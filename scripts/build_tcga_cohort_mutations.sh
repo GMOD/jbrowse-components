@@ -28,7 +28,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-HELPERS=(maf_to_vcf.py tcga_clinical_tsv.py hosted_assembly.py)
+HELPERS=(maf_to_vcf.py tcga_clinical_tsv.py mutation_recurrence.py hosted_assembly.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -36,8 +36,13 @@ done
 
 PROJECT=${1:-TCGA-BRCA}
 LIMIT=${2:-0}
+# Which clinical column the recurrence track splits on. `subtype` is derived
+# from the receptor calls and so is breast only; `histology` and `stage` come
+# from harmonized GDC fields and work for any project.
+GROUP_COLUMN=${3:-subtype}
 OUT=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_mutations
 CLINICAL=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_clinical.tsv
+RECURRENCE=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_mutation_recurrence_by_${GROUP_COLUMN}.bedGraph
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
@@ -103,8 +108,20 @@ tabix -f -p vcf "$OUT.vcf.gz"
 echo "== fetching clinical annotation"
 python3 "$SCRIPT_DIR/tcga_clinical_tsv.py" "$PROJECT" "$CLINICAL"
 
+# The matrix draws a group's mutation rate as how dark its band is, which stops
+# working once the groups differ in size: at TP53 the triple-negative band
+# carries about as many marks as the HR+/HER2- band nearly four times its
+# height. This is the same tally on an axis, one interval per gene, and it is
+# derived from the VCF above rather than re-downloaded.
+echo "== tallying per-gene recurrence"
+python3 "$SCRIPT_DIR/mutation_recurrence.py" "$OUT.vcf.gz" "$RECURRENCE" \
+  --groups "$CLINICAL:$GROUP_COLUMN"
+bgzip -f "$RECURRENCE"
+tabix -f -p bed "$RECURRENCE.gz"
+
 echo "== done: $OUT.vcf.gz ($(du -h "$OUT.vcf.gz" | cut -f1))"
 echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
+echo "         $RECURRENCE.gz ($(du -h "$RECURRENCE.gz" | cut -f1))"
 
 # ── JBrowse app ──────────────────────────────────────────────────────────────
 # The files above are the cohort; this is what opens them, so "reproduce it end
@@ -117,15 +134,17 @@ else jb() { npx -y @jbrowse/cli "$@"; }; fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP"
 cp "$OUT.vcf.gz" "$OUT.vcf.gz.tbi" "$CLINICAL" "$APP"/
+cp "$RECURRENCE.gz" "$RECURRENCE.gz.tbi" "$APP"/
 
 # genes, so a mutation column has something to be read against
 python3 "$SCRIPT_DIR/hosted_assembly.py" "$APP/config.json" hg38 \
   hg38-ncbiRefSeqCurated
 
-python3 - "$APP/config.json" "$OUT" "$CLINICAL" "$PROJECT" <<'PY'
+python3 - "$APP/config.json" "$OUT" "$CLINICAL" "$PROJECT" "$RECURRENCE.gz" \
+  "$GROUP_COLUMN" <<'PY'
 import json, sys
 
-path, out, clinical, project = sys.argv[1:5]
+path, out, clinical, project, recurrence, group_column = sys.argv[1:7]
 cfg = json.load(open(path))
 
 cfg['tracks'].append({
@@ -150,6 +169,26 @@ cfg['tracks'].append({
     }],
 })
 
+# The same tally on an axis: one row per clinical group, pinned to 0-100 so a
+# bar means the same rate in every window rather than fitting its own row.
+cfg['tracks'].append({
+    'type': 'MultiQuantitativeTrack',
+    'trackId': f'{out}_recurrence_track',
+    'name': f'{project} mutation recurrence by {group_column}',
+    'assemblyNames': ['hg38'],
+    'category': ['TCGA'],
+    'adapter': {
+        'type': 'BedGraphTabixAdapter',
+        'uri': recurrence,
+    },
+    'displayDefaults': {
+        'height': 320,
+        'minScore': 0,
+        'maxScore': 100,
+        'showRowSeparators': True,
+    },
+})
+
 # PIK3CA, the locus the tutorial reads first.
 cfg['defaultSession'] = {
     'name': f'{project} somatic mutations',
@@ -157,7 +196,11 @@ cfg['defaultSession'] = {
         'type': 'LinearGenomeView',
         'assembly': 'hg38',
         'loc': 'chr3:179,148,000-179,240,000',
-        'tracks': ['hg38-ncbiRefSeqCurated', f'{out}_track'],
+        'tracks': [
+            'hg38-ncbiRefSeqCurated',
+            f'{out}_recurrence_track',
+            f'{out}_track',
+        ],
     }],
 }
 json.dump(cfg, open(path, 'w'), indent=2)
@@ -174,10 +217,11 @@ the track menu. Serve it, e.g.:
 or open $(pwd)/$APP/config.json in JBrowse Desktop via
 File -> Session -> Open config.json or .jbrowse file...
 
-Maintainers: the hosted figures read these two files, so a change to what this
+Maintainers: the hosted figures read these files, so a change to what this
 builds needs them uploaded. The bucket has no versioning, so an overwrite is not
 recoverable.
 
   aws s3 cp $OUT.vcf.gz{,.tbi} s3://jbrowse.org/demos/tcga/
   aws s3 cp $CLINICAL s3://jbrowse.org/demos/tcga/
+  aws s3 cp $RECURRENCE.gz{,.tbi} s3://jbrowse.org/demos/tcga/
 EOF

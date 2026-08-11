@@ -21,10 +21,11 @@ clinical column you point `groupBy` at.
   URL with nothing to host) and the [JBrowse CLI](/docs/cli)
 - Both files, hosted:
 
-| File                                                        | What                                  |
-| ----------------------------------------------------------- | ------------------------------------- |
-| `https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz` | the cohort's somatic mutations        |
-| `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`     | per-tumor histology, receptors, stage |
+| File                                                                                  | What                                  |
+| ------------------------------------------------------------------------------------- | ------------------------------------- |
+| `https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz`                           | the cohort's somatic mutations        |
+| `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                               | per-tumor histology, receptors, stage |
+| `https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz` | per-gene mutation rate per subtype    |
 
 ## What the two files hold
 
@@ -189,10 +190,14 @@ Three things in that figure travel to any gene-scale matrix:
   transcript. A tumor suppressor is inactivated by any truncating call anywhere
   in the coding sequence, so CDH1's fan lands in exon after exon, where PIK3CA's
   comes off three codons.
-- A ClinVar track over the same window puts the germline record beside the
-  somatic one. It is the same variant display and the same coordinates, so a
-  column of the matrix and a red tick in the lane above line up when a somatic
-  call sits where a pathogenic germline variant has been submitted.
+- A ClinVar track puts the germline record beside the somatic one, at a window
+  narrow enough for the two to be lined up. It is the same variant display and
+  the same coordinates, so a column of the matrix and a pathogenic tick in the
+  lane above meet when a somatic call sits where a germline variant has been
+  submitted. Not at this zoom: collapsed to one row across sixteen exons,
+  ClinVar's submissions touch each other and the lane is a barcode with no
+  feature a matrix column can be matched to. It earns its row over a hotspot or
+  a single exon.
 
 The shape of the rest of the picture is the shape of somatic mutation data: most
 columns are one tumor wide. That is why the whole-genome view of this track is
@@ -216,6 +221,83 @@ PIK3CA is the same gene-scale picture with the opposite geometry: its calls pile
 on two hotspots (H1047R in the kinase domain, E542K/E545K in the helical one) in
 the HR+/HER2- band rather than spreading, so its connector fan comes off a
 couple of points where TP53's and CDH1's land in exon after exon.
+
+## Put a number on the bands
+
+A band's darkness is its mutation rate, which works while the bands are of
+comparable size and stops working when they are not. The triple-negative band
+above carries about as many marks as the HR+/HER2- band, and reads as comparable
+to it, because that band is nearly four times taller: the same ink over four
+times the rows is a quarter of the rate. Where in a gene the calls fall is what
+the matrix is for; how often they fall needs an axis.
+
+[`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py)
+is the mutation counterpart of the copy-number cohort's
+[`cnv_recurrence.py`](/docs/tutorials/tcga_cohort_cnv#add-a-recurrence-track).
+It takes the same `SAMPLES.tsv:COLUMN` group spec, so a tumor falls in the same
+group in every track on both pages, and writes one interval per gene valued in
+percent of the cohort:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mutation_recurrence.py
+python3 mutation_recurrence.py tcga_brca_mutations.vcf.gz by_subtype.bedGraph \
+  --groups tcga_brca_clinical.tsv:subtype
+```
+
+```
+#chrom  start      end        HR+/HER2-  HER2+  triple-negative  unknown
+chr3    179199065  179234302  40.56      30.18  11.19            30.71
+chr17   7670683    7676564    19.44      39.64  80.42            32.28
+```
+
+That is the same shape the copy-number recurrence writes, so the same adapter
+and the same display read it: `BedGraphTabixAdapter` takes every column past
+`end` as its own signal, and a
+[`MultiQuantitativeTrack`](/docs/config_guides/multiquantitative_track) draws
+one row per group.
+
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "tcga_brca_mutation_recurrence_by_subtype",
+  "name": "TCGA-BRCA mutation recurrence by receptor subtype",
+  "assemblyNames": ["hg38"],
+  "category": ["TCGA"],
+  "adapter": {
+    "type": "BedGraphTabixAdapter",
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz"
+  },
+  "displayDefaults": {
+    "height": 320,
+    "minScore": 0,
+    "maxScore": 100,
+    "showRowSeparators": true
+  }
+}
+```
+
+[`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
+pin every row to one axis for the reason the copy-number recurrence rows are
+pinned: left to autoscale each row fits its own maximum and the groups look
+alike, which is the one thing this track exists to disprove.
+
+The two genes above are each other's control. TP53 climbs from the HR+/HER2-
+column to the triple-negative one and PIK3CA falls across the same four columns,
+in the same track, from the same pipeline, so a bar that tracked band size
+rather than rate could not produce both. Whichever way the reader expects a
+column to go, one of the two genes goes the other way.
+
+What the track counts is set by
+[`--impact`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py),
+which defaults to the HIGH and MODERATE tiers, the ones the matrix's own
+consequence-impact coloring draws in a color rather than in grey. So a gene's
+bar and the cells beside it agree about what counts as a hit.
+
+Read it as a rate and not as a result. There is no background model and no
+significance test, and gene length enters the count directly: _TTN_ is 100 kb of
+coding sequence and outranks every driver on this page except TP53 and PIK3CA,
+on passenger mutations alone. The same caveat the copy-number page's frequency
+track carries, arriving here through length rather than through amplitude.
 
 ## Cluster the rows instead of grouping them
 
@@ -259,21 +341,21 @@ any TSV whose first column matches the VCF's sample names will do.
 ## Where to go next
 
 - [](/docs/tutorials/tcga_cohort_cnv), the same tumors' copy number as a
-  one-row-per-tumor painting, plus the cohort recurrence track
-- **Allele-specific copy number** (ASCAT, open access at the GDC) reports major
-  and minor allele copy number separately, so it shows loss of heterozygosity
-  that a total copy-number segment call reads as balanced
-- **Methylation** (Beta Value arrays, open access) is probe level with genomic
-  coordinates, and loads as a multi-row track with beta as the color field
+  one-row-per-tumor painting, plus the cohort recurrence track. Its
+  [next steps](/docs/tutorials/tcga_cohort_cnv#where-to-go-next) are this page's
+  too: allele-specific copy number and the methylation arrays are open access at
+  the GDC and cover the same tumors
 
 ## Reproduce it end to end
 
-One script builds both files for any project id:
+One script builds every file above for any project id:
 [`build_tcga_cohort_mutations.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_mutations.sh),
 which merges the MAFs with
-[`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
-and assembles the clinical table with
-[`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py).
+[`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py),
+assembles the clinical table with
+[`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py),
+and tallies the per-gene rates with
+[`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py).
 It needs `curl`, `python3`, and `bgzip` + `tabix` from
 [htslib](http://www.htslib.org/), which on Debian/Ubuntu is
 `apt install curl python3 tabix`.
@@ -285,17 +367,24 @@ bash build_tcga_cohort_mutations.sh TCGA-BRCA    # the full cohort, ~10 minutes
 npx --yes serve jbrowse2                         # then open the printed URL
 ```
 
-It writes `tcga_brca_mutations.vcf.gz` (+ `.tbi`) and `tcga_brca_clinical.tsv`,
-then a `jbrowse2/` opening on _PIK3CA_ with the matrix display above. The
-assembly is the hosted UCSC hg38 hub's own entry copied in, so the reference is
-never downloaded.
+It writes `tcga_brca_mutations.vcf.gz` (+ `.tbi`), `tcga_brca_clinical.tsv` and
+`tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz` (+ `.tbi`), then a
+`jbrowse2/` opening on _PIK3CA_ with the recurrence rows over the matrix
+display. The assembly is the hosted UCSC hg38 hub's own entry copied in, so the
+reference is never downloaded. The recurrence step is derived from the VCF
+rather than re-downloaded, and is separately runnable as
+[`mutation_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py)
+if you have a cohort VCF already.
 
 The full run reports
 `87574 distinct mutations from 992 MAFs across 979 tumors (400 rows wrong sample type, 351 rows replicate aliquot)`
 in 7.7 MB, plus a 140 KB clinical table. Swap in any other project id
 (`TCGA-LUAD`, `TCGA-COAD`, ...) for a different cohort, and pass
 `--no-receptors` to `tcga_clinical_tsv.py` for a non-breast project, whose
-receptor columns would come back empty.
+receptor columns would come back empty. A third argument names the clinical
+column the recurrence track splits on, since `subtype` is derived from the
+receptor calls and so is breast only, while `histology` and `stage` come from
+harmonized GDC fields and work for any project.
 
 Four of its steps decide whether the resulting track is correct. It takes only
 open-access files: the GDC's Masked Somatic Mutation MAFs are the aliquot-merged
