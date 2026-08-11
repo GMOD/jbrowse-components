@@ -16,6 +16,7 @@ displayMode
 featureHighlights
 filterBy
 gfaLocation
+growMaxHeight
 height
 jexlFiltersSetting
 label

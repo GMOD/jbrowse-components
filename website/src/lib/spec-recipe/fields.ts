@@ -46,6 +46,14 @@ import {
 // right-clicked feature, so no click sequence enters an accession. Leave them
 // reported rather than hand-copying a label from a sibling checkout.
 //
+// `growMaxHeight` is reported for a third reason, and it is the one the Settings
+// paragraph above forbids papering over: it is a config slot with no control at
+// all. The size submenu's 'Track sizing' radios pick the MODE (`heightMode`);
+// nothing in the UI edits the ceiling that mode grows to. A figure needs it when
+// its own read height pushes the track past the 800px default, which is a spec
+// concern rather than something a reader would click, so the honest answer is
+// the JSON tab.
+//
 // The other way an entry lands in the report is a field several displays share
 // on a track whose display type went unresolved, and the fix for that one is
 // not here. Where only one display declares a field the name settles it, which
@@ -451,6 +459,13 @@ const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
   LinearMultiRowFeatureDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantDisplay: 'Edit colors/arrangement...',
   LinearMultiSampleVariantMatrixDisplay: 'Edit colors/arrangement...',
+  // The multi-wiggle reaches the same dialog from the same item, so it belongs
+  // here as much as the four above — it was simply never added, and `layout` /
+  // `subtreeFilter` on a multi-wiggle went unmapped as a result. It appears in
+  // WIGGLE_COLOR_EDITORS as well, and the two are not one table: that one asks
+  // which of the two wiggle displays' color editors a score-sign swatch is in,
+  // this one asks which displays arrange rows at all.
+  MultiLinearWiggleDisplay: 'Edit colors/arrangement...',
 }
 
 // wiggle-core's makeScoreSubMenu, which the alignments coverage band reuses
@@ -968,12 +983,26 @@ export const trackFields: Record<string, FieldRecipe> = {
   },
   layout: (value, { displayType }) => {
     const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
-    return Array.isArray(value) && editor
+    if (!Array.isArray(value) || !editor) {
+      return undefined
+    }
+    // One slot, two quite different reasons to set it, and the click inside the
+    // dialog is not the same one: a saved order comes from dragging, a saved
+    // color from the swatch column. A layout whose rows all carry a color was
+    // written for the color, so lead with that rather than telling the reader
+    // to drag rows that are already in adapter order.
+    const colored = value.filter(
+      row => typeof row === 'object' && row !== null && 'color' in row,
+    ).length
+    return colored === value.length
       ? {
-          path: `${TRACK_MENU} → ${editor} → drag the rows into order`,
-          note: `The same dialog renames a row, so a figure's ${value.length} rows carry both their order and any labels it shows.`,
+          path: `${TRACK_MENU} → ${editor} → set each row's color`,
+          note: `This figure colors all ${value.length} of its rows by hand rather than taking the palette. The same dialog also holds their order and labels.`,
         }
-      : undefined
+      : {
+          path: `${TRACK_MENU} → ${editor} → drag the rows into order`,
+          note: `The same dialog renames a row and recolors it, so a figure's ${value.length} rows carry their order, any labels it shows, and any color it picked.`,
+        }
   },
   posColor: scoreSignColorStep('Positive'),
   negColor: scoreSignColorStep('Negative'),
