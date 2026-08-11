@@ -49,12 +49,27 @@ const LinearGenomeViewImportForm = observer(
     const { recentLocations, addRecentLocation, clearRecentLocations } =
       useRecentLocations(selectedAsm)
 
-    // the location the form will open; the input starts on the first refname
-    // and is replaced by whatever the user types or picks
-    const [selectedOption, setSelectedOption] = useState<BaseResult>()
-    const [inputText, setInputText] = useState<string>()
+    // The location the form will open, tagged with the assembly it was entered
+    // for, and read back only while that tag still matches. Switching assembly
+    // then drops it structurally — nothing has to remember to clear it — which
+    // is the shape `useAssemblySelection` already uses for the assembly choice
+    // itself ("stored as an override, re-resolved against the live list every
+    // render") and the breakpoint form uses for its shared track. One object
+    // rather than a text/option pair for the same reason: they are only ever
+    // valid together, and as two useStates every write had to remember to reset
+    // the other.
+    //
+    // Undefined means "nothing entered yet", which is what makes the box fall
+    // back to the first refname below and keeps that default out of the recent
+    // locations list.
+    const [entered, setEntered] = useState<{
+      assemblyName: string
+      text: string
+      option?: BaseResult
+    }>()
+    const current = entered?.assemblyName === selectedAsm ? entered : undefined
 
-    const value = inputText ?? regions?.[0]?.refName ?? ''
+    const value = current?.text ?? regions?.[0]?.refName ?? ''
     const displayError = assemblyError ?? viewError
 
     async function navigate({
@@ -103,8 +118,8 @@ const LinearGenomeViewImportForm = observer(
             event.preventDefault()
             await navigate({
               loc: value,
-              option: selectedOption,
-              record: inputText !== undefined,
+              option: current?.option,
+              record: current !== undefined,
             })
           }}
         >
@@ -115,9 +130,15 @@ const LinearGenomeViewImportForm = observer(
           >
             <AssemblySelector
               onChange={val => {
+                // Only the model's error needs clearing by hand: it lives
+                // outside React and is not tagged with the assembly it was
+                // about. The typed location isn't reset here — `entered` is
+                // tagged, so it drops itself. The banner reports the previous
+                // assembly's failure (that is why the form is up at all), so it
+                // has to go with it; the circular form clears here for the same
+                // reason.
+                model.setError(undefined)
                 setSelectedAssemblyName(val)
-                setInputText(undefined)
-                setSelectedOption(undefined)
               }}
               session={session}
               selected={selectedAsm}
@@ -140,12 +161,17 @@ const LinearGenomeViewImportForm = observer(
                   value={value}
                   minWidth={270}
                   onChange={v => {
-                    setInputText(v)
-                    setSelectedOption(undefined)
+                    // no `option` on the new object, so typing over a picked
+                    // search result discards it rather than opening the old
+                    // one's location under the new text
+                    setEntered({ assemblyName: selectedAsm, text: v })
                   }}
                   onSelect={opt => {
-                    setSelectedOption(opt)
-                    setInputText(opt.getDisplayString())
+                    setEntered({
+                      assemblyName: selectedAsm,
+                      text: opt.getDisplayString(),
+                      option: opt,
+                    })
                   }}
                   endAdornment={
                     <RefNameAutocompleteEndAdornment

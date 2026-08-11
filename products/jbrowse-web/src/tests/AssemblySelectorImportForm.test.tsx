@@ -32,6 +32,23 @@ test('select volvox404', async () => {
   jest.restoreAllMocks()
 }, 30000)
 
+// The typed location belongs to the assembly it was typed for, so switching
+// assemblies has to drop it — otherwise Open carries a volvox locstring into
+// misc. Nothing clears it by hand: the state is tagged with its assembly and
+// read back only on a match, so this is the tag doing its job.
+test('typing a location then switching assembly drops what was typed', async () => {
+  const { input, getInputValue, findByText } = await doSetupForImportForm()
+  fireEvent.change(input, { target: { value: 'ctgA:100-200' } })
+  await waitFor(() => {
+    expect(getInputValue()).toBe('ctgA:100-200')
+  })
+  fireEvent.mouseDown(await findByText('volvox'))
+  fireEvent.click(await findByText('misc'))
+  await waitFor(() => {
+    expect(getInputValue()).toBe('t1')
+  }, delay)
+}, 30000)
+
 test('select misc', async () => {
   const { getInputValue, findByText } = await doSetupForImportForm()
   fireEvent.mouseDown(await findByText('volvox'))
