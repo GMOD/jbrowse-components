@@ -42,6 +42,20 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   the fold doesn't collapse them.
 - **Capture-phase rubberband listeners** — `capture: true` was a debugging
   artifact. Bubble phase works.
+- **`overlay` subfeature labels as the compact-mode replacement for `below`** —
+  rejected 2026-08-11 on measurement. It looks free (overlay reserves no
+  vertical space), but overlay puts the label's top at the box's top and the two
+  shrink on different curves, so in superCompact a 7.15px label sits on a 3px box
+  and spills ~4px onto the transcript below. It trades a fixed overlap for an
+  unfixed one. The overlap itself is a live question — TODO.md, "Overlay labels
+  cover the row below".
+- **Making the canvas `featureItemMap` first-wins to match `indexById`** — tried
+  2026-08-11 and reverted. The two tables resolve a region-spanning feature
+  differently on paper, but `laidOutDataMap` is the LAID-OUT map and the packer
+  gives such a feature one row across its whole ref-group, so both copies carry
+  identical geometry before either table is built. A test written to catch the
+  difference passes against both spellings. The existing comment had already
+  reached that conclusion deliberately.
 
 ## Config and MST
 
@@ -355,6 +369,18 @@ re-attempt without genuinely new data.
     range queries, not something to do a locus at a time.
 
 ## Tooling, tests and docs
+
+- **A shared helper for the RPC method classes' `execute`** — declined three
+  times. ~15 classes across 7 plugins repeat `deserializeArguments` → dynamic
+  `import()` → `execute({pluginManager, args})`, but the `import()` specifier
+  must stay a literal for bundlers and each executor's export name differs, so
+  the helper takes a thunk and lands at about the size of the ten lines it
+  replaces.
+- **Declaring `Reversible` narrowings in `LinearAlignmentsDisplay`** — declined
+  2026-08-11. Its filters are edited in a dialog and its menu deliberately offers
+  no group clear, so declaring them would mean `clear` closures nothing calls or
+  a flag to suppress the row the declaration implies. The shape fits a menu that
+  owns the undo; see `packages/core/src/ui/CLAUDE.md`.
 
 - **Golden-snapshot browser tests** — not worth the investment; the one version
   worth building is automated canvas-vs-GPU parity.

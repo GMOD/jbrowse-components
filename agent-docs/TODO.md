@@ -28,6 +28,7 @@ Exploratory concepts that are *not* committed work live in
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
+| [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
@@ -627,6 +628,32 @@ just the clicked feature's instances (`GpuSyntenyRenderer.ensureOutlineUploaded`
 so don't reintroduce the HAL `firstInstance`/`instanceCount` range on `drawPass`
 for this reason. The corner-order convention these passes read is spelled out at
 the top of `syntenyTypes.slang`.
+
+### `overlay` subfeature labels swallow the row below them in compact modes
+
+An `overlay` subfeature label puts its top at the box's top (`relativeY =
+-featureHeight` in `createTranscriptFloatingLabel`) and reserves nothing, by
+design — that is what "overlay" means. The label is drawn at
+`labelFontSize(displayMode)` while the box is `featureHeight ×
+HEIGHT_MULTIPLIERS`, and those two shrink on different curves, so the spill past
+the bottom of the box grows as the mode gets denser:
+
+| mode | box | label | spill |
+| --- | --- | --- | --- |
+| normal | 10px | 11px | 1px |
+| compact | 6px | 8.25px | 2.25px |
+| superCompact | 3px | 7.15px | 4.15px |
+
+In superCompact the label more than covers the transcript under it. Measured
+2026-08-11 while evaluating overlay as a compaction for `below` (it was rejected
+for this reason — see REJECTED_IDEAS.md).
+
+**The call to make: is this a bug or the contract?** Reserving a row for overlay
+in compact modes is now cheap — the `labelRowsAbove` channel exists and the main
+thread already spends it (`FeatureLayout.labelRowsAbove`) — but it stops overlay
+being free, which is the only reason to pick it over `below`. The alternative is
+to say overlay is a normal-mode affordance and document it. Not the
+implementer's call, hence here rather than in the small-items section.
 
 ## Measure first: the premise or the cost attribution is unconfirmed
 
