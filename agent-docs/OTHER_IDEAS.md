@@ -79,7 +79,9 @@ reference others may hold, not as free-form prose.
 - [Offline genome packages](#offline-genome-packages-for-jbrowse-desktop) —
   relocatable genome packs plus a download manager
 - [Deferred architecture-review items](#deferred-architecture-review-items-type-safety--displaychrome) —
-  and the chrome loose end left after it
+  the chrome loose end left after it, and the custom-display page that would
+  answer "can I draw my own visualization", blocked on `render-core` being
+  unpublished
 - [Interaction perf](#interaction-perf-which-components-re-render-per-frame) — the
   measured culprit is the coordinate ruler, not the alignments overlays
 - [Search / misc](#search--misc)
@@ -1980,6 +1982,52 @@ the file would be about how to write a display rather than about the seam, and
 the site's "one page adds one thing" arc has nowhere to put it. If it ever gets a
 demo it belongs outside the arc, and the honest scope is a custom-display page
 that happens to use `DisplayChromeBase` — not a `DisplayChromeBase` page.
+
+### A custom-display page, and the packaging that blocks it
+
+Reframed 2026-08-11, and the reframing is the useful part. The paragraph above
+scopes this as a chrome demo, which undersells it. The question an embedder
+actually arrives with — sharpened by the GPU rearchitecture, which from outside
+reads as *everything is a hardcoded shader now* — is **"can I draw my own
+visualization at all?"** Nothing on any of the four sites answers it, and the
+answer is much better than the architecture looks.
+
+**No shaders are involved, and that is measured rather than hoped.**
+`createCanvas2DBackend` (`packages/render-core/src/createRenderingBackend.ts`)
+is a first-class Canvas2D-only path: it skips the HAL ladder outright and
+"plugs into the exact same `RenderLifecycleMixin` / `DisplayChrome` machinery as
+a GPU display — the lifecycle is backend-agnostic, so nothing downstream knows
+or cares there's no HAL." Its own guidance is to promote to the dual GPU path
+only once a profile shows Canvas2D cannot hold 60fps at real feature counts
+(≳100K features/frame, RFC-001 §3a). Five display families already take it —
+sequence, gwas, hic, maf, synteny — and the draw functions are small:
+`Canvas2DSequenceRenderer.ts` 37 lines, `HicRenderer.ts` 19,
+`Canvas2DManhattanRenderer.ts` 117. A Manhattan plot is ~120 lines of `ctx`
+calls on the same engine, which is a far stronger page than anything about
+chrome.
+
+**The blocker is packaging, not difficulty.** `@jbrowse/render-core` is
+unpublished — 404 on the npm registry, despite carrying a version and being a
+workspace dependency of `plugins/linear-genome-view` and `jbrowse-web` — and it
+is absent from `ReExports/modules.ts`, so it is not on the runtime-plugin ABI
+either. That bites from both directions at once:
+
+- an examples-site page importing it would build inside the monorepo and be
+  **un-pasteable** by a reader, which breaks the one inviolable rule of those
+  sites (an example may import only from published packages);
+- an external runtime plugin cannot reach it at all.
+
+So this is not a "write the page" decision, it is **do we want custom displays
+to be a supported public extension point?** If yes, the work is: publish
+`render-core`, or re-export the needed surface through `@jbrowse/core`, plus the
+`abiBaseline.json` entry — and then the page is straightforward and the shader
+boilerplate never enters it. If no, the page cannot honestly exist on those
+sites, because the reader could not run what it shows.
+
+Unmeasured, and worth doing before committing: the **state model** is the real
+bulk of a display, not the renderer (gwas's is 689 lines, though much of that is
+LD-specific). Size a genuinely minimal display first; the ~120-line figure above
+is the drawing only.
 
 ## Interaction perf: which components re-render per frame
 
