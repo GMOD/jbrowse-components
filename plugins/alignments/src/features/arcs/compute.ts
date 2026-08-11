@@ -14,10 +14,7 @@ import {
 // hop through palettes.ts (SHADER_JS_CODEGEN.md).
 import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
-import {
-  classifyInsertSize,
-  robustSpread,
-} from '../../shared/insertSizeStats.ts'
+import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { resolveReadGroup } from '../../shared/readGroupConnections.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
@@ -75,11 +72,6 @@ interface ArcSettings {
   // Optional: omitted (tests / no assembly) means no aliasing — identity.
   canonicalRefName?: (refName: string) => string
 }
-
-// Pairs at least this far apart paint with the dedicated long-insert color
-// (purely a coloring threshold — it has no effect on the arc's geometry).
-const LARGE_INSERT_THRESHOLD = 10_000
-const LONG_RANGE_STDDEV_THRESHOLD = 3
 
 // A pair is concordant FR (the modal, "normal" insert) when its tlen sits
 // inside the insert-size stats band AND it is LR orientation. Read cloud drops
@@ -222,44 +214,45 @@ export function getArcColorType(args: {
   arc: PendingArc
   colorByType: ArcColorByType
   hasPaired: boolean
-  longRange: boolean
-  largeInsert: boolean
   stats: InsertSizeBand | undefined
 }) {
-  const { arc, colorByType, hasPaired, longRange, largeInsert, stats } = args
+  const { arc, colorByType, hasPaired, stats } = args
 
   // A split-read junction carries no pair semantics (no template length, no
   // pair orientation), so it colors by its own segment strands — opposite
   // strands flag the inversion — regardless of whether OTHER reads in the view
   // are paired. Keying on the per-connection `isSplit` instead of the dataset-
   // global `hasPaired` is what lets a paired read that is itself SA-split show
-  // its inversion junctions correctly. Resolved before the long-/large-insert
-  // override below because that is a paired-insert concept: a wide inversion
-  // breakpoint (large genomic gap) must keep its inversion color, not get
-  // repainted long-insert just because its span clears the pair thresholds.
+  // its inversion junctions correctly. Resolved before the insert class below
+  // because that is a paired concept and a junction has no TLEN to classify.
   if (!hasPaired || arc.isSplit) {
     return colorByType === 'insertSize'
       ? COLOR_DEFAULT
       : unpairedOrientationColor(arc.p1Strand, arc.p2Strand)
   }
   const orient = orientationColor(arc.pairOrientationNum)
-  // A genomically far-apart pair reads as long-insert even when its TLEN-based
-  // class is normal — discordant pairs often carry an unreliable/0 TLEN, so the
-  // span is the more trustworthy signal. Folded into the insert class (and, in
-  // pure 'orientation' mode, applied only as the LR fallback) rather than as a
-  // blanket pre-switch override, so it can't repaint an abnormal-orientation
-  // pair (RL/RR/LL) whose orientation is the real SV signal — the same
-  // protection the split branch above relies on.
-  const isLongRange = longRange && largeInsert
-  const longRangeColor = isLongRange ? COLOR_LONG_INSERT : COLOR_DEFAULT
-  const insert = isLongRange
-    ? COLOR_LONG_INSERT
-    : insertSizeColor(arc.tlen, stats)
+  // TLEN, and only TLEN — the same field `readColorCategory` classifies, so an
+  // arc and the reads under it cannot key the same pair two different ways.
+  //
+  // This used to override the TLEN class with the pair's drawn SPAN: a pair
+  // whose mates sat more than LARGE_INSERT_THRESHOLD apart painted long-insert
+  // whatever TLEN said, on the ground that a discordant pair often carries an
+  // unreliable or 0 TLEN and the distance is the more trustworthy signal. The
+  // signal is real, but the read fills never had the rule, so the two disagreed
+  // on exactly the pairs it existed to catch: `classifyInsertSize` sorts TLEN 0
+  // into `normal` (0 is neither > upper nor inside (0, lower)), so those arcs
+  // went red over reads that stayed grey. That is what shipped in a figure.
+  //
+  // The span was also a moving target in a way TLEN is not: half of the test
+  // was `absrad >= longRangeThreshold`, a median+MAD outlier cut over the arcs
+  // IN VIEW, so an arc's color depended on what else was on screen and changed
+  // as you panned.
+  const insert = insertSizeColor(arc.tlen, stats)
   switch (colorByType) {
     case 'insertSize':
       return insert
     case 'orientation':
-      return orient ?? longRangeColor
+      return orient ?? COLOR_DEFAULT
     // Short-insert pairs always paint pink, even with abnormal orientation;
     // otherwise orientation wins, falling back to long-/normal-insert.
     case 'insertSizeAndOrientation':
@@ -388,31 +381,6 @@ function computeArcShape({
     }
   }
   return { shapeType: ARC_SHAPE_ARC, yBp: absrad }
-}
-
-// Takes one array per group, not one flat array: the threshold describes the
-// whole fetched read set, so every group's arcs contribute to it (see
-// `poolArcScale`). Iterated rather than flattened so pooling costs no copy.
-function computeLongRangeThreshold(pendingArcsByGroup: PendingArc[][]) {
-  // Split-junction spans are breakpoint gaps, not paired-end insert radii;
-  // mixing them into the distribution skews the spread and mis-classifies the
-  // long-insert coloring. Characterize the threshold from mate-link arcs only.
-  const radii: number[] = []
-  for (const arcs of pendingArcsByGroup) {
-    for (const a of arcs) {
-      if (!a.isSplit && a.p1Ref === a.p2Ref) {
-        radii.push(Math.abs(a.p2Bp - a.p1Bp) / 2)
-      }
-    }
-  }
-  if (radii.length === 0) {
-    return Infinity
-  }
-  // Robust center + spread (median ± N·1.4826·MAD): arc radii are right-skewed
-  // like insert sizes, so a few very large inserts would inflate a mean/std
-  // threshold and let genuine long-range pairs escape the long-insert override.
-  const { center, spread } = robustSpread(radii, LONG_RANGE_STDDEV_THRESHOLD)
-  return center + spread
 }
 
 interface ReadEntry {
@@ -806,16 +774,12 @@ function collectArcInputs(
 interface ArcScale {
   hasPaired: boolean
   stats: InsertSizeBand | undefined
-  longRangeThreshold: number
 }
 
 function poolArcScale(inputs: ArcInputs[]): ArcScale {
   return {
     hasPaired: inputs.some(i => i.hasPaired),
     stats: inputs.find(i => i.stats !== undefined)?.stats,
-    longRangeThreshold: computeLongRangeThreshold(
-      inputs.map(i => i.pendingArcs),
-    ),
   }
 }
 
@@ -883,7 +847,7 @@ function arcKey(a: {
 // same offset (`pairJitter01`). Arcs that agree on the key agree on it.
 function resolveArcs(
   pendingArcs: PendingArc[],
-  { hasPaired, stats, longRangeThreshold }: ArcScale,
+  { hasPaired, stats }: ArcScale,
   settings: ArcSettings,
 ) {
   const { colorByType, cloud = false, drawInter } = settings
@@ -922,8 +886,6 @@ function resolveArcs(
     }
 
     const absrad = Math.abs((p2Bp - p1Bp) / 2)
-    const longRange = absrad >= longRangeThreshold
-    const largeInsert = absrad > LARGE_INSERT_THRESHOLD
 
     // No bp distance ever hides or reshapes a both-mates-visible pair: every
     // pair renders as an arc. "Long range" is purely the *visual* result of
@@ -935,8 +897,6 @@ function resolveArcs(
       arc,
       colorByType,
       hasPaired,
-      longRange,
-      largeInsert,
       stats,
     })
     const { shapeType, yBp } = computeArcShape({ cloud, arc, absrad })

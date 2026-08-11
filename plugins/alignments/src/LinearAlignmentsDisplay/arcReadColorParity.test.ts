@@ -14,9 +14,8 @@ import type { ArcColorByType } from '../shared/types.ts'
 // curve mark. That fold is an assertion that the two classifiers agree, and
 // nothing held them to it: a figure shipped with red arcs over grey reads.
 //
-// So this file is the missing half. It pins the agreement where it is supposed
-// to hold, and pins the ONE place it does not so that divergence stays
-// deliberate rather than being rediscovered from a picture.
+// This file is the missing half. Both sides now classify TLEN and nothing else,
+// so the agreement is total and this pins it that way.
 
 const stats = { upper: 600, lower: 100 }
 
@@ -35,7 +34,6 @@ function arcCategory(
   colorByType: ArcColorByType,
   pairOrientationNum: number,
   tlen: number,
-  { longRange = false } = {},
 ) {
   return arcColorLegendCategory(
     getArcColorType({
@@ -52,8 +50,6 @@ function arcCategory(
       },
       colorByType,
       hasPaired: true,
-      longRange,
-      largeInsert: longRange,
       stats,
     }),
     colorByType,
@@ -104,34 +100,33 @@ describe('arc and read color classifiers', () => {
     },
   )
 
-  // The known divergence, asserted rather than left to be found in a figure.
-  // `getArcColorType` folds a pair whose SPAN clears LARGE_INSERT_THRESHOLD into
-  // the long-insert color on the ground that a discordant pair's TLEN is often
-  // 0 or unreliable; `readColorCategory` reads TLEN alone and has no such rule.
-  // A normal-TLEN pair drawn far apart is therefore a red arc over a read that
-  // is not red, in every mode that can paint long insert.
-  test('diverge on a long-range pair whose TLEN looks normal', () => {
-    const tlen = 300 // inside [lower, upper], so TLEN alone says normal
-    expect(readCategory('insertSizeAndOrientation', 1, tlen)).toBe(
-      'normalInsert',
-    )
-    expect(arcCategory('insertSizeAndOrientation', 1, tlen)).toBe(
-      'normalInsert',
-    )
-    expect(
-      arcCategory('insertSizeAndOrientation', 1, tlen, { longRange: true }),
-    ).toBe('longInsert')
+  // TLEN 0 is the case the two classifiers used to split on, and the reason a
+  // figure shipped with red arcs over grey reads. `classifyInsertSize` sorts it
+  // into `normal` (0 is neither > upper nor inside (0, lower)), so the reads
+  // painted it as an ordinary pair; the arcs measured the mates' drawn distance
+  // instead and painted it long-insert. The arcs read TLEN now, so an
+  // information-unavailable pair is `normal` on both sides rather than red on
+  // one of them.
+  test('agree on TLEN 0, however far apart the mates are drawn', () => {
+    for (const colorByType of Object.keys(
+      ARC_TO_READ_SCHEME,
+    ) as ArcColorByType[]) {
+      expect(arcCategory(colorByType, 1, 0)).toBe(
+        readCategory(colorByType, 1, 0),
+      )
+    }
   })
 
-  // The sharper case, and the one that made the legend wrong: `orientation`
-  // mode has no insert-size vocabulary at all on the read side, so this bucket
-  // cannot be folded into a `pairOrientation` read key.
-  test('orientation mode can emit a bucket pairOrientation reads never paint', () => {
-    expect(arcCategory('orientation', 1, 300, { longRange: true })).toBe(
-      'longInsert',
-    )
+  // `orientation` mode has no insert-size vocabulary at all on the read side,
+  // so an arc keying an insert bucket there is unfoldable into the read key —
+  // which is exactly what the long-insert LR fallback used to produce.
+  test('orientation mode never emits an insert-size bucket', () => {
     for (const po of ORIENTATIONS) {
-      expect(readCategory('orientation', po, 300)).not.toBe('longInsert')
+      for (const tlen of [0, ...INSERT_SIZES]) {
+        expect(['longInsert', 'shortInsert', 'normalInsert']).not.toContain(
+          arcCategory('orientation', po, tlen),
+        )
+      }
     }
   })
 })

@@ -567,6 +567,12 @@ describe('computeArcsFromPileupData', () => {
       readNames: ['readA'],
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([500000]),
+      // The color comes from TLEN against this band and from nothing else, so
+      // the band has to be here for the pair to read as a long insert. It used
+      // not to be: the span alone repainted a far-apart pair long-insert, which
+      // is the rule this file's `getArcColorType` no longer has (the read fills
+      // never had it, so the two keyed the same pair differently).
+      insertSizeStats: { upper: 500, lower: 100 },
     })
 
     const rpcDataMap = new Map([[0, data]])
@@ -1430,12 +1436,11 @@ describe('computeArcsFromPileupData', () => {
   })
 
   test('wide inversion split keeps its inversion color in a paired dataset', () => {
-    // A paired pair (idx 0/1) makes the dataset globally paired and gives the
-    // long-range threshold a finite value. A lone unpaired read (idx 2) is
-    // SA-split fwd→rev spanning >10kb — its |gap|/2 clears both the
-    // long-range and the 10kb large-insert threshold. The split must still
-    // color by its own strands (split-inversion slot 7), NOT get repainted
-    // long-insert (slot 1) by the paired-only large-insert override.
+    // A paired pair (idx 0/1) makes the dataset globally paired. A lone
+    // unpaired read (idx 2) is SA-split fwd→rev spanning >10kb. The split must
+    // color by its own strands (split-inversion slot 7) rather than by any
+    // paired-insert rule: a junction has no TLEN to classify, so the split
+    // branch has to resolve before the insert class either way.
     const data = makePileupData({
       regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 1400, 1600, 1000, 1500]),
@@ -1463,78 +1468,6 @@ describe('computeArcsFromPileupData', () => {
     expect(Math.abs((loneArc.p2.bp - loneArc.p1.bp) / 2)).toBeGreaterThan(10000)
     // fwd→rev split junction → split-inversion slot 7, not long-insert 1
     expect(loneArc.colorType).toBe(7)
-  })
-
-  test('long-range threshold is robust to a few extreme-insert outliers', () => {
-    // A tight cluster of normal-radius LR pairs, two extreme outliers, and one
-    // target pair with a large-but-not-outlier radius (~15kb). The outliers
-    // inflate a mean+3·std threshold (~570kb) past the target, so the old
-    // estimator would leave the target unflagged; the robust median±3·1.4826·MAD
-    // threshold (~1.2kb) stays near the cluster and flags it. colorByType
-    // 'orientation' ignores insert size except via the long-range override, so
-    // an LR pair is COLOR_DEFAULT (0) unless the override fires → COLOR_LONG_INSERT
-    // (1). This is the only path computeLongRangeThreshold feeds.
-    const spans = [
-      1800,
-      1900,
-      2000,
-      2000,
-      2000,
-      2100,
-      2100,
-      2200,
-      1950,
-      2050, // cluster
-      1_000_000,
-      1_000_000, // outliers (radius ~500kb)
-      30_000, // target (radius ~15kb > 10kb large-insert threshold)
-    ]
-    const positions: number[] = []
-    const flags: number[] = []
-    const strands: number[] = []
-    const orientations: number[] = []
-    const inserts: number[] = []
-    const names: string[] = []
-    spans.forEach((span, i) => {
-      const a = 1000 + i * 4000
-      const b = a + span
-      positions.push(a, a + 100, b, b + 100)
-      flags.push(
-        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
-        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
-      )
-      strands.push(1, -1)
-      orientations.push(1, 1) // LR
-      inserts.push(span, span)
-      names.push(`pair${i}`, `pair${i}`)
-    })
-    const data = makePileupData({
-      regionStart: 0,
-      readPositions: new Uint32Array(positions),
-      readFlags: new Uint16Array(flags),
-      readStrands: new Int8Array(strands),
-      readPairOrientations: new Uint8Array(orientations),
-      readInsertSizes: new Float32Array(inserts),
-      readNames: names,
-    })
-    const regions = [
-      { refName: 'chr1', start: 0, end: 2_000_000, displayedRegionIndex: 0 },
-    ]
-    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorByType: 'orientation',
-      drawInter: false,
-      drawLongRange: true,
-    })
-    const radius = (a: (typeof arcs)[number]) =>
-      Math.abs((a.p2.bp - a.p1.bp) / 2)
-    // Target (~15kb radius) is flagged long-range despite the outliers.
-    const target = arcs.find(a => radius(a) > 10_000 && radius(a) < 100_000)!
-    expect(target.colorType).toBe(1) // COLOR_LONG_INSERT
-    // The threshold sits between the cluster and the target: normal-radius LR
-    // pairs stay COLOR_DEFAULT, confirming it isn't trivially low.
-    expect(
-      arcs.filter(a => radius(a) < 5_000).every(a => a.colorType === 0),
-    ).toBe(true)
   })
 })
 
@@ -1580,58 +1513,9 @@ describe('computeArcsByGroup', () => {
     })
   }
 
-  // Lane A: a tight ~2kb cluster (radii ~1000), enough to characterize a
-  // threshold. Lane B: a 60kb pair (radius ~30k, past the 10kb large-insert
-  // gate) and a 15kb one (radius ~7.5k, below it — the control that must stay
-  // COLOR_DEFAULT either way, since only the 60kb pair's verdict is the
-  // threshold's to change).
+  // A tight ~2kb cluster of LR pairs — enough rows for the grouped and
+  // ungrouped entry points to have something non-trivial to agree on.
   const CLUSTER = [1800, 1900, 2000, 2000, 2000, 2100, 2100, 2200, 1950, 2050]
-  const laneA = () => new Map([[0, lrPairs(1000, CLUSTER, 'a')]])
-  const laneB = () => new Map([[0, lrPairs(1_000_000, [60_000, 15_000], 'b')]])
-
-  function colorTypesOf(
-    byGroup: Map<string, Map<number, { arcColorTypes: Uint8Array }>>,
-    key: string,
-  ) {
-    return [...byGroup.get(key)!.get(0)!.arcColorTypes]
-  }
-
-  test('the long-range threshold is pooled across lanes, not per lane', () => {
-    // Scaled per lane, B's two pairs ARE its whole distribution — the
-    // median±MAD band straddles them both and neither reads as long-range.
-    // Pooled with A, the threshold sits near A's cluster (~1.2kb) and the 60kb
-    // pair is correctly flagged. colorByType 'orientation' ignores insert size
-    // except via that override, so an LR pair is COLOR_DEFAULT (0) unless it
-    // fires → COLOR_LONG_INSERT (1).
-    const byGroup = computeArcsByGroup(
-      new Map([
-        ['a', laneA()],
-        ['b', laneB()],
-      ]),
-      regions,
-      settings,
-    )
-    // Only the 60kb pair flips; the 15kb control stays default, so this isn't a
-    // blanket repaint of the lane.
-    expect(colorTypesOf(byGroup, 'b')).toEqual([1, 0])
-    // The lane that set the scale is unaffected by it.
-    expect(colorTypesOf(byGroup, 'a').every(c => c === 0)).toBe(true)
-  })
-
-  test('a lane left out of the map does not shift the pooled scale', () => {
-    // B alone. This is what a hidden lane looks like from here — the display
-    // drops those in `buildRawDataByGroup` (covered in groupedDataMaps.test),
-    // so what arrives is already the drawn lanes. Scaled to itself, B's 60kb
-    // pair falls back to COLOR_DEFAULT, so the omission really did move the
-    // threshold rather than only the output.
-    const byGroup = computeArcsByGroup(
-      new Map([['b', laneB()]]),
-      regions,
-      settings,
-    )
-    expect(byGroup.has('a')).toBe(false)
-    expect(colorTypesOf(byGroup, 'b')).toEqual([0, 0])
-  })
 
   test('one visible lane matches the single-group entry point exactly', () => {
     const data = lrPairs(1000, CLUSTER, 'a')

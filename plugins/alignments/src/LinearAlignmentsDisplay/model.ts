@@ -1743,7 +1743,7 @@ export default function stateModelFactory(
          * `arcsYDomainBp`.
          *
          * `computeArcsByGroup` owns the whole fan-out rather than a loop here,
-         * because the arc COLOR scale (`poolArcScale`: long-range threshold +
+         * because the arc COLOR scale (`poolArcScale`: the insert-size band, and
          * whether the read set is paired at all) describes the fetch, not a lane
          * — the same rule the worker follows for `insertSizeStats` and this model
          * follows for `arcsYDomainBp`. Computing it needs every group's arcs in
