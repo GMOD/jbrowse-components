@@ -66,6 +66,8 @@ const COPIED = {
     "what a host's own loading and error box looks like is theirs; that `view.ready` covers two states rather than one is not, which is why the block is here at all rather than a `: null` on every page — see the Loading and error states page",
   readSiteMode:
     "how a host knows its own colour mode is the host's business; JBrowse's half is useSessionPalette",
+  watchSiteMode:
+    'ditto, the subscribe half — an embedder subscribes to whatever their own design system publishes, not to a data-theme attribute this site happens to set',
   useSiteMode: "ditto — the watchers are this site's, not an embedder's",
   BrowserSession:
     "the page's own alias for what `createViewState` handed back — one line, and naming it is what keeps every component below from re-deriving it",
