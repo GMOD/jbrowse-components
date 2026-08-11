@@ -213,7 +213,12 @@ function insertSizeColor(tlen: number, stats: InsertSizeBand | undefined) {
 // separately, always COLOR_INTERCHROM). Read cloud shares this so its
 // flat lines color the same as arcs — red/green/teal/navy by insert size +
 // orientation.
-function getArcColorType(args: {
+// Exported for `arcReadColorParity.test.ts`, which holds this against
+// `readColorCategory`. The claim that the two mirror each other is what
+// `arcColorsMatchReads` folds the arc key into the read key on, and it was made
+// in a comment rather than by a test until that fold was found asserting it
+// where it does not hold.
+export function getArcColorType(args: {
   arc: PendingArc
   colorByType: ArcColorByType
   hasPaired: boolean

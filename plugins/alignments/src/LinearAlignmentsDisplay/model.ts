@@ -1315,14 +1315,42 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether the overlay speaks the reads' own color vocabulary — arc mode
-         * against its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME).
-         * The swatches are then identical categories in identical palette
-         * colors, so keying both sections lists the same colors twice under two
-         * headings; the arc buckets fold into the read key instead.
+         * against its equivalent read scheme (see ARC_SCHEME_AS_READ_SCHEME),
+         * AND every bucket the arcs are actually painting being one the reads
+         * are painting too. The swatches are then identical categories in
+         * identical palette colors, so keying both sections lists the same
+         * colors twice under two headings; the arc buckets fold into the read
+         * key instead.
+         *
+         * The second half is not belt-and-braces, it is the half that was
+         * missing. Folding drops the curve mark and renders an arc bucket as a
+         * plain read swatch, so it is an assertion that the reads paint that
+         * color — and the scheme names alone do not support it, because the arc
+         * classifier is not a re-spelling of the read one:
+         *
+         * - `getArcColorType` folds a LONG-RANGE pair (span past
+         *   LARGE_INSERT_THRESHOLD) into the long-insert color, on the ground
+         *   that a discordant pair's TLEN is often 0 or unreliable, and the read
+         *   classifier has no such rule — it reads TLEN alone. So the arcs can
+         *   carry `longInsert` while the reads carry `normalInsert`, in EVERY
+         *   mode.
+         * - In `orientation` mode that same fallback is the LR case, so the arcs
+         *   can key `longInsert` while the reads are on `pairOrientation`, a
+         *   scheme with no long-insert bucket at all. That one produced a red
+         *   "Long insert" square in the read key of a track whose reads are
+         *   never red.
+         *
+         * Asked of the categories in hand rather than of a table of what each
+         * scheme COULD emit: the two classifiers are free to diverge again, and
+         * a table saying they don't would be the same assertion one level up.
          */
         get arcColorsMatchReads() {
           return (
-            ARC_SCHEME_AS_READ_SCHEME[self.arcColorByType] === this.colorBy.type
+            ARC_SCHEME_AS_READ_SCHEME[self.arcColorByType] ===
+              this.colorBy.type &&
+            [...this.arcLegendCategories].every(c =>
+              this.colorLegendCategories.has(c),
+            )
           )
         },
 
