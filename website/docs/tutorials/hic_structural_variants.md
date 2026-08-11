@@ -41,34 +41,28 @@ annotation files derived from the same matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="A contact domain is a claim about which sequence talks to which, so the test is whether the sequence inside it is doing anything. MYC's 600 kb domain, its bounding HiCCUPS loop and the denser triangle in the matrix are three readings of one file; the twelve single-cell ATAC pseudobulks above them are not, and their peaks pile up inside the domain and thin out to its right in every blood lineage." links="Open this view=hic/loops_and_domains" />
+<Figure src="/img/hic/loops_and_domains.png" caption="The MYC contact domain, its bounding HiCCUPS loop and the denser triangle in the matrix, which are three readings of one file, under twelve single-cell ATAC pseudobulks, which are not. The ATAC peaks pile up inside the domain and thin out to its right in every blood lineage." links="Open this view=hic/loops_and_domains" />
 
-All twelve lineages are drawn because the agreement between them is the result.
-Every PBMC lineage in that pseudobulk is between 3.6 and 5.2 times more
-accessible inside this domain than in the flanking sequence, so the lane says
-the contacted DNA is regulatory, not that it is B-specific. Read one row at a
-time they would be a comparison with nothing in it; read together they are the
-same enrichment twelve times.
+A contact domain and the loop at its corner are the same object seen two ways.
+The block in the matrix and the arc above it end at the same two coordinates,
+because the loop is what holds the domain together.
 
-The dark arc is the point of the figure. A contact domain and the loop at its
-corner are the same object seen two ways. The block in the matrix and the arc
-above it end at the same two coordinates, because the loop is what holds the
-domain together.
+The ATAC lane is the one thing in the frame not derived from the contact map,
+and it is there so the window has something to be checked against. GM12878 is a
+B-lymphoblastoid line, so B-cell accessibility is the nearest public annotation
+of which sequence here is regulatory, and it turns a gene desert into something
+the domain has a reason to contain. All twelve lineages are drawn rather than
+just the B rows: each of them is more accessible inside the domain than in the
+flanking sequence, so the lane says the contacted DNA is regulatory rather than
+that it is B-specific.
 
-The ATAC lane is the one thing in the frame that is not derived from the contact
-map. GM12878 is a B-lymphoblastoid line, so B-cell accessibility is the nearest
-public annotation of which sequence in this window is regulatory, and it is what
-turns a gene desert into something the domain has a reason to contain. Adding a
-lane like it is the general habit: everything else stacked here comes out of one
-file, and a picture made only of one file's own derivatives cannot check itself.
-
-The window is one such pair rather than a slice of chromosome chosen for its
-genes. Over a whole cell line the two files hold thousands of calls each, and a
-megabase taken at random draws domains wider than the frame and a fan of arcs
-with nothing under them. Score the two files against each other instead, taking
-every Arrowhead domain whose two corners carry a HiCCUPS loop and ranking by
-that loop's contact count, and this one comes sixteenth of the 1,142 domains
-that carry one. Its left anchor is _MYC_. The
+The window itself is a domain-and-loop pair rather than a slice of chromosome
+picked for its genes. Over a whole cell line the two files hold thousands of
+calls each, and a megabase taken at random draws domains wider than the frame
+and a fan of arcs with nothing under them. Scoring the two files against each
+other instead, taking every Arrowhead domain whose two corners carry a HiCCUPS
+loop and ranking by that loop's contact count, puts this one near the top of the
+list, with _MYC_ at its left anchor. The
 [scoring script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hic_pick_loop.py)
 prints that ranking, and prints what a candidate window contains.
 
@@ -107,42 +101,36 @@ pipeline in ENCODE, so the two maps are directly comparable.
 
 Read the two panels as one comparison. The paired triangles are the same in
 both: chr9 and chr22 each fold normally in K562. What differs is the space
-between them, and that space is not a subtle enrichment: it is empty in one cell
-line and solid in the other.
+between them, empty in one cell line and solid in the other.
 
-## Why the control matters more than the sample
+## Choosing a control the comparison can rest on
 
-It would be easy to produce that figure dishonestly, and the two ways to do it
-are worth knowing because both fail silently.
+The empty wedge in the top panel does as much work as the dense one below it, so
+it is worth a moment on how that control was picked. Two choices decide whether
+the pair says anything, and both go wrong quietly.
 
-**Pick a shallow control and the difference is sequencing depth, not
-karyotype.** ENCODE has several GM12878 Hi-C experiments. Point the scan's
-`CTRL` at the "supernatant" fraction (`ENCSR730CER`, the alternative the script
-carries commented out) and its whole chr9–chr22 block holds 17,905 contacts
-against the deep in situ file's 2,072,975. Next to K562 that reads as a
-spectacular result, but an empty panel is empty because nothing was sequenced.
-The figure above uses `ENCSR410MDC`, the _deeper_ of the two files, and that is
-the point. Run the scan as it ships and the totals come out the wrong way round
-from what the figure suggests: across the whole chr9–chr22 block GM12878 has
-**more** contact than K562, 2,072,975 against 1,539,676. It is only at the
-junction bin that the order inverts, 149 against 161,282. A focal difference
-against a higher background is an argument; a difference in totals is not.
+**Depth comes first.** ENCODE has several GM12878 Hi-C experiments, and the
+"supernatant" fraction (`ENCSR730CER`, the alternative the script carries
+commented out) is far shallower over this chromosome pair than the deep in situ
+file. Put the shallow one under K562 and the wedge above is empty because little
+was sequenced there, which looks exactly like a wedge that is empty because
+there is no translocation. The figure uses `ENCSR410MDC`, the deeper of the two.
+Run the scan as it ships and GM12878 in fact carries more contact than K562
+across the whole chr9–chr22 block; the order inverts only at the junction bin,
+which is what makes that one bin worth looking at.
 
-**Normalize, and you delete the finding.** Matrix balancing exists to divide out
-per-bin coverage differences, and an amplified fusion _is_ a coverage
-difference. Re-run the scan below with `NORM=INTER_SCALE` and *ABL1*×*BCR* is
-gone from the top of the table, displaced by bins elsewhere on the two
-chromosomes that the control scores at zero. Both Hi-C tracks in this demo
-therefore set
+**Then normalization.** Matrix balancing exists to divide out per-bin coverage
+differences, and an amplified fusion _is_ a coverage difference. Re-run the scan
+below with `NORM=INTER_SCALE` and *ABL1*×*BCR* drops off the top of the table,
+displaced by bins elsewhere on the two chromosomes that the control scores at
+zero. Both Hi-C tracks in this demo therefore set
 [`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
-to `NONE`. Balanced matrices are the right choice for reading domains and loops,
-and the wrong choice for reading rearrangements.
+to `NONE`. Balanced matrices are what to read domains and loops with;
+rearrangements want the raw counts.
 
-A single ranked sample proves nothing either way, and the control's own ranking
-is what shows it. The scan prints that ranking below the case's, headed by
-chr9:129.25 Mb × chr22:23.5 Mb, a bin that is hot in GM12878, present in K562,
-and not a rearrangement. What identifies a breakpoint is a bin hot in the sample
-and cold in the control.
+The control gets its own ranked list, which the scan prints below the case's.
+The bin at its head is hot in GM12878, present in K562, and not a rearrangement,
+which is the sort of thing one sample's ranking cannot say about itself.
 
 ## Run the scan
 
@@ -159,17 +147,15 @@ bash scan_hic_translocation.sh
 It needs `java` and `curl` and downloads `juicer_tools` itself; `CASE`, `CTRL`,
 `CHR1`, `CHR2`, `RES` and `NORM` are all overridable, so the same scan applies
 to any two `.hic` files that hold inter-chromosomal blocks. The top row it
-prints is `chr9:130,750,000 × chr22:23,000,000` at 161,282 contacts against 149
-in GM12878: _ABL1_ intron 1 against the 5' end of _BCR_, which is the pair of
-bins the canonical CML fusion joins rather than the junction itself. Drop `RES`
-to `10000` and the top row lands on the junction,
-`chr9:130,730,000 × chr22:23,280,000`, _ABL1_ intron 1 against the _BCR_ major
-breakpoint cluster region.
+prints pairs _ABL1_ intron 1 with the 5' end of _BCR_, which is the pair of bins
+the canonical CML fusion joins rather than the junction itself. Drop `RES` to
+`10000` and the top row lands on the junction, _ABL1_ intron 1 against the _BCR_
+major breakpoint cluster region.
 
-The scan also reports a second partner for chr9 at chr22:16.75 Mb, 22,278
-contacts against 10. K562's karyotype is complex and BCR-ABL1 is not its only
-rearrangement, which is a good reminder that the ranked list is a list of
-candidates rather than a single answer.
+Further down its list the scan reports a second partner for chr9 elsewhere on
+chr22, well clear of the control. K562's karyotype is complex and BCR-ABL1 is
+not its only rearrangement, so the ranking is a list of candidates to open
+rather than a single answer.
 
 Purpose-built callers do this genome-wide with a trained model rather than one
 pair at a time: [EagleC](https://github.com/XiaoTaoWang/EagleC),
