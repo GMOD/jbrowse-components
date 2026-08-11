@@ -169,6 +169,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 4000,
+    // The dialog is taller than the app window behind it, so what sits below it
+    // is page background and the run reads that as slack: 121 css px at the
+    // default 800. It re-centres as the viewport shrinks, so the blank closes at
+    // about half the rate you take off — 680 leaves 61, just over the 50 the run
+    // warns at. **Don't chase the warning to zero.** That needs ~580, where the
+    // dialog rises over the app's toolbar and locstring and the frame stops
+    // showing what the dialog was opened from. 61 is a framing choice.
+    viewportHeight: 680,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
