@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   settledAs,
@@ -120,6 +120,7 @@ export function App() {
   // makes the captured queue the answer to a stale question — the first capture
   // is taken before the fetch lands and is empty.
   const [dataEpoch, setDataEpoch] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string>()
   const [figureState, setFigureState] = useState<FigureState>()
   const [figureError, setFigureError] = useState<string>()
@@ -129,65 +130,89 @@ export function App() {
   // switched individually.
   const [overrides, setOverrides] = useState<Record<string, CompareMode>>({})
 
-  useEffect(() => {
-    let cancelled = false
-    async function load() {
-      let specs: SpecEntry[]
-      try {
-        const body = await getJson('/api/specs')
-        if (!Array.isArray(body)) {
-          throw new Error('the spec list was not an array')
-        }
-        specs = body as SpecEntry[]
-      } catch (err) {
-        // Say why. The report being unparseable is a real case with real
-        // recovery instructions in the message (loadReport writes them), and
-        // swallowing this left an empty page that looked like a review with
-        // nothing left to do.
-        if (!cancelled) {
-          setLoadError(errText(err))
-        }
-        return
+  // The fetch behind the whole page, run on mount and again whenever the
+  // reviewer asks for it.
+  //
+  // Asking for it is the point: the review loop is regenerate, look again, and
+  // the only way to see the new picture used to be a browser reload. That
+  // answers it badly — the request below takes as long as hashing the figure
+  // corpus, so the document is still empty when the browser tries to put the
+  // scroll position back, and the reviewer lands at the top of 328 cards having
+  // been most of the way down them. Re-fetching in place keeps the scroll, the
+  // note drafts and the per-card compare modes.
+  //
+  // `run` is which fetch is the current one. A response from an earlier one — a
+  // slow first load still in flight when Reload is pressed, or either of them
+  // outliving the page — belongs to nobody and is dropped.
+  const run = useRef(0)
+  const load = useCallback(async () => {
+    const mine = ++run.current
+    const current = () => mine === run.current
+    setLoading(true)
+    let specs: SpecEntry[]
+    try {
+      const body = await getJson('/api/specs')
+      if (!Array.isArray(body)) {
+        throw new Error('the spec list was not an array')
       }
-      // The banner is fetched before the first card is drawn, and after
-      // /api/specs has answered.
-      //
-      // Before the cards, because the banner is four lines of prose above main:
-      // it used to land ~120ms after them, shoving every card down 217px a tenth
-      // of a second after they became clickable, and a press straddling that has
-      // its button moved out from under the pointer.
-      //
-      // After /api/specs, because this endpoint answers from the working-tree
-      // scan that request refreshes. The two used to be issued together and this
-      // one relied on arriving second — but they go out on two sockets, and
-      // nothing made that true. Losing the race meant hashing the 68 MB of
-      // figures twice, and on a reload after a regen it meant a banner
-      // describing the tree as it was before it.
-      try {
-        const state = (await getJson('/api/figure-state')) as FigureState
-        if (!cancelled) {
-          setFigureState(state)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setFigureError(errText(err))
-        }
+      specs = body as SpecEntry[]
+    } catch (err) {
+      // Say why. The report being unparseable is a real case with real
+      // recovery instructions in the message (loadReport writes them), and
+      // swallowing this left an empty page that looked like a review with
+      // nothing left to do.
+      if (current()) {
+        setLoadError(errText(err))
+        setLoading(false)
       }
-      if (!cancelled) {
-        loadEntries(specs)
-        setDataEpoch(e => e + 1)
-        // drop a restored group filter that no longer names an existing group
-        const groups = new Set(specs.map(s => nameGroup(s.name)))
-        setFilters(f =>
-          !f.group || groups.has(f.group) ? f : { ...f, group: '' },
-        )
+      return
+    }
+    // The banner is fetched before the first card is drawn, and after
+    // /api/specs has answered.
+    //
+    // Before the cards, because the banner is four lines of prose above main:
+    // it used to land ~120ms after them, shoving every card down 217px a tenth
+    // of a second after they became clickable, and a press straddling that has
+    // its button moved out from under the pointer.
+    //
+    // After /api/specs, because this endpoint answers from the working-tree
+    // scan that request refreshes. The two used to be issued together and this
+    // one relied on arriving second — but they go out on two sockets, and
+    // nothing made that true. Losing the race meant hashing the 68 MB of
+    // figures twice, and on a reload after a regen it meant a banner
+    // describing the tree as it was before it.
+    try {
+      const state = (await getJson('/api/figure-state')) as FigureState
+      if (current()) {
+        setFigureState(state)
+        setFigureError(undefined)
+      }
+    } catch (err) {
+      if (current()) {
+        setFigureError(errText(err))
       }
     }
-    void load()
-    return () => {
-      cancelled = true
+    if (current()) {
+      setLoadError(undefined)
+      loadEntries(specs)
+      setDataEpoch(e => e + 1)
+      // drop a restored group filter that no longer names an existing group
+      const groups = new Set(specs.map(s => nameGroup(s.name)))
+      setFilters(f =>
+        !f.group || groups.has(f.group) ? f : { ...f, group: '' },
+      )
+      setLoading(false)
     }
   }, [loadEntries])
+
+  // No cleanup: `run` already drops the response of any fetch that is no longer
+  // the current one, which is the race that actually happens here — Reload
+  // pressed while the first load is still hashing the corpus. Unmount is not
+  // one: App is the root, main.tsx deliberately does not wrap it in StrictMode,
+  // and this effect's only dependency is a callback over a stable setter.
+  useEffect(() => {
+    void load()
+  }, [load])
 
   // Canonicalizes as well as persists: a shared URL naming a group that no
   // longer exists is rewritten once the data says so.
@@ -412,6 +437,21 @@ export function App() {
           Clear settled
           <Count n={leaving.size} />
         </button>
+        {/* Fixed label and no count, per the header rule above: `disabled` is
+            the whole of the in-flight state because it recolours without
+            resizing, and a spinner or a "Reloading…" would move every figure on
+            the page the moment the request went out. */}
+        <button
+          type="button"
+          className="tab"
+          disabled={loading}
+          title="Re-read the figures on disk without reloading the page — after a regen, this is the thing to press"
+          onClick={() => {
+            void load()
+          }}
+        >
+          Reload figures
+        </button>
         <div className="counts">
           <CountPill cls="good" n={settled('good')} label="approved" />
           <CountPill cls="bad" n={settled('bad')} label="denied" />
@@ -430,29 +470,36 @@ export function App() {
       </header>
       <StoreBanner state={figureState} error={figureError} />
       <main>
+        {/* Above the cards rather than instead of them. A failed RELOAD leaves
+            the last good list on screen and still reviewable — throwing it away
+            to show the message would cost the reviewer their place over a
+            request that changed nothing. On a failed first load there is
+            nothing below it anyway. */}
         {loadError ? (
           <div className="loaderror">
-            Could not load the screenshot list.{'\n\n'}
+            {dataEpoch
+              ? 'Could not reload — the cards below are from the last load that worked.'
+              : 'Could not load the screenshot list.'}
+            {'\n\n'}
             {loadError}
           </div>
-        ) : (
-          queue.map(spec => (
-            <Card
-              key={spec.name}
-              spec={spec}
-              message={messages[spec.name]}
-              pressed={pressed[spec.name]}
-              drafts={drafts}
-              settled={leaving.has(spec.name)}
-              compareMode={overrides[spec.name] ?? filters.compare}
-              onCompareMode={onCompareMode}
-              onSetVerdict={setVerdict}
-              onClearVerdict={clearVerdict}
-              onSaveNote={saveNote}
-              onDismiss={dismiss}
-            />
-          ))
-        )}
+        ) : null}
+        {queue.map(spec => (
+          <Card
+            key={spec.name}
+            spec={spec}
+            message={messages[spec.name]}
+            pressed={pressed[spec.name]}
+            drafts={drafts}
+            settled={leaving.has(spec.name)}
+            compareMode={overrides[spec.name] ?? filters.compare}
+            onCompareMode={onCompareMode}
+            onSetVerdict={setVerdict}
+            onClearVerdict={clearVerdict}
+            onSaveNote={saveNote}
+            onDismiss={dismiss}
+          />
+        ))}
         {/* An empty list under filters that DO select things is the one state
             the reviewer cannot tell from "nothing left to review": the queue is
             a capture, so it stays empty until it is retaken. */}
