@@ -1,6 +1,6 @@
 import { ARC_SHAPE_ARC } from '../../features/arcs/compute.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
-import { hitTestArcBand } from './arcHitTest.ts'
+import { resolveArcBandHover } from './arcHitTest.ts'
 
 import type { ArcHitBandOptions } from './arcHitTest.ts'
 
@@ -40,10 +40,10 @@ const OPTS = {
 const APEX = { x: 400, y: 100 - 0.75 * 40 }
 
 test('finds the arc at its apex, and carries the support count out', () => {
-  const hit = hitTestArcBand(APEX.x, APEX.y, ARCS, OPTS)
-  expect(hit?.index).toBe(0)
-  expect(hit?.support).toBe(7)
-  expect([hit?.x1, hit?.x2]).toEqual([1200, 1600])
+  const hover = resolveArcBandHover(APEX.x, APEX.y, ARCS, OPTS)
+  expect(hover?.hit.index).toBe(0)
+  expect(hover?.hit.support).toBe(7)
+  expect([hover?.hit.x1, hover?.hit.x2]).toEqual([1200, 1600])
 })
 
 test('an ungrouped band is sticky, so scrolling does not move it', () => {
@@ -53,24 +53,24 @@ test('an ungrouped band is sticky, so scrolling does not move it', () => {
     ...OPTS,
     scroll: { isGrouped: false, scrollTop: 40, canvasHeight: 500 },
   }
-  expect(hitTestArcBand(APEX.x, APEX.y, ARCS, scrolled)?.index).toBe(0)
+  expect(resolveArcBandHover(APEX.x, APEX.y, ARCS, scrolled)?.hit.index).toBe(0)
 })
 
 test('a grouped band scrolls with its section', () => {
   const scroll = { isGrouped: true, scrollTop: 40, canvasHeight: 500 }
   // Band top 40 minus scroll 40 puts the band back at the top of the canvas, so
   // the apex is at the same screen y the unscrolled ungrouped case had.
-  const hit = hitTestArcBand(APEX.x, APEX.y, ARCS, {
+  const hover = resolveArcBandHover(APEX.x, APEX.y, ARCS, {
     ...OPTS,
     band: { arcBandTop: 40, arcBandHeight: 100, arcDown: false },
     scroll,
   })
-  expect(hit?.index).toBe(0)
+  expect(hover?.hit.index).toBe(0)
   // Without the scroll subtraction the band would sit 40px lower, and the same
   // point would be off the arc — this is the assertion that the projection is
   // applied at all.
   expect(
-    hitTestArcBand(APEX.x, APEX.y, ARCS, {
+    resolveArcBandHover(APEX.x, APEX.y, ARCS, {
       ...OPTS,
       band: { arcBandTop: 40, arcBandHeight: 100, arcDown: false },
       scroll: { ...scroll, scrollTop: 0 },
@@ -81,23 +81,23 @@ test('a grouped band scrolls with its section', () => {
 test('a reversed region mirrors the arc onto the other side of the block', () => {
   const reversed = { ...OPTS, region: { ...REGION, reversed: true } }
   // bp 1200 and 1600 now map to x=800 and x=400, so the dome centres on 600.
-  expect(hitTestArcBand(600, APEX.y, ARCS, reversed)?.index).toBe(0)
+  expect(resolveArcBandHover(600, APEX.y, ARCS, reversed)?.hit.index).toBe(0)
   // …and no longer answers where the forward-strand dome peaked.
-  expect(hitTestArcBand(400, APEX.y, ARCS, reversed)).toBeUndefined()
+  expect(resolveArcBandHover(400, APEX.y, ARCS, reversed)).toBeUndefined()
 })
 
 test('a lane that reserved no arc band answers nothing', () => {
   // `arcBandHeight` 0 is the same gate the renderers use to skip the pass — a
   // group whose reads produced no arc, or arcs switched off entirely.
   expect(
-    hitTestArcBand(APEX.x, APEX.y, ARCS, {
+    resolveArcBandHover(APEX.x, APEX.y, ARCS, {
       ...OPTS,
       band: { arcBandTop: 0, arcBandHeight: 0, arcDown: false },
     }),
   ).toBeUndefined()
-  expect(hitTestArcBand(APEX.x, APEX.y, undefined, OPTS)).toBeUndefined()
+  expect(resolveArcBandHover(APEX.x, APEX.y, undefined, OPTS)).toBeUndefined()
   expect(
-    hitTestArcBand(APEX.x, APEX.y, emptyArcsUploadData(), OPTS),
+    resolveArcBandHover(APEX.x, APEX.y, emptyArcsUploadData(), OPTS),
   ).toBeUndefined()
 })
 
@@ -130,14 +130,18 @@ describe('the far/near split is taken against the same width the renderers use',
   const LEG = { x: 400 - Math.sqrt(300 * 300 - 20 * 20), y: 100 - 20 }
 
   test('a leg of the painted semicircle answers', () => {
-    expect(hitTestArcBand(LEG.x, LEG.y, WIDE_PAIR, NARROW)?.index).toBe(0)
+    expect(
+      resolveArcBandHover(LEG.x, LEG.y, WIDE_PAIR, NARROW)?.hit.index,
+    ).toBe(0)
   })
 
   test('and the dome the canvas-width reading would have drawn does not', () => {
     // Read as a near pair the same arc is an ellipse peaking 30px up at x=400,
     // which is where the hover used to answer. Nothing is painted there — the
     // real curve is 200px above the band at that x — so it must miss.
-    expect(hitTestArcBand(400, 100 - 30, WIDE_PAIR, NARROW)).toBeUndefined()
+    expect(
+      resolveArcBandHover(400, 100 - 30, WIDE_PAIR, NARROW),
+    ).toBeUndefined()
   })
 })
 
@@ -145,7 +149,7 @@ test('a degenerate region does not divide by zero', () => {
   // A region measured before layout has zero width; the projection is undefined
   // there rather than infinite, so the hover simply misses.
   expect(
-    hitTestArcBand(APEX.x, APEX.y, ARCS, {
+    resolveArcBandHover(APEX.x, APEX.y, ARCS, {
       ...OPTS,
       region: { ...REGION, screenEndPx: 0 },
     }),

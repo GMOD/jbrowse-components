@@ -147,6 +147,7 @@ import type {
   SortedBy,
 } from '../shared/types'
 import type { ReadColorCategory } from './colorUtils.ts'
+import type { ArcHighlight } from './components/arcHitTest.ts'
 import type { SashimiArcSection } from './components/sashimiArcs.ts'
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
@@ -711,6 +712,15 @@ export default function stateModelFactory(
           hoverCoverageBand: undefined as
             | { topOffset: number; coverageHeight: number }
             | undefined,
+          /**
+           * #volatile
+           * The read-connection arc under the cursor, as the ink to draw over
+           * it — `ArcHoverOverlay`'s whole input. A SNAPSHOT, resolved at the
+           * mousemove that found the arc, exactly like the tooltip it appears
+           * with: both describe where the cursor was, and both refresh on the
+           * next move. `undefined` when not on an arc.
+           */
+          hoveredArcHighlight: undefined as ArcHighlight | undefined,
         }
       })
       // Named getters for frequently-tested conditions so the inline boolean
@@ -2769,6 +2779,7 @@ export default function stateModelFactory(
           self.mouseoverExtraInformation = undefined
           self.overCigarItem = false
           self.hoverCoverageBand = undefined
+          self.hoveredArcHighlight = undefined
           if (self.highlightedChainReadIds.length > 0) {
             self.highlightedChainReadIds = []
           }
@@ -3440,12 +3451,17 @@ export default function stateModelFactory(
             featureIdUnderMouse: string | undefined
             mouseoverExtraInformation: TooltipPayload | undefined
             hoverCoverageBand?: { topOffset: number; coverageHeight: number }
+            // Optional and ALWAYS assigned, like `hoverCoverageBand`: a branch
+            // with no arc to name clears the highlight by not mentioning one,
+            // which is the property this single action exists to give.
+            hoveredArcHighlight?: ArcHighlight
             highlightedChainReadIds: string[]
           }) {
             self.overCigarItem = state.overCigarItem
             self.featureIdUnderMouse = state.featureIdUnderMouse
             self.mouseoverExtraInformation = state.mouseoverExtraInformation
             self.hoverCoverageBand = state.hoverCoverageBand
+            self.hoveredArcHighlight = state.hoveredArcHighlight
             // Write only on a real change. Assigning an equal array still
             // replaces the MST node, which invalidates `highlightBoxes` — an
             // O(reads) rebuild — so dragging the cursor along one chain would

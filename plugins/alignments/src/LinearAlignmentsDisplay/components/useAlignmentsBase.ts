@@ -17,7 +17,7 @@ import {
   startDocumentDrag,
   useAbortableRef,
 } from './alignmentComponentUtils.ts'
-import { hitTestArcBand } from './arcHitTest.ts'
+import { resolveArcBandHover } from './arcHitTest.ts'
 import {
   openCigarWidget,
   openCoverageWidget,
@@ -155,7 +155,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       : undefined
   }
 
-  // Which arc, if any, the cursor is on, for the hovered section.
+  // What the cursor is on in the hovered section's arc band, as the two fields
+  // `setHoverState` takes for it: the tooltip to show and the ink to mark it
+  // with. Both come from one `resolveArcBandHover`, so the mark is on the arc
+  // the tooltip describes by construction rather than by agreement.
   //
   // Kept OUT of `performHitTest`: that pipeline is the pileup's, and takes a
   // resolved block of laid-out reads. Arcs are a different feed (per group, per
@@ -180,7 +183,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const arcs = model.arcsByGroup
       .get(section.groupKey)
       ?.get(region.displayedRegionIndex)
-    const hit = hitTestArcBand(canvasX, canvasY, arcs, {
+    const hover = resolveArcBandHover(canvasX, canvasY, arcs, {
       region,
       band: section,
       scroll: model.scrollModel,
@@ -188,7 +191,20 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       arcsYDomainBp: model.arcsYDomainBp,
       canvasWidthPx: view.trackWidthPx,
     })
-    return hit ? { hit, refName: region.refName } : undefined
+    return hover
+      ? {
+          tooltip: formatArcTooltip(
+            hover.hit,
+            region.refName,
+            colorType =>
+              readColorCategoryLabel(
+                arcColorLegendCategory(colorType, model.arcColorByType),
+              ),
+            isFlatArcShape(hover.hit.shapeType),
+          ),
+          highlight: hover.highlight,
+        }
+      : undefined
   }
 
   // Maps a canvas mouse event to canvas coordinates and runs the full hit-test
@@ -357,15 +373,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       model.setHoverState({
         overCigarItem: true,
         featureIdUnderMouse: undefined,
-        mouseoverExtraInformation: formatArcTooltip(
-          arc.hit,
-          arc.refName,
-          colorType =>
-            readColorCategoryLabel(
-              arcColorLegendCategory(colorType, model.arcColorByType),
-            ),
-          isFlatArcShape(arc.hit.shapeType),
-        ),
+        mouseoverExtraInformation: arc.tooltip,
+        hoveredArcHighlight: arc.highlight,
         hoverCoverageBand,
         highlightedChainReadIds: [],
       })

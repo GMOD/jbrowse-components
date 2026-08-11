@@ -1,10 +1,15 @@
 import { clampBlockScissor } from '@jbrowse/render-core'
 
+import { arcLineWidth } from '../../features/arcs/arcLineWidth.ts'
+import { arcScreenPath } from '../../features/arcs/arcPath.ts'
 import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
 import { hitTestArcs } from '../../features/arcs/hitTest.ts'
 import { bandScreenTop, makeBpToPx } from './sectionScreen.ts'
 
-import type { ArcHitResult } from '../../features/arcs/hitTest.ts'
+import type {
+  ArcHitOptions,
+  ArcHitResult,
+} from '../../features/arcs/hitTest.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ScrollModel } from './sectionScreen.ts'
 
@@ -46,19 +51,34 @@ export interface ArcHitBandOptions {
   canvasWidthPx: number
 }
 
-// Resolve a hover over one section's arc band. Undefined when the section
-// reserves no band (`arcBandHeight` 0 — arcs off, or a lane whose reads produced
-// none), which is also the gate the renderers use to skip the pass.
-export function hitTestArcBand(
-  canvasX: number,
-  canvasY: number,
-  arcs: ArcsUploadData | undefined,
+// Everything an arc hover produces: the arc, and the ink to draw over it.
+//
+// `hit` feeds the tooltip and `highlight` feeds the overlay — one field each,
+// both off one projection, so the mark cannot land anywhere but on the arc the
+// tooltip is describing.
+export interface ArcBandHover {
+  hit: ArcHitResult
+  highlight: ArcHighlight
+}
+
+// Flat on purpose: an SVG path, the rect to clip it to, and a stroke width. The
+// overlay strokes it and nothing else reads it, so there is nothing here to
+// destructure twice.
+export interface ArcHighlight {
+  d: string
+  clipTop: number
+  clipHeight: number
+  lineWidth: number
+}
+
+// The screen-space frame one section's arc band draws in: the bp→x projection,
+// the Y scale, the band rect and the far/near width. Private, because computing
+// it twice is the whole class of bug this file exists to avoid — the hit and the
+// highlight below are both taken from one call.
+function arcBandScreenScale(
   opts: ArcHitBandOptions,
-): ArcHitResult | undefined {
+): ArcHitOptions | undefined {
   const { region, band, scroll, lineWidth, arcsYDomainBp, canvasWidthPx } = opts
-  if (!arcs || arcs.numArcs === 0 || band.arcBandHeight === 0) {
-    return undefined
-  }
   const bpPerPx =
     (region.end - region.start) / (region.screenEndPx - region.screenStartPx)
   if (!(bpPerPx > 0)) {
@@ -98,7 +118,7 @@ export function hitTestArcBand(
     arcAvailH(arcsH),
     1 / bpPerPx,
   )
-  return hitTestArcs(canvasX, canvasY, arcs, {
+  return {
     bpToScreenX: makeBpToPx(region, bpPerPx),
     arcsYDomainBp: domainBp,
     arcsYLog: log,
@@ -107,5 +127,40 @@ export function hitTestArcBand(
     pairedArcsDown: band.arcDown,
     lineWidth,
     screenWidthPx: scissor.scissorW,
-  })
+  }
+}
+
+// Resolve a hover over one section's arc band: project the band once, ask what
+// is under the cursor, ask where that arc's ink is. Undefined when the section
+// reserves no band (`arcBandHeight` 0 — arcs off, or a lane whose reads produced
+// none), which is also the gate the renderers use to skip the pass.
+export function resolveArcBandHover(
+  canvasX: number,
+  canvasY: number,
+  arcs: ArcsUploadData | undefined,
+  opts: ArcHitBandOptions,
+): ArcBandHover | undefined {
+  if (!arcs || arcs.numArcs === 0 || opts.band.arcBandHeight === 0) {
+    return undefined
+  }
+  const scale = arcBandScreenScale(opts)
+  const hit = scale && hitTestArcs(canvasX, canvasY, arcs, scale)
+  return scale && hit
+    ? {
+        hit,
+        highlight: {
+          d: arcScreenPath(arcs, hit.index, scale),
+          // The arc pass's own clip. Not decoration: a far pair's semicircle
+          // rises hundreds of px above a band tens of px tall, and the
+          // renderers clip it, so an unclipped highlight would trace a curve
+          // across the coverage histogram that no arc was ever painted on.
+          clipTop: scale.arcsTop,
+          clipHeight: scale.arcsH,
+          // Never thinner than the arc's own ink, so the highlight reads as the
+          // arc lighting up rather than as a second, finer curve laid beside a
+          // heavy one.
+          lineWidth: arcLineWidth(hit.support, scale.lineWidth),
+        },
+      }
+    : undefined
 }

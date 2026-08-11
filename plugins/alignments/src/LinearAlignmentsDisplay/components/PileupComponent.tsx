@@ -20,6 +20,7 @@ import {
   compactAxisLabel,
   leftAxisSpineX,
 } from '../coverageAxisStyle.ts'
+import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import HighlightOverlay from './HighlightOverlay.tsx'
 import InsertSizeAxis from './InsertSizeAxis.tsx'
@@ -136,6 +137,7 @@ const PileupBody = observer(function PileupBody({
 
       <SashimiArcsOverlay model={model} />
       <PileupBezierOverlay model={model} />
+      <ArcHoverOverlay model={model} />
 
       <VisibleLabelsHost
         model={model}
