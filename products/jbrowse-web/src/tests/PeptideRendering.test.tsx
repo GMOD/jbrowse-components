@@ -30,7 +30,10 @@ test('renders peptide letters on CDS features', async () => {
 
   // Frame coloring is opt-in; the amino acids on top of it are not
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText(/Color CDS by reading frame/, ...opts))
+  fireEvent.click(await findByText('Show...', ...opts))
+  fireEvent.click(
+    await findByText(/Show CDS colored by reading frame/, ...opts),
+  )
 
   // Open the track
   fireEvent.click(await findByTestId(hts('bedtabix_genes'), ...opts))

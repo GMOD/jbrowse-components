@@ -140,24 +140,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     // it, so it was findable only by someone who already knew it existed
     scrollZoomMenuItem(self),
     {
-      label: 'Color CDS by reading frame',
-      type: 'checkbox',
-      checked: self.colorByCDS,
-      icon: PaletteIcon,
-      onClick: () => {
-        self.setColorByCDS(!self.colorByCDS)
-      },
-    },
-    {
-      label: 'Draw amino acids when zoomed in',
-      type: 'checkbox',
-      checked: self.showAminoAcids,
-      icon: PaletteIcon,
-      onClick: () => {
-        self.setShowAminoAcids(!self.showAminoAcids)
-      },
-    },
-    {
       label: 'Show...',
       icon: VisibilityIcon,
       subMenu: [
@@ -211,6 +193,24 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           checked: !self.hideNoTracksActive,
           onClick: () => {
             self.setHideNoTracksActive(!self.hideNoTracksActive)
+          },
+        },
+        {
+          label: 'Show amino acids when zoomed in',
+          type: 'checkbox',
+          checked: self.showAminoAcids,
+          icon: PaletteIcon,
+          onClick: () => {
+            self.setShowAminoAcids(!self.showAminoAcids)
+          },
+        },
+        {
+          label: 'Show CDS colored by reading frame',
+          type: 'checkbox',
+          checked: self.colorByCDS,
+          icon: PaletteIcon,
+          onClick: () => {
+            self.setColorByCDS(!self.colorByCDS)
           },
         },
         {
