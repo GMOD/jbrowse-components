@@ -589,9 +589,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const liveByConnectionId = new Map(
           connectionInstances.map(c => [c.connectionId, c]),
         )
-        const resolve = (tracks: AnyConfigurationModel[]) =>
+        // a connection's tracks are never the session's own, so only the main
+        // group can put a track under the session-tracks pseudo-category
+        const { sessionTrackIds } = this
+        const resolve = (
+          tracks: AnyConfigurationModel[],
+          sessionTracks = false,
+        ) =>
           sortSources(
-            tracks.map(t => trackNodeSourceFor(t, session)),
+            tracks.map(t =>
+              trackNodeSourceFor(
+                t,
+                session,
+                sessionTracks && sessionTrackIds.has(t.trackId),
+              ),
+            ),
             this.activeSortTrackNames,
             this.activeSortCategories,
           )
@@ -599,7 +611,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           {
             group: mainGroupId,
             id: mainGroupId,
-            tracks: resolve(this.configAndSessionTrackConfigurations),
+            tracks: resolve(this.configAndSessionTrackConfigurations, true),
             defaultCollapsed: false,
             loading: false,
           },
@@ -747,7 +759,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * empty connection still shows in the tree
        */
       get hierarchy() {
-        const { sessionTrackIds, filteredTrackSet } = self
+        const { filteredTrackSet } = self
         return {
           name: 'Root',
           id: 'Root',
@@ -761,7 +773,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             loading: s.loading,
             children: generateHierarchy({
               trackSources: s.tracks,
-              sessionTrackIds,
               filteredTrackSet,
               groupId: s.id,
             }),

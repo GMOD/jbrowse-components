@@ -34,6 +34,10 @@ export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
   return subset.every(x => s.has(x))
 }
 
+// The category a non-admin's added/copied tracks nest under. Leading space so
+// it sorts above the config's own categories.
+export const sessionTracksCategory = ' Session tracks'
+
 // Everything the tree needs from a track's config, read once into
 // model.allTracks instead of on every filterText keystroke. searchText covers
 // what a tree row shows — its name, the categories it nests under, and the
@@ -42,13 +46,23 @@ export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
 // left out here because, unlike in the faceted grid, the tree renders neither.
 // sortName is the raw name slot rather than getTrackName, so the unnamed
 // reference sequence track still sorts to the top.
+//
+// A session track's pseudo-category is prepended here rather than where the
+// hierarchy is built, so it is one of the categories for every purpose that
+// reads them — sorting, the subcategory count, and searching. The tree draws
+// that folder, and the rule is that the filter box searches what the tree
+// shows.
 export function trackNodeSourceFor(
   conf: AnyConfigurationModel,
   session: AbstractSessionModel,
+  isSessionTrack = false,
 ): TrackNodeSource {
   const name = getTrackName(conf, session)
-  const categories =
+  const ownCategories =
     (readConfObject(conf, 'category') as string[] | undefined) ?? []
+  const categories = isSessionTrack
+    ? [sessionTracksCategory, ...ownCategories]
+    : ownCategories
   const description =
     (readConfObject(conf, 'description') as string | undefined) ?? ''
   return {

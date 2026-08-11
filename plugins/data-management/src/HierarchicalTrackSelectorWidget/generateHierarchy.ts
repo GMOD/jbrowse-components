@@ -9,12 +9,10 @@ interface NodeWithChildren {
 
 export function generateHierarchy({
   trackSources,
-  sessionTrackIds,
   filteredTrackSet,
   groupId,
 }: {
   trackSources: TrackNodeSource[]
-  sessionTrackIds: Set<string>
   filteredTrackSet: Set<AnyConfigurationModel>
   groupId: string
 }): TreeNode[] {
@@ -24,11 +22,8 @@ export function generateHierarchy({
   // trackSources arrive resolved and sorted (see model.allTracks), so nothing
   // here reads a config or sorts; filtering preserves the order
   for (const source of trackSources.filter(s => filteredTrackSet.has(s.conf))) {
-    const { conf, name, description } = source
+    const { conf, name, description, categories } = source
     const { trackId } = conf
-    const categories = sessionTrackIds.has(trackId)
-      ? [' Session tracks', ...source.categories]
-      : source.categories
 
     let currLevel: NodeWithChildren = root
     let categoryPath = ''

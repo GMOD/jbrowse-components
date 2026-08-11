@@ -74,6 +74,18 @@ test('the tree filter still matches a category name', () => {
   expect(treeMatches(model, 'assays')).toEqual(['categorized'])
 })
 
+// the folder a non-admin's own tracks nest under is drawn like any other
+// category, so it is searchable like any other category. setup() is a non-admin
+// session, so addTrackConf put all three under it
+test('the tree filter matches the session-tracks category', () => {
+  const { model } = setup()
+  expect(treeMatches(model, 'session tracks')).toEqual([
+    'categorized',
+    'markup',
+    'plain',
+  ])
+})
+
 // a query can't span two fields: both filter boxes are single-line, and the
 // fields are newline-joined for exactly that reason
 test('a query cannot span two fields', () => {
