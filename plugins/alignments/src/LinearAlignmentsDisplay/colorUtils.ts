@@ -331,7 +331,7 @@ export function readColorCategory(
   }
 
   // Same as above but for a same-strand (co-linear) split — a deletion / tandem-
-  // dup junction. Its own color (the supplementary yellow), reserving magenta
+  // dup junction. Its own color (the supplementary orange), reserving magenta
   // for the more specific inversion case.
   if (splitsUnderOrientationScheme && chainSupp === CHAIN_FILL_SPLIT_DELETION) {
     return 'splitDeletion'
@@ -421,6 +421,11 @@ export function readColorCategory(
         ? 'noTagValue'
         : 'tag'
 
+    // Unreachable: `colorScheme` is always `ColorScheme[shaderScheme]`, which
+    // COLOR_SCHEMES makes total over the ten ShaderScheme names, and every one
+    // of them has a case above. Kept because the parameter is a bare `number`
+    // and TypeScript can't be told otherwise — not because any scheme falls
+    // through to it.
     default:
       return 'plain'
   }
@@ -564,7 +569,7 @@ export const swatchPaletteKeys = {
   // dedicated inversion hue (colorSplitReadInversion), distinct from the RR-pair
   // blue so the legend swatch and read fill are unambiguous
   splitInversion: 'colorSplitInversion',
-  // co-linear (deletion) split reuses the supplementary yellow — "ordinary split
+  // co-linear (deletion) split reuses the supplementary orange — "ordinary split
   // read", with magenta reserved for the special inverted case
   splitDeletion: 'colorSupplementary',
   // read a CPU-baked scheme resolved no color for: the shader's tagColor==0

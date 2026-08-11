@@ -306,18 +306,6 @@ function bucketItems(
   )
 }
 
-function crossCuttingBuckets(
-  presentCategories: ReadonlySet<ReadColorCategory>,
-  palette: ColorPalette,
-  colorBy: ColorBy | undefined,
-): LegendItem[] {
-  return bucketItems(
-    presentCategories,
-    palette,
-    categoryLabelOverrides(colorBy),
-  )
-}
-
 // Short insert is the one bucket whose arc swatch is not the read swatch: a 1px
 // arc curve in the pale pileup fill (colorShortInsert #ffc0cb) is invisible over
 // the band, so the curves stroke the saturated variant (colorShortInsertArc,
@@ -533,6 +521,6 @@ export function getReadDisplayLegendItems({
       colorTagMap,
       presentTagValues,
     ),
-    ...crossCuttingBuckets(categories, palette, colorBy),
+    ...bucketItems(categories, palette, categoryLabelOverrides(colorBy)),
   ]
 }
