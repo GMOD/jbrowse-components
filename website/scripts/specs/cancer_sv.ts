@@ -100,17 +100,6 @@ const MULTIHOP_GENE_HEIGHT = 70
 // a solid block and the connectors then fan out of a smear.
 const SPLIT_READS = { featureHeight: 2 }
 
-// HALF A PIXEL, on the one figure whose subject is the CURVES rather than the
-// reads (review on k562_starfusion_triage: "you can also consider making
-// alignments less than 1px in height"). `featureSpacingForHeight` returns 0 for
-// anything at or under 3, so the pitch is the height and ~250 split rows become
-// a 125 px block instead of a 500 px one. What that buys is not the height on
-// its own: at 2 px the pileup was the largest object in the frame and the
-// bundle of connectors was drawn over it, and at 0.5 the pileup is a texture
-// and the bundle is the figure. Everywhere else 2 px is still right, because
-// everywhere else the reads are what is being read.
-const FUSION_SPLIT_READS = { featureHeight: 0.5 }
-
 // The 29 reads realigned to the derivative used to share one row height across
 // the three figures that draw them. They no longer do, and the reason is that
 // the three are at three zooms: 40 kb (derivative_synteny, now the coverage
@@ -1584,142 +1573,98 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 15000,
   })),
-  // The fourth frame: where a triaged row GOES (review: "this is uninteresting
-  // by itself, consider launching the breakpointsplitview"). Three frames of
-  // narrowing ended on a table with two rows in it and nothing following from
-  // them, and every row of that table carries the menu that opens this -- its
-  // caret, then "Open in breakpoint split view" (spreadsheet-view's
-  // FeatureMenu), which is what `displayName` records here in the same way the
-  // import-form frame records its own menu path.
+  // The fourth frame: where a triaged row GOES. Every row of the table above
+  // carries the menu that opens it.
   //
-  // NUP214--XKR3, NOT BCR--ABL1, and the choice is what keeps this from being a
-  // duplicate. The search leaves two rows because the Philadelphia
-  // translocation is in the file from both sides; the rest of the page follows
-  // the BCR--ABL1 side (`k562_bcr_abl_split`, which is deliberately a
-  // two-region LGV rather than this view type, for the reason recorded there).
-  // Opening the OTHER row shows the reciprocal side, which nothing else on the
-  // page draws, and it is the row a reader is most likely to be curious about
-  // after the search.
+  // ONE LEVEL, TWO REGIONS, NOT A BREAKPOINT SPLIT VIEW (review: "i think the
+  // premise of using the two level breakpoint split view is likely bad ... we
+  // can show this in a single-level linear-genome-view, with view-as-pairs
+  // enabled so that it literally puts the read pairs in a single row in
+  // layout, no complex curves"). Two rounds of settings on the split view --
+  // flipping chr22, dropping intraview links, half-pixel rows -- each made it
+  // less chaotic and none fixed the shape: a stacked view runs its splines DOWN
+  // the page, so a molecule is read across a gap that is not the gap the fusion
+  // closes.
   //
-  // Breakpoints are the call's own, `chr9:131199015:+` and `chr22:16808083:-`
-  // from K562.star-fusion.tsv, +/- 2.5 kb. The STAR-Fusion track rides above
-  // the reads in both panels so the junction the reads support is marked on
-  // each.
+  // Side by side with `linkedReads: 'normal'`, chain layout merges each
+  // molecule's two alignments onto ONE row across the two displayed regions
+  // (`mergeChains`), so the connectors go flat and the row count halves. Same
+  // layout as `k562_bcr_abl_split`, on the other side of the same amplicon, and
+  // the reviewer's "view as pairs" is literally that menu item (Read
+  // connections -> View as pairs / link supplementary alignments). Iso-Seq is
+  // single-end; what is linked is the SA chain.
   //
-  // WINDOW, ORIENTATION AND ROW HEIGHT, all three from one note (review: "this
-  // is a very complex figure still. please think about ways to dramatically
-  // simplify. for example, if the lower panel was horizontally flipped, and
-  // both top and bottom were zoomed out, it would be more clear how it is a
-  // 'gene fusion' ... you can also consider making alignments less than 1px in
-  // height"). All three are taken, and the flip is the one that changes what
-  // the picture says rather than how much of it there is:
+  // NUP214--XKR3, not BCR--ABL1: the search leaves two rows because the
+  // Philadelphia translocation is in the file from both sides, and the rest of
+  // the page follows the BCR--ABL1 one.
   //
-  // - **The chr22 panel is `[rev]`.** The call is `chr9:131199015:+` and
-  //   `chr22:16808083:-`, so the fusion transcript runs 5'->3' left to right
-  //   through NUP214 and then continues into XKR3, which is on the MINUS
-  //   strand — right to left on chr22's forward coordinates. Unflipped, both
-  //   pileups sat left of their own junction and every connector had to travel
-  //   backwards across the seam to reach the second half of the same molecule.
-  //   Flipped, chr9's reads are left of the junction and chr22's are right of
-  //   it, and one molecule reads straight across the two panels. The `[rev]`
-  //   locstring is the same switch as the view's Horizontally flip; see
-  //   `horizontally_flip_before`/`_after`.
-  // - **10 kb per panel, up from 5.** Which reverses an earlier round's halving
-  //   ("the screenshot in 4 is also VERY chaotic") and does not contradict it:
-  //   what made that frame chaotic was ~250 rows of pileup at 2 px each, and
-  //   that is now 0.5 px. With the pileup compressed, width buys gene context
-  //   instead of rows — enough of NUP214 and XKR3 either side of the junction
-  //   for the fusion to read as two genes rather than two coordinates. 20 kb
-  //   was rendered too and is worse: the reads cluster at the junction, so the
-  //   extra width is empty lane.
-  // - **`featureHeight: 0.5`**, see FUSION_SPLIT_READS.
-  //
-  // The frame is 1,322 px where it was 2,205.
+  // chr22 is `[rev]`, as on the split view and for the same reason: the call is
+  // chr9:131199015:+ / chr22:16808083:-, so the transcript runs into XKR3 right
+  // to left on chr22's forward coordinates. Flipped, one molecule reads
+  // straight across the join.
   {
     mode: 'url' as const,
-    name: 'cancer_sv/k562_fusion_inspector_split',
-    // Sized off the run's own blank-below-the-content report with both lanes
-    // grown, so it is the row count that sets it rather than a guess. At 2 px
-    // rows this was 2,205, and 830 / 1100 / 1500 all looked complete and were
-    // not, because a pinned alignments lane scrolls instead of pushing the page
-    // down.
-    viewportHeight: 1322,
-    url: sessionSpec(CONFIG, {
-      views: [
+    name: 'cancer_sv/k562_fusion_inspector_reads',
+    // sized off the run's own below-the-fold report
+    viewportHeight: 985,
+    url: lgvSession(CONFIG, {
+      assembly: 'hg38',
+      // EACH WINDOW ENDS ON ITS OWN BREAKPOINT, on the side facing the join.
+      // The fusion transcript only occupies chr9 left of 131,199,015 and chr22
+      // below 16,808,083, so a window centred on either breakpoint spends half
+      // its width on empty lane AND pushes the two read piles ~700 px apart --
+      // which is what turns the connectors from short hops into the long
+      // diagonal fan this figure was denied for. chr22 is `[rev]`, so its
+      // higher coordinate is drawn leftmost and the breakpoint lands at that
+      // region's left edge.
+      loc: 'chr9:131,195,015-131,199,515 chr22:16,805,083-16,808,583[rev]',
+      // the call's own breakpoints, one band each, so each side's coverage step
+      // has a marked position to sit on
+      highlight: [
+        { refName: 'chr9', start: 131_198_915, end: 131_199_115 },
+        { refName: 'chr22', start: 16_807_983, end: 16_808_183 },
+      ],
+      tracks: [
+        GENE_TRACK,
         {
-          type: 'BreakpointSplitView',
-          displayName:
-            'Row menu → Open in breakpoint split view (NUP214--XKR3)',
-          // The other half of the chaos, and the half that says nothing about
-          // this fusion: an intraview link joins two alignments of one read
-          // that both landed in the SAME panel, so none of them crosses the
-          // junction the figure is about. On chr9 they were a fan of ~60 blue
-          // arcs over the 2.5 kb left of the breakpoint, drawn on top of the
-          // curves that do cross. `Show intra-view links` in the view menu is
-          // the same switch.
-          showIntraviewLinks: false,
-          views: [
-            {
-              loc: 'chr9:131,194,015-131,204,015',
-              assembly: 'hg38',
-              tracks: [
-                GENE_TRACK,
-                {
-                  trackId: 'K562_star_fusion',
-                  type: 'LinearVariantDisplay',
-                  height: 40,
-                },
-                {
-                  trackId: 'K562_isoseq',
-                  // GROW, not a pinned height, and this is the whole of the
-                  // chaos complaint. A curve's endpoint is the ROW its read is
-                  // packed onto, so any row past the lane's height is a curve
-                  // leaving the frame with nothing to land on -- and an
-                  // alignments lane that does not fit SCROLLS rather than
-                  // clipping the page, so neither the below-the-fold report nor
-                  // the blank-space one can see it. Three pinned heights were
-                  // tried (260, 380, 480) and each left a scrollbar. Let the
-                  // lane state its own row count and size the frame off that.
-                  heightMode: 'grow',
-                  coverageHeight: 80,
-                  showOnlySplitAlignments: true,
-                  ...FUSION_SPLIT_READS,
-                },
-              ],
-            },
-            {
-              loc: 'chr22:16,803,083-16,813,083[rev]',
-              assembly: 'hg38',
-              tracks: [
-                GENE_TRACK,
-                {
-                  trackId: 'K562_star_fusion',
-                  type: 'LinearVariantDisplay',
-                  height: 40,
-                },
-                {
-                  trackId: 'K562_isoseq',
-                  // grown for the same reason as the chr9 lane above; this is
-                  // the deeper of the two, since the fusion transcript runs
-                  // from NUP214's promoter into XKR3
-                  heightMode: 'grow',
-                  coverageHeight: 80,
-                  showOnlySplitAlignments: true,
-                  ...FUSION_SPLIT_READS,
-                },
-              ],
-            },
-          ],
+          trackId: 'K562_star_fusion',
+          type: 'LinearVariantDisplay',
+          height: 40,
+        },
+        {
+          trackId: 'K562_isoseq',
+          height: 600,
+          coverageHeight: 150,
+          // a read whose chr9 alignment has a chr22 supplementary IS the
+          // fusion's support, so every remaining row crosses the junction
+          showOnlySplitAlignments: true,
+          linkedReads: 'normal',
+          // chain layout's own connecting line is emitted per displayed region
+          // and draws as a 1px hairline; the bezier pass is the one that
+          // resolves both ends through view.bpToPx. See k562_bcr_abl_split.
+          showBezierConnections: true,
+          ...SPLIT_READS,
         },
       ],
     }),
-    // the track name in the second panel's header, not a gene symbol: the
-    // 10 kb windows sit INSIDE NUP214 and XKR3, so neither glyph has an end in
-    // frame for its floating label to hang under, and a gene-name readyText
-    // waits out its whole timeout on a view that has already drawn
     readyText: 'K562 PacBio Iso-Seq (ENCODE)',
     readyTimeout: 120000,
     settleMs: 15000,
+    annotations: [
+      {
+        type: 'text' as const,
+        text: 'each line is one molecule, NUP214 into XKR3',
+        fontSize: 18,
+        maxWidth: 250,
+        anchor: {
+          track: 'K562_isoseq',
+          locus: 'chr9:131,195,200',
+          fracY: 0.55,
+          alignX: 'left',
+          dx: 20,
+        },
+      },
+    ],
   },
   {
     mode: 'compose',
@@ -1735,7 +1680,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // dropped step as a live view.
     parts: [
       'cancer_sv/k562_fusion_inspector_pair',
-      'cancer_sv/k562_fusion_inspector_split',
+      'cancer_sv/k562_fusion_inspector_reads',
     ],
     // stacked, not side by side: each frame is a wide table plus a circle, and
     // two of those in a row would put the pair of circles a screen apart
