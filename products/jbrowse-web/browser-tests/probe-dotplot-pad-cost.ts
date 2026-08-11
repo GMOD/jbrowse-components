@@ -200,7 +200,7 @@ try {
         padded: makeProgram(vsPadded),
         unpadded: makeProgram(vsUnpadded),
       }
-      const out: Record<string, number[]> = { padded: [], unpadded: [] }
+      const out = { padded: [] as number[], unpadded: [] as number[] }
 
       // Interleave the variants and take the median: a GPU that clocks up or
       // down mid-run otherwise assigns the whole drift to whichever ran second.
@@ -214,7 +214,7 @@ try {
           }
           const ms = await timePass(p, 30)
           if (ms !== null) {
-            out[key]!.push(ms)
+            out[key].push(ms)
           }
           console.log(
             `round ${round} ${key} ${ms === null ? 'disjoint' : ms.toFixed(3)}`,
