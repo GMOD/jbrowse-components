@@ -9,6 +9,7 @@ import {
   clusterProvenanceLocLabel,
   describeClusterProvenance,
 } from './clusterProvenance.ts'
+import { treeIsShowing } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -77,12 +78,16 @@ export const ClusterProvenanceHint = observer(function ClusterProvenanceHint({
 }) {
   const { classes, cx } = useStyles()
   const [dismissed, setDismissed] = useState(false)
-  const { clusterProvenance, hierarchy, showTree, treeAreaWidth } = model
+  const { clusterProvenance, treeAreaWidth } = model
   const view = getContainingView(model) as LinearGenomeViewModel
 
   // Gate on the *positioned* tree: a tree that isn't drawn has no locus worth
-  // captioning, and `StaleTreeHint` is already explaining that case.
-  if (!clusterProvenance || !hierarchy || !showTree || dismissed) {
+  // captioning, and `StaleTreeHint` is already explaining that case. Through
+  // `treeIsShowing`, which is what "positioned" means — spelled out here as
+  // `!hierarchy || !showTree` it was a fourth copy of a predicate the package
+  // keeps in one place precisely because the gutter and what draws in it must
+  // not disagree.
+  if (!clusterProvenance || !treeIsShowing(model) || dismissed) {
     return null
   }
   const drifted = clusterProvenanceDrifted(
