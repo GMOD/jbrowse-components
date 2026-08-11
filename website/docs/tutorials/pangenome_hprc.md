@@ -506,7 +506,14 @@ The bubble lane up top is cut to bubbles holding an allele over 100 kb, and the
 banded one is a short reference span. In the middle the boxed node is the CHM13
 sequence that hangs off it, attached at a small anchor.
 
-<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window. Middle: the graph cut from it. Bottom: that node on hs1's own chr17, tiled by long L1 elements in red. LINE covers 23.7% of the inserted sequence against 14.2% and 14.5% either side; whether that is a lot is asked at megabase scale below." src="/img/pangenome/hprc_chm13_allele.png" />
+The last part is the same measurement at a scale that can answer whether the L1
+density means anything, since a 180 kb window has only its own flanks to be
+dense against. Open the LINE row alone over the last 3 Mb of the chromosome and
+set the track's **Resolution** low, so each drawn value averages about 100 kb
+rather than 3 kb: at 5 kb the allele is invisible inside the spikes, and at its
+own scale it is a block.
+
+<Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Under them, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean, where the shaded allele is the tallest sustained level: of the 262 same-size windows within 5 Mb, 2 carry more LINE." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
 carries was already in the graph and little is credited to it:
@@ -586,16 +593,12 @@ insertion allele on its own is the sharper version of the same contrast, at
 23.70% LINE against 14.18% and 14.47% in the CHM13 sequence either side of it,
 which is the L1 tiling the figure above already shows per element.
 
-Whether that is a lot depends on the scale it is asked at, and one lane answers
-it. Open the LINE row alone over the last 3 Mb of the chromosome and set the
-track's **Resolution** low, so each drawn value averages about 100 kb rather
-than 3 kb: at 5 kb the allele is invisible inside the spikes, and at its own
-scale it is a block.
-
-<Figure caption="LINE density across the last 3 Mb of T2T-CHM13v2.0 chr17, each bar a ~100 kb mean. The shaded stretch is the 142 kb insertion allele, the tallest sustained level in the window: of the 262 same-size windows within 5 Mb, 2 carry more LINE." src="/img/pangenome/hprc_l1_density_context.png" />
-
-So the enrichment is a local statement rather than a genome-wide one. That is
-the claim the figure supports: not that this sequence is L1-dense for human
+Whether that is a lot depends on the scale it is asked at, which is what the
+last part of [the donor-node figure](#the-one-donor-worth-loading) draws. The
+same script ranks the allele against every window of its own size in CHM13: 2 of
+the 262 within 5 Mb carry more LINE, against 35% of windows genome-wide. So the
+enrichment is a local statement rather than a genome-wide one, and that is the
+claim the figure supports: not that this sequence is L1-dense for human
 sequence, but that it is L1-dense for this end of chr17, which is what makes it
 the piece a BAC-and-Sanger reference could not place.
 

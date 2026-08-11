@@ -4179,7 +4179,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   // too.
   {
     mode: 'url',
-    name: 'pangenome/hprc_chm13_allele',
+    name: 'pangenome/hprc_chm13_allele_panes',
     url: sessionSpec(HPRC_CONFIG, {
       sessionTracks: [HS1_RMSK_TRACK],
       views: [
@@ -4350,14 +4350,15 @@ export const graphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // IS THAT A LOT? (review, on the figure above: "we keep relitigated this but
-  // im trying to understand, what would convince user this is like an abnormal
-  // numnber of L1 compared to an even larger e.g. megabase scale region").
-  // Nothing in that figure can answer it: its widest lane is 180 kb, so the
-  // allele has only itself and two slivers of flank to be dense against, and
-  // the pill's "23.7% vs 14%" is a pair of numbers a reader has to take on
+  // PART TWO: IS THAT A LOT? (review, on the part above: "we keep relitigated
+  // this but im trying to understand, what would convince user this is like an
+  // abnormal numnber of L1 compared to an even larger e.g. megabase scale
+  // region"). Nothing in that part can answer it: its widest lane is 180 kb, so
+  // the allele has only itself and two slivers of flank to be dense against,
+  // and the pill's "23.7% vs 14%" is a pair of numbers a reader has to take on
   // trust. This is the same measurement drawn at the scale the question is
-  // asked at.
+  // asked at, and it is a PART rather than a figure of its own so that the
+  // claim and its check cannot be read apart.
   //
   // Three earlier rounds concluded there was no picture here, and each was
   // looking at the wrong two things: the ELEMENT lane, which cannot go past
@@ -4380,7 +4381,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   // kb bins reach 0.73 inside it and 0.47 just outside.
   {
     mode: 'url',
-    name: 'pangenome/hprc_l1_density_context',
+    name: 'pangenome/hprc_chm13_allele_density',
     url: sessionSpec(HPRC_CONFIG, {
       sessionTracks: [HS1_LINE_DENSITY_TRACK],
       views: [
@@ -4441,6 +4442,22 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
         textAlign: 'end',
       },
+    ],
+  },
+  // The two as one figure. The name is the one the doc and the review log
+  // already carry, so what moves is which spec renders it, and a reader cannot
+  // reach the claim without the check under it.
+  //
+  // Vertical, and both parts are viewportWidth 1000, so the stack needs no
+  // padding. It IS a tall figure -- the three panes are 2,662 px and this adds
+  // ~940 -- which is why the second part is one lane at 470 px rather than the
+  // several a repeat-density figure could carry.
+  {
+    mode: 'compose',
+    name: 'pangenome/hprc_chm13_allele',
+    parts: [
+      'pangenome/hprc_chm13_allele_panes',
+      'pangenome/hprc_chm13_allele_density',
     ],
   },
   // pangenome/hprc_repeat_classes was here and is DELETED (review: "i dont think
