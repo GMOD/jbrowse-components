@@ -626,31 +626,9 @@ export interface RegionBounds {
   end: number
 }
 
-/**
- * The `sortedBy` that applies to these regions, or undefined.
- *
- * A sort names a genomic **column** — a refName as well as a position — so it
- * applies only when every region being laid out is on that refName. A position
- * number means something different on another chromosome, and applying it there
- * is a false match, not a sort.
- *
- * That matters because `sortedBy` is a **config slot**: it outlives the view
- * that set it. Committing a sort on chr1 and navigating to chr2 leaves the slot
- * set, and without this the chr2 reads are reordered by whatever happens to sit
- * at the same offset. It is also what makes an aliased session spec (`chr1` on
- * an assembly canonicalized `1`, which `canonicalizeViewRefName` can't resolve)
- * leave the reads alone rather than sorting the wrong ones — the behaviour the
- * display's `sortedBy` getter documents.
- *
- * Shared by the single-region and multi-region paths so the two can't drift, the
- * same reason `refNameAxisShift` is. It was the multi-region path's alone, and
- * the single-region path is the ordinary one — one region on screen is most of
- * the browsing anyone does.
- *
- * No region bounds means nothing to check against, so the caller's sort stands;
- * the multi-region path additionally *needs* the bounds to locate the sort
- * position's region at all, and keeps its own structural guard for that.
- */
+// The sort that applies to these regions, or undefined. Both layout paths go
+// through it; see CLAUDE.md. No bounds to check against means the caller's sort
+// stands.
 export function sortForRegions(
   sortedBy: SortedBy | undefined,
   regionIndices: number[],
@@ -810,8 +788,8 @@ export function computeMultiRegionLayout({
   }
   orderedIds.sort(compareIdsCanonically)
 
-  // `regions` twice over: the shared refName gate below, and — structurally —
-  // to locate the region holding the sort position at all.
+  // `regions` twice over: the refName gate, and structurally to locate the
+  // region holding the sort position.
   const activeSort = sortForRegions(
     sortedBy,
     entries.map(([idx]) => idx),
@@ -966,8 +944,6 @@ function computePileupRowLayout(
   }
   if (withReads.length === 1) {
     const [idx, data] = withReads[0]!
-    // Gated on refName exactly as the multi-region path below is: this is the
-    // ordinary case, and the slot outlives the contig it was set on.
     const activeSort = sortForRegions(sortedBy, [idx], regions)
     const { readYs, maxY, truncated } = activeSort
       ? computeSortedLayout(data, activeSort, showSoftClipping, maxRows)
