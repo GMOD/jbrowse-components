@@ -10,10 +10,8 @@ data: hosted
 
 **TL;DR:** a 22 Mb inversion reads as one block, from `plink --r2` output
 through an [`LDTrack`](/docs/config/plinkldtabixadapter). What decides whether a
-locus shows anything is the panel, the allele frequency floor and the metric,
-all three testable before a figure is built. The same inversion also loads as a
-structural variant genotyped per mosquito, which is the same event drawn a
-different way.
+locus shows anything is the panel, the allele frequency floor and the metric.
+The same inversion also loads as a structural variant genotyped per mosquito.
 
 ## Prerequisites
 

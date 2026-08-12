@@ -12,8 +12,7 @@ data: hosted
 linear genome view can be turned into a cross-species protein alignment or a 3D
 structure without preparing anything. The alignment is built from NCBI's
 precomputed orthologs rather than from a similarity search, so there is no job
-to queue, its rows are labelled by species, and NCBI's conserved-domain
-annotations are drawn on top of it.
+to queue.
 
 ## Prerequisites
 

@@ -12,9 +12,8 @@ data: pipeline
 **TL;DR:** an [OrthoFinder](https://github.com/davidemms/OrthoFinder) run groups
 genes by homology and says nothing about position, so it produces a synteny
 track for genomes no aligner can line up. `Orthogroups.tsv` converts to the
-`.blocks` table `MCScanBlocksAdapter` reads, with one BED per genome. A
-duplicated gene becomes several rows rather than one arbitrary choice, which is
-what makes the polyploid case readable.
+`.blocks` table `MCScanBlocksAdapter` reads, with one BED per genome, and a
+duplicated gene becomes several rows rather than one arbitrary choice.
 
 ## Prerequisites
 

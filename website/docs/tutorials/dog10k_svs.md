@@ -12,8 +12,7 @@ data: pipeline
 **TL;DR:** slice a locus out of the Dog10K structural-variant callsets over
 HTTP, load it as a `VariantTrack` in the multi-sample variant display with breed
 labels, and read the genotypes against the gene model above it. Five loci, one
-recipe, and each is a different class of variant that has to be read a different
-way.
+recipe, a different class of variant each time.
 
 ## Prerequisites
 

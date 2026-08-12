@@ -12,8 +12,7 @@ data: download
 and render it as a `multirowdensity` heatmap, with the color pivot at the
 diploid baseline of 2. Every individual becomes one row, colored by copy number.
 Past a few hundred samples the per-file requests become the bottleneck, so the
-second half packs the same values into one Zarr store, which answers the same
-window for all 2504 individuals in 3 requests.
+second half packs the same values into one Zarr store.
 
 ## Prerequisites
 

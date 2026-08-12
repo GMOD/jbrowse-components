@@ -11,8 +11,6 @@ data: hosted
 **TL;DR:** genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC
 genome, and each one already carries that genome's UCSC track catalog. Any of
 those tracks is a checkbox away, with nothing to download, index or configure.
-This page turns on hg38's phyloP conservation over _TP53_ and then reads it
-against the gene model it lands next to.
 
 ## Prerequisites
 

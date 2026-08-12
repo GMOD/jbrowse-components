@@ -12,8 +12,6 @@ data: hosted
 **TL;DR:** a pileup looks the same whether its reads belong at a locus or merely
 landed there. Four tracks tell the difference, and genomes.jbrowse.org already
 publishes all of them for hg38, so this is a click-path rather than a pipeline.
-At _SMN1_ every one of them says the placement cannot be trusted; further along
-the same frame, out of the same sample, every one says the opposite.
 
 ## Prerequisites
 

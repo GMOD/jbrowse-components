@@ -11,9 +11,7 @@ data: pipeline
 
 **TL;DR:** dN/dS is a per-ortholog-pair measurement, so it is a colour on a
 synteny track. This builds a human against rhesus macaque ortholog table with
-jcvi, measures dN and dS on every pair with `kaks_from_pairs.py`, and opens a
-gene neighbourhood where one gene is a different colour from all of its
-neighbours.
+jcvi and measures dN and dS on every pair with `kaks_from_pairs.py`.
 
 ## Prerequisites
 
