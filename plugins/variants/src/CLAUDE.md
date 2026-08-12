@@ -262,12 +262,28 @@ in that display), and `breakendSplitViewMenuItem`.
 
 Four geometries have to agree on one record's drawn extent — the marker overlay,
 the lane's mark, the hover box, the click target — and all four go through
-`variantCellSpanPx`. **`insertionsWiden` (the display's `showInsertionGlyphs`)
-has no default there on purpose.** It had one implicitly, by nobody asking: with
-glyphs switched off the GPU cells drew a 2px SNP while the lane drew a 40px bar
-above it, the hover box covered 40px of nothing, and a click 20px clear of the
-cell still opened its widget. The only caller that passes a literal is
-`markersForBlock`, where the widening _is_ the marker.
+`variantCellSpanPx`.
+
+**And its base span comes from `snapVariantCellX`, the cell painter's own.**
+Sharing the 2px floor is not sharing the span: `drawVariantBlocks` snaps both
+edges to the grid `variant.slang` snaps to (about the canvas CENTRE, which is
+why `canvasWidth` has to reach here), and computing min/max raw instead put all
+four up to half a pixel off the cell they were describing — 0.48px measured on a
+genome-wide window, where the snap fires on every record and every mark is at
+the 2px floor, so it is a quarter of the mark. There is one span function; the
+four consumers are its callers.
+
+The insertion-marker branch keeps the **unsnapped** reference-span centre, and
+that is not an oversight: no shader draws a marker, so there is nothing to match
+— and all four consumers take the marker from here, so they agree with each
+other, which is the property that matters for a mark the GPU never draws.
+
+**`insertionsWiden` (the display's `showInsertionGlyphs`) has no default there
+on purpose.** It had one implicitly, by nobody asking: with glyphs switched off
+the GPU cells drew a 2px SNP while the lane drew a 40px bar above it, the hover
+box covered 40px of nothing, and a click 20px clear of the cell still opened its
+widget. The only caller that passes a literal is `markersForBlock`, where the
+widening _is_ the marker.
 
 `showInsertionGlyphs` is a model getter for the same reason — it is one answer
 four consumers need, not four `getConf` reads.
