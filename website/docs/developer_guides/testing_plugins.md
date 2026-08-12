@@ -156,6 +156,16 @@ preloaded `runtimePlugins`, and returns the session model, so `addView`,
 `addWidget`, `showWidget`, and `addTrackConf` are all available. To test a
 custom plugin's pluggable elements, pass it via `runtimePlugins`.
 
+**A view you add afterwards has no width, and `view.width` throws.** There is no
+layout in jsdom, so nothing sizes a view on its own: `createTestSession` sets
+800px on the views your `sessionSnapshot` declares, and only those. A view from
+a later `session.addView(...)` is unsized, and the getter throws
+`width undefined, make sure to check for model.initialized` the moment anything
+reads it — which most block and coordinate logic does. Either declare the view
+in the snapshot, as the component test below does, or call `view.setWidth(800)`
+straight after adding it, which is what the integration tests across the repo
+do.
+
 `FromConfigSequenceAdapter` is what keeps a session test off the network: the
 assembly's sequence is inline, so nothing is fetched and the assembly is ready
 immediately.
