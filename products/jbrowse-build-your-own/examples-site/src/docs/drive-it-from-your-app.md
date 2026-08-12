@@ -20,6 +20,12 @@ input every frame of a drag.
 
 Several regions lay out contiguously: no gap, no marker. The boundary comes from
 the container JBrowse wraps around a track, not the display, so mounting
-`RenderingComponent` yourself gets both regions and no seam. `RegionBoundaries`
-below draws it, from the blocks flagged `isRightEndOfDisplayedRegion` at
-`block.offsetPx - view.offsetPx`.
+`RenderingComponent` yourself gets both regions and no seam.
+
+`RegionBoundaries` below draws it from `view.paddingSpans` — `{x, width, kind}`
+per span, where `kind` is a region's right edge, the greyed ends of the genome,
+or a region too narrow to draw. Those x values are in the `staticBlocks` frame,
+so one wrapper translated by `view.staticBlocksTranslateX` places every span at
+once. **Don't derive this from `isRightEndOfDisplayedRegion`**: that flag is set
+on elided blocks too, so a bar per region is a solid grey wall at whole-genome
+zoom, and drawing only the seams loses the elided tail of a genome entirely.

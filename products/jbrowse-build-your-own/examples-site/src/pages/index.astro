@@ -61,12 +61,18 @@ const base = import.meta.env.BASE_URL
     components, {bundle.muiGzipKb} KB with Material ones.
   </p>
   <p class="note">
-    An example imports three published packages, all on the same version:
+    Most examples import three published packages, all on the same version:
     <code>@jbrowse/react-linear-genome-view2</code> for the engine, <code
       >@jbrowse/core</code
     > for the hooks and the palette, and <code
       >@jbrowse/plugin-linear-genome-view</code
-    > for the display seams.
+    > for the display seams. The two that reach further say why they do:
+    <a href={`${base}track-settings/`}>Track settings</a> takes its colour-scheme
+    labels from <code>@jbrowse/plugin-alignments</code>, and <a
+      href={`${base}synteny/`}>Comparing two genomes</a
+    > needs a session whose views are an array, which is <code
+      >@jbrowse/react-app2</code
+    >.
   </p>
 
   <Gallery examples={examples} />
