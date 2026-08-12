@@ -56,8 +56,14 @@ export function globToRegExp(pattern: string) {
  * possible split: the caller has no way to tell "this assembly has no such
  * contigs" from "globs don't see the names you're using". Pass `allRefNames`
  * (canonical names AND aliases — `buildRefNameMaps` identity-maps every region,
- * so it is a strict superset) and a pattern sees what a literal sees. Omitted,
- * matching falls back to canonical names, which is what it did before.
+ * so it is a strict superset) and a pattern sees what a literal sees.
+ *
+ * It is optional ONLY because this is published ABI and the three-argument form
+ * predates it; an external plugin still calling that gets the canonical-only
+ * matching it always got. It is not optional because there is a state where an
+ * assembly has regions but not yet names — `setLoaded` writes `volatileRegions`
+ * and `refNameAliases` in one action, so no such state exists, and every
+ * in-tree caller (all of them through `resolveNamedRegions`) passes both.
  */
 export function selectNamedRegions(
   regions: readonly Region[],
@@ -66,8 +72,8 @@ export function selectNamedRegions(
   allRefNames?: readonly string[],
 ): Region[] {
   const byRefName = new Map(regions.map(r => [r.refName, r]))
-  // every name a glob may match on. `allRefNames` is undefined until the
-  // assembly's aliases load, and empty for an assembly that declares none
+  // every name a glob may match on — see above for why the absent case is a
+  // legacy call rather than an unloaded assembly
   const candidates = allRefNames?.length
     ? allRefNames
     : regions.map(r => r.refName)

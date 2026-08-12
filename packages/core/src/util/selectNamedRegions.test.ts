@@ -130,7 +130,10 @@ describe('selectNamedRegions', () => {
     ).toHaveLength(1)
   })
 
-  it('falls back to canonical names when the assembly has no alias list yet', () => {
+  it('matches canonical names only for a legacy three-argument call', () => {
+    // the published ABI's older form, which is the ONLY thing the optional
+    // parameter is for — an assembly with regions always has names, since
+    // setLoaded writes both in one action
     expect(
       selectNamedRegions(ensembl, ['chr*'], canonical).map(r => r.refName),
     ).toEqual([])
