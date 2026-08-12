@@ -21,8 +21,14 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * and the containing view, and every promotable-slot row walks the cascade
  * through the session — so a mock `self` would just reimplement the thing under
  * test.
+ *
+ * `neighbourAssembly` puts that LGV in a two-panel STACK, with the second panel
+ * open on the named assembly — the shape "Move other panel to the matching
+ * region" exists for, and the one the standalone default cannot reach.
  */
-export function createDisplay() {
+export function createDisplay({
+  neighbourAssembly,
+}: { neighbourAssembly?: string } = {}) {
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
   const configSchema = configSchemaF(pluginManager)
@@ -78,10 +84,26 @@ export function createDisplay() {
   // `toggle` wrote, so a read-only shim can only ever show an outline pin.
   const promoted = new Map<string, unknown>()
 
+  // width/setWidth are what isViewModel keys on, and the whole point of the
+  // stack being a VIEW rather than any node with a `views` array
+  const Stack = types
+    .model('TestPanelStack', {
+      id: types.optional(types.identifier, 'stack1'),
+      type: types.literal('TestPanelStack'),
+      views: types.array(LinearGenomeModel),
+    })
+    .volatile(() => ({ width: 800 }))
+    .actions(self => ({
+      setWidth(n: number) {
+        self.width = n
+      },
+    }))
+
   const Session = types
     .model({
       name: 'testSession',
       view: types.maybe(LinearGenomeModel),
+      stack: types.maybe(Stack),
       configuration: types.map(types.frozen()),
     })
     .volatile(() => ({
@@ -90,8 +112,7 @@ export function createDisplay() {
       // giving the view a displayed region wakes the assembly-readiness
       // reactions, which want an assemblyManager to ask
       assemblyManager: {
-        get: (name: string) =>
-          name === 'volvox' ? { initialized: true } : undefined,
+        get: () => ({ initialized: true }),
       },
     }))
     .views(() => ({
@@ -108,32 +129,53 @@ export function createDisplay() {
         self.view = view
         return view
       },
+      setStack(stack: Instance<typeof Stack>) {
+        self.stack = stack
+        return stack
+      },
       setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
         promoted.set(`${displayType}\0${slot}`, value)
       },
       notify() {},
     }))
 
+  const trackSnapshot = {
+    type: 'SyntenyTrack',
+    configuration: 'test_track',
+    displays: [{ type: 'LGVSyntenyDisplay' }],
+  }
   const session = Session.create({ configuration: {} }, { pluginManager })
-  const view = session.setView(
-    LinearGenomeModel.create({
-      type: 'LinearGenomeView',
-      tracks: [
-        {
-          type: 'SyntenyTrack',
-          configuration: 'test_track',
-          displays: [{ type: 'LGVSyntenyDisplay' }],
-        },
-      ],
-    }),
-  )
-  view.setWidth(800)
-  // The launch item anchors its first panel on the view's own assembly, so the
-  // view needs a region to name one.
-  view.setDisplayedRegions([
-    { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
-  ])
-  return view.tracks[0]!.displays[0]!
+  const panels =
+    neighbourAssembly === undefined
+      ? [
+          session.setView(
+            LinearGenomeModel.create({
+              type: 'LinearGenomeView',
+              tracks: [trackSnapshot],
+            }),
+          ),
+        ]
+      : [
+          ...session.setStack(
+            Stack.create({
+              type: 'TestPanelStack',
+              views: [
+                { type: 'LinearGenomeView', tracks: [trackSnapshot] },
+                { type: 'LinearGenomeView' },
+              ],
+            }),
+          ).views,
+        ]
+  // The launch item anchors its first panel on the view's own assembly, and the
+  // move item names the neighbour by its own, so both panels need a region.
+  const assemblies = ['volvox', neighbourAssembly]
+  for (const [i, panel] of panels.entries()) {
+    panel.setWidth(800)
+    panel.setDisplayedRegions([
+      { refName: 'ctgA', start: 0, end: 1000, assemblyName: assemblies[i]! },
+    ])
+  }
+  return panels[0]!.tracks[0]!.displays[0]!
 }
 
 /**

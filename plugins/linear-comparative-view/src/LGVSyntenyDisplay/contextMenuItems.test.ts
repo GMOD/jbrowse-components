@@ -8,14 +8,33 @@ function labels(display: ReturnType<typeof createDisplay>) {
     .map((i: unknown) => (i as { label?: string }).label)
 }
 
-function makeFeature(mateAssembly: string) {
+function makeFeature(mateAssembly: string, CIGAR?: string) {
   return new SimpleFeature({
     uniqueId: 'f1',
     refName: 'ctgA',
     start: 0,
     end: 100,
+    CIGAR,
     mate: { refName: 'ctgB', start: 0, end: 100, assemblyName: mateAssembly },
   })
+}
+
+// The block the right-click landed in, which the move maps across and the launch
+// clips to. Every case below opens the menu the same way, so a missing item is
+// about the gate under test rather than about a missing block.
+function rightClick(
+  display: ReturnType<typeof createDisplay>,
+  feature?: SimpleFeature,
+) {
+  display.openContextMenu({
+    coord: [1, 2],
+    featureId: 'f1',
+    block: { bpRange: [0, 1000], refName: 'ctgA' },
+  })
+  if (feature) {
+    display.setContextMenuFeature(feature)
+  }
+  return labels(display)
 }
 
 // The whole point of building these from the id: the feature behind a
@@ -63,4 +82,62 @@ test('a right-click on no feature offers no feature items', () => {
   const display = createDisplay()
   display.openContextMenu({ coord: [1, 2] })
   expect(labels(display)).toEqual([])
+})
+
+const MOVE = 'Move other panel to the matching region'
+const LAUNCH = 'Launch synteny view for this position'
+
+test('a panel whose neighbour is on the mate assembly can move it', () => {
+  const display = createDisplay({ neighbourAssembly: 'volvox_random' })
+  expect(rightClick(display, makeFeature('volvox_random', '100M'))).toContain(
+    MOVE,
+  )
+})
+
+// In a standalone linear view there is no neighbour to move, and launching a
+// synteny view is the whole answer.
+test('a standalone view offers the launch and no move', () => {
+  const labelled = rightClick(
+    createDisplay(),
+    makeFeature('volvox_random', '100M'),
+  )
+  expect(labelled).toContain(LAUNCH)
+  expect(labelled).not.toContain(MOVE)
+})
+
+// Without a CIGAR the mate position can only be interpolated across the block,
+// and this parks a panel flush against its neighbour — presenting the guess as
+// a correspondence. The launch still stands: its dialog pads the result and
+// shows what it resolved.
+test('a CIGAR-less block offers the launch and no move', () => {
+  const labelled = rightClick(
+    createDisplay({ neighbourAssembly: 'volvox_random' }),
+    makeFeature('volvox_random'),
+  )
+  expect(labelled).toContain(LAUNCH)
+  expect(labelled).not.toContain(MOVE)
+})
+
+test('a neighbour on some other assembly is not offered', () => {
+  expect(
+    rightClick(
+      createDisplay({ neighbourAssembly: 'volvox' }),
+      makeFeature('volvox_random', '100M'),
+    ),
+  ).not.toContain(MOVE)
+})
+
+// The move used to be nested inside the launch's gate, so it inherited a
+// condition it does not need. An all-vs-all track draws mates for PanSN samples
+// it does not declare in `assemblyNames` — the adapter's own docs say so — and
+// the launch is rightly hidden for those. But with a neighbouring panel already
+// open on that sample, moving it is perfectly well defined, and it was silently
+// unavailable.
+test('a mate outside the track assemblies can still move a panel already on it', () => {
+  const labelled = rightClick(
+    createDisplay({ neighbourAssembly: 'HG002#1' }),
+    makeFeature('HG002#1', '100M'),
+  )
+  expect(labelled).not.toContain(LAUNCH)
+  expect(labelled).toContain(MOVE)
 })

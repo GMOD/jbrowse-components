@@ -1,15 +1,11 @@
-import { lazy } from 'react'
-
 import {
   ConfigurationReference,
   getConf,
   makePin,
   setConf,
 } from '@jbrowse/core/configuration'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  copyFeatureInfo,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
@@ -17,7 +13,6 @@ import {
   getSortByMenuItem,
   linearAlignmentsDisplayStateModelFactory,
   pickColorOptions,
-  withContextMenuFeature,
 } from '@jbrowse/plugin-alignments'
 import {
   getCoarseBpPerPxThreshold,
@@ -25,29 +20,14 @@ import {
   resolveLodTier,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import SyncAltIcon from '@mui/icons-material/SyncAlt'
 
-import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
-import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
-import { getCigar, getMate } from '../syntenyMate.ts'
-import {
-  containingPanelStack,
-  matePanelIndexes,
-  moveMatePanels,
-} from './matePanelNavigation.ts'
+import { featureMenuItems } from './contextMenuItems.ts'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorBy } from '@jbrowse/plugin-alignments'
 import type { LodMode } from '@jbrowse/synteny-core'
-
-const LaunchSyntenyViewDialog = lazy(
-  () => import('../LaunchSyntenyView/LaunchSyntenyViewDialog.tsx'),
-)
 
 /**
  * #stateModel LGVSyntenyDisplay
@@ -127,8 +107,10 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
         /**
          * #getter
          * A row here is a PAF block, not a read — the group-label chips say
-         * "Show all features". Matches the `noun` the menu builders below are
-         * passed.
+         * "Show all features". The ONE place that word is chosen: the two menu
+         * builders below that take a `noun` read it from here rather than
+         * spelling it again, so the chips and the menus cannot end up naming the
+         * same row two different things.
          */
         get featureNoun() {
           return 'feature'
@@ -220,7 +202,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
         /**
          * #method
          */
-        contextMenuItems() {
+        contextMenuItems(): MenuItem[] {
           // The mismatch / interbase-indicator details come from the base
           // alignments display: this display renders those same layers off the
           // PAF cs/CIGAR (see its "Show..." menu), so a right-click on one has
@@ -228,148 +210,12 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           // indicator (which carries no feature) produced no menu at all. The
           // read-specific half of the base menu (mate, read/HP/RG filters, read
           // name + sequence copies) is what a PAF block has no answer for, and
-          // is replaced by the feature items below. `sort: false` because the
-          // curated "Sort by..." menu offers no position-anchored mode.
-          const items: MenuItem[] = getHitMenuItems(self, { sort: false })
-          // Keyed on the id, which the hit test carries, rather than on
-          // `contextMenuFeature`, which arrives an RPC later: a right-click on a
-          // CIGAR op otherwise opened a menu holding only its hit item, and the
-          // feature items appeared afterwards (or, on a whole-block re-read,
-          // long afterwards). What actually needs the feature resolves it in its
-          // own onClick — normally already in hand by then.
-          const featureId = self.contextMenuFeatureId
-          if (featureId !== undefined) {
-            const feature = self.contextMenuFeature
-            items.push(
-              {
-                label: 'Open feature details',
-                icon: MenuOpenIcon,
-                onClick: () => {
-                  withContextMenuFeature(self, featureId, feature, feat => {
-                    self.selectFeature(feat)
-                  })
-                },
-              },
-              {
-                label: 'Copy info to clipboard',
-                icon: ContentCopyIcon,
-                onClick: () => {
-                  withContextMenuFeature(self, featureId, feature, feat => {
-                    copyFeatureInfo(self, feat)
-                  })
-                },
-              },
-            )
-            // The one item that can't be offered from the id alone: whether a
-            // synteny view can open depends on the mate's assembly, which is
-            // per-feature (a one-vs-all mate can be a PanSN sample that is no
-            // declared assembly of the track). So it waits for the fetch rather
-            // than offering a view that would fail to open — and sits last, so
-            // arriving late appends to the menu instead of shifting the items
-            // already under the cursor.
-            // The anchor panel opens on the view's own assembly, which is what
-            // the features were fetched against — more dependable than the
-            // feature's own `assemblyName` field, which not every adapter sets.
-            const view = self.lgv
-            const anchorAssembly = view.assemblyNames[0]
-            const track = getContainingTrack(self)
-            if (
-              feature &&
-              anchorAssembly !== undefined &&
-              canLaunchSyntenyForMate(
-                getConf(track, 'assemblyNames'),
-                getMate(feature)?.assemblyName,
-              )
-            ) {
-              // The visible block the user right-clicked in, which the launch
-              // dialog offers to clip the synteny view to. Snapshotted here
-              // rather than read in the onClick because closeContextMenu nulls
-              // it first, and taken from the click rather than searched for by
-              // refName: a feature abutting a region boundary overlaps two
-              // visible blocks, and only the cursor says which one it was drawn
-              // in.
-              const block = self.contextMenuBlock
-              items.push({
-                label: 'Launch synteny view for this position',
-                icon: CompareArrowsIcon,
-                onClick: () => {
-                  getSession(self).queueDialog(handleClose => [
-                    LaunchSyntenyViewDialog,
-                    {
-                      region: block
-                        ? { start: block.bpRange[0], end: block.bpRange[1] }
-                        : undefined,
-                      trackId: getConf(track, 'trackId'),
-                      handleClose,
-                      session: getSession(self),
-                      anchorAssembly,
-                      // the anchor panel opens on this view's assembly, so it
-                      // can open on this view's tracks too — this chain track
-                      // excluded, since it becomes the ribbon band
-                      anchorTracks: anchorPanelTracks(view.tracks),
-                      // ...and so the launched view can take this one's place
-                      // rather than stacking below it, showing the same locus
-                      // twice
-                      sourceView: view,
-                      feature,
-                    },
-                  ])
-                },
-              })
-
-              // The in-place twin of the launch above: same alignment, same
-              // region of interest, but instead of building a new view it moves
-              // the panel next to this one to the region the alignment says
-              // corresponds. Only offered when this view IS a panel of a stack
-              // whose neighbour is already on the mate's assembly — in a
-              // standalone linear view there is nothing to move, and launching
-              // is the whole answer.
-              //
-              // AND ONLY WITH A CIGAR TO WALK. Without one, `resolvedMateSpan`
-              // interpolates across the block — which is the right answer for
-              // the LAUNCH above, whose dialog pads the result by a window size
-              // and shows what it resolved, but not for this: this navigates a
-              // neighbouring panel and parks it flush against this one, which
-              // presents a straight-line guess as a correspondence with nothing
-              // on screen to say so. A minimap2 PAF without `-c`, MashMap,
-              // MCScan and a PIF's coarse tier all carry no CIGAR, and on the
-              // coarse tier the skew is not even bounded by its 10 kb split
-              // threshold — smaller indels accumulate without triggering a
-              // split. The band's own right-click menu gates on the same thing
-              // via `featureData.hasCigar`.
-              const stack = containingPanelStack(view)
-              const indexes =
-                stack && getCigar(feature)
-                  ? matePanelIndexes({
-                      panelAssemblies: stack.views.map(v => v.assemblyNames[0]),
-                      anchorIndex: stack.views.indexOf(view),
-                      mateAssemblyName: getMate(feature)?.assemblyName,
-                    })
-                  : []
-              if (stack && block && indexes.length) {
-                items.push({
-                  label:
-                    indexes.length > 1
-                      ? 'Move other panels to the matching region'
-                      : 'Move other panel to the matching region',
-                  icon: SyncAltIcon,
-                  onClick: () => {
-                    moveMatePanels({
-                      stack,
-                      indexes,
-                      feature,
-                      region: {
-                        start: block.bpRange[0],
-                        end: block.bpRange[1],
-                      },
-                      session: getSession(self),
-                    })
-                  },
-                })
-              }
-            }
-          }
-          return items
+          // is replaced by the feature items. `sort: false` because the curated
+          // "Sort by..." menu offers no position-anchored mode.
+          return [
+            ...getHitMenuItems(self, { sort: false }),
+            ...featureMenuItems(self),
+          ]
         },
         /**
          * #method
@@ -407,7 +253,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             // largeFeaturesFirst layout flag, folded in as a peer radio because
             // it competes with a real sort for the same ordering.
             getSortByMenuItem(self, {
-              noun: 'feature',
+              noun: self.featureNoun,
               modes: ['position', 'length', 'strand'],
             }),
             ...getFiltersMenuItems(self),
@@ -416,7 +262,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
             // Same submenu the synteny view and dotplot show, from one source, so
             // the three surfaces can't word the same setting differently
             ...lodMenuItems(self),
-            getFeatureHeightMenuItem(self, 'feature'),
+            getFeatureHeightMenuItem(self, self.featureNoun),
           ] satisfies MenuItem[]
         },
       }))
