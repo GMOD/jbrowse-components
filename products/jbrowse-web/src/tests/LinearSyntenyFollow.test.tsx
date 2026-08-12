@@ -309,6 +309,123 @@ test('following an all-vs-all track walks the CIGAR rather than scaling the bloc
   }, timeout)
 }, 60000)
 
+// THREE ROWS, which is where the follow stops being one mapping and becomes a
+// chain: an alignment only says anything about the pair it is drawn between, so
+// a row two levels from the anchor is placed from a row that is itself being
+// placed. Every test above anchors a two-row view, where there is one level and
+// no chain at all.
+//
+// What these do NOT cover is the ORDER the levels are visited in. `followPairs`
+// sorts them outward from the anchor so one pass settles the stack, and a
+// follow visiting them in level order still converges — a pass later per level,
+// which waitFor cannot see and which a monotonic scroll probe cannot either
+// (a row placed from a stale neighbour still moves, just behind it). That
+// property is pinned where it can be measured, on `followDistance` in
+// followDirection.test.ts.
+//
+// volvox_all_vs_all holds all three pairs and its adapter indexes both sides of
+// each record, so one track serves both levels whichever way round the rows go.
+// The offsets make the three rows tell each other apart: volvox_del is 45141bp
+// against volvox's 50001 (28498M 4860D 16643M) and volvox_ins is 54801 against
+// the same 50001 (31198M 4800I 18803M), so a locus at 30000 on volvox_del is
+// 34860 on volvox and 39660 on volvox_ins — each step ~4.8kb, far larger than
+// any tolerance below.
+const DEL_LOCUS = 30000
+const VOLVOX_LOCUS = 34860
+const INS_LOCUS = 39660
+
+async function openThreeRowView() {
+  const { session } = getTestSession()
+  const view = session.addView('LinearSyntenyView', {
+    init: {
+      views: [
+        { assembly: 'volvox_ins' },
+        { assembly: 'volvox' },
+        { assembly: 'volvox_del' },
+      ],
+      tracks: [['volvox_all_vs_all'], ['volvox_all_vs_all']],
+    },
+  }) as unknown as SyntenyView
+  view.setWidth(800)
+  await waitFor(() => {
+    expect(view.initialized).toBe(true)
+  }, timeout)
+  await waitFor(() => {
+    for (const level of view.levels) {
+      expect(level.linearSyntenyDisplays[0]!.featureData).toBeDefined()
+    }
+  }, timeout)
+  return view
+}
+
+// Anchoring the BOTTOM row is the longest chain a three-row stack has: level 1
+// places the middle row from the anchor, level 0 then places the top row from
+// the middle. The tight-scroll block at the end is the same case under the
+// per-frame pass rather than the settled one — a chain that only the exact pass
+// carries would leave the far row still through a drag, which is the complaint
+// the frame pass exists to answer, one row further out.
+test('anchoring the bottom row carries the follow up two levels', async () => {
+  const view = await openThreeRowView()
+  const [ins, volvox, del] = view.views
+  view.setRowSyncMode('follow')
+  view.setFollowAnchorIndex(2)
+
+  await del!.navToLocString(
+    `ctgA:${DEL_LOCUS}..${DEL_LOCUS + 1000}`,
+    'volvox_del',
+  )
+
+  await waitFor(() => {
+    const mid = windowOf(volvox!)
+    expect(mid.refName).toBe('ctgA')
+    expect(mid.start).toBeGreaterThan(VOLVOX_LOCUS - 500)
+    expect(mid.end).toBeLessThan(VOLVOX_LOCUS + 1500)
+    // the row two levels out, which is the whole point of the case
+    const top = windowOf(ins!)
+    expect(top.start).toBeGreaterThan(INS_LOCUS - 500)
+    expect(top.end).toBeLessThan(INS_LOCUS + 1500)
+  }, timeout)
+
+  // no awaiting between the steps, so nothing debounced can have run and every
+  // position here comes from the per-frame pass
+  const top: number[] = [ins!.offsetPx]
+  const mid: number[] = [volvox!.offsetPx]
+  for (let i = 0; i < 5; i++) {
+    del!.horizontalScroll(40)
+    top.push(ins!.offsetPx)
+    mid.push(volvox!.offsetPx)
+  }
+  for (let i = 1; i < top.length; i++) {
+    expect(mid[i]!).toBeGreaterThan(mid[i - 1]!)
+    expect(top[i]!).toBeGreaterThan(top[i - 1]!)
+  }
+}, 60000)
+
+// Anchoring the middle row runs one level in each direction at once: level 0
+// maps the anchor back onto the feature axis to place the top row, level 1 maps
+// it onto the mate axis to place the bottom one. Nothing else exercises both
+// values of `toMate` against the same anchor.
+test('anchoring the middle row drives both neighbours outward', async () => {
+  const view = await openThreeRowView()
+  const [ins, volvox, del] = view.views
+  view.setRowSyncMode('follow')
+  view.setFollowAnchorIndex(1)
+
+  await volvox!.navToLocString(
+    `ctgA:${VOLVOX_LOCUS}..${VOLVOX_LOCUS + 1000}`,
+    'volvox',
+  )
+
+  await waitFor(() => {
+    const top = windowOf(ins!)
+    expect(top.start).toBeGreaterThan(INS_LOCUS - 500)
+    expect(top.end).toBeLessThan(INS_LOCUS + 1500)
+    const bottom = windowOf(del!)
+    expect(bottom.start).toBeGreaterThan(DEL_LOCUS - 500)
+    expect(bottom.end).toBeLessThan(DEL_LOCUS + 1500)
+  }, timeout)
+}, 60000)
+
 test('the two row-sync modes are mutually exclusive', async () => {
   const view = await openSyntenyView()
   const model = view as unknown as {
