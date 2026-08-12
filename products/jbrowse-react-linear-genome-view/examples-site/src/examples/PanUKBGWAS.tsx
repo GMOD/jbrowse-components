@@ -202,17 +202,15 @@ export default function PanUKBGWAS() {
               </option>
             ))}
           </select>
-          {phenotypes ? (
-            <div style={{ fontSize: '0.8em', color: '#666' }}>
-              {query
+          {/* GrayText, not a hex grey: a system color follows the host page's
+              light/dark scheme, and #666 is unreadable on a dark one */}
+          <div style={{ fontSize: '0.8em', color: 'GrayText' }}>
+            {!phenotypes
+              ? 'Loading phenotype catalog…'
+              : query
                 ? `${results.length}${results.length === 100 ? '+' : ''} match`
                 : `${phenotypes.length.toLocaleString()} phenotypes`}
-            </div>
-          ) : (
-            <div style={{ fontSize: '0.8em', color: '#666' }}>
-              Loading phenotype catalog…
-            </div>
-          )}
+          </div>
         </div>
         <label>
           Population:{' '}

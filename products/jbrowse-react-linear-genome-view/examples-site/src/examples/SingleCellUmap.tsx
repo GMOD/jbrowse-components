@@ -85,7 +85,6 @@ function UmapScatter({
   selected: string[]
   onPick: (cellType: string) => void
 }) {
-  const canvasRef = useRef<HTMLDivElement>(null)
   const ref = useRef<HTMLCanvasElement>(null)
 
   // an imperative canvas repaint whenever the inputs change
@@ -129,7 +128,7 @@ function UmapScatter({
   }, [cells, expr, gene, selected])
 
   return (
-    <div ref={canvasRef}>
+    <div>
       <canvas
         ref={ref}
         width={WIDTH * 2}
@@ -177,8 +176,10 @@ function UmapScatter({
               gap: 5,
               padding: '2px 7px',
               cursor: 'pointer',
+              // CanvasText, not a hex grey: the selected outline has to stay
+              // visible whichever scheme the host page is in
               border: selected.includes(type.name)
-                ? '2px solid #333'
+                ? '2px solid CanvasText'
                 : '2px solid transparent',
               background: 'none',
               font: 'inherit',
