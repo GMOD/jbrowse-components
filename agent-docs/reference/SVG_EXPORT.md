@@ -36,7 +36,14 @@ description: SVG export pipeline covering the renderSvg shape, the svgReady/sett
   `<rect>`/`<path>`/`<line>` is a red flag, with three permitted exceptions
   (trivial chrome, bezier-arc overlays, shared React-SVG overlays).
 - **Clip-path ids must be scoped by the owning model's `.id`.** SVG ids are
-  document-global; a duplicate renders the second group unclipped.
+  document-global; a duplicate renders the second group unclipped. They must
+  also be **stable** — the same content exports to the same bytes, or diffing
+  two saved files shows changes that aren't real.
+- **`renderSvg` is optional, and a display without one is skipped, not called.**
+  Partition before rendering and pass the skipped tracks to
+  `notifySkippedSvgTracks` (`@jbrowse/core/svg/trackNames`). Calling it anyway
+  is a `TypeError` that fails the whole export, which is the opposite of what
+  making it optional was for.
 
 ## Detail
 
@@ -565,8 +572,24 @@ duplicate ids as a regression guard; prefer `SvgClipRect` over hand-rolled
 
 The one sanctioned exception is `SvgCanvas.clip()`
 (`packages/core/src/util/SvgCanvas.ts`), which mints ids from a **module-level
-counter** (`svgcanvas-clip-${clipIdCounter++}`). It's safe — a process-global
-monotonic counter is unique across every canvas and export in the document — and
-it has no model to scope to (it's the Canvas2D-shim path, driven by imperative
-`ctx.clip()` calls with no MST node in scope). Don't "fix" it to use `.id`; do
-keep new *component*-level clip ids on `.id`.
+counter** (`svgcanvas-clip-${clipIdCounter++}`). It has no model to scope to —
+it's the Canvas2D-shim path, driven by imperative `ctx.clip()` calls with no MST
+node in scope. Don't "fix" it to use `.id`; do keep new *component*-level clip
+ids on `.id`.
+
+Module-level buys uniqueness, which is only half of what an id has to be. The
+other half is the one `svgNodeId` exists for — **the same content exports to the
+same bytes** — and a counter that runs for the life of the process does not have
+it: each export was numbered from wherever the last one stopped. Diffing two
+saved SVGs of an unchanged view showed changes that weren't real, and `jest -t`
+on any export test but the first failed its checked-in snapshot with a diff that
+was nothing but renumbering.
+
+So it is reset per **document**, by `resetSvgClipIds()` in `wrapSvgExport` —
+which is the only place that can do it. `wrapSvgExport` is the single funnel
+every view's `renderToSvg` ends in, and the `renderToStaticMarkup` it wraps is
+synchronous, so a whole document's ids are minted with no other export able to
+interleave. Anything resetting on a boundary an `await` can cross would let two
+exports share a numbering run and collide. `wrapSvgExport.test.tsx` pins both
+halves: export-after-export equality, and distinct ids for the layers of one
+document.
