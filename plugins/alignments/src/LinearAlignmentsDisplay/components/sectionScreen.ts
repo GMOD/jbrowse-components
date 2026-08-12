@@ -77,6 +77,20 @@ export function bandOnScreen(top: number, height: number, m: ScrollModel) {
   return top + height >= 0 && top <= m.canvasHeight
 }
 
+// Whether a content-space tick span — a `YScaleTicks`' `yTop`/`yBottom` — is on
+// screen. The composition of the two above, named because the insert-size axis
+// culls with it exactly as the coverage axis culls with `bandOnScreen`, and
+// because which span to ask about is the part worth writing down: the ticks,
+// not the band. `computeInsertSizeTicks` returns the arc band already inset by
+// `arcAvailH`, in the same absolute content Y a band top lives in, so the ticks
+// bound their own ink more tightly than the band they were derived from.
+export function tickSpanOnScreen(
+  span: { yTop: number; yBottom: number },
+  m: ScrollModel,
+) {
+  return bandOnScreen(bandScreenTop(span.yTop, m), span.yBottom - span.yTop, m)
+}
+
 // Screen Y of a stacked section's pileup band bottom, clamped to the canvas.
 // Collapsed groups have pileupHeight 0, so this collapses to the band top and
 // nothing in the band stays visible. Shared by the label / highlight / bezier

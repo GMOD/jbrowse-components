@@ -3,6 +3,7 @@ import {
   bandScreenTop,
   contentScreenY,
   sectionBandBottom,
+  tickSpanOnScreen,
 } from './sectionScreen.ts'
 
 const ungrouped = { isGrouped: false, scrollTop: 40, canvasHeight: 600 }
@@ -45,5 +46,21 @@ describe('bandOnScreen', () => {
   it('is false when the band is fully above or below the canvas', () => {
     expect(bandOnScreen(-60, 50, grouped)).toBe(false) // bottom at -10
     expect(bandOnScreen(601, 20, grouped)).toBe(false)
+  })
+})
+
+describe('tickSpanOnScreen', () => {
+  it('projects through the sticky-capable tier, so the two modes differ', () => {
+    // the same content-space span: sticky when ungrouped, scrolled up by 40 when
+    // grouped — which is enough to carry it off the top
+    const span = { yTop: 10, yBottom: 30 }
+    expect(tickSpanOnScreen(span, ungrouped)).toBe(true)
+    expect(tickSpanOnScreen(span, grouped)).toBe(false)
+  })
+  it('keeps a section straddling an edge and drops one wholly past it', () => {
+    expect(tickSpanOnScreen({ yTop: 50, yBottom: 80 }, grouped)).toBe(true)
+    expect(tickSpanOnScreen({ yTop: 600, yBottom: 700 }, grouped)).toBe(true)
+    // stacked far below the fold: culled until the user scrolls to it
+    expect(tickSpanOnScreen({ yTop: 1000, yBottom: 1100 }, grouped)).toBe(false)
   })
 })

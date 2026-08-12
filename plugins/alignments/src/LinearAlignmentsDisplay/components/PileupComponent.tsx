@@ -33,6 +33,7 @@ import {
   bandScreenTop,
   contentScreenY,
   sectionKey,
+  tickSpanOnScreen,
 } from './sectionScreen.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
@@ -549,10 +550,26 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { insertSizeTickSections, readConnectionsDown, height } = model
+  const {
+    insertSizeTickSections,
+    readConnectionsDown,
+    height,
+    scrollModel: scroll,
+  } = model
   if (insertSizeTickSections.length === 0) {
     return null
   }
+  // Cull the off-screen bands, the same duty `GroupedCoverageAxis` does above:
+  // a grouped read cloud scrolls its sections, so most of them are outside the
+  // canvas on any frame and their ticks are reconciliation spent on ink the
+  // `<svg>` root clips anyway.
+  //
+  // Here and not inside `InsertSizeAxisStack`, because the stack is shared with
+  // `renderSvg` and an export has no viewport to be off-screen of — every band
+  // must reach the figure.
+  const visible = insertSizeTickSections.filter(({ ticks }) =>
+    tickSpanOnScreen(ticks, scroll),
+  )
   return (
     <svg
       style={{
@@ -567,7 +584,7 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
       }}
     >
       <InsertSizeAxisStack
-        sections={insertSizeTickSections}
+        sections={visible}
         down={readConnectionsDown}
         // The arc band is a sticky-capable band top like coverage — same tier,
         // same projection, rather than a second inline
