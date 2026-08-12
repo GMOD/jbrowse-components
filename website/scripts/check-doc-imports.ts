@@ -784,6 +784,11 @@ const problems = [
 // one in a generated file's source citing "The three readiness axes" against a
 // heading that says two. `.py` is here because a pipeline script cites the
 // graph reference; the parse is a substring test, so the language is irrelevant.
+// BUILD_DIRS, not just the `/esm/`+`/dist/` test the narrow version used: with
+// `.tsx?` only, a `node_modules` bundle could never match, so widening the
+// extensions is what made the directory reachable. A storybook cache under
+// products/ ships a bundled copy of a plugin's source comments, citation and
+// all — reported against a `CLAUDE.md` that resolves to the wrong package.
 const isSource = (name: string) => /\.(tsx?|jsx?|mjs|cjs|py)$/.test(name)
 const isBuildOutput = (file: string) =>
   file.includes('/esm/') || file.includes('/dist/')
@@ -795,7 +800,7 @@ for (const base of [
   'scripts',
   'website/scripts',
 ]) {
-  for (const file of walkFiles(join(repoRoot, base), isSource)) {
+  for (const file of walkFiles(join(repoRoot, base), isSource, BUILD_DIRS)) {
     if (isBuildOutput(file)) {
       continue
     }
