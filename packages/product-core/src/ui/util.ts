@@ -27,9 +27,11 @@ export interface AboutPanelProps {
 // below, which then needs no cast on the Core-customizeAbout result.
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
-    // accumulates an array of panels — every callback appends its own component
-    // and returns the array, so panels from multiple plugins compose instead of
-    // clobbering one another. Each renders its own BaseCard chrome
+    // accumulates an array of panels, so panels from multiple plugins compose
+    // instead of clobbering one another. The array-valued args is what makes
+    // contributeToExtensionPoint the registration method: a plugin returns its
+    // own component and never sees the array. Each renders its own BaseCard
+    // chrome
     'Core-extraAboutPanel': {
       args: ComponentType<AboutPanelProps>[]
       result: ComponentType<AboutPanelProps>[]
