@@ -2,6 +2,7 @@ import {
   arcAnchorY,
   arcAvailH,
   arcMarkY,
+  arcYFraction,
   arcYOffsetPx,
 } from '../features/arcs/arcYScale.ts'
 
@@ -37,6 +38,30 @@ function logTickValues(domain: number, maxTicks: number) {
   }
   if (decades.at(-1) !== domain) {
     decades.push(domain)
+    // The appended max lands wherever the data put it, which is often a hair
+    // above the decade below it — and on a LOG axis "a hair above" is a hair
+    // apart. `arcsYDomainBp` is a real maximum |TLEN|, so any library topping
+    // out just past a power of ten hits this: at domain 1005 in a 160px band the
+    // 1000 and 1005 ticks came out 0.1px apart, printing "1kb" over "1.0kb"; at
+    // 10500 in a 200px band, 1.1px apart; at 12000, 3.9px.
+    //
+    // The thinning below cannot reach it — it fires only when there are MORE
+    // decades than slots, and it keeps the first and last, which are the two in
+    // question here. So the crowded decade is dropped up front, on the same
+    // budget the caller sized `maxTicks` with: one tick per `1/maxTicks` of the
+    // axis, which is where its `availH / 30` came from. The MAX is the one kept
+    // — it is the top of the axis and the number the domain is.
+    const crowded = decades.at(-2)
+    if (
+      decades.length > 2 &&
+      crowded !== undefined &&
+      // `arcYFraction`, not a second spelling of log2/log2 beside it: this
+      // decides a tick's fate on where that tick would LAND, so it has to be
+      // the function that lands it.
+      arcYFraction(crowded, domain, true) > 1 - 1 / maxTicks
+    ) {
+      decades.splice(-2, 1)
+    }
   }
   if (decades.length <= maxTicks) {
     return decades
