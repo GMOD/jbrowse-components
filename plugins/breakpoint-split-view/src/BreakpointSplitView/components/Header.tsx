@@ -1,5 +1,5 @@
+import { useSearchBoxPrefs } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -47,19 +47,8 @@ const Header = observer(function Header({
 }) {
   const { classes } = useStyles()
   const { views } = model
-  // Persist search-box visibility/orientation per regime (few vs many rows)
-  // rather than one global key, so the "compact default" heuristic isn't
-  // permanently overridden by a choice made in a differently-sized view.
-  const compact = views.length <= 3
-  const regime = compact ? 'compact' : 'large'
-  const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
-    `bsv-showSearchBoxes-${regime}`,
-    compact,
-  )
-  const [sideBySide, setSideBySide] = useLocalStorage(
-    `bsv-sideBySide-${regime}`,
-    compact,
-  )
+  const { showSearchBoxes, setShowSearchBoxes, sideBySide, setSideBySide } =
+    useSearchBoxPrefs('bsv', views.length)
   return (
     <div className={classes.header}>
       <div className={classes.buttons}>

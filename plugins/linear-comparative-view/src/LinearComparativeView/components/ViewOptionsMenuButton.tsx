@@ -4,7 +4,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observer } from 'mobx-react'
 
 import type { LinearComparativeViewModel } from '../model.ts'
-import type { SearchBoxPrefs } from './useSearchBoxPrefs.ts'
+import type { SearchBoxPrefs } from '@jbrowse/core/ui'
 
 const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model,

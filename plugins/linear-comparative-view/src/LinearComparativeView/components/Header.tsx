@@ -1,3 +1,4 @@
+import { useSearchBoxPrefs } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -8,7 +9,6 @@ import SyntenyHeaderControls from './SyntenyHeaderControls.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
 import TrackSelectorMenuButton from './TrackSelectorMenuButton.tsx'
 import ViewOptionsMenuButton from './ViewOptionsMenuButton.tsx'
-import { useSearchBoxPrefs } from './useSearchBoxPrefs.ts'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 
@@ -27,7 +27,7 @@ const Header = observer(function Header({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const prefs = useSearchBoxPrefs(model.views.length)
+  const prefs = useSearchBoxPrefs('lcv', model.views.length)
   const syntenyModel = asSyntenyModel(model)
 
   return (

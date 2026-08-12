@@ -42,7 +42,7 @@ The configuration slots for this model are documented on its
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-retrieverefreshtoken">**retrieveRefreshToken**</span><br><code>() =&gt; string &#124; null</code> |  |
+| <span id="method-retrieverefreshtoken">**retrieveRefreshToken**</span><br><code>() =&gt; string &#124; undefined</code> |  |
 
 ## Actions
 

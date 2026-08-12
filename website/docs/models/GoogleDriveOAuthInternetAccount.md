@@ -49,7 +49,7 @@ the whole surface.
 | --- | --- | --- |
 | <span id="method-getfetcher">**getFetcher**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(location?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, in…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(location?: UriLocation &#124; undefined) =&gt; (input: RequestInfo, init?: RequestInitWithMetadata &#124; undefined) =&gt; Promise&lt;Response&gt;</code></pre></dialog></span> |  | GoogleDriveOAuthInternetAccount |
 | <span id="method-openlocation">**openLocation**</span><br><code>(location: UriLocation) =&gt; GoogleDriveFile</code> |  | GoogleDriveOAuthInternetAccount |
-| <span id="method-retrieverefreshtoken">**retrieveRefreshToken**</span><br><code>() =&gt; string &#124; null</code> |  | [OAuthInternetAccount](../oauthinternetaccount#method-retrieverefreshtoken) |
+| <span id="method-retrieverefreshtoken">**retrieveRefreshToken**</span><br><code>() =&gt; string &#124; undefined</code> |  | [OAuthInternetAccount](../oauthinternetaccount#method-retrieverefreshtoken) |
 
 ## Actions
 
