@@ -39,6 +39,38 @@ test('loads the list and marks the attempt, then clears it on success', async ()
   expect(localStorage.getItem(LOADING_MARKER)).toBe('')
 })
 
+test('a disabled entry is kept but not loaded', async () => {
+  const g = await importFresh('/', '')
+  const off = {
+    name: 'Off',
+    umdUrl: 'https://example.com/off.js',
+    disabled: true,
+  }
+  mockInvoke.mockResolvedValue([...plugins, off])
+  // the dialog edits the whole list, so it has to see the entry it is going to
+  // switch back on
+  expect(await g.readGlobalPlugins()).toEqual([...plugins, off])
+  expect(await g.getGlobalPlugins()).toEqual(plugins)
+})
+
+test('a list with everything switched off arms nothing', async () => {
+  const g = await importFresh('/', '')
+  mockInvoke.mockResolvedValue([{ ...plugins[0], disabled: true }])
+  expect(await g.getGlobalPlugins()).toEqual([])
+  // nothing ran, so a crash after this point is not theirs to answer for
+  expect(localStorage.getItem(LOADING_MARKER)).toBe('')
+})
+
+test('enabling drops the flag rather than writing false', async () => {
+  const g = await importFresh('/', '')
+  const entry = { name: 'P', umdUrl: 'https://example.com/p.js' }
+  const off = g.withDisabled(entry, true)
+  expect(off).toEqual({ ...entry, disabled: true })
+  // so a list toggled twice is the same file as one never touched
+  expect(g.withDisabled(off, false)).toEqual(entry)
+  expect('disabled' in g.withDisabled(off, false)).toBe(false)
+})
+
 test('an empty list arms nothing, so an unrelated crash is not blamed on it', async () => {
   const g = await importFresh('/', '')
   mockInvoke.mockResolvedValue([])

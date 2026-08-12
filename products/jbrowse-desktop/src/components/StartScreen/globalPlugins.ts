@@ -41,24 +41,52 @@ export function globalPluginSafeMode() {
 }
 
 /**
- * The user's global plugin list, or a failure to read it. Editing surfaces use
- * this rather than {@link getGlobalPlugins}: a read that failed must not look
- * like an empty list to something about to write the list back.
+ * An entry in the user's global plugin list: a plugin definition, plus whether
+ * they have switched it off.
+ *
+ * The flag rides on the definition rather than wrapping it, so the file stays
+ * the list of definitions it has always been and an entry written by an older
+ * build needs no migration — no flag means enabled. Everything downstream
+ * (`samePlugin`, `dedupePlugins`, PluginLoader) ignores fields it doesn't know,
+ * and only a disabled entry carries this one at all.
  */
-export async function readGlobalPlugins() {
-  return (await invokeIpc('getGlobalPlugins')) as PluginDefinition[]
+export type GlobalPluginEntry = PluginDefinition & { disabled?: boolean }
+
+/**
+ * Switch an entry off, or back on. Enabling drops the key rather than writing
+ * `false`, so an untouched list and one that has been toggled twice are the same
+ * file.
+ */
+export function withDisabled(entry: GlobalPluginEntry, disabled: boolean) {
+  const next = { ...entry }
+  if (disabled) {
+    next.disabled = true
+  } else {
+    delete next.disabled
+  }
+  return next
 }
 
 /**
- * The global plugins to load into a plugin manager: none in safe mode, and none
- * when the list can't be read — an unreadable or corrupt globalPlugins.json
- * must not take the whole session down with it.
+ * The user's global plugin list, or a failure to read it — every entry,
+ * including the disabled ones, since this is what the dialog edits. Editing
+ * surfaces use this rather than {@link getGlobalPlugins}: a read that failed
+ * must not look like an empty list to something about to write the list back.
+ */
+export async function readGlobalPlugins() {
+  return (await invokeIpc('getGlobalPlugins')) as GlobalPluginEntry[]
+}
+
+/**
+ * The global plugins to load into a plugin manager: the enabled ones, none in
+ * safe mode, and none when the list can't be read — an unreadable or corrupt
+ * globalPlugins.json must not take the whole session down with it.
  */
 export async function getGlobalPlugins() {
-  let plugins: PluginDefinition[] = []
+  let plugins: GlobalPluginEntry[] = []
   if (!safeModeReason) {
     try {
-      plugins = await readGlobalPlugins()
+      plugins = (await readGlobalPlugins()).filter(p => !p.disabled)
     } catch (e) {
       console.error(e)
     }
@@ -67,7 +95,9 @@ export async function getGlobalPlugins() {
     // global plugin was still told, after any hard crash during session load,
     // that "global plugins were disabled because the last launch did not finish
     // loading them" — and put into a safe mode that skips an empty list and so
-    // changes nothing about the crash they are about to hit again.
+    // changes nothing about the crash they are about to hit again. A list whose
+    // entries are all switched off counts as empty here for the same reason:
+    // none of them ran.
     if (plugins.length > 0) {
       localStorageSetItem(LOADING_MARKER, '1')
     }
@@ -87,7 +117,7 @@ export function globalPluginsGeneration() {
   return generation
 }
 
-export async function setGlobalPlugins(plugins: PluginDefinition[]) {
+export async function setGlobalPlugins(plugins: GlobalPluginEntry[]) {
   await invokeIpc('setGlobalPlugins', plugins)
   generation++
 }

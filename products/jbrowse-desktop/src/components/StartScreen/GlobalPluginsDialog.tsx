@@ -20,6 +20,7 @@ import {
   InputAdornment,
   List,
   ListItem,
+  Switch,
   TextField,
   Tooltip,
   Typography,
@@ -28,6 +29,7 @@ import {
 import packageJSON from '../../../package.json' with { type: 'json' }
 import { useGlobalPluginsState } from './useGlobalPluginsState.ts'
 
+import type { GlobalPluginEntry } from './globalPlugins.ts'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 const useStyles = makeStyles()({
@@ -48,14 +50,20 @@ function InstalledGlobalPlugins({
   plugins,
   filter,
   onRemove,
+  onSetDisabled,
 }: {
-  plugins: PluginDefinition[]
+  plugins: GlobalPluginEntry[]
   filter: string
   onRemove: (index: number) => void
+  onSetDisabled: (index: number, disabled: boolean) => void
 }) {
   const { classes } = useStyles()
   const matching = plugins
-    .map((plugin, index) => ({ index, label: pluginLabel(plugin) }))
+    .map((plugin, index) => ({
+      index,
+      label: pluginLabel(plugin),
+      disabled: Boolean(plugin.disabled),
+    }))
     .filter(({ label }) => label.toLowerCase().includes(filter.toLowerCase()))
 
   return (
@@ -66,10 +74,27 @@ function InstalledGlobalPlugins({
         <Typography>No installed plugins match the filter</Typography>
       ) : (
         <List dense>
-          {matching.map(({ index, label }) => (
-            // keyed by position, which is also what remove() addresses: the
+          {matching.map(({ index, label, disabled }) => (
+            // keyed by position, which is also what the callbacks address: the
             // stored list is not deduped, so two entries can share a label
             <ListItem key={index}>
+              <Tooltip
+                title={
+                  disabled
+                    ? 'Load this plugin again'
+                    : 'Stop loading this plugin, without removing it'
+                }
+              >
+                <Switch
+                  size="small"
+                  edge="start"
+                  checked={!disabled}
+                  onChange={event => {
+                    onSetDisabled(index, !event.target.checked)
+                  }}
+                  slotProps={{ input: { 'aria-label': `Enable ${label}` } }}
+                />
+              </Tooltip>
               <Tooltip title="Remove global plugin">
                 <IconButton
                   onClick={() => {
@@ -79,7 +104,10 @@ function InstalledGlobalPlugins({
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>
-              <Typography>{label}</Typography>
+              <Typography color={disabled ? 'textDisabled' : undefined}>
+                {label}
+                {disabled ? ' — disabled' : ''}
+              </Typography>
             </ListItem>
           ))}
         </List>
@@ -144,7 +172,7 @@ export default function GlobalPluginsDialog({
   const { classes } = useStyles()
   const [filter, setFilter] = useState('')
   const [showCustomDialog, setShowCustomDialog] = useState(false)
-  const { plugins, loadError, saveError, add, remove, removeAll } =
+  const { plugins, loadError, saveError, add, remove, removeAll, setDisabled } =
     useGlobalPluginsState()
 
   return (
@@ -160,9 +188,11 @@ export default function GlobalPluginsDialog({
       >
         <DialogContent>
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            These plugins load automatically in every session. A plugin that
-            crashes on load can be removed here, or skipped entirely with
-            &quot;Reload without global plugins&quot; in the start screen menu.
+            These plugins load automatically in every session. One that crashes
+            on load can be switched off here — which keeps it installed, so it
+            can be switched back on — or removed outright; and the whole list
+            can be skipped for one launch with &quot;Reload without global
+            plugins&quot; in the start screen menu.
           </Typography>
           {loadError ? <ErrorMessage error={loadError} /> : null}
           {saveError ? <ErrorMessage error={saveError} /> : null}
@@ -239,6 +269,7 @@ export default function GlobalPluginsDialog({
                   plugins={plugins}
                   filter={filter}
                   onRemove={remove}
+                  onSetDisabled={setDisabled}
                 />
               </Accordion>
               <Accordion defaultExpanded>

@@ -110,6 +110,31 @@ test('two edits in a row compose, rather than the second dropping the first', as
   expect(result.current.plugins).toEqual([...existing, added, alsoAdded])
 })
 
+test('switching one off keeps its entry, so it can be switched back on', async () => {
+  mockInvoke.mockResolvedValue(existing)
+  const useGlobalPluginsState = await importHook()
+  const { result } = renderHook(() => useGlobalPluginsState())
+  await waitFor(() => {
+    expect(result.current.plugins).toEqual(existing)
+  })
+
+  act(() => {
+    result.current.setDisabled(0, true)
+  })
+  await waitFor(() => {
+    expect(mockInvoke).toHaveBeenLastCalledWith('setGlobalPlugins', [
+      { ...existing[0], disabled: true },
+    ])
+  })
+
+  act(() => {
+    result.current.setDisabled(0, false)
+  })
+  await waitFor(() => {
+    expect(mockInvoke).toHaveBeenLastCalledWith('setGlobalPlugins', existing)
+  })
+})
+
 test('a remove addresses the list on screen, not the one before the last edit', async () => {
   mockInvoke.mockResolvedValue(existing)
   const useGlobalPluginsState = await importHook()

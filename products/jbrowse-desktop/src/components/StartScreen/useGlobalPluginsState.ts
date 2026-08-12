@@ -2,8 +2,13 @@ import { useRef, useState } from 'react'
 
 import { useFetch } from '@jbrowse/core/util/useFetch'
 
-import { readGlobalPlugins, setGlobalPlugins } from './globalPlugins.ts'
+import {
+  readGlobalPlugins,
+  setGlobalPlugins,
+  withDisabled,
+} from './globalPlugins.ts'
 
+import type { GlobalPluginEntry } from './globalPlugins.ts'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 /**
@@ -25,7 +30,7 @@ export function useGlobalPluginsState() {
   // clicks in a row both composed onto the list from before the first — the
   // second install overwrote the first, and a `remove` resolved a position
   // against a list one edit stale and deleted the wrong plugin.
-  const [edited, setEdited] = useState<PluginDefinition[]>()
+  const [edited, setEdited] = useState<GlobalPluginEntry[]>()
   const [saveError, setSaveError] = useState<unknown>()
   const plugins = edited ?? data
   // Writes are chained for the same reason they are optimistic: two writeFile
@@ -35,7 +40,7 @@ export function useGlobalPluginsState() {
 
   // never rejects: a write that failed is reported through saveError, and the
   // list goes back to whatever is actually on disk
-  function save(next: PluginDefinition[]) {
+  function save(next: GlobalPluginEntry[]) {
     setEdited(next)
     setSaveError(undefined)
     writeRef.current = (writeRef.current ?? Promise.resolve())
@@ -50,7 +55,7 @@ export function useGlobalPluginsState() {
       })
   }
 
-  function edit(update: (prev: PluginDefinition[]) => PluginDefinition[]) {
+  function edit(update: (prev: GlobalPluginEntry[]) => GlobalPluginEntry[]) {
     if (plugins) {
       save(update(plugins))
     }
@@ -65,6 +70,15 @@ export function useGlobalPluginsState() {
     },
     remove: (index: number) => {
       edit(prev => prev.filter((_, i) => i !== index))
+    },
+    // Switching one off keeps its entry, which is the difference from remove:
+    // the user gets it back — same url, same pinned version, same integrity
+    // hash — without going to find it in the store again. That is what makes
+    // bisecting a list of four to find the one that crashes practical.
+    setDisabled: (index: number, disabled: boolean) => {
+      edit(prev =>
+        prev.map((p, i) => (i === index ? withDisabled(p, disabled) : p)),
+      )
     },
     // Unguarded, unlike the two above: this is also the way out of a
     // globalPlugins.json that cannot be read at all, where there is no list to
