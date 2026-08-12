@@ -3011,5 +3011,19 @@
     "note": "",
     "reviewedAt": "2026-08-11T15:40:52.891Z",
     "hash": "d5a9fc1bbc03db5a9032c57315fbac8c9bdef8bd"
+  },
+  "hg002_haplotypes_wholegenome": {
+    "name": "hg002_haplotypes_wholegenome",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-12T11:45:57.522Z",
+    "hash": "50a618cdce3508b40aff7c04ad88587aa212420d"
+  },
+  "hg002_haplotypes_import_form": {
+    "name": "hg002_haplotypes_import_form",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-12T11:45:59.363Z",
+    "hash": "8f918d11f577c6d2e50af0b563df0a5579d09330"
   }
 }
