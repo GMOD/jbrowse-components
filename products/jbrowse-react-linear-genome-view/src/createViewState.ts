@@ -1,3 +1,4 @@
+import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { assembleLocString } from '@jbrowse/core/util'
 import {
   normalizeAdapterSnapshots,
@@ -133,10 +134,16 @@ export default function createViewState(opts: ViewStateOptions) {
     {
       config: {
         configuration,
-        // the assembly too, not only the tracks: its sequence adapter is the
+        // The assembly too, not only the tracks: its sequence adapter is the
         // same shape, and a host whose genome is a file on disk rather than a
-        // hub — a non-model organism, an in-house build — has nowhere to put it
-        assembly: local(assembly),
+        // hub — a non-model organism, an in-house build — has nowhere to put it.
+        //
+        // Its own shorthand is expanded first, and by a different door than an
+        // adapter's: `{ name, uri: 'genome.fa.gz' }` becomes a sequence adapter
+        // inside the *assembly* config schema, so until that has run the only
+        // `uri` here is on the assembly itself — which is not a location node
+        // and must not be rewritten as one.
+        assembly: local(expandAssemblyShorthand(assembly, pluginManager)),
         tracks: tracks?.map(local),
         internetAccounts,
         aggregateTextSearchAdapters,

@@ -133,6 +133,36 @@ test('localFiles reach the built config, index sibling and all', () => {
 // on disk. The assembly's sequence adapter is the same shape as a track's, so
 // it gets the same substitution — without it, `localFiles` can only decorate a
 // genome someone else is already hosting.
+// ...including through the flat `{ name, uri }` shorthand, which is the form
+// every host's docs show and the only one a non-TypeScript host writes. It
+// expands inside the *assembly* config schema rather than through an adapter
+// type, so a substitution that only knew about adapters ran too early and left
+// the sequence pointing at a relative URL — which 404s against the host page.
+test('an assembly can come from local files through the flat shorthand', () => {
+  const state = createViewState({
+    assembly: { name: 'mine', uri: 'genome.fa.gz' },
+    localFiles: {
+      'genome.fa.gz': new Uint8Array([1]),
+      'genome.fa.gz.fai': new Uint8Array([2]),
+      'genome.fa.gz.gzi': new Uint8Array([3]),
+    },
+  })
+
+  const { adapter } = getSnapshot(state.config.assembly.sequence) as {
+    adapter: {
+      fastaLocation: { locationType: string; name: string }
+      faiLocation: { locationType: string }
+      gziLocation: { locationType: string }
+    }
+  }
+  expect(adapter.fastaLocation).toMatchObject({
+    locationType: 'BlobLocation',
+    name: 'genome.fa.gz',
+  })
+  expect(adapter.faiLocation.locationType).toBe('BlobLocation')
+  expect(adapter.gziLocation.locationType).toBe('BlobLocation')
+})
+
 test('an assembly can come from local files too', () => {
   const state = createViewState({
     assembly: {

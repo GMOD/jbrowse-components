@@ -1,10 +1,13 @@
 import { ConfigurationSchema } from '../configuration/index.ts'
-import { expandAssemblySequenceAdapter } from './expandAssemblyConfigShorthand.ts'
+import { expandAssemblyShorthand } from './expandAssemblyConfigShorthand.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-export { expandAssemblySequenceAdapter } from './expandAssemblyConfigShorthand.ts'
+export {
+  expandAssemblySequenceAdapter,
+  expandAssemblyShorthand,
+} from './expandAssemblyConfigShorthand.ts'
 
 /**
  * #config BaseAssembly
@@ -265,34 +268,9 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
        * human-readable label, set the "displayName" config slot instead
        */
       explicitIdentifier: 'name',
-      preProcessSnapshot: snap => {
-        const { name, uri, baseUri, ...rest } = snap
-        // flattest shorthand: `{ name, uri: 'genome.fa.gz' }` describes an
-        // assembly by its sequence file alone. baseUri, stamped next to the
-        // `uri` key by addRelativeUris (hub/relative configs), rides down onto
-        // the adapter so the sequence resolves against the config's location.
-        const rawSequence =
-          rest.sequence ??
-          (typeof uri === 'string'
-            ? { adapter: { uri, ...(baseUri ? { baseUri } : {}) } }
-            : undefined)
-        // infer sequence.adapter.type from its uri when omitted, so a config can
-        // give just `sequence: { adapter: { uri: 'genome.fa.gz' } }` and core
-        // picks the adapter (Bgzip/Indexed/TwoBit) — no adapter table in hosts
-        const seq = expandAssemblySequenceAdapter(rawSequence, pluginManager)
-        // then allow sequence.type/trackId to be omitted, since they are always
-        // 'ReferenceSequenceTrack' and a name derived from the assembly name
-        const sequence =
-          seq && typeof seq === 'object' && !('type' in seq)
-            ? {
-                type: 'ReferenceSequenceTrack',
-                trackId: `${name}-ReferenceSequenceTrack`,
-                ...seq,
-              }
-            : seq
-        // preserve the identity-unchanged case so nothing rebuilds needlessly
-        return sequence === snap.sequence ? snap : { ...rest, name, sequence }
-      },
+      // lifted out so a caller that needs canonical locations before MST builds
+      // the tree can run the same expansion — see expandAssemblyShorthand
+      preProcessSnapshot: snap => expandAssemblyShorthand(snap, pluginManager),
     },
   )
 }
