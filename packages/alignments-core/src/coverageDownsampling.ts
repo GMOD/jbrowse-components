@@ -325,100 +325,13 @@ export function computeVisibleCoverageStats<
   }
 }
 
-export interface DownsampledBins {
-  // Absolute genomic positions stored as uint32 — exact at 3 Gbp.
-  positions: Uint32Array
-  mins: Float32Array
-  maxs: Float32Array
-  count: number
-}
-
-// Downsample per-bp depths into min/max bins for faithful peak/valley rendering.
-// When depthCount <= targetBins, returns per-bp bins (min=0, max=depth).
-// When depthCount > targetBins, aggregates into targetBins bins.
-export function downsampleMinMax(
-  depths: Float32Array,
-  startPos: number,
-  targetBins: number,
-  globalMaxDepth: number,
-): DownsampledBins {
-  const n = depths.length
-  if (n === 0) {
-    return {
-      positions: new Uint32Array(0),
-      mins: new Float32Array(0),
-      maxs: new Float32Array(0),
-      count: 0,
-    }
-  }
-
-  if (n <= targetBins) {
-    let count = 0
-    for (let i = 0; i < n; i++) {
-      if (depths[i]! > 0) {
-        count++
-      }
-    }
-    const positions = new Uint32Array(count)
-    const mins = new Float32Array(count)
-    const maxs = new Float32Array(count)
-    let idx = 0
-    for (let i = 0; i < n; i++) {
-      const d = depths[i]!
-      if (d > 0) {
-        positions[idx] = startPos + i
-        mins[idx] = 0
-        maxs[idx] = d / globalMaxDepth
-        idx++
-      }
-    }
-    return { positions, mins, maxs, count }
-  }
-
-  const bpPerBin = n / targetBins
-  const positions = new Uint32Array(targetBins)
-  const mins = new Float32Array(targetBins)
-  const maxs = new Float32Array(targetBins)
-  let count = 0
-
-  for (let b = 0; b < targetBins; b++) {
-    const from = Math.floor(b * bpPerBin)
-    const to = Math.min(Math.floor((b + 1) * bpPerBin), n)
-    let lo = Infinity
-    let hi = 0
-    for (let i = from; i < to; i++) {
-      const d = depths[i]!
-      if (d < lo) {
-        lo = d
-      }
-      if (d > hi) {
-        hi = d
-      }
-    }
-    if (hi > 0) {
-      positions[count] = startPos + from
-      mins[count] = (lo === Infinity ? 0 : lo) / globalMaxDepth
-      maxs[count] = hi / globalMaxDepth
-      count++
-    }
-  }
-
-  return {
-    positions: positions.subarray(0, count),
-    mins: mins.subarray(0, count),
-    maxs: maxs.subarray(0, count),
-    count,
-  }
-}
-
 // Reduce a per-bp depth array to at most `maxBins` DENSE bins, each holding the
 // MAX depth over its bp span (peak-preserving, like a wiggle bar at low zoom).
 // Returns the input verbatim with binSize 1 when it already fits, so the
-// zoomed-in path is byte-identical to per-bp. Unlike `downsampleMinMax` (sparse,
-// skips empty bins, carries min+max) this stays dense and index-addressable —
-// bin b covers [startPos + b*binSize, startPos + (b+1)*binSize) — which is what
-// the single `binSize` GPU uniform and any bin = floor((pos-start)/binSize)
-// lookup need. Bin-by-bin (not a per-bp divide) to stay a tight typed-array loop.
+// zoomed-in path is byte-identical to per-bp. Dense and index-addressable — bin
+// b covers [startPos + b*binSize, startPos + (b+1)*binSize) — which is what the
+// single `binSize` GPU uniform and any bin = floor((pos-start)/binSize) lookup
+// need. Bin-by-bin (not a per-bp divide) to stay a tight typed-array loop.
 export function downsampleDenseMax(depths: Float32Array, maxBins: number) {
   const n = depths.length
   if (n <= maxBins) {

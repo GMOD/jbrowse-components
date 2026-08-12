@@ -238,7 +238,8 @@ just exposes the next — so this is a program of work, not a single fix:
 Order of value: coverage-only mode + read downsampling (makes force-load survivable
 and useful) → byte-gate rework for that path → optional precomputed-coverage
 sidecar. Cross-ref the coverage-OOM binning work (`packCoverageBinsForGpu`,
-`downsampleMinMax` in `packages/alignments-core`) and `runCoveragePipeline.ts`.
+`downsampleDenseMax` and `downsampleStatsBins` in `packages/alignments-core`)
+and `runCoveragePipeline.ts`.
 
 **SBX duplex reads — `yc`-tag / duplex-confidence coloring.** Roche's
 sequencing-by-expansion (SBX, AXELIOS platform; XOOS analysis tools) emits
