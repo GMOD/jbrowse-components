@@ -21,8 +21,9 @@ const useStyles = makeStyles()(theme => ({
     gap: 4,
     minWidth: 0,
   },
-  // dockview's `.dv-default-tab-content`: takes the space, ellipsises, and
-  // takes its colour from the tab, which is what encodes active/inactive
+  // dockview's `.dv-default-tab-content`: takes the space, truncates with an
+  // ellipsis, and takes its colour from the tab, which is what encodes
+  // active/inactive
   title: {
     flexGrow: 1,
     marginRight: 4,
