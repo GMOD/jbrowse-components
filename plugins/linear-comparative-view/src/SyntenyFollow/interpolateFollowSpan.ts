@@ -28,13 +28,9 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * alignment (or one starting off its end) lands back on the block's own ends
  * rather than extrapolating off the far side of the mate.
  *
- * ONE FORMULA FOR BOTH DIRECTIONS, over an anchor axis `a` and a placed axis
- * `b` that swap with `toMate`. The two used to be written out separately and
- * are the same function: express the window edge as a fraction along `a` and
- * read that fraction off `b`, from its far end when the strands disagree. The
- * two spellings differed only in a degenerate corner — a reverse-strand block
- * of zero length on the anchor axis collapsed onto `b`'s near corner in one
- * direction and its far corner in the other.
+ * One formula for both directions, over an anchor axis `a` and a placed axis
+ * `b` that swap with `toMate`: the window edge as a fraction along `a`, read
+ * off `b` from its far end when the strands disagree.
  */
 export function interpolateFollowSpan({
   feat,

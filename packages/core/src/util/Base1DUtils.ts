@@ -316,16 +316,13 @@ export function bpToOffset({
 
 /**
  * A 0-based genomic coord's distance in **bp** from the left edge of the
- * displayed regions — which is the unit `offsetPx` is in, before the division:
- * a view's offset space is exactly `bp / bpPerPx`, since inter-region padding
- * contributes no pixels.
+ * displayed regions — the unit `offsetPx` is in before the division, since
+ * inter-region padding contributes no pixels.
  *
- * `bpToPx` answers the same question already scaled, and bakes in the view's
- * CURRENT bpPerPx to do it — which is the wrong one for a caller that is about
- * to change it. A zoom-then-scroll pair has to compute its offset against the
- * bpPerPx it will land on, not the one it is leaving, and `zoomTo` clamps to
- * the view's limits so the requested value is not reliably it either. Reach for
- * this when the scale is in flight; reach for `bpToPx` when it is not.
+ * `bpToPx` answers the same question already scaled by the view's CURRENT
+ * bpPerPx, which is the wrong one for a caller about to change it: a
+ * zoom-then-scroll pair has to measure against the bpPerPx it will land on, and
+ * `zoomTo` clamps, so the requested value is not reliably it either.
  *
  * Undefined when no displayed region holds the coord, same as `bpToPx`.
  */

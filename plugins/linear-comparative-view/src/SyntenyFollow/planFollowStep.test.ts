@@ -14,9 +14,8 @@ interface Block {
   mateEnd?: number
 }
 
-// Packs blocks the way the RPC hands them over, and wraps each set in the one
-// member of the display this reads: a level's displays are asked for their
-// `featureData` and nothing else.
+// Packs blocks the way the RPC hands them over. `featureData` is the only
+// member of the display this reads.
 function display(blocks: Block[], hasCigar = true) {
   const data: SyntenyFeatureData = {
     strands: Int8Array.from(blocks.map(() => 1)),
@@ -73,8 +72,7 @@ test('a window inside the alignment takes the exact walk and computes no envelop
 })
 
 test('a window wider than the alignment falls to the envelope', () => {
-  // two blocks with a gap between them, mates offset by 10kb so the answer can
-  // only have come from the mapping
+  // mates offset by 10kb, so the answer can only have come from the mapping
   const step = plan([
     display([
       { id: 'left', start: 900, end: 1400, mateStart: 10900, mateEnd: 11400 },
@@ -82,15 +80,14 @@ test('a window wider than the alignment falls to the envelope', () => {
     ]),
   ])
   expect(step?.windowInsideFeat).toBe(false)
-  // each WINDOW EDGE mapped through the block it sits in — 1000 through `left`
-  // and 2000 through `right` — rather than either block's own width, which is
-  // what the single-block resolvers would have clamped it to
+  // each window edge mapped through the block it sits in, rather than either
+  // block's own width, which is what the single-block resolvers clamp to
   expect(step?.envelope).toEqual({ refName: 'chr1', start: 11000, end: 12000 })
 })
 
 describe('hysteresis across the tracks on one level', () => {
   // the same locus covered by two tracks — an all-vs-all file overlaid on a
-  // pairwise one, or two aligners' output on the same pair
+  // pairwise one, or two aligners on the same pair
   const trackA = display([{ id: 'a', start: 1000, end: 1990 }])
   const trackB = display([{ id: 'b', start: 1000, end: 2000 }])
 
@@ -99,9 +96,8 @@ describe('hysteresis across the tracks on one level', () => {
   })
 
   test('a marginally wider block on the other track does not steal the follow', () => {
-    // the bug this covers: each display refuses to abandon its own block for a
-    // 10bp improvement, and comparing their answers on raw overlap threw that
-    // away, so the row flapped between the two tracks as the anchor panned
+    // comparing the displays' answers on raw overlap threw the margin away, so
+    // the row flapped between the two tracks as the anchor panned
     expect(plan([trackA, trackB], 'a')?.feat.id).toBe('a')
   })
 

@@ -11,14 +11,12 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 /**
  * Send `view` to a resolved span, the way every one-shot path does.
  *
- * A NAVIGATION rather than a pan: `navToLocString` will change what the row
- * displays if the span is on a contig it is not currently showing, which is the
- * whole point when a follow crosses onto another chromosome. The per-frame
- * pass wants the opposite and uses `positionViewOnSpan` instead.
+ * A navigation rather than a pan: this changes what the row displays if the
+ * span is on another contig, which the per-frame pass must not do — it uses
+ * `positionViewOnSpan` instead.
  *
- * Shared because the one-base clamp below is easy to leave out and silent when
- * it is: a zero-width span assembles into an INVERTED locstring, which the
- * parser then reads as a region running backwards.
+ * Shared for the one-base clamp, which is silent when left out: a zero-width
+ * span assembles into an inverted locstring.
  */
 export async function navToResolvedSpan(
   view: LinearGenomeViewModel,

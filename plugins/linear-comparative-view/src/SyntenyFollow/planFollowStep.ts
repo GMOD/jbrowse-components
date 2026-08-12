@@ -97,13 +97,9 @@ interface FollowPick extends FollowCandidate {
  * over the window and the widest wins, so a sparse track does not outvote the
  * one that actually covers the locus.
  *
- * THE SAME HYSTERESIS AS WITHIN A TRACK, applied again here. Each display
- * already refuses to abandon the block it is following for a marginally wider
- * one, and comparing their answers on raw overlap threw that away one level up:
- * two tracks over the same locus (an all-vs-all file overlaid on a pairwise
- * one, two aligners' output on the same pair) traded the follow back and forth
- * on the rounding a pan produces, which is exactly the flapping between
- * paralogous loci the margin exists to stop.
+ * The same hysteresis as within a track, applied again here: comparing the
+ * displays' answers on raw overlap threw it away one level up, so two tracks
+ * over the same locus traded the follow back and forth on rounding.
  *
  * `undefined` means no alignment covers the anchor window — a haplotype-specific
  * insertion, a centromere, a row parked off the end of the file. The caller
@@ -143,11 +139,9 @@ export function planFollowStep({
     if (!widest || pick.overlap > widest.overlap) {
       widest = pick
     }
-    // Which display is holding the incumbent, read off the answer it gave
-    // rather than searched for: `pickFollowFeature` returns the incumbent when
-    // its own hysteresis kept it, so a display that has already abandoned it
-    // for a decisively better block of its own says nothing here — which is
-    // right, since that abandonment was legitimate.
+    // Read off the answer rather than searched for, so a display that has
+    // already abandoned the incumbent for a better block of its own does not
+    // re-nominate it.
     if (
       incumbentId !== undefined &&
       data.featureIds[candidate.index] === incumbentId
