@@ -102,11 +102,11 @@
   },
   "devDependencies": {
     "@electron/notarize": "^3.1.1",
-    "@electron/packager": "^20.2.1",
+    "@electron/packager": "^20.3.0",
     "@jbrowse/browser-test-utils": "workspace:*",
     "@types/selenium-webdriver": "^4.35.6",
     "electron": "^43.4.0",
-    "electron-chromedriver": "^43.3.0",
+    "electron-chromedriver": "^43.4.0",
     "esbuild": "^0.28.2",
     "selenium-webdriver": "^4.47.0"
   },
