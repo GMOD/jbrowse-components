@@ -472,28 +472,59 @@ const MANIFEST =
 // generate.ts reaches `accumulateConfig`, and an eager read made the import
 // itself throw when the manifest was absent — a failure attributed to whatever
 // happened to be running, rather than to the generator that needs the file.
-let adapterShorthands: Record<string, { shorthandKeys?: string[] }> | undefined
+interface ManifestEntry {
+  slots: { name: string }[]
+  shorthandKeys?: string[]
+}
+type ManifestCategories = Record<string, Record<string, ManifestEntry>>
+type TypedManifestEntry = ManifestEntry & { category: string }
 
-function shorthandKeysByAdapter() {
+let manifestByType: Record<string, TypedManifestEntry> | undefined
+let adapterShorthands: Record<string, ManifestEntry> | undefined
+
+function readManifest() {
   if (!adapterShorthands) {
     const text = fs.readFileSync(MANIFEST, 'utf8')
     const json =
       /export const configManifest: ConfigManifest = (\{[\s\S]*\})\n/.exec(
         text,
       )?.[1]
-    const parsed = json
-      ? (JSON.parse(json) as {
-          adapters: Record<string, { shorthandKeys?: string[] }>
-        })
-      : undefined
-    if (!parsed?.adapters.BamAdapter) {
+    const parsed = json ? (JSON.parse(json) as ManifestCategories) : undefined
+    if (!parsed?.adapters?.BamAdapter) {
       // A manifest this cannot read would silently mark every adapter as having
       // no shorthand, which reads as a fact rather than as a missing file.
       throw new Error(`could not read adapter shorthands from ${MANIFEST}`)
     }
     adapterShorthands = parsed.adapters
+    // Only the categories whose `#example` is a bare object of the type itself.
+    // A DISPLAY's example is by convention a whole track config carrying the
+    // display (the same rule the hand-written guides follow — show something a
+    // reader can paste), so its keys are the track's and checking them against
+    // the display's slot list reports every one of them as unknown. Validating
+    // that shape means wrapping and running the real `validateConfig`, which is
+    // what `check-config-blocks` does for the guides; displays are left to it.
+    //
+    // `migratedDisplayKeys` is not a type table and is dropped by the shape
+    // guard.
+    manifestByType = Object.fromEntries(
+      (['adapters', 'textSearchAdapters', 'connections', 'tracks'] as const)
+        .flatMap(category =>
+          Object.entries(parsed[category] ?? {}).map(
+            ([name, entry]) => [name, { ...entry, category }] as const,
+          ),
+        )
+        .filter(([, entry]) => Array.isArray(entry.slots)),
+    )
   }
-  return adapterShorthands
+  return { adapters: adapterShorthands, byType: manifestByType! }
+}
+
+function shorthandKeysByAdapter() {
+  return readManifest().adapters
+}
+
+function configManifest() {
+  return readManifest().byType
 }
 
 function shorthandLine(name: string, category: string, isBase: boolean) {
@@ -1192,6 +1223,105 @@ function assertNoBlankSlotDescriptions(gaps: { file: string; name: string }[]) {
   }
 }
 
+// Top-level property names of the first object literal in an `#example` fence.
+// Parsed rather than regexed because an example is JS, not JSON — unquoted
+// keys, single quotes, nested objects whose keys must not be mistaken for the
+// outer ones.
+function exampleTopLevelKeys(code: string, descendToAdapter: boolean) {
+  const source = ts.createSourceFile(
+    'example.ts',
+    `const __example = ${code.trim()}`,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  let literal: ts.ObjectLiteralExpression | undefined
+  const visit = (node: ts.Node) => {
+    if (!literal && ts.isObjectLiteralExpression(node)) {
+      literal = node
+    }
+    if (!literal) {
+      ts.forEachChild(node, visit)
+    }
+  }
+  ts.forEachChild(source, visit)
+  if (!literal) {
+    return undefined
+  }
+  const keyOf = (p: ts.ObjectLiteralElementLike) =>
+    p.name?.getText().replaceAll(/['"]/g, '')
+  // An adapter's example is sometimes written in the config that holds it — a
+  // ReferenceSequenceTrack around a sequence adapter, a track around a
+  // MotifListAdapter — because that is the form a reader can paste. The outer
+  // keys then belong to the wrapper, not to the type being documented, so
+  // descend to the `adapter` this example is really about. A TRACK's example
+  // has an `adapter` too and owns its outer keys, hence the caller's say.
+  const adapter = descendToAdapter
+    ? literal.properties.find(p => keyOf(p) === 'adapter')
+    : undefined
+  const inner =
+    adapter &&
+    ts.isPropertyAssignment(adapter) &&
+    ts.isObjectLiteralExpression(adapter.initializer)
+      ? adapter.initializer
+      : literal
+  return inner.properties.map(keyOf).filter((n): n is string => !!n)
+}
+
+// Every key an `#example` writes must be one the type declares, or a shorthand
+// its snapshot normalizer rewrites.
+//
+// The examples are the most-copied config in the docs and were the one config
+// surface with no checker: `check-config-blocks` validates the hand-written
+// blocks in the guides and skips the generated pages precisely because these
+// come from source — so "fixed in the source" was true and nothing checked the
+// source. A key that is not a slot is the failure that matters, because JBrowse
+// ignores an undeclared key rather than rejecting it: the example loads, does
+// nothing, and reads as the documented way to do the thing.
+//
+// Keys come from the same manifest the shorthand line above reads, so a type
+// the manifest does not carry (internet accounts, the root config schemas) is
+// skipped rather than guessed at — checking against an empty slot list would
+// report every key as unknown.
+function assertExampleKeysAreSlots(configs: ConfigWithHeader[]) {
+  const manifest = configManifest()
+  const problems: string[] = []
+  for (const config of configs) {
+    const entry = manifest[config.header.name]
+    if (!entry) {
+      continue
+    }
+    const known = new Set([
+      ...entry.slots.map(s => s.name),
+      ...(entry.shorthandKeys ?? []),
+      // A track's per-display shorthand. Not a declared slot — the track config
+      // schema's preProcessSnapshot folds it into `displays` — so the manifest
+      // does not carry it, and it is the form the guides tell readers to write.
+      'displayDefaults',
+    ])
+    for (const ex of config.header.examples) {
+      const code = /```[\w]*\n([\s\S]*?)```/.exec(ex.content)?.[1]
+      const keys = code
+        ? exampleTopLevelKeys(code, entry.category !== 'tracks')
+        : undefined
+      const unknown = keys?.filter(k => !known.has(k)) ?? []
+      if (unknown.length) {
+        problems.push(
+          `  ${config.filename}: ${config.header.name} #example writes ${unknown
+            .map(k => `\`${k}\``)
+            .join(
+              ', ',
+            )} — not ${unknown.length > 1 ? 'slots' : 'a slot'} it declares`,
+        )
+      }
+    }
+  }
+  if (problems.length) {
+    throw new Error(
+      `${problems.length} #example block(s) name a key the type does not declare. JBrowse ignores an undeclared key, so such an example loads and silently does nothing — which is worse than no example. Fix the key, or add the slot:\n${problems.join('\n')}`,
+    )
+  }
+}
+
 // Group every documented adapter by the track type it declares via #trackType,
 // so a track/display page can list the adapters that supply it.
 function adaptersByTrackType(configs: ConfigWithHeader[]) {
@@ -1281,6 +1411,7 @@ export function writeConfigDocs(
   // Both before the write loop, so a run that would emit a blank cell — or
   // write one page for two types — fails without having rewritten anything.
   assertNoBlankSlotDescriptions(slotsMissingDescription(withHeader))
+  assertExampleKeysAreSlots(withHeader)
   assertUniquePages(
     '#config',
     withHeader.map(c => ({

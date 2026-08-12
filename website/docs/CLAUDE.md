@@ -80,6 +80,18 @@ site and a missing one is **fatal**, not a blank cell — same reasoning as the
 untagged-`#slot` check. A blank cell reads as "this does nothing"; a failed
 build reads as "write one line here".
 
+**An `#example`'s keys are checked against the type's slots** (fatal, in
+`generateConfigDocs`), because JBrowse ignores an undeclared key rather than
+rejecting it — so a mistyped one loads, does nothing, and reads as the
+documented way. `check-config-blocks` covers the hand-written blocks in the
+guides and deliberately skips generated pages, which left the most-copied config
+in the docs as the one surface with no checker at all. Two shapes are allowed
+and the check knows the difference: a **track**'s example owns its outer keys,
+and everything else may be written inside the config that holds it (a
+`ReferenceSequenceTrack` around a sequence adapter), where the `adapter` is what
+gets checked. Internet accounts and the root schemas aren't in the manifest, so
+they are skipped rather than guessed at.
+
 ## Avoiding drift in hand-written docs
 
 - **Don't restate a config slot's default** — link
