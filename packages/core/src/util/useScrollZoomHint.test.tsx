@@ -2,7 +2,7 @@ import { useRef } from 'react'
 
 import { act, render } from '@testing-library/react'
 
-import { useScrollZoomHint } from './usePanZoom.ts'
+import { HINT_ATTR, useScrollZoomHint } from './usePanZoom.ts'
 
 // The wheel decision matrix belongs to wheelZoom.test and the drag half to
 // usePanZoom.test; what is tested here is the second gate — that the prompt
@@ -12,6 +12,8 @@ import { useScrollZoomHint } from './usePanZoom.ts'
 // must match the hook's own SETTLE_MS; the linger is the one the harness passes
 const SETTLE_MS = 150
 const LINGER_MS = 5000
+// must match the hook's own HINT_MAX_MS, the one timer nothing can hold off
+const HINT_MAX_MS = 15000
 
 beforeEach(() => {
   jest.useFakeTimers()
@@ -226,6 +228,94 @@ test('holding it open survives the timer, and releasing restarts it', () => {
   })
   expect(el.textContent).toBe('hint')
   advance(LINGER_MS)
+  expect(el.textContent).toBe('')
+})
+
+// A held prompt is the one that gets stuck: `held` is latched by a pointer that
+// arrived and is released by a `mouseleave` that, in the cases below, never
+// comes. Everything here is about it going away anyway.
+test('a held prompt still goes away eventually', () => {
+  const { el } = setup()
+  wheel(el)
+  settle()
+  act(() => {
+    held(true)
+  })
+  // the pointer entered and never left — a tab switch, or the card drawn under
+  // a cursor that then stopped moving
+  advance(HINT_MAX_MS + 1)
+  expect(el.textContent).toBe('')
+})
+
+test('escape takes it down', () => {
+  const { el } = setup()
+  wheel(el)
+  settle()
+  act(() => {
+    held(true)
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+  })
+  expect(el.textContent).toBe('')
+})
+
+test('a press anywhere else takes it down, a press on it does not', () => {
+  const { el } = setup()
+  wheel(el)
+  settle()
+
+  // the prompt's own element, marked so its button's press isn't a dismissal
+  const card = document.createElement('div')
+  card.setAttribute(HINT_ATTR, '')
+  document.body.append(card)
+  act(() => {
+    card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+  })
+  expect(el.textContent).toBe('hint')
+
+  act(() => {
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+  })
+  expect(el.textContent).toBe('')
+  card.remove()
+})
+
+test('a ctrl+wheel takes it down — they did the thing it asked', () => {
+  const { el } = setup()
+  wheel(el)
+  settle()
+  act(() => {
+    held(true)
+  })
+  wheel(el, { ctrlKey: true })
+  expect(el.textContent).toBe('')
+})
+
+test('switching away from the tab takes it down', () => {
+  const { el } = setup()
+  wheel(el)
+  settle()
+  // the case `held` cannot recover from on its own: the pointer is on the card
+  // and the `mouseleave` is never dispatched
+  act(() => {
+    held(true)
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  expect(el.textContent).toBe('')
+})
+
+test('dismissing drops a verdict still pending behind it', () => {
+  const { el } = setup()
+  wheel(el)
+  settle()
+  act(() => {
+    dismiss()
+  })
+  // a wheel arriving as it was dismissed must not raise it again a moment later
+  wheel(el)
+  act(() => {
+    dismiss()
+  })
+  settle()
   expect(el.textContent).toBe('')
 })
 

@@ -99,6 +99,22 @@ const DRAG_THRESHOLD_PX = 4
 // — see `lingerMs`.
 const HINT_LINGER_MS = 1200
 
+// The longest the prompt may stay up no matter what, counted from the raise and
+// not restarted by anything. Everything else that keeps it alive — wheeling on,
+// the pointer resting on it — is a signal that can get stuck on: a pointer that
+// entered and never left, a tab switched away mid-gesture. This is the one timer
+// with no way to hold it off, so a prompt nobody is interacting with always goes
+// away on its own.
+const HINT_MAX_MS = 15000
+
+/**
+ * Marks the prompt's own element, so the press-anywhere-to-dismiss listener can
+ * tell a press aimed at its button from a press aimed at the app. An attribute
+ * rather than a ref because the state hook doesn't render the prompt — the host
+ * does, and there are two of them (core's card, an embedder's caption).
+ */
+export const HINT_ATTR = 'data-scroll-zoom-hint'
+
 // Quiet needed after a wheel before its verdict is taken. Same idiom (and order
 // of magnitude) as wheelZoom's ZOOM_ACTIVE_WINDOW_MS and scrollLatch's
 // LATCH_TIMEOUT_MS: continuous trackpad or inertial scrolling fires every ~16ms,
@@ -140,6 +156,13 @@ const SCROLL_LAG_MS = 100
  * case this exists to catch: scrolling to the bottom of a view and continuing to
  * push is one unbroken run of wheel events, and judging the run as a whole lets
  * its scrolling first half acquit its dead second half.
+ *
+ * Going away is the other half of it, and is not left to the linger timer alone:
+ * escape, a press anywhere else, a ctrl+wheel (they took the advice), a tab
+ * switch, and finally HINT_MAX_MS, which nothing can hold off. The prompt is an
+ * interruption the user did not ask for, so every reading of "done with it"
+ * counts, and none of them can be the only one — the pointer hold in particular
+ * is released by a `mouseleave` that a backgrounded tab never dispatches.
  *
  * How often it may fire is the caller's to decide, through `enabled`/`onShow`.
  * That policy is deliberately not here: the budget worth enforcing is
@@ -193,6 +216,8 @@ export function useScrollZoomHintState({
   const lingerTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   )
+  // the backstop behind both of those — see HINT_MAX_MS
+  const maxTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   // suppresses the linger timer while the pointer rests on the prompt, so it
   // can't vanish from under a click
   const held = useRef(false)
@@ -224,6 +249,10 @@ export function useScrollZoomHintState({
 
   function dismiss() {
     clearTimeout(lingerTimer.current)
+    clearTimeout(maxTimer.current)
+    // a verdict still pending would raise the prompt again a moment after it
+    // was dismissed, which reads as the dismissal not having worked
+    clearTimeout(settleTimer.current)
     shown.current = false
     // the prompt unmounts under the pointer that was holding it open, so its
     // `mouseleave` never arrives — release the hold here or it stays latched
@@ -246,6 +275,8 @@ export function useScrollZoomHintState({
     setMounted(true)
     setShow(true)
     restartLinger()
+    clearTimeout(maxTimer.current)
+    maxTimer.current = setTimeout(dismiss, HINT_MAX_MS)
     onShow?.()
   }
 
@@ -268,10 +299,76 @@ export function useScrollZoomHintState({
     settleTimer.current = setTimeout(takeVerdict, SETTLE_MS)
   }
 
+  // stable, so the listeners below bind once per raise rather than every render
+  const dismissNow = useEventCallback(dismiss)
+
+  // While it is up, take it down at the first sign the user is done with it —
+  // and bound only to `show`, so a view that has never hinted binds nothing.
+  //
+  // The timers alone are not enough. Each of these is a case where the prompt
+  // has outlived its moment but no timer is going to notice: the pointer that
+  // holds it open never fires its `mouseleave` (the tab was switched, the card
+  // moved out from under a resting cursor), or the timer is running fine and
+  // the user has simply moved on and wants it gone now.
+  useEffect(() => {
+    if (!show) {
+      return
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        dismissNow()
+      }
+    }
+    const onPointerDown = (event: PointerEvent) => {
+      // a press on the prompt itself is aimed at its button — dismissing here
+      // would unmount it before the click landed
+      if (
+        !(
+          event.target instanceof Element &&
+          event.target.closest(`[${HINT_ATTR}]`)
+        )
+      ) {
+        dismissNow()
+      }
+    }
+    const onWheel = (event: WheelEvent) => {
+      // they did the thing it asked for: the prompt has been read and has
+      // nothing left to say, so it shouldn't sit over the zoom it just taught
+      if (event.ctrlKey || event.metaKey) {
+        dismissNow()
+      }
+    }
+    // A backgrounded tab is the way `held` gets stuck for good: the pointer is
+    // on the card, the user switches away, and the `mouseleave` that would
+    // release it is never dispatched. Also the moment nobody is looking, which
+    // is the other reason to spend the prompt now rather than on their return.
+    const onHide = () => {
+      dismissNow()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    document.addEventListener('pointerdown', onPointerDown, { capture: true })
+    document.addEventListener('wheel', onWheel, {
+      capture: true,
+      passive: true,
+    })
+    window.addEventListener('blur', onHide)
+    document.addEventListener('visibilitychange', onHide)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onPointerDown, {
+        capture: true,
+      })
+      document.removeEventListener('wheel', onWheel, { capture: true })
+      window.removeEventListener('blur', onHide)
+      document.removeEventListener('visibilitychange', onHide)
+    }
+  }, [show, dismissNow])
+
   useEffect(() => {
     return () => {
       clearTimeout(lingerTimer.current)
       clearTimeout(settleTimer.current)
+      clearTimeout(maxTimer.current)
     }
   }, [])
 
@@ -290,6 +387,11 @@ export function useScrollZoomHintState({
     /**
      * Hold the prompt open while the pointer is on it, and start it expiring
      * again on the way out.
+     *
+     * Take the hold on a pointer that *moved* onto the prompt, not on a plain
+     * `mouseenter` — see ScrollZoomHint. Either way the hold is not the last
+     * word: HINT_MAX_MS and the dismissals above outrank it, because a hold is
+     * released by an event that doesn't always arrive.
      */
     setZoomHintHeld: (value: boolean) => {
       held.current = value
