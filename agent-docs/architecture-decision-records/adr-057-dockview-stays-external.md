@@ -1,18 +1,28 @@
 ---
 status: Accepted
-summary: "dockview stays an npm dependency — neither vendored nor reimplemented; the friction is two state machines both owning layout, and dockview 8's mutation origin retires most of it"
+summary: "dockview stays an npm dependency and is not vendored; whether to REPLACE it with our own MST-native engine is reopened — the ~8-9k-line estimate that ruled it out was wrong, and a measured spike came in smaller than the seam it deletes"
 ---
 
 # ADR-057: dockview stays external; the seam is ours
 
 ## Status
 
-Accepted (2026-08). Amended 2026-08-12 to answer the **second** form of the
-proposal — replace dockview with our own MST-driven layout engine — and to
-record that dockview 8's `DockviewOrigin` changed the arithmetic.
+**Accepted** — for the vendoring question, which stands and is what the title
+is about. The reimplementation question inside it is reopened; see below.
+
+**Amended 2026-08-12, and the amendment reopens half of it.** The original
+argued against reimplementing dockview partly on a cost estimate of ~8–9k lines.
+That estimate was wrong — it measured the library rather than the subset a
+JBrowse workspace needs — and a working spike came in at 863 lines against a
+1,178-line seam. The cost argument is withdrawn; see "On rewriting it
+ourselves". The vendoring decision is unaffected.
+
+Also records that dockview 8's `DockviewOrigin` retired the seam's worst rule,
+which cuts the other way.
 
 Recurring proposal. This ADR exists because the question has been reopened
-several times and each time re-derived the same answer from scratch.
+several times and each time re-derived the same answer from scratch — so the
+correction above matters more than the conclusion did.
 
 ## Context
 
@@ -35,8 +45,27 @@ The proposal arrives in two forms, and they need separate answers:
 
 ## Decision
 
-**Keep dockview external, and do not reimplement it.** Four reasons for the
-first, one decisive measurement for the second.
+**Keep dockview external — do not vendor it.** Four reasons, below, and none of
+them has weakened.
+
+**On reimplementing it: the cost argument that used to settle this has
+collapsed, and the decision is now genuinely open.** A measured spike puts a
+replacement at *fewer* lines than the seam it deletes. What remains is a trade
+between two coherent positions rather than a right answer:
+
+- **Don't**, if the goal is fewer bugs. Zero of the six real seam bugs are in
+  anything a rewrite would rebuild, and dockview 8's `DockviewOrigin` retired
+  the worst of the reconciliation rules for free.
+- **Do**, if the goal is that layout be MST-native like the rest of JBrowse.
+  Three separate mechanisms now guard one seam against re-entrancy, all of them
+  justified, all of them existing purely because dockview is imperative and
+  event-driven while the session is reactive. That mismatch is permanent. A
+  React-rendered tree has no mid-mutation window to defend, so those three
+  vanish rather than being reimplemented.
+
+This ADR does not decide the second question, because it is a judgement about
+what the codebase should be rather than a defect count, and the numbers that
+used to make it look like a defect count were wrong.
 
 ### 1. The ownership-to-surface ratio is bad by two orders of magnitude
 
@@ -107,35 +136,67 @@ seam's worst rule — see "What dockview 8 changed" below.
 ## On rewriting it ourselves
 
 The instinct behind this one is sound and the ADR agrees with its diagnosis: the
-friction is that layout has two owners synced bidirectionally. Writing an
-MST-first engine would fix that. It would fix it by rebuilding, at full cost,
-the parts of dockview that have nothing to do with any bug we have had.
+friction is that layout has two owners synced bidirectionally.
 
-Measured against `dockview-core` 8.0.0's 18.3k lines, the portion we actually
-use — and would therefore have to write — is roughly:
+**This section first argued the rewrite was ~8–9k lines. That number was wrong,
+and it was wrong in the direction that supported the conclusion already
+reached.** It measured `dockview-core` — gridview, splitview, the whole dnd
+subsystem, tab overflow, serialization — rather than the subset a JBrowse
+workspace needs. Two gestures, not a general dnd framework. No floating groups,
+popout windows, edge groups or cross-window drag.
 
-| Area | Lines | Do our bugs live here? |
-| --- | ---: | --- |
-| gridview + splitview (recursive resizable grid, proportional relayout) | ~2,500 | no |
-| dnd + overlays + drop targets + tab reorder + drag ghost | ~3,300 | no |
-| tabs container (overflow, reorder, focus, a11y) | ~1,200 | no |
-| group/panel models + serialization | ~2,000 | partly — the serialized format |
+The estimate was replaced with a working spike
+(`packages/app-core/src/WorkspaceLayout/`), because a number nobody has checked
+is an opinion:
 
-Call it 8–9k lines to reach parity with what users already have. The remaining
-~9k (paneview, popout windows, floating groups, edge groups, tab group chips,
-watermark, live region, theming) we do not use at all.
+| | source lines |
+| --- | ---: |
+| Current dockview seam (`useDockviewController` + `dockviewUtils` + `DockviewLayout` + containers) | **1,178** |
+| Spike: pure layout tree, MST model, renderer with splitters | 461 |
+| Spike: drag-and-drop, both gestures with drop indicators | 402 |
+| **Spike total** | **863** |
 
-The declarative React layout tree — the part that is appealing to write — is a
-day's work. The drag-and-drop third is a multi-week project with a long bug
-tail, and **not one seam bug has ever been in it**. Rewriting means replacing
-the healthy majority to cure the sick minority.
+So a replacement is *smaller than the glue it deletes*, and it also drops the
+dependency. Two of the pieces that looked expensive turned out not to be:
 
-Run the seam's own bug list against the diagnosis instead. Of six real bugs,
-five are ownership bugs (the layout echo truncating the redo stack; panel close
-skipping stacked views; the spec layout applied too late; the mid-mutation
-revert that produced `invalid operation: resource is already disposed`; and
-`size` honoured only at top level) and one is a plugin-API regression. Zero are
-"dockview does the wrong thing." A rewrite is aimed at the wrong target.
+- **The grid engine is flexbox.** Sizes are `flex-grow`, so proportional
+  relayout on container resize is the browser's job and there is no pixel maths
+  to get wrong. This was expected to be the riskiest part and it is ~30 lines.
+- **The dnd geometry is one pure function** over a rect. Edge bands, the corner
+  tie-break, what counts as the middle — all decided in `dropZoneAt`, tested
+  without a DOM or a synthetic pointer.
+
+What the spike demonstrates rather than asserts, with tests:
+
+- **`size` works at any depth.** dockview forces orientation to alternate by
+  depth, which is why `size` only ever applied to the top-level split. A tree
+  that can nest `row` in `row` and normalise it does not have that limit.
+- **Undo is `applySnapshot` with nothing to notify**, and a settled layout emits
+  no further snapshots — no echo, so nothing can truncate the redo stack.
+- **The scenario that needs three separate mechanisms in the seam** — a reaction
+  rearranging the workspace during a user close — **is two actions.** MST
+  finishes one before reactions run; there is no half-applied state to catch.
+
+The trade is real and is not "complexity for none": reconciliation is replaced
+by **tree normalisation** (collapsing single-child branches, flattening
+same-direction nesting, keeping sizes summing to 1). That is where this design's
+bugs would live. The difference is that it is pure, so it is checked by a
+2000-step randomised operation sequence asserting canonical form and no
+duplicated or stranded view after every step — a property the imperative bridge
+could never have, because there "correct" depended on what dockview did next.
+
+**What remains unbuilt**, and is the honest residual cost: tab overflow,
+keyboard/a11y, min-size constraints (flex alone lets a panel shrink to nothing),
+and an importer for persisted `dockviewLayout` blobs so saved sessions and
+shared session URLs survive. That last one is the only item that can lose user
+data, and it is unavoidable in a rewrite.
+
+The bug-count argument still stands and still says don't: of six real seam bugs,
+five are ownership bugs and one is a plugin-API regression; **zero** are
+"dockview does the wrong thing", and zero are in the parts a rewrite rebuilds.
+What the corrected numbers change is that this is no longer also a cost
+argument. It is a genuine trade, and the deciding axis is architectural — see
+below.
 
 ## What dockview 8 changed
 

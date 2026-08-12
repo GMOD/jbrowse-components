@@ -272,15 +272,14 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   all of `session.views` and doesn't freeze — don't build virtualization.
   Suspect is MST write amplification.
   [ADR-057](../architecture-decision-records/adr-057-dockview-stays-external.md).
-- **Rolling our own tiling window manager to replace dockview** —
-  [ADR-057](../architecture-decision-records/adr-057-dockview-stays-external.md),
-  which now answers both forms of the proposal (vendor it / rewrite it). The
-  diagnosis is right — layout has two owners synced bidirectionally — but ~8-9k
-  of the ~18k lines of `dockview-core` would have to be rewritten to reach
-  parity, and the biggest slice of it (drag-and-drop, ~3.3k) has never contained
-  a single one of our bugs. dockview 8's `DockviewOrigin` retired the seam's
-  worst rule for free (`278f320601`). Ask "which of our bugs does this fix?"
-  before reopening; the answer has been "none of them" four times.
+- **Vendoring dockview** (copying the source in) —
+  [ADR-057](../architecture-decision-records/adr-057-dockview-stays-external.md).
+  Nine of ten imports are `import type`, four majors have been absorbed for one
+  repair commit, and every hard bug at the seam is on our side of the line.
+  **Note this entry does NOT cover replacing dockview with our own engine**,
+  which is open: the ~8-9k-line estimate that used to rule it out was wrong (it
+  measured the library, not the subset we need) and a measured spike came in at
+  863 lines against a 1,178-line seam. See the ADR.
 - **Read-time binning for synteny/PIF** —
   [ADR-039](../architecture-decision-records/adr-039-synteny-no-read-time-binning.md).
   `pif.getLines` fetches every line and `parsePifLine` runs per-line before any
