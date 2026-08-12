@@ -20,6 +20,53 @@ import type { CramRecord } from '@gmod/cram'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
+/**
+ * How many workers @gmod/cram should decode slices on, per RPC worker.
+ *
+ * Its own default is `min(hardwareConcurrency, 4)`, which is right for a
+ * consumer with one JS context and wrong for this one. Each track gets its own
+ * rpcSessionId and those round-robin over up to five RPC workers, so N CRAM
+ * tracks sit in N contexts — and the pool is shared per *context*, so five
+ * tracks start five pools. At the library default that is 5 x 4 = 20 slice
+ * workers plus the RPC workers themselves.
+ *
+ * On a machine with cores to spare that is free. On a laptop it is not.
+ * Measured on the jb2bench 19 kb region at 1000x short-read coverage, timing
+ * the slowest track (a pan is not done until every track has drawn), best of
+ * 4 reps:
+ *
+ *                       4 cores            16 cores
+ *   tracks  pool     workers  slowest    workers  slowest
+ *        1     4           5    220 ms         5    148 ms
+ *        1     2           3    241 ms         3    203 ms
+ *        3     4          15    669 ms        15    259 ms
+ *        3     2           9    498 ms         9    304 ms
+ *        5     4          25   1347 ms        25    484 ms
+ *        5     2          15    956 ms        15    471 ms
+ *
+ * So 4 wins on 16 cores everywhere, and loses badly on 4 cores from three
+ * tracks up — 1.41x at five. Halving the core count gives both: 2 on a 4-core
+ * machine, 4 on anything from 8 up, which is where the library default already
+ * caps.
+ *
+ * The trade is deliberate. A single track on a 4-core machine gets slightly
+ * slower (220 -> 241 ms) so that five tracks get much faster (1347 -> 956 ms),
+ * and the multi-track case is the one where the user is actually waiting.
+ *
+ * Note this pool is not the only one in a context: `sharedBgzfWorkerPool` puts
+ * another four in any context that also holds a bgzip-backed track, and nothing
+ * coordinates the two. Sizing this one down is a local fix for a gap that is
+ * really about the total — see the note in `util/bgzfWorkerPool.ts` on why the
+ * per-context scope was chosen, and `util/cacheBudgets.ts` for how the same
+ * "per-instance ceiling times N instances bounds nothing" problem was solved
+ * for memory.
+ */
+function sliceWorkerCount() {
+  const cores =
+    typeof navigator === 'undefined' ? 1 : navigator.hardwareConcurrency || 1
+  return Math.max(2, Math.min(4, Math.floor(cores / 2)))
+}
+
 function shouldFilterRecord(
   record: CramRecord,
   filterBy: FilterBy | undefined,
@@ -135,6 +182,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
         // track. Its own budget, not the bytes one: this cache weighs decoded
         // records, and a budget summing records with bytes bounds neither
         cacheBudget: decodedRecordsBudget,
+        numSliceWorkers: sliceWorkerCount(),
       })
       this.configureResult = { cram, index }
     }
