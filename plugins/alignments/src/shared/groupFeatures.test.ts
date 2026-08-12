@@ -224,9 +224,17 @@ test('isChainGroupableType allows only chain-consistent dimensions', () => {
 // representative read (the primary read1) cannot answer on its own — hence the
 // dimension's own chainKey.
 test('split-read grouping keys a chain off any read carrying SA', () => {
+  // `name` is what chains the two, and it has to be spelled: a fixture that
+  // leaves it off is two NAMELESS features, which `chainGroupingKey` now keys
+  // apart (a PAF block has no QNAME either) rather than collapsing into one
+  // accidental chain.
   const features = [
-    feat('r1', { flags: 0x40, tags: {} }),
-    feat('r2', { flags: 0x80, tags: { SA: 'ctgA,200,+,50M50S,60,0;' } }),
+    feat('r1', { name: 'frag', flags: 0x40, tags: {} }),
+    feat('r2', {
+      name: 'frag',
+      flags: 0x80,
+      tags: { SA: 'ctgA,200,+,50M50S,60,0;' },
+    }),
   ]
   const groups = partitionChains(features, { type: 'splitRead' })
   expect(groups.map(g => g.label)).toEqual(['Split (SA)'])

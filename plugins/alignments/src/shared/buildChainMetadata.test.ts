@@ -198,3 +198,21 @@ test('secondary on the reverse strand still stands alone', () => {
   ])
   expect(chainNames).toHaveLength(3)
 })
+
+// A PAF/synteny block carries no QNAME, and LGVSyntenyDisplay pushes those
+// through this same worker with `linkedReads` a published config slot. Keyed by
+// the empty name they became ONE chain: every block in the region on one row, a
+// connecting line across the whole view, and an overlap tint over the lot.
+test('nameless features (PAF/synteny blocks) each stand alone', () => {
+  const { chainNames, chainHasMultiple, chainAbsMinStarts, chainAbsMaxEnds } =
+    buildChainMetadata([
+      feat({ id: 'block-a', name: '', start: 0, end: 100 }),
+      feat({ id: 'block-b', name: '', start: 5000, end: 5100 }),
+      feat({ id: 'block-c', name: '', start: 900_000, end: 900_100 }),
+    ])
+  expect(chainNames).toHaveLength(3)
+  expect([...chainHasMultiple]).toEqual([0, 0, 0])
+  // and no chain spans the gap between two unrelated blocks
+  expect([...chainAbsMinStarts]).toEqual([0, 5000, 900_000])
+  expect([...chainAbsMaxEnds]).toEqual([100, 5100, 900_100])
+})

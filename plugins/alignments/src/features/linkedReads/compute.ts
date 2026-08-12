@@ -144,6 +144,12 @@ export function splitColorType(s1: number, s2: number) {
 // The arc path has the twin of this loop over its own entry type. Sharing them
 // was tried and measured back out — see REJECTED_IDEAS, "One shared
 // groupReadsByName".
+//
+// A nameless feature is skipped rather than bucketed under '': the PAF/synteny
+// blocks LGVSyntenyDisplay pushes through this pipeline carry no QNAME, so one
+// bucket held every block in view and `splitJunctions` chained them into a run
+// of fabricated junctions between features that share nothing. `chainGroupingKey`
+// gives the layout the same answer from the other side.
 export function groupReadsByName(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
 ): Map<string, ReadEntry[]> {
@@ -151,11 +157,14 @@ export function groupReadsByName(
   for (const [idx, data] of laidOutPileupMap) {
     const { readIds, readNames } = data
     for (let i = 0; i < readIds.length; i++) {
-      getOrCreate(readsByName, readNames[i]!, () => []).push({
-        displayedRegionIndex: idx,
-        readIdx: i,
-        data,
-      })
+      const name = readNames[i]!
+      if (name) {
+        getOrCreate(readsByName, name, () => []).push({
+          displayedRegionIndex: idx,
+          readIdx: i,
+          data,
+        })
+      }
     }
   }
   return readsByName

@@ -429,6 +429,10 @@ interface ReadEntry {
 // them was tried and measured back out — see REJECTED_IDEAS, "One shared
 // groupReadsByName"; the object build is the hot part and every way of varying
 // it generically costs more than the eight lines are worth.
+//
+// A nameless feature is skipped, the same rule and for the same reason as the
+// twin's: a PAF/synteny block carries no QNAME, and one '' bucket made every
+// block in view a segment of one enormous read.
 function groupReadsByName(
   rpcDataMap: ReadonlyMap<number, PileupDataResult>,
   regions: RegionInfo[],
@@ -438,12 +442,15 @@ function groupReadsByName(
     const data = rpcDataMap.get(region.displayedRegionIndex)
     if (data) {
       for (let i = 0; i < data.readIds.length; i++) {
-        getOrCreate(readsByName, data.readNames[i]!, () => []).push({
-          displayedRegionIndex: region.displayedRegionIndex,
-          refName: region.refName,
-          readIdx: i,
-          data,
-        })
+        const name = data.readNames[i]!
+        if (name) {
+          getOrCreate(readsByName, name, () => []).push({
+            displayedRegionIndex: region.displayedRegionIndex,
+            refName: region.refName,
+            readIdx: i,
+            data,
+          })
+        }
       }
     }
   }

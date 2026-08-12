@@ -18,18 +18,29 @@ import type { Feature } from '@jbrowse/core/util'
  * excludes secondary from both pairing and supplementary linking) and this
  * plugin's own connection resolver (readGroupConnections, which already drops
  * secondary). The '\0' prefix cannot collide with a real QNAME.
+ *
+ * A feature with NO name takes the same escape, for a reason that is not about
+ * SAM at all: this pipeline also serves the flagless PAF/synteny blocks
+ * LGVSyntenyDisplay pushes through it, and a PAF row carries no QNAME (see
+ * `makeSyntenyFeature`), so `buildBaseFeatureData` gives every one of them the
+ * empty name. Keyed by that name they became ONE chain — every block in the
+ * region on a single row, a connecting line across the whole view, and
+ * `buildChainOverlaps` tinting the lot — the moment a config or session set
+ * `linkedReads: 'normal'`, which LGVSyntenyDisplay publishes as a slot. Nothing
+ * links a nameless feature to another, so a singleton chain is the honest
+ * answer, and it is the same answer for the ordinary case of a SAM record whose
+ * QNAME the source dropped.
  */
 export function chainGroupingKey(name: string, id: string, flags: number) {
-  return flags & SAM_FLAG_SECONDARY ? `\0${id}` : name
+  return !name || flags & SAM_FLAG_SECONDARY ? `\0${id}` : name
 }
 
 /**
  * `chainGroupingKey` for a raw fetched feature — the form both by-name grouping
  * sites over `Feature`s (`partitionChains`, `filterChainFeatures`) need, so
- * neither re-spells the field reads. A missing QNAME falls back to '', collapsing
- * such reads into one shared chain; acceptable since QNAME is mandatory in SAM and
- * linked-read data always carries it. (`buildChainMetadata` works from already
- * extracted `ChainFeatureData`, so it calls `chainGroupingKey` directly.)
+ * neither re-spells the field reads. A missing QNAME reads as '' and takes the
+ * unique-key branch above. (`buildChainMetadata` works from already extracted
+ * `ChainFeatureData`, so it calls `chainGroupingKey` directly.)
  */
 export function featureChainKey(feature: Feature) {
   return chainGroupingKey(
