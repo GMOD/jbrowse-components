@@ -565,7 +565,10 @@ export async function handleBasicAuthLogin(
 
 // Workspace helpers
 export async function waitForWorkspacesReady(page: Page) {
-  await page.waitForSelector('.dockview-theme-light, .dockview-theme-dark', {
+  // Our own hook, not a library's class names — the workspace is ours now, and
+  // a test that waits on a dependency's stylesheet class breaks when the
+  // dependency does, which is how these six failed the day dockview left.
+  await page.waitForSelector('[data-testid="workspace"]', {
     timeout: 10000,
   })
   await page.waitForSelector('[data-testid^="view-container-"]', {

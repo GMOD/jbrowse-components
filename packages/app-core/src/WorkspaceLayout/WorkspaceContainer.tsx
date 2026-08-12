@@ -65,7 +65,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
   )
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="workspace">
       <LayoutRenderer
         node={session.tree}
         layout={session}

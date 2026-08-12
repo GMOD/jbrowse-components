@@ -129,16 +129,15 @@ const suite: TestSuite = {
 
         await navigateWithSessionSpec(page, sessionSpec)
 
-        await page.waitForSelector(
-          '.dockview-theme-light, .dockview-theme-dark',
-          { timeout: 10000 },
-        )
+        await page.waitForSelector('[data-testid="workspace"]', {
+          timeout: 10000,
+        })
         await delay(2000)
 
-        const groups = await page.$$('.dv-groupview')
+        const groups = await page.$$('[data-panel-id]')
         if (groups.length < 2) {
           throw new Error(
-            `Expected at least 2 dockview groups for horizontal split, got ${groups.length}`,
+            `Expected at least 2 workspace panels for horizontal split, got ${groups.length}`,
           )
         }
 
@@ -188,15 +187,14 @@ const suite: TestSuite = {
 
         await navigateWithSessionSpec(page, sessionSpec)
 
-        await page.waitForSelector(
-          '.dockview-theme-light, .dockview-theme-dark',
-          { timeout: 10000 },
-        )
+        await page.waitForSelector('[data-testid="workspace"]', {
+          timeout: 10000,
+        })
         await delay(2000)
 
-        const groups = await page.$$('.dv-groupview')
+        const groups = await page.$$('[data-panel-id]')
         if (groups.length < 2) {
-          throw new Error(`Expected 2 dockview groups, got ${groups.length}`)
+          throw new Error(`Expected 2 workspace panels, got ${groups.length}`)
         }
 
         const viewContainers = await page.$$('[data-testid^="view-container-"]')
@@ -280,7 +278,7 @@ const suite: TestSuite = {
         await waitForWorkspacesReady(page)
 
         // The app rewrites the URL to session=local-<id> on load. Reloading that
-        // restores the autosaved session (with its serialized dockviewLayout)
+        // restores the autosaved session (with its serialized layout tree)
         // from sessionStorage, exercising the api.fromJSON restore path rather
         // than re-deriving the layout from the URL spec.
         await page.waitForFunction(
@@ -288,10 +286,10 @@ const suite: TestSuite = {
           { timeout: 10000 },
         )
 
-        const groupsBefore = (await page.$$('.dv-groupview')).length
+        const groupsBefore = (await page.$$('[data-panel-id]')).length
         if (groupsBefore < 2) {
           throw new Error(
-            `Expected >=2 dockview groups before reload, got ${groupsBefore}`,
+            `Expected >=2 workspace panels before reload, got ${groupsBefore}`,
           )
         }
 
@@ -301,7 +299,7 @@ const suite: TestSuite = {
         let groupsAfter = 0
         let viewsAfter = 0
         for (let i = 0; i < 30; i++) {
-          groupsAfter = (await page.$$('.dv-groupview')).length
+          groupsAfter = (await page.$$('[data-panel-id]')).length
           viewsAfter = (await page.$$('[data-testid^="view-container-"]'))
             .length
           if (groupsAfter >= 2 && viewsAfter >= 3) {
@@ -312,7 +310,7 @@ const suite: TestSuite = {
 
         if (groupsAfter < 2) {
           throw new Error(
-            `Split layout not restored after reload: expected >=2 dockview groups, got ${groupsAfter} (the split collapsed to a single panel)`,
+            `Split layout not restored after reload: expected >=2 workspace panels, got ${groupsAfter} (the split collapsed to a single panel)`,
           )
         }
         if (viewsAfter < 3) {
