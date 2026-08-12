@@ -491,6 +491,12 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // and a doc whose whole purpose is to list departed names is the one place
   // naming an absent symbol is the point rather than a mistake.
   'layoutsEqual',
+  // packages/app-core/CLAUDE.md, "The four 'Global:' tilings went with ... in
+  // ADR-068 and nobody noticed for 225 commits": the component whose deletion
+  // took the menu items with it, named as the worked example of the section's
+  // rule that a component holding menu items is not interchangeable with the
+  // items it holds. Its absence is the whole point of the sentence.
+  'DockviewRightHeaderActions',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on
