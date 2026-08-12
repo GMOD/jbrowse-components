@@ -12,7 +12,12 @@ function pack(len: number, op: number) {
 }
 
 function collect(cigar: number[], bpPerPx0: number, bpPerPx1: number) {
-  const results: { op: number; bp1End: number; bp2End: number }[] = []
+  const results: {
+    op: number
+    bp1Start: number
+    bp1End: number
+    bp2End: number
+  }[] = []
   visitCigarRenderedSegments(
     cigar,
     0,
@@ -21,8 +26,8 @@ function collect(cigar: number[], bpPerPx0: number, bpPerPx1: number) {
     bpPerPx1,
     1,
     1,
-    (op, _bp1Start, bp1End, _bp2Start, bp2End) =>
-      results.push({ op, bp1End, bp2End }),
+    (op, bp1Start, bp1End, _bp2Start, bp2End) =>
+      results.push({ op, bp1Start, bp1End, bp2End }),
   )
   return results
 }
@@ -80,5 +85,50 @@ describe('visitCigarRenderedSegments', () => {
     const cigar = [pack(30, CIGAR_M), pack(3, CIGAR_I), pack(30, CIGAR_M)]
     const segs = collect(cigar, 2, 2)
     expect(segs.some(s => s.op === CIGAR_I)).toBe(true)
+  })
+
+  // The merge path skips the flush, so a sub-pixel indel LAST used to leave the
+  // open segment unemitted — the whole span from the previous emit to the end of
+  // the alignment, silently.
+  it('flushes the tail when the last op is a merged sub-pixel indel', () => {
+    const segs = collect([pack(500, CIGAR_M), pack(1, CIGAR_D)], 100, 100)
+    expect(segs.at(-1)!.bp1End).toBeCloseTo(501)
+  })
+
+  // And the tail is not necessarily small: it is however long a run of sub-pixel
+  // indels the CIGAR ends with. 1000 x 1bp D at 100bp/px is 10px of query axis.
+  it('flushes a tail made of many sub-pixel indels', () => {
+    const segs = collect(
+      [
+        pack(500, CIGAR_M),
+        ...Array.from({ length: 1000 }, () => pack(1, CIGAR_D)),
+      ],
+      100,
+      100,
+    )
+    expect(segs.at(-1)!.bp1End).toBeCloseTo(1500)
+    // Labelled a match: every op merged into it was individually sub-pixel, so
+    // the trailing D's kind would misname a span that is 500bp of match.
+    expect(segs.at(-1)!.op).toBe(CIGAR_M)
+  })
+
+  // The segments must partition the query axis for the location-marker grid to
+  // be able to ask each one "does a round coordinate fall inside you" and get
+  // each tick exactly once.
+  it('emits segments that tile the query axis end to end', () => {
+    const cigar = [
+      pack(300, CIGAR_M),
+      pack(2000, CIGAR_D),
+      pack(400, CIGAR_M),
+      pack(50, CIGAR_I),
+      pack(600, CIGAR_M),
+      pack(3, CIGAR_D),
+    ]
+    const segs = collect(cigar, 100, 100)
+    expect(segs[0]!.bp1Start).toBe(0)
+    for (let i = 1; i < segs.length; i++) {
+      expect(segs[i]!.bp1Start).toBeCloseTo(segs[i - 1]!.bp1End)
+    }
+    expect(segs.at(-1)!.bp1End).toBeCloseTo(300 + 2000 + 400 + 600 + 3)
   })
 })

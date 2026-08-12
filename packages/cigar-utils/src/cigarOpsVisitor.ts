@@ -131,6 +131,23 @@ export function visitCigarRenderedSegments(
       callback(resolvedOp, segBp1Start, bp1, segBp2Start, bp2)
     }
   }
+
+  // The merge above `continue`s PAST the flush, so a sub-pixel indel as the very
+  // last op leaves the open segment unvisited: the `isNotLast` escape hatch that
+  // forces a final emit is in the branch the `continue` skipped. The tail is
+  // usually a base or two, but it is bounded only by how long a run of sub-pixel
+  // indels the CIGAR ends with — 1000 trailing 1bp deletions at 100bp/px is 10px
+  // of query axis that never reaches the callback, so a clipped block ending in
+  // an indel run lost its trailing location markers, and in transparent-indels
+  // mode its base tile too (a hole, since a tiled feature draws no full-span
+  // base under it).
+  //
+  // Emitted as CIGAR_M rather than through the resolvedOp expression above: every
+  // op merged into this segment was individually judged sub-pixel, so the last
+  // one's kind is the wrong label for a span that may be mostly match.
+  if (continuingFlag) {
+    callback(CIGAR_M, segBp1Start, bp1, segBp2Start, bp2)
+  }
 }
 
 export function visitCsOps(
