@@ -1,28 +1,40 @@
 ---
-status: Accepted
-summary: "dockview stays an npm dependency and is not vendored; whether to REPLACE it with our own MST-native engine is reopened — the ~8-9k-line estimate that ruled it out was wrong, and a measured spike came in smaller than the seam it deletes"
+status: Superseded
+summary: "Decided four times that dockview stays; superseded by ADR-068, which replaced it. Kept for the part that held — every hard bug at the seam was ours — and for the cost estimate that did not, which was ~4x too high and was the thing deciding it"
 ---
 
 # ADR-057: dockview stays external; the seam is ours
 
 ## Status
 
-**Accepted** — for the vendoring question, which stands and is what the title
-is about. The reimplementation question inside it is reopened; see below.
+**Superseded** by [ADR-068](adr-068-workspace-layout-is-an-mst-tree.md)
+(2026-08-12), which replaced dockview with an MST-native layout. dockview is no
+longer a dependency of any package.
 
-**Amended 2026-08-12, and the amendment reopens half of it.** The original
-argued against reimplementing dockview partly on a cost estimate of ~8–9k lines.
-That estimate was wrong — it measured the library rather than the subset a
-JBrowse workspace needs — and a working spike came in at 863 lines against a
-1,178-line seam. The cost argument is withdrawn; see "On rewriting it
-ourselves". The vendoring decision is unaffected.
+Kept rather than deleted, because the two halves of it aged very differently and
+both are worth having.
 
-Also records that dockview 8's `DockviewOrigin` retired the seam's worst rule,
-which cuts the other way.
+**What held.** Every hard bug at that seam was on our side of the line — five of
+six were ownership bugs, one was a plugin-API regression, none was "dockview
+does the wrong thing". The vendoring argument (§1–4 below) was never the weak
+part and was never what got reversed: nobody vendored anything, the dependency
+was simply removed.
 
-Recurring proposal. This ADR exists because the question has been reopened
-several times and each time re-derived the same answer from scratch — so the
-correction above matters more than the conclusion did.
+**What did not.** The cost of replacing it, given as ~8–9k lines in "On
+rewriting it ourselves". That measured `dockview-core` — its whole dnd
+subsystem, popout windows, floating groups, tab overflow — rather than the
+subset a JBrowse workspace needs. The shipped replacement is **~1,940 source
+lines**: about four times cheaper than the estimate, and about 60% *more* code
+than the 1,178-line seam it deleted, in exchange for the dependency going away.
+That is a trade worth making and it is not a free lunch — say it that way
+round.
+
+**And that is the reason this file is still here.** It was reopened four times
+and each time re-derived the same answer from a number nobody had checked. One
+day of building replaced the estimate and the answer inverted. When a decision
+rests on a cost that has never been measured, measure it.
+
+Read below for the analysis of the seam itself, which ADR-068 does not repeat.
 
 ## Context
 

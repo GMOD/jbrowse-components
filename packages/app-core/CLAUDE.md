@@ -8,8 +8,10 @@ This replaced dockview, and most of what used to be in this file described the
 seam between the two. If you are reading an old comment or commit that talks
 about `dockviewLayout`, `panelViewAssignments`, `useDockviewController`,
 `withSuppressedPanelRemoval`, `layoutsEqual` or `init`, all of it is gone —
+[ADR-068](../../agent-docs/architecture-decision-records/adr-068-workspace-layout-is-an-mst-tree.md)
+is the decision, and the
 [ADR-057](../../agent-docs/architecture-decision-records/adr-057-dockview-stays-external.md)
-records why it existed and what the measurement was that ended it.
+it supersedes is worth reading for why the seam existed for as long as it did.
 
 ## Four levels, and the middle two are the ones people get wrong
 
@@ -165,8 +167,9 @@ somewhere and drops members the session no longer has, and nothing reads back.
 
 It used to be a single `@import` of dockview's stylesheet. Owning that entry
 point is what let the dependency be dropped without breaking a single embedder's
-import, which is exactly what it was for. Keep it exported even while empty —
-deleting it is a breaking change for every consumer.
+import, which is exactly what ADR-057 said it was for — the one part of that
+ADR's reasoning that paid off precisely as written. Keep it exported even while
+empty; deleting it is a breaking change for every consumer.
 
 ## Products key `<App>` on `session.id`
 
