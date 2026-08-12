@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react'
 import { createDockview } from 'dockview-react'
 
 import { DockviewLayoutMixin } from '../../DockviewLayout/index.ts'
+import { rearrangePanelsWithDirection } from './dockviewUtils.ts'
 import { useDockviewController } from './useDockviewController.ts'
 
 import type { DockviewGroupPanel } from 'dockview-react'
@@ -150,4 +151,66 @@ test('a layout rewound out from under dockview is re-applied', async () => {
   })
 
   expect(api.groups.length).toBe(1)
+})
+
+// The two halves of "who removed this panel?". dockview answers it for us now
+// (origin 'user' vs 'api'), and both halves have to keep working: getting the
+// first wrong strands views in a panel nobody renders, getting the second wrong
+// deletes the user's views during our own restructures.
+test('a panel the user closes takes its views with it', async () => {
+  const { api, session } = await setup(['view-1'])
+  const panelId = session.activePanelId!
+  expect(session.getViewIdsForPanel(panelId)).toEqual(['view-1'])
+
+  act(() => {
+    api.getPanel(panelId)!.api.close()
+  })
+
+  expect(session.views.length).toBe(0)
+  expect(session.panelViewAssignments.has(panelId)).toBe(false)
+})
+
+test('a tile preset restructures the grid without closing anything', async () => {
+  const { api, session, controller } = await setup(['view-1', 'view-2'])
+  act(() => {
+    controller.current.contextValue.addEmptyTab()
+  })
+  act(() => {
+    controller.current.contextValue.moveViewToNewTab('view-2')
+  })
+  expect(api.panels.length).toBeGreaterThan(1)
+
+  // what DockviewRightHeaderActions' "tile horizontally" runs: every panel is
+  // removed and re-added, all of it through DockviewApi and so all origin 'api'
+  act(() => {
+    controller.current.contextValue.rearrangePanels(dockviewApi => {
+      rearrangePanelsWithDirection(dockviewApi, (idx, states) =>
+        idx === 0
+          ? undefined
+          : { referencePanel: states[0]!.id, direction: 'right' },
+      )
+    })
+  })
+
+  expect(session.views.map(v => v.id).sort()).toEqual(['view-1', 'view-2'])
+  for (const view of session.views) {
+    const home = session.getPanelContainingView(view.id)
+    expect(home).toBeDefined()
+    expect(api.getPanel(home!.panelId)).toBeDefined()
+  }
+})
+
+test('activePanelId keeps naming a panel that exists after a user close', async () => {
+  const { api, session, controller } = await setup(['view-1'])
+  act(() => {
+    controller.current.contextValue.addEmptyTab()
+  })
+  const closed = session.activePanelId!
+
+  act(() => {
+    api.getPanel(closed)!.api.close()
+  })
+
+  expect(session.activePanelId).not.toBe(closed)
+  expect(api.getPanel(session.activePanelId!)).toBeDefined()
 })

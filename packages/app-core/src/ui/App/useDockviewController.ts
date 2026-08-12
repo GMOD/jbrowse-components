@@ -21,6 +21,7 @@ import type { DockviewSessionType } from './types.ts'
 import type {
   DockviewApi,
   DockviewGroupPanel,
+  DockviewOrigin,
   DockviewReadyEvent,
   SerializedDockview,
 } from 'dockview-react'
@@ -35,35 +36,30 @@ type DockviewSession = DockviewSessionType & SessionWithDockviewLayout
  */
 export function useDockviewController(session: DockviewSession) {
   const [api, setApi] = useState<DockviewApi | null>(null)
-  const removingPanelsRef = useRef(false)
   const sessionRef = useRef(session)
   sessionRef.current = session
 
-  // Run `fn` with the "a closed panel closes its views" rule turned off.
-  // Removing a panel is how dockview expresses both "the user closed this tab"
-  // and "I am restructuring the grid" (fromJSON clears every panel first, the
-  // tile presets remove and re-add them), and only the first should reach
-  // session.removeView. onDidRemovePanel fires synchronously, so a flag held
-  // across the call is enough to tell them apart; the `finally` guarantees it
-  // is always reset, so it can never get stuck on and eat a real close.
-  const withSuppressedPanelRemoval = useCallback((fn: () => void) => {
-    removingPanelsRef.current = true
-    try {
-      fn()
-    } finally {
-      removingPanelsRef.current = false
-    }
-  }, [])
+  // Who caused the mutation dockview is currently inside, or undefined between
+  // mutations. dockview tags everything entered through DockviewApi as 'api'
+  // and every user gesture as 'user', and brackets each top-level mutation with
+  // onWillMutateLayout/onDidMutateLayout — so "is this remove the user closing
+  // a tab, or us restructuring the grid?" is a question the library answers.
+  //
+  // This replaced a try/finally flag we set around our own calls. The flag was
+  // not wrong, it was unenforceable: nothing made a new restructure remember to
+  // wrap itself, and a forgotten wrap silently closes the user's views. Reading
+  // the origin cannot be forgotten, and it is correct for compound operations
+  // (a drag that relocates a panel is one mutation, not three) because dockview
+  // joins nested mutations into the outermost bracket.
+  const mutationOriginRef = useRef<DockviewOrigin | undefined>(undefined)
 
   const rearrangePanels = useCallback(
     (arrange: (api: DockviewApi) => void) => {
       if (api) {
-        withSuppressedPanelRemoval(() => {
-          arrange(api)
-        })
+        arrange(api)
       }
     },
-    [api, withSuppressedPanelRemoval],
+    [api],
   )
 
   const addEmptyTab = useCallback(
@@ -140,10 +136,10 @@ export function useDockviewController(session: DockviewSession) {
     (dockviewApi: DockviewApi, initLayout: DockviewLayoutNode) => {
       const session = sessionRef.current
       clearPanelAssignments(session)
-      // no-op at mount; on a later init it retires the panels being replaced
-      withSuppressedPanelRemoval(() => {
-        dockviewApi.clear()
-      })
+      // no-op at mount; on a later init it retires the panels being replaced.
+      // Its removals carry origin 'api', so onDidRemovePanel leaves the views
+      // alone without this call having to announce itself.
+      dockviewApi.clear()
 
       const firstPanelId = applyInitLayout(dockviewApi, session, initLayout)
       session.setInit(undefined)
@@ -153,7 +149,7 @@ export function useDockviewController(session: DockviewSession) {
       }
       session.setDockviewLayout(dockviewApi.toJSON())
     },
-    [clearPanelAssignments, withSuppressedPanelRemoval],
+    [clearPanelAssignments],
   )
 
   const createInitialPanels = useCallback(
@@ -176,14 +172,29 @@ export function useDockviewController(session: DockviewSession) {
     (event: DockviewReadyEvent) => {
       setApi(event.api)
 
+      // Bracket every top-level mutation with who asked for it. Nested calls
+      // join the outermost, so this is set once per user-visible operation and
+      // is live for every panel event fired inside it.
+      event.api.onWillMutateLayout(e => {
+        mutationOriginRef.current = e.origin
+      })
+      event.api.onDidMutateLayout(() => {
+        mutationOriginRef.current = undefined
+      })
+
+      // Only a user activating a panel is news. Our own addPanel/fromJSON
+      // activate one too, and writing that back is how the sync autorun ended
+      // up re-entered from inside dockview's still-running emitter — every
+      // path that calls the api sets activePanelId itself, in its own action,
+      // where it is a deliberate edit rather than an echo.
       event.api.onDidActivePanelChange(e => {
-        if (e.panel?.id) {
+        if (e.origin === 'user' && e.panel?.id) {
           sessionRef.current.setActivePanelId(e.panel.id)
         }
       })
 
       event.api.onDidRemovePanel(e => {
-        if (!removingPanelsRef.current) {
+        if (mutationOriginRef.current !== 'api') {
           const session = sessionRef.current
           for (const viewId of session.getViewIdsForPanel(e.id)) {
             const view = session.views.find(v => v.id === viewId)
@@ -219,28 +230,26 @@ export function useDockviewController(session: DockviewSession) {
       }
 
       if (dockviewLayout) {
-        withSuppressedPanelRemoval(() => {
-          try {
-            event.api.fromJSON(dockviewLayout)
-            if (event.api.panels.length === 0) {
-              throw new Error('No panels after fromJSON restore')
-            }
-            // Only on this path, and only here: a restore is the one moment a
-            // session's saved panel order can disagree with session.views. The
-            // undo path below restores both from one snapshot, where they
-            // already agree, and writing to the session there is what the
-            // TimeTraveller cannot tell from a fresh edit.
-            adoptSavedPanelOrder(sessionRef.current)
-          } catch (e) {
-            console.error('Failed to restore dockview layout:', e)
-            createInitialPanels(event.api)
+        try {
+          event.api.fromJSON(dockviewLayout)
+          if (event.api.panels.length === 0) {
+            throw new Error('No panels after fromJSON restore')
           }
-        })
+          // Only on this path, and only here: a restore is the one moment a
+          // session's saved panel order can disagree with session.views. The
+          // undo path below restores both from one snapshot, where they
+          // already agree, and writing to the session there is what the
+          // TimeTraveller cannot tell from a fresh edit.
+          adoptSavedPanelOrder(sessionRef.current)
+        } catch (e) {
+          console.error('Failed to restore dockview layout:', e)
+          createInitialPanels(event.api)
+        }
       } else {
         createInitialPanels(event.api)
       }
     },
-    [createInitialPanels, withSuppressedPanelRemoval],
+    [createInitialPanels],
   )
 
   // The layout this autorun last saw on the session, so step 2 below can ask
@@ -272,32 +281,31 @@ export function useDockviewController(session: DockviewSession) {
         // Step 2 has exactly one caller — undo rewinding `dockviewLayout`
         // through applySnapshot — so it asks whether the SESSION's layout
         // moved. "does dockview disagree with the session?" is a different
-        // question and answering that one is what broke: dockview legitimately
+        // question, and answering that one is what broke: dockview legitimately
         // disagrees for the whole window between an imperative mutation and the
-        // AsapEvent microtask that persists it, and any other dependency of
-        // this autorun re-entering during that window then reverts the change
-        // the user just made. addPanel is such a window and fires
-        // onDidActivePanelChange synchronously; that writes activePanelId,
-        // which reconcile subscribes to the moment it homes a view. So opening
-        // a tab or a split ran fromJSON from inside dockview's own emitter,
-        // disposing every group while it was still walking its listener list —
-        // "invalid operation: resource is already disposed" from the next
-        // listener's header-actions React part.
+        // AsapEvent microtask that persists it, so anything re-entering this
+        // autorun during that window reverted the change the user just made,
+        // and did it from inside dockview's own emitter — fromJSON disposing
+        // groups mid-fire, "invalid operation: resource is already disposed".
+        //
+        // Filtering onDidActivePanelChange on origin removed the re-entry this
+        // autorun's own api calls caused. It cannot remove all of them: a user
+        // gesture that writes to the session (a drag, a close) is a mutation in
+        // flight too, and that write is one we do want. So the guard stays, and
+        // it is the one that makes step 2 safe rather than merely quiet.
         dockviewLayout &&
         !layoutsEqual(dockviewLayout, lastSeenLayout) &&
         !layoutsEqual(api.toJSON(), dockviewLayout)
       ) {
-        withSuppressedPanelRemoval(() => {
-          try {
-            api.fromJSON(dockviewLayout)
-          } catch (e) {
-            console.error('Failed to restore dockview layout from undo:', e)
-          }
-        })
+        try {
+          api.fromJSON(dockviewLayout)
+        } catch (e) {
+          console.error('Failed to restore dockview layout from undo:', e)
+        }
       }
       reconcilePanelAssignments(api, session)
     })
-  }, [session, api, applyInit, withSuppressedPanelRemoval])
+  }, [session, api, applyInit])
 
   return { contextValue, onReady }
 }

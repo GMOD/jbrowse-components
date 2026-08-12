@@ -42,16 +42,34 @@ What this does **not** unify is _which_ panel a replacement lands in. A new view
 arrives unassigned and reconcile homes it to the active panel, which is the
 replaced view's panel only because clicking into a view activates its panel.
 
-## dockview's layout event is a microtask; its panel events are not
+## dockview tells you whether you or the user did it — use that, not a flag
 
-`onDidLayoutChange` is an `AsapEvent`, which `queueMicrotask`s its fire.
-`onDidRemovePanel` / `onDidActivePanelChange` are plain `Emitter`s and fire
-synchronously.
+`DockviewOrigin` is `'user' | 'api'`. Everything entered through `DockviewApi`
+is tagged `'api'`; every user gesture is `'user'`. It reaches us two ways:
 
-So a `try/finally` flag held across an imperative burst guards the panel events
-and **can never** guard the layout event — the microtask only runs once the
-stack empties, long after the `finally`. Don't reach for a flag there; compare
-before writing (`layoutsEqual`).
+- `onDidActivePanelChange` carries `origin` on the event.
+- `onWillMutateLayout` / `onDidMutateLayout` bracket each top-level structural
+  mutation with `{kind, origin}`, and nested calls **join the outermost
+  bracket**, so one compound operation (a drag that relocates a panel) is one
+  bracket rather than three. `onDidRemovePanel` fires inside it, which is how
+  the controller answers "did the user close this tab, or am I restructuring?"
+
+This replaced a `try/finally` flag (`withSuppressedPanelRemoval`) that we set
+around our own calls. That flag was not wrong, it was **unenforceable**: nothing
+made a newly added restructure remember to wrap itself, and a forgotten wrap
+silently closes the user's views. Don't reintroduce one.
+
+Two caveats to check before leaning on it:
+
+- `DockviewApi.addGroup` is the one method upstream does **not** wrap in
+  `withOrigin('api')` — every sibling is — so our own `addGroup` reports
+  `'user'`. Harmless today (adding a group removes no panels, and the empty
+  group has no active panel to report), but don't build a rule that needs it.
+- **`onDidLayoutChange` has no origin**, and cannot get one: it is an
+  `AsapEvent` that `queueMicrotask`s a _coalesced_ fire, so by the time it runs
+  no mutation is in flight and several may have merged. It is also the only
+  signal for splitter drags, which are not structural mutations at all. Persist
+  from it by comparing before writing (`layoutsEqual`) — that part stands.
 
 It matters because dockview re-fires the layout event after every layout we
 install ourselves: `fromJSON` on restore and on undo, the tile presets. The
@@ -88,9 +106,14 @@ reconcile subscribes to `activePanelId` the moment it homes a view. So the
 autorun ran from inside dockview's own emitter, and `fromJSON` disposed every
 group while that emitter was still walking its listener list — the next listener
 touched its disposed React part and threw
-`invalid operation: resource is already disposed`. Any session write made from a
-dockview callback can land you back here; keep the reactions that dockview
-events trigger from calling back into dockview.
+`invalid operation: resource is already disposed`.
+
+Filtering `onDidActivePanelChange` on `origin === 'user'` removes the re-entry
+our _own_ api calls cause, which is where that crash came from. It cannot remove
+all of it — a user gesture that writes to the session is a mutation in flight
+too, and that write is one we want — so the guard above is what makes step 2
+safe, and the origin filter is what keeps it from being exercised constantly.
+Both, not either.
 
 ## An assignment is what marks a view as "homed"
 
@@ -138,8 +161,12 @@ it to `fromJSON`, **not** recursive `setSize`. Don't bolt size math onto
 
 `onDidRemovePanel` removes the panel's views from the session. Dragging a tab
 between groups does not trip it: dockview's `_moving` lock suppresses the event
-during re-parenting. It fires for real closes and for our own restructures —
-telling those two apart is the sole job of `withSuppressedPanelRemoval`.
+during re-parenting. It fires for real closes and for our own restructures, and
+the origin of the enclosing mutation is what tells those apart (above).
+
+Both directions are pinned by tests, because both failure modes are silent: a
+close that does not reach the session strands views in a panel nobody renders,
+and a restructure that does reach it deletes the user's views mid-retile.
 
 ## Products key `<App>` on `session.id`
 
