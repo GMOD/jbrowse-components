@@ -739,15 +739,61 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // The highlight list with every refName run through the assembly's
+        // getCanonicalRefName — the one normalization layer, which resolves
+        // aliases and casing together.
+        //
+        // The matchers compare refName text directly, and the regions they
+        // compare it against carry the assembly's CANONICAL name. A highlight
+        // does not: the right-click path copies the region's own refName and is
+        // therefore already canonical, but a hand-authored session spec carries
+        // whatever the author typed — which is whatever the location box showed
+        // them, i.e. an alias as often as not. Unnormalized, `chr12` against an
+        // assembly canonicalized on `12` boxes nothing, says nothing, and is
+        // indistinguishable from the feature not being there. Worse, it depends
+        // on the assembly: the same spec key works on one hg38 config and
+        // silently does nothing on another.
+        //
+        // The search bridge (searchResultHighlight.ts) canonicalizes at its own
+        // producer for exactly this reason. Doing it here covers the provenance
+        // that has no producer to fix it.
+        get canonicalFeatureHighlights(): FeatureHighlight[] {
+          const { assemblyManager } = getSession(self)
+          const track = getContainingTrack(self)
+          const assemblyNames = readConfObject(
+            track.configuration,
+            'assemblyNames',
+          ) as string[]
+          const assembly = assemblyManager.get(assemblyNames[0]!)
+          // `initialized` gates the call, not a try/catch: getCanonicalRefName
+          // THROWS before the alias file has loaded, and this getter runs from
+          // the first render.
+          return self.featureHighlights.map(h => ({
+            refName: assembly?.initialized
+              ? (assembly.getCanonicalRefName(h.refName) ?? h.refName)
+              : h.refName,
+            start: h.start,
+            end: h.end,
+            name: h.name,
+            featureId: h.featureId,
+          }))
+        },
+
+        /**
+         * #getter
+         */
         // Resolve declarative highlights against the RAW fetched data (rpcDataMap)
         // rather than the laid-out data — deliberately pre-layout, so it can feed
         // both boxing and pinning without a layout→layout cycle (coords/name live
         // on the raw items, no row/topPx needed). See resolveFeatureHighlights for
         // the box/pin/boxedBy resolution rules.
         get resolvedHighlights(): ResolvedHighlights {
+          // index-aligned with self.featureHighlights, so `boxedBy` attribution
+          // still indexes the stored list (removeFeatureHighlightsForId).
+          const highlights = this.canonicalFeatureHighlights
           const resolved = resolveFeatureHighlights(
             self.rpcDataMap.values(),
-            self.featureHighlights,
+            highlights,
           )
           // exact-span matching makes a mistyped coordinate draw nothing at all;
           // say so once rather than leaving it silent (warnUnresolvedHighlights
@@ -755,7 +801,7 @@ export default function baseStateModelFactory(
           // loaded region SPANS, not just "is there data": a highlight resolves
           // to nothing whenever the user pans or navigates off its locus, and
           // gating on data-existence alone blamed the spec for that.
-          warnUnresolvedHighlights(self.featureHighlights, resolved, [
+          warnUnresolvedHighlights(highlights, resolved, [
             ...self.loadedRegions.values(),
           ])
           return resolved

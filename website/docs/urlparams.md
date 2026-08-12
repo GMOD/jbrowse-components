@@ -169,6 +169,11 @@ tooltip. URL form (URL-encode the JSON):
 JSON highlights use the same `%20` space delimiter, and loc strings and JSON
 objects can be mixed in one `&highlight=` value.
 
+This highlights a _region_, over every track at once, and needs coordinates. To
+box a single _feature_ by name, and sort it to the top of its track's layout,
+see
+[`featureHighlights`](#live-example-highlight-a-feature-and-sort-it-to-the-top).
+
 ### &tracklist=
 
 `&tracklist=true`
@@ -755,6 +760,66 @@ in green:
 
 To color by a feature attribute, use a jexl expression, e.g.
 `"color": "jexl:get(feature,'type')=='gene'?'blue':'gray'"`.
+
+#### Live example: highlight a feature, and sort it to the top
+
+[`&highlight=`](#highlight) paints a band over a _region_, drawn by the view
+across every track at once. To box one _feature_ — a gene, transcript or
+variant, at whatever row and height its own track laid it out — set
+`featureHighlights` on the display. It is the same state the right-click
+"Highlight feature" item and a feature search write, and every canvas display
+carries it
+([`LinearBasicDisplay`](/docs/models/linearbasicdisplay#property-featurehighlights),
+`LinearVariantDisplay`, and the rest):
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "assembly": "volvox",
+      "loc": "ctgA:1-50000",
+      "type": "LinearGenomeView",
+      "tracks": [
+        {
+          "trackId": "gff3tabix_genes",
+          "displaySnapshot": {
+            "height": 200,
+            "featureHighlights": [{ "refName": "ctgA", "name": "EDEN" }]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+A highlight also **sorts its feature to a top row** of that track, ahead of the
+row packer's usual order, and holds it there across pan and zoom. On a dense
+annotation track that is most of the point — the named gene is boxed _and_ is
+the first thing in the lane, rather than boxed seven rows down. Only a
+declarative highlight moves anything: the right-click one marks a feature the
+user just clicked, and yanking that out of its row would be the opposite of
+helpful.
+
+Each entry names one feature, either way:
+
+- **By name** — `{"refName": "ctgA", "name": "EDEN"}`. The feature's label,
+  matched exactly and case-insensitively within that refName. Prefer this.
+- **By span** — `{"refName": "ctgA", "start": 1049, "end": 9000}`, in interbase
+  (0-based half-open) coordinates, matched within ±1bp of the track's own
+  record.
+
+The trap in the span form is that a location box reads `ctgA:1,050-9,000` for
+that same feature — 1-based and inclusive — so coordinates copied off the screen
+are a base short at the start and match nothing. An entry may carry both, in
+which case `name` is the fallback used when the span misses. A name that is
+genuinely ambiguous (a gene and its same-named transcript) boxes both.
+
+A span that resolves to nothing logs a console warning naming the coordinates,
+once data covering it has loaded. A name that resolves to nothing stays silent —
+it is indistinguishable from a feature elsewhere on the contig that has not been
+fetched yet. To clear, use the clear-highlights button that appears in the view
+header while anything is highlighted, or the track menu's "Clear N highlights".
 
 ### Circular view
 

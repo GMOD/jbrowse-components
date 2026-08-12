@@ -147,7 +147,12 @@ export function createTestEnvironment(opts?: {
                     assemblyName: 'volvox',
                   },
                 ],
-                getCanonicalRefName: (refName: string) => refName,
+                // identity for a canonical name, plus one alias: the display
+                // normalizes user-typed refName text through this, and a stub
+                // that only ever answered identity could not tell a resolver
+                // that normalizes from one that doesn't
+                getCanonicalRefName: (refName: string) =>
+                  refName === 'chrA' ? 'ctgA' : refName,
                 getGeneticCodeId: () => undefined,
                 configuration: {
                   sequence: undefined,

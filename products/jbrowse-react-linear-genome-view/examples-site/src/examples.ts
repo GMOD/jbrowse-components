@@ -129,7 +129,7 @@ export const pages: ExamplePage[] = [
     slug: 'feature-colors-and-labels',
     title: 'Colors, labels & sizing',
     description:
-      'How a feature track looks: color and label per feature with jexl, and what it does when rows overflow.',
+      'How a feature track looks: color and label per feature with jexl, what it does when rows overflow, and marking one feature.',
     group: 'Tracks & styling',
     sections: [
       {
@@ -146,6 +146,11 @@ export const pages: ExamplePage[] = [
         slug: 'track-sizing',
         title: 'Track sizing: grow & fit',
         description: 'heightMode, with the same crowded locus opened twice.',
+      },
+      {
+        slug: 'with-feature-highlights',
+        title: 'Highlight a feature, and sort it to the top',
+        description: 'featureHighlights boxes one feature and pins its row.',
       },
     ],
   },

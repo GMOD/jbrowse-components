@@ -563,6 +563,15 @@ const SHOW_LEGEND_DISPLAYS = new Set([
   'LinearHicDisplay',
 ])
 
+// The displays composing LinearCanvasBaseDisplay, which is where
+// `featureHighlights` is declared and where the right-click item that writes it
+// lives. LinearVariantDisplay is in it because it renames its noun rather than
+// its behaviour — its menu row reads "Highlight variant" and is the same item.
+const FEATURE_HIGHLIGHT_DISPLAYS = new Set([
+  'LinearBasicDisplay',
+  'LinearVariantDisplay',
+])
+
 // The three displays declaring `squashToHeight`, all of which draw a triangle
 // whose natural height is half the view width: the Hi-C contact matrix and the
 // two LD heatmaps. They share one menu-item helper, so they share the label.
@@ -807,11 +816,13 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → Show row separators (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  featureHighlights: (value, { displayType }) =>
-    Array.isArray(value) && displayType === 'LinearBasicDisplay'
+  featureHighlights: (value, { displayType, noun }) =>
+    Array.isArray(value) &&
+    displayType &&
+    FEATURE_HIGHLIGHT_DISPLAYS.has(displayType)
       ? {
-          path: 'Search for the feature by name in the location box — a hit highlights it on the track.',
-          note: `This figure highlights ${value.length} feature${value.length === 1 ? '' : 's'}. There is no menu entry; the highlight is what a successful feature search leaves behind.`,
+          path: `Right-click the ${noun} → Highlight ${noun} (searching for it by name in the location box leaves the same highlight behind)`,
+          note: `This figure highlights ${value.length} ${noun}${value.length === 1 ? '' : 's'}. The spec form differs from the click in one way that matters to a figure: a highlight the user did not click also sorts its ${noun} to a top row of the track, so it is boxed at the top of a dense lane rather than boxed several rows down.`,
         }
       : undefined,
   maxFeatureScreenDensity: (value, { displayType }) =>

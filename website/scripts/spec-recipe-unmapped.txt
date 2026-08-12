@@ -13,7 +13,6 @@ color
 colorDomain
 connectedView
 displayMode
-featureHighlights
 filterBy
 gfaLocation
 growMaxHeight

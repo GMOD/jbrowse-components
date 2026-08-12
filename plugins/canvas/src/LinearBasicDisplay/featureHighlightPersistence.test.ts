@@ -164,6 +164,46 @@ describe('feature highlight declarative persistence', () => {
     expect([...display.layoutPinnedFeatureIdSet]).toContain('feat-xyz')
   })
 
+  // The provenance the matchers were never written for: nobody produces this
+  // highlight, so nothing canonicalizes its refName on the way in. An author
+  // types what the location box showed them, which is an alias as often as it
+  // is the assembly's own name — and the regions it is matched against are
+  // canonical. Both forms have to resolve, or the same spec key works on one
+  // assembly and silently does nothing on another.
+  it('resolves a spec highlight written with an aliased refName', () => {
+    const { createDisplay } = createTestEnvironment()
+    // 'chrA' is the testEnv assembly's alias for the canonical 'ctgA'
+    const { display } = createDisplay({
+      featureHighlights: [{ ...brca1, refName: 'chrA' }],
+    })
+
+    loadFeature(display, {
+      featureId: 'feat-xyz',
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+    })
+
+    expect([...display.highlightedFeatureIdSet]).toEqual(['feat-xyz'])
+    expect([...display.layoutPinnedFeatureIdSet]).toContain('feat-xyz')
+  })
+
+  it('resolves an aliased name-only spec highlight', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({
+      featureHighlights: [{ refName: 'chrA', name: 'BRCA1' }],
+    })
+
+    loadFeature(display, {
+      featureId: 'feat-xyz',
+      startBp: 4321,
+      endBp: 5678,
+      name: 'BRCA1',
+    })
+
+    expect([...display.highlightedFeatureIdSet]).toEqual(['feat-xyz'])
+  })
+
   it('a non-matching rendered feature is neither highlighted nor pinned', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({ featureHighlights: [brca1] })
