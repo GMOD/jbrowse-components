@@ -1,4 +1,4 @@
-import { alreadyShowing } from './installSyntenyFollow.ts'
+import { alreadyShowing } from './alreadyShowing.ts'
 
 import type { FollowWindow } from './followAnchorWindow.ts'
 

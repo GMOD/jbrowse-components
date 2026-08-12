@@ -1,9 +1,37 @@
 import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import type { SpanOfInterest } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
+import type {
+  ResolvedSpan,
+  SpanOfInterest,
+} from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+/**
+ * Send `view` to a resolved span, the way every one-shot path does.
+ *
+ * A NAVIGATION rather than a pan: `navToLocString` will change what the row
+ * displays if the span is on a contig it is not currently showing, which is the
+ * whole point when a follow crosses onto another chromosome. The per-frame
+ * pass wants the opposite and uses `positionViewOnSpan` instead.
+ *
+ * Shared because the one-base clamp below is easy to leave out and silent when
+ * it is: a zero-width span assembles into an INVERTED locstring, which the
+ * parser then reads as a region running backwards.
+ */
+export async function navToResolvedSpan(
+  view: LinearGenomeViewModel,
+  span: ResolvedSpan,
+) {
+  await view.navToLocString(
+    assembleLocStringRaw({
+      refName: span.refName,
+      start: span.start,
+      end: Math.max(span.start + 1, span.end),
+    }),
+  )
+}
 
 /**
  * The part of `view`'s visible window that lies on `refName`, or undefined
@@ -136,13 +164,5 @@ export async function moveMatchingPanel({
     )
     return
   }
-  await movingView.navToLocString(
-    assembleLocStringRaw({
-      refName: span.refName,
-      start: span.start,
-      // at least one base, since a zero-width span assembles into an inverted
-      // locstring
-      end: Math.max(span.start + 1, span.end),
-    }),
-  )
+  await navToResolvedSpan(movingView, span)
 }
