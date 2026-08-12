@@ -30,12 +30,13 @@ const mainThreadConfig = {
   },
 }
 
-function setup() {
+function setup({ adminMode = false } = {}) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
   const rootModel = rootModelFactory({
     pluginManager,
     sessionModelFactory,
+    adminMode,
   }).create(mainThreadConfig)
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
@@ -279,5 +280,62 @@ describe('loadHubSpec with a view init', () => {
     // the hub itself still loaded, non-silently, so its own defaultPos launch
     // remains the best guess available
     expect(session.connectionInstances[0].silent).toBe(false)
+  })
+})
+
+// `?hubURL=…&sessionTracks=[…]` used to open the hub with the tracks silently
+// dropped, while the SAME url handed to app-core's parseSessionSpecUrl — which
+// is what Desktop's "Open JBrowse Web link…" and the jbrowse:// handler use —
+// carried them through. One link, two answers, neither of them announced.
+describe('loadHubSpec with sessionTracks', () => {
+  const hubURL = ['https://example.com/hubs/my-hub/hub.txt']
+  const TRACK = {
+    trackId: 'url_track',
+    type: 'FeatureTrack',
+    name: 'URL track',
+    assemblyNames: ['hubAsm'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  }
+
+  function pendingFetch() {
+    jest.spyOn(global, 'fetch').mockReturnValue(new Promise(() => {}))
+  }
+
+  it('registers them as session tracks alongside the hub', () => {
+    const { pluginManager, rootModel } = setup()
+    pendingFetch()
+
+    void loadHubSpec({ hubURL, sessionTracks: [TRACK] }, pluginManager)
+
+    const session = rootModel.session!
+    expect(
+      session.sessionTracks.map((t: { trackId: string }) => t.trackId),
+    ).toEqual(['url_track'])
+    // registered by the time the connection exists, which is what lets a view
+    // launched after the hub's assembly resolves name the track in `&tracks=`
+    expect(session.connectionInstances).toHaveLength(1)
+  })
+
+  // the reason addSessionTracks is shared with loadSessionSpec rather than
+  // reimplemented here: `addTrackConf` follows the user, so in admin mode it
+  // writes jbrowse.tracks — the config.json served to every visitor
+  it('keeps them out of jbrowse.tracks for an admin', () => {
+    const { pluginManager, rootModel } = setup({ adminMode: true })
+    pendingFetch()
+
+    void loadHubSpec({ hubURL, sessionTracks: [TRACK] }, pluginManager)
+
+    const session = rootModel.session!
+    expect(session.sessionTracks).toHaveLength(1)
+    expect(session.jbrowse.tracks).toHaveLength(0)
+  })
+
+  it('is a no-op when the link carries none', () => {
+    const { pluginManager, rootModel } = setup()
+    pendingFetch()
+
+    void loadHubSpec({ hubURL }, pluginManager)
+
+    expect(rootModel.session!.sessionTracks).toHaveLength(0)
   })
 })

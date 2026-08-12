@@ -624,6 +624,13 @@ const SessionLoader = types
         // launch resolves against one of the hub's own genomes, so an init with
         // no way to name one has nothing to launch against.
         viewInit: self.isJb1StyleSession ? self.urlViewInit : undefined,
+        // ungated, unlike viewInit: a `&sessionTracks=` is worth registering
+        // whether or not the link also says where to look. Dropping it here is
+        // what made `?hubURL=…&sessionTracks=…&tracks=my_track` open the hub
+        // with `my_track` unresolvable and no diagnostic, while the same URL
+        // handed to parseSessionSpecUrl (Desktop's "Open JBrowse Web link…")
+        // carried the track — one link, two answers.
+        sessionTracks: self.sessionTracksParsed,
       })
     },
   }))

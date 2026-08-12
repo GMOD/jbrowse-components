@@ -76,6 +76,50 @@ function isSessionWithAddSessionTracks(
   return 'addSessionTrackConf' in session
 }
 
+/**
+ * Register `&sessionTracks=` / a spec's `sessionTracks` into a session.
+ *
+ * Exported because the hub launch needs it too and must not reimplement it: the
+ * admin-mode hazard above is invisible from a call site (`addTrackConf`
+ * succeeds, and only an admin's config.json is quietly rewritten for every
+ * visitor), so a second copy that forgot the session-scoped adder would look
+ * correct and test correct everywhere except the one deployment it matters in.
+ *
+ * A track that fails to register does not cost the caller the rest of them —
+ * same reasoning as the per-connection and per-view try/catch around it, one
+ * layer down.
+ */
+export function addSessionTracks(
+  session: AbstractSessionModel | undefined,
+  tracks: Record<string, unknown>[],
+) {
+  if (!tracks.length) {
+    return
+  }
+  if (!isSessionWithAddTracks(session)) {
+    session?.notifyError(
+      'This link has "sessionTracks", but this application cannot add tracks to a session',
+    )
+    return
+  }
+  for (const track of tracks) {
+    const label = typeof track.trackId === 'string' ? track.trackId : '?'
+    try {
+      if (isSessionWithAddSessionTracks(session)) {
+        session.addSessionTrackConf(track)
+      } else {
+        session.addTrackConf(track)
+      }
+    } catch (e) {
+      console.error(e)
+      session.notifyError(
+        `Track "${label}" has an invalid configuration: ${e}`,
+        e,
+      )
+    }
+  }
+}
+
 // A connection supplies assemblies and tracks that the spec's views go on to
 // reference by name, and it supplies them from a fetch. Launching a view before
 // that fetch lands gives it an assembly that doesn't exist yet ("Assembly X not
@@ -257,19 +301,7 @@ export async function loadSessionSpec(
         )
       }
     }
-    if (isSessionWithAddTracks(session)) {
-      for (const track of sessionTracks) {
-        // session-scoped adder for the same reason as the connections above: a
-        // spec key named `sessionTracks` means the session, and `addTrackConf`
-        // follows the user, so an admin clicking a link would otherwise write
-        // the spec's tracks into the config.json served to everyone.
-        if (isSessionWithAddSessionTracks(session)) {
-          session.addSessionTrackConf(track)
-        } else {
-          session.addTrackConf(track)
-        }
-      }
-    }
+    addSessionTracks(session, sessionTracks)
 
     // a view type with no registered LaunchView-<type> extension point makes
     // evaluateAsyncExtensionPoint a silent no-op, leaving an empty session with

@@ -1,4 +1,8 @@
-import { hubConnectionSpec, shortHubLabel } from '@jbrowse/app-core'
+import {
+  addSessionTracks,
+  hubConnectionSpec,
+  shortHubLabel,
+} from '@jbrowse/app-core'
 import { isSessionModelWithConnections } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { isBaseSession } from '@jbrowse/product-core'
@@ -79,12 +83,15 @@ export async function loadHubSpec(
     hubURL,
     sessionName,
     viewInit,
+    sessionTracks = [],
   }: {
     hubURL: string[]
     sessionName?: string
     // the loc/assembly/tracks URL shorthand, when the link carried it alongside
     // the hub
     viewInit?: Partial<InitState>
+    // `&sessionTracks=`, when the link carried it alongside the hub
+    sessionTracks?: Record<string, unknown>[]
   },
   pluginManager: PluginManager,
 ) {
@@ -121,6 +128,13 @@ export async function loadHubSpec(
       session.makeConnection(conn, launchInit ? { silent: true } : undefined)
     }
   }
+
+  // After the connections and before the launch below, the same order a spec
+  // uses: a `&sessionTracks=` entry may name an assembly the hub supplies, and
+  // `&tracks=` may name one of these trackIds, so both ends have to be
+  // registered by the time launchHubView resolves the view. Shared with
+  // loadSessionSpec rather than reimplemented — see addSessionTracks.
+  addSessionTracks(session, sessionTracks)
 
   try {
     const res = await fetch(firstURL)

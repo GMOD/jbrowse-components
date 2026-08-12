@@ -17,6 +17,7 @@ export type {
   SessionWithDockviewLayout,
 } from './DockviewLayout/index.ts'
 export {
+  addSessionTracks,
   buildLgvInit,
   buildLgvInitFromParams,
   hubConnectionSpec,

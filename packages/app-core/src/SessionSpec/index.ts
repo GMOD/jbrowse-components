@@ -8,7 +8,7 @@ export {
   shortHubLabel,
   splitHighlights,
 } from './lgvUrlInit.ts'
-export { loadSessionSpec } from './loadSessionSpec.ts'
+export { addSessionTracks, loadSessionSpec } from './loadSessionSpec.ts'
 export { parseSessionSpecUrl } from './parseSessionSpecUrl.ts'
 
 export type { LgvUrlInit } from './lgvUrlInit.ts'

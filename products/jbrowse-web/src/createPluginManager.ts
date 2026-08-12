@@ -132,6 +132,7 @@ function initSession(
           ...sessionSource.hubSpec,
           sessionName,
           viewInit: sessionSource.viewInit,
+          sessionTracks: sessionSource.sessionTracks,
         },
         pluginManager,
       )

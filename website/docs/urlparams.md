@@ -259,10 +259,12 @@ against.
 ?config=none&hubURL=https://example.com/hub.txt&assembly=GCF_019202715.1&loc=chr1:1-100000
 ```
 
+`&sessionTracks=` works alongside a hub, registering its track configs into the
+hub session, so `&tracks=` can name one of them beside the hub's own tracks.
+
 `&hubURL=` opens each hub with a single linear genome view. For anything beyond
-that — several views over a hub, a workspace layout, a dotplot, or extra
-`sessionTracks` — put the hub in a session spec's
-[`sessionConnections`](#session-spec) instead.
+that — several views over a hub, a workspace layout, or a dotplot — put the hub
+in a session spec's [`sessionConnections`](#session-spec) instead.
 
 See [](/docs/user_guides/hub_url) for the full workflow, including combining a
 hub with a config and loading several at once.
@@ -324,10 +326,10 @@ ranking, highest first:
 5. Nothing of the above, which opens the config's `defaultSession`.
 
 `?config=`, `&sessionName=` and `&renderer=` sit outside the ranking and apply
-to whichever launch wins. `&sessionTracks=` applies only at rank 4 — it is not
-layered onto a default session, a hub, or a `&session=` of any kind, all of
-which have their own way to carry a track (a spec's
-[`sessionTracks`](#session-spec), the hub itself, the snapshot).
+to whichever launch wins. `&sessionTracks=` applies at ranks 3 and 4 — with a
+hub, and with the shorthand on its own. It is not layered onto a default session
+or onto a `&session=` of any kind, both of which have their own way to carry a
+track (a spec's [`sessionTracks`](#session-spec), the snapshot's own).
 
 ## Session spec
 
@@ -468,9 +470,8 @@ supplies:
 
 This is what [`&hubURL=`](#huburl) does in its simple form, written out. Use the
 spec form when the hub needs more than one view, a
-[layout](#tiled-views--workspaces), a view type other than the linear genome
-view, or additional `sessionTracks` alongside the hub's own — none of which
-`&hubURL=` can express.
+[layout](#tiled-views--workspaces), or a view type other than the linear genome
+view — none of which `&hubURL=` can express.
 
 A spec that lists no `views` leaves the connection to open its own view wherever
 it starts (a single-file hub's `defaultPos`), which is what `&hubURL=` on its

@@ -56,6 +56,10 @@ export type SessionSource =
       // the loc/assembly/tracks URL shorthand, when the link carried it
       // alongside &hubURL=; applied on top of the hub session
       viewInit?: Partial<InitState>
+      // `&sessionTracks=`, when the link carried it alongside &hubURL=. Added
+      // to the hub session the same way a spec's `sessionTracks` is added
+      // beside its `sessionConnections`, so `&tracks=` can name one.
+      sessionTracks?: Record<string, unknown>[]
     }
   | { type: 'default' }
   | { type: 'error'; error: unknown }
