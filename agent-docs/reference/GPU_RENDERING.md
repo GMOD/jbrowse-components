@@ -904,6 +904,20 @@ Rule of thumb: anything the upload callback already knows from observable inputs
 can be looked up at render time too. Less local state means fewer divergence
 points when the source of truth shifts.
 
+**The one legal renderer-held region map, and what makes it legal.** The model's
+`rpcDataMap` / `laidOutDataMap` is the single source of truth, and most displays
+pass it in per frame (`renderBlocks(blocks, regions, state)`) — that is the
+default to reach for. A renderer-held `private regions` map is legal only when it
+is written **exclusively by the upload callback** and never mutated in place:
+`RenderLifecycleMixin` bumps `renderTick` after every upload, so the render
+autorun re-fires and the cache cannot stale. Alignments is the one display built
+that way (`sync(sources)` on both its GPU and Canvas2D backends, because the GPU
+side must hold buffers anyway and the two share one `AlignmentsRenderingBackend`
+interface). What is still forbidden is a cache populated from anywhere else, or
+one whose entries get patched in place — and, per the bullets above, mirroring
+HAL's region map for buffer lifecycle rather than calling
+`hal.pruneRegions(active)`.
+
 ## Shaders (Slang codegen)
 
 Production draw shaders are authored as `.slang`, compiled to WGSL (WebGPU) and

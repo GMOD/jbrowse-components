@@ -149,6 +149,33 @@ How a slot then reaches the renderer — snapshot, plain object, RPC payload, an
 the JEXL callbacks along the way — is
 [reference/CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md).
 
+### A stored hover is a volatile the viewport can invalidate
+
+Most volatiles die with the view and need no more thought than that. A hover is
+the exception, because a third party — the viewport — can make it wrong while it
+is still alive, and nothing tells the display.
+
+**Content moves under a stationary cursor on three axes**: zoom, `offsetPx` (a
+side-scroll or a locstring pan fires no pointer event at all), and the display's
+own `scrollTop`. A sticky canvas gets no `mousemove` / `mouseleave` for any of
+them, so a hover held in a volatile goes on naming what *used* to be there.
+`installClearHoverOnViewportChange` is the fix, and it is a `reaction` precisely
+so its effect can read hover state without setting a hover re-firing it. Clearing
+on `bpPerPx` alone is the same bug with two axes left in it, which is where
+alignments started.
+
+**A derived hover needs none of this, and that is the other correct design.** MAF
+stores no hit: its body re-runs `mafHitTest` from the live pointer on every
+render, so an observer re-resolves under a moving viewport by construction.
+
+So there are two correct answers and one wrong one. **Store** a hover when the
+hit is expensive or several components read it (canvas, alignments, Manhattan,
+wiggle, the multi-row painting, the multi-sample variant matrix) — and then
+install the clear. **Derive** it when the hit test is a lookup and one component
+consumes it. What is not allowed is the third thing: storing it and leaving the
+clear to the pointer handlers, which cover only the case where the pointer is
+what moved.
+
 ## Public developer guides mirror this spec
 
 The hand-written walkthroughs in `website/docs/developer_guides/` —
@@ -999,11 +1026,17 @@ region and refetches stale ones.
 
 ## What not to do
 
-The index of this doc's rules, meant to be complete: a rule stated anywhere
-above gets a line here, so scanning this section is scanning the spec. Each is
-stated flat and argued where it's linked; the longer entries kept their
-reasoning because it lives nowhere else. Nearly all of them fail *silently* —
-that is what makes them worth listing rather than trusting to review.
+The index of this doc's rules, meant to be complete: a rule stated anywhere above
+gets a line here, so scanning this section is scanning the spec. Nearly all of
+them fail *silently* — that is what makes them worth listing rather than trusting
+to review.
+
+**Every entry is stated flat and argued elsewhere**, either in a section above or
+in the linked reference doc. Keep it that way when you add one: an entry that
+grows a paragraph of reasoning is a section that hasn't been written yet, and it
+hides from anyone who reads the spec rather than the checklist. Two entries were
+allowed to become that — the hover rule and the renderer-held region map, at 19
+and 12 lines — and both have since been given the sections they wanted.
 
 ### State, config and composition
 
@@ -1092,17 +1125,11 @@ that is what makes them worth listing rather than trusting to review.
   recolor doesn't re-run row placement; see [derived region
   maps](#gpuprops-and-derived-region-maps--re-upload-without-refetch).
 - Don't make a renderer class the *owner* of per-region data. The model's
-  `rpcDataMap` / `laidOutDataMap` is the single source of truth. Most displays
-  pass it in per frame (`renderBlocks(blocks, regions, state)`), and that is the
-  default to reach for. A renderer-held `private regions` map is legal only when
-  it is written **exclusively by the upload callback** and never mutated in
-  place: `RenderLifecycleMixin` bumps `renderTick` after every upload, so the
-  render autorun re-fires and the cache cannot stale. Alignments is the one
-  display built that way (`sync(sources)` on both its GPU and Canvas2D backends,
-  because the GPU side must hold buffers anyway and the two share one
-  `AlignmentsRenderingBackend` interface). What is still forbidden is a cache
-  populated from anywhere else, or one whose entries get patched in place. For
-  GPU buffer lifecycle delegate to `hal.pruneRegions(active)`.
+  `rpcDataMap` / `laidOutDataMap` is the single source of truth, passed in per
+  frame; a renderer-held map is legal only under the conditions in
+  [GPU_RENDERING.md § Renderers stay
+  stateless](reference/GPU_RENDERING.md#renderers-stay-stateless), which
+  alignments alone meets.
 - Don't add or redefine volatiles/actions owned by the slot mixin (`canvasDrawn`,
   `renderTick`, `currentRenderingBackend`, `renderError`, `markCanvasDrawn`,
   `resetCanvasDrawn`, `renderNow`, `setRenderError`, `stopRenderingBackend`, etc.).
@@ -1127,25 +1154,11 @@ that is what makes them worth listing rather than trusting to review.
   `session.palette`, not `session.theme`: the palette is the serializable,
   toolkit-free one that crosses the RPC boundary. See [theme-derived render
   inputs](#theme-derived-render-inputs-are-session-getters-not-pushed-volatiles).
-- Don't **store** a hover without clearing it on viewport change. Content moves
-  under a stationary cursor on three axes — zoom, `offsetPx` (a side-scroll or
-  locstring pan fires no pointer event at all), and the display's own
-  `scrollTop` — and a sticky canvas gets no `mousemove`/`mouseleave` for any of
-  them, so a hover held in a volatile goes on naming what *used* to be there.
-  `installClearHoverOnViewportChange` is the fix, and it is a `reaction`
-  precisely so its effect can read hover state without setting a hover
-  re-firing it. Clearing on `bpPerPx` alone is the same bug with two axes left
-  in it, which is where alignments started.
-
-  **A derived hover needs none of this, and that is the other correct design.**
-  MAF stores no hit: its body re-runs `mafHitTest` from the live pointer on
-  every render, so an observer re-resolves under a moving viewport by
-  construction. Store a hover when the hit is expensive or several components
-  read it (canvas, alignments, Manhattan, wiggle, the multi-row painting, the
-  multi-sample variant matrix); derive it when the hit test is a lookup and one
-  component consumes it. What is not allowed is the third thing — storing it and
-  leaving the clear to the pointer handlers, which cover only the case where
-  the pointer is what moved.
+- Don't **store** a hover without clearing it on viewport change, and don't leave
+  the clear to the pointer handlers — they cover only the case where the pointer
+  is what moved. Either install
+  `installClearHoverOnViewportChange` or derive the hit instead; see [a stored
+  hover](#a-stored-hover-is-a-volatile-the-viewport-can-invalidate).
 
 ### Backends and generated code
 
@@ -1173,6 +1186,11 @@ up):
 - [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md) — the render lifecycle
   in depth: the mixin, the upload/render autoruns, per-plugin backends, the three
   upload patterns, the HAL, Slang shaders, and the new-display checklist.
+- [reference/SHARED_CANVAS_VIEWS.md](reference/SHARED_CANVAS_VIEWS.md) — the
+  comparative views (synteny, dotplot): why they own their fetch, how one canvas
+  is shared by several displays, and the keying / empty-frame / readiness rules
+  that follow. Read before touching either, or before building any container that
+  owns a canvas its children draw on.
 - [reference/SVG_EXPORT.md](reference/SVG_EXPORT.md) — SVG export pipeline, the
   `svgReady` / `settled` readiness gates, `paintLayer`, model-scoped clip ids.
 - [reference/BP_PRECISION.md](reference/BP_PRECISION.md) — the absolute-uint32
