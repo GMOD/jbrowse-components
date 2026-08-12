@@ -279,6 +279,14 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       event.preventDefault()
       // clear the hover tooltip so it doesn't stay stuck behind the menu
       model.setHoveredFeature(undefined)
+      // ...and outline the ribbon the menu is about, which is what the tooltip
+      // was doing until the line above. Without it the menu names no ribbon at
+      // all: the picture a synteny view usually shows is a hairball of
+      // overlapping bands, the pick engine resolved exactly one of them, and
+      // "Move bottom panel to the matching region" gives the user no way to see
+      // which. Same fix, same reason, as the alignments display re-boxing the
+      // read under its own context menu.
+      model.setClickedFeature(hit)
       display.openContextMenu({
         clientX: event.clientX,
         clientY: event.clientY,
