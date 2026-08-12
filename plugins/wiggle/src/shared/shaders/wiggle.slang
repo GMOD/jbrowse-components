@@ -111,8 +111,10 @@ float normalizeScore(float score, float domainMin, float domainMax, int scaleTyp
     // Floor at the domain's own min, not at 1, so a domain sitting entirely
     // below 1 (mappability, a methylation fraction, any normalized ratio) still
     // has a range to spread over instead of collapsing to a flat baseline. Same
-    // rule and same reasoning as JS `makeScoreNormalizer`; the two are hand-kept
-    // in lockstep because this function is not `//! js-export`ed.
+    // rule and same reasoning as JS `makeScoreNormalizer`, which keeps its own
+    // hand-written copy because it hoists this arithmetic out of a per-feature
+    // loop — so this one is `//! js-export`ed as the ORACLE the two are swept
+    // against (`normalizeScoreParity.test.ts`), not to retire it.
     float lo = domainMin > 0.0 ? domainMin : 1.0;
     float logMin = log2(lo);
     float logMax = log2(max(domainMax, lo));
