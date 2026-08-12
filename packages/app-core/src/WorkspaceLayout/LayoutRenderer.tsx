@@ -2,8 +2,12 @@ import { Fragment, useCallback, useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { indicatorRect } from './dropZone.ts'
+
+import type { DropZone } from './dropZone.ts'
 import type { WorkspaceLayout } from './model.ts'
 import type { BranchNode, LayoutTree } from './tree.ts'
+import type { DragState } from './useLayoutDrag.ts'
 
 /**
  * The layout, rendered. There is no imperative api and no event to listen to:
@@ -20,19 +24,30 @@ interface Props {
   node: LayoutTree
   layout: WorkspaceLayout
   renderPanel: (panelId: string, viewIds: string[]) => React.ReactNode
+  /** the in-flight drag, so the panel under the pointer can show where it lands */
+  drag?: DragState
 }
 
 export const LayoutRenderer = observer(function LayoutRenderer({
   node,
   layout,
   renderPanel,
+  drag,
 }: Props) {
   if (!('children' in node)) {
     return (
       <div
-        style={{ flexGrow: node.size, flexBasis: 0, minWidth: 0, minHeight: 0 }}
+        data-panel-id={node.id}
+        style={{
+          position: 'relative',
+          flexGrow: node.size,
+          flexBasis: 0,
+          minWidth: 0,
+          minHeight: 0,
+        }}
       >
         {renderPanel(node.id, node.viewIds)}
+        {drag?.panelId === node.id && <DropIndicator zone={drag.zone} />}
       </div>
     )
   }
@@ -54,6 +69,7 @@ export const LayoutRenderer = observer(function LayoutRenderer({
             node={child}
             layout={layout}
             renderPanel={renderPanel}
+            drag={drag}
           />
         </Fragment>
       ))}
@@ -159,6 +175,30 @@ const Splitter = observer(function Splitter({
         cursor: horizontal ? 'col-resize' : 'row-resize',
         background: 'rgba(128,128,128,0.35)',
         touchAction: 'none',
+      }}
+    />
+  )
+})
+
+/**
+ * Where the view would land if released now. Half the panel for an edge, the
+ * whole panel for a tab drop — the same shape dockview draws, because it reads
+ * unambiguously and users already know it.
+ */
+const DropIndicator = observer(function DropIndicator({
+  zone,
+}: {
+  zone: DropZone
+}) {
+  return (
+    <div
+      data-drop-indicator={zone}
+      style={{
+        position: 'absolute',
+        pointerEvents: 'none',
+        background: 'rgba(64,128,255,0.30)',
+        outline: '1px solid rgba(64,128,255,0.8)',
+        ...indicatorRect(zone),
       }}
     />
   )

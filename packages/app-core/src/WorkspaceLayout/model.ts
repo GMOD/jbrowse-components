@@ -6,6 +6,7 @@ import {
   normalize,
   panelContainingView,
   panels,
+  pruneEmptyPanel,
   removePanel,
   removeView,
   setSizes,
@@ -137,6 +138,51 @@ export function WorkspaceLayoutMixin() {
         },
         setSizes(branchId: string, sizes: number[]) {
           apply(setSizes(self.tree, branchId, sizes))
+        },
+        /**
+         * Drop a dragged view into an existing panel, as a tab.
+         *
+         * One action, so the tree never exists in a state where the view is in
+         * both panels or neither. The imperative bridge needed an explicit
+         * `runInAction` around the unassign+reassign pair for exactly this, and
+         * a comment explaining that without it the reconcile autorun would
+         * observe the gap and re-home the view.
+         */
+        dropViewInPanel(viewId: string, targetPanelId: string) {
+          const source = panelContainingView(self.tree, viewId)
+          let next = moveViewToPanel(self.tree, viewId, targetPanelId)
+          if (source && source.id !== targetPanelId) {
+            next = pruneEmptyPanel(next, source.id)
+          }
+          apply(next)
+          self.activePanelId = targetPanelId
+        },
+        /** Drop a dragged view onto a panel edge: split, and land in the new half. */
+        dropViewInNewSplit(
+          viewId: string,
+          targetPanelId: string,
+          direction: 'row' | 'column',
+          before: boolean,
+        ) {
+          const source = panelContainingView(self.tree, viewId)
+          const newId = nextPanelId()
+          let next = splitPanel(
+            self.tree,
+            targetPanelId,
+            direction,
+            { id: newId, size: 1, viewIds: [] },
+            before,
+          )
+          next = moveViewToPanel(next, viewId, newId)
+          // Dragging a panel's only view onto that same panel's edge prunes the
+          // now-empty source, which collapses the split — the gesture undoes
+          // itself rather than leaving a blank half, without needing a case.
+          if (source) {
+            next = pruneEmptyPanel(next, source.id)
+          }
+          apply(next)
+          self.activePanelId = newId
+          return newId
         },
         setActivePanelId(panelId: string | undefined) {
           self.activePanelId = panelId

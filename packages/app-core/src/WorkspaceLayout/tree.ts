@@ -204,6 +204,23 @@ export function setSizes(
 }
 
 /**
+ * Drop a panel that has been left empty, unless it is the only one.
+ *
+ * Deliberately NOT a normalisation rule. An empty panel is a legitimate state —
+ * it is exactly what "new empty tab" creates — so removing empty panels
+ * wholesale would delete the thing the user just asked for. It is instead a
+ * step the *drag* gesture takes about its own source panel, because dragging
+ * the last view out of a split and leaving a blank half is the one place an
+ * empty panel is clearly not what was meant.
+ */
+export function pruneEmptyPanel(root: LayoutTree, panelId: string): LayoutTree {
+  const found = findPanel(root, panelId)
+  return found && found.viewIds.length === 0 && panels(root).length > 1
+    ? removePanel(root, panelId)
+    : root
+}
+
+/**
  * Move a view into another panel — the drag-a-tab gesture, and the only one
  * that has to be atomic. Expressed as one function returning one tree, so
  * there is no instant at which the view is in both panels or neither, which is
