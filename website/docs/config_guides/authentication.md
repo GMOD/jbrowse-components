@@ -121,9 +121,43 @@ header the token is sent in.
 
 ## How an account is matched to a URL
 
-When JBrowse fetches a file, it walks `internetAccounts` in order and picks the
-**first** account whose `domains` matches. The match is a plain substring test
-against the whole URL, not a hostname comparison, which has two consequences:
+Domain matching is the second thing JBrowse tries, not the first. A file
+location can name its account outright — `internetAccountId` is a key on the
+location, beside `uri` — and that account is used whatever its `domains` say:
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "private_bam",
+  "name": "Private alignments",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BamAdapter",
+    "bamLocation": {
+      "uri": "https://cdn.example.com/x.bam",
+      "locationType": "UriLocation",
+      "internetAccountId": "myLab"
+    },
+    "index": {
+      "location": {
+        "uri": "https://cdn.example.com/x.bam.bai",
+        "locationType": "UriLocation",
+        "internetAccountId": "myLab"
+      }
+    }
+  }
+}
+```
+
+That is the way to authenticate a host whose URLs no substring cleanly
+identifies, and the reason the Add Track form's account picker works on a file
+whose URL matches nothing. (If the id names an account the config does not
+declare, JBrowse builds an ephemeral one for that URL rather than failing.)
+
+Only when the location names no account does JBrowse walk `internetAccounts` in
+order and pick the **first** whose `domains` matches. That match is a plain
+substring test against the whole URL, not a hostname comparison, which has two
+consequences:
 
 - You can scope an account to a **path**, not just a host, by including the path
   in the domain entry. This is how one server can use different credentials for
