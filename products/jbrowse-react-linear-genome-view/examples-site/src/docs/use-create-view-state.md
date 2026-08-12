@@ -4,11 +4,14 @@ away the view's scroll position, open tracks and in-flight data.
 `useCreateViewState` memoizes it for the component's lifetime, and
 `<JBrowseLinearGenomeView viewState={state}>` renders it.
 
-`location` is the hook-form equivalent of `init.loc`. It takes a locstring
-(`'ctgA:1,000..5,000'`, 1-based) or a `{ refName, start, end }` object
-(0-based), which is handier when you already have structured coordinates.
+It takes the same options the managed
+[`<LinearGenomeView>`](../setting-up-the-view/#with-init) takes, `init`
+included, so choosing it costs no extra setup — and it hands you the engine on
+the first render, where a `ref` on that component arrives one render later. Two
+things need it: reading the view _while_ rendering (a button of yours that
+depends on view state), and
+[destroying the engine](../plugins/#with-external-plugin) when you discard it.
 
-Calling `createViewState` yourself works the same wrapped in
-`useState(() => …)`. To skip it entirely, the managed
-[`<LinearGenomeView>`](../setting-up-the-view/#with-init) owns the engine for
-you.
+`location` is a shorthand for `init.loc` that also accepts a
+`{ refName, start, end }` object (0-based), handier when you already have
+structured coordinates than the 1-based locstring.

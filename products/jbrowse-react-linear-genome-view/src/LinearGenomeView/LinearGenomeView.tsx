@@ -7,17 +7,14 @@ import createViewState from '../createViewState.ts'
 
 import type { ViewModel } from '../createModel/createModel.ts'
 import type { CreateViewStateBaseOptions } from '../createViewState.ts'
-import type { InitState } from '@jbrowse/plugin-linear-genome-view'
 import type { Ref } from 'react'
 
 export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
-  // declarative description of the initial view: optional loc, tracks to show,
-  // highlights, nav/tracklist visibility, etc. mirrors the view's own `init`
-  // shape (minus `assembly`, which is taken from the `assembly` prop), so the
-  // same blob round-trips through saved sessions and URL specs
-  init?: Omit<InitState, 'assembly'>
   // ref to the live engine, for imperative control after launch
-  // (navToLocString, showTrack, ...)
+  // (navToLocString, showTrack, ...). Good for firing an action from an event
+  // handler; a host that has to *read* the engine while rendering — to disable
+  // its own button until the view is up, to show what is on screen — gets it a
+  // render too late, and should build the engine with useCreateViewState
   ref?: Ref<ViewModel>
 }
 
@@ -28,7 +25,10 @@ export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
  * ignored. To swap assembly/plugins, remount via React `key`.
  *
  * `init` is the declarative input; for imperative control after launch take a
- * `ref` to the live engine.
+ * `ref` to the live engine. The `ref` arrives a render after mount, so a host
+ * that needs the engine *during* render should call {@link useCreateViewState}
+ * with the same options and render `<JBrowseLinearGenomeView>` itself — that is
+ * this component's body, minus the ref.
  *
  * This owns its engine for the lifetime of the page and does not tear it down:
  * the engine is not owned by React, so unmounting leaves its RPC worker threads
@@ -40,27 +40,14 @@ export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
  * `destroyViewState` when they let go of it.
  */
 const LinearGenomeView = observer(function LinearGenomeView({
-  init,
   ref,
   ...rest
 }: LinearGenomeViewProps) {
-  const [state] = useState(() =>
-    createViewState({
-      ...rest,
-      // with no init, createViewState shows the import form. otherwise wrap
-      // init in the session the view expects, filling in the configured
-      // assembly name so callers never repeat it
-      defaultSession: init
-        ? {
-            name: `New session ${new Date().toLocaleString()}`,
-            view: {
-              type: 'LinearGenomeView',
-              init: { ...init, assembly: rest.assembly.name },
-            },
-          }
-        : undefined,
-    }),
-  )
+  // `init` is passed straight through: createViewState takes the same blob and
+  // fills in the assembly name, so this component is the prop-shaped face of
+  // that call and nothing about launching a view lives only here. With no init
+  // it shows the import form, same as a bare createViewState.
+  const [state] = useState(() => createViewState(rest))
 
   useImperativeHandle(ref, () => state, [state])
 

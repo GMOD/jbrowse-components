@@ -44,49 +44,80 @@ React remounts it on a fresh engine.
 
 ## Driving the view from your own code
 
-When you want to read or change the view after launch, hold the engine yourself
-and render the `viewState`-taking component. That is the same object the props
-version builds internally, so nothing is given up. `useCreateViewState(opts)` is
-exactly `useState(() => createViewState(opts))`, so an example that needs the
-state before it returns — to call an action at construction, as here — writes
-that line out instead:
+When you want to read or change the view after launch, hold the engine yourself:
+`useCreateViewState(opts)` and render the `viewState`-taking component. It takes
+the same options the props component does, `init` included, so nothing is given
+up — and unlike a `ref`, which arrives a render after mount, you have the engine
+on the first render and can pass it to anything.
 
 <!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithShowTrack.tsx -->
 
 ```tsx
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
+import { observer } from 'mobx-react'
+
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
+
+const TRACK_ID = 'volvox_gff3'
+
+// `view.tracks` is observable, so an `observer` button knows whether the track
+// is open without subscribing to anything — no callback, no local copy of the
+// state that can fall out of step with the track selector's own checkbox.
+const ToggleTrack = observer(function ToggleTrack({
+  viewState,
+}: {
+  viewState: ViewModel
+}) {
+  const { view } = viewState.session
+  const open = !!view.getTrack(TRACK_ID)
+  return (
+    <button
+      onClick={() => {
+        // showTrack API: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack
+        if (open) {
+          view.hideTrack(TRACK_ID)
+        } else {
+          view.showTrack(TRACK_ID)
+        }
+      }}
+    >
+      {open ? 'Hide' : 'Show'} the genes track
+    </button>
+  )
+})
 
 export default function WithShowTrack() {
-  const [state] = useState(() => {
-    const s = createViewState({
-      assembly: {
-        name: 'volvox',
-        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-      },
-      tracks: [
-        {
-          type: 'FeatureTrack',
-          trackId: 'volvox_gff3',
-          name: 'Volvox genes',
-          assemblyNames: ['volvox'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-          },
+  const state = useCreateViewState({
+    assembly: {
+      name: 'volvox',
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+    },
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: TRACK_ID,
+        name: 'Volvox genes',
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
         },
-      ],
-      location: 'ctgA:1105..1221',
-    })
-    // showTrack API: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack
-    s.session.view.showTrack('volvox_gff3')
-    return s
+      },
+    ],
+    // the view opens with the track closed, since this page is about opening it
+    // from your own code. For a track that should be open on first paint, put
+    // its id in `init.tracks` instead of calling showTrack at construction
+    init: { loc: 'ctgA:1105..1221' },
   })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return (
+    <div>
+      <ToggleTrack viewState={state} />
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
 }
 ```
 
@@ -113,11 +144,9 @@ needed.
 <!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithWebWorker.tsx -->
 
 ```tsx
-import { useState } from 'react'
-
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 // Vite/Astro apps construct the RPC worker with Vite's `?worker` suffix. (With
 // a webpack/CRA setup you'd instead import the package's prebuilt
@@ -125,32 +154,28 @@ import {
 import RpcWorker from '@jbrowse/react-linear-genome-view2/esm/rpcWorker?worker'
 
 export default function WithWebWorker() {
-  const [state] = useState(() => {
-    const s = createViewState({
-      assembly: {
-        name: 'volvox',
-        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-      },
-      tracks: [
-        {
-          type: 'FeatureTrack',
-          trackId: 'volvox_gff3',
-          name: 'Volvox genes',
-          assemblyNames: ['volvox'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-          },
+  const state = useCreateViewState({
+    assembly: {
+      name: 'volvox',
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+    },
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'volvox_gff3',
+        name: 'Volvox genes',
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
         },
-      ],
-      location: 'ctgA:1105..1221',
-      // supplying makeWorkerInstance is enough — the RPC default driver
-      // switches to WebWorkerRpcDriver automatically (no defaultDriver config
-      // needed)
-      makeWorkerInstance: () => new RpcWorker(),
-    })
-    s.session.view.showTrack('volvox_gff3')
-    return s
+      },
+    ],
+    init: { loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] },
+    // supplying makeWorkerInstance is enough — the RPC default driver
+    // switches to WebWorkerRpcDriver automatically (no defaultDriver config
+    // needed)
+    makeWorkerInstance: () => new RpcWorker(),
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }

@@ -8,7 +8,10 @@ import type {
 } from './createModel/index.ts'
 import type { ParsedLocString } from '@jbrowse/core/util'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  HighlightType,
+  InitState,
+} from '@jbrowse/plugin-linear-genome-view'
 import type {
   PluginInput,
   SessionSnapshot as RestoredSessionSnapshot,
@@ -38,12 +41,29 @@ export interface CreateViewStateBaseOptions {
   disableAddTracks?: boolean
   makeWorkerInstance?: () => Worker
   drawerViewHeight?: string
+  /**
+   * The declarative description of the view to open — where to navigate, which
+   * tracks to show, whether to open the track list — minus `assembly`, which is
+   * filled in from the `assembly` option so you never repeat it. The same blob
+   * a saved session and a URL spec carry, so all three round-trip through each
+   * other.
+   *
+   * Shared by both entry points rather than being the managed component's own
+   * input, and that is the point: a host holding its own engine says
+   * `init: { loc, tracks: [...] }` instead of authoring a `defaultSession`
+   * around the same three fields, so choosing `useCreateViewState` over
+   * `<LinearGenomeView>` costs nothing. It is the choice that gets you an
+   * engine you can read during render and hand to `destroyViewState`.
+   */
+  init?: Omit<InitState, 'assembly'>
 }
 
-// the imperative API adds three ways to express initial state; the managed
-// <LinearGenomeView> component expresses the same through a single `init` blob
+// the imperative call adds the two session slots, plus two shorthands for init
+// fields; the managed component expresses the same through `init` alone
 export interface ViewStateOptions extends CreateViewStateBaseOptions {
+  /** sugar for `init.loc`, and it also accepts a parsed locstring. Wins over `init.loc` */
   location?: string | ParsedLocString
+  /** sugar for `init.highlight`. Wins over `init.highlight` */
   highlight?: (string | HighlightType)[]
   /** a session you author, checked against the session model's shape */
   defaultSession?: SessionSnapshot
@@ -64,6 +84,7 @@ export default function createViewState(opts: ViewStateOptions) {
     configuration,
     aggregateTextSearchAdapters,
     plugins = [],
+    init,
     location,
     highlight,
     disableAddTracks = false,
@@ -102,22 +123,25 @@ export default function createViewState(opts: ViewStateOptions) {
     // validates it here and throws on a mismatch)
     stateTree.restoreSession(session)
   }
-  if (location || highlight) {
-    // route through the declarative `init` field so the navigation + highlight
-    // flow goes through the same path as URL/session-spec launches, instead of
-    // reimplementing navToLocString/addToHighlights here. init also drives the
-    // loading-state machine, so the view shows a spinner (not the import form)
-    // while the assembly loads. a highlight-only call (no location) still routes
-    // here; the init autorun skips auto-navigation when a defaultSession already
-    // has displayed regions, so highlights apply without clobbering navigation
+  if (init || location || highlight) {
+    // Applied after create rather than folded into the default session above,
+    // so one path serves all three inputs and composes with a `defaultSession`
+    // the caller authored: the init autorun skips auto-navigation when the
+    // session already has displayed regions, so a highlight-only init applies
+    // without clobbering that session's own navigation. It is also the same
+    // path URL and session-spec launches take, rather than a second
+    // navToLocString/addToHighlights/showTrack sequence written here — and it
+    // drives the loading-state machine, so the view shows a spinner rather than
+    // the import form while the assembly loads.
     stateTree.session.view.setInit({
+      ...init,
       assembly: assembly.name,
       loc: location
         ? typeof location === 'string'
           ? location
           : assembleLocString(location)
-        : undefined,
-      highlight,
+        : init?.loc,
+      highlight: highlight ?? init?.highlight,
     })
   }
   return stateTree
