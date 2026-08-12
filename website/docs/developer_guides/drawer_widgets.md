@@ -125,23 +125,25 @@ export interface InitState {
 
 // Plain persisted view props a launch spec may set inline alongside init keys.
 // Unlike InitState these need no resolution — LaunchView forwards them straight
-// onto the view snapshot.
-export interface LinearGenomeViewLaunchProps {
-  showCenterLine?: boolean
-  // track-label placement mode, matching the view's setTrackLabels action (not
-  // the ExportSvg TrackLabelMode enum)
-  trackLabels?: 'overlapping' | 'offset' | 'hidden'
-  // color CDS segments by reading frame on gene tracks (matches the view's
-  // setColorByCDS action)
-  colorByCDS?: boolean
-  // draw per-codon shading and amino acid lettering on coding features once
-  // zoomed in far enough (matches the view's setShowAminoAcids action). On by
-  // default, so a spec only ever sets this to false
-  showAminoAcids?: boolean
-  // draw the interactive link-icon chip on each highlight band (chips are
-  // otherwise off by default, leaving a bare colored band)
-  showHighlightChips?: boolean
-}
+// onto the view snapshot, where MST restores and validates them natively.
+//
+// EVERY declared property of the view, derived, minus the init keys (which mean
+// something else here: `tracks` is trackIds to open, not built track models)
+// and the view's identity. Nothing is listed, so a property is settable from a
+// spec — and type-checked — from the line that declares it.
+//
+// It used to be a hand-written eight, and the model has grown past it:
+// `hideHeader`, `hideHeaderOverview`, `hideNoTracksActive`, `labelsVisible`,
+// `scalebarOnly`, `showCytobands`, `showGridlines` and `showTrackOutlines` were
+// all declared, all settable from the menu, and all dropped in silence by a
+// spec that named them — which is most of what a figure or an embed wants to
+// say. `partitionLaunchKeys` reads the same set off the model at runtime.
+export type LinearGenomeViewLaunchProps = Partial<
+  Omit<
+    SnapshotIn<LinearGenomeViewStateModel>,
+    keyof InitState | 'id' | 'type' | 'init'
+  >
+>
 ```
 
 ## Drawer position and width
