@@ -41,7 +41,7 @@
     "mobx-react": "^10.0.0"
   },
   "devDependencies": {
-    "@jbrowse/jexl": "^3.0.2"
+    "@jbrowse/jexl": "^3.1.0"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

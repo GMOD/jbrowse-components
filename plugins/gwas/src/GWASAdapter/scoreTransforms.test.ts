@@ -30,6 +30,18 @@ test('a jexl expression without a jexl instance falls through, but warns', () =>
   expect(warn).toHaveBeenCalledTimes(1)
 })
 
+// The form the configSchema docs and the ScoreColumnFields helper text both
+// advertise. It threw "Invalid expression token: -log10" on @jbrowse/jexl
+// <3.1.0, which folded a leading minus into the token that followed it, so
+// unary minus only ever worked on a numeric literal.
+test('a jexl expression can negate a function call', () => {
+  const jexl = createJexlInstance()
+  const t = getScoreTransform('jexl:-log10(score)', jexl)!
+  expect(t(0.01)).toBeCloseTo(2)
+  expect(t(5e-8)).toBeCloseTo(7.301)
+  expect(warn).not.toHaveBeenCalled()
+})
+
 test('an unrecognized mode falls through, but warns instead of silently plotting raw p-values', () => {
   expect(getScoreTransform('neglog10')).toBeUndefined()
   expect(warn).toHaveBeenCalledTimes(1)

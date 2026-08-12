@@ -39,6 +39,7 @@ minimumReleaseAgeExclude:
   - 'electron'
   - 'generic-filehandle2'
   - '@jbrowse/mobx-state-tree'
+  - '@jbrowse/jexl'
   - 'typescript'
   - '@typescript/*'
   - 'astro'
