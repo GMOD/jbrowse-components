@@ -318,7 +318,7 @@ describe('feature highlight declarative persistence', () => {
     expect([...display.highlightedFeatureIdSet]).toEqual(['copy-b'])
   })
 
-  it('right-click on a subfeature boxes the subfeature and pins its parent', () => {
+  it('right-click on a subfeature boxes the subfeature and moves nothing', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     loadGeneWithTranscript(display)
@@ -334,7 +334,10 @@ describe('feature highlight declarative persistence', () => {
       'ctgA',
     )
     expect([...display.highlightedFeatureIdSet]).toEqual(['transcript-1'])
-    expect([...display.layoutPinnedFeatureIdSet]).toEqual(['gene-1'])
+    // A right-click highlight marks a feature the user just clicked, so unlike
+    // the searched one above it must NOT pin: pinning yanked the containing gene
+    // to row 0, reshuffling the track around the box the user asked for.
+    expect([...display.layoutPinnedFeatureIdSet]).toEqual([])
   })
 
   it('removeFeatureHighlightsForId drops a right-click highlight by its id', () => {

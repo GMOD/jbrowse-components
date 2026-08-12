@@ -284,10 +284,17 @@ function sweep(
 // no top-level feature matched — a text search for a transcript whose span is a
 // subspan of its gene, or a right-click directly on a subfeature:
 //   `box` = the render-item ids the overlay draws a box around.
-//   `pin` = the ids the packer pins to a top row. For a subfeature that's its
-//           PARENT feature, since the packer keys on top-level ids and pinning
-//           the subfeature id would be a no-op that leaves the searched
-//           transcript buried/clipped in a dense track.
+//   `pin` = the ids the packer pins to a top row, and ONLY for a highlight that
+//           named something the user cannot see — a text search or a
+//           hand-authored spec. A right-click highlight carries a `featureId`
+//           and so, by construction, marks a feature the user just clicked;
+//           pinning that one yanked it out of its row (from row 78 to row 0 in
+//           a dense track), reshuffled everything around it, and left it above
+//           a scrolled viewport — the box the user asked for, drawn where they
+//           could no longer see it. A highlight MARKS; only a pin moves.
+//           For a subfeature the pin is its PARENT feature, since the packer
+//           keys on top-level ids and pinning the subfeature id would be a
+//           no-op that leaves the searched transcript buried/clipped.
 //   `boxedBy` = index-aligned with `highlights`: which ids each individual
 //           highlight boxes. Attribution is the only honest answer to "which
 //           highlights box THIS?" — a span matcher re-run outside this loop
@@ -329,8 +336,14 @@ export function resolveFeatureHighlights(
     for (const id of boxed) {
       box.add(id)
     }
-    for (const id of pins) {
-      pin.add(id)
+    // Pin only what the user cannot already see; see `pin` above. The gate is
+    // the same `featureId === undefined` that decides the name fallback, and for
+    // the same reason: an id highlight names one rendered feature the user
+    // pointed at, a spec highlight names something to go and find.
+    if (h.featureId === undefined) {
+      for (const id of pins) {
+        pin.add(id)
+      }
     }
     return boxed
   })

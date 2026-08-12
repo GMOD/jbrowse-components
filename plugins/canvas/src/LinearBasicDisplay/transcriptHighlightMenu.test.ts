@@ -111,8 +111,9 @@ describe('transcript highlight context menu', () => {
     clickLabel(display, 'mRNA (EDEN.1)')
 
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1'])
-    // the packer keys on top-level ids, so the parent gene is what gets pinned
-    expect([...display.layoutPinnedFeatureIdSet]).toEqual(['EDEN'])
+    // and leaves the layout alone: the user is looking at EDEN, so pinning it to
+    // row 0 would move the thing they just boxed (see resolveFeatureHighlights)
+    expect([...display.layoutPinnedFeatureIdSet]).toEqual([])
   })
 
   it('distinguishes EDEN.1 from EDEN.2, which share an exact span', () => {
