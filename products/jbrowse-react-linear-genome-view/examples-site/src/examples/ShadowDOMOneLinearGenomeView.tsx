@@ -5,6 +5,7 @@ import { CacheProvider } from '@emotion/react'
 import {
   JBrowseLinearGenomeView,
   createViewState,
+  destroyViewState,
 } from '@jbrowse/react-linear-genome-view2'
 import r2wc from '@r2wc/react-to-web-component'
 import { createPortal } from 'react-dom'
@@ -27,54 +28,58 @@ const ShadowComponent = () => {
     setCacheNode(
       createCache({ key: 'react-shadow', prepend: true, container: root }),
     )
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- shadow DOM setup requires setState in effect
-    setConfig(
-      createViewState({
-        assembly: {
-          name: 'volvox',
-          uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-        },
-        tracks: [
-          {
-            type: 'FeatureTrack',
-            trackId: 'volvox_gff3',
-            name: 'Volvox genes',
-            assemblyNames: ['volvox'],
-            adapter: {
-              type: 'Gff3TabixAdapter',
-              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-            },
+    const engine = createViewState({
+      assembly: {
+        name: 'volvox',
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+      },
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox_gff3',
+          name: 'Volvox genes',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
           },
-        ],
-        location: 'ctgA:1105..1221',
-        configuration: {
-          theme: {
-            palette: { primary: { main: '#4400a6' } },
-            components: {
-              MuiPopover: {
-                defaultProps: { container: () => nodeForPinRef.current },
-              },
-              MuiPopper: {
-                defaultProps: { container: () => nodeForPinRef.current },
-              },
-              MuiTooltip: {
-                defaultProps: {
-                  slotProps: {
-                    popper: { container: () => nodeForPinRef.current },
-                  },
+        },
+      ],
+      location: 'ctgA:1105..1221',
+      configuration: {
+        theme: {
+          palette: { primary: { main: '#4400a6' } },
+          components: {
+            MuiPopover: {
+              defaultProps: { container: () => nodeForPinRef.current },
+            },
+            MuiPopper: {
+              defaultProps: { container: () => nodeForPinRef.current },
+            },
+            MuiTooltip: {
+              defaultProps: {
+                slotProps: {
+                  popper: { container: () => nodeForPinRef.current },
                 },
               },
-              MuiModal: {
-                defaultProps: { container: () => nodeForPinRef.current },
-              },
-              MuiMenu: {
-                defaultProps: { container: () => nodeForPinRef.current },
-              },
+            },
+            MuiModal: {
+              defaultProps: { container: () => nodeForPinRef.current },
+            },
+            MuiMenu: {
+              defaultProps: { container: () => nodeForPinRef.current },
             },
           },
         },
-      }),
-    )
+      },
+    })
+    // eslint-disable-next-line @eslint-react/set-state-in-effect -- shadow DOM setup requires setState in effect
+    setConfig(engine)
+    // the engine is not owned by React: unmounting the custom element leaves
+    // its RPC worker threads and its autoruns running unless it is torn down
+    return () => {
+      destroyViewState(engine)
+    }
   }, [])
   return (
     <div ref={nodeRef}>

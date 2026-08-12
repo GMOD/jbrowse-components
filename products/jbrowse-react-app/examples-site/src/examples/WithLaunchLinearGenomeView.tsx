@@ -2,14 +2,25 @@ import { useEffect, useState } from 'react'
 
 import { ErrorMessage } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
-import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
+import {
+  JBrowseApp,
+  createViewState,
+  destroyViewState,
+} from '@jbrowse/react-app2'
+
+type ViewState = ReturnType<typeof createViewState>
 
 export default function WithLaunchLinearGenomeView() {
-  const [viewState, setViewState] =
-    useState<ReturnType<typeof createViewState>>()
+  const [viewState, setViewState] = useState<ViewState>()
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
+    // The engine is not owned by React, so unmounting alone leaves its RPC
+    // worker threads and its autoruns running — see the external-plugin example
+    // for why an engine built in an effect has to be destroyed by that effect.
+    // One box rather than a `let`, because the cleanup below assigns from a
+    // separate call and the compiler's narrowing doesn't see through that.
+    const mount = { engine: undefined as ViewState | undefined }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
@@ -42,6 +53,7 @@ export default function WithLaunchLinearGenomeView() {
         })
         const { pluginManager } = getEnv(state)
 
+        mount.engine = state
         setViewState(state)
         // Strict so a bad assembly/loc reaches the catch below and renders the
         // error, instead of being swallowed into a silently blank view
@@ -59,6 +71,11 @@ export default function WithLaunchLinearGenomeView() {
         setError(e)
       }
     })()
+    return () => {
+      if (mount.engine) {
+        destroyViewState(mount.engine)
+      }
+    }
   }, [])
 
   return viewState ? (

@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
 
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
-import { JBrowseApp, createViewState, loadPlugins } from '@jbrowse/react-app2'
+import {
+  JBrowseApp,
+  createViewState,
+  destroyViewState,
+  loadPlugins,
+} from '@jbrowse/react-app2'
 
 type ViewState = ReturnType<typeof createViewState>
 
@@ -19,6 +24,13 @@ const configUrl =
 export default function WithFetchConfigJson() {
   const [state, setState] = useState<ViewState>()
   useEffect(() => {
+    // The engine is not owned by React, so unmounting alone leaves its RPC
+    // worker threads and its autoruns running — see the external-plugin example
+    // for why an engine built in an effect has to be destroyed by that effect.
+    const mount = {
+      unmounted: false,
+      engine: undefined as ViewState | undefined,
+    }
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       const response = await fetch(configUrl)
@@ -30,8 +42,18 @@ export default function WithFetchConfigJson() {
       const plugins = await loadPlugins(config.plugins ?? [], {
         baseUri: configUrl,
       })
-      setState(createViewState({ config, plugins }))
+      if (mount.unmounted) {
+        return
+      }
+      mount.engine = createViewState({ config, plugins })
+      setState(mount.engine)
     })()
+    return () => {
+      mount.unmounted = true
+      if (mount.engine) {
+        destroyViewState(mount.engine)
+      }
+    }
   }, [])
 
   return state ? <JBrowseApp viewState={state} /> : null

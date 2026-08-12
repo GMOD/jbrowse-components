@@ -4,6 +4,7 @@ import {
   JBrowseLinearGenomeView,
   createViewState,
   decodeSession,
+  destroyViewState,
   encodeSession,
 } from '@jbrowse/react-linear-genome-view2'
 
@@ -85,18 +86,39 @@ export default function SessionInUrl() {
     if (!param) {
       return
     }
+    // The engine is not owned by React, so unmounting alone leaves its RPC
+    // worker threads and its autoruns running — and the decode below can land
+    // after this effect was torn down (in StrictMode it usually does), which
+    // would build one that nothing ever destroys. One box rather than two
+    // `let`s, because the compiler's narrowing doesn't see through the cleanup.
+    const mount = {
+      unmounted: false,
+      engine: undefined as ViewModel | undefined,
+    }
+    const open = (session?: SessionSnapshot) => {
+      if (!mount.unmounted) {
+        mount.engine = build(session)
+        setState(mount.engine)
+      }
+    }
     decodeSession(param)
       .then(session => {
-        setState(build(session))
+        open(session)
         setStatus(`restored "${session.name}" from the URL`)
       })
       .catch((e: unknown) => {
         // a truncated or hand-edited link shouldn't strand the user on a
         // blank view: fall back to the normal starting state and say so
         console.error(e)
-        setState(build())
+        open()
         setStatus(`could not restore the session in the URL: ${e}`)
       })
+    return () => {
+      mount.unmounted = true
+      if (mount.engine) {
+        destroyViewState(mount.engine)
+      }
+    }
   }, [])
 
   return state ? (
