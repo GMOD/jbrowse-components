@@ -1,6 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { observable, runInAction } from 'mobx'
 
+import { viewIdsInSpec } from '../WorkspaceLayout/spec.ts'
 import { loadSessionSpec } from './loadSessionSpec.ts'
 
 import type { AbstractRootModel } from '@jbrowse/core/util'
@@ -102,7 +103,15 @@ function setup(
     notifyError: jest.fn(),
     notify: jest.fn(),
     ...(workspaces
-      ? { setUseWorkspaces: jest.fn(), applyLayoutSpec: jest.fn(() => []) }
+      ? {
+          setUseWorkspaces: jest.fn(),
+          // returns what the real action returns — the view ids the spec names,
+          // in the order it states — because that return value is the whole
+          // input to `orderViews`, and a stub returning `[]` cannot tell a
+          // wired-up ordering from a dropped one
+          applyLayoutSpec: jest.fn(viewIdsInSpec),
+          orderViews: jest.fn(),
+        }
       : undefined),
     ...connections?.session,
   }
@@ -272,6 +281,36 @@ test('displayName is applied to whatever view type the spec launched', async () 
   )
 
   expect(session.views[0]!.displayName).toBe('My panel')
+})
+
+test('a layout stating an order applies it to session.views', async () => {
+  // The regression this pins: a tab's `viewIds` carries membership, and a tab
+  // renders `session.views` order. So a spec panel that stacks its views in an
+  // order the `views` array does not have gets that order ONLY because the
+  // layout's stated order is fed back through `orderViews` — the tree holding
+  // it is not enough, and nothing reports it when the call goes missing.
+  const { session, pluginManager } = setup({
+    'LaunchView-A': async s => {
+      s.views.push(stubView('a'))
+    },
+    'LaunchView-B': async s => {
+      s.views.push(stubView('b'))
+    },
+  })
+
+  await loadSessionSpec(
+    {
+      views: [
+        { type: 'A', assembly: 'volvox' },
+        { type: 'B', assembly: 'volvox' },
+      ],
+      // b above a, the reverse of launch order
+      layout: { views: [1, 0] },
+    },
+    pluginManager,
+  )
+
+  expect(session.orderViews).toHaveBeenCalledWith(['b', 'a'])
 })
 
 test('a layout index past the end of the spec views is reported', async () => {

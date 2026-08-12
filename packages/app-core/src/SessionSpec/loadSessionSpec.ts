@@ -13,22 +13,28 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // A spec `layout` needs both session mixins that own workspaces state:
 // WorkspaceLayoutMixin's `applyLayoutSpec` and MultipleViewsSessionMixin's
-// `setUseWorkspaces`. A session without them (an embedded product) can't honor a
-// layout, which is worth saying rather than throwing mid-load.
+// `setUseWorkspaces` and `orderViews`. A session without them (an embedded
+// product) can't honor a layout, which is worth saying rather than throwing
+// mid-load.
 //
-// The member named here has to move with the mixin. It is looked up at runtime
-// behind the `in` guard below, so renaming the action without renaming it here
-// does not fail to compile and does not throw — the guard just goes false and
-// every spec layout is silently declined. That is exactly how `setPendingMove`
-// broke once already; see app-core/CLAUDE.md.
+// The members named here have to move with their mixins. They are looked up at
+// runtime behind the `in` guard below, so renaming the action without renaming
+// it here does not fail to compile and does not throw — the guard just goes
+// false and every spec layout is silently declined. That is exactly how
+// `setPendingMove` broke once already; see app-core/CLAUDE.md.
 interface SessionWithWorkspaceLayout {
   setUseWorkspaces: (useWorkspaces: boolean) => void
   applyLayoutSpec: (spec: LayoutSpecNode) => string[]
+  orderViews: (ids: string[]) => void
 }
 function isSessionWithWorkspaceLayout(
   session: AbstractSessionModel,
 ): session is AbstractSessionModel & SessionWithWorkspaceLayout {
-  return 'applyLayoutSpec' in session && 'setUseWorkspaces' in session
+  return (
+    'applyLayoutSpec' in session &&
+    'setUseWorkspaces' in session &&
+    'orderViews' in session
+  )
 }
 
 // A spec `sessionConnections` needs a session that can both register a
@@ -438,7 +444,17 @@ export async function loadSessionSpec(
         // Enable workspaces mode for this session only — a spec URL shouldn't
         // rewrite the visitor's own preference
         session.setUseWorkspaces(true)
-        session.applyLayoutSpec(convertLayoutNode(layout, createdViewIds))
+        // A tab's `viewIds` is membership, not order: a tab renders its views
+        // in `session.views` order (WorkspaceContainer's `viewsOf`, and
+        // `viewIdsForTab`). So the top-to-bottom order a spec panel states —
+        // `viewIds` is documented as "the views to stack vertically in one tab"
+        // — only takes effect if it is applied to `session.views`, which is
+        // what `applyLayoutSpec`'s return value is for. Drop this call and the
+        // stated order is silently ignored: the tree holds it, nothing reads
+        // it, and the views come back in launch order with no diagnostic.
+        session.orderViews(
+          session.applyLayoutSpec(convertLayoutNode(layout, createdViewIds)),
+        )
       } else {
         session.notifyError(
           'Session spec has a "layout", but this application does not support workspace layouts',
