@@ -340,6 +340,20 @@ export const pages: ExamplePage[] = [
     ],
   },
 
+  {
+    slug: 'local-files',
+    title: 'Files from your host process',
+    description:
+      'Open a track on bytes your host already holds — a notebook kernel, an R session — with no web server and no CORS.',
+    group: 'Sessions & integration',
+    sections: [
+      {
+        slug: 'with-local-files',
+        title: 'Local files',
+      },
+    ],
+  },
+
   // --- Real-world demos ---
   {
     slug: 'human-exome-example',
