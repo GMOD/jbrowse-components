@@ -243,6 +243,21 @@ To turn an inherited field off, state it rather than omitting it:
 `mySlot: { type: 'number', defaultValue: 4, advanced: false }` still inherits
 the base slot's `description` and `validate`, and is not advanced here.
 
+The schema's third argument — its options — merges the same shallow way, with
+four exceptions. `actions`, `views`, `extend` and `preProcessSnapshot`
+**compose** with the base's instead of replacing them, base first. The first
+three chain through separate MST calls, so the base's members are on `self`
+inside your function and you override one by redeclaring its name;
+`preProcessSnapshot` folds to `child(base(snapshot))`, so the base normalizes
+before you see the snapshot. Without this, `createBaseTrackConfig` declaring two
+of them would be a ceiling no track config schema could reach past.
+
+Pass the type `ConfigurationSchema()` returned, and nothing else. The slot table
+lives in a registry keyed by that exact type, so a `types.late` wrapper or a
+union from `pluginManager.pluggableConfigSchemaType(…)` carries none of it —
+both type-check, and both used to hand back a schema missing every inherited
+slot with nothing thrown anywhere. They now throw at construction.
+
 :::note Changed behavior
 
 An override used to _replace_ the whole base slot definition, so every field it
@@ -284,12 +299,19 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 ```
 
 Passed as `preProcessSnapshot: normalizeSnapshot` in the schema's options, that
-allows minimal configs in `config.json`:
+allows minimal configs in `config.json` — neither `bamLocation` nor `index` is
+written out:
 
-```json
-"adapter": {
-  "type": "BamAdapter",
-  "uri": "tracks/sample.bam"
+```json addtrack
+{
+  "type": "AlignmentsTrack",
+  "trackId": "my_alignments_track",
+  "name": "My Alignments",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "BamAdapter",
+    "uri": "https://yourhost/file.bam"
+  }
 }
 ```
 
@@ -449,16 +471,22 @@ moves pixels, and re-running a jexl expression per feature per frame is the
 usual cause of a display that scrolls badly.
 
 Callbacks are written in [jexl](https://github.com/TomFrost/Jexl). For example,
-a `VariantTrack` display can color SNVs green and everything else purple:
+a `VariantTrack` can color SNVs green and everything else purple:
 
-```json
-"displays": [
-  {
-    "type": "LinearVariantDisplay",
-    "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
-    "color": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "my_variant_track",
+  "name": "Variants colored by type",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://yourhost/file.vcf.gz"
+  },
+  "displayDefaults": {
+    "color": "jexl:feature.type=='SNV'?'green':'purple'"
   }
-]
+}
 ```
 
 Any slot with a `contextVariable` can take a jexl callback as its default value,
