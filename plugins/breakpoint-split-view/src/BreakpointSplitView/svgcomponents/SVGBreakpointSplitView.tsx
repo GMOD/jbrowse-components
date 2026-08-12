@@ -1,5 +1,6 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
   awaitSvgRenders,
   awaitViewInitialized,
@@ -165,7 +166,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
 
         <g transform={`translate(${trackLabelOffset + exportMargin})`}>
           <SvgClipRect
-            id={`clip-bsv-${model.id}`}
+            id={`clip-bsv-${svgNodeId(model)}`}
             width={width}
             height={totalHeightSvg}
           >

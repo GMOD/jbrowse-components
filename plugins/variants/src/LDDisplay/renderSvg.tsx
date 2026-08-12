@@ -1,3 +1,4 @@
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -64,7 +65,7 @@ function LdSvgBody({
   return (
     <>
       <SvgClipRect
-        id={`ld-clip-${self.id}`}
+        id={`ld-clip-${svgNodeId(self)}`}
         width={visibleWidth}
         height={height}
       >

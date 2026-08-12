@@ -1,4 +1,5 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
   awaitSvgRenders,
   awaitViewInitialized,
@@ -166,7 +167,7 @@ export async function renderToSvg(
             height: level.height,
             node: (
               <SVGSyntenyLevel
-                clipId={`synclip-${model.id}-${i}`}
+                clipId={`synclip-${svgNodeId(model)}-${i}`}
                 width={width}
                 levelHeight={level.height}
                 trackLabelOffset={trackLabelOffset}

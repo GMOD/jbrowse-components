@@ -1,3 +1,4 @@
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
@@ -136,7 +137,7 @@ function MultiWiggleSvgBody({
   return (
     <>
       <SvgClipRect
-        id={`wiggle-clip-${model.id}`}
+        id={`wiggle-clip-${svgNodeId(model)}`}
         width={canvasWidth}
         height={height}
       >

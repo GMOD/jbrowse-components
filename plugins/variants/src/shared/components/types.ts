@@ -10,6 +10,8 @@ import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 // under it is drawn at.
 export interface SampleRowLabelsModel {
   id: string
+  // for svgDisplayId, so the gutter's clip id is stable across session loads
+  configuration?: { displayId?: string }
   scrollTop: number
   availableHeight: number
   hierarchy?: ClusterHierarchyNode

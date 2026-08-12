@@ -1,3 +1,4 @@
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
@@ -82,7 +83,7 @@ function MultiRowSvgBody({
   return (
     <>
       <SvgClipRect
-        id={`multirow-clip-${self.id}`}
+        id={`multirow-clip-${svgNodeId(self)}`}
         width={canvasWidth}
         height={height}
       >

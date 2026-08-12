@@ -1,3 +1,4 @@
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -57,7 +58,7 @@ function HicSvgBody({
   return (
     <>
       <SvgClipRect
-        id={`hic-clip-${self.id}`}
+        id={`hic-clip-${svgNodeId(self)}`}
         width={visibleWidth}
         height={height}
       >

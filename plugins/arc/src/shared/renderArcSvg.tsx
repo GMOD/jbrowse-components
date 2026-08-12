@@ -1,3 +1,4 @@
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
   SvgClipRect,
   renderDisplaySvg,
@@ -34,7 +35,7 @@ export async function renderArcSvg<M extends ArcDisplayModel>(
       // the viewport on its way between two endpoints inside it
       return (
         <SvgClipRect
-          id={`arc-${props.model.id}`}
+          id={`arc-${svgNodeId(props.model)}`}
           width={props.view.totalWidthPx}
           height={props.height}
         >

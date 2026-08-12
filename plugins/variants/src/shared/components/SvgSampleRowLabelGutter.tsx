@@ -1,4 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { observer } from 'mobx-react'
 
 import SvgSampleRowLabels, { getMaxLabelWidth } from './SvgSampleRowLabels.tsx'
@@ -15,7 +16,6 @@ const SvgSampleRowLabelGutter = observer(function SvgSampleRowLabelGutter({
   model: SampleRowLabelsModel
 }) {
   const {
-    id,
     scrollTop,
     availableHeight: height,
     canDisplayLabels,
@@ -38,12 +38,16 @@ const SvgSampleRowLabelGutter = observer(function SvgSampleRowLabelGutter({
       ? Math.min(nrow, Math.ceil((scrollTop + height) / rowHeight))
       : 0
 
-  // Clip id scoped by model.id so two overlays in one exported document don't
+  // Clip id scoped per display so two overlays in one exported document don't
   // collide (a duplicate clipPath id makes the second render unclipped). Uses
   // the same real id in tests as in production — the export duplicate-id guard
   // runs under jest, so a hardcoded test literal would defeat itself.
   return (
-    <SvgClipRect id={`sample-row-labels-${id}`} width={1000} height={height}>
+    <SvgClipRect
+      id={`sample-row-labels-${svgNodeId(model)}`}
+      width={1000}
+      height={height}
+    >
       <g transform={`translate(0,${-scrollTop})`}>
         <SvgSampleRowLabels
           model={model}

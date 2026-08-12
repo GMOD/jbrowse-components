@@ -1,5 +1,6 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
   awaitSvgRenders,
   awaitViewInitialized,
@@ -66,7 +67,7 @@ export async function renderToSvg(
           {/* grid inside the clip, matching the on-screen grid's sized <svg>:
               its region-boundary lines can otherwise stray into the axes */}
           <SvgClipRect
-            id={`clip-plot-${model.id}`}
+            id={`clip-plot-${svgNodeId(model)}`}
             width={viewWidth}
             height={viewHeight}
           >

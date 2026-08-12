@@ -1,4 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
@@ -27,7 +28,11 @@ export default function SVGGridlines({
   // viewport on both sides, so clip to the view width rather than letting ticks
   // bleed into the export margin
   return (
-    <SvgClipRect id={`gridline-clip-${model.id}`} width={width} height={height}>
+    <SvgClipRect
+      id={`gridline-clip-${svgNodeId(model)}`}
+      width={width}
+      height={height}
+    >
       <path
         d={vlinePath(minor, 0, height)}
         strokeWidth={1}

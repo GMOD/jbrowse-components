@@ -1,4 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { getEnv } from '@jbrowse/core/util'
 
 import SVGHighlights from './SVGHighlights.tsx'
@@ -25,7 +26,7 @@ export default function SVGHighlightsOverlay({
   )
   return (
     <SvgClipRect
-      id={`highlight-clip-${model.id}`}
+      id={`highlight-clip-${svgNodeId(model)}`}
       width={model.width}
       height={tracksHeight}
     >

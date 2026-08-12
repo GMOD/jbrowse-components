@@ -1,4 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
@@ -110,7 +111,7 @@ function SVGRefNameLabels({ model }: { model: LGV }) {
             key={label.key}
             label={label}
             fill={fill}
-            clipId={`reflabel-${model.id}-${label.key}`}
+            clipId={`reflabel-${svgNodeId(model)}-${label.key}`}
           />
         ))}
     </>
@@ -168,7 +169,7 @@ export default function SVGRuler({
     // last region's right edge can't bleed into the export margin (on screen
     // the scalebar's overflow:hidden does this)
     <SvgClipRect
-      id={`ruler-clip-${model.id}`}
+      id={`ruler-clip-${svgNodeId(model)}`}
       width={model.width}
       height={rulerHeight}
     >

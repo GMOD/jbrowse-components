@@ -1,3 +1,4 @@
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { SvgColorLegend } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
@@ -138,7 +139,7 @@ function CanvasFeaturesSvgBody({
 
   return (
     <SvgClipRect
-      id={`canvas-features-clip-${model.id}`}
+      id={`canvas-features-clip-${svgNodeId(model)}`}
       width={canvasWidth}
       height={height}
     >

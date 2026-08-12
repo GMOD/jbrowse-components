@@ -1,3 +1,4 @@
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
@@ -52,7 +53,6 @@ const SvgVariantOverlay = ({
   children: React.ReactNode
 }) => {
   const {
-    id,
     sources,
     effectiveRowHeight: rowHeight,
     scrollTop,
@@ -63,7 +63,11 @@ const SvgVariantOverlay = ({
     rowsTopOffset,
   } = model
   return (
-    <SvgClipRect id={`${idPrefix}-${id}`} width={width} height={height}>
+    <SvgClipRect
+      id={`${idPrefix}-${svgNodeId(model)}`}
+      width={width}
+      height={height}
+    >
       {variantLane}
       {lineZone}
       <g transform={`translate(0 ${rowsTopOffset})`}>

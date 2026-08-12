@@ -1,4 +1,5 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { getSession } from '@jbrowse/core/util'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
@@ -52,7 +53,7 @@ export default function SVGTracks({
             carries a trackId — arbitrary config text landing inside a
             `url(#...)` — and SvgClipRect is what sanitizes it. */}
             <SvgClipRect
-              id={`track-clip-${model.id}-${conf.trackId}`}
+              id={`track-clip-${svgNodeId(model)}-${conf.trackId}`}
               x={-leftBuffer}
               y={textOffset}
               width={model.width + trackLabelOffset + leftBuffer + legendWidth}

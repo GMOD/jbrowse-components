@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Fragment } from 'react'
 
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
   SvgColorLegend,
   createJBrowseTheme,
@@ -126,7 +127,7 @@ function AlignmentsSvgBody({
   return (
     <>
       <SvgClipRect
-        id={`alignments-clip-${model.id}`}
+        id={`alignments-clip-${svgNodeId(model)}`}
         width={canvasWidth}
         height={displayHeight}
       >

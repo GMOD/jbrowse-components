@@ -36,9 +36,9 @@ const UnindexedFastaAdapter = ConfigurationSchema(
     /**
      * #slot
      * jexl expression rewriting each sequence name as the FASTA is parsed, e.g.
-     * `jexl:refName.split(' ')[0]` to keep only the first word of a description
-     * line. Left empty, names are used as written; an expression returning
-     * nothing falls back to the original name.
+     * `jexl:split(refName, ' ')[0]` to keep only the first word of a
+     * description line. Left empty, names are used as written; an expression
+     * returning nothing falls back to the original name.
      */
     rewriteRefNames: {
       type: 'string',

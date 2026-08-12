@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import {
   SvgColorLegend,
   createJBrowseTheme,
@@ -101,7 +102,11 @@ function MafSvgBody({
   const contrast = getContrastBaseMap(palette)
 
   return (
-    <SvgClipRect id={`maf-clip-${model.id}`} width={view.width} height={height}>
+    <SvgClipRect
+      id={`maf-clip-${svgNodeId(model)}`}
+      width={view.width}
+      height={height}
+    >
       {coverageBandActive ? (
         <PaintLayer
           width={width}
