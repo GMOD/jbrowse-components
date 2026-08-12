@@ -457,6 +457,21 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           this.regionSignature,
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
+          // In the key because geometry is built worker-side, NOT because the
+          // data differs: unlike the two CIGAR options above (which gate the
+          // parse, and so genuinely change what is fetched), markers need
+          // nothing from the adapter that a plain fetch has not already got. So
+          // ticking the checkbox re-downloads and re-parses the whole track to
+          // arrive at the same features.
+          //
+          // Liftable, and the machinery is already here: emit the markers
+          // unconditionally and let `computedColors` paint them transparent when
+          // the toggle is off, which makes it a `patchInstanceColors` write on
+          // the color lane — the same path colorBy takes to avoid an RPC. The
+          // cost is carrying marker instances nobody asked for, which
+          // MIN_MARKER_FEATURE_PX bounds tightly (a whole-genome hairball emits
+          // none at all, since nothing in it clears 30px). Not done here because
+          // it widens the RPC contract for everyone to speed up one toggle.
           view.drawLocationMarkers,
           // the resolved tier, not view.lodMode: in 'auto' the mode is constant
           // while the tier flips, and the tier is what the fetch differs by
