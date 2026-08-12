@@ -97,6 +97,20 @@ snapshot config names a backend — so an unpinned browser test would silently
 start exercising Canvas2D on a change that reads as a user-facing perf fix. Any
 implementation has to pin the suite first and say which runs it pinned.
 
+Measured on this box the same day, loading jbrowse-web with real tracks and
+reading the string the detection reads:
+
+| launch | UNMASKED_RENDERER_WEBGL | `softwareWebgl` |
+| --- | --- | --- |
+| headed | `ANGLE (Intel, Mesa Intel(R) UHD Graphics 630 (CFL GT2), OpenGL ES 3.2)` | false |
+| headless | `ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) …), SwiftShader driver)` | true |
+
+Both runs logged **zero** context-lost lines, which is the probe's `loseContext()`
+removal confirmed in a browser rather than in jsdom. Neither run had WebGPU —
+Chrome 151 here reports no compatible adapter — so the WebGPU-skips-the-probe
+path is still pinned only by unit tests, and a dev box on this hardware is in the
+population that keeps probing.
+
 ## The probe's own context
 
 `getGraphicsCapabilities` is memoized per page and holds its probe context until

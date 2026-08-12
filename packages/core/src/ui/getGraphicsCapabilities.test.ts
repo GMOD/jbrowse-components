@@ -166,9 +166,13 @@ test('a WebGPU machine reports no driver string, since nothing probed', async ()
   expect(caps.softwareWebgl).toBeUndefined()
 })
 
+// The first string of each group is a real capture, not a plausible one: Chrome
+// 151 on this repo's dev box reports the SwiftShader line headless and the Intel
+// line headed (2026-08-12, via a scratch puppeteer run). The rest are the
+// shapes the marker list is meant to cover.
 test('isSoftwareRenderer knows the rasterizers and leaves hardware alone', () => {
   for (const software of [
-    'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)))',
+    'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)',
     'llvmpipe (LLVM 15.0.7, 256 bits)',
     'lavapipe (LLVM 17.0.6, 256 bits)',
     'Software Rasterizer',
@@ -177,6 +181,7 @@ test('isSoftwareRenderer knows the rasterizers and leaves hardware alone', () =>
     expect(isSoftwareRenderer(software)).toBe(true)
   }
   for (const hardware of [
+    'ANGLE (Intel, Mesa Intel(R) UHD Graphics 630 (CFL GT2), OpenGL ES 3.2)',
     'Mesa Intel(R) UHD Graphics 630',
     'ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 Direct3D11 vs_5_0 ps_5_0, D3D11)',
     'Apple M1 Pro',
