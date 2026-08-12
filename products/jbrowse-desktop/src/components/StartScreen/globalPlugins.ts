@@ -1,4 +1,8 @@
-import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
+import {
+  localStorageGetItem,
+  localStorageRemoveItem,
+  localStorageSetItem,
+} from '@jbrowse/core/util'
 
 import { invokeIpc } from '../../ipc.ts'
 import { setQueryParams } from '../../useQueryParam.ts'
@@ -12,8 +16,7 @@ const SAFE_MODE_PARAM = 'safeMode'
 // startup means the last attempt never got that far — a plugin that threw while
 // its module was evaluated, hung, or took the renderer down with it — and none
 // of those leave an error anyone can act on, so the next launch skips global
-// plugins instead of reproducing the same crash. Cleared, rather than removed,
-// because the core localStorage helpers only get and set.
+// plugins instead of reproducing the same crash.
 const LOADING_MARKER = 'jbrowse-desktop-global-plugins-loading'
 
 export type SafeModeReason = 'requested' | 'previousLaunchFailed'
@@ -134,7 +137,7 @@ export function markGlobalPluginLoadSucceeded() {
   // the only thing standing between the user and that loop. Safe mode now stays
   // on until they take it off.
   if (!safeModeReason) {
-    localStorageSetItem(LOADING_MARKER, '')
+    localStorageRemoveItem(LOADING_MARKER)
   }
 }
 
@@ -156,6 +159,6 @@ export function reloadInSafeMode() {
  */
 export function reloadWithGlobalPlugins() {
   setQueryParams({ [SAFE_MODE_PARAM]: undefined })
-  localStorageSetItem(LOADING_MARKER, '')
+  localStorageRemoveItem(LOADING_MARKER)
   window.location.reload()
 }

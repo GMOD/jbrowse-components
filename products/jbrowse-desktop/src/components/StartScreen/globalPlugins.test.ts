@@ -16,10 +16,14 @@ const plugins = [{ name: 'P', umdUrl: 'https://example.com/p.js' }]
 
 // safe mode is decided once, when the module is first imported, so each test
 // sets up the url/marker it wants and then imports a fresh copy
-async function importFresh(search: string, marker: string) {
+async function importFresh(search: string, marker?: string) {
   jest.resetModules()
   window.history.replaceState(null, '', search)
-  localStorage.setItem(LOADING_MARKER, marker)
+  if (marker === undefined) {
+    localStorage.removeItem(LOADING_MARKER)
+  } else {
+    localStorage.setItem(LOADING_MARKER, marker)
+  }
   return import('./globalPlugins.ts')
 }
 
@@ -30,17 +34,17 @@ beforeEach(() => {
 })
 
 test('loads the list and marks the attempt, then clears it on success', async () => {
-  const g = await importFresh('/', '')
+  const g = await importFresh('/')
   expect(g.globalPluginSafeMode()).toBeUndefined()
   expect(await g.getGlobalPlugins()).toEqual(plugins)
   // still set: the plugins have been fetched but not yet run
   expect(localStorage.getItem(LOADING_MARKER)).toBe('1')
   g.markGlobalPluginLoadSucceeded()
-  expect(localStorage.getItem(LOADING_MARKER)).toBe('')
+  expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
 })
 
 test('a disabled entry is kept but not loaded', async () => {
-  const g = await importFresh('/', '')
+  const g = await importFresh('/')
   const off = {
     name: 'Off',
     umdUrl: 'https://example.com/off.js',
@@ -54,15 +58,15 @@ test('a disabled entry is kept but not loaded', async () => {
 })
 
 test('a list with everything switched off arms nothing', async () => {
-  const g = await importFresh('/', '')
+  const g = await importFresh('/')
   mockInvoke.mockResolvedValue([{ ...plugins[0], disabled: true }])
   expect(await g.getGlobalPlugins()).toEqual([])
   // nothing ran, so a crash after this point is not theirs to answer for
-  expect(localStorage.getItem(LOADING_MARKER)).toBe('')
+  expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
 })
 
 test('enabling drops the flag rather than writing false', async () => {
-  const g = await importFresh('/', '')
+  const g = await importFresh('/')
   const entry = { name: 'P', umdUrl: 'https://example.com/p.js' }
   const off = g.withDisabled(entry, true)
   expect(off).toEqual({ ...entry, disabled: true })
@@ -72,21 +76,21 @@ test('enabling drops the flag rather than writing false', async () => {
 })
 
 test('an empty list arms nothing, so an unrelated crash is not blamed on it', async () => {
-  const g = await importFresh('/', '')
+  const g = await importFresh('/')
   mockInvoke.mockResolvedValue([])
   expect(await g.getGlobalPlugins()).toEqual([])
-  expect(localStorage.getItem(LOADING_MARKER)).toBe('')
+  expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
 })
 
 test('?safeMode skips the list without touching it', async () => {
-  const g = await importFresh('/?safeMode=1', '')
+  const g = await importFresh('/?safeMode=1')
   expect(g.globalPluginSafeMode()).toBe('requested')
   expect(await g.getGlobalPlugins()).toEqual([])
   expect(mockInvoke).not.toHaveBeenCalled()
 })
 
 test('a valueless ?safeMode counts', async () => {
-  const g = await importFresh('/?safeMode', '')
+  const g = await importFresh('/?safeMode')
   expect(g.globalPluginSafeMode()).toBe('requested')
 })
 
@@ -111,11 +115,11 @@ test('re-enabling is what turns it back off', async () => {
   // jsdom has no navigation, and says so on the virtual console
   jest.spyOn(console, 'error').mockImplementation(() => {})
   g.reloadWithGlobalPlugins()
-  expect(localStorage.getItem(LOADING_MARKER)).toBe('')
+  expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
 })
 
 test('a failed read degrades to no global plugins rather than throwing', async () => {
-  const g = await importFresh('/', '')
+  const g = await importFresh('/')
   mockInvoke.mockRejectedValue(new Error('EACCES'))
   jest.spyOn(console, 'error').mockImplementation(() => {})
   expect(await g.getGlobalPlugins()).toEqual([])
