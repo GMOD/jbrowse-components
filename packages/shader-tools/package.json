@@ -26,16 +26,26 @@
     "jbrowse-build-shaders": "./src/build-shaders.ts"
   },
   "files": [
-    "src"
+    "esm"
   ],
   "engines": {
     "node": ">=22.18"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "main": "esm/build-shaders.js",
+    "types": "esm/build-shaders.d.ts",
+    "bin": {
+      "jbrowse-build-shaders": "esm/build-shaders.js"
+    }
   },
   "scripts": {
-    "test": "cd ../..; jest --passWithNoTests packages/shader-tools"
+    "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
+    "build": "pnpm build:esm",
+    "test": "cd ../..; jest --passWithNoTests packages/shader-tools",
+    "clean": "rimraf esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "prepack": "pnpm build"
   },
   "sideEffects": false
 }

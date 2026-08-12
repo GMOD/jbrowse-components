@@ -11,6 +11,7 @@
     { "path": "packages/modifications-utils/tsconfig.build.esm.json" },
     { "path": "packages/product-core/tsconfig.build.esm.json" },
     { "path": "packages/render-core/tsconfig.build.esm.json" },
+    { "path": "packages/shader-tools/tsconfig.build.esm.json" },
     { "path": "packages/sv-core/tsconfig.build.esm.json" },
     { "path": "packages/synteny-core/tsconfig.build.esm.json" },
     { "path": "packages/text-indexing/tsconfig.build.esm.json" },

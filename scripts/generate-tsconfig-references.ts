@@ -24,6 +24,7 @@ const workspaceDirs = ['packages', 'plugins', 'products', 'example-plugins']
 // their build program. Everything else builds for the browser.
 const nodePackages = new Set([
   '@jbrowse/capture',
+  '@jbrowse/shader-tools',
   '@jbrowse/text-indexing-core',
   '@jbrowse/text-indexing',
 ])
