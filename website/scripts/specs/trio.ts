@@ -1,18 +1,186 @@
 import {
   DEMO_CONFIG,
-  TRIO_MATERNAL_COLORS,
-  TRIO_PAINT_TRACK,
-  TRIO_PATERNAL_COLORS,
-  TRIO_VCF_DISPLAY_H,
-  TRIO_VCF_TRACK,
-  crossoverHighlights,
   lgvSession,
   menuCascade,
-  trioVcfLayout,
 } from '../screenshot-spec-helpers.ts'
 
-import type { TrioCrossover } from '../screenshot-spec-helpers.ts'
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  Annotation,
+  AnnotationAnchor,
+  ScreenshotSpec,
+} from '../screenshot-spec-types.ts'
+
+// ── Trio crossover callouts (analyze_trio.md) ──────────────────────────────
+// The two tracks every callout below resolves against. Named once because a
+// trackId that doesn't match is an anchor that resolves to nothing, which fails
+// the spec rather than misplacing a box — but only if the two figures and the
+// helper are spelling it the same way.
+export const TRIO_PAINT_TRACK = 'HG02024_VN049_KHVTrio.chr1.hapibd'
+export const TRIO_VCF_TRACK = 'HG02024_VN049_KHVTrio.chr1.vcf'
+
+// The six VCF haplotype rows, top→bottom, sharing the hap-ibd painting's
+// Father/Mother hapN names so the sidebar and the painting read consistently.
+// `name`/`sampleName` keep the canonical "HG020xx HPn" identity; `label` is the
+// friendly sidebar text. trioRowFrac(label) is that row's top as a fraction of
+// the display's height.
+export const TRIO_HAPLOTYPES = [
+  { sample: 'HG02024', hp: 0, label: 'Child hap1' },
+  { sample: 'HG02024', hp: 1, label: 'Child hap2' },
+  { sample: 'HG02025', hp: 0, label: 'Mother hap1' },
+  { sample: 'HG02025', hp: 1, label: 'Mother hap2' },
+  { sample: 'HG02026', hp: 0, label: 'Father hap1' },
+  { sample: 'HG02026', hp: 1, label: 'Father hap2' },
+]
+export const trioVcfLayout = TRIO_HAPLOTYPES.map(h => ({
+  name: `${h.sample} HP${h.hp}`,
+  sampleName: h.sample,
+  HP: h.hp,
+  label: h.label,
+}))
+// the VCF display auto-fits its `TRIO_VCF_DISPLAY_H` px body across the 6
+// haplotype rows (LinearMultiSampleVariantDisplay has no line zone), so the true
+// per-row pitch is height/rows ≈ 43.33 — NOT a round 44, which drifts the frames
+// ~3px low by the bottom row (boxes don't exactly match the rows).
+export const TRIO_VCF_DISPLAY_H = 260
+export const TRIO_VCF_ROW_PITCH = TRIO_VCF_DISPLAY_H / TRIO_HAPLOTYPES.length
+// That same pitch as a fraction of the display's own height, which is what an
+// anchor takes. The arithmetic is unchanged; what goes is its ORIGIN — the
+// callouts used to be measured down from the top of the page, so the painting
+// track's height (and everything else above the variant display) was silently
+// part of every one of them.
+export const trioRowFrac = (label: string) =>
+  TRIO_HAPLOTYPES.findIndex(h => h.label === label) / TRIO_HAPLOTYPES.length
+
+export const TRIO_HL_FILL = 0.16 // translucent wash inside each highlight frame
+// distinct palettes so the two figures aren't mistaken for each other
+export const TRIO_MATERNAL_COLORS = { left: '#15a01a', right: '#ff6f00' } // green/orange
+export const TRIO_PATERNAL_COLORS = { left: '#caa200', right: '#8e44ad' } // yellow/purple
+
+// hap-ibd painting: the display is filtered to one parent's 2 haplotype rows,
+// which render at the auto-fit 20px row height. A depth from the track's top
+// edge rather than a fraction of it, because this display's height is auto — a
+// fraction would need the height nobody wrote down.
+export const TRIO_PAINT_ROW_H = 20
+
+// The window either side of a crossover, as two loci. The frames' widths were
+// `TRIO_XOVER_X - 3` and `1495 - TRIO_XOVER_X`, which is the crossover's pixel
+// twice over; as loci they are just the two halves of the window the spec
+// already declares, and no width is written down at all.
+function crossoverHalves(loc: string, crossover: string) {
+  const win = /^(.+):([\d,]+)-([\d,]+)$/.exec(loc)
+  const cut = /^(.+):([\d,]+)$/.exec(crossover)
+  if (!win || !cut) {
+    throw new Error(`trio crossover: "${loc}" / "${crossover}" don't parse`)
+  }
+  if (win[1] !== cut[1]) {
+    throw new Error(`trio crossover: ${cut[1]} is not on ${win[1]}`)
+  }
+  return {
+    left: `${win[1]}:${win[2]}-${cut[2]}`,
+    right: `${win[1]}:${cut[2]}-${win[3]}`,
+  }
+}
+
+// Colour-code the two sides of a crossover: the left-colour frame wraps the
+// parental copy matched left of the breakpoint plus the matching left half of
+// the child row; the right-colour frame wraps the copy matched right of it plus
+// the child's right half; each lightly tinted. A neutral box marks the painting
+// step and an arrow drops from it to the crossover point on the child row.
+//
+// Every one of the sixteen callouts resolves against the two tracks at capture
+// time: the x is the crossover (or a half-window either side of it) and the y is
+// a haplotype row of the display it is drawn on. The one thing that has to be
+// said in pixels is a box's HEIGHT, since a `fracY` anchor is a line through the
+// track rather than a band, and a box given no height falls back to 2*pad.
+export interface TrioCrossover {
+  // the spec's own window, and the breakpoint at the middle of it
+  loc: string
+  crossover: string
+  child: string
+  leftSource: string
+  rightSource: string
+  palette: { left: string; right: string }
+  paintingTopRow: number
+  leftText: string
+  rightText: string
+}
+
+export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
+  const { child, crossover, leftSource, rightSource, palette } = opts
+  const half = crossoverHalves(opts.loc, crossover)
+  const stepTop = opts.paintingTopRow * TRIO_PAINT_ROW_H
+  const stepHeight = TRIO_PAINT_ROW_H * 2
+  // the two painting rows the block steps between, boxed around the step: a
+  // fixed 56px window on the crossover, since what it frames is the step itself
+  const step = {
+    type: 'box',
+    color: '#333',
+    anchor: {
+      track: TRIO_PAINT_TRACK,
+      locus: crossover,
+      fracY: 0,
+      dy: stepTop,
+    },
+    // `pad: 0` throughout: an anchored box is inset by `pad` on every side, and
+    // these frames have to meet the rows and each other exactly
+    pad: 0,
+    dx: -28,
+    width: 56,
+    height: stepHeight,
+  } satisfies Annotation
+  const frame = (color: string, locus: string, row: string) =>
+    ({
+      type: 'box',
+      color,
+      fillOpacity: TRIO_HL_FILL,
+      anchor: {
+        track: TRIO_VCF_TRACK,
+        locus,
+        fracY: trioRowFrac(row),
+      },
+      pad: 0,
+      height: TRIO_VCF_ROW_PITCH,
+    }) satisfies Annotation
+  // both captions sit below the variant track, on the bottom of the display
+  // rather than 70px under a row whose y was itself measured from the page top
+  const caption = (color: string, anchor: AnnotationAnchor, text: string) =>
+    ({
+      type: 'text',
+      color,
+      anchor: { track: TRIO_VCF_TRACK, fracY: 1, dy: 27, ...anchor },
+      text,
+      maxWidth: 600,
+    }) satisfies Annotation
+  return [
+    step,
+    {
+      type: 'arrow',
+      // thinner line -> smaller arrowhead (head was too big)
+      strokeWidth: 2,
+      // straight down the crossover, from the bottom of the painting step to the
+      // top of the child's row in the display below
+      fromAnchor: {
+        track: TRIO_PAINT_TRACK,
+        locus: crossover,
+        fracY: 0,
+        dy: stepTop + stepHeight,
+      },
+      anchor: {
+        track: TRIO_VCF_TRACK,
+        locus: crossover,
+        fracY: trioRowFrac(child),
+      },
+    },
+    frame(palette.left, half.left, leftSource),
+    frame(palette.left, half.left, child),
+    frame(palette.right, half.right, rightSource),
+    frame(palette.right, half.right, child),
+    // left caption from the track's left edge, right caption from the crossover
+    // — each starts where the half it describes does
+    caption(palette.left, { alignX: 'left', dx: 60 }, opts.leftText),
+    caption(palette.right, { locus: crossover, dx: 50 }, opts.rightText),
+  ]
+}
 
 export const trioSpecs: ScreenshotSpec[] = [
   // ────────────────────────────────────────────────────────────────────────

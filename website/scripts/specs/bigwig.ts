@@ -2,7 +2,6 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
   DEMO_CONFIG,
-  HPYLORI_26695_SEQ_ADAPTER,
   VOLVOX,
   hpyloriUrl,
   lgvSession,
@@ -11,6 +10,22 @@ import {
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// hpylori 26695 reference sequence adapter, shared by the GC-content and GC-skew
+// session tracks (both wrap the same assembly sequence via an absolute fasta
+// url, since session tracks don't inherit the config's baseUri). Referenced as a
+// const so both GCContentAdapters encode byte-identically.
+export const HPYLORI_26695_SEQ_ADAPTER = {
+  type: 'IndexedFastaAdapter',
+  fastaLocation: {
+    uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa',
+    locationType: 'UriLocation',
+  },
+  faiLocation: {
+    uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa.fai',
+    locationType: 'UriLocation',
+  },
+}
 
 // The volvox microarray BigWig, absolute-hosted so it resolves both in the local
 // generator and in the live-link session (session tracks don't inherit the

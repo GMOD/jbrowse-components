@@ -4,11 +4,6 @@ import {
   DEMO_CONFIG,
   HG00151_ONT_1000G_ADAPTER,
   HG002_NANOPORE_HP_TRACK,
-  HG008_BAF_TRACK,
-  HG008_BICSEQ2_TRACK,
-  HG008_DEPTH_TRACK,
-  HG008_INDEXCOV_TRACK,
-  HG008_T_PACBIO_BAM,
   PARK_CURSOR,
   VOLVOX,
   cgiabUrl,
@@ -19,6 +14,136 @@ import {
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// HG008-T tumor PacBio HiFi Revio reads, the same rehosted slice the hosted
+// cgiab config's own reads track points at. Same reasoning as
+// HG002_NANOPORE_BAM: the NCBI original is 118 GB with a ~26 MB BAI that
+// downloaded on every fresh-tab capture. The slice covers the SV_20
+// translocation windows (chr3 / chr13) and CDKN2A (chr9) and nothing else.
+export const HG008_T_PACBIO_BAM =
+  'https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam'
+
+// HG008-T (CGIAB) copy-number session tracks reused across the sv_cgiab CNV
+// figures: HiFiCNV's depth track, and B-allele frequency. Both hosted BigWigs on
+// jbrowse.org/demos/cgiab (see the tutorial's "Add copy-number tracks" section /
+// build_sv_visualization_cgiab.sh).
+//
+// BAF here is deliberately NOT HiFiCNV's own maf.bw. That track is folded to
+// min(AF, 1-AF), so an LOH arm collapses onto one band near 0 and the reader
+// loses the mirrored 0/1 split that makes a BAF plot instantly legible to
+// anyone who reads cancer genomes. Unfolded BAF over germline het sites
+// (bcftools mpileup on the tumor, baf_bcftools.sh) shows both bands: an LOH arm
+// splits to 0 AND 1, a balanced arm sits as one band at 0.5.
+//
+// resolutionMultiplier is what makes those bands survive being drawn. BAF per
+// bin is a distribution, not a signal with a meaningful mean, but a bigWig zoom
+// level can only carry min/avg/max: every summary bin over an LOH arm comes back
+// min 0, max 1, avg noise, and the default whiskers rendering paints that as a
+// full-height wash. The bigWig's finest zoom level reduces at 2560 bp and bbi
+// takes a zoom level when reductionLevel <= 2*basesPerSpan, so 0.001 keeps the
+// fetch on raw per-site values out to ~1.28 Mbp/px. That covers every
+// single-chromosome view the figures use (whole chr1 is ~190 kbp/px) and costs
+// 1.4 MB on the widest of them. Whole-genome view still summarizes, so a figure
+// that needs the allelic state at that zoom wants it as SEGMENTS rather than as
+// a point cloud — Wakhan's published per-haplotype copy number is the file for
+// that, and the sv_visualization_cgiab tutorial carries it as a config block.
+export const HG008_DEPTH_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'hg008_depth',
+  name: 'HG008-T HiFiCNV depth',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BigWigAdapter',
+    bigWigLocation: {
+      uri: 'https://jbrowse.org/demos/cgiab/HG008-T.hificnv.depth.bw',
+      locationType: 'UriLocation',
+    },
+  },
+}
+// The copy-number lane, and the answer to "the raw depths are hard to
+// interpret" (reviewer). Depth is a per-bin read count: on a 1 Mb view it is a
+// cloud a hundred points deep, and reading a copy-number step out of it means
+// eyeballing where the cloud's centre moved. This is the same event already
+// segmented — BIC-seq2's tumour-vs-normal log2 copy ratio, taken from the New
+// York Genome Center's somatic pipeline run on this exact pair and published by
+// C-GIAB, so the segmentation and the normalization are theirs and not ours
+// (see [[feedback-visualizer-not-methods]]; scripts/build_sv_visualization_cgiab.sh
+// carries the two-line derivation). 196 segments genome-wide, which is why it
+// loads as a plain 6 KB bedGraph rather than a bigWig.
+//
+// The baseline is at +0.44, not 0: BIC-seq2 normalizes on total read counts and
+// HG008-T is hypodiploid, so the balanced state sits above zero. Shown as
+// published rather than re-centred; the STEPS are what the figures read, and
+// each one lands where the benchmark says — chr3 p to q is -0.53 to +0.42
+// (CN 1 to CN 2, log2(2/1) = 1.0 apart), chr18 flips the same distance over
+// SMAD4, and KRAS's tandem duplication is +1.07 against the +0.45 beside it,
+// which is log2(3/2).
+export const HG008_BICSEQ2_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'hg008_bicseq2',
+  name: 'HG008-T copy ratio, segmented (NYGC BIC-seq2, log2 T/N)',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BedGraphAdapter',
+    bedGraphLocation: {
+      uri: 'https://jbrowse.org/demos/cgiab/HG008-T_bicseq2_log2ratio.bedgraph',
+      locationType: 'UriLocation',
+    },
+  },
+}
+
+export const HG008_BAF_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'hg008_baf',
+  name: 'HG008-T B-allele frequency (BAF)',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BigWigAdapter',
+    bigWigLocation: {
+      uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bcftools.bw',
+      locationType: 'UriLocation',
+    },
+    resolutionMultiplier: 0.001,
+  },
+}
+
+// The matched pair, as one track: goleft indexcov coverage for the tumour and
+// for its own normal. indexcov normalizes each sample to that sample's own
+// median, which is the only reason two rows drawn on one axis can be read
+// against each other -- the normal sits flat at 1.0 and every level the tumour
+// holds is a ratio against it.
+//
+// Shared rather than inlined per figure, because a second copy of the two URIs
+// is a second chance for one figure's normal to be a different file from
+// another's. Both the chr5 CNV walkthrough and the chr18/SMAD4 driver figure
+// mount it.
+export const HG008_INDEXCOV_TRACK = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'hg008_cnv_indexcov',
+  name: 'HG008 normal vs tumor coverage (indexcov)',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: [
+      {
+        name: 'HG008-N (normal)',
+        type: 'BigWigAdapter',
+        bigWigLocation: {
+          uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
+          locationType: 'UriLocation',
+        },
+      },
+      {
+        name: 'HG008-T (tumor)',
+        type: 'BigWigAdapter',
+        bigWigLocation: {
+          uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
+          locationType: 'UriLocation',
+        },
+      },
+    ],
+  },
+}
 
 // A ONE-GENE LANE on the C-GIAB assembly, from MANE Select 1.4.
 //

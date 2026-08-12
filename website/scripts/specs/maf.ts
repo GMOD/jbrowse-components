@@ -1,14 +1,88 @@
-import {
-  CE_MAF,
-  CE_MAF_FRAMES,
-  HG38_470WAY,
-  HG38_470WAY_30,
-  HG38_NCBI_GENE_TRACK,
-  PARK_CURSOR,
-  sessionSpec,
-} from '../screenshot-spec-helpers.ts'
+import { PARK_CURSOR, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// hg38 NCBI RefSeq (UCSC hub build, jbrowse.org/ucsc/hg38) as a session track —
+// reviewer's preferred gene track over the MANE bigBed in a few figures.
+// geneGlyphMode: 'longestCoding' on the display collapses isoforms the way
+// MANE Select did.
+export const HG38_NCBI_GENE_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'ncbi_genes_hg38_ucsc',
+  name: 'NCBI RefSeq (UCSC)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: {
+      uri: 'https://jbrowse.org/ucsc/hg38/hg38.gff.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      location: {
+        uri: 'https://jbrowse.org/ucsc/hg38/hg38.gff.gz.csi',
+        locationType: 'UriLocation',
+      },
+      indexType: 'CSI',
+    },
+  },
+}
+
+// Thin local config wiring the ce11 assembly + the real UCSC ce11 26-way multiz
+// MAF (data hosted on jbrowse.org/demos/ce + UCSC) to the *built-in* MAF
+// support. The jbrowse.org/demos/ce config itself loads the old external
+// mafviewer UMD plugin, which would shadow the built-in conservation band and
+// trip the cross-origin-plugin trust dialog — so a local config path is used to
+// render with the local build's code instead.
+export const CE_MAF = 'test_data/ce_maf.json'
+
+// Same ce11 26-way MAF, plus an `annotationAdapter` sub-adapter (a local bigBed
+// built from the real UCSC ce11 multiz26wayFrames data) on the MAF adapter, so
+// the per-species CDS reading-frame overlay + codon view render.
+export const CE_MAF_FRAMES = 'test_data/ce_maf_frames.json'
+
+// UCSC hg38 470-way multiz (Zoonomia + more) config.
+export const HG38_470WAY = 'test_data/hg38_multiz470way.json'
+
+// A representative ~30-species slice of the hg38 470-way spanning the major
+// mammalian clades (primates, rodents+glires, laurasiatheria, afrotheria,
+// xenarthra) plus opossum and platypus as marsupial/monotreme outgroups — close
+// to the classic UCSC "30-way vertebrate" sampling. Exact leaf names from
+// hg38.470way.nh (the Cactus alignment uses HL-prefixed names for many
+// assemblies). Used as a `subtreeFilter`; the pruned guide tree then reads as a
+// clean ~30-leaf dendrogram instead of the full 470-species tree.
+export const HG38_470WAY_30 = [
+  'hg38', // human
+  'panTro6', // chimp
+  'gorGor6', // gorilla
+  'ponAbe3', // orangutan
+  'rheMac10', // rhesus macaque
+  'HLcalJac4', // marmoset
+  'otoGar3', // bushbaby
+  'mm39', // mouse
+  'rn6', // rat
+  'cavPor3', // guinea pig
+  'hetGla2', // naked mole-rat
+  'oryCun2', // rabbit
+  'tupBel1', // tree shrew
+  'bosTau9', // cow
+  'HLoviAri5', // sheep
+  'susScr11', // pig
+  'vicPac2', // alpaca
+  'turTru2', // dolphin
+  'equCab3', // horse
+  'cerSim1', // white rhino
+  'felCat9', // cat
+  'canFam4', // dog
+  'ursMar1', // polar bear
+  'myoLuc2', // little brown bat
+  'eriEur2', // hedgehog
+  'HLloxAfr4', // elephant
+  'echTel2', // tenrec
+  'oryAfe1', // aardvark
+  'dasNov3', // armadillo
+  'monDom5', // opossum
+  'HLornAna3', // platypus
+]
 
 // MANE Select (v1.4, RefSeq/NCBI) as a session track: one curated transcript
 // per gene, so the GAPDH exon/CDS structure lines up above the 470-way heatmap

@@ -6,13 +6,30 @@ import {
   HG002_NANOPORE_HP_TRACK,
   PARK_CURSOR,
   VOLVOX,
-  VOLVOX_SV_CRAM_ADAPTER,
   lgvSession,
   menuCascade,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// volvox_sv_cram's adapter, used to build the read_cloud session track. Session
+// tracks don't inherit the config's baseUri, so an absolute url is used (the
+// same volvox test data jbrowse.org hosts) — works in both the local generator
+// and the live-link instance.
+export const VOLVOX_SV_CRAM =
+  'https://jbrowse.org/code/jb2/latest/test_data/volvox'
+export const VOLVOX_SV_CRAM_ADAPTER = {
+  type: 'CramAdapter',
+  cramLocation: {
+    uri: `${VOLVOX_SV_CRAM}/volvox-sv.cram`,
+    locationType: 'UriLocation',
+  },
+  craiLocation: {
+    uri: `${VOLVOX_SV_CRAM}/volvox-sv.cram.crai`,
+    locationType: 'UriLocation',
+  },
+}
 
 // The menu label for `fit`, straight from the shared option table, so the click
 // path and the boxed annotation below can't drift from the menu.

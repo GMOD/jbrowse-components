@@ -1,8 +1,6 @@
 import {
   DEMO_CONFIG,
   PARK_CURSOR,
-  PROTEIN3D_CONFIG,
-  PTEN_RNASEQ_ADAPTER,
   VOLVOX,
   cascadeBoxes,
   dismissMenus,
@@ -14,6 +12,29 @@ import {
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// NA12878 direct-RNA nanopore reads sliced to just the PTEN locus and re-hosted,
+// so the collapse-introns/sashimi figure downloads a ~2 MB deterministic file
+// instead of range-querying the whole-genome BAM (which never quiesced before
+// the loading-overlay timeout — the source of that figure's run-to-run flakiness).
+export const PTEN_RNASEQ_BAM =
+  'https://jbrowse.org/demos/rnaseq/NA12878-DirectRNA.PTEN.bam'
+export const PTEN_RNASEQ_ADAPTER = {
+  type: 'BamAdapter',
+  bamLocation: { uri: PTEN_RNASEQ_BAM, locationType: 'UriLocation' },
+  index: {
+    location: { uri: `${PTEN_RNASEQ_BAM}.bai`, locationType: 'UriLocation' },
+    indexType: 'BAI',
+  },
+}
+
+// hg38 + NCBI RefSeq + ClinVar, loading the Protein3d plugin from the
+// version-agnostic jbrowse.org plugin-store `latest/` path (served no-cache), so
+// there's no pinned version to bump on a protein3d release. The protein-feature
+// data-testid clicks in the spec below need protein3d >= v0.4.14, which `latest/`
+// satisfies. Rendered against the *local* build (bare ?config=), which has the
+// workspaces split API (session `init`) the side-by-side launch needs.
+export const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 
 // The volvox Apple3 mRNA, which two figures below open the feature-details panel
 // on. Naming the mRNA's own span puts the click at its midpoint, so it is the

@@ -1,16 +1,10 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
-  CGIAB_ASM_PIF_TRACK,
-  DOTPLOT_CONFIG,
   HG38_HS1_CONFIG,
-  HS1_MM39_CONFIG,
-  PICALM_ALU_LOCUS,
   UCSC_HG38_CONFIG,
   VOLVOX,
   cgiabUrl,
-  hg38ChimpSynteny,
-  hpyloriSyntenyWithGenes,
   hpyloriUrl,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
@@ -18,6 +12,203 @@ import { ECOLI_DEMO_BASE } from './demoBase.ts'
 import { GRAPH_DRAWN } from './graph.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+export const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
+export const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
+
+// HG008-T v3.2 T2T assembly vs GRCh38 synteny as a session track, shared by the
+// sv_cgiab dotplot and synteny figures. Overriding with PairwiseIndexedPAFAdapter
+// keeps the PIF q/t refName prefixes mapped. Referenced as a const so both
+// figures encode byte-identically. Needs the v3.2 PIF uploaded to
+// jbrowse.org/demos/cgiab and the HG008T_v3.2 assembly in the hosted config.
+export const CGIAB_ASM_PIF_TRACK = {
+  type: 'SyntenyTrack',
+  trackId: 'HG008T_v3.2_pif',
+  name: 'HG008T v3.2',
+  assemblyNames: ['HG008T_v3.2', 'GRCh38_GIABv3'],
+  adapter: {
+    type: 'PairwiseIndexedPAFAdapter',
+    assemblyNames: ['HG008T_v3.2', 'GRCh38_GIABv3'],
+    pifGzLocation: {
+      uri: 'https://jbrowse.org/demos/cgiab/HG008T_v3.2.pif.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'TBI',
+      location: {
+        uri: 'https://jbrowse.org/demos/cgiab/HG008T_v3.2.pif.gz.tbi',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+}
+
+// Three H. pylori strains stacked top-to-bottom, with a synteny track between
+// each adjacent pair and a gene annotation track on each genome, used by the
+// synteny_visualization.md tutorial.
+//
+// `geneColor` is the display's `color` slot, written on all three gene tracks at
+// once: the "Color by attribute" dialog produces
+// `jexl:randomColor(get(feature,'<attr>'))`, and in bacteria the `gene`
+// attribute is the ortholog id, so the same symbol takes the same color in every
+// panel. Omitted by default, which encodes byte-identically to the version
+// without the parameter.
+export function hpyloriSyntenyWithGenes({
+  geneColor,
+}: { geneColor?: string } = {}) {
+  // showOnlyGenes collapses each locus to its gene glyph (no CDS/mRNA
+  // sub-features), so the lane reads as a tidy row of genes rather than nested
+  // boxes
+  const geneTrack = (trackId: string) => ({
+    trackId,
+    // the hosted config can't be read at build time, so the figure recipe only
+    // knows which display a `color` expression belongs to if the spec says
+    type: 'LinearBasicDisplay',
+    showOnlyGenes: true,
+    ...(geneColor ? { color: geneColor } : {}),
+  })
+  return hpyloriUrl({
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        // curved bezier ribbons connect the aligned blocks more legibly than
+        // straight quadrilaterals across the three stacked strains
+        drawCurves: true,
+        // 2-D form: tracks[i] is the synteny shown between views[i] and
+        // views[i+1]. A flat string[] is treated as a single level-0 entry, so
+        // the level-1 band (chc155 vs j99) stayed empty — this nests each track
+        // onto its own adjacent-pair level.
+        tracks: [['26695_vs_chc155.pif'], ['chc155_vs_j99.pif']],
+        views: [
+          {
+            loc: 'NC_018939.1:177696-190329',
+            assembly: 'hpylori_26695',
+            tracks: [geneTrack('hpylori_26695.gff')],
+          },
+          {
+            loc: 'NZ_AP026446.1:287157-299790',
+            assembly: 'hpylori_chc155',
+            tracks: [geneTrack('hpylori_chc155.gff')],
+          },
+          {
+            // j99 aligns to chc155 in inverted orientation, so the [rev]
+            // suffix flips this panel (declarative loc-string reverse) to
+            // straighten the level-1 ribbons — otherwise they cross in an X
+            loc: 'NZ_CP011330.1:872350-884982[rev]',
+            assembly: 'hpylori_j99',
+            tracks: [geneTrack('hpylori_j99.gff')],
+          },
+        ],
+      },
+    ],
+  })
+}
+
+// Human (hg38) vs chimp (panTro6) synteny from the hosted UCSC hg38->panTro6
+// liftOver PIF + RefSeq genes + RepeatMasker on jbrowse.org/ucsc.
+export const HG38_PANTRO6_CONFIG = 'test_data/hg38_panTro6_synteny/config.json'
+
+// RB1 (retinoblastoma tumor suppressor): a full-length ~6 kb L1HS — the youngest,
+// still-active human LINE-1 subfamily — sits in an intron in human but is absent
+// at the orthologous chimp intron (chimp has only old L1PA13/14/16). It is
+// flanked by repeats conserved in both species (L1ME3A upstream, MER21C
+// downstream), so it renders as a clean human-specific transposon insertion; the
+// RepeatMasker track labels it "L1HS" exactly at the insertion.
+export const RB1_L1_LOCUS = {
+  hg38: 'chr13:48,459,000-48,477,500',
+  panTro6: 'chr13:29,450,000-29,459,000',
+}
+
+// PICALM (Alzheimer's-associated): a ~0.3 kb AluYb8 — a young, human-specific Alu
+// subfamily and the commonest kind of human-specific mobile-element insertion —
+// dropped in downstream of a conserved AluY; the orthologous chimp interval keeps
+// the AluY but has no AluYb8 (none anywhere in chimp PICALM). Shows that even a
+// small lineage-specific insertion reads clearly as an indel.
+export const PICALM_ALU_LOCUS = {
+  hg38: 'chr11:85,978,000-85,986,000',
+  panTro6: 'chr11:81,727,500-81,735,000',
+}
+
+// A hosted liftOver chain is one chromosome-scale block; drawn zoomed in it
+// exercises the oversized-block viewport clip (the worker trims the block to the
+// visible slice, else the ribbon would vanish). "Transparent indels" (cigarMode
+// 'matches') shows the indel as a see-through gap, "Colored indels" ('full') as
+// a painted wedge.
+export function hg38ChimpSynteny(
+  cigarMode: 'matches' | 'full',
+  locus: { hg38: string; panTro6: string } = RB1_L1_LOCUS,
+) {
+  // collapse each gene to its single longest coding transcript: MANE isn't
+  // available for panTro6, so geneGlyphMode 'longestCoding' is the way to cut
+  // the dense NCBI isoform stacks on both genomes (reviewer)
+  // NORMAL FEATURE HEIGHT, and the lane sized to what it draws. This used to
+  // pin `featureHeight: 18` against an earlier "reads as a bare sliver" note,
+  // and at these loci that is a gene reduced to one transcript with a handful of
+  // exons 15-30 px wide — so an 18 px body draws each exon as a SQUARE, next to
+  // a RepeatMasker lane whose elements are ordinary flat bars (review: "the
+  // canvasfeatures are oddly 'tall'"). The two lanes are the same renderer and
+  // there is no reason for the gene one to be at a different scale.
+  //
+  // `heightMode: 'grow'` for the same reason the repeat lanes have it, and it is
+  // worth saying that it buys no pixels HERE: probed on the live model, both
+  // gene lanes come out at 50, which is the grow floor rather than the content's
+  // own height, and is what the fixed slot already gave them. It is here so the
+  // lane follows its content if the locus ever holds more than one collapsed
+  // transcript — the empty strip under one row is the floor, not a setting.
+  const genes = (id: string) => ({
+    trackId: id,
+    geneGlyphMode: 'longestCoding',
+    heightMode: 'grow',
+  })
+  // RepeatMasker: 'grow' height mode — the track auto-sizes to exactly the few
+  // rows of repeats at these TE loci, so it stays compact without crowding the
+  // gene track, while every element keeps its NORMAL feature height (no fit-mode
+  // scaling that inflates the boxes) and every name is drawn (no fit-ladder label
+  // decimation). Reviewer: repeats should be normal-height and compact but still
+  // labeled (SVA_F, L1HS, AluY… at the insertions) — not the tall, label-dropping
+  // 'fit' band.
+  //
+  // `displayMode: 'compact'` on top of that (review on both TE figures: "try to
+  // improve y-screen real estate using compact renderings"). These lanes are
+  // what the frames spend their height on -- every element gets a row of its
+  // own because its label widens its footprint, so each RepeatMasker band packs
+  // five or six rows. Compact is a 0.6x body with proportionally smaller label
+  // text and tighter row padding (HEIGHT_MULTIPLIERS / ROW_PADDING in
+  // glyphUtils), which is the one compactness step that keeps the names: only
+  // `collapsed` forces labels off, and the names are the point here.
+  const rmsk = (id: string) => ({
+    trackId: id,
+    heightMode: 'grow',
+    displayMode: 'compact',
+  })
+  return sessionSpec(HG38_PANTRO6_CONFIG, {
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        cigarMode,
+        drawCurves: true,
+        tracks: [['hg38_panTro6_synteny']],
+        views: [
+          {
+            assembly: 'hg38',
+            loc: locus.hg38,
+            // RepeatMasker last so it sits against the synteny band, where its
+            // elements line up with the indels
+            tracks: [genes('hg38-genes'), rmsk('hg38-rmsk')],
+            trackLabels: 'offset',
+          },
+          {
+            assembly: 'panTro6',
+            loc: locus.panTro6,
+            // RepeatMasker first so it sits against the synteny band above it
+            tracks: [rmsk('panTro6-rmsk'), genes('panTro6-genes')],
+            trackLabels: 'offset',
+          },
+        ],
+      },
+    ],
+  })
+}
 
 // PAR1 through the end of the euchromatic male-specific region of T2T chrY,
 // which is what the self-alignment covers (Yq12 beyond it is DYZ satellite).
