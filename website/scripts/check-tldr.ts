@@ -101,7 +101,7 @@ function tldrParagraph(body: string): string | undefined {
     }
     paragraph.push(line)
   }
-  return paragraph.join(' ').replace(/\s+/g, ' ').trim()
+  return paragraph.join(' ').replaceAll(/\s+/g, ' ').trim()
 }
 
 const problems: string[] = []

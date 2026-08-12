@@ -96,7 +96,7 @@ export default function WithLocalFiles() {
       </div>
       {files ? (
         // keyed on the names, so a different set of files rebuilds the engine
-        <LocalFileView key={Object.keys(files).join()} localFiles={files} />
+        <LocalFileView key={Object.keys(files).join(',')} localFiles={files} />
       ) : null}
     </div>
   )

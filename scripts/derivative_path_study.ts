@@ -29,10 +29,10 @@
  * sizes and parameter settings, and prints the tables. The corpus is fetched at
  * the widest window so every narrower one is a filter rather than a refetch.
  */
-import { execFileSync } from 'child_process'
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
+import { execFileSync } from 'node:child_process'
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { pileupDataFromSamRecords } from '../plugins/alignments/src/LinearAlignmentsDisplay/testUtils.ts'
 import { computeReadChains } from '../plugins/alignments/src/features/arcs/compute.ts'
@@ -287,7 +287,7 @@ function samFetch(
   const bed = join(corpusDir(dataset), 'windows.bed')
   writeFileSync(
     bed,
-    loci.map(l => `${l.refName}\t${l.start}\t${l.end}`).join('\n') + '\n',
+    `${loci.map(l => `${l.refName}\t${l.start}\t${l.end}`).join('\n')}\n`,
   )
   const args = [
     'view',

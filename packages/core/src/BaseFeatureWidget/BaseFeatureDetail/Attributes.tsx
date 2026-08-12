@@ -4,8 +4,8 @@ import {
   isLocalPathLocation,
   isObject,
   isUriLocation,
+  measureText,
 } from '../../util/index.ts'
-import { measureText } from '../../util/index.ts'
 import ArrayValue, { isObjectArray } from './ArrayValue.tsx'
 import SimpleField from './SimpleField.tsx'
 import UriAttribute from './UriField.tsx'
