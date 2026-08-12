@@ -12,9 +12,17 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 `FETCH_AUTORUNS`, `PALETTE_KEYS`, `HELPER_PACKAGES`, `REEXPORT_MODULES`,
 `MENU_ITEM_TYPES`, `MENU_ITEM_FIELDS`, `MENU_ITEM_BUILDERS`, `MENU_ACTIONS`,
 `SPEC_KEYS`, `EXAMPLE_PLUGIN_TREE`, `SHADER_EXPORTS`, `ADAPTER_BASES`,
-`SEARCH_RESULT_FIELDS`, `SLOT_TYPES`). Each renders from a JSDoc tag, a
-registration, or a manifest at the definition site — document a new one by
-tagging the source. Everything else under `docs/` is hand-written.
+`SEARCH_RESULT_FIELDS`, `SLOT_TYPES`, `LAUNCH_VIEW_POINTS`). Each renders from a
+JSDoc tag, a registration, or a manifest at the definition site — document a new
+one by tagging the source. Everything else under `docs/` is hand-written.
+
+`LAUNCH_VIEW_POINTS` is the second reader of the launch registry, and the one
+that shows what a cross-page link costs. Its middle column deep-links each
+`LaunchView-` point into that view type's section on `urlparams.md`, so the link
+text and the anchor come from the `###` heading standing over that type's
+`SPEC_KEYS` block rather than from anything typed twice — rename the heading and
+the table follows it, where hand-written the link would 404 with nothing to
+notice.
 
 `SLOT_TYPES` is the one whose gate is not about the doc. Three tables define the
 closed set of config slot types — the MST models in `configurationSlot.ts`, the

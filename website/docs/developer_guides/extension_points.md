@@ -1069,20 +1069,25 @@ Each launcher's args are that view type's spec fields, documented once in the
 URL parameter guide and typed by the `Launch*Args` interface exported beside the
 registration:
 
-| Extension point                  | Spec fields                                                    | Args type                                                                                                                                                    |
-| -------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `LaunchView-BreakpointSplitView` | [breakpoint split view](/docs/urlparams#breakpoint-split-view) | [`LaunchBreakpointSplitViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/LaunchBreakpointSplitView/index.ts) |
-| `LaunchView-CircularView`        | [circular view](/docs/urlparams#circular-view)                 | [`LaunchCircularViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/LaunchCircularView/index.ts)                       |
-| `LaunchView-DotplotView`         | [dotplot view](/docs/urlparams#dotplot-view)                   | [`LaunchDotplotViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/LaunchDotplotView.ts)                                |
-| `LaunchView-LinearGenomeView`    | [linear genome view](/docs/urlparams#linear-genome-view)       | [`LaunchLinearGenomeViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LaunchLinearGenomeView/index.ts)          |
-| `LaunchView-LinearSyntenyView`   | [linear synteny view](/docs/urlparams#linear-synteny-view)     | [`LaunchLinearSyntenyViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts)         |
-| `LaunchView-SpreadsheetView`     | [spreadsheet view](/docs/urlparams#spreadsheet-view)           | [`LaunchSpreadsheetViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/LaunchSpreadsheetView/index.ts)              |
-| `LaunchView-SvInspectorView`     | [SV inspector](/docs/urlparams#sv-inspector)                   | [`LaunchSvInspectorViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/LaunchSvInspectorView/index.ts)                  |
+<!-- LAUNCH_VIEW_POINTS START -->
+
+<!-- prettier-ignore -->
+| Extension point | Spec fields | Args type |
+| --- | --- | --- |
+| `LaunchView-BreakpointSplitView` | [Breakpoint split view](/docs/urlparams#breakpoint-split-view) | [`LaunchBreakpointSplitViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/breakpoint-split-view/src/LaunchBreakpointSplitView/index.ts) |
+| `LaunchView-CircularView` | [Circular view](/docs/urlparams#circular-view) | [`LaunchCircularViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/LaunchCircularView/index.ts) |
+| `LaunchView-DotplotView` | [Dotplot view](/docs/urlparams#dotplot-view) | [`LaunchDotplotViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/LaunchDotplotView.ts) |
+| `LaunchView-LinearGenomeView` | [Linear genome view](/docs/urlparams#linear-genome-view) | [`LaunchLinearGenomeViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/LaunchLinearGenomeView/index.ts) |
+| `LaunchView-LinearSyntenyView` | [Linear synteny view](/docs/urlparams#linear-synteny-view) | [`LaunchLinearSyntenyViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts) |
+| `LaunchView-SpreadsheetView` | [Spreadsheet view](/docs/urlparams#spreadsheet-view) | [`LaunchSpreadsheetViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/LaunchSpreadsheetView/index.ts) |
+| `LaunchView-SvInspectorView` | [SV inspector](/docs/urlparams#sv-inspector) | [`LaunchSvInspectorViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/LaunchSvInspectorView/index.ts) |
+
+<!-- LAUNCH_VIEW_POINTS END -->
 
 Two spec keys never reach a launcher: `type` is the dispatch key, and
 `displayName` is applied by `loadSessionSpec` to whatever view the launch
 created, so it works for plugin-provided types whose launcher never heard of it.
-`id` is each launcher's own job, and all seven above honor it.
+`id` is each launcher's own job, and every one above honors it.
 
 ### LinearGenomeView-TracksContainerComponent
 

@@ -8,6 +8,7 @@ import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
 import { writeFileTypeDocs } from './generateFileTypeDocs.ts'
 import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
+import { writeLaunchViewDocs } from './generateLaunchViewDocs.ts'
 import { writeMenuDocs } from './generateMenuDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
@@ -73,6 +74,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Extension point index',
     write: (corpus, opts) => writeExtensionPointDocs(corpus, opts),
+  },
+  {
+    label: 'LaunchView point table',
+    write: (corpus, opts) => writeLaunchViewDocs(corpus, opts),
   },
   {
     label: 'File type tables',
