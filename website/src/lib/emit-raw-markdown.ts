@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import { absolutizeMarkdownLinks } from './absolutize-markdown-links.ts'
 import { retargetCodeBaseInMarkdown } from './code-base.ts'
+import { docId, slugFilename } from './doc-slug.ts'
 
 // Writes each doc's raw Markdown to `dist/docs/<slug>.md` (introduction ->
 // `index.md`) at build time. This runs as an integration hook rather than an
@@ -29,16 +30,6 @@ function parseFrontmatter(raw: string) {
   return { data, body: match ? match[2]! : raw }
 }
 
-// Mirror the docs loader's id/slug rules (src/content.config.ts,
-// src/lib/docs-sidebar.ts) so URLs match the sidebar and llms.txt links.
-function slugForDoc(rel: string, data: Record<string, string>) {
-  if (data.slug === '/') {
-    return 'index'
-  }
-  const id = rel.replace(/\.md$/, '').toLowerCase()
-  return (id.endsWith('/index') ? id.slice(0, -6) : id) || 'index'
-}
-
 export async function emitRawMarkdown({
   docsDir,
   distDir,
@@ -54,7 +45,10 @@ export async function emitRawMarkdown({
     }
     const raw = await fs.readFile(path.join(docsDir, rel), 'utf-8')
     const { data, body } = parseFrontmatter(raw)
-    const slug = slugForDoc(rel, data)
+    // The docs loader's own id/slug rules, not a copy of them — this hook's
+    // filenames are what /llms.txt links and what the sidebar's URLs have to
+    // match, so a re-derivation that drifted would 404 silently.
+    const slug = slugFilename(docId(rel, data.slug))
     const title = data.title ?? slug
     const md = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(body.trimStart(), origin))}\n`
     const out = path.join(distDir, 'docs', `${slug}.md`)

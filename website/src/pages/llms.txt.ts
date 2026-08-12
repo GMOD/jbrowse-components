@@ -1,6 +1,8 @@
-import { base, site } from 'astro:config/client'
+import { site } from 'astro:config/client'
 import { getCollection } from 'astro:content'
 
+import { baseUrl } from '../lib/base-url.ts'
+import { slugFilename } from '../lib/doc-slug.ts'
 import {
   buildSidebar,
   entrySlug,
@@ -25,9 +27,10 @@ const sectionNotes: Record<string, string> = {
 }
 
 export async function GET() {
-  const baseUrl = base.replace(/\/$/, '')
   const origin = `${site ?? ''}${baseUrl}`
-  const mdUrl = (slug: string) => `${origin}/docs/${slug || 'index'}.md`
+  // slugFilename, so the docs root is named `index.md` here and by the build
+  // hook that writes it (src/lib/emit-raw-markdown.ts) for the same reason.
+  const mdUrl = (slug: string) => `${origin}/docs/${slugFilename(slug)}.md`
 
   const docs = await getCollection('docs')
   // Sidebar can include `link`-type entries to landing pages that aren't doc

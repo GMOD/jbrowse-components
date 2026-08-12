@@ -15,7 +15,7 @@
 // Run: `pnpm check-wiki-titles`.
 import { readFileSync } from 'node:fs'
 
-import { docId, entrySlug } from '../src/lib/doc-slug.ts'
+import { docId, docUrl, normalizeDocUrl } from '../src/lib/doc-slug.ts'
 import { docFiles, parseFrontmatter, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir } from './paths.ts'
 
@@ -33,7 +33,7 @@ for (const file of files) {
   const fm = parseFrontmatter(readFileSync(file, 'utf8')) ?? {}
   relPathOf.set(file, rel)
   if (fm.title) {
-    titleByUrl.set(`/docs/${entrySlug(docId(rel, fm.slug))}`, fm.title)
+    titleByUrl.set(normalizeDocUrl(docUrl(docId(rel, fm.slug))), fm.title)
   }
 }
 
@@ -55,8 +55,7 @@ for (const file of files) {
       if (bang || !text) {
         continue
       }
-      const normUrl = url!.replace(/#.*$/, '').replace(/\/$/, '')
-      const title = titleByUrl.get(normUrl)
+      const title = titleByUrl.get(normalizeDocUrl(url!))
       if (title && title === text) {
         errorLines.push(
           `  ${rel}:${i + 1} [${text}](${url}) — reuse the target's title with [](${url}), or add ${SUPPRESS} to keep the literal text`,

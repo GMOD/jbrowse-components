@@ -1,14 +1,9 @@
 import { visit } from 'unist-util-visit'
 
-import { retargetCodeBase } from './code-base.ts'
+import { CODE_BASE, retargetCodeBase } from './code-base.ts'
 
 import type { Code, Root } from 'mdast'
 import type { Plugin } from 'unified'
-
-// Default live JBrowse instance used by the URL-parameter docs. This is the
-// "code" deploy that tracks main, so the generated links open against a current
-// build the reader can explore.
-const DEFAULT_BASE = 'https://jbrowse.org/code/jb2/main/'
 
 // Parse a code-fence info string into key/value pairs. Bare words (e.g. `live`)
 // map to an empty string, so presence can be tested with `in`.
@@ -57,8 +52,13 @@ const remarkSpecExample: Plugin<[], Root> = () => {
             node,
           )
         }
+        // An explicit `base=` is retargeted like any hand-written link; with
+        // none, the default IS CODE_BASE rather than a hardcoded copy of it.
+        // It used to be the latter, and retargetCodeBase could not rescue it —
+        // that only rewrites `latest/` URLs — so `JBROWSE_CODE_BASE` moved every
+        // live link on the site except the ones this plugin generates.
         const url = buildSpecUrl(
-          retargetCodeBase(meta.base || DEFAULT_BASE),
+          meta.base ? retargetCodeBase(meta.base) : CODE_BASE,
           meta.config ?? '',
           spec,
         )

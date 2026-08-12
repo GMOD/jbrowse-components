@@ -98,10 +98,19 @@ const searchPrefixes = buildSearchCategoryPrefixes(await getCollection('docs'))
     panel.replaceChildren()
   }
 
+  // Site-root-relative, with no base path and no trailing slash — both the
+  // dropdown's second line and the bucket lookup in isReference() key off it.
+  // baseUrl, not a literal "/jb2": deploy_staging.sh builds with
+  // SITE_BASE_PATH=/jb2-staging, and under that a hardcoded prefix strips
+  // nothing, so every row read "jb2-staging/docs/..." AND isReference() stopped
+  // matching "docs/" — silently retiring the whole reference quota below on the
+  // one deploy where docs changes get looked at first.
   function shortPath(url) {
-    return new URL(url, location.href).pathname
-      .replace(/^\/jb2\/|^\//, '')
-      .replace(/\/$/, '')
+    const path = new URL(url, location.href).pathname
+    const stripped = path.startsWith(`${baseUrl}/`)
+      ? path.slice(baseUrl.length)
+      : path
+    return stripped.replace(/^\//, '').replace(/\/$/, '')
   }
 
   async function run(query) {

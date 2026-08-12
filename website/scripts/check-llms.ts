@@ -10,27 +10,24 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { docId, slugFilename } from '../src/lib/doc-slug.ts'
 import {
   assertBaseMatches,
   docFiles,
   isFile,
+  parseFrontmatter,
   reportProblems,
   walkFiles,
 } from './check-utils.ts'
 import { distDir, docRelative, docsDir } from './paths.ts'
 
-function hasRootSlug(file: string): boolean {
-  const fm = /^---\n([\s\S]*?)\n---/.exec(readFileSync(file, 'utf8'))
-  return fm ? /^slug:\s*\/\s*$/m.test(fm[1]!) : false
-}
-
-// Emitted filename slug for a source doc — the loader's id/slug rules with
-// introduction.md (`slug: /`) mapped to index. Mirrors slugForDoc in
-// src/lib/emit-raw-markdown.ts and entrySlug in src/lib/docs-sidebar.ts.
-function emittedSlug(rel: string, isRoot: boolean): string {
-  const id = rel.replace(/\.md$/, '').toLowerCase()
-  const stripped = id.endsWith('/index') ? id.slice(0, -6) : id
-  return isRoot ? 'index' : stripped || 'index'
+// The emitted filename for a source doc, derived through the site's own
+// id/slug rules (src/lib/doc-slug.ts) rather than a third copy of them — the
+// point of this check is that the build hook agrees with the content loader,
+// which a reimplementation here could only weaken.
+function emittedSlug(file: string): string {
+  const fm = parseFrontmatter(readFileSync(file, 'utf8')) ?? {}
+  return slugFilename(docId(docRelative(file), fm.slug))
 }
 
 if (!isFile(join(distDir, 'llms.txt'))) {
@@ -41,10 +38,7 @@ if (!isFile(join(distDir, 'llms.txt'))) {
 const problems: string[] = []
 
 // CLAUDE.md is excluded from the docs collection (content.config.ts).
-const pages = docFiles(docsDir)
-const expectedSlugs = pages.map(full =>
-  emittedSlug(docRelative(full), hasRootSlug(full)),
-)
+const expectedSlugs = docFiles(docsDir).map(emittedSlug)
 const missing = expectedSlugs.filter(
   slug => !isFile(join(distDir, 'docs', `${slug}.md`)),
 )

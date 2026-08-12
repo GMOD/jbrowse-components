@@ -25,3 +25,33 @@ export function entrySlug(id: string): string {
   }
   return id.endsWith('/index') ? id.slice(0, -6) : id
 }
+
+// The filename a page is emitted under by the raw-markdown build hook (and so
+// the name /llms.txt links and check-llms.ts verifies): its slug, with the docs
+// root — whose slug is the empty string — named `index`. Takes a collection id
+// or an already-resolved slug; entrySlug is idempotent, so callers on either
+// side of it agree without having to know which they hold.
+export function slugFilename(idOrSlug: string): string {
+  return entrySlug(idOrSlug) || 'index'
+}
+
+// A doc's own page URL, before the site base path is applied. Kept next to the
+// derivation it is built from because the lookups keyed on it (the wiki-title
+// index in autogen-links.ts, its validator in scripts/check-wiki-titles.ts) both
+// have to spell it the same way as the pages do.
+export function docUrl(id: string): string {
+  return `/docs/${entrySlug(id)}`
+}
+
+// A link href as authored in markdown — trailing slash and `#fragment` both
+// optional — reduced to the one spelling docUrl values are keyed under.
+//
+// The map side is normalized too, not just the lookup side. It wasn't: the docs
+// root is `docUrl('index') === '/docs/'`, which no stripped lookup could ever
+// produce, so introduction.md's title sat in the index under a key nothing could
+// reach — `[](/docs/)` threw as unresolvable rather than resolving to
+// "Introduction", and check-wiki-titles could not see a hand-written link that
+// duplicated that title.
+export function normalizeDocUrl(url: string): string {
+  return url.replace(/#.*$/, '').replace(/\/+$/, '')
+}

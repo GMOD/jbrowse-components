@@ -1,14 +1,15 @@
+import { CODE_BASE } from './code-base.ts'
 import { specSessionUrls } from './galleryLinks.generated.ts'
 
 // Single source of truth for the /gallery/ page: a screenshot + description
 // card for every item that has an `img`, and a compact link for the rest.
-// Hyperlinks build from CODE_BASE + `session`, so pointing all cards at a
-// different deploy (e.g. a release build instead of a branch preview) is a
-// one-line edit.
-
-// The hosted app build these sessions open in. Change only this to retarget
-// every live link on the page.
-export const CODE_BASE = 'https://jbrowse.org/code/jb2/main/'
+// Hyperlinks build from CODE_BASE + `session`, so the whole page retargets with
+// the rest of the site's live links.
+//
+// CODE_BASE is src/lib/code-base.ts's, not a second copy of the same string.
+// It was one, which meant `JBROWSE_CODE_BASE` — documented there as retargeting
+// every live link at once, and set by deploy_staging.sh — moved the doc figures
+// and left all ~45 gallery cards pointing at `main/`.
 
 export interface GalleryItem {
   label: string
