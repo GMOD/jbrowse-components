@@ -1,4 +1,4 @@
-import { getSession, selectNamedRegions } from '@jbrowse/core/util'
+import { getSession, resolveNamedRegions } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -28,14 +28,27 @@ function rowRegions(
     regions?: Region[]
     getCanonicalRefName: (n: string) => string | undefined
   },
+  assemblyName: string,
   names: string[] | undefined,
+  notify: (message: string) => void,
 ) {
   const all = asm.regions ?? []
   if (!names?.length) {
     return all
   }
-  const picked = selectNamedRegions(all, names, n => asm.getCanonicalRefName(n))
-  return picked.length ? picked : all
+  // falling back to the whole assembly is the right shape — an empty LGV renders
+  // as a broken panel — but doing it in silence is not, and this row used to.
+  // The form's chromosome box makes a typo something a user does rather than
+  // something a spec author does.
+  return (
+    resolveNamedRegions({
+      regions: all,
+      names,
+      assemblyName,
+      getCanonicalRefName: n => asm.getCanonicalRefName(n),
+      notify,
+    }) ?? all
+  )
 }
 
 // One genome row per init.views entry, each opened on its assembly's whole
@@ -47,7 +60,8 @@ async function buildViews(
   init: LinearSyntenyViewInit,
   superseded: () => boolean,
 ) {
-  const { assemblyManager } = getSession(self)
+  const session = getSession(self)
+  const { assemblyManager } = session
   // The LGV's declared property names, so a row can carry any of them. Read
   // from the registered view type rather than a list here: the rows do not
   // exist yet, and a second list is what went stale last time.
@@ -62,28 +76,39 @@ async function buildViews(
     }),
   )
   self.setViews(
-    assemblies.map((asm, idx) => ({
-      type: 'LinearGenomeView' as const,
-      bpPerPx: 1,
-      offsetPx: 0,
-      hideHeader: true,
-      // A row init gives no tracks opens collapsed to its ruler when asked for
-      // (the launch dialog's checkbox), never by default: an authored session
-      // means what it wrote. Only the row's own emptiness is decided here — the
-      // policy is the caller's.
-      scalebarOnly:
-        !!init.collapseEmptyRows && !init.views[idx]?.tracks?.length,
-      // The row's own subset, or the whole genome. A name list that resolves to
-      // nothing falls back rather than blanking the row: an empty LGV renders
-      // as a broken panel with nothing saying why, and the same choice is made
-      // for the dotplot's axes (applyInitDisplayedRegions).
-      displayedRegions: rowRegions(asm, init.views[idx]?.displayedRegionNames),
-      // Plain persisted LGV props (trackLabels, showAminoAcids, colorByCDS, …)
-      // go straight onto the row's snapshot, where MST restores them natively.
-      // Partitioned rather than listed, so a prop the LGV gains is a prop a
-      // synteny row can set, with no second list to keep in step.
-      ...partitionLaunchKeys(init.views[idx] ?? {}, rowPropKeys).viewProps,
-    })),
+    assemblies.map((asm, idx) => {
+      // `assemblies` IS init.views mapped, so the pairing is total and the
+      // three optional chains this used to carry described a case that cannot
+      // arise
+      const v = init.views[idx]!
+      return {
+        type: 'LinearGenomeView' as const,
+        bpPerPx: 1,
+        offsetPx: 0,
+        hideHeader: true,
+        // A row init gives no tracks opens collapsed to its ruler when asked
+        // for (the launch dialog's checkbox), never by default: an authored
+        // session means what it wrote. Only the row's own emptiness is decided
+        // here — the policy is the caller's.
+        scalebarOnly: !!init.collapseEmptyRows && !v.tracks?.length,
+        // The row's own subset, or the whole genome. A name list that resolves
+        // to nothing falls back rather than blanking the row: an empty LGV
+        // renders as a broken panel, the same choice the circular view makes.
+        displayedRegions: rowRegions(
+          asm,
+          v.assembly,
+          v.displayedRegionNames,
+          message => {
+            session.notify(message, 'warning')
+          },
+        ),
+        // Plain persisted LGV props (trackLabels, showAminoAcids, colorByCDS, …)
+        // go straight onto the row's snapshot, where MST restores them natively.
+        // Partitioned rather than listed, so a prop the LGV gains is a prop a
+        // synteny row can set, with no second list to keep in step.
+        ...partitionLaunchKeys(v, rowPropKeys).viewProps,
+      }
+    }),
   )
   // a row only initializes once it has been laid out, so this parks
   // indefinitely if the view is never given a width — which would hold the

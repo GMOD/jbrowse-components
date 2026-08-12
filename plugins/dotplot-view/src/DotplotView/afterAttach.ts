@@ -2,7 +2,7 @@ import {
   getSession,
   localStorageSetItem,
   parseLocString,
-  selectNamedRegions,
+  resolveNamedRegions,
 } from '@jbrowse/core/util'
 import {
   applyInitSettings,
@@ -210,20 +210,31 @@ function applyInitDisplayedRegions(
   self: DotplotViewModel,
   init: DotplotViewInit,
 ) {
-  const { assemblyManager } = getSession(self)
+  const session = getSession(self)
   const axes = [self.hview, self.vview]
   let changed = false
   for (const [i, v] of init.views.entries()) {
     const axis = axes[i]
     const names = v.displayedRegionNames
-    const all = assemblyManager.get(self.assemblyNames[i]!)
+    const assemblyName = self.assemblyNames[i]!
+    const all = session.assemblyManager.get(assemblyName)
     if (axis && names?.length && all?.regions) {
-      const regions = selectNamedRegions(all.regions, names, n =>
-        all.getCanonicalRefName(n),
-      )
       // a list that matches nothing leaves the axis alone rather than blanking
-      // it — an empty axis renders as a broken plot with no clue why
-      if (regions.length) {
+      // it — an empty axis renders as a broken plot with no clue why — and
+      // resolveNamedRegions says so, which this did not. That was tolerable
+      // while the field was reachable only from a hand-authored spec; the
+      // import form's chromosome box makes a typo the ordinary case, and the
+      // whole plot coming back unrestricted is not a legible answer to one.
+      const regions = resolveNamedRegions({
+        regions: all.regions,
+        names,
+        assemblyName,
+        getCanonicalRefName: n => all.getCanonicalRefName(n),
+        notify: message => {
+          session.notify(message, 'warning')
+        },
+      })
+      if (regions) {
         axis.setDisplayedRegions(regions)
         changed = true
       }

@@ -6,7 +6,7 @@ import {
   clamp,
   getSession,
   isSessionModelWithWidgets,
-  selectNamedRegions,
+  resolveNamedRegions,
 } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
@@ -80,22 +80,27 @@ function applyInit(self: CircularViewInitSelf, init: CircularViewInit) {
   const regions = assembly?.regions
   if (assembly && regions) {
     const names = init.displayedRegionNames
-    const named = names
-      ? selectNamedRegions(regions, names, n => assembly.getCanonicalRefName(n))
-      : regions
     // A list that matches nothing draws the whole assembly rather than blanking
-    // the circle — the same fallback the LGV's and the dotplot's key of this
-    // name take, and it matters more here: an empty displayedRegions drops the
-    // view to its import form, and `init`, the only thing that could rebuild
-    // the figure, is consumed on the way out. So a typo'd refName used to lose
-    // the view outright with nothing said.
-    if (names && !named.length) {
-      session.notify(
-        `displayedRegionNames matched no regions in ${init.assembly}: ${names.join(', ')}`,
-        'warning',
-      )
-    }
-    self.setDisplayedRegions(named.length ? named : regions)
+    // the circle — the same fallback the synteny row takes, and it matters more
+    // here: an empty displayedRegions drops the view to its import form, and
+    // `init`, the only thing that could rebuild the figure, is consumed on the
+    // way out. So a typo'd refName used to lose the view outright with nothing
+    // said; resolveNamedRegions is what says it now.
+    //
+    // `?.length`, not the bare key: an empty array is truthy, so `[]` used to
+    // resolve to nothing and report that no names had matched no regions.
+    const named = names?.length
+      ? resolveNamedRegions({
+          regions,
+          names,
+          assemblyName: init.assembly,
+          getCanonicalRefName: n => assembly.getCanonicalRefName(n),
+          notify: message => {
+            session.notify(message, 'warning')
+          },
+        })
+      : regions
+    self.setDisplayedRegions(named ?? regions)
   }
   for (const t of init.tracks ?? []) {
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)

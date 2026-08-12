@@ -2,7 +2,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   localStorageSetItem,
-  selectNamedRegions,
+  resolveNamedRegions,
 } from '@jbrowse/core/util'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
@@ -101,26 +101,27 @@ function showNamedRegions(
   const assembly = session.assemblyManager.get(assemblyName)
   const all = assembly?.regions
   if (all) {
-    const regions = selectNamedRegions(all, names, n =>
-      assembly.getCanonicalRefName(n),
-    )
-    if (regions.length) {
+    // resolveNamedRegions is what reports a list that matched nothing —
+    // otherwise a typo'd refName silently shows the whole genome and reads as
+    // displayedRegionNames being ignored. The FALLBACK stays here because it is
+    // this view's alone: nothing shown yet means show the whole genome rather
+    // than an empty view, but already navigated (URL params layered onto a
+    // defaultSession) means keep what's there, since a typo shouldn't discard
+    // the session's own navigation.
+    const regions = resolveNamedRegions({
+      regions: all,
+      names,
+      assemblyName,
+      getCanonicalRefName: n => assembly.getCanonicalRefName(n),
+      notify: message => {
+        session.notify(message, 'warning')
+      },
+    })
+    if (regions) {
       self.setDisplayedRegions(regions)
       self.showAllRegions()
-    } else {
-      // a list that matches nothing leaves the view alone rather than blanking
-      // it, so say why. Otherwise a typo'd refName silently shows the whole
-      // genome and reads as displayedRegionNames being ignored
-      session.notify(
-        `displayedRegionNames matched no regions in ${assemblyName}: ${names.join(', ')}`,
-        'warning',
-      )
-      // nothing shown yet: fall back to the whole genome rather than an empty
-      // view. Already navigated (URL params layered onto a defaultSession): keep
-      // what's there — a typo shouldn't discard the session's own navigation
-      if (!self.hasDisplayedRegions) {
-        self.showAllRegionsInAssembly(assemblyName)
-      }
+    } else if (!self.hasDisplayedRegions) {
+      self.showAllRegionsInAssembly(assemblyName)
     }
   }
 }
@@ -136,10 +137,15 @@ async function navigateInit(
       // runs once `initialized` confirms init.assembly has loaded regions, so
       // no explicit waitForAssembly is needed here
       await self.navToLocString(init.loc, init.assembly, init.grow)
-    } else if (init.displayedRegionNames) {
+    } else if (init.displayedRegionNames?.length) {
       // an explicit region list is a navigation request just like `loc`, so it
       // applies even when regions already exist (URL params layered onto a
       // defaultSession that already navigated)
+      //
+      // `?.length`, not the bare key: an empty array is truthy, so a spec
+      // writing `displayedRegionNames: []` took this path with nothing to name
+      // and got told its list of no names had matched no regions. That is why
+      // LinearSyntenyView's doSubmit omits the key rather than passing [].
       showNamedRegions(self, session, init.assembly, init.displayedRegionNames)
     } else if (!self.hasDisplayedRegions) {
       // a highlight-only init (nothing to navigate to) must not clobber a
