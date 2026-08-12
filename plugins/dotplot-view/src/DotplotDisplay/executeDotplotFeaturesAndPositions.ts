@@ -1,4 +1,4 @@
-import { parseCigar2Typed } from '@jbrowse/alignments-core'
+import { parseCigar2Typed } from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'

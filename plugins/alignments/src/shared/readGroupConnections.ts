@@ -1,10 +1,10 @@
 import {
+  connectionEndpointBps,
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
-} from '@jbrowse/alignments-core'
-import { connectionEndpointBps } from '@jbrowse/cigar-utils'
+} from '@jbrowse/cigar-utils'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 

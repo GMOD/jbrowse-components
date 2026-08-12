@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { SAM_FLAG_PAIRED } from '@jbrowse/alignments-core'
+import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { Paper, Typography } from '@mui/material'

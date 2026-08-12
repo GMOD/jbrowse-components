@@ -1,4 +1,4 @@
-import { parseCigar2 } from '@jbrowse/alignments-core'
+import { parseCigar2 } from '@jbrowse/cigar-utils'
 
 import { extractPerBaseQuality } from './extract.ts'
 

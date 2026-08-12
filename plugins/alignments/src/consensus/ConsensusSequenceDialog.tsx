@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-import { SAM_FLAG_SECONDARY, variantsToVcf } from '@jbrowse/alignments-core'
+import { variantsToVcf } from '@jbrowse/alignments-core'
+import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import {
   CopyToClipboardButton,

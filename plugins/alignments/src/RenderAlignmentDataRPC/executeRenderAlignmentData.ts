@@ -1,10 +1,12 @@
 import {
-  SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_PROPER_PAIR,
-  SAM_FLAG_SUPPLEMENTARY,
   isAbnormalPairDirection,
   pairDirection,
 } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/cigar-utils'
 import {
   createProgressReporter,
   groupBy,

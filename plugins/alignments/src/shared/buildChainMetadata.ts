@@ -1,9 +1,9 @@
+import { splitJunctionKind } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
   SAM_FLAG_SUPPLEMENTARY,
-  splitJunctionKind,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/cigar-utils'
 import { groupBy } from '@jbrowse/core/util'
 
 import { chainGroupingKey } from './chainGroupingKey.ts'

@@ -1,4 +1,4 @@
-import { SAM_FLAG_SECONDARY } from '@jbrowse/alignments-core'
+import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 
 import { getFlags } from './util.ts'
 

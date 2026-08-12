@@ -1,4 +1,3 @@
-import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -6,6 +5,7 @@ import {
   CIGAR_M,
   CIGAR_N,
   CIGAR_X,
+  parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
 
 import type { BpRegionIndex } from '@jbrowse/synteny-core'

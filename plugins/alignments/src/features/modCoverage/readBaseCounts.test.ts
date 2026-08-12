@@ -1,4 +1,4 @@
-import { SAM_FLAG_REVERSE } from '@jbrowse/alignments-core'
+import { SAM_FLAG_REVERSE } from '@jbrowse/cigar-utils'
 
 import { computeReadBaseCounts } from './readBaseCounts.ts'
 

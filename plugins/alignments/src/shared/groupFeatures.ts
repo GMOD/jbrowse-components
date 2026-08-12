@@ -1,8 +1,8 @@
 import {
-  SAM_FLAG_SECONDARY,
   SAM_FLAG_SECOND_IN_PAIR,
+  SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/cigar-utils'
 
 import { featureChainKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'

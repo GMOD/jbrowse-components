@@ -31,17 +31,6 @@ export type {
   IndelEntry,
   InsertionType,
 } from './labelConstants.ts'
-export {
-  CIGAR_D,
-  CIGAR_I,
-  CIGAR_N,
-  getLengthOnRef,
-  parseCigar2,
-  parseCigar2Typed,
-  visitCigarOps,
-  visitCsOps,
-} from '@jbrowse/cigar-utils'
-export type { ClipMismatch, Mismatch } from '@jbrowse/cigar-utils'
 export { buildSyntheticAssembly } from './buildSyntheticAssembly.ts'
 export type { SyntheticAssembly } from './buildSyntheticAssembly.ts'
 export { buildReadVsRefNames } from './readVsRefNaming.ts'
@@ -58,32 +47,12 @@ export type {
   SplitJunctionKind,
 } from './orientation.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
-// SAM flags and the SA-tag split-read decomposition live in @jbrowse/cigar-utils
-// (pure SAM/CIGAR parsing, no framework deps). Re-exported here so consumers
-// that already depend on this package keep one import site.
-export {
-  SAM_FLAG_DUPLICATE,
-  SAM_FLAG_FAILS_QC,
-  SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_MATE_REVERSE,
-  SAM_FLAG_MATE_UNMAPPED,
-  SAM_FLAG_PAIRED,
-  SAM_FLAG_PROPER_PAIR,
-  SAM_FLAG_REVERSE,
-  SAM_FLAG_SECONDARY,
-  SAM_FLAG_SECOND_IN_PAIR,
-  SAM_FLAG_SUPPLEMENTARY,
-  SAM_FLAG_UNMAPPED,
-  buildReadVsRefFeatures,
-  samFlagDescriptions,
-  samFlagLabels,
-} from '@jbrowse/cigar-utils'
-export type {
-  ReadVsRefFeature,
-  ReadVsRefFeatures,
-  ReadVsRefInput,
-  ReadVsRefMate,
-} from '@jbrowse/cigar-utils'
+// SAM flags, CIGAR/cs parsing and the SA-tag split-read decomposition live in
+// @jbrowse/cigar-utils (pure SAM/CIGAR parsing, no framework deps) and are
+// imported from there. This package used to mirror them so consumers "keep one
+// import site", which is the opposite of what happened: consumers used both
+// specifiers, sometimes in the same file, for names that are the same value.
+// One owner, named at every call site.
 export { coverageLayout } from './coverageBandBox.ts'
 export {
   CANVAS2D_COVERAGE,

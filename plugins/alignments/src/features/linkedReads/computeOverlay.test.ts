@@ -3,7 +3,7 @@ import {
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/cigar-utils'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'

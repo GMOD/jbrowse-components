@@ -1,16 +1,14 @@
 import { forEachMismatchNumeric } from '@gmod/bam'
 import {
+  clipLengthAtStartOfReadNumeric,
+  encodeSeqNumeric,
+  parseCigar2Typed,
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
   SAM_FLAG_REVERSE,
   SAM_FLAG_UNMAPPED,
-} from '@jbrowse/alignments-core'
-import {
-  clipLengthAtStartOfReadNumeric,
-  encodeSeqNumeric,
-  parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'

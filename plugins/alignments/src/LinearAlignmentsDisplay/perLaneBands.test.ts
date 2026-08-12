@@ -1,4 +1,4 @@
-import { SAM_FLAG_PAIRED } from '@jbrowse/alignments-core'
+import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'

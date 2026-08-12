@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { samFlagLabels } from '@jbrowse/alignments-core'
+import { samFlagLabels } from '@jbrowse/cigar-utils'
 import { Dialog, TagTextField } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {

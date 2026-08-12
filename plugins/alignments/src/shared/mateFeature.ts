@@ -1,7 +1,7 @@
 import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { getStrand } from './util.ts'

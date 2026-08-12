@@ -1,13 +1,11 @@
-import {
-  SAM_FLAG_MATE_REVERSE,
-  SAM_FLAG_MATE_UNMAPPED,
-  SAM_FLAG_PAIRED,
-  splitJunctionKind,
-} from '@jbrowse/alignments-core'
+import { splitJunctionKind } from '@jbrowse/alignments-core'
 import {
   connectionEndpointBps,
   featurizeSA,
   readLeadingBp,
+  SAM_FLAG_MATE_REVERSE,
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_PAIRED,
 } from '@jbrowse/cigar-utils'
 
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'

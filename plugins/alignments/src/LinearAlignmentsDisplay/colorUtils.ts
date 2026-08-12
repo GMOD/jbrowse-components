@@ -1,7 +1,4 @@
-import {
-  SAM_FLAG_MATE_UNMAPPED,
-  SAM_FLAG_PAIRED,
-} from '@jbrowse/alignments-core'
+import { SAM_FLAG_MATE_UNMAPPED, SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
 import {

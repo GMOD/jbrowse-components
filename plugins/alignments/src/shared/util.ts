@@ -1,4 +1,4 @@
-import { SAM_FLAG_SECOND_IN_PAIR } from '@jbrowse/alignments-core'
+import { SAM_FLAG_SECOND_IN_PAIR } from '@jbrowse/cigar-utils'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'

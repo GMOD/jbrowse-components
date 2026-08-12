@@ -1,4 +1,3 @@
-import { SAM_FLAG_SECOND_IN_PAIR } from '@jbrowse/alignments-core'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -7,6 +6,7 @@ import {
   CIGAR_N,
   CIGAR_S,
   CIGAR_X,
+  SAM_FLAG_SECOND_IN_PAIR,
 } from '@jbrowse/cigar-utils'
 import {
   methylated5hmC,

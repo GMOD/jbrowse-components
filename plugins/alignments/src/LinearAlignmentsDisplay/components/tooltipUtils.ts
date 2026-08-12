@@ -1,10 +1,12 @@
 import {
-  SAM_FLAG_MATE_UNMAPPED,
-  SAM_FLAG_SUPPLEMENTARY,
   countSnpsAtPosition,
   formatInsertionLabel,
   interbaseDepthAt,
 } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_MATE_UNMAPPED,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
 
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'

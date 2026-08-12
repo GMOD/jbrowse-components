@@ -3,7 +3,7 @@ import {
   SAM_FLAG_PROPER_PAIR,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
-} from '@jbrowse/alignments-core'
+} from '@jbrowse/cigar-utils'
 
 import { computePairedInsertSizeStats } from './computePairedInsertSizeStats.ts'
 
