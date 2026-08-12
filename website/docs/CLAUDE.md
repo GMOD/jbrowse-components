@@ -18,14 +18,23 @@ Everything else under `docs/` is hand-written.
 
 `SPEC_KEYS` is the grouped one on `urlparams.md`:
 `<!-- SPEC_KEYS <ViewType> -->` renders what a session spec may set on that
-view, in the two buckets the launcher actually partitions on. Both halves are
-found by scanning, so **no path is written down** — `#launchKeys <ViewType>`
-tags the object literal or interface defining the load-time bucket,
-`#valueList <key>` tags the const array a key's accepted values come from, and
-the properties come off the model's `#property` tags including the ones it
-composes in. Adding a spec-settable key therefore means tagging it and nothing
-else; leaving one undescribed **fails** the run, and a `#launchKeys` group no
-page renders fails it too.
+view, in the two buckets the launcher actually partitions on. **No path and no
+view type is written down.** Which types need a block comes from the
+`'LaunchView-<type>': { args: X }` entries the launchers add to PluginManager's
+`ExtensionPointRegistry` — that IS the registry of what a spec can open. The
+keys come from that args interface (minus what its `Omit<SnapshotIn<Model>, …>`
+takes away, which the launcher builds itself), from a
+`#launchKeys <ViewType>`-tagged Commands interface where the view keeps them
+separately, from `#valueList <key>` for a key's accepted values, and from the
+model's `#property` tags including everything it composes in.
+
+So adding a spec-settable key means describing it at its declaration and nothing
+else. Four things **fail** the run, and each is a mode this generator hit rather
+than a hypothetical: a key with no description, a launchable view type no page
+documents, a `ViewInit<>` Commands interface with no `#launchKeys` tag, and a
+launch bucket where only some keys carry a comment. The last three all render a
+table that looks complete and is short, which is the one failure a generated
+table is supposed to make impossible.
 
 The sweep also covers `agent-docs/`, which hosts the `DISPLAY_FOUNDATION_STACKS`
 and `FETCH_AUTORUNS` counterparts. A guide table and its architecture-spec twin
