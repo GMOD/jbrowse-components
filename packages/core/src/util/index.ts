@@ -316,7 +316,13 @@ export { revlist } from './revlist.ts'
 // both `import { useLocalStorage } from '@jbrowse/core/util'`, and on a host
 // without it that is `(0, PR.useLocalStorage) is not a function` when the panel
 // renders. The implementations never went anywhere -- only these lines did.
-export { useDebounce, useLocalStorage, useWidthSetter } from './hooks.ts'
+export {
+  useCreateOnce,
+  useDebounce,
+  useFinalUnmount,
+  useLocalStorage,
+  useWidthSetter,
+} from './hooks.ts'
 export { renderToStaticMarkup } from './renderToStaticMarkup.ts'
 export {
   codonTable,

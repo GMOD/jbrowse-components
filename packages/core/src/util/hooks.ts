@@ -95,6 +95,71 @@ export function useWidthSetter(view: {
   return ref
 }
 
+/**
+ * Build a value exactly once per mount — including under React StrictMode,
+ * which `useState(() => build())` does not.
+ *
+ * StrictMode double-invokes a state initializer in development and throws the
+ * SECOND result away. For an ordinary value that is the intended lint: it
+ * surfaces impure initializers and costs nothing. For anything that owns
+ * something — an MST tree, a worker pool, a subscription — it stands up a second
+ * one and then drops the only reference to it, so nothing can ever tear it down,
+ * and it is invisible because the one React kept behaves perfectly.
+ *
+ * A ref is written once and survives the double render; this is React's own
+ * "avoiding recreating the ref contents" pattern.
+ */
+export function useCreateOnce<T>(create: () => T): T {
+  // boxed, so a `create` that legitimately returns undefined isn't re-run every
+  // render by the nullish assignment
+  const ref = useRef<{ value: T } | undefined>(undefined)
+  ref.current ??= { value: create() }
+  return ref.current.value
+}
+
+/**
+ * Run `cleanup` when the component *really* unmounts.
+ *
+ * "Really" is the whole difficulty, because React does not distinguish a final
+ * unmount from a simulated one. The obvious spelling —
+ * `useEffect(() => () => cleanup(), [])` — is wrong in exactly the environment
+ * most hosts develop in, jbrowse-web included: StrictMode runs
+ * setup → cleanup → setup on a live component, so a cleanup that destroys
+ * something leaves the component holding the destroyed thing for the rest of its
+ * life, with the second setup having nothing to rebuild from. For an MST tree
+ * that is not a quiet degradation — the next read throws `[mobx-state-tree] …
+ * [dead]`.
+ *
+ * So the teardown is deferred by a microtask and cancelled if setup runs again.
+ * StrictMode's cleanup and re-setup are one synchronous block, so the cancel
+ * always wins there; a real unmount never runs setup again, so the microtask
+ * fires.
+ *
+ * This owns a *component's* teardown, not a per-value one: `cleanup` always sees
+ * the latest render's closure, and swapping the thing being torn down mid-life
+ * is not supported. Pair it with {@link useCreateOnce}, which is the shape that
+ * makes that true.
+ *
+ * Deliberately not covered: a subtree hidden with `<Activity>`, which destroys
+ * effects and re-creates them a task later rather than synchronously.
+ */
+export function useFinalUnmount(cleanup: () => void) {
+  const stableCleanup = useEventCallback(cleanup)
+  const teardownPending = useRef(false)
+  useEffect(() => {
+    // this setup owns the value: cancel a teardown a preceding cleanup queued
+    teardownPending.current = false
+    return () => {
+      teardownPending.current = true
+      queueMicrotask(() => {
+        if (teardownPending.current) {
+          stableCleanup()
+        }
+      })
+    }
+  }, [stableCleanup])
+}
+
 function resolveUpdate<T>(value: T | ((val: T) => T), prev: T) {
   return typeof value === 'function' ? (value as (val: T) => T)(prev) : value
 }
