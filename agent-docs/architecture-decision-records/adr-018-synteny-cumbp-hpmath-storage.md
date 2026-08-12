@@ -1,14 +1,23 @@
 ---
-status: Accepted
-summary: "Synteny corner storage moves to cumulative-bp hi/lo Float32 (supersedes ADR-010)"
+status: Superseded
+summary: "Synteny corner storage moves to cumulative-bp hi/lo Float32 — superseded by ADR-067 (window-relative Float32)"
 ---
 
 # ADR-018: Synteny corner storage moves to cumulative-bp hi/lo Float32
 
 ## Status
 
-Accepted (supersedes ADR-010 for the synteny path; dotplot still on
-pre-projected pixel offsets per ADR-010).
+Superseded by ADR-067. The hi/lo pair described here no longer exists: corners
+are a single window-relative Float32 against a per-axis fetch-time base, which
+is half the bytes and has no whole-assembly ceiling (this shape was exact only
+to `cumBp < 2³⁶ ≈ 68.7 Gbp`). The per-instance `padTop`/`padBottom` attributes
+this ADR introduced, the `viewPad0`/`viewPad1` uniforms, and the shared
+`hpCornerScreenX` helper are all gone with it — which also moots ADR-023.
+
+Read on for the precision problem that motivated moving off ADR-010's pixel
+offsets; ADR-067 solves the same problem a cheaper way.
+
+(Originally: Accepted, superseding ADR-010 for the synteny path.)
 
 ## Context
 

@@ -1,13 +1,18 @@
 ---
-status: Closed
-summary: "Per-instance pad memory — no action"
+status: Superseded
+summary: "Per-instance pad memory — no action; moot since ADR-067 removed per-instance padding entirely"
 ---
 
 # ADR-023: Per-instance pad memory — no action
 
 ## Status
 
-Closed — not a real problem under realistic workloads.
+Superseded by ADR-067, which removed the subject. `padTop`/`padBottom` no
+longer exist as per-instance attributes — or at all — so there is no per-
+instance padding memory to weigh against a per-region uniform table. The
+conclusion below (no action) was correct and is now unconditional.
+
+(Originally: Closed — not a real problem under realistic workloads.)
 
 ## Context
 

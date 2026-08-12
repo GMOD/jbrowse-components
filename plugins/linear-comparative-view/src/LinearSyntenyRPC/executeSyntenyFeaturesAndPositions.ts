@@ -466,8 +466,8 @@ export async function executeSyntenyFeaturesAndPositions({
   }
 
   // cumBp arrays are intermediate buffers consumed only by buildSyntenyGeometry
-  // below. They never leave the worker — the main thread reads bp-space hi/lo
-  // pairs out of `instanceData`.
+  // below. They never leave the worker — the main thread reads window-relative
+  // Float32 corners (plus `base0`/`base1`) out of `instanceData`. See ADR-067.
   const p11_cumBp = p11Array.subarray(0, validCount)
   const p12_cumBp = p12Array.subarray(0, validCount)
   const p21_cumBp = p21Array.subarray(0, validCount)

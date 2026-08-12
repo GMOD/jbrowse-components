@@ -1,19 +1,24 @@
 ---
 status: Superseded
-summary: "Synteny/dotplot pre-projected pixel offsets — superseded by ADR-018 for synteny"
+summary: "Synteny/dotplot pre-projected pixel offsets — superseded by ADR-067 for both paths"
 ---
 
 # ADR-010: Synteny and dotplot keep pre-projected pixel offsets
 
 ## Status
 
-Superseded by ADR-018 for the **synteny** path (corner storage moved to
-hi/lo Float32 cumulative-bp, eliminating the ADR-010 deep-zoom drift case
-that was filed under "known limitation"). Still accepted for **dotplot**:
-the architectural concerns documented here (per-(region-pair) draw scaling,
-codegen array support, MAX_REGIONS) all still rule out the alternatives
-ADR-010 considered, and dotplot's geometry buffer shape would need its
-own migration.
+Superseded — **neither** path stores pixel offsets any more. Synteny went
+first, to ADR-018's hi/lo Float32 cumulative-bp; ADR-067 then moved both
+synteny and dotplot to window-relative Float32 cumulative-bp against a
+fetch-time base, which is the shape in force. Dotplot additionally keeps its
+main-thread geometry as *absolute* Float64 cumBp and converts only at GPU
+upload.
+
+What survives from this ADR is the analysis, not the decision: the reasons
+per-(region-pair) draw calls, codegen array support and a `MAX_REGIONS`-capped
+uniform table were rejected are still the reasons, and ADR-067 sidesteps
+per-region addressing rather than revisiting them. The "known limitation"
+recorded below — deep-zoom drift past ~2× the geometry `bpPerPx` — is gone.
 
 ## Context
 

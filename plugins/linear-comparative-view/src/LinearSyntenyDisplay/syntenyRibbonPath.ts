@@ -164,7 +164,7 @@ export interface ComputedTransform {
 // syntenyTypes.slang. `panPx = (base - offsetPx*bpPerPx)/bpPerPx` is how far
 // the view has panned from the geometry's fetch-time base. Float64 here (the
 // GPU narrows it to Float32, which is exact because the delta is bounded by the
-// pan buffer). See ADR-018.
+// pan buffer). See ADR-067.
 export function computeTransform(
   params: SyntenyTrackRenderParams,
   data: { base0: number; base1: number },

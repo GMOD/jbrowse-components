@@ -41,7 +41,7 @@ reference others may hold, not as free-form prose.
 
 - [Synteny / comparative](#synteny--comparative) — SV-type classification,
   `syntenyGroupId`, all-vs-all PAF, PIF limits, block-level chaining, the
-  precision ceilings, and the vendor-format survey
+  `featureId` instance ceiling, and the vendor-format survey
 - [Ortholog / multi-genome navigation](#ortholog--multi-genome-navigation) —
   pangene-backed gene locator, anchor-assembly model, tiered MAF
 - [Multi-hop / fusion chaining](#multi-hop--fusion-chaining-splitthreader-style) —
@@ -923,23 +923,24 @@ formats) if these prove insufficient.
 builds an image showing read pairs, read depth, and L/R–R/L pairs as a matrix — could
 this be shown as a triangular heatmap (like `plugins/hic`) or in dotplot?
 
-### Synteny coordinate-precision ceilings (documented, deferred — see ARCHITECTURE.md "Genome-size limits")
+### Synteny featureId instance ceiling (documented, deferred — see ARCHITECTURE.md "Genome-size limits")
 
-Two ceilings in the synteny GPU path. Neither affects wheat (16 Gbp) or any
-common genome; both are documented and left unfixed as YAGNI until a real
-dataset hits them.
+One ceiling left in the synteny GPU path, and it is not a coordinate one. It
+does not affect wheat (16 Gbp) or any common genome, and is left unfixed as
+YAGNI until a real dataset hits it.
 
-**hi/lo Float32 cumulative-bp cap ~68.7 Gbp.** Corner positions split into a
-4096-bp-aligned (2¹²) Float32 `hi` + `lo` pair; `hi` is exact only while
-`cumBp < 2³⁶ ≈ 68.7 Gbp`. Above that (*Tmesipteris oblanceolata* ~160 Gbp,
-*Paris japonica* ~148 Gbp, some lungfish ~130 Gbp) `hi` rounds off its
-boundary: the whole-genome overview stays sub-pixel-correct, but zoomed-in
-navigation on far chromosomes misaligns by `~16384/bpPerPx` px. Fix if ever
-needed: widen the bucket 2¹²→2¹⁴ (in `writeHiLo`, `splitPositionWithFrac`, and
-`hpmath.slang`'s `HP_LOW_MASK` in lockstep) → exact to ~274 Gbp. Note this is
-incomplete alone — such genomes likely also breach the per-reference uint32 cap
-(4.29 Gbp/chromosome) used by the local `starts/ends/mateStarts/mateEnds`
-arrays, so full support means addressing both.
+There used to be a second, coordinate ceiling here — the ~68.7 Gbp cap from the
+4096-aligned hi/lo Float32 corner split. **It no longer exists.** ADR-067
+replaced hi/lo with a single window-relative Float32 against a fetch-time base,
+which cancels the genome-scale magnitude outright, so 100+ Gbp assemblies
+(*Tmesipteris oblanceolata* ~160 Gbp, *Paris japonica* ~148 Gbp, some lungfish
+~130 Gbp) render correctly with no cap to widen. If you find a writeup
+proposing the 2¹²→2¹⁴ bucket widening in `writeHiLo` / `HP_LOW_MASK`, it is
+stale — none of those symbols survive. See `reference/HISTORICAL.md`.
+
+The **per-reference uint32 cap** (4.29 Gbp per chromosome, on the local
+`starts/ends/mateStarts/mateEnds` arrays) is untouched by that and is still the
+one hard assumption; see `reference/BP_PRECISION.md` §"Genome-size limits".
 
 **`featureId` as Float32 → 16.7M-instance cap.** `instanceInterleave.ts` writes
 the per-instance `featureId` through the Float32 view, and the shader compares

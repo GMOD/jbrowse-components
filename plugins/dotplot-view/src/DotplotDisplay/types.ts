@@ -7,8 +7,11 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // whether the "could not be mapped" warning applies) and never stores.
 //
 // All position values are absolute genomic cumBp coordinates (uint32-scale
-// values held in Float64Array — Float32 loses precision past ~16M bp). Per
-// project rules, hi/lo splits are confined to the GPU upload boundary.
+// values held in Float64Array — Float32 loses precision past ~16M bp). They
+// stay absolute all the way to the GPU upload boundary, where
+// instanceInterleave subtracts the per-axis `baseH`/`baseV` to get the
+// window-relative Float32 the shader wants; there is no hi/lo split anywhere
+// on this path. See ADR-067.
 export type DotplotRpcData = Omit<
   DotplotFeaturesAndPositionsResult,
   'skippedHRefNames' | 'skippedVRefNames'

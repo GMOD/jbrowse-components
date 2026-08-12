@@ -21,18 +21,18 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [007](adr-007-global-data-display-mixin.md) | Accepted | `GlobalDataDisplayMixin` — fetch lifecycle for monolithic-dataset GPU displays |
 | [008](adr-008-wiggle-strict-bpperpx-equality.md) | Accepted | Strict-equality `bpPerPx` cache check for wiggle |
 | [009](adr-009-canvas-drawn-reliability.md) | Accepted | `canvasDrawn` reliability — backend-owned return and reset on invalidation |
-| [010](adr-010-synteny-dotplot-pixel-offsets.md) | Superseded | Synteny/dotplot pre-projected pixel offsets — superseded by ADR-018 for synteny |
+| [010](adr-010-synteny-dotplot-pixel-offsets.md) | Superseded | Synteny/dotplot pre-projected pixel offsets — superseded by ADR-067 for both paths |
 | [011](adr-011-canvas-flatbush-immutable-offsets.md) | Rejected | Canvas flatbushItem/subfeatureInfo stay mutable; reject parallel offset arrays |
 | [012](adr-012-synteny-worker-output-split.md) | Accepted | Synteny worker emits geometry only; main thread owns colors and picking IDs (picking part superseded by ADR-019) |
 | 013–015 | Removed | Graph-genome ADRs (bubble shape, chain contraction, cross-path symmetry) — deleted with `graph-core`; numbers not reused |
 | [016](adr-016-bicolorpivot-stays-in-worker.md) | Accepted | `bicolorPivot` split stays in the worker, not `gpuProps` |
 | [017](adr-017-wiggle-per-key-autoruns.md) | Accepted | Per-region streamed wiggle upload uses per-key autoruns |
-| [018](adr-018-synteny-cumbp-hpmath-storage.md) | Accepted | Synteny corner storage moves to cumulative-bp hi/lo Float32 (supersedes ADR-010) |
+| [018](adr-018-synteny-cumbp-hpmath-storage.md) | Superseded | Synteny corner storage moves to cumulative-bp hi/lo Float32 — superseded by ADR-067 (window-relative Float32) |
 | [019](adr-019-synteny-cpu-picking.md) | Accepted | Synteny picking moves from GPU framebuffer readback to CPU (supersedes ADR-012 picking) |
 | [020](adr-020-wiggle-line-plot-encoding.md) | Accepted | Wiggle line-plot single-polyline encoding |
 | [021](adr-021-getfeaturearrays-stays-duck-typed.md) | Accepted | Wiggle adapter fast path stays duck-typed; bicolor split lives at the executor |
 | [022](adr-022-no-batched-wiggle-rpc.md) | Superseded | Reversed — wiggle now batches every visible region into one RPC, because the adapter can coalesce adjacent on-disk blocks across region boundaries, which this ADR priced at zero. The dispatch-overhead reasoning below was right and was never the deciding term |
-| [023](adr-023-synteny-per-instance-pad-memory.md) | Closed | Per-instance pad memory — no action |
+| [023](adr-023-synteny-per-instance-pad-memory.md) | Superseded | Per-instance pad memory — no action; moot since ADR-067 removed per-instance padding entirely |
 | [024](adr-024-per-backend-snapshots-real-gpu.md) | Accepted | Browser-test snapshots are per-backend, rendered on a real GPU, run locally |
 | [025](adr-025-gpu-canvas-stays-mounted-not-xor-error.md) | Superseded | GPU canvas stays mounted across error/retry — superseded by the DisplayChrome unification |
 | [026](adr-026-displaychrome-layering-stays.md) | Accepted | DisplayChrome's layering stays — the split maps to concern boundaries |
@@ -76,4 +76,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [064](adr-064-parsed-chunk-budgets-are-per-worker-not-per-file.md) | Accepted | @gmod/bam, @gmod/tabix and @gmod/cram each bound their parsed-chunk cache per file, and dataAdapterCache holds one file per open track, so the ceilings multiplied by track count with nothing bounding the sum — three deep alignments tracks browsing eight windows retained 1109 MB with every cache still well under its own 1 GB ceiling; the adapters now share one SharedBudget per JS context, in two of them because bytes and records cannot be summed |
 | [065](adr-065-display-readiness-selectors.md) | Accepted | Display readiness is a data attribute and `data-testid` no longer mutates — the `-done`/`_done` suffix was an internal convenience that never reached the published contract, and its one ergonomic advantage came back as a helper that reports which half of the wait failed |
 | [066](adr-066-callback-slots-are-read-raw-at-the-call-site.md) | Accepted | A config slot holding a `jexl:` callback is forwarded by reading it raw (`self.conf.slot`) at the call site — the reader was NOT changed to skip evaluation on an arg-less read, because that changes plugin-ABI semantics for every caller to fix two |
+| [067](adr-067-synteny-dotplot-window-relative-float32.md) | Accepted | Synteny and dotplot corners are window-relative Float32 against a fetch-time base (supersedes ADR-010 and ADR-018) |
 <!-- END GENERATED ADR INDEX -->

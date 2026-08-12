@@ -19,7 +19,8 @@ is how we keep positions exact anyway.
 - In an LGV-family shader you write `bpToClipX(bp, u)` and stop thinking about
   precision. The hi/lo split lives inside that one wrapper.
 - Synteny and dotplot use a different scheme: cumulative-bp stored
-  **window-relative** as a single Float32 against a per-axis fetch-time base.
+  **window-relative** as a single Float32 against a per-axis fetch-time base
+  (ADR-067).
 - Limits: one chromosome must be `< 2³²` (the one hard assumption);
   whole-assembly cumulative bp has **no** GPU ceiling.
 
@@ -175,9 +176,36 @@ Far-off-screen corners — a distant-mate ribbon on another chromosome — lose
 absolute precision, but only on the clipped-away sliver; visible error stays
 ~`panDistancePx · 2⁻²³`. Storing cumBp instead of regional bp + region index
 avoids the per-region uniform table and per-region-pair draw calls that ruled
-out earlier hp-math attempts, and imposes no `MAX_REGIONS` cap. See ADR-010 for
-the rejected per-region-table alternatives and ADR-018 for the earlier hi/lo
-shape this replaced.
+out earlier hp-math attempts, and imposes no `MAX_REGIONS` cap. **ADR-067** is
+the decision; ADR-010 holds the rejected per-region-table alternatives and
+ADR-018 the earlier hi/lo shape this replaced.
+
+**The one axis the window scoping does not cover is dotplot's vertical.** The
+dotplot fetch is h-axis-scoped (`dotplotFetchKey` takes `fetchRegions` from the
+h axis alone) and the geometry autorun reads `offsetPx` untracked, so a pan on
+the v axis neither refetches nor rebuilds — only a zoom recaptures `baseV`.
+`panPxV` therefore grows unbounded within a zoom level. The error bound above
+still holds unchanged, and at `2⁻²³` per pixel it takes ~8.4M px of purely
+vertical panning with no zoom to reach one pixel of error, so this is recorded
+rather than fixed. Don't read the "re-runs when the window moves" sentence as
+covering it.
+
+### Why synteny bakes it in and dotplot doesn't
+
+The table above has synteny putting relative values across the RPC while
+dotplot keeps absolute Float64 until GPU upload, and that reads like an
+unresolved inconsistency. It is a consequence of **where each plugin builds
+geometry**, not a coordinate-convention disagreement:
+
+- Dotplot builds geometry on the **main thread** (`buildLineSegments`, in an
+  autorun), so there is a seam between "the data" and "the vertex buffer" at
+  which to change representation, and it costs nothing to use it.
+- Synteny builds geometry **in the worker**, so its geometry object *is* its
+  RPC payload. There is no such seam — the representation the worker picks is
+  the one every main-thread consumer gets.
+
+So the question below is not "should synteny adopt a better convention" but
+"should synteny pay for a seam it doesn't have."
 
 ### Should synteny adopt dotplot's shape? Asked, declined on bytes
 
@@ -187,6 +215,14 @@ output is absolute genomic uint32. It does not straightforwardly violate it —
 synteny's base is a **viewport** base rather than a regionStart, it is refetched
 when the window moves, and `base0`/`base1` travel with the data so no consumer
 has to guess it — but the inconsistency is real and the question has been asked.
+
+Two things bound how far the departure goes. The rule holds **in full for the
+feature payload**: `starts`/`ends`/`mateStarts`/`mateEnds` in
+`SyntenyFeatureData` are absolute chromosome-local uint32, and only the geometry
+arrays are relative. And neither plugin could satisfy the letter of the rule
+anyway — a corner is cumBp across displayedRegions, so even a fully "absolute"
+version would be Float64 cumBp, not the uint32 coordinate family the rule
+describes.
 
 It was declined, so it can be argued with rather than re-derived:
 
@@ -199,6 +235,17 @@ It was declined, so it can be argued with rather than re-derived:
   scheme. Undoing it buys consistency and spends a measured win.
 - It is not a buffer-format change. The CPU pick path (`syntenyPickEngine.ts` /
   `projectCorners`) reads the relative values today, so it moves too.
+
+The bytes are the reason it was declined, but they are not the honest statement
+of what the current shape costs. That is the **coupling**: `base0`/`base1` are a
+correctness dependency riding along with the data, and every consumer of
+`bp1..bp4` has to account for it. Of the four today, three are correct only
+implicitly — `getCigarOpAtInstance` because the base *cancels* in a within-axis
+subtraction, and the draw/pick paths because they route through
+`computeTransform`. Dotplot's shape cannot have that bug class at all. What
+keeps it safe here is the SYNC comments naming all four call sites plus
+`buildSyntenyGeometry.precision.test.ts`, `syntenyPickRenderAgreement.test.ts`
+and `syntenyShaderParity.test.ts`; treat those as load-bearing, not decorative.
 
 **What would change the verdict:** a decision that one coordinate story across
 the fleet is worth the bytes regardless (a legitimate call, and not the
