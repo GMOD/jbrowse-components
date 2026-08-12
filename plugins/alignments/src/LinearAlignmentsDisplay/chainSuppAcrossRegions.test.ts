@@ -1,7 +1,4 @@
-import {
-  SAM_FLAG_REVERSE,
-  SAM_FLAG_SUPPLEMENTARY,
-} from '@jbrowse/alignments-core'
+import { SAM_FLAG_REVERSE, SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
 import {
   CHAIN_FILL_NO_SUPP,

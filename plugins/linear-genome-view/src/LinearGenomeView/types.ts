@@ -46,8 +46,6 @@ export interface VolatileGuide {
   xPos: number
 }
 
-export type { TrackInit }
-
 // A declarative LGV `init` blob holds ONLY keys that need on-attach
 // resolution/conversion and have no direct MST representation — `loc` (→
 // offsetPx/bpPerPx once the assembly loads), tracks (→ showTrack), highlight (→

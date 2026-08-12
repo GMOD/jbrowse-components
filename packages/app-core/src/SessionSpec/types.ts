@@ -1,14 +1,4 @@
-/**
- * Track initialization can be a simple trackId string or an object with
- * additional configuration for display type and initial state.
- */
-export type TrackInit =
-  | string
-  | {
-      trackId: string
-      displaySnapshot?: Record<string, unknown>
-      trackSnapshot?: Record<string, unknown>
-    }
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 export interface ViewSpec {
   type: string

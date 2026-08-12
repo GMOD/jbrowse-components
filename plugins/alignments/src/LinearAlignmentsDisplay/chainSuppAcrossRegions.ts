@@ -1,4 +1,4 @@
-import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/alignments-core'
+import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
 import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { chainSuppFill } from '../shared/buildChainMetadata.ts'

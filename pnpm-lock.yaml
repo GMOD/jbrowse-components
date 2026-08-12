@@ -904,6 +904,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.1.0
         version: 6.1.0(mobx@7.0.0)
+      '@jbrowse/modifications-utils':
+        specifier: workspace:^
+        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view

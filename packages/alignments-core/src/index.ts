@@ -34,7 +34,6 @@ export type {
 export { buildSyntheticAssembly } from './buildSyntheticAssembly.ts'
 export type { SyntheticAssembly } from './buildSyntheticAssembly.ts'
 export { buildReadVsRefNames } from './readVsRefNaming.ts'
-export { getTag } from './getTag.ts'
 export {
   isAbnormalPairDirection,
   pairDirection,
@@ -79,7 +78,6 @@ export type { ClipEntry, InsertionEntry } from './interbaseCoverage.ts'
 export { computeCoverage } from './coverageCompute.ts'
 export type { CoverageGap } from './coverageCompute.ts'
 export {
-  YSCALEBAR_LABEL_OFFSET,
   buildCoverageTooltipBin,
   computeCoverageTicks,
   coverageDepthDomain,

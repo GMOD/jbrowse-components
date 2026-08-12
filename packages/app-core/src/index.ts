@@ -34,7 +34,6 @@ export type {
   LayoutNode,
   LgvUrlInit,
   ParsedSessionSpec,
-  TrackInit,
   ViewSpec,
 } from './SessionSpec/index.ts'
 export { processMutableMenuActions, resolveMenus } from './menus.ts'

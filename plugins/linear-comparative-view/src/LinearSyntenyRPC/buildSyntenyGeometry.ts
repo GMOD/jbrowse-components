@@ -3,12 +3,10 @@ import {
   CIGAR_I,
   CIGAR_INDEL_MASK,
   CIGAR_N,
+  visitCigarRenderedSegments,
 } from '@jbrowse/cigar-utils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
-import {
-  syntenyPanBufferPx,
-  visitCigarRenderedSegments,
-} from '@jbrowse/synteny-core'
+import { syntenyPanBufferPx } from '@jbrowse/synteny-core'
 
 import {
   KIND_BASE,

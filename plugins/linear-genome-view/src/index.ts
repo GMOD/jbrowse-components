@@ -191,7 +191,6 @@ export type {
   InitState,
   LinearGenomeViewLaunchProps,
   NavLocation,
-  TrackInit,
   TrackLabelMode,
   VolatileGuide,
 } from './LinearGenomeView/types.ts'

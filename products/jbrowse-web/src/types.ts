@@ -24,10 +24,12 @@ export interface SessionDB extends DBSchema {
   }
 }
 
-// The session-spec shapes (ViewSpec/LayoutNode/TrackInit) live in
-// @jbrowse/app-core alongside loadSessionSpec, so Desktop shares one definition
-// of the spec format with Web.
-export type { LayoutNode, TrackInit, ViewSpec } from '@jbrowse/app-core'
+// The session-spec shapes (ViewSpec/LayoutNode) live in @jbrowse/app-core
+// alongside loadSessionSpec, so Desktop shares one definition of the spec
+// format with Web. `TrackInit` is not one of them — it belongs to
+// @jbrowse/core/util/tracks, next to the `normalizeTrackInit` that interprets
+// it, and consumers import it from there.
+export type { LayoutNode, ViewSpec } from '@jbrowse/app-core'
 
 export interface SessionTriagedInfo {
   snap: Record<string, unknown>

@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { isSyntenyTrack } from '@jbrowse/synteny-core'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 // The shape read off a launching view's open tracks — a structural type rather
 // than LinearGenomeViewModel so this stays a pure function over two fields, and

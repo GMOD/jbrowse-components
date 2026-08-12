@@ -1,8 +1,6 @@
 import type { Feature } from '@jbrowse/core/util'
-import type {
-  ExportSvgOptions as LgvExportSvgOptions,
-  TrackInit,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
+import type { ExportSvgOptions as LgvExportSvgOptions } from '@jbrowse/plugin-linear-genome-view'
 
 // The LGV export's options plus the one this view adds, rather than a parallel
 // copy: everything here is forwarded verbatim to each sub-view's display

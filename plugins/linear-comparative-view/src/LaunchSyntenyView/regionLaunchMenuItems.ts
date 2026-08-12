@@ -14,7 +14,7 @@ import type {
   AbstractViewModel,
   Region,
 } from '@jbrowse/core/util'
-import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 const LaunchSyntenyViewForRegionDialog = lazy(
   () => import('./LaunchSyntenyViewForRegionDialog.tsx'),

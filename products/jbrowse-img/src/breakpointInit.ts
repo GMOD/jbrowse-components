@@ -2,8 +2,8 @@ import { buildDisplaySnapshot, configTrackCategory } from './applyTrackOpts.ts'
 
 import type { Entry } from './parseArgv.ts'
 import type { Config, OpenTrack, Opts } from './types.ts'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { BreakpointSplitViewInitView } from '@jbrowse/plugin-breakpoint-split-view'
-import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 
 // The `init` array a BreakpointSplitView is opened with, built from CLI flags.
 // Pure, and split out of renderRegion.ts for the reason comparativeInit.ts is:

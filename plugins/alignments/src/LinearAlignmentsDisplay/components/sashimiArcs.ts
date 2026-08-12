@@ -1,4 +1,4 @@
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 import type { SashimiSide } from '../../features/sashimi/junctions.ts'

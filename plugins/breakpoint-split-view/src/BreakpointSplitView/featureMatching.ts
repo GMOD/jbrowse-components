@@ -1,10 +1,10 @@
 import {
-  getTag,
   isAbnormalPairDirection,
   pairDirection,
 } from '@jbrowse/alignments-core'
 import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
 import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
+import { getTag } from '@jbrowse/modifications-utils'
 import { safeParseBreakend } from '@jbrowse/sv-core'
 
 import type { ChainSegment, LayoutMatch } from './types.ts'

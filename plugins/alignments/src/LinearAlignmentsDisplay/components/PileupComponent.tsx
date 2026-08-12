@@ -1,6 +1,5 @@
 import { Fragment, useId } from 'react'
 
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ResizeHandle, VerticalScrollbar } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
 import { getContainingView } from '@jbrowse/core/util'
@@ -8,6 +7,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
 import {

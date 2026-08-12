@@ -1,4 +1,4 @@
-import { visitCigarRenderedSegments } from '@jbrowse/synteny-core'
+import { visitCigarRenderedSegments } from '@jbrowse/cigar-utils'
 
 import { MIN_CIGAR_PX_WIDTH } from './dotplotCigarDetail.ts'
 

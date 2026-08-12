@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 
 import {
-  YSCALEBAR_LABEL_OFFSET,
   computeCoverageTicks,
   coverageDepthDomain,
   computeVisibleCoverageStats,
@@ -41,6 +40,7 @@ import {
   domainFromStats,
   getNiceDomain,
 } from '@jbrowse/wiggle-core'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, observable } from 'mobx'
 
 import {

@@ -1,4 +1,3 @@
-import { getTag } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
@@ -7,6 +6,7 @@ import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { getTag } from '@jbrowse/modifications-utils'
 
 import type { AbstractTrackModel, Feature } from '@jbrowse/core/util'
 

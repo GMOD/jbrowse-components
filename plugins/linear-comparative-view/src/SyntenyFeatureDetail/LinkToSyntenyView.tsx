@@ -19,7 +19,7 @@ import type {
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
-import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 // lazies
 const LaunchSyntenyViewDialog = lazy(

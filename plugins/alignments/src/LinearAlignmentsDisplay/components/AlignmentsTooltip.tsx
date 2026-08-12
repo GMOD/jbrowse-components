@@ -1,8 +1,8 @@
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
 import { formatLocationRange } from '../../shared/locStrings.ts'

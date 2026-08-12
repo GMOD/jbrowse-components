@@ -50,7 +50,7 @@ import type {
   AbstractViewModel,
   Region,
 } from '@jbrowse/core/util'
-import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 // The panel list is one row per aligning assembly, so an all-vs-all locus can
 // produce a dozen; at MUI's default checkbox padding that list alone is taller

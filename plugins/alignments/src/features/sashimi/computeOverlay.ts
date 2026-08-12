@@ -1,10 +1,10 @@
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import {
   colorFwdStrand,
   colorNostrand,
   colorRevStrand,
 } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
 import { mergeJunctions } from './junctions.ts'
 

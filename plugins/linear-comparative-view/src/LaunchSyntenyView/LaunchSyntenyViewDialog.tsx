@@ -18,7 +18,7 @@ import type {
   AbstractViewModel,
   Feature,
 } from '@jbrowse/core/util'
-import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 // The pairwise launch: one clicked alignment, one target panel. Launching every
 // assembly a locus aligns to is the region-anchored flow instead — see

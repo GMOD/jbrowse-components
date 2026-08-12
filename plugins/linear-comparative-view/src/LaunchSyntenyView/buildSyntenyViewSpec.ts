@@ -12,7 +12,7 @@ import type {
   AbstractViewModel,
   Feature,
 } from '@jbrowse/core/util'
-import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
+import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 // The clicked block's genomic span, used to clip the launched synteny view to
 // the region of interest. Only the span matters — the refName is the feature's
