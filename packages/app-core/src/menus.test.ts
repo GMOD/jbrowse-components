@@ -272,6 +272,39 @@ describe('item contributions', () => {
     expect(menus[0]!.menuItems()).not.toBe(definitions[0]!.menuItems)
   })
 
+  // a menuItem contribution can pre-populate its own subMenu (appendToMenu with
+  // a literal subMenu array) and a later contribution can target that same
+  // path (appendToSubMenu) to add to it. Repeated opens must not compound: the
+  // second contribution used to push into the first contribution's own,
+  // never-cloned subMenu array, so every open left one more copy behind.
+  it('does not accumulate items in a pre-populated sub-menu across opens', () => {
+    const menus = run(base, [
+      {
+        type: 'addItem',
+        menuPath: ['File'],
+        menuItem: {
+          label: 'SubMenu',
+          subMenu: [item('Item in sub-menu')],
+        } as unknown as MenuItem,
+      },
+      {
+        type: 'addItem',
+        menuPath: ['File', 'SubMenu'],
+        menuItem: item('Second item in sub-menu'),
+      },
+    ])
+    const expected = {
+      label: 'SubMenu',
+      subMenu: [
+        { label: 'Item in sub-menu' },
+        { label: 'Second item in sub-menu' },
+      ],
+    }
+    expect(menus[0]!.menuItems()).toContainEqual(expected)
+    expect(menus[0]!.menuItems()).toContainEqual(expected)
+    expect(menus[0]!.menuItems()).toContainEqual(expected)
+  })
+
   // menus() replays the whole action log on every re-render, and a menu can be
   // opened any number of times; neither may accumulate
   it('is stable across replays and repeated opens', () => {

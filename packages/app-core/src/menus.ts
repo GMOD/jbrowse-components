@@ -74,11 +74,20 @@ const reported = new WeakSet<AddItemAction>()
 // model's own literal or a thunk's internals; leaf items (with their
 // onClick/icon) are shared by ref
 function cloneMenuItems(items: MenuItem[]): MenuItem[] {
-  return items.map(item =>
-    'subMenu' in item
-      ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
-      : item,
-  )
+  return items.map(cloneMenuItem)
+}
+
+// an item contribution's own menuItem needs the same protection as `base`: if
+// it already carries a subMenu (a plugin pre-populating one in the same call
+// that declares it), a later action targeting that path resolves this exact
+// array and pushes into it. Without cloning, that push lands on the action's
+// permanent menuItem object, so the next open's resolveSubMenu finds it
+// already containing last open's addition and appends another — one more
+// copy of the item every time the menu opens, forever.
+function cloneMenuItem(item: MenuItem): MenuItem {
+  return 'subMenu' in item
+    ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
+    : item
 }
 
 function materialize(menuItems: MenuItemsGetter) {
@@ -124,7 +133,7 @@ function applyItemActions(items: MenuItem[], actions: AddItemAction[]) {
   for (const action of actions) {
     try {
       const target = resolveSubMenu(items, action.menuPath)
-      insertAt(target, action.menuItem, action.position)
+      insertAt(target, cloneMenuItem(action.menuItem), action.position)
     } catch (error) {
       if (!reported.has(action)) {
         reported.add(action)
