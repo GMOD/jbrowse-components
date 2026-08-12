@@ -1637,7 +1637,21 @@ export default function baseStateModelFactory(
         get subfeatureIdIndex() {
           return indexById(self.laidOutDataMap, d => d.subfeatureInfos)
         },
-
+      }))
+      // The id-index consumers sit in their own block, after the two getters
+      // they read, so each reads them off `self` rather than `this`. Same shape
+      // and same reason as `MultiRegionDisplayMixin`'s `dataCurrent`/`svgReady`
+      // split ("a super-captured view is called bare") — except here it is not
+      // hypothetical. `overlayElements.tsx` destructures `morphOffsetFor` off
+      // the model and calls it with no receiver, which under `this` threw
+      // `Cannot read properties of undefined (reading 'featureIdIndex')` the
+      // moment anything asked for an overlay box: a search hit, a selection, a
+      // solo pick, or a hover. A getter survives being destructured because it
+      // is evaluated at that moment with the right receiver; a *method* does
+      // not, so the two kinds cannot be told apart by looking at the call site.
+      // Read siblings off `self` in a later block and the distinction stops
+      // mattering.
+      .views(self => ({
         /**
          * #method
          */
@@ -1654,11 +1668,11 @@ export default function baseStateModelFactory(
           if (from === undefined) {
             return 0
           }
-          const topLevelId = this.featureIdIndex.has(featureId)
+          const topLevelId = self.featureIdIndex.has(featureId)
             ? featureId
-            : (this.subfeatureIdIndex.get(featureId)?.parentFeatureId ??
+            : (self.subfeatureIdIndex.get(featureId)?.parentFeatureId ??
               featureId)
-          const item = this.featureIdIndex.get(topLevelId)
+          const item = self.featureIdIndex.get(topLevelId)
           return item === undefined
             ? 0
             : morphOffset(from, topLevelId, item.topPx, self.morphEased)
@@ -1669,7 +1683,7 @@ export default function baseStateModelFactory(
          */
         get hoveredFeature() {
           const id = self.featureIdUnderMouse
-          return id ? (this.featureIdIndex.get(id) ?? null) : null
+          return id ? (self.featureIdIndex.get(id) ?? null) : null
         },
 
         /**
@@ -1677,21 +1691,22 @@ export default function baseStateModelFactory(
          */
         get hoveredSubfeature() {
           const id = self.subfeatureIdUnderMouse
-          return id ? (this.subfeatureIdIndex.get(id) ?? null) : null
+          return id ? (self.subfeatureIdIndex.get(id) ?? null) : null
         },
 
         /**
          * #method
          */
         getFeatureById(featureId: string) {
-          return this.featureIdIndex.get(featureId)
+          return self.featureIdIndex.get(featureId)
         },
-
+      }))
+      .views(self => ({
         /**
          * #method
          */
         searchFeatureByID(id: string) {
-          const item = this.getFeatureById(id)
+          const item = self.getFeatureById(id)
           if (!item) {
             return undefined
           }

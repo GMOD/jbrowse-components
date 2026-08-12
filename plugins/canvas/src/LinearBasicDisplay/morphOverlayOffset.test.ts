@@ -122,4 +122,27 @@ describe('morphOffsetFor', () => {
     display.setMorphProgress(0.5)
     expect(display.morphOffsetFor('nonexistent')).toBe(0)
   })
+
+  // `overlayElements.tsx` pulls this off the model with the rest of what it
+  // reads and calls it bare, so it runs with no receiver. While the body said
+  // `this.featureIdIndex` that threw "Cannot read properties of undefined" —
+  // not on load, but the first time anything asked for an overlay box, which is
+  // a search hit, a selection, a solo pick or a hover. The sibling getters
+  // beside it survive the same destructuring because a getter is evaluated
+  // where it is destructured; a method is not, which is why this needs its own
+  // test rather than being covered by the ones above.
+  it('survives being destructured off the model', () => {
+    const display = setUp(['f1'])
+    const settledY = drawnRectY(display, 'f1', display.laidOutDataMap)
+    display.beginYMorph(
+      new Map([['f1', settledY + 60]]),
+      display.settledMaxY + 60,
+    )
+    display.setMorphProgress(0.5)
+
+    const { morphOffsetFor, getFeatureById, searchFeatureByID } = display
+    expect(morphOffsetFor('f1')).toBeCloseTo(30)
+    expect(getFeatureById('f1')).toBeDefined()
+    expect(searchFeatureByID('f1')).toBeDefined()
+  })
 })
