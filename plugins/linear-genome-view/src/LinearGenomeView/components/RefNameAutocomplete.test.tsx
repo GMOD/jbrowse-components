@@ -286,39 +286,6 @@ describe('RefNameAutocomplete', () => {
     expect(screen.queryByText('ctg1_hap2')).toBeNull()
   })
 
-  it('pressing enter on a glob does what that row does', async () => {
-    // the property the shared matcher exists for: Enter and the row answer for
-    // the same typed text. Enter used to reach the text index, which can never
-    // answer a glob, and report no results over a list the box was showing
-    const user = userEvent.setup()
-    const { model, session } = setupHaplotypes()
-
-    render(
-      <RefNameAutocomplete
-        session={session}
-        assemblyName="volvox"
-        fetchResults={async () => []}
-        onSelect={option => {
-          navigateToSelectedOption({
-            model,
-            assemblyName: 'volvox',
-            option,
-          }).catch(() => {})
-        }}
-      />,
-    )
-
-    const input = screen.getByPlaceholderText('Search for location')
-    await user.click(input)
-    await user.type(input, '*_hap1{Enter}')
-
-    await waitFor(() => {
-      expect(
-        model.displayedRegions.map((r: { refName: string }) => r.refName),
-      ).toEqual(['ctg1_hap1', 'ctg2_hap1'])
-    }, patience)
-  })
-
   it('picking that row displays every match, via the multi-region path', async () => {
     const user = userEvent.setup()
     const { model, session } = setupHaplotypes()

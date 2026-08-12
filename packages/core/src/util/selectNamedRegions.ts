@@ -1,17 +1,19 @@
 import type { Region } from './types/index.ts'
 
-// `*` is the only metacharacter; everything else in a name is matched literally,
-// so a refName containing regex punctuation (`chr1.1`, `scaffold[2]`) can't turn
-// into an accidental pattern.
-//
-// Case-INSENSITIVE, and not optionally: the literal reading beside it resolves
-// through getCanonicalRefName, which falls back to `lowerCaseRefNameAliases`, so
-// `CHR1` has always found `chr1`. A case-sensitive glob meant `CHR1*` found
-// nothing on the same assembly — literal working where pattern silently fails,
-// which is the same split the alias fix removed and is no more tellable apart
-// from "this assembly has no such contigs" here than it was there. No caller
-// wants the other behaviour, so it is baked in rather than passed.
-function globToRegExp(pattern: string) {
+/**
+ * `*` is the only metacharacter; everything else in a name is matched literally,
+ * so a refName containing regex punctuation (`chr1.1`, `scaffold[2]`) can't turn
+ * into an accidental pattern. Anchored, so a pattern names whole refNames.
+ *
+ * Case-INSENSITIVE, and not optionally: the literal reading beside it resolves
+ * through getCanonicalRefName, which falls back to `lowerCaseRefNameAliases`, so
+ * `CHR1` has always found `chr1`. A case-sensitive glob meant `CHR1*` found
+ * nothing on the same assembly — literal working where pattern silently fails,
+ * which is the same split the alias fix removed and is no more tellable apart
+ * from "this assembly has no such contigs" here than it was there. No caller
+ * wants the other behaviour, so it is baked in rather than passed.
+ */
+export function globToRegExp(pattern: string) {
   const escaped = pattern.replaceAll(/[.*+?^${}()|[\]\\]/g, m =>
     m === '*' ? '.*' : `\\${m}`,
   )

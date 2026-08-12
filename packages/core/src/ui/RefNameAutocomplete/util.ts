@@ -1,11 +1,6 @@
 import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
 import { measureText } from '../../util/index.ts'
-import {
-  MAX_GLOB_REGIONS,
-  matchRefNames,
-} from '../../util/selectNamedRegions.ts'
-
-import type { RefNameMatchSource } from '../../util/selectNamedRegions.ts'
+import { globToRegExp } from '../../util/selectNamedRegions.ts'
 
 // matches the rendered font-size of the TextField
 const INPUT_FONT_SIZE = 14
@@ -39,6 +34,15 @@ export function cap(options: Option[]) {
     : options
 }
 
+// How many matches a glob may gather into the one "show all" option below.
+// Displaying a few hundred whole chromosomes is ordinary — GRCh38 with its alts
+// and decoys is ~640 refNames, and showAllRegionsInAssembly lays out every one —
+// so the ceiling sits well above any real chromosome set. Past it, the option is
+// withheld rather than truncated: a bulk action that reads "all of them" and
+// navigates to the first thousand is the one behaviour not worth having, and the
+// individual options are still listed for picking one at a time.
+export const MAX_SELECT_ALL = 1000
+
 /**
  * One option carrying every match as a whitespace-separated locstring — the
  * multi-region form the box already accepts, and the form it already displays
@@ -64,32 +68,58 @@ function selectAllOption(matches: string[], pattern: string): Option {
 /**
  * The browse/pre-fetch fallback list, shown while a typed query is in flight and
  * when it comes back empty (typed queries otherwise resolve through
- * fetchResults).
+ * fetchResults). An assembly can hold ~10^6 refNames, so match and materialize
+ * in one bounded pass rather than building a million option objects or slicing
+ * first — slicing first would hide every refName past the cap from the filter,
+ * so a substring of a late scaffold's name matched nothing. Collecting one past
+ * the cap lets `cap` still render its "keep typing" hint.
  *
- * The matching itself is `matchRefNames`, in core beside the glob semantics,
- * because Enter answers for the same typed text and the two must not each grow
- * their own reading of it. What is left here is presentation: how many rows to
- * materialize, and the bulk row.
+ * A query containing `*` is ALSO read as an anchored glob, the same reading
+ * `selectNamedRegions` gives a `displayedRegionNames` entry — so `*_MATERNAL`
+ * picks out a haplotype here exactly as it does in a session spec. Read as well
+ * as, never instead of, the substring match: `*` is a legal refName character
+ * (GRCh38's ALT decoys are HLA allele names like `HLA-A*01:01:01:01`), so a
+ * literal hit must not be lost to the pattern reading of the same text. Union,
+ * rather than selectNamedRegions' literal-first rule, because this is a filter
+ * and not a resolver — an extra row in a list the user is looking at costs
+ * nothing, where an extra region in a resolved set is a wrong answer.
  *
- * A glob may gather up to MAX_GLOB_REGIONS for that bulk row; a plain query
- * never needs more than the visible list, so it keeps the tighter bound and the
- * cost it always had. Collecting one past MAX_OPTIONS is what lets `cap` render
- * its "keep typing" hint.
+ * Only a glob query does the extra scanning. A plain substring query takes the
+ * same bounded path, and costs the same, as it always has.
  */
 export function getRefNameOptions(
   assembly: RefNameMatchSource | undefined,
   inputValue: string,
 ) {
-  const isGlob = inputValue.includes('*')
-  const matches = matchRefNames(
-    assembly,
-    inputValue,
-    isGlob ? MAX_GLOB_REGIONS : MAX_OPTIONS,
-  )
-  const options: Option[] = matches.slice(0, MAX_OPTIONS + 1).map(refName => ({
-    result: new RefSequenceResult({ refName, label: refName }),
-  }))
-  return isGlob && matches.length > 1 && matches.length <= MAX_GLOB_REGIONS
+  const query = inputValue.toLowerCase()
+  const glob = query.includes('*') ? globToRegExp(query, 'i') : undefined
+  const options: Option[] = []
+  // gathered only for a glob, and only to build the bulk option below; one past
+  // the ceiling is all it takes to know the ceiling was passed
+  const matches: string[] = []
+  for (const { refName } of regions) {
+    if (!(refName.toLowerCase().includes(query) || glob?.test(refName))) {
+      continue
+    }
+    if (options.length <= MAX_OPTIONS) {
+      options.push({
+        result: new RefSequenceResult({ refName, label: refName }),
+      })
+    }
+    if (glob && matches.length <= MAX_SELECT_ALL) {
+      matches.push(refName)
+    }
+    // stop once neither list can learn anything more: the options are one past
+    // their cap, which is all `cap` needs to render its hint, and the match list
+    // is one past the ceiling, which withholds the bulk option either way
+    if (
+      options.length > MAX_OPTIONS &&
+      (!glob || matches.length > MAX_SELECT_ALL)
+    ) {
+      break
+    }
+  }
+  return glob && matches.length > 1 && matches.length <= MAX_SELECT_ALL
     ? [selectAllOption(matches, inputValue), ...options]
     : options
 }
