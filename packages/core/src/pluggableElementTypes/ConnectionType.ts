@@ -9,9 +9,9 @@ export default class ConnectionType extends PluggableElementBase {
 
   configSchema: AnyConfigurationSchemaType
 
-  description: string
+  description?: string
 
-  url: string
+  url?: string
 
   configEditorComponent?: AnyReactComponentType
 
@@ -20,9 +20,9 @@ export default class ConnectionType extends PluggableElementBase {
     stateModel: IAnyModelType
     configSchema: AnyConfigurationSchemaType
     displayName?: string
-    description: string
+    description?: string
     configEditorComponent?: AnyReactComponentType
-    url: string
+    url?: string
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel

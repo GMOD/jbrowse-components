@@ -41,8 +41,7 @@ export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
 
 ### Required items
 
-`ConnectionType` requires five, two of which describe the type to a user in the
-"Add connection" dialog:
+`ConnectionType` requires three:
 
 - `name`: the name JBrowse uses internally and in configuration files to refer
   to this type of connection
@@ -52,16 +51,20 @@ export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
   connection, and must at least have a `name` slot.
 - `stateModel`: the `@jbrowse/mobx-state-tree` model that does the queries and
   creates tracks (see below).
-- `description`: a sentence about what the connection connects to, shown as
-  helper text under the connection-type dropdown once the type is selected.
-- `url`: a link to more information about the resource or its format, rendered
-  as an external link after the description.
 
 ### Optional items
 
-- `displayName`: what that dropdown lists, falling back to `name` as it does on
-  every pluggable element. Worth setting to something readable, since `name` is
-  an identifier.
+The first three furnish the "Add connection" dialog. A connection is something a
+user picks out of a list of them, so all three are worth setting even though
+none is enforced; every connection in the tree passes all three.
+
+- `displayName`: what the connection-type dropdown lists, falling back to `name`
+  as it does on every pluggable element. Worth setting to something readable,
+  since `name` is an identifier.
+- `description`: a sentence about what the connection connects to, shown as
+  helper text under that dropdown once the type is selected.
+- `url`: a link to more information about the resource or its format, rendered
+  as an external link after the description.
 - `configEditorComponent`: by default the user configures the connection with
   the built-in config editor. A custom React component can be supplied instead;
   it receives a `model` prop whose `target` is the connection config. Set a slot

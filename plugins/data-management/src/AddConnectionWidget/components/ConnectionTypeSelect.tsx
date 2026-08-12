@@ -19,7 +19,7 @@ const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
         value={connectionType.name}
         label="Connection type"
         helperText={
-          connectionType.description ? (
+          connectionType.description || connectionType.url ? (
             <>
               {connectionType.description}
               {connectionType.url ? (
