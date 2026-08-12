@@ -11,18 +11,14 @@ import { observer } from 'mobx-react'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
-import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-function loc(r: BaseBlock) {
-  return r.type === 'ContentBlock'
-    ? `${r.refName}:${Math.floor(r.start)}-${Math.floor(r.end)}`
-    : ''
-}
 
 type ViewState = ReturnType<typeof useCreateViewState>
 
-// reading the visible regions is synchronous observable state
+// reading the visible regions is synchronous observable state.
+// coarseVisibleLocStrings is the debounced twin of visibleLocStrings, and it
+// already assembles the locstring for you — including the [rev] marker on a
+// flipped region and the assembly prefix when several are on screen
 const VisibleRegions = observer(function VisibleRegions({
   viewState,
 }: {
@@ -30,10 +26,7 @@ const VisibleRegions = observer(function VisibleRegions({
 }) {
   const view = viewState.session.view
   return view.initialized ? (
-    <p>
-      Visible region{' '}
-      {view.coarseDynamicBlocks.map(loc).filter(Boolean).join(',')}
-    </p>
+    <p>Visible region {view.coarseVisibleLocStrings}</p>
   ) : null
 })
 
@@ -49,22 +42,32 @@ const VisibleFeatures = observer(function VisibleFeatures({
   const { rpcManager, view } = session
 
   useEffect(() => {
+    // each run supersedes the one before it. Two pans in quick succession leave
+    // two calls in flight, and they can come back in either order — without the
+    // generation check the slower, older one lands last and the table shows the
+    // region you already left
+    let latest = 0
     return autorun(() => {
       if (view.initialized) {
         const track = view.tracks[0]
         if (track) {
           const adapterConfig = getConf(track, 'adapter')
           const sessionId = getRpcSessionId(track)
+          const generation = ++latest
           void rpcManager
             .call(sessionId, 'CoreGetFeatures', {
               adapterConfig,
               regions: view.coarseDynamicBlocks,
             })
             .then(feats => {
-              setFeatures(feats)
+              if (generation === latest) {
+                setFeatures(feats)
+              }
             })
             .catch((e: unknown) => {
-              setError(e)
+              if (generation === latest) {
+                setError(e)
+              }
             })
         }
       }
