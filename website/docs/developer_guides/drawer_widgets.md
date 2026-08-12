@@ -150,8 +150,19 @@ export type LinearGenomeViewLaunchProps = Partial<
 
 Width (CSS pixels, default 384) is set with `updateDrawerWidth(500)`, clamped so
 the drawer cannot take the whole viewport (minimum drawer width 128px, minimum
-main view width 150px). `drawerPosition` (default `'right'`, set with
-`setDrawerPosition`) persists to localStorage and restores on the next page
+main view width 150px). It returns the width actually applied, so a caller can
+tell it asked for more than it got. `resizeDrawer(distance)` is the edge drag's
+action and moves the width by a delta instead, flipping the sign for a
+left-positioned drawer and returning the delta that fitted. `drawerPosition`
+(default `'right'`, set with `setDrawerPosition`) persists to localStorage and
+restores on the next page load.
+
+The two do **not** travel together. `drawerWidth` is an ordinary session
+property, so it round-trips through a saved or shared session; `drawerPosition`
+is stripped out of the snapshot on the way out and lives only in that browser's
+localStorage, on the grounds that which side your drawer sits on is a personal
+layout preference rather than something to hand to whoever opens your link. So a
+session cannot carry a drawer position, and a host that wants one sets it after
 load.
 
 ## Showing a custom widget
