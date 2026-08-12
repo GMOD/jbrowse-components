@@ -27,8 +27,7 @@
   },
   "files": [
     "esm",
-    "dist",
-    "docs"
+    "dist"
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
