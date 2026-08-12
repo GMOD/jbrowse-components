@@ -128,7 +128,7 @@ for (const dir of GUIDE_DIRS) {
       if (hit) {
         problems.push(
           `${rel}: TL;DR says "${hit[0].trim()}". Say what the page shows, ` +
-            `not how good it is (website/docs/CLAUDE.md, "Voice").`,
+            `not how good it is (website/docs/CLAUDE.md §"Voice").`,
         )
       }
     }

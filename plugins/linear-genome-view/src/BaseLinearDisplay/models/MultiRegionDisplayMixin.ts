@@ -653,7 +653,7 @@ export function autorunOnReadyView(
 
 /**
  * Dev-only feedback-loop guard for the (undelayed) `SettingsInvalidate` autorun.
- * The classic `rpcProps()` trap (ARCHITECTURE.md "rpcProps() loop trap") puts a
+ * The classic `rpcProps()` trap (ARCHITECTURE.md §"rpcProps() loop trap") puts a
  * fetch-derived value in `rpcProps()`, so the autorun that reads it and clears
  * fetched data re-invalidates itself — MobX runs it until its 100-iteration
  * convergence guard throws a cryptic "Reaction doesn't converge". Call this at

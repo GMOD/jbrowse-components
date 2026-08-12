@@ -468,10 +468,10 @@ const PLACEHOLDER = /^My[A-Z]|Xxx/
 // Keep each entry pinned to the sentence that needs it — if that sentence goes,
 // so does the entry.
 const DOC_ABSENT_ON_PURPOSE = new Set([
-  // ARCHITECTURE.md, "Theme-derived render inputs are session getters": the
+  // ARCHITECTURE.md §"Theme-derived render inputs are session getters": the
   // volatile-plus-useEffect shape it rules out, contrasted with the getter.
   'setColorPalette',
-  // ARCHITECTURE.md, "`rpcProps()` / `gpuProps()` pattern": names the removed
+  // ARCHITECTURE.md §"`rpcProps()` / `gpuProps()` pattern": names the removed
   // server-side-block predecessor precisely to stop the next reader grepping
   // for it. It was a live-precedent claim here until 2026-08.
   'renderProps',

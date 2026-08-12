@@ -160,7 +160,7 @@ function simulateLoaded(
 
 // Worker output is absolute genomic uint32, so alignment data stays valid under
 // zoom and alignments leaves `isCacheValid` at the default `() => true` — see
-// ARCHITECTURE.md "Per-region zoom-staleness". These pin the consequence: a zoom
+// ARCHITECTURE.md §"Per-region zoom-staleness". These pin the consequence: a zoom
 // that stays inside the fetched buffer must not drop into the loading phase.
 // BreakpointSplitView's overlays depend on it — a cleared `rpcDataMap` makes
 // every `searchFeatureByID` miss, which is what collapses its connection curves

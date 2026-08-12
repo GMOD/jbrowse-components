@@ -1071,7 +1071,7 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * Which samples the worker should emit rows for, as a **set** — sorted
          * and deduped, so only a membership change can move it. Row order is not
-         * a fetch input here; ARCHITECTURE.md, "Row order is not a fetch input",
+         * a fetch input here; ARCHITECTURE.md §"Row order is not a fetch input",
          * has the why and how the three row displays each do it.
          *
          * Two local rules:

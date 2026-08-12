@@ -27,7 +27,7 @@ const timeout = 20000
 // `DisplayContainer` wrapper, and now registers its body directly. Asserting the
 // testid, display id and phase land on one element is what makes that last move
 // verifiable here rather than only in a full GPU + headless-Chrome run. See
-// DISPLAYCHROME.md, "One element per display".
+// DISPLAYCHROME.md §"One element per display".
 test('open a GWAS manhattan track', async () => {
   const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)

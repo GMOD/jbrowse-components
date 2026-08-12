@@ -145,7 +145,7 @@ interface GlobalFetchAutorunHost extends IStateTreeNode {
  * network thrash rather than a synchronous freeze, so a within-tick counter
  * cannot distinguish it from legitimate rapid interaction. The invariant is the
  * same: `rpcProps()` must return only user-controlled settings, never fetched
- * data (see ARCHITECTURE.md "rpcProps() loop trap").
+ * data (see ARCHITECTURE.md §"rpcProps() loop trap").
  */
 export function installGlobalFetchAutorun(
   self: GlobalFetchAutorunHost,

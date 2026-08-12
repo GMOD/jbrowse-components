@@ -201,7 +201,7 @@ function main() {
     '# Each entry resolves a slot that may hold a `jexl:` expression without',
     '# giving the expression anything to be about, so a configured callback is',
     '# evaluated against a context where every name in it is undefined. See',
-    '# adr-066 and CONFIG_PATTERN.md "Forwarding a callback slot".',
+    '# adr-066 and CONFIG_PATTERN.md §"Forwarding a callback slot".',
     '#',
     '# Reads are matched on the slot NAME, so a name is only usable as a signal',
     '# when every slot bearing it is callback-capable. These names are not, and',

@@ -13,7 +13,7 @@ the point where the model has data and needs to draw it.
 
 Everything here applies to displays that draw to a canvas. Arc — the one display
 class that paints JSX SVG on both the on-screen and export paths — composes none
-of it; see ARCHITECTURE.md "Display stacks".
+of it; see ARCHITECTURE.md §"Display stacks".
 
 ## TL;DR
 

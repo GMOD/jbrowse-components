@@ -601,7 +601,7 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
         // Display settings live on the TRACK's displays entry, which is built by
         // the display's config schema — never on the session display node below,
         // which is built by its state model and drops a slot name in silence.
-        // See ARCHITECTURE.md "Where a display's state lives"; `jbrowse
+        // See ARCHITECTURE.md §"Where a display's state lives"; `jbrowse
         // validate` reports the wrong side of it.
         displays: [
           {
@@ -719,7 +719,7 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
 // in silence and the demo rendered at the schema's default 250px with no
 // population coloring, for as long as the demo existed. Nothing else can catch
 // this: it isn't a type error, it isn't a runtime error, and the page looks
-// plausible. See ARCHITECTURE.md "Where a display's state lives".
+// plausible. See ARCHITECTURE.md §"Where a display's state lives".
 //
 // The reshape below is only a shape adapter — this product's config takes
 // `assembly`/`view` where a jbrowse-web config.json takes `assemblies[]` and

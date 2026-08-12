@@ -723,7 +723,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             // forever with no error set — the display would sit on the loading
             // scrim and `svgReady` would never settle, hanging the whole view's
             // export on an unbounded `awaitSvgReady`. Every resting state that
-            // never fetches has to be terminal (ARCHITECTURE.md, "SVG export").
+            // never fetches has to be terminal (ARCHITECTURE.md §"SVG export").
             if (resolutions?.length) {
               self.setAvailableResolutions(resolutions)
               // No initial selection needed — `effectiveResolution` derives

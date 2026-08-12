@@ -159,7 +159,7 @@ export function makeRetryContractCheck(
             `counter (ArcFetchModel.reload drops loadedRegionSignature so its ` +
             `dataCurrent goes false). If this display is deliberately not ` +
             `fetching, say so with loadingSuppressed — the loading scrim reads ` +
-            `it too. See DISPLAYCHROME.md, "The retry contract".`,
+            `it too. See DISPLAYCHROME.md §"The retry contract".`,
         )
       }
     })

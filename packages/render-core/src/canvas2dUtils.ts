@@ -135,7 +135,7 @@ export function prepareCanvas(
 // `getContext('2d')` + null-guard + `prepareCanvas` ritual that every
 // standalone 2D overlay otherwise hand-rolls in its draw effect — and the
 // `prepareCanvas` DPR step is easy to omit, which renders blurry on Retina
-// (see agent-docs/reference/GPU_RENDERING.md "Canvas scaling & hi-DPI").
+// (see agent-docs/reference/GPU_RENDERING.md §"Canvas scaling & hi-DPI").
 // Returning the
 // prepared ctx structurally prevents that omission.
 export function getPreparedCanvas2D(

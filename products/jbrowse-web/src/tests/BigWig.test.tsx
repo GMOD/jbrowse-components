@@ -53,7 +53,7 @@ test('open a bigwig density track', async () => {
 // DisplayChrome, `display-${displayId}-done` on a `DisplayContainer` wrapper).
 // Collapsing that wrapper is invisible to jest unless the co-location is
 // asserted, and the suites that would notice need a full GPU + headless-Chrome
-// run. See agent-docs/reference/DISPLAYCHROME.md, "One element per display".
+// run. See agent-docs/reference/DISPLAYCHROME.md §"One element per display".
 test('a wiggle track emits its testid, display id and phase on one element', async () => {
   const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)

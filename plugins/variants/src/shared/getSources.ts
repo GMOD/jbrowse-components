@@ -62,7 +62,7 @@ export function expandSourcesToHaplotypes({
  * into this list, `rowNames` names it, and the client maps those names onto the
  * rows it draws (`rowRemap` → `placeVariantRows`). That is what lets a reorder,
  * a regroup or a clustering run re-upload the cells already in hand instead of
- * re-downloading the VCF; see ARCHITECTURE.md, "Row order is not a fetch input".
+ * re-downloading the VCF; see ARCHITECTURE.md §"Row order is not a fetch input".
  *
  * Lives here, beside `expandSourcesToHaplotypes`, because the one thing it must
  * get right is producing the same `"<sampleName> HP<n>"` strings the client's

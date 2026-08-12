@@ -807,7 +807,7 @@ export default function stateModelFactory(
          * unobservable to the fetch but would still move the key. Re-picking the
          * same clade after a re-cluster hands `setSubtreeFilter` the same names
          * in the tree's new leaf order, which refetched every loaded region for
-         * identical data. ARCHITECTURE.md, "Row order is not a fetch input".
+         * identical data. ARCHITECTURE.md §"Row order is not a fetch input".
          *
          * Copied out of the MST node for the same reason: the key is a JSON
          * string and an MST node's serialization is not this module's to depend
