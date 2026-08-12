@@ -7,9 +7,21 @@ import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 // coverage band produced an unreadable figure with no on-screen warning.
 export const COMPACT_AXIS_HEIGHT = 30
 
-// The compact label's text. Same wording on screen and in export.
-export function compactAxisLabel(maxValue: number) {
-  return `[0, ${Math.round(maxValue)}]`
+// The compact label's text, from the SAME ticks the full axis would have drawn.
+// Same wording on screen and in export.
+//
+// Both ends come off the tick ladder rather than the low end being written as a
+// literal 0. The coverage domain does not always start there: a log scale floors
+// it at one read (`coverageDepthDomain`) and a `minScore` bound starts it
+// wherever the user put it — and `computeCoverageTicks` emits its first tick at
+// exactly that baseline, because that is the depth the bars draw flat at. So a
+// hardcoded 0 made the axis contradict itself across one drag of the resize
+// handle: 30px tall it read "1" at the foot, 29px tall it read "0".
+export function compactAxisLabel(ticks: { items: { value: number }[] }) {
+  const { items } = ticks
+  const min = items[0]?.value ?? 0
+  const max = items.at(-1)?.value ?? 0
+  return `[${Math.round(min)}, ${Math.round(max)}]`
 }
 
 // Width reserved for a full y-axis, and where inside it the spine goes. Both

@@ -33,17 +33,19 @@ function draw({
   sections,
   hasGroupLabels = false,
   left = 0,
+  scaleTicks = ticks,
 }: {
   sections: RenderSection[]
   hasGroupLabels?: boolean
   left?: number
+  scaleTicks?: typeof ticks
 }) {
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>
         <CoverageScaleBars
           sections={sections}
-          ticks={ticks}
+          ticks={scaleTicks}
           left={left}
           hasGroupLabels={hasGroupLabels}
           canvasWidth={CANVAS_WIDTH}
@@ -106,6 +108,31 @@ describe('coverage y-axis export geometry', () => {
       expect(x).toBeGreaterThan(CANVAS_WIDTH / 2)
       expect(x).toBeLessThanOrEqual(CANVAS_WIDTH)
     }
+  })
+
+  // Both ends of the compact label come off the same tick ladder the full axis
+  // draws, so shrinking a band past COMPACT_AXIS_HEIGHT can't change what the
+  // axis claims its floor is. A log scale floors the domain at one read and a
+  // `minScore` bound starts it wherever the user put it, and `[0, max]` was
+  // written as a literal — so a log-scaled band read "1" at 30px tall and "0" at
+  // 29px.
+  it.each([
+    ['a log scale floored at one read', 1, '[1, 128]'],
+    ['a minScore bound', 10, '[10, 128]'],
+    ['an ordinary autoscaled domain', 0, '[0, 128]'],
+  ])('reports the domain floor in the compact label: %s', (_n, min, text) => {
+    const t = draw({
+      sections: [section({ coverageHeight: 20 })],
+      scaleTicks: {
+        items: [
+          { value: min, y: 40 },
+          { value: 128, y: 0 },
+        ],
+        yTop: 0,
+        yBottom: 40,
+      },
+    }).querySelector('text')
+    expect(t?.textContent).toBe(text)
   })
 
   it('follows the content when scrolled before the genome start', () => {

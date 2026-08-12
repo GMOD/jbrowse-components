@@ -409,11 +409,17 @@ const VisibleLabelsHost = observer(function VisibleLabelsHost({
   )
 })
 
-function CompactCoverageLabel({ top, max }: { top: number; max: number }) {
+function CompactCoverageLabel({
+  top,
+  ticks,
+}: {
+  top: number
+  ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
+}) {
   const { classes } = useStyles()
   return (
     <div className={classes.compactAxisLabel} style={{ top }}>
-      {compactAxisLabel(max)}
+      {compactAxisLabel(ticks)}
     </div>
   )
 }
@@ -431,12 +437,7 @@ function GroupCoverageAxisBar({
   ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
 }) {
   if (coverageHeight < COMPACT_AXIS_HEIGHT) {
-    return (
-      <CompactCoverageLabel
-        top={top + 1}
-        max={ticks.items.at(-1)?.value ?? 0}
-      />
-    )
+    return <CompactCoverageLabel top={top + 1} ticks={ticks} />
   }
   return (
     <svg
@@ -493,12 +494,7 @@ const UngroupedCoverageAxis = observer(function UngroupedCoverageAxis({
     return null
   }
   if (section.coverageHeight < COMPACT_AXIS_HEIGHT) {
-    return (
-      <CompactCoverageLabel
-        top={1}
-        max={coverageTicks.items.at(-1)?.value ?? 0}
-      />
-    )
+    return <CompactCoverageLabel top={1} ticks={coverageTicks} />
   }
   return (
     <svg
