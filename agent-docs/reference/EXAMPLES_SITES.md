@@ -41,6 +41,20 @@ because inlining a 72 KB config would bury the code the page is about. Data
 only, never code. Snippets in `.astro` prose are held to the same bar: write the
 generic call as a literal, never `?raw` a private helper of the site.
 
+**A config fixture has to be run through `jbrowse validate`, and nothing else
+will catch what it finds.** These files are the one part of a site that is
+neither typechecked nor exercised by a test, and JBrowse ignores a key it does
+not declare rather than reporting it — so a wrong one is invisible on every
+check the site runs, including a screenshot, because the page still renders. All
+five of the lineargenomeview site's `nextstrain_*.json` carried `height: 400`
+and `colorBy: 'region'` on a *session* display node, which MST builds from the
+display's state model where both are config slots; both were dropped and the
+demo shipped 150px short and unpainted. The react-app site's copy of the volvox
+config still has eight of its own. Where a fixture is generated, the generator
+validates before it writes (`gen-nextstrain-demos.mjs`); where it is
+hand-maintained, validate it when you touch it. ARCHITECTURE.md "Where a
+display's state lives" is the underlying rule.
+
 ### The one good way out is to publish the block
 
 A repeated block falls into two kinds, and only one of them is a site's own

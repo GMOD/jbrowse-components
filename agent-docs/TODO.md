@@ -20,6 +20,7 @@ Exploratory concepts that are *not* committed work live in
 | --- | --- | --- |
 | [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
+| [Validate the react-app site's volvox config](#run-jbrowse-validate-over-the-react-app-sites-volvox-configjson) | embedded, config | 8 errors already reported; fix the file, then ask why it is a copy |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
@@ -66,6 +67,26 @@ disabled, with the reason the label already carries.
 
 No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
 per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
+
+### Run `jbrowse validate` over the react-app site's volvox-config.json
+
+`products/jbrowse-react-app/examples-site/src/volvox-config.json` is a private
+copy of the volvox config, drifted from the canonical one, and the validator
+reports **8 errors** on it — three `pileupDisplay` and three `renderers` blocks
+that are neither slots nor properties, plus two tracks naming assemblies the
+file never defines (`wombat`, `volvox_del2`). Every one is silent at runtime.
+
+The equivalent bugs in the lineargenomeview site's `nextstrain_*.json` are
+fixed, and its generator now refuses to write an invalid config (`gen-nextstrain-
+demos.mjs`, `assertConfigValid`). This one has no generator, so the fix is to
+correct the file and then decide whether it should be a copy at all — the two
+`renderers`/`pileupDisplay` shapes are pre-slot spellings that suggest it was
+forked before the config migration and never re-synced.
+
+Doing this for every site at once means the check belongs in
+`runExamplesSiteChecks` (`@jbrowse/browser-test-utils`), which would put
+`@jbrowse/cli` in all four sites' installs for one function — weigh that against
+two fixtures.
 
 ### Extra large text SVG mode for pub-ready figures
 
