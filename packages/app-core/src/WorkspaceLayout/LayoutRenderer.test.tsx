@@ -4,6 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { render, screen } from '@testing-library/react'
 
 import { LayoutRenderer } from './LayoutRenderer.tsx'
+import { dv } from './dockviewTheme.ts'
 import { WorkspaceLayoutMixin } from './model.ts'
 
 const TestSession = types.compose(
@@ -142,23 +143,52 @@ test('the cell wrapper carries the size, and does not collapse either', () => {
   )
 })
 
-// The workspace chrome is deliberately NOT paper: dockview shipped a dark
-// stylesheet and the bar reads as chrome in a light theme too, matching the app
-// bar above it. Pinned because "follow the theme" is the obvious thing to write
-// and is wrong here — the old header-action components coloured their buttons
-// `primary.contrastText`, which only reads on a primary-coloured bar.
-test('the tab strip is primary chrome, not the paper colour', () => {
+// The chrome is dockview's dark theme, FIXED — not derived from the MUI theme,
+// and dark in a light JBrowse theme too. Pinned because "follow the theme" is
+// the obvious thing to write and is wrong here: a light strip reads as content
+// rather than as the frame around it.
+test('the tab strip is dockview chrome, not the MUI theme', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
 
   const strip = container.querySelector('[role="tablist"]')!
-  // the same theme the component resolves through, so this asserts "primary
-  // chrome" rather than one hard-coded navy that a theme change would falsify
-  const theme = createJBrowseTheme()
-  expect(getComputedStyle(strip).backgroundColor).toBe(
-    colord(theme.palette.primary.main).toRgbString(),
+  const style = getComputedStyle(strip)
+  expect(style.backgroundColor).toBe(colord(dv.tabsBackground).toRgbString())
+  expect(style.height).toBe(`${dv.tabsHeight}px`)
+  // and emphatically not the theme's surface colour
+  expect(style.backgroundColor).not.toBe(
+    colord(createJBrowseTheme().palette.background.paper).toRgbString(),
   )
-  expect(getComputedStyle(strip).color).toBe(
-    colord(theme.palette.primary.contrastText).toRgbString(),
+})
+
+// All four states dockview enumerates. The focused panel's selected tab is the
+// only fully-white label on screen, which is the whole point of having four.
+test('a tab is coloured by both its panel and its selection', () => {
+  const session = TestSession.create({ name: 't' })
+  const p1 = session.panels[0]!.id
+  const firstTab = session.tabs[0]!.id
+  const secondTab = session.addTab(p1)!.id
+  const p2 = session.splitPanel(p1, 'row')!
+  // p2 is active after a split, so p1 is the inactive panel
+  expect(session.activePanelId).toBe(p2.id)
+
+  const { container } = renderLayout(session)
+  // looked up by dataset rather than an attribute selector: jsdom has no
+  // `CSS.escape`, which is what lint rewrites an interpolated selector to use
+  const bg = (tabId: string) =>
+    getComputedStyle(
+      [...container.querySelectorAll('[data-tab-id]')].find(
+        el => (el as HTMLElement).dataset.tabId === tabId,
+      )!,
+    ).backgroundColor
+
+  expect(bg(secondTab)).toBe(
+    colord(dv.inactiveGroupVisibleTabBackground).toRgbString(),
+  )
+  expect(bg(firstTab)).toBe(
+    colord(dv.inactiveGroupHiddenTabBackground).toRgbString(),
+  )
+  expect(bg(p2.tabs[0]!.id)).toBe(
+    colord(dv.activeGroupVisibleTabBackground).toRgbString(),
   )
 })

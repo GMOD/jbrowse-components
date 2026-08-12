@@ -1,8 +1,7 @@
-import { emphasize } from '@jbrowse/core/util/color'
-import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { dv, tabColors } from './dockviewTheme.ts'
 import { indicatorRect } from './dropZone.ts'
 
 import type { DropZone } from './dropZone.ts'
@@ -17,9 +16,12 @@ import type { TabDragHandlers } from './useLayoutDrag.ts'
  * The strip's structure is layout and lives here; what a tab is *called* and
  * what it *contains* are the app's, and arrive as render props. That split is
  * why this file knows nothing about JBrowse views.
+ *
+ * The colours are dockview's dark theme, transcribed in `dockviewTheme.ts` —
+ * see there for why they are fixed rather than derived from the MUI theme.
  */
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   // `flex: 1` and `minWidth: 0` are load-bearing, not tidiness. This is a child
   // of a `display: flex` row, so without them its width is its CONTENT's width
   // — and a view measures its container to decide how wide to draw
@@ -32,51 +34,37 @@ const useStyles = makeStyles()(theme => ({
     flex: 1,
     minWidth: 0,
     minHeight: 0,
-    background: theme.palette.background.default,
+    background: dv.groupBackground,
   },
-  // Chrome, not paper — dark in a light theme too, which is what dockview's
-  // dark stylesheet gave us and what the app bar above it already does. The
-  // old header-action components are the evidence this was always the intent:
-  // they coloured their buttons `primary.contrastText`, which only reads on a
-  // primary-coloured bar.
   tabStrip: {
     display: 'flex',
-    alignItems: 'stretch',
-    flex: '0 0 auto',
-    minHeight: 28,
-    background: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-  },
-  // An inactive tab sits on the chrome; the active one is cut out of it in the
-  // content's own colour, so the tab reads as the front of the panel below it.
-  tab: {
-    display: 'flex',
-    alignItems: 'center',
-    touchAction: 'none',
-    cursor: 'pointer',
-    maxWidth: 240,
-    padding: '0 4px',
-    color: 'inherit',
-    borderRight: `1px solid ${colord(theme.palette.primary.contrastText).alpha(0.2).toRgbString()}`,
-    // `emphasize` lightens a dark colour and darkens a light one, so the hover
-    // is legible whichever way a custom `primary` goes — a fixed white overlay
-    // would vanish on a light primary.
-    '&:hover': { background: emphasize(theme.palette.primary.main, 0.15) },
-    '&[aria-selected="true"]': {
-      background: theme.palette.background.default,
-      color: theme.palette.text.primary,
-    },
-    '&:hover .jbrowse-tab-menu': { visibility: 'visible' },
+    flexShrink: 0,
+    boxSizing: 'border-box',
+    height: dv.tabsHeight,
+    fontSize: dv.tabsFontSize,
+    background: dv.tabsBackground,
   },
   tabs: {
     display: 'flex',
-    alignItems: 'stretch',
     overflowX: 'auto',
     flex: 1,
     minWidth: 0,
-    // the strip is chrome, so a horizontal scrollbar in it would be noise
+    // the strip is chrome, so a scrollbar across it would be noise
     scrollbarWidth: 'none',
     '&::-webkit-scrollbar': { display: 'none' },
+  },
+  tab: {
+    display: 'flex',
+    alignItems: 'center',
+    flexShrink: 0,
+    boxSizing: 'border-box',
+    maxWidth: 240,
+    padding: '0.25rem 0.5rem',
+    cursor: 'pointer',
+    userSelect: 'none',
+    touchAction: 'none',
+    borderRight: `1px solid ${dv.tabDividerColor}`,
+    '&:hover .jbrowse-tab-menu': { visibility: 'visible' },
   },
   content: {
     flex: 1,
@@ -87,13 +75,13 @@ const useStyles = makeStyles()(theme => ({
   indicator: {
     position: 'absolute',
     pointerEvents: 'none',
-    // the panel is position:relative, so 1 is above its content and nothing
-    // else — an app-wide z-index would let it cover menus and dialogs
+    // above this panel's own content and nothing else — the panel is
+    // position:relative, so an app-wide z-index would let it cover menus
     zIndex: 1,
-    background: colord(theme.palette.primary.main).alpha(0.3).toRgbString(),
-    outline: `1px solid ${theme.palette.primary.main}`,
+    background: dv.dragOverBackground,
+    outline: `1px solid ${dv.edgeDockIndicatorColor}`,
   },
-}))
+})
 
 interface PanelViewProps {
   panel: PanelNode
@@ -118,6 +106,7 @@ export const PanelView = observer(function PanelView({
   const { classes } = useStyles()
   const active =
     panel.tabs.find(t => t.id === panel.activeTabId) ?? panel.tabs[0]
+  const groupActive = layout.activePanelId === panel.id
 
   return (
     <div
@@ -127,7 +116,7 @@ export const PanelView = observer(function PanelView({
         // clicking anywhere in a cell makes it the one a new view lands in.
         // Capture, so it still registers when the click is consumed by a
         // control inside the view.
-        if (layout.activePanelId !== panel.id) {
+        if (!groupActive) {
           layout.setActivePanelId(panel.id)
         }
       }}
@@ -147,6 +136,7 @@ export const PanelView = observer(function PanelView({
               onPointerMove={dragHandlers.onTabPointerMove}
               onPointerUp={dragHandlers.onTabPointerUp}
               className={classes.tab}
+              style={tabColors(groupActive, tab.id === active?.id)}
             >
               {renderTabLabel(tab)}
             </div>

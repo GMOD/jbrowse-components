@@ -21,14 +21,19 @@ const useStyles = makeStyles()(theme => ({
     gap: 4,
     minWidth: 0,
   },
+  // dockview's `.dv-default-tab-content`: takes the space, ellipsises, and
+  // takes its colour from the tab, which is what encodes active/inactive
   title: {
+    flexGrow: 1,
+    marginRight: 4,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    fontSize: '0.8rem',
+    fontSize: 'inherit',
+    color: 'inherit',
   },
   editInput: {
-    fontSize: '0.8rem',
+    fontSize: 'inherit',
     padding: '2px 4px',
     color: theme.palette.text.primary,
     backgroundColor: theme.palette.background.paper,

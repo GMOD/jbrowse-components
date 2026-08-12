@@ -4,6 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { PanelView } from './PanelView.tsx'
+import { dv } from './dockviewTheme.ts'
 
 import type { WorkspaceLayout } from './model.ts'
 import type { BranchNode, LayoutTree, PanelNode, TabNode } from './tree.ts'
@@ -100,14 +101,28 @@ export const LayoutRenderer = observer(function LayoutRenderer({
  * changes — every other pane holds still, which is what a splitter is expected
  * to do and what "just scale everything" gets wrong.
  */
-const useSplitterStyles = makeStyles()(theme => ({
+// dockview's sash is a transparent grab strip with a 1px separator line drawn
+// down the middle of it — the line is what you see, the 4px is what you can
+// hit. Its dark theme deliberately gives the sash no hover colour at all.
+const useSplitterStyles = makeStyles()({
   splitter: {
-    flex: '0 0 4px',
-    background: theme.palette.divider,
+    flex: `0 0 ${dv.sashSize}px`,
+    position: 'relative',
+    background: 'transparent',
     touchAction: 'none',
-    '&:hover': { background: theme.palette.primary.main },
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      background: dv.separatorBorder,
+    },
   },
-}))
+  horizontal: {
+    '&::before': { top: 0, bottom: 0, left: '50%', width: 1 },
+  },
+  vertical: {
+    '&::before': { left: 0, right: 0, top: '50%', height: 1 },
+  },
+})
 
 const Splitter = observer(function Splitter({
   branch,
@@ -118,7 +133,7 @@ const Splitter = observer(function Splitter({
   index: number
   layout: WorkspaceLayout
 }) {
-  const { classes } = useSplitterStyles()
+  const { classes, cx } = useSplitterStyles()
   const dragRef = useRef<{
     axis: 'clientX' | 'clientY'
     start: number
@@ -195,8 +210,11 @@ const Splitter = observer(function Splitter({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      className={classes.splitter}
-      style={{ cursor: horizontal ? 'col-resize' : 'row-resize' }}
+      className={cx(
+        classes.splitter,
+        horizontal ? classes.horizontal : classes.vertical,
+      )}
+      style={{ cursor: horizontal ? 'ew-resize' : 'ns-resize' }}
     />
   )
 })

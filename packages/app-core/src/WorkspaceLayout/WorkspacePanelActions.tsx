@@ -8,15 +8,24 @@ import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { dv } from './dockviewTheme.ts'
+
 import type { DockviewSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
 import type { PanelNode } from './tree.ts'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   actions: { display: 'flex', alignItems: 'center', flex: '0 0 auto' },
-  button: { padding: 4, color: theme.palette.primary.contrastText },
+  // dockview's `.dv-default-tab-action`: inherits the strip's colour, and takes
+  // a small rounded chip on hover rather than MUI's circular ripple surface
+  button: {
+    padding: 4,
+    borderRadius: 2,
+    color: dv.activeGroupHiddenTabColor,
+    '&:hover': { background: dv.iconHoverBackground, borderRadius: 2 },
+  },
   icon: { fontSize: 16 },
-}))
+})
 
 /**
  * The per-cell buttons: new tab, split, close.
