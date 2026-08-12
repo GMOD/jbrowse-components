@@ -34,12 +34,46 @@ export interface PendingMove {
  * nesting, so `size` applies wherever it is written and there is no all-or-
  * nothing pass.
  */
+/**
+ * The effective size of each child of one branch.
+ *
+ * `size` is documented as a **percentage**, so a spec that sizes some siblings
+ * and leaves the rest bare means the rest to share what is left over: `70` and
+ * blank is 70/30. Defaulting a bare sibling to 1 instead reads a weight against
+ * a percentage, and the panel comes out at 1/71 of the width — present, about a
+ * pixel wide, and reported by nothing.
+ *
+ * The mixed case used to be unreachable: dockview forced orientation to
+ * alternate by depth, so the converter discarded any partially-sized branch
+ * wholesale and raised a notification saying so. Nesting works now, which means
+ * this has to mean something instead.
+ *
+ * All-sized and none-sized both stay plain weights — `normalize` renormalises
+ * them, so `70`/`30` and `7`/`3` are the same layout and neither has to sum to
+ * anything in particular.
+ */
+function resolveSizes(children: LayoutSpecNode[]): number[] {
+  const stated = children.map(child => child.size)
+  const named = stated.filter(size => size !== undefined)
+  if (named.length === 0 || named.length === children.length) {
+    return stated.map(size => size ?? 1)
+  }
+  const claimed = named.reduce((a, b) => a + b, 0)
+  const remainder = 100 - claimed
+  const share =
+    remainder > 0
+      ? remainder / (children.length - named.length)
+      : // an over-subscribed branch has nothing left to hand out, so a bare
+        // sibling takes a typical share rather than collapsing to nothing
+        claimed / named.length
+  return stated.map(size => size ?? share)
+}
+
 export function treeFromSpec(
   spec: LayoutSpecNode,
   nextId: (kind: 'panel' | 'tab') => string,
 ): LayoutTree {
-  function build(node: LayoutSpecNode): LayoutTree | undefined {
-    const size = node.size ?? 1
+  function build(node: LayoutSpecNode, size: number): LayoutTree | undefined {
     if (node.viewIds) {
       return {
         id: nextId('panel'),
@@ -66,8 +100,9 @@ export function treeFromSpec(
         activeTabId: tabs[0]?.id,
       }
     }
-    const built = children.flatMap(child => {
-      const node = build(child)
+    const sizes = resolveSizes(children)
+    const built = children.flatMap((child, i) => {
+      const node = build(child, sizes[i]!)
       return node ? [node] : []
     })
     return built.length === 0
@@ -80,7 +115,7 @@ export function treeFromSpec(
         }
   }
 
-  const root = build(spec)
+  const root = build(spec, spec.size ?? 1)
   return root ? normalize(root) : { id: nextId('panel'), size: 1, tabs: [] }
 }
 

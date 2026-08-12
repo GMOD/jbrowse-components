@@ -134,8 +134,15 @@ spec's `views` array**, not ids:
 ```
 
 `direction` is `horizontal`, `vertical`, or `tabs` (stack into one tab group
-instead of splitting space). One real constraint: **`size` is honoured only on
-the top-level split, and only when every panel there carries one.** Nested sizes
-are dropped — dockview forces branch orientation to alternate by depth, so a
-nested container has no single branch to size against. JBrowse notifies rather
-than silently ignoring them.
+instead of splitting space). `children` nest, and **`size` applies at every
+depth** — a nested container takes a share of its parent and divides its own
+space among its children.
+
+`size` is a proportion, not a strict percentage: `7`/`3` and `70`/`30` are the
+same split. A panel left unsized takes an equal share of what the sized ones
+leave over, so `70` beside a bare panel is 70/30.
+
+Older docs describe nested sizes as discarded with a notification. That was
+dockview's constraint — it forced branch orientation to alternate by depth, so a
+nested container had no single branch to size against — and it went with
+dockview.

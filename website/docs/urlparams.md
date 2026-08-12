@@ -1391,11 +1391,22 @@ A panel's `size` gives its proportion of the split:
 
 A 70/30 split, the left panel taking 70% of the width.
 
-`size` applies to the **top-level split only**, and only when every one of its
-panels carries one. Sizes on a nested container, or a top-level split where one
-panel is left unsized, are ignored — the layout still builds, but those panels
-share the space evenly, and a notification says so. Drag the divider to adjust
-from there; the position is saved with the session.
+`size` works at **any depth**, so a nested container sizes its own children as
+well as taking a share of its parent — see the nested example below. A panel
+left unsized takes an equal share of whatever the sized panels leave over, so
+`70` beside a bare panel is a 70/30 split. Sizes are proportions rather than
+strict percentages: `7` and `3` lay out the same as `70` and `30`.
+
+Drag the divider to adjust from there; the position is saved with the session.
+
+:::note
+
+Earlier releases applied `size` to the top-level split only, and only when every
+panel there carried one — anything else was discarded, with a notification
+saying so. Nested sizes now apply, so an existing link lays out the way it
+always read.
+
+:::
 
 #### Tabs instead of a split
 
@@ -1504,16 +1515,20 @@ Containers nested inside containers:
     "direction": "horizontal",
     "children": [
       {
-        "views": [0, 1]
+        "views": [0, 1],
+        "size": 60
       },
       {
         "direction": "vertical",
+        "size": 40,
         "children": [
           {
-            "views": [2]
+            "views": [2],
+            "size": 75
           },
           {
-            "views": [3]
+            "views": [3],
+            "size": 25
           }
         ]
       }
@@ -1522,8 +1537,10 @@ Containers nested inside containers:
 }
 ```
 
-Views 0 and 1 stack in the left panel; the right side splits vertically, view 2
-above view 3.
+Views 0 and 1 stack in the left panel, which takes 60% of the width; the right
+40% splits vertically, view 2 taking three quarters of that column and view 3
+the rest. The `75`/`25` is the nested sizing — it divides the right-hand
+container's own height, not the window's.
 
 ## Other session formats
 
