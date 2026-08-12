@@ -1,6 +1,8 @@
+import { IndexedCramFile } from '@gmod/cram'
 import { getClip } from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { statusMessageText } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -138,4 +140,75 @@ test('clipLengthAtStartOfRead matches getClip(CIGAR) for every record', async ()
     const strand = feature.get('strand')!
     expect(feature.get('clipLengthAtStartOfRead')).toBe(getClip(cigar, strand))
   }
+})
+
+// The signal is what makes a cancelled navigation reach the socket. Without it
+// a superseded fetch stops *processing* records but downloads the whole range
+// first, which on a 2000x pileup is the entire cost of the navigation it was
+// meant to abandon. BamAdapter has done this since stopTokenSignal landed;
+// CramAdapter had the stopToken in hand and passed no signal.
+//
+// jest cannot cover what the signal does to a socket — see the comment at the
+// top of products/jbrowse-web/browser-tests/suites/fetch-cancellation.ts, which
+// covers that end for BAM. What it can pin is that a signal is threaded at all,
+// and that it is wired to this call's stop token, which is the part that was
+// missing and the part a refactor would silently drop again.
+test('getFeatures threads its stop token into the cram read as a signal', async () => {
+  const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+
+  // The read is held open so the token can be stopped while it is genuinely in
+  // flight. That is the only window in which the signal is live: withStopTokenSignal
+  // disposes its listener as soon as the call it wraps resolves, so a token
+  // stopped afterwards correctly aborts nothing.
+  const seen: (AbortSignal | undefined)[] = []
+  let releaseRead = () => {}
+  const readReached = new Promise<void>(resolveReached => {
+    const spy = jest
+      .spyOn(IndexedCramFile.prototype, 'getRecordsForRange')
+      .mockImplementation(async (_seq, _start, _end, opts) => {
+        seen.push(opts?.signal)
+        resolveReached()
+        await new Promise<void>(r => {
+          releaseRead = () => {
+            spy.mockRestore()
+            r()
+          }
+        })
+        return []
+      })
+  })
+
+  const stopToken = createStopToken()
+  const done = firstValueFrom(
+    adapter
+      .getFeatures(
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 20000 },
+        { stopToken },
+      )
+      .pipe(toArray()),
+  )
+
+  await readReached
+  expect(seen).toHaveLength(1)
+  const signal = seen[0]
+  expect(signal).toBeInstanceOf(AbortSignal)
+  expect(signal!.aborted).toBe(false)
+
+  // and it is this call's token driving it, not some unrelated signal. Awaited
+  // rather than asserted synchronously: a SharedArrayBuffer token aborts
+  // through Atomics.waitAsync, which resolves a tick after the store.
+  const aborted = new Promise<void>(resolve => {
+    signal!.addEventListener('abort', () => {
+      resolve()
+    })
+  })
+  stopStopToken(stopToken)
+  await aborted
+  expect(signal!.aborted).toBe(true)
+
+  // and the observable unwinds rather than delivering features from a read the
+  // caller has already abandoned
+  releaseRead()
+  await expect(done).rejects.toMatchObject({ name: 'AbortError' })
 })

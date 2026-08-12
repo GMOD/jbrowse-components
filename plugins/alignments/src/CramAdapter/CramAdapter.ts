@@ -4,7 +4,10 @@ import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { decodedRecordsBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import {
+  checkStopToken,
+  withStopTokenSignal,
+} from '@jbrowse/core/util/stopToken'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
 import { filterReadFlag, filterTagValue } from '../shared/util.ts'
@@ -206,13 +209,17 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
       // wipe the header/index caches — those are memoized in setup() and only
       // invalidated on a setup failure. Re-downloading them on every dropped
       // data chunk would force a full re-download on the next pan.
-      const records = await downloadStatus(
-        'Downloading alignments',
-        statusCallback,
-        onProgress =>
+      //
+      // The signal is what makes cancellation reach the socket, as in
+      // BamAdapter: without it a canceled navigation stops *processing* the
+      // records but downloads every byte of the range to completion first.
+      const records = await withStopTokenSignal(stopToken, signal =>
+        downloadStatus('Downloading alignments', statusCallback, onProgress =>
           cram.getRecordsForRange(refId, start, end, {
             onProgress,
+            signal,
           }),
+        ),
       )
       checkStopToken(stopToken)
       await withProgress(
