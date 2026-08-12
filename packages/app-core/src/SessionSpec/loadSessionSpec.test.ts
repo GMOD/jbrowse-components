@@ -646,9 +646,14 @@ describe('sessionConnections', () => {
   })
 })
 
-// `size` reaches dockview only on the top-level split, and only when every
-// panel there carries one; anywhere else the whole sizing pass bails, so a spec
-// author who sizes a nested panel sees an evenly-split layout and no reason why
+// A `tabs` node shares one cell between its children, so a `size` on one of
+// them describes nothing and is the one place a stated size is still dropped.
+//
+// Everything else here used to warn as well, because dockview honoured `size`
+// only on the top-level split and only when every panel there carried one. That
+// limitation is gone (ADR-068) and the warning outlived it, so these cases now
+// pin the SILENCE: a spec author whose nested or partial sizes were applied
+// must not be told they were ignored.
 describe('layout size that cannot be applied', () => {
   async function loadWithLayout(layout: unknown) {
     const { session, pluginManager } = setup({
@@ -683,18 +688,17 @@ describe('layout size that cannot be applied', () => {
     expect(session.notify).not.toHaveBeenCalled()
   })
 
-  it('warns when only some top-level panels are sized', async () => {
+  // a bare sibling takes an equal share of what the sized ones leave over, so
+  // `70` beside a bare panel is a 70/30 split — documented, and applied
+  it('says nothing when only some top-level panels are sized', async () => {
     const session = await loadWithLayout({
       direction: 'horizontal',
       children: [sized(70, [0]), { views: [1] }],
     })
-    expect(session.notify).toHaveBeenCalledWith(
-      expect.stringContaining('size'),
-      'info',
-    )
+    expect(session.notify).not.toHaveBeenCalled()
   })
 
-  it('warns when a size sits inside a nested container', async () => {
+  it('says nothing when a size sits inside a nested container', async () => {
     const session = await loadWithLayout({
       direction: 'horizontal',
       children: [
@@ -702,16 +706,29 @@ describe('layout size that cannot be applied', () => {
         { direction: 'vertical', children: [sized(50, [1]), sized(50, [2])] },
       ],
     })
+    expect(session.notify).not.toHaveBeenCalled()
+  })
+
+  it('warns when tabs children are sized, which shares one cell', async () => {
+    const session = await loadWithLayout({
+      direction: 'tabs',
+      children: [sized(70, [0]), sized(30, [1])],
+    })
     expect(session.notify).toHaveBeenCalledWith(
       expect.stringContaining('size'),
       'info',
     )
   })
 
-  it('warns when tabs children are sized, which shares one group', async () => {
+  // the `tabs` node the sizes are on is not the root, so the check has to
+  // recurse — the old one only ever looked at the top level
+  it('warns when a nested tabs node has sized children', async () => {
     const session = await loadWithLayout({
-      direction: 'tabs',
-      children: [sized(70, [0]), sized(30, [1])],
+      direction: 'horizontal',
+      children: [
+        { views: [0] },
+        { direction: 'tabs', children: [sized(70, [1]), sized(30, [2])] },
+      ],
     })
     expect(session.notify).toHaveBeenCalledWith(
       expect.stringContaining('size'),
