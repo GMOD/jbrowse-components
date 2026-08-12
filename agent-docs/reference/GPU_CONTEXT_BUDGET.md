@@ -142,6 +142,15 @@ first thing an over-ceiling page evicts, and nothing draws to it or re-acquires
 it. Before the memo, each reopening of the About widget or the stack-trace dialog
 made another one.
 
+**Eviction is strictly oldest-first, measured** (2026-08-12, Chrome 151 headless,
+a bare page that makes 24 one-pixel WebGL2 contexts and holds a reference to
+every one, so nothing is collectable): all 24 are created, then indices 0-7 —
+exactly the eight oldest — report `webglcontextlost` and answer
+`isContextLost()`, leaving 16 alive. That is the ceiling and the victim order in
+one run, and it is what makes leaving the probe's context alive safe rather than
+merely cheap. It is a Blink property, not a driver one, so the SwiftShader
+launch does not weaken it.
+
 ## Measuring it: pass `--headed=true`
 
 `products/jbrowse-web/browser-tests/workspaces-freeze-stress.ts` (build first).
