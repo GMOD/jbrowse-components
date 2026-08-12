@@ -26,6 +26,7 @@ const useStyles = makeStyles()(theme => ({
   stack: {
     display: 'flex',
     flexDirection: 'column',
+    minWidth: 0,
   },
   empty: {
     display: 'flex',

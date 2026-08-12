@@ -1,3 +1,5 @@
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { indicatorRect } from './dropZone.ts'
@@ -15,6 +17,56 @@ import type { TabDragHandlers } from './useLayoutDrag.ts'
  * what it *contains* are the app's, and arrive as render props. That split is
  * why this file knows nothing about JBrowse views.
  */
+
+const useStyles = makeStyles()(theme => ({
+  // `flex: 1` and `minWidth: 0` are load-bearing, not tidiness. This is a child
+  // of a `display: flex` row, so without them its width is its CONTENT's width
+  // — and a view measures its container to decide how wide to draw
+  // (useWidthSetter), so the two settle at the view's intrinsic width and the
+  // panel renders at half the window with dead space beside it.
+  panel: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minWidth: 0,
+    minHeight: 0,
+    background: theme.palette.background.default,
+  },
+  tabStrip: {
+    display: 'flex',
+    alignItems: 'stretch',
+    flex: '0 0 auto',
+    minHeight: 28,
+    background: theme.palette.background.paper,
+    borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+  tabs: {
+    display: 'flex',
+    alignItems: 'stretch',
+    overflowX: 'auto',
+    flex: 1,
+    minWidth: 0,
+    // the strip is chrome, so a horizontal scrollbar in it would be noise
+    scrollbarWidth: 'none',
+    '&::-webkit-scrollbar': { display: 'none' },
+  },
+  content: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: 0,
+    overflow: 'auto',
+  },
+  indicator: {
+    position: 'absolute',
+    pointerEvents: 'none',
+    // the panel is position:relative, so 1 is above its content and nothing
+    // else — an app-wide z-index would let it cover menus and dialogs
+    zIndex: 1,
+    background: alpha(theme.palette.primary.main, 0.3),
+    outline: `1px solid ${theme.palette.primary.main}`,
+  },
+}))
 
 interface PanelViewProps {
   panel: PanelNode
@@ -36,20 +88,14 @@ export const PanelView = observer(function PanelView({
   dragHandlers,
   dropZone,
 }: PanelViewProps) {
+  const { classes } = useStyles()
   const active =
     panel.tabs.find(t => t.id === panel.activeTabId) ?? panel.tabs[0]
 
   return (
     <div
       data-panel-id={panel.id}
-      style={{
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        minWidth: 0,
-        minHeight: 0,
-      }}
+      className={classes.panel}
       onPointerDownCapture={() => {
         // clicking anywhere in a cell makes it the one a new view lands in.
         // Capture, so it still registers when the click is consumed by a
@@ -59,11 +105,8 @@ export const PanelView = observer(function PanelView({
         }
       }}
     >
-      <div
-        role="tablist"
-        style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}
-      >
-        <div style={{ display: 'flex', overflowX: 'auto', flex: 1 }}>
+      <div role="tablist" className={classes.tabStrip}>
+        <div className={classes.tabs}>
           {panel.tabs.map(tab => (
             <div
               key={tab.id}
@@ -85,35 +128,17 @@ export const PanelView = observer(function PanelView({
         {renderPanelActions?.(panel)}
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+      <div className={classes.content}>
         {active ? renderTabContent(active) : null}
       </div>
 
-      {dropZone ? <DropIndicator zone={dropZone} /> : null}
+      {dropZone ? (
+        <div
+          data-drop-indicator={dropZone}
+          className={classes.indicator}
+          style={indicatorRect(dropZone)}
+        />
+      ) : null}
     </div>
-  )
-})
-
-/**
- * Where the tab would land if released now. Half the cell for an edge, the
- * whole cell for a tab drop — the same shape dockview draws, because it reads
- * unambiguously and users already know it.
- */
-const DropIndicator = observer(function DropIndicator({
-  zone,
-}: {
-  zone: DropZone
-}) {
-  return (
-    <div
-      data-drop-indicator={zone}
-      style={{
-        position: 'absolute',
-        pointerEvents: 'none',
-        background: 'rgba(64,128,255,0.30)',
-        outline: '1px solid rgba(64,128,255,0.8)',
-        ...indicatorRect(zone),
-      }}
-    />
   )
 })

@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useRef } from 'react'
 
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { PanelView } from './PanelView.tsx'
@@ -99,6 +100,15 @@ export const LayoutRenderer = observer(function LayoutRenderer({
  * changes — every other pane holds still, which is what a splitter is expected
  * to do and what "just scale everything" gets wrong.
  */
+const useSplitterStyles = makeStyles()(theme => ({
+  splitter: {
+    flex: '0 0 4px',
+    background: theme.palette.divider,
+    touchAction: 'none',
+    '&:hover': { background: theme.palette.primary.main },
+  },
+}))
+
 const Splitter = observer(function Splitter({
   branch,
   index,
@@ -108,6 +118,7 @@ const Splitter = observer(function Splitter({
   index: number
   layout: WorkspaceLayout
 }) {
+  const { classes } = useSplitterStyles()
   const dragRef = useRef<{
     axis: 'clientX' | 'clientY'
     start: number
@@ -184,12 +195,8 @@ const Splitter = observer(function Splitter({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      style={{
-        flex: '0 0 4px',
-        cursor: horizontal ? 'col-resize' : 'row-resize',
-        background: 'rgba(128,128,128,0.35)',
-        touchAction: 'none',
-      }}
+      className={classes.splitter}
+      style={{ cursor: horizontal ? 'col-resize' : 'row-resize' }}
     />
   )
 })

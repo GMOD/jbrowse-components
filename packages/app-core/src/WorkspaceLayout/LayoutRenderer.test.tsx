@@ -97,3 +97,45 @@ test('a renamed tab shows its title', () => {
 
   expect(screen.getByText('My comparison')).toBeDefined()
 })
+
+// A panel must FILL its cell, not shrink to its content. This is a real bug that
+// shipped: the panel is a child of a `display: flex` row, so without `flex: 1`
+// its width is its content's width — and a view measures its container to decide
+// how wide to draw (useWidthSetter), so the two settle at the view's intrinsic
+// width and the workspace renders at half the window with dead space beside it.
+//
+// jsdom computes no layout, so this asserts the declared style rather than a
+// measured box. That is the whole mechanism here: the bug was a missing
+// declaration, not a miscalculation.
+test('a panel fills its cell rather than shrinking to its content', () => {
+  const session = TestSession.create({ name: 't' })
+  session.splitPanel(session.panels[0]!.id, 'row')
+
+  const { container } = renderLayout(session)
+
+  for (const el of container.querySelectorAll('[data-panel-id]')) {
+    const style = getComputedStyle(el)
+    expect(style.flexGrow).toBe('1')
+    // without this a long tab title or a wide view can push the cell past its
+    // share of the split instead of scrolling inside it. jsdom reports the
+    // class-derived value unitless and the inline one as `0px`, so compare
+    // numerically rather than pinning a spelling.
+    expect(Number.parseFloat(style.minWidth)).toBe(0)
+  }
+})
+
+test('the cell wrapper carries the size, and does not collapse either', () => {
+  const session = TestSession.create({ name: 't' })
+  session.splitPanel(session.panels[0]!.id, 'row')
+  session.setSizes((session.layout as unknown as { id: string }).id, [0.7, 0.3])
+
+  const { container } = renderLayout(session)
+
+  const wrappers = [...container.querySelectorAll('[data-panel-id]')].map(
+    el => el.parentElement!,
+  )
+  expect(wrappers.map(w => w.style.flexGrow)).toEqual(['0.7', '0.3'])
+  expect(wrappers.every(w => Number.parseFloat(w.style.minWidth) === 0)).toBe(
+    true,
+  )
+})
