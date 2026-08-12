@@ -54,7 +54,7 @@ import { trioSpecs } from './specs/trio.ts'
 import { uiSpecs } from './specs/ui.ts'
 import { variantsSpecs } from './specs/variants.ts'
 
-import type { ScreenshotSpec } from './screenshot-spec-types.ts'
+import type { ScreenshotSpec, SessionUrlSpec } from './screenshot-spec-types.ts'
 
 export const specs: ScreenshotSpec[] = [
   ...syntenySpecs,
@@ -145,12 +145,15 @@ const SLOW_TIMEOUT_MS = 120000
 
 // The longest an action is allowed to wait, across a spec's own actions and
 // every stage's. A stage frame is part of the same live session.
-function longestActionTimeout(spec: ScreenshotSpec) {
-  const stages =
-    spec.mode === 'url' || spec.mode === 'embedded' ? (spec.stages ?? []) : []
+//
+// Url-mode only, which is all the caller narrows to and all that can be slow in
+// this sense: a cli spec runs no browser and a compose spec stacks files off
+// disk, and an embedded one has no actions and ignores `stages` outright
+// (validateSpecs says so).
+function longestActionTimeout(spec: SessionUrlSpec) {
   const actions = [
-    ...(spec.mode === 'url' ? (spec.actions ?? []) : []),
-    ...stages.flatMap(stage => stage.actions ?? []),
+    ...(spec.actions ?? []),
+    ...(spec.stages ?? []).flatMap(stage => stage.actions ?? []),
   ]
   return Math.max(0, ...actions.map(action => action.timeout ?? 0))
 }

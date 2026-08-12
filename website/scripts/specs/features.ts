@@ -11,7 +11,27 @@ import {
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  ScreenshotAction,
+  ScreenshotSpec,
+} from '../screenshot-spec-types.ts'
+
+// The feature-details route into the sequence panel, from an already-open
+// feature: wait for the item, click it, then open the "Sequence type" select so
+// the next action can pick a rendering. Three figures on this page take it.
+//
+// The delays are the panel's, not padding: the item appears before the details
+// pane has finished laying out, and the sequence fetch runs between the click
+// and the select being mounted. They were written out identically at all three
+// sites, which is the thing a helper stops drifting.
+const openFeatureSequence = (): ScreenshotAction[] => [
+  { type: 'waitForText', text: 'Show feature sequence' },
+  { type: 'delay', ms: 1000 },
+  { type: 'click', text: 'Show feature sequence' },
+  { type: 'delay', ms: 2000 },
+  { type: 'click', selector: '[aria-label="Sequence type"]' },
+  { type: 'delay', ms: 1000 },
+]
 
 // NA12878 direct-RNA nanopore reads sliced to just the PTEN locus and re-hosted,
 // so the collapse-introns/sashimi figure downloads a ~2 MB deterministic file
@@ -487,12 +507,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     actions: [
       { type: 'click', text: 'HBB' },
-      { type: 'waitForText', text: 'Show feature sequence' },
-      { type: 'delay', ms: 1000 },
-      { type: 'click', text: 'Show feature sequence' },
-      { type: 'delay', ms: 2000 },
-      { type: 'click', selector: '[aria-label="Sequence type"]' },
-      { type: 'delay', ms: 1000 },
+      ...openFeatureSequence(),
       // collapsed introns keep 10bp of each intron so the exon structure reads
       // without huge intronic runs dominating the sequence, and the
       // up/down-stream variant additionally shows the flanking sequence
@@ -532,12 +547,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     actions: [
       { type: 'click', text: 'SELENOP' },
-      { type: 'waitForText', text: 'Show feature sequence' },
-      { type: 'delay', ms: 1000 },
-      { type: 'click', text: 'Show feature sequence' },
-      { type: 'delay', ms: 2000 },
-      { type: 'click', selector: '[aria-label="Sequence type"]' },
-      { type: 'delay', ms: 1000 },
+      ...openFeatureSequence(),
       { type: 'click', text: 'Protein' },
       { type: 'delay', ms: 3000 },
     ],
@@ -608,12 +618,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 900,
     actions: [
       { type: 'click', anchor: APPLE3_MRNA },
-      { type: 'waitForText', text: 'Show feature sequence' },
-      { type: 'delay', ms: 1000 },
-      { type: 'click', text: 'Show feature sequence' },
-      { type: 'delay', ms: 2000 },
-      { type: 'click', selector: '[aria-label="Sequence type"]' },
-      { type: 'delay', ms: 1000 },
+      ...openFeatureSequence(),
       {
         type: 'click',
         text: 'Genomic w/ full introns +/- 100bp up+down stream',

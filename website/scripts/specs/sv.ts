@@ -2,6 +2,7 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
   DEMO_CONFIG,
+  DERIVATIVE_ROUTE_LABEL,
   HG00151_ONT_1000G_ADAPTER,
   HG002_NANOPORE_HP_TRACK,
   PARK_CURSOR,
@@ -9,6 +10,7 @@ import {
   cgiabUrl,
   kgUrl,
   lgvSession,
+  reconstructDerivativeAllele,
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
@@ -1289,21 +1291,15 @@ export const svSpecs: ScreenshotSpec[] = [
     hideTooltip: true,
     actions: [
       trackMenuIcon('HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3'),
-      { type: 'click', text: 'Launch view' },
-      { type: 'click', text: 'Reconstruct derivative allele...' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="derivative-path-candidates"]',
-        // the pass walks every read's SA chain over a 116x HiFi pileup
-        timeout: 180000,
-      },
+      ...reconstructDerivativeAllele(180000),
     ],
-    // How the dialog was opened, in the same shape and wording the cancer_sv
-    // reconstruction figures use, so the two pages name one route identically.
+    // How the dialog was opened. The label is the one the actions above drive
+    // (DERIVATIVE_ROUTE_LABEL), so the two pages name one route identically
+    // because they read one string, not because someone kept them matching.
     annotations: [
       {
         type: 'text',
-        text: 'Track menu → Launch view → Reconstruct derivative allele...',
+        text: DERIVATIVE_ROUTE_LABEL,
         fontSize: 17,
         maxWidth: 300,
         anchor: {

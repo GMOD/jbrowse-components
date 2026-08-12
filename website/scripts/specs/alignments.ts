@@ -8,6 +8,7 @@ import {
   VOLVOX,
   lgvSession,
   menuCascade,
+  openTrackSelector,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
@@ -260,15 +261,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 400,
     readyText: 'ctgA',
     settleMs: 3000,
-    actions: [
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
-    ],
+    actions: openTrackSelector('menu'),
   },
 
   {

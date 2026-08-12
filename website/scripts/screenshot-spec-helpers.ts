@@ -31,7 +31,7 @@ export const VOLVOX = 'test_data/volvox/config.json'
 // spec that pans outside them sees no reads.
 export const HG002_NANOPORE_BAM =
   'https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam'
-export const HG002_NANOPORE_ADAPTER = {
+const HG002_NANOPORE_ADAPTER = {
   type: 'BamAdapter',
   bamLocation: { uri: HG002_NANOPORE_BAM, locationType: 'UriLocation' },
   index: {
@@ -97,8 +97,8 @@ export const DEMO_CONFIG = 'test_data/config_demo.json'
 // like the LinearSyntenyView drawCurves view property render — jbrowse.org/code/
 // jb2/latest is an older release that ignores them. specLiveUrl still turns the
 // bare url into a jbrowse.org/code/jb2/latest link for the docs reader links.
-export const CGIAB_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/cgiab/config.json')}`
-export const HPYLORI_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/hpylori/config.json')}`
+const CGIAB_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/cgiab/config.json')}`
+const HPYLORI_BASE = `?config=${encodeURIComponent('https://jbrowse.org/demos/hpylori/config.json')}`
 
 // UCSC RepeatMasker for hg38 (jb2hubs golden-path build) as a session track: a
 // BedTabix whose `#`-header exposes a `repClass` column (SINE/LINE/LTR/DNA/
@@ -290,6 +290,61 @@ export const dismissMenus = (): ScreenshotAction[] => [
   { type: 'delay', ms: 300 },
 ]
 
+// Open the hierarchical track selector and leave it open, by whichever of the
+// two routes the figure wants. Seven specs across three modules took one of
+// them, written out identically each time.
+//
+// `via` is a real choice rather than a default worth hiding, which is why it is
+// required. The 'menu' route is the one a tutorial walks a reader through. The
+// 'button' route exists for the frames where the view menu must NOT be left
+// standing over the capture, and for a view with no tracks active — the body
+// then renders an "Open track selector" button of its own, so a text click is
+// ambiguous where the header button's `title` is unique.
+export const openTrackSelector = (
+  via: 'menu' | 'button',
+): ScreenshotAction[] => [
+  ...(via === 'menu'
+    ? ([
+        { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+        { type: 'waitForText', text: 'Open track selector' },
+        { type: 'click', text: 'Open track selector' },
+      ] as const)
+    : ([
+        { type: 'click', selector: 'button[title="Open track selector"]' },
+      ] as const)),
+  {
+    type: 'waitForSelector',
+    selector: '[data-testid="hierarchical_track_selector"]',
+  },
+]
+
+// Track menu -> Launch view -> Reconstruct derivative allele..., waited out to
+// the candidate list. Four figures across the cancer_sv and sv pages take this
+// route, and sv.ts's own comment used to promise they were "in the same shape
+// and wording" — a promise a helper keeps instead.
+//
+// The wait is the reconstruction itself, which walks every read's SA chain over
+// the pileup, so the caller states the timeout its own coverage earns.
+export const reconstructDerivativeAllele = (
+  timeout: number,
+): ScreenshotAction[] => [
+  { type: 'click', text: 'Launch view' },
+  { type: 'click', text: 'Reconstruct derivative allele...' },
+  {
+    type: 'waitForSelector',
+    selector: '[data-testid="derivative-path-candidates"]',
+    timeout,
+  },
+]
+
+// The same route as a callout, for the frames that show the dialog and have to
+// say how it was reached. Beside the actions rather than typed out per figure,
+// the same way `cascadeBoxes` pairs with `menuCascade`: a reworded menu item is
+// then one edit, where four hand-written copies drift one at a time and the
+// figure keeps asserting a click path the spec no longer takes.
+export const DERIVATIVE_ROUTE_LABEL =
+  'Track menu → Launch view → Reconstruct derivative allele...'
+
 export function cgiabUrl(session?: object) {
   if (!session) {
     return CGIAB_BASE
@@ -305,7 +360,7 @@ export function hpyloriUrl(session: object) {
 // url), so new display settings like readConnections render — jbrowse.org/code/
 // jb2/latest is an older release that ignores them. specLiveUrl still turns
 // this into a jbrowse.org link for readers.
-export const KG_CONFIG =
+const KG_CONFIG =
   'https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json'
 
 export function kgUrl(session: object) {

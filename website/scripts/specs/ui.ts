@@ -12,11 +12,16 @@ import {
   lgvSession,
   menuCascade,
   openFeatureHeightSubmenu,
+  openTrackSelector,
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
-import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  Annotation,
+  ScreenshotAction,
+  ScreenshotSpec,
+} from '../screenshot-spec-types.ts'
 
 // One labelled control in `lgv_usage_guide`: a pill in the clear strip above a
 // toolbar control, and a short arrow down into the control it names.
@@ -29,6 +34,16 @@ import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 // decision rather than a measurement: the five toolbar controls resolve to
 // x 37..1067 and their labels are wider than the gaps between them, so the pills
 // have to be slid along the strip to clear each other.
+// Tools -> Assembly manager, waited out to the dialog's own "Add new assembly"
+// button. Three figures on this page open it, and the item is not admin-gated,
+// so the route is the same whichever mode the config is in.
+const openAssemblyManager = (): ScreenshotAction[] => [
+  { type: 'click', text: 'Tools' },
+  { type: 'waitForText', text: 'Assembly manager' },
+  { type: 'click', text: 'Assembly manager' },
+  { type: 'waitForText', text: 'Add new assembly' },
+]
+
 function toolbarCallout(opts: {
   selector: string
   text: string
@@ -1359,13 +1374,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 4000,
     actions: [
       // open the track selector so the track-list entry menu icon is visible
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
+      ...openTrackSelector('menu'),
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'structural variant' },
       { type: 'delay', ms: 800 },
@@ -1492,13 +1501,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 3000,
     actions: [
       // open the track selector to get a widget in the drawer
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
+      ...openTrackSelector('menu'),
     ],
     stages: [
       {
@@ -1685,11 +1688,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       // open the track selector directly via the header button so the LGV view
       // menu never opens (the view menu was left open in the capture)
-      { type: 'click', selector: 'button[title="Open track selector"]' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
+      ...openTrackSelector('button'),
       // open the hamburger menu, then open the Collapse... submenu so its
       // options are visible alongside the main menu
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
@@ -1729,11 +1728,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       // open the track selector directly via the header button — with no tracks
       // active the view body also renders an "Open track selector" button, so a
       // text-based click is ambiguous; the header button's title is unique
-      { type: 'click', selector: 'button[title="Open track selector"]' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
+      ...openTrackSelector('button'),
       // filter the (virtualized) list so the target row is rendered, then open
       // it through the UI (by name) so it lands in "recently used"
       { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
@@ -1789,13 +1784,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 4000,
     actions: [
       // open track selector
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
+      ...openTrackSelector('menu'),
       // filter the (virtualized) list so the target row is rendered
       { type: 'type', text: 'Filter tracks', value: 'volvox-sorted' },
       { type: 'delay', ms: 800 },
@@ -1911,13 +1900,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     url: sessionSpec(DEMO_CONFIG, { views: [] }),
     readyText: 'Select a view to launch',
     settleMs: 2000,
-    actions: [
-      { type: 'click', text: 'Tools' },
-      { type: 'waitForText', text: 'Assembly manager' },
-      { type: 'click', text: 'Assembly manager' },
-      { type: 'waitForText', text: 'Add new assembly' },
-      { type: 'delay', ms: 1500 },
-    ],
+    actions: [...openAssemblyManager(), { type: 'delay', ms: 1500 }],
   },
 
   // Sample-configuration start state (quickstart_web.md) — volvox loaded with the
@@ -2127,12 +2110,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 540,
     settleMs: 2000,
     hideTooltip: true,
-    actions: [
-      { type: 'click', text: 'Tools' },
-      { type: 'waitForText', text: 'Assembly manager' },
-      { type: 'click', text: 'Assembly manager' },
-      { type: 'waitForText', text: 'Add new assembly' },
-    ],
+    actions: openAssemblyManager(),
   },
 
   // Assembly manager with one assembly present: a config carrying only hg38 in
@@ -2147,12 +2125,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 540,
     settleMs: 2000,
     hideTooltip: true,
-    actions: [
-      { type: 'click', text: 'Tools' },
-      { type: 'waitForText', text: 'Assembly manager' },
-      { type: 'click', text: 'Assembly manager' },
-      { type: 'waitForText', text: 'Add new assembly' },
-    ],
+    actions: openAssemblyManager(),
   },
 
   // Set-default-session dialog: admin mode, Admin -> Set default session. The

@@ -6,6 +6,7 @@ import {
   hpyloriUrl,
   lgvSession,
   menuCascade,
+  openTrackSelector,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
@@ -414,11 +415,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // open the track selector via the in-view header button, not the view
           // hamburger menu, which would otherwise linger open over the capture
           // (only the track menus should show)
-          { type: 'click', selector: 'button[title="Open track selector"]' },
-          {
-            type: 'waitForSelector',
-            selector: '[data-testid="hierarchical_track_selector"]',
-          },
+          ...openTrackSelector('button'),
           // open the category's "..." track menu (stable testid on the category
           // CascadingMenuButton)
           {
