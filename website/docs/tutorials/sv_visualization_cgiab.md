@@ -204,7 +204,7 @@ over a fixed 0 to 1 range: the value is one point per het site and the spread is
 the entire signal, so a line rendering would average the two LOH bands back to
 0.5 and erase the event.
 
-<Figure caption="Chromosome 3 over the benchmark CNV calls: BIC-seq2's segmented log2 copy ratio, the HiFiCNV depth it summarizes, and B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity (the copy-ratio segment steps down, depth halves, BAF splits into two bands at 0 and 1); the q-arm is balanced (one segment, flat depth, one BAF band at 0.5)." src="/img/sv_cgiab/cnv_depth_baf.png" />
+<Figure caption="Chromosome 3 over the benchmark CNV calls: BIC-seq2's segmented log2 copy ratio, the HiFiCNV depth it summarizes, and B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity; the q-arm is balanced." src="/img/sv_cgiab/cnv_depth_baf.png" />
 
 #### Keep the BAF track off bigWig summaries
 

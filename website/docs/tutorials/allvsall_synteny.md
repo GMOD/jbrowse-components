@@ -279,7 +279,7 @@ The row order here is a free choice. Unlike a reference-anchored `.blocks`
 table, an all-vs-all file is a complete graph, so every adjacent pair you happen
 to stack is a direct alignment rather than a transitive link.
 
-<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all five, and the gaps are strain-specific islands. The bottom band is the one with structure: IAI39 is inverted against the others over much of its length, and each inverted segment draws as a crossing." src="/img/multiway_synteny/ecoli_pangenome.png" />
+<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all five, and the gaps are strain-specific islands. The bottom band is the one with structure: IAI39 is inverted against the others over much of its length." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
 The gaps in those ribbons are where the strains differ. Sakai's largest carry
 its prophage Shiga-toxin genes, and CFT073's are its own pathogenicity islands.

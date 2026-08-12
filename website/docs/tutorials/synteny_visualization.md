@@ -125,7 +125,7 @@ given a color of their own, which matters here: two thirds of the genes in this
 window carry only a locus tag, and a color for them would be the loudest thing
 on screen and would read as one large named group.
 
-<Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene, and the expression it will write printed under the field. Right, the same three strains after applying it: prfB, fliR, cbf2, efp, pseI and lysS hold one color per symbol down all three panels, and the genes that carry only a locus tag are grey." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
+<Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene, and the expression it will write printed under the field. Right, the same three strains after applying it: a shared symbol holds one color down all three panels, and the genes that carry only a locus tag are grey." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
 The dialog writes a display color expression, so the same thing is one line of
 config when you would rather ship it than click it:

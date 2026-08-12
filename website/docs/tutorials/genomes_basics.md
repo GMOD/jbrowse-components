@@ -84,7 +84,7 @@ this config that alignment is a checkbox too. UCSC publishes no bigMaf for the
 Genomics: **Multiz Alignments - 470-way Mammal Alignment (Hiller lab)** and
 **Basewise Conservation (phyloP) - 470 phyloP**. Leave the window where it is.
 
-<Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: the gene collapsed to one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from, one row per species down the tree. A base is drawn only where it differs from human. The near-solid single-color column under S240 keeps a positive score, while the sparser mixed columns under T256 and G244 are where it goes red." />
+<Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: the gene collapsed to one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from, one row per species down the tree. A base is drawn only where it differs from human. The column under S240 keeps a positive score; T256 and G244 are where it goes red." />
 
 Each row is one species, ordered by the tree drawn at the left, and a base is
 only drawn where it differs from human. Most columns are therefore blank, which
