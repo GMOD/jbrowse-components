@@ -1,4 +1,3 @@
-import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { Paper } from '@mui/material'
@@ -20,9 +19,8 @@ const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail(props: {
         feature={featureData}
         formatter={value => <Formatter value={value} />}
       />
-      <BaseCard title="Link to view">
-        <LinkToSyntenyView model={model} feat={featureData} />
-      </BaseCard>
+      {/* Its own card, so it can decline to draw one — see LinkToSyntenyView */}
+      <LinkToSyntenyView model={model} feat={featureData} />
     </Paper>
   ) : (
     <div>

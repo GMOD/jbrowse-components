@@ -1,18 +1,16 @@
 import { lazy } from 'react'
 
+import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ActionLink } from '@jbrowse/core/ui'
-import {
-  SimpleFeature,
-  assembleLocString,
-  getSession,
-} from '@jbrowse/core/util'
+import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
 import { getMate } from '../syntenyMate.ts'
+import { syntenyCenterTargets } from './centerOnFeature.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
 import type {
@@ -92,87 +90,81 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
     anchorAssembly !== undefined &&
     trackAssemblyNames !== undefined &&
     canLaunchSyntenyForMate(trackAssemblyNames, mate?.assemblyName)
+  const canCenter = 'views' in view
+  // No card at all rather than an empty one titled "Link to view". A synteny
+  // track opened inside a plain LGV has no rows to center, and a mate whose
+  // assembly the track does not declare cannot launch a view either — which
+  // left the panel showing a heading over an empty list.
+  if (!canCenter && !canLaunch) {
+    return null
+  }
   return (
-    <ul>
-      {'views' in view ? (
-        <li>
-          <ActionLink
-            onClick={() => {
-              const { views } = view
-              if (level !== undefined) {
-                // level is "pre-known", and stored in the SyntenyFeatureWidget
-                // model state e.g. when clicking on a feature from a
-                // LinearSyntenyRendering
-                views[level]?.navTo(feat, 0.2)
-                views[level + 1]?.navTo(
-                  feat.mate as SimpleFeatureSerialized,
-                  0.2,
-                )
-              } else {
-                // best effort to find the right level. this is triggered for
-                // example if a user clicks on a feature in a LGVSyntenyDisplay
-                // in an existing LinearSyntenyView, there is no real proper
-                // level "pre-known" to this situation
-                const f2 = feat.mate as SimpleFeatureSerialized
-                const r1 = feat.assemblyName as string
-                const r2 = f2.assemblyName as string
-                const v1 = views.find(v => v.assemblyNames[0] === r1)
-                const v2 = views.find(v => v.assemblyNames[0] === r2)
-                if (!v1 || !v2) {
-                  session.notify(
-                    [
-                      !v1
-                        ? `Unable to find ${assembleLocString(feat)} in synteny view`
-                        : '',
-                      !v2
-                        ? `Unable to find ${assembleLocString(f2)} in synteny view`
-                        : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ... '),
-                  )
+    <BaseCard title="Link to view">
+      <ul>
+        {canCenter ? (
+          <li>
+            <ActionLink
+              onClick={() => {
+                const { targets, missing } = syntenyCenterTargets({
+                  views: view.views,
+                  level,
+                  feat,
+                })
+                // Both sides attempted, whichever fails. `navTo` throws for a
+                // row whose displayed regions do not contain the feature — a
+                // panel sent elsewhere while this widget sat open in the
+                // drawer — and letting that escape a click handler both took
+                // out the second row's navigation and went unreported.
+                const problems = [...missing]
+                for (const { view: row, loc } of targets) {
+                  try {
+                    row.navTo(loc, 0.2)
+                  } catch (e) {
+                    problems.push(`${e}`)
+                  }
                 }
-                v1?.navTo(feat, 0.2)
-                v2?.navTo(f2, 0.2)
-              }
-            }}
-          >
-            Center view on this feature
-          </ActionLink>
-        </li>
-      ) : null}
-      {canLaunch ? (
-        <li>
-          <ActionLink
-            onClick={() => {
-              session.queueDialog(handleClose => [
-                LaunchSyntenyViewDialog,
-                {
-                  session,
-                  feature,
-                  anchorAssembly,
-                  anchorTracks: findAnchorTracks(model),
-                  // The view this widget was opened from, so the dialog can
-                  // offer to put the launched view in its slot rather than
-                  // below it — the same choice the two menu-driven launches
-                  // make. Passed for both shapes and filtered by the dialog:
-                  // `canReplaceView` keeps the offer to a view the session
-                  // actually holds a slot for, which drops the LGV *row* of a
-                  // synteny view (a ribbon click's widget names the outer view,
-                  // which does have one) without this having to know which
-                  // shape it got.
-                  sourceView: view,
-                  trackId,
-                  handleClose,
-                },
-              ])
-            }}
-          >
-            Launch linear synteny view on this feature
-          </ActionLink>
-        </li>
-      ) : null}
-    </ul>
+                if (problems.length > 0) {
+                  session.notify(problems.join(' ... '), 'warning')
+                }
+              }}
+            >
+              Center view on this feature
+            </ActionLink>
+          </li>
+        ) : null}
+        {canLaunch ? (
+          <li>
+            <ActionLink
+              onClick={() => {
+                session.queueDialog(handleClose => [
+                  LaunchSyntenyViewDialog,
+                  {
+                    session,
+                    feature,
+                    anchorAssembly,
+                    anchorTracks: findAnchorTracks(model),
+                    // The view this widget was opened from, so the dialog can
+                    // offer to put the launched view in its slot rather than
+                    // below it — the same choice the two menu-driven launches
+                    // make. Passed for both shapes and filtered by the dialog:
+                    // `canReplaceView` keeps the offer to a view the session
+                    // actually holds a slot for, which drops the LGV *row* of a
+                    // synteny view (a ribbon click's widget names the outer
+                    // view, which does have one) without this having to know
+                    // which shape it got.
+                    sourceView: view,
+                    trackId,
+                    handleClose,
+                  },
+                ])
+              }}
+            >
+              Launch linear synteny view on this feature
+            </ActionLink>
+          </li>
+        ) : null}
+      </ul>
+    </BaseCard>
   )
 })
 
