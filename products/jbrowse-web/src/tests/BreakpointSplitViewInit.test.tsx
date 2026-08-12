@@ -45,9 +45,22 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
+// An EMPTY session, not the config's `defaultSession`. That default is a
+// pre-built BreakpointSplitView carrying pacbio_hg002_breakpoints and pacbio_vcf
+// on both of its rows, and nothing in this file looks at it — every test adds
+// its own view. What it did instead was start four display fetches per test that
+// no test waits for, so they were still in flight when jest tore the environment
+// down and the RPC's dynamic import landed on a dead module registry:
+//
+//   ReferenceError: You are trying to `require` a file after the Jest
+//   environment has been torn down. From BreakpointSplitViewInit.test.tsx
+//
+// which is not just noise — an async rejection with no owner is attributed to
+// whichever test happens to be running, so it turns a clean suite into an
+// intermittently red one somewhere else.
 function createBreakpointView(init: object) {
   const { rootModel } = getPluginManager(configSnapshot)
-  rootModel.setDefaultSession()
+  rootModel.setSession({ name: 'BreakpointSplitViewInit test' })
   const session = rootModel.session!
   const view = session.addView('BreakpointSplitView', { init })
   view.setWidth(800)
@@ -174,7 +187,7 @@ test('BreakpointSplitView showImportForm is false when init is set', async () =>
 
 test('BreakpointSplitView showImportForm is true when no init', () => {
   const { rootModel } = getPluginManager(configSnapshot)
-  rootModel.setDefaultSession()
+  rootModel.setSession({ name: 'BreakpointSplitViewInit test' })
   const view = rootModel.session!.addView('BreakpointSplitView', {})
   view.setWidth(800)
 

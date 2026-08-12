@@ -281,6 +281,10 @@ export interface ComputedArc {
   // How many connections were coalesced into this arc — see `resolveArcs`.
   // Always >= 1.
   support: number
+  // The `arcKey` this arc was deduped under, so it is unique across the array.
+  // Only `resolveArcs`' sort reads it, as the tie-break that makes paint order
+  // independent of the order the reads arrived in.
+  key: string
 }
 
 // A connector tick. No color: every tick is ARC_COLOR_INTERCHROM (see the
@@ -977,6 +981,9 @@ function resolveArcs(
       yBp,
       spanBp,
       support: 1,
+      // kept for the sort's tie-break below, where it is the only thing that
+      // does not depend on what order the reads arrived in
+      key,
     }
     byKey.set(key, computed)
     // pushed in first-seen order, so the feed's order is still the reads' —
@@ -993,8 +1000,21 @@ function resolveArcs(
   // express, and it is what lets the hit test resolve an overlap toward the
   // strongest junction and still be describing the arc on top.
   //
-  // Stable, so equal-support arcs keep the reads' order they arrived in.
-  arcs.sort((a, b) => a.support - b.support)
+  // TOTAL, tie-broken on the dedup key, because "the reads' order they arrived
+  // in" — which is what a merely stable sort leaves equal-support arcs in — is
+  // not the same order twice. Reads reach `pendingArcs` as their fetches
+  // complete, so on a loaded machine a different interleaving produces a
+  // different paint order among equal-support arcs, and paint order is what
+  // decides the color of every pixel where two of them cross.
+  //
+  // It surfaced as an intermittently failing image snapshot: AlignmentArcs'
+  // out-of-view-pairing frame came back 4.9% different, with the whole
+  // difference inside the arc band and the reads and coverage below it
+  // pixel-identical — the data was the same, only the order it was painted in
+  // had changed. `key` is what arcs are deduped by, so no two share it and this
+  // is a strict weak ordering; which arc wins a tie does not matter, only that
+  // the same one wins it every time.
+  arcs.sort((a, b) => a.support - b.support || (a.key < b.key ? -1 : 1))
 
   return { arcs, lines }
 }

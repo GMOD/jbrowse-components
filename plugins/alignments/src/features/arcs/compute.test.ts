@@ -20,6 +20,24 @@ import {
 } from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ComputedArc } from './compute.ts'
+
+// Find the junction under test rather than indexing into `arcs`. The array is
+// in PAINT order — ascending support, then by dedup key — which is deliberately
+// not the order the reads produced the arcs in, so an index pins something no
+// assertion here means. Throws with the junctions it did find, so a genuine
+// miss still reads like a failed assertion rather than an undefined deref.
+function arcAt(arcs: ComputedArc[], p1Bp: number, p2Bp: number) {
+  const found = arcs.find(a => a.p1.bp === p1Bp && a.p2.bp === p2Bp)
+  if (!found) {
+    throw new Error(
+      `no arc ${p1Bp}->${p2Bp}; got ${arcs
+        .map(a => `${a.p1.bp}->${a.p2.bp}`)
+        .join(', ')}`,
+    )
+  }
+  return found
+}
 
 function makePileupData(
   overrides: Partial<PileupDataResult> & {
@@ -1163,10 +1181,10 @@ describe('computeArcsFromPileupData', () => {
       drawLongRange: true,
     })
     expect(arcs).toHaveLength(2)
-    // seg1.end (2200) → seg2.start (3000)
-    expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([2200, 3000])
-    // seg2.end (3200) → seg0.start (1000)
-    expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([3200, 1000])
+    // seg1.end (2200) → seg2.start (3000), and seg2.end (3200) → seg0.start
+    // (1000). Looked up rather than indexed: see arcAt.
+    arcAt(arcs, 2200, 3000)
+    arcAt(arcs, 3200, 1000)
   })
 
   // A read overhanging the region's left edge: its fwd flank starts at 100,
@@ -1345,15 +1363,13 @@ describe('computeArcsFromPileupData', () => {
       drawLongRange: true,
     })
     expect(arcs).toHaveLength(2)
-    // arc[0] = read1's fwd→rev split junction (a.end 1200 → b.end 3200).
-    expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([1200, 3200])
-    // Colored split-inversion (7) by its own strands — NOT the paired
-    // insert-size default (0) the global hasPaired branch would have produced.
-    expect(arcs[0]!.colorType).toBe(7)
-    // arc[1] = the read1↔read2 mate link, still colored by pair semantics.
-    // Each mate's own outer edge: fwd read1's start (1000), rev read2's end
-    // (5200).
-    expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([1000, 5200])
+    // read1's fwd→rev split junction (a.end 1200 → b.end 3200), colored
+    // split-inversion (7) by its own strands — NOT the paired insert-size
+    // default (0) the global hasPaired branch would have produced.
+    expect(arcAt(arcs, 1200, 3200).colorType).toBe(7)
+    // and the read1↔read2 mate link, still colored by pair semantics. Each
+    // mate's own outer edge: fwd read1's start (1000), rev read2's end (5200).
+    arcAt(arcs, 1000, 5200)
   })
 
   test('mate-unmapped paired split read still draws its split junction', () => {
@@ -1428,10 +1444,12 @@ describe('computeArcsFromPileupData', () => {
     })
     // The within-read split junction (1500 → 3000) AND the mate link from the
     // read's own outer 5' edge (1000) to the mate's recorded position (8000).
-    expect(arcs.map(a => [a.p1.bp, a.p2.bp])).toEqual([
-      [1500, 3000],
-      [1000, 8000],
-    ])
+    expect(arcs.map(a => [a.p1.bp, a.p2.bp])).toEqual(
+      expect.arrayContaining([
+        [1500, 3000],
+        [1000, 8000],
+      ]),
+    )
   })
 
   test('a split read whose mate is off screen draws no mate link when long-range is off', () => {
@@ -1679,6 +1697,7 @@ describe('groupArcsByRef', () => {
         yBp: 200,
         spanBp: 200,
         support: 1,
+        key: 'chr1\u00001100\u0000chr1\u00001500\u00000\u00000',
       },
       {
         p1: { refName: 'chr2', bp: 5000 },
@@ -1688,6 +1707,7 @@ describe('groupArcsByRef', () => {
         yBp: 500,
         spanBp: 500,
         support: 1,
+        key: 'chr2\u00005000\u0000chr2\u00006000\u00001\u00001',
       },
     ]
     const lines = [
@@ -1714,6 +1734,7 @@ describe('arcsToRegionResult', () => {
         yBp: 200,
         spanBp: 200,
         support: 1,
+        key: 'chr1\u00001100\u0000chr1\u00001500\u00000\u00000',
       },
     ]
     const regionLines = [{ x: { refName: 'chr1', bp: 1200 }, colorType: 0 }]

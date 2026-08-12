@@ -30,6 +30,7 @@ function arc(
     yBp: bp * 2,
     spanBp: bp * 2,
     support,
+    key: `chr1\0${bp}\0chr1\0${bp + 500}\0${colorType}\0${shapeType}`,
   }
 }
 
