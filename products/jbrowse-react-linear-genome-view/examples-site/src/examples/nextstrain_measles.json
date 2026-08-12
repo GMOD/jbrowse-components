@@ -121,10 +121,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "Measles-nextstrain-color-display",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:get(feature,'fill') || 'black'"
-          }
+          "color": "jexl:get(feature,'fill') || 'black'"
         }
       ]
     },
@@ -139,7 +136,13 @@
         "bigWigLocation": {
           "uri": "https://jbrowse.org/demos/nextstrain/measles/measles_entropy.bw"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "Measles-entropy-score-LinearWiggleDisplay"
+        }
+      ]
     },
     {
       "type": "VariantTrack",
@@ -160,7 +163,15 @@
         "samplesTsvLocation": {
           "uri": "https://jbrowse.org/demos/nextstrain/measles/measles_samples.tsv"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantMatrixDisplay",
+          "displayId": "Measles-genotypes-LinearMultiSampleVariantMatrixDisplay",
+          "height": 400,
+          "colorBy": "region"
+        }
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -176,7 +187,13 @@
         "craiLocation": {
           "uri": "https://jbrowse.org/demos/nextstrain/measles/measles_genomes.cram.crai"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "Measles-published-genomes-LinearAlignmentsDisplay"
+        }
+      ]
     }
   ],
   "location": "Measles:1..15,894",
@@ -192,12 +209,7 @@
           "displays": [
             {
               "type": "LinearWiggleDisplay",
-              "displayId": "Measles-entropy-score-LinearWiggleDisplay",
-              "renderers": {
-                "DensityRenderer": { "type": "DensityRenderer" },
-                "XYPlotRenderer": { "type": "XYPlotRenderer" },
-                "LinePlotRenderer": { "type": "LinePlotRenderer" }
-              }
+              "configuration": "Measles-entropy-score-LinearWiggleDisplay"
             }
           ]
         },
@@ -217,9 +229,7 @@
           "displays": [
             {
               "type": "LinearMultiSampleVariantMatrixDisplay",
-              "displayId": "Measles-genotypes-LinearMultiSampleVariantMatrixDisplay",
-              "height": 400,
-              "colorBy": "region"
+              "configuration": "Measles-genotypes-LinearMultiSampleVariantMatrixDisplay"
             }
           ]
         },
@@ -229,7 +239,7 @@
           "displays": [
             {
               "type": "LinearAlignmentsDisplay",
-              "displayId": "Measles-published-genomes-LinearAlignmentsDisplay"
+              "configuration": "Measles-published-genomes-LinearAlignmentsDisplay"
             }
           ]
         },

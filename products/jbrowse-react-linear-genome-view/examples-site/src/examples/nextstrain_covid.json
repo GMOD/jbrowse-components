@@ -139,10 +139,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "SARS-CoV-2-nextstrain-color-display",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:get(feature,'fill') || 'black'"
-          }
+          "color": "jexl:get(feature,'fill') || 'black'"
         }
       ]
     },
@@ -157,7 +154,13 @@
         "bigWigLocation": {
           "uri": "https://jbrowse.org/demos/nextstrain/covid/covid_entropy.bw"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "SARS-CoV-2-entropy-score-LinearWiggleDisplay"
+        }
+      ]
     },
     {
       "type": "VariantTrack",
@@ -178,7 +181,15 @@
         "samplesTsvLocation": {
           "uri": "https://jbrowse.org/demos/nextstrain/covid/covid_samples.tsv"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantMatrixDisplay",
+          "displayId": "SARS-CoV-2-genotypes-LinearMultiSampleVariantMatrixDisplay",
+          "height": 400,
+          "colorBy": "region"
+        }
+      ]
     }
   ],
   "location": "SARS-CoV-2:1..29,903",
@@ -194,12 +205,7 @@
           "displays": [
             {
               "type": "LinearWiggleDisplay",
-              "displayId": "SARS-CoV-2-entropy-score-LinearWiggleDisplay",
-              "renderers": {
-                "DensityRenderer": { "type": "DensityRenderer" },
-                "XYPlotRenderer": { "type": "XYPlotRenderer" },
-                "LinePlotRenderer": { "type": "LinePlotRenderer" }
-              }
+              "configuration": "SARS-CoV-2-entropy-score-LinearWiggleDisplay"
             }
           ]
         },
@@ -219,9 +225,7 @@
           "displays": [
             {
               "type": "LinearMultiSampleVariantMatrixDisplay",
-              "displayId": "SARS-CoV-2-genotypes-LinearMultiSampleVariantMatrixDisplay",
-              "height": 400,
-              "colorBy": "region"
+              "configuration": "SARS-CoV-2-genotypes-LinearMultiSampleVariantMatrixDisplay"
             }
           ]
         },

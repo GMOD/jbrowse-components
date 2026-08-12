@@ -551,6 +551,12 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
             cramLocation: { uri: genomesCram },
             craiLocation: { uri: `${genomesCram}.crai` },
           },
+          displays: [
+            {
+              type: 'LinearAlignmentsDisplay',
+              displayId: `${genomesTrackId}-LinearAlignmentsDisplay`,
+            },
+          ],
         },
       ]
     : []
@@ -562,7 +568,7 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
           displays: [
             {
               type: 'LinearAlignmentsDisplay',
-              displayId: `${genomesTrackId}-LinearAlignmentsDisplay`,
+              configuration: `${genomesTrackId}-LinearAlignmentsDisplay`,
             },
           ],
         },
@@ -592,14 +598,16 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
           type: 'FromConfigAdapter',
           features: geneFeats,
         },
+        // Display settings live on the TRACK's displays entry, which is built by
+        // the display's config schema — never on the session display node below,
+        // which is built by its state model and drops a slot name in silence.
+        // See ARCHITECTURE.md "Where a display's state lives"; `jbrowse
+        // validate` reports the wrong side of it.
         displays: [
           {
             type: 'LinearBasicDisplay',
             displayId: `${assembly}-nextstrain-color-display`,
-            renderer: {
-              type: 'SvgFeatureRenderer',
-              color1: "jexl:get(feature,'fill') || 'black'",
-            },
+            color: "jexl:get(feature,'fill') || 'black'",
           },
         ],
       },
@@ -613,6 +621,12 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
           type: 'BigWigAdapter',
           bigWigLocation: { uri: `${base}/${slug}_entropy.bw` },
         },
+        displays: [
+          {
+            type: 'LinearWiggleDisplay',
+            displayId: `${assembly}-entropy-score-LinearWiggleDisplay`,
+          },
+        ],
       },
       {
         type: 'VariantTrack',
@@ -626,6 +640,14 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
           index: { location: { uri: `${base}/${slug}_genotypes.vcf.gz.tbi` } },
           samplesTsvLocation: { uri: `${base}/${slug}_samples.tsv` },
         },
+        displays: [
+          {
+            type: 'LinearMultiSampleVariantMatrixDisplay',
+            displayId: `${assembly}-genotypes-LinearMultiSampleVariantMatrixDisplay`,
+            height: 400,
+            colorBy: 'region',
+          },
+        ],
       },
       ...publishedGenomesTracks,
     ],
@@ -635,6 +657,10 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
       view: {
         id: 'linearGenomeView',
         type: 'LinearGenomeView',
+        // These nodes only say which track+display to open, and in what order.
+        // Every one of them names its display by `configuration` — the settings
+        // themselves are on the track configs above, for the reason stated
+        // there.
         tracks: [
           {
             type: 'QuantitativeTrack',
@@ -642,12 +668,7 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
             displays: [
               {
                 type: 'LinearWiggleDisplay',
-                displayId: `${assembly}-entropy-score-LinearWiggleDisplay`,
-                renderers: {
-                  DensityRenderer: { type: 'DensityRenderer' },
-                  XYPlotRenderer: { type: 'XYPlotRenderer' },
-                  LinePlotRenderer: { type: 'LinePlotRenderer' },
-                },
+                configuration: `${assembly}-entropy-score-LinearWiggleDisplay`,
               },
             ],
           },
@@ -667,9 +688,7 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
             displays: [
               {
                 type: 'LinearMultiSampleVariantMatrixDisplay',
-                displayId: `${assembly}-genotypes-LinearMultiSampleVariantMatrixDisplay`,
-                height: 400,
-                colorBy: 'region',
+                configuration: `${assembly}-genotypes-LinearMultiSampleVariantMatrixDisplay`,
               },
             ],
           },
@@ -687,6 +706,45 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
         ],
       },
     },
+  }
+}
+
+// Run the config this script just built through `jbrowse validate` before it is
+// written, and refuse to write one with errors.
+//
+// This exists because of a bug that shipped in all five of these files: the
+// genotype matrix carried `height: 400` and `colorBy: 'region'` on its *session*
+// display node, which is instantiated by the display's state model, where both
+// are getters over config slots rather than properties. MST dropped the two keys
+// in silence and the demo rendered at the schema's default 250px with no
+// population coloring, for as long as the demo existed. Nothing else can catch
+// this: it isn't a type error, it isn't a runtime error, and the page looks
+// plausible. See ARCHITECTURE.md "Where a display's state lives".
+//
+// The reshape below is only a shape adapter — this product's config takes
+// `assembly`/`view` where a jbrowse-web config.json takes `assemblies[]` and
+// `views[]`. The display nodes it walks are the same objects either way. The
+// relative import into the CLI's source is deliberate: this is a build-time
+// script in the site, not shipped code, so wiring it as a package dependency
+// would put the whole CLI in the site's install for one function.
+async function assertConfigValid(config, file) {
+  const { validateConfig } =
+    await import('../../../jbrowse-cli/src/commands/validate/validateConfig.ts')
+  const { problems } = validateConfig({
+    assemblies: [config.assembly],
+    tracks: config.tracks,
+    defaultSession: {
+      name: config.defaultSession.name,
+      views: [config.defaultSession.view],
+    },
+  })
+  const errors = problems.filter(p => p.level === 'error')
+  if (errors.length) {
+    throw new Error(
+      `${file}.json is invalid:\n${errors
+        .map(p => `  ${p.where}: ${p.message}`)
+        .join('\n')}`,
+    )
   }
 }
 
@@ -758,6 +816,7 @@ for (const ds of DATASETS) {
       ? `${S3_BASE}/${ds.slug}/${ds.slug}_genomes.cram`
       : undefined,
   })
+  await assertConfigValid(config, ds.file)
   writeFileSync(join(exampleDir, `${ds.file}.json`), JSON.stringify(config))
   console.log(
     `wrote ${ds.file}.json + ${ds.slug}/ flatfiles — ${seq.length} bp ` +

@@ -103,10 +103,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "Ebola-nextstrain-color-display",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:get(feature,'fill') || 'black'"
-          }
+          "color": "jexl:get(feature,'fill') || 'black'"
         }
       ]
     },
@@ -121,7 +118,13 @@
         "bigWigLocation": {
           "uri": "https://jbrowse.org/demos/nextstrain/ebola/ebola_entropy.bw"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "Ebola-entropy-score-LinearWiggleDisplay"
+        }
+      ]
     },
     {
       "type": "VariantTrack",
@@ -142,7 +145,15 @@
         "samplesTsvLocation": {
           "uri": "https://jbrowse.org/demos/nextstrain/ebola/ebola_samples.tsv"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantMatrixDisplay",
+          "displayId": "Ebola-genotypes-LinearMultiSampleVariantMatrixDisplay",
+          "height": 400,
+          "colorBy": "region"
+        }
+      ]
     }
   ],
   "location": "Ebola:1..18,958",
@@ -158,12 +169,7 @@
           "displays": [
             {
               "type": "LinearWiggleDisplay",
-              "displayId": "Ebola-entropy-score-LinearWiggleDisplay",
-              "renderers": {
-                "DensityRenderer": { "type": "DensityRenderer" },
-                "XYPlotRenderer": { "type": "XYPlotRenderer" },
-                "LinePlotRenderer": { "type": "LinePlotRenderer" }
-              }
+              "configuration": "Ebola-entropy-score-LinearWiggleDisplay"
             }
           ]
         },
@@ -183,9 +189,7 @@
           "displays": [
             {
               "type": "LinearMultiSampleVariantMatrixDisplay",
-              "displayId": "Ebola-genotypes-LinearMultiSampleVariantMatrixDisplay",
-              "height": 400,
-              "colorBy": "region"
+              "configuration": "Ebola-genotypes-LinearMultiSampleVariantMatrixDisplay"
             }
           ]
         },
