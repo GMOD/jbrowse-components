@@ -7,187 +7,116 @@ summary: "Synteny and dotplot corners are window-relative Float32 against a fetc
 
 ## Status
 
-Accepted. Supersedes ADR-010 (pre-projected pixel offsets) and ADR-018
-(cumulative-bp hi/lo Float32) for **both** paths, and moots ADR-023
-(per-instance pad memory), whose subject — `padTop`/`padBottom` — no longer
-exists.
+Accepted. Supersedes ADR-010 (pre-projected pixel offsets) and ADR-018 (hi/lo
+Float32), and moots ADR-023, whose subject — per-instance `padTop`/`padBottom` —
+no longer exists.
 
 ## Context
 
-A synteny ribbon connects two views, and a dotplot segment two axes, each with
-its own `bpPerPx` and its own region ordering. A corner is therefore
-**cumulative bp across all displayedRegions of its view/axis**, not the
-chromosome-local absolute uint32 the LGV plugins emit. On a large assembly that
-value reaches Gbp — past Float32's 24-bit mantissa, and on the largest genomes
-past uint32 — so the storage format is a real decision rather than a detail.
+A synteny ribbon connects two views, a dotplot segment two axes, each with its
+own `bpPerPx` and region ordering. So a corner is **cumulative bp across the
+whole axis**, not the chromosome-local uint32 LGV emits — Gbp scale, past
+Float32's mantissa and past uint32 on large assemblies.
 
-Two previous shapes:
-
-- **ADR-010: pre-projected Float32 pixel offsets.** Drifted once zoom moved
-  more than ~2× past the geometry's fetch `bpPerPx`, and had a hard ULP floor
-  at genome-scale magnitudes (~64 px at 8×10⁸ px) that no refetch could fix,
-  because the floor was in the storage format.
-- **ADR-018: cumulative-bp hi/lo Float32 pairs** (4096-aligned `hi` + sub-4096
-  `lo`), plus a per-instance `pad` pixel attribute for inter-region gaps. Fixed
-  the drift, at 8 bytes per corner, and carried its own ceiling: `hi` is exact
-  only while `cumBp < 2³⁶ ≈ 68.7 Gbp`.
-
-Both were solving "how do we represent a genome-scale magnitude in Float32."
-The observation that retired both is that **we never have to**.
+ADR-010 stored pre-projected pixels (drifted on zoom, ULP floor in the format).
+ADR-018 stored a 4096-aligned hi/lo Float32 pair (8 bytes/corner, exact only
+below `2³⁶ ≈ 68.7 Gbp`). Both were answering "how do we fit a genome-scale
+magnitude into Float32." We never have to.
 
 ## Decision
 
-Each corner is stored as a **single Float32 holding `cumBp − base`**, where
-`base` is the per-axis viewport-start cumBp captured when the geometry was
-built (`base = offsetPx * bpPerPx`). The base travels with the geometry
-(`base0`/`base1` for synteny's two views, `baseH`/`baseV` for dotplot's two
-axes) and is never inferred by a consumer.
-
-Screen position is reconstructed identically on GPU and CPU:
+Store each corner as **one Float32 holding `cumBp − base`**, where `base` is the
+per-axis viewport-start cumBp at build time (`offsetPx * bpPerPx`). The base
+travels with the geometry — `base0`/`base1` (synteny), `baseH`/`baseV`
+(dotplot) — and is never inferred.
 
 ```
-screenX = bpRel * bpPerPxInv + panPx        where panPx = (base − viewBp) * bpPerPxInv
+screenX = bpRel * bpPerPxInv + panPx      panPx = (base − viewBp) * bpPerPxInv
 ```
 
-`panPx` — how far the view has panned since the fetch — is folded on the CPU in
-Float64 from a small delta and uploaded as one uniform per axis. There is no
-hi/lo split, no per-region uniform table, no `MAX_REGIONS`, and no per-instance
-padding attribute.
+`panPx` is folded on the CPU in Float64 from a small delta and uploaded as one
+uniform per axis. No hi/lo split, no per-region uniform table, no `MAX_REGIONS`,
+no per-instance padding.
 
-Four call sites must agree on that one line, and say so in SYNC comments:
-`GpuSyntenyRenderer.writeUniforms`, `syntenyTypes.slang#computeCorners`,
-`syntenyRibbonPath.ts#computeTransform`/`projectCorners` (Canvas2D, SVG and the
-CPU pick engine all route through it), and the dotplot twins in
-`GpuDotplotRenderer.render` / `dotplot.slang`.
+## Why one Float32 is enough
 
-## Why a single Float32 is enough
-
-Error in the reconstructed position is proportional to the corner's distance
-from the base **measured in pixels**, not in bp:
+Error scales with distance from the base **in pixels**, not in bp:
 
 ```
 err ≈ (bpRel / bpPerPx) · 2⁻²³ = distanceFromBaseInPx · 2⁻²³
 ```
 
-The base is recaptured near the view whenever the geometry is rebuilt, and the
-fetch window is grid-snapped with a pan buffer of `max(width/2, 2000)` px
-(`syntenyFetchWindow.ts`), so anything **on screen** sits within a few thousand
-pixels of the base. Worst case is ~5×10⁻⁴ px — four orders of magnitude below a
-pixel.
+The fetch window is grid-snapped with a `max(width/2, 2000)` px pan buffer
+(`syntenyFetchWindow.ts`) and the base is recaptured whenever geometry rebuilds,
+so anything on screen is within a few thousand px of the base — worst case
+~5×10⁻⁴ px. Far-off-screen corners do lose precision, but the error at the far
+end is scaled by the visible fraction of the run, so it lands on the
+clipped-away sliver.
 
-Far-off-screen corners (a distant-mate ribbon whose other end is on another
-chromosome) do lose absolute precision. This is not a defect: the error at the
-far corner is scaled by the visible fraction of the run, so a 64 px error
-8×10⁸ px away contributes ~10⁻⁴ px where the ribbon is actually rasterized. The
-imprecision lands entirely on the clipped-away sliver.
+Strictly better than both predecessors at once: half the bytes of hi/lo, **and**
+no whole-assembly ceiling, so 100+ Gbp genomes render correctly.
 
-This is strictly better than both predecessors on both axes at once — half the
-position bytes of ADR-018's hi/lo pair, **and** no whole-assembly ceiling at
-all, so 100+ Gbp genomes (*Tmesipteris oblanceolata*, *Paris japonica*) render
-correctly where the hi/lo shape degraded past 68.7 Gbp.
+## Why synteny bakes it in and dotplot doesn't
 
-## Where the relative value lives, and why the two views differ
+Synteny emits relative values from the worker; dotplot keeps absolute Float64
+and subtracts only at GPU upload. That is not a convention disagreement — it
+follows from **where each plugin builds geometry**:
 
-The two plugins put the conversion in different places:
+- Dotplot builds it on the main thread, so there is a seam between the data and
+  the vertex buffer at which to change representation.
+- Synteny builds it in the worker, so its geometry object **is** its RPC
+  payload. No seam exists. Making it absolute means Float64 corners (~+8 MB per
+  region at the 500k-instance target) with no consumer that wants them.
 
-- **Synteny** bakes it in the worker. `buildSyntenyGeometry` emits `bp1..bp4`
-  already relative, and `base0`/`base1` ride along on `SyntenyGeometry`.
-- **Dotplot** keeps geometry **absolute Float64 cumBp** and subtracts the base
-  only in `instanceInterleave.ts` at GPU upload. The RPC payload
-  (`p11/p12/p21/p22`) and the Canvas2D/SVG renderers all see absolute values.
-
-This looks like an inconsistency and is not one: it falls out of **where each
-plugin builds geometry**. Dotplot builds it on the main thread, in an autorun,
-so "absolute in the model, relative at upload" costs nothing. Synteny builds it
-*in the worker*, so its geometry object **is** its RPC payload — there is no
-seam between the two at which to change representation. Making synteny's
-payload absolute would mean Float64 corners (16 bytes/instance → 32; roughly
-+8 MB per region at the 500k-instance target the plugin sizes for) with no
-consumer that wants them, or the worse option of converting on arrival, which
-is that cost plus a copy.
-
-Synteny's departure from the repo `CLAUDE.md` rule that worker output is
-absolute is therefore narrow and deliberate. It is also bounded: the rule holds
-in full for synteny's **feature** payload — `starts`/`ends`/`mateStarts`/
-`mateEnds` in `SyntenyFeatureData` are absolute chromosome-local uint32 — and
-only the geometry arrays are relative. Note that neither plugin could satisfy
-the letter of the rule anyway, since a corner is cumBp rather than
-chromosome-local bp; the coordinate family the rule describes does not apply
-here.
+Synteny's departure from the `CLAUDE.md` absolute-uint32 rule is therefore
+narrow and deliberate. The rule still holds in full for its *feature* payload
+(`starts`/`ends`/`mateStarts`/`mateEnds` are absolute chromosome-local uint32);
+only geometry is relative. Neither plugin could satisfy the letter of the rule
+anyway, since a corner is cumBp rather than chromosome-local bp.
 
 ## Consequences
 
-- No whole-assembly size ceiling. The former ~68.7 Gbp cap is gone; see
-  `reference/HISTORICAL.md`.
-- 4 bytes per corner. Per-instance `pad` is gone entirely (ADR-023's subject),
-  as are the `viewPad0`/`viewPad1` uniforms and `hpmath.slang`'s
-  `hpCornerScreenX`. The LGV in-shader `hpSplitUint`/`hpToClipX` path is
-  untouched — this ADR is about the comparative views only.
-- Pan and zoom within a fetch window remain uniform-only updates.
-- **`base0`/`base1` are a coupling that travels with the data.** Every consumer
-  of `bp1..bp4` must account for the base. Three of the four do so implicitly —
-  `getCigarOpAtInstance` is correct only because the base *cancels* in a
-  within-axis subtraction, and the draw/pick paths are correct only because
-  they route through `computeTransform`. This is a bug class the dotplot shape
-  cannot have, and it is why the SYNC comments and
-  `buildSyntenyGeometry.precision.test.ts` /
-  `syntenyPickRenderAgreement.test.ts` / `syntenyShaderParity.test.ts` are
-  load-bearing rather than decorative.
-- `base0` derives from the raw `offsetPx` at fetch time, not from the snapped
-  fetch window, so the same snapped window fetched from two pan positions
-  inside one grid cell produces different bytes for identical data. Harmless
-  today; it only rules out content-addressing the payload by `fetchKey`.
-- Dotplot's **v-axis** pan is not bounded by a fetch window — the fetch is
-  h-axis-scoped and the geometry autorun reads `offsetPx` untracked, so only a
-  zoom recaptures `baseV`. The error bound still holds, and reaching 1 px needs
-  ~8.4M px of purely vertical panning with no zoom, so this is documented
-  rather than fixed.
+- No whole-assembly size ceiling; the former ~68.7 Gbp cap is gone
+  (`reference/HISTORICAL.md`).
+- 4 bytes per corner. `padTop`/`padBottom`, the `viewPad0`/`viewPad1` uniforms
+  and `hpmath.slang`'s `hpCornerScreenX` are all gone. The LGV
+  `hpSplitUint`/`hpToClipX` path is untouched.
+- Pan and zoom within a fetch window stay uniform-only updates.
+- `panPx` and `bpPerPxInv` have **one** implementation, `computeTransform` in
+  `syntenyRibbonPath.ts`, which the GPU renderer imports rather than re-spells.
+  The only hand-written twin is the final `bpRel * inv + panPx`: once in
+  `projectCorners` (TS), once in `computeCorners` (Slang). That duplication is
+  forced — ADR-051 caps the shader→JS codegen at scalar decisions, and
+  `computeCorners` takes structs and returns `float4` — so a SYNC comment is the
+  sanctioned mechanism here, not a shortcut.
+- The precision tests (`buildSyntenyGeometry.precision.test.ts`,
+  `dotplotPrecision.test.ts`) verify the **scheme** — that a Float32
+  window-relative round-trip stays sub-pixel at genome scale — by re-spelling
+  the formula locally. They would not catch the TS and Slang twins diverging.
+- Dotplot's **v-axis** pan is not window-bounded: the fetch is h-axis-scoped and
+  the geometry autorun reads `offsetPx` untracked, so only a zoom recaptures
+  `baseV`. The error bound holds; reaching 1 px needs ~8.4M px of purely
+  vertical pan, so this is documented rather than fixed.
 
 ## Rejected alternatives
 
-**Cumulative-bp hi/lo Float32 (ADR-018).** What this replaces. Twice the
-position bytes and a 68.7 Gbp ceiling, to solve a problem the base subtraction
-removes for free.
-
-**Pre-projected pixel offsets (ADR-010).** Zoom-dependent, and its ULP floor
-was in the storage format.
-
-**Per-region uniform table, per-(region-pair) draw calls, 1D-texture region
-table.** All three were rejected in ADR-010 and again in ADR-018, for
-`MAX_REGIONS`, O(N×M) draw scaling, and parallel-data-path cost respectively.
-Nothing here revives them; the base subtraction sidesteps per-region addressing
-entirely.
-
-**Making synteny's RPC payload absolute Float64 for consistency with dotplot.**
-Declined — see the section above. `reference/BP_PRECISION.md` states the
-conditions that would change the verdict.
-
-**Converting synteny's payload to absolute on arrival.** Explicitly not the
-compromise: it pays the memory cost *and* a copy, and leaves the coupling in
-place across the RPC where it is hardest to see.
+- **hi/lo Float32 (ADR-018)** — twice the bytes and a 68.7 Gbp ceiling, for a
+  problem the base subtraction removes for free.
+- **Pre-projected pixels (ADR-010)** — zoom-dependent, ULP floor in the format.
+- **Per-region uniform table / per-region-pair draws / 1D-texture table** —
+  rejected in ADR-010 and again in ADR-018 for `MAX_REGIONS`, O(N×M) draw
+  scaling, and parallel-data-path cost. The base subtraction sidesteps
+  per-region addressing entirely.
+- **Absolute Float64 across synteny's RPC, for consistency with dotplot** —
+  declined; see above and `reference/BP_PRECISION.md` for the conditions that
+  would change the verdict. Converting on arrival instead is the worst of both:
+  the memory cost plus a copy.
 
 ## Revisit if
 
-- A third main-thread consumer needs absolute cumBp from synteny geometry. Two
-  exist today and neither does: the draw/pick paths want screen px, and
-  anything needing a genuine position correspondence takes the
-  `SyntenyResolveMatchingRegion` worker round trip instead (which walks the
-  real CIGAR — see `reference/BP_PRECISION.md` on why interpolating `FeatPos`
-  is wrong). At that point synteny pays the conversion anyway and the byte
-  argument weakens.
-- Someone decides one coordinate story across the fleet is worth the bytes
-  regardless. A legitimate call, and not the implementer's to make.
-- Dotplot v-axis pan drift becomes measurable — track `vview.offsetPx` in the
+- A third main-thread consumer needs absolute cumBp from synteny geometry.
+  Neither of today's two does — draw and pick want screen px, and a real
+  position correspondence takes the `SyntenyResolveMatchingRegion` round trip.
+- Someone decides one coordinate story across the fleet is worth the bytes.
+- Dotplot v-axis drift becomes measurable → track `vview.offsetPx` in the
   geometry autorun, or scope the fetch on both axes.
-
-## References
-
-- `reference/BP_PRECISION.md` §"Synteny + dotplot" — the coordinate families
-  table and the full error argument.
-- `reference/HISTORICAL.md` §"The former ~68.7 Gbp synteny/dotplot ceiling".
-- `plugins/linear-comparative-view/src/LinearSyntenyRPC/buildSyntenyGeometry.ts`
-- `plugins/linear-comparative-view/src/LinearSyntenyDisplay/syntenyRibbonPath.ts`
-- `plugins/dotplot-view/src/DotplotDisplay/dotplotGeometry.ts`,
-  `instanceInterleave.ts`
-- `packages/synteny-core/src/syntenyFetchWindow.ts` — the pan buffer that
-  bounds the base-to-view distance.
