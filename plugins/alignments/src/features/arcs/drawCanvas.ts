@@ -1,4 +1,4 @@
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { bpToScreenX } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildArcColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
@@ -47,6 +47,10 @@ interface DrawArcsOpts {
   // squares alike — one meaning, one color. The squares took a `markerPalette`
   // of their own until the short-insert substitution behind it went away.
   palette: RGBColor[]
+  // The flat read-cloud connector's own colour — the theme's foreground, not a
+  // palette slot, because the line carries no category (its endpoint squares
+  // do). Mirrors arcFlat.slang's `u.colorFlatConnector`.
+  flatConnectorColor: RGBColor
   // Visible width in px (mirrors arc.slang's `canvasW`); sets the far-pair
   // threshold below.
   screenWidthPx: number
@@ -91,15 +95,23 @@ export function strokeArc(
 // Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
 // constant line Y, otherwise the curve apex. See ARC_SHAPE_* in compute.ts.
 function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
-  const { arcsTop, arcsH, pairedArcsDown, lineWidth, palette, screenWidthPx } =
-    opts
+  const {
+    arcsTop,
+    arcsH,
+    pairedArcsDown,
+    lineWidth,
+    palette,
+    flatConnectorColor,
+    screenWidthPx,
+  } = opts
   // Pre-stringify the palette once per draw — saves N Math.round + string
   // allocations per frame (N = numArcs, often thousands).
   const cssPalette = palette.map(c => rgb255(c))
-  // Flat (read cloud) connector lines are neutral black; the category color lives
-  // in the endpoint squares drawn by the arcMarker pass. ARC_FLAT_ALPHA comes
-  // from arc.generated.ts (arc.slang is the source of truth).
-  const flatLineCss = `rgba(0,0,0,${ARC_FLAT_ALPHA})`
+  // Flat (read cloud) connector lines are neutral — the theme's foreground, so
+  // they read on a dark track background too; the category color lives in the
+  // endpoint squares drawn by the arcMarker pass. ARC_FLAT_ALPHA is
+  // arcFlat.slang's, which is also where the GPU twin of this line lives.
+  const flatLineCss = rgba255(flatConnectorColor, ARC_FLAT_ALPHA)
   // Anchor = where arcs meet the adjacent band (insert-size 0). pointing-up
   // sits at the bottom of the band; pointing-down sits at the top. Matches
   // the GPU shader and the right-side insert-size scalebar.
@@ -122,9 +134,9 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
 
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
     if (isFlat) {
-      // Black connector line clamped to a minimum drawn width (centered on the
-      // midpoint) so short-insert pairs stay visible; mirrors arc.slang's
-      // flat-line clamp. The endpoint squares carry the category color.
+      // Neutral connector line clamped to a minimum drawn width (centered on
+      // the midpoint) so short-insert pairs stay visible; mirrors
+      // arcFlat.slang's clamp. The endpoint squares carry the category color.
       ctx.strokeStyle = flatLineCss
       const mid = (sx1 + sx2) / 2
       const halfPx = Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2
@@ -177,6 +189,7 @@ export function drawArcs(
     pairedArcsDown,
     lineWidth: state.readConnectionsLineWidth,
     palette: arcColors,
+    flatConnectorColor: state.colors.colorFlatConnector,
     screenWidthPx,
   })
 

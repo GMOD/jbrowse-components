@@ -96,6 +96,10 @@ export function buildColorPaletteFromPalette(
     colorSplitInversion: toRgb(colorSplitReadInversion),
     colorUnmappedMate: toRgb(colorUnmappedMate),
     colorInterchrom: toRgb(colorInterchrom),
+    // The same token `ArcHoverOverlay` strokes its highlight in, which is the
+    // argument for it: the mark drawn ON a hovered flat connector already
+    // followed the theme while the connector under it was hard black.
+    colorFlatConnector: toRgb(palette.text.primary),
   }
 }
 

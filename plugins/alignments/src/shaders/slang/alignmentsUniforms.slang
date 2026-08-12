@@ -142,6 +142,11 @@ public struct Uniforms {
   // Muted grey for non-A/C/G/T mismatch/softclip bases (e.g. N) and the
   // showModifications palette collapse. Matches the Canvas2D path and MAF.
   public uint colorMutedSnpBase;
+  // The read cloud's flat connector line (arcFlat.slang). The theme's
+  // `text.primary`: the line carries no category — its two endpoint squares do —
+  // so it wants the foreground colour, and both renderers hard-coded that as
+  // black, which is the background in dark mode.
+  public uint colorFlatConnector;
   // Paired-read arc palette, indexed by the per-instance color type — a real
   // array, because that is what it is. The nine slots were nine separately-named
   // uniforms (arcColor0..8, the ninth appended at the tail years later for

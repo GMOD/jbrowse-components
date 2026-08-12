@@ -41,6 +41,7 @@ export function makeTestPalette(
     colorSplitInversion: z,
     colorUnmappedMate: z,
     colorInterchrom: z,
+    colorFlatConnector: z,
     ...overrides,
   }
 }

@@ -42,4 +42,10 @@ export interface ColorPalette {
   colorSplitInversion: RGBColor
   colorUnmappedMate: RGBColor
   colorInterchrom: RGBColor
+  // The read cloud's flat connector — the neutral line between a discordant
+  // pair's two coloured endpoint squares. `text.primary`, so it is the theme's
+  // foreground rather than a colour of its own: the line deliberately carries no
+  // category (the squares do), and "neutral" against a dark track background is
+  // light, not the hard black both renderers used to hard-code.
+  colorFlatConnector: RGBColor
 }

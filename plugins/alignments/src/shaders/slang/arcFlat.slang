@@ -1,6 +1,7 @@
 // Read-cloud flat connector pass: the horizontal line joining a discordant
 // pair's two reads, drawn at the Y its insert size maps to. The colored squares
-// at each end are arcMarker.slang; this is the neutral line between them.
+// at each end are arcMarker.slang; this is the neutral line between them —
+// neutral meaning the theme's foreground (`u.colorFlatConnector`), not black.
 //
 // These used to ride in arc.slang as `shapeType` 1 and 2. That pass draws a
 // stroked CURVE, so its instance is a 65-segment triangle strip — 130 vertices,
@@ -17,6 +18,10 @@
 //! export-consts: ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA
 
 import alignmentsUniforms;
+// `unpackRGBA`, for the connector colour. Slang does not re-export through an
+// import, so naming a packed colour uniform means importing this too — the same
+// pair mismatch.slang and every other named-colour pass carries.
+import colorPack;
 import hpmath;
 
 
@@ -124,6 +129,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     float phase = frac(fragIn.screenPx / 6.0 + 0.25) * 6.0;
     alpha *= clamp(2.0 - abs(phase - 3.0), 0.0, 1.0);
   }
+  // Neutral, not black: `colorFlatConnector` is the theme's foreground, so the
+  // line reads against a dark track background the way it does against a light
+  // one. The category colour stays in the endpoint squares (arcMarker.slang).
   // Output straight alpha — the HAL blend func does the premultiply.
-  return float4(0.0, 0.0, 0.0, ARC_FLAT_ALPHA * alpha);
+  return float4(unpackRGBA(u.colorFlatConnector).xyz, ARC_FLAT_ALPHA * alpha);
 }

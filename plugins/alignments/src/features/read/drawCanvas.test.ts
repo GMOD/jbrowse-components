@@ -3,48 +3,24 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
 import { shouldOutlineReads } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { drawReads, showChevron } from './drawCanvas.ts'
 
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ChevronFrame } from './drawCanvas.ts'
 
-const BLACK: [number, number, number] = [0, 0, 0]
-const palette = {
+// The three roles these cases actually assert on; every other slot is
+// makeTestPalette's zero. Spelled out in full here until the helper existed,
+// which meant every new ColorPalette field was a compile error in a test that
+// does not care about it.
+const palette = makeTestPalette({
   colorFwdStrand: [1, 0, 0],
   colorRevStrand: [0, 0, 1],
-  colorNostrand: BLACK,
   colorPairLR: [0, 0.5, 0],
-  colorPairRL: BLACK,
-  colorPairRR: BLACK,
-  colorPairLL: BLACK,
-  colorBaseA: BLACK,
-  colorBaseC: BLACK,
-  colorBaseG: BLACK,
-  colorBaseT: BLACK,
-  colorBaseN: BLACK,
-  colorInsertion: BLACK,
-  colorDeletion: BLACK,
-  colorSkip: BLACK,
-  colorSoftclip: BLACK,
-  colorHardclip: BLACK,
-  colorInsertionIndicator: BLACK,
-  colorSoftclipIndicator: BLACK,
-  colorHardclipIndicator: BLACK,
-  colorCoverage: BLACK,
-  colorModificationFwd: BLACK,
-  colorModificationRev: BLACK,
-  colorMutedSnpBase: BLACK,
-  colorLongInsert: BLACK,
-  colorShortInsert: BLACK,
-  colorSupplementary: BLACK,
-  colorSplitInversion: BLACK,
-  colorUnmappedMate: BLACK,
-  colorInterchrom: BLACK,
-} satisfies ColorPalette
+})
 
 interface ReadSpec {
   start: number

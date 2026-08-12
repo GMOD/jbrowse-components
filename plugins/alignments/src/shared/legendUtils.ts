@@ -193,9 +193,7 @@ export function getAlignmentsLegendSections(model: {
     {
       id: 'connections',
       title: 'Read connections',
-      items: model
-        .bezierLegendItems()
-        .filter(i => !keyed.has(legendKey(i))),
+      items: model.bezierLegendItems().filter(i => !keyed.has(legendKey(i))),
     },
   ]
 }

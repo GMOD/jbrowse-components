@@ -95,6 +95,7 @@ export const UNIFORM_OFFSET_U32 = {
   colorUnmappedMate: 60,
   colorInterchrom: 61,
   colorMutedSnpBase: 62,
+  colorFlatConnector: 63,
   colorSplitInversion: 225,
 } as const
 
@@ -173,6 +174,7 @@ export interface Uniforms {
   colorUnmappedMate: number
   colorInterchrom: number
   colorMutedSnpBase: number
+  colorFlatConnector: number
   arcColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   linkedReadColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   readCategoryColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
@@ -249,6 +251,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[60] = uniforms.colorUnmappedMate
   u32[61] = uniforms.colorInterchrom
   u32[62] = uniforms.colorMutedSnpBase
+  u32[63] = uniforms.colorFlatConnector
   f32[64] = uniforms.arcColor[0][0]
   f32[65] = uniforms.arcColor[0][1]
   f32[66] = uniforms.arcColor[0][2]

@@ -14,6 +14,7 @@ import {
   GpuAlignmentsRenderer,
   coveragePassPlan,
 } from '../renderers/GpuAlignmentsRenderer.ts'
+import { makeTestPalette } from '../testUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
@@ -615,39 +616,10 @@ describe('GPU sync skips regions whose data is unchanged', () => {
 // `true` from the Canvas2D path once drifted the other way. One scenario table,
 // both backends, same expected result — lock the shared contract in.
 describe('renderBlocks canvasDrawn gating parity', () => {
-  const triple: [number, number, number] = [0, 0, 0]
-  const fullColors: ColorPalette = {
-    colorFwdStrand: triple,
-    colorRevStrand: triple,
-    colorNostrand: triple,
-    colorPairLR: triple,
-    colorPairRL: triple,
-    colorPairRR: triple,
-    colorPairLL: triple,
-    colorBaseA: triple,
-    colorBaseC: triple,
-    colorBaseG: triple,
-    colorBaseT: triple,
-    colorBaseN: triple,
-    colorInsertion: triple,
-    colorDeletion: triple,
-    colorSkip: triple,
-    colorSoftclip: triple,
-    colorHardclip: triple,
-    colorInsertionIndicator: triple,
-    colorSoftclipIndicator: triple,
-    colorHardclipIndicator: triple,
-    colorCoverage: triple,
-    colorModificationFwd: triple,
-    colorModificationRev: triple,
-    colorMutedSnpBase: triple,
-    colorLongInsert: triple,
-    colorShortInsert: triple,
-    colorSupplementary: triple,
-    colorSplitInversion: triple,
-    colorUnmappedMate: triple,
-    colorInterchrom: triple,
-  }
+  // Nothing here asserts on a colour — the scenarios are about whether a block
+  // reports having drawn — so this is makeTestPalette's all-zero palette rather
+  // than thirty hand-written `[0, 0, 0]`s that had to grow with the type.
+  const fullColors: ColorPalette = makeTestPalette()
 
   const block = {
     displayedRegionIndex: 0,
