@@ -273,6 +273,15 @@ export function removeTab(root: LayoutTree, tabId: string): LayoutTree {
  * One function returning one tree, so there is no instant at which the tab is
  * in both panels or neither — the state the imperative bridge had to wrap an
  * explicit `runInAction` around to hide from its own reconcile autorun.
+ *
+ * **`index` counts the tabs as they are ordered NOW**, before the move. That is
+ * the only reading a caller can supply, because it is the strip the user is
+ * looking at — and it differs from the post-removal ordering exactly when the
+ * tab is moving within its own panel and is currently to the LEFT of the gap it
+ * was dropped in. Dragging A to the gap between B and C in `[A, B, C]` is index
+ * 2 on screen; taking A out first makes that gap index 1, and inserting at 2
+ * lands it after C instead. Adjusting here rather than in the caller keeps the
+ * whole "remove then insert" mechanic inside the one function that does it.
  */
 export function moveTabToPanel(
   root: LayoutTree,
@@ -288,8 +297,14 @@ export function moveTabToPanel(
     return root
   }
   const { tab } = home
+  const from =
+    home.panel.id === targetPanelId
+      ? home.panel.tabs.findIndex(t => t.id === tabId)
+      : -1
   const detached = mapPanel(removeTab(root, tabId), targetPanelId, panel => {
-    const at = index ?? panel.tabs.length
+    const requested = index === undefined ? panel.tabs.length : index
+    const shifted = from >= 0 && from < requested ? requested - 1 : requested
+    const at = Math.min(Math.max(shifted, 0), panel.tabs.length)
     return {
       ...panel,
       tabs: [...panel.tabs.slice(0, at), tab, ...panel.tabs.slice(at)],

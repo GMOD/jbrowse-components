@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 import { dv, tabColors } from './dockviewTheme.ts'
 import { indicatorRect } from './dropZone.ts'
 
-import type { DropZone } from './dropZone.ts'
+import type { DropTarget } from './dropZone.ts'
 import type { WorkspaceLayout } from './model.ts'
 import type { PanelNode, TabNode } from './tree.ts'
 import type { TabDragHandlers } from './useLayoutDrag.ts'
@@ -102,6 +102,16 @@ const useStyles = makeStyles()(theme => ({
     background: dv.dragOverBackground,
     outline: `1px solid ${dv.edgeDockIndicatorColor}`,
   },
+  // where a tab dragged onto the strip would land
+  caret: {
+    position: 'absolute',
+    pointerEvents: 'none',
+    zIndex: 1,
+    top: 0,
+    width: 2,
+    height: dv.tabsHeight,
+    background: dv.edgeDockIndicatorColor,
+  },
 }))
 
 interface PanelViewProps {
@@ -112,7 +122,8 @@ interface PanelViewProps {
   /** the panel's own buttons — new tab, split, close */
   renderPanelActions?: (panel: PanelNode) => React.ReactNode
   dragHandlers: TabDragHandlers
-  dropZone?: DropZone
+  /** where an in-flight drag would land in THIS cell, if it is over this one */
+  drop?: DropTarget
 }
 
 /**
@@ -130,7 +141,7 @@ export const PanelView = observer(function PanelView({
   renderTabContent,
   renderPanelActions,
   dragHandlers,
-  dropZone,
+  drop,
 }: PanelViewProps) {
   const { classes } = useStyles()
   const active =
@@ -254,11 +265,19 @@ export const PanelView = observer(function PanelView({
         {active ? renderTabContent(active) : null}
       </div>
 
-      {dropZone ? (
+      {drop?.strip ? (
+        // a caret in the strip, not a wash over half the cell: the drop is
+        // between two tabs and shading the panel would say the wrong thing
         <div
-          data-drop-indicator={dropZone}
+          data-drop-caret={drop.strip.index}
+          className={classes.caret}
+          style={{ left: drop.strip.left }}
+        />
+      ) : drop ? (
+        <div
+          data-drop-indicator={drop.zone}
           className={classes.indicator}
-          style={indicatorRect(dropZone)}
+          style={indicatorRect(drop.zone)}
         />
       ) : null}
     </div>

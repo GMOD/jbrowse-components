@@ -246,6 +246,98 @@ describe('views and tabs', () => {
     expect(target.activeTabId).toBe(movedTab)
   })
 
+  // `index` counts the strip the USER is looking at, which is the tree before
+  // the move. Within one panel that differs from the post-removal ordering
+  // exactly when the tab starts to the left of the gap it was dropped in, and
+  // getting it wrong lands the tab one place too far right — the classic
+  // remove-then-insert off-by-one, and invisible until a UI passed an index.
+  describe('reordering within one panel', () => {
+    const threeTabs = (): PanelNode => ({
+      id: 'p1',
+      size: 1,
+      tabs: [
+        { id: 'a', viewIds: ['v1'] },
+        { id: 'b', viewIds: ['v2'] },
+        { id: 'c', viewIds: ['v3'] },
+      ],
+      activeTabId: 'a',
+    })
+    const order = (tree: LayoutTree) => (tree as PanelNode).tabs.map(t => t.id)
+
+    test('a tab dragged rightwards lands in the gap it was dropped in', () => {
+      // the gap between b and c is index 2 on screen
+      expect(order(moveTabToPanel(threeTabs(), 'a', 'p1', 2))).toEqual([
+        'b',
+        'a',
+        'c',
+      ])
+    })
+
+    test('a tab dragged leftwards needs no adjustment', () => {
+      expect(order(moveTabToPanel(threeTabs(), 'c', 'p1', 1))).toEqual([
+        'a',
+        'c',
+        'b',
+      ])
+    })
+
+    test('dropping a tab in its own gap leaves the order alone', () => {
+      expect(order(moveTabToPanel(threeTabs(), 'b', 'p1', 1))).toEqual([
+        'a',
+        'b',
+        'c',
+      ])
+      expect(order(moveTabToPanel(threeTabs(), 'b', 'p1', 2))).toEqual([
+        'a',
+        'b',
+        'c',
+      ])
+    })
+
+    test('the ends are reachable', () => {
+      expect(order(moveTabToPanel(threeTabs(), 'c', 'p1', 0))).toEqual([
+        'c',
+        'a',
+        'b',
+      ])
+      expect(order(moveTabToPanel(threeTabs(), 'a', 'p1', 3))).toEqual([
+        'b',
+        'c',
+        'a',
+      ])
+    })
+
+    test('an index past the end clamps rather than leaving a hole', () => {
+      expect(order(moveTabToPanel(threeTabs(), 'a', 'p1', 99))).toEqual([
+        'b',
+        'c',
+        'a',
+      ])
+      expect(order(moveTabToPanel(threeTabs(), 'a', 'p1', -5))).toEqual([
+        'a',
+        'b',
+        'c',
+      ])
+    })
+
+    // Across panels there is no shift: removing the tab does not disturb the
+    // target's ordering, so the index means what it says.
+    test('moving into another panel inserts at the index as given', () => {
+      const split = splitPanel(threeTabs(), 'p1', 'row', {
+        id: 'p2',
+        size: 1,
+        tabs: [
+          { id: 'x', viewIds: ['v4'] },
+          { id: 'y', viewIds: ['v5'] },
+        ],
+        activeTabId: 'x',
+      })
+      const result = moveTabToPanel(split, 'a', 'p2', 1)
+      const target = panels(result).find(p => p.id === 'p2')!
+      expect(target.tabs.map(t => t.id)).toEqual(['x', 'a', 'y'])
+    })
+  })
+
   test('adding a view twice is a no-op', () => {
     const base = panel('p1')
     const tabId = base.tabs[0]!.id

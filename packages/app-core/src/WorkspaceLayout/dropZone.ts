@@ -17,6 +17,24 @@ export interface Rect {
 }
 
 /**
+ * Where a drop would land. `zone` alone says which half of a cell; `strip` is
+ * set when the pointer is on the tab strip itself, which is a finer answer than
+ * `center` — that one appends, this one says where in the order.
+ */
+export interface DropTarget {
+  zone: DropZone
+  strip?: StripDrop
+}
+
+/** A drop on the strip: the position in the tab order, and where to draw it. */
+export interface StripDrop {
+  /** insertion index into the target panel's tabs, as they are ordered NOW */
+  index: number
+  /** x of that gap, in the same space as the rects it was computed from */
+  left: number
+}
+
+/**
  * `center` means "add as a tab in this panel"; an edge means "split this panel
  * and put the view in the new half".
  *
@@ -56,6 +74,31 @@ export function dropZoneAt(
   return depths.reduce((best, candidate) =>
     candidate.depth > best.depth ? candidate : best,
   ).zone
+}
+
+/**
+ * Which gap between tabs a pointer at `x` is nearest — the insertion index a
+ * drop there would use, and the x to draw the caret at.
+ *
+ * The test is each tab's MIDPOINT rather than its edges, so every x belongs to
+ * exactly one gap and there is no dead band between tabs where a drop would
+ * have to fall back to appending. `rects` are in strip order and `x` is in
+ * their coordinate space, whatever that is — this function does not know
+ * whether it was handed viewport or panel-relative numbers.
+ *
+ * An empty strip is index 0, which is the only sensible place for a first tab.
+ */
+export function stripDropAt(rects: Rect[], x: number): StripDrop {
+  for (const [i, rect] of rects.entries()) {
+    if (x < rect.left + rect.width / 2) {
+      return { index: i, left: rect.left }
+    }
+  }
+  const last = rects.at(-1)
+  return {
+    index: rects.length,
+    left: last ? last.left + last.width : 0,
+  }
 }
 
 /**

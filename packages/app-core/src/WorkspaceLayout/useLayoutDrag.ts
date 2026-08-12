@@ -1,11 +1,11 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { dropZoneAt, splitForZone } from './dropZone.ts'
+import { dropZoneAt, splitForZone, stripDropAt } from './dropZone.ts'
 
-import type { DropZone } from './dropZone.ts'
+import type { DropTarget, DropZone } from './dropZone.ts'
 import type { WorkspaceLayout } from './model.ts'
 
-export interface DragState {
+export interface DragState extends DropTarget {
   tabId: string
   panelId: string
   zone: DropZone
@@ -43,18 +43,40 @@ export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
   >(undefined)
 
   const resolveTarget = useCallback((x: number, y: number) => {
-    const panelEl = document
-      .elementsFromPoint(x, y)
-      .find(el => el instanceof HTMLElement && el.dataset.panelId) as
-      | HTMLElement
-      | undefined
+    const under = document.elementsFromPoint(x, y)
+    const panelEl = under.find(
+      el => el instanceof HTMLElement && el.dataset.panelId,
+    ) as HTMLElement | undefined
     if (!panelEl?.dataset.panelId) {
       return undefined
     }
-    return {
-      panelId: panelEl.dataset.panelId,
-      zone: dropZoneAt(panelEl.getBoundingClientRect(), x, y),
+    const panelId = panelEl.dataset.panelId
+    const panelRect = panelEl.getBoundingClientRect()
+
+    // The strip is a finer answer than `center`, and it has to be tested first:
+    // the strip sits inside the panel's top edge band, so `dropZoneAt` alone
+    // reads a drop between two tabs as "split this cell upwards".
+    const stripEl = under.find(
+      el => el instanceof HTMLElement && 'tabStrip' in el.dataset,
+    ) as HTMLElement | undefined
+    if (stripEl) {
+      // panel-relative, so the caret can be drawn inside the panel's own box
+      const rects = [...stripEl.querySelectorAll('[data-tab-id]')].map(el => {
+        const r = el.getBoundingClientRect()
+        return {
+          left: r.left - panelRect.left,
+          top: r.top - panelRect.top,
+          width: r.width,
+          height: r.height,
+        }
+      })
+      return {
+        panelId,
+        zone: 'center' as const,
+        strip: stripDropAt(rects, x - panelRect.left),
+      }
     }
+    return { panelId, zone: dropZoneAt(panelRect, x, y) }
   }, [])
 
   const onTabPointerDown = useCallback(
@@ -93,6 +115,15 @@ export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
       const current = drag
       setDrag(undefined)
       if (!pending || !current) {
+        return
+      }
+      // a drop on the strip says where in the order; anywhere else appends
+      if (current.strip) {
+        layout.dropTabInPanel(
+          current.tabId,
+          current.panelId,
+          current.strip.index,
+        )
         return
       }
       const split = splitForZone(current.zone)

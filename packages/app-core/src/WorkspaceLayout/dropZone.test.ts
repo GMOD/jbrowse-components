@@ -1,4 +1,9 @@
-import { dropZoneAt, indicatorRect, splitForZone } from './dropZone.ts'
+import {
+  dropZoneAt,
+  indicatorRect,
+  splitForZone,
+  stripDropAt,
+} from './dropZone.ts'
 
 const rect = { left: 0, top: 0, width: 400, height: 200 }
 
@@ -57,6 +62,50 @@ describe('splitForZone', () => {
 
   test('center is not a split', () => {
     expect(splitForZone('center')).toBeUndefined()
+  })
+})
+
+describe('stripDropAt', () => {
+  // three 100px tabs in a row, so the midpoints are at 50, 150 and 250
+  const tabs = [
+    { left: 0, top: 0, width: 100, height: 35 },
+    { left: 100, top: 0, width: 100, height: 35 },
+    { left: 200, top: 0, width: 100, height: 35 },
+  ]
+
+  test('the left half of a tab inserts before it, the right half after', () => {
+    expect(stripDropAt(tabs, 10).index).toBe(0)
+    expect(stripDropAt(tabs, 49).index).toBe(0)
+    expect(stripDropAt(tabs, 51).index).toBe(1)
+    expect(stripDropAt(tabs, 149).index).toBe(1)
+    expect(stripDropAt(tabs, 151).index).toBe(2)
+  })
+
+  test('past the last tab is the end', () => {
+    expect(stripDropAt(tabs, 260).index).toBe(3)
+    expect(stripDropAt(tabs, 5000).index).toBe(3)
+  })
+
+  // The midpoint test is what makes this total: every x belongs to exactly one
+  // gap, so there is no band between two tabs where a drop has to fall back to
+  // appending — which is what "drop anywhere on the strip" would degrade to.
+  test('every position on the strip resolves to a gap', () => {
+    for (let x = -50; x < 350; x += 7) {
+      const { index } = stripDropAt(tabs, x)
+      expect(index).toBeGreaterThanOrEqual(0)
+      expect(index).toBeLessThanOrEqual(tabs.length)
+    }
+  })
+
+  test('the caret is drawn at the gap, not at the pointer', () => {
+    expect(stripDropAt(tabs, 10).left).toBe(0)
+    expect(stripDropAt(tabs, 120).left).toBe(100)
+    // after the last tab, the caret sits at its trailing edge
+    expect(stripDropAt(tabs, 400).left).toBe(300)
+  })
+
+  test('an empty strip takes the tab at index 0', () => {
+    expect(stripDropAt([], 40)).toEqual({ index: 0, left: 0 })
   })
 })
 

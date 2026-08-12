@@ -57,18 +57,44 @@ const Harness = observer(function Harness({
   )
 })
 
+const NO_RECT = { left: 0, top: 0, width: 0, height: 0 } as DOMRect
+
+/**
+ * Rects are keyed by panel id, `strip:<panelId>` and `tab:<tabId>`. A key that
+ * is absent measures zero, which is how the tests that only care about panel
+ * bodies opt out of the strip entirely — a zero-width strip contains no point,
+ * so `elementsFromPoint` never reports one and the drag takes the panel path.
+ */
 function stubGeometry(rects: Record<string, DOMRect>) {
+  const rectFor = (el: HTMLElement) => {
+    if (el.dataset.panelId) {
+      return rects[el.dataset.panelId]
+    }
+    if (el.dataset.tabId) {
+      return rects[`tab:${el.dataset.tabId}`]
+    }
+    if ('tabStrip' in el.dataset) {
+      const panelId = el
+        .closest('[data-panel-id]')
+        ?.getAttribute('data-panel-id')
+      return panelId ? rects[`strip:${panelId}`] : undefined
+    }
+    return undefined
+  }
+
   Element.prototype.getBoundingClientRect = function () {
-    const id = (this as HTMLElement).dataset.panelId
-    return (
-      (id && rects[id]) || ({ left: 0, top: 0, width: 0, height: 0 } as DOMRect)
-    )
+    return rectFor(this as HTMLElement) ?? NO_RECT
   }
   document.elementsFromPoint = (x: number, y: number) =>
-    [...document.querySelectorAll('[data-panel-id]')].filter(el => {
-      const r = rects[(el as HTMLElement).dataset.panelId!]
+    [
+      ...document.querySelectorAll(
+        '[data-panel-id],[data-tab-strip],[data-tab-id]',
+      ),
+    ].filter(el => {
+      const r = rectFor(el as HTMLElement)
       return (
         !!r &&
+        r.width > 0 &&
         x >= r.left &&
         x <= r.left + r.width &&
         y >= r.top &&
@@ -214,6 +240,111 @@ test('the tab menu opens on click', () => {
 
   expect(screen.getByText('Rename tab')).toBeTruthy()
   expect(screen.getByText('Close tab')).toBeTruthy()
+})
+
+// Reordering tabs by dragging within a strip. The model could already do this
+// — `dropTabInPanel` has taken an `index` since it was written, and passed it
+// to `moveTabToPanel` — but nothing ever supplied one, so a tab dragged onto
+// its own strip went to the end. The missing half was the geometry: which GAP
+// the pointer is over, which `dropZoneAt` has no vocabulary for.
+describe('reordering within a strip', () => {
+  // 3 tabs of 100px in the left panel's strip, which is its top 35px
+  function setupStrip() {
+    const session = TestSession.create({ name: 't' })
+    const left = session.panels[0]!.id
+    const a = session.tabs[0]!.id
+    session.addViewToTab(a, 'view-1')
+    const b = session.addTab(left, ['view-2'])!.id
+    const c = session.addTab(left, ['view-3'])!.id
+
+    stubGeometry({
+      [left]: { left: 0, top: 0, width: 400, height: 400 } as DOMRect,
+      [`strip:${left}`]: { left: 0, top: 0, width: 400, height: 35 } as DOMRect,
+      [`tab:${a}`]: { left: 0, top: 0, width: 100, height: 35 } as DOMRect,
+      [`tab:${b}`]: { left: 100, top: 0, width: 100, height: 35 } as DOMRect,
+      [`tab:${c}`]: { left: 200, top: 0, width: 100, height: 35 } as DOMRect,
+    })
+    render(<Harness session={session} />)
+    const order = () => session.panels[0]!.tabs.map(t => t.id)
+    return { session, left, a, b, c, order }
+  }
+
+  function dragTabTo(tabId: string, x: number, y: number) {
+    const tab = screen.getByTestId(`tab-${tabId}`)
+    act(() => {
+      fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+      fireEvent.pointerMove(tab, { clientX: x, clientY: y })
+    })
+    return {
+      drop: () => {
+        act(() => {
+          fireEvent.pointerUp(tab, { clientX: x, clientY: y })
+        })
+      },
+    }
+  }
+
+  test('a tab dropped between two others lands between them', () => {
+    const { a, b, c, order } = setupStrip()
+    expect(order()).toEqual([a, b, c])
+
+    // c spans 200..300, so its midpoint is 250 and x=220 is in its left half:
+    // the gap BEFORE c, index 2 of the strip as it stands
+    dragTabTo(a, 220, 10).drop()
+
+    expect(order()).toEqual([b, a, c])
+  })
+
+  test('a tab dropped past the last one goes to the end', () => {
+    const { a, b, c, order } = setupStrip()
+    dragTabTo(a, 380, 10).drop()
+    expect(order()).toEqual([b, c, a])
+  })
+
+  test('a tab dropped at the start goes first', () => {
+    const { a, b, c, order } = setupStrip()
+    dragTabTo(c, 5, 10).drop()
+    expect(order()).toEqual([c, a, b])
+  })
+
+  test('a tab dropped back in its own gap changes nothing', () => {
+    const { a, b, c, order } = setupStrip()
+    dragTabTo(b, 120, 10).drop()
+    expect(order()).toEqual([a, b, c])
+  })
+
+  // A caret, not the half-panel wash: the drop is between two tabs, and shading
+  // half the cell would say it splits.
+  test('the strip shows a caret at the gap rather than a split indicator', () => {
+    const { a } = setupStrip()
+    const dragging = dragTabTo(a, 220, 10)
+
+    const caret = document.querySelector('[data-drop-caret]')
+    expect(caret).toBeTruthy()
+    expect(caret!.getAttribute('data-drop-caret')).toBe('2')
+    expect((caret as HTMLElement).style.left).toBe('200px')
+    expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+    dragging.drop()
+    expect(document.querySelector('[data-drop-caret]')).toBeNull()
+  })
+
+  // The strip sits inside the panel's own top edge band, so testing the panel
+  // first would read every strip drop as "split this cell upwards".
+  test('the strip wins over the top edge band it sits inside', () => {
+    const { a, b, c, session, order } = setupStrip()
+    dragTabTo(a, 220, 10).drop()
+
+    expect(session.panels).toHaveLength(1)
+    expect(order()).toEqual([b, a, c])
+  })
+
+  // Below the strip is the body, and the old behaviour is untouched there.
+  test('a drop below the strip still splits or appends as before', () => {
+    const { a, session } = setupStrip()
+    dragTabTo(a, 380, 200).drop()
+    expect(session.panels).toHaveLength(2)
+  })
 })
 
 test('clicking a tab makes it active without moving anything', () => {

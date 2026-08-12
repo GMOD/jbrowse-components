@@ -59,7 +59,7 @@ export const LayoutRenderer = observer(function LayoutRenderer({
           renderTabContent={renderTabContent}
           renderPanelActions={renderPanelActions}
           dragHandlers={dragHandlers}
-          dropZone={drag?.panelId === node.id ? drag.zone : undefined}
+          drop={drag?.panelId === node.id ? drag : undefined}
         />
       </div>
     )
