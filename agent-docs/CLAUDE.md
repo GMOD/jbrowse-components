@@ -117,3 +117,34 @@ Typecheck the touched packages, `pnpm test <path>`, a browser test when UI
 behavior changed, `pnpm lint --fix`. Regenerate snapshots only after a visually
 verified change. **Then commit it** — done means committed, not left in the
 working tree. Don't push or open a PR unless asked.
+
+**Three CI jobs are gated by nothing in that list** — `pnpm check-format`,
+`pnpm check-docs`, and the spell check (crate-ci/typos, run bare as `typos`).
+None runs under `pnpm test` and none is a lint rule, so a change can be green by
+every measure above and still land red. On 2026-08-12 all three were red on
+`main` at once, and the format failures had arrived on three *different*
+commits, which is what says it was a gate nobody ran rather than one slip. The
+first two take seconds; `check-docs` takes a couple of minutes and earns it only
+when you touched a doc or moved a symbol a doc might name.
+
+**Prefer the cheap decisive check over the browser probe** when the question is
+"does release X have symbol Y". `git ls-remote --tags origin` for the newest tag,
+then `git cat-file -e <tag>:<path>` — `ls-remote`, not local tags, or a checkout
+that has not fetched in a while answers "no release yet" forever.
+
+**Check what your worktree branched from before trusting a gate in it.** The
+root CLAUDE.md says the worktree tool creates it off local `main`; that tool's
+own default base ref is **origin**'s default branch. Those differ by however
+much local `main` is ahead — which, with agents landing locally and nothing
+pushed, is everything done that day. Observed 2026-08-12: a fresh worktree came
+up on an `origin/main` predating a `check-doc-imports` fix, so `pnpm check-docs`
+failed on a reference the fix already accepts, and the natural reading of that
+is "my edit broke it".
+
+    git merge-base --is-ancestor main HEAD && echo ok || git reset --hard main
+
+The same worktree also arrived with an incomplete install — `remark-parse`
+absent at the root, so three of `check-docs`' validators died on
+ERR_MODULE_NOT_FOUND rather than reporting anything. A validator that cannot
+import is not a validator that passed, and the run's summary counts it as a
+failure with no detail. Read the body, not the tally.
