@@ -41,7 +41,7 @@ test('loading again when the viewport leaves loaded data', () => {
 // the phase fell to `ready` the loading overlay — which is what carries the
 // Retry button after a cancel — would unmount, leaving the display stopped and
 // empty with nothing to click and nothing to restart it. See
-// agent-docs/reference/DISPLAYCHROME.md, "The retry affordance is a contract".
+// agent-docs/reference/DISPLAYCHROME.md §"The retry contract".
 test('a user cancel keeps the overlay up even though isLoading is false', () => {
   const { display, view } = createDisplay()
   display.setLoadedRegion(0, view.displayedRegions[0]!)

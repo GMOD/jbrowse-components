@@ -23,7 +23,7 @@ what we now generate, and what we deliberately never will.
 
 Every canvas-drawing display ships two renderers: a `.slang` shader and a
 Canvas2D draw function, the latter load-bearing because SVG export runs it
-(ARCHITECTURE.md, "Canvas2D is the floor; GPU is the optional accelerator").
+(GPU_RENDERING.md §"Canvas2D is the floor").
 Parity between them is kept by construction where possible — `//! export-consts`
 puts a constant in the shader and generates the TS — and by hand-written twins
 where not. There were **27** `SYNC:`-tagged hand-sync sites when this was

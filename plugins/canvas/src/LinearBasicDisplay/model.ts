@@ -102,7 +102,7 @@ export default function stateModelFactory(
       // composes the same model), so `getConf`/`setConf`, which name their slots
       // off `self.configuration`, could only see base slots — a read of
       // `showOnlyGenes`, declared on this schema alone, was a type error. See
-      // core/configuration/CLAUDE.md, "Read type narrowing".
+      // packages/core/src/configuration/CLAUDE.md §"Read type narrowing".
       configuration: ConfigurationReference(configSchema),
     })
     .volatile(() => ({

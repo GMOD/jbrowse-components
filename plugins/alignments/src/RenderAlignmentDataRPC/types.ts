@@ -80,7 +80,7 @@ export interface ModTooltipEntry {
 // contract (which this structurally satisfies), not on the whole struct. Fields
 // group into row-instanced features (carry `*Ys`, packed main-thread post-layout)
 // and position-aggregate features (no `*Ys`, pre-packed in the worker as a
-// `*PackedBuffer`) — see ./CLAUDE.md "Two feature categories".
+// `*PackedBuffer`) — see plugins/alignments/src/RenderAlignmentDataRPC/CLAUDE.md §"Row-instanced vs position-aggregate".
 export interface PileupDataResult {
   // Read data - positions are absolute genomic uint32
   // [start, end] pairs — the read's true alignment span, never clipped to the

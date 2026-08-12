@@ -524,7 +524,7 @@ export default defineConfig(
     },
   },
   // Guards against regressions in the SVG-export pipeline. See
-  // agent-docs/ARCHITECTURE.md "SVG export pipeline (single source of truth)".
+  // agent-docs/ARCHITECTURE.md §"SVG export".
   // Heavy draw paths must go through paintLayer; clipPath wrappers must use
   // SvgClipRect for consistency.
   // NOTE: must come after the global no-restricted-syntax block above so that
@@ -538,12 +538,12 @@ export default defineConfig(
         {
           selector: "NewExpression[callee.name='SvgCanvas']",
           message:
-            'Use paintLayer(width, height, opts, ctx => drawXxxToCtx(ctx, …)) instead of constructing SvgCanvas directly. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
+            'Use paintLayer(width, height, opts, ctx => drawXxxToCtx(ctx, …)) instead of constructing SvgCanvas directly. See agent-docs/ARCHITECTURE.md §"SVG export".',
         },
         {
           selector: "JSXOpeningElement[name.name='clipPath']",
           message:
-            'Use <SvgClipRect> from @jbrowse/plugin-linear-genome-view instead of hand-rolling <defs><clipPath><rect>. See agent-docs/ARCHITECTURE.md "SVG export pipeline".',
+            'Use <SvgClipRect> from @jbrowse/plugin-linear-genome-view instead of hand-rolling <defs><clipPath><rect>. See agent-docs/ARCHITECTURE.md §"SVG export".',
         },
       ],
     },

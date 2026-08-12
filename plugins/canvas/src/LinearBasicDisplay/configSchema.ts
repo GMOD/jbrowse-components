@@ -145,7 +145,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
 // (`LinearVariantDisplayConfigModel` / `…Config`). The schema type is what a
 // state model factory annotates its `configSchema` param with, which is the
 // only lever that narrows that model's config reads — see
-// core/configuration/CLAUDE.md, "Read type narrowing".
+// packages/core/src/configuration/CLAUDE.md §"Read type narrowing".
 export type LinearBasicDisplayConfigModel = ReturnType<
   typeof configSchemaFactory
 >

@@ -215,7 +215,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const count = decorated.length
   // cumBp (bpBefore + bpOffset, no padding) is whole-assembly cumulative-bp,
   // held in Float64 (exact to 2^53) — unbounded by uint32; a 16 Gbp assembly is
-  // fine. See agent-docs/ARCHITECTURE.md "Genome-size limits".
+  // fine. See agent-docs/reference/BP_PRECISION.md §"Genome-size limits".
   const p11Array = new Float64Array(count)
   const p12Array = new Float64Array(count)
   const p21Array = new Float64Array(count)

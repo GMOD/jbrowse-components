@@ -26,7 +26,8 @@
 //      `AlignmentsFeatureWidget`, or `renderProps` for a method deleted with the
 //      server-side block system) — the fence checks above can't see prose, and
 //      `sync-doc-snippets` only guards fences that opted into an include.
-//   6. Every section citation by quoted title — `SOME_DOC.md §"A heading"` —
+//   6. Every section citation by quoted title — `ARCHITECTURE.md §"Display
+//      stacks"` (a real one: this comment is inside the scan) —
 //      checked so a heading still starts with the quoted text. This is the
 //      checker 4 asks for, and the only reference that runs *from* code *into*
 //      the docs, so it scans source as well as docs.
@@ -773,14 +774,43 @@ const problems = [
 // tree collectSymbols already reads, and only files containing `§` are parsed.
 // `esm/` and `dist/` are build output — they carry a stale copy of every
 // comment until the next build, so checking them reports the previous edit.
-const isSource = (name: string) => /\.tsx?$/.test(name)
+//
+// Same roots and the same net as collectSymbols, for the same stated reason: a
+// citation in `eslint.config.mjs`, `scripts/` or `website/scripts/` is as real
+// as one in a plugin, and the tooling is simply not under a workspace
+// directory. The narrower `packages|plugins|products` × `.tsx?` version missed
+// eight of them — including three in eslint.config.mjs pointing at an
+// "SVG export pipeline" heading that has said "SVG export" for some time, and
+// one in a generated file's source citing "The three readiness axes" against a
+// heading that says two. `.py` is here because a pipeline script cites the
+// graph reference; the parse is a substring test, so the language is irrelevant.
+const isSource = (name: string) => /\.(tsx?|jsx?|mjs|cjs|py)$/.test(name)
 const isBuildOutput = (file: string) =>
   file.includes('/esm/') || file.includes('/dist/')
-for (const base of ['packages', 'plugins', 'products', 'example-plugins']) {
+for (const base of [
+  'packages',
+  'plugins',
+  'products',
+  'example-plugins',
+  'scripts',
+  'website/scripts',
+]) {
   for (const file of walkFiles(join(repoRoot, base), isSource)) {
     if (isBuildOutput(file)) {
       continue
     }
+    const text = readFileSync(file, 'utf8')
+    if (text.includes('§')) {
+      problems.push(...scanSectionCites(file, text.split('\n')))
+    }
+  }
+}
+// Repo-root tooling config, non-recursively — the citation twin of the root
+// scan collectSymbols does. `eslint.config.mjs` carries three citations in
+// rule messages, which is the most read-by-a-human place one can be.
+for (const name of readdirSync(repoRoot)) {
+  const file = join(repoRoot, name)
+  if (isSource(name) && isFile(file)) {
     const text = readFileSync(file, 'utf8')
     if (text.includes('§')) {
       problems.push(...scanSectionCites(file, text.split('\n')))

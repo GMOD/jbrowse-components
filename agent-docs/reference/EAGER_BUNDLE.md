@@ -99,7 +99,7 @@ host, including one that sets `hideHeader`. Now
 `LinearGenomeView/lazyChromeComponents.tsx`.
 
 This is the same anti-pattern `BaseDisplayModel`'s `DisplayMessageComponent`
-getter was deleted for (DISPLAYCHROME.md, "What was deleted with it"). Deleting
+getter was deleted for (DISPLAYCHROME.md §"One element per display"). Deleting
 was not repeated here only because these two are documented `#method` entries an
 external plugin may override; `lazy()` gets the same bytes without the bet.
 

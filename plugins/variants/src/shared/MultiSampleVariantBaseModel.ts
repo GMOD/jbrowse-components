@@ -1013,7 +1013,8 @@ export default function MultiSampleVariantBaseModelF(
          * `sourcesBase` keep their `undefined`, because there it is genuinely
          * load-bearing: `sampleFilter` and `fetchNeeded` both read
          * `sourcesBase`, and its `undefined` → list transition is what wakes the
-         * fetch autorun (ARCHITECTURE.md, "the per-region twin"). Nothing reads
+         * fetch autorun (ARCHITECTURE.md §"The global-fetch trigger list must
+         * be read unconditionally"). Nothing reads
          * *this* getter for that — every consumer immediately collapsed the
          * absent case with `?.length`, `?? []` or `?? 0`, so the option was
          * about eighteen defensive reads and no decision.

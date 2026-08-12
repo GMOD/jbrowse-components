@@ -39,7 +39,7 @@ const DisplayStatusOverlays = observer(function DisplayStatusOverlays({
             // `onReset` is the display's own `reload()` (SyntenyFetchStateMixin),
             // not a page refresh: a PAF/adapter failure here used to render a
             // banner with no button at all, so the only way out was reloading the
-            // tab. See DISPLAYCHROME.md, "The retry affordance is a contract".
+            // tab. See DISPLAYCHROME.md §"The retry contract".
             <div className={classes.interactive}>
               <ErrorBanner
                 error={display.error}

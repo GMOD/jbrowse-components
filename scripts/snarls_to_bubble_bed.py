@@ -8,7 +8,7 @@ for — but its only producer was `gfatools bubble`, and that returns **0 bubble
 on a pggb GFA**: it reads rGFA `SN`/`SO`/`SR` to place a bubble on a reference,
 and a pggb graph states the same information in P/W lines instead. So the graph
 that most needs coarsening was the one that could not be coarsened
-(reference/PANGENOME_GRAPHS.md, "Level of detail: one node per bubble").
+(PANGENOME_GRAPHS.md §"Level of detail: one node per bubble").
 
 A snarl VCF is the decomposition that graph already ships, and it carries more
 than gfatools' does:

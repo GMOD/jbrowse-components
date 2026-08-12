@@ -16,7 +16,7 @@ once and the main thread uploads the bytes verbatim.
 The renderer's per-region metadata (`regionMeta`) is derived separately from the
 uploads rather than as a side effect of one of them, because a region whose
 payload is unchanged still needs the metadata while skipping every pack — see
-GPU_RENDERING.md, "skipping a region inside the rebuild transaction".
+GPU_RENDERING.md §"Whole-map synced".
 
 ## Group-by
 

@@ -923,7 +923,7 @@ formats) if these prove insufficient.
 builds an image showing read pairs, read depth, and L/R–R/L pairs as a matrix — could
 this be shown as a triangular heatmap (like `plugins/hic`) or in dotplot?
 
-### Synteny featureId instance ceiling (documented, deferred — see ARCHITECTURE.md "Genome-size limits")
+### Synteny featureId instance ceiling (documented, deferred — see BP_PRECISION.md §"Genome-size limits")
 
 One ceiling left in the synteny GPU path, and it is not a coordinate one. It
 does not affect wheat (16 Gbp) or any common genome, and is left unfixed as

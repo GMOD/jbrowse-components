@@ -603,7 +603,7 @@ fetch that found no rows, and the render callback's first-paint gate must open
 for the second (`emptyRegionLoading.test.ts`). The load-bearing `undefined`
 stays where it always was, on `sourcesVolatile` / `sourcesBase` — `sampleFilter`
 and `fetchNeeded` read those, and the `undefined` → list transition is what
-wakes the fetch autorun (ARCHITECTURE.md, "the per-region twin").
+wakes the fetch autorun (ARCHITECTURE.md §"The global-fetch trigger list").
 
 Still per display:
 

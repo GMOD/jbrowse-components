@@ -112,8 +112,8 @@ export function SyntenyFetchStateMixin() {
       /**
        * #action
        * Re-run the fetch. The display's half of the retry contract
-       * (agent-docs/reference/DISPLAYCHROME.md, "The retry affordance is a
-       * contract"): every state that can raise an error banner must be one this
+       * (agent-docs/reference/DISPLAYCHROME.md §"The retry contract"): every
+       * state that can raise an error banner must be one this
        * actually undoes. Clearing the error is not enough on its own — the
        * autorun re-clears it at the start of each run anyway — so this bumps a
        * counter the autorun tracks, which is what makes the refetch happen.

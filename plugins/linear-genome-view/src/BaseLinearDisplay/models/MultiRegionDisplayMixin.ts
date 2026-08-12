@@ -196,8 +196,9 @@ export default function MultiRegionDisplayMixin() {
          * currently exists. Any display defining a feature-lookup method
          * (`searchFeatureByID`, `getFeatureById`) must override it, so callers can
          * tell "laid out, but off-display" from "no layout exists yet" — a
-         * distinction only the display can make. See BaseLinearDisplay/CLAUDE.md,
-         * "The three readiness axes".
+         * distinction only the display can make. See
+         * plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md §"The two
+         * readiness axes".
          */
         get layoutReady(): boolean {
           // fail-safe: forgetting the override drops overlays (visibly absent)

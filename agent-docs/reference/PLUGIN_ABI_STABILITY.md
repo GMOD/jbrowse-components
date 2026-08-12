@@ -231,7 +231,7 @@ The pre-rip situation, and the graceful path we *didn't* take:
   named here because this file is where the *first* half's removal is recorded:
   an external plugin reaching `LGVPlugin.exports.BaseLinearDisplayComponent` at
   runtime gets `undefined` rather than a deprecation. See
-  reference/DISPLAYCHROME.md, "One element per display", for what replaced it.
+  DISPLAYCHROME.md §"One element per display", for what replaced it.
 
 ---
 
