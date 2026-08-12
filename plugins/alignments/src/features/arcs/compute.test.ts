@@ -403,6 +403,94 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines).toEqual([])
   })
 
+  // The two settings are orthogonal predicates and the menu offers them as
+  // siblings, so either alone has to be able to produce a connection. They were
+  // layered instead — `drawLongRange` gated EMISSION and `drawInter` filtered
+  // the result — and the case that broke is the ordinary one: a view showing a
+  // single chromosome never loads the far mate of a translocation, so unticking
+  // off-screen mates silently unticked inter-chromosomal pairs too.
+  describe('drawInter and drawLongRange are independent gates', () => {
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 },
+    ]
+    // One read on chr1 whose mate is recorded on chr2, and one whose mate is
+    // 8 kb away on chr1 — the two kinds of not-loaded partner, in one fetch, so
+    // each setting's answer is visible against the other's.
+    const offScreenMates = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1100, 2000, 2100]),
+      readFlags: new Uint16Array(2).fill(SAM_FLAG_PAIRED),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([0, 8000]),
+      readPairOrientations: new Uint8Array([0, 1]),
+      readNames: ['translocated', 'farMate'],
+      readNextRefs: ['chr2', 'chr1'],
+      readNextPositions: new Uint32Array([5000, 10000]),
+    })
+    const run = (drawInter: boolean, drawLongRange: boolean) =>
+      computeArcsFromPileupData(new Map([[0, offScreenMates]]), regions, {
+        colorByType: 'insertSizeAndOrientation',
+        drawInter,
+        drawLongRange,
+      })
+
+    test('inter alone still draws the translocation ticks', () => {
+      const { arcs, lines } = run(true, false)
+      // THE REGRESSION: these were empty, because the tick could only be
+      // filtered by `drawInter` after `drawLongRange` had agreed to emit it.
+      expect(lines.map(l => l.x.refName)).toEqual(['chr1', 'chr2'])
+      // and the gate has not leaked — the same-chromosome off-screen mate is
+      // still the other setting's to allow.
+      expect(arcs).toEqual([])
+    })
+
+    test('long-range alone still draws the same-chromosome mate', () => {
+      const { arcs, lines } = run(false, true)
+      expect(arcs.map(a => [a.p1.bp, a.p2.bp])).toEqual([[2000, 10000]])
+      expect(lines).toEqual([])
+    })
+
+    test('both off draws neither', () => {
+      const { arcs, lines } = run(false, false)
+      expect(arcs).toEqual([])
+      expect(lines).toEqual([])
+    })
+
+    test('both on draws both', () => {
+      const { arcs, lines } = run(true, true)
+      expect(arcs.map(a => [a.p1.bp, a.p2.bp])).toEqual([[2000, 10000]])
+      expect(lines.map(l => l.x.refName)).toEqual(['chr1', 'chr2'])
+    })
+  })
+
+  test('a split read reaching another chromosome draws on drawInter alone', () => {
+    // A translocation supported by an SA segment rather than by a mate. It
+    // reaches its far chromosome exactly the way an off-screen mate does, so it
+    // takes the same gate — otherwise "Show inter-chromosomal pairs" had no
+    // split-read evidence to draw whenever off-screen mates were off.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1500]),
+      readFlags: new Uint16Array([0]),
+      readStrands: new Int8Array([1]),
+      readNames: ['splitRead'],
+      readClipAtStart: new Uint32Array([0]),
+      readSuppAlignments: ['chr2,9000,+,500S500M,60,0;'],
+    })
+    const { arcs, lines } = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
+      {
+        colorByType: 'insertSizeAndOrientation',
+        drawInter: true,
+        drawLongRange: false,
+      },
+    )
+
+    expect(arcs).toEqual([])
+    expect(lines.map(l => l.x.refName)).toEqual(['chr1', 'chr2'])
+  })
+
   test('single-region reads with drawLongRange=false are skipped', () => {
     const data = makePileupData({
       regionStart: 1000,

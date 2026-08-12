@@ -476,18 +476,45 @@ function computePairingInfo(rpcDataMap: ReadonlyMap<number, PileupDataResult>) {
 type CanonicalRefName = (refName: string) => string
 
 // Dependencies threaded through pending-arc EMISSION: the normalizer above plus
-// the long-range gate.
+// the two user gates that decide whether a connection to a partner this view has
+// not loaded is worth emitting at all.
 //
 // Chain BUILDING takes only the normalizer, which is why that is the narrower
-// parameter below rather than this bundle. `drawLongRange` decides whether a
-// junction touching an off-screen segment is emitted as an arc; it says nothing
-// about which segments a read has, so a chain builder handed this whole struct
-// had to be given a value for a field it could not read — and `computeReadChains`
-// duly set `drawLongRange: true` under a comment explaining that nothing would
-// look at it.
+// parameter below rather than this bundle. The gates decide whether a junction
+// touching an off-screen segment is emitted as an arc; they say nothing about
+// which segments a read has, so a chain builder handed this whole struct had to
+// be given values for fields it could not read — and `computeReadChains` duly
+// set `drawLongRange: true` under a comment explaining that nothing would look
+// at it.
 interface ArcChainContext {
   drawLongRange: boolean
+  drawInter: boolean
   canonicalRefName: CanonicalRefName
+}
+
+// Whether a connection whose far end is NOT loaded in this view is emitted.
+//
+// The two settings are orthogonal predicates and the menu offers them as
+// siblings — "Show off-screen mate connections" is about a partner this view has
+// not loaded, "Show inter-chromosomal pairs" about one on another chromosome —
+// so either alone has to be able to produce a connection. They were layered
+// instead: `drawLongRange` gated EMISSION here and `drawInter` filtered the
+// result in `resolveArcs`, which is an AND wearing the costume of an OR.
+//
+// The case it broke is the ordinary one. A view showing a single chromosome
+// never loads the far mate of a translocation, so unticking off-screen mates
+// also silently unticked inter-chromosomal pairs: the connector ticks vanished
+// while their own checkbox stayed on. Both slots default true, which is why it
+// survived — it takes turning one off to see the other stop working.
+//
+// `drawInter` still filters in `resolveArcs`, so the OR here cannot smuggle an
+// interchromosomal connection past a user who turned it off; this only stops the
+// other gate from suppressing one first.
+function emitsOffScreenPartner(
+  ctx: ArcChainContext,
+  interchromosomal: boolean,
+) {
+  return ctx.drawLongRange || (ctx.drawInter && interchromosomal)
 }
 
 function entrySeg(entry: ReadEntry): SegAln {
@@ -633,9 +660,13 @@ function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
 // read-trailing (3') edge to the next segment's read-leading (5') edge — so a
 // fwd→rev inversion joins at the breakpoint, not the far edge of the reverse
 // segment. A junction between two on-screen segments always draws; one touching
-// an off-screen segment is a long-range connection, drawn only when those are
-// enabled — this is also what suppresses a misleading direct join across an
-// off-screen segment (the flanking pair are not actually read-adjacent).
+// an off-screen segment is a connection to something this view has not loaded,
+// emitted on `emitsOffScreenPartner` — this is also what suppresses a misleading
+// direct join across an off-screen segment (the flanking pair are not actually
+// read-adjacent). A translocation supported by a split read reaches its far
+// chromosome exactly the way an off-screen mate does, so it takes the same gate:
+// dropping it whenever off-screen mates were off left "Show inter-chromosomal
+// pairs" with no split-read evidence to draw.
 function unpairedChainArcs(
   entries: ReadEntry[],
   ctx: ArcChainContext,
@@ -645,7 +676,10 @@ function unpairedChainArcs(
   for (let j = 0; j < chain.length - 1; j++) {
     const a1 = chain[j]!
     const a2 = chain[j + 1]!
-    if ((a1.onScreen && a2.onScreen) || ctx.drawLongRange) {
+    if (
+      (a1.onScreen && a2.onScreen) ||
+      emitsOffScreenPartner(ctx, a1.refName !== a2.refName)
+    ) {
       arcs.push(splitJunctionArc(a1, a2))
     }
   }
@@ -699,11 +733,13 @@ function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
 
 // The link to a mate that isn't on screen: only RNEXT/PNEXT locate it, so this
 // is the one connection kind the bezier overlay can't draw and the arc path can.
-// Gated on `drawLongRange` (the "show off-screen mate connections" setting) and
-// on the mate actually having a locus — an unmapped mate has none, and neither
-// does a record that claims a mapped mate while naming RNEXT `*` / PNEXT 0
-// (BAM next_refid -1). Substituting this read's own refName and bp 0 there drew
-// a full-chromosome arc down to the origin.
+// Gated on `emitsOffScreenPartner` — either user setting can ask for it, and a
+// translocation seen from a single-chromosome view has ONLY this path, which is
+// why "Show inter-chromosomal pairs" is one of the two — and on the mate
+// actually having a locus: an unmapped mate has none, and neither does a record
+// that claims a mapped mate while naming RNEXT `*` / PNEXT 0 (BAM next_refid
+// -1). Substituting this read's own refName and bp 0 there drew a
+// full-chromosome arc down to the origin.
 //
 // The arc connects the read's own outer (5') edge — the fragment boundary TLEN
 // measures from — to the recorded mate position. Only PNEXT (the mate's
@@ -719,7 +755,14 @@ function offScreenMateArcs(
   const mateRef = data.readNextRefs?.[readIdx]
   const mateBp = data.readNextPositions?.[readIdx]
   const mateUnmapped = (flagsOf(entry) & SAM_FLAG_MATE_UNMAPPED) !== 0
-  if (!ctx.drawLongRange || mateUnmapped || !mateRef || !mateBp) {
+  if (mateUnmapped || !mateRef || !mateBp) {
+    return []
+  }
+  // Normalized before the comparison, not after: an SA/RNEXT `chr1` against a
+  // fetched `1` is the same chromosome, and asking the gate with the raw name
+  // would call every aliased mate a translocation.
+  const mateCanonRef = ctx.canonicalRefName(mateRef)
+  if (!emitsOffScreenPartner(ctx, mateCanonRef !== refName)) {
     return []
   }
   const strand = strandOf(entry)
@@ -729,7 +772,7 @@ function offScreenMateArcs(
       p1Ref: refName,
       p1Bp: readLeadingBp(strand, start, end),
       p1Strand: strand,
-      p2Ref: ctx.canonicalRefName(mateRef),
+      p2Ref: mateCanonRef,
       p2Bp: mateBp,
       p2Strand: flagsOf(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1,
       pairOrientationNum: data.readPairOrientations[readIdx]!,
@@ -787,6 +830,7 @@ function collectArcInputs(
   const { hasPaired, stats } = computePairingInfo(rpcDataMap)
   const pendingArcs = collectPendingArcs(readsByName, {
     drawLongRange: settings.drawLongRange,
+    drawInter: settings.drawInter,
     canonicalRefName: settings.canonicalRefName ?? (refName => refName),
   })
   return { pendingArcs, hasPaired, stats }

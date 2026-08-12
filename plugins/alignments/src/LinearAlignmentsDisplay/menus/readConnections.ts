@@ -104,7 +104,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           },
           {
             helpText:
-              'draw an arc to a read whose mate is not loaded in the current view (off-screen or on another chromosome); the arc renders as vertical lines at this zoom',
+              'draw an arc to a read whose mate is elsewhere on this chromosome and not loaded in the current view; the arc renders as vertical lines at this zoom. Inter-chromosomal partners have their own setting below and do not need this one.',
           },
         ),
         checkboxItem(
@@ -113,7 +113,10 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           () => {
             model.setDrawInter(!model.drawInter)
           },
-          { helpText: 'reads whose mate maps to a different chromosome' },
+          {
+            helpText:
+              'reads whose mate — or split-read segment — maps to a different chromosome, drawn as a connector tick at each breakpoint. Independent of the setting above: a single-chromosome view never loads the far end of a translocation, so this one has to be able to draw it on its own.',
+          },
         ),
         checkboxItem(
           'Debug: show arc geometry',
