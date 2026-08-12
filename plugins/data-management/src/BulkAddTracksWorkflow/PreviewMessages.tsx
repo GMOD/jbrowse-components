@@ -1,7 +1,6 @@
+import { pluralize } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { plural } from './util.ts'
 
 const PreviewMessages = observer(function PreviewMessages({
   orphanIndexCount,
@@ -16,9 +15,9 @@ const PreviewMessages = observer(function PreviewMessages({
     <>
       {orphanIndexCount > 0 ? (
         <Typography variant="body2" color="textSecondary">
-          {orphanIndexCount} index {plural(orphanIndexCount, 'file', 'files')}{' '}
-          had no matching data file and{' '}
-          {plural(orphanIndexCount, 'was', 'were')} ignored
+          {orphanIndexCount} index {pluralize(orphanIndexCount, 'file')} had no
+          matching data file and {pluralize(orphanIndexCount, 'was', 'were')}{' '}
+          ignored
         </Typography>
       ) : null}
       {warnings.map(warning => (
@@ -28,7 +27,7 @@ const PreviewMessages = observer(function PreviewMessages({
       ))}
       {skippedCount > 0 ? (
         <Typography variant="body2" color="error">
-          {skippedCount} {plural(skippedCount, 'row', 'rows')} with unrecognized
+          {skippedCount} {pluralize(skippedCount, 'row')} with unrecognized
           types will not be added
         </Typography>
       ) : null}

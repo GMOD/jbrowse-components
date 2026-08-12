@@ -1,5 +1,5 @@
 import { FileDropZone } from '@jbrowse/core/ui'
-import { fileToLocation } from '@jbrowse/core/util'
+import { fileToLocation, pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -43,7 +43,7 @@ const DropZone = observer(function DropZone({
           }}
         >
           Clear {localLocations.length}{' '}
-          {localLocations.length === 1 ? 'file' : 'files'}
+          {pluralize(localLocations.length, 'file')}
         </Button>
       ) : null}
     </div>

@@ -1,9 +1,9 @@
-import { getSession } from '@jbrowse/core/util'
+import { getSession, pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { plural, submitBulkTracks } from './util.ts'
+import { submitBulkTracks } from './util.ts'
 
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
 import type { NamedRow } from './util.ts'
@@ -39,7 +39,7 @@ const SubmitTracksButton = observer(function SubmitTracksButton({
         }
       }}
     >
-      Add {okNamed.length} {plural(okNamed.length, 'track', 'tracks')}
+      Add {okNamed.length} {pluralize(okNamed.length, 'track')}
     </Button>
   )
 })

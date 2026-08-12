@@ -16,14 +16,18 @@ export function truncateMiddle(str: string, maxLen = 40) {
   return `${str.slice(0, half)}...${str.slice(-half)}`
 }
 
-// Regular-plural noun for a count, for the "N hidden features" / "Clear N
-// highlights" family of labels. Takes the count rather than returning a bare
-// suffix so the call site reads as the sentence it produces, and so `0` pairs
-// with the plural ("0 features") the way English does — the hand-written
-// `n > 1 ? 's' : ''` scattered around got that right only because every one of
-// those labels was already gated on n > 0.
-export function pluralize(count: number, noun: string) {
-  return count === 1 ? noun : `${noun}s`
+// Plural noun for a count, for the "N hidden features" / "Clear N highlights"
+// family of labels. Takes the count rather than returning a bare suffix so the
+// call site reads as the sentence it produces, and so `0` pairs with the plural
+// ("0 features") the way English does — the hand-written `n > 1 ? 's' : ''`
+// scattered around got that right only because every one of those labels was
+// already gated on n > 0.
+//
+// `plural` covers the irregular pairs the same sentences run into once the noun
+// is not the only word that inflects — `pluralize(n, 'was', 'were')`,
+// `pluralize(n, 'URL is', 'URLs are')` — so those don't grow a second helper.
+export function pluralize(count: number, noun: string, plural = `${noun}s`) {
+  return count === 1 ? noun : plural
 }
 
 // Sentence-case a noun that arrives lowercase because it also appears
