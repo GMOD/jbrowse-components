@@ -89,6 +89,13 @@ description: The shared display status chrome that owns loading, error, and retr
   `renderSvg` reaches `SvgChrome`, the narrower export-side gate, and the same
   `—` row would appear for one that stopped. Two chromes, two columns, one list —
   because on-screen and export drift independently.
+- **The export side tolerates absence; the on-screen side does not.**
+  `renderSvg` is optional (`SvgExportTrack`), and a display without one is
+  dropped from the export the way a minimized track is, with the user notified
+  which tracks were left out — so a third-party display that never wrote one
+  costs itself a place in figures instead of breaking export for every track in
+  the session. Every in-tree LGV display still has one, which is what makes a
+  `—` in the last column here a regression rather than a choice.
 - **One element per display**, carrying a stable `data-testid` plus
   `data-display-id`, `data-display-drawn` and `data-display-phase` — one
   question each (ADR-065). `testid` is required, no display bypasses the chrome,
