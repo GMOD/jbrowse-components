@@ -2,6 +2,7 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
+  SAM_FLAG_SUPPLEMENTARY,
   splitJunctionKind,
 } from '@jbrowse/alignments-core'
 import {
@@ -639,8 +640,37 @@ function pairOuterBp(entry: ReadEntry) {
   return readLeadingBp(entryStrand(entry), start, end)
 }
 
+// Which endpoint of a mate link the PAIR-LEVEL fields (orientation, template
+// length) are read off. Geometry always comes from the two segments actually
+// drawn; these two do not, because they describe the fragment rather than the
+// segment, and a supplementary's own record answers them differently.
+//
+// `pair_orientation` is derived (in @gmod/bam) from the record's own reverse bit
+// and its own position, so a supplementary that flipped strand at the split
+// junction — or that simply sits on the other side of its mate — computes a
+// different orientation from its primary, while the two PRIMARIES of a pair
+// always agree (the table maps read1's and read2's flag/position combinations
+// onto the same string). Preferring a primary is therefore a no-op whenever both
+// are on screen, which is the overwhelming majority, and only bites in the case
+// it exists for: a mate whose primary is off-screen, so `primaryOf` handed this
+// its supplementary segment instead.
+//
+// The same rule the read FILLS already follow — `buildChainResultFields` exists
+// to overwrite a supplementary's `readPairOrientations` entry with the chain
+// primary's, "rather than the divergent one their own strand-flipped record
+// computes". Arcs read that array too, so in chain mode they were already
+// getting the corrected value and in pileup mode they were not: the same reads,
+// the same locus, a different arc colour depending on a layout setting.
+function pairFieldSource(e1: ReadEntry, e2: ReadEntry) {
+  return isSupplementaryEntry(e1) && !isSupplementaryEntry(e2) ? e2 : e1
+}
+
+function isSupplementaryEntry(e: ReadEntry) {
+  return (entryFlags(e) & SAM_FLAG_SUPPLEMENTARY) !== 0
+}
+
 // The mate link between the two reads of one pair, sourcing orientation and
-// template length from the first read's primary.
+// template length from a primary segment (see `pairFieldSource`).
 //
 // Split junctions do not come through here. The arc path chains a read's
 // segments as `SegAln`s so it can walk off-screen SA records, and
@@ -657,6 +687,7 @@ function pairOuterBp(entry: ReadEntry) {
 // both mates' own lengths, so the dome's width silently disagreed with the TLEN
 // driving its color.
 function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
+  const src = pairFieldSource(e1, e2)
   return {
     p1Ref: e1.refName,
     p1Bp: pairOuterBp(e1),
@@ -665,8 +696,8 @@ function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
     p2Bp: pairOuterBp(e2),
     p2Strand: entryStrand(e2),
     isSplit: false,
-    pairOrientationNum: e1.data.readPairOrientations[e1.readIdx]!,
-    tlen: e1.data.readInsertSizes[e1.readIdx]!,
+    pairOrientationNum: src.data.readPairOrientations[src.readIdx]!,
+    tlen: src.data.readInsertSizes[src.readIdx]!,
   }
 }
 

@@ -1908,3 +1908,98 @@ describe('identical arcs coalesce and carry their support', () => {
     ])
   })
 })
+
+// A mate link's GEOMETRY comes from the two segments actually on screen, but its
+// pair-level fields (orientation, template length) describe the fragment. A
+// supplementary answers those differently from its own primary — @gmod/bam
+// derives `pair_orientation` from the record's own reverse bit and position —
+// while the two PRIMARIES of a pair always agree. So sourcing them from a
+// primary is a no-op whenever both are on screen, and only bites when a mate's
+// primary is off-screen and `primaryOf` fell back to its supplementary segment.
+//
+// This is the rule the read fills already follow: `buildChainResultFields`
+// overwrites a supplementary's `readPairOrientations` entry with the chain
+// primary's. Arcs read that same array, so in CHAIN mode the correction was
+// already applied upstream and in pileup mode it was not — the same reads at the
+// same locus painting a different arc colour depending on a layout setting.
+describe('a mate link reads its pair fields off a primary, not a supplementary', () => {
+  const regions = [
+    { refName: 'chr1', start: 0, end: 10000, displayedRegionIndex: 0 },
+  ]
+
+  // read1's primary is off-screen, so only its supplementary segment is loaded;
+  // read2's primary is on screen. The pair is RL (orientation 2); read1's
+  // supplementary, having flipped at the split junction, computes LR (1).
+  const splitMateOffScreenPrimary = makePileupData({
+    regionStart: 0,
+    readPositions: new Uint32Array([1000, 1100, 5000, 5100]),
+    readFlags: new Uint16Array([
+      SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
+      SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+    ]),
+    readStrands: new Int8Array([1, -1]),
+    readInsertSizes: new Float32Array([0, 4100]),
+    readPairOrientations: new Uint8Array([1, 2]),
+    readNames: ['readA', 'readA'],
+  })
+
+  test('orientation comes from the primary mate (RL), not the supplementary (LR)', () => {
+    const { arcs } = computeArcsFromPileupData(
+      new Map([[0, splitMateOffScreenPrimary]]),
+      regions,
+      { colorByType: 'orientation', drawInter: false, drawLongRange: false },
+    )
+    expect(arcs).toHaveLength(1)
+    // COLOR_PAIR_RL. The supplementary's own orientation (1/LR) has no slot and
+    // would have fallen through to COLOR_DEFAULT (0) — the neutral grey that
+    // says "ordinary pair" over exactly the discordant pair the arc exists for.
+    expect(arcs[0]!.colorType).toBe(6)
+  })
+
+  test('template length comes from the primary mate, so insert-size colour is not lost', () => {
+    const withStats = {
+      ...splitMateOffScreenPrimary,
+      insertSizeStats: { upper: 500, lower: 100 },
+    }
+    const { arcs } = computeArcsFromPileupData(
+      new Map([[0, withStats]]),
+      regions,
+      {
+        colorByType: 'insertSize',
+        drawInter: false,
+        drawLongRange: false,
+      },
+    )
+    expect(arcs).toHaveLength(1)
+    // tlen 4100 > upper 500 → COLOR_LONG_INSERT. The supplementary carries
+    // tlen 0, which `classifyInsertSize` sorts into `normal` (0 is neither above
+    // upper nor inside the open short interval) — so the arc painted the default
+    // over a pair 8x the modal insert.
+    expect(arcs[0]!.colorType).toBe(1)
+  })
+
+  test('is a no-op when both primaries are on screen', () => {
+    // Same pair, both primaries loaded. Each primary already carries the pair's
+    // own orientation, so which endpoint is read makes no difference — this is
+    // the case that must not move.
+    const bothPrimaries = makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array([1000, 1100, 5000, 5100]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ]),
+      readStrands: new Int8Array([1, -1]),
+      readInsertSizes: new Float32Array([4100, 4100]),
+      readPairOrientations: new Uint8Array([2, 2]),
+      readNames: ['readA', 'readA'],
+    })
+    const { arcs } = computeArcsFromPileupData(
+      new Map([[0, bothPrimaries]]),
+      regions,
+      { colorByType: 'orientation', drawInter: false, drawLongRange: false },
+    )
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.colorType).toBe(6)
+  })
+})
