@@ -145,7 +145,13 @@ export default function DiagonalizeDialog({
             >
               Close
             </Button>
-            {state.phase === 'idle' ? (
+            {/* A reorder is a long RPC over remote alignment files, so it
+            fails for reasons that have nothing to do with the request — and
+            the only way back to Start was to close the dialog and pick the
+            menu item again. 'done' keeps the single Close: the reorder it just
+            reported is the state of the view, and a second identical pass over
+            it is work with nothing to find. */}
+            {state.phase === 'idle' || state.phase === 'failed' ? (
               <Button
                 variant="contained"
                 color="primary"
@@ -154,7 +160,7 @@ export default function DiagonalizeDialog({
                   start()
                 }}
               >
-                Start
+                {state.phase === 'failed' ? 'Retry' : 'Start'}
               </Button>
             ) : null}
           </>
