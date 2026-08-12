@@ -1,14 +1,30 @@
 import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 
-import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
+import {
+  buildSyntenyGeometry,
+  markerGridPitch,
+} from './buildSyntenyGeometry.ts'
 import { KIND_BASE, KIND_MARKER } from './syntenyColors.ts'
 
 // Everything here runs at bpPerPx=1 with viewOff=0 on both axes, so cumBp,
 // genomic bp and screen px are all the same number and a marker's position can
 // be read straight off `bp1`. The grid the markers land on is the query view's
-// scalebar grid, which at this scale is:
-const PITCH = chooseGridPitch(1, 120, 15).majorPitch // 200
+// scalebar grid subdivided, which at this scale is:
+const PITCH = markerGridPitch(1) // 100
+
+// The subdivision, stated against the ruler it subdivides rather than as the
+// literal 100 above: every labelled scalebar gridline carries a tick, and so
+// does the midpoint between each adjacent pair.
+test('the marker pitch divides the query ruler pitch', () => {
+  for (const bpPerPx of [0.5, 1, 13, 500, 6428, 103_571]) {
+    const ruler = chooseGridPitch(bpPerPx, 120, 15).majorPitch
+    expect(ruler % markerGridPitch(bpPerPx)).toBe(0)
+    expect(markerGridPitch(bpPerPx)).toBeLessThanOrEqual(ruler)
+    // never a fractional bp — a tick has to land on a base
+    expect(Number.isInteger(markerGridPitch(bpPerPx))).toBe(true)
+  }
+})
 
 // One feature spanning [0, widthBp] on both axes. `cigar` defaults to none;
 // passing one turns CIGAR detail on, which routes the markers through the
@@ -48,7 +64,9 @@ test('markers land on the query axis grid, not at fractions of the feature', () 
 
   // Half-open in the query axis: the tick at the feature's far edge belongs to
   // whatever comes next, so 1000 is not one of these.
-  expect(markers.map(i => g.bp1[i])).toEqual([0, 200, 400, 600, 800])
+  expect(markers.map(i => g.bp1[i])).toEqual([
+    0, 100, 200, 300, 400, 500, 600, 700, 800, 900,
+  ])
 
   // Each marker is a vertical tick: a point on each axis (top span and bottom
   // span both zero).
@@ -81,7 +99,7 @@ test('the grid is absolute, so panning does not slide the markers', () => {
     viewWidth: 1100,
   })
   expect(markerIndices(g.kinds).map(i => g.bp1[i])).toEqual([
-    200, 400, 600, 800, 1000,
+    100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
   ])
 })
 
@@ -139,7 +157,12 @@ test('markers follow the CIGAR through a deletion', () => {
   const markers = markerIndices(g.kinds)
   // Ticks are still on the query grid — the deletion moves where they LAND on
   // the target axis, never where they sit on the query one.
-  expect(markers.map(i => g.bp1[i])).toEqual([0, 200, 400, 600, 800])
-  // Query 600 and 800 are past the deletion, so they pair 100bp back.
-  expect(markers.map(i => g.bp1[i]! - g.bp3[i]!)).toEqual([0, 0, 0, 100, 100])
+  expect(markers.map(i => g.bp1[i])).toEqual([
+    0, 100, 200, 300, 400, 500, 600, 700, 800, 900,
+  ])
+  // Query 600 and up is past the deletion, so those pair 100bp back. The tick at
+  // 500 is the deletion's own left edge, still paired at 0.
+  expect(markers.map(i => g.bp1[i]! - g.bp3[i]!)).toEqual([
+    0, 0, 0, 0, 0, 0, 100, 100, 100, 100,
+  ])
 })

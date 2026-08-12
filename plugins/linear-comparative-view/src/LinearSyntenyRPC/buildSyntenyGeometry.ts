@@ -75,6 +75,9 @@ export const MIN_CIGAR_PX_WIDTH = 2
 // grid IS the ruler's rather than merely resembling it, at whatever pitch the
 // current zoom put the ruler on.
 //
+// HALVED, so a tick sits on every labelled gridline AND on the midpoint between
+// each adjacent pair — see MARKER_PITCH_DIVISOR.
+//
 // What this replaced, and why the replacement is not a tuning change: markers
 // used to be spaced by PIXELS along each drawn shape, one every 20px, with a
 // "skip anything under 30px" gate — applied per rendered CIGAR segment. Since
@@ -87,15 +90,49 @@ export const MIN_CIGAR_PX_WIDTH = 2
 const MARKER_GRID_MIN_MAJOR_PX = 120
 const MARKER_GRID_MIN_MINOR_PX = 15
 
+// How far the ruler's major pitch is subdivided for the marker grid.
+//
+// The ruler's own major pitch is >=120px, and on chooseGridPitch's 1/2/5 ladder
+// it typically lands at 150-300px — so a 1400px frame has room for only 6-10
+// ticks, and any of those that falls in a gap between alignments (or outside the
+// blocks whose mate is in the other panel's window at all) is one fewer line.
+// Measured on the tutorial's own data, the HG002 maternal-vs-paternal chain: the
+// 70kb frame drew 6 lines and the 9Mb 8p23 frame 7, which is EVERY tick the
+// ruler offered — nothing was being dropped, there was simply nothing more to
+// draw. The way to get more correspondence lines is a finer grid, not a looser
+// gate.
+//
+// A DIVISOR of the ruler's pitch rather than a second, independent
+// chooseGridPitch call at a smaller minimum. Asking the ladder for >=60px
+// answers with a pitch that need not divide the ruler's: ruler at 5000 and
+// markers at 2000 puts ticks on 2000/4000/6000 and leaves the LABELLED 5000
+// gridline without one, which gives up the whole point of using the ruler's
+// grid. Halving keeps every labelled gridline ticked and adds the midpoint
+// between neighbours, at 60-150px, and the midpoint is itself a drawn minor
+// gridline whenever the ruler's minor pitch is majorPitch/10.
+//
+// Two is as far as this should go: majorPitch/5 would put ticks 24-60px apart,
+// and at the markers' fixed 0.25 alpha that many lines over one ribbon reads as
+// hatching rather than as a set of positions.
+const MARKER_PITCH_DIVISOR = 2
+
 // A feature narrower than this on the QUERY AXIS draws no markers.
 //
-// Not a density rule — the >=120px pitch already spaces the ticks. It is that a
+// Not a density rule — the >=60px pitch already spaces the ticks. It is that a
 // tick is a 1px line, so on a block of comparable width the tick IS the block
 // and marks nothing inside it; and that a whole-genome hairball would otherwise
 // put one on every sub-pixel thread it crosses, at the markers' fixed 0.25 alpha
 // over ribbons the thin-fade has taken down to 0.15 — a ruler louder than the
 // data it rules. 30px is ~30 tick-widths, where a tick reads as a mark in a
 // block rather than as an edge of it.
+//
+// It costs almost nothing, which is worth recording because the obvious first
+// theory for "few markers on a fragmented alignment" is that this gate is eating
+// them. Swept over the HG002 chain across chr8 with the panels mated (windows
+// from 30kb to 9Mb, 1400px), of ~48,000 ruler ticks that had an alignment under
+// them, 11 were rejected here. What actually limits the count is how many ticks
+// the grid offers and whether a block with a mate in the other panel's window
+// sits under each one.
 //
 // THE QUERY AXIS, not the average of the two, because that is the axis the grid
 // is defined on: a tick's position is a query coordinate, so how much of the
@@ -108,6 +145,28 @@ const MARKER_GRID_MIN_MINOR_PX = 15
 // Measured over the WHOLE FEATURE, never a rendered CIGAR segment; see above
 // for what that distinction cost.
 const MIN_MARKER_FEATURE_PX = 30
+
+// The marker grid's pitch in query-axis bp at this zoom: the query view's own
+// scalebar pitch, subdivided.
+//
+// The divisor applies only when it leaves a whole number of bp. chooseGridPitch
+// floors its major pitch at 5bp, the one odd value the 1/2/5 ladder can hand
+// back, and that floor is reached at base-level zoom — where a tick every 2.5bp
+// would sit between bases and mark a coordinate that does not exist.
+//
+// Exported so the tests read the pitch from here rather than re-spelling the
+// derivation: a test that computes its own expected grid cannot notice this one
+// moving.
+export function markerGridPitch(bpPerPx: number) {
+  const rulerPitch = chooseGridPitch(
+    bpPerPx,
+    MARKER_GRID_MIN_MAJOR_PX,
+    MARKER_GRID_MIN_MINOR_PX,
+  ).majorPitch
+  return rulerPitch % MARKER_PITCH_DIVISOR === 0
+    ? rulerPitch / MARKER_PITCH_DIVISOR
+    : rulerPitch
+}
 
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
 function indelKind(op: number) {
@@ -184,13 +243,9 @@ export function buildSyntenyGeometry({
   const base0 = viewOff0 * bpPerPx0
   const base1 = viewOff1 * bpPerPx1
 
-  // Marker grid pitch, in query-axis bp. One pitch for the whole build: it is
-  // the query view's ruler, and the ruler does not change per feature.
-  const markerPitchBp = chooseGridPitch(
-    bpPerPx0,
-    MARKER_GRID_MIN_MAJOR_PX,
-    MARKER_GRID_MIN_MINOR_PX,
-  ).majorPitch
+  // One pitch for the whole build: it is the query view's ruler, and the ruler
+  // does not change per feature.
+  const markerPitchBp = markerGridPitch(bpPerPx0)
   const markerPitchPx = markerPitchBp * bpPerPxInv0
 
   const alignmentLengths = new Float32Array(featureCount)
