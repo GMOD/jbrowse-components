@@ -68,12 +68,13 @@ const SearchBox = observer(function SearchBox({
         navigate(option).catch(() => {})
       }}
       assemblyName={assemblyName}
-      fetchResults={queryString =>
+      fetchResults={(queryString, stopToken) =>
         fetchResults({
           queryString,
           assemblyName,
           textSearchManager,
           assembly,
+          stopToken,
         })
       }
       session={session}

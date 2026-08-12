@@ -1,6 +1,7 @@
 import { readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import { isAbortException } from '../util/aborting.ts'
+import { checkStopToken } from '../util/stopToken.ts'
 import { canonicalAssemblyNames } from '../util/tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
@@ -129,6 +130,13 @@ export default class TextSearchManager {
       adapters.map(a => a.searchIndex(args)),
       'text search adapter failed',
     )
+    // the ranking below is the expensive half — a dynamic import plus a fuzzy
+    // sort over every hit — and a superseded keystroke has no use for it.
+    // Checked here rather than only inside the adapters because keepFulfilled
+    // deliberately drops a failing adapter and carries on, so an abort thrown
+    // by one of them would otherwise still land here as "no results from that
+    // index" and rank the rest
+    checkStopToken(args.stopToken)
     return await this.sortResults({ args, results: results.flat() })
   }
 

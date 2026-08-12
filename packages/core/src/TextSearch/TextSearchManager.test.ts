@@ -1,3 +1,5 @@
+import { isAbortException } from '../util/aborting.ts'
+import { createStopToken, stopStopToken } from '../util/stopToken.ts'
 import BaseResult from './BaseResults.ts'
 import TextSearchManager from './TextSearchManager.ts'
 
@@ -61,6 +63,37 @@ describe('search resilience', () => {
     expect(results.map(r => r.getLabel())).toEqual(['BRCA1'])
     expect(spy).toHaveBeenCalledTimes(1)
     spy.mockRestore()
+  })
+
+  it('drops a superseded query before ranking it', async () => {
+    // every keystroke supersedes the previous one, and the ranking is the
+    // expensive half (a dynamic import plus a fuzzy sort over every hit)
+    const m = new TextSearchManager({} as never)
+    m.loadTextSearchAdapters = async () => [
+      fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),
+    ]
+    const sortSpy = jest.spyOn(m, 'sortResults')
+    const stopToken = createStopToken()
+    stopStopToken(stopToken)
+
+    const thrown = await m
+      .search({ queryString: 'BRCA1', stopToken }, 'hg38')
+      .catch((e: unknown) => e)
+
+    expect(isAbortException(thrown)).toBe(true)
+    expect(sortSpy).not.toHaveBeenCalled()
+  })
+
+  it('still ranks a query whose token is live', async () => {
+    const m = new TextSearchManager({} as never)
+    m.loadTextSearchAdapters = async () => [
+      fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),
+    ]
+    const results = await m.search(
+      { queryString: 'BRCA1', stopToken: createStopToken() },
+      'hg38',
+    )
+    expect(results.map(r => r.getLabel())).toEqual(['BRCA1'])
   })
 })
 

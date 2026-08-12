@@ -3,9 +3,12 @@ import '@testing-library/jest-dom'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { RefNameAutocomplete } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { isStopped } from '@jbrowse/core/util/stopToken'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -132,8 +135,46 @@ describe('RefNameAutocomplete', () => {
     await user.type(input, 'ctg')
 
     await waitFor(() => {
-      expect(fetchResults).toHaveBeenCalledWith('ctg')
+      // the second argument is the per-fetch stop token: a fetcher that
+      // forwards it lets the next keystroke cancel this query's ranking
+      expect(fetchResults).toHaveBeenCalledWith('ctg', expect.anything())
     }, patience)
+  })
+
+  it('stops the previous query token when a keystroke supersedes it', async () => {
+    const user = userEvent.setup()
+    const { session } = setup()
+    const tokens: StopToken[] = []
+    const fetchResults = jest.fn(async (_q: string, stopToken?: StopToken) => {
+      if (stopToken) {
+        tokens.push(stopToken)
+      }
+      return []
+    })
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        fetchResults={fetchResults}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+    await user.type(input, 'ctg')
+    await waitFor(() => {
+      expect(tokens).toHaveLength(1)
+    }, patience)
+    expect(isStopped(tokens[0])).toBe(false)
+
+    await user.type(input, 'A')
+    await waitFor(() => {
+      expect(tokens).toHaveLength(2)
+    }, patience)
+    // the superseded query's token is stopped; the live one is not
+    expect(isStopped(tokens[0])).toBe(true)
+    expect(isStopped(tokens[1])).toBe(false)
   })
 
   it('displays results returned by fetchResults', async () => {

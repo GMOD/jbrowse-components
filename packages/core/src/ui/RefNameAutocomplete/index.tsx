@@ -16,6 +16,7 @@ import {
 
 import type BaseResult from '../../TextSearch/BaseResults.ts'
 import type { AbstractSessionModel } from '../../util/index.ts'
+import type { StopToken } from '../../util/stopToken.ts'
 import type { CSSProperties, ReactNode } from 'react'
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
@@ -38,7 +39,10 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   // Current display value (e.g. the view's visible locstring). If absent,
   // the input shows only what the user has typed.
   value?: string
-  fetchResults: (query: string) => Promise<BaseResult[]>
+  // the stop token is stopped as soon as the next keystroke supersedes this
+  // query, so a fetcher that forwards it drops the superseded work instead of
+  // ranking and formatting an answer nobody will see
+  fetchResults: (query: string, stopToken?: StopToken) => Promise<BaseResult[]>
   onSelect?: (region: BaseResult) => void
   onChange?: (val: string) => void
   minWidth?: number
@@ -65,8 +69,14 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
 
   const shouldSearch = !!assemblyName && debouncedSearch !== ''
   const { data: searchOptions, isLoading } = useFetch(
-    shouldSearch ? ['refNameSearch', assemblyName, debouncedSearch] : null,
-    async () => getDeduplicatedResult(await fetchResults(debouncedSearch)),
+    // `as const` so the key is a fixed-arity tuple: useFetch derives the
+    // fetcher's parameter list from it, and a plain array widens to a variadic
+    // the named parameters below cannot be destructured out of
+    shouldSearch
+      ? (['refNameSearch', assemblyName, debouncedSearch] as const)
+      : null,
+    async (_tag, _assembly, query, stopToken) =>
+      getDeduplicatedResult(await fetchResults(query, stopToken)),
     {
       onError: e => {
         session.notifyError(`${e}`, e)
@@ -75,8 +85,6 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   )
 
   const width = getInputWidth(externalValue, minWidth, maxWidth, adornmentWidth)
-  const regionOptions = getRefNameOptions(assembly?.regions ?? [], searchQuery)
-
   const hasSearchResults = !!searchOptions?.length
 
   return (
@@ -114,7 +122,14 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           setInputValue(externalValue)
         }
       }}
-      options={hasSearchResults ? searchOptions : regionOptions}
+      // built inside the branch rather than every render: it scans the
+      // assembly's regions and materializes up to the cap in option objects,
+      // which is wasted work on the keystrokes that do have search results
+      options={
+        hasSearchResults
+          ? searchOptions
+          : getRefNameOptions(assembly?.regions ?? [], searchQuery)
+      }
       getOptionDisabled={option => !!option.isLimit}
       // both sources arrive already matched against a query — searchOptions
       // server-side for `debouncedSearch`, regionOptions live for `searchQuery`

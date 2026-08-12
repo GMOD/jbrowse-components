@@ -3,6 +3,7 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -79,6 +80,10 @@ export default class TrixTextSearchAdapter
     // double space or a tab produce an empty word that matches everything
     const words = query.split(/\s+/)
     const results = await this.trixJs.search(query)
+    // the index read has landed but nothing below it has run yet; a broad
+    // prefix returns thousands of records to JSON-parse, decode and snippet,
+    // and the keystroke that asked for them is 50ms stale by now
+    checkStopToken(args.stopToken)
     const formatted = results
       .map(([term, data]) => {
         // record is ["loc"|"trackId"|"attr1"|...] with commas pre-encoded as

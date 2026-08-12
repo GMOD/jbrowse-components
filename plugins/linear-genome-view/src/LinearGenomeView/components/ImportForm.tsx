@@ -153,12 +153,13 @@ const LinearGenomeViewImportForm = observer(
                 <CloseIcon color="error" />
               ) : regions ? (
                 <RefNameAutocomplete
-                  fetchResults={queryString =>
+                  fetchResults={(queryString, stopToken) =>
                     fetchResults({
                       queryString,
                       assembly,
                       textSearchManager,
                       assemblyName: selectedAsm,
+                      stopToken,
                     })
                   }
                   session={session}

@@ -15,6 +15,7 @@ import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
@@ -239,17 +240,23 @@ export async function fetchResults({
   assemblyName,
   textSearchManager,
   assembly,
+  stopToken,
 }: {
   queryString: string
   assemblyName: string
   searchType?: SearchType
   textSearchManager?: TextSearchManager
   assembly?: Assembly
+  // supplied by the autocomplete's per-fetch token, so a keystroke that
+  // supersedes this one drops the ranking and formatting rather than finishing
+  // an answer that is already stale
+  stopToken?: StopToken
 }) {
   const textSearchResults = await textSearchManager?.search(
     {
       queryString,
       searchType,
+      stopToken,
     },
     assemblyName,
   )
