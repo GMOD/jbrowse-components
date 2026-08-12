@@ -139,3 +139,6 @@ test_data/dog10k/dog10k_fgf4_cohort_samples.tsv
 # Tracking it would pin a 2504-row copy of somebody else's manifest that nothing
 # revalidates.
 test_data/1000g_cnv/samples.tsv
+
+# batch study corpora, refetchable with scripts/derivative_path_study.ts fetch
+.derivative-study/
