@@ -55,7 +55,10 @@ complete example — an exported args interface, then the augmentation naming it
 <!-- include: plugins/spreadsheet-view/src/LaunchSpreadsheetView/index.ts#registry -->
 
 ```typescript
-export interface LaunchSpreadsheetViewArgs {
+export interface LaunchSpreadsheetViewArgs extends Omit<
+  SnapshotIn<SpreadsheetViewStateModel>,
+  'type' | 'init' | 'spreadsheet' | 'importWizard'
+> {
   session: AbstractSessionModel
   assembly: string
   // a spec view is untyped user input, so both of these can be absent: without
@@ -64,9 +67,6 @@ export interface LaunchSpreadsheetViewArgs {
   fileType?: string
   // search-box text, applied once the file is loaded
   filterText?: string
-  // optional explicit view id, so another view in the same session spec can
-  // reference this one
-  id?: string
 }
 
 declare module '@jbrowse/core/PluginManager' {
