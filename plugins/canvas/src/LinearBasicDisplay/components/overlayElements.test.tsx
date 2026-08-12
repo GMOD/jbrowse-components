@@ -132,6 +132,21 @@ test.each([
   expect(toggleSoloFeature.mock.calls.length > 0).toBe(expected === 'solo')
 })
 
+// The slice HighlightLayer reads, with one feature (`f1`) search-highlighted.
+const HIGHLIGHT_MODEL = {
+  renderedShowLabels: true,
+  renderedShowDescriptions: false,
+  labelFontSize: 11,
+  selectedFeatureId: undefined,
+  hoveredFeature: null,
+  hoveredSubfeature: null,
+  featureItemMap: MODEL.featureItemMap,
+  morphOffsetFor: () => 0,
+  highlightedFeatureIdSet: new Set(['f1']),
+  soloFeatureIdSet: new Set<string>(),
+  soloApplied: false,
+}
+
 // A box is drawn once per visible region on the feature's own reference
 // sequence, which is how a feature spanning a displayed-region boundary gets
 // boxed piecewise. "Same sequence" is assembly + refName (the layout's own
@@ -146,18 +161,6 @@ test('highlight boxes are scoped to the reference sequence, not the refName', ()
     assemblyName: 'volvox2',
     displayedRegionIndex: 1,
   }
-  const model = {
-    renderedShowLabels: true,
-    renderedShowDescriptions: false,
-    labelFontSize: 11,
-    selectedFeatureId: undefined,
-    hoveredFeature: null,
-    hoveredSubfeature: null,
-    featureItemMap: MODEL.featureItemMap,
-    highlightedFeatureIdSet: new Set(['f1']),
-    soloFeatureIdSet: new Set<string>(),
-    soloApplied: false,
-  }
   const view = {
     initialized: true,
     trackWidthPx: 1000,
@@ -166,7 +169,32 @@ test('highlight boxes are scoped to the reference sequence, not the refName', ()
   } as unknown as LinearGenomeViewModel
 
   const { getAllByTestId } = render(
-    <HighlightLayer model={model} view={view} />,
+    <HighlightLayer model={HIGHLIGHT_MODEL} view={view} />,
   )
   expect(getAllByTestId('feature-highlight')).toHaveLength(1)
+})
+
+// A box frames a glyph, so it has to travel with one. Its geometry comes from
+// `featureItemMap`, which holds the SETTLED rows so hit targets are the
+// destination — mid Y-morph the glyph itself is drawn `morphOffsetFor` px off
+// that row, and without applying it the box snaps to the destination and waits
+// there for the morph's 300ms while the feature is still on its way.
+test('a highlight box follows its feature through a Y morph', () => {
+  const at = (morphOffsetFor: () => number) => {
+    const { getByTestId, unmount } = render(
+      <HighlightLayer
+        model={{ ...HIGHLIGHT_MODEL, morphOffsetFor }}
+        view={VIEW}
+      />,
+    )
+    const { top } = getByTestId('feature-highlight').style
+    unmount()
+    return top
+  }
+
+  // the feature is laid out at topPx 0, and the box is outset 2px above it —
+  // clamped to the content edge when it has nowhere to go
+  expect(at(() => 0)).toBe('0px')
+  // eased 25px down from its row: 25 - 2 of outset, no clamping needed
+  expect(at(() => 25)).toBe('23px')
 })

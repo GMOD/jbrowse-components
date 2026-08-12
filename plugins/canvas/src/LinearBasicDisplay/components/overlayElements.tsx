@@ -72,6 +72,10 @@ interface HighlightBoxesModel {
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
   featureItemMap: Map<string, FeatureItemEntry>
+  // Y a feature's glyph is currently drawn off its laid-out row by, mid Y-morph.
+  // featureItemMap holds the destination rows (hit targets), so every box adds
+  // this to keep framing the glyph while it eases; 0 whenever nothing is easing.
+  morphOffsetFor: (featureId: string) => number
   // render-item ids resolved from a declarative search highlight; addFeatureBox
   // no-ops any id not currently laid out (same as soloFeatureIdSet)
   highlightedFeatureIdSet: ReadonlySet<string>
@@ -451,6 +455,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     renderedShowDescriptions,
     labelFontSize,
     featureItemMap,
+    morphOffsetFor,
   } = model
   const { classes, cx } = useStyles()
   const boxStyles = overlayBoxStyles(usePalette())
@@ -473,6 +478,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     extraWidth = 0,
     xPadding = 0,
     yPadding = 0,
+    yOffset = 0,
     testId,
     boxStyle,
   }: {
@@ -486,6 +492,9 @@ export const HighlightLayer = observer(function HighlightLayer({
     extraWidth?: number
     xPadding?: number
     yPadding?: number
+    // px the glyph is currently displaced from `item`'s row by an in-flight
+    // Y-morph, applied to the box's top so it travels with what it frames
+    yOffset?: number
     testId?: string
     boxStyle?: CSSProperties
   }) => {
@@ -501,7 +510,12 @@ export const HighlightLayer = observer(function HighlightLayer({
             data-testid={testId}
             className={cx(classes.overlayBase, className)}
             style={{
-              ...computeOverlayRect(rect, extraWidth, xPadding, yPadding),
+              ...computeOverlayRect(
+                yOffset === 0 ? rect : { ...rect, topPx: rect.topPx + yOffset },
+                extraWidth,
+                xPadding,
+                yPadding,
+              ),
               ...boxStyle,
             }}
           />,
@@ -547,6 +561,7 @@ export const HighlightLayer = observer(function HighlightLayer({
         extraWidth: computeExtraWidth(entry),
         xPadding: 2,
         yPadding: 2,
+        yOffset: morphOffsetFor(featureId),
         testId,
       })
     }
@@ -568,6 +583,7 @@ export const HighlightLayer = observer(function HighlightLayer({
         key: 'hover',
         extraWidth: subfeatureHover ? 0 : computeExtraWidth(entry),
         xPadding: subfeatureHover ? 0 : HIT_PAD_PX,
+        yOffset: morphOffsetFor(hoverItem.featureId),
       })
     }
   }

@@ -93,12 +93,12 @@ import {
 } from './trackMenus.ts'
 import {
   canMorph,
-  captureDisplayedTops,
   captureFeatureTops,
   easeInOutCubic,
   interpolateYData,
   morphAllowed,
   morphClockMs,
+  morphOffset,
   rowGeometrySignature,
 } from './yMorph.ts'
 
@@ -1403,6 +1403,17 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // The morph's progress with the easing curve applied. The ONE place
+        // `easeInOutCubic` is called on it: the interpolated map below, the
+        // overlay offset and the mid-flight re-seed in CanvasYMorph all read
+        // this, so none of them can end up describing a different frame than
+        // the one the canvas drew.
+        get morphEased() {
+          return easeInOutCubic(self.morphProgress)
+        },
+        /**
+         * #getter
+         */
         // What the canvas + DOM overlays actually draw. Identical to
         // `laidOutDataMap` except during a row re-pack, when feature Y eases
         // from the previous layout to the new one (see yMorph). Returns the
@@ -1410,20 +1421,17 @@ export default function baseStateModelFactory(
         // don't re-upload/re-render unless an animation is in flight.
         get renderDataMap(): Map<number, FeatureDataResult> {
           const from = self.morphFromTops
-          // morphProgress === 1 is the settled frame between the clock's final
+          const t = this.morphEased
+          // t === 1 is the settled frame between the clock's final
           // setMorphProgress(1) and endYMorph clearing morphFromTops: every
           // feature already sits at its destination, so return laidOutDataMap by
           // reference (same as idle) instead of rebuilding an identical map. The
           // stable reference also lets the MobX computed skip a redundant
           // re-render when endYMorph then clears the morph.
-          if (from === undefined || self.morphProgress === 1) {
+          if (from === undefined || t === 1) {
             return self.laidOutDataMap
           }
-          return interpolateYData(
-            from,
-            self.laidOutDataMap,
-            easeInOutCubic(self.morphProgress),
-          )
+          return interpolateYData(from, self.laidOutDataMap, t)
         },
       }))
       .actions(self => ({
@@ -1457,6 +1465,11 @@ export default function baseStateModelFactory(
         endYMorph() {
           self.morphFromTops = undefined
           self.morphProgress = 1
+          // Cleared, not left behind: `maxY` reads it only while a morph is in
+          // flight, but CanvasYMorph folds it into the next morph's hold with a
+          // plain `Math.max`, which is only correct if a settled display reports
+          // no held height.
+          self.morphFromMaxY = 0
         },
       }))
       .views(self => ({
@@ -1577,6 +1590,32 @@ export default function baseStateModelFactory(
          */
         get subfeatureIdIndex() {
           return indexById(self.laidOutDataMap, d => d.subfeatureInfos)
+        },
+
+        /**
+         * #method
+         */
+        // How far this feature's glyph is currently drawn from the row it is
+        // laid out on, or 0 when no morph is easing it. The DOM overlay boxes
+        // add it to their tops: they take geometry from `featureItemMap`, which
+        // is built off the settled `laidOutDataMap` so hit targets are the
+        // destination, and without this a selection or hover box sits on the
+        // destination row for the morph's 300ms while the glyph inside it is
+        // still travelling. A subfeature rides its parent's row, so its box
+        // takes the parent's offset.
+        morphOffsetFor(featureId: string) {
+          const from = self.morphFromTops
+          if (from === undefined) {
+            return 0
+          }
+          const topLevelId = this.featureIdIndex.has(featureId)
+            ? featureId
+            : (this.subfeatureIdIndex.get(featureId)?.parentFeatureId ??
+              featureId)
+          const item = this.featureIdIndex.get(topLevelId)
+          return item === undefined
+            ? 0
+            : morphOffset(from, topLevelId, item.topPx, self.morphEased)
         },
 
         /**
@@ -2679,23 +2718,19 @@ export default function baseStateModelFactory(
                     // feature's live displayed position instead of `from`'s
                     // settled rows so mid-flight features don't snap, and hold
                     // the content height across the taller of the two morphs so
-                    // a feature easing up from a deep row isn't clipped.
-                    const active = self.morphFromTops
+                    // a feature easing up from a deep row isn't clipped. With
+                    // nothing in flight both fall through to `from` alone: no
+                    // morphFromTops eases the capture, and endYMorph zeroed the
+                    // held height.
                     return {
                       scrollTop: self.scrollTop,
                       height: self.height,
-                      fromTops:
-                        active === undefined
-                          ? captureFeatureTops(from)
-                          : captureDisplayedTops(
-                              from,
-                              active,
-                              easeInOutCubic(self.morphProgress),
-                            ),
-                      fromMaxY:
-                        active === undefined
-                          ? maxBottom(from)
-                          : Math.max(maxBottom(from), self.morphFromMaxY),
+                      fromTops: captureFeatureTops(
+                        from,
+                        self.morphFromTops,
+                        self.morphEased,
+                      ),
+                      fromMaxY: Math.max(maxBottom(from), self.morphFromMaxY),
                     }
                   },
                 )

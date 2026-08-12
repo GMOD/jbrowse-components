@@ -16,7 +16,7 @@ import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { MORPH_DURATION_MS } from '../yMorph.ts'
+import { MORPH_DURATION_MS, morphClockMs } from '../yMorph.ts'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
@@ -234,38 +234,43 @@ const FeatureBody = observer(function FeatureBody({
   // MORPH_DURATION_MS, which re-derives renderDataMap each frame, then settles.
   // Kept in the component because the frame loop is inherently a DOM-side effect.
   useEffect(() => {
+    // The frame handle doubles as "a frame is already pending" below — rAF
+    // handles are never 0 — so the loop can't schedule itself twice off one
+    // morph.
     let raf = 0
-    let running = false
     const tick = () => {
+      raf = 0
       if (!isAlive(model) || model.morphFromTops === undefined) {
-        running = false
         return
       }
+      // morphClockMs, the same clock beginYMorph stamped morphStartMs from.
       const t = Math.min(
         1,
-        (performance.now() - model.morphStartMs) / MORPH_DURATION_MS,
+        (morphClockMs() - model.morphStartMs) / MORPH_DURATION_MS,
       )
       model.setMorphProgress(t)
       if (t < 1) {
-        raf = requestAnimationFrame(() => {
-          tick()
-        })
+        raf = requestAnimationFrame(tick)
       } else {
         model.endYMorph()
-        running = false
       }
     }
     const dispose = autorun(() => {
-      if (model.morphFromTops !== undefined && !running) {
-        running = true
-        raf = requestAnimationFrame(() => {
-          tick()
-        })
+      if (model.morphFromTops !== undefined && raf === 0) {
+        raf = requestAnimationFrame(tick)
       }
     })
     return () => {
       dispose()
       cancelAnimationFrame(raf)
+      // This clock is the only thing that advances morphProgress, so a morph
+      // left in flight here would never finish: renderDataMap would stay frozen
+      // partway through the interpolation and `maxY` would hold at the taller of
+      // the two layouts for as long as the display lives. Settle it instead —
+      // the destination layout is already correct, only the animation is lost.
+      if (isAlive(model)) {
+        model.endYMorph()
+      }
     }
   }, [model])
 

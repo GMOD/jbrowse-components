@@ -20,6 +20,11 @@ export function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
 }
 
+// A layout nothing is morphing away from: the default source for
+// `captureFeatureTops`, so a settled capture and a mid-flight one are the same
+// walk with an empty table rather than two functions to keep in step.
+const NO_TOPS: FeatureTops = new Map()
+
 // How far a feature should ease during a morph: its old row top minus its new
 // one. `undefined` when the feature has no previous row (newly appeared — leave
 // it at its destination) or when the packer left it unplaced in the target
@@ -34,6 +39,25 @@ function morphDelta(
   return prevTop !== undefined && isPlacedRow(targetTop)
     ? prevTop - targetTop
     : undefined
+}
+
+// How far one feature's glyph is currently drawn from its `targetTop` row, with
+// `t` of the morph elapsed: the same `delta * (1 - t)` every Y in
+// `interpolateYData` is shifted by, for a caller that wants one feature rather
+// than a whole interpolated map. 0 when nothing is easing this feature.
+//
+// The DOM overlay boxes (hover, selection, solo, search) read this: their
+// geometry comes from the settled `laidOutDataMap`, so without it a highlight
+// sits on the destination row while the glyph it frames is still on its way
+// there. Per drawn box — a handful — rather than re-deriving the interpolated
+// map they'd otherwise have to index into.
+export function morphOffset(
+  fromTops: FeatureTops,
+  featureId: string,
+  targetTop: number,
+  t: number,
+) {
+  return (morphDelta(fromTops, featureId, targetTop) ?? 0) * (1 - t)
 }
 
 // Everything that fixes a feature's row *height* and vertical *offset*, as a
@@ -54,45 +78,32 @@ export function rowGeometrySignature(g: {
   return `${g.displayMode}|${g.renderedShowLabels}|${g.renderedShowDescriptions}|${g.fitScale}`
 }
 
-// Snapshot each on-screen feature's row top by id. Used both as the start of a
+// Snapshot each on-screen feature's top by id. Used both as the start of a
 // later morph and to seed the next re-pack's insertion order (layout.ts).
 // Features the packer left unplaced (overflowed maxHeight — see `isPlacedRow`)
 // are skipped so a feature that was overflowed in the old layout and lands
 // on-screen in the new one isn't animated flying in from ~-1e6, nor sorted ahead
 // of genuinely on-screen features when seeding.
+//
+// `fromTops`/`t` describe a morph already in flight *over* `map`: given them,
+// each feature is captured where it is presently DISPLAYED — eased `t` of the way
+// from `fromTops` toward its row here — rather than at that settled row. That is
+// what re-seeds a morph interrupted mid-flight by a second layout change (a pin
+// toggle or region flip, neither debounced like zoom): starting the new morph
+// from the live positions instead of the settled ones avoids a visible snap.
+// Omit them — the settled case — and every feature is captured at its own row,
+// since an empty `fromTops` eases nothing. One walk, so the two cannot drift.
 export function captureFeatureTops(
   map: ReadonlyMap<number, FeatureDataResult>,
+  fromTops: FeatureTops = NO_TOPS,
+  t = 1,
 ): FeatureTops {
   const out: FeatureTops = new Map()
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
       if (isPlacedRow(item.topPx)) {
-        out.set(item.featureId, item.topPx)
-      }
-    }
-  }
-  return out
-}
-
-// Each on-screen feature's *currently displayed* top when a morph is in flight,
-// i.e. its position eased `t` of the way from `fromTops` to `target`. Used to
-// re-seed a morph interrupted mid-flight by a second layout change (a pin toggle
-// or region flip, neither debounced like zoom): starting the new morph from
-// these live positions instead of `target`'s settled rows avoids a visible snap.
-// Mirrors interpolateYData's per-feature Y math (rem = 1 - t) so a retarget is
-// seamless, and skips unplaced features the same way captureFeatureTops does.
-export function captureDisplayedTops(
-  target: ReadonlyMap<number, FeatureDataResult>,
-  fromTops: FeatureTops,
-  t: number,
-): FeatureTops {
-  const rem = 1 - t
-  const out: FeatureTops = new Map()
-  for (const data of target.values()) {
-    for (const item of data.flatbushItems) {
-      if (isPlacedRow(item.topPx)) {
-        const delta = morphDelta(fromTops, item.featureId, item.topPx) ?? 0
-        out.set(item.featureId, item.topPx + delta * rem)
+        const { featureId, topPx } = item
+        out.set(featureId, topPx + morphOffset(fromTops, featureId, topPx, t))
       }
     }
   }

@@ -4,10 +4,10 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
   canMorph,
-  captureDisplayedTops,
   captureFeatureTops,
   easeInOutCubic,
   interpolateYData,
+  morphOffset,
 } from './yMorph.ts'
 
 // One rect per feature, sitting at the feature's top.
@@ -142,19 +142,34 @@ test('captureFeatureTops skips features overflowed off-screen', () => {
   expect(tops.get('b')).toBe(30)
 })
 
-test('captureDisplayedTops eases each feature from source toward target', () => {
-  // "a" is morphing from row 60 (source) to row 0 (target). Halfway through, its
-  // displayed top is 30 — that's what re-seeds a morph interrupted mid-flight.
+test('captureFeatureTops with a morph in flight records displayed tops', () => {
+  // "a" is morphing from row 60 (source) toward row 0 (its row in this layout).
+  // Halfway through, its displayed top is 30 — that's what re-seeds a morph
+  // interrupted mid-flight.
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
   const fromTops = new Map([['a', 60]])
-  expect(captureDisplayedTops(target, fromTops, 0).get('a')).toBe(60)
-  expect(captureDisplayedTops(target, fromTops, 0.5).get('a')).toBe(30)
-  expect(captureDisplayedTops(target, fromTops, 1).get('a')).toBe(0)
+  expect(captureFeatureTops(target, fromTops, 0).get('a')).toBe(60)
+  expect(captureFeatureTops(target, fromTops, 0.5).get('a')).toBe(30)
+  expect(captureFeatureTops(target, fromTops, 1).get('a')).toBe(0)
 })
 
-test('captureDisplayedTops leaves features with no source at the target', () => {
+test('captureFeatureTops leaves features with no morph source at their row', () => {
   const target = new Map([[0, region([{ featureId: 'a', top: 40 }])]])
-  expect(captureDisplayedTops(target, new Map(), 0.5).get('a')).toBe(40)
+  expect(captureFeatureTops(target, new Map(), 0.5).get('a')).toBe(40)
+})
+
+// What the DOM overlay boxes add to their tops. Same easing as the rect Ys
+// above, so a highlight and the glyph it frames are never a frame apart.
+test('morphOffset is the displacement interpolateYData applies', () => {
+  const fromTops = new Map([['a', 60]])
+  const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
+  for (const t of [0, 0.25, 0.5, 1]) {
+    const rectY = interpolateYData(fromTops, target, t).get(0)!.rectYs[0]!
+    expect(morphOffset(fromTops, 'a', 0, t)).toBe(rectY - 0)
+  }
+  // no source row, and an unplaced destination: nothing to displace
+  expect(morphOffset(fromTops, 'unknown', 0, 0)).toBe(0)
+  expect(morphOffset(fromTops, 'a', -1e6, 0)).toBe(0)
 })
 
 test('a feature overflowing off-screen in the target does not animate', () => {
