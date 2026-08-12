@@ -79,15 +79,28 @@ function collectRegistryKeys(file: string, keys: Map<string, string>) {
 }
 
 /**
- * What a second plugin registering on the same point does to the first. An
- * array-valued `args` means every callback appends and they all survive; any
- * other `args` is a single value threaded along, so each callback overwrites
- * what the one before it returned. This is the distinction that the point
- * *names* don't carry (`DotplotView-OverlaySVGComponent` accumulates,
+ * What a second plugin registering on the same point does to the first, and so
+ * which registration method the point takes. An array-valued `args` means every
+ * callback appends and they all survive (`contributeToExtensionPoint`); `args:
+ * undefined` means there is no value to overwrite at all, only side effects that
+ * all run (`observeExtensionPoint`); anything else is a single value threaded
+ * along, so each callback overwrites what the one before it returned
+ * (`addToExtensionPoint`). This is the distinction that the point *names* don't
+ * carry (`DotplotView-OverlaySVGComponent` accumulates,
  * `DotplotView-OverlayHTMLComponent` does not).
+ *
+ * `notify` is its own row rather than folded into `single` because the two are
+ * opposites where it matters: on a `single` point only the last plugin to
+ * register is visible, and on a `notify` point every plugin's callback runs.
  */
 function shapeOf(args: string) {
-  return args === '' ? '' : args.endsWith('[]') ? 'list' : 'single'
+  if (args === '') {
+    return ''
+  }
+  if (args.endsWith('[]')) {
+    return 'list'
+  }
+  return args === 'undefined' ? 'notify' : 'single'
 }
 
 function collectExtensionPoints(): ExtensionPoint[] {

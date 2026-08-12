@@ -78,6 +78,20 @@ test('addFeaturePanel scopes without touching other plugins entries', () => {
   expect(fireFeaturePanels(pm, { trackType: 'AlignmentsTrack' })).toEqual([A])
 })
 
+// typecheck-only: the guarantee above is only real if the by-hand route is shut.
+// Excluding accumulating names from addToExtensionPoint's *typed* overload was
+// not enough — the loose overload took `string`, so this call fell through to it
+// and compiled, inferring the entry type from the callback. An unused
+// expect-error directive fails `pnpm typecheck`, so this is a real assertion
+// despite running nothing. (Don't open a line here with the directive itself —
+// TS reads one in any `//` comment, and it would swallow the next real error.)
+test('addToExtensionPoint refuses an accumulating point', () => {
+  const pm = new PluginManager([])
+  // @ts-expect-error accumulating points go through contributeToExtensionPoint
+  pm.addToExtensionPoint('Core-extraFeaturePanel', () => [A])
+  expect(pm.extensionPointCallbackCount('Core-extraFeaturePanel')).toBe(1)
+})
+
 test('addExtensionElement contributes one keyed element per registration', () => {
   const pm = new PluginManager([])
   addExtensionElement(pm, 'LinearGenomeView-TracksContainerComponent', A)

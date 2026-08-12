@@ -120,3 +120,65 @@ test('the strict async runner propagates instead of swallowing', async () => {
   )
   expect(after).not.toHaveBeenCalled()
 })
+
+// A notification point carries no data, so its folded value is only ever a
+// completion signal: the promise a producer awaits to learn that handlers have
+// finished trying. Under the *sync* runner nothing awaits between callbacks, so
+// each observer's promise had to survive being handed to the next one — and
+// returning only its own discarded the earlier one, leaving assemblyManager's
+// waitForAssembly waiting on whichever handler happened to register last rather
+// than on the one supplying the assembly.
+test('two async observers both settle before the folded promise does', async () => {
+  const pm = new PluginManager([])
+  const done: string[] = []
+  const settle = (name: string, ms: number) =>
+    new Promise<void>(resolve => {
+      setTimeout(() => {
+        done.push(name)
+        resolve()
+      }, ms)
+    })
+  // the slow one first, so "last registered wins" would resolve without it
+  pm.observeExtensionPoint('Core-handleUnrecognizedAssembly', () =>
+    settle('slow', 20),
+  )
+  pm.observeExtensionPoint('Core-handleUnrecognizedAssembly', () =>
+    settle('fast', 0),
+  )
+  await pm.evaluateExtensionPoint(
+    'Core-handleUnrecognizedAssembly',
+    undefined,
+    {
+      assemblyName: 'volvox',
+    },
+  )
+  expect(done).toEqual(['fast', 'slow'])
+})
+
+// the other half of the same branch: a sync observer contributes no completion
+// signal of its own, so it must hand the accumulated promise along untouched
+test('a sync observer passes an accumulated completion promise through', async () => {
+  const pm = new PluginManager([])
+  const done: string[] = []
+  pm.observeExtensionPoint(
+    'Core-handleUnrecognizedAssembly',
+    () =>
+      new Promise<void>(resolve => {
+        setTimeout(() => {
+          done.push('async')
+          resolve()
+        }, 20)
+      }),
+  )
+  pm.observeExtensionPoint('Core-handleUnrecognizedAssembly', () => {
+    done.push('sync')
+  })
+  await pm.evaluateExtensionPoint(
+    'Core-handleUnrecognizedAssembly',
+    undefined,
+    {
+      assemblyName: 'volvox',
+    },
+  )
+  expect(done).toEqual(['sync', 'async'])
+})

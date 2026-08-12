@@ -340,6 +340,34 @@ export type UnregisteredPointName<S extends string> =
     : S
 
 /**
+ * The same guard for `addToExtensionPoint`'s loose overload, which needs its own
+ * message because the interesting case is different: an accumulating point has a
+ * registration method of its own.
+ *
+ * Excluding accumulating names from the *typed* overload is not enough on its
+ * own. The loose overload matches whenever the typed one doesn't, so
+ * `addToExtensionPoint('Core-extraFeaturePanel', panels => [MyPanel])` — the one
+ * call `contributeToExtensionPoint` exists to make impossible — fell through and
+ * compiled, with `T` inferred from whatever the callback returned, dropping every
+ * other plugin's panels exactly as if the exclusion weren't there.
+ *
+ * `S` is inferred from the name, so this binds on the ordinary call. It does not
+ * bind when a caller writes the type argument out — `addToExtensionPoint<T>(…)`
+ * pins `T` and leaves `S` on its default — which is the price of keeping that
+ * arity working for plugins compiled against the older signature.
+ */
+export type NonAccumulatingPointName<S extends string> =
+  S extends AccumulatingPointName
+    ? {
+        ERROR: 'this extension point accumulates a list; register with contributeToExtensionPoint, whose callback returns only its own entries'
+      }
+    : S extends ExtensionPointName
+      ? {
+          ERROR: 'this extension point is in ExtensionPointRegistry; check the callback against its args/result types'
+        }
+      : S
+
+/**
  * metadata related to the instance of this plugin. `isCore` is set when the
  * plugin was loaded as part of the "core" set of plugins for this application,
  * and `url` records the resolved location it was loaded from. The index
@@ -913,18 +941,16 @@ export default class PluginManager {
       props: ExtensionPointProps<N>,
     ) => ExtensionPointEntry<N> | ExtensionPointEntry<N>[] | undefined,
   ): void {
-    this.addToExtensionPoint<ExtensionPointEntry<N>[]>(
-      extensionPointName,
-      (entries, props) => {
-        const contributed = callback(props as ExtensionPointProps<N>)
-        return contributed === undefined
-          ? entries
-          : [
-              ...entries,
-              ...(Array.isArray(contributed) ? contributed : [contributed]),
-            ]
-      },
-    )
+    this.pushExtensionPointCallback(extensionPointName, (entries, props) => {
+      const contributed = callback(props as ExtensionPointProps<N>)
+      const accumulated = entries as ExtensionPointEntry<N>[]
+      return contributed === undefined
+        ? accumulated
+        : [
+            ...accumulated,
+            ...(Array.isArray(contributed) ? contributed : [contributed]),
+          ]
+    })
   }
 
   /**
@@ -941,17 +967,26 @@ export default class PluginManager {
     extensionPointName: N,
     callback: (props: ExtensionPointProps<N>) => void | Promise<void>,
   ): void {
-    this.addToExtensionPoint<undefined>(
-      extensionPointName,
-      (extendee, props) => {
-        const ret = callback(props as ExtensionPointProps<N>)
-        // An async observer is awaited — by evaluateAsyncExtensionPoint, or by
-        // a producer that checks the folded value for a thenable to learn when
-        // handlers have finished. A sync one passes through whatever an earlier
-        // observer left, so its promise is not dropped on the way past.
-        return ret instanceof Promise ? ret.then(() => undefined) : extendee
-      },
-    )
+    this.pushExtensionPointCallback(extensionPointName, (extendee, props) => {
+      const ret = callback(props as ExtensionPointProps<N>)
+      // An async observer is awaited — by evaluateAsyncExtensionPoint, or by a
+      // producer that checks the folded value for a thenable to learn when
+      // handlers have finished. A sync one passes through whatever an earlier
+      // observer left, so its promise is not dropped on the way past.
+      //
+      // Two async ones are joined rather than the later replacing the earlier.
+      // Under the sync runner nothing awaits between callbacks, so returning
+      // just this observer's promise discarded the one before it, and a
+      // producer waiting on the fold (waitForAssembly) stopped waiting as soon
+      // as the *last*-registered handler finished — whichever handler was
+      // actually going to supply the assembly.
+      if (!(ret instanceof Promise)) {
+        return extendee
+      }
+      return extendee instanceof Promise
+        ? Promise.all([extendee, ret]).then(() => undefined)
+        : ret.then(() => undefined)
+    })
   }
 
   // Accumulating points are excluded: they go through
@@ -965,22 +1000,41 @@ export default class PluginManager {
       props: ExtensionPointProps<N>,
     ) => ExtensionPointResult<N> | Promise<ExtensionPointResult<N>>,
   ): void
-  // untyped fallback; mirrors the typed overload in allowing a promise, since
-  // evaluateAsyncExtensionPoint awaits each callback
-  addToExtensionPoint<T>(
-    extensionPointName: string,
+  // untyped fallback, for a plugin-defined point; mirrors the typed overload in
+  // allowing a promise, since evaluateAsyncExtensionPoint awaits each callback.
+  // Registered names are kept out of it — see NonAccumulatingPointName
+  addToExtensionPoint<T, S extends string = string>(
+    extensionPointName: NonAccumulatingPointName<S>,
     callback: (extendee: T, props: Record<string, unknown>) => T | Promise<T>,
   ): void
   addToExtensionPoint(
     extensionPointName: string,
     callback: (extendee: unknown, props: Record<string, unknown>) => unknown,
   ) {
+    this.pushExtensionPointCallback(
+      extensionPointName,
+      callback as ExtensionPointCallback,
+    )
+  }
+
+  /**
+   * The one place a callback joins a point's chain. The three public
+   * registration methods go through this rather than through each other:
+   * `contributeToExtensionPoint` and `observeExtensionPoint` register on exactly
+   * the point names their own signatures reject, so routing them via
+   * `addToExtensionPoint` would either fail to compile or force its guard to be
+   * loose enough to let a plugin do the same thing by hand.
+   */
+  private pushExtensionPointCallback(
+    extensionPointName: string,
+    callback: ExtensionPointCallback,
+  ) {
     let callbacks = this.extensionPoints.get(extensionPointName)
     if (!callbacks) {
       callbacks = []
       this.extensionPoints.set(extensionPointName, callbacks)
     }
-    callbacks.push(callback as ExtensionPointCallback)
+    callbacks.push(callback)
   }
 
   evaluateExtensionPoint<N extends ExtensionPointName>(

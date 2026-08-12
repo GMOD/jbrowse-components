@@ -112,27 +112,24 @@ pluginManager.observeExtensionPoint(extensionPointName, props => {
 })
 ```
 
-Only `addToExtensionPoint` accumulates: each callback's return value becomes the
-next callback's `args`. `props` is passed unchanged to every callback whichever
-method registered it, and any of the three creates the point if it doesn't exist
-yet.
+Only `addToExtensionPoint` threads a value: each callback's return value becomes
+the next callback's `args`. `props` is passed unchanged to every callback
+whichever method registered it, and any of the three creates the point if it
+doesn't exist yet. Each rejects the points the other two own, so the method you
+can call is the one the point's shape calls for.
+
+There is a fourth fire method, `evaluateAsyncExtensionPointStrict`, which is
+`evaluateAsyncExtensionPoint` without the swallow-and-continue: a callback that
+throws propagates to the producer instead of being logged. Every `LaunchView-`
+point is fired that way, so a launcher that throws surfaces as an error to the
+user rather than as an empty session. Producers of accumulating points want the
+plain runner, where one plugin failing does not cost the others their entries.
 
 These are the only signatures on this page that are not generated from source —
-they name placeholder arguments so the four read side by side, which the real
+they name placeholder arguments so the five read side by side, which the real
 generic signatures do not.
 
-## Extension point listing
-
-Generated from the `#extensionPoint` tags at each point's fire/registration
-site. The detailed sections that follow are hand-written.
-
-**Shape** says what happens when a second plugin registers on the same point,
-and is derived from whether the point's `args` are an array. A `list` point
-accumulates, so every plugin's contribution survives. A `single` point threads
-one value along, so each callback overwrites what the one before it returned and
-only the last plugin to register is visible. The names don't carry this:
-`DotplotView-OverlaySVGComponent` accumulates and
-`DotplotView-OverlayHTMLComponent` does not.
+## Registering on a point
 
 ### Accumulating points
 
@@ -186,36 +183,9 @@ plugin manager, so no plugin can write the `[MyEntry]` that drops every other
 plugin's entries. `addToExtensionPoint` covers the points that thread a single
 value, and type-errors on a `list` point.
 
-### Notification points
-
-A point declaring `args: undefined` carries its whole payload in `props` and
-reads nothing back. Register on it with **`observeExtensionPoint`**, whose
-callback returns nothing:
-
-<!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
-
-```typescript
-pluginManager.observeExtensionPoint(
-  'LinearGenomeView-searchResultSelected',
-  ({ result, model, assemblyName }) => {
-    highlightSearchResultFeature({ result, model, assemblyName })
-  },
-)
-```
-
-Every point is a fold, so a callback on one of these used to have to
-`return arg` — returning the nothing the point carries, so the chain stayed
-intact for whoever registered after it. Forgetting cost the later plugins their
-callbacks, for a value that was never data.
-
-An `async` callback is still awaited. That is how
-`Core-handleUnrecognizedAssembly` works: a handler supplies the assembly out of
-band, and its promise is what lets `waitForAssembly` stop waiting on an event
-rather than on a clock.
-
 For `list` points that accumulate rendered elements, register with
-`addExtensionElement` rather than by hand, so the array spread and the React
-`key` aren't yours to get right:
+`addExtensionElement` rather than by hand, so the React `key` isn't yours to get
+right:
 
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/components/SequenceFeatureHoverHighlightExtension.tsx -->
 
@@ -237,6 +207,56 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 }
 ```
 
+### Notification points
+
+A point declaring `args: undefined` carries its whole payload in `props` and
+reads nothing back. Register on it with **`observeExtensionPoint`**, whose
+callback returns nothing:
+
+<!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
+
+```typescript
+pluginManager.observeExtensionPoint(
+  'LinearGenomeView-searchResultSelected',
+  ({ result, model, assemblyName }) => {
+    highlightSearchResultFeature({ result, model, assemblyName })
+  },
+)
+```
+
+Every callback registered on a notification point runs — there is no value for a
+later one to overwrite. That is what the `notify` shape in the listing below
+means, and it is the opposite of `single`, where only the last plugin to
+register is visible.
+
+Every point is a fold, so a callback on one of these used to have to
+`return arg` — returning the nothing the point carries, so the chain stayed
+intact for whoever registered after it. Forgetting cost the later plugins their
+callbacks, for a value that was never data.
+
+An `async` callback's promise is not dropped either: the folded value is the
+completion signal, and two async callbacks are joined rather than the later one
+replacing the earlier. That is how `Core-handleUnrecognizedAssembly` works — a
+handler supplies the assembly out of band, and its promise is what lets
+`waitForAssembly` stop waiting on an event rather than on a clock. Note the
+producer there fires the point with the **sync** runner and awaits the folded
+value itself; only `evaluateAsyncExtensionPoint` awaits each callback in turn.
+
+## Extension point listing
+
+Generated from the `#extensionPoint` tags at each point's fire/registration
+site. The detailed sections that follow are hand-written.
+
+**Shape** says what happens when a second plugin registers on the same point,
+and is derived from the point's `args`. A `list` point accumulates, so every
+plugin's contribution survives; register with `contributeToExtensionPoint`. A
+`notify` point carries no value at all, so every plugin's callback runs;
+register with `observeExtensionPoint`. A `single` point threads one value along,
+so each callback overwrites what the one before it returned and only the last
+plugin to register is visible; register with `addToExtensionPoint`. The names
+don't carry this: `DotplotView-OverlaySVGComponent` accumulates and
+`DotplotView-OverlayHTMLComponent` does not.
+
 <!-- EXTENSION_POINTS_INDEX START -->
 
 <!-- prettier-ignore -->
@@ -252,7 +272,7 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |
 | `Core-guessAdapterForLocation` | sync | single | Guess an adapter config from a file location |
 | `Core-guessTrackTypeForLocation` | sync | single | Guess a track type from a file location |
-| `Core-handleUnrecognizedAssembly` | sync | single | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout |
+| `Core-handleUnrecognizedAssembly` | sync | notify | Supply an assembly config when a referenced assembly is unknown. May return a promise settling when the handler has finished trying, which is what lets waitForAssembly stop waiting without a timeout |
 | `Core-preferencesDialogPanels` | sync | list | Add panels to the preferences dialog |
 | `Core-preProcessTrackConfig` | sync | single | Rewrite a track config snapshot before it is instantiated |
 | `Core-replaceAbout` | sync | single | Replace or wrap a track's About dialog body |
@@ -274,7 +294,7 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 | `LinearGenomeView-HighlightSVGComponent` | sync | list | Add an SVG highlight overlay in the LGV SVG export |
 | `LinearGenomeView-OverviewScalebarComponent` | sync | list | Add a component to the overview scalebar |
 | `LinearGenomeView-ScalebarHighlightComponent` | sync | list | Add a highlight component to the scalebar |
-| `LinearGenomeView-searchResultSelected` | async | single | Invoked when a search result is selected |
+| `LinearGenomeView-searchResultSelected` | async | notify | Invoked when a search result is selected |
 | `LinearGenomeView-TracksContainerComponent` | sync | list | Add a component into the LGV tracks container |
 | `LinearSyntenyView-ImportFormSyntenyOptions` | sync | list | Add options to the linear synteny view import form |
 | `LinearSyntenyView-SyntenyFileFormats` | sync | list | Add synteny file formats to the linear synteny import form |
@@ -520,8 +540,9 @@ registration order.
 - `props` - [`AboutPanelProps`](#core-replaceabout), also passed to your
   component
 
-Return value: the array, with your component appended. Each panel renders its
-own card chrome, so use `BaseCard` for a titled section.
+Return value: your component, or `undefined` to add no panel — the array itself
+is never in reach, so nothing you return can drop another plugin's panel. Each
+panel renders its own card chrome, so use `BaseCard` for a titled section.
 
 Example: adds an extra about dialog panel for a particular track ID
 
@@ -1074,8 +1095,9 @@ div:
 ```
 
 Render a custom overlay inside the LinearGenomeView TracksContainer, e.g.
-highlights as a full-height div over the tracks area. Append to the array and
-return it.
+highlights as a full-height div over the tracks area. Contribute the node with
+[`addExtensionElement`](#accumulating-points), which fixes the React `key` for
+you, or `contributeToExtensionPoint` if you need to build it yourself.
 
 ### LinearGenomeView-OverviewScalebarComponent
 
@@ -1123,26 +1145,13 @@ Registered contract:
 
 Called when a search result is selected in the LinearGenomeView search box,
 after navigation (if the result has a location). Useful for taking further
-action, e.g. selecting a corresponding feature. It's a notification point: the
-payload lives in `props` (passed unchanged to every callback) rather than
-`args`, so callbacks can't alter what later callbacks see.
-
-The canvas plugin registers on it to highlight the feature the result names,
-rather than only the region the search navigated to:
-
-<!-- include: plugins/canvas/src/index.ts#searchResultSelected -->
-
-```typescript
-pluginManager.observeExtensionPoint(
-  'LinearGenomeView-searchResultSelected',
-  ({ result, model, assemblyName }) => {
-    highlightSearchResultFeature({ result, model, assemblyName })
-  },
-)
-```
-
-`args` is `undefined` here, so the return is not carrying data — it is keeping
-the fold intact for whatever registered after you.
+action, e.g. selecting a corresponding feature. It's a
+[notification point](#notification-points): the payload lives in `props` (passed
+unchanged to every callback) rather than `args`, so callbacks can't alter what
+later callbacks see, and every plugin registered on it runs. Register with
+`observeExtensionPoint` — the canvas plugin's registration, which highlights the
+feature the result names rather than only the region the search navigated to, is
+the worked example in that section.
 
 ### DotplotView-ImportFormSyntenyOptions
 
@@ -1214,8 +1223,8 @@ type: synchronous
 
 Add support for new synteny file formats in the DotplotView import form. The
 built-in formats (`.paf`, `.delta`, `.out`, `.chain`, `.anchors`,
-`.anchors.simple`, `.pif.gz`) are the initial value; each callback appends to or
-replaces entries. Each option:
+`.anchors.simple`, `.pif.gz`) are the point's initial value and are always kept;
+a contribution is added after them. Each option:
 
 <!-- include: packages/synteny-core/src/SelectorTypes.ts#fileFormatOption -->
 
@@ -1240,8 +1249,10 @@ export interface SyntenyFileFormatOption {
 `onAdapterChange` should be called with the built adapter config whenever the
 user's file selection is complete, or `undefined` when the selection is cleared.
 
-The built-in formats are all produced by one helper in `@jbrowse/synteny-core`,
-which is the smallest complete example of the shape:
+Four of the built-in formats (`.paf`, `.delta`, `.out`, `.chain`) come from one
+helper in `@jbrowse/synteny-core` — the three `.anchors`/`.pif.gz` variants need
+a second file or a different selector and have their own — and it is the
+smallest complete example of the shape:
 
 <!-- include: packages/synteny-core/src/defaultSyntenyFileFormats.tsx#simpleFormat -->
 
@@ -1306,8 +1317,6 @@ file/swap UI as the built-ins rather than reimplementing it.
 
 Register it with
 `pluginManager.contributeToExtensionPoint('DotplotView-SyntenyFileFormats', () => myFormat)`.
-The built-in formats are the point's initial value and are always kept; a
-contribution is added after them.
 
 ### LinearSyntenyView-SyntenyFileFormats
 
@@ -1364,8 +1373,9 @@ export interface LinearSyntenyImportFormSyntenyOption {
 }
 ```
 
-Register it the same way as `DotplotView-ImportFormSyntenyOptions` above,
-appending your `{ value, label, ReactComponent }` option to the array.
+Register it the same way as `DotplotView-ImportFormSyntenyOptions` above, with
+`contributeToExtensionPoint` returning your `{ value, label, ReactComponent }`
+option.
 
 ### Desktop-StartScreenMenuItems
 
