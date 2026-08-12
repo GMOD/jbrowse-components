@@ -6,6 +6,7 @@ import { getFeatureAtIndex } from '../LinearSyntenyDisplay/model.ts'
 import { resolveMatchingSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { followAnchorWindow } from './followAnchorWindow.ts'
 import { followDirection } from './followDirection.ts'
+import { followEnvelope } from './followEnvelope.ts'
 import { interpolateFollowSpan } from './interpolateFollowSpan.ts'
 import { pickFollowFeature } from './pickFollowFeature.ts'
 
@@ -45,6 +46,12 @@ interface FollowStep {
   // whether the alignment carries a CIGAR to walk, decided from the same fetch
   // the feature came out of
   hasCigar: boolean
+  // The union of everything under the window, used when the window is NOT
+  // inside `feat` — see the choice in `execute`. Computed in the tracked pass
+  // beside the rest, since it reads the same fetched data.
+  envelope: ResolvedSpan | undefined
+  // whether the anchor window lies wholly inside `feat`
+  windowInsideFeat: boolean
 }
 
 /**
@@ -158,16 +165,30 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     } = step
     const state = stateFor(level)
     const seq = ++state.seq
-    // The CIGAR walk first where there is one to walk, interpolation where there
-    // is not. `hasCigar` is per-FETCH, not per-feature — true when any block in
-    // the response carried one — so a file that mixes them (a chain set with a
-    // few CIGAR-less rows, a PAF concatenated from two runs) reaches the walk
-    // and gets nothing back. Falling through rather than giving up keeps those
-    // blocks followable, on the same terms as a wholly CIGAR-less tier.
-    const span =
-      (hasCigar
-        ? await resolveMatchingSpan({ model: display, feat, window, toMate })
-        : undefined) ?? interpolateFollowSpan({ feat, window, toMate })
+    // ONE ALIGNMENT ONLY WHEN THE WINDOW IS INSIDE ONE. Both single-block
+    // resolvers clamp the window to the block before mapping it, which is right
+    // — a block says nothing about sequence outside itself — and which makes
+    // the single-block answer useless once the window is wider than the block:
+    // the followed row lands on the block's own width however far the anchor is
+    // zoomed out. So the exact walk serves the case it is exact for, and the
+    // envelope (the union of everything under the window) serves the rest.
+    //
+    // The test is the containment itself rather than a coverage threshold, so
+    // there is no number to tune and the two agree at the boundary: a window
+    // that just fits inside a block resolves the same either way, and one that
+    // just escapes it picks up the neighbouring blocks it now overlaps.
+    const span = step.windowInsideFeat
+      ? // The CIGAR walk where there is one to walk, interpolation where there
+        // is not. `hasCigar` is per-FETCH, not per-feature — true when any block
+        // in the response carried one — so a file that mixes them (a chain set
+        // with a few CIGAR-less rows, a PAF concatenated from two runs) reaches
+        // the walk and gets nothing back. Falling through rather than giving up
+        // keeps those blocks followable, on the same terms as a wholly
+        // CIGAR-less tier.
+        ((hasCigar
+          ? await resolveMatchingSpan({ model: display, feat, window, toMate })
+          : undefined) ?? interpolateFollowSpan({ feat, window, toMate }))
+      : (step.envelope ?? interpolateFollowSpan({ feat, window, toMate }))
     // superseded while the resolve was in flight, or the view went away
     if (seq !== state.seq || !isAlive(self) || !isAlive(movingView)) {
       return
@@ -253,15 +274,26 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             })
             if (candidate && (!best || candidate.overlap > bestOverlap)) {
               bestOverlap = candidate.overlap
+              const feat = getFeatureAtIndex(data, candidate.index)
+              const [aStart, aEnd] = toMate
+                ? [feat.start, feat.end]
+                : [feat.mate.start, feat.mate.end]
               best = {
                 level,
                 display,
                 movingView,
                 movingWindow,
-                feat: getFeatureAtIndex(data, candidate.index),
+                feat,
                 window,
                 toMate,
                 hasCigar: data.hasCigar,
+                windowInsideFeat: aStart <= window.start && aEnd >= window.end,
+                envelope: followEnvelope({
+                  data,
+                  window,
+                  toMate,
+                  mateAssembly,
+                }),
               }
             }
           }

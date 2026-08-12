@@ -107,6 +107,37 @@ test('the followed row tracks the anchor as it pans, rather than jumping once', 
   }, timeout)
 })
 
+// Reported from the grape/peach MCScan demo and reproduced there at 2131x: a
+// window wider than any one alignment resolved through whichever single block
+// overlapped it most, and since both single-block resolvers CLAMP the window to
+// the block, the followed row zoomed to that block's own width. The wider the
+// anchor, the worse it got. volvox_inv_indels puts seven blocks on ctgA, the
+// widest 22kb of a 49kb contig, so a whole-contig window is the same shape of
+// problem an order of magnitude smaller.
+test('a window wider than any one alignment does not zoom the followed row in', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+
+  // ZOOM IN FIRST. The target row opens on the whole genome, which is already
+  // wider than anything asserted below — so without this the test passes on a
+  // row the follow never touched, which is exactly how it read before this
+  // line was here.
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).end - windowOf(target!).start).toBeLessThan(5000)
+  }, timeout)
+
+  await query!.navToLocString('ctgA:1..49186', QUERY_ASM)
+
+  await waitFor(() => {
+    // the single-block answer is the widest block's own 22.7kb; the union of
+    // everything under the window covers nearly the whole 50kb contig
+    const followed = windowOf(target!)
+    expect(followed.end - followed.start).toBeGreaterThan(35000)
+  }, timeout)
+})
+
 test('a followed row dragged away by hand is put back', async () => {
   // The guard against redundant navigation compares against where the row
   // ACTUALLY is, not against what the follow last asked for. Remembering only
