@@ -68,7 +68,16 @@ const OpenTrackBadge = observer(function OpenTrackBadge({
     display,
     changes: getDisplayTypeDefaultChanges(display),
   }))
-  const displayTypeDefaults = perDisplay.flatMap(d => d.changes)
+  // Addressed by display type, the same shape `flattenTrackConfigDelta` gives
+  // the "edited on this track" rows above — the two tables sit one under the
+  // other in the dialog, and a bare slot name in one of them reads as a
+  // different kind of setting. It is also what keeps the rows apart:
+  // `SettingsChangesTable` keys on the joined path, and the cascade's own paths
+  // are one segment long, so a track holding two displays that share a slot
+  // name (`showLegend`, `heightMode`) hands React two identical keys.
+  const displayTypeDefaults = perDisplay.flatMap(({ display, changes }) =>
+    changes.map(c => ({ ...c, path: [display.type, ...c.path] })),
+  )
   // clear exactly the slots the dialog listed, keeping the button's blast radius
   // equal to what the user is looking at — a promoted default this track
   // customized over, or one equal to the base, appears in no row yet still

@@ -107,8 +107,10 @@ describe('OverrideBadge session-default awareness', () => {
         displayTypeDefaults: { path: string[] }[]
         onClearDefaults: () => void
       }
-    expect(displayTypeDefaults.map(c => c.path[0])).toEqual([
-      'subfeatureLabels',
+    // display-type-addressed, like the edited-on-this-track rows beside them —
+    // and the reason the two tables can't collide on a shared slot name
+    expect(displayTypeDefaults.map(c => c.path.join('.'))).toEqual([
+      'LinearBasicDisplay.subfeatureLabels',
     ])
 
     onClearDefaults()
