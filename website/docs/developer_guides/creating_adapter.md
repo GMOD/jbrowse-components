@@ -182,6 +182,59 @@ other methods await rather than in each of them.
 Larger example:
 [`MCScanAnchorsAdapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/MCScanAnchorsAdapter.ts).
 
+## Registering the adapter type
+
+The class is half of it; a plugin's `install()` registers the type.
+`BedGraphAdapter`'s registration is the whole file:
+
+<!-- include: plugins/bed/src/BedGraphAdapter/index.ts -->
+
+```ts
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+
+import configSchema, { normalizeSnapshot } from './configSchema.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+export default function BedGraphAdapterF(pluginManager: PluginManager) {
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'BedGraphAdapter',
+        displayName: 'BedGraph adapter',
+        normalizeSnapshot,
+        configSchema,
+        getAdapterClass: () =>
+          import('./BedGraphAdapter.ts').then(r => r.default),
+      }),
+  )
+}
+```
+
+`getAdapterClass` returns a promise, so the adapter's parsing code stays out of
+the startup bundle until a track using it opens. (An eager `AdapterClass` is
+still accepted for older plugins; prefer the lazy form.)
+
+The rest are optional:
+
+- **`adapterMetadata`** is how the adapter presents itself in the "Add track"
+  form: `category` groups it in the dropdown, `description` is the sentence
+  under it, `hiddenFromGUI` keeps it out entirely (right for an adapter only
+  ever nested inside another), and `alsoReads` is a `RegExp` of file names it
+  can read but the extension guess does not hand it. `alsoReads` is a form hint
+  only — it does not enter `Core-guessAdapterForLocation`, so nothing changes
+  about what a file resolves to headlessly or from the CLI.
+- **`adapterCapabilities`** is a string list other code tests for, e.g.
+  `'exportData'` (the VCF adapters) or `'hasResolution'` (bigWig).
+- **`locationKey`** names the config slot holding the primary file location, so
+  import forms can pull the file back out of an existing track's config.
+- **`normalizeSnapshot`** expands a shorthand config — `{ type, uri }` — to the
+  location slots the schema declares. This defaults to the config schema's own
+  [`preProcessSnapshot`](/docs/developer_guides/configuration_schema#preprocesssnapshot),
+  so declaring the shorthand there is enough and the two cannot come apart. Pass
+  one here only to normalize differently before MST builds the config than
+  during it, which nothing in tree needs.
+
 ## Feature adapter API
 
 ### getRefNames
