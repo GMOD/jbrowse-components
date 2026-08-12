@@ -10,7 +10,10 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
 import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
-import { followDirection } from '../SyntenyFollow/followDirection.ts'
+import {
+  followDirection,
+  followDistance,
+} from '../SyntenyFollow/followDirection.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 
@@ -212,29 +215,43 @@ function stateModelFactory(pluginManager: PluginManager) {
        * each resolved the direction, looked the two rows up and repeated the
        * initialized guard. Those are the same question, and the answer changes
        * only when the rows or the anchor do.
+       *
+       * ORDERED OUTWARD FROM THE ANCHOR rather than by level index, which is
+       * what makes a stack of three or more settle in one pass: a level's
+       * staying row is either the anchor or a row some nearer level places, so
+       * visiting them nearest-first means every level reads an input the same
+       * pass has already written. In level order that only holds when the
+       * anchor is the top row.
        */
       get followPairs() {
-        return self.levels.flatMap(level => {
-          const { stayingIndex, movingIndex, toMate } = followDirection(
-            level.level,
-            self.followAnchorIndex,
+        const { followAnchorIndex } = self
+        return self.levels
+          .flatMap(level => {
+            const { stayingIndex, movingIndex, toMate } = followDirection(
+              level.level,
+              followAnchorIndex,
+            )
+            const stayingView = self.views[stayingIndex]
+            const movingView = self.views[movingIndex]
+            return stayingView?.initialized && movingView?.initialized
+              ? [
+                  {
+                    level,
+                    stayingView,
+                    movingView,
+                    toMate,
+                    // the level's LOWER row is the one on the alignments' mate
+                    // axis whichever direction the level runs in
+                    mateAssembly: self.views[level.level + 1]?.assemblyNames[0],
+                  },
+                ]
+              : []
+          })
+          .sort(
+            (a, b) =>
+              followDistance(a.level.level, followAnchorIndex) -
+              followDistance(b.level.level, followAnchorIndex),
           )
-          const stayingView = self.views[stayingIndex]
-          const movingView = self.views[movingIndex]
-          return stayingView?.initialized && movingView?.initialized
-            ? [
-                {
-                  level,
-                  stayingView,
-                  movingView,
-                  toMate,
-                  // the level's LOWER row is the one on the alignments' mate
-                  // axis whichever direction the level runs in
-                  mateAssembly: self.views[level.level + 1]?.assemblyNames[0],
-                },
-              ]
-            : []
-        })
       },
 
       /**
