@@ -121,7 +121,6 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
-import { computeArcBand } from './renderers/rendererTypes.ts'
 import {
   belowCoverageBandsGeometry,
   buildSectionRenders,
@@ -1421,9 +1420,15 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The fields `computeArcBand` reads. One source so the drawn arc band
-         * (`sections`/`buildSectionRenders`) and the insert-size ruler that must
-         * land on its apexes (`insertSizeTicks`) can't be assembled differently.
+         * The fields `computeArcBand` reads, bundled so the layout can hand them
+         * over whole.
+         *
+         * It used to have a second caller — the insert-size ruler assembled its
+         * own band from this, and the bundle was what kept the two assemblies
+         * identical. `insertSizeTickSections` now reads the band the LAYOUT
+         * placed (`renderSections`), which it had to in order to rule more than
+         * the first section, so the ruler and the arcs agree by reading one
+         * answer rather than by computing one twice from one input.
          */
         get arcBandInput() {
           return {
@@ -2659,9 +2664,10 @@ export default function stateModelFactory(
           // comparability trick coverage uses with coverageMaxDepth). Ungrouped
           // has one group, so this reduces to the prior single-group max.
           //
-          // The largest INSERT SIZE, not the largest drawn Y — `insertSizeTicks`
-          // labels its top tick with this number, so a domain carrying the
-          // cloud's ±8% jitter printed a template length no read has.
+          // The largest INSERT SIZE, not the largest drawn Y —
+          // `insertSizeTickSections` labels its top tick with this number, so a
+          // domain carrying the cloud's ±8% jitter printed a template length no
+          // read has.
           let maxBp = 0
           for (const regionMap of self.arcsByGroup.values()) {
             for (const data of regionMap.values()) {
@@ -2675,20 +2681,46 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The read cloud's insert-size ruler, ONE PER SECTION that reserves an
+         * arc band, in stacking order. Empty outside read-cloud mode, which is
+         * the only mode that puts |TLEN| on the band's Y axis.
+         *
+         * Per section for the same reason `CoverageScaleBars` is: arc strips are
+         * reserved per section, so a grouped read cloud has N bands and a single
+         * ruler can only sit beside one of them. It sat beside the first — the
+         * values were right for every lane, since `arcsYDomainBp` is pooled
+         * across groups, but every lane below the first had a plotted axis and
+         * nothing labelling it.
+         *
+         * The band comes off `renderSections`, which carries `computeArcBand`'s
+         * answer already placed at the section's own `coverageTop`, rather than
+         * from a second `computeArcBand(self.arcBandInput)` call that could only
+         * describe a section-relative band. So the tick `y`s are absolute CONTENT
+         * y, and the one `bandScreenTop(0, …)` shift both hosts already apply
+         * completes the projection — `bandScreenTop` being linear in its
+         * argument, that is exactly `bandScreenTop(sec.arcBandTop, …)`.
          */
-        get insertSizeTicks() {
-          const domain = this.arcsYDomainBp
-          if (domain === undefined) {
-            return undefined
+        get insertSizeTickSections() {
+          const arcsYDomainBp = this.arcsYDomainBp
+          if (arcsYDomainBp === undefined) {
+            return []
           }
-          // arcsYDomainBp is only set in read-cloud mode, so this runs only then.
-          // The ruler reuses the arcs' own band geometry so ticks land on the
-          // arc apexes (see insertSizeTicks.ts / features/arcs/drawCanvas.ts).
-          const band = computeArcBand(self.arcBandInput)
-          if (!band) {
-            return undefined
-          }
-          return computeInsertSizeTicks({ band, arcsYDomainBp: domain })
+          return self.renderSections.flatMap(sec => {
+            // A lane whose reads produced no arc reserves no band, so it gets no
+            // ruler — the same gate the renderers use to skip the pass.
+            const ticks =
+              sec.arcBandHeight > 0
+                ? computeInsertSizeTicks({
+                    band: {
+                      top: sec.arcBandTop,
+                      height: sec.arcBandHeight,
+                      down: sec.arcDown,
+                    },
+                    arcsYDomainBp,
+                  })
+                : undefined
+            return ticks ? [{ groupKey: sec.groupKey, ticks }] : []
+          })
         },
       }))
       .views(self => ({

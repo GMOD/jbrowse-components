@@ -73,7 +73,7 @@ function AlignmentsSvgBody({
   const palette = resolvePalette({ configTheme: opts?.theme })
   const baseState = model.renderState
   const displayHeight = height
-  const { coverageTicks, insertSizeTicks, renderSections } = model
+  const { coverageTicks, insertSizeTickSections, renderSections } = model
   // anchors the left-edge scale bars / group labels to the content; non-zero
   // only when scrolled before the genome start
   const contentLeft = Math.max(-view.offsetPx, 0)
@@ -159,13 +159,14 @@ function AlignmentsSvgBody({
           canvasWidth={canvasWidth}
         />
       ) : null}
-      {insertSizeTicks ? (
-        <InsertSizeScaleBar
-          ticks={insertSizeTicks}
+      {insertSizeTickSections.length > 0 ? (
+        <InsertSizeScaleBars
+          sections={insertSizeTickSections}
           down={model.readConnectionsDown}
           canvasWidth={canvasWidth}
           // A sticky-capable band top like coverage, so it takes the same
-          // projection the on-screen InsertSizeAxisHost applies.
+          // projection the on-screen InsertSizeAxisHost applies. One shift for
+          // all of them: each section's ticks carry its own `arcBandTop`.
           yShift={bandScreenTop(0, scroll)}
         />
       ) : null}
@@ -276,17 +277,19 @@ export function CoverageScaleBars({
   )
 }
 
-// Insert-size (TLEN) scale bar, read-cloud mode only. The axis lays itself out
-// inside its own box (`InsertSizeAxis`, shared with PileupComponent's
-// InsertSizeAxisHost); all this supplies is where that box goes, which is the
-// only thing that differs from the on-screen overlay's CSS-anchored one.
-function InsertSizeScaleBar({
-  ticks,
+// Insert-size (TLEN) scale bars, read-cloud mode only — one per section that
+// reserves an arc band, the way `CoverageScaleBars` above does for coverage. The
+// axis lays itself out inside its own box (`InsertSizeAxis`, shared with
+// PileupComponent's InsertSizeAxisHost); all this supplies is where that box
+// goes, which is the only thing that differs from the on-screen overlay's
+// CSS-anchored one.
+function InsertSizeScaleBars({
+  sections,
   down,
   canvasWidth,
   yShift,
 }: {
-  ticks: NonNullable<LinearAlignmentsDisplayModel['insertSizeTicks']>
+  sections: LinearAlignmentsDisplayModel['insertSizeTickSections']
   down: boolean
   canvasWidth: number
   yShift: number
@@ -295,7 +298,9 @@ function InsertSizeScaleBar({
     <g
       transform={`translate(${insertSizeAxisBoxLeft(canvasWidth, down)}, ${yShift})`}
     >
-      <InsertSizeAxis ticks={ticks} down={down} />
+      {sections.map(({ groupKey, ticks }) => (
+        <InsertSizeAxis key={sectionKey(groupKey)} ticks={ticks} down={down} />
+      ))}
     </g>
   )
 }

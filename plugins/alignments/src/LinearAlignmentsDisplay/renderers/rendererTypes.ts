@@ -204,9 +204,13 @@ export interface ArcBand {
   down: boolean
 }
 
-// The fields `computeArcBand` reads. Narrower than `RenderState` so the model's
-// `insertSizeTicks` getter can build the band from raw fields without depending
-// on the full render state (which also needs the color palette to exist).
+// The fields `computeArcBand` reads. Narrower than `RenderState` so the LAYOUT
+// can place the band without depending on the full render state, which also
+// needs the color palette to exist — and the layout runs before there is one.
+//
+// It was narrowed for the insert-size ruler, which used to assemble a band of
+// its own from these. It no longer does: a ruler per section has to read the
+// band the layout placed, since only that one knows where each section's is.
 export interface ArcBandInput {
   showCoverage: boolean
   coverageHeight: number

@@ -539,20 +539,24 @@ const CoverageAxisHost = observer(function CoverageAxisHost({
   )
 })
 
-// Only rendered in read-cloud mode (insertSizeTicks is null otherwise). Shared
-// Y-domain means one bar is value-correct for all sections; in grouped mode
-// it scrolls with the first section.
+// Only rendered in read-cloud mode (`insertSizeTickSections` is empty
+// otherwise). One bar per section that reserves an arc band, mirroring
+// `CoverageAxisHost`: the Y domain is pooled across groups so every bar reads
+// the same values, but the bands are stacked, and a single bar could only sit
+// beside the first of them.
 const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { insertSizeTicks, readConnectionsDown, height } = model
-  if (!insertSizeTicks) {
+  const { insertSizeTickSections, readConnectionsDown, height } = model
+  if (insertSizeTickSections.length === 0) {
     return null
   }
   // The arc band is a sticky-capable band top like coverage — same tier, same
-  // projection, rather than a second inline `isGrouped ? -scrollTop : 0`.
+  // projection, rather than a second inline `isGrouped ? -scrollTop : 0`. One
+  // shift for every section, because each section's ticks already carry its own
+  // `arcBandTop` in content space.
   const yShift = bandScreenTop(0, model.scrollModel)
   return (
     <svg
@@ -568,7 +572,13 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
       }}
     >
       <g transform={`translate(0, ${yShift})`}>
-        <InsertSizeAxis ticks={insertSizeTicks} down={readConnectionsDown} />
+        {insertSizeTickSections.map(({ groupKey, ticks }) => (
+          <InsertSizeAxis
+            key={sectionKey(groupKey)}
+            ticks={ticks}
+            down={readConnectionsDown}
+          />
+        ))}
       </g>
     </svg>
   )

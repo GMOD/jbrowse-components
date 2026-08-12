@@ -17,6 +17,7 @@ import { makeEmptyPileupData } from './testUtils.ts'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 // Boots a real LinearAlignmentsDisplay in a measured view, so the per-lane band
 // decision is exercised through the actual `arcsByGroup` → `sections` chain
@@ -222,4 +223,99 @@ test('turning read connections off drops the band from the lane that had one', (
   expect(display.sections.contentHeight).toBe(
     withArcs - display.readConnectionsHeight,
   )
+})
+
+// Arc strips are reserved PER SECTION, so a grouped read cloud has one band per
+// lane — and the ruler that labels the |TLEN| axis has to have one per lane too.
+// It did not: `insertSizeTicks` built a single bar from
+// `computeArcBand(self.arcBandInput)`, a section-RELATIVE band, and both hosts
+// placed it at content y 0. The values were right for every lane (the domain is
+// pooled across groups by `arcsYDomainBp`) but only the first lane's band had
+// anything beside it. `CoverageScaleBars` had solved the same problem by mapping
+// over sections; this is that.
+describe('the read cloud rules every lane that reserves an arc band', () => {
+  // Both lanes carrying a pair, so both reserve a band. Read cloud rather than
+  // arc mode, since only read cloud puts |TLEN| on the axis at all.
+  function twoCloudLanes() {
+    const { view, display } = createEnv()
+    display.setReadConnections('cloud')
+    display.setReadConnectionsDown(true)
+    display.setRpcData(0, {
+      groups: [
+        { key: 'a', label: 'Lane A', data: oneRead(2000) },
+        { key: 'b', label: 'Lane B', data: oneRead(3000) },
+      ],
+    })
+    display.setLoadedRegion(0, {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    })
+    return { view, display }
+  }
+
+  // The harness's `display` is the loosely-typed MST instance the session hands
+  // back, so name what this getter returns once rather than at four call sites.
+  type Ruler = { groupKey: string; ticks: YScaleTicks }
+  const rulers = (display: { insertSizeTickSections: Ruler[] }): Ruler[] =>
+    display.insertSizeTickSections
+
+  test('one ruler per banded lane, named by its group', () => {
+    const { display } = twoCloudLanes()
+    const layout: SectionsLayout = display.sections
+    expect(layout.sections.every(s => s.hasArcsBand)).toBe(true)
+    expect(rulers(display).map(s => s.groupKey)).toEqual(['a', 'b'])
+  })
+
+  test('each ruler sits on its own lane’s band, in content space', () => {
+    const { display } = twoCloudLanes()
+    const bands = display.renderSections
+    for (const [i, { ticks }] of rulers(display).entries()) {
+      const band = bands[i]!
+      // Down mode anchors at the band top, so the baseline tick (value 1, log
+      // fraction 0) lands exactly there — the same `arcAnchorY` the arcs take.
+      expect(ticks.items[0]!.value).toBe(1)
+      expect(ticks.items[0]!.y).toBe(band.arcBandTop)
+      expect(ticks.yTop).toBe(band.arcBandTop)
+    }
+  })
+
+  test('the second lane’s ruler is genuinely lower than the first', () => {
+    // The regression this exists for: one bar for the whole track put every
+    // section's ticks at the first section's band.
+    const { display } = twoCloudLanes()
+    const [a, b] = rulers(display)
+    if (!a || !b) {
+      throw new Error('expected a ruler for each of the two lanes')
+    }
+    expect(b.ticks.yTop).toBeGreaterThan(a.ticks.yTop)
+  })
+
+  test('a lane with no arc band gets no ruler', () => {
+    // Same gate the renderers use to skip the pass: no arcs, no band, so
+    // nothing to label. Lane A pairs, lane B does not.
+    const { display } = createEnv()
+    display.setReadConnections('cloud')
+    display.setReadConnectionsDown(true)
+    display.setRpcData(0, {
+      groups: [
+        { key: 'a', label: 'Lane A', data: oneRead(2000) },
+        { key: 'b', label: 'Lane B', data: oneRead() },
+      ],
+    })
+    display.setLoadedRegion(0, {
+      refName: 'ctgA',
+      start: 0,
+      end: 10_000,
+      assemblyName: 'volvox',
+    })
+    expect(rulers(display).map(s => s.groupKey)).toEqual(['a'])
+  })
+
+  test('arc mode has no |TLEN| axis to rule', () => {
+    const { display } = twoCloudLanes()
+    display.setReadConnections('arc')
+    expect(rulers(display)).toEqual([])
+  })
 })
