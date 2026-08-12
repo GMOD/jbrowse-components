@@ -4,10 +4,10 @@
 // with the drawn one, and it has, twice.
 import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
-import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
+import { arcAnchorY } from './arcYScale.ts'
 import { ellipseDistance } from './ellipseDistance.ts'
-import { arcPlacement } from './placement.ts'
+import { arcPlacement, flatBarExtent } from './placement.ts'
 
 import type { ArcsUploadData } from './types.ts'
 
@@ -80,7 +80,7 @@ export function hitTestArcs(
     return undefined
   }
 
-  const anchorY = pairedArcsDown ? arcsTop : arcsTop + arcsH
+  const anchorY = arcAnchorY(arcsTop, arcsH, pairedArcsDown)
   // Drawn-side-positive local Y: an up-pointing band measures upward from the
   // anchor, a down-pointing one downward, and every test below is written once
   // against that single frame instead of twice against the two directions.
@@ -165,8 +165,7 @@ function flatDistance(
   sx2: number,
   arcH: number,
 ) {
-  const mid = (sx1 + sx2) / 2
-  const halfPx = Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2
+  const { mid, halfPx } = flatBarExtent(sx1, sx2)
   return Math.hypot(
     Math.max(Math.abs(canvasX - mid) - halfPx, 0),
     localY - arcH,

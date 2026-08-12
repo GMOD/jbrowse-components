@@ -9,7 +9,8 @@
 // exactly the case the split was about. The hit test had the same divergence
 // against the paint one commit earlier, over the far/near width. Two instances
 // of one shape is a missing function, not two bugs.
-import { arcAvailH, arcYOffsetPx } from './arcYScale.ts'
+import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.iface.generated.ts'
+import { arcAnchorY, arcAvailH, arcMarkY, arcYOffsetPx } from './arcYScale.ts'
 import { isFlatArcShape } from './compute.ts'
 
 import type { ArcsUploadData } from './types.ts'
@@ -61,7 +62,7 @@ export function arcPlacement(
     arcsH,
     pairedArcsDown,
   } = frame
-  const anchorY = pairedArcsDown ? arcsTop : arcsTop + arcsH
+  const anchorY = arcAnchorY(arcsTop, arcsH, pairedArcsDown)
   const availH = arcAvailH(arcsH)
   const yBp = data.arcYBp[i]!
   // One rule for both mark kinds, CLAMPED into the band. A dome briefly took an
@@ -74,8 +75,23 @@ export function arcPlacement(
     sx1: bpToScreenX(data.arcX1[i]!),
     sx2: bpToScreenX(data.arcX2[i]!),
     anchorY,
-    markY: pairedArcsDown ? anchorY + destY : anchorY - destY,
+    markY: arcMarkY(anchorY, destY, pairedArcsDown),
     destY,
     isFlat,
+  }
+}
+
+// The drawn extent of a flat read-cloud connector: where its midpoint sits and
+// how far the bar reaches either side, widened to `ARC_FLAT_MIN_PX` so a
+// sub-pixel pair still paints something. THE extent — the Canvas2D/SVG stroke,
+// the hover highlight's path and `flatDistance`'s hit target all measure it,
+// and each spelled `Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2` for
+// itself. Two of the three already carried a comment promising they mirrored
+// the third, which is the state this file's own header describes as a missing
+// function rather than as three correct copies.
+export function flatBarExtent(sx1: number, sx2: number) {
+  return {
+    mid: (sx1 + sx2) / 2,
+    halfPx: Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2,
   }
 }

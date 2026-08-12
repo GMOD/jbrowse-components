@@ -1,4 +1,9 @@
-import { arcAvailH, arcYOffsetPx } from '../features/arcs/arcYScale.ts'
+import {
+  arcAnchorY,
+  arcAvailH,
+  arcMarkY,
+  arcYOffsetPx,
+} from '../features/arcs/arcYScale.ts'
 
 import type { ArcBand } from './renderers/rendererTypes.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
@@ -66,7 +71,7 @@ export function computeInsertSizeTicks({
   if (availH <= 0 || arcsYDomainBp <= 0) {
     return undefined
   }
-  const anchor = band.down ? band.top : band.top + band.height
+  const anchor = arcAnchorY(band.top, band.height, band.down)
 
   // ~30px of vertical room per tick keeps the 10px labels from colliding; a
   // short band (e.g. the read-cloud TLEN band) thus shows just min + max
@@ -75,8 +80,11 @@ export function computeInsertSizeTicks({
   const items: YScaleTicks['items'] = []
   for (const v of logTickValues(arcsYDomainBp, maxTicks)) {
     const offset = arcYOffsetPx(v, arcsYDomainBp, true, availH)
-    const y = band.down ? anchor + offset : anchor - offset
-    items.push({ value: v, y, label: formatBp(v) })
+    items.push({
+      value: v,
+      y: arcMarkY(anchor, offset, band.down),
+      label: formatBp(v),
+    })
   }
 
   const yTop = band.down ? anchor : anchor - availH

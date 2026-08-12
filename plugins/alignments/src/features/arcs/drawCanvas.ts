@@ -9,16 +9,13 @@ import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generate
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 // The flat-line constants moved with the flat line: they are arcFlat.slang's
 // now, declared on the pass that consumes them.
-import {
-  ARC_FLAT_ALPHA,
-  ARC_FLAT_MIN_PX,
-} from '../../shaders/slang/arcFlat.iface.generated.ts'
+import { ARC_FLAT_ALPHA } from '../../shaders/slang/arcFlat.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAvailH, arcYScale } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
-import { arcPlacement } from './placement.ts'
+import { arcPlacement, flatBarExtent } from './placement.ts'
 
 import type {
   DrawBlock,
@@ -95,9 +92,9 @@ export function strokeArc(
 // Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
 // constant line Y, otherwise the curve apex. See ARC_SHAPE_* in compute.ts.
 function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
+  // The band rect is not read here at all: `arcPlacement` takes `opts` whole
+  // and resolves the anchor and both mark Ys from it.
   const {
-    arcsTop,
-    arcsH,
     pairedArcsDown,
     lineWidth,
     palette,
@@ -112,10 +109,6 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   // endpoint squares drawn by the arcMarker pass. ARC_FLAT_ALPHA is
   // arcFlat.slang's, which is also where the GPU twin of this line lives.
   const flatLineCss = rgba255(flatConnectorColor, ARC_FLAT_ALPHA)
-  // Anchor = where arcs meet the adjacent band (insert-size 0). pointing-up
-  // sits at the bottom of the band; pointing-down sits at the top. Matches
-  // the GPU shader and the right-side insert-size scalebar.
-  const anchorY = pairedArcsDown ? arcsTop : arcsTop + arcsH
 
   for (let i = 0; i < data.numArcs; i++) {
     const colorIdx = data.arcColorTypes[i]!
@@ -127,10 +120,16 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     ctx.lineWidth = arcLineWidth(data.arcSupport[i]!, lineWidth)
 
     // The one placement — shared with `hitTestArcs` and the hover highlight, so
-    // none of the three can drift from the other two. The band clip is the
-    // caller's; a dome deliberately leaves the band rather than flattening onto
-    // its ceiling.
-    const { sx1, sx2, markY, destY, isFlat } = arcPlacement(data, i, opts)
+    // none of the three can drift from the other two. `anchorY` comes off it
+    // too: the anchor rule is `arcAnchorY`'s, and hoisting a second copy of it
+    // out of this loop is how a draw gets to disagree with the placement it is
+    // otherwise reading. The band clip is the caller's; a dome deliberately
+    // leaves the band rather than flattening onto its ceiling.
+    const { sx1, sx2, anchorY, markY, destY, isFlat } = arcPlacement(
+      data,
+      i,
+      opts,
+    )
 
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
     if (isFlat) {
@@ -138,8 +137,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
       // the midpoint) so short-insert pairs stay visible; mirrors
       // arcFlat.slang's clamp. The endpoint squares carry the category color.
       ctx.strokeStyle = flatLineCss
-      const mid = (sx1 + sx2) / 2
-      const halfPx = Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2
+      const { mid, halfPx } = flatBarExtent(sx1, sx2)
       ctx.beginPath()
       ctx.moveTo(mid - halfPx, markY)
       ctx.lineTo(mid + halfPx, markY)

@@ -8,7 +8,11 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
+import {
+  arcAnchorY,
+  arcAvailH,
+  arcYScale,
+} from '../../features/arcs/arcYScale.ts'
 import {
   ARC_FLAT_PASS,
   ARC_LINE_PASS,
@@ -1064,8 +1068,9 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         arcBandH: band.height,
         dpr,
         // Up mode anchors at the band bottom (band.top + full height); down
-        // mode anchors at the band top.
-        arcAnchorPx: band.top + (band.down ? 0 : band.height),
+        // mode anchors at the band top — `arcAnchorY`, the same rule the
+        // Canvas2D placement and the insert-size ruler take their anchor from.
+        arcAnchorPx: arcAnchorY(band.top, band.height, band.down),
       })
       this.hal.writeUniforms(this.uData)
 
