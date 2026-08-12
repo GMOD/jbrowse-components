@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -160,15 +160,41 @@ export const PanelView = observer(function PanelView({
   )
   const roving = panel.tabs.find(t => t.id === focusedTabId)?.id ?? active?.id
 
+  // by dataset rather than an interpolated attribute selector: a tab id is
+  // nanoid output and would need CSS.escape, which jsdom does not have
+  function tabElement(tabId: string | undefined) {
+    return [...(stripRef.current?.children ?? [])].find(
+      child => (child as HTMLElement).dataset.tabId === tabId,
+    ) as HTMLElement | undefined
+  }
+
   function focusTab(tabId: string) {
     setFocusedTabId(tabId)
-    // by dataset rather than an interpolated attribute selector: a tab id is
-    // nanoid output and would need CSS.escape, which jsdom does not have
-    const el = [...(stripRef.current?.children ?? [])].find(
-      child => (child as HTMLElement).dataset.tabId === tabId,
-    )
-    ;(el as HTMLElement | undefined)?.focus()
+    // focusing scrolls it into view on its own, which is the whole reason the
+    // keyboard could always reach an overflowing strip when the mouse could not
+    tabElement(tabId)?.focus()
   }
+
+  /**
+   * Keep the shown tab in view.
+   *
+   * The strip scrolls, so a tab can become current while sitting outside it —
+   * `+` on a full strip appends a tab, makes it active, and leaves the user
+   * looking at the tabs it scrolled past. Clicking never needs this (you
+   * clicked something visible) and arrowing gets it from `focus()`, so this is
+   * for the tab that becomes current without being touched.
+   *
+   * `block: 'nearest'` so it cannot scroll an ancestor vertically. jsdom has no
+   * scrollIntoView at all, but `config/jest/scrollIntoView.js` already no-ops it
+   * for the whole suite — don't add an optional call for that, it reads as a
+   * browser that might not have the method.
+   */
+  useEffect(() => {
+    tabElement(active?.id)?.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  }, [active?.id])
 
   /**
    * MANUAL activation: arrows move focus, Enter/Space selects.
@@ -220,7 +246,27 @@ export const PanelView = observer(function PanelView({
           because a tablist's children have to be tabs and the panel actions
           beside them are not */}
       <div data-tab-strip className={classes.tabStrip}>
-        <div role="tablist" ref={stripRef} className={classes.tabs}>
+        <div
+          role="tablist"
+          ref={stripRef}
+          className={classes.tabs}
+          // A mouse wheel only has a vertical axis, and this scrolls
+          // horizontally — so without translating it, a strip with more tabs
+          // than fit is reachable by trackpad swipe and by keyboard and NOT AT
+          // ALL by mouse. The scrollbar is hidden on purpose (the strip is
+          // chrome) which removes the other way of noticing there is more.
+          //
+          // `deltaX` is a trackpad's own horizontal axis and the browser has
+          // already applied it; taking the larger axis leaves that gesture
+          // alone rather than doubling it.
+          onWheel={event => {
+            const el = stripRef.current
+            if (!el || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+              return
+            }
+            el.scrollLeft += event.deltaY
+          }}
+        >
           {panel.tabs.map(tab => (
             <div
               key={tab.id}

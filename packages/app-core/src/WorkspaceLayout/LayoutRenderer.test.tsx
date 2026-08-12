@@ -2,7 +2,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { defaultStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { colord } from '@jbrowse/core/util/colord'
 import { types } from '@jbrowse/mobx-state-tree'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import { LayoutRenderer } from './LayoutRenderer.tsx'
@@ -442,4 +442,69 @@ test('the splitter reports where it sits, as a percentage of its pair', () => {
   expect(splitter.getAttribute('aria-valuemin')).toBe('0')
   expect(splitter.getAttribute('aria-valuemax')).toBe('100')
   expect(splitter.getAttribute('aria-label')).toBeTruthy()
+})
+
+// ---------------------------------------------------------------------------
+// Overflow. The strip scrolls and hides its scrollbar (it is chrome, and a
+// scrollbar across it would be noise), so with more tabs than fit there is
+// nothing saying there is more and nothing a mouse can do about it. Measured at
+// 1400px with 30 tabs: 11 of them entirely outside the strip.
+// ---------------------------------------------------------------------------
+
+// jsdom computes no layout, so scrollLeft never moves on its own and
+// scrollWidth is 0 — the handler's arithmetic is what is checkable here, and
+// the reachability it buys was measured in a real browser.
+test('a mouse wheel over the strip scrolls it sideways', () => {
+  const session = TestSession.create({ name: 't' })
+  const { container } = renderLayout(session)
+  const list = container.querySelector('[role="tablist"]') as HTMLElement
+
+  list.scrollLeft = 0
+  fireEvent.wheel(list, { deltaY: 120, deltaX: 0 })
+  expect(list.scrollLeft).toBe(120)
+
+  fireEvent.wheel(list, { deltaY: -40, deltaX: 0 })
+  expect(list.scrollLeft).toBe(80)
+})
+
+// A trackpad swipe already arrives as deltaX and the browser has applied it.
+// Adding deltaY on top would scroll twice as far as the fingers moved.
+test('a horizontal gesture is left to the browser', () => {
+  const session = TestSession.create({ name: 't' })
+  const { container } = renderLayout(session)
+  const list = container.querySelector('[role="tablist"]') as HTMLElement
+
+  list.scrollLeft = 50
+  fireEvent.wheel(list, { deltaX: 200, deltaY: 5 })
+  expect(list.scrollLeft).toBe(50)
+})
+
+// Clicking never needs this and arrowing gets it from focus(); the case is a
+// tab that becomes current without being touched, which is what `+` does on a
+// strip already full.
+test('a tab that becomes current without being touched is scrolled into view', () => {
+  const session = TestSession.create({ name: 't' })
+  const p1 = session.panels[0]!.id
+  const scrolled: string[] = []
+  // record which tab asked; the shared jsdom stub is a bare no-op
+  const original = Element.prototype.scrollIntoView
+  Element.prototype.scrollIntoView = function (this: Element) {
+    const id = (this as HTMLElement).dataset.tabId
+    if (id) {
+      scrolled.push(id)
+    }
+  }
+  try {
+    renderLayout(session)
+    scrolled.length = 0
+    let added = ''
+    act(() => {
+      added = session.addTab(p1)!.id
+    })
+
+    expect(session.activeTabOf(p1)?.id).toBe(added)
+    expect(scrolled).toContain(added)
+  } finally {
+    Element.prototype.scrollIntoView = original
+  }
 })

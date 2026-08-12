@@ -149,6 +149,25 @@ move focus, Enter/Space shows). Automatic activation is the more common reading
 of the WAI tabs pattern, and its documented exception is exactly this: arrowing
 across five tabs would build and tear down five sets of views in passing.
 
+## The strip hides its scrollbar, so it has to scroll some other way
+
+`tabs` is `overflow-x: auto` with the scrollbar hidden — it is chrome, and a
+scrollbar across it would be noise. That removes both the affordance saying
+there is more and the means of getting there, and a mouse wheel has no
+horizontal axis to fall back on. Measured at 1400px with 30 tabs: 11 of them
+entirely outside the strip, `scrollLeft` immovable.
+
+So the wheel is translated to horizontal scroll, and a tab that becomes current
+_without being touched_ scrolls itself into view — `+` on a full strip appends a
+tab, makes it active, and otherwise leaves the user looking somewhere else.
+Clicking never needs that (you clicked something visible) and arrowing gets it
+free from `focus()`, which is why the keyboard could always reach an overflowing
+strip when the mouse could not.
+
+A trackpad's own horizontal swipe arrives as `deltaX` and the browser has
+already applied it, so the handler takes the larger axis and leaves that gesture
+alone rather than scrolling twice as far as the fingers moved.
+
 ## Keyboard: the strip is one tab stop, the splitter is operable
 
 A roving tabindex, so a panel with eight tabs is one stop rather than eight
