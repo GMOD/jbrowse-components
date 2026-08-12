@@ -2037,6 +2037,7 @@ export default function baseStateModelFactory(
                   openFeatureWidget(self, feature.toJSON(), {
                     widget: self.featureWidgetType,
                     extra: { descriptions },
+                    feature,
                   })
                 }
               })

@@ -259,3 +259,33 @@ test('a broken callback reports which track to look at', () => {
   model.widget.setFeatureData(feature)
   expect(`${model.widget.error}`).toContain('testtrack')
 })
+
+// The clone and the per-subfeature walk are both proportional to the subfeature
+// tree, and both produce nothing when neither tier declares a callback -- which
+// is what nearly every real config looks like. Identity is the observable half
+// of skipping them: `applyFormatDetails` hands the feature straight back rather
+// than returning a structural copy of it.
+test('a config declaring no callbacks does not copy the feature', () => {
+  const model = setup({})
+  model.widget.setFeatureData(feature)
+  expect(model.widget.featureData).toBe(feature)
+  expect(model.widget.featureData?.__jbrowsefmt).toBeUndefined()
+})
+
+// The skip is per-slot, so declaring one does not pay for the other: a
+// `feature` callback formats the top level without walking the tree.
+test('declaring only a feature callback leaves subfeatures unwalked', () => {
+  const model = setup({ trackFormatDetails: { feature: "jexl:{a:'b'}" } })
+  model.widget.setFeatureData(feature)
+  expect(model.widget.featureData).not.toBe(feature)
+  expect(model.widget.featureData?.__jbrowsefmt).toEqual({ a: 'b' })
+  expect(fmtAtDepth(model.widget.featureData, 1)).toBeUndefined()
+})
+
+// ...and the reverse: subfeatures format without a top-level callback.
+test('declaring only a subfeatures callback still formats subfeatures', () => {
+  const model = setup({ trackFormatDetails: { subfeatures: "jexl:{c:'d'}" } })
+  model.widget.setFeatureData(feature)
+  expect(model.widget.featureData?.__jbrowsefmt).toBeUndefined()
+  expect(fmtAtDepth(model.widget.featureData, 1)).toEqual({ c: 'd' })
+})

@@ -10,7 +10,7 @@ import {
 import SimpleFeature from './simpleFeature.ts'
 import { isSessionModelWithWidgets } from './types/index.ts'
 
-import type { SimpleFeatureSerialized } from './simpleFeature.ts'
+import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
 import type { Widget } from './types/index.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -46,13 +46,26 @@ export function openFeatureWidget(
     // Extra initialState fields merged into the widget. Use for adapter
     // metadata, descriptions, etc.
     extra?: Record<string, unknown>
+    // The live Feature `featureData` was serialized from, when the caller
+    // still holds it. Only an optimization -- `setSelection` is given this
+    // instead of a rebuilt one, and the two are interchangeable because
+    // `featureData` is this feature's own `toJSON()` (which already bakes in
+    // the parentId and inherited strand that a reconstructed feature would
+    // otherwise lack).
+    //
+    // Worth threading because `new SimpleFeature` is not shallow: its
+    // constructor inflates the whole subfeature tree, so rebuilding one for a
+    // gene the user just clicked allocates a wrapper per exon and per CDS of
+    // every transcript -- ~16k of them for a RefSeq BRCA1 -- purely to hand
+    // the session a feature it was already given.
+    feature?: Feature
   } = {},
 ): Widget | undefined {
   const session = getSession(node)
   if (!isSessionModelWithWidgets(session)) {
     return undefined
   }
-  session.setSelection(new SimpleFeature(featureData))
+  session.setSelection(opts.feature ?? new SimpleFeature(featureData))
   const { type, id } = opts.widget ?? DEFAULT_FEATURE_WIDGET
   const widget = session.addWidget(type, id, {
     featureData,
