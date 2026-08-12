@@ -161,12 +161,20 @@ export interface LoadedSpan {
 // A name-only highlight (`{ refName: 'chr12', name: 'KRAS' }`) is never
 // checkable — "not fetched yet" and "misspelled" are indistinguishable without a
 // span, since the feature could sit anywhere on the refName.
+//
+// Nor is an exact-id (right-click) one, and for a stronger reason: nothing about
+// it can be mistyped. Its id came from a feature that was rendered, so it
+// resolving to nothing means the feature stopped being drawn — hidden, filtered,
+// or an isoform dropped when the gene glyph collapsed to the longest one at
+// zoom-out. All routine, and the warning below would blame the user's
+// coordinates for each of them.
 function highlightIsCheckable(
   h: FeatureHighlight,
   loadedSpans: readonly LoadedSpan[],
 ) {
   const { refName, start, end } = h
   return (
+    h.featureId === undefined &&
     start !== undefined &&
     end !== undefined &&
     loadedSpans.some(
@@ -175,7 +183,7 @@ function highlightIsCheckable(
   )
 }
 
-// Warn once per highlight that resolved to nothing.
+// Warn once per SPAN-AUTHORED highlight that resolved to nothing.
 //
 // Matching is exact by design (see featureMatchesHighlight), which is right for
 // the two provenances that produce highlights programmatically: a right-click
@@ -187,9 +195,11 @@ function highlightIsCheckable(
 // hand-tuned arrow annotation compensating for it until someone diffed the
 // coordinates against the GFF.)
 //
-// Reaching here means BOTH the span/featureId pass and the name fallback missed
-// over data that covers the highlight's own span, so the coordinates disagree
-// with the track's record and no `name` rescued them.
+// So this is only for highlights whose span IS the identity; see
+// highlightIsCheckable for why a right-click's id is never in doubt. Reaching
+// here means the span pass and the name fallback both missed over data that
+// covers the highlight's own span, so the coordinates disagree with the track's
+// record and no `name` rescued them.
 // Module-level so the warning stays once-per-highlight across the many times the
 // getter recomputes. Exported purely so tests can reset it — without that, cases
 // silently depend on each other through it.
@@ -209,7 +219,9 @@ export function warnUnresolvedHighlights(
       resolved.boxedBy[i]?.size === 0 &&
       highlightIsCheckable(h, loadedSpans)
     ) {
-      const key = `${h.refName}:${h.start}-${h.end}:${h.featureId ?? h.name ?? ''}`
+      // no featureId in the key: highlightIsCheckable has already excluded every
+      // highlight that carries one
+      const key = `${h.refName}:${h.start}-${h.end}:${h.name ?? ''}`
       if (!warned.has(key)) {
         warned.add(key)
         console.warn(

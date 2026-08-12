@@ -439,6 +439,36 @@ describe('feature highlight declarative persistence', () => {
       expect(console.warn).toHaveBeenCalledTimes(1)
     })
 
+    it('stays silent for a right-click highlight whose feature stopped drawing', () => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      loadGeneWithTranscript(display)
+      display.setLoadedRegion(0, ctgA)
+      display.addFeatureHighlightForItem(
+        {
+          startBp: 1000,
+          endBp: 2000,
+          name: 'BRCA1',
+          featureId: 'transcript-1',
+        },
+        'ctgA',
+      )
+      expect([...display.highlightedFeatureIdSet]).toEqual(['transcript-1'])
+
+      // the same region, redrawn without that isoform — what hiding it, filtering
+      // it, or the gene glyph collapsing to the longest transcript at zoom-out
+      // all produce. Nothing here is a mistyped coordinate, so the span-authoring
+      // warning must not fire: the id came from a feature that WAS rendered.
+      loadFeature(display, {
+        featureId: 'gene-1',
+        startBp: 0,
+        endBp: 3000,
+      })
+
+      expect(display.highlightedFeatureIdSet.size).toBe(0)
+      expect(console.warn).not.toHaveBeenCalled()
+    })
+
     it('stays silent once the view has navigated off the highlight', () => {
       const { createDisplay } = createTestEnvironment()
       const { display } = createDisplay({ featureHighlights: [brca1] })
