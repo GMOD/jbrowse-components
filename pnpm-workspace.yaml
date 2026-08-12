@@ -46,3 +46,5 @@ minimumReleaseAgeExclude:
   - 'mobx@7.0.0'
   - 'mobx-react@10.0.0'
   - 'mobx-react-lite@5.0.0'
+patchedDependencies:
+  dockview-react@8.0.0: patches/dockview-react@8.0.0.patch

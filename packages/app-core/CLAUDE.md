@@ -59,7 +59,36 @@ around our own calls. That flag was not wrong, it was **unenforceable**: nothing
 made a newly added restructure remember to wrap itself, and a forgotten wrap
 silently closes the user's views. Don't reintroduce one.
 
-Two caveats to check before leaning on it:
+### The one `pnpm patch` in the repo lives here
+
+`patches/dockview-react@8.0.0.patch` sets `createContextMenuItemComponent` to
+`undefined` in `DockviewReact`'s framework options. Upstream sets it
+unconditionally, and dockview-core reads a non-null value there as the consumer
+_declaring intent_ to use context menus — a feature in the paid `ContextMenu`
+module — so it logs, on every mount:
+
+```
+dockview: `createContextMenuItemComponent` requires the "ContextMenu" module,
+which ships in dockview-enterprise.
+```
+
+It is a deduplicated `console.error`, not a throw, and nothing degrades: without
+the enterprise module the feature cannot work whether or not the option is set,
+so dropping it costs us nothing we had. But it is a `console.error` in every
+workspaces session that reads as a real failure and advertises a paid product,
+so it is worth the repo's first patched dependency.
+
+`dockviewEnterprisePatch.test.tsx` pins it, and pins it through `DockviewReact`
+rather than `createDockview` — a bare `createDockview` never sets the option, so
+testing that path passes whether or not the patch is applied and proves nothing.
+
+Per
+[ADR-057](../../agent-docs/architecture-decision-records/adr-057-dockview-stays-external.md),
+a patch carried across more than a release or two is the signal that our needs
+and upstream's have diverged. **Try deleting it at every dockview bump** — if
+upstream fixed it the patch will refuse to apply, which is the reminder.
+
+### Two caveats to check before leaning on origin
 
 - `DockviewApi.addGroup` is the one method upstream does **not** wrap in
   `withOrigin('api')` — every sibling is — so our own `addGroup` reports

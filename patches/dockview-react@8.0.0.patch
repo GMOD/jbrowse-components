@@ -1,0 +1,32 @@
+diff --git a/dist/package/main.cjs.js b/dist/package/main.cjs.js
+index 38e117871a7ee72f8e117ad90969d5d5337576ee..b2af5cd5fa1bae13109fcb34aaaa31e44ce3bd32 100644
+--- a/dist/package/main.cjs.js
++++ b/dist/package/main.cjs.js
+@@ -518,10 +518,7 @@ const DockviewReact = react.default.forwardRef((props, ref) => {
+ 				return new ReactWatermarkPart("watermark", props.watermarkComponent, { addPortal });
+ 			} : void 0,
+ 			defaultTabComponent: props.defaultTabComponent ? DEFAULT_REACT_TAB : void 0,
+-			createContextMenuItemComponent: (options) => {
+-				if (!options.component) return;
+-				return new ReactContextMenuItemPart(options.id, options.component, { addPortal });
+-			}
++			createContextMenuItemComponent: void 0
+ 		};
+ 		const coreOptions = extractCoreOptions$3(props);
+ 		if (props.tabGroupChipComponent) {
+diff --git a/dist/package/main.esm.mjs b/dist/package/main.esm.mjs
+index ea315dcbfc18dc4e07b33ee5316ee982f344920b..7eda51b15b1486f194d3e13c7adad353be206fba 100644
+--- a/dist/package/main.esm.mjs
++++ b/dist/package/main.esm.mjs
+@@ -490,10 +490,7 @@ const DockviewReact = React.forwardRef((props, ref) => {
+ 				return new ReactWatermarkPart("watermark", props.watermarkComponent, { addPortal });
+ 			} : void 0,
+ 			defaultTabComponent: props.defaultTabComponent ? DEFAULT_REACT_TAB : void 0,
+-			createContextMenuItemComponent: (options) => {
+-				if (!options.component) return;
+-				return new ReactContextMenuItemPart(options.id, options.component, { addPortal });
+-			}
++			createContextMenuItemComponent: void 0
+ 		};
+ 		const coreOptions = extractCoreOptions$3(props);
+ 		if (props.tabGroupChipComponent) {

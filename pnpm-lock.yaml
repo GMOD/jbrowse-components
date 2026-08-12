@@ -7,6 +7,9 @@ settings:
 overrides:
   '@babel/core': ^8.0.1
 
+patchedDependencies:
+  dockview-react@8.0.0: 13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3
+
 importers:
 
   .:
@@ -340,7 +343,7 @@ importers:
         version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       dockview-react:
         specifier: ^8.0.0
-        version: 8.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2068,7 +2071,7 @@ importers:
         version: 4.3.1
       dockview-react:
         specifier: ^8.0.0
-        version: 8.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       electron-context-menu:
         specifier: ^4.1.2
         version: 4.1.2
@@ -2316,7 +2319,7 @@ importers:
         version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       dockview-react:
         specifier: ^8.0.0
-        version: 8.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2748,7 +2751,7 @@ importers:
         version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       dockview-react:
         specifier: ^8.0.0
-        version: 8.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -14890,7 +14893,7 @@ snapshots:
 
   dockview-core@8.0.0: {}
 
-  dockview-react@8.0.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  dockview-react@8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       dockview: 8.0.0
       react: 19.2.8
