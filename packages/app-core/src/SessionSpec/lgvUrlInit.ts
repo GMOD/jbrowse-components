@@ -1,3 +1,5 @@
+import { parseRegionNames } from '@jbrowse/core/util'
+
 // The `&loc=`/`&assembly=`/`&tracks=`/... URL shorthand, normalized into the
 // LinearGenomeView init that a session spec's view entry carries.
 //
@@ -116,7 +118,18 @@ export function buildLgvInit(args: {
   if (regions !== undefined) {
     // restrict a whole-genome view (no loc) to these named chromosomes, in
     // order; resolved through assembly aliases in afterAttach's showNamedRegions
-    init.displayedRegionNames = regions.split(',')
+    //
+    // Through core's parser, the same one the import forms' chromosome boxes
+    // use, rather than a bare split: this is one syntax with one meaning, and
+    // the second reading of it dropped `chr2` from `&regions=chr1,%20chr2`
+    // without a word. Empty entries go with it — a present-but-empty
+    // `&regions=` is still truthy, and the list of one empty name it used to
+    // produce reported itself as having matched nothing. Same trap as
+    // readHubUrlParam below.
+    const names = parseRegionNames(regions)
+    if (names.length) {
+      init.displayedRegionNames = names
+    }
   }
   return init
 }

@@ -142,11 +142,10 @@ export {
 } from './range.ts'
 export { dedupe } from './dedupe.ts'
 export {
-  MAX_GLOB_REGIONS,
-  matchRefNames,
+  parseRegionNames,
+  resolveNamedRegions,
   selectNamedRegions,
 } from './selectNamedRegions.ts'
-export type { RefNameMatchSource } from './selectNamedRegions.ts'
 export { isValidTag, tagRegex } from './tags.ts'
 export { formatRelativeTime } from './formatRelativeTime.ts'
 export { fetchJson } from './fetchJson.ts'

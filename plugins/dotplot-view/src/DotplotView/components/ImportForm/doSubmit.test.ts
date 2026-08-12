@@ -1,5 +1,3 @@
-import { parseRegionNames } from '@jbrowse/synteny-core'
-
 import { doSubmit } from './doSubmit.ts'
 
 import type { DotplotViewModel } from '../../model.ts'
@@ -193,25 +191,34 @@ describe('doSubmit', () => {
       ],
     })
   })
-})
 
-describe('parseRegionNames', () => {
-  test('splits on commas and trims', () => {
-    expect(parseRegionNames('chr1, chr2 ,chr3')).toEqual([
-      'chr1',
-      'chr2',
-      'chr3',
-    ])
+  test('a whitespace-padded list reaches the init trimmed', () => {
+    const { calls, model, session } = setup({ type: 'none' })
+    doSubmit({
+      model,
+      session,
+      assemblyX: 'hg38',
+      assemblyY: 'mm10',
+      regionsX: 'chr1, chr2 ,',
+    })
+    expect(calls.init).toEqual({
+      views: [
+        { assembly: 'hg38', displayedRegionNames: ['chr1', 'chr2'] },
+        { assembly: 'mm10', displayedRegionNames: [] },
+      ],
+    })
   })
 
-  test('a blank or whitespace box is no restriction at all', () => {
-    expect(parseRegionNames('')).toEqual([])
-    expect(parseRegionNames('   ')).toEqual([])
-    expect(parseRegionNames('chr1,')).toEqual(['chr1'])
-  })
-
-  test('keeps a name containing * intact for selectNamedRegions to resolve', () => {
-    // splitting on anything but the comma would break an HLA allele in half
-    expect(parseRegionNames('HLA-A*01:01:01:01')).toEqual(['HLA-A*01:01:01:01'])
+  test('a box holding only whitespace is no restriction at all', () => {
+    const { calls, model, session } = setup({ type: 'none' })
+    doSubmit({
+      model,
+      session,
+      assemblyX: 'hg38',
+      assemblyY: 'mm10',
+      regionsX: '  ',
+      regionsY: ',',
+    })
+    expect(calls.init).toBeUndefined()
   })
 })

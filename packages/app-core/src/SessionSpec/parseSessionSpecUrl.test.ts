@@ -272,6 +272,23 @@ describe('the loc/assembly shorthand', () => {
     })
   })
 
+  // a hand-written link separates its names the way prose does, and the space
+  // survives decoding; the bare split kept it and quietly showed one chromosome
+  test('&regions= tolerates the spaces someone types after the commas', () => {
+    const [view] = parseSessionSpecUrl(
+      `${base}?assembly=volvox&regions=ctgA,%20ctgB`,
+    ).spec.views
+    expect(view).toMatchObject({ displayedRegionNames: ['ctgA', 'ctgB'] })
+  })
+
+  // present-but-empty is the readHubUrlParam trap: truthy, so it took the
+  // named-regions path and warned that its one empty name had matched nothing
+  test('&regions= with nothing in it asks for no restriction at all', () => {
+    const [view] = parseSessionSpecUrl(`${base}?assembly=volvox&regions=`).spec
+      .views
+    expect(view).not.toHaveProperty('displayedRegionNames')
+  })
+
   // the two booleans default opposite ways round, which is exactly the sort of
   // thing a second implementation gets backwards
   test('nav is on unless the link says the literal false', () => {

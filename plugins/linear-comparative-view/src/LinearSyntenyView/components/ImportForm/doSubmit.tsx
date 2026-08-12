@@ -1,7 +1,5 @@
-import {
-  applySyntenyTrackSelections,
-  parseRegionNames,
-} from '@jbrowse/synteny-core'
+import { parseRegionNames } from '@jbrowse/core/util'
+import { applySyntenyTrackSelections } from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

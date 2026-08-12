@@ -78,80 +78,62 @@ export function selectNamedRegions(
   return out
 }
 
-// The part of an Assembly the search box's name matching needs, duck-typed so
-// it can be tested without building one.
-export interface RefNameMatchSource {
-  regions?: readonly { refName: string }[]
-  // canonical names AND aliases. Absent only for an unloaded assembly, whose
-  // `regions` is equally absent — `setLoaded` writes both in ONE action
-  allRefNames?: readonly string[]
-  getCanonicalRefName: (name: string) => string | undefined
+/**
+ * Split a user-typed or URL-supplied region list into the entries
+ * `selectNamedRegions` takes. Comma-separated, because the two things anyone
+ * writes here are one glob (`*_MATERNAL`) or a short explicit list
+ * (`chr1, chr2`), and neither wants punctuation ceremony. Only the comma
+ * splits, so an HLA allele name — which carries both `*` and `:` — survives
+ * intact.
+ *
+ * Whitespace-trimmed and empties dropped, so a trailing comma, a box holding
+ * only spaces, and a bare `&regions=` all mean the same thing as nothing at
+ * all: no restriction, whole assembly. That last one is why this lives in core
+ * beside the matcher rather than next to the text box that first needed it —
+ * `&regions=` was reading the same syntax through a bare `split(',')`, so
+ * `&regions=chr1,%20chr2` dropped chr2 on the floor without a word and
+ * `&regions=` warned that a list of one empty name had matched nothing.
+ */
+export function parseRegionNames(value: string) {
+  return value
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s !== '')
 }
 
 /**
- * How many regions an INTERACTIVE glob will open at once. Displaying a few
- * hundred whole chromosomes is ordinary — GRCh38 with its alts and decoys is
- * ~640 refNames, and showAllRegionsInAssembly lays out every one — so this sits
- * well above any real chromosome set and well below a scaffold-level assembly's
- * contig count. Past it the offer is WITHHELD, never truncated: a bulk action
- * reading "all of them" that opens the first thousand is the one behaviour not
- * worth having.
+ * `selectNamedRegions` plus the report a miss owes the user, which each of the
+ * four views taking `displayedRegionNames` had written out for itself — and two
+ * of them had not written at all, so a typo there showed the whole assembly and
+ * read as the field being ignored. A typo is no longer only a hand-authored-JSON
+ * mistake either: the dotplot and synteny import forms put this syntax in a text
+ * box.
  *
- * `selectNamedRegions` itself is deliberately unbounded — see its docstring.
- * The bound belongs to the surfaces a person types at, not to the resolver a
- * session spec goes through, because only the former has a way to say "too
- * many, narrow it" and only the latter is a written-down intention.
+ * `undefined` means "this list picks out nothing" — the caller's cue to apply
+ * its own fallback, which is the part that genuinely differs between them: the
+ * LGV keeps a defaultSession's existing navigation, the circular view and a
+ * synteny row draw the whole assembly, and a dotplot axis is left as the
+ * regions autorun populated it.
  */
-export const MAX_GLOB_REGIONS = 1000
-
-/**
- * The canonical refNames a search-box query picks out, in ASSEMBLY order.
- *
- * Shared by the dropdown's option list and by what Enter does, which is the
- * whole point of it being one function: those two answer for the same typed
- * text, and a surface-by-surface reading of one syntax is the split this file
- * keeps being fixed for. A substring match (what the box has always done) and,
- * when the text contains `*`, an anchored glob — union, never one instead of
- * the other, since `*` is a legal refName character and a literal hit must
- * survive the pattern reading of the same text.
- *
- * Matching runs over every name the assembly answers to, aliases included, and
- * resolves hits to the canonical name — the name the view will display, and the
- * same choice `searchRefNames` makes. Emitting by walking `regions` is what
- * keeps assembly order rather than alias-file order.
- *
- * Bounded: matching stops one hit past `ceiling`, so a caller can tell "at the
- * limit" from "under it" without the scan being unbounded.
- */
-export function matchRefNames(
-  assembly: RefNameMatchSource | undefined,
-  inputValue: string,
-  ceiling: number,
-): string[] {
-  const regions = assembly?.regions ?? []
-  const query = inputValue.toLowerCase()
-  const glob = query.includes('*') ? globToRegExp(query) : undefined
-  // getCanonicalRefName THROWS before aliases load, and is only ever reached
-  // for a name that came out of this list, which is empty in that state
-  const candidates = assembly?.allRefNames ?? []
-  const hits = new Set<string>()
-  for (const name of candidates) {
-    if (name.toLowerCase().includes(query) || glob?.test(name)) {
-      hits.add(assembly?.getCanonicalRefName(name) ?? name)
-      if (hits.size > ceiling) {
-        break
-      }
-    }
+export function resolveNamedRegions({
+  regions,
+  names,
+  assemblyName,
+  getCanonicalRefName,
+  notify,
+}: {
+  regions: readonly Region[]
+  names: readonly string[]
+  assemblyName: string
+  getCanonicalRefName: (name: string) => string | undefined
+  notify: (message: string) => void
+}): Region[] | undefined {
+  const picked = selectNamedRegions(regions, names, getCanonicalRefName)
+  if (picked.length) {
+    return picked
   }
-  const out: string[] = []
-  for (const { refName } of regions) {
-    if (hits.has(refName)) {
-      out.push(refName)
-      // every hit is placed, so nothing later in `regions` can match
-      if (out.length === hits.size) {
-        break
-      }
-    }
-  }
-  return out
+  notify(
+    `displayedRegionNames matched no regions in ${assemblyName}: ${names.join(', ')}`,
+  )
+  return undefined
 }

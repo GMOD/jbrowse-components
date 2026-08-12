@@ -1,4 +1,8 @@
-import { selectNamedRegions } from './selectNamedRegions.ts'
+import {
+  parseRegionNames,
+  resolveNamedRegions,
+  selectNamedRegions,
+} from './selectNamedRegions.ts'
 
 import type { Region } from './types/index.ts'
 
@@ -93,5 +97,62 @@ describe('selectNamedRegions', () => {
         r => r.refName,
       ),
     ).toEqual(['HLA-A*24:01:01:01'])
+  })
+})
+
+describe('parseRegionNames', () => {
+  it('splits on commas and trims', () => {
+    expect(parseRegionNames('chr1, chr2 ,chr3')).toEqual([
+      'chr1',
+      'chr2',
+      'chr3',
+    ])
+  })
+
+  it('reads a blank, a whitespace-only and a trailing-comma list as no restriction', () => {
+    expect(parseRegionNames('')).toEqual([])
+    expect(parseRegionNames('   ')).toEqual([])
+    expect(parseRegionNames(',,')).toEqual([])
+    expect(parseRegionNames('chr1,')).toEqual(['chr1'])
+  })
+
+  it('keeps a name containing * intact for selectNamedRegions to resolve', () => {
+    // splitting on anything but the comma would break an HLA allele in half
+    expect(parseRegionNames('HLA-A*01:01:01:01')).toEqual(['HLA-A*01:01:01:01'])
+  })
+})
+
+describe('resolveNamedRegions', () => {
+  const resolve = (names: string[], notify: (m: string) => void) =>
+    resolveNamedRegions({
+      regions: hap,
+      names,
+      assemblyName: 'asm',
+      getCanonicalRefName: identity,
+      notify,
+    })
+
+  it('returns the selection and says nothing when something matched', () => {
+    const said: string[] = []
+    expect(resolve(['*_hap1'], m => said.push(m))?.map(r => r.refName)).toEqual(
+      ['chr1_hap1', 'chr2_hap1'],
+    )
+    expect(said).toEqual([])
+  })
+
+  it('reports a list that matched nothing and leaves the fallback to the caller', () => {
+    const said: string[] = []
+    expect(resolve(['nope', '*_hap3'], m => said.push(m))).toBeUndefined()
+    expect(said).toEqual([
+      'displayedRegionNames matched no regions in asm: nope, *_hap3',
+    ])
+  })
+
+  it('reports a partial miss as a success, since the named part is showable', () => {
+    const said: string[] = []
+    expect(
+      resolve(['chr1_hap1', 'nope'], m => said.push(m))?.map(r => r.refName),
+    ).toEqual(['chr1_hap1'])
+    expect(said).toEqual([])
   })
 })

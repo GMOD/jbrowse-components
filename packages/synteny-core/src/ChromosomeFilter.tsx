@@ -53,20 +53,3 @@ export default function ChromosomeFilter({
     />
   )
 }
-
-/**
- * Split a chromosome box into the entries `selectNamedRegions` takes.
- * Comma-separated, because the two things a user types here are one glob
- * (`*_MATERNAL`) or a short explicit list (`chr1, chr2`), and neither wants
- * punctuation ceremony. Only the comma splits, so an HLA allele name — which
- * carries both `*` and `:` — survives intact.
- *
- * Whitespace-trimmed and empties dropped, so a trailing comma or a box holding
- * only spaces is the same as an empty box: no restriction, whole assembly.
- */
-export function parseRegionNames(value: string) {
-  return value
-    .split(',')
-    .map(s => s.trim())
-    .filter(s => s !== '')
-}

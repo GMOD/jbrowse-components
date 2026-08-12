@@ -159,7 +159,6 @@ export {
   syntenyTrackRows,
 } from './syntenyTrackRows.ts'
 export { default as ChromosomeFilter } from './ChromosomeFilter.tsx'
-export { parseRegionNames } from './ChromosomeFilter.tsx'
 export { default as ImportFormModeToggle } from './ImportFormModeToggle.tsx'
 export type { ImportFormMode } from './ImportFormModeToggle.tsx'
 export { default as ImportFormModes } from './ImportFormModes.tsx'
