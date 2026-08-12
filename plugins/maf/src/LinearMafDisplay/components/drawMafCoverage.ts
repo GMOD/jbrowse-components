@@ -84,6 +84,15 @@ export function drawMafCoverage(
         bpToX,
         canvasWidth,
       )
+      // `domainMax`, not this region's own `coverageMaxDepth`: the last argument
+      // is the axis the bars are measured against, and the worker already baked
+      // each segment as a fraction of `interbaseMaxCount` (the region's peak
+      // depth). Passing the region peak divided that back out against itself, so
+      // every bar drew at full half-band height whatever its count — too tall
+      // next to depth bars the nice rounded domain had shortened, and a
+      // different height per region for the same number of insertions. Unlike
+      // `drawSnpSegments` above, whose `coverageMaxDepth` argument really is the
+      // region peak it un-normalizes with before applying `normalize`.
       drawInterbaseSegments(
         ctx,
         coverage.interbasePackedBuffer,
@@ -92,7 +101,7 @@ export function drawMafCoverage(
         bpToX,
         canvasWidth,
         coverageHeight,
-        coverage.coverageMaxDepth,
+        domainMax,
       )
       drawIndicators(
         ctx,
