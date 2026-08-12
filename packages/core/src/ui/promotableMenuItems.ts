@@ -32,6 +32,7 @@ import type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 // by its checkbox type: these rows only write a setting, users flip several in
 // one visit, and the menu is an observer so the ticks and pins move live. A row
 // whose click opens a dialog instead (colorBy's "Tag...") passes false.
+/** #menuBuilder promotableToggleItem | `checkboxItem` plus a promote-to-default pin */
 export function promotableToggleItem({
   label,
   checked,
@@ -66,6 +67,7 @@ export function promotableToggleItem({
 // its checkbox sibling had — naming `subLabel`/`helpText`/`keepMenuOpen` by hand
 // and so silently dropping `disabled` and `disabledHelpText`, which the
 // alignments size presets have to bolt back on afterwards (`needsContent`).
+/** #menuBuilder promotableRadioItem | `radioItem` plus a promote-to-default pin */
 export function promotableRadioItem({
   label,
   checked,
@@ -107,6 +109,7 @@ export function promotableRadioItem({
 // The rows are `radioItems`' own, so the promotable and plain groups can't drift
 // on anything but the pin. `radioItems` maps `options` in order, which is what
 // lets each row be paired back to the option that built it.
+/** #menuBuilder promotableRadioItems | `radioItems` plus a pin per option, from a factory over the value */
 export function promotableRadioItems<T extends string>(
   options: readonly RadioOption<T>[],
   current: T | undefined,

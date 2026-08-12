@@ -19,6 +19,7 @@ import type React from 'react'
  * React-free: `React.ElementType` is a type-only import, so this stays inside
  * the `menuItems.ts` purity boundary.
  */
+/** #menuBuilder makeRadioSubMenu | a radio group wrapped in a submenu row */
 export function makeRadioSubMenu<T extends string>(opts: {
   label: string
   icon?: React.ElementType

@@ -31,6 +31,7 @@ import type { MenuItem } from './MenuTypes.ts'
  * Deliberately not used by `synteny-core`'s "Show color legend", which sits
  * inside a "Color by..." submenu where the bare word would not say which legend.
  */
+/** #menuBuilder showLegendCheckboxItem | the shared "Show legend" checkbox */
 export function showLegendCheckboxItem(
   checked: boolean,
   onToggle: () => void,

@@ -1,11 +1,12 @@
 import type { Pin } from '../configuration/promotableDefaults.ts'
 
-// #region menuItem
+/** #menuItem divider | a horizontal rule; not clickable */
 export interface MenuDivider {
   priority?: number
   type: 'divider'
 }
 
+/** #menuItem subHeader | a text label for a section of a menu; not clickable */
 export interface MenuSubHeader {
   type: 'subHeader'
   priority?: number
@@ -20,16 +21,25 @@ export interface MenuSubHeader {
 export type MenuItemClickHandler = (...args: any[]) => void
 
 export interface BaseMenuItem {
+  /** #menuField stable identifier, for tests and for finding a row again */
   id?: string
+  /** #menuField the row's text */
   label: React.ReactNode
+  /** #menuField sort weight within the menu; higher sorts earlier */
   priority?: number
+  /** #menuField secondary text under the label */
   subLabel?: string
+  /** #menuField any [MUI icon](https://mui.com/material-ui/material-icons/) component */
   icon?: React.ElementType
+  /** #menuField renders the row unclickable */
   disabled?: boolean
+  /** #menuField tooltip shown from a help icon at the trailing edge */
   helpText?: string
-  /** tooltip shown when the item is disabled, in place of helpText */
+  /** #menuField tooltip shown when the item is disabled, in place of helpText */
   disabledHelpText?: string
   /**
+   * #menuField override the dismiss-on-click rule; see `staysOpenOnClick`
+   *
    * Override whether the menu stays open after this row is clicked. Leave it
    * unset and the row TYPE decides: a `checkbox`/`radio` is a setting, so the
    * menu stays put (users flip several in one visit, and the menu content is an
@@ -42,6 +52,8 @@ export interface BaseMenuItem {
    */
   keepMenuOpen?: boolean
   /**
+   * #menuField arbitrary trailing content; prefer `pin`
+   *
    * Extra content rendered at the trailing (right) edge of the row, after the
    * checkbox/radio decoration and help icon — e.g. a secondary toggle. The
    * content must `stopPropagation` on its own click so it doesn't fire the row's
@@ -55,6 +67,8 @@ export interface BaseMenuItem {
    */
   endAdornment?: React.ReactNode
   /**
+   * #menuField the "make this the default for all tracks of this type" pin; set it with a promotable builder
+   *
    * The trailing "default for all tracks of this type" pin, as a **description**
    * rather than an element — the renderer builds `PinAdornment` from
    * it. Same rule as a `TrackControlProps` icon name (reference/DISPLAYCHROME.md):
@@ -99,37 +113,43 @@ export interface MenuItemPin {
   label: string
 }
 
+/** #menuItem normal | an action row; the default when `type` is omitted */
 export interface NormalMenuItem extends BaseMenuItem {
   type?: 'normal'
   onClick: MenuItemClickHandler
 }
 
+/** #menuItem checkbox | a setting row with a checkbox; leaves the menu open */
 export interface CheckboxMenuItem extends BaseMenuItem {
   type: 'checkbox'
   checked: boolean
   onClick: MenuItemClickHandler
 }
 
+/** #menuItem radio | a setting row with a radio button; leaves the menu open */
 export interface RadioMenuItem extends BaseMenuItem {
   type: 'radio'
   checked: boolean
   onClick: MenuItemClickHandler
 }
 
+/** #menuItem subMenu | nests another `MenuItem[]`, to any depth */
 export interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'
   subMenu: MenuItem[]
 }
 
-// Renders arbitrary React content inline in the menu (e.g. a slider) instead of
-// a clickable row. The menu is not dismissed when interacting with it, so a
-// control can be dragged live; `onClose` is passed for content that wants to
-// close the menu explicitly. `label` is used only as a React key/testid.
+/**
+ * #menuItem custom | renders arbitrary React content inline, e.g. a slider
+ *
+ * The menu is not dismissed when interacting with it, so a control can be
+ * dragged live; `onClose` is passed for content that wants to close the menu
+ * explicitly. `label` is used only as a React key/testid.
+ */
 export interface CustomMenuItem extends BaseMenuItem {
   type: 'custom'
   render: (onClose: () => void) => React.ReactNode
 }
-// #endregion
 
 // A clickable row: what remains once divider/subHeader/subMenu/custom items are
 // handled — a plain action, or a checkbox/radio carrying a checked value.

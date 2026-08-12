@@ -20,6 +20,11 @@ export function RootAppMenuMixin() {
       return {
         /**
          * #action
+         * Replace the menu bar wholesale. Item contributions recorded before
+         * this one are dropped along with the menus they targeted, so a plugin
+         * adding to the existing bar wants `appendToMenu` instead.
+         *
+         * @param newMenus - The complete new set of top-level menus.
          */
         setMenus(newMenus: MenuDefinition[]) {
           pushAction({ type: 'setMenus', newMenus })

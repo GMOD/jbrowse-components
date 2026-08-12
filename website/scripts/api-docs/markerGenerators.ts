@@ -6,6 +6,7 @@ import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
 import { writeFileTypeDocs } from './generateFileTypeDocs.ts'
 import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
+import { writeMenuDocs } from './generateMenuDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
 
@@ -43,6 +44,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Jexl catalog',
     write: (corpus, opts) => writeJexlDocs(corpus, opts),
+  },
+  {
+    label: 'Menu tables',
+    write: (corpus, opts) => writeMenuDocs(corpus, opts),
   },
   {
     label: 'Extension point index',

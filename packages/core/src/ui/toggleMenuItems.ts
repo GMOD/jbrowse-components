@@ -28,6 +28,7 @@ export interface SettingRowOptions {
   keepMenuOpen?: boolean
 }
 
+/** #menuBuilder checkboxItem | one checkbox setting row */
 export function checkboxItem(
   label: string,
   checked: boolean,
@@ -46,6 +47,7 @@ export function checkboxItem(
 // One radio row. The singular of `radioItems`, and what
 // `promotableRadioItem` builds through, so a lone radio row and a member of a
 // group are the same object plus or minus its pin.
+/** #menuBuilder radioItem | one radio setting row; the singular of `radioItems` */
 export function radioItem(
   label: string,
   checked: boolean,
@@ -70,6 +72,7 @@ export interface RadioOption<T extends string> {
   helpText?: string
 }
 
+/** #menuBuilder radioItems | a radio group, one row per option */
 export function radioItems<T extends string>(
   options: readonly RadioOption<T>[],
   current: T | undefined,
