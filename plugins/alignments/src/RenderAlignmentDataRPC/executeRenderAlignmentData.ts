@@ -169,6 +169,17 @@ function isSplitChain(chain: Feature[]) {
 
 // Chain mode groups reads into chains by name, then optionally drops
 // singletons (chains of one), proper pairs, and/or non-split chains.
+//
+// PER WORKER CALL, i.e. per displayed region — the RPC takes `regions[0]`. So
+// "chain of one" means "one alignment in THIS window", and in a multi-region
+// view a read whose two alignments land in different windows is a singleton in
+// both. `drawSingletons` defaults on, so this only bites a user who turns it
+// off; the menu's help text names the scope for that reason. `showOnlySplitAlignments`
+// is the one that already routes around it, by reading the SA tag rather than
+// counting what this call happened to fetch (`isSplitChain`) — the same move is
+// not available for the other two, which are about what is on screen. Making
+// them view-wide means moving the filter to the main thread, where the coverage
+// histogram these also thin is no longer being computed.
 export function filterChainFeatures(
   features: Feature[],
   drawSingletons: boolean,

@@ -131,9 +131,13 @@ export function getReadsMenuItems(model: ReadsModel) {
       {
         helpText:
           'Uncheck to hide reads whose mate or split/supplementary ' +
-          'segment is not present in the view, so the read stands alone ' +
-          '(samtools calls these "singletons"). Grouped by read name, so ' +
-          'it applies to a plain pileup too.',
+          'segment was not fetched for the same window, so the read stands ' +
+          'alone (samtools calls these "singletons"). Grouped by read name, ' +
+          'so it applies to a plain pileup too. "Window", not "view": each ' +
+          'displayed region is fetched and grouped on its own, so in a ' +
+          'multi-region view (a fusion with one window per partner) a read ' +
+          'whose two alignments land in different windows counts as alone ' +
+          'in both.',
       },
     ),
     checkboxItem(
