@@ -273,10 +273,27 @@ genome-wide window, where the snap fires on every record and every mark is at
 the 2px floor, so it is a quarter of the mark. There is one span function; the
 four consumers are its callers.
 
+**Edges go in in RECORD order — `toX(start)`, `toX(end)` — never sorted, and
+never pre-snapped.** `snappedCellLeftPx` reads the orientation to hang the 2px
+floor off the record's _start_, which on a reversed block is its **right** edge;
+that is `spanLeft`/`extendToMinWidthPx`'s pivot, and the cells were the fourth
+painter in the tree to get it wrong (after the canvas rect painter, multi-row
+and wiggle). Anchoring the leftmost edge is identical forward and anchors the
+record's _end_ when flipped, so every sub-pixel record — which at genome-wide
+zoom is every record — drew a full 2px toward the block's end.
+
+The snap has to happen **inside** those two functions, and that is the part
+worth remembering: snapping first puts both edges of a sub-pixel record on one
+pixel, so a pivot that compares the snapped pair is a no-op in exactly the case
+it exists for. Raw px in, decision inside.
+
 The insertion-marker branch keeps the **unsnapped** reference-span centre, and
 that is not an oversight: no shader draws a marker, so there is nothing to match
 — and all four consumers take the marker from here, so they agree with each
-other, which is the property that matters for a mark the GPU never draws.
+other, which is the property that matters for a mark the GPU never draws. That
+centre comes back from the same call (`center`) rather than being re-derived
+beside it, because `markersForBlock` centres the _drawn_ bar on it while the
+hover box and click target take `left`/`width`: one rect, so one number.
 
 **`insertionsWiden` (the display's `showInsertionGlyphs`) has no default there
 on purpose.** It had one implicitly, by nobody asking: with glyphs switched off
