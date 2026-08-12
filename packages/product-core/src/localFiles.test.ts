@@ -58,6 +58,25 @@ test('resolveLocalFileUris swaps a registered name, index sibling included', () 
   expect(resolved.adapter.index.location).toEqual(locations['peaks.bed.gz.tbi'])
 })
 
+// A shorthand adapter (`{ type, uri }`) also has a `uri`, and it is the style
+// every doc and example writes, so eating that node is the likeliest way this
+// silently does nothing: the adapter's type and every sibling key go with it,
+// the config schema fills the hole with its `/path/to/my.bam` default, and the
+// track loads nothing with nothing logged. normalizeAdapterSnapshots is what
+// turns the shorthand into a location node first — covered against a real
+// pluginManager in the lgv product's createViewState.test.ts.
+test('a shorthand adapter node is not mistaken for a location', () => {
+  const locations = registerLocalFiles({ 'x.bam': new Uint8Array([1]) })
+
+  const resolved = resolveLocalFileUris(
+    { type: 'BamAdapter', uri: 'x.bam' },
+    locations,
+  )
+
+  expect(resolved.type).toBe('BamAdapter')
+  expect(resolved.uri).toBe('x.bam')
+})
+
 test('an unregistered uri is left alone, so local and remote can mix', () => {
   const locations = registerLocalFiles({ 'mine.bw': new Uint8Array([1]) })
   const conf = {

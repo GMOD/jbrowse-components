@@ -1,5 +1,6 @@
 import { storeBlobLocation } from '@jbrowse/core/util'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BlobLocation } from '@jbrowse/core/util'
 
 /**
@@ -61,18 +62,90 @@ function register(name: string, data: LocalFileInput[string]): BlobLocation {
   return location
 }
 
+// A location node is `{ uri }` and at most the two keys that travel with it.
+// Anything else carrying a `uri` is a shorthand adapter (`{ type, uri }`), and
+// telling the two apart is what stops resolveLocalFileUris replacing a whole
+// adapter with a bare location — see its comment.
+const LOCATION_KEYS = new Set(['uri', 'baseUri', 'locationType'])
+
+function isLocationNode(record: Record<string, unknown>) {
+  return Object.keys(record).every(key => LOCATION_KEYS.has(key))
+}
+
+/**
+ * Expand every shorthand adapter snapshot (`{ type, uri }`) in a config to the
+ * canonical location keys its config schema declares, using that adapter type's
+ * own `normalizeSnapshot` — the hook that exists so "downstream code can read
+ * location keys without knowing each shorthand".
+ *
+ * {@link resolveLocalFileUris} has to run on the expanded form, and this is the
+ * difference between `localFiles` working and silently doing nothing: the
+ * shorthand puts `uri` on the *adapter*, so substituting there would replace
+ * `{ type: 'BamAdapter', uri: 'x.bam' }` with a bare BlobLocation and take the
+ * adapter's type with it. Expanding first moves the name onto `bamLocation`,
+ * where it is a location node and substitution is what it looks like. The
+ * expansion also derives the conventional index sibling (`.bai`/`.tbi`/`.crai`)
+ * from the same string, so registering `x.bam` and `x.bam.bai` is enough and no
+ * caller has to know which adapter wanted which file.
+ *
+ * Idempotent, and a no-op for an already-canonical config or an adapter type
+ * that declares no shorthand.
+ */
+export function normalizeAdapterSnapshots<T>(
+  config: T,
+  pluginManager: PluginManager,
+): T {
+  if (Array.isArray(config)) {
+    return config.map(item =>
+      normalizeAdapterSnapshots(item, pluginManager),
+    ) as T
+  }
+  if (typeof config === 'object' && config !== null) {
+    const record = config as Record<string, unknown>
+    // `type` names a track, a display and an adapter alike, so this asks
+    // whether the name is an adapter rather than demanding that it is —
+    // getAdapterType throws on a miss, and 'AlignmentsTrack' is a miss
+    const normalize =
+      typeof record.type === 'string' &&
+      pluginManager.hasAdapterType(record.type)
+        ? pluginManager.getAdapterType(record.type).normalizeSnapshot
+        : undefined
+    const normalized = normalize?.(record) ?? record
+    // Every normalizeSnapshot returns its argument unchanged when there was no
+    // shorthand to expand, so identity is the signal that `uri` was consumed —
+    // and it then has to GO. The same function runs again as the config
+    // schema's preProcessSnapshot when MST builds the tree, and a surviving
+    // `uri` makes that second pass rebuild the location from the string,
+    // overwriting the BlobLocation just substituted into it. That failure is
+    // invisible: the track ends up pointing at a relative URL named
+    // `volvox-sorted.bam`, which 404s against the host page's own origin.
+    const expanded =
+      normalized === record
+        ? record
+        : Object.fromEntries(
+            Object.entries(normalized).filter(([key]) => key !== 'uri'),
+          )
+    return Object.fromEntries(
+      Object.entries(expanded).map(([key, value]) => [
+        key,
+        normalizeAdapterSnapshots(value, pluginManager),
+      ]),
+    ) as T
+  }
+  return config
+}
+
 /**
  * Rewrite every `{ uri: <a registered name> }` in a track config to that file's
  * `BlobLocation`, in place of nothing else — unregistered URIs are left alone,
  * so a config can mix local and remote files freely.
  *
- * Runs *after* type inference rather than instead of it: `guessTrackConf` reads
- * the extension off the uri string to pick the adapter, and derives the index's
- * location as a conventional sibling (`.tbi`/`.bai`/`.crai`) of that same
- * string. So a host registers `peaks.bed.gz` and `peaks.bed.gz.tbi` under their
- * plain names, the guesser produces a BedTabixAdapter pointing at both, and this
- * swaps both for blobs — index and all, with no host-side knowledge of which
- * adapter wanted which sibling.
+ * Runs on a config whose locations are already canonical, which is what
+ * `guessTrackConf` (for a loose track spec) and {@link normalizeAdapterSnapshots}
+ * (for a written-out one) each produce. So a host registers `peaks.bed.gz` and
+ * `peaks.bed.gz.tbi` under their plain names, the config names both under
+ * `bedGzLocation` and `index.location`, and this swaps both for blobs — index
+ * and all, with no host-side knowledge of which adapter wanted which sibling.
  */
 export function resolveLocalFileUris<T>(
   config: T,
@@ -84,10 +157,15 @@ export function resolveLocalFileUris<T>(
   if (typeof config === 'object' && config !== null) {
     const record = config as Record<string, unknown>
     const uri = record.uri
-    if (typeof uri === 'string' && locations[uri]) {
-      // the whole location node is replaced: a BlobLocation carries blobId and
-      // its own locationType, and leaving the old uri alongside would make it
-      // fail isBlobLocation's discrimination
+    // the whole location node is replaced: a BlobLocation carries blobId and
+    // its own locationType, and leaving the old uri alongside would make it
+    // fail isBlobLocation's discrimination. Only a *location* node, though — a
+    // shorthand adapter also has a `uri`, and replacing that node discards the
+    // adapter's type and every sibling key, which the config schema then papers
+    // over with its `/path/to/my.bam` default: a track that loads nothing, with
+    // nothing logged. normalizeAdapterSnapshots is what turns the shorthand
+    // into a location node so this substitutes it.
+    if (typeof uri === 'string' && locations[uri] && isLocationNode(record)) {
       return locations[uri] as T
     }
     return Object.fromEntries(

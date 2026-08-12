@@ -1,4 +1,9 @@
 import { assembleLocString } from '@jbrowse/core/util'
+import {
+  normalizeAdapterSnapshots,
+  registerLocalFiles,
+  resolveLocalFileUris,
+} from '@jbrowse/product-core'
 
 import createModel from './createModel/index.ts'
 
@@ -13,6 +18,7 @@ import type {
   InitState,
 } from '@jbrowse/plugin-linear-genome-view'
 import type {
+  LocalFileInput,
   PluginInput,
   SessionSnapshot as RestoredSessionSnapshot,
 } from '@jbrowse/product-core'
@@ -41,6 +47,19 @@ export interface CreateViewStateBaseOptions {
   disableAddTracks?: boolean
   makeWorkerInstance?: () => Worker
   drawerViewHeight?: string
+  /**
+   * In-memory files, `name -> bytes`, that `tracks` may then refer to by that
+   * name as if it were a URL — for a host whose data lives in a process rather
+   * than at a URL (a notebook kernel, an R session), with no web server and no
+   * CORS. They are read by byte range, so register an index under its
+   * conventional sibling name (`peaks.bed.gz` + `peaks.bed.gz.tbi`) and the
+   * file stays indexed: only the bytes the current view needs are touched.
+   *
+   * Read once, at construction, like every other option here. A host whose
+   * files arrive later remounts on a React `key`; the imperative
+   * `createLinearGenomeView` has `addLocalFiles` for that instead.
+   */
+  localFiles?: LocalFileInput
   /**
    * The declarative description of the view to open — where to navigate, which
    * tracks to show, whether to open the track list — minus `assembly`, which is
@@ -91,15 +110,28 @@ export default function createViewState(opts: ViewStateOptions) {
     makeWorkerInstance,
     defaultSession,
     session,
+    localFiles,
     drawerViewHeight = '100vh',
   } = opts
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  // registered once, here, rather than per track: each registration pushes a
+  // File into core's process-global blobMap. Adapters are expanded out of their
+  // `{ type, uri }` shorthand first, because that is the form the substitution
+  // recognizes — see normalizeAdapterSnapshots
+  const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
   const stateTree = model.create(
     {
       config: {
         configuration,
         assembly,
-        tracks,
+        tracks: blobs
+          ? tracks?.map(track =>
+              resolveLocalFileUris(
+                normalizeAdapterSnapshots(track, pluginManager),
+                blobs,
+              ),
+            )
+          : tracks,
         internetAccounts,
         aggregateTextSearchAdapters,
       },

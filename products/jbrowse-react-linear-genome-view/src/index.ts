@@ -29,6 +29,7 @@ export type { ViewModel } from './createModel/createModel.ts'
 export { resolveAssemblies } from '@jbrowse/product-core'
 export type {
   AssemblyInput,
+  LocalFileInput,
   PluginInput,
   ResolvedAssemblies,
   SessionSnapshot,

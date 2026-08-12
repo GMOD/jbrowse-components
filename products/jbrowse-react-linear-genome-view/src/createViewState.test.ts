@@ -1,3 +1,5 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
 import createViewState from './createViewState.ts'
 
 const assembly = {
@@ -76,4 +78,69 @@ test('no init input leaves the view with none', () => {
   const state = createViewState({ assembly, tracks })
 
   expect(state.session.view.init).toBeUndefined()
+})
+
+// `localFiles` is only worth having if it survives all the way into the built
+// config, and every step between here and there is a place it silently doesn't:
+// the `{ type, uri }` shorthand has to be expanded before substitution or the
+// adapter is replaced by a bare location, and the `uri` that drove the
+// expansion has to be dropped afterwards or the config schema's own
+// preProcessSnapshot rebuilds a UriLocation over the blob when MST creates the
+// tree. Both failures leave a track pointing at a relative URL that 404s
+// against the host page, with nothing logged — so this reads the tree.
+test('localFiles reach the built config, index sibling and all', () => {
+  const state = createViewState({
+    assembly,
+    localFiles: {
+      'volvox-sorted.bam': new Uint8Array([1]),
+      'volvox-sorted.bam.bai': new Uint8Array([2]),
+    },
+    tracks: [
+      {
+        type: 'AlignmentsTrack',
+        trackId: 'local_bam',
+        name: 'my local bam',
+        assemblyNames: ['volvox'],
+        // the shorthand form, which is what every doc and example writes
+        adapter: { type: 'BamAdapter', uri: 'volvox-sorted.bam' },
+      },
+    ],
+  })
+
+  const { adapter } = getSnapshot(state.config.tracks[0]) as {
+    adapter: {
+      type: string
+      uri?: string
+      bamLocation: { locationType: string; name: string }
+      index: { location: { locationType: string; name: string } }
+    }
+  }
+  expect(adapter.type).toBe('BamAdapter')
+  expect(adapter.uri).toBeUndefined()
+  expect(adapter.bamLocation).toMatchObject({
+    locationType: 'BlobLocation',
+    name: 'volvox-sorted.bam',
+  })
+  // never registered by the caller as an index, only as a name: the adapter's
+  // own expansion is what asked for `<uri>.bai`
+  expect(adapter.index.location).toMatchObject({
+    locationType: 'BlobLocation',
+    name: 'volvox-sorted.bam.bai',
+  })
+})
+
+test('a remote track alongside a local one is untouched', () => {
+  const state = createViewState({
+    assembly,
+    localFiles: { 'mine.bam': new Uint8Array([1]) },
+    tracks,
+  })
+
+  const { adapter } = getSnapshot(state.config.tracks[0]) as {
+    adapter: { gffGzLocation: { locationType: string; uri: string } }
+  }
+  expect(adapter.gffGzLocation).toMatchObject({
+    locationType: 'UriLocation',
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+  })
 })

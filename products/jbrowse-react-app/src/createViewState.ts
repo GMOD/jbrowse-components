@@ -4,12 +4,22 @@ import {
   pluginLabel,
   samePlugin,
 } from '@jbrowse/core/pluginDefinitions'
+import {
+  normalizeAdapterSnapshots,
+  registerLocalFiles,
+  resolveLocalFileUris,
+} from '@jbrowse/product-core'
 
 import createModel from './createModel.ts'
 
 import type { ViewModel } from './createModel.ts'
 import type { PluginsUpdate } from './rootModel/rootModel.ts'
-import type { Config, PluginInput, SessionSnapshot } from './types.ts'
+import type {
+  Config,
+  LocalFileInput,
+  PluginInput,
+  SessionSnapshot,
+} from './types.ts'
 
 export interface CreateViewStateOptions {
   config: Config
@@ -22,6 +32,15 @@ export interface CreateViewStateOptions {
    * state rather than to whatever was restored.
    */
   session?: SessionSnapshot
+  /**
+   * In-memory files, `name -> bytes`, that `config.tracks` may then refer to by
+   * that name as if it were a URL — for a host whose data lives in a process
+   * rather than at a URL (a notebook kernel, an R session), with no web server
+   * and no CORS. They are read by byte range, so register an index under its
+   * conventional sibling name (`peaks.bed.gz` + `peaks.bed.gz.tbi`) and the
+   * file stays indexed: only the bytes the current view needs are touched.
+   */
+  localFiles?: LocalFileInput
   makeWorkerInstance?: () => Worker
   /**
    * Called when something changes the plugin set — the plugin store widget,
@@ -44,6 +63,7 @@ export default function createViewState(
     session,
     onPluginsUpdated,
     makeWorkerInstance,
+    localFiles,
   } = opts
   // the config model's own default for this slot, restated because a root with
   // no session at all is a different (broken) state than one with an empty
@@ -57,12 +77,26 @@ export default function createViewState(
   // what the plugin manager actually installed at runtime, i.e. the subset of
   // `plugins` that carried a definition (a bare plugin class carries none)
   const loaded = pluginManager.runtimePluginDefinitions
+  // registered once, here, rather than per track: each registration pushes a
+  // File into core's process-global blobMap. Adapters are expanded out of their
+  // `{ type, uri }` shorthand first, because that is the form the substitution
+  // recognizes — see normalizeAdapterSnapshots
+  const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
+  const tracks = blobs
+    ? config.tracks?.map(track =>
+        resolveLocalFileUris(
+          normalizeAdapterSnapshots(track, pluginManager),
+          blobs,
+        ),
+      )
+    : config.tracks
   // annotated so the reads below are checked: `model` erases its session type
   // (see ViewModel), and a session is always passed here
   const stateTree: ViewModel = model.create(
     {
       jbrowse: {
         ...config,
+        tracks,
         // The plugins the host loaded for us belong in the app's own plugin
         // list, not only in the plugin manager. `onPluginsUpdated` answers
         // "what does a rebuild have to load" out of `jbrowse.plugins`, so a

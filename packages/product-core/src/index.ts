@@ -108,7 +108,11 @@ export type { SessionSnapshot } from './sessionUrl.ts'
 // in-memory files as tracks, for hosts whose data lives in a process rather
 // than at a URL (a notebook kernel, an R session) — read by byte range, so an
 // indexed file stays indexed
-export { registerLocalFiles, resolveLocalFileUris } from './localFiles.ts'
+export {
+  normalizeAdapterSnapshots,
+  registerLocalFiles,
+  resolveLocalFileUris,
+} from './localFiles.ts'
 export type { LocalFileInput } from './localFiles.ts'
 // hub names, sequence URIs and hub configs -> assembly configs, so every
 // product takes the same assembly vocabulary

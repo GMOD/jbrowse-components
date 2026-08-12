@@ -817,6 +817,16 @@ export default class PluginManager {
     return this.adapterTypes.get(typeName)
   }
 
+  /**
+   * Whether an adapter type is registered, for a caller walking a config where
+   * `type` names a track, a display and an adapter alike — `getAdapterType`
+   * throws on a miss, which is right when the name came from a config that
+   * claims to be an adapter and wrong when you are asking whether it is one.
+   */
+  hasAdapterType(typeName: string) {
+    return this.adapterTypes.has(typeName)
+  }
+
   getTextSearchAdapterType(typeName: string) {
     return this.textSearchAdapterTypes.get(typeName)
   }
