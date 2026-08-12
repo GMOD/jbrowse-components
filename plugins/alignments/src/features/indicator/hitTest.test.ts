@@ -133,20 +133,46 @@ describe('hitTestInterbase histogram bars', () => {
     ).toBeUndefined()
   })
 
-  it('reports the dominant (tallest) stacked type', () => {
-    // insertion height 0.2 then softclip height 0.8 → softclip dominates.
-    const rpcData = makeRpcData({
-      interbaseCovPositions: new Uint32Array([1005, 1005]),
-      interbaseCovYOffsets: new Float32Array([0, 0.2]),
-      interbaseCovHeights: new Float32Array([0.2, 0.8]),
-      interbaseCovColorTypes: new Uint8Array([1, 2]),
-      interbaseMaxCount: 20,
-    })
+  // A stacked bar: insertion occupies [0, 0.2] of the stack and softclip
+  // [0.2, 1.0], i.e. px [4.5, 12.5] and [12.5, 44.5]. Which type the hover means
+  // is which SEGMENT is under the cursor, not which segment is tallest —
+  // clicking opens a widget titled by this type and showing only its counts.
+  const stackedAt1005 = {
+    interbaseCovPositions: new Uint32Array([1005, 1005]),
+    interbaseCovYOffsets: new Float32Array([0, 0.2]),
+    interbaseCovHeights: new Float32Array([0.2, 0.8]),
+    interbaseCovColorTypes: new Uint8Array([1, 2]),
+    interbaseMaxCount: 20,
+  }
+
+  it.each([
+    ['the short top segment', 8, 'insertion'],
+    ['the tall bottom segment', 30, 'softclip'],
+  ])('reports the type under the cursor: %s', (_name, canvasY, expected) => {
+    const rpcData = makeRpcData(stackedAt1005)
     expect(
       hitTestInterbase(
         1005,
         0.5,
-        30,
+        canvasY,
+        rpcData,
+        true,
+        true,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      )?.indicatorType,
+    ).toBe(expected)
+  })
+
+  // The slack below the drawn stack (BAR_HIT_PAD_PX) belongs to the segment
+  // whose bottom edge the cursor is just under.
+  it('falls back to the bottom-most segment in the pad below the bar', () => {
+    const rpcData = makeRpcData(stackedAt1005)
+    expect(
+      hitTestInterbase(
+        1005,
+        0.5,
+        46,
         rpcData,
         true,
         true,

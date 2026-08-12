@@ -1,4 +1,7 @@
-import { INDICATOR_TRIANGLE_H, coverageLayout } from '@jbrowse/alignments-core'
+import {
+  INDICATOR_TRIANGLE_H,
+  interbaseBarHeightPx,
+} from '@jbrowse/alignments-core'
 
 import { interbaseTypeName } from '../../shared/types.ts'
 
@@ -79,11 +82,11 @@ export function hitTestInterbase(
   // anywhere in the pileup — hundreds of px below the coverage band — still ran
   // both O(n) passes over the interbase arrays before being rejected by the
   // per-position bar bottom at the end.
-  const interbaseHeight =
-    domainMax !== undefined && domainMax > 0 && rpcData.interbaseMaxCount > 0
-      ? (coverageLayout(coverageHeight).effectiveH / 2) *
-        (rpcData.interbaseMaxCount / domainMax)
-      : 0
+  const interbaseHeight = interbaseBarHeightPx(
+    coverageHeight,
+    rpcData.interbaseMaxCount,
+    domainMax,
+  )
   if (
     !hit &&
     interbaseVisible &&
@@ -104,20 +107,38 @@ export function hitTestInterbase(
     )
     if (nearestIdx >= 0) {
       const pos = interbaseCovPositions[nearestIdx]!
-      // Tallest stacked point at this position and its dominant (tallest
-      // segment) type.
+      // The bar at `pos` is a STACK of up to three differently-coloured
+      // segments, so which type the hover means is decided by where in the stack
+      // the cursor is — the segment whose drawn band contains it. Reporting the
+      // tallest segment instead named a colour that isn't under the cursor,
+      // which the tooltip hides (it tables all three types) and the click does
+      // not: `openIndicatorWidget` titles the widget by this type and reads
+      // `bin.interbase[type]` for its count/length rows, and the context menu
+      // offers "Sort by" it.
+      //
+      // `cursorY` is the cursor as a stack fraction, the same units yOffset and
+      // segHeight are in. The segments at one position tile the stack with no
+      // gaps, so the one the cursor is in is the SHALLOWEST whose bottom edge is
+      // at or below it — which needs only each segment's `yEnd`, and answers
+      // above the stack (every edge qualifies, so the topmost wins) as well as
+      // inside it. Below the stack nothing qualifies; that is the BAR_HIT_PAD_PX
+      // slack, and it falls back to the bottom-most segment, whose edge the
+      // cursor is just under.
+      const cursorY = (canvasY - INDICATOR_TRIANGLE_H) / interbaseHeight
       let maxYEnd = 0
-      let dominantType = 1
-      let dominantHeight = 0
+      let bottomType = 0
+      let hitYEnd = Infinity
+      let hitType = 0
       for (let i = 0; i < interbaseCovPositions.length; i++) {
         if (interbaseCovPositions[i] === pos) {
           const yEnd = interbaseCovYOffsets[i]! + interbaseCovHeights[i]!
           if (yEnd > maxYEnd) {
             maxYEnd = yEnd
+            bottomType = interbaseCovColorTypes[i]!
           }
-          if (interbaseCovHeights[i]! > dominantHeight) {
-            dominantHeight = interbaseCovHeights[i]!
-            dominantType = interbaseCovColorTypes[i]!
+          if (yEnd >= cursorY && yEnd < hitYEnd) {
+            hitYEnd = yEnd
+            hitType = interbaseCovColorTypes[i]!
           }
         }
       }
@@ -126,7 +147,7 @@ export function hitTestInterbase(
         hit = {
           type: 'indicator',
           position: pos,
-          indicatorType: interbaseTypeName(dominantType),
+          indicatorType: interbaseTypeName(hitType || bottomType),
         }
       }
     }
