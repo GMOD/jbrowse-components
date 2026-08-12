@@ -37,10 +37,31 @@ test('loads the list and marks the attempt, then clears it on success', async ()
   const g = await importFresh('/')
   expect(g.globalPluginSafeMode()).toBeUndefined()
   expect(await g.getGlobalPlugins()).toEqual(plugins)
-  // still set: the plugins have been fetched but not yet run
-  expect(localStorage.getItem(LOADING_MARKER)).toBe('1')
+  // still set, and naming what was about to run, so the launch after a crash
+  // can say which plugins it was
+  expect(JSON.parse(localStorage.getItem(LOADING_MARKER)!)).toEqual([
+    'P (https://example.com/p.js)',
+  ])
   g.markGlobalPluginLoadSucceeded()
   expect(localStorage.getItem(LOADING_MARKER)).toBeNull()
+})
+
+test('the launch after a crash can name what was loading', async () => {
+  const g = await importFresh('/', JSON.stringify(['P (x)', 'Q (y)']))
+  expect(g.globalPluginSafeMode()).toBe('previousLaunchFailed')
+  expect(g.globalPluginSafeModeSuspects()).toEqual(['P (x)', 'Q (y)'])
+})
+
+test('a marker from a build that did not record names still means safe mode', async () => {
+  const g = await importFresh('/', '1')
+  expect(g.globalPluginSafeMode()).toBe('previousLaunchFailed')
+  // nothing to accuse, which is the pre-upgrade behaviour and not an error
+  expect(g.globalPluginSafeModeSuspects()).toEqual([])
+})
+
+test('nothing is accused when safe mode was asked for', async () => {
+  const g = await importFresh('/?safeMode=1', JSON.stringify(['P (x)']))
+  expect(g.globalPluginSafeModeSuspects()).toEqual([])
 })
 
 test('a disabled entry is kept but not loaded', async () => {

@@ -1,3 +1,4 @@
+import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import {
   localStorageGetItem,
   localStorageRemoveItem,
@@ -17,6 +18,13 @@ const SAFE_MODE_PARAM = 'safeMode'
 // its module was evaluated, hung, or took the renderer down with it — and none
 // of those leave an error anyone can act on, so the next launch skips global
 // plugins instead of reproducing the same crash.
+//
+// Its value is the labels of the plugins that were about to load, so the launch
+// after a crash can name them. That is the whole difference between a banner the
+// user can act on and one that only says something went wrong: with a name they
+// can switch off the plugin, and with the list they can tell how many candidates
+// there are. Older builds wrote "1" here, which parses to no names and still
+// reads as set — the marker's job as a flag does not depend on its shape.
 const LOADING_MARKER = 'jbrowse-desktop-global-plugins-loading'
 
 export type SafeModeReason = 'requested' | 'previousLaunchFailed'
@@ -31,9 +39,27 @@ function readSafeModeReason(): SafeModeReason | undefined {
       : undefined
 }
 
+function readSuspects(): string[] {
+  let suspects: string[] = []
+  try {
+    const parsed: unknown = JSON.parse(
+      localStorageGetItem(LOADING_MARKER) || '',
+    )
+    if (Array.isArray(parsed)) {
+      suspects = parsed.filter(s => typeof s === 'string')
+    }
+  } catch {
+    // "1" from a build before the marker carried names, or anything else that
+    // is not the list we wrote. It still means "a launch did not finish", which
+    // readSafeModeReason has already taken from it; there is just nobody to name.
+  }
+  return suspects
+}
+
 // Read once, at module load: the marker is cleared during a successful boot, so
 // asking later would answer a different question than the one callers mean.
 const safeModeReason = readSafeModeReason()
+const safeModeSuspects = readSuspects()
 
 /**
  * Why global plugins are being skipped this launch, or undefined when they are
@@ -41,6 +67,16 @@ const safeModeReason = readSafeModeReason()
  */
 export function globalPluginSafeMode() {
   return safeModeReason
+}
+
+/**
+ * The plugins that were loading when the previous launch failed to finish, when
+ * that is why global plugins are off and the marker recorded them. Empty
+ * otherwise — including under `?safeMode`, where nothing failed and there is
+ * nothing to accuse.
+ */
+export function globalPluginSafeModeSuspects() {
+  return safeModeReason === 'previousLaunchFailed' ? safeModeSuspects : []
 }
 
 /**
@@ -102,7 +138,10 @@ export async function getGlobalPlugins() {
     // entries are all switched off counts as empty here for the same reason:
     // none of them ran.
     if (plugins.length > 0) {
-      localStorageSetItem(LOADING_MARKER, '1')
+      localStorageSetItem(
+        LOADING_MARKER,
+        JSON.stringify(plugins.map(p => pluginLabel(p))),
+      )
     }
   }
   return plugins

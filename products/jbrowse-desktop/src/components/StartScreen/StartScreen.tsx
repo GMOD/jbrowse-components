@@ -21,6 +21,7 @@ import GlobalPluginsDialog from './GlobalPluginsDialog.tsx'
 import Logo from './Logo.tsx'
 import {
   globalPluginSafeMode,
+  globalPluginSafeModeSuspects,
   reloadInSafeMode,
   reloadWithGlobalPlugins,
 } from './globalPlugins.ts'
@@ -146,6 +147,7 @@ export default function StartScreen({
   const [showGlobalPlugins, setShowGlobalPlugins] = useState(false)
   const notifyError = useNotifyError()
   const safeMode = globalPluginSafeMode()
+  const suspects = globalPluginSafeModeSuspects()
   // Global plugins get their own manager here: the start screen has no session,
   // so this is the only thing a plugin can extend before one is opened. The
   // start screen renders undecorated until it resolves.
@@ -237,6 +239,18 @@ export default function StartScreen({
           {safeMode === 'requested'
             ? 'Global plugins are disabled for this launch.'
             : 'Global plugins were disabled because the last launch did not finish loading them.'}
+          {/* Named because a name is what the user can act on: switch that one
+          off in the dialog and leave the rest loading. With more than one there
+          is no telling which of them it was, but a list of three to bisect is
+          still a great deal better than "something went wrong". */}
+          {suspects.length > 0 ? (
+            <>
+              {suspects.length === 1
+                ? ' It was loading: '
+                : ' It was loading these, one of which is likely responsible: '}
+              {suspects.join(', ')}
+            </>
+          ) : null}
         </Alert>
       ) : null}
       <div className={classes.root}>
