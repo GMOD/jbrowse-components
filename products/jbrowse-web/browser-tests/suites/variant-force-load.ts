@@ -14,9 +14,9 @@ import type { Page } from 'puppeteer'
 // early-returns TooLargeMessage instead of the canvas body, force-load remounts
 // the body, and the GPU canvas must re-init and paint cleanly — proving the old
 // `visibility:hidden` special-casing the variant displays used to need was
-// artificial. jsdom can't render the variant GPU/canvas2d fallback (the
-// equivalent StatsEstimation.test cases are `test.skip` for exactly that
-// reason), so this lives in browser-tests.
+// artificial. The equivalent StatsEstimation.test cases do run, but jsdom has
+// no WebGL2 (its Canvas2D fallback notice is silenced in config/jest/console.js),
+// so the GPU re-init is only covered here.
 //
 // volvox.sv.vcf.gz is tiny (~66Kb estimate) so the gate never trips on its own,
 // and the trigger has to sit on the ADAPTER: `resolveByteLimit` prefers an
