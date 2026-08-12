@@ -41,6 +41,11 @@ export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
 
 ### Required items
 
+`ConnectionType` asks for more than the other pluggable element types do — the
+three GUI fields are part of the constructor's contract, not extras, because a
+connection is something a user picks out of a list and has to be able to tell
+apart:
+
 - `name`: the name JBrowse uses internally and in configuration files to refer
   to this type of connection
 - `configSchema`: a
@@ -49,20 +54,19 @@ export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
   connection, and must at least have a `name` slot.
 - `stateModel`: the `@jbrowse/mobx-state-tree` model that does the queries and
   creates tracks (see below).
+- `displayName`: what the "Add connection" list shows. Unlike every other
+  pluggable element, where it falls back to `name`, this one has to be stated.
+- `description`: a sentence about what the connection connects to, shown beside
+  the name.
+- `url`: a link to more information about the resource or its format.
 
 ### Optional items
 
-Shown in the GUI when a user adds a connection:
-
-- `displayName`: a user-friendly name for the connection type; `name` is used if
-  absent.
-- `description`: a description of the connection.
-- `url`: a link to more information about the connection or the resource being
-  connected to.
 - `configEditorComponent`: by default the user configures the connection with
   the built-in config editor. A custom React component can be supplied instead;
   it receives a `model` prop whose `target` is the connection config. Set a slot
-  with `model.target.setSlot('name', 'someNewName')`.
+  with `model.target.setSlot('name', 'someNewName')`. No session prop is passed
+  — reach it with `getSession(model.target)`.
 
 ## State model
 
