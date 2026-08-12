@@ -67,11 +67,51 @@ configuration everybody looks at:
 | arc colour vs read colour | pairs with clean TLEN | TLEN 0, and far-apart pairs |
 | overlay palette vs read palette | light mode | dark mode, themed deployments |
 | connector labels vs read key | the day each was written | any later wording edit |
+| connector slot rule, Canvas2D vs GPU | every slot in use | slot 10+ (see below) |
+| mate-link pair fields | both primaries on screen | a mate whose primary is off-screen |
 
 Every one was described correctly in a comment and enforced by nothing. Figures
 are captured in light mode with well-formed data, so the corpus could not catch
 any of them. That is the pattern to look for elsewhere in the plugin: a comment
 asserting two things match is a derivation waiting to be written.
+
+## Deriving the rule is not the same as calling it
+
+The last two rows are a variant worth naming separately, because the doctrine
+above had already been applied to both and they still diverged: what drifted was
+a **call site**, not a rule.
+
+`linkedReadColorSlot` (a clamp, generated from `alignmentsUniforms.slang`)
+replaced a hand-spelled `colorType % palette.length` at three sites. Two moved
+onto it; `features/linkedReads/drawCanvas.ts` — the Canvas2D/SVG twin of the GPU
+straight-line pass — did not, and its own unit test
+(`arcYScale.test.ts::linkedReadColorSlot`) passed throughout, because it tests
+the rule. **Test the caller when the rule is shared**; a rule with three callers
+and one test proves nothing about the other two.
+
+That one hid unusually well even for this file. Slot 7 is the unknown/fallback
+baseline and takes LR's swatch, the same colour slot 0 takes, so the first
+out-of-range index (`8 % 8 === 0`) *happened* to paint the clamp's answer; slots
+1 and 9 are LR as well. Index 10 is the first that wraps onto a colour of its
+own. So the usual "diverges only out of range" was itself masked twice over.
+
+The mate link is the other shape: `buildChainResultFields` overwrites a
+supplementary's `readPairOrientations` entry with the chain primary's, because
+`pair_orientation` is derived (in @gmod/bam) from the record's own reverse bit
+and position and a strand-flipped segment computes a different one. The arcs read
+that same array — so in **chain** mode they got the corrected value and in
+**pileup** mode they did not, the same reads at the same locus taking a different
+arc colour from a layout setting. `mateLinkArc` now sources orientation and TLEN
+from a primary endpoint itself (`pairFieldSource`), which is a no-op when both
+primaries are loaded since the two primaries of a pair always agree.
+
+A related inconsistency is **open and deliberate**: `readInsertSizes` is not
+corrected the way `readPairOrientations` is, so under the plain `insertSize`
+scheme a supplementary segment (TLEN 0 → `normal`) paints neutral beside its
+long-insert primary within one chain. Defensible — an unset TLEN is genuinely
+unknown, and the orientation-flavoured schemes cover the split with their own
+`CHAIN_FILL_SPLIT_*` hues — but it is the same question answered the other way,
+so decide it rather than rediscover it.
 
 ## Insert size is TLEN, on both sides
 
