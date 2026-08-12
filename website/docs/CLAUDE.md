@@ -12,9 +12,17 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 `FETCH_AUTORUNS`, `PALETTE_KEYS`, `HELPER_PACKAGES`, `REEXPORT_MODULES`,
 `MENU_ITEM_TYPES`, `MENU_ITEM_FIELDS`, `MENU_ITEM_BUILDERS`, `MENU_ACTIONS`,
 `SPEC_KEYS`, `EXAMPLE_PLUGIN_TREE`, `SHADER_EXPORTS`, `ADAPTER_BASES`,
-`SEARCH_RESULT_FIELDS`, `SLOT_TYPES`, `LAUNCH_VIEW_POINTS`). Each renders from a
-JSDoc tag, a registration, or a manifest at the definition site — document a new
-one by tagging the source. Everything else under `docs/` is hand-written.
+`SEARCH_RESULT_FIELDS`, `SLOT_TYPES`, `LAUNCH_VIEW_POINTS`, `ELEMENT_PHASES`).
+Each renders from a JSDoc tag, a registration, or a manifest at the definition
+site — document a new one by tagging the source. Everything else under `docs/`
+is hand-written.
+
+`ELEMENT_PHASES` is the one where the failure would be a table that stays
+_complete_. It renders `PluginManager`'s `elementCreationSchedule` arguments,
+and the pluggable-elements guide leans on that order hard — a track type can
+look up a display type by name because displays are built first. Reorder the
+schedule and a hand-written list still names all ten, still looks right, and the
+dependency it documents is silently false.
 
 `LAUNCH_VIEW_POINTS` is the second reader of the launch registry, and the one
 that shows what a cross-page link costs. Its middle column deep-links each

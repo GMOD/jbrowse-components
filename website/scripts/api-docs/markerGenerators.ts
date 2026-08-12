@@ -2,6 +2,7 @@ import { writeAdapterBaseDocs } from './generateAdapterBaseDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
 import { writeCrossCuttingMixinDocs } from './generateCrossCuttingMixinDocs.ts'
 import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
+import { writeElementPhaseDocs } from './generateElementPhaseDocs.ts'
 import { writeExamplePluginDocs } from './generateExamplePluginDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
@@ -78,6 +79,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'LaunchView point table',
     write: (corpus, opts) => writeLaunchViewDocs(corpus, opts),
+  },
+  {
+    label: 'Element creation phases',
+    write: (_corpus, opts) => writeElementPhaseDocs(opts),
   },
   {
     label: 'File type tables',

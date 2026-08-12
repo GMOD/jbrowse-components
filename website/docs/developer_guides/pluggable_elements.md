@@ -19,19 +19,26 @@ a page, even if multiple products use it.**
 
 ## Pluggable elements
 
-Pluggable elements are pieces of functionality a plugin can add to JBrowse. The
-ten element types, in the order the plugin manager creates them:
+Pluggable elements are pieces of functionality a plugin can add to JBrowse, in
+the order the plugin manager creates them:
 
-- Adapter types
-- Text search adapter types
-- Display types
-- Track types
-- Connection types
-- View types
-- Widgets
-- RPC methods
-- Internet account types
-- Add track workflows
+<!-- ELEMENT_PHASES START -->
+
+<!-- prettier-ignore -->
+| Phase | Element type | Registered with |
+| --- | --- | --- |
+| 1 | Adapter types | <code>pluginManager.addAdapterType()</code> |
+| 2 | Text search adapter types | <code>pluginManager.addTextSearchAdapterType()</code> |
+| 3 | Display types | <code>pluginManager.addDisplayType()</code> |
+| 4 | Track types | <code>pluginManager.addTrackType()</code> |
+| 5 | Connection types | <code>pluginManager.addConnectionType()</code> |
+| 6 | View types | <code>pluginManager.addViewType()</code> |
+| 7 | Widget types | <code>pluginManager.addWidgetType()</code> |
+| 8 | RPC method types | <code>pluginManager.addRpcMethod()</code> |
+| 9 | Internet account types | <code>pluginManager.addInternetAccountType()</code> |
+| 10 | Add track workflow types | <code>pluginManager.addAddTrackWorkflowType()</code> |
+
+<!-- ELEMENT_PHASES END -->
 
 The order is a real dependency, not a listing convention: your `install` runs
 before any of them are built, and the plugin manager then creates each group in
