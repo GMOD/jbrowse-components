@@ -46,98 +46,38 @@ contexts: CpG, CHG, and CHH (H is A, C, or T). JBrowse restricts the coloring to
 any one of them, so all three read off the same pileup. Everything below runs on
 real _Arabidopsis thaliana_ data, from SRA reads to a colored browser view.
 
-## The pipeline
+## Producing the BAM
 
-### Get the reference and reads
-
-This page uses the TAIR10 reference and one wild-type Col-0 WGBS run
+The [reproduce script](#reproduce-it-end-to-end) runs the whole pipeline, from
+the TAIR10 reference and one wild-type Col-0 WGBS run
 ([`DRR029742`](https://www.ebi.ac.uk/ena/browser/view/DRR029742), paired-end 150
-bp, HiSeq 2500). The `datasets download` writes a zip with the genome nested a
-few directories deep, so unzip it and rename the `.fna` to `tair10.fa`:
+bp) through Trim Galore to a sorted BAM. Two of its steps decide what JBrowse
+can read.
 
-```bash
-# reference (TAIR10), via the NCBI datasets CLI
-datasets download genome accession GCF_000001735.4 --include genome
-unzip ncbi_dataset.zip
-mv ncbi_dataset/data/GCF_000001735.4/*.fna tair10.fa
-
-# reads, straight from ENA (or use prefetch + fasterq-dump from SRA)
-wget https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/DRR029742_1.fastq.gz
-wget https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/DRR029742_2.fastq.gz
-```
-
-### Trim adapters (recommended)
-
-WGBS libraries benefit from adapter and low-quality trimming before alignment:
-
-```bash
-trim_galore --paired DRR029742_1.fastq.gz DRR029742_2.fastq.gz
-```
-
-### Bisulfite-align with bwameth
-
-[bwameth](https://github.com/brentp/bwa-meth) aligns bisulfite reads by
-in-silico C→T converting both reads and reference, then running `bwa mem`. It
-emits an ordinary BAM with the original read sequences, so the C→T signal is
-preserved for JBrowse to read.
-
-```bash
-bwameth.py index tair10.fa
-bwameth.py --reference tair10.fa -t 8 \
-    DRR029742_1_val_1.fq.gz DRR029742_2_val_2.fq.gz \
-  | samtools sort -@4 -o arabidopsis_wgbs.bam -
-samtools index arabidopsis_wgbs.bam
-```
-
-(The `_val_1`/`_val_2` inputs are Trim Galore's outputs from the previous step.
-If you skipped trimming, pass the raw
-`DRR029742_1.fastq.gz DRR029742_2.fastq.gz` instead. Bismark is an equally
-common aligner, especially in the plant community. JBrowse reads Bismark BAMs
-the same way.)
+The aligner is [bwameth](https://github.com/brentp/bwa-meth), which handles
+bisulfite reads by in-silico C→T converting both reads and reference and then
+running `bwa mem`. It emits an ordinary BAM carrying the original read
+sequences, so the C→T signal survives for JBrowse to compare against the
+reference at render time. Bismark is an equally common aligner, especially in
+the plant community, and JBrowse reads its BAMs the same way.
 
 ### Check the conversion rate
 
 An unconverted cytosine is indistinguishable from a methylated one, so the
 library's conversion rate is worth having before reading anything off the track.
-The chloroplast is unmethylated, which makes it the control:
+The chloroplast is unmethylated, which makes it the control: the script runs
+MethylDackel over it in CHH context and prints the rate. Modern libraries
+convert above 99%.
 
-```bash
-MethylDackel extract --CHH -r NC_000932.1 -o conversion tair10.fa arabidopsis_wgbs.bam
+### Aggregate methylation, optionally
 
-# MethylDackel bedGraph: chrom start end pct nMethylated nUnmethylated
-awk 'NR > 1 { m += $5; u += $6 }
-     END { printf "conversion %.2f%%\n", 100 * u / (m + u) }' conversion_CHH.bedGraph
-```
-
-Modern libraries convert above 99%, and the
-[reproduce script](#reproduce-it-end-to-end) prints this.
-
-### (Optional) Aggregate methylation calling
-
-For a whole-genome, per-position methylation fraction track, complementary to
-the per-read coloring, call methylation with
-[MethylDackel](https://github.com/dpryan79/MethylDackel), which understands all
-three plant contexts:
-
-```bash
-MethylDackel extract --CHG --CHH tair10.fa arabidopsis_wgbs.bam
-# -> arabidopsis_wgbs_CpG.bedGraph, _CHG.bedGraph, _CHH.bedGraph
-
-# bedGraphToBigWig needs a chrom.sizes; derive it from the reference
-samtools faidx tair10.fa
-cut -f1,2 tair10.fa.fai > tair10.chrom.sizes
-
-# convert each context to bigWig for fast random access
-for ctx in CpG CHG CHH; do
-  sort -k1,1 -k2,2n arabidopsis_wgbs_$ctx.bedGraph > arabidopsis_wgbs_$ctx.sorted.bedGraph
-  bedGraphToBigWig arabidopsis_wgbs_$ctx.sorted.bedGraph tair10.chrom.sizes arabidopsis_wgbs_$ctx.bw
-done
-```
-
-Group the three bigWigs into one `MultiQuantitativeTrack` (a subadapter per
-context, each with its own `name` and `color`) so they render as three labeled
-rows, the Aggregate methylation track in the figures below. This is the same
-mechanism as the
+A per-position methylation fraction across the whole genome is complementary to
+the per-read coloring, and
+[MethylDackel](https://github.com/dpryan79/MethylDackel) calls one in all three
+plant contexts. Group the resulting bigWigs into a single
+`MultiQuantitativeTrack`, a subadapter per context, and they render as three
+labeled rows, the Aggregate methylation track in the figures below. This is the
+same mechanism as the
 [DNA methylation tutorial's aggregate section](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl).
 
 ```json
