@@ -423,6 +423,18 @@ describe('reordering within a strip', () => {
     dragTabTo(a, 380, 200).drop()
     expect(session.panels).toHaveLength(2)
   })
+
+  // The centre of a cell means "be a tab of this cell", which for a tab already
+  // in it means the end — there is no gap being pointed at. This is the path
+  // that goes through `dropTabInPanel` with NO index, and the index adjustment
+  // the strip needs must not reach it.
+  test('a drop on its own body sends the tab to the end', () => {
+    const { a, b, c, session, order } = setupStrip()
+    dragTabTo(a, 200, 200).drop()
+
+    expect(order()).toEqual([b, c, a])
+    expect(session.panels).toHaveLength(1)
+  })
 })
 
 test('clicking a tab makes it active without moving anything', () => {

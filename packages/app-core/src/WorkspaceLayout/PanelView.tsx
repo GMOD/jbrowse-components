@@ -287,9 +287,15 @@ export const PanelView = observer(function PanelView({
                 setFocusedTabId(tab.id)
               }}
               onPointerDown={event => {
-                // the middle button closes rather than drags, and its default
+                // The middle button closes rather than drags, and its default
                 // action is the browser's autoscroll — which would otherwise
-                // start the moment a tab is middle-pressed
+                // start the moment a tab is middle-pressed.
+                //
+                // Cancelling pointerdown suppresses the compatibility mouse
+                // events (which is what stops the autoscroll) and NOT `click` /
+                // `auxclick`: Pointer Events L3 dispatches those two
+                // independently of that mapping. So the close below still
+                // fires, which is the thing this looks like it would break.
                 if (event.button === 1) {
                   event.preventDefault()
                   return

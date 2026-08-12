@@ -302,9 +302,17 @@ export function moveTabToPanel(
       ? home.panel.tabs.findIndex(t => t.id === tabId)
       : -1
   const detached = mapPanel(removeTab(root, tabId), targetPanelId, panel => {
-    const requested = index === undefined ? panel.tabs.length : index
-    const shifted = from >= 0 && from < requested ? requested - 1 : requested
-    const at = Math.min(Math.max(shifted, 0), panel.tabs.length)
+    // No index means append, and it has to keep meaning that within one panel.
+    // The shift below is about reading a STATED index against the strip on
+    // screen; a caller that states nothing is not describing a gap, so shifting
+    // its position lands the tab one place short of the end.
+    const at =
+      index === undefined
+        ? panel.tabs.length
+        : Math.min(
+            Math.max(from >= 0 && from < index ? index - 1 : index, 0),
+            panel.tabs.length,
+          )
     return {
       ...panel,
       tabs: [...panel.tabs.slice(0, at), tab, ...panel.tabs.slice(at)],

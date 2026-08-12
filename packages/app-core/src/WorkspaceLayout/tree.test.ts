@@ -264,6 +264,29 @@ describe('views and tabs', () => {
     })
     const order = (tree: LayoutTree) => (tree as PanelNode).tabs.map(t => t.id)
 
+    // The shift is about reading a STATED index against the strip on screen, so
+    // it must not touch the no-index case: a caller that states nothing is not
+    // describing a gap. Dropping a tab on its own panel's BODY takes this path,
+    // and the shift landed it one place short of the end.
+    test('no index appends, even when the tab is already in that panel', () => {
+      expect(order(moveTabToPanel(threeTabs(), 'a', 'p1'))).toEqual([
+        'b',
+        'c',
+        'a',
+      ])
+      expect(order(moveTabToPanel(threeTabs(), 'b', 'p1'))).toEqual([
+        'a',
+        'c',
+        'b',
+      ])
+      // and the tab that was already last stays last
+      expect(order(moveTabToPanel(threeTabs(), 'c', 'p1'))).toEqual([
+        'a',
+        'b',
+        'c',
+      ])
+    })
+
     test('a tab dragged rightwards lands in the gap it was dropped in', () => {
       // the gap between b and c is index 2 on screen
       expect(order(moveTabToPanel(threeTabs(), 'a', 'p1', 2))).toEqual([
