@@ -517,6 +517,51 @@ describe('computePileupBezierArcs — exclusions', () => {
   })
 })
 
+// What `enumerateBezierPairs` returns IS what the overlay draws, so the two
+// consumers (the arc emitter and the legend) never re-derive the skip rule — and
+// the memoized list doesn't carry every ordinary pair at depth for both of them
+// to throw away.
+describe('enumerateBezierPairs — the list is what gets drawn', () => {
+  it('drops normal-orientation pairs wholly inside one region', () => {
+    // An ordinary LR pair: the GPU / Canvas2D line pass owns it.
+    const normalPair = makeData({
+      names: ['p', 'p'],
+      ids: ['p1', 'p2'],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
+      strands: [1, -1],
+      positions: [
+        [100, 200],
+        [600, 700],
+      ],
+      orientations: [LINKED_READ_COLOR_PAIR_LR, LINKED_READ_COLOR_PAIR_LR],
+      ys: [0, 0],
+    })
+    expect(enumerateBezierPairs(new Map([[0, normalPair]]))).toHaveLength(0)
+  })
+
+  // A PAF/synteny block has no QNAME, and LGVSyntenyDisplay runs this same
+  // overlay. Bucketed under '' they were one read's segment chain, so N blocks
+  // produced N-1 junctions between features that share nothing.
+  it('never connects nameless features to each other', () => {
+    const blocks = makeData({
+      names: ['', '', ''],
+      ids: ['block-a', 'block-b', 'block-c'],
+      flags: [0, 0, 0],
+      strands: [1, 1, -1],
+      positions: [
+        [100, 200],
+        [5000, 5100],
+        [900_000, 900_100],
+      ],
+      ys: [0, 1, 2],
+    })
+    expect(enumerateBezierPairs(new Map([[0, blocks]]))).toHaveLength(0)
+  })
+})
+
 // Chain layout puts a chain's alignments on one row across displayed regions but
 // its connecting-line pass is per region, so nothing joins them. This overlay is
 // the only pass that resolves both ends, and `crossRegion` is it doing exactly

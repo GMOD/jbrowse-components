@@ -53,7 +53,6 @@ import { computeDerivativePaths } from '../features/derivativePaths/computePaths
 import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
-  isBezierArcPair,
 } from '../features/linkedReads/computeOverlay.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 import { ARC_COLOR_INTERCHROM } from '../shaders/slang/arcLine.iface.generated.ts'
@@ -2148,18 +2147,18 @@ export default function stateModelFactory(
          * #getter
          * Connection types (LINKED_READ_COLOR_*) actually drawn as bezier/line
          * arcs in view, the input that lets the legend list only the connection
-         * colors present. Mirrors the overlay's skip rule (normal within-region
-         * pairs are drawn by the GPU pipeline, not as arcs) so the key matches the
-         * curves. Empty while the legend is hidden so the scan is skipped.
+         * colors present. `bezierPairSections` is already narrowed to what the
+         * overlay draws (`enumerateBezierPairs` applies the scope's own
+         * predicate), so this scans the same list the curves come from rather
+         * than re-deriving the skip rule beside it. Empty while the legend is
+         * hidden so the scan is skipped.
          */
         get bezierConnectionColorTypes(): Set<number> {
           const present = new Set<number>()
           if (self.showLegend) {
             for (const sec of this.bezierPairSections) {
               for (const pair of sec.pairs) {
-                if (isBezierArcPair(pair)) {
-                  present.add(pair.c.colorType)
-                }
+                present.add(pair.c.colorType)
               }
             }
           }

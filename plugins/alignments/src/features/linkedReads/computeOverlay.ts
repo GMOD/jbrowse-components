@@ -52,9 +52,10 @@ export function bezierArcKey(arc: Pick<PileupArc, 'id1' | 'id2'>) {
 
 // A linked pair becomes an overlay arc unless it's a normal-orientation pair
 // wholly within one region — those straight connectors are drawn by the GPU /
-// Canvas2D pipeline, not here. The single gate shared by the arc emitter
-// (computePileupBezierArcs) and the legend (bezierConnectionColorTypes), so the
-// key can never list a connection color the overlay didn't draw.
+// Canvas2D pipeline, not here. Applied once, by `enumerateBezierPairs`, so the
+// arc emitter (computePileupBezierArcs) and the legend
+// (bezierConnectionColorTypes) work from one already-narrowed list and the key
+// can never list a connection color the overlay didn't draw.
 export function isBezierArcPair({ e1, e2, c }: LinkedPair): boolean {
   return !(c.isNormal && e1.displayedRegionIndex === e2.displayedRegionIndex)
 }
@@ -132,8 +133,23 @@ export function enumerateBezierPairs(
   ) {
     return []
   }
-  const pairs = [...iterLinkedPairs(laidOutPileupMap)]
-  return scope === 'crossRegion' ? pairs.filter(isCrossRegionPair) : pairs
+  // The scope's own predicate, applied HERE rather than at each consumer, so
+  // what this returns is exactly what the overlay draws. Both consumers (the arc
+  // emitter and the legend) used to re-apply `isBezierArcPair` themselves, which
+  // left the memoized `bezierPairSections` holding every ordinary within-region
+  // pair — the overwhelming majority at depth under the `all` scope — for both
+  // of them to skip. `crossRegion` needs no second gate: two ends in different
+  // regions can never be the within-region normal pair `isBezierArcPair` drops,
+  // so it is the narrower of the two.
+  const predicate =
+    scope === 'crossRegion' ? isCrossRegionPair : isBezierArcPair
+  const out: LinkedPair[] = []
+  for (const pair of iterLinkedPairs(laidOutPileupMap)) {
+    if (predicate(pair)) {
+      out.push(pair)
+    }
+  }
+  return out
 }
 
 interface Opts {
@@ -158,9 +174,10 @@ interface Opts {
 
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
 // cross-region normal pairs. Within-region normal pairs are rendered by the
-// GPU + Canvas2D pipelines and intentionally absent here. Projects the
-// precomputed `pairs` (see `enumerateBezierPairs`) to screen space; this is the
-// only scroll/pan-dependent half.
+// GPU + Canvas2D pipelines and are already absent from `pairs`, which
+// `enumerateBezierPairs` narrows to what this draws. Purely a projection of
+// those pairs to screen space — the only scroll/pan-dependent half, and the only
+// thing it drops is what falls outside the frame.
 export function computePileupBezierArcs(opts: Opts): PileupArc[] {
   const {
     pairs,
@@ -185,13 +202,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const result: PileupArc[] = []
 
-  for (const pair of pairs) {
-    const { e1, e2, c } = pair
-    // GPU + Canvas2D pipelines own normal-orientation within-region lines.
-    if (!isBezierArcPair(pair)) {
-      continue
-    }
-
+  for (const { e1, e2, c } of pairs) {
     const r1 = displayedRegions[e1.displayedRegionIndex]
     const r2 = displayedRegions[e2.displayedRegionIndex]
     if (!r1 || !r2) {
