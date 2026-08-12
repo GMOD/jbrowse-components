@@ -551,8 +551,14 @@ name matching nothing is dropped, and a list that matches nothing at all is
 reported rather than silently showing the whole genome.
 
 The same field, and the same matching, is available on [`&regions=`](#regions),
-on the [circular view](#circular-view), and on each axis of a
-[dotplot](#dotplot-view).
+on the [circular view](#circular-view), on each axis of a
+[dotplot](#dotplot-view), and on each row of a
+[linear synteny view](#linear-synteny-view).
+
+The dotplot and linear synteny [import forms](#dotplot-view) put this syntax in
+a text box — one beside each assembly, holding the comma-separated list this
+field takes — so a haplotype-per-axis plot can be reached by clicking rather
+than only by writing a spec. Empty means the whole assembly.
 
 #### Advanced track configuration
 
@@ -915,6 +921,14 @@ A self-self alignment is allowed:
   ]
 }
 ```
+
+Each entry in `views` is one genome row, and takes the same keys an
+[LGV](#linear-genome-view) does. `displayedRegionNames` restricts that row to a
+subset of its assembly, with [globs](#glob-region-names) allowed — so a
+whole-genome synteny view can put one haplotype on each row (`["*_MATERNAL"]`
+above `["*_PATERNAL"]`) instead of stacking both interleaved. Use it instead of
+`loc`, not alongside: `loc` navigates within what a row displays, and takes
+precedence.
 
 #### Linear synteny view init options
 
