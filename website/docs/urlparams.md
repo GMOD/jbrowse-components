@@ -34,9 +34,15 @@ A simplified URL format for launching a single linear genome view:
 `http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
 The allowed query parameters are listed below. `&assembly=`, `&loc=`,
-`&regions=`, `&nav=`, `&tracks=`, `&tracklist=`, and `&highlight=` apply only to
-this single linear genome view launch. `?config=`, `&sessionName=`, `&hubURL=`,
-`&renderer=`, and `&session=` work for any launch type.
+`&regions=`, `&nav=`, `&tracks=`, `&tracklist=`, `&highlight=`,
+`&sessionTracks=` and `&extendSession=` apply only to this single linear genome
+view launch — every other launch type carries the same settings inside the
+session it loads. `?config=`, `&sessionName=`, `&hubURL=`, `&renderer=` and
+`&session=` work for any launch type.
+
+Two more are documented with the feature they belong to: `&password=` with
+[`&session=share-`](#sessionshare-), and `&adminKey=` in
+[](/docs/quickstart_adminserver).
 
 ### ?config=
 
@@ -292,6 +298,7 @@ Example
 Pins the backend tracks are drawn with, rather than detecting one. `webgpu`,
 `webgl` and `canvas2d` each pin that one: `webgl` skips WebGPU and uses WebGL2,
 `canvas2d` skips both and draws in software, and `webgpu` requires WebGPU.
+`canvas` is accepted as an alias for `canvas2d`.
 
 A pin never falls through to the next backend. If the one you named cannot
 start, tracks show an error saying so — which is the point, since a flag whose
@@ -321,6 +328,33 @@ With `&extendSession=true`, `&loc=` (and `&tracks=`, `&highlight=`, `&nav=`,
 
 `&sessionTracks=` (dynamically-added track configs) is not layered onto the
 default session. Use a full [session spec](#session-spec) for that.
+
+## Which parameter decides the launch
+
+A link can carry several of these at once, and they don't combine — one of them
+decides what opens and the rest are either layered onto it or dropped. The
+ranking, highest first:
+
+1. **`&session=`**, in any of its forms (`spec-`, `share-`, `encoded-`, `json-`,
+   `local-`). An explicit session always beats a stray `&loc=`. A value matching
+   none of those prefixes is an error rather than a fallback.
+2. **`&extendSession=true`** alongside `&loc=`/`&assembly=`, which navigates the
+   config's `defaultSession` — see
+   [below](#navigating-within-the-default-session). It outranks a hub, which
+   would otherwise replace that session outright.
+3. **`&hubURL=`**, because a hub is the only parameter that brings its own
+   assemblies and tracks: a link carrying both a hub and `&loc=` is asking to
+   navigate _inside_ the hub, so the shorthand rides along on top of the hub
+   session rather than replacing it.
+4. **`&loc=`/`&assembly=`** on their own, which build a fresh single linear
+   genome view.
+5. Nothing of the above, which opens the config's `defaultSession`.
+
+`?config=`, `&sessionName=` and `&renderer=` sit outside the ranking and apply
+to whichever launch wins. `&sessionTracks=` applies only at rank 4 — it is not
+layered onto a default session, a hub, or a `&session=` of any kind, all of
+which have their own way to carry a track (a spec's
+[`sessionTracks`](#session-spec), the hub itself, the snapshot).
 
 ## Session spec
 
@@ -527,10 +561,17 @@ any property the view itself declares. The ones worth naming:
   ruler to sit beside something drawn elsewhere.
 - `showGridlines`: vertical gridlines in the track area (default `true`).
 - `showCytobands`: the cytoband ideogram in the overview, where the assembly has
-  one (default `true`).
-- `showTrackOutlines`: the 1px border around each track (default `true`).
+  one.
+- `showTrackOutlines`: the 1px border around each track.
 - `labelsVisible`: inline labels on highlight and bookmark chips (default
   `true`).
+
+`showCytobands` and `showTrackOutlines` are the two whose default is the
+visitor's own stored preference rather than a fixed value — both are menu
+settings persisted in `localStorage`, so a spec that omits them opens however
+that visitor last left them. Set them explicitly in a link that has to look the
+same for everyone.
+
 - `trackSelectorType`: vestigial — the hierarchical selector is the only one
   that exists, so the value is ignored. It is accepted because saved sessions
   and configs persist it.
