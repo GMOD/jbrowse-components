@@ -7,9 +7,6 @@ settings:
 overrides:
   '@babel/core': ^8.0.1
 
-patchedDependencies:
-  dockview-react@8.0.0: 13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3
-
 importers:
 
   .:
@@ -341,9 +338,6 @@ importers:
       '@mui/material':
         specifier: ^9.3.1
         version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      dockview-react:
-        specifier: ^8.0.0
-        version: 8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2069,9 +2063,6 @@ importers:
       deepmerge:
         specifier: ^4.3.1
         version: 4.3.1
-      dockview-react:
-        specifier: ^8.0.0
-        version: 8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       electron-context-menu:
         specifier: ^4.1.2
         version: 4.1.2
@@ -2317,9 +2308,6 @@ importers:
       '@mui/material':
         specifier: ^9.3.1
         version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      dockview-react:
-        specifier: ^8.0.0
-        version: 8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2749,9 +2737,6 @@ importers:
       '@mui/material':
         specifier: ^9.3.1
         version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      dockview-react:
-        specifier: ^8.0.0
-        version: 8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -6893,18 +6878,6 @@ packages:
   dns-packet@5.6.1:
     resolution: {integrity: sha512-l4gcSouhcgIKRvyy99RNVOgxXiicE+2jZoNmaNmZ6JXiGajBOJAesk1OBlJuM5k2c+eudGdLxDqXuPCKIj6kpw==}
     engines: {node: '>=6'}
-
-  dockview-core@8.0.0:
-    resolution: {integrity: sha512-LLC4CPDat68XIwAi60bSsp2Ve2b7YXgt7d47hIZIIkNDG+mKT3HGBODGPxoebukyzagiZp35KsI+9iFfwFe8sg==}
-
-  dockview-react@8.0.0:
-    resolution: {integrity: sha512-f6+gCNOwWpWtVEehm2R6NYL6KMKbzIqUexb1WjqOOlQxjkKpGjlgaNQS+OcwYmWYTOfoq8qdzaFT56T+oWl+Yg==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
-  dockview@8.0.0:
-    resolution: {integrity: sha512-DbRQvsIAuCqMPNDH07Aciy4MjyIgt1buhHYTAwP3TdLboeWGrnngesjXTrViMKTva5G87RyoX8prWO8YGZKvJg==}
 
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
@@ -14890,18 +14863,6 @@ snapshots:
   dns-packet@5.6.1:
     dependencies:
       '@leichtgewicht/ip-codec': 2.0.5
-
-  dockview-core@8.0.0: {}
-
-  dockview-react@8.0.0(patch_hash=13eee6675827e292bffd30759ff416423113d8a77e69114dba9c378e9a5e5db3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
-    dependencies:
-      dockview: 8.0.0
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-
-  dockview@8.0.0:
-    dependencies:
-      dockview-core: 8.0.0
 
   dom-accessibility-api@0.5.16: {}
 

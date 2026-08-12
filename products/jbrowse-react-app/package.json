@@ -77,7 +77,6 @@
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/web-core": "workspace:^",
     "@mui/material": "^9.3.1",
-    "dockview-react": "^8.0.0",
     "mobx": "^7.0.0",
     "mobx-react": "^10.0.0"
   },

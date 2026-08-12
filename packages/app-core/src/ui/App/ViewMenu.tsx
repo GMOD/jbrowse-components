@@ -11,16 +11,14 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
 import { observer } from 'mobx-react'
 
-import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
-import { useDockview } from './DockviewContext.tsx'
 import { renameIds } from './copyView.ts'
 
-import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
+import type { WorkspaceLayout } from '../../WorkspaceLayout/model.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { ReorderDirection } from '@jbrowse/core/util'
 import type { SessionWithMultipleViews } from '@jbrowse/product-core'
 
-type ViewMenuSession = SessionWithMultipleViews & SessionWithDockviewLayout
+type ViewMenuSession = SessionWithMultipleViews & WorkspaceLayout
 
 // takes the icon's class, not an SvgIconProps object: the object was built
 // inline by ViewHeader and so was new on each of its renders, which defeated
@@ -35,10 +33,6 @@ const ViewMenu = observer(function ViewMenu({
 }) {
   const session = getSession(model) as unknown as ViewMenuSession
 
-  const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
-  const usePanel =
-    session.effectiveUseWorkspaces && isSessionWithDockviewLayout(session)
-
   const moves: Record<
     ReorderDirection,
     (id: string, scopeIds?: string[]) => void
@@ -50,28 +44,16 @@ const ViewMenu = observer(function ViewMenu({
   }
 
   // Give this view a home of its own: its own tab beside the rest, or its own
-  // split to their right. With a workspace already up that's an api call on the
-  // live panels; from the classic stack there are no panels yet, so describe
-  // the arrangement as an `init` and let the controller build it on the way in.
+  // split to their right. One path, whether or not the workspace is already up
+  // — the layout is session state either way, so there is nothing to defer and
+  // no second implementation for "the panels do not exist yet". That fork is
+  // the reason `init` existed.
   const moveViewOut = (direction: 'tabs' | 'horizontal') => {
-    if (usePanel) {
-      if (direction === 'tabs') {
-        moveViewToNewTab(model.id)
-      } else {
-        moveViewToSplitRight(model.id)
-      }
+    const allViewIds = session.views.map(v => v.id)
+    if (direction === 'tabs') {
+      session.moveViewToNewTab(model.id, allViewIds)
     } else {
-      const others = session.views.flatMap(v =>
-        v.id === model.id ? [] : [v.id],
-      )
-      session.setInit(
-        others.length > 0
-          ? {
-              direction,
-              children: [{ viewIds: others }, { viewIds: [model.id] }],
-            }
-          : { viewIds: [model.id] },
-      )
+      session.moveViewToSplitRight(model.id, allViewIds)
     }
     session.setUseWorkspaces(true)
   }
@@ -91,8 +73,8 @@ const ViewMenu = observer(function ViewMenu({
         // render would also subscribe this menu to them, so a view moving
         // between panels anywhere re-rendered every view's menu. None of it is
         // needed until the menu opens.
-        const scopeIds = usePanel
-          ? session.getPanelContainingView(model.id)?.viewIds.slice()
+        const scopeIds = session.effectiveUseWorkspaces
+          ? session.tabContainingView(model.id)?.tab.viewIds.slice()
           : undefined
         const viewCount = scopeIds?.length ?? session.views.length
         return [

@@ -7,15 +7,16 @@ export { AppSessionMixin } from './AppSession/index.ts'
 export type { AppRootModel } from './AppSession/index.ts'
 export { RootAppMenuMixin } from './RootMenu/index.ts'
 export {
-  DockviewLayoutMixin,
-  isSessionWithDockviewLayout,
-} from './DockviewLayout/index.ts'
+  WorkspaceLayoutMixin,
+  isSessionWithWorkspaceLayout,
+} from './WorkspaceLayout/index.ts'
 export type {
-  DockviewLayoutMixinType,
-  DockviewLayoutNode,
-  PendingMove,
-  SessionWithDockviewLayout,
-} from './DockviewLayout/index.ts'
+  WorkspaceLayoutMixinType,
+  WorkspaceLayout,
+  LayoutTree,
+  PanelNode,
+  TabNode,
+} from './WorkspaceLayout/index.ts'
 export {
   addSessionTracks,
   buildLgvInit,

@@ -1,5 +1,6 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
+import { specForPendingMove, treeFromSpec, viewIdsInSpec } from './spec.ts'
 import {
   addTab,
   addViewToTab,
@@ -9,6 +10,7 @@ import {
   panelContainingView,
   panels,
   pruneEmptyPanel,
+  pruneEmptyTabIn,
   removePanel,
   removeTab,
   removeView,
@@ -20,8 +22,9 @@ import {
   tabs,
 } from './tree.ts'
 
+import type { LayoutSpecNode, PendingMove } from './spec.ts'
 import type { LayoutTree, PanelNode, TabNode } from './tree.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel WorkspaceLayoutMixin
@@ -141,6 +144,41 @@ export function WorkspaceLayoutMixin() {
       function apply(next: LayoutTree) {
         self.layout = cast(normalize(next) as never)
       }
+
+      // Put any view no tab holds into the active cell's active tab, and drop
+      // members the session no longer has. The only reconciliation left, and it
+      // is one-directional: views are owned by `session.views`, so a newly
+      // launched one has to land somewhere. Nothing reads back.
+      function home(tree: LayoutTree, viewIds: string[]): LayoutTree {
+        let next = tree
+        const all = panels(next)
+        const activePanel = all.find(p => p.id === self.activePanelId) ?? all[0]
+        if (!activePanel) {
+          return next
+        }
+        let homeTabId =
+          activePanel.tabs.find(t => t.id === activePanel.activeTabId)?.id ??
+          activePanel.tabs[0]?.id
+        if (!homeTabId) {
+          const tab: TabNode = { id: nextId('tab'), viewIds: [] }
+          next = addTab(next, activePanel.id, tab)
+          homeTabId = tab.id
+        }
+        for (const viewId of viewIds) {
+          if (!tabContainingView(next, viewId)) {
+            next = addViewToTab(next, homeTabId, viewId)
+          }
+        }
+        for (const tab of tabs(next)) {
+          for (const viewId of tab.viewIds) {
+            if (!viewIds.includes(viewId)) {
+              next = removeView(next, viewId)
+            }
+          }
+        }
+        return next
+      }
+
       return {
         apply,
         setActivePanelId(panelId: string | undefined) {
@@ -239,42 +277,74 @@ export function WorkspaceLayoutMixin() {
           apply(setSizes(self.tree, branchId, sizes))
         },
         /**
-         * Put any view that no tab holds into the active panel's active tab,
-         * and drop members the session no longer has.
+         * Arrange the workspace as a spec states.
          *
-         * The only reconciliation left, and it is one-directional: views are
-         * owned elsewhere (`session.views`), so a newly launched one has to
-         * land somewhere. Nothing reads back.
+         * There is no `init` property and no standing request: the spec is
+         * converted and *becomes* the layout, here and now. `init` existed only
+         * because dockview had to be told, could not be told before it mounted,
+         * and had to be told again afterwards — three problems that all came
+         * from the layout living somewhere this action could not reach.
          */
-        homeUnassignedViews(viewIds: string[]) {
-          let next = self.tree
-          const all = panels(next)
-          const activePanel =
-            all.find(p => p.id === self.activePanelId) ?? all[0]
-          if (!activePanel) {
+        applyLayoutSpec(spec: LayoutSpecNode) {
+          apply(treeFromSpec(spec, nextId))
+          self.activePanelId = panels(self.tree)[0]?.id
+          return viewIdsInSpec(spec)
+        },
+        /**
+         * Move one view relative to the others. PUBLIC API: an external plugin
+         * calls this behind a `'setPendingMove' in session` guard
+         * (jbrowse-plugin-protein3d, putting a protein view beside its genome
+         * view). It survived the last storage change by being kept as sugar,
+         * and it survives this one the same way — a capability-detecting caller
+         * cannot tell you it lost a capability.
+         */
+        setPendingMove(move: PendingMove | undefined, allViewIds: string[]) {
+          if (move) {
+            this.applyLayoutSpec(specForPendingMove(move, allViewIds))
+          }
+        },
+        /** ViewMenu's "move to new tab": the view leaves its tab for a new one. */
+        moveViewToNewTab(viewId: string, allViewIds: string[] = [viewId]) {
+          // From the classic stack nothing has been homed yet, so home first —
+          // the old code forked here instead, taking an api path when the
+          // workspace was already up and writing an `init` when it was not.
+          const tree = home(self.tree, allViewIds)
+          const homed = tabContainingView(tree, viewId)
+          if (!homed) {
             return
           }
-          let homeTabId =
-            activePanel.tabs.find(t => t.id === activePanel.activeTabId)?.id ??
-            activePanel.tabs[0]?.id
-          if (!homeTabId) {
-            const tab: TabNode = { id: nextId('tab'), viewIds: [] }
-            next = addTab(next, activePanel.id, tab)
-            homeTabId = tab.id
-          }
-          for (const viewId of viewIds) {
-            if (!tabContainingView(next, viewId)) {
-              next = addViewToTab(next, homeTabId, viewId)
-            }
-          }
-          for (const tab of tabs(next)) {
-            for (const viewId of tab.viewIds) {
-              if (!viewIds.includes(viewId)) {
-                next = removeView(next, viewId)
-              }
-            }
-          }
+          const home_ = homed
+          let next = removeView(tree, viewId)
+          const tab: TabNode = { id: nextId('tab'), viewIds: [viewId] }
+          next = addTab(next, home_.panel.id, tab)
+          next = pruneEmptyTabIn(next, home_.panel.id, home_.tab.id)
           apply(next)
+          self.activePanelId = home_.panel.id
+          return tab.id
+        },
+        /** ViewMenu's "move to split view": the view leaves for a new cell. */
+        moveViewToSplitRight(viewId: string, allViewIds: string[] = [viewId]) {
+          const tree = home(self.tree, allViewIds)
+          const homed = tabContainingView(tree, viewId)
+          if (!homed) {
+            return
+          }
+          const home_ = homed
+          let next = removeView(tree, viewId)
+          const panel: PanelNode = {
+            id: nextId('panel'),
+            size: 1,
+            tabs: [{ id: nextId('tab'), viewIds: [viewId] }],
+          }
+          panel.activeTabId = panel.tabs[0]!.id
+          next = splitPanel(next, home_.panel.id, 'row', panel)
+          next = pruneEmptyTabIn(next, home_.panel.id, home_.tab.id)
+          apply(next)
+          self.activePanelId = panel.id
+          return panel.id
+        },
+        homeUnassignedViews(viewIds: string[]) {
+          apply(home(self.tree, viewIds))
         },
       }
     })
@@ -282,3 +352,9 @@ export function WorkspaceLayoutMixin() {
 
 export type WorkspaceLayoutMixinType = ReturnType<typeof WorkspaceLayoutMixin>
 export interface WorkspaceLayout extends Instance<WorkspaceLayoutMixinType> {}
+
+export function isSessionWithWorkspaceLayout(
+  session: IAnyStateTreeNode,
+): session is WorkspaceLayout {
+  return 'layout' in session && 'splitPanel' in session
+}

@@ -90,7 +90,6 @@
     "@mui/x-data-grid": "^9.11.0",
     "date-fns": "^4.4.0",
     "deepmerge": "^4.3.1",
-    "dockview-react": "^8.0.0",
     "electron-context-menu": "^4.1.2",
     "electron-debug": "^4.1.0",
     "electron-updater": "^6.8.9",

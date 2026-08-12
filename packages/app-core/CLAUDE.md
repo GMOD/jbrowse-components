@@ -1,229 +1,147 @@
 # @jbrowse/app-core
 
-The workspaces seam: **dockview owns the grid** (panels, groups, sizes, active
-panel — persisted as the opaque `dockviewLayout` blob) and **MST owns which
-views live in which panel** (`panelViewAssignments`), because "a panel holds a
-stack of JBrowse views" is our concept, not dockview's. Everything hard in
-`ui/App/useDockviewController.ts` is keeping those two consistent.
+The workspace is **one MST tree** (`src/WorkspaceLayout/`). There is no window
+manager library, no imperative api, and nothing to reconcile: the layout is
+session state, React renders it, and a gesture is an action.
 
-That is also why the seam is ours rather than dockview's: nine of the ten
-imports from `dockview-react` are `import type`, and the bugs that live here are
-reconciliation bugs, not library bugs. Vendoring dockview has been proposed and
-rejected —
+This replaced dockview, and most of what used to be in this file described the
+seam between the two. If you are reading an old comment or commit that talks
+about `dockviewLayout`, `panelViewAssignments`, `useDockviewController`,
+`withSuppressedPanelRemoval`, `layoutsEqual` or `init`, all of it is gone —
 [ADR-057](../../agent-docs/architecture-decision-records/adr-057-dockview-stays-external.md)
-records why, and what would actually retire the friction.
+records why it existed and what the measurement was that ended it.
 
-## `session.views` is the order; a panel assignment is the grouping
-
-One ordering, both layout modes. `getViewsForPanel` reads a panel's membership
-off `panelViewAssignments` and then renders those views **in `session.views`
-order**, so the assignment array's own order carries no meaning and nothing may
-read it as one.
-
-It used to, and two arrays each claiming to be the order meant one user intent
-needed two implementations picked by mode. `replaceView` (put a new view where
-an old one was) was the first operation that could not express itself to
-whichever ordering happened to be live, and the fix was not a third case but
-deleting the second ordering.
-
-So the mode now decides the **scope** of a move and nothing else:
-`reorderWithin(views, idx, direction, inScope)` — `@jbrowse/core/util/reorder`,
-driven from product-core's `Session/MultipleViews.ts`, not from here — moves
-past the previous view _in this panel_, leaving out-of-scope views pinned in
-their slots. `ViewMenu` passes the panel's members as the scope, or nothing at
-all in the classic stack.
-
-An order arriving in another vocabulary lands in `session.views` too: a session
-spec's `layout` lists views per panel, top to bottom, and `applyInitLayout`
-applies that with `orderViews` rather than leaving it implicit in the
-assignment.
-
-What this does **not** unify is _which_ panel a replacement lands in. A new view
-arrives unassigned and reconcile homes it to the active panel, which is the
-replaced view's panel only because clicking into a view activates its panel.
-
-## dockview tells you whether you or the user did it — use that, not a flag
-
-`DockviewOrigin` is `'user' | 'api'`. Everything entered through `DockviewApi`
-is tagged `'api'`; every user gesture is `'user'`. It reaches us two ways:
-
-- `onDidActivePanelChange` carries `origin` on the event.
-- `onWillMutateLayout` / `onDidMutateLayout` bracket each top-level structural
-  mutation with `{kind, origin}`, and nested calls **join the outermost
-  bracket**, so one compound operation (a drag that relocates a panel) is one
-  bracket rather than three. `onDidRemovePanel` fires inside it, which is how
-  the controller answers "did the user close this tab, or am I restructuring?"
-
-This replaced a `try/finally` flag (`withSuppressedPanelRemoval`) that we set
-around our own calls. That flag was not wrong, it was **unenforceable**: nothing
-made a newly added restructure remember to wrap itself, and a forgotten wrap
-silently closes the user's views. Don't reintroduce one.
-
-### The one `pnpm patch` in the repo lives here
-
-`patches/dockview-react@8.0.0.patch` sets `createContextMenuItemComponent` to
-`undefined` in `DockviewReact`'s framework options. Upstream sets it
-unconditionally, and dockview-core reads a non-null value there as the consumer
-_declaring intent_ to use context menus — a feature in the paid `ContextMenu`
-module — so it logs, on every mount:
+## Four levels, and the middle two are the ones people get wrong
 
 ```
-dockview: `createContextMenuItemComponent` requires the "ContextMenu" module,
-which ships in dockview-enterprise.
+branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked vertically)
 ```
 
-It is a deduplicated `console.error`, not a throw, and nothing degrades: without
-the enterprise module the feature cannot work whether or not the option is set,
-so dropping it costs us nothing we had. But it is a `console.error` in every
-workspaces session that reads as a real failure and advertises a paid product,
-so it is worth the repo's first patched dependency.
+A **branch** divides its space among children in one direction. A **panel** is a
+cell of the grid: it owns a tab strip and shows one tab at a time. A **tab**
+holds a vertical stack of views. dockview modelled the first three as
+branch/group/panel and had no fourth, which is why `panelViewAssignments` had to
+exist beside its serialized grid — the vertical stack is our concept.
 
-`dockviewEnterprisePatch.test.tsx` pins it, and pins it through `DockviewReact`
-rather than `createDockview` — a bare `createDockview` never sets the option, so
-testing that path passes whether or not the patch is applied and proves nothing.
+The first version of this tree collapsed tab and view into one level, which
+silently deleted tabs as a feature. Both middle levels are real:
 
-Per
-[ADR-057](../../agent-docs/architecture-decision-records/adr-057-dockview-stays-external.md),
-a patch carried across more than a release or two is the signal that our needs
-and upstream's have diverged. **Try deleting it at every dockview bump** — if
-upstream fixed it the patch will refuse to apply, which is the reminder.
+- a **panel with no tabs** is legal and is what a drag leaves behind before the
+  gesture prunes it
+- a **tab with no views** is legal and is what "new empty tab" creates — it
+  shows the view launcher
 
-### Two caveats to check before leaning on origin
+So nothing prunes empties as a rule. `pruneEmptyPanel` and `pruneEmptyTabIn`
+exist, and each is called only by the gesture that just emptied the thing.
 
-- `DockviewApi.addGroup` is the one method upstream does **not** wrap in
-  `withOrigin('api')` — every sibling is — so our own `addGroup` reports
-  `'user'`. Harmless today (adding a group removes no panels, and the empty
-  group has no active panel to report), but don't build a rule that needs it.
-- **`onDidLayoutChange` has no origin**, and cannot get one: it is an
-  `AsapEvent` that `queueMicrotask`s a _coalesced_ fire, so by the time it runs
-  no mutation is in flight and several may have merged. It is also the only
-  signal for splitter drags, which are not structural mutations at all. Persist
-  from it by comparing before writing (`layoutsEqual`) — that part stands.
+## `session.views` is the order; a tab's `viewIds` is the grouping
 
-It matters because dockview re-fires the layout event after every layout we
-install ourselves: `fromJSON` on restore and on undo, the tile presets. The
-session is the TimeTraveller's target, so writing that echo back counts as a
-fresh edit — an undo's echo lands 300ms later and `addUndoState` splices away
-the redo stack.
+Unchanged from the dockview era, and still the rule. `viewIds` is membership
+only; the order views render in is `session.views`, in both layout modes. Two
+arrays each claiming to be the order is what made "move this view up" need two
+implementations picked by mode.
 
-Compounding it: `types.frozen` set to a deep-equal-but-new object **still**
-fires `onSnapshot` (MST compares the snapshot computed by reference), so a fresh
-`api.toJSON()` always reads as a change.
+## The pure tree is where the risk lives, and it is pure so that it can be
 
-## One autorun, three ordered steps
+`tree.ts` is plain functions over plain snapshots — no MST nodes, no parents, no
+lifecycle. Every operation is `tree in -> tree out`.
 
-`init` → re-apply `dockviewLayout` → `reconcilePanelAssignments`. Each step
-reads the panel set the one before it installs. Split across separate reactions
-their relative order is an accident of registration, and for undo it is the
-wrong one: reconcile fires first, judges the restored assignments against the
-panels undo is about to replace, and prunes every one of them as dead.
+The work that replaced reconciliation is **normalisation**: after a split or a
+removal the tree is usually not canonical, and every operation has to put it
+back. Four rules, bottom-up — drop empty branches, replace a single-child branch
+with its child, flatten a branch into a same-direction parent, renormalise sizes
+to sum to 1. That is genuine work and it is where this design's bugs would live.
 
-## Step 2 fires on the session's layout moving, never on dockview disagreeing
+What it is not is _timing_. There is no event, no re-entrancy, no window during
+which the tree is half-updated, and no second owner to disagree with. Which is
+why it can be checked by a 2000-step randomised operation sequence asserting
+canonical form, and no duplicated or stranded tab or view, after every step.
 
-Those read as the same test and are not. Dockview disagrees with the persisted
-blob for the whole window between an imperative mutation and the microtask that
-records it, so `!layoutsEqual(api.toJSON(), dockviewLayout)` is _true by
-construction_ during any of our own `addPanel`/`addGroup` calls. Whatever else
-re-enters the autorun in that window then "restores" the layout the user just
-left — undoing the tab they opened. Step 2's one caller is undo, so it compares
-`dockviewLayout` against the value the previous run saw and only then against
-dockview.
+**Flattening a same-direction branch is the rule dockview could not express.**
+It forces orientation to alternate by depth, so `row` inside `row` was not
+representable and a nested split got silently reparented — which is why `size`
+used to apply only to the top-level split, and only if every panel there carried
+one. Here nesting is preserved and canonicalised, so `size` works at any depth.
 
-The re-entry is not hypothetical, it is the common case: `addPanel` fires
-`onDidActivePanelChange` **synchronously**, that writes `activePanelId`, and
-reconcile subscribes to `activePanelId` the moment it homes a view. So the
-autorun ran from inside dockview's own emitter, and `fromJSON` disposed every
-group while that emitter was still walking its listener list — the next listener
-touched its disposed React part and threw
-`invalid operation: resource is already disposed`.
+## Sizes are `flex-grow`; there is no resize code
 
-Filtering `onDidActivePanelChange` on `origin === 'user'` removes the re-entry
-our _own_ api calls cause, which is where that crash came from. It cannot remove
-all of it — a user gesture that writes to the session is a mutation in flight
-too, and that write is one we want. Hence the third mechanism below.
+A branch's children divide its space in proportion to their `size`, whatever
+that space becomes, so a window resize is the browser's problem. This is the
+pixel maths a grid engine is most likely to get subtly wrong, and we do not do
+any of it. The one place sizes are computed is the splitter drag, which moves
+the boundary _within the combined space of the pair either side of it_ so every
+other pane holds still.
 
-## The invariant: the autorun never touches dockview mid-mutation
+## Drag-and-drop: geometry is pure, wiring is thin
 
-The two guards above each remove a _reason_ to re-enter dockview. Neither makes
-re-entering impossible, and the case that escapes both is not exotic: a user
-gesture writes to the session, some **other** model reacts to that write by
-setting `init` (`setPendingMove` is public API precisely so plugins can), and
-`applyInit` then calls `api.clear()` from inside the user's own close.
+`dropZoneAt` is a pure function over a rect: edge bands, the corner tie-break,
+what counts as the middle. It is tested without a DOM or a synthetic pointer.
+`useLayoutDrag` is the DOM half and is deliberately dumb.
 
-So the autorun refuses to run while dockview is mid-mutation at all. It reads
-`mutationOriginRef` (`undefined` means no mutation in flight), sets a deferred
-flag, and returns; `onDidMutateLayout` resumes it on a **microtask** — not
-inline, because that event is itself a dispatch and a mutation started from
-there would nest inside the listener loop. `resumeTick` is an observable box
-purely so a deferred autorun can be re-run on demand.
+The React test stubs geometry and therefore covers **wiring only**, and says so.
+A test that stubs the thing it is checking proves nothing, and drag-and-drop is
+mostly geometry.
 
-That case violated the invariant for a long time while looking fine, surviving
-on the accident that `applyInit` calls `clearPanelAssignments` _before_
-`api.clear()`, so the removes it triggers find no assignments to act on. Reorder
-those two lines and every view in the session is deleted, silently. That is why
-the invariant is tested as an invariant: `dockviewReentrancy.test.ts` asserts
-"no api call at mutation depth > 0" across every workspace operation, rather
-than asserting the symptom, which depends on which listener happens to run next.
+Pointer events, not HTML5 DnD — for pointer capture, so releasing outside the
+window ends the drag instead of leaving it stuck on.
 
-Removing any one of the three mechanisms fails a different test. They are not
-redundant.
+**The in-flight drag is React state, never MST.** It is transient UI; putting it
+in the session would put every intermediate hover into the undo history.
 
-## An assignment is what marks a view as "homed"
+## Undo is `applySnapshot`, and nothing has to be told
 
-So a stale one is worse than none. `getPanelContainingView` returns truthy, the
-homing loop skips the view, and nothing renders the panel it names — the view is
-invisible with no error. Reconcile drops assignments naming panels dockview
-doesn't have _before_ homing, for that reason.
+There is one owner, so there is no echo. A settled layout emits no further
+snapshots at all — pinned by a test, because the old design's worst bug was the
+opposite: dockview's layout event fired on a microtask after every layout we
+installed ourselves, `types.frozen` set to a deep-equal-but-new object still
+fires `onSnapshot`, and so an undo pushed its own re-serialisation into the undo
+history 300ms later and truncated the redo stack.
 
-## `init` is a standing request, not a mount-time read
+## `applyLayoutSpec` is a plain action, not a standing request
 
-`loadSessionSpec` launches views one awaited handler at a time and sets `layout`
-last. A visitor whose `useWorkspaces` preference is already on has the container
-mounted by the time the first view lands, so reading `init` only in `onReady`
-dropped exactly those spec layouts on the floor. It is applied whenever it
-appears, at mount and after.
+A session spec's `layout` (a documented URL parameter, so `spec.ts` keeps its
+`horizontal`/`vertical`/`tabs` vocabulary and percentage sizes) is converted and
+_becomes_ the layout, immediately.
 
-It is also the _only_ "arrange the panels like this" channel. `pendingMove` was
-a second, volatile one saying the same thing, consumed in the same place;
-ViewMenu now writes an `init` (using `direction: 'tabs'` for "move to new tab").
+There is no `init` property. `init` existed because dockview had to be told,
+could not be told before it mounted, and had to be told again afterwards. All
+three problems came from the layout living somewhere an action could not reach.
 
-`setPendingMove` survives as **sugar over `init`**, and has to: it is public API
-an external plugin calls behind a `'setPendingMove' in session` guard
-(jbrowse-plugin-protein3d, putting a protein view beside its genome view).
-Deleting the action along with the channel did not fail anywhere — the plugin
-feature-detects, so it silently stopped asking for a split and started stacking,
-and the only thing that noticed was a website figure eight commits later. Keep
-the entry point even when its storage changes; a capability-detecting caller
-cannot tell you it lost a capability.
+`ViewMenu`'s "move to new tab" / "move to split view" lost its fork for the same
+reason: it used to call the live dockview api when a workspace was up and write
+an `init` when it was not.
 
-## `DockviewLayoutNode` is not isomorphic to dockview's grid
+## Two members are looked up at runtime and will not fail to compile
 
-dockview forces branch orientation to **alternate by depth**, so a `horizontal`
-nested inside a `horizontal` in our tree is flattened into siblings of one
-branch. There is no single group to address for a nested container, which is why
-`size` is honoured only on the top-level split — and only when every panel there
-carries one, the pass being all-or-nothing, so one nested `size` silently kills
-the outer split's too. `loadSessionSpec` notifies rather than dropping the
-numbers in silence.
+- **`setPendingMove`** — jbrowse-plugin-protein3d calls it behind a
+  `'setPendingMove' in session` guard. It has survived two storage changes as
+  sugar and must keep doing so. Deleting it does not break a build or throw; the
+  plugin just silently stops asking for a split, and the only thing that noticed
+  last time was a website figure eight commits later.
+- **`applyLayoutSpec`** — `loadSessionSpec` duck-types it behind an `in` guard
+  for the same reason (an embedded product has no workspace). Rename the action
+  without renaming it there and every spec layout is silently declined.
 
-Making sizes work at depth means building dockview's serialized grid and handing
-it to `fromJSON`, **not** recursive `setSize`. Don't bolt size math onto
-`applyInitLayout`.
+A capability-detecting caller cannot tell you it lost a capability.
 
-## Closing a panel closes its views, and that is safe
+## Closing a tab or a panel closes its views
 
-`onDidRemovePanel` removes the panel's views from the session. Dragging a tab
-between groups does not trip it: dockview's `_moving` lock suppresses the event
-during re-parenting. It fires for real closes and for our own restructures, and
-the origin of the enclosing mutation is what tells those apart (above).
+The layout does not own views, so the two go together explicitly at the call
+site: `WorkspaceTab`'s close and `WorkspacePanelActions`' close both
+`session.removeView` the views first, then drop the tab or the cell. Homing runs
+in the other direction only — `homeUnassignedViews` puts a newly launched view
+somewhere and drops members the session no longer has, and nothing reads back.
 
-Both directions are pinned by tests, because both failure modes are silent: a
-close that does not reach the session strands views in a panel nobody renders,
-and a restructure that does reach it deletes the user's views mid-retile.
+## `@jbrowse/react-app2/styles.css` is intentionally empty
+
+It used to be a single `@import` of dockview's stylesheet. Owning that entry
+point is what let the dependency be dropped without breaking a single embedder's
+import, which is exactly what it was for. Keep it exported even while empty —
+deleting it is a breaking change for every consumer.
 
 ## Products key `<App>` on `session.id`
 
-jbrowse-web, -desktop and -react-app all do. So a session swap remounts the
-dockview container and `session` is effectively constant for a mounted
-controller; undo (`applySnapshot` on the same node) keeps the id and does not
-remount, which is why the re-apply autorun exists at all.
+jbrowse-web, -desktop and -react-app all do, so a session swap remounts the
+container and `session` is effectively constant for a mounted one. Undo
+(`applySnapshot` on the same node) keeps the id and does not remount — which no
+longer matters the way it used to, since there is nothing to re-install.

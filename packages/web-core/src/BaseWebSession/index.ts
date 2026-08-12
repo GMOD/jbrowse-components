@@ -1,7 +1,7 @@
 import {
   AppSessionMixin,
   AssembliesMixin,
-  DockviewLayoutMixin,
+  WorkspaceLayoutMixin,
 } from '@jbrowse/app-core'
 import { getConf } from '@jbrowse/core/configuration'
 import {
@@ -73,7 +73,7 @@ export function BaseWebSessionModel({
       WebSessionConnectionsMixin(pluginManager),
       // nested to stay within types.compose's 10-argument limit
       types.compose(
-        DockviewLayoutMixin(),
+        WorkspaceLayoutMixin(),
         TrackMenuItemsSessionMixin(pluginManager),
       ),
     )

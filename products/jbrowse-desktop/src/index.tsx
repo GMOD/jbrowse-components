@@ -1,5 +1,4 @@
 import '@fontsource/roboto'
-import 'dockview-react/dist/styles/dockview.css'
 
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'

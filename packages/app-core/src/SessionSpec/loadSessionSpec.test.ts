@@ -7,7 +7,7 @@ import type { AbstractRootModel } from '@jbrowse/core/util'
 
 // A fake session/pluginManager: the real ones need a full plugin runtime, but
 // the layout mapping only cares about which view id each spec entry created, so
-// stub the launch handlers to push view ids and record what setInit receives.
+// stub the launch handlers to push view ids and record the layout spec applied.
 interface StubView {
   id: string
   displayName?: string
@@ -102,7 +102,7 @@ function setup(
     notifyError: jest.fn(),
     notify: jest.fn(),
     ...(workspaces
-      ? { setUseWorkspaces: jest.fn(), setInit: jest.fn() }
+      ? { setUseWorkspaces: jest.fn(), applyLayoutSpec: jest.fn(() => []) }
       : undefined),
     ...connections?.session,
   }
@@ -156,7 +156,7 @@ test('layout indices map to the view each spec entry created, not session positi
   )
 
   expect(session.setUseWorkspaces).toHaveBeenCalledWith(true)
-  expect(session.setInit).toHaveBeenCalledWith({
+  expect(session.applyLayoutSpec).toHaveBeenCalledWith({
     direction: 'horizontal',
     children: [
       { viewIds: ['a-main'], size: undefined },
@@ -215,7 +215,7 @@ test('a spec view that creates no view leaves an undefined slot the layout skips
   )
 
   // index 0 created nothing, so only index 1's real view lands in the panel
-  expect(session.setInit).toHaveBeenCalledWith({
+  expect(session.applyLayoutSpec).toHaveBeenCalledWith({
     viewIds: ['real'],
     size: undefined,
   })
@@ -290,7 +290,7 @@ test('a layout index past the end of the spec views is reported', async () => {
     expect.stringContaining('layout references view index 2'),
   )
   // the valid index still lands in the panel
-  expect(session.setInit).toHaveBeenCalledWith({
+  expect(session.applyLayoutSpec).toHaveBeenCalledWith({
     viewIds: ['a'],
     size: undefined,
   })

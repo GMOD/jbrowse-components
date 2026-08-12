@@ -5,24 +5,30 @@ import {
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
-import type { DockviewLayoutNode } from '../DockviewLayout/index.ts'
+import type { LayoutSpecNode } from '../WorkspaceLayout/spec.ts'
 import type { LayoutNode, ViewSpec } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // A spec `layout` needs both session mixins that own workspaces state:
-// DockviewLayoutMixin's `setInit` and MultipleViewsSessionMixin's
+// WorkspaceLayoutMixin's `applyLayoutSpec` and MultipleViewsSessionMixin's
 // `setUseWorkspaces`. A session without them (an embedded product) can't honor a
 // layout, which is worth saying rather than throwing mid-load.
+//
+// The member named here has to move with the mixin. It is looked up at runtime
+// behind the `in` guard below, so renaming the action without renaming it here
+// does not fail to compile and does not throw — the guard just goes false and
+// every spec layout is silently declined. That is exactly how `setPendingMove`
+// broke once already; see app-core/CLAUDE.md.
 interface SessionWithWorkspaceLayout {
   setUseWorkspaces: (useWorkspaces: boolean) => void
-  setInit: (init: DockviewLayoutNode | undefined) => void
+  applyLayoutSpec: (spec: LayoutSpecNode) => string[]
 }
 function isSessionWithWorkspaceLayout(
   session: AbstractSessionModel,
 ): session is AbstractSessionModel & SessionWithWorkspaceLayout {
-  return 'setInit' in session && 'setUseWorkspaces' in session
+  return 'applyLayoutSpec' in session && 'setUseWorkspaces' in session
 }
 
 // A spec `sessionConnections` needs a session that can both register a
@@ -144,14 +150,14 @@ async function whenConnectionsSettle(
 }
 
 // Convert LayoutNode (view indices into the spec's `views` array) to
-// DockviewLayoutNode (view IDs). `viewIds` is indexed the same as that spec
+// LayoutSpecNode (view IDs). `viewIds` is indexed the same as that spec
 // array — element i is the id of the view the i-th spec entry created, or
 // undefined if it created none — so a layout index maps to the right view
 // regardless of what order the views ended up in on the session.
 function convertLayoutNode(
   node: LayoutNode,
   viewIds: (string | undefined)[],
-): DockviewLayoutNode {
+): LayoutSpecNode {
   if (node.views !== undefined) {
     // Panel node - convert view indices to view IDs
     const ids = node.views
@@ -432,7 +438,7 @@ export async function loadSessionSpec(
         // Enable workspaces mode for this session only — a spec URL shouldn't
         // rewrite the visitor's own preference
         session.setUseWorkspaces(true)
-        session.setInit(convertLayoutNode(layout, createdViewIds))
+        session.applyLayoutSpec(convertLayoutNode(layout, createdViewIds))
       } else {
         session.notifyError(
           'Session spec has a "layout", but this application does not support workspace layouts',

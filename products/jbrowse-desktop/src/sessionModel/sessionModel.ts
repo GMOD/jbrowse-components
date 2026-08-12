@@ -1,7 +1,7 @@
 import {
   AppSessionMixin,
   AssembliesMixin,
-  DockviewLayoutMixin,
+  WorkspaceLayoutMixin,
 } from '@jbrowse/app-core'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -50,7 +50,7 @@ export default function sessionModelFactory({
     AssembliesMixin(pluginManager, assemblyConfigSchema),
     AppSessionMixin(pluginManager),
     DesktopSessionTrackMenuMixin(pluginManager),
-    DockviewLayoutMixin(),
+    WorkspaceLayoutMixin(),
   )
 
   return finalizeSession(pluginManager, sessionModel)

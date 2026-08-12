@@ -11,7 +11,6 @@ import InitialLoad from './InitialLoad.tsx'
 // of every page load. Import it dynamically so it becomes an async CSS chunk.
 // The import stays here rather than next to DockviewReact because packages/
 // must not import css (breaks pure-ESM consumers).
-void import('dockview-react/dist/styles/dockview.css')
 
 setStackTraceLimit()
 

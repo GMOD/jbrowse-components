@@ -10,7 +10,6 @@
 // `version` (react-dom/client has one, and so does ./version.ts), which the npm
 // entry point below does not re-export — so if you ever add it there, re-export
 // it under a distinct name here.
-import 'dockview-react/dist/styles/dockview.css'
 
 // eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
