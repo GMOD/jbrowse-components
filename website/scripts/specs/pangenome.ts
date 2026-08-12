@@ -20,7 +20,8 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The graph-view figures (the Bandage force-directed and rGFA anchored subgraph
 // pictures) moved out with the GraphGenomeView, which is now the third-party
 // jbrowse-plugin-graphgenomeview and no longer bundled in jbrowse-web. They live
-// in specs/graph.ts, which loads that plugin by esmUrl from a fixture config, so
+// in specs/graph-ecoli.ts and specs/graph-hprc.ts, which load that plugin by
+// esmUrl from a fixture config (specs/graph-fixtures.ts), so
 // they are generated and live-linkable like everything else here.
 const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 

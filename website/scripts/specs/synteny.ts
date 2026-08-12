@@ -9,7 +9,7 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
-import { GRAPH_DRAWN } from './graph.ts'
+import { GRAPH_DRAWN } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 

@@ -208,7 +208,7 @@ graph track's own menu; synteny has no track-menu equivalent.
   `RgfaTabixAdapter` and `MinigraphBubbleAdapter` moved out with the view, so
   `plugins/comparative-adapters` no longer has them and nothing in this repo
   registers those types. What is left here is `scripts/build_rgfa_tabix.sh`, the
-  tutorials, and `website/scripts/specs/graph.ts`. The plugin's own
+  tutorials, and `website/scripts/specs/graph-ecoli.ts`. The plugin's own
   `RGFA_GRAPH_HANDOFF.md` still tables them under
   `plugins/comparative-adapters/src/` and is stale on this point.
 - **Subgraphs are rGFA-only.** `RgfaTabixAdapter` declares `getSubgraph`;
@@ -252,7 +252,7 @@ a single mate and the multi-panel launch degenerated to the pairwise case it was
 meant to contrast against.
 
 The graph launcher now has the same coverage from this repo, in
-`website/scripts/specs/graph.ts`: `pangenome/rgfa_launch_menu` drives the track
+`website/scripts/specs/graph-ecoli.ts`: `pangenome/rgfa_launch_menu` drives the track
 menu, and `pangenome/rgfa_segment_neighbourhood` drives the feature context menu
 and then the Color dropdown on the view it launched. Both assert nothing but a
 picture, so review them by eye after a regen. Three things they taught:

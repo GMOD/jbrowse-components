@@ -162,7 +162,7 @@ export const HG38_GENCODE_PROMOTER_TRACK = {
 // is "no element is at data-display-phase=loading", which is trivially true in
 // the window before a display has entered `loading` at all — so a big remote
 // track (HPRC release 2's 2.3 GB wave VCF is the worked example, and
-// specs/graph.ts's hprc_graph_vs_callset is where it is read that way) can sail
+// specs/graph-hprc.ts's hprc_graph_vs_callset is where it is read that way) can sail
 // through it and be captured empty. Waiting on `data-display-phase=ready` on
 // the display itself closes that window: the phase covers the whole fetch,
 // where `data-display-drawn` is first paint, which an empty canvas reaches on

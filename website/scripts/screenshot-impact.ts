@@ -429,8 +429,19 @@ export function buildFingerprints(): SpecFingerprint[] {
 // Any array export whose entries look like specs counts, so a module can split
 // its list in two (specs/jbrowse-img.ts keeps its `CliSpec[]` separate from its
 // one composed figure) without falling off this map.
+//
+// A spec claimed by two modules goes to the one exporting FEWER of them, which
+// is the rule for a BARREL — a module that re-exports another's list. Ownership
+// used to be last-writer-wins over `readdirSync` order, so a barrel took every
+// name from the modules it re-exports purely because its filename sorted later,
+// and the modules that actually hold the specs then owned nothing. That failure
+// is silent AND inverted: `--affected` answers `none` for an edit to the file
+// the specs are written in, so the sweep renders nothing and reports success.
+// Counting is deterministic where readdir order is not, and a barrel is by
+// construction the union of what it re-exports.
 export async function specFileOwners(): Promise<Map<string, string>> {
   const out = new Map<string, string>()
+  const exported = new Map<string, number>()
   const specsDir = path.join(__dirname, 'specs')
   for (const file of fs.readdirSync(specsDir)) {
     if (!file.endsWith('.ts')) {
@@ -440,26 +451,41 @@ export async function specFileOwners(): Promise<Map<string, string>> {
       string,
       unknown
     >
-    for (const value of Object.values(mod)) {
-      if (!Array.isArray(value)) {
-        continue
-      }
-      for (const entry of value) {
-        if (
-          entry &&
+    const rel = `website/scripts/specs/${file}`
+    const names = Object.values(mod)
+      .filter(value => Array.isArray(value))
+      .flat()
+      .filter(
+        (entry): entry is ScreenshotSpec =>
+          !!entry &&
           typeof entry === 'object' &&
           typeof (entry as ScreenshotSpec).name === 'string' &&
-          typeof (entry as ScreenshotSpec).mode === 'string'
-        ) {
-          out.set(
-            (entry as ScreenshotSpec).name,
-            `website/scripts/specs/${file}`,
-          )
-        }
+          typeof (entry as ScreenshotSpec).mode === 'string',
+      )
+      .map(spec => spec.name)
+    exported.set(rel, names.length)
+    for (const name of names) {
+      const held = out.get(name)
+      if (!held || names.length < exported.get(held)!) {
+        out.set(name, rel)
       }
     }
   }
   return out
+}
+
+// Every spec whose own module imports `basename` from beside it. Read off the
+// source text rather than the module graph: these are all `./<name>.ts`
+// specifiers in one directory, so a substring match is exact enough, and it
+// costs a readFileSync per spec module against booting an import graph.
+function specsImporting(basename: string, owners: Map<string, string>) {
+  const needle = `'./${basename}'`
+  const importers = new Set(
+    [...new Set(owners.values())].filter(rel =>
+      fs.readFileSync(path.join(repoRoot, rel), 'utf8').includes(needle),
+    ),
+  )
+  return [...owners].filter(([, f]) => importers.has(f)).map(([n]) => n)
 }
 
 // ---------------------------------------------------------------------------
@@ -529,13 +555,28 @@ export async function selectAffected(
   const touchedConfigs = new Set<string>()
 
   for (const file of changedFiles) {
-    // 1. a spec file selects exactly the specs it exports
+    // 1. a spec file selects exactly the specs it exports — or, for one that
+    // exports none, the specs of the sibling modules that import it.
+    //
+    // That second case is a SHARED module inside specs/ (graph-fixtures.ts is
+    // the one today: the graph figures' ready gates, their colour ramp and the
+    // fixture configs both organisms load). It owns no spec of its own, so
+    // without this it selected nothing at all — which is the worst answer a
+    // narrowing tool can give, since "nothing to re-render" is indistinguishable
+    // from a clean run. One hop is enough because that is the only relationship
+    // specs/ has: a module either declares figures or is read by ones that do.
     if (file.startsWith('website/scripts/specs/')) {
-      const from = [...owners].filter(([, f]) => f === file).map(([n]) => n)
+      const owned = [...owners].filter(([, f]) => f === file).map(([n]) => n)
+      const from =
+        owned.length > 0 ? owned : specsImporting(path.basename(file), owners)
       for (const n of from) {
         selected.add(n)
       }
-      reasons.push(`${file} -> ${from.length} spec(s) it exports`)
+      reasons.push(
+        owned.length > 0
+          ? `${file} -> ${from.length} spec(s) it exports`
+          : `${file} exports no spec -> ${from.length} spec(s) of the sibling modules that import it`,
+      )
       continue
     }
 

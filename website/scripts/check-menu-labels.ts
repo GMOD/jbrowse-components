@@ -40,7 +40,7 @@ const SUPPRESS = '<!-- menu-path-ok -->'
 // least-checked prose in the docs and the most exposed to drift: the plugin is
 // deployed from its own repo, so a renamed dropdown changes every page that
 // walks a reader to it with no commit here to attribute it to. The same sibling
-// checkout is already how `specs/graph.ts` picks up a locally built bundle, so
+// checkout is already how `specs/graph-fixtures.ts` picks up a locally built bundle, so
 // reading its `src/` for label literals adds no dependency that the figure
 // pipeline does not already have.
 //

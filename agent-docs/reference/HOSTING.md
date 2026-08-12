@@ -125,7 +125,7 @@ where a wrong delete costs a re-derivation.
   fails on md5 mismatch. An upload the edge shadows looks exactly like a
   successful publish.
 - **graphgenomeview** — third-party **ESM**, consumed only via a hosted
-  `esmUrl`; figures via `website/scripts/specs/graph.ts` and
+  `esmUrl`; figures via `website/scripts/specs/graph-{fixtures,ecoli,hprc}.ts` and
   `test_data/graphgenomeview/config.json`.
 
 BLAT proxy: `https://api.jbrowse.org/ucsc/v1/{blat,ispcr}`, stack

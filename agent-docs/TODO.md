@@ -33,7 +33,6 @@ Exploratory concepts that are *not* committed work live in
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
-| [Split graph.ts into its two organisms](#split-websitescriptsspecsgraphts-into-its-two-organisms) | figures | the seam is measured: 4 of 124 bindings are shared. By hand, not by script |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -245,43 +244,6 @@ is the method, including why the 40 remaining raw coordinates are deliberate.
 
 Each of these carries a design that already survived a rejected alternative.
 Read the linked ADR or reference doc before re-proposing the thing it rejected.
-
-### Split `website/scripts/specs/graph.ts` into its two organisms
-
-5,524 lines, and the largest file in `website/scripts` by a factor of two. It
-holds two datasets that share almost nothing: the E. coli pangenome figures
-(`pggb_*`, `rgfa_*`, `graph_resolution*`, `graph_context`) and the HPRC human
-pangenome ones (`hprc_*`).
-
-**The seam is already measured, and it is clean.** Of the 124 top-level bindings
-in the 2,193-line preamble, exactly **four** are reached from both families —
-`GRAPH_DRAWN`, `TOOLBAR_READY`, `referencePositionColor`, `mhcLayoutPartSpecs` —
-and the 3,332-line spec array divides 1,654 / 1,648. So:
-
-- `specs/graph-fixtures.ts` — the header, the `GRAPH_PLUGIN_LOCAL` /
-  `usingLocalDemo` fixture-rewriting plumbing (`local()`, `CONFIG`,
-  `HPRC_CONFIG`), and those four shared bindings. It is a module-level side
-  effect, so it must be one module both sides import rather than duplicated.
-- `specs/graph-ecoli.ts` → `ecoliGraphSpecs`
-- `specs/graph-hprc.ts` → `hprcGraphSpecs`
-- `specs/graph.ts` — `graphSpecs = [...ecoliGraphSpecs, ...hprcGraphSpecs]`.
-
-Order within `specs` is cosmetic (run order and console output; every consumer
-keys by name), so the concatenation does not have to interleave.
-
-The payoff beyond size is `--affected`: `specFileOwners` attributes a spec to the
-`specs/*.ts` that exports it, so today any edit to an E. coli figure also
-re-renders all 16 HPRC ones, several of which are the slowest specs in the
-corpus.
-
-**Do it by hand, not with a script.** This was attempted mechanically and
-abandoned there: the reachability analysis above is reliable, but the file
-carries free-floating prose that a script cannot place — a tombstone comment for
-the deleted `pangenome/hprc_node_menu`, for instance, sits immediately above an
-E. coli spec. Machine-guessing where 3,000 lines of load-bearing comments belong
-degrades the file more than its length does. Verify the result by dumping
-`JSON.stringify(specs)` sorted by name before and after: it must be byte-identical,
-which is what proves no figure moved.
 
 ### Give the comparative displays a cancel and a retry
 

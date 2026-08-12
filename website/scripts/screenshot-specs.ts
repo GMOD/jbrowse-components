@@ -25,7 +25,9 @@ import { dtuSpecs } from './specs/dtu.ts'
 import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
-import { graphSpecs } from './specs/graph.ts'
+// the pangenome graph figures, split by organism — see specs/graph-fixtures.ts
+import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
+import { hprcGraphSpecs } from './specs/graph-hprc.ts'
 import { gwasSpecs } from './specs/gwas.ts'
 import { hg002HaplotypeSpecs } from './specs/hg002_haplotypes.ts'
 import { hicSpecs } from './specs/hic.ts'
@@ -84,7 +86,8 @@ export const specs: ScreenshotSpec[] = [
   ...msaSpecs,
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,
-  ...graphSpecs,
+  ...ecoliGraphSpecs,
+  ...hprcGraphSpecs,
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,
