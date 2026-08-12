@@ -101,9 +101,11 @@ export const WorkspaceTab = observer(function WorkspaceTab({
   const title = tabDisplayName(tab, views, session)
 
   const save = () => {
-    if (draft.trim()) {
-      layout.renameTab(tab.id, draft.trim())
-    }
+    // An empty box means "go back to the automatic name". `title === undefined`
+    // is the sentinel for "not renamed" and `renameTab` takes it, but nothing
+    // in the UI passed it: clearing the box just discarded the edit, so a
+    // rename could be made and never unmade.
+    layout.renameTab(tab.id, draft.trim() || undefined)
     setEditing(false)
   }
 

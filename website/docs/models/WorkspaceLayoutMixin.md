@@ -13,7 +13,7 @@ The whole workspace, in one MST tree. There is no second owner, so there is
 nothing to reconcile, no event to echo, and no window during which the two
 disagree — which is the entire content of `useDockviewController`.
 
-Three levels, matching what the workspace actually has and what a generic window
+Four levels, matching what the workspace actually has and what a generic window
 manager cannot quite express:
 
 branch (a split) > panel (a grid cell) > tab > views (stacked)
@@ -50,7 +50,7 @@ is `applySnapshot` on this node and nothing else has to be told.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-tree">**tree**</span><br><code>LayoutTree</code> |  |
+| <span id="getter-tree">**tree**</span><br><code>LayoutTree</code> | The plain tree the pure functions take.<br><br>`getSnapshot` rather than a JSON round trip: MST keeps the snapshot on a `keepAlive` computed, so this is cached and referentially stable instead of re-serialising the whole layout on every read — and an action here reads it several times. The stability also matters on the way back in: `apply` assigns a tree built by spreading this one, so an untouched subtree is the very object MST already holds and its reconcile short-circuits on identity rather than walking it.<br><br>Safe because nothing mutates it. Every function in `tree.ts` is `tree in -> tree out` over spreads, which is the same property that lets them be tested exhaustively.<br><br>**Deliberately uncast.** The models below and the interfaces in `tree.ts` are two spellings of one shape and nothing else makes them agree, so this assignment is where they are checked — add a field to `PanelNode` without adding it to `LayoutPanel` and it stops compiling here. A cast would take that check away and give nothing back. |
 | <span id="getter-panels">**panels**</span><br><code>PanelNode[]</code> |  |
 | <span id="getter-tabs">**tabs**</span><br><code>TabNode[]</code> |  |
 
@@ -59,10 +59,10 @@ is `applySnapshot` on this node and nothing else has to be told.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-findtab">**findTab**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(tabId: string) =&gt; { panel: PanelNode; tab: TabNode; } &#124; undefi…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(tabId: string) =&gt; { panel: PanelNode; tab: TabNode; } &#124; undefined</code></pre></dialog></span> |  |
-| <span id="method-tabcontainingview">**tabContainingView**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(viewId: string) =&gt; { panel: PanelNode; tab: TabNode; } &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(viewId: string) =&gt; { panel: PanelNode; tab: TabNode; } &#124; undefined</code></pre></dialog></span> |  |
+| <span id="method-haspanel">**hasPanel**</span><br><code>(panelId: string) =&gt; boolean</code> |  |
+| <span id="method-findtab">**findTab**</span><br><code>(tabId: string) =&gt; TabHome &#124; undefined</code> |  |
+| <span id="method-tabcontainingview">**tabContainingView**</span><br><code>(viewId: string) =&gt; TabHome &#124; undefined</code> |  |
 | <span id="method-panelcontainingview">**panelContainingView**</span><br><code>(viewId: string) =&gt; PanelNode &#124; undefined</code> |  |
-| <span id="method-viewidsfortab">**viewIdsForTab**</span><br><code>(tabId: string, order: string[]) =&gt; string[]</code> | The views a tab renders, in `session.views` order. |
 | <span id="method-activetabof">**activeTabOf**</span><br><code>(panelId: string) =&gt; TabNode &#124; undefined</code> | The tab a panel is showing, or its first. |
 
 ## Actions
@@ -83,7 +83,6 @@ is `applySnapshot` on this node and nothing else has to be told.
 | <span id="action-setsizes">**setSizes**</span><br><code>(branchId: string, sizes: number[]) =&gt; void</code> |  |
 | <span id="action-applylayoutspec">**applyLayoutSpec**</span><br><code>(spec: LayoutSpecNode) =&gt; string[]</code> | Arrange the workspace as a spec states.<br><br>There is no `init` property and no standing request: the spec is converted and *becomes* the layout, here and now. `init` existed only because dockview had to be told, could not be told before it mounted, and had to be told again afterwards — three problems that all came from the layout living somewhere this action could not reach. |
 | <span id="action-setpendingmove">**setPendingMove**</span><br><code>(move: PendingMove &#124; undefined, allViewIds: string[]) =&gt; void</code> | Move one view relative to the others. PUBLIC API: an external plugin calls this behind a `'setPendingMove' in session` guard (jbrowse-plugin-protein3d, putting a protein view beside its genome view). It survived the last storage change by being kept as sugar, and it survives this one the same way — a capability-detecting caller cannot tell you it lost a capability. |
-| <span id="action-moveviewtonewtab">**moveViewToNewTab**</span><br><code>(viewId: string, allViewIds?: string[]) =&gt; string &#124; undefined</code> | ViewMenu's "move to new tab": the view leaves its tab for a new one. |
-| <span id="action-moveviewtosplitright">**moveViewToSplitRight**</span><br><code>(viewId: string, allViewIds?: string[]) =&gt; string &#124; undefined</code> | ViewMenu's "move to split view": the view leaves for a new cell. |
-| <span id="action-tileviews">**tileViews**</span><br><code>(mode: TileMode, allViewIds: string[]) =&gt; void</code> | The whole-workspace re-arrange: every view one cell, in one of four shapes. Restored from the dockview header's four "Global:" commands, which went with that component and were not reimplemented.<br><br>`allViewIds` is passed in rather than read off the session for the same reason `moveViewToNewTab` takes it: this mixin owns the tree and has no view list of its own. Passing `session.views` order means the arrangement it states is already the order views render in, so unlike a session spec's layout there is nothing for `orderViews` to apply. |
+| <span id="action-moveviewtonewtab">**moveViewToNewTab**</span><br><code>(viewId: string, allViewIds: string[]) =&gt; string &#124; undefined</code> | ViewMenu's "move to new tab": the view leaves its tab for a new one.<br><br>`allViewIds` is EVERY view in the session, not just this one, and is required for that reason. Homing is two-directional about membership — it drops any view the list does not name — so defaulting it to `[viewId]` (which it did) unhomed every other view in the workspace, and the homing autorun then swept them all into one tab. |
+| <span id="action-moveviewtosplitright">**moveViewToSplitRight**</span><br><code>(viewId: string, allViewIds: string[]) =&gt; string &#124; undefined</code> | ViewMenu's "move to split view": the view leaves for a new cell. `allViewIds` is every view in the session — see `moveViewToNewTab`. |
 | <span id="action-homeunassignedviews">**homeUnassignedViews**</span><br><code>(viewIds: string[]) =&gt; void</code> |  |

@@ -40,9 +40,8 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# members the structural pass cannot see (1)
+# members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns
-packages/app-core/src/WorkspaceLayout/model.ts apply
 
 # baseConfiguration references that resolved to no documented #config (0)
 # fix: document the base with #config, or accept that the page shows raw code

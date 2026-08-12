@@ -50,6 +50,38 @@ the broken code. `integrity.test.ts` restarts the module graph with
 `jest.resetModules()` and re-imports, which is the only version of that test
 worth having.
 
+## Where the files sit, and why the split is there
+
+```
+tree.ts        every operation on the layout, pure, no MST and no React
+spec.ts        the public `layout` URL vocabulary -> a tree
+model.ts       the MST mixin: tree in a node, and a named action per gesture
+panelChrome.ts what a panel needs from the APP, as one `PanelChrome` object
+LayoutRenderer the grid: branches, panes, splitters
+PanelView      one cell: the frame, the tabpanel, the drop indicator
+TabStrip       the strip and everything with state in it (+ one tab)
+useLayoutDrag  the DOM half of dragging a tab; geometry is dropZone.ts
+```
+
+`PanelChrome` is worth naming because it is the seam. `LayoutRenderer` and
+everything under it knows nothing about views, assemblies or sessions — what a
+tab is _called_ and what it _contains_ arrive as render props. They travel as
+one object rather than five, because the recursion forwards them unchanged at
+every hop and five copies of that list drift.
+
+**And because one object can be memoised.** It is a prop of every panel, so
+anything in it that changes per render defeats `observer`'s memo for all of them
+at once — and a panel's render rebuilds its `ViewStack`. That is why
+`useLayoutDrag` returns `handlers` as one memoised object and reads the
+in-flight drag from a ref rather than closing over it: handlers that changed on
+every pointer move re-rendered every view in the workspace while a tab was being
+dragged. `WorkspaceContainer` memoises the chrome for the same reason, and
+nothing does it for us — `observer(function(){})` is not compiled by the React
+Compiler.
+
+The `drag` prop is deliberately NOT in the chrome. It goes down its own prop so
+it reaches the one cell it describes and the rest hold still.
+
 ## Every pure function is total, and the guard belongs in the function
 
 An MST action guarding its arguments protects that one caller. The pure
@@ -72,6 +104,14 @@ only; the order views render in is `session.views`, in both layout modes. Two
 arrays each claiming to be the order is what made "move this view up" need two
 implementations picked by mode.
 
+**`homeViews` is what keeps the two in step, and its list is the session's WHOLE
+set of views.** It is two-directional about membership: a view no tab holds
+lands in the active one, and a view the list does not name is dropped from
+whatever tab holds it. So a caller passing only the view it cares about does not
+"leave the rest alone" — it unhomes them, and the next homing pass sweeps them
+all into one tab. `moveViewToNewTab`/`moveViewToSplitRight` default it to
+nothing for that reason; the parameter is required.
+
 ## The pure tree is where the risk lives, and it is pure so that it can be
 
 `tree.ts` is plain functions over plain snapshots — no MST nodes, no parents, no
@@ -85,8 +125,17 @@ to sum to 1. That is genuine work and it is where this design's bugs would live.
 
 What it is not is _timing_. There is no event, no re-entrancy, no window during
 which the tree is half-updated, and no second owner to disagree with. Which is
-why it can be checked by a 2000-step randomised operation sequence asserting
-canonical form, and no duplicated or stranded tab or view, after every step.
+why it can be checked by a 2000-step randomised operation sequence asserting,
+after every step: canonical form, no duplicated or stranded tab or view, and no
+panel naming a tab it does not have.
+
+**Every operation is in that sequence, and keeping it that way is the point.**
+`homeViews` — the one-directional reconcile with `session.views`, which runs on
+every change to it — used to live in the model, closing over `activePanelId` and
+the id minter, and so was outside the only test that drives operations against
+each other. It takes both as arguments now and is in the mix. A new operation
+that skips this test is a new operation with no test worth the name; adding it
+to the sequence is two lines.
 
 **Flattening a same-direction branch is the rule dockview could not express.**
 It forces orientation to alternate by depth, so `row` inside `row` was not
@@ -236,8 +285,9 @@ somewhere and drops members the session no longer has, and nothing reads back.
 `closeTab` is **one function with two callers** — the tab's own ⋮ menu and
 middle-clicking the tab — rather than the pair spelled out at each. Spelled
 twice, one of them ends up dropping the tab and leaving its views in the session
-forever, which nothing reports. `WorkspaceTab` and `PanelView` therefore take a
-close callback rather than building one; neither knows what a view is.
+forever, which nothing reports. `WorkspaceTab` and `TabStrip` therefore take a
+close callback (`PanelChrome.onTabClose`) rather than building one; neither
+knows what a view is.
 
 ## `@jbrowse/react-app2/styles.css` is intentionally empty
 

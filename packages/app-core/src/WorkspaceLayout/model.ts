@@ -47,7 +47,7 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
  * nothing to reconcile, no event to echo, and no window during which the two
  * disagree — which is the entire content of `useDockviewController`.
  *
- * Three levels, matching what the workspace actually has and what a generic
+ * Four levels, matching what the workspace actually has and what a generic
  * window manager cannot quite express:
  *
  *   branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked)

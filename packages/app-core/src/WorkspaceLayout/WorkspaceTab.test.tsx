@@ -1,6 +1,9 @@
-import { tabDisplayName } from './WorkspaceTab.tsx'
+import { fireEvent, render, screen } from '@testing-library/react'
+
+import { WorkspaceTab, tabDisplayName } from './WorkspaceTab.tsx'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
+import type { WorkspaceLayout } from './model.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 
 const session = {
@@ -51,4 +54,50 @@ test('an empty display name falls through', () => {
       session,
     ),
   ).toBe('hg19!')
+})
+
+// `title === undefined` is the sentinel for "not renamed", `renameTab` accepts
+// it, and until now no UI passed it: clearing the box discarded the edit
+// instead, so a rename could be made and never unmade.
+describe('renaming', () => {
+  function renderTab(title?: string) {
+    const renamed: (string | undefined)[] = []
+    const layout = {
+      renameTab: (_id: string, next: string | undefined) => {
+        renamed.push(next)
+      },
+    } as unknown as WorkspaceLayout
+    render(
+      <WorkspaceTab
+        tab={tab(title)}
+        views={[view({ displayName: 'Derived' })]}
+        session={session}
+        layout={layout}
+        onClose={() => {}}
+      />,
+    )
+    fireEvent.doubleClick(screen.getByText(title ?? 'Derived'))
+    return { renamed, input: screen.getByRole('textbox') }
+  }
+
+  test('a name typed in is kept', () => {
+    const { renamed, input } = renderTab()
+    fireEvent.change(input, { target: { value: '  Comparison  ' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(renamed).toEqual(['Comparison'])
+  })
+
+  test('clearing the box goes back to the automatic name', () => {
+    const { renamed, input } = renderTab('Mine')
+    fireEvent.change(input, { target: { value: '   ' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(renamed).toEqual([undefined])
+  })
+
+  test('Escape abandons the edit without renaming', () => {
+    const { renamed, input } = renderTab('Mine')
+    fireEvent.change(input, { target: { value: 'Something else' } })
+    fireEvent.keyDown(input, { key: 'Escape' })
+    expect(renamed).toEqual([])
+  })
 })
