@@ -2,7 +2,8 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { defaultStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { colord } from '@jbrowse/core/util/colord'
 import { types } from '@jbrowse/mobx-state-tree'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { observer } from 'mobx-react'
 
 import { LayoutRenderer } from './LayoutRenderer.tsx'
 import { dv } from './dockviewTheme.ts'
@@ -20,8 +21,22 @@ const noDrag = {
   onTabPointerUp: () => {},
 }
 
-function renderLayout(session: ReturnType<typeof TestSession.create>) {
-  return render(
+/**
+ * `node` is a plain snapshot, so it has to be re-read for the render to follow
+ * the tree — which is what `WorkspaceContainer` does by being an observer. The
+ * harness does the same rather than passing `session.tree` once: a second
+ * keypress on a splitter otherwise computes from the sizes the first one
+ * replaced, and reads as an off-by-one-step bug in the handler.
+ *
+ * The pointer drag never needed this, which is why it went unnoticed — it
+ * captures its start sizes in a ref on pointerdown and works from those.
+ */
+const Harness = observer(function Harness({
+  session,
+}: {
+  session: ReturnType<typeof TestSession.create>
+}) {
+  return (
     <LayoutRenderer
       node={session.tree}
       layout={session}
@@ -30,8 +45,12 @@ function renderLayout(session: ReturnType<typeof TestSession.create>) {
       renderTabContent={tab => (
         <div data-testid={`content-${tab.id}`}>{tab.viewIds.join(',')}</div>
       )}
-    />,
+    />
   )
+})
+
+function renderLayout(session: ReturnType<typeof TestSession.create>) {
+  return render(<Harness session={session} />)
 }
 
 test('each cell shows only its active tab', () => {
@@ -152,7 +171,7 @@ test('the tab strip is dockview chrome, not the MUI theme', () => {
   const session = TestSession.create({ name: 't' })
   const { container } = renderLayout(session)
 
-  const strip = container.querySelector('[role="tablist"]')!
+  const strip = container.querySelector('[data-tab-strip]')!
   const style = getComputedStyle(strip)
   expect(style.backgroundColor).toBe(colord(dv.tabsBackground).toRgbString())
   expect(style.height).toBe(`${dv.tabsHeight}px`)
@@ -172,7 +191,7 @@ test('the panel body is content, so it follows the theme rather than the chrome'
   const { container } = renderLayout(session)
 
   const panel = container.querySelector('[data-panel-id]')!
-  const strip = container.querySelector('[role="tablist"]')!
+  const strip = container.querySelector('[data-tab-strip]')!
   // the theme `makeStyles` hands a component with no provider mounted, which is
   // what this bare render has
   expect(getComputedStyle(panel).backgroundColor).toBe(
@@ -229,4 +248,198 @@ test('a tab is coloured by both its panel and its selection', () => {
   expect(bg(p2.tabs[0]!.id)).toBe(
     colord(dv.activeGroupVisibleTabBackground).toRgbString(),
   )
+})
+
+// ---------------------------------------------------------------------------
+// Keyboard. The strip carried `role="tab"` and `aria-selected` with no way to
+// reach or operate any of it, which is worse than plain divs would have been:
+// it announces tabs to a screen reader whose user then cannot find them.
+// ---------------------------------------------------------------------------
+
+const tabsIn = (container: HTMLElement) =>
+  [...container.querySelectorAll('[role="tab"]')] as HTMLElement[]
+
+const childSizes = (session: ReturnType<typeof TestSession.create>) =>
+  (session.tree as unknown as { children: { size: number }[] }).children.map(
+    c => c.size,
+  )
+
+// One tab stop for the whole strip, not one per tab — otherwise a panel with
+// eight tabs is eight stops between the user and the view.
+test('the strip is a single tab stop, and the shown tab holds it', () => {
+  const session = TestSession.create({ name: 't' })
+  session.addTab(session.panels[0]!.id)
+  const { container } = renderLayout(session)
+
+  const tabs = tabsIn(container)
+  const shown = tabs.filter(t => t.getAttribute('aria-selected') === 'true')
+  expect(shown).toHaveLength(1)
+  expect(shown[0]!.tabIndex).toBe(0)
+  expect(tabs.filter(t => t.tabIndex === 0)).toHaveLength(1)
+  expect(tabs.filter(t => t.tabIndex === -1)).toHaveLength(tabs.length - 1)
+})
+
+// MANUAL activation — the WAI tabs pattern's exception rather than its default,
+// and the right one here: only the shown tab's views are mounted, and each
+// display costs a WebGL2 context against a ceiling of 16, so activating on
+// arrow would build and tear down a set of them per keypress.
+test('arrowing moves focus without showing the tab it lands on', () => {
+  const session = TestSession.create({ name: 't' })
+  const p1 = session.panels[0]!.id
+  const first = session.tabs[0]!.id
+  const second = session.addTab(p1)!.id
+  const { container } = renderLayout(session)
+  expect(session.activeTabOf(p1)?.id).toBe(second)
+
+  const shownTab = tabsIn(container).find(t => t.dataset.tabId === second)!
+  shownTab.focus()
+  fireEvent.keyDown(shownTab, { key: 'ArrowLeft' })
+
+  // focus moved to the other tab...
+  expect((document.activeElement as HTMLElement).dataset.tabId).toBe(first)
+  // ...and the second tab is still the one being shown
+  expect(session.activeTabOf(p1)?.id).toBe(second)
+  expect(screen.getByTestId(`content-${second}`)).toBeTruthy()
+  expect(screen.queryByTestId(`content-${first}`)).toBeNull()
+})
+
+test('Enter shows the focused tab, and Home and End reach the ends', () => {
+  const session = TestSession.create({ name: 't' })
+  const p1 = session.panels[0]!.id
+  const first = session.tabs[0]!.id
+  const second = session.addTab(p1)!.id
+  const { container } = renderLayout(session)
+
+  const focused = tabsIn(container).find(t => t.dataset.tabId === second)!
+  focused.focus()
+  fireEvent.keyDown(focused, { key: 'Home' })
+  expect((document.activeElement as HTMLElement).dataset.tabId).toBe(first)
+
+  fireEvent.keyDown(document.activeElement!, { key: 'Enter' })
+  expect(session.activeTabOf(p1)?.id).toBe(first)
+
+  fireEvent.keyDown(document.activeElement!, { key: 'End' })
+  expect((document.activeElement as HTMLElement).dataset.tabId).toBe(second)
+})
+
+test('arrowing wraps around rather than stopping at the ends', () => {
+  const session = TestSession.create({ name: 't' })
+  const p1 = session.panels[0]!.id
+  const first = session.tabs[0]!.id
+  const second = session.addTab(p1)!.id
+  const { container } = renderLayout(session)
+
+  const firstTab = tabsIn(container).find(t => t.dataset.tabId === first)!
+  firstTab.focus()
+  fireEvent.keyDown(firstTab, { key: 'ArrowLeft' })
+
+  expect((document.activeElement as HTMLElement).dataset.tabId).toBe(second)
+})
+
+// A tablist's children have to be tabs, so the panel's own +/× buttons sit
+// beside it rather than inside — inside, a screen reader counts them as tabs.
+test('the panel actions are in the strip but not in the tablist', () => {
+  const session = TestSession.create({ name: 't' })
+  const { container } = render(
+    <LayoutRenderer
+      node={session.tree}
+      layout={session}
+      dragHandlers={noDrag}
+      renderTabLabel={tab => <span>{tab.id}</span>}
+      renderTabContent={() => null}
+      renderPanelActions={() => <button type="button">add</button>}
+    />,
+  )
+
+  const tablist = container.querySelector('[role="tablist"]')!
+  const strip = container.querySelector('[data-tab-strip]')!
+  expect(strip.contains(tablist)).toBe(true)
+  expect(tablist.querySelector('button')).toBeNull()
+  expect(strip.querySelector('button')).toBeTruthy()
+})
+
+// Wired both ways, which is what lets a screen reader say which tab's content
+// it is about to read.
+test('the shown tab and its panel name each other', () => {
+  const session = TestSession.create({ name: 't' })
+  const { container } = renderLayout(session)
+
+  const tab = container.querySelector('[role="tab"]')!
+  const tabpanel = container.querySelector('[role="tabpanel"]')!
+  expect(tab.id).toBeTruthy()
+  expect(tabpanel.id).toBeTruthy()
+  expect(tab.getAttribute('aria-controls')).toBe(tabpanel.id)
+  expect(tabpanel.getAttribute('aria-labelledby')).toBe(tab.id)
+})
+
+test('a hidden tab controls nothing, because none of it is rendered', () => {
+  const session = TestSession.create({ name: 't' })
+  session.addTab(session.panels[0]!.id)
+  const { container } = renderLayout(session)
+
+  const hidden = tabsIn(container).filter(
+    t => t.getAttribute('aria-selected') !== 'true',
+  )
+  expect(hidden.length).toBeGreaterThan(0)
+  for (const tab of hidden) {
+    expect(tab.getAttribute('aria-controls')).toBeNull()
+  }
+})
+
+// The splitter claimed `role="separator"` while being neither focusable nor
+// operable: an affordance announced and then not there.
+test('the splitter resizes from the keyboard, in both directions', () => {
+  const session = TestSession.create({ name: 't' })
+  session.splitPanel(session.panels[0]!.id, 'row')
+  const { container } = renderLayout(session)
+
+  const splitter = container.querySelector('[data-splitter]') as HTMLElement
+  expect(splitter.tabIndex).toBe(0)
+
+  // 2% of the pair, moved from the right pane to the left
+  fireEvent.keyDown(splitter, { key: 'ArrowRight' })
+  expect(childSizes(session)[0]!).toBeCloseTo(0.52, 5)
+  expect(childSizes(session)[1]!).toBeCloseTo(0.48, 5)
+
+  fireEvent.keyDown(splitter, { key: 'ArrowLeft' })
+  expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
+
+  // Home and End drive the boundary to its limits, never through them — a pane
+  // dragged to nothing still exists and can be brought back
+  fireEvent.keyDown(splitter, { key: 'Home' })
+  expect(childSizes(session)[0]!).toBeCloseTo(0, 5)
+  expect(childSizes(session)[1]!).toBeCloseTo(1, 5)
+  expect(session.panels).toHaveLength(2)
+
+  fireEvent.keyDown(splitter, { key: 'End' })
+  expect(childSizes(session)[0]!).toBeCloseTo(1, 5)
+  expect(session.panels).toHaveLength(2)
+})
+
+test('a vertical split takes the vertical arrows and ignores the others', () => {
+  const session = TestSession.create({ name: 't' })
+  session.splitPanel(session.panels[0]!.id, 'column')
+  const { container } = renderLayout(session)
+
+  const splitter = container.querySelector('[data-splitter]') as HTMLElement
+  expect(splitter.getAttribute('aria-orientation')).toBe('horizontal')
+
+  fireEvent.keyDown(splitter, { key: 'ArrowRight' })
+  expect(childSizes(session)[0]!).toBeCloseTo(0.5, 5)
+
+  fireEvent.keyDown(splitter, { key: 'ArrowDown' })
+  expect(childSizes(session)[0]!).toBeCloseTo(0.52, 5)
+})
+
+test('the splitter reports where it sits, as a percentage of its pair', () => {
+  const session = TestSession.create({ name: 't' })
+  session.splitPanel(session.panels[0]!.id, 'row')
+  session.setSizes((session.layout as unknown as { id: string }).id, [0.7, 0.3])
+  const { container } = renderLayout(session)
+
+  const splitter = container.querySelector('[data-splitter]')!
+  expect(splitter.getAttribute('aria-valuenow')).toBe('70')
+  expect(splitter.getAttribute('aria-valuemin')).toBe('0')
+  expect(splitter.getAttribute('aria-valuemax')).toBe('100')
+  expect(splitter.getAttribute('aria-label')).toBeTruthy()
 })

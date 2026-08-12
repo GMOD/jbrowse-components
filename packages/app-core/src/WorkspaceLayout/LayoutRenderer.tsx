@@ -110,6 +110,12 @@ const useSplitterStyles = makeStyles()({
     position: 'relative',
     background: 'transparent',
     touchAction: 'none',
+    // it is focusable, so it has to show focus — dockview's sash deliberately
+    // has no HOVER colour, which is a different thing and still holds
+    '&:focus-visible': {
+      outline: `2px solid ${dv.edgeDockIndicatorColor}`,
+      outlineOffset: -1,
+    },
     '&::before': {
       content: '""',
       position: 'absolute',
@@ -202,11 +208,57 @@ const Splitter = observer(function Splitter({
     [],
   )
 
+  // A `separator` that can be moved is focusable and takes the arrow keys; one
+  // that cannot is just decoration and should not claim the role. This one
+  // claimed it while being neither focusable nor operable, which announces an
+  // affordance to a screen reader that its user then cannot find.
+  const onKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const sizes = branch.children.map(c => c.size)
+      const pairShare = sizes[index - 1]! + sizes[index]!
+      const decrease = horizontal ? 'ArrowLeft' : 'ArrowUp'
+      const increase = horizontal ? 'ArrowRight' : 'ArrowDown'
+      // 2% of the PAIR per press, matching the drag: the boundary moves within
+      // the two panes either side of it and every other pane holds still
+      const step = pairShare * 0.02
+      let moved: number | undefined
+      if (event.key === decrease) {
+        moved = sizes[index - 1]! - step
+      } else if (event.key === increase) {
+        moved = sizes[index - 1]! + step
+      } else if (event.key === 'Home') {
+        moved = 0
+      } else if (event.key === 'End') {
+        moved = pairShare
+      }
+      if (moved === undefined) {
+        return
+      }
+      event.preventDefault()
+      const next = [...sizes]
+      next[index - 1] = Math.min(Math.max(moved, 0), pairShare)
+      next[index] = pairShare - next[index - 1]!
+      layout.setSizes(branch.id, next)
+    },
+    [branch, index, horizontal, layout],
+  )
+
+  // the pane BEFORE the handle, as a percentage of the pair it divides — which
+  // is what the handle actually moves
+  const pair = branch.children[index - 1]!.size + branch.children[index]!.size
+  const valueNow = Math.round((branch.children[index - 1]!.size / pair) * 100)
+
   return (
     <div
       data-splitter
       role="separator"
+      tabIndex={0}
       aria-orientation={horizontal ? 'vertical' : 'horizontal'}
+      aria-label={horizontal ? 'Resize panels' : 'Resize rows'}
+      aria-valuenow={valueNow}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      onKeyDown={onKeyDown}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

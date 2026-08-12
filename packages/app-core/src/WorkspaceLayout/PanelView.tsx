@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -76,6 +78,14 @@ const useStyles = makeStyles()(theme => ({
     touchAction: 'none',
     borderRight: `1px solid ${dv.tabDividerColor}`,
     '&:hover .jbrowse-tab-menu': { visibility: 'visible' },
+    // a keyboard user needs the ⋮ too, and hover is not a thing they can do
+    '&:focus-within .jbrowse-tab-menu': { visibility: 'visible' },
+    // the strip is dark in either theme, so the focus ring is the drop
+    // indicator's blue rather than the UA default black-on-dark
+    '&:focus-visible': {
+      outline: `2px solid ${dv.edgeDockIndicatorColor}`,
+      outlineOffset: -2,
+    },
   },
   content: {
     flex: 1,
@@ -105,6 +115,14 @@ interface PanelViewProps {
   dropZone?: DropZone
 }
 
+/**
+ * The tab strip is a `tablist`, so the ids it wires `aria-controls` /
+ * `aria-labelledby` with have to be DOM ids. Tab ids are `types.identifier` and
+ * so unique within the tree, which is what makes prefixing them enough.
+ */
+const tabDomId = (tabId: string) => `jbrowse-tab-${tabId}`
+const tabPanelDomId = (panelId: string) => `jbrowse-tabpanel-${panelId}`
+
 export const PanelView = observer(function PanelView({
   panel,
   layout,
@@ -119,6 +137,58 @@ export const PanelView = observer(function PanelView({
     panel.tabs.find(t => t.id === panel.activeTabId) ?? panel.tabs[0]
   const groupActive = layout.activePanelId === panel.id
 
+  // Roving tabindex: the strip is ONE tab stop, and the arrow keys move within
+  // it. Focus is tracked separately from selection because activation here is
+  // manual (see below), so the two genuinely differ while arrowing.
+  const stripRef = useRef<HTMLDivElement>(null)
+  const [focusedTabId, setFocusedTabId] = useState<string | undefined>(
+    undefined,
+  )
+  const roving = panel.tabs.find(t => t.id === focusedTabId)?.id ?? active?.id
+
+  function focusTab(tabId: string) {
+    setFocusedTabId(tabId)
+    // by dataset rather than an interpolated attribute selector: a tab id is
+    // nanoid output and would need CSS.escape, which jsdom does not have
+    const el = [...(stripRef.current?.children ?? [])].find(
+      child => (child as HTMLElement).dataset.tabId === tabId,
+    )
+    ;(el as HTMLElement | undefined)?.focus()
+  }
+
+  /**
+   * MANUAL activation: arrows move focus, Enter/Space selects.
+   *
+   * The automatic form (arrowing selects as it goes) is the more common reading
+   * of the tabs pattern, and is wrong here for the reason WAI-ARIA names as its
+   * exception — showing a tab is expensive. Only the selected tab's views are
+   * mounted, and a JBrowse view costs a WebGL2 context per display against a
+   * ceiling of 16, so arrowing across five tabs would build and tear down five
+   * sets of them to pass through.
+   */
+  function onTabKeyDown(event: React.KeyboardEvent, tabId: string) {
+    const ids = panel.tabs.map(t => t.id)
+    const i = ids.indexOf(tabId)
+    const step =
+      event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
+    let next: string | undefined
+    if (step !== 0) {
+      next = ids[(i + step + ids.length) % ids.length]
+    } else if (event.key === 'Home') {
+      next = ids[0]
+    } else if (event.key === 'End') {
+      next = ids.at(-1)
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      layout.setActiveTab(panel.id, tabId)
+      return
+    }
+    if (next !== undefined) {
+      event.preventDefault()
+      focusTab(next)
+    }
+  }
+
   return (
     <div
       data-panel-id={panel.id}
@@ -132,14 +202,30 @@ export const PanelView = observer(function PanelView({
         }
       }}
     >
-      <div role="tablist" className={classes.tabStrip}>
-        <div className={classes.tabs}>
+      {/* the strip is the chrome; the `tablist` inside it is the tabs ALONE,
+          because a tablist's children have to be tabs and the panel actions
+          beside them are not */}
+      <div data-tab-strip className={classes.tabStrip}>
+        <div role="tablist" ref={stripRef} className={classes.tabs}>
           {panel.tabs.map(tab => (
             <div
               key={tab.id}
               role="tab"
+              id={tabDomId(tab.id)}
               data-tab-id={tab.id}
               aria-selected={tab.id === active?.id}
+              // only the shown tab has a panel in the DOM to control — the rest
+              // are not rendered, so pointing at an absent id would be a lie
+              aria-controls={
+                tab.id === active?.id ? tabPanelDomId(panel.id) : undefined
+              }
+              tabIndex={tab.id === roving ? 0 : -1}
+              onKeyDown={event => {
+                onTabKeyDown(event, tab.id)
+              }}
+              onFocus={() => {
+                setFocusedTabId(tab.id)
+              }}
               onPointerDown={event => {
                 layout.setActiveTab(panel.id, tab.id)
                 dragHandlers.onTabPointerDown(tab.id, event)
@@ -156,7 +242,15 @@ export const PanelView = observer(function PanelView({
         {renderPanelActions?.(panel)}
       </div>
 
-      <div className={classes.content}>
+      <div
+        role="tabpanel"
+        id={tabPanelDomId(panel.id)}
+        // no tabIndex: the WAI pattern adds one only for a panel with nothing
+        // focusable inside, and a tab here holds views full of controls (an
+        // empty one holds the launcher's buttons)
+        aria-labelledby={active ? tabDomId(active.id) : undefined}
+        className={classes.content}
+      >
         {active ? renderTabContent(active) : null}
       </div>
 
