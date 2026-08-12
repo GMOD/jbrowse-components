@@ -128,6 +128,7 @@ is a state the user navigated to on purpose.
 <!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx -->
 
 ```tsx
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
@@ -197,7 +198,7 @@ function SequenceSvgBody({
   // PNG-embed when set, but the default (vector) path keeps letters crisp.
   return (
     <SvgClipRect
-      id={`sequence-clip-${model.id}`}
+      id={`sequence-clip-${svgNodeId(model)}`}
       width={canvasWidth}
       height={height}
     >
