@@ -82,6 +82,10 @@ Color by an attribute with a jexl expression:
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)
 - **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **Adapter:** [NCListAdapter](../nclistadapter)
+- **Adapter:** [SPARQLAdapter](../sparqladapter)
+- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
+- **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **State model:** [runtime API](../../models/linearbasicdisplay)
 - **Base config:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 

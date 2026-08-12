@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config NCListAdapter
+ * #trackType FeatureTrack
  *
  * #example
  * Reads a JBrowse 1 NCList store in place, so an existing JBrowse 1 instance's

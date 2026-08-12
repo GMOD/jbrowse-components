@@ -32,6 +32,14 @@ substituted per sequence, which is how the store is laid out on disk:
 
 _See the **Config slots** section below for all available configuration fields._
 
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+
 ## Config slots
 
 These slots go inside the track's `adapter`:

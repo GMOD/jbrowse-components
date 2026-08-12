@@ -75,6 +75,10 @@ so configure it with an explicit `displays` entry (rather than the
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)
 - **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **Adapter:** [NCListAdapter](../nclistadapter)
+- **Adapter:** [SPARQLAdapter](../sparqladapter)
+- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
+- **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **State model:** [runtime API](../../models/linearmultirowfeaturedisplay)
 
 ## Config slots

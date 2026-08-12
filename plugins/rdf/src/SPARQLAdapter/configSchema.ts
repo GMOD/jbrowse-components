@@ -4,6 +4,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config SPARQLAdapter
+ * #trackType FeatureTrack
  * #category adapter
  * fetches features from a SPARQL endpoint, substituting the queried region into
  * a query template

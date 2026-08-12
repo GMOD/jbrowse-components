@@ -54,6 +54,14 @@ Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
 track is displayed against. Setting it by hand pins the scan to one sequence
 source and silently desyncs the track if the assembly's sequence changes.
 
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+
 ## Config slots
 
 These slots go inside the track's `adapter`:

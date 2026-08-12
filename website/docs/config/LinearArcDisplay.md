@@ -51,6 +51,10 @@ _See the **Config slots** section below for all available configuration fields._
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)
 - **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **Adapter:** [NCListAdapter](../nclistadapter)
+- **Adapter:** [SPARQLAdapter](../sparqladapter)
+- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
+- **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **State model:** [runtime API](../../models/lineararcdisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 

@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config CrisprGuideAdapter
+ * #trackType FeatureTrack
  *
  * Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
  * track is displayed against. Setting it by hand pins the scan to one sequence

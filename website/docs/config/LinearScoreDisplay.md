@@ -20,6 +20,10 @@ Config for the worked-example score display. Attaches to any `FeatureTrack`.
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)
 - **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **Adapter:** [NCListAdapter](../nclistadapter)
+- **Adapter:** [SPARQLAdapter](../sparqladapter)
+- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
+- **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 
 ## Config slots
 

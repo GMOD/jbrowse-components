@@ -11,39 +11,55 @@ plugin.
 
 ## Example usage
 
-Used as an assembly's `refNameAliases`. The file ships beside any RefSeq
-assembly on NCBI datasets, and aliases the RefSeq, GenBank and UCSC-style names
-of every sequence at once:
+Goes on an ASSEMBLY, under `refNameAliases` — not on a track. The file ships
+beside any RefSeq assembly on NCBI datasets and aliases the RefSeq, GenBank and
+UCSC-style names of every sequence at once, so it replaces a hand-maintained
+chromAlias table:
 
 ```js
 {
-  type: 'FeatureTrack',
-  trackId: 'my_track',
-  name: 'My track',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'NcbiSequenceReportAliasAdapter',
-    uri: 'https://example.com/GCF_000001405.40_sequence_report.tsv',
+  name: 'GCF_000001405.40',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'GCF_000001405.40-ReferenceSequenceTrack',
+    adapter: {
+      type: 'BgzipFastaAdapter',
+      uri: 'https://example.com/GCF_000001405.40.fa.gz',
+    },
+  },
+  refNameAliases: {
+    adapter: {
+      type: 'NcbiSequenceReportAliasAdapter',
+      uri: 'https://example.com/GCF_000001405.40_sequence_report.tsv',
+    },
   },
 }
 ```
 
 ### Example: keeping the FASTA's own names
 
-With an NCBI FASTA (`NC_000001.11`), the default shows UCSC-style names (`chr1`)
-and fetches bases under the accession. Set `useNameOverride: false` to display
-the accessions instead, with `chr1` still searchable as an alias.
+With an NCBI FASTA (`NC_000001.11`), the default displays UCSC-style names
+(`chr1`) while still fetching bases under the accession. Set
+`useNameOverride: false` to display the accessions instead, with `chr1` left
+searchable as an alias:
 
 ```js
 {
-  type: 'FeatureTrack',
-  trackId: 'my_track',
-  name: 'My track',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'NcbiSequenceReportAliasAdapter',
-    uri: 'https://example.com/GCF_000001405.40_sequence_report.tsv',
-    useNameOverride: false,
+  name: 'GCF_000001405.40',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'GCF_000001405.40-ReferenceSequenceTrack',
+    adapter: {
+      type: 'BgzipFastaAdapter',
+      uri: 'https://example.com/GCF_000001405.40.fa.gz',
+    },
+  },
+  refNameAliases: {
+    adapter: {
+      type: 'NcbiSequenceReportAliasAdapter',
+      uri: 'https://example.com/GCF_000001405.40_sequence_report.tsv',
+      useNameOverride: false,
+    },
   },
 }
 ```

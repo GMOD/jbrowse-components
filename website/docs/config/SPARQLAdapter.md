@@ -38,6 +38,14 @@ _See the **Config slots** section below for all available configuration fields._
 fetches features from a SPARQL endpoint, substituting the queried region into a
 query template
 
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+
 ## Config slots
 
 These slots go inside the track's `adapter`:

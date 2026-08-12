@@ -1235,44 +1235,44 @@ function assertNoBlankSlotDescriptions(gaps: { file: string; name: string }[]) {
 // Parsed rather than regexed because an example is JS, not JSON — unquoted
 // keys, single quotes, nested objects whose keys must not be mistaken for the
 // outer ones.
-function exampleTopLevelKeys(code: string, descendToAdapter: boolean) {
+function exampleKeysForType(code: string, typeName: string) {
   const source = ts.createSourceFile(
     'example.ts',
     `const __example = ${code.trim()}`,
     ts.ScriptTarget.Latest,
     true,
   )
-  let literal: ts.ObjectLiteralExpression | undefined
+  const keyOf = (p: ts.ObjectLiteralElementLike) =>
+    p.name?.getText().replaceAll(/['"]/g, '')
+
+  // The object this example is ABOUT is the one whose `type` is the documented
+  // type — wherever it sits. An example is written in whatever shape a reader
+  // can paste, and that is rarely the bare object: a sequence adapter is shown
+  // inside its ReferenceSequenceTrack, an alias adapter inside the whole
+  // assembly that carries it, a track as itself. Keying on `type` covers all
+  // of those with one rule, where matching on an `adapter` property meant
+  // knowing in advance how deep the wrapper was — and got the assembly case
+  // wrong, reporting `name`/`sequence`/`refNameAliases` as unknown slots of the
+  // adapter three levels down.
+  let match: ts.ObjectLiteralExpression | undefined
   const visit = (node: ts.Node) => {
-    if (!literal && ts.isObjectLiteralExpression(node)) {
-      literal = node
+    if (!match && ts.isObjectLiteralExpression(node)) {
+      const type = node.properties.find(p => keyOf(p) === 'type')
+      if (
+        type &&
+        ts.isPropertyAssignment(type) &&
+        ts.isStringLiteralLike(type.initializer) &&
+        type.initializer.text === typeName
+      ) {
+        match = node
+      }
     }
-    if (!literal) {
+    if (!match) {
       ts.forEachChild(node, visit)
     }
   }
   ts.forEachChild(source, visit)
-  if (!literal) {
-    return undefined
-  }
-  const keyOf = (p: ts.ObjectLiteralElementLike) =>
-    p.name?.getText().replaceAll(/['"]/g, '')
-  // An adapter's example is sometimes written in the config that holds it — a
-  // ReferenceSequenceTrack around a sequence adapter, a track around a
-  // MotifListAdapter — because that is the form a reader can paste. The outer
-  // keys then belong to the wrapper, not to the type being documented, so
-  // descend to the `adapter` this example is really about. A TRACK's example
-  // has an `adapter` too and owns its outer keys, hence the caller's say.
-  const adapter = descendToAdapter
-    ? literal.properties.find(p => keyOf(p) === 'adapter')
-    : undefined
-  const inner =
-    adapter &&
-    ts.isPropertyAssignment(adapter) &&
-    ts.isObjectLiteralExpression(adapter.initializer)
-      ? adapter.initializer
-      : literal
-  return inner.properties.map(keyOf).filter((n): n is string => !!n)
+  return match?.properties.map(keyOf).filter((n): n is string => !!n)
 }
 
 // Every key an `#example` writes must be one the type declares, or a shorthand
@@ -1308,8 +1308,11 @@ function assertExampleKeysAreSlots(configs: ConfigWithHeader[]) {
     ])
     for (const ex of config.header.examples) {
       const code = /```[\w]*\n([\s\S]*?)```/.exec(ex.content)?.[1]
+      // undefined when the example never names the type — nothing to check
+      // against, and an example that omits its own `type` is a separate
+      // authoring question from a wrong key.
       const keys = code
-        ? exampleTopLevelKeys(code, entry.category !== 'tracks')
+        ? exampleKeysForType(code, config.header.name)
         : undefined
       const unknown = keys?.filter(k => !known.has(k)) ?? []
       if (unknown.length) {

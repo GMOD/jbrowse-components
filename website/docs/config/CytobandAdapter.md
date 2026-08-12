@@ -10,18 +10,25 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ## Example usage
 
-Configured on an assembly's `cytobands`, not on a track — it draws the ideogram
-banding in the linear view's overview bar:
+Goes on an ASSEMBLY, under `cytobands` — not on a track. It draws the ideogram
+banding in the linear genome view's overview bar:
 
 ```js
 {
-  type: 'FeatureTrack',
-  trackId: 'my_track',
-  name: 'My track',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'CytobandAdapter',
-    uri: 'https://example.com/hg38.cytoBand.txt.gz',
+  name: 'hg38',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'hg38-ReferenceSequenceTrack',
+    adapter: {
+      type: 'BgzipFastaAdapter',
+      uri: 'https://example.com/hg38.fa.gz',
+    },
+  },
+  cytobands: {
+    adapter: {
+      type: 'CytobandAdapter',
+      uri: 'https://example.com/hg38.cytoBand.txt.gz',
+    },
   },
 }
 ```

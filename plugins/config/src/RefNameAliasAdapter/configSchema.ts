@@ -10,12 +10,25 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * refName aliases
  *
  * #example
- * Used as an assembly's `refNameAliases`, where the bare `{ uri }` form is
- * shorthand for this adapter:
+ * Goes on an ASSEMBLY, under `refNameAliases` — not on a track. Writing
+ * `refNameAliases: { uri: '...' }` is shorthand for exactly this adapter:
  * ```js
  * {
- *   type: 'RefNameAliasAdapter',
- *   uri: 'https://example.com/hg38.chromAlias.txt',
+ *   name: 'hg38',
+ *   sequence: {
+ *     type: 'ReferenceSequenceTrack',
+ *     trackId: 'hg38-ReferenceSequenceTrack',
+ *     adapter: {
+ *       type: 'BgzipFastaAdapter',
+ *       uri: 'https://example.com/hg38.fa.gz',
+ *     },
+ *   },
+ *   refNameAliases: {
+ *     adapter: {
+ *       type: 'RefNameAliasAdapter',
+ *       uri: 'https://example.com/hg38.chromAlias.txt',
+ *     },
+ *   },
  * }
  * ```
  *
@@ -25,9 +38,22 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * the header; `refNameColumn` takes a zero-based index instead.
  * ```js
  * {
- *   type: 'RefNameAliasAdapter',
- *   uri: 'https://example.com/aliases.txt',
- *   refNameColumnHeaderName: 'ucsc',
+ *   name: 'hg38',
+ *   sequence: {
+ *     type: 'ReferenceSequenceTrack',
+ *     trackId: 'hg38-ReferenceSequenceTrack',
+ *     adapter: {
+ *       type: 'BgzipFastaAdapter',
+ *       uri: 'https://example.com/hg38.fa.gz',
+ *     },
+ *   },
+ *   refNameAliases: {
+ *     adapter: {
+ *       type: 'RefNameAliasAdapter',
+ *       uri: 'https://example.com/aliases.txt',
+ *       refNameColumnHeaderName: 'ucsc',
+ *     },
+ *   },
  * }
  * ```
  */

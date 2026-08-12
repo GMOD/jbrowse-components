@@ -75,6 +75,10 @@ identifies it (not one of the config slots below).
 - **Adapter:** [Gff3TabixAdapter](../gff3tabixadapter)
 - **Adapter:** [GtfAdapter](../gtfadapter)
 - **Adapter:** [GtfTabixAdapter](../gtftabixadapter)
+- **Adapter:** [NCListAdapter](../nclistadapter)
+- **Adapter:** [SPARQLAdapter](../sparqladapter)
+- **Adapter:** [CrisprGuideAdapter](../crisprguideadapter)
+- **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots

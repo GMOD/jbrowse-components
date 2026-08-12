@@ -4,12 +4,25 @@ import { ConfigurationSchema } from '../../configuration/index.ts'
  * #config CytobandAdapter
  *
  * #example
- * Configured on an assembly's `cytobands`, not on a track — it draws the
- * ideogram banding in the linear view's overview bar:
+ * Goes on an ASSEMBLY, under `cytobands` — not on a track. It draws the
+ * ideogram banding in the linear genome view's overview bar:
  * ```js
  * {
- *   type: 'CytobandAdapter',
- *   uri: 'https://example.com/hg38.cytoBand.txt.gz',
+ *   name: 'hg38',
+ *   sequence: {
+ *     type: 'ReferenceSequenceTrack',
+ *     trackId: 'hg38-ReferenceSequenceTrack',
+ *     adapter: {
+ *       type: 'BgzipFastaAdapter',
+ *       uri: 'https://example.com/hg38.fa.gz',
+ *     },
+ *   },
+ *   cytobands: {
+ *     adapter: {
+ *       type: 'CytobandAdapter',
+ *       uri: 'https://example.com/hg38.cytoBand.txt.gz',
+ *     },
+ *   },
  * }
  * ```
  */

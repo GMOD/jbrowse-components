@@ -47,15 +47,8 @@ packages/app-core/src/WorkspaceLayout/model.ts apply
 # baseConfiguration references that resolved to no documented #config (0)
 # fix: document the base with #config, or accept that the page shows raw code
 
-# adapters whose #example defaulted to FeatureTrack (7)
+# adapters whose #example defaulted to FeatureTrack (0)
 # fix: add #trackType to the adapter’s #config JSDoc
-CrisprGuideAdapter
-CytobandAdapter
-NCListAdapter
-NcbiSequenceReportAliasAdapter
-RefNameAliasAdapter
-SPARQLAdapter
-SequenceSearchAdapter
 
 # #stateModel tags attached to a declaration that builds no model (0)
 # fix: move the #stateModel JSDoc back onto its factory — a declaration in between takes the tag, and every inherited member row silently disappears
