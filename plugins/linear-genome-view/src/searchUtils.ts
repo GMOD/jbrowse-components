@@ -118,6 +118,18 @@ export class SearchResultsNotFoundError extends Error {
   name = 'SearchResultsNotFoundError'
 }
 
+// How every search surface reports a failed navigation. A miss is the ordinary
+// outcome of typing a name that isn't there, so it shows its own sentence
+// rather than `${e}`, which would prefix it with the class name. Shared so the
+// import form and the header box can't drift apart on it again.
+export function notifySearchFailure(session: AbstractSessionModel, e: unknown) {
+  console.error(e)
+  session.notify(
+    e instanceof SearchResultsNotFoundError ? e.message : `${e}`,
+    'warning',
+  )
+}
+
 // if input is a known ref or locstring, navigate directly;
 // otherwise search and: pop a dialog for multiple results, navigate for one,
 // or fall back to treating input as a locstring

@@ -1,4 +1,3 @@
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   ADORNMENT_RESERVE_PX,
   HELP_BUTTON_RESERVE_PX,
@@ -11,14 +10,15 @@ import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
-  SearchResultsNotFoundError,
   fetchResults,
   navigateToSelectedOption,
+  notifySearchFailure,
 } from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
-import { recentLocationsMenu } from './recentLocationsMenu.ts'
+import { recentLocationOf, recentLocationsMenu } from './recentLocationsMenu.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type React from 'react'
 
 const defaultStyle = { margin: SPACING }
@@ -48,20 +48,16 @@ const SearchBox = observer(function SearchBox({
   async function navigate(option: BaseResult) {
     try {
       await navigateToSelectedOption({ model, assemblyName, option })
-      addRecentLocation(option.getDisplayString())
+      addRecentLocation(recentLocationOf(option))
     } catch (e) {
-      console.error(e)
-      session.notify(
-        e instanceof SearchResultsNotFoundError ? e.message : `${e}`,
-        'warning',
-      )
+      notifySearchFailure(session, e)
     }
   }
 
   const recentMenuItems = recentLocationsMenu({
     recentLocations,
-    onNavigate: loc => {
-      navigate(new BaseResult({ label: loc })).catch(() => {})
+    onNavigate: option => {
+      navigate(option).catch(() => {})
     },
     onClear: clearRecentLocations,
   })

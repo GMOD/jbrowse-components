@@ -15,8 +15,12 @@ import CloseIcon from '@mui/icons-material/Close'
 import { Button, CircularProgress, Container, Grid } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
-import { recentLocationsMenu } from './recentLocationsMenu.ts'
+import {
+  fetchResults,
+  navigateToSelectedOption,
+  notifySearchFailure,
+} from '../../searchUtils.ts'
+import { recentLocationOf, recentLocationsMenu } from './recentLocationsMenu.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -73,39 +77,36 @@ const LinearGenomeViewImportForm = observer(
     const displayError = assemblyError ?? viewError
 
     async function navigate({
-      loc,
       option,
       record,
     }: {
-      loc: string
-      option?: BaseResult
+      option: BaseResult
       // only remember locations the user actually typed or picked; skip the
       // default first-refname that pre-fills the box, so a plain "Open" of the
       // starting chromosome doesn't clutter the recent list
       record: boolean
     }) {
       model.setError(undefined)
-      if (loc && selectedAsm) {
+      if (selectedAsm) {
         try {
           await navigateToSelectedOption({
-            option: option ?? new BaseResult({ label: loc }),
+            option,
             model,
             assemblyName: selectedAsm,
           })
           if (record) {
-            addRecentLocation(loc)
+            addRecentLocation(recentLocationOf(option))
           }
         } catch (e) {
-          console.error(e)
-          session.notify(`${e}`, 'warning')
+          notifySearchFailure(session, e)
         }
       }
     }
 
     const recentMenuItems = recentLocationsMenu({
       recentLocations,
-      onNavigate: loc => {
-        navigate({ loc, record: true }).catch(() => {})
+      onNavigate: option => {
+        navigate({ option, record: true }).catch(() => {})
       },
       onClear: clearRecentLocations,
     })
@@ -119,11 +120,12 @@ const LinearGenomeViewImportForm = observer(
         <form
           onSubmit={async event => {
             event.preventDefault()
-            await navigate({
-              loc: value,
-              option: current?.option,
-              record: current !== undefined,
-            })
+            if (value) {
+              await navigate({
+                option: current?.option ?? new BaseResult({ label: value }),
+                record: current !== undefined,
+              })
+            }
           }}
         >
           <Grid
