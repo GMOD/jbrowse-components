@@ -87,6 +87,40 @@ Terms used throughout this doc:
   the MobX primitive that re-runs a function whenever the observables it read
   change.
 
+## Workspace tiers
+
+The three workspace roots are a direction, not three places to put things:
+
+```
+packages/*        libraries          (core, render-core, the *-core domain
+                    │                 libraries, the leaf utils, and the
+                    │                 product-assembly libs product-core /
+                    ▼                 app-core / web-core / embedded-core)
+plugins/*         plugins            (+ example-plugins/*, same tier)
+                    │
+                    ▼
+products/*        applications       (web, desktop, cli, the embedded React
+                                      components, img, capture)
+```
+
+Dependencies run **down** this list. Three edges cross it upward on purpose, and
+each is recorded with its reason in `scripts/workspaceLayering.test.ts`, which
+pins them symmetrically — a new upward edge fails, and so does leaving a stale
+entry behind after one is removed.
+
+The check exists because the property was real and invisible. pnpm links every
+workspace package into the root `node_modules`, so an undeclared import of any
+of them typechecks and runs; and a `dependencies` line is a one-line edit nobody
+reads as an architectural change. `@jbrowse/web` was imported by 50 test files
+across seven plugins while being declared by none of them. Same doctrine as
+`ReExports/abi.test.ts` and render-core's `publicApi.test.ts`: the surface only
+moves when someone means it to.
+
+The load-bearing rule is the one with no exceptions — **no plugin ships a
+dependency on a product.** A plugin is a library a third party installs; a
+product is a whole application. Test-only edges are a separate question and are
+allowed onto `@jbrowse/web` alone, which is where `createTestSession` lives.
+
 ## Coordinate system
 
 JBrowse uses **0-based half-open intervals** `[start, end)` internally, matching
