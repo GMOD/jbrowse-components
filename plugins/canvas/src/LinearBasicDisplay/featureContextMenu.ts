@@ -176,17 +176,30 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
       label: `Zoom to ${self.featureNoun}`,
       icon: CenterFocusStrongIcon,
       onClick: () => {
-        // resolved on click, not while building the menu: a refetch can swap
-        // loadedRegions out from under an open menu
-        const region = self.loadedRegions.get(displayedRegionIndex)
-        if (region) {
-          const view = getContainingView(self) as LinearGenomeViewModel
+        const view = getContainingView(self) as LinearGenomeViewModel
+        // `displayedRegions`, not `loadedRegions`: `displayedRegionIndex` is an
+        // index into it, and it is the set `navTo` resolves against. Resolved on
+        // click, not while building the menu, since either can be swapped out
+        // from under an open menu.
+        const region = view.displayedRegions[displayedRegionIndex]
+        if (!region) {
+          return
+        }
+        // navTo takes a span wholly inside ONE displayed region and THROWS
+        // otherwise, so clamp to the region this hit was drawn in. A feature
+        // wider than the region containing it is routine: a collapsed-introns
+        // view (which this display's own "Collapse introns" builds) shows a
+        // gene's exons as separate regions, so the gene's full span is inside
+        // none of them and this threw `could not find a region that contained
+        // ...` out of the onClick — no navigation, nothing said. Clamping zooms
+        // to the part of the feature that region shows; where the feature fits,
+        // which is every ordinary whole-chromosome view, it is a no-op.
+        const start = Math.max(startBp, region.start)
+        const end = Math.min(endBp, region.end)
+        if (end > start) {
           // grow 0.2 adds ~20% flanks so the feature isn't pinned to
           // the viewport edges (matches synteny/bookmark zoom-to).
-          view.navTo(
-            { refName: region.refName, start: startBp, end: endBp },
-            0.2,
-          )
+          view.navTo({ refName: region.refName, start, end }, 0.2)
         }
       },
     },
