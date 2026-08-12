@@ -8,6 +8,7 @@ function hit(
   { x1 = 1000, x2 = 2000, yBp = 500, spanBp = 500 } = {},
 ): ArcHitResult {
   return {
+    kind: 'arc',
     index: 0,
     x1,
     x2,

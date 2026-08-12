@@ -38,3 +38,16 @@ export function arcScreenPath(
   // which is `strokeArc`'s [PI, 2PI] / [0, PI] choice said in path terms.
   return `M ${mid - rx} ${anchorY} A ${rx} ${ry} 0 0 ${frame.pairedArcsDown ? 0 : 1} ${mid + rx} ${anchorY}`
 }
+
+// One connector tick's ink: a vertical spanning the whole band at the
+// breakpoint, which is arcLine.slang's own span and `drawArcs`' moveTo/lineTo.
+// Its own function rather than a branch in `arcScreenPath` because the two read
+// different arrays — a tick has no `arcPlacement`, having no Y to place.
+export function arcLineScreenPath(
+  data: ArcsUploadData,
+  i: number,
+  frame: ArcBandFrame,
+) {
+  const x = frame.bpToScreenX(data.arcLinePositions[i]!)
+  return `M ${x} ${frame.arcsTop} L ${x} ${frame.arcsTop + frame.arcsH}`
+}

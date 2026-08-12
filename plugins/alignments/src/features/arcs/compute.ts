@@ -292,6 +292,19 @@ export interface ComputedArc {
 // per distinct breakpoint, not one per supporting read — see `resolveArcs`.
 export interface ComputedLine {
   x: ArcEndpoint
+  // Reads through this breakpoint, exactly as `ComputedArc.support` counts them
+  // for an arc, and drawn the same way: `arcLineWidth` turns it into a stroke
+  // width in all three renderers. A translocation carrying 40 reads and one
+  // carrying a single mismapped pair are not the same claim, and until the
+  // ticks were coalesced there was nowhere for that count to go.
+  support: number
+  // The refName(s) on the FAR side of this breakpoint, sorted and unique. The
+  // one fact a tick is drawn to convey and the only one it could not answer: a
+  // vertical line at a locus, with the chromosome it points at knowable only by
+  // hovering a read underneath. Plural because a breakpoint in a complex
+  // rearrangement genuinely reaches more than one chromosome, and collapsing
+  // that to "the first one" would be a confident wrong answer.
+  partnerRefNames: string[]
 }
 
 interface PendingArcEndpoints {
@@ -905,22 +918,39 @@ function resolveArcs(
   const arcs: ComputedArc[] = []
   const byKey = new Map<string, ComputedArc>()
   const lines: ComputedLine[] = []
-  const lineKeys = new Set<string>()
+  const byLineKey = new Map<string, ComputedLine>()
 
-  // One tick per breakpoint, for the reason `arcKey` coalesces arcs: every read
-  // over a translocation used to push its own pair of ticks, and a tick is a
-  // fixed-width mark with no support channel, so N of them are the same picture
-  // as one. Not merely redundant, though — the GPU pass shades its edges by
-  // coverage (`strokeCoverage`), so the duplicates alpha-composite and a
-  // 50-read breakpoint drew a perceptibly wider, harder-edged tick than a
-  // 1-read one, while the Canvas2D mirror strokes opaque and drew both the
-  // same. Deduping is what makes the two renderers agree again.
-  function pushLine(refName: string, bp: number) {
+  // One tick per breakpoint, COUNTING the reads that agree on it — the same
+  // move `arcKey` makes for arcs, and for the same two reasons.
+  //
+  // Every read over a translocation used to push its own pair of ticks. Opaque
+  // marks at one x, so N of them were pixels-identical to one: the picture said
+  // "a breakpoint is here" and could not say how many reads said so. Worse, the
+  // GPU pass shades its edges by coverage (`strokeCoverage`), so the duplicates
+  // alpha-composited and a 50-read breakpoint drew a perceptibly wider,
+  // harder-edged tick than a 1-read one, while the Canvas2D mirror strokes
+  // opaque and drew the two the same.
+  //
+  // Coalescing is what lets `support` become a channel (`arcLineWidth`, the
+  // same curve the arcs use) instead of being thrown away, and what gives the
+  // hover something to report. Deduping alone would have been lossy.
+  function pushLine(refName: string, bp: number, partnerRef: string) {
     const key = `${refName}\0${bp}`
-    if (!lineKeys.has(key)) {
-      lineKeys.add(key)
-      lines.push({ x: { refName, bp } })
+    const seen = byLineKey.get(key)
+    if (seen) {
+      seen.support++
+      if (!seen.partnerRefNames.includes(partnerRef)) {
+        seen.partnerRefNames.push(partnerRef)
+      }
+      return
     }
+    const line = {
+      x: { refName, bp },
+      support: 1,
+      partnerRefNames: [partnerRef],
+    }
+    byLineKey.set(key, line)
+    lines.push(line)
   }
 
   for (const arc of pendingArcs) {
@@ -935,8 +965,11 @@ function resolveArcs(
     // arcLine.slang where the pass reads it.
     if (p1Ref !== p2Ref) {
       if (drawInter) {
-        pushLine(p1Ref, p1Bp)
-        pushLine(p2Ref, p2Bp)
+        // Each endpoint's tick names the OTHER endpoint's chromosome — that is
+        // the whole content of a translocation marker, and the direction is
+        // what makes the two ticks different marks rather than a mirrored pair.
+        pushLine(p1Ref, p1Bp, p2Ref)
+        pushLine(p2Ref, p2Bp, p1Ref)
       }
       continue
     }
@@ -1016,6 +1049,19 @@ function resolveArcs(
   // the same one wins it every time.
   arcs.sort((a, b) => a.support - b.support || (a.key < b.key ? -1 : 1))
 
+  // The same ordering, for the same reason, over the ticks. They are opaque
+  // full-band verticals, so two within a stroke width of each other resolve by
+  // paint order, and `hitTestArcBand` reads the feed's order as its
+  // last-drawn-wins tie-break. Total on the breakpoint's own bp, which is
+  // unique per tick after the coalescing above.
+  lines.sort((a, b) => a.support - b.support || a.x.bp - b.x.bp)
+  // Sorted, so a tooltip listing two partners lists them the same way twice.
+  // First-seen order is the reads' arrival order, which is not stable across
+  // runs — the trap `arcs.sort`'s tie-break is written up for, one field over.
+  for (const line of lines) {
+    line.partnerRefNames.sort()
+  }
+
   return { arcs, lines }
 }
 
@@ -1071,8 +1117,13 @@ export function arcsToRegionResult(
   // One entry per connector tick — the arcLine pass self-expands each instance
   // to the two band-edge vertices (see arcLine.slang / packInstances).
   const arcLinePositions = new Uint32Array(regionLines.length)
+  const arcLineSupport = new Uint32Array(regionLines.length)
+  const arcLinePartnerRefNames: string[][] = []
   for (let i = 0; i < regionLines.length; i++) {
-    arcLinePositions[i] = regionLines[i]!.x.bp
+    const line = regionLines[i]!
+    arcLinePositions[i] = line.x.bp
+    arcLineSupport[i] = line.support
+    arcLinePartnerRefNames.push(line.partnerRefNames)
   }
 
   return {
@@ -1087,6 +1138,8 @@ export function arcsToRegionResult(
     numFlatArcs,
     maxFlatArcYBp,
     arcLinePositions,
+    arcLineSupport,
+    arcLinePartnerRefNames,
     numArcLines: regionLines.length,
   }
 }

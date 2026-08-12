@@ -14,7 +14,10 @@ import { getOrCreate } from '../../shared/util.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
-import type { ArcHitResult } from '../../features/arcs/hitTest.ts'
+import type {
+  ArcHitResult,
+  ArcLineHitResult,
+} from '../../features/arcs/hitTest.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
@@ -87,6 +90,23 @@ export interface ArcTooltipPayload {
   insertSize?: number
 }
 
+// An interchromosomal connector tick. Its own payload rather than an
+// `ArcTooltipPayload` with optional halves: a tick has ONE endpoint, no span, no
+// insert size and no colour bucket (every tick is ARC_COLOR_INTERCHROM), and
+// what it does have — the chromosomes on the far side — no arc has.
+export interface ArcLineTooltipPayload {
+  type: 'arcLine'
+  refName: string
+  // The breakpoint itself, in absolute genomic bp.
+  position: number
+  // The chromosome(s) the reads through this breakpoint have their mates on,
+  // sorted. Never empty. More than one is a genuinely complex rearrangement
+  // rather than a formatting edge case, so the tooltip lists them all.
+  partnerRefNames: string[]
+  // Reads behind the tick, which is what its stroke width encodes.
+  support: number
+}
+
 // "Supported by 1 read" / "Supported by 12 reads". Singular at 1 so a lone
 // connection does not read as a suspiciously weak junction.
 export function supportLabel(support: number) {
@@ -105,6 +125,7 @@ export type TooltipPayload =
   | ModificationTooltipPayload
   | SashimiTooltipPayload
   | ArcTooltipPayload
+  | ArcLineTooltipPayload
 
 export function pct(n: number, total: number) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`
@@ -486,6 +507,22 @@ export function formatArcTooltip(
     // a ±8% jitter so coincident pairs don't stack, and reading the drawn
     // position back reported that jittered number as the template length.
     ...(isFlat ? { insertSize: hit.spanBp } : {}),
+  }
+}
+
+// A connector tick's hover. `refName` is the region the tick is drawn in —
+// which the hit result cannot carry, since the feed is bucketed by refName and
+// each region's array holds only its own.
+export function formatArcLineTooltip(
+  hit: ArcLineHitResult,
+  refName: string,
+): ArcLineTooltipPayload {
+  return {
+    type: 'arcLine',
+    refName,
+    position: hit.bp,
+    partnerRefNames: hit.partnerRefNames,
+    support: hit.support,
   }
 }
 

@@ -1,7 +1,13 @@
-// Which arc, if any, the cursor is on. The counterpart to `drawArcs`: it takes
+// What the cursor is on in the arc band. The counterpart to `drawArcs`: it takes
 // its geometry from `arcPlacement`, the same call the draw makes, because a hit
 // test that re-derives it is a second placement of the arcs — free to disagree
 // with the drawn one, and it has, twice.
+//
+// The band paints TWO families of mark and this answers for both. It used to
+// answer only for the arcs, which is the "layer with no hit test at all" gap
+// this display's CLAUDE.md names: an interchromosomal tick is ink, drawn in the
+// same rect, and hovering it reported nothing at all — so the one mark whose
+// meaning is least guessable from its shape was the one you could not ask.
 import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
@@ -21,6 +27,11 @@ import type { ArcsUploadData } from './types.ts'
 export const ARC_HIT_SLOP_PX = 3
 
 export interface ArcHitResult {
+  // Which family of mark. A discriminant rather than two sibling entry points,
+  // because the caller's question is "what is under the cursor" and the band
+  // draws both — asking the two separately puts the priority rule (below) at
+  // every call site instead of in the one place that knows the paint order.
+  kind: 'arc'
   // Index into the ArcsUploadData parallel arrays, so a caller can reach any
   // channel this result does not name.
   index: number
@@ -42,8 +53,35 @@ export interface ArcHitResult {
   spanBp: number
 }
 
+// An interchromosomal connector tick: a full-band vertical at one breakpoint.
+export interface ArcLineHitResult {
+  kind: 'tick'
+  // Index into the `arcLine*` parallel arrays.
+  index: number
+  // The breakpoint, in absolute genomic bp.
+  bp: number
+  // Reads through it — the number its stroke width encodes since `resolveArcs`
+  // began coalescing ticks, exactly as `ArcHitResult.support` does for an arc.
+  support: number
+  // The chromosome(s) on the far side, sorted. The reason this hover is worth
+  // more than the arc one: a tick's own geometry says where the breakpoint is
+  // and gives no hint at all of what it reaches.
+  partnerRefNames: string[]
+}
+
+// Everything the arc band can answer a hover with.
+export type ArcBandHitResult = ArcHitResult | ArcLineHitResult
+
+// One family's best answer, with how far outside its ink the cursor is — the
+// quantity `pickBetween` needs and the only reason this is not just the hit.
+interface Candidate<T> {
+  hit: T
+  outside: number
+}
+
 function arcHitAt(data: ArcsUploadData, i: number): ArcHitResult {
   return {
+    kind: 'arc',
     index: i,
     x1: data.arcX1[i]!,
     x2: data.arcX2[i]!,
@@ -66,27 +104,132 @@ export interface ArcHitOptions {
   screenWidthPx: number
 }
 
-export function hitTestArcs(
+/**
+ * What the cursor is on in one section's arc band — a curved or flat arc, an
+ * interchromosomal tick, or nothing.
+ *
+ * The single entry point on purpose. Both families are drawn into one rect and
+ * overlap freely, so "which one answers" is a question about PAINT ORDER, and
+ * the answer belongs here rather than at each call site: `drawArcsPass` runs
+ * arc → flat → marker → line, and `drawArcs` strokes the arcs then the ticks,
+ * so a tick is always the later ink.
+ */
+export function hitTestArcBand(
   canvasX: number,
   canvasY: number,
   data: ArcsUploadData,
   opts: ArcHitOptions,
-): ArcHitResult | undefined {
-  // The projection and the Y scale are read by `arcPlacement`, not here — this
-  // needs only the band rect, the direction, and the two widths.
-  const { arcsTop, arcsH, pairedArcsDown, lineWidth, screenWidthPx } = opts
+): ArcBandHitResult | undefined {
+  const { arcsTop, arcsH } = opts
   // The band's own gate, and it is EXACT rather than widened by the slop below:
   // both renderers clip the arc pass to this rect, so there is no arc ink
   // outside it to be near. Widening it would let a foot at the band edge answer
   // hovers a few px into whatever is stacked next to the band — the coverage
   // histogram above, the sashimi strip or the pileup below — which is the
   // "layer with no matching hit gate" trap in this display's CLAUDE.md, just
-  // pointed outward instead of inward. Inside the band the per-arc slop applies
-  // in full.
+  // pointed outward instead of inward. Inside the band the per-mark slop
+  // applies in full.
   if (canvasY < arcsTop || canvasY > arcsTop + arcsH) {
     return undefined
   }
+  return pickBetween(
+    arcCandidate(canvasX, canvasY, data, opts),
+    tickCandidate(canvasX, data, opts),
+  )
+}
 
+// The two families' winners, resolved by the rule the picture already states.
+//
+// ON THE INK beats near it, whichever family: the cursor is literally over that
+// mark, and a mark it is merely NEAR is a guess. Within that, the tick wins,
+// because it is painted over the arcs and naming the one underneath would
+// describe a colour the reader cannot see. Only when neither is on ink does
+// distance decide, and a tie there goes to the tick for the same reason.
+function pickBetween(
+  arc: Candidate<ArcHitResult> | undefined,
+  tick: Candidate<ArcLineHitResult> | undefined,
+): ArcBandHitResult | undefined {
+  if (!arc) {
+    return tick?.hit
+  }
+  if (!tick) {
+    return arc.hit
+  }
+  const arcOnInk = arc.outside <= 0
+  const tickOnInk = tick.outside <= 0
+  if (arcOnInk !== tickOnInk) {
+    return arcOnInk ? arc.hit : tick.hit
+  }
+  if (arcOnInk) {
+    return tick.hit
+  }
+  return arc.outside < tick.outside ? arc.hit : tick.hit
+}
+
+// The ticks: full-band verticals, so the distance is purely horizontal and the
+// band gate above has already settled Y. Same two-bucket ranking as the arcs —
+// heaviest among those on the ink, nearest among those merely near it — since
+// `resolveArcs` orders the tick feed by support too, making heaviest and
+// last-drawn the same tick.
+function tickCandidate(
+  canvasX: number,
+  data: ArcsUploadData,
+  opts: ArcHitOptions,
+): Candidate<ArcLineHitResult> | undefined {
+  const { bpToScreenX, lineWidth } = opts
+  let onInk = -1
+  let onInkSupport = -1
+  let nearest = -1
+  let nearestOutside = Number.POSITIVE_INFINITY
+  let nearestSupport = -1
+
+  for (let i = 0; i < data.numArcLines; i++) {
+    const support = data.arcLineSupport[i]!
+    const halfWidth = arcLineWidth(support, lineWidth) / 2
+    const outside =
+      Math.abs(canvasX - bpToScreenX(data.arcLinePositions[i]!)) - halfWidth
+    if (outside > ARC_HIT_SLOP_PX) {
+      continue
+    }
+    if (outside <= 0) {
+      if (support >= onInkSupport) {
+        onInk = i
+        onInkSupport = support
+      }
+    } else if (
+      outside < nearestOutside ||
+      (outside === nearestOutside && support >= nearestSupport)
+    ) {
+      nearest = i
+      nearestOutside = outside
+      nearestSupport = support
+    }
+  }
+
+  const found = onInk === -1 ? nearest : onInk
+  return found === -1
+    ? undefined
+    : {
+        hit: {
+          kind: 'tick',
+          index: found,
+          bp: data.arcLinePositions[found]!,
+          support: data.arcLineSupport[found]!,
+          partnerRefNames: data.arcLinePartnerRefNames[found] ?? [],
+        },
+        outside: onInk === -1 ? nearestOutside : 0,
+      }
+}
+
+function arcCandidate(
+  canvasX: number,
+  canvasY: number,
+  data: ArcsUploadData,
+  opts: ArcHitOptions,
+): Candidate<ArcHitResult> | undefined {
+  // The projection and the Y scale are read by `arcPlacement`, not here — this
+  // needs only the band rect, the direction, and the two widths.
+  const { arcsTop, arcsH, pairedArcsDown, lineWidth, screenWidthPx } = opts
   const anchorY = arcAnchorY(arcsTop, arcsH, pairedArcsDown)
   // Drawn-side-positive local Y: an up-pointing band measures upward from the
   // anchor, a down-pointing one downward, and every test below is written once
@@ -157,7 +300,9 @@ export function hitTestArcs(
   }
 
   const found = onInk === -1 ? nearest : onInk
-  return found === -1 ? undefined : arcHitAt(data, found)
+  return found === -1
+    ? undefined
+    : { hit: arcHitAt(data, found), outside: onInk === -1 ? nearestOutside : 0 }
 }
 
 // The read cloud's flat connector: a horizontal segment at the arc's Y, widened

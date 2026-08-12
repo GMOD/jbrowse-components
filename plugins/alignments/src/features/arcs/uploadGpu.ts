@@ -59,7 +59,7 @@ export function uploadArcs(
     hal.uploadBuffer(
       displayedRegionIndex,
       PASS_ARC_LINE,
-      packArcLines(data),
+      packArcLines(data, baseWidth),
       data.numArcLines,
     )
   }

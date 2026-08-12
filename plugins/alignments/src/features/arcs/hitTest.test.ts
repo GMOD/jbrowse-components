@@ -1,6 +1,7 @@
+import { arcLineWidth } from './arcLineWidth.ts'
 import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './compute.ts'
 import { strokeArc } from './drawCanvas.ts'
-import { ARC_HIT_SLOP_PX, hitTestArcs } from './hitTest.ts'
+import { ARC_HIT_SLOP_PX, hitTestArcBand } from './hitTest.ts'
 import { emptyArcsUploadData } from './types.ts'
 
 import type { ArcHitOptions } from './hitTest.ts'
@@ -93,16 +94,16 @@ describe('a dome answers along the curve Canvas2D draws', () => {
 
   test('every point on the drawn curve is a hit', () => {
     for (const p of pointsOnDrawnCurve(200, 600, 40)) {
-      expect(hitTestArcs(p.x, p.y, data, BAND)?.index).toBe(0)
+      expect(hitTestArcBand(p.x, p.y, data, BAND)?.index).toBe(0)
     }
   })
 
   test('a point well off the curve is not', () => {
     // Inside the dome, halfway up the middle — the arc is a stroke, not a fill,
     // so the enclosed area must not answer.
-    expect(hitTestArcs(400, 80, data, BAND)).toBeUndefined()
+    expect(hitTestArcBand(400, 80, data, BAND)).toBeUndefined()
     // Outside the span entirely.
-    expect(hitTestArcs(50, 100, data, BAND)).toBeUndefined()
+    expect(hitTestArcBand(50, 100, data, BAND)).toBeUndefined()
   })
 
   test('a foot answers from inside the band but the arc does not reach across it', () => {
@@ -111,9 +112,9 @@ describe('a dome answers along the curve Canvas2D draws', () => {
     // blank inside of the dome, because the stroke at a vertical tangent runs
     // out sideways rather than along the curve's own direction.
     const foot = 200
-    expect(hitTestArcs(foot, BAND.arcsH - 1, data, BAND)?.index).toBe(0)
+    expect(hitTestArcBand(foot, BAND.arcsH - 1, data, BAND)?.index).toBe(0)
     expect(
-      hitTestArcs(foot + ARC_HIT_SLOP_PX + 4, BAND.arcsH - 1, data, BAND),
+      hitTestArcBand(foot + ARC_HIT_SLOP_PX + 4, BAND.arcsH - 1, data, BAND),
     ).toBeUndefined()
   })
 })
@@ -122,10 +123,10 @@ test('a down-pointing band mirrors, and hits the curve it draws', () => {
   const down = { ...BAND, pairedArcsDown: true }
   const data = arcsData([{ x1: 200, x2: 600, yBp: 40 }])
   for (const p of pointsOnDrawnCurve(200, 600, 40, true)) {
-    expect(hitTestArcs(p.x, p.y, data, down)?.index).toBe(0)
+    expect(hitTestArcBand(p.x, p.y, data, down)?.index).toBe(0)
   }
   // Above the anchor (which is the band TOP here) is the blank side.
-  expect(hitTestArcs(400, -6, data, down)).toBeUndefined()
+  expect(hitTestArcBand(400, -6, data, down)).toBeUndefined()
 })
 
 test('a far pair answers on its near-vertical legs', () => {
@@ -142,11 +143,11 @@ test('a far pair answers on its near-vertical legs', () => {
   )
   expect(inBand.length).toBeGreaterThan(0)
   for (const p of inBand) {
-    expect(hitTestArcs(p.x, p.y, data, far)?.index).toBe(0)
+    expect(hitTestArcBand(p.x, p.y, data, far)?.index).toBe(0)
   }
   // The legs rise AT the endpoints, so the middle of the span is empty even
   // though the pair spans it.
-  expect(hitTestArcs(400, 60, data, far)).toBeUndefined()
+  expect(hitTestArcBand(400, 60, data, far)).toBeUndefined()
 })
 
 test('a far pair with a millions-of-px radius still resolves its legs', () => {
@@ -155,9 +156,9 @@ test('a far pair with a millions-of-px radius still resolves its legs', () => {
   const far = { ...BAND, screenWidthPx: 800 }
   const data = arcsData([{ x1: 0, x2: 4_000_000, yBp: 40 }])
   // Just outside the left endpoint's leg, a few px up the band.
-  expect(hitTestArcs(0, BAND.arcsH - 20, data, far)?.index).toBe(0)
+  expect(hitTestArcBand(0, BAND.arcsH - 20, data, far)?.index).toBe(0)
   // Ten px to the left of that leg is off it.
-  expect(hitTestArcs(-10, BAND.arcsH - 20, data, far)).toBeUndefined()
+  expect(hitTestArcBand(-10, BAND.arcsH - 20, data, far)).toBeUndefined()
 })
 
 describe('support widens the target the way it widens the ink', () => {
@@ -168,14 +169,14 @@ describe('support widens the target the way it widens the ink', () => {
     // Straight up from the apex, past the slop a support-1 arc gets.
     const apexY = BAND.arcsH - 0.75 * 40
     const y = apexY - (ARC_HIT_SLOP_PX + 2)
-    expect(hitTestArcs(400, y, thin, BAND)).toBeUndefined()
-    expect(hitTestArcs(400, y, thick, BAND)?.index).toBe(0)
+    expect(hitTestArcBand(400, y, thin, BAND)).toBeUndefined()
+    expect(hitTestArcBand(400, y, thick, BAND)?.index).toBe(0)
   })
 
   test('the hit carries the support count, which is what the tooltip reports', () => {
-    expect(hitTestArcs(400, BAND.arcsH - 0.75 * 40, thick, BAND)?.support).toBe(
-      64,
-    )
+    expect(
+      hitTestArcBand(400, BAND.arcsH - 0.75 * 40, thick, BAND)?.support,
+    ).toBe(64)
   })
 })
 
@@ -208,7 +209,7 @@ describe('when arcs crowd together, the visible one wins', () => {
     // 1.6px off the thick line's centre — inside its 1.875px half-width — and
     // 0.4px off the hairline's. Both are ink under the cursor; the old rule took
     // the nearer centre and reported the singleton.
-    expect(hitTestArcs(400, y(41.6), data, BAND)?.support).toBe(32)
+    expect(hitTestArcBand(400, y(41.6), data, BAND)?.support).toBe(32)
   })
 
   test('a singleton the cursor is on beats a heavy neighbour it is not on', () => {
@@ -216,7 +217,7 @@ describe('when arcs crowd together, the visible one wins', () => {
     // Dead on the hairline, 4px off the thick line — past its ink, inside its
     // slop. Support is a tie-break between arcs under the cursor, not a
     // licence to capture hovers on somebody else's stroke.
-    expect(hitTestArcs(400, y(42), data, BAND)?.support).toBe(1)
+    expect(hitTestArcBand(400, y(42), data, BAND)?.support).toBe(1)
   })
 
   test('off every stroke, nearest decides — measured from the ink, not the centre', () => {
@@ -224,7 +225,7 @@ describe('when arcs crowd together, the visible one wins', () => {
     // 2.5px off the thick line and 1.5px off the hairline, on neither: 0.625px
     // outside the thick ink against 1.0px outside the thin. The thick arc is
     // the nearer MARK even though its centre is further away.
-    expect(hitTestArcs(400, y(42.5), data, BAND)?.support).toBe(32)
+    expect(hitTestArcBand(400, y(42.5), data, BAND)?.support).toBe(32)
   })
 })
 
@@ -237,8 +238,8 @@ test('the nearest arc wins when two overlap', () => {
   ])
   const low = pointsOnDrawnCurve(200, 600, 40)[2]!
   const high = pointsOnDrawnCurve(200, 600, 80)[2]!
-  expect(hitTestArcs(low.x, low.y, data, BAND)?.index).toBe(0)
-  expect(hitTestArcs(high.x, high.y, data, BAND)?.index).toBe(1)
+  expect(hitTestArcBand(low.x, low.y, data, BAND)?.index).toBe(0)
+  expect(hitTestArcBand(high.x, high.y, data, BAND)?.index).toBe(1)
 })
 
 describe('read-cloud flat lines', () => {
@@ -248,14 +249,14 @@ describe('read-cloud flat lines', () => {
   const flatY = BAND.arcsH - 40
 
   test('answers along the bar and not above it', () => {
-    expect(hitTestArcs(300, flatY, data, BAND)?.index).toBe(0)
-    expect(hitTestArcs(400, flatY, data, BAND)?.index).toBe(0)
-    expect(hitTestArcs(500, flatY, data, BAND)?.index).toBe(0)
-    expect(hitTestArcs(400, flatY - 12, data, BAND)).toBeUndefined()
+    expect(hitTestArcBand(300, flatY, data, BAND)?.index).toBe(0)
+    expect(hitTestArcBand(400, flatY, data, BAND)?.index).toBe(0)
+    expect(hitTestArcBand(500, flatY, data, BAND)?.index).toBe(0)
+    expect(hitTestArcBand(400, flatY - 12, data, BAND)).toBeUndefined()
   })
 
   test('does not answer past the ends of the bar', () => {
-    expect(hitTestArcs(520, flatY, data, BAND)).toBeUndefined()
+    expect(hitTestArcBand(520, flatY, data, BAND)).toBeUndefined()
   })
 
   test('a sub-minimum pair is hoverable across the bar it actually draws', () => {
@@ -264,16 +265,115 @@ describe('read-cloud flat lines', () => {
     const tiny = arcsData([
       { x1: 400, x2: 401, yBp: 40, shape: ARC_SHAPE_FLAT },
     ])
-    expect(hitTestArcs(401.6, flatY, tiny, BAND)?.index).toBe(0)
+    expect(hitTestArcBand(401.6, flatY, tiny, BAND)?.index).toBe(0)
   })
 })
 
 test('an empty feed answers nothing', () => {
-  expect(hitTestArcs(400, 50, emptyArcsUploadData(), BAND)).toBeUndefined()
+  expect(hitTestArcBand(400, 50, emptyArcsUploadData(), BAND)).toBeUndefined()
 })
 
 test('a cursor outside the band is rejected before any arc is measured', () => {
   const data = arcsData([{ x1: 200, x2: 600, yBp: 40 }])
-  expect(hitTestArcs(400, -40, data, BAND)).toBeUndefined()
-  expect(hitTestArcs(400, BAND.arcsH + 40, data, BAND)).toBeUndefined()
+  expect(hitTestArcBand(400, -40, data, BAND)).toBeUndefined()
+  expect(hitTestArcBand(400, BAND.arcsH + 40, data, BAND)).toBeUndefined()
+})
+
+// Interchromosomal connector ticks. Ink in the same rect as the arcs, drawn
+// after them, and until this existed the one mark in the band that answered no
+// hover at all — the "layer with no hit test" gap this display's CLAUDE.md
+// names, and the sharpest instance of it, since a bare vertical at a locus is
+// the mark whose meaning is least guessable from its shape.
+interface TickSpec {
+  bp: number
+  support?: number
+  partners?: string[]
+}
+
+// Ticks ONTO an existing feed, rather than a sibling builder returning a whole
+// payload. `{...arcsData(…), ...ticksData(…)}` reads as a merge and is not one:
+// both would start from `emptyArcsUploadData()`, so the second spread puts the
+// empty arc arrays back and the case silently tests ticks alone.
+function withTicks(base: ArcsUploadData, ticks: TickSpec[]): ArcsUploadData {
+  return {
+    ...base,
+    arcLinePositions: new Uint32Array(ticks.map(t => t.bp)),
+    arcLineSupport: new Uint32Array(ticks.map(t => t.support ?? 1)),
+    arcLinePartnerRefNames: ticks.map(t => t.partners ?? ['chr2']),
+    numArcLines: ticks.length,
+  }
+}
+
+function ticksData(ticks: TickSpec[]): ArcsUploadData {
+  return withTicks(emptyArcsUploadData(), ticks)
+}
+
+describe('a connector tick answers along its whole height', () => {
+  const data = ticksData([{ bp: 400, support: 12, partners: ['chr7'] }])
+
+  test.each([0, 50, BAND.arcsH])('at band y=%i', y => {
+    // The tick spans the band, so Y is settled by the band gate alone and only
+    // the horizontal distance decides — including exactly at both edges.
+    expect(hitTestArcBand(400, y, data, BAND)?.kind).toBe('tick')
+  })
+
+  test('carries the count and the far-side chromosome the tooltip reports', () => {
+    const hit = hitTestArcBand(400, 50, data, BAND)
+    expect(hit).toEqual({
+      kind: 'tick',
+      index: 0,
+      bp: 400,
+      support: 12,
+      partnerRefNames: ['chr7'],
+    })
+  })
+
+  test('is reachable through the slop and not beyond it', () => {
+    // Its own half-width plus the slop, the same tolerance an arc gets — and
+    // grown by support the same way, since the tick is drawn at that width.
+    const halfWidth = arcLineWidth(12, BAND.lineWidth) / 2
+    expect(
+      hitTestArcBand(400 + halfWidth + ARC_HIT_SLOP_PX - 0.1, 50, data, BAND)
+        ?.kind,
+    ).toBe('tick')
+    expect(
+      hitTestArcBand(400 + halfWidth + ARC_HIT_SLOP_PX + 1, 50, data, BAND),
+    ).toBeUndefined()
+  })
+})
+
+describe('a tick and an arc under one cursor', () => {
+  // A dome from 200 to 600 rising 40, with a tick standing on its apex. Both
+  // renderers paint the ticks after the arcs (`drawArcsPass` runs the line pass
+  // last; `drawArcs` strokes the ticks after the curves), so where the two
+  // overlap the tick is the ink actually on screen.
+  const both = withTicks(
+    arcsData([{ x1: 200, x2: 600, yBp: 40, support: 99 }]),
+    [{ bp: 400 }],
+  )
+  // A point ON the drawn ellipse at a given screen x, so these cases do not
+  // depend on a hand-computed y that would quietly stop being on the curve.
+  const onCurveAt = (x: number) =>
+    BAND.arcsH - 0.75 * 40 * Math.sqrt(Math.max(1 - ((x - 400) / 200) ** 2, 0))
+
+  test('the tick wins, because it is the one painted on top', () => {
+    // Support 99 on the arc against 1 on the tick: this is paint order, not a
+    // weight comparison, so the far heavier arc still loses.
+    expect(hitTestArcBand(400, onCurveAt(400), both, BAND)?.kind).toBe('tick')
+  })
+
+  test('but only where the tick is actually inked', () => {
+    // Along the same arc, well away from the tick, the arc answers — a tick
+    // must not shadow the whole band merely by being drawn later.
+    expect(hitTestArcBand(300, onCurveAt(300), both, BAND)?.kind).toBe('arc')
+  })
+
+  test('on-ink beats near-ink whichever family is which', () => {
+    // Cursor inside the arc's own stroke and only NEAR the tick. The arc is
+    // what the cursor is over, so the tick's slop — a guess — does not pre-empt
+    // it. This is the case that makes the rule two-tier rather than "tick
+    // always".
+    const x = 400 + arcLineWidth(1, BAND.lineWidth) / 2 + 2
+    expect(hitTestArcBand(x, onCurveAt(x), both, BAND)?.kind).toBe('arc')
+  })
 })

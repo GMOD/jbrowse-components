@@ -20,7 +20,7 @@ import {
 } from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ComputedArc } from './compute.ts'
+import type { ComputedLine, ComputedArc } from './compute.ts'
 
 // Find the junction under test rather than indexing into `arcs`. The array is
 // in PAINT order — ascending support, then by dedup key — which is deliberately
@@ -153,6 +153,18 @@ function makePileupData(
   }
 }
 
+// A connector tick, for the packing tests below. `support`/`partnerRefNames`
+// are what `resolveArcs` coalesces onto one, so the shorthand takes the single
+// -read form and the cases that care override it.
+function tick(
+  refName: string,
+  bp: number,
+  partner: string,
+  support = 1,
+): ComputedLine {
+  return { x: { refName, bp }, support, partnerRefNames: [partner] }
+}
+
 describe('computeArcsFromPileupData', () => {
   test('returns empty result for empty data', () => {
     const result = computeArcsFromPileupData(new Map(), [], {
@@ -264,11 +276,12 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines.length).toBe(2)
   })
 
-  test('reads over one translocation share a tick instead of stacking them', () => {
-    // Three reads naming the same breakpoint. A tick has no support channel —
-    // it is a fixed-width mark — so N of them draw the same picture as one, and
-    // the GPU pass shades its edges by coverage, so the duplicates composite
-    // into a wider, harder-edged tick than the opaque Canvas2D mirror strokes.
+  test('reads over one translocation coalesce into one counted tick', () => {
+    // Three reads naming the same breakpoint. Opaque marks at one x, so N of
+    // them draw the same picture as one — and the GPU pass shades its edges by
+    // coverage, so the duplicates composited into a wider, harder-edged tick
+    // than the opaque Canvas2D mirror strokes. Coalescing is what puts the
+    // count somewhere it can be drawn and reported instead of thrown away.
     const data = makePileupData({
       regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100, 1000, 1100, 1000, 1100]),
@@ -291,10 +304,76 @@ describe('computeArcsFromPileupData', () => {
       },
     )
 
+    // One tick per breakpoint, each carrying the three reads and naming the
+    // chromosome on the OTHER side — which is the direction that makes the pair
+    // two different marks rather than a mirrored one.
     expect(result.lines).toEqual([
-      { x: { refName: 'chr1', bp: 1000 } },
-      { x: { refName: 'chr2', bp: 5000 } },
+      {
+        x: { refName: 'chr1', bp: 1000 },
+        support: 3,
+        partnerRefNames: ['chr2'],
+      },
+      {
+        x: { refName: 'chr2', bp: 5000 },
+        support: 3,
+        partnerRefNames: ['chr1'],
+      },
     ])
+  })
+
+  test('a breakpoint reaching two chromosomes names both, sorted', () => {
+    // A complex rearrangement: the same locus on chr1 has mates on chr9 and on
+    // chr2. Collapsing that to whichever arrived first would be a confident
+    // wrong answer, and arrival order is not stable across runs, so the list is
+    // sorted for the same reason `arcs.sort` carries a total tie-break.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1100, 1000, 1100]),
+      readFlags: new Uint16Array(2).fill(SAM_FLAG_PAIRED),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([0, 0]),
+      readPairOrientations: new Uint8Array([1, 1]),
+      readNames: ['readA', 'readB'],
+      readNextRefs: ['chr9', 'chr2'],
+      readNextPositions: new Uint32Array([5000, 7000]),
+    })
+
+    const { lines } = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
+      { colorByType: 'insertSize', drawInter: true, drawLongRange: true },
+    )
+
+    const atBreakpoint = lines.find(l => l.x.refName === 'chr1')
+    expect(atBreakpoint?.support).toBe(2)
+    expect(atBreakpoint?.partnerRefNames).toEqual(['chr2', 'chr9'])
+  })
+
+  test('ticks are ordered by support, so the heaviest is painted last', () => {
+    // Array order is paint order and the ticks are opaque, exactly as for the
+    // arcs — and `hitTestArcBand` reads the same order as its tie-break. Two
+    // breakpoints, the lighter one fetched first.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1100, 1500, 1600, 1500, 1600]),
+      readFlags: new Uint16Array(3).fill(SAM_FLAG_PAIRED),
+      readStrands: new Int8Array([1, 1, 1]),
+      readInsertSizes: new Float32Array([0, 0, 0]),
+      readPairOrientations: new Uint8Array([1, 1, 1]),
+      readNames: ['readA', 'readB', 'readC'],
+      readNextRefs: ['chr2', 'chr2', 'chr2'],
+      readNextPositions: new Uint32Array([5000, 5000, 5000]),
+    })
+
+    const { lines } = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
+      { colorByType: 'insertSize', drawInter: true, drawLongRange: true },
+    )
+
+    expect(
+      lines.filter(l => l.x.refName === 'chr1').map(l => l.support),
+    ).toEqual([1, 2])
   })
 
   test('inter-chromosomal produces nothing when drawInter=false', () => {
@@ -1710,10 +1789,7 @@ describe('groupArcsByRef', () => {
         key: 'chr2\u00005000\u0000chr2\u00006000\u00001\u00001',
       },
     ]
-    const lines = [
-      { x: { refName: 'chr1', bp: 1200 }, colorType: 0 },
-      { x: { refName: 'chr2', bp: 5500 }, colorType: 0 },
-    ]
+    const lines = [tick('chr1', 1200, 'chr2'), tick('chr2', 5500, 'chr1')]
     const { arcsByRef, linesByRef } = groupArcsByRef(arcs, lines)
     expect(arcsByRef.get('chr1')?.length).toBe(1)
     expect(arcsByRef.get('chr2')?.length).toBe(1)
@@ -1737,7 +1813,7 @@ describe('arcsToRegionResult', () => {
         key: 'chr1\u00001100\u0000chr1\u00001500\u00000\u00000',
       },
     ]
-    const regionLines = [{ x: { refName: 'chr1', bp: 1200 }, colorType: 0 }]
+    const regionLines = [tick('chr1', 1200, 'chr2')]
 
     const result = arcsToRegionResult(regionArcs, regionLines)
 
@@ -1757,10 +1833,7 @@ describe('arcsToRegionResult', () => {
   })
 
   test('one entry per connector line, packed in order', () => {
-    const lines = [
-      { x: { refName: 'chr1', bp: 1500 } },
-      { x: { refName: 'chr1', bp: 2500 } },
-    ]
+    const lines = [tick('chr1', 1500, 'chr9'), tick('chr1', 2500, 'chr9')]
     const result = arcsToRegionResult([], lines)
 
     expect(result.numArcLines).toBe(2)

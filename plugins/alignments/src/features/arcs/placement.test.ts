@@ -1,7 +1,7 @@
 import { arcScreenPath } from './arcPath.ts'
 import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './compute.ts'
 import { strokeArc } from './drawCanvas.ts'
-import { hitTestArcs } from './hitTest.ts'
+import { hitTestArcBand } from './hitTest.ts'
 import { arcPlacement } from './placement.ts'
 import { emptyArcsUploadData } from './types.ts'
 
@@ -68,7 +68,7 @@ function drawnEllipse(data: ArcsUploadData, i: number, opts: ArcHitOptions) {
 }
 
 // Points on that ellipse, at the angles strokeArc sweeps — INSIDE the band
-// only. Both renderers clip the arc pass to it and `hitTestArcs` gates on it
+// only. Both renderers clip the arc pass to it and `hitTestArcBand` gates on it
 // exactly, so a sample above the band is not ink and asserting a hit there
 // would assert the opposite of what the band does. A tall dome's in-band part
 // is the two near-vertical legs by its feet.
@@ -91,7 +91,7 @@ const TALL_DOME = arcsData([{ x1: 200, x2: 600, yBp: 100_000 }])
 
 test('the dome the draw places is the one the hit test answers on', () => {
   for (const p of inBandPointsOnDrawnCurve(TALL_DOME, FRAME)) {
-    expect(hitTestArcs(p.x, p.y, TALL_DOME, FRAME)?.index).toBe(0)
+    expect(hitTestArcBand(p.x, p.y, TALL_DOME, FRAME)?.index).toBe(0)
   }
 })
 
@@ -121,7 +121,7 @@ test('a dome past the domain still closes inside the band', () => {
 test('a down-pointing band mirrors every consumer at once', () => {
   const down = { ...FRAME, pairedArcsDown: true }
   for (const p of inBandPointsOnDrawnCurve(TALL_DOME, down)) {
-    expect(hitTestArcs(p.x, p.y, TALL_DOME, down)?.index).toBe(0)
+    expect(hitTestArcBand(p.x, p.y, TALL_DOME, down)?.index).toBe(0)
   }
   const e = drawnEllipse(TALL_DOME, 0, down)
   expect(arcScreenPath(TALL_DOME, 0, down)).toBe(

@@ -22,12 +22,20 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
-// Position only. A `colorType : ATTR1` used to ride along, but `resolveArcs`
-// assigns every tick ARC_COLOR_INTERCHROM and nothing else can — so the
-// attribute, the `arcLineColorTypes` array behind it and the legend scan over
-// that array were all carrying one constant.
+// Position and width. A `colorType : ATTR1` used to ride along, but
+// `resolveArcs` assigns every tick ARC_COLOR_INTERCHROM and nothing else can —
+// so the attribute, the `arcLineColorTypes` array behind it and the legend scan
+// over that array were all carrying one constant.
+//
+// `lineWidthPx` is the opposite case, and is why the two are not the same
+// story: a tick IS one breakpoint rather than one read since `resolveArcs`
+// coalesced them, so its weight says how many reads stand behind it. Resolved
+// on the CPU by `arcLineWidth` (packGpu), the one implementation of that curve,
+// shared with Canvas2D and the SVG export — exactly as arc.slang and
+// arcFlat.slang take theirs.
 struct Instance {
-  uint position : ATTR0;
+  uint  position    : ATTR0;
+  float lineWidthPx : ATTR1;
 };
 
 struct VsOut {
@@ -37,6 +45,11 @@ struct VsOut {
   // expanded by exactly this much, so |∇dx| is 1 and the AA ramp is a constant
   // (see STROKE_AA_PX).
   float  dx       : COLOR1;
+  // The resolved half stroke width, constant per instance so it interpolates
+  // back to itself. Carried rather than recomputed in the fragment so the quad
+  // the vertex stage expanded and the ink the fragment measures cannot be sized
+  // from two different widths — the same pairing arcFlat.slang makes.
+  float  halfWidthPx : COLOR2;
 };
 
 [shader("vertex")]
@@ -51,7 +64,12 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float bandTopPx = (u.pairedArcsDown > 0.5) ? u.covOffset : (u.covOffset - u.arcBandH);
 
   float2 local = quadLocal(vid);
-  float hw = u.lineWidthPx * 0.5 + STROKE_AA_PX;
+  // Same floor arc.slang and arcFlat.slang apply, and for the same reason:
+  // u.lineWidthPx is the configured width already raised to 1.5 device px
+  // (fillArcUniforms), an antialiasing minimum rather than anything about how
+  // many reads a tick stands for.
+  o.halfWidthPx = max(inst.lineWidthPx, u.lineWidthPx) * 0.5;
+  float hw = o.halfWidthPx + STROKE_AA_PX;
   o.dx = (local.x * 2.0 - 1.0) * hw;
   float yPx = bandTopPx + local.y * u.arcBandH;
 
@@ -64,6 +82,6 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  float alpha = strokeCoverage(abs(fragIn.dx), u.lineWidthPx * 0.5, u);
+  float alpha = strokeCoverage(abs(fragIn.dx), fragIn.halfWidthPx, u);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

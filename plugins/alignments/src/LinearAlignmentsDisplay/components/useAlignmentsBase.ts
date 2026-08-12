@@ -31,6 +31,7 @@ import {
   performHitTest,
 } from './hitTestPipeline.ts'
 import {
+  formatArcLineTooltip,
   formatArcTooltip,
   formatChainTooltip,
   formatCigarTooltip,
@@ -191,19 +192,28 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       arcsYDomainBp: model.arcsYDomainBp,
       canvasWidthPx: view.trackWidthPx,
     })
-    return hover
-      ? {
-          tooltip: formatArcTooltip(
-            hover.hit,
-            region.refName,
-            readColorCategoryLabel(
-              arcColorLegendCategory(hover.hit.colorType, model.arcColorByType),
+    if (!hover) {
+      return undefined
+    }
+    const { hit, highlight } = hover
+    return {
+      // A tick reports what it points AT; an arc reports its span and colour
+      // bucket. The two payloads are disjoint (see `ArcLineTooltipPayload`), so
+      // the discriminant the hit already carries picks the formatter rather
+      // than one formatter taking half-meaningless arguments.
+      tooltip:
+        hit.kind === 'tick'
+          ? formatArcLineTooltip(hit, region.refName)
+          : formatArcTooltip(
+              hit,
+              region.refName,
+              readColorCategoryLabel(
+                arcColorLegendCategory(hit.colorType, model.arcColorByType),
+              ),
+              isFlatArcShape(hit.shapeType),
             ),
-            isFlatArcShape(hover.hit.shapeType),
-          ),
-          highlight: hover.highlight,
-        }
-      : undefined
+      highlight,
+    }
   }
 
   // Maps a canvas mouse event to canvas coordinates and runs the full hit-test

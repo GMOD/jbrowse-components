@@ -381,6 +381,29 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         </BaseTooltip>
       )
     }
+    case 'arcLine': {
+      const { refName, position, partnerRefNames, support } = tooltipData
+      return (
+        <BaseTooltip clientPoint={{ x, y }}>
+          <div className={classes.tooltipContent}>
+            <div>
+              <strong>Translocation breakpoint</strong>
+            </div>
+            <div>Location: {formatLocation(refName, position)}</div>
+            {/* The one thing the mark itself cannot show. A tick is a bare
+                vertical at a locus: without this the reader can see THAT the
+                reads here have mates elsewhere and not where elsewhere is. */}
+            <div>
+              {partnerRefNames.length === 1
+                ? 'Mate chromosome: '
+                : 'Mate chromosomes: '}
+              {partnerRefNames.join(', ')}
+            </div>
+            <div>{supportLabel(support)}</div>
+          </div>
+        </BaseTooltip>
+      )
+    }
     case 'modification': {
       const { modType, noMod, probability, color, refName, position, snpBase } =
         tooltipData

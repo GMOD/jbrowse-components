@@ -29,7 +29,27 @@ export interface ArcsUploadData {
   // spans the full arc band, so no Y is stored, and every tick is
   // ARC_COLOR_INTERCHROM, so no color is stored either — see arcLine.slang.
   arcLinePositions: Uint32Array
+  // Reads behind each tick, the same channel `arcSupport` is for arcs: stroke
+  // width through `arcLineWidth`, and the number the hover reports.
+  arcLineSupport: Uint32Array
+  // The far-side refName(s) of each tick, sorted and unique — the fact the
+  // hover exists to give, since a tick's own position says only where the
+  // breakpoint is and not what it reaches. A `string[][]` beside the typed
+  // arrays because this feed is built and consumed entirely on the main thread
+  // (`computeArcsByGroup` runs in the model, not the worker); only
+  // `arcLinePositions` and the widths derived here cross into a GPU buffer.
+  arcLinePartnerRefNames: string[][]
   numArcLines: number
+}
+
+// Whether one region's feed paints anything in the arc band — EITHER family.
+// Named once because the two counts are asked together everywhere and asking
+// only `numArcs` is a live bug rather than a style point: a lane whose only
+// interchromosomal partner is off-region carries ticks and no arcs, and gating
+// on the arc count reserves the band, paints the ticks, and then treats the
+// band as empty.
+export function hasArcBandInk(data: ArcsUploadData) {
+  return data.numArcs > 0 || data.numArcLines > 0
 }
 
 // Whether a group's arc feed paints anything at all, across its regions. Drives
@@ -42,7 +62,7 @@ export function anyArcsDrawn(
 ) {
   return regionMap === undefined
     ? false
-    : [...regionMap.values()].some(d => d.numArcs > 0 || d.numArcLines > 0)
+    : [...regionMap.values()].some(hasArcBandInk)
 }
 
 export function emptyArcsUploadData(): ArcsUploadData {
@@ -58,6 +78,8 @@ export function emptyArcsUploadData(): ArcsUploadData {
     numFlatArcs: 0,
     maxFlatArcYBp: 0,
     arcLinePositions: new Uint32Array(0),
+    arcLineSupport: new Uint32Array(0),
+    arcLinePartnerRefNames: [],
     numArcLines: 0,
   }
 }

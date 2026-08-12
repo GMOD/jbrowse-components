@@ -41,10 +41,15 @@ const OPTS = {
 const APEX = { x: 400, y: 100 - 0.75 * 40 }
 
 test('finds the arc at its apex, and carries the support count out', () => {
-  const hover = resolveArcBandHover(APEX.x, APEX.y, ARCS, OPTS)
-  expect(hover?.hit.index).toBe(0)
-  expect(hover?.hit.support).toBe(7)
-  expect([hover?.hit.x1, hover?.hit.x2]).toEqual([1200, 1600])
+  const hit = resolveArcBandHover(APEX.x, APEX.y, ARCS, OPTS)?.hit
+  expect(hit?.index).toBe(0)
+  expect(hit?.support).toBe(7)
+  // The band answers for ticks as well as arcs now, so the endpoints are behind
+  // the discriminant — and that this hover is an arc at all is the assertion.
+  expect(hit?.kind).toBe('arc')
+  expect(hit?.kind === 'arc' ? [hit.x1, hit.x2] : undefined).toEqual([
+    1200, 1600,
+  ])
 })
 
 test('an ungrouped band is sticky, so scrolling does not move it', () => {
@@ -143,6 +148,47 @@ describe('the far/near split is taken against the same width the renderers use',
     expect(
       resolveArcBandHover(400, 100 - 30, WIDE_PAIR, NARROW),
     ).toBeUndefined()
+  })
+})
+
+// A lane whose only interchromosomal partner is off-region carries ticks and no
+// arcs. That combination used to be rejected outright by a `numArcs === 0`
+// guard here, so the band reserved space, painted its ticks, and answered
+// nothing — the whole point of this hover, missed on the one feed that needs it
+// most.
+describe('a band of ticks and no arcs', () => {
+  const TICKS = {
+    ...emptyArcsUploadData(),
+    arcLinePositions: new Uint32Array([1400]),
+    arcLineSupport: new Uint32Array([9]),
+    arcLinePartnerRefNames: [['chrX']],
+    numArcLines: 1,
+  }
+
+  test('answers, and reports what the tick points at', () => {
+    expect(resolveArcBandHover(400, 50, TICKS, OPTS)?.hit).toEqual({
+      kind: 'tick',
+      index: 0,
+      bp: 1400,
+      support: 9,
+      partnerRefNames: ['chrX'],
+    })
+  })
+
+  test('the highlight traces the full-band vertical the tick draws', () => {
+    // arcLine.slang spans the band and `drawArcs` strokes moveTo/lineTo over the
+    // same two edges, so the mark is that line and not a curve.
+    const highlight = resolveArcBandHover(400, 50, TICKS, OPTS)?.highlight
+    expect(highlight?.d).toBe('M 400 0 L 400 100')
+    expect(highlight?.clipTop).toBe(0)
+    expect(highlight?.clipHeight).toBe(100)
+  })
+
+  test('the highlight is at least as wide as the ink it covers', () => {
+    // Ticks take their width from support on the same `arcLineWidth` curve the
+    // arcs do, so a heavy tick must not be marked with a hairline.
+    const highlight = resolveArcBandHover(400, 50, TICKS, OPTS)?.highlight
+    expect(highlight?.lineWidth).toBeGreaterThan(OPTS.lineWidth)
   })
 })
 

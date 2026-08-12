@@ -127,12 +127,23 @@ export function packArcFlats(
   )
 }
 
-// Position only — a tick's color is ARC_COLOR_INTERCHROM, which the shader
-// names itself (see arcLine.slang).
-export function packArcLines(data: ArcsUploadData): ArrayBuffer {
+// Position and width. A tick's color is ARC_COLOR_INTERCHROM, which the shader
+// names itself (see arcLine.slang), but its width is per instance for the same
+// reason the other two arc passes' are: a tick is one breakpoint rather than one
+// read since `resolveArcs` coalesced them, so the weight is how many reads stand
+// behind it, through the one `arcLineWidth` curve.
+export function packArcLines(
+  data: ArcsUploadData,
+  baseWidth: number,
+): ArrayBuffer {
+  const count = data.numArcLines
+  const lineWidthPx = new Float32Array(count)
+  for (let i = 0; i < count; i++) {
+    lineWidthPx[i] = arcLineWidth(data.arcLineSupport[i]!, baseWidth)
+  }
   return arcLineShader.packInstances(
-    { position: data.arcLinePositions },
-    data.numArcLines,
+    { position: data.arcLinePositions, lineWidthPx },
+    count,
   )
 }
 

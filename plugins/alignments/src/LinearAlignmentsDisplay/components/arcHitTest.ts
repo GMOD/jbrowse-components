@@ -1,17 +1,21 @@
 import { clampBlockScissor } from '@jbrowse/render-core'
 
 import { arcLineWidth } from '../../features/arcs/arcLineWidth.ts'
-import { arcScreenPath } from '../../features/arcs/arcPath.ts'
+import {
+  arcLineScreenPath,
+  arcScreenPath,
+} from '../../features/arcs/arcPath.ts'
 import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
-import { hitTestArcs } from '../../features/arcs/hitTest.ts'
+import { hitTestArcBand } from '../../features/arcs/hitTest.ts'
 import { arcPlacement } from '../../features/arcs/placement.ts'
+import { hasArcBandInk } from '../../features/arcs/types.ts'
 import { ARC_APEX_FRACTION } from '../../shaders/slang/arc.iface.generated.ts'
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 import { bandScreenTop, makeBpToPx } from './sectionScreen.ts'
 
 import type {
+  ArcBandHitResult,
   ArcHitOptions,
-  ArcHitResult,
 } from '../../features/arcs/hitTest.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ScrollModel } from './sectionScreen.ts'
@@ -60,7 +64,7 @@ export interface ArcHitBandOptions {
 // both off one projection, so the mark cannot land anywhere but on the arc the
 // tooltip is describing.
 export interface ArcBandHover {
-  hit: ArcHitResult
+  hit: ArcBandHitResult
   highlight: ArcHighlight
 }
 
@@ -218,34 +222,44 @@ export function resolveArcBandDebug(
 }
 
 // Resolve a hover over one section's arc band: project the band once, ask what
-// is under the cursor, ask where that arc's ink is. Undefined when the section
+// is under the cursor, ask where that mark's ink is. Undefined when the section
 // reserves no band (`arcBandHeight` 0 — arcs off, or a lane whose reads produced
 // none), which is also the gate the renderers use to skip the pass.
+//
+// The emptiness test is `anyArcsDrawn`'s, not `numArcs === 0`: a lane can carry
+// nothing but interchromosomal ticks — a translocation at the edge of a region
+// with no intra-chromosomal pair in view is exactly that — and gating on the arc
+// count alone made those the one band that reserved space, painted ink, and
+// answered no hover at all.
 export function resolveArcBandHover(
   canvasX: number,
   canvasY: number,
   arcs: ArcsUploadData | undefined,
   opts: ArcHitBandOptions,
 ): ArcBandHover | undefined {
-  if (!arcs || arcs.numArcs === 0 || opts.band.arcBandHeight === 0) {
+  if (!arcs || !hasArcBandInk(arcs) || opts.band.arcBandHeight === 0) {
     return undefined
   }
   const scale = arcBandScreenScale(opts)
-  const hit = scale && hitTestArcs(canvasX, canvasY, arcs, scale)
+  const hit = scale && hitTestArcBand(canvasX, canvasY, arcs, scale)
   return scale && hit
     ? {
         hit,
         highlight: {
-          d: arcScreenPath(arcs, hit.index, scale),
+          d:
+            hit.kind === 'tick'
+              ? arcLineScreenPath(arcs, hit.index, scale)
+              : arcScreenPath(arcs, hit.index, scale),
           // The arc pass's own clip. Not decoration: a far pair's semicircle
           // rises hundreds of px above a band tens of px tall, and the
           // renderers clip it, so an unclipped highlight would trace a curve
           // across the coverage histogram that no arc was ever painted on.
           clipTop: scale.arcsTop,
           clipHeight: scale.arcsH,
-          // Never thinner than the arc's own ink, so the highlight reads as the
-          // arc lighting up rather than as a second, finer curve laid beside a
-          // heavy one.
+          // Never thinner than the mark's own ink, so the highlight reads as it
+          // lighting up rather than as a second, finer curve laid beside a
+          // heavy one. One `arcLineWidth` call for both families, since ticks
+          // take their width from support on the same curve the arcs do.
           lineWidth: arcLineWidth(hit.support, scale.lineWidth),
         },
       }

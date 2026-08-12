@@ -1,5 +1,6 @@
 import * as arcShader from '../../shaders/slang/arc.iface.generated.ts'
 import * as arcFlatShader from '../../shaders/slang/arcFlat.iface.generated.ts'
+import * as arcLineShader from '../../shaders/slang/arcLine.iface.generated.ts'
 import { ARC_WIDTH_MAX_SCALE } from './arcLineWidth.ts'
 import {
   ARC_SHAPE_ARC,
@@ -7,7 +8,12 @@ import {
   ARC_SHAPE_FLAT_SPLIT,
   arcsToRegionResult,
 } from './compute.ts'
-import { packArcFlats, packArcMarkers, packArcs } from './packGpu.ts'
+import {
+  packArcFlats,
+  packArcLines,
+  packArcMarkers,
+  packArcs,
+} from './packGpu.ts'
 
 import type { ComputedArc } from './compute.ts'
 
@@ -122,6 +128,10 @@ const FLAT_WIDTH = {
   INSTANCE_STRIDE_WORDS: arcFlatShader.INSTANCE_STRIDE_WORDS,
   lineWidthPx: arcFlatShader.INSTANCE_OFFSET_F32.lineWidthPx,
 }
+const LINE_WIDTH = {
+  INSTANCE_STRIDE_WORDS: arcLineShader.INSTANCE_STRIDE_WORDS,
+  lineWidthPx: arcLineShader.INSTANCE_OFFSET_F32.lineWidthPx,
+}
 
 // Width is per instance because an arc is a junction, not a read: `resolveArcs`
 // folds identical connections and counts them, and `arcLineWidth` turns that
@@ -166,5 +176,29 @@ describe('arc stroke width per instance', () => {
     const buf = packArcFlats(data, BASE_WIDTH)
     expect(packedWidth(buf, 0, FLAT_WIDTH)).toBe(BASE_WIDTH)
     expect(packedWidth(buf, 1, FLAT_WIDTH)!).toBeGreaterThan(BASE_WIDTH)
+  })
+
+  // And on the connector ticks, which is the newest of the three and the one
+  // that had nowhere to put a count at all: a tick was a fixed-width mark, so a
+  // 40-read translocation and one mismapped pair drew identically.
+  it('carries the width on connector ticks as well', () => {
+    const data = arcsToRegionResult(
+      [],
+      [
+        {
+          x: { refName: 'chr1', bp: 100 },
+          support: 1,
+          partnerRefNames: ['c2'],
+        },
+        {
+          x: { refName: 'chr1', bp: 900 },
+          support: 32,
+          partnerRefNames: ['c2'],
+        },
+      ],
+    )
+    const buf = packArcLines(data, BASE_WIDTH)
+    expect(packedWidth(buf, 0, LINE_WIDTH)).toBe(BASE_WIDTH)
+    expect(packedWidth(buf, 1, LINE_WIDTH)!).toBeCloseTo(BASE_WIDTH * 3.75, 5)
   })
 })
