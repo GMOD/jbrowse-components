@@ -1,9 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { format, resolveConfig } from 'prettier'
-
-import { checkOrWrite } from './check-utils.ts'
+import { checkOrWrite, formatMarkdown } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
 // Mirrors products/jbrowse-cli/README.md into website/docs/cli.md. That README
@@ -44,15 +42,11 @@ function stripFrontmatter(md: string) {
 
 // The generated string is compared byte-for-byte against the committed file, and
 // `pnpm format` also rewrites that file — so whatever formats here has to agree
-// with `pnpm format` or the two fight and `--check` oscillates.
-//
-// `pnpm format` is oxfmt, not prettier. This still passes only because the two
-// agree on markdown (verified: of 361 docs, the only three prettier would change
-// are the raw-written guide indexes, which nothing prettier-checks). That is a
-// coupling, not a guarantee — the api-docs generator dropped prettier for a
-// single oxfmt sweep for exactly this reason, and this script and
-// generate-img-doc.ts are the two sites left to convert.
-async function generate() {
+// with `pnpm format` or the two fight and `--check` oscillates. `formatMarkdown`
+// runs the repo formatter itself, which is the only way to say that by
+// construction; this was a prettier call, and prettier agreed with oxfmt on
+// markdown by observation.
+function generate() {
   const body = rewriteImgLink(
     stripFrontmatter(readFileSync(readmePath, 'utf8')),
   )
@@ -68,13 +62,12 @@ async function generate() {
     '',
     body,
   ].join('\n')
-  const prettierConfig = await resolveConfig(outPath)
-  return format(raw, { ...prettierConfig, filepath: outPath })
+  return formatMarkdown(raw, outPath)
 }
 
 checkOrWrite({
   path: outPath,
-  content: await generate(),
+  content: generate(),
   label: 'cli.md',
   staleHint: 'run `pnpm autogen`',
 })

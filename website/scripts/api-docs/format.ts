@@ -1,8 +1,8 @@
 import { execFile } from 'child_process'
 import fs from 'fs'
-import { createRequire } from 'module'
-import path from 'path'
 import { promisify } from 'util'
+
+import { oxfmtBin } from '../check-utils.ts'
 
 // Generated pages are written raw and formatted in one `formatWithOxfmt` sweep
 // at the end of the run (see generate.ts). Every path written here has to appear
@@ -35,21 +35,9 @@ export function writtenDocs() {
 // formatters that had to agree on markdown forever or the `--check` gates would
 // oscillate.
 //
-// The binary is resolved through node's resolver rather than spawned by name:
-// the old prettier shell-out only found its binary via the PATH an npm script
-// sets, so running `node generate.ts` directly spawned ENOENT and silently
-// formatted nothing.
-//
-// Resolved from the repo root rather than from `import.meta.url`: every path
-// this generator touches is already cwd-relative, so this adds no assumption —
-// and it keeps `import.meta` out of a module util.ts imports, which jest
-// transforms to CJS and cannot parse.
+// `oxfmtBin` resolves the binary through node's resolver rather than by name;
+// its comment says why, and the one-file-at-a-time counterpart lives beside it
+// as `formatMarkdown`.
 export async function formatWithOxfmt(paths: string[]) {
-  const require = createRequire(path.join(process.cwd(), 'package.json'))
-  const bin = path.join(
-    path.dirname(require.resolve('oxfmt/package.json')),
-    'bin',
-    'oxfmt',
-  )
-  await promisify(execFile)(process.execPath, [bin, ...paths])
+  await promisify(execFile)(process.execPath, [oxfmtBin(), ...paths])
 }

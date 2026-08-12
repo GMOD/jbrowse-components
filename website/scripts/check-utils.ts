@@ -3,8 +3,10 @@
 // fails CI when its committed output is stale rather than rewriting it, and each
 // validator walks the docs tree collecting problems — this centralizes the
 // boilerplate all of them repeated.
+import { spawnSync } from 'node:child_process'
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
 
 // True when invoked with `--check` (CI parity mode); false for a local rewrite.
 export const check = process.argv.includes('--check')
@@ -257,6 +259,48 @@ export function assertBaseMatches(distDir: string, base: string) {
     )
     process.exit(1)
   }
+}
+
+// oxfmt is the repo's formatter (`pnpm format`), so running it is what decides
+// the committed bytes of anything a generator writes.
+//
+// Resolved through node's resolver rather than spawned by name: the shell-out
+// this replaced found its binary only via the PATH an npm script sets, so
+// running a generator with plain `node` spawned ENOENT and silently formatted
+// nothing. Resolved from the repo root rather than from `import.meta.url`,
+// which keeps `import.meta` out of a module jest transforms to CJS.
+export function oxfmtBin(): string {
+  return join(
+    dirname(
+      createRequire(join(process.cwd(), 'package.json')).resolve(
+        'oxfmt/package.json',
+      ),
+    ),
+    'bin',
+    'oxfmt',
+  )
+}
+
+// Format generated markdown as a string, the way `pnpm format` would format the
+// file it is about to be written to.
+//
+// A generator that mirrors one committed file into another compares its output
+// byte-for-byte against what is on disk, and `pnpm format` rewrites that file
+// too — so whatever formats here has to agree with the repo formatter or the
+// two fight and `--check` oscillates. This used to be a prettier call in each
+// generator, which agreed with oxfmt on markdown by observation rather than by
+// construction. `--stdin-filepath` is how oxfmt picks its parser, so the path
+// matters even though nothing is read from it.
+export function formatMarkdown(text: string, filepath: string): string {
+  const { status, stdout, stderr } = spawnSync(
+    process.execPath,
+    [oxfmtBin(), `--stdin-filepath=${filepath}`],
+    { input: text, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+  )
+  if (status !== 0) {
+    throw new Error(`oxfmt failed on ${filepath}: ${stderr}`)
+  }
+  return stdout
 }
 
 // The collect-then-report tail every validator repeated: print `errorLines` and

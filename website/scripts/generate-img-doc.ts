@@ -7,14 +7,12 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 
-import { format, resolveConfig } from 'prettier'
-
 import {
   syntenyTrackTypes,
   trackTypes,
 } from '../../products/jbrowse-img/src/makeConfigs.ts'
 import { buildFullHelp } from '../../products/jbrowse-img/src/options.ts'
-import { check } from './check-utils.ts'
+import { check, formatMarkdown } from './check-utils.ts'
 import { docsDir, repoRoot, websiteDir } from './paths.ts'
 
 // Mirrors products/jbrowse-img/README.md into website/docs/jbrowse-img.md so the
@@ -113,21 +111,19 @@ function imagesToFigures(md: string) {
 
 // The generated string is compared byte-for-byte against the committed file, and
 // `pnpm format` also rewrites that file — so whatever formats here has to agree
-// with `pnpm format` or the two fight and `--check` oscillates.
-//
-// `pnpm format` is oxfmt, not prettier; this passes only because the two agree on
-// markdown today. See the same note in generate-cli-doc.ts — these are the two
-// sites left to convert after the api-docs generator dropped prettier.
-async function generate() {
+// with `pnpm format` or the two fight and `--check` oscillates. `formatMarkdown`
+// runs the repo formatter itself, which is the only way to say that by
+// construction; this was a prettier call, and prettier agreed with oxfmt on
+// markdown by observation.
+function generate() {
   // The README is the source of truth, but its help block is auto-filled from
-  // the CLI. Refresh it and run it through prettier so the injected README is
-  // byte-identical to what `pnpm format` produces — then both the README and
+  // the CLI. Refresh it and run it through the formatter so the injected README
+  // is byte-identical to what `pnpm format` produces — then both the README and
   // the doc generated from it stay current and idempotent under --check.
-  const readmeConfig = await resolveConfig(readmePath)
-  const readme = await format(injectHelp(readFileSync(readmePath, 'utf8')), {
-    ...readmeConfig,
-    filepath: readmePath,
-  })
+  const readme = formatMarkdown(
+    injectHelp(readFileSync(readmePath, 'utf8')),
+    readmePath,
+  )
   // Drop the leading "# @jbrowse/img" H1 — the frontmatter title supplies the
   // page heading. Keep everything after it.
   const body = readme.replace(/^# @jbrowse\/img\n+/, '')
@@ -145,9 +141,7 @@ async function generate() {
     '',
     rewriteRelativeLinks(withFigures),
   ].join('\n')
-  const prettierConfig = await resolveConfig(outPath)
-  const md = await format(raw, { ...prettierConfig, filepath: outPath })
-  return { md, names, readme }
+  return { md: formatMarkdown(raw, outPath), names, readme }
 }
 
 // Copy each referenced example image into the website's static dir (or, in check
@@ -176,7 +170,7 @@ function syncImages(names: Set<string>) {
   return stale
 }
 
-const { md, names, readme } = await generate()
+const { md, names, readme } = generate()
 const staleImages = syncImages(names)
 
 if (check) {
