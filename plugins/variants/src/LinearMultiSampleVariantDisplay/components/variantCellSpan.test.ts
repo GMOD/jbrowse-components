@@ -1,5 +1,6 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 
+import { snapVariantCellX } from './snapVariantCellX.ts'
 import {
   MAX_INSERTION_MARKER_WIDTH_PX,
   variantCellSpanPx,
@@ -9,10 +10,16 @@ import {
 // 'large' insertion the wide box (insertionBarWidth's featureHeight arg).
 const TALL_ROW = 10
 
+// The snap grid is centred on the canvas, so an EVEN width snaps whole pixels to
+// themselves — which keeps every expectation below about the span rather than
+// about the grid. `snapAgreesWithTheCellPainter` covers the grid itself.
+const CANVAS = 800
+
 describe('variantCellSpanPx without an insertion', () => {
   test('a wide reference span is itself', () => {
     expect(
       variantCellSpanPx({
+        canvasWidth: CANVAS,
         x1: 100,
         x2: 140,
         insertedBp: 0,
@@ -26,6 +33,7 @@ describe('variantCellSpanPx without an insertion', () => {
   test('a sub-pixel span takes the 2px floor the shader and Canvas2D use', () => {
     expect(
       variantCellSpanPx({
+        canvasWidth: CANVAS,
         x1: 100,
         x2: 100.2,
         insertedBp: 0,
@@ -39,6 +47,7 @@ describe('variantCellSpanPx without an insertion', () => {
   test('a reversed block hands x1/x2 back swapped', () => {
     expect(
       variantCellSpanPx({
+        canvasWidth: CANVAS,
         x1: 140,
         x2: 100,
         insertedBp: 0,
@@ -58,6 +67,7 @@ describe('variantCellSpanPx with an insertion', () => {
     expect(markerWidth).toBeGreaterThan(2)
     expect(
       variantCellSpanPx({
+        canvasWidth: CANVAS,
         x1: 100,
         x2: 100.2,
         insertedBp: 5000,
@@ -74,6 +84,7 @@ describe('variantCellSpanPx with an insertion', () => {
 
   test('centering survives a reversed block', () => {
     const forward = variantCellSpanPx({
+      canvasWidth: CANVAS,
       x1: 100,
       x2: 100.2,
       insertedBp: 5000,
@@ -83,6 +94,7 @@ describe('variantCellSpanPx with an insertion', () => {
     })
     expect(
       variantCellSpanPx({
+        canvasWidth: CANVAS,
         x1: 100.2,
         x2: 100,
         insertedBp: 5000,
@@ -98,6 +110,7 @@ describe('variantCellSpanPx with an insertion', () => {
     // would draw, so the overlay stays out of the way and the plain span wins.
     expect(
       variantCellSpanPx({
+        canvasWidth: CANVAS,
         x1: 100,
         x2: 300,
         insertedBp: 5,
@@ -110,6 +123,7 @@ describe('variantCellSpanPx with an insertion', () => {
 
   test('a short row falls back to the unlabelled bar, not the wide box', () => {
     const { width, drawsMarker } = variantCellSpanPx({
+      canvasWidth: CANVAS,
       x1: 100,
       x2: 100.2,
       insertedBp: 5000,
@@ -132,6 +146,7 @@ describe('variantCellSpanPx with insertion widening switched off', () => {
   test('the largest insertion is its plain reference span', () => {
     expect(
       variantCellSpanPx({
+        canvasWidth: CANVAS,
         x1: 100,
         x2: 100.2,
         insertedBp: 5000,
@@ -144,6 +159,7 @@ describe('variantCellSpanPx with insertion widening switched off', () => {
 
   test('a record that inserts nothing is unaffected either way', () => {
     const args = {
+      canvasWidth: CANVAS,
       x1: 100,
       x2: 140,
       insertedBp: 0,
@@ -153,6 +169,48 @@ describe('variantCellSpanPx with insertion widening switched off', () => {
     expect(variantCellSpanPx({ ...args, insertionsWiden: false })).toEqual(
       variantCellSpanPx({ ...args, insertionsWiden: true }),
     )
+  })
+})
+
+// The lane's mark, the hover box and the click target all describe a cell that
+// `drawVariantBlocks` painted through `snapVariantCellX`. This function used to
+// take min/max raw and share only the 2px floor, so all three sat up to half a
+// pixel off the cell they were about — and the marks are AT that 2px floor
+// wherever the snap fires, so the offset is a quarter of the mark.
+describe('the span is the one the cell painter drew', () => {
+  test.each([0, 0.2, 0.37, 0.5, 0.74, 0.9])(
+    'agrees for a sub-pixel record at +%fpx',
+    frac => {
+      const x1 = 100 + frac
+      const x2 = x1 + 0.4
+      const painted = snapVariantCellX(x1, x2, CANVAS)
+      const span = variantCellSpanPx({
+        x1,
+        x2,
+        canvasWidth: CANVAS,
+        insertedBp: 0,
+        insertionsWiden: false,
+        pxPerBp: 0.4,
+        drawnRowHeight: TALL_ROW,
+      })
+      expect([span.left, span.width]).toEqual([painted.x, painted.width])
+    },
+  )
+
+  // An odd canvas puts the grid on half-pixels, so this would pass by accident
+  // on an even one whatever the inputs.
+  test('agrees on an odd canvas width too', () => {
+    const painted = snapVariantCellX(100.3, 100.7, 801)
+    const span = variantCellSpanPx({
+      x1: 100.3,
+      x2: 100.7,
+      canvasWidth: 801,
+      insertedBp: 0,
+      insertionsWiden: false,
+      pxPerBp: 0.4,
+      drawnRowHeight: TALL_ROW,
+    })
+    expect([span.left, span.width]).toEqual([painted.x, painted.width])
   })
 })
 

@@ -50,6 +50,10 @@ export interface FeatureSpan {
  * setting; the lane passes the setting, because with it off the record below is
  * a 2px cell and a wide mark above it would name a column that is not there.
  *
+ * `canvasWidth` is the snap grid's origin — the shader snaps a cell edge about
+ * the canvas centre, so a span computed without it is not the span that was
+ * painted. See `variantCellSpanPx`.
+ *
  * `pxPerBp` comes back because callers need it for the marker's own geometry
  * (`drawInsertionMarker`, `getInsertionType`), and re-deriving it beside a call
  * to this is how the two would drift.
@@ -60,7 +64,8 @@ export function forEachFeatureSpan(
   {
     drawnHeight,
     insertionsWiden,
-  }: { drawnHeight: number; insertionsWiden: boolean },
+    canvasWidth,
+  }: { drawnHeight: number; insertionsWiden: boolean; canvasWidth: number },
   cb: (featureIndex: number, span: FeatureSpan) => void,
 ) {
   const toX = makeBpMapper(block)
@@ -78,6 +83,7 @@ export function forEachFeatureSpan(
     const { left, width, drawsMarker } = variantCellSpanPx({
       x1,
       x2,
+      canvasWidth,
       insertedBp: region.featureInsertedBp[f]!,
       insertionsWiden,
       pxPerBp,

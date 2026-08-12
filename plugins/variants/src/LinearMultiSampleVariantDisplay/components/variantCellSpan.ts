@@ -1,6 +1,6 @@
 import { insertionBarWidth, textWidthForNumber } from '@jbrowse/alignments-core'
 
-import { snappedCellWidthPx } from './shaders/variant.js.generated.ts'
+import { snapVariantCellX } from './snapVariantCellX.ts'
 
 // The widest an insertion marker can ever get: insertionBarWidth caps at the
 // count label's box (textWidthForNumber), so the hit-test's search window needs
@@ -37,6 +37,7 @@ export const MAX_INSERTION_MARKER_WIDTH_PX = textWidthForNumber(99999)
 export function variantCellSpanPx({
   x1,
   x2,
+  canvasWidth,
   insertedBp,
   insertionsWiden,
   pxPerBp,
@@ -44,15 +45,19 @@ export function variantCellSpanPx({
 }: {
   x1: number
   x2: number
+  canvasWidth: number
   insertedBp: number
   insertionsWiden: boolean
   pxPerBp: number
   drawnRowHeight: number
 }) {
-  const left = Math.min(x1, x2)
-  // The shader's own 2px floor, generated into TS (adr-051), rather than a
-  // fourth hand-written copy of it.
-  const width = snappedCellWidthPx(left, Math.max(x1, x2))
+  // Through `snapVariantCellX`, which is what the cell painter itself draws
+  // with — not a second spelling of the span that shares only its 2px floor.
+  // This used to take `min`/`max` raw and apply `snappedCellWidthPx` alone, so
+  // every consumer here sat up to half a pixel off the cell it was describing:
+  // measured at 0.48px on a genome-wide window, where the snap fires on every
+  // record and every mark is at the 2px floor — a quarter of the mark's width.
+  const { x: left, width } = snapVariantCellX(x1, x2, canvasWidth)
   const markerWidth =
     insertionsWiden && insertedBp > 0
       ? insertionBarWidth(insertedBp, pxPerBp, drawnRowHeight)

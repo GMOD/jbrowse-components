@@ -41,6 +41,9 @@ const identityRows = Int32Array.from({ length: 64 }, (_, i) => i)
 const geom = {
   toX: (bp: number) => bp,
   pxPerBp: 1,
+  // even, so the shader's canvas-centred snap leaves whole-pixel bp positions
+  // where they are and these cases stay about the pick, not about the grid
+  canvasWidth: 800,
   drawnRowHeight: 10,
   insertionsWiden: true,
   rowUnmap: identityRows,
@@ -207,6 +210,7 @@ describe('pickVariantCell insertion markers', () => {
   const zoomedOut = {
     toX: (bp: number) => bp * 0.2,
     pxPerBp: 0.2,
+    canvasWidth: 800,
     drawnRowHeight: 10,
     insertionsWiden: true,
     rowUnmap: identityRows,
@@ -298,6 +302,7 @@ describe('pickVariantCell reversed regions', () => {
       rowUnmap: identityRows,
       toX: (bp: number) => 1000 - bp,
       pxPerBp: 1,
+      canvasWidth: 800,
       drawnRowHeight: 10,
       insertionsWiden: true,
     })

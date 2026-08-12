@@ -335,12 +335,14 @@ export function stateModelFactory(
           if (!self.showInsertionGlyphs) {
             return undefined
           }
-          const drawnRowHeight = drawnCellHeightPx(self.renderState.rowHeight)
+          const { rowHeight, canvasWidth } = self.renderState
+          const drawnRowHeight = drawnCellHeightPx(rowHeight)
           for (const block of self.renderBlocks) {
             const region = self.perRegionCellMap.get(block.displayedRegionIndex)
             if (
               region?.numCells &&
-              markersForBlock(region, block, drawnRowHeight).anyMarker
+              markersForBlock(region, block, drawnRowHeight, canvasWidth)
+                .anyMarker
             ) {
               return getSession(self).palette.insertion
             }

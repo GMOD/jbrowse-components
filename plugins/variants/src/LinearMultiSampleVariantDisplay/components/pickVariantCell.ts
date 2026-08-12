@@ -53,6 +53,7 @@ export function pickVariantCell({
   rowUnmap,
   toX,
   pxPerBp,
+  canvasWidth,
   drawnRowHeight,
   insertionsWiden,
 }: {
@@ -68,6 +69,8 @@ export function pickVariantCell({
   // bp -> canvas px for this region, reversal already handled.
   toX: (bp: number) => number
   pxPerBp: number
+  // the snap grid the cells were painted on — see `variantCellSpanPx`
+  canvasWidth: number
   drawnRowHeight: number
   // The display's `showInsertionGlyphs`: with it off an insertion is a 2px cell
   // and its click target has to be one too. See `variantCellSpanPx`.
@@ -91,6 +94,7 @@ export function pickVariantCell({
             ? data.featureInsertedBp[featureIndex]!
             : 0
           const { left, width } = variantCellSpanPx({
+            canvasWidth,
             x1: toX(genomicStart),
             x2: toX(genomicEnd),
             insertedBp,

@@ -164,7 +164,7 @@ export function drawVariantLane(
       forEachFeatureSpan(
         region,
         block,
-        { drawnHeight: markHeight, insertionsWiden },
+        { drawnHeight: markHeight, insertionsWiden, canvasWidth },
         (f, span) => {
           const abgr = region.featureColors[f]!
           if (abgr !== currentAbgr) {
