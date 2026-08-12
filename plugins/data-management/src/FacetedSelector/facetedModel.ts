@@ -2,10 +2,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   coarseStripHTML,
   localStorageGetBoolean,
-  localStorageGetItem,
+  localStorageGetJSON,
   localStorageGetNumber,
   localStorageSetBoolean,
-  localStorageSetItem,
+  localStorageSetJSON,
   localStorageSetNumber,
   measureGridWidth,
 } from '@jbrowse/core/util'
@@ -41,17 +41,12 @@ function hiddenColumnsKey(assemblyNames: string[]) {
   return configScopedKey('facet-hiddenColumns', assemblyNames)
 }
 
-// Tolerant of a corrupt/missing entry (falls back to none hidden).
+// Tolerant of a corrupt/missing entry (falls back to none hidden). The filter
+// is the part localStorageGetJSON can't do: a stored array of the wrong element
+// type parses fine and then hides nothing while looking like it hid something.
 function readHiddenColumns(key: string): string[] {
-  try {
-    const parsed: unknown = JSON.parse(localStorageGetItem(key) ?? '[]')
-    return Array.isArray(parsed)
-      ? parsed.filter(x => typeof x === 'string')
-      : []
-  } catch (e) {
-    console.error(e)
-    return []
-  }
+  const parsed = localStorageGetJSON<unknown>(key, [])
+  return Array.isArray(parsed) ? parsed.filter(x => typeof x === 'string') : []
 }
 
 /**
@@ -206,10 +201,7 @@ export function facetedStateTreeF() {
           ? self.hiddenColumns.filter(c => c !== field)
           : [...new Set([...self.hiddenColumns, field])]
         self.hiddenColumns.replace(next)
-        localStorageSetItem(
-          hiddenColumnsKey(self.assemblyNames),
-          JSON.stringify(next),
-        )
+        localStorageSetJSON(hiddenColumnsKey(self.assemblyNames), next)
       },
     }))
     .views(self => ({
