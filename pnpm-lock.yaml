@@ -723,8 +723,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^8.8.0
-        version: 8.8.0
+        specifier: ^8.8.1
+        version: 8.8.1
       '@gmod/bgzf-filehandle':
         specifier: ^6.6.0
         version: 6.6.0
@@ -853,8 +853,8 @@ importers:
         specifier: ^2.2.10
         version: 2.2.10
       '@gmod/tabix':
-        specifier: ^3.8.0
-        version: 3.8.0
+        specifier: ^3.8.1
+        version: 3.8.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1015,8 +1015,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.8.0
-        version: 3.8.0
+        specifier: ^3.8.1
+        version: 3.8.1
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1221,8 +1221,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.8.0
-        version: 3.8.0
+        specifier: ^3.8.1
+        version: 3.8.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1279,8 +1279,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.8.0
-        version: 3.8.0
+        specifier: ^3.8.1
+        version: 3.8.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1762,8 +1762,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.8.0
-        version: 3.8.0
+        specifier: ^3.8.1
+        version: 3.8.1
       '@gmod/vcf':
         specifier: ^7.2.0
         version: 7.2.0
@@ -4325,8 +4325,8 @@ packages:
   '@fontsource/roboto@5.3.0':
     resolution: {integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==}
 
-  '@gmod/bam@8.8.0':
-    resolution: {integrity: sha512-9sYrgn3rx1nHPGhJKXSGBqv8/Y4V4cCnxMJ1LM+N4fXMXQDM+Mn2xJYUZunvF2qxcxB+uh27RtJNlfkxyK+rxw==}
+  '@gmod/bam@8.8.1':
+    resolution: {integrity: sha512-69BNTrmpufI0wvpxaLd535Ia3aBvicwASUrjPj0yvv6hRlaLZOyHGvoa4C5LvYaFaTTliat/v6GWWMv5JGyeoQ==}
 
   '@gmod/bbi@11.0.1':
     resolution: {integrity: sha512-X006LXWrTZacaws4j8AjCbhjSI3RRuMigwoWqyj0HJhnxW9nWdBpmZ5L6HHfQl5G7Y7DkJKCz0Q4Grec4aVi3g==}
@@ -4358,8 +4358,8 @@ packages:
   '@gmod/shared-read-cache@1.5.1':
     resolution: {integrity: sha512-2Me6eOJhBrZzYruG1t73trs29ovAMSNnn6JzzzYcL4t1/bxK3EToyDBPslcoebTrg5zDeocA+yzgwsQ2mHe0eA==}
 
-  '@gmod/tabix@3.8.0':
-    resolution: {integrity: sha512-wr+RNxURr3kH69pZSV1CibH85EoQ8LDZ/dmSjHeQhIz6wAFkfjf1gJDr+w/qIc59di82DMRsHioGVE75e98YfQ==}
+  '@gmod/tabix@3.8.1':
+    resolution: {integrity: sha512-ZAA7we8dMwezKZX03h4kx4eKxBSQqJn9kxWE6rnmc8pHUNxDyynGd91GfUkj57z+ZNgA7yA/4yAMskHpLTiJdg==}
 
   '@gmod/trix@3.0.21':
     resolution: {integrity: sha512-DD33yKkbRQkUzLXuAJIoq0uRFBrN1ei1hNYqa5t8ioSv8ksKj/D/KzfxUFAoRqDyPm5cGQ1bYvcGy57Smv5bOA==}
@@ -12262,7 +12262,7 @@ snapshots:
 
   '@fontsource/roboto@5.3.0': {}
 
-  '@gmod/bam@8.8.0':
+  '@gmod/bam@8.8.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.6.0
       '@gmod/shared-read-cache': 1.5.1
@@ -12317,9 +12317,9 @@ snapshots:
 
   '@gmod/shared-read-cache@1.5.1': {}
 
-  '@gmod/tabix@3.8.0':
+  '@gmod/tabix@3.8.1':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.4.0
+      '@gmod/bgzf-filehandle': 6.6.0
       '@gmod/shared-read-cache': 1.5.1
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.3.1
