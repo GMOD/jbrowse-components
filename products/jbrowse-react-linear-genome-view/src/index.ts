@@ -24,6 +24,19 @@ export {
   getSessionSnapshot,
 } from './sessionUrl.ts'
 export { useCreateViewState } from './useCreateViewState.ts'
+// Pin the page to one rendering backend — the same switch jbrowse-web's
+// `?renderer=` throws, and the embedded host's only way to throw it, since there
+// is no URL of ours to put a parameter in. It is the host that can make this
+// call and we cannot: the browser's WebGL context budget is per *page*, and the
+// rest of that page — another engine, a map, a plot — is code JBrowse never
+// sees.
+//
+// Page-wide rather than per view state, because it pins one physical device;
+// two engines disagreeing means the last caller wins. Call it before the first
+// view renders. A canvas's context kind is permanent, so an override arriving
+// afterwards leaves already-mounted canvases on the backend they took.
+export { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
+export type { GpuOverride } from '@jbrowse/render-core/gpuDevice'
 export type { ViewModel } from './createModel/createModel.ts'
 // the assembly vocabulary is product-core's, shared with the multi-view app
 export { resolveAssemblies } from '@jbrowse/product-core'

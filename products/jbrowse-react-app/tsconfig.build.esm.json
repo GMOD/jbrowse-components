@@ -4,6 +4,7 @@
     { "path": "../../packages/app-core/tsconfig.build.esm.json" },
     { "path": "../../packages/core/tsconfig.build.esm.json" },
     { "path": "../../packages/product-core/tsconfig.build.esm.json" },
+    { "path": "../../packages/render-core/tsconfig.build.esm.json" },
     { "path": "../../packages/web-core/tsconfig.build.esm.json" },
     { "path": "../../plugins/alignments/tsconfig.build.esm.json" },
     { "path": "../../plugins/arc/tsconfig.build.esm.json" },

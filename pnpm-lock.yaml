@@ -2320,6 +2320,9 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@jbrowse/web-core':
         specifier: workspace:^
         version: link:../../packages/web-core
@@ -2565,6 +2568,9 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@mui/material':
         specifier: ^9.3.1
         version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

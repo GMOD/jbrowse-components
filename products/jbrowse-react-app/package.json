@@ -75,6 +75,7 @@
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
+    "@jbrowse/render-core": "workspace:^",
     "@jbrowse/web-core": "workspace:^",
     "@mui/material": "^9.3.1",
     "mobx": "^7.0.0",
