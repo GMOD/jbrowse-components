@@ -242,18 +242,33 @@ whether to *use* it, gated on `needsReference`: MD-ness is a property of the
 file, so one query's answer predicts the next one's, and a BAM that carries MD
 never opens the gate at all.
 
-**Two traps, both of which bit here.** `prefetched ?? this.fetchRegionSeq(…)`
+**The after, measured on the tiled fixture.** Three reps at 60ms, both arms from
+one run — the gate supplies them for free, since the first query is necessarily
+unprefetched and the pan is prefetched:
+
+| arm                      | reference read | hidden | critical path            |
+| ------------------------ | -------------- | ------ | ------------------------ |
+| first load (gate closed) | 67ms           | 0ms    | 663-698ms — SERIAL       |
+| pan (gate open)          | 68ms           | 68ms   | 133-136ms — **OVERLAPPED** |
+
+The pan's serial equivalent is 200-204ms, so **1.50x**. The read is entirely
+inside the alignment fetch; what that is worth depends on the ratio between
+them, which is why 10% (first load, 8-request BAM phase) and 33% (pan, 2
+requests) are both right.
+
+**Three traps, all of which bit.** `prefetched ?? this.fetchRegionSeq(…)`
 evaluates its right side eagerly, so it read sequence on the first query of
 every BAM including the MD-carrying ones — defeating the gate it sat under, and
 caught only because `referencePrefetch.test.ts` asserts the MD case reads
-nothing. And the browser probe **cannot** measure the fix: its fixture's
-reference is a 255 KB FASTA, smaller than one 256 KiB `RemoteFileWithRangeCache`
-chunk, so the first query caches the whole genome and a pan issues no reference
-request at all — while the gate means the prefetch cannot engage on the first
-query. The only query that fixture shows the cost on is the one the fix cannot
-help. Ordering is the real claim, so it is asserted deterministically in the
-unit test instead; a browser A/B needs a reference big enough that panning
-misses that chunk cache.
+nothing. A "% of query" figure assumes the read is serial and returns **-93%**
+the moment it isn't, which is the case under test. And the original fixture
+cannot show the fix at all: its 255 KB reference is smaller than one 256 KiB
+`RemoteFileWithRangeCache` chunk, so the first query caches the whole genome and
+a pan issues no reference request — while the gate stops the prefetch engaging
+on the first query. The only query it showed the cost on was the one the fix
+cannot help. `make-tiled-fixture.sh` is the way out, and it needs no read
+simulator: tile the contig and shift a copy of each read into each tile, so the
+reference tiles and every copy still aligns against identical sequence.
 
 ## Things checked and found already integrated
 

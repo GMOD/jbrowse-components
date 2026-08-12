@@ -52,7 +52,6 @@ Exploratory concepts that are *not* committed work live in
 | [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | multiplication measured; time the shared pool at three sizes |
-| [A bigger reference fixture](#a-reference-fixture-big-enough-to-ab-a-sequence-prefetch-in-the-browser) | alignments, browser tests | reads over tens of Mb; 255 KB fits in one cache chunk |
 
 ## Ready to build: small and self-contained
 
@@ -988,30 +987,11 @@ so every vitest bench in all three repos reports parity forever. Use
 `percontext-probe.ts` and heed the traps in its header and in
 [reference/BGZF_WORKER_POOL.md](reference/BGZF_WORKER_POOL.md).
 
-### A reference fixture big enough to A/B a sequence prefetch in the browser
-
-Falls out of closing seam 3, and is the only part of it left. The reference read
-is now issued alongside the alignment fetch
-([BAM_STACK_INTEGRATION.md](reference/BAM_STACK_INTEGRATION.md) seam 3), and the
-BASELINE is measured — serial at every latency, ~20% of a cold query at 60ms —
-but the fix itself is verified only by ordering assertions in
-`referencePrefetch.test.ts`, not by a timing A/B.
-
-The obstacle is the fixture, not the harness. `hg19mod.fa` is 255 KB, smaller
-than one 256 KiB `RemoteFileWithRangeCache` chunk, so the first query caches the
-whole genome and a pan issues no reference request at all — while the prefetch
-is gated on having already seen an MD-less read and so cannot engage on the
-first query. The one query that fixture shows the cost on is the one the fix
-cannot help, and no amount of probe work gets around that.
-
-What is needed is a fixture whose reference is big enough that panning misses
-that chunk cache: reads spread over tens of Mb rather than 250 kb, against a
-reference of the same span. Then `seqfetch-timing-probe.ts` runs unchanged (it
-already measures the pan rather than the first load) and gives a real before /
-after. Worth doing for the pool work too — the same fixture is what would let
-[the inflate pool entry](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them)
-measure byte-cache sharing on something other than a file that fits in one
-chunk.
+For the byte-cache half, build the fixture with `make-tiled-fixture.sh` first.
+The stock one is a 255 KB reference that fits inside a single 256 KiB chunk, so
+sharing the cache across workers looks free on it whatever the truth is — the
+duplication is real (measured: one reference download per RPC worker) but its
+COST is invisible until a pan can miss that cache.
 
 ## Auto-detect when to use first-of-pair strand?
 
