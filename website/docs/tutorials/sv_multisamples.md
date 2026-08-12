@@ -125,9 +125,6 @@ homozygous reference. Two settings make them comparable:
 
 <Figure caption="The RHD deletion across three genotypes, coverage pinned to one shared axis, the banded span RHD itself. Top, HG00113 with no copy: coverage at the flanking depth either side, collapsing across the gene. Middle, HG00096 with one: about half that depth. Bottom, HG00097 with two: flat throughout." src="/img/multisv_rhd_dosage.png" />
 
-That is the whole dosage series in one frame: the gene is there twice, once, or
-not at all, and the coverage says which.
-
 ## A closer look at the empty span
 
 Look again at the top row and the deleted span is not quite at zero. It is low,

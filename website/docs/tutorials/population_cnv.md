@@ -41,7 +41,7 @@ because the lab's own download share is offline. **If you use them, cite
 
 QuicK-mer2 counts only k-mers that occur exactly once in the reference, so it
 reads _paralogs_ apart instead of collapsing a gene family into one averaged
-pile. That is the whole reason this tutorial has anything to show.
+pile.
 
 ## Load it
 

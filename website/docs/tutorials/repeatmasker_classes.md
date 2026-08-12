@@ -49,8 +49,8 @@ in the track menu.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track. Any feature track carries the multi-row display beside its default one." />
 
-That is the whole interaction. The colored, packed form and the lane form are
-the same track and the same fetch:
+The colored, packed form and the lane form are the same track and the same
+fetch:
 
 <Figure caption="UCSC RepeatMasker over a 17q21 window, colored by repClass through a jexl lookup table. The key over the track is the display's legend slot. Every class shares one packed lane, so a class's blocks are interleaved with five others." src="/img/cookbook_color_by_type.png"/>
 

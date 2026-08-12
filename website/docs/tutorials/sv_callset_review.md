@@ -126,9 +126,8 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 ```
 
 Put the two directories side by side and the somatic calls are the ones with
-curves in `tumor/` and none in `normal/`. That comparison is the whole reason to
-render the normal at the same flank and width: a difference between two pictures
-only reads as a difference when nothing else about them differs.
+curves in `tumor/` and none in `normal/`, which is why the normal renders at the
+same flank and width.
 
 ## Reading the sheet
 
