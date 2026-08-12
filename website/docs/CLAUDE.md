@@ -7,8 +7,8 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 
 `pnpm autogen` rebuilds `config/`, `models/`, `api/`, the guide indexes
 (`user_guide.md` etc.), `cli.md`, `jbrowse-img.md`, and every marker-pair block
-(`<!-- COLOR_TABLE … -->`, `FILE_TYPES`, `DISPLAY_TYPES`, `GOTCHA`,
-`PROMOTABLE_SLOTS`, `DISPLAY_FOUNDATIONS`, `CROSS_CUTTING_MIXINS`,
+(`<!-- COLOR_TABLE … -->`, `FILE_TYPES`, `DISPLAY_TYPES`, `DISPLAY_VIEW_TYPES`,
+`GOTCHA`, `PROMOTABLE_SLOTS`, `DISPLAY_FOUNDATIONS`, `CROSS_CUTTING_MIXINS`,
 `FETCH_AUTORUNS`, `PALETTE_KEYS`, `HELPER_PACKAGES`, `REEXPORT_MODULES`,
 `MENU_ITEM_TYPES`, `MENU_ITEM_FIELDS`, `MENU_ITEM_BUILDERS`, `MENU_ACTIONS`,
 `SPEC_KEYS`). Each renders from a JSDoc tag, a registration, or a manifest at

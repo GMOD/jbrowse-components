@@ -8,7 +8,7 @@ import {
   tableCell,
 } from './util.ts'
 
-import type { SourceCorpus } from './util.ts'
+import type { DisplayTrackLink, SourceCorpus } from './util.ts'
 import type { Node } from 'typescript'
 
 // Render the format -> adapter -> track type tables into the "Supported file
@@ -183,6 +183,62 @@ export function writeDisplayTypeDocs(
   return rewriteMarkerBlock(
     'DISPLAY_TYPES',
     markdownTable(['Track type', 'Display types'], rows),
+    { check },
+  )
+}
+
+/**
+ * The same registrations read along the other axis: which view each display
+ * renders in. `DISPLAY_TYPES` answers "what can I draw this track as"; this
+ * answers "one track, several views", which is the thing the creating_display
+ * guide is explaining and which it used to illustrate with three hand-picked
+ * examples.
+ *
+ * Grouped by track type so a track owning displays in more than one view — the
+ * whole point — reads as one row.
+ */
+export function assertEveryDisplayDeclaresAViewType(links: DisplayTrackLink[]) {
+  const untyped = links.filter(l => !l.viewType).map(l => l.displayName)
+  if (untyped.length > 0) {
+    throw new Error(
+      `these DisplayType registrations declare a trackType but no string-literal viewType, so they would render a blank cell in the creating_display guide: ${[...new Set(untyped)].sort().join(', ')}`,
+    )
+  }
+}
+
+export function writeDisplayViewTypeDocs(
+  links: DisplayTrackLink[],
+  configNames: Set<string>,
+  { check = false } = {},
+) {
+  const link = (name: string) =>
+    configNames.has(name) ? `[](/docs/config/${name.toLowerCase()})` : name
+  const byTrack = new Map<string, DisplayTrackLink[]>()
+  for (const l of links) {
+    const seen = byTrack.get(l.trackType)
+    if (seen) {
+      // extractWithComment can emit the same link twice (the VariableStatement
+      // and its inner declaration)
+      if (!seen.some(s => s.displayName === l.displayName)) {
+        seen.push(l)
+      }
+    } else {
+      byTrack.set(l.trackType, [l])
+    }
+  }
+  const rows = [...byTrack]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .flatMap(([trackType, displays]) =>
+      [...displays]
+        .sort((a, b) => a.displayName.localeCompare(b.displayName))
+        .map(
+          (d, i) =>
+            `| ${i === 0 ? link(trackType) : ''} | ${link(d.displayName)} | ${d.viewType} |`,
+        ),
+    )
+  return rewriteMarkerBlock(
+    'DISPLAY_VIEW_TYPES',
+    markdownTable(['Track type', 'Display type', 'Renders in'], rows),
     { check },
   )
 }

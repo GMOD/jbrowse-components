@@ -13,7 +13,9 @@ import {
   writePromotableSlotDocs,
 } from './generateConfigDocs.ts'
 import {
+  assertEveryDisplayDeclaresAViewType,
   writeDisplayTypeDocs,
+  writeDisplayViewTypeDocs,
   writeGotchaDocs,
 } from './generateFileTypeDocs.ts'
 import { writeSpecKeyDocs } from './generateSpecKeyDocs.ts'
@@ -133,6 +135,7 @@ async function main() {
   // from every table fails without having rewritten the pages first — same
   // placement, and same argument, as `assertNoBlankSlotDescriptions`.
   assertEveryDisplayTypeIsDocumented(displayToTrackType, configNames)
+  assertEveryDisplayDeclaresAViewType(displayLinks)
 
   const configGaps = writeConfigDocs(
     configs,
@@ -205,6 +208,7 @@ async function main() {
     write(corpus, { check: false })
   }
   writeDisplayTypeDocs(displayTypesByTrack, configNames)
+  writeDisplayViewTypeDocs(displayLinks, configNames)
   writeGotchaDocs(
     new Map(
       Object.values(configs)

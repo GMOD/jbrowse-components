@@ -17,32 +17,45 @@ a display shows that track inside a particular view and owns the drawing.
 Track  ─owns→  Display(s)  ─draw→  canvas
 ```
 
-Tracks are deliberately thin. For example:
+Tracks are deliberately thin. Every in-tree registration, with the axis that
+makes them thin in the last column — `SyntenyTrack` and `VariantTrack` are the
+two that reach past `LinearGenomeView`:
 
-- `AlignmentsTrack` owns `LinearAlignmentsDisplay`, which internally combines a
-  pileup row and an SNP-coverage row, both ways of looking at BAM/CRAM data
-  inside a `LinearGenomeView`.
-- `VariantTrack` owns `LinearVariantDisplay` (registered against
-  `LinearGenomeView`) and `ChordVariantDisplay` (registered against
-  `CircularView` by the `circular-view` plugin). The track is the same; the
-  displays are different because the views are different.
-- `SyntenyTrack` owns `DotplotDisplay` and `LinearSyntenyDisplay`, letting the
-  same underlying PIF/PAF data render in either a `DotplotView` or a
-  `LinearSyntenyView`.
+<!-- DISPLAY_VIEW_TYPES START -->
+
+<!-- prettier-ignore -->
+| Track type | Display type | Renders in |
+| --- | --- | --- |
+| [](/docs/config/alignmentstrack) | [](/docs/config/linearalignmentsdisplay) | LinearGenomeView |
+| [](/docs/config/featuretrack) | [](/docs/config/lineararcdisplay) | LinearGenomeView |
+|  | [](/docs/config/linearbasicdisplay) | LinearGenomeView |
+|  | [](/docs/config/linearmultirowfeaturedisplay) | LinearGenomeView |
+|  | [](/docs/config/linearscoredisplay) | LinearGenomeView |
+| [](/docs/config/gccontenttrack) | [](/docs/config/lineargccontenttrackdisplay) | LinearGenomeView |
+| [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) | LinearGenomeView |
+| [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) | LinearGenomeView |
+| [](/docs/config/ldtrack) | [](/docs/config/ldtrackdisplay) | LinearGenomeView |
+| [](/docs/config/maftrack) | [](/docs/config/linearmafdisplay) | LinearGenomeView |
+| [](/docs/config/multiquantitativetrack) | [](/docs/config/multilinearwiggledisplay) | LinearGenomeView |
+| [](/docs/config/quantitativetrack) | [](/docs/config/linearwiggledisplay) | LinearGenomeView |
+| [](/docs/config/referencesequencetrack) | [](/docs/config/lineargccontentdisplay) | LinearGenomeView |
+|  | [](/docs/config/linearreferencesequencedisplay) | LinearGenomeView |
+| [](/docs/config/syntenytrack) | [](/docs/config/dotplotdisplay) | DotplotView |
+|  | [](/docs/config/lgvsyntenydisplay) | LinearGenomeView |
+|  | [](/docs/config/linearsyntenydisplay) | LinearSyntenyView |
+| [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay) | CircularView |
+|  | [](/docs/config/lddisplay) | LinearGenomeView |
+|  | [](/docs/config/linearmultisamplevariantdisplay) | LinearGenomeView |
+|  | [](/docs/config/linearmultisamplevariantmatrixdisplay) | LinearGenomeView |
+|  | [](/docs/config/linearpairedarcdisplay) | LinearGenomeView |
+|  | [](/docs/config/linearvariantdisplay) | LinearGenomeView |
+
+<!-- DISPLAY_VIEW_TYPES END -->
 
 Add a track type only when you need a new conceptual track category, a custom
 config schema for that category, or behavior shared across multiple displays.
-
-## Registering a track type
-
-Track types are registered with `pluginManager.addTrackType(...)` and reuse the
-base track config schema. The
-[pluggable elements](/docs/developer_guides/pluggable_elements) reference lists
-the full set of slots. Useful in-tree references:
-
-- `plugins/alignments/src/AlignmentsTrack` - multi-display track
-- `plugins/variants/src/VariantTrack` - track shared across view types
-- `plugins/hic/src/HicTrack` - track with a single dedicated display
+Register it with `pluginManager.addTrackType(...)`, reusing the base track
+config schema.
 
 ## When to add a custom display type
 
@@ -57,16 +70,15 @@ the full set of slots. Useful in-tree references:
   / `LinearBasicDisplay`
 
 The display owns view-specific state, menu items, overlays, and the drawing
-itself. The rendering backend it instantiates is a plain class it constructs
-directly, not something registered with the plugin manager.
+itself. Its rendering backend is not a pluggable element: the display builds one
+with `createRenderingBackend`, which walks the WebGPU → WebGL2 → Canvas2D
+ladder, or with `createCanvas2DBackend` when it ships no shader path.
 
 ## Display foundations
 
-Linear-genome-view displays are built from a small set of **foundation mixins**
-composed on `BaseDisplay`, all sharing `baseLinearDisplayConfigSchema` as their
-config base. Which foundation you compose is the primary axis of code sharing;
-_how_ you render (GPU or Canvas2D) is a separate axis layered on top. Two fetch
-foundations cover every in-tree display:
+LGV displays compose one **foundation mixin** on `BaseDisplay`, all sharing
+`baseLinearDisplayConfigSchema`. The foundation answers how the display
+_fetches_; how it _renders_ is a separate axis on top.
 
 <!-- DISPLAY_FOUNDATIONS START -->
 
@@ -79,24 +91,20 @@ foundations cover every in-tree display:
 
 <!-- DISPLAY_FOUNDATIONS END -->
 
-Both walkthroughs, [Canvas2D](/docs/developer_guides/plotting_features) and
-[GPU](/docs/developer_guides/creating_gpu_display), use
-`MultiRegionDisplayMixin`, the common case. New track types should compose one
-of these rather than emitting SVG per feature.
+Both walkthroughs use `MultiRegionDisplayMixin`, the common case. Compose one of
+these rather than emitting SVG per feature. The
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
+goes further into why fetch and render are split.
 
 ## Cross-cutting mixins
 
-A foundation answers how your display _fetches_. These answer everything else,
-and they are orthogonal to it — compose any of them on top of whichever
-foundation you picked. Each is one mixin with one overridable hook, and
-composing it **is** the opt-in: a display that never overrides the hook gets the
-default and pays nothing.
-
-Reach for one of these before writing the behavior yourself. Each replaced
-several hand-written copies that had already drifted from each other — four
-spellings of the scroll clamp, two of grow mode — and the **Composed by** column
-is read off the `types.compose(...)` calls themselves, so it is also the honest
-answer to "does anything else already do this?"
+Orthogonal to the foundation — compose any of them on top of whichever one you
+picked. Each is one mixin with one overridable hook, and composing it **is** the
+opt-in: a display that never overrides the hook gets the default and pays
+nothing. Reach for one before writing the behavior yourself; each replaced
+several hand-written copies that had already drifted, and **Composed by** is
+read off the `types.compose(...)` calls, so it also answers "does anything else
+already do this?"
 
 <!-- CROSS_CUTTING_MIXINS START -->
 
@@ -111,23 +119,10 @@ answer to "does anything else already do this?"
 
 <!-- CROSS_CUTTING_MIXINS END -->
 
-`HeightModeMixin()` is the one with an ordering rule: compose it **after**
-`TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides.
-`types.compose` gives a collision to the later argument, so the wrong order
-silently leaves grow mode inert — the mixin reports it at attach rather than
-letting you find out visually.
-
-The
-[architecture spec's display-stacks table](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
-is the canonical version of this table and goes further into why the fetch and
-render foundations are split.
-
-## Pairing displays with tracks and views
-
-A display registers itself as compatible with one view type. For example
-`LinearVariantDisplay` is registered against `LinearGenomeView`, while
-`ChordVariantDisplay` is registered against `CircularView`. Both belong to the
-same `VariantTrack`.
+Order matters in one place: `types.compose` gives a collision to the later
+argument, so composing `HeightModeMixin()` before `TrackHeightMixin()` silently
+leaves grow mode inert. The mixin reports that at attach rather than letting you
+find it visually.
 
 ## Walkthroughs
 
@@ -142,15 +137,10 @@ Start with the first:
 Both are build-step plugins; [](/docs/developer_guides/simple_plugin) covers the
 scaffold and build setup they assume.
 
-In-tree references:
-
-- `plugins/wiggle/src/LinearWiggleDisplay` - adds a Y-scale overlay on top of
-  the rendered content
-- `plugins/alignments/src/LinearAlignmentsDisplay` - rich display with many
-  toggleable menu items and a custom feature widget
-- `plugins/variants/src/LinearVariantDisplay` and
-  `plugins/circular-view/src/ChordVariantDisplay` - two displays for one track
-  type, in different view types
+For a worked in-tree display, read `plugins/wiggle/src/LinearWiggleDisplay` for
+an overlay drawn over rendered content, or
+`plugins/alignments/src/LinearAlignmentsDisplay` for many toggleable menu items
+and a custom feature widget.
 
 ## See also
 

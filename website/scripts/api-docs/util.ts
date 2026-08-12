@@ -78,6 +78,12 @@ export interface ComposedRef {
 export interface DisplayTrackLink {
   displayName: string
   trackType: string
+  /**
+   * The view type the display renders in — the other half of what a
+   * registration declares, and the axis `config_guides/tracks.md` does not
+   * show. Absent only if a registration omits it, which nothing in tree does.
+   */
+  viewType?: string
 }
 
 const TAG_TYPES = [
@@ -923,7 +929,10 @@ function displayTrackLink(node: ts.Node): DisplayTrackLink | undefined {
   }
   const displayName = stringPropValue(arg, 'name')
   const trackType = stringPropValue(arg, 'trackType')
-  return displayName && trackType ? { displayName, trackType } : undefined
+  const viewType = stringPropValue(arg, 'viewType')
+  return displayName && trackType
+    ? { displayName, trackType, viewType }
+    : undefined
 }
 
 // The string-literal value of a `key: '...'` property in an object literal, or
