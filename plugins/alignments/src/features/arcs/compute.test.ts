@@ -1853,6 +1853,130 @@ describe('computeArcsByGroup', () => {
   })
 })
 
+// A region's buffer holds the arcs that can paint ink in ITS block, which
+// refName equality does not decide. Two displayed regions on one chromosome is
+// the multi-region SV view — the thing read connections exist for — and there
+// each region used to receive every arc on the chromosome, multiplying the pack,
+// the upload and the per-mousemove hit-test walk by the region count.
+describe('an arc is uploaded only to the regions it reaches', () => {
+  const settings = {
+    colorByType: 'insertSize' as const,
+    drawInter: false,
+    drawLongRange: false,
+  }
+  // Two windows on chr1, 900kb apart, each holding a pair local to itself.
+  const regions = [
+    { refName: 'chr1', start: 0, end: 2000, displayedRegionIndex: 0 },
+    { refName: 'chr1', start: 899000, end: 901000, displayedRegionIndex: 1 },
+  ]
+
+  function localPair(base: number, name: string, ids: [string, string]) {
+    const data = makePileupData({
+      regionStart: base,
+      readPositions: new Uint32Array([
+        base,
+        base + 100,
+        base + 400,
+        base + 500,
+      ]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([500, 500]),
+      readPairOrientations: new Uint8Array([1, 1]),
+      readNames: [name, name],
+    })
+    data.readIds[0] = ids[0]
+    data.readIds[1] = ids[1]
+    return data
+  }
+
+  test('each region gets its own arc and not the other region’s', () => {
+    const byGroup = computeArcsByGroup(
+      new Map([
+        [
+          '',
+          new Map([
+            [0, localPair(1000, 'readA', ['a1', 'a2'])],
+            [1, localPair(900000, 'readB', ['b1', 'b2'])],
+          ]),
+        ],
+      ]),
+      regions,
+      settings,
+    )
+    const regionMap = byGroup.get('')!
+    expect([...regionMap.get(0)!.arcX1]).toEqual([1000])
+    expect([...regionMap.get(1)!.arcX1]).toEqual([900000])
+  })
+
+  test('an arc straddling both still reaches both, since it draws in each', () => {
+    // One pair with a mate in each window: the two blocks each paint the foot
+    // they hold and the leg leaving toward the other, so both need the arc.
+    const near = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([899000]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readC'],
+    })
+    near.readIds[0] = 'c1'
+    const far = makePileupData({
+      regionStart: 900000,
+      readPositions: new Uint32Array([900000, 900100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([899000]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readC'],
+    })
+    far.readIds[0] = 'c2'
+
+    const regionMap = computeArcsByGroup(
+      new Map([
+        [
+          '',
+          new Map([
+            [0, near],
+            [1, far],
+          ]),
+        ],
+      ]),
+      regions,
+      settings,
+    ).get('')!
+    expect([...regionMap.get(0)!.arcX1]).toEqual([1000])
+    expect([...regionMap.get(1)!.arcX1]).toEqual([1000])
+  })
+
+  test('a connector tick goes to the region holding it, and to no other', () => {
+    // Both mates off-chromosome, so each end drops a tick; only the one on chr1
+    // is in a displayed region at all, and only in the region containing it.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readD'],
+      readNextRefs: ['chr2'],
+      readNextPositions: new Uint32Array([5000]),
+    })
+    const regionMap = computeArcsByGroup(
+      new Map([['', new Map([[0, data]])]]),
+      regions,
+      { ...settings, drawInter: true, drawLongRange: true },
+    ).get('')!
+    expect([...regionMap.get(0)!.arcLinePositions]).toEqual([1000])
+    expect(regionMap.get(1)!.numArcLines).toBe(0)
+  })
+})
+
 describe('groupArcsByRef', () => {
   test('buckets arcs and lines by refName', () => {
     const arcs = [

@@ -1099,11 +1099,49 @@ function bucketByRef<T>(items: T[], refOf: (item: T) => string) {
 // Group computed arcs and lines by the refName they belong to so callers
 // can look up the per-region subset in O(1) instead of filtering the full
 // array once per displayed region.
+//
+// Keyed on `p1` alone because an arc's two ends always share a refName: the
+// interchromosomal branch of `resolveArcs` turns those into a pair of ticks and
+// never reaches here.
 export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
   return {
     arcsByRef: bucketByRef(arcs, arc => arc.p1.refName),
     linesByRef: bucketByRef(lines, line => line.x.refName),
   }
+}
+
+// Whether an arc can paint any ink inside one region's block, which is the
+// question "does this arc belong in that region's buffer" — refName equality is
+// only half of it.
+//
+// A mark's horizontal extent is the span between its two feet: a dome runs foot
+// to foot, a far pair's legs rise AT the feet, and a flat read-cloud bar lies
+// between them. So an arc with both feet outside the region on the same side
+// draws nothing in it. The block is inside the loaded region by construction —
+// `isBlockCovered` is what gates rendering on exactly that — so measuring
+// against the region is the conservative form of measuring against the block.
+//
+// Without this, every displayed region on a chromosome received every arc on
+// that chromosome. Harmless to look at (the far copies project off-block and the
+// scissor eats them) and not free: it multiplied the pack, the upload and the
+// per-mousemove `hitTestArcBand` walk by the number of same-ref regions. That is
+// the multi-region SV view, which is what read connections are for.
+//
+// An arc reaching NO region is one whose every endpoint is off-screen — the
+// junction between two off-screen SA segments of one read, which `drawLongRange`
+// admits and which used to be uploaded everywhere and clipped away everywhere.
+// It now reaches nothing, which also takes it out of `maxFlatArcSpanBp`: an arc
+// that cannot be drawn no longer sizes the read cloud's shared Y axis.
+function arcTouchesRegion(arc: ComputedArc, region: RegionInfo) {
+  const { bp: b1 } = arc.p1
+  const { bp: b2 } = arc.p2
+  return Math.min(b1, b2) <= region.end && Math.max(b1, b2) >= region.start
+}
+
+// A connector tick is a single bp with no horizontal extent beyond its own
+// stroke, so it belongs to the region containing it and to no other.
+function lineTouchesRegion(line: ComputedLine, region: RegionInfo) {
+  return line.x.bp >= region.start && line.x.bp <= region.end
 }
 
 export function arcsToRegionResult(
@@ -1170,8 +1208,14 @@ export function arcsToRegionResult(
   }
 }
 
-// Bucket one group's computed arcs by refName, then materialize each region's
-// `ArcsUploadData`.
+// Bucket one group's computed arcs by refName, narrow each bucket to the region
+// actually asking, then materialize that region's `ArcsUploadData`.
+//
+// TWO steps, not one, because the refName bucket is a Map lookup that skips
+// every other chromosome's arcs outright while the bp narrowing is a scan of
+// what survives it. Regions may overlap in bp and an arc spanning two of them
+// belongs to both, so the second step is a per-region filter rather than a
+// second bucketing — see `arcTouchesRegion`.
 function arcsToRegionMap(
   { arcs, lines }: { arcs: ComputedArc[]; lines: ComputedLine[] },
   regions: RegionInfo[],
@@ -1182,8 +1226,10 @@ function arcsToRegionMap(
     out.set(
       ri.displayedRegionIndex,
       arcsToRegionResult(
-        arcsByRef.get(ri.refName) ?? [],
-        linesByRef.get(ri.refName) ?? [],
+        (arcsByRef.get(ri.refName) ?? []).filter(a => arcTouchesRegion(a, ri)),
+        (linesByRef.get(ri.refName) ?? []).filter(l =>
+          lineTouchesRegion(l, ri),
+        ),
       ),
     )
   }
