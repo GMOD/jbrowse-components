@@ -214,6 +214,17 @@ an `init` when it was not.
 
 A capability-detecting caller cannot tell you it lost a capability.
 
+**A menu item is the third such surface, and the quietest.** Deleting one
+compiles, passes every model test, and changes no behaviour that anything
+asserts — the capability is simply no longer offered. The four "Global:" tilings
+went with `DockviewRightHeaderActions` in ADR-068 and nobody noticed for 225
+commits; the commit message even lists four things that were dropped
+deliberately, and these were not among them. So a component that holds menu
+items is not interchangeable with the items it holds: when one is deleted, the
+items move or get named as dropped. `WorkspacePanelActions.test.tsx` asserts the
+labels for this reason, and a diff of `label: '...'` strings against an older
+revision is how you check the rest.
+
 ## Closing a tab or a panel closes its views
 
 The layout does not own views, so the two go together explicitly at the call
