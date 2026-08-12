@@ -1,6 +1,9 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
 import {
   getBreakendCoveringRegions,
   getBreakendMateLocString,
+  hasBreakpointSplitView,
   safeParseBreakend,
   splitRegionAtPosition,
 } from './util.ts'
@@ -194,5 +197,51 @@ describe('splitRegionAtPosition', () => {
     expect(left.end).toBe(1000)
     expect(right.start).toBe(999)
     expect(right.end).toBe(1000)
+  })
+})
+
+// Every launch site calls this from a display or widget — a node *inside* the
+// session — except the spreadsheet's FeatureMenu, which already holds the
+// session and passes that. Resolving through `getSession` served the first
+// group and threw `no session model found!` for the second, during render, so
+// the gate meant to remove one menu item removed the menu.
+describe('hasBreakpointSplitView', () => {
+  function tree(viewTypes: string[]) {
+    const Child = types.model('Child', {
+      id: types.optional(types.string, 'c'),
+    })
+    const Session = types
+      .model('Session', {
+        // half of what core's isSessionModel keys off; `rpcManager` is the
+        // other half and is a view, since a session's is not a property
+        configuration: types.optional(types.frozen(), {}),
+        child: types.optional(Child, {}),
+      })
+      .views(() => ({
+        get rpcManager() {
+          return {}
+        },
+      }))
+    const session = Session.create(
+      {},
+      { pluginManager: { viewTypes: new Map(viewTypes.map(v => [v, {}])) } },
+    )
+    return { session, child: session.child }
+  }
+
+  test('resolves from a node inside the session', () => {
+    const { child } = tree(['BreakpointSplitView'])
+    expect(hasBreakpointSplitView(child)).toBe(true)
+  })
+
+  test('resolves from the session itself, which has no session ancestor', () => {
+    const { session } = tree(['BreakpointSplitView'])
+    expect(hasBreakpointSplitView(session)).toBe(true)
+  })
+
+  test('is false when the view type is not registered', () => {
+    const { session, child } = tree(['LinearGenomeView'])
+    expect(hasBreakpointSplitView(session)).toBe(false)
+    expect(hasBreakpointSplitView(child)).toBe(false)
   })
 })

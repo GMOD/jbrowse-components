@@ -232,10 +232,21 @@ export function readTranslocationMate(info: {
   return { chr, pos, myDir: myDir ?? '.', mateDir: mateDir ?? '.' }
 }
 
+/**
+ * Whether `BreakpointSplitView` is registered at all, so a launch site can hide
+ * a menu item a host without that plugin cannot honor.
+ *
+ * Reads the env off the node it is given rather than off `getSession(node)`.
+ * The env is the tree's, identical from every node in it, so the hop through
+ * the session bought nothing — and it made the function throw
+ * `no session model found!` for the one caller that already had the session and
+ * passed it (the spreadsheet's FeatureMenu), since `getSession` looks for a
+ * session *ancestor* and a session has none. That took out five suites: the
+ * throw happens during render, so the gate meant to remove an unusable menu
+ * item removed the menu.
+ */
 export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
-  return getEnv(getSession(model)).pluginManager.viewTypes.has(
-    'BreakpointSplitView',
-  )
+  return getEnv(model).pluginManager.viewTypes.has('BreakpointSplitView')
 }
 
 export function navToLoc(
