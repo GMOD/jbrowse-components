@@ -53,13 +53,12 @@ test('creates with a minimal session', () => {
   expect(root.session).toBeTruthy()
 })
 
+// no localStorage setup: this used to seed a `localSaved-123` key and replace
+// Storage.prototype.getItem outright, neither of which setSession reads — and
+// the replacement was never restored, so every test after it in this file ran
+// with a getItem that returned the same session snapshot for any key.
 test('activates a session snapshot', () => {
   const session = { name: 'testSession' }
-  localStorage.setItem('localSaved-123', JSON.stringify({ session }))
-  Storage.prototype.getItem = jest.fn(
-    () => `{"session": {"name": "testSession"}}`,
-  )
-
   const root = getRootModel().create(mainThreadConfig)
   expect(root.session).toBeUndefined()
   root.setSession(session)
