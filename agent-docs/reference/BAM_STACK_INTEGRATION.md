@@ -66,7 +66,7 @@ should pass X" against.
 | `unzipChunkSlice` | bgzf | yes | via `@gmod/bam` |
 | `getSharedWorkerPool` | bgzf | yes | `packages/core/src/util/bgzfWorkerPool.ts` |
 | `BgzfWorkerPoolHost` / `Client` | bgzf | **no** | **gap — see seam 1** |
-| `destroySharedWorkerPool` | bgzf | **no** | **gap — see seam 1** |
+| `destroySharedWorkerPool` | bgzf | no | the pool reaps itself since 6.6.0 |
 
 ## The four non-integrations that are deliberate
 
@@ -133,8 +133,12 @@ machine with six or more cores, plus the RPC workers themselves. Each runs its
 own copy of the inlined wasm bundle, so each carries an independent
 `WebAssembly.Memory` — and that memory is grow-only, which REJECTED_IDEAS.md
 already names as the root cause of the transient RPC-worker peaks (deep CRAM,
-~997 MB down to 7 MB after GC). Nothing calls `destroySharedWorkerPool`, so
-those heaps outlive the last bgzip track.
+~997 MB down to 7 MB after GC). Those heaps used to outlive the last bgzip
+track; `@gmod/bgzf-filehandle` 6.6.0 reaps a pool's workers after 3 minutes
+idle and respawns them on demand, which gives the resting level back without
+the pool object ever becoming invalid — `destroy()` could not be used for this,
+since a destroyed pool throws out of `decompressBlocks` and every open reader
+holds one.
 
 `@gmod/bgzf-filehandle` documents this case in `docs/worker-pool.md` and ships
 `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` / `createPoolPort` for it, naming

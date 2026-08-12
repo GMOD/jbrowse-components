@@ -402,8 +402,8 @@ importers:
         specifier: ^0.27.20
         version: 0.27.20(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@gmod/bgzf-filehandle':
-        specifier: ^6.4.0
-        version: 6.4.0
+        specifier: ^6.6.0
+        version: 6.6.0
       '@gmod/shared-read-cache':
         specifier: ^1.5.1
         version: 1.5.1
@@ -726,8 +726,8 @@ importers:
         specifier: ^8.8.0
         version: 8.8.0
       '@gmod/bgzf-filehandle':
-        specifier: ^6.4.0
-        version: 6.4.0
+        specifier: ^6.6.0
+        version: 6.6.0
       '@gmod/cram':
         specifier: ^13.2.0
         version: 13.2.0
@@ -1515,8 +1515,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.4.0
-        version: 6.4.0
+        specifier: ^6.6.0
+        version: 6.6.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -4336,6 +4336,9 @@ packages:
 
   '@gmod/bgzf-filehandle@6.4.0':
     resolution: {integrity: sha512-PrID2FLkIqPZWSuHwYnc4A4riG4qJ6jOg+c4UXnfNio+hejZrKctUn7A3+BPMJ8i8W+S0fZOmCfKgreFHzFuBg==}
+
+  '@gmod/bgzf-filehandle@6.6.0':
+    resolution: {integrity: sha512-rCKRWfN4KXf4YYH4TeMKKq+56Viu+FX/l2B53uBIx2+ThP9yVbupFMtspteh7Z/lnP6R3vn2kfIytB0wt+bFbA==}
 
   '@gmod/cram@13.2.0':
     resolution: {integrity: sha512-2eEZg31QX74g+jKERgvBjFDGfNClAcChj1wHQnJw3samMqOqSdtJYF58FDmf/q4fyAK05+umStwj93zLXyzS9Q==}
@@ -12261,7 +12264,7 @@ snapshots:
 
   '@gmod/bam@8.8.0':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.4.0
+      '@gmod/bgzf-filehandle': 6.6.0
       '@gmod/shared-read-cache': 1.5.1
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
@@ -12277,6 +12280,11 @@ snapshots:
   '@gmod/bed@2.2.10': {}
 
   '@gmod/bgzf-filehandle@6.4.0':
+    dependencies:
+      generic-filehandle2: 2.3.1
+      pako-esm2: 2.0.2
+
+  '@gmod/bgzf-filehandle@6.6.0':
     dependencies:
       generic-filehandle2: 2.3.1
       pako-esm2: 2.0.2

@@ -99,8 +99,12 @@ pool multiplies by the number of contexts:
 | 5      | 5           | 20           |
 | 8      | 5           | 20           |
 
-Each of the 20 has its own grow-only wasm heap, and nothing calls
-`destroySharedWorkerPool` when the last bgzip track closes.
+Each of the 20 has its own grow-only wasm heap. Since
+`@gmod/bgzf-filehandle` 6.6.0 those are given back after 3 minutes idle — a
+pool terminates its own workers and spawns a fresh set on the next call, which
+is transparent to holders in a way `destroySharedWorkerPool` is not (a
+destroyed pool throws out of `decompressBlocks`, and every open track holds
+one).
 `@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` for
 this and nothing here uses them. The naive wiring is a regression on exactly the
 several-tracks case it is meant to help, so the open question is pool size

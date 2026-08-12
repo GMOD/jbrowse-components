@@ -316,8 +316,11 @@ rather than the track count — the caches work, their scope is the problem.
 
 - **The inflate pool.** 20 workers, each with its own copy of the inlined wasm
   bundle and so its own grow-only `WebAssembly.Memory` — the memory
-  REJECTED_IDEAS.md names behind the transient RPC-worker peaks. Nothing calls
-  `destroySharedWorkerPool`, so they outlive the last bgzip track.
+  REJECTED_IDEAS.md names behind the transient RPC-worker peaks. They used to
+  outlive the last bgzip track; as of `@gmod/bgzf-filehandle` 6.6.0 a pool
+  reaps its own workers after 3 minutes idle and respawns them on demand, so
+  the RESTING level is reclaimed. The peak while someone is actively browsing
+  is not, and is still unmeasured.
 - **`RemoteFileWithRangeCache`.** Its chunk `Map` is module-global, so the same
   reference sequence is downloaded once per worker for tracks sharing an
   assembly and a viewport. Nothing above it dedupes — there is no session-level

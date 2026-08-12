@@ -1015,22 +1015,28 @@ The sizing worry that used to be written here — that one shared pool of four
 would regress the several-tracks case — is not supported either: the "capped to
 1 per context" arm is strictly worse than that and cost ~13%, inside the drift.
 
-**What is left is memory, and it is unmeasured**: 20 grow-only
-`WebAssembly.Memory` instances that nothing tears down (nothing calls
-`destroySharedWorkerPool`). Measure that BEFORE building anything, and note the
-usual tools do not see it — wasm memory is outside `Runtime.getHeapUsage`, so
-this wants process-level RSS per target rather than a heap snapshot. If the
-memory turns out not to matter either, close this entry rather than building the
-channel; the duplication is then untidy and free.
+**What is left is the memory PEAK, and only that.** The resting level is
+handled upstream as of `@gmod/bgzf-filehandle` 6.6.0: a pool reaps its own
+workers after 3 minutes idle and respawns them on demand, so the 20 grow-only
+`WebAssembly.Memory` instances no longer outlive the tracks that needed them.
+What sharing would additionally buy is a lower peak *while someone is actively
+browsing several tracks*, and that is unmeasured. Note the usual tools do not
+see it — wasm memory is outside `Runtime.getHeapUsage`, so this wants
+process-level RSS per target rather than a heap snapshot. If the peak turns out
+not to matter either, close this entry rather than building the channel; the
+duplication is then untidy and free.
 
 Do **not** touch `SharedBudget` (ADR-064) while doing this. Per context is the
 right scope for it — a worker OOMs on its own heap — and only threads and the
 network are being bounded from the wrong place.
 
-Two smaller things fall out of the same work and may be worth taking alone:
-nothing calls `destroySharedWorkerPool` when the last bgzip track closes, and
-`sweepIdleCache` is exported for a tab-hidden sweep that no in-tree code
-registers.
+One smaller thing is still going begging: `sweepIdleCache` is exported for a
+tab-hidden sweep that no in-tree code registers. (The pool half of this pair is
+done — and note the fix could NOT be "call `destroySharedWorkerPool` when the
+last bgzip track closes", which is the obvious shape and a footgun: a destroyed
+pool throws out of `decompressBlocks`, and `BamFile` holds the pool promise for
+the life of the track, so that would break open readers rather than reclaim
+anything. It had to be reaping inside the pool.)
 
 Node cannot measure any of it — `getSharedWorkerPool` returns `undefined` there,
 so every vitest bench in all three repos reports parity forever. Use

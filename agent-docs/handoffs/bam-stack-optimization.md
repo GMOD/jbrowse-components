@@ -46,10 +46,12 @@ variant that looks like a small local fix silently returns duplicated reads.
 
 ## The one decision waiting
 
-**Weigh the wasm memory, or close the inflate-pool item.** The speed premise it
-was filed on is measured out (see the limits entry). What remains is 20
-grow-only `WebAssembly.Memory` instances that nothing tears down, since nothing
-calls `destroySharedWorkerPool`.
+**Weigh the wasm memory PEAK, or close the inflate-pool item.** The speed
+premise it was filed on is measured out (see the limits entry), and the resting
+level is now handled upstream — `@gmod/bgzf-filehandle` 6.6.0 reaps a pool's
+workers after 3 minutes idle and respawns them on demand, so those 20 grow-only
+`WebAssembly.Memory` instances no longer outlive the tracks that needed them.
+What is left is only the peak while several tracks are actively browsing.
 
 Closing it is a legitimate outcome and should not need permission: if the memory
 does not matter, the duplication is untidy and free, and `BgzfWorkerPoolHost` /
