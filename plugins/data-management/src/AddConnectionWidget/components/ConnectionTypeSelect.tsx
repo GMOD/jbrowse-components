@@ -42,7 +42,7 @@ const ConnectionTypeSelect = observer(function ConnectionTypeSelect({
       >
         {connectionTypeChoices.map(c => (
           <MenuItem key={c.name} value={c.name}>
-            {c.displayName || c.name}
+            {c.displayName}
           </MenuItem>
         ))}
       </TextField>

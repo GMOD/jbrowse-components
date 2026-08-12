@@ -19,7 +19,7 @@ export default class ConnectionType extends PluggableElementBase {
     name: string
     stateModel: IAnyModelType
     configSchema: AnyConfigurationSchemaType
-    displayName: string
+    displayName?: string
     description: string
     configEditorComponent?: AnyReactComponentType
     url: string
