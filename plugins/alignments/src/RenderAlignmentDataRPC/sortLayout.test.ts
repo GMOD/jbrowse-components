@@ -1,5 +1,6 @@
 import { INTERBASE_SOFTCLIP } from '../shared/types.ts'
 import {
+  buildLaidOutPileupMap,
   computeLayout,
   computeMultiRegionLayout,
   computeSortedLayout,
@@ -1226,4 +1227,65 @@ describe('layout is independent of read arrival order', () => {
       )
     },
   )
+})
+
+// `sortedBy` names a genomic COLUMN — a refName as well as a position — and the
+// multi-region path gates on it (`commonRefName === sortedBy.refName`). The
+// single-region path is the ordinary one and has to gate the same way: the slot
+// is config, so a sort committed on one contig is still set after the view
+// navigates to another, and a position number means something different there.
+describe('the pileup sort is gated on refName in the single-region path too', () => {
+  // Three reads mutually overlapping at position 50, carrying T/A/C. Sorted
+  // ascending by base that is A(1) < C(2) < T(0), so the sort is visible as
+  // rows [2, 0, 1] against the unsorted [0, 1, 2].
+  const readsAtSortPos = () =>
+    makePileupData({
+      regionStart: 0,
+      sortPos: 50,
+      reads: [
+        { start: 40, end: 60, baseAtSortPos: 'T' },
+        { start: 42, end: 62, baseAtSortPos: 'A' },
+        { start: 44, end: 64, baseAtSortPos: 'C' },
+      ],
+    })
+
+  function rowsFor(regionRefName: string, sortRefName: string) {
+    const out = buildLaidOutPileupMap({
+      dataMap: new Map([[0, readsAtSortPos()]]),
+      sortedBy: {
+        type: 'basePair',
+        pos: 50,
+        refName: sortRefName,
+        assemblyName: 'a',
+      },
+      showSoftClipping: false,
+      regions: new Map([[0, { refName: regionRefName, start: 0, end: 100 }]]),
+    })
+    return [...out.get(0)!.readYs]
+  }
+
+  test('sorts when the region is the one the sort names', () => {
+    expect(rowsFor('chr1', 'chr1')).toEqual([2, 0, 1])
+  })
+
+  test('leaves another contig unsorted rather than sorting at the same number', () => {
+    expect(rowsFor('chr2', 'chr1')).toEqual([0, 1, 2])
+  })
+
+  // The gate needs region bounds to check against. Without them the sort is the
+  // only thing the caller asked for, so it still applies — this is the shape
+  // every `computeSortedLayout` unit test in this file uses.
+  test('applies when the caller supplies no regions to check against', () => {
+    const out = buildLaidOutPileupMap({
+      dataMap: new Map([[0, readsAtSortPos()]]),
+      sortedBy: {
+        type: 'basePair',
+        pos: 50,
+        refName: 'chr1',
+        assemblyName: 'a',
+      },
+      showSoftClipping: false,
+    })
+    expect([...out.get(0)!.readYs]).toEqual([2, 0, 1])
+  })
 })
