@@ -244,6 +244,10 @@ export function resolveReadGroup<E extends MinEntry, T>(
   },
 ): T[] {
   const { first, second, hasPaired } = partitionReadGroup(entries)
+  // Accumulated INTO the first chainer's return value, so `chainMate` must hand
+  // back an array it does not keep — all three callers build a fresh one per
+  // call. Written this way rather than as a copy because this runs once per
+  // QNAME group at depth; the cost of the contract is this comment.
   const out = chainMate(first)
   if (hasPaired) {
     out.push(...chainMate(second))

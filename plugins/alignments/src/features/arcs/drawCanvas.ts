@@ -185,6 +185,17 @@ export function drawArcs(
     arcsTop,
     arcsH,
     pairedArcsDown,
+    // The CONFIGURED width, unfloored — deliberately not the GPU's
+    // `max(readConnectionsLineWidth, 1.5 / dpr)` (fillArcUniforms), and this is
+    // the one place in this directory where the two renderers are meant to
+    // differ. That floor exists because the shader's AA ramp is a fixed number
+    // of DEVICE px (STROKE_AA_PX) and a stroke thinner than it has no room to
+    // ramp, so a sub-1.5px arc stairsteps. Canvas2D rasterizes with its own
+    // antialiasing and renders a 0.5px line as a faint 1px one, which is the
+    // honest picture of a 0.5px line; raising it here would make the export
+    // draw thicker than asked. `hitTestArcs` takes the unfloored width for the
+    // same reason, and ARC_HIT_SLOP_PX swallows the sub-pixel difference
+    // against the GPU's ink either way.
     lineWidth: state.readConnectionsLineWidth,
     palette: arcColors,
     flatConnectorColor: state.colors.colorFlatConnector,
