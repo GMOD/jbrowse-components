@@ -158,6 +158,32 @@ describe('a GWAS file and an LD file that name the contig differently', () => {
     expect(built.r2ByKey.get('1:200')).toBe(0.8)
   })
 
+  it('gives a partner on another contig no position key at all', async () => {
+    const built = await buildLdToIndex({
+      adapter: ldSource('chr1', [
+        rec({
+          snpA: 'rsIndex',
+          chrA: 'chr1',
+          bpA: 100,
+          snpB: 'rsTrans',
+          chrB: 'chr7',
+          bpB: 200,
+          r2: 0.3,
+        }),
+      ]),
+      region: gwasRegion,
+      ldRefName: 'chr1',
+      indexSnp: 'rsIndex',
+    })
+    // `ldRefName` is one pair out of the assembly's aliasing — it says what
+    // `1` is called in the LD file and nothing about `chr7`. Rather than key
+    // the partner under a spelling from the other scheme, it gets no position
+    // key, so every position key in the map is one a GWAS feature could build.
+    // The id still resolves; a SNP id names no contig.
+    expect(built.r2ByKey.get('rsTrans')).toBe(0.3)
+    expect([...built.r2ByKey.keys()]).toEqual(['rsTrans'])
+  })
+
   it('without ldRefName the query misses entirely — the bug this fixes', async () => {
     const built = await buildLdToIndex({
       adapter: ld,

@@ -12,7 +12,7 @@ import { isLDRecordSource } from '@jbrowse/ld-core'
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
-import { defaultGlyph } from './rpcTypes.ts'
+import { defaultGlyph, ldColoringRequested } from './rpcTypes.ts'
 
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -119,32 +119,29 @@ export function buildManhattanResult({
 // index SNP. LD coloring needs a mode, an index and an adapter to read r² from;
 // with any of the three missing the worker falls back to the flat `color`
 // config, which is also the whole of normal coloring mode.
-async function makeEvaluators({
-  pluginManager,
-  sessionId,
-  region,
-  color,
-  colorBy,
-  indexSnp,
-  ldAdapterConfig,
-  ldRefName,
-  statusCallback,
-  stopTokenCheck,
-}: Pick<
-  GetManhattanDataArgs,
-  | 'sessionId'
-  | 'region'
-  | 'color'
-  | 'colorBy'
-  | 'indexSnp'
-  | 'ldAdapterConfig'
-  | 'ldRefName'
-> & {
-  pluginManager: PluginManager
-  statusCallback: StatusCallback
-  stopTokenCheck: StopTokenChecker
-}): Promise<ManhattanEvaluators & { indexFound?: boolean }> {
-  if (colorBy === 'ld' && indexSnp && ldAdapterConfig) {
+async function makeEvaluators(
+  args: Pick<
+    GetManhattanDataArgs,
+    | 'sessionId'
+    | 'region'
+    | 'color'
+    | 'colorBy'
+    | 'indexSnp'
+    | 'ldAdapterConfig'
+    | 'ldRefName'
+  > & {
+    pluginManager: PluginManager
+    statusCallback: StatusCallback
+    stopTokenCheck: StopTokenChecker
+  },
+): Promise<ManhattanEvaluators & { indexFound?: boolean }> {
+  const { pluginManager, sessionId, region, color, statusCallback } = args
+  // The same predicate `GetManhattanData.serializeArguments` resolves
+  // `ldRefName` under. Kept as one call rather than a restated condition: if
+  // this side said yes where that side said no, the LD read would run with no
+  // `ldRefName` and query the PLINK file under the GWAS file's name.
+  if (ldColoringRequested(args)) {
+    const { indexSnp, ldAdapterConfig, ldRefName, stopTokenCheck } = args
     const { dataAdapter: ldAdapter } = await getAdapter(
       pluginManager,
       sessionId,

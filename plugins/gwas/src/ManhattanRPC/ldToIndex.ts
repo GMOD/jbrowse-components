@@ -18,8 +18,12 @@ export function matchesIndexSnp(
   return name === indexSnp || key === indexSnp
 }
 
-function sideMatchesIndex(snp: string, chr: string, bp: number, index: string) {
-  return matchesIndexSnp(snp, `${chr}:${bp}`, index)
+// One side of an LD pair against the index. `key` is that side's position key
+// in the caller's scheme, or undefined when it has no such key — a trans-LD
+// partner on another contig (see `callerKey`). Such a side can still
+// match by SNP id, which names no contig; it just has no position to match on.
+function sideMatchesIndex(snp: string, key: string | undefined, index: string) {
+  return key === undefined ? snp === index : matchesIndexSnp(snp, key, index)
 }
 
 export interface LdToIndex {
@@ -55,6 +59,14 @@ export function lookupR2(
 // that comes back is translated to the caller's before it is keyed —
 // `makeLdEvaluator` looks these keys up with `posKey(region.refName, …)` built
 // from GWAS features, and a `chr16` key never matches a `16` lookup.
+//
+// Why the two files aren't just two RPCs, which is how the MAF display handles
+// its own second adapter (`LinearMafGetAnnotationData` is called with
+// `adapterConfig: annotationAdapterConfig`, so the ordinary rename covers it
+// and nothing has to be threaded): the r²-to-feature join is per feature, and
+// features never cross this boundary — only packed typed arrays come back. The
+// join has to happen where the Feature objects are, so both files have to be
+// readable from one call, so one of the two names has to travel.
 export async function buildLdToIndex({
   adapter,
   region,
@@ -79,39 +91,43 @@ export async function buildLdToIndex({
     end: region.end,
   })
 
-  // A record's contig, in the caller's scheme. Every record the scan sees was
-  // matched on `chrA === queryRefName` by the adapter, so that name IS this
-  // region's contig under another spelling. A `chrB` on some other contig
-  // (trans-LD, which PLINK's windowed output does not normally emit) keeps its
-  // own name and simply matches no feature here, which is the right answer.
-  const toCallerRefName = (chr: string) =>
-    chr === queryRefName ? region.refName : chr
+  // One side's position key in the caller's scheme, or undefined when that side
+  // is not on this region's contig.
+  //
+  // Every record the scan sees was matched on `chrA === queryRefName` by the
+  // adapter, so that name IS this region's contig under another spelling.
+  // Anything else is trans-LD — a partner on some other contig, which PLINK's
+  // windowed output does not normally emit — and `ldRefName` is a single pair
+  // out of the assembly's whole aliasing, so there is nothing here to translate
+  // it with. Such a side matches no feature in this region regardless; leaving
+  // it out keeps every position key in `r2ByKey` one that `makeLdEvaluator`
+  // could actually build, instead of mixing a second file's spelling into a map
+  // that is otherwise entirely in the caller's.
+  const callerKey = (chr: string, bp: number) =>
+    chr === queryRefName ? `${region.refName}:${bp}` : undefined
 
   const r2ByKey = new Map<string, number>()
   let indexFound = false
   for (const r of records) {
     // indexSnp is in the caller's scheme too (GetManhattanData rewrites it
-    // through the same rename as the region), so translate before comparing.
-    const aIsIndex = sideMatchesIndex(
-      r.snpA,
-      toCallerRefName(r.chrA),
-      r.bpA,
-      indexSnp,
-    )
-    const bIsIndex = sideMatchesIndex(
-      r.snpB,
-      toCallerRefName(r.chrB),
-      r.bpB,
-      indexSnp,
-    )
+    // through the same rename as the region), so compare against keys built in
+    // that scheme, not against the record's own `chrA`/`chrB`.
+    const keyA = callerKey(r.chrA, r.bpA)
+    const keyB = callerKey(r.chrB, r.bpB)
+    const aIsIndex = sideMatchesIndex(r.snpA, keyA, indexSnp)
+    const bIsIndex = sideMatchesIndex(r.snpB, keyB, indexSnp)
     if (aIsIndex && !bIsIndex) {
       indexFound = true
       r2ByKey.set(r.snpB, r.r2)
-      r2ByKey.set(`${toCallerRefName(r.chrB)}:${r.bpB}`, r.r2)
+      if (keyB !== undefined) {
+        r2ByKey.set(keyB, r.r2)
+      }
     } else if (bIsIndex && !aIsIndex) {
       indexFound = true
       r2ByKey.set(r.snpA, r.r2)
-      r2ByKey.set(`${toCallerRefName(r.chrA)}:${r.bpA}`, r.r2)
+      if (keyA !== undefined) {
+        r2ByKey.set(keyA, r.r2)
+      }
     }
   }
   if (!indexFound && records.length > 0) {

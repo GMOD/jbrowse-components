@@ -21,6 +21,23 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // its hover prints a locus directly under the ruler). `originalRefName` is NOT
 // that name — it is a third scheme, the FASTA's, load-bearing for CRAM/BAM
 // reference fetch.
+//
+// That third scheme is the general case in miniature, and worth naming: a
+// rename is a property of an (assembly, adapter) PAIR, and this renames against
+// exactly one adapter — `args.adapterConfig`. An RPC that reaches a SECOND file
+// gets no renaming for it, and the failure is silent in the usual way: the query
+// goes out under the first file's spelling, matches nothing, and reads as "no
+// data here". So an RPC naming two adapters needs two passes, not one.
+//
+// **Prefer giving the second file its own RPC**, where `adapterConfig` names the
+// file being read and the ordinary pass is simply right — MAF's annotation
+// overlay is called that way. Thread a second name only when the two results
+// cannot be joined by the caller: GWAS LD coloring can't, because the r²-to-
+// feature join is per feature and features never cross the boundary, so it
+// resolves a second pass in `serializeArguments` and ships `ldRefName`
+// (`plugins/gwas/src/ManhattanRPC/GetManhattanData.ts`). That and
+// `originalRefName` are the only two, and there is no reason to expect a third:
+// a sub-adapter is normally the same data in another form, named the same way.
 export function renameRegionIfNeeded(
   refNameMap: Record<string, string> | undefined,
   region: Region | Instance<typeof MUIRegion>,

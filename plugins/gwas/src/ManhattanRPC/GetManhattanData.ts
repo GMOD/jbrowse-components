@@ -1,6 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import { parseChrBp } from './parseChrBp.ts'
+import { ldColoringRequested } from './rpcTypes.ts'
 
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -69,18 +70,26 @@ export default class GetManhattanData extends RpcMethodType {
   // same contig differently, so the region renamed above is not a valid query
   // for it. A second pass, against that config, is what makes it one.
   //
-  // Gated on the same three conditions `makeEvaluators` gates the LD read on,
-  // and deliberately so: resolving a refName map calls the adapter's
+  // Gated on `ldColoringRequested`, the same predicate the worker gates the LD
+  // read on, and deliberately so: resolving a refName map calls the adapter's
   // `getRefNames`, which for the in-memory PLINK adapter parses the whole `.ld`
   // file. Doing that for a track drawn in normal coloring mode would be a
   // download nobody asked for.
   private async ldRefName(args: GetManhattanDataArgs) {
-    if (args.colorBy !== 'ld' || !args.indexSnp || !args.ldAdapterConfig) {
+    if (!ldColoringRequested(args)) {
       return undefined
     }
     const { regions } = await this.renameRegions({
       ...args,
       adapterConfig: args.ldAdapterConfig,
+      // `args.region`, NOT the renamed `regions[0]` above. A refName map is
+      // keyed by the assembly's *canonical* names (`loadRefNameMap` builds it
+      // as `result[getCanonicalRefName(name)] = name`), so a second pass has to
+      // start from the canonical name too. Feeding it the GWAS-renamed region
+      // finds no entry and falls through unchanged — reintroducing this very
+      // bug, silently, in exactly the case it is meant to fix (the two files
+      // disagreeing). The two regions are the same type and both in scope, so
+      // this is one substitution away at all times.
       regions: [args.region],
     })
     return regions[0]!.refName

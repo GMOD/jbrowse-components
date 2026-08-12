@@ -51,6 +51,35 @@ export interface GetManhattanDataArgs {
   statusCallback?: StatusCallback
 }
 
+// Whether this request colors by LD. Three things have to be present, and both
+// sides of the RPC boundary have to agree on all three: `serializeArguments`
+// resolves `ldRefName` only when this holds, and the worker takes the LD path
+// only when it holds. Stated once because the two readings drifting apart is
+// silent — the worker would still read LD records, but with no `ldRefName`, so
+// it would query the PLINK file under the GWAS file's name for the contig,
+// which is exactly the bug `ldRefName` exists to fix.
+// Generic in the argument type, rather than taking the three-field Pick
+// directly, so narrowing it does not throw away the rest of the caller's
+// object — the worker calls it on a bag that also carries `pluginManager` and
+// the status/stop-token handles, and needs those to survive the guard.
+export function ldColoringRequested<
+  T extends Pick<
+    GetManhattanDataArgs,
+    'colorBy' | 'indexSnp' | 'ldAdapterConfig'
+  >,
+>(
+  args: T,
+): args is T & {
+  indexSnp: string
+  ldAdapterConfig: Record<string, unknown>
+} {
+  return (
+    args.colorBy === 'ld' &&
+    !!args.indexSnp &&
+    args.ldAdapterConfig !== undefined
+  )
+}
+
 // One region's worth of GWAS points. Flat by design — GWAS doesn't bin or
 // split by sign like wiggle does.
 export interface ManhattanRpcResult {
