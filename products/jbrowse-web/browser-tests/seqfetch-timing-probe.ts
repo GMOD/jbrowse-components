@@ -18,38 +18,58 @@
 // ORDER: if the reference phase starts after the BAM phase ends, it is on the
 // critical path and overlapping it would remove its whole duration.
 //
-// Measured 2026-08-12, one no-MD long-read track, 10 kb window. SERIAL in every
-// arm — the reference read never once started before the last BAM byte landed:
+// The BASELINE, measured 2026-08-12 across latencies on the untiled fixture
+// (one no-MD long-read track, 10 kb window). Serial in every arm — the
+// reference read never once started before the last BAM byte landed:
 //
-//   RTT    bam phase   reference   gap    removable   share
-//     0ms       69ms   142->151    74ms         9ms      6%
-//    20ms      148ms   182->218    34ms        36ms     17%
-//    60ms      291ms   335->417    43ms        82ms     20%
-//   150ms      651ms   707->895    56ms       188ms     21%
+//   RTT    bam phase   reference   gap    read    share
+//     0ms       69ms   142->151    74ms     9ms      6%
+//    20ms      148ms   182->218    34ms    36ms     17%
+//    60ms      291ms   335->417    43ms    82ms     20%
+//   150ms      651ms   707->895    56ms   188ms     21%
 //
 // The 0ms arm is the control and it is the one that says the cost is round
 // trips rather than work: strip the latency and the reference read collapses to
 // 9ms while the `gap` — JS that would still run — stays put.
 //
-// THIS PROBE MEASURES THE BASELINE AND CANNOT MEASURE THE FIX, and the reason
-// is worth knowing before you try. The fixture's reference is a 255 KB FASTA,
-// which is smaller than one 256 KiB RemoteFileWithRangeCache chunk — so the
-// first query caches the whole genome and a pan issues NO reference request at
-// all (measured: the pan's entire trace is one nomd1.bam read). Meanwhile the
-// prefetch is gated on having already seen an MD-less read, so it cannot engage
-// on the first query by construction. The two miss each other completely: the
-// only query this fixture shows the cost on is the one the fix cannot help.
+// BOTH ARMS COME OUT OF ONE RUN, and the gate is what makes that possible: the
+// prefetch only engages once the adapter has seen an MD-less read, so the first
+// query is necessarily the unprefetched path and the pan is the prefetched one.
+// Same build, same process, arms interleaved by construction. Three reps at
+// 60ms, and they barely move:
 //
-// So a browser A/B of the fix needs a reference big enough that panning misses
-// that chunk cache — a real assembly, or a synthetic one with reads spread over
-// tens of Mb. Until then the ordering claim is asserted deterministically in
-// plugins/alignments/src/BamAdapter/referencePrefetch.test.ts, which is a better
-// test of it anyway.
+//   FIRST LOAD (gate closed)   reference read 67ms, 0ms hidden — SERIAL
+//                              critical path 663-698ms
+//   PAN (gate open)            reference read 68ms, 68ms hidden — OVERLAPPED
+//                              critical path 133-136ms vs 200-204ms serial
+//                              equivalent = 1.50x
 //
-// Fixture and traps: see percontext-probe.ts's header (same fixture). TRACKS=1
-// by default here -- several tracks contend for RPC workers and connections,
+// The reference read is now entirely inside the alignment fetch. What that is
+// worth depends on the ratio between them, which is why the two arms disagree
+// and both are right: 10% of a first load (whose BAM phase is 8 requests) and
+// 33% of a pan (2 requests). It is never negative — the read either hides or
+// it doesn't.
+//
+// THE FIXTURE HAS TO BE TILED, and this took a wasted run to find out. With the
+// original 255 KB hg19mod.fa the pan issues no reference request AT ALL: the
+// reference is smaller than one 256 KiB RemoteFileWithRangeCache chunk, so the
+// first query caches the whole genome. The only query that fixture shows the
+// cost on is the one the gate excludes, so it can measure the baseline and
+// never the fix. make-tiled-fixture.sh repeats chr22_mask into a 5 Mb contig
+// and shifts a copy of every read into each tile — the reference tiles, so the
+// copies still align against identical sequence and the mismatches stay real,
+// with no read simulator involved.
+//
+// Build the fixture with make-tiled-fixture.sh, then write a
+// tiled_config.json beside it with one IndexedFastaAdapter assembly over
+// chr22_big.fa and one AlignmentsTrack over tiled.bam (fetchSizeLimit above the
+// byte gate). percontext-probe.ts's header covers the traps shared with it —
+// chiefly that jb2bench's own BAMs all carry MD, so the reference is never
+// fetched on them and this whole question is invisible.
+//
+// TRACKS=1 by default: several tracks contend for RPC workers and connections,
 // which blurs the phase boundary this is trying to see.
-// Env: HEADLESS=0, TRACKS, LOC, LATENCY_MS.
+// Env: HEADLESS=0, TRACKS, LOC, PAN_LOC, LATENCY_MS, CONFIG, ASSEMBLY.
 import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import { launchProfilingBrowser, sleep } from './memHelpers.ts'
@@ -57,12 +77,13 @@ import { startServerOnFreePort } from './server.ts'
 
 import type { CDPSession, Page } from 'puppeteer'
 
-const CONFIG = 'test_data/jb2bench_link/seqfetch_config.json'
-const ASSEMBLY = 'hg19mod'
-const LOC = process.env.LOC || 'chr22_mask:100000..110000'
-// A non-overlapping window, so the pan is a genuine cold query rather than one
-// served out of @gmod/bam's parsed-chunk cache
-const PAN_LOC = process.env.PAN_LOC || 'chr22_mask:150000..160000'
+const CONFIG = process.env.CONFIG || 'test_data/jb2bench_link/tiled_config.json'
+const ASSEMBLY = process.env.ASSEMBLY || 'hg19big'
+const LOC = process.env.LOC || 'chr22_big:100000..110000'
+// Far from LOC, and far enough that the reference bases it needs are in a
+// DIFFERENT 256 KiB RemoteFileWithRangeCache chunk. That is the whole reason
+// the fixture is tiled — see the header. Also a cold @gmod/bam chunk.
+const PAN_LOC = process.env.PAN_LOC || 'chr22_big:4000000..4010000'
 const TRACKS = Number(process.env.TRACKS || 1)
 const LATENCY_MS = Number(process.env.LATENCY_MS ?? 60)
 
@@ -193,15 +214,17 @@ async function quiet() {
   await sleep(20000)
 }
 
+// BOTH arms come out of ONE run, and the gate is what makes that possible.
+// The prefetch only engages once the adapter has seen an MD-less read, so the
+// FIRST query is necessarily the unprefetched path and the pan is the
+// prefetched one — same build, same process, same browser, arms interleaved by
+// construction rather than by a two-build A/B whose halves can drift.
+//
+// The pan has to land somewhere the reference is not already cached, or there
+// is nothing to overlap; that is what the tiled fixture is for. See the header.
 await quiet()
+const firstLoad = [...timed]
 
-// Measure the PAN, not the first load. Two reasons, and the second is the one
-// that matters. A first load is unrepresentative anyway — it builds the
-// sequence sub-adapter and reads its .fai, which a pan does not. And any
-// prefetch of the reference has to be gated on having already SEEN an MD-less
-// read on this file, since nothing in the header says whether MD is present, so
-// on the first query it cannot have engaged yet by construction. Measuring the
-// first load therefore reports the unprefetched path whatever the code does.
 timed.length = 0
 pending.clear()
 await page.evaluate(l => {
@@ -212,18 +235,21 @@ await page.evaluate(l => {
   ).JBrowseSession?.views?.[0]?.navToLocString(l)
 }, PAN_LOC)
 await quiet()
+const pan = [...timed]
 
-const bam = phase(n => n.endsWith('.bam') || n.endsWith('.bam.bai'))
-const ref = bam
-  ? phase(n => n === 'hg19mod.fa' || n === 'hg19mod.fa.fai', bam.start)
-  : undefined
-
-console.log('')
-if (!bam || !ref) {
-  console.log(
-    'WARNING: a phase is missing — the reference read only happens if the reads lack MD and the byte gate let the query run. Check the fixture.',
-  )
-} else {
+function report(label: string, rows: Timed[]) {
+  const saved = timed.splice(0, timed.length, ...rows)
+  const bam = phase(n => n.endsWith('.bam') || n.endsWith('.bam.bai'))
+  const ref = bam ? phase(n => /\.fa$|\.fai$/.test(n), bam.start) : undefined
+  console.log('')
+  console.log(`--- ${label} ---`)
+  if (!bam || !ref) {
+    console.log(
+      'WARNING: a phase is missing — the reference read only happens if the reads lack MD, the byte gate let the query run, and the reference is not already in the 256 KiB chunk cache. Check the fixture.',
+    )
+    timed.splice(0, timed.length, ...saved)
+    return
+  }
   const t0 = bam.start
   const rel = (t: number) => `${(t - t0).toFixed(0)}ms`
   console.log(
@@ -233,39 +259,42 @@ if (!bam || !ref) {
     `reference phase  ${rel(ref.start)} -> ${rel(ref.end)}   (${ref.n} req)`,
   )
   const gap = ref.start - bam.end
-  const tail = ref.end - bam.end
-  const total = ref.end - bam.start
-  console.log('')
   console.log(
     gap >= 0
-      ? `SERIAL: the reference read starts ${gap.toFixed(0)}ms after the last BAM byte`
-      : `OVERLAPPING by ${(-gap).toFixed(0)}ms — the serialization claim does not hold here`,
+      ? `SERIAL: reference starts ${gap.toFixed(0)}ms after the last BAM byte`
+      : `OVERLAPPED: reference started ${(-gap).toFixed(0)}ms BEFORE the last BAM byte`,
   )
-  // Two numbers, and the difference between them matters. The TAIL is
-  // everything after the last BAM byte, so it is the upper bound on what
-  // overlapping could remove — but it includes `gap`, which is JS (the filter
-  // loop, seqFetchSpan, building the sequence sub-adapter) and would still run.
-  // REMOVABLE is the reference reads' own duration, which is what actually goes
-  // away when they are issued alongside the alignment fetch instead of after it.
-  const removable = ref.end - ref.start
+  // Split the reference read into the part that is HIDDEN behind the alignment
+  // fetch and the part still EXPOSED on the critical path. That is the one
+  // framing that reads correctly for both arms: a "% of query" figure assumes
+  // the read is serial and goes negative — literally, -93% — the moment it
+  // isn't, which is exactly the case being measured.
+  const read = ref.end - ref.start
+  // measured from where the read is still running past the BAM fetch, NOT from
+  // bam.end — otherwise the JS gap between the two phases is counted as part of
+  // the read and `exposed` comes out larger than the read itself
+  const exposed = Math.max(0, ref.end - Math.max(ref.start, bam.end))
+  const hidden = Math.max(0, read - exposed)
+  const critical = Math.max(bam.end, ref.end) - bam.start
   console.log(
-    `tail (upper bound) ${tail.toFixed(0)}ms of ${total.toFixed(0)}ms = ${((tail / total) * 100).toFixed(0)}%   [includes ${gap.toFixed(0)}ms of JS that would still run]`,
+    `reference read   ${read.toFixed(0)}ms — ${hidden.toFixed(0)}ms hidden behind the alignment fetch, ${exposed.toFixed(0)}ms still on the critical path`,
   )
   console.log(
-    `removable          ${removable.toFixed(0)}ms of ${total.toFixed(0)}ms = ${((removable / total) * 100).toFixed(0)}%   <- the reference reads themselves`,
+    `critical path    ${critical.toFixed(0)}ms   (serial equivalent ${(bam.end - bam.start + read).toFixed(0)}ms)`,
   )
+  console.log('requests, ordered:')
+  for (const t of [...rows].sort((a, b) => a.start - b.start)) {
+    if (/\.(bam|bai|fa|fai)$/.test(t.name)) {
+      console.log(
+        `  ${(t.start - t0).toFixed(0).padStart(6)}ms  +${(t.end - t.start).toFixed(0).padStart(5)}ms  ${t.name}`,
+      )
+    }
+  }
+  timed.splice(0, timed.length, ...saved)
 }
 
-console.log('')
-console.log('every request, ordered:')
-for (const t of [...timed].sort((a, b) => a.start - b.start)) {
-  if (/\.(bam|bai|fa|fai)$/.test(t.name)) {
-    const t0 = timed.length ? Math.min(...timed.map(x => x.start)) : 0
-    console.log(
-      `  ${(t.start - t0).toFixed(0).padStart(6)}ms  +${(t.end - t.start).toFixed(0).padStart(5)}ms  ${t.name}`,
-    )
-  }
-}
+report('FIRST LOAD (gate closed — the unprefetched path)', firstLoad)
+report('PAN (gate open — the prefetched path)', pan)
 
 await browser.close()
 server.close()
