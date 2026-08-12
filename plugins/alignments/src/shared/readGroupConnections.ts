@@ -139,6 +139,35 @@ function primaryOf<E extends MinEntry>(segs: E[]) {
   return segs.find(e => !isSupplementary(e)) ?? segs[0]!
 }
 
+// Which endpoint of a resolved MATE LINK its PAIR-LEVEL fields (orientation,
+// template length) are read off. Geometry always comes from the two segments
+// actually drawn; these two do not, because they describe the fragment rather
+// than the segment, and a supplementary's own record answers them differently.
+//
+// `pair_orientation` is derived (in @gmod/bam) from the record's own reverse bit
+// and its own position, so a supplementary that flipped strand at the split
+// junction — or that simply sits on the other side of its mate — computes a
+// different orientation from its primary, while the two PRIMARIES of a pair
+// always agree (the table maps read1's and read2's flag/position combinations
+// onto the same string). Preferring a primary is therefore a no-op whenever both
+// are on screen, which is the overwhelming majority, and only bites in the case
+// it exists for: a mate whose primary is off-screen, so `primaryOf` above handed
+// the resolver its supplementary segment instead.
+//
+// The same rule the read FILLS already follow — `buildChainResultFields` exists
+// to overwrite a supplementary's `readPairOrientations` entry with the chain
+// primary's, "rather than the divergent one their own strand-flipped record
+// computes". Both connection renderers read that array, so in chain mode they
+// were already getting the corrected value and in pileup mode they were not: the
+// same reads, the same locus, a different colour depending on a layout setting.
+//
+// Lives here, beside the resolver that chose the two entries, because the arc
+// band and the bezier overlay each need it and a second copy is how the two came
+// to disagree in the first place.
+export function pairFieldEntry<E extends MinEntry>(e1: E, e2: E) {
+  return isSupplementary(e1) && !isSupplementary(e2) ? e2 : e1
+}
+
 // The same physical read overlapping two displayedRegions (e.g. spanning
 // collapsed-intron exons) is returned by each region's fetch, arriving as
 // duplicate entries sharing a readId (f.id() = adapter.id + fileOffset, stable

@@ -190,6 +190,86 @@ describe('classifyPair — paired reads', () => {
   })
 })
 
+// A mate link's pair-level fields describe the FRAGMENT, so they come off a
+// primary rather than off whichever segment `primaryOf` handed over as e1. It
+// bites only where read1's own primary is off-screen and its supplementary
+// segment is the loaded one — a split read at an SV breakpoint, which is the
+// picture connectors exist to draw. @gmod/bam derives `pair_orientation` from
+// the record's own reverse bit and its own position, so that supplementary
+// reports LR for a pair its primaries both call RL.
+//
+// This costs the overlay more than a colour: `isNormal` also decides
+// curve-vs-straight, and `isBezierArcPair` drops a within-region normal pair
+// entirely — so the discordant connection was handed to the plain-line pass and
+// never drawn as a curve at all.
+describe('classifyPair sources pair fields from a primary, not a supplementary', () => {
+  // read1: supplementary only (its primary is off-screen), reporting LR.
+  // read2: primary, reporting the pair's true RL.
+  const splitMateOffScreenPrimary = makeData({
+    names: ['r', 'r'],
+    flags: [
+      SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
+      SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+    ],
+    strands: [1, -1],
+    positions: [
+      [100, 200],
+      [300, 400],
+    ],
+    orientations: [LINKED_READ_COLOR_PAIR_LR, LINKED_READ_COLOR_PAIR_RL],
+    ys: [0, 0],
+  })
+
+  it('reads the orientation off the primary mate, whichever endpoint it is', () => {
+    const supplementaryFirst = classifyPair(
+      makeEntry(splitMateOffScreenPrimary, 0),
+      makeEntry(splitMateOffScreenPrimary, 1),
+      false,
+    )
+    expect(supplementaryFirst.colorType).toBe(LINKED_READ_COLOR_PAIR_RL)
+    // The whole point: a normal pair inside one region never reaches the
+    // overlay, so the LR misreading took this curve off screen entirely.
+    expect(supplementaryFirst.isNormal).toBe(false)
+  })
+
+  it('is a no-op when both mates are primaries', () => {
+    // The two primaries of a pair always agree, so which one is read cannot
+    // matter — this is the case that must not move.
+    const bothPrimaries = makeData({
+      names: ['r', 'r'],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
+      strands: [1, -1],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      orientations: [LINKED_READ_COLOR_PAIR_RL, LINKED_READ_COLOR_PAIR_RL],
+      ys: [0, 0],
+    })
+    const c = classifyPair(
+      makeEntry(bothPrimaries, 0),
+      makeEntry(bothPrimaries, 1),
+      false,
+    )
+    expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_RL)
+    expect(c.isNormal).toBe(false)
+  })
+
+  it('leaves a split junction alone — it has no pair fields to source', () => {
+    // Both segments of one read: `isSplit` colours by the two strands, so the
+    // orientation array is not consulted at either end.
+    const c = classifyPair(
+      makeEntry(splitMateOffScreenPrimary, 0),
+      makeEntry(splitMateOffScreenPrimary, 1),
+      true,
+    )
+    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_INV)
+  })
+})
+
 describe('classifyPair — split long reads', () => {
   // A split read is normal (a plain deletion) when both segments share a strand,
   // and an inversion when they differ. classifyPair exposes the real BAM s1/s2

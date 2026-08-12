@@ -8,6 +8,7 @@ import {
 } from '../../shared/legendUtils.ts'
 import {
   connectionEndpoints,
+  pairFieldEntry,
   readGroupConnections,
 } from '../../shared/readGroupConnections.ts'
 import { getOrCreate } from '../../shared/util.ts'
@@ -179,6 +180,16 @@ export interface ClassifiedPair {
 // the semantics: a mate link uses paired-read rules, a split junction uses
 // split-read rules. This lets paired short reads, split long reads, and paired
 // reads that are themselves SA-split all coexist in one view.
+//
+// Geometry is both entries'; the ORIENTATION is the fragment's, so it comes off
+// a primary (`pairFieldEntry`) rather than off `e1` whichever segment that
+// turned out to be. Reading e1 unconditionally cost this path two things a
+// colour alone would not: `isNormal` decides curve-vs-straight, and
+// `isBezierArcPair` drops a within-region normal pair entirely — so a
+// supplementary reporting LR for a genuinely RL pair took the aberrant
+// connection off the overlay and handed it to the plain-line pass, in the one
+// case the overlay exists to draw. The arc band already sourced this from a
+// primary; the two now read the same rule rather than two spellings of it.
 export function classifyPair(
   e1: ReadEntry,
   e2: ReadEntry,
@@ -186,7 +197,8 @@ export function classifyPair(
 ): ClassifiedPair {
   const hasPaired = !isSplit
   const { bp1, s1, bp2, s2 } = connectionEndpoints({ e1, e2, isSplit })
-  const orientNum = e1.data.readPairOrientations[e1.readIdx]!
+  const src = pairFieldEntry(e1, e2)
+  const orientNum = src.data.readPairOrientations[src.readIdx]!
   const isNormal = isNormalOrientation(hasPaired, orientNum, s1, s2)
   const colorType = hasPaired
     ? pairedColorType(orientNum)
