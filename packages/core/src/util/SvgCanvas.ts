@@ -42,27 +42,34 @@ const fontShorthandRe = /^(.*?)(\d+(?:\.\d+)?)px(?:\/\S+)?\s+(.+)$/
 const fontWeightTokens = new Set(['bold', 'bolder', 'lighter'])
 const fontStyleTokens = new Set(['italic', 'oblique'])
 
+// CSS font shorthand broken into the parts both consumers below need. One parse,
+// because they are the emitted size/family and the *measured* size/family, and a
+// string measured in one face and painted in another is the drift the whole
+// class exists to avoid. A bare "12px" (no family) still yields its size.
+function parseFont(font: string) {
+  const m = fontShorthandRe.exec(font)
+  return m
+    ? { prefix: m[1] ?? '', size: m[2]!, family: m[3] ?? '' }
+    : { prefix: '', size: `${Number.parseFloat(font) || 10}`, family: '' }
+}
+
 // Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace" into
 // SVG-compatible attributes. The default sans-serif family is left off so
 // feature labels match the raw-JSX <text> elements (ruler, scalebar, etc.),
 // which set no family either; an explicitly-set family is still emitted.
 function fontAttrs(font: string) {
-  const m = fontShorthandRe.exec(font)
-  if (m) {
-    const [, prefix = '', size, family = ''] = m
-    const tokens = prefix.split(/\s+/).filter(Boolean)
-    const weight = tokens.find(
-      t => fontWeightTokens.has(t) || /^\d{1,4}$/.test(t),
-    )
-    const style = tokens.find(t => fontStyleTokens.has(t))
-    return [
-      ` font-size="${size}"`,
-      family === 'sans-serif' ? '' : ` font-family="${family}"`,
-      weight ? ` font-weight="${weight}"` : '',
-      style ? ` font-style="${style}"` : '',
-    ].join('')
-  }
-  return ` font-size="${Number.parseFloat(font) || 10}"`
+  const { prefix, size, family } = parseFont(font)
+  const tokens = prefix.split(/\s+/).filter(Boolean)
+  const weight = tokens.find(
+    t => fontWeightTokens.has(t) || /^\d{1,4}$/.test(t),
+  )
+  const style = tokens.find(t => fontStyleTokens.has(t))
+  return [
+    ` font-size="${size}"`,
+    family === '' || family === 'sans-serif' ? '' : ` font-family="${family}"`,
+    weight ? ` font-weight="${weight}"` : '',
+    style ? ` font-style="${style}"` : '',
+  ].join('')
 }
 // SVG ids are document-global (see svg/svgId.ts), so this counter has to be
 // too: one export mounts many SvgCanvas instances — a PaintLayer per display,
@@ -605,10 +612,15 @@ export class SvgCanvas {
     }
   }
 
+  // The family goes through, not just the size: `measureText` switches to the
+  // fixed monospace advance on seeing one, so dropping it measured a monospace
+  // string against the proportional table — the same string, laid out one way on
+  // a real canvas and another in the export, with nothing to show which. No draw
+  // function calls ctx.measureText today; this is here so the first one to do it
+  // doesn't inherit a silent discrepancy.
   measureText(text: string) {
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font)
-    const fontSize = m ? +m[1]! : Number.parseFloat(this.font) || 10
-    return { width: measureTextWidth(text, fontSize) }
+    const { size, family } = parseFont(this.font)
+    return { width: measureTextWidth(text, Number(size), family) }
   }
 
   // The fragment drawn so far, or '' if nothing was drawn — PaintLayer reads

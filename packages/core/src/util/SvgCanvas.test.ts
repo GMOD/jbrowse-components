@@ -1,4 +1,5 @@
 import { SvgCanvas } from './SvgCanvas.ts'
+import { measureText } from './measureText.ts'
 
 test('clip + restore brackets a group, scoping draws to the clip path', () => {
   const ctx = new SvgCanvas()
@@ -371,5 +372,35 @@ describe('ellipse', () => {
     ctx.ellipse(0, 0, 40, 10, 0, 0, 2 * Math.PI)
     ctx.stroke()
     expect(pathOf(ctx)).toBe('M40,0A40,10 0 1 1 -40,0A40,10 0 1 1 40,0')
+  })
+})
+
+// measureText switches to the fixed monospace advance on seeing a monospace
+// family, so a shim forwarding only the size measures a monospace string against
+// the proportional table — the same string laid out one way on a real canvas and
+// another in the export, with nothing on screen to show which.
+describe('measureText', () => {
+  test('a monospace face measures on the monospace advance', () => {
+    const ctx = new SvgCanvas()
+    ctx.font = 'bold 12px monospace'
+    expect(ctx.measureText('MMMM').width).toBe(
+      measureText('MMMM', 12, 'monospace'),
+    )
+  })
+
+  test('a proportional face still measures proportionally', () => {
+    const ctx = new SvgCanvas()
+    ctx.font = '12px sans-serif'
+    expect(ctx.measureText('illi').width).toBe(measureText('illi', 12))
+    // and the two faces genuinely disagree, so the case above is not vacuous
+    expect(measureText('illi', 12, 'monospace')).not.toBe(
+      measureText('illi', 12),
+    )
+  })
+
+  test('a bare size with no family still reports its size', () => {
+    const ctx = new SvgCanvas()
+    ctx.font = '20px'
+    expect(ctx.measureText('MM').width).toBe(measureText('MM', 20))
   })
 })
