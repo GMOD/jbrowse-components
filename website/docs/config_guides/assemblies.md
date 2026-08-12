@@ -122,8 +122,8 @@ plastids/bacteria often use table 11; full list on the
 Unlisted sequences use the standard code; keys are matched through refname
 aliasing, so `chrM` still applies if your FASTA calls it `MT`. A sidecar TSV
 ([`geneticCodesLocation`](/docs/config/baseassembly/#slot-geneticcodeslocation),
-`refName<TAB>geneticCodeId`) can supply the same map instead of inlining it; an
-inline entry wins if both are present.
+`refName<TAB>geneticCodeId`, `#` comment lines allowed) can supply the same map
+instead of inlining it; an inline entry wins if both are present.
 
 ## Adding an assembly with the CLI
 
