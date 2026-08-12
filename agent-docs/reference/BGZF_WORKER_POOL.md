@@ -87,6 +87,20 @@ just counting whatever else spawns workers.
 Note Safari only gained nested workers in 16.4; below that this degrades to
 in-process by design, which is correct rather than a bug to fix.
 
+**The four is per RPC worker, not per session.** The check above loaded one
+track. `getSharedWorkerPool()` memoizes per JS context and
+`WorkerPoolRpcDriver` gives each track a sticky worker out of
+`clamp(hardwareConcurrency - 1, 1, 5)`, so five bgzip-backed tracks is up to
+five pools — **20** inflate workers, each with its own grow-only wasm heap, and
+nothing calls `destroySharedWorkerPool` when the last one closes.
+`@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` for
+this and nothing here uses them. The naive wiring is a regression on exactly the
+several-tracks case it is meant to help, so the open question is pool size
+rather than plumbing — see
+[BAM_STACK_INTEGRATION.md](BAM_STACK_INTEGRATION.md) seam 1 and the TODO entry
+it points at. If you re-run the puppeteer worker count above, load **five**
+bgzip tracks, not one; counting one track is what made this invisible.
+
 ## Benchmark traps
 
 Three, and two of them produce numbers that look real.

@@ -144,7 +144,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="getter-linkedreads">**linkedReads**</span><br><code>"off" &#124; "normal"</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-linkedreads">**linkedReads**</span><br><code>"normal" &#124; "off"</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-pairsdisplaytypedefault">**pairsDisplayTypeDefault**</span><br><code>Pin</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showbezierconnections">**showBezierConnections**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showcoverage">**showCoverage**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
@@ -414,7 +414,7 @@ the whole surface.
 | <span id="action-setshowinterbaseindicators">**setShowInterbaseIndicators**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setflipstrandlongreadchains">**setFlipStrandLongReadChains**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setcolorsupplementarychains">**setColorSupplementaryChains**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
-| <span id="action-setlinkedreads">**setLinkedReads**</span><br><code>(mode: "off" &#124; "normal") =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setlinkedreads">**setLinkedReads**</span><br><code>(mode: "normal" &#124; "off") =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setshowbezierconnections">**setShowBezierConnections**</span><br><code>(flag: boolean) =&gt; void</code> | Toggle the paired-read connection overlay. A main-thread tier-2/4 setting (read in `laidOutPileupMap` + `renderState`), not in `rpcProps` — toggling it never refetches. | LinearAlignmentsDisplay |
 | <span id="action-updatevisiblemodifications">**updateVisibleModifications**</span><br><code>(uniqueModifications: string[]) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setmodificationsready">**setModificationsReady**</span><br><code>(flag: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |

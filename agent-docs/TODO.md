@@ -51,6 +51,8 @@ Exploratory concepts that are *not* committed work live in
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
+| [Share one BGZF inflate pool](#share-one-bgzf-inflate-pool-across-the-rpc-workers) | bgzf, RPC, limits | the library has the fix; the open question is pool size |
+| [Overlap the reference fetch](#overlap-the-reference-fetch-with-the-alignment-fetch) | alignments | time the sequence read on a cold MD-less query |
 
 ## Ready to build: small and self-contained
 
@@ -981,6 +983,61 @@ show nothing; use a callset in the thousands. Note that the redundant rebuilds
 are already gone — `setVisibleRows` compares before writing (`sameVisibleRowFlags`
 in `SpreadsheetModel.tsx`), so what is left is genuine filter changes only, and
 that is what needs timing.
+
+### Share one BGZF inflate pool across the RPC workers
+
+`sharedBgzfWorkerPool()` memoizes per JS context, and adapters run one sticky RPC
+worker per track, so the inflate pool multiplies by the RPC pool instead of being
+shared across it — up to **20** inflate workers on a six-core machine, each with
+its own grow-only wasm heap, none of them ever torn down.
+`@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` /
+`createPoolPort` for precisely this and names JBrowse's data workers as the case;
+neither symbol appears in this repo.
+[reference/BAM_STACK_INTEGRATION.md](reference/BAM_STACK_INTEGRATION.md) seam 1.
+
+**Measure the several-tracks-at-once case first, because the naive wiring is a
+regression there.** One shared pool of four replaces twenty workers with four:
+right when a single track is loading, wrong when five are, which is the moment a
+reader notices. So the question to answer is not "does the port hop work" — it
+does, the library has it — but **how big the shared pool should be**, and 4 is
+only the library's per-context default, never measured above. Get a number for a
+five-bgzip-track session at `hardwareConcurrency`, at 4, and at today's 5x4, then
+wire it.
+
+Two smaller things fall out of the same measurement and may be worth taking
+alone: nothing calls `destroySharedWorkerPool` when the last bgzip track closes,
+and `sweepIdleCache` is exported for a tab-hidden sweep that no in-tree code
+registers.
+
+Node cannot measure any of it — `getSharedWorkerPool` returns `undefined` there,
+so every vitest bench in all three repos reports parity forever. Use the
+puppeteer harness and heed the three traps in
+[reference/BGZF_WORKER_POOL.md](reference/BGZF_WORKER_POOL.md).
+
+### Overlap the reference fetch with the alignment fetch
+
+`BamAdapter.getFeatures` awaits all of `getRecordsForRange`, then computes
+`seqFetchSpan`, then fetches sequence — two round trips end to end on every BAM
+whose reads carry no MD, which is most long-read data (minimap2 and bwa both
+leave MD off unless asked).
+
+The records are not needed to bound the fetch. `seqFetchSpan` clamps to
+`[regionStart, regionEnd)`, so the queried region is already an upper bound on
+what it can return, and `PackedReference` carries its own `start` — a reference
+packed for the whole region locates any read in itself and the walk windows to
+the viewport anyway. So the read can be issued concurrently and the records used
+only to decide whether to *use* it.
+
+Unconditionally that wastes a fetch on every BAM that does carry MD. MD-ness is a
+property of the file rather than of the query, so the guard is a sticky
+per-adapter flag set the first time `seqFetchSpan` returns non-null: the win on
+the files that need it, nothing on the files that do not.
+
+**Measure the sequence read's share of a cold MD-less query first.**
+`RemoteFileWithRangeCache` may already be serving it out of a chunk the reference
+sequence track pulled in, in which case there is no round trip to overlap and
+this is not worth the flag. [reference/BAM_STACK_INTEGRATION.md](reference/BAM_STACK_INTEGRATION.md)
+seam 3.
 
 ## Auto-detect when to use first-of-pair strand?
 

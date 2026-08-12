@@ -295,6 +295,30 @@ rotation in `FetchMixin`), not a scheduler.
 **Retire when** a session-level priority queue with a max-in-flight cap lands, or
 `fetchRegions` at least sorts `needed` by distance from viewport center.
 
+### Every RPC worker spawns its own BGZF inflate pool
+
+**Status:** Open.
+
+`sharedBgzfWorkerPool()` memoizes per JS context and adapters run one sticky RPC
+worker per track, so the pool multiplies by the RPC pool rather than being shared
+across it: `clamp(hardwareConcurrency - 1, 1, 5)` RPC workers x
+`min(hardwareConcurrency, 4)` inflate workers is **up to 20** on any machine with
+six or more cores. Each inflate worker holds its own copy of the inlined wasm
+bundle, so each carries an independent grow-only `WebAssembly.Memory` — the same
+grow-only memory REJECTED_IDEAS.md names behind the transient RPC-worker peaks —
+and nothing calls `destroySharedWorkerPool`, so they outlive the last bgzip track.
+
+`@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` for
+exactly this, naming JBrowse's data workers as the case. Neither symbol appears
+in this repo. It is not a free win — one shared pool of four is a loss when five
+tracks load at once, which is when it is noticed — so the sizing has to be
+settled with it. [BAM_STACK_INTEGRATION.md](BAM_STACK_INTEGRATION.md) seam 1 has
+the three things to settle and why node cannot measure any of them.
+
+**Retire when** one pool serves every RPC worker over a `MessagePort`, sized
+against a browser measurement of the several-tracks-at-once case rather than the
+library's per-context default.
+
 ### Worker payloads are collect-then-return
 
 **Status:** Accepted (deferred, RFC-001 §13b).
