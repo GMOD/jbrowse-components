@@ -68,6 +68,54 @@ test('a classic-stack session exports no assignments, and the reader makes its o
   expect(reopened.tabs.map(t => [...t.viewIds])).toEqual([ids])
 })
 
+test('a workspace arranged only by dragging still says it is a workspace', () => {
+  // The gap the test above cannot see, because `setUseWorkspacesPreference`
+  // writes the session property itself. Here the workspace is on because the
+  // ADMIN turned it on, and the arrangement is built entirely by the gestures
+  // the tab strip offers — none of which touch the preference, since
+  // WorkspaceLayoutMixin owns the tree and nothing else. So the raw property is
+  // undefined and the intent reaches the recipient only if the export resolves
+  // the cascade (`bakeWorkspacesIntent`).
+  const session = createTestSession({
+    jbrowseConfig: { configuration: { preferences: { useWorkspaces: true } } },
+  })
+  const [first, second] = addViews(session, 2)
+  mountWorkspace(session)
+  // the panel's own split button: a pure layout gesture, and one of the several
+  // that never go near the preference
+  session.splitPanel(session.panels[0]!.id, 'row')
+  expect(session.useWorkspaces).toBeUndefined()
+
+  // the recipient is on a deployment whose admin default is the shipped false,
+  // so their own cascade says classic stack
+  const reopened = reopen(session)
+
+  expect(reopened.effectiveUseWorkspaces).toBe(true)
+  expect(reopened.panels).toHaveLength(2)
+  expect(reopened.tabs.map(t => [...t.viewIds])).toEqual([[first, second], []])
+  // and the empty cell is a real one — a tab with no views is the view
+  // launcher, not something the recipient's homing pass should absorb
+  mountWorkspace(reopened)
+  expect(reopened.panels).toHaveLength(2)
+})
+
+test('an export with nothing arranged leaves the choice to the recipient', () => {
+  // The other half of the rule: only the on case is baked. A classic-stack
+  // sender has no arrangement to carry, so stamping `false` would be a sender
+  // with nothing to say overriding a recipient who prefers workspaces.
+  const session = createTestSession()
+  addViews(session, 2)
+
+  const snap = getShareableSessionSnapshot(session)
+  expect(snap.useWorkspaces).toBeUndefined()
+
+  const recipient = createTestSession({
+    jbrowseConfig: { configuration: { preferences: { useWorkspaces: true } } },
+    sessionSnapshot: snap,
+  })
+  expect(recipient.effectiveUseWorkspaces).toBe(true)
+})
+
 test('a view closed before export does not come back as a phantom tab entry', () => {
   const session = createTestSession()
   session.setUseWorkspacesPreference(true)

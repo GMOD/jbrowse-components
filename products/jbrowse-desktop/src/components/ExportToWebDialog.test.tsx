@@ -13,7 +13,7 @@ jest.mock('@jbrowse/product-core', () => {
   const actual = jest.requireActual<typeof ProductCore>('@jbrowse/product-core')
   return {
     ...actual,
-    bakePromotedDefaultsIntoSnapshot: (
+    bakeSessionCascades: (
       _session: unknown,
       snapshot: Record<string, unknown>,
     ) => snapshot,

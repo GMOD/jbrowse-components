@@ -3,7 +3,7 @@ import { encodeSessionParam, fetchJson } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import {
   DEFAULT_WEB_BASE_URL,
-  bakePromotedDefaultsIntoSnapshot,
+  bakeSessionCascades,
   buildWebExportUrl,
   planWebExport,
 } from '@jbrowse/product-core'
@@ -55,11 +55,14 @@ export async function prepareExport(
   const plan = planWebExport(snapshot, baseConfig)
   return {
     plan,
-    // Flatten the live promotable-default cascade into concrete track values, the
-    // same as jbrowse-web's ShareDialog — a self-contained track is baked into its
-    // sessionTracks config, a hosted-base track into a trackConfigDeltas entry the
-    // web recipient merges — so the exported session shows what the sender saw.
-    bakedSession: bakePromotedDefaultsIntoSnapshot(session, plan.session),
+    // Flatten the cascades this desktop instance resolves at read time, the same
+    // as jbrowse-web's ShareDialog — promoted display-type defaults into each
+    // track's config layer (self-contained track into its sessionTracks config,
+    // hosted-base track into a trackConfigDeltas entry the web recipient merges),
+    // and the workspaces intent — so the exported session shows what the sender
+    // saw. Not `getShareableSessionSnapshot`, because the snapshot being baked is
+    // planWebExport's transformed one rather than the live session's.
+    bakedSession: bakeSessionCascades(session, plan.session),
     // A short link uploads to the share server that the export TARGET reads back
     // from — never this desktop instance's own shareURL config, since Desktop never
     // reads share links at all. That target is DEFAULT_WEB_BASE_URL loading
