@@ -279,7 +279,7 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   of the ~18k lines of `dockview-core` would have to be rewritten to reach
   parity, and the biggest slice of it (drag-and-drop, ~3.3k) has never contained
   a single one of our bugs. dockview 8's `DockviewOrigin` retired the seam's
-  worst rule for free (`ef62502c0a`). Ask "which of our bugs does this fix?"
+  worst rule for free (`278f320601`). Ask "which of our bugs does this fix?"
   before reopening; the answer has been "none of them" four times.
 - **Read-time binning for synteny/PIF** —
   [ADR-039](../architecture-decision-records/adr-039-synteny-no-read-time-binning.md).

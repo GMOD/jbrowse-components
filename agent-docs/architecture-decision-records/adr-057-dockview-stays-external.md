@@ -147,7 +147,7 @@ arrives on `onDidActivePanelChange`, and `onWillMutateLayout` /
 `{kind, origin}`, joining nested calls into the outermost bracket.
 
 That is the seam's hardest question — *did the user do this, or did I?* — asked
-and answered by the library. `ef62502c0a` deleted
+and answered by the library. `278f320601` deleted
 `withSuppressedPanelRemoval` in favour of it and filtered the `activePanelId`
 write on `origin === 'user'`, which removes the re-entrancy class that caused
 the disposal crash rather than guarding its consequences.
