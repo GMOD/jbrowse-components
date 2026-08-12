@@ -1,4 +1,6 @@
-import { useImperativeHandle, useState } from 'react'
+import { useImperativeHandle } from 'react'
+
+import { useCreateOnce } from '@jbrowse/product-core'
 
 import JBrowseApp from '../JBrowseApp/index.ts'
 import { createViewStateFromProps } from '../createViewStateFromProps.ts'
@@ -76,12 +78,15 @@ export interface JBrowseProps {
  * the engine is not owned by React, so unmounting leaves its RPC worker threads
  * and autoruns running. That is fine for a page that mounts one and keeps it,
  * and a leak for a host that mounts and discards repeatedly — an SPA route, a
- * notebook cell re-run. Those should build the engine themselves
- * ({@link useCreateViewState} + `<JBrowseApp>`, or `createApp`) and hand it to
- * `destroyViewState` when they let go of it.
+ * notebook cell re-run. Those should use {@link useCreateViewState} +
+ * `<JBrowseApp>`, which destroys the engine on unmount, or `createApp`, which
+ * owns the whole lifecycle.
  */
 function JBrowse({ ref, headerButtons, ...opts }: JBrowseProps) {
-  const [state] = useState(() => createViewStateFromProps(opts))
+  // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state
+  // initializer and discards the second result, which for an engine is a whole
+  // orphaned worker pool per mount, and this component never destroys anything.
+  const state = useCreateOnce(() => createViewStateFromProps(opts))
 
   useImperativeHandle(ref, () => state, [state])
 

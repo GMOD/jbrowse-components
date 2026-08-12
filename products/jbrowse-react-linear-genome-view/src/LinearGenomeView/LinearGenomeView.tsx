@@ -1,5 +1,6 @@
-import { useImperativeHandle, useState } from 'react'
+import { useImperativeHandle } from 'react'
 
+import { useCreateOnce } from '@jbrowse/product-core'
 import { observer } from 'mobx-react'
 
 import JBrowseLinearGenomeView from '../JBrowseLinearGenomeView/index.ts'
@@ -34,10 +35,9 @@ export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
  * the engine is not owned by React, so unmounting leaves its RPC worker threads
  * and autoruns running. That is fine for a page that mounts one and keeps it,
  * and a leak for a host that mounts and discards repeatedly — an SPA route, a
- * notebook cell re-run. Those should build the engine themselves
- * ({@link useCreateViewState} + `<JBrowseLinearGenomeView>`, or
- * `createLinearGenomeView`, which owns the whole lifecycle) and hand it to
- * `destroyViewState` when they let go of it.
+ * notebook cell re-run. Those should use {@link useCreateViewState} +
+ * `<JBrowseLinearGenomeView>`, which destroys the engine on unmount, or
+ * `createLinearGenomeView`, which owns the whole lifecycle.
  */
 const LinearGenomeView = observer(function LinearGenomeView({
   ref,
@@ -47,7 +47,11 @@ const LinearGenomeView = observer(function LinearGenomeView({
   // fills in the assembly name, so this component is the prop-shaped face of
   // that call and nothing about launching a view lives only here. With no init
   // it shows the import form, same as a bare createViewState.
-  const [state] = useState(() => createViewState(rest))
+  //
+  // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state
+  // initializer and discards the second result, which for an engine is a whole
+  // orphaned worker pool per mount, and this component never destroys anything.
+  const state = useCreateOnce(() => createViewState(rest))
 
   useImperativeHandle(ref, () => state, [state])
 

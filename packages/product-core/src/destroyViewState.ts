@@ -6,7 +6,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // name one, and every embedded root has these two members. `IStateTreeNode`
 // (not `IAnyStateTreeNode`, which resolves to `any` and would switch off the
 // checking below) keeps it assignable to isAlive/destroy while staying checked.
-interface EmbeddedRoot extends IStateTreeNode {
+export interface EmbeddedRoot extends IStateTreeNode {
   session?: unknown
   rpcManager: { destroy: () => void }
 }

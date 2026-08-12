@@ -1,5 +1,6 @@
-import { useImperativeHandle, useState } from 'react'
+import { useImperativeHandle } from 'react'
 
+import { useCreateOnce } from '@jbrowse/product-core'
 import { observer } from 'mobx-react'
 
 import JBrowseCircularGenomeView from '../JBrowseCircularGenomeView/index.ts'
@@ -35,16 +36,18 @@ export interface CircularGenomeViewProps extends CreateViewStateBaseOptions {
  * the engine is not owned by React, so unmounting leaves its RPC worker threads
  * and autoruns running. That is fine for a page that mounts one and keeps it,
  * and a leak for a host that mounts and discards repeatedly — an SPA route, a
- * notebook cell re-run. Those should build the engine themselves
- * ({@link useCreateViewState} + `<JBrowseCircularGenomeView>`) and hand it to
- * `destroyViewState` when they let go of it.
+ * notebook cell re-run. Those should use {@link useCreateViewState} +
+ * `<JBrowseCircularGenomeView>`, which destroys the engine on unmount.
  */
 const CircularGenomeView = observer(function CircularGenomeView({
   init,
   ref,
   ...rest
 }: CircularGenomeViewProps) {
-  const [state] = useState(() =>
+  // `useCreateOnce`, not `useState(() => …)`: StrictMode double-invokes a state
+  // initializer and discards the second result, which for an engine is a whole
+  // orphaned worker pool per mount, and this component never destroys anything.
+  const state = useCreateOnce(() =>
     createViewState({
       ...rest,
       // wrap init in the session the view expects, filling in the configured

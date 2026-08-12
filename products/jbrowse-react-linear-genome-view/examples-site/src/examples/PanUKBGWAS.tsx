@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 
 import {
   JBrowseLinearGenomeView,
-  destroyViewState,
   useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
@@ -109,8 +108,9 @@ function makeTrack(p: Phenotype, scoreColumn: string, label: string) {
 // Rebuilt on every phenotype/population change via the `key` below, so this is
 // the case the managed <LinearGenomeView> is explicitly not for: that component
 // owns its engine for the lifetime of the page and never tears it down, which
-// is a whole orphaned RPC worker pool and autorun set per switch. Building the
-// engine here means we can hand it to destroyViewState on the way out.
+// is a whole orphaned RPC worker pool and autorun set per switch.
+// useCreateViewState destroys the engine when the component unmounts, so the
+// switch costs nothing.
 function GenomeView({
   phenotype,
   scoreColumn,
@@ -135,11 +135,6 @@ function GenomeView({
       },
     },
   })
-  useEffect(() => {
-    return () => {
-      destroyViewState(state)
-    }
-  }, [state])
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
