@@ -75,7 +75,24 @@ const restrictedSyntax = [
 
 export default defineConfig(
   {
-    ignores: oxlintConfig.ignorePatterns,
+    // Agent worktrees live at `.claude/worktrees/<branch>/` — whole extra
+    // checkouts inside the repo root. oxlint never sees them because it honors
+    // `.gitignore`, which has `.claude/*`; ESLint's flat config reads no
+    // ignore file, so it walked every worktree and linted the entire tree once
+    // per concurrent session. That is not just slow: another agent editing its
+    // own worktree mid-run deletes a file this run already enumerated, and the
+    // whole command dies `ENOENT` on a path that has nothing to do with the
+    // caller's change.
+    //
+    // Anchored, and that is the point — `.claude/**` contains a slash, so flat
+    // config resolves it against the config's own directory rather than at any
+    // depth. Running from INSIDE a worktree, that directory is the worktree, so
+    // this matches its (empty) `.claude/` and not the `.claude/` in the
+    // absolute path above it. The unanchored spelling would match every file in
+    // the worktree and silently lint nothing — the trap `jest.config.js`'s
+    // `modulePathIgnorePatterns` comment describes, which is the same rule for
+    // the same reason.
+    ignores: [...oxlintConfig.ignorePatterns, '.claude/**'],
   },
   {
     // The tree has ~84 inline `eslint-disable @typescript-eslint/*` comments
