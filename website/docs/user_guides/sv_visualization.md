@@ -271,6 +271,48 @@ against the reads rather than a call. [](/docs/tutorials/cancer_sv) works
 through both shapes it produces, a two-segment fold-back and a four-segment
 allele across three chromosomes.
 
+### Where the method comes from
+
+Reading a split alignment as an ordered list of reference intervals is the
+signature long-read SV callers extract before they cluster anything
+([Sedlazeck et al. 2018](https://doi.org/10.1038/s41592-018-0001-7)), and
+ordering and orienting those intervals into a derivative chromosome is what
+long-read rearrangement pipelines do with them
+([Cretu Stancu et al. 2017](https://doi.org/10.1038/s41467-017-01343-4),
+[Mitsuhashi et al. 2020](https://doi.org/10.1186/s13073-020-00762-1)). Callers
+that work from junctions instead reach the same object by chaining breakends
+under copy-number constraints, which is LINX
+([Shale et al. 2022](https://doi.org/10.1016/j.xgen.2022.100112)).
+
+The browser does the visualization half of that lineage. Ribbon
+([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa1080)) draws
+one read's split alignment against every locus it touches; this groups those
+chains and counts them. It does not genotype, filter or emit a call, and where
+two routes disagree it lists both with their counts rather than choosing.
+
+### What it has been checked against
+
+Each row below is a regression fixture holding every read in that window that
+takes part in a multi-segment chain, verbatim from the published file, so what
+the fixture asserts is what the picker shows.
+
+| Records                       | Chemistry       | What the fixture pins                                                                                                   |
+| ----------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| COLO829 tumor, chr3           | ONT             | The der(3) allele as one four-segment route at 28 reads, and beside it at 2 reads the route that skips its chr12 insert |
+| COLO829BL normal, same window | ONT             | No route, which is what makes the tumor's somatic                                                                       |
+| COLO829 tumor, chr9           | ONT             | A fold-back, kept apart from a second allele whose junction sits 28 bp away                                             |
+| COLO829 tumor, hg19           | Illumina 100 bp | The three published junctions ranked top, and no path: no read reaches from one junction to the next                    |
+| HG008-T                       | PacBio HiFi     | A chromoplexy breakend as the top route at 65 reads, its two ends on the breakends the benchmark publishes              |
+| HG008-N, same window          | PacBio HiFi     | No split reads at all                                                                                                   |
+| 1000 Genomes HG02030          | Illumina 150 bp | Confidently ranked routes at a germline locus with no event, separable from a real allele by segment span               |
+| K562                          | PacBio Iso-Seq  | One row per splice acceptor from a single DNA breakpoint, which is why this is documented for genomic reads             |
+
+The COLO829 junctions are those of the multi-platform truth set
+([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)); the
+HG008-T ones are the C-GIAB draft benchmark's, whose T2T tumor assembly puts
+both loci on one contig with the orientation flip the reads describe
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
+
 ## Breakpoint split view
 
 The breakpoint split view opens two synchronized panels side-by-side, each
@@ -416,3 +458,22 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 - [](/docs/user_guides/variant_track)
 - [Alignments track configuration](/docs/config_guides/alignments_track)
 - [Gallery: structural variant examples](/gallery/#sv)
+
+## References
+
+- Cretu Stancu et al. (2017).
+  [Mapping and phasing of structural variation in patient genomes using nanopore sequencing](https://doi.org/10.1038/s41467-017-01343-4)
+- Mitsuhashi et al. (2020).
+  [A pipeline for complete characterization of complex germline rearrangements from long DNA reads](https://doi.org/10.1186/s13073-020-00762-1)
+- Nattestad et al. (2018).
+  [Complex rearrangements and oncogene amplifications revealed by long-read DNA and RNA sequencing of a breast cancer cell line](https://doi.org/10.1101/gr.231100.117)
+- Nattestad et al. (2021).
+  [Ribbon: intuitive visualization for complex genomic variation](https://doi.org/10.1093/bioinformatics/btaa1080)
+- Sedlazeck et al. (2018).
+  [Accurate detection of complex structural variations using single-molecule sequencing](https://doi.org/10.1038/s41592-018-0001-7)
+- Shale et al. (2022).
+  [Unscrambling cancer genomes via integrated analysis of structural variation and copy number](https://doi.org/10.1016/j.xgen.2022.100112)
+- Valle-Inclán et al. (2022).
+  [A multi-platform reference for somatic structural variation detection](https://doi.org/10.1016/j.xgen.2022.100139)
+- Wagner et al. (2026).
+  [A complete human pancreatic cancer genome](https://doi.org/10.64898/2026.05.01.722316)
