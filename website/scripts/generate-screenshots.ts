@@ -5,7 +5,8 @@
 // This file is the pipeline itself: drive a spec to a finished frame, decide
 // whether that frame replaces the committed PNG, and run the pool that does it
 // for 328 of them. The parts that are about one concern each live beside it —
-// screenshot-options (the CLI and what it derives), -ready (getting a page to
+// screenshot-options (the CLI and what it derives), -select (which specs this
+// run will render, and the diff gate's precondition), -ready (getting a page to
 // the state a figure shows), -asserts (the gates a frame passes before it is
 // allowed to exist), -page (per-page setup and network diagnosis), -report
 // (what the run noticed and how it says so), -embedded (the component-only
@@ -31,8 +32,6 @@ import {
   drawAnnotations,
   hideLingeringTooltip,
 } from './annotations.ts'
-import { fileExists, readManifest } from './figure-paths.ts'
-import { matchesFilterTokens } from './filter-tokens.ts'
 import {
   IM,
   commitScreenshot,
@@ -50,21 +49,12 @@ import {
 } from './screenshot-asserts.ts'
 import { captureEmbeddedToTemp } from './screenshot-embedded.ts'
 import {
-  changedFilesFromGit,
-  selectAffected,
-  selectCover,
-} from './screenshot-impact.ts'
-import {
   CONCURRENCY,
   DEVICE_SCALE_FACTOR,
   SLACK_WARN_PX,
-  affected,
   buildPath,
-  changedFrom,
   check,
-  cover,
   diffThreshold,
-  exact,
   externalPort,
   filterTokens,
   firefox,
@@ -76,7 +66,6 @@ import {
   outDir,
   repoRoot,
   servePort,
-  since,
   tempPath,
   testDataRoot,
 } from './screenshot-options.ts'
@@ -95,8 +84,7 @@ import {
   recordTooltip,
   recordUnpainted,
 } from './screenshot-report.ts'
-import { validateSpecs } from './screenshot-spec-rules.ts'
-import { specs } from './screenshot-specs.ts'
+import { selectSpecsToRender } from './screenshot-select.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
 import type { RunTotals } from './screenshot-report.ts'
@@ -664,186 +652,14 @@ async function captureComposeSpec(spec: ComposeSpec) {
   }
 }
 
-// The repo-relative figure path(s) a spec writes, in the spelling figures.lock
-// uses. A cli spec writes two: jb2export's own output under
-// products/jbrowse-img/img and the website mirror captureCliSpec copies it to.
-function manifestPathsFor(spec: ScreenshotSpec): string[] {
-  const rel = (abs: string) =>
-    path.relative(repoRoot, abs).split(path.sep).join('/')
-  const website = rel(path.join(outDir, `${spec.name}.png`))
-  return spec.mode === 'cli'
-    ? [
-        website,
-        rel(
-          path.join(
-            jbrowseImgOutDir,
-            `${spec.name.replace(/^jbrowse-img\//, '')}.png`,
-          ),
-        ),
-      ]
-    : [website]
-}
-
 async function main() {
-  // The content-stable gate needs the figures it is comparing against.
-  //
-  // commitScreenshot treats a missing output as a brand-new figure and writes
-  // it unconditionally — correct for a new spec, catastrophic for all of them
-  // at once. Figure bytes are gitignored now, so a fresh clone has none, and a
-  // sweep there would rewrite all 452 as "new", never run pngDiffFraction once,
-  // and leave a push that reports every figure as changed. Nothing downstream
-  // could tell that from a run where the app really did move everything.
-  //
-  // `pnpm screenshots` pulls first, but website/CLAUDE.md tells people to run
-  // this file directly with node (npx tsx breaks page.evaluate), so the guard
-  // has to live here rather than only in the npm script. It refuses instead of
-  // pulling: a sweep is a long, expensive operation and silently going to the
-  // network at minute zero is not something to do on the user's behalf.
-  //
-  // It is checked against THIS RUN's own outputs, below, once the filters have
-  // been applied — not against the whole manifest. An absent figure only
-  // matters to a capture that is about to overwrite it, and scoping it that way
-  // is what lets a `--filter` run work in a worktree whose figure directory is
-  // shared with another one: a figure some other branch has deleted is not on
-  // disk, is not in that branch's lock, and has nothing to do with the two
-  // specs being re-rendered here. Unscoped, it stopped the run outright.
-  const manifest = readManifest()
-
-  // Before anything is rendered: a duplicate name or a compose part that names
-  // no spec is an hour of capture producing a wrong figure, and neither fails on
-  // its own (see validateSpecs). Same check CI runs via check-specs.ts.
-  const specProblems = validateSpecs(specs)
-  if (specProblems.length > 0) {
-    console.error(
-      `${specProblems.length} screenshot spec problem(s):\n${specProblems
-        .map(p => `  - ${p}`)
-        .join('\n')}`,
-    )
-    process.exit(1)
-  }
-
-  // `--filter a,b,c` matches a spec when any comma-separated token matches, so
-  // "re-render these few" is one invocation instead of a shell loop. The flag is
-  // repeatable and the tokens union. Parsed once at module scope, since it also
-  // decides forceCommit.
-  let selected = specs.filter(s =>
-    matchesFilterTokens(s.name, filterTokens, exact),
-  )
-
-  if (selected.length === 0) {
-    console.error(`No specs match filter: ${filterTokens.join(',')}`)
-    process.exit(1)
-  }
-
-  // `--cover` narrows to the smallest set that still puts every declared type on
-  // screen. It answers a different question from --affected: not "which figures
-  // could have moved" but "does every type still launch, paint and settle" — the
-  // half of the corpus's value that does not need 329 renders. Composes with the
-  // others by intersection, like --filter.
-  if (cover) {
-    const { names, uncovered } = selectCover()
-    const before = selected.length
-    selected = selected.filter(s => names.has(s.name))
-    const gap =
-      uncovered.length > 0
-        ? `\n  (${uncovered.length} type(s) only an unresolved spec declares, so no spec here reaches them: ${uncovered.join(', ')})`
-        : ''
-    console.log(
-      `--cover: ${before} -> ${selected.length} spec(s) covering every declared type${gap}`,
-    )
-  }
-
-  // `--affected` narrows the sweep to specs a change could plausibly have moved
-  // (see screenshot-impact.ts for how, and for what it deliberately can't
-  // prove). Deliberately does NOT imply --force the way --filter does: --filter
-  // is "re-render these, I mean them", while this is "skip the ones nothing
-  // could have touched", so the content-stable diff gate still decides what gets
-  // rewritten. It also composes with --filter rather than replacing it — both
-  // narrow, so the run is the intersection.
-  if (affected) {
-    const ref = since ?? 'HEAD'
-
-    const changed = changedFrom
-      ? fs
-          .readFileSync(changedFrom, 'utf8')
-          .split('\n')
-          .map(s => s.trim())
-          .filter(Boolean)
-      : changedFilesFromGit(ref)
-    const selection = await selectAffected(changed)
-    console.log(
-      `--affected: ${changed.length} file(s) ${changedFrom ? `from ${changedFrom}` : `changed since ${ref}`}${
-        selection.reasons.length
-          ? `\n${selection.reasons
-              .slice(0, 8)
-              .map(r => `  · ${r}`)
-              .join('\n')}`
-          : ''
-      }`,
-    )
-    if (selection.kind === 'none') {
-      // Exit 0: "nothing to re-render" is the answer, not a failure. A CI job
-      // that runs this on every PR has to be able to pass on a docs-only change.
-      console.log('  nothing changed that renders a figure — nothing to do')
-      return
-    }
-    if (selection.kind === 'some') {
-      const before = selected.length
-      selected = selected.filter(s => selection.names.has(s.name))
-      console.log(
-        `  narrowed ${before} -> ${selected.length} spec(s) of ${specs.length}`,
-      )
-      if (selected.length === 0) {
-        console.log('  (nothing left after --filter) — nothing to do')
-        return
-      }
-    } else {
-      console.log(`  no narrowing possible — running all ${selected.length}`)
-    }
-  }
-
-  // The figure a doc publishes for a compose spec is the STACK, not the parts.
-  // Re-rendering a part on its own (`--filter pangenome/graph_resolution_pggb`)
-  // would leave that stack showing the old part, with nothing to say so — so pull
-  // in every compose spec whose parts this run touches.
-  const selectedNames = new Set(selected.map(s => s.name))
-  const impliedCompose = specs.filter(
-    s =>
-      s.mode === 'compose' &&
-      !selectedNames.has(s.name) &&
-      s.parts.some(p => selectedNames.has(p)),
-  )
-  const filteredSpecs = [...selected, ...impliedCompose]
-
-  // The guard described at the top of main(), now that the run knows what it
-  // will write. commitScreenshot treats a missing output as a brand-new figure
-  // and writes it unconditionally — correct for a new spec, catastrophic for
-  // all of them at once (a fresh clone has no figure bytes at all, so a sweep
-  // there would rewrite every figure as "new", never run pngDiffFraction once,
-  // and leave a push reporting the whole corpus as changed). A figure absent
-  // from the manifest is a genuinely new spec and is not counted.
-  const willWrite = new Set(filteredSpecs.flatMap(manifestPathsFor))
-  const absent = [...manifest.keys()].filter(
-    p => willWrite.has(p) && !fileExists(p),
-  )
-  if (absent.length > 0) {
-    console.error(
-      `${absent.length} of this run's ${willWrite.size} output(s) are not on ` +
-        'disk, so the diff gate cannot compare against them and every capture ' +
-        `would be written as new:\n${absent
-          .map(p => `  - ${p}`)
-          .join('\n')}\n  Run \`pnpm figures:pull\` first.`,
-    )
-    process.exit(1)
-  }
-
-  console.log(
-    `Generating ${filteredSpecs.length} screenshot(s)${filterTokens.length ? ` (filter: ${filterTokens.join(',')})` : ''}`,
-  )
-  if (impliedCompose.length > 0) {
-    console.log(
-      `  + recomposing ${impliedCompose.map(s => s.name).join(', ')} (their parts are in this run)`,
-    )
+  // What this run will render, and why — every flag composes by intersection,
+  // and the diff gate's own precondition is checked there too. `undefined` is
+  // "nothing to do", which a --affected run on a docs-only change has to be able
+  // to answer with exit 0.
+  const filteredSpecs = await selectSpecsToRender()
+  if (!filteredSpecs) {
+    return
   }
 
   // Only url-mode specs pointing at a relative path need the jbrowse-web server.
@@ -883,12 +699,6 @@ async function main() {
     height: 800,
     deviceScaleFactor: DEVICE_SCALE_FACTOR,
   }
-  const {
-    width: vpWidth,
-    height: vpHeight,
-    deviceScaleFactor,
-  } = defaultViewport
-
   // Chrome leans on swiftshader for headless WebGL; Firefox needs WebGL forced
   // on past the headless GL caveat so molstar's canvas renders at all.
   const buildLaunchOptions = (useFirefox: boolean) => ({
@@ -927,22 +737,29 @@ async function main() {
     ? []
     : filteredSpecs.filter(s => s.mode === 'compose')
 
-  let passed = 0
-  let failed = 0
-  let kept = 0
   let started = 0
   const total = renderSpecs.length + composeSpecs.length
-  // What this run set out to render, recorded rather than inferred. Every other
-  // list below is an exception, so a spec that renders fine and unchanged leaves
-  // no trace — and the review UI cannot tell that from a spec the run never
-  // reached unless the selection itself is written down. See RunReport.selected.
-  const runSelection = [...renderSpecs, ...composeSpecs].map(s => s.name)
-  const skipped: RunTotals['skipped'] = []
-  const failures: RunTotals['failures'] = []
-  const flaky: RunTotals['flaky'] = []
-  const changed: RunTotals['changed'] = []
-  const suppressed: RunTotals['suppressed'] = []
-  const slacked: RunTotals['slacked'] = []
+  // One object rather than ten bindings, because printSummary takes exactly
+  // this and the ten used to be re-assembled into it by hand at the bottom of
+  // the function — a literal that could drift from the declarations without
+  // anything noticing.
+  //
+  // `selected` is what this run set out to render, recorded rather than
+  // inferred. Every other list here is an exception, so a spec that renders fine
+  // and unchanged leaves no trace — and the review UI cannot tell that from a
+  // spec the run never reached unless the selection itself is written down.
+  const totals: RunTotals = {
+    passed: 0,
+    failed: 0,
+    kept: 0,
+    selected: [...renderSpecs, ...composeSpecs].map(s => s.name),
+    skipped: [],
+    failures: [],
+    flaky: [],
+    changed: [],
+    suppressed: [],
+    slacked: [],
+  }
 
   // Zero-padded `[ 7/40]` so the counter column stays aligned as it grows,
   // keeping the interleaved per-worker lines readable.
@@ -964,9 +781,9 @@ async function main() {
       await trustCapturePlugins(page)
       if (spec.viewportHeight || spec.viewportWidth) {
         await page.setViewport({
-          width: spec.viewportWidth ?? vpWidth,
-          height: spec.viewportHeight ?? vpHeight,
-          deviceScaleFactor,
+          ...defaultViewport,
+          ...(spec.viewportWidth ? { width: spec.viewportWidth } : {}),
+          ...(spec.viewportHeight ? { height: spec.viewportHeight } : {}),
         })
       }
       const report = (kind: string, text: string) => {
@@ -1029,7 +846,7 @@ async function main() {
     if (frac === null || frac >= specThreshold(spec)) {
       const drift = frac === null ? 'size-mismatch' : pct(frac)
       console.log(`  ✗ ${spec.name} FLAKY (${drift} between two renders)`)
-      flaky.push({ name: spec.name, frac: frac ?? 1 })
+      totals.flaky.push({ name: spec.name, frac: frac ?? 1 })
     } else {
       console.log(`  ✓ ${spec.name} stable (${pct(frac)})`)
     }
@@ -1040,7 +857,7 @@ async function main() {
   // says the run declined to check it.
   function skip(spec: ScreenshotSpec, reason: string) {
     console.log(`${progress()} ⊘ ${spec.name} (${reason})`)
-    skipped.push({ name: spec.name, reason })
+    totals.skipped.push({ name: spec.name, reason })
   }
 
   async function runSpec(spec: ScreenshotSpec) {
@@ -1062,13 +879,13 @@ async function main() {
     // made of a stale image, and the run would still report success.
     const brokenParts =
       spec.mode === 'compose'
-        ? spec.parts.filter(p => failures.some(f => f.name === p))
+        ? spec.parts.filter(p => totals.failures.some(f => f.name === p))
         : []
     if (brokenParts.length > 0) {
       const error = `part(s) failed to render this run: ${brokenParts.join(', ')} — not restacking a figure from stale parts`
       console.error(`${progress()} ✗ ${spec.name}: ${error}`)
-      failed++
-      failures.push({ name: spec.name, error })
+      totals.failed++
+      totals.failures.push({ name: spec.name, error })
       return
     }
     console.log(`${progress()} → ${spec.name}`)
@@ -1095,12 +912,12 @@ async function main() {
       }
       if (result) {
         if (result.status === 'kept') {
-          kept++
+          totals.kept++
           if (result.raisedGate) {
-            suppressed.push({ name: spec.name, frac: result.frac })
+            totals.suppressed.push({ name: spec.name, frac: result.frac })
           }
         } else {
-          changed.push({ name: spec.name, result })
+          totals.changed.push({ name: spec.name, result })
           // Only for an image this run actually wrote. Slack is news when it
           // appears — the app or a plugin started laying something out shorter
           // — and 28% of the committed corpus has some, most of it a deliberate
@@ -1111,16 +928,16 @@ async function main() {
             path.join(outDir, `${spec.name}.png`),
           )
           if (slack !== null && slack > SLACK_WARN_PX) {
-            slacked.push({ name: spec.name, px: slack })
+            totals.slacked.push({ name: spec.name, px: slack })
           }
         }
       }
-      passed++
+      totals.passed++
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)
       console.error(`  ✗ ${spec.name}: ${error}`)
-      failed++
-      failures.push({ name: spec.name, error })
+      totals.failed++
+      totals.failures.push({ name: spec.name, error })
     }
   }
 
@@ -1144,21 +961,10 @@ async function main() {
     server?.close()
   }
 
-  printSummary({
-    passed,
-    failed,
-    kept,
-    selected: runSelection,
-    skipped,
-    failures,
-    flaky,
-    changed,
-    suppressed,
-    slacked,
-  })
+  printSummary(totals)
   // exit non-zero once, after every report prints — a --check run can be both
   // flaky and have hard failures, and swallowing either report hides real work
-  if (flaky.length > 0 || failures.length > 0) {
+  if (totals.flaky.length > 0 || totals.failures.length > 0) {
     process.exit(1)
   }
 }
