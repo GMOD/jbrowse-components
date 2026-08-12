@@ -932,13 +932,31 @@ function svgChromeOf(module: string, seen = new Set<string>()): boolean {
   return false
 }
 
-/** Whether a module declares `name` itself, rather than re-exporting it. */
+/**
+ * Whether a module declares `name` itself, rather than re-exporting it.
+ *
+ * `default` counts, and has to: the models are re-exported as
+ * `export { default as modelFactory } from './model.ts'`, so `declaringModule`
+ * recurses looking for the name `default`. Without this arm nothing ever
+ * matched it, the chain "ran out", and the answer came from the fallback below
+ * — which happened to be the same file, so the bug was invisible. It fired for
+ * the alignments, wiggle and canvas base models, i.e. the three most-composed
+ * models in the tree, which is a lot of weight on a documented last resort. The
+ * risk was never the answer, it was the next person tightening that fallback
+ * into a throw on the reasonable belief that it was exceptional.
+ */
 function declaresName(src: ts.SourceFile, name: string) {
   for (const s of src.statements) {
-    if (
-      (ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s)) &&
-      s.name?.text === name
-    ) {
+    const isDefaultExport = !!s.modifiers?.some(
+      m => m.kind === ts.SyntaxKind.DefaultKeyword,
+    )
+    if (ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s)) {
+      if (s.name?.text === name || (name === 'default' && isDefaultExport)) {
+        return true
+      }
+    }
+    // `export default <expr>`, the other way to spell it
+    if (ts.isExportAssignment(s) && !s.isExportEquals && name === 'default') {
       return true
     }
     if (ts.isVariableStatement(s)) {
