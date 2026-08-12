@@ -13,8 +13,19 @@ export function snapCellEdgePx(xPx: number, canvasWidth: number): number {
   return (Math.floor(((xPx - half) + 0.5)) + half)
 }
 
-export function snappedCellWidthPx(x1Px: number, x2Px: number): number {
-  return _max(2.0, (x2Px - x1Px))
+export function snappedCellWidthPx(x1Px: number, x2Px: number, canvasWidth: number): number {
+  return _max(2.0, Math.abs((snapCellEdgePx(x2Px, canvasWidth) - snapCellEdgePx(x1Px, canvasWidth))))
+}
+
+export function snappedCellLeftPx(x1Px: number, x2Px: number, canvasWidth: number, widthPx: number): number {
+  let startPx = snapCellEdgePx(x1Px, canvasWidth)
+  let _t0: number
+  if ((x2Px < x1Px)) {
+    _t0 = (startPx - widthPx)
+  } else {
+    _t0 = startPx
+  }
+  return _t0
 }
 
 export function drawnCellHeightPx(rowHeight: number): number {

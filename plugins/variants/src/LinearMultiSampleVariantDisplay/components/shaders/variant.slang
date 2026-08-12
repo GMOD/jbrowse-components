@@ -2,7 +2,7 @@
 // bounding-box quad; the fragment shader uses an SDF to carve the inversion
 // triangle glyph out of the quad when shapeType != RECT.
 //! targets: wgsl, glsl
-//! js-export: drawnCellHeightPx, snapCellEdgePx, snappedCellWidthPx
+//! js-export: drawnCellHeightPx, snapCellEdgePx, snappedCellWidthPx, snappedCellLeftPx
 
 import hpmath;
 import colorPack;
@@ -38,8 +38,36 @@ float snapCellEdgePx(float xPx, float canvasWidth) {
 
 // A snapped cell paints at least 2px wide, so a lone variant in a sparse matrix
 // stays visible rather than collapsing to a sliver.
-float snappedCellWidthPx(float x1Px, float x2Px) {
-  return max(2.0, x2Px - x1Px);
+//
+// Both this and its pivot twin below take the cell's RAW px edges in RECORD
+// order — `toX(start)`, `toX(end)` — and snap inside. That is deliberate: on a
+// reversed block the record's start is its *right* edge, and once both edges are
+// snapped a sub-pixel record has both of them on the same pixel, so the pivot
+// can no longer tell which way the block ran. Since that is every record at
+// genome-wide zoom, a pivot reading snapped edges would be a no-op exactly where
+// it is needed. Raw in, decision inside, so the orientation survives the snap.
+float snappedCellWidthPx(float x1Px, float x2Px, float canvasWidth) {
+  return max(2.0, abs(
+    snapCellEdgePx(x2Px, canvasWidth) - snapCellEdgePx(x1Px, canvasWidth)));
+}
+
+// Which edge the widened cell hangs off: the record's START, always.
+//
+// This is `spanLeft`/`extendToMinWidthPx`'s pivot, the one every painter with a
+// min-width floor needs and the one that keeps being got wrong — the canvas rect
+// painter (2px), the multi-row painter (1px) and wiggle (1.5px) each had it
+// independently, and the cells here were the fourth. Anchoring the leftmost edge
+// and growing right is identical on a forward block and anchors the record's
+// *end* on a reversed one, sliding every sub-pixel cell a full floor-width
+// toward the block's end — off the ruler, and off the same VCF drawn in a
+// LinearVariantDisplay beside it, which pivots correctly.
+//
+// `widthPx` is passed rather than recomputed so the floor stays one expression.
+float snappedCellLeftPx(
+  float x1Px, float x2Px, float canvasWidth, float widthPx
+) {
+  float startPx = snapCellEdgePx(x1Px, canvasWidth);
+  return x2Px < x1Px ? startPx - widthPx : startPx;
 }
 
 struct CellInstance {
@@ -78,22 +106,20 @@ struct VsOut {
 VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float clipX1 = bpToClipX(inst.startEnd.x, u);
   float clipX2 = bpToClipX(inst.startEnd.y, u);
-  // Reversal is baked into bpRangeX (negated length), so clipX2 < clipX1 on
-  // reversed regions. Order the edges to screen-space left/right before snapping
-  // so a wide variant spans its full extent instead of collapsing to the
-  // min-width sliver on the wrong side — mirrors the Math.min/Math.abs in
-  // Canvas2DVariantRenderer.ts.
-  float loClip = min(clipX1, clipX2);
-  float hiClip = max(clipX1, clipX2);
-
   // Pixel-snap + 2px floor, in px space (see snapCellEdgePx) so the CPU runs the
   // identical rounding. clipX/pxSize is already `px - canvasWidth/2`, so adding
   // the half-width back is all the conversion this needs.
+  //
+  // The edges stay in RECORD order: reversal is baked into bpRangeX (negated
+  // length), so clipX2 < clipX1 on a reversed region, and that is exactly what
+  // snappedCellLeftPx needs to know. Ordering them left/right first would throw
+  // the orientation away before the pivot could read it.
   float pxSize = 2.0 / u.canvasWidth;
   float halfW = u.canvasWidth * 0.5;
-  float x1Px = snapCellEdgePx(loClip / pxSize + halfW, u.canvasWidth);
-  float wPx = snappedCellWidthPx(
-    x1Px, snapCellEdgePx(hiClip / pxSize + halfW, u.canvasWidth));
+  float rx1 = clipX1 / pxSize + halfW;
+  float rx2 = clipX2 / pxSize + halfW;
+  float wPx = snappedCellWidthPx(rx1, rx2, u.canvasWidth);
+  float x1Px = snappedCellLeftPx(rx1, rx2, u.canvasWidth, wPx);
   float cx1 = (x1Px - halfW) * pxSize;
   float cx2 = (x1Px + wPx - halfW) * pxSize;
 

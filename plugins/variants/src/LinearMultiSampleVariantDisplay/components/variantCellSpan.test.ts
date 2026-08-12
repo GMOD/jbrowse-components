@@ -12,7 +12,8 @@ const TALL_ROW = 10
 
 // The snap grid is centred on the canvas, so an EVEN width snaps whole pixels to
 // themselves — which keeps every expectation below about the span rather than
-// about the grid. `snapAgreesWithTheCellPainter` covers the grid itself.
+// about the grid. The grid itself is `snapVariantCellX.test.ts`'s subject; what
+// the block at the bottom of this file pins is that this function is reading it.
 const CANVAS = 800
 
 describe('variantCellSpanPx without an insertion', () => {
@@ -42,6 +43,29 @@ describe('variantCellSpanPx without an insertion', () => {
         drawnRowHeight: TALL_ROW,
       }),
     ).toEqual({ left: 100, width: 2, drawsMarker: false })
+  })
+
+  // The 2px floor grows away from the record's START, which on a reversed block
+  // is its right edge — `spanLeft`'s pivot, carried here from the cell painter.
+  // Every record is sub-pixel at genome-wide zoom, so on a flipped region this
+  // is the difference between the lane mark, the hover box and the click target
+  // sitting on the record and sitting a full mark-width past it.
+  test('a sub-pixel span on a reversed block hangs off its start edge', () => {
+    const args = {
+      canvasWidth: CANVAS,
+      insertedBp: 0,
+      insertionsWiden: false,
+      pxPerBp: 1,
+      drawnRowHeight: TALL_ROW,
+    }
+    expect(variantCellSpanPx({ ...args, x1: 100.2, x2: 100.3 })).toMatchObject({
+      left: 100,
+      width: 2,
+    })
+    expect(variantCellSpanPx({ ...args, x1: 100.3, x2: 100.2 })).toMatchObject({
+      left: 98,
+      width: 2,
+    })
   })
 
   test('a reversed block hands x1/x2 back swapped', () => {
