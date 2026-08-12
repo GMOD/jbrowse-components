@@ -41,8 +41,8 @@ export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
 
 ### Required items
 
-`ConnectionType` requires five, two of which a user reads while choosing a
-connection from the "Add connection" list:
+`ConnectionType` requires five, two of which describe the type to a user in the
+"Add connection" dialog:
 
 - `name`: the name JBrowse uses internally and in configuration files to refer
   to this type of connection
@@ -52,13 +52,14 @@ connection from the "Add connection" list:
   connection, and must at least have a `name` slot.
 - `stateModel`: the `@jbrowse/mobx-state-tree` model that does the queries and
   creates tracks (see below).
-- `description`: a sentence about what the connection connects to, shown beside
-  the name.
-- `url`: a link to more information about the resource or its format.
+- `description`: a sentence about what the connection connects to, shown as
+  helper text under the connection-type dropdown once the type is selected.
+- `url`: a link to more information about the resource or its format, rendered
+  as an external link after the description.
 
 ### Optional items
 
-- `displayName`: what that list shows, falling back to `name` as it does on
+- `displayName`: what that dropdown lists, falling back to `name` as it does on
   every pluggable element. Worth setting to something readable, since `name` is
   an identifier.
 - `configEditorComponent`: by default the user configures the connection with
