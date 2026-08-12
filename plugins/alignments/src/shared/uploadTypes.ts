@@ -20,7 +20,6 @@ export interface ReadUploadData {
   readStrands: Int8Array
   readTagColors: Uint32Array
   readColorCategories: Uint8Array
-  readChainHasSupp?: Uint8Array
   readInterchrom: Uint8Array // 1 = mate on a different chromosome
   readIds: string[]
   maxY: number

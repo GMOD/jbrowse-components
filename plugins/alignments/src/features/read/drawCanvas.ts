@@ -32,7 +32,6 @@ interface DrawReadsRegion {
   readColorCategories: Uint8Array
   readMapqs: Uint8Array
   readInsertSizes: Float32Array
-  readChainHasSupp: Uint8Array | undefined
   readInterchrom: Uint8Array
   insertSizeStats?: InsertSizeBand
   // Per-exon segments: reads split at CIGAR N/skip. Each segment carries its

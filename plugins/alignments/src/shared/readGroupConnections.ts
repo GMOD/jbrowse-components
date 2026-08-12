@@ -9,11 +9,21 @@ import { connectionEndpointBps } from '@jbrowse/cigar-utils'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 
 // Minimal entry shape both the arc and bezier paths satisfy: a per-read array
-// bundle plus the read's index into it.
+// bundle plus the read's index into it. Structural, and deliberately not
+// exported — each consumer's own entry type satisfies it by having those two
+// fields, so nothing has to import a shape to be accepted here.
 interface MinEntry {
   data: PileupDataResult
   readIdx: number
 }
+
+// The QNAME grouping that produces the lists every rule below consumes lives in
+// the two CONSUMERS, not here, and that is measured rather than accidental — see
+// REJECTED_IDEAS, "One shared groupReadsByName". Both loops are eight lines
+// keying on `readNames[i]`; what differs is the entry each builds, and every
+// mechanism for varying that (a spread, a factory callback) costs 1.4-1.9x on a
+// 200k-read path this sits on. The accessors below ARE shared, which is where
+// the duplication that actually mattered was.
 
 export interface ReadConnection<E> {
   e1: E
@@ -31,32 +41,45 @@ export interface ConnectionEndpoints {
   s2: number
 }
 
-function clipAt(e: MinEntry) {
+// Per-entry field accessors. Every read field lives in a parallel TypedArray
+// indexed by `readIdx` — and `readPositions` is the one with a stride of 2 — so
+// naming the reads once keeps that arithmetic in a single place.
+//
+// EXPORTED, and that is the point: both consumers of `resolveReadGroup` used to
+// carry a private second set over the identical arrays (`entryFlags`,
+// `entryStrand`, `entrySpan` in features/arcs), each with its own spelling of
+// the `* 2` / `* 2 + 1` stride — the arcs copy carrying a comment about keeping
+// that arithmetic in one place while being the second place it was written.
+export function clipAt(e: MinEntry) {
   return e.data.readClipAtStart?.[e.readIdx] ?? 0
 }
 
+// Not exported: only `dedupeByReadId` below wants it.
 function readIdOf(e: MinEntry) {
   return e.data.readIds[e.readIdx]!
 }
 
-function flagsOf(e: MinEntry) {
+export function flagsOf(e: MinEntry) {
   return e.data.readFlags[e.readIdx]!
 }
 
-function strandOf(e: MinEntry) {
+export function strandOf(e: MinEntry) {
   return e.data.readStrands[e.readIdx]!
 }
 
-function startEndOf(e: MinEntry) {
-  return [
-    e.data.readPositions[e.readIdx * 2]!,
-    e.data.readPositions[e.readIdx * 2 + 1]!,
-  ] as const
+// `{start, end}` rather than a tuple: it is destructured by name at every call
+// site but one, and a positional pair of same-typed genomic coordinates is the
+// shape that silently survives being swapped.
+export function spanOf(e: MinEntry) {
+  return {
+    start: e.data.readPositions[e.readIdx * 2]!,
+    end: e.data.readPositions[e.readIdx * 2 + 1]!,
+  }
 }
 
 // Named flag predicates, so the partition below reads as the rule it implements
 // rather than as bitmask arithmetic. Each returns a boolean, not the masked bit.
-function isSupplementary(e: MinEntry) {
+export function isSupplementary(e: MinEntry) {
   return (flagsOf(e) & SAM_FLAG_SUPPLEMENTARY) !== 0
 }
 
@@ -82,8 +105,8 @@ export function connectionEndpoints<E extends MinEntry>({
 }: ReadConnection<E>): ConnectionEndpoints {
   const s1 = strandOf(e1)
   const s2 = strandOf(e2)
-  const [start1, end1] = startEndOf(e1)
-  const [start2, end2] = startEndOf(e2)
+  const { start: start1, end: end1 } = spanOf(e1)
+  const { start: start2, end: end2 } = spanOf(e2)
   const { bp1, bp2 } = connectionEndpointBps({
     s1,
     start1,

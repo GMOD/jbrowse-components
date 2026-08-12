@@ -332,6 +332,35 @@ describe('readColorCategory', () => {
     ).toBe('fwdStrand')
   })
 
+  // The unpaired framing decodes `chainHasSupp` by NAMING the reverse code
+  // rather than testing `> FWD`. Under the magnitude form a split marker (3/4)
+  // reaching this branch claimed a reverse primary and inverted the framing —
+  // and it can reach it, because `summarizeChain` writes the markers when ANY
+  // read of the chain is paired while this branch asks whether THIS read is not,
+  // which two records sharing a QNAME across a paired and an unpaired run
+  // disagree about. Falling to the unframed +1 is what "no primary direction
+  // known" should look like.
+  test('an unexpected split marker leaves the framing unflipped', () => {
+    for (const chainHasSupp of [3, 4]) {
+      expect(
+        readColorCategory(
+          0,
+          makeData({ chainHasSupp, flags: 0, strand: 1 }),
+          ColorScheme.strand,
+          chainOpts,
+        ),
+      ).toBe('fwdStrand')
+      expect(
+        readColorCategory(
+          0,
+          makeData({ chainHasSupp, flags: 0, strand: -1 }),
+          ColorScheme.strand,
+          chainOpts,
+        ),
+      ).toBe('revStrand')
+    }
+  })
+
   // The framing repaints the whole read, so it may only refine a fill that is
   // already about the alignment's geometry. Over a scheme carrying a per-read
   // datum it would answer a different question than the one the user asked.

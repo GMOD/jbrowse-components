@@ -2,7 +2,6 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
-  SAM_FLAG_SUPPLEMENTARY,
   splitJunctionKind,
 } from '@jbrowse/alignments-core'
 import {
@@ -16,7 +15,14 @@ import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 // hop through palettes.ts (SHADER_JS_CODEGEN.md).
 import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
-import { resolveReadGroup } from '../../shared/readGroupConnections.ts'
+import {
+  clipAt,
+  flagsOf,
+  isSupplementary,
+  resolveReadGroup,
+  spanOf,
+  strandOf,
+} from '../../shared/readGroupConnections.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -403,6 +409,12 @@ function computeArcShape({
   return { shapeType: ARC_SHAPE_ARC, yBp: absrad, spanBp: absrad }
 }
 
+// Carries `refName` — unlike the bezier overlay's entry — because this path
+// compares a fetched segment against one named only by an SA tag or RNEXT, and
+// same-chromosome-ness is the whole difference between an arc and a connector
+// tick. That extra field is why the two paths build their own entries; the field
+// ACCESSORS are shared (readGroupConnections), which is where the duplication
+// that mattered was.
 interface ReadEntry {
   displayedRegionIndex: number
   refName: string
@@ -410,27 +422,15 @@ interface ReadEntry {
   data: PileupDataResult
 }
 
-// Per-entry field accessors. Every read field lives in a parallel TypedArray
-// indexed by `readIdx` — and `readPositions` is the one with a stride of 2 — so
-// naming the reads once keeps the `* 2` / `* 2 + 1` arithmetic in a single place
-// instead of re-spelled at each of the five sites that need a span.
-function entryFlags(e: ReadEntry) {
-  return e.data.readFlags[e.readIdx]!
-}
-
-function entryStrand(e: ReadEntry) {
-  return e.data.readStrands[e.readIdx]!
-}
-
-function entrySpan(e: ReadEntry) {
-  return {
-    start: e.data.readPositions[e.readIdx * 2]!,
-    end: e.data.readPositions[e.readIdx * 2 + 1]!,
-  }
-}
-
 // Bucket every fetched read by its QNAME so mates / split segments that share a
-// name (possibly across displayed regions) land in the same list.
+// name (possibly across displayed regions) land in the same list. Walks the
+// regions rather than the data map, so a region whose fetch has not landed drops
+// out and every entry gets its region's refName.
+//
+// The bezier overlay has the twin of this loop over its own entry type. Sharing
+// them was tried and measured back out — see REJECTED_IDEAS, "One shared
+// groupReadsByName"; the object build is the hot part and every way of varying
+// it generically costs more than the eight lines are worth.
 function groupReadsByName(
   rpcDataMap: ReadonlyMap<number, PileupDataResult>,
   regions: RegionInfo[],
@@ -485,9 +485,9 @@ interface ArcChainContext {
 function entrySeg(entry: ReadEntry): SegAln {
   return {
     refName: entry.refName,
-    ...entrySpan(entry),
-    strand: entryStrand(entry),
-    clipAtStart: entry.data.readClipAtStart?.[entry.readIdx] ?? 0,
+    ...spanOf(entry),
+    strand: strandOf(entry),
+    clipAtStart: clipAt(entry),
     onScreen: true,
   }
 }
@@ -653,8 +653,8 @@ function unpairedChainArcs(
 // TLEN driving its color (a pair could look unremarkably small yet be painted
 // long-insert, or vice versa).
 function pairOuterBp(entry: ReadEntry) {
-  const { start, end } = entrySpan(entry)
-  return readLeadingBp(entryStrand(entry), start, end)
+  const { start, end } = spanOf(entry)
+  return readLeadingBp(strandOf(entry), start, end)
 }
 
 // Which endpoint of a mate link the PAIR-LEVEL fields (orientation, template
@@ -679,11 +679,7 @@ function pairOuterBp(entry: ReadEntry) {
 // getting the corrected value and in pileup mode they were not: the same reads,
 // the same locus, a different arc colour depending on a layout setting.
 function pairFieldSource(e1: ReadEntry, e2: ReadEntry) {
-  return isSupplementaryEntry(e1) && !isSupplementaryEntry(e2) ? e2 : e1
-}
-
-function isSupplementaryEntry(e: ReadEntry) {
-  return (entryFlags(e) & SAM_FLAG_SUPPLEMENTARY) !== 0
+  return isSupplementary(e1) && !isSupplementary(e2) ? e2 : e1
 }
 
 // The mate link between the two reads of one pair, sourcing orientation and
@@ -708,10 +704,10 @@ function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
   return {
     p1Ref: e1.refName,
     p1Bp: pairOuterBp(e1),
-    p1Strand: entryStrand(e1),
+    p1Strand: strandOf(e1),
     p2Ref: e2.refName,
     p2Bp: pairOuterBp(e2),
-    p2Strand: entryStrand(e2),
+    p2Strand: strandOf(e2),
     isSplit: false,
     pairOrientationNum: src.data.readPairOrientations[src.readIdx]!,
     tlen: src.data.readInsertSizes[src.readIdx]!,
@@ -739,12 +735,12 @@ function offScreenMateArcs(
   const { data, readIdx, refName } = entry
   const mateRef = data.readNextRefs?.[readIdx]
   const mateBp = data.readNextPositions?.[readIdx]
-  const mateUnmapped = (entryFlags(entry) & SAM_FLAG_MATE_UNMAPPED) !== 0
+  const mateUnmapped = (flagsOf(entry) & SAM_FLAG_MATE_UNMAPPED) !== 0
   if (!ctx.drawLongRange || mateUnmapped || !mateRef || !mateBp) {
     return []
   }
-  const strand = entryStrand(entry)
-  const { start, end } = entrySpan(entry)
+  const strand = strandOf(entry)
+  const { start, end } = spanOf(entry)
   return [
     {
       p1Ref: refName,
@@ -752,7 +748,7 @@ function offScreenMateArcs(
       p1Strand: strand,
       p2Ref: ctx.canonicalRefName(mateRef),
       p2Bp: mateBp,
-      p2Strand: entryFlags(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1,
+      p2Strand: flagsOf(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1,
       pairOrientationNum: data.readPairOrientations[readIdx]!,
       tlen: data.readInsertSizes[readIdx]!,
       isSplit: false,

@@ -246,10 +246,15 @@ export interface SortedBy {
 
 // Numeric codes stored in the Uint8Array `readChainHasSupp`, describing how a
 // read's chain is split. Emitted by the worker (executeRenderAlignmentData) and
-// read by every fill path — the GPU shader (read.slang `chainHasSupp`), the
-// Canvas2D/legend classifier (colorUtils `readColorCategory`), and the SVG
-// export. Lives here so the wire encoding has one spelling; read.slang is the
-// one twin that must still be hand-mirrored.
+// consumed by exactly ONE reader: `readColorCategory` (colorUtils), which bakes
+// it into `readColorCategories` once per recolour. Every fill path — GPU,
+// Canvas2D, SVG export, legend — then reads that baked category and never this.
+//
+// It said "read by every fill path … read.slang is the one twin that must still
+// be hand-mirrored", which stopped being true when the classification moved to
+// the CPU: read.slang has no `chainHasSupp` and takes `colorCategory` (ATTR10).
+// The array was still threaded into `ReadRegionFields` and `Canvas2DRegionData`
+// on the strength of that sentence, where nothing read it.
 export const CHAIN_FILL_NO_SUPP = 0
 export const CHAIN_FILL_SUPP_PRIMARY_FWD = 1
 export const CHAIN_FILL_SUPP_PRIMARY_REV = 2

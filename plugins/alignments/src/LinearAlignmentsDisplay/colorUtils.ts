@@ -35,7 +35,7 @@ import {
   CHAIN_FILL_NO_SUPP,
   CHAIN_FILL_SPLIT_DELETION,
   CHAIN_FILL_SPLIT_INVERSION,
-  CHAIN_FILL_SUPP_PRIMARY_FWD,
+  CHAIN_FILL_SUPP_PRIMARY_REV,
 } from '../shared/types.ts'
 import { MAPQ_UNAVAILABLE, firstOfPairStrand } from '../shared/util.ts'
 import { ColorScheme } from './constants.ts'
@@ -304,9 +304,17 @@ export function readColorCategory(
     flipStrandLongReadChains &&
     !dataFillSchemes.has(colorScheme)
   ) {
-    // Only reachable with chainSupp 1 or 2 — buildChainMetadata writes the
-    // split markers (3/4) for paired chains only.
-    const primaryStrand = chainSupp > CHAIN_FILL_SUPP_PRIMARY_FWD ? -1 : 1
+    // Names the one code that means "reverse" instead of testing `> FWD`. The
+    // magnitude form was correct only under "unreachable with the split markers
+    // 3/4, which buildChainMetadata writes for paired chains only" — and that
+    // rests on `summarizeChain`'s `paired` (ANY read of the chain is paired)
+    // agreeing with this branch's `!isPaired` (THIS read is not), which two
+    // records sharing a QNAME across a paired and an unpaired run do not. Under
+    // the ordering test such a read claimed a reverse primary and painted its
+    // strand framing inverted; naming the code makes an unexpected marker fall
+    // to the unframed +1 instead, which is what "we don't know" should look
+    // like. Identical for 1 and 2, which is every real chain.
+    const primaryStrand = chainSupp === CHAIN_FILL_SUPP_PRIMARY_REV ? -1 : 1
     return strandCategory(strand * primaryStrand)
   }
 

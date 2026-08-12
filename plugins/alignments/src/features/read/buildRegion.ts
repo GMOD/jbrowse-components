@@ -19,7 +19,6 @@ export interface ReadRegionFields {
   readStrands: Int8Array
   readTagColors: Uint32Array
   readColorCategories: Uint8Array
-  readChainHasSupp: Uint8Array | undefined
   readInterchrom: Uint8Array
   insertSizeStats?: InsertSizeBand
   // Per-exon segments (reads split at CIGAR N/skip). The Canvas2D/SVG read
@@ -42,7 +41,6 @@ export function buildReadFields(data: PileupDataResult): ReadRegionFields {
     readStrands: data.readStrands,
     readTagColors: data.readTagColors,
     readColorCategories: data.readColorCategories,
-    readChainHasSupp: data.readChainHasSupp,
     readInterchrom: data.readInterchrom,
     insertSizeStats: data.insertSizeStats,
     segmentPositions: data.segmentPositions,
@@ -66,7 +64,6 @@ export function emptyReadFields(): ReadRegionFields {
     readStrands: new Int8Array(0),
     readTagColors: new Uint32Array(0),
     readColorCategories: new Uint8Array(0),
-    readChainHasSupp: undefined,
     readInterchrom: new Uint8Array(0),
     insertSizeStats: undefined,
     segmentPositions: new Uint32Array(0),

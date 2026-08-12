@@ -468,34 +468,6 @@ describe('readGroupConnections', () => {
   })
 })
 
-describe('groupReadsByName', () => {
-  it('groups reads by name across regions', () => {
-    const data0 = makeData({
-      names: ['r1'],
-      flags: [SAM_FLAG_PAIRED],
-      strands: [1],
-      positions: [[100, 200]],
-      orientations: [1],
-      ys: [0],
-    })
-    const data1 = makeData({
-      names: ['r1'],
-      flags: [SAM_FLAG_PAIRED],
-      strands: [-1],
-      positions: [[300, 400]],
-      orientations: [1],
-      ys: [0],
-    })
-    const readsByName = groupReadsByName(
-      new Map([
-        [0, data0],
-        [1, data1],
-      ]),
-    )
-    expect(readsByName.get('r1')).toHaveLength(2)
-  })
-})
-
 describe('computeLinkedReadLinesByRegion', () => {
   it('emits a line for a normal paired-LR pair, correct 3-prime endpoints', () => {
     const data = makeData({
@@ -724,5 +696,40 @@ describe('computeLinkedReadLinesByRegion', () => {
     expect(lines.linkedReadLineColorTypes[1]).toBe(
       LINKED_READ_COLOR_SPLIT_NORMAL,
     )
+  })
+})
+
+describe('groupReadsByName', () => {
+  const named = (names: string[]) =>
+    ({
+      readIds: names.map((n, i) => `${n}-${i}`),
+      readNames: names,
+    }) as unknown as PileupDataResult
+
+  it('groups reads by name across regions', () => {
+    const byName = groupReadsByName(
+      new Map([
+        [0, named(['r1'])],
+        [1, named(['r1'])],
+      ]),
+    )
+    expect(byName.get('r1')).toHaveLength(2)
+    expect(byName.get('r1')!.map(e => e.displayedRegionIndex)).toEqual([0, 1])
+  })
+
+  it('indexes each read of a region separately', () => {
+    const byName = groupReadsByName(new Map([[0, named(['r1', 'r2', 'r1'])]]))
+    expect(byName.get('r1')!.map(e => e.readIdx)).toEqual([0, 2])
+    expect(byName.get('r2')!.map(e => e.readIdx)).toEqual([1])
+  })
+
+  it('groups a secondary alignment WITH its primary, for the partition to drop', () => {
+    // Deliberately not `chainGroupingKey`, which hands a secondary a synthetic
+    // key so chain LAYOUT puts it on its own row. Here it has to land in the
+    // group so `partitionReadGroup` can filter it out — a different question,
+    // answered by QNAME alone.
+    expect(
+      groupReadsByName(new Map([[0, named(['r1', 'r1'])]])).get('r1'),
+    ).toHaveLength(2)
   })
 })

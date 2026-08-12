@@ -86,6 +86,11 @@ export function connectionMark(colorType: number): 'line' | 'curve' {
   return STRAIGHT_CONNECTION_COLORS.has(colorType) ? 'line' : 'curve'
 }
 
+// No refName, unlike the arc path's entry: every comparison this path makes is
+// between two on-screen entries, and the overlay resolves each end's refName
+// through its own `displayedRegionIndex` at draw time. That difference is why
+// the two paths build their own entries; the field ACCESSORS are shared
+// (readGroupConnections).
 export interface ReadEntry {
   displayedRegionIndex: number
   readIdx: number
@@ -134,6 +139,10 @@ export function splitColorType(s1: number, s2: number) {
 
 // Group reads across all displayed regions by readName. Used by both the
 // straight-line emitter and the bezier-curve emitter.
+//
+// The arc path has the twin of this loop over its own entry type. Sharing them
+// was tried and measured back out — see REJECTED_IDEAS, "One shared
+// groupReadsByName".
 export function groupReadsByName(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
 ): Map<string, ReadEntry[]> {
