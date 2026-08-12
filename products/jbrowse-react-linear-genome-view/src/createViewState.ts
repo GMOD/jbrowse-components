@@ -119,13 +119,16 @@ export default function createViewState(opts: ViewStateOptions) {
   // `{ type, uri }` shorthand first, because that is the form the substitution
   // recognizes — see normalizeAdapterSnapshots
   const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
-  const local = <T>(node: T) =>
-    blobs
+  // a declaration rather than a generic arrow: `<T>(x: T) => …` in a .ts file
+  // is a JSX tag to babel, which is what jest parses these with
+  function local<T>(node: T) {
+    return blobs
       ? resolveLocalFileUris(
           normalizeAdapterSnapshots(node, pluginManager),
           blobs,
         )
       : node
+  }
   const stateTree = model.create(
     {
       config: {
