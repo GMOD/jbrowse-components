@@ -195,6 +195,27 @@ snapshot.
 Normalize once, where the state is read (a getter, or the autorun's single choke
 point), not at each comparison — the comparisons are the part that multiplies.
 
+**But only on the main thread.** `renameRegionsIfNeeded` rewrites `regions[]`
+into the _adapter's_ naming scheme inside `serializeArguments`, so `refName`
+means the assembly's canonical name before the RPC boundary and the file's name
+after it, in the same field of the same type (`util/renameRegions.ts` is the
+statement of this). Canonicalizing a refName that is about to be compared
+worker-side therefore breaks it on exactly the aliased tracks the rule above is
+meant to fix.
+
+Both the sortRowsBy and sortedBy comparisons above _look_ worker-side — one
+lives in `RenderAlignmentDataRPC/sortLayout.ts` — and are not: alignments layout
+is main-thread (ADR-053) over `loadedRegions`, which is the display's own
+un-renamed copy. Check which side a comparison runs on before normalizing either
+operand.
+
+The worker layer already handles its half, four ways, and each is worth
+recognizing rather than reinventing: bundle a stray refName into `regions` so it
+rides the same rename pass (gwas `indexSnp`); carry the view's names in a
+parallel array (hic `viewBlocks[].refName`); return no refName at all
+(`GetConsensusSequence`); or canonicalize on receipt (breakpoint-split's
+overlays).
+
 ## Tooling
 
 - Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
