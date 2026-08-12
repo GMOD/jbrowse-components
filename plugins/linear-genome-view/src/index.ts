@@ -245,12 +245,16 @@ export {
   getRowHeaderLayout,
   labelBaselineFromTop,
   labelOffset,
-  notifySkippedSvgTracks,
   totalHeight,
   trackBoxHeight,
   trackBoxOffsets,
   trackLabelLeftOffset,
 } from './LinearGenomeView/svgcomponents/util.ts'
+// Re-exported from core, where it moved so the circular view — which depends
+// on neither this plugin nor the LGV geometry around it — can send the same
+// notification. Kept on this plugin's surface because published plugins
+// resolve it here.
+export { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 export { renderViewTracks } from './LinearGenomeView/svgcomponents/renderViewTracks.ts'
 export type {
   SvgExportTrack,

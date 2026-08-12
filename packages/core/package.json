@@ -72,6 +72,7 @@
     "./svg/saveSvgAsImage": "./src/svg/saveSvgAsImage.ts",
     "./svg/svgId": "./src/svg/svgId.ts",
     "./svg/svgReady": "./src/svg/svgReady.ts",
+    "./svg/trackNames": "./src/svg/trackNames.ts",
     "./svg/wrapSvgExport": "./src/svg/wrapSvgExport.tsx",
     "./ui": "./src/ui/index.ts",
     "./ui/AddCustomPluginDialog": "./src/ui/AddCustomPluginDialog.tsx",
@@ -449,6 +450,10 @@
       "./svg/svgReady": {
         "types": "./esm/svg/svgReady.d.ts",
         "import": "./esm/svg/svgReady.js"
+      },
+      "./svg/trackNames": {
+        "types": "./esm/svg/trackNames.d.ts",
+        "import": "./esm/svg/trackNames.js"
       },
       "./svg/wrapSvgExport": {
         "types": "./esm/svg/wrapSvgExport.d.ts",
@@ -1084,6 +1089,9 @@
         ],
         "svg/svgReady": [
           "esm/svg/svgReady.d.ts"
+        ],
+        "svg/trackNames": [
+          "esm/svg/trackNames.d.ts"
         ],
         "svg/wrapSvgExport": [
           "esm/svg/wrapSvgExport.d.ts"

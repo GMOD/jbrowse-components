@@ -1,5 +1,6 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
+import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 
@@ -9,7 +10,6 @@ import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
-  notifySkippedSvgTracks,
   trackLabelLeftOffset,
 } from './util.ts'
 

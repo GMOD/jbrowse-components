@@ -1,5 +1,5 @@
-import { coarseStripHTML, max, measureText, sum } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { svgTrackName } from '@jbrowse/core/svg/trackNames'
+import { max, measureText, sum } from '@jbrowse/core/util'
 
 import {
   HEADER_BAR_HEIGHT,
@@ -253,42 +253,6 @@ export function labelOffset(trackLabels: TrackLabelMode, textHeight: number) {
 // so it and trackLabelLeftOffset must agree or the widest name overflows the
 // gutter it was measured for.
 export const TRACK_LABEL_GAP = 40
-
-// The name SVGTrackLabel actually draws for a track. HTML in a config's name
-// is stripped before measuring, so the reserved gutter matches the glyphs.
-export function svgTrackName(
-  track: { configuration: AnyConfigurationModel },
-  session: AbstractSessionModel,
-) {
-  return coarseStripHTML(getTrackName(track.configuration, session))
-}
-
-/**
- * Tell the user which visible tracks the export left out because their display
- * type implements no `renderSvg`. Called once per export, after the renders, by
- * each of the three view exports — the stacked ones flatten every row's
- * `skippedTracks` into one call rather than notifying per row.
- *
- * Skipping is deliberate (see `SvgExportTrack.renderSvg`), so this is
- * informational rather than an error. But it is not silent: a figure that is
- * quietly short a track is worse than one whose author was told why, and the
- * reader of the file has no way to tell the difference afterwards.
- */
-export function notifySkippedSvgTracks(
-  session: AbstractSessionModel,
-  skipped: { configuration: AnyConfigurationModel }[],
-) {
-  if (skipped.length === 0) {
-    return
-  }
-  const names = skipped.map(t => svgTrackName(t, session)).join(', ')
-  session.notify(
-    `Not included in the SVG: ${names}. ${
-      skipped.length === 1 ? 'Its display type does' : 'Their display types do'
-    } not support SVG export.`,
-    'info',
-  )
-}
 
 // Horizontal gutter reserved for 'left' track labels (0 in every other mode).
 // Takes an already-minimized-filtered track list, so the reserved width matches

@@ -1,10 +1,11 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import { svgTrackName } from '@jbrowse/core/svg/trackNames'
 import { getSession } from '@jbrowse/core/util'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { labelOffset, svgTrackName, trackBoxOffsets } from './util.ts'
+import { labelOffset, trackBoxOffsets } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
