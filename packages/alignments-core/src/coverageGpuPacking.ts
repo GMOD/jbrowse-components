@@ -57,6 +57,12 @@ import type { computeInterbaseCoverage } from './interbaseCoverage.ts'
 // coverage; the worker downsamples to a wider binSize at whole-chromosome scale
 // (see packCoverageArea) so this buffer's record count tracks screen pixels
 // rather than base pairs — otherwise it overflows the GPU device limit.
+//
+// `relDepth` is depth/regionMaxDepth, the same packing the SNP and modification
+// segments carry: every coverage-band pass hands it to the shader's
+// `normalizeDepth`, which recovers the raw depth and applies the display's
+// autoscaled domain. Storing the raw depth here instead would bake the region's
+// peak into the buffer and need a repack on every autoscale change.
 export function packCoverageBinsForGpu(
   depths: Float32Array,
   maxDepth: number,
@@ -73,7 +79,7 @@ export function packCoverageBinsForGpu(
   for (let i = 0; i < binCount; i++) {
     const o = i * COVERAGE_STRIDE
     u32[o + COVERAGE_U32.position] = startOffset + i * binSize
-    f32[o + COVERAGE_F32.depth] = (depths[i] ?? 0) / maxDepth
+    f32[o + COVERAGE_F32.relDepth] = (depths[i] ?? 0) / maxDepth
   }
   return buffer
 }

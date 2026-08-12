@@ -24,7 +24,7 @@ struct Instance {
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
-  o.position = covSegQuad(inst.position, inst.yOffset, inst.segHeight,
+  o.position = covSegQuad(inst.position, 1u, inst.yOffset, inst.segHeight,
                           inst.relDepth, quadLocal(vid), u);
   o.color = unpackRGBA(inst.packedColor);
   return o;

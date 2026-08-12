@@ -37,7 +37,7 @@ float3 snpColor(float ct, Uniforms u) {
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
-  o.position = covSegQuad(inst.position, inst.yOffset, inst.segHeight,
+  o.position = covSegQuad(inst.position, 1u, inst.yOffset, inst.segHeight,
                           inst.relDepth, quadLocal(vid), u);
   o.color = float4(snpColor(inst.colorType, u), 1.0);
   return o;

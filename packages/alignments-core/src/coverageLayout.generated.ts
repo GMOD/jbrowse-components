@@ -6,7 +6,7 @@ export const INSTANCE_STRIDE_WORDS = 2
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
-  depth: 1,
+  relDepth: 1,
 } as const
 
 // Word indices into a Uint32Array view over the instance buffer.

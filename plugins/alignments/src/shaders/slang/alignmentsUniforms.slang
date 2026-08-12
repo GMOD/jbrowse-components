@@ -719,14 +719,21 @@ public float covBarScale(float relDepth, Uniforms u) {
   return normalizeDepth(relDepth, u) * effHeight(u) / u.canvasH * 2.0;
 }
 
-// Coverage-strip stacked-segment quad (SNP + modification coverage). A 1bp-wide
-// rect whose bottom/top are the yOffset / yOffset+segHeight fractions of this
-// position's coverage bar (covBarScale(relDepth)). Shared so the two passes'
-// geometry can't drift — they differ only in how each colors the segment.
-public float4 covSegQuad(uint position, float yOffset, float segHeight,
-                         float relDepth, float2 local, Uniforms u) {
+// Coverage-strip stacked-segment quad — the geometry of EVERY bar in the band.
+// A `widthBp`-wide rect whose bottom/top are the yOffset / yOffset+segHeight
+// fractions of this position's coverage bar (covBarScale(relDepth)).
+//
+// The three passes differ only in what they put in those parameters. The SNP and
+// modification segments are 1bp slices of a bar (widthBp 1, a partial y span);
+// the depth bar itself is the whole bar (widthBp = u.binSize, y span 0..1), and
+// coverage.slang open-coded it — the same four calls in the same order, so the
+// band could shift under its own segments without anything catching it. Passing
+// `0.0, 1.0` is not a special case here, it is what "the whole bar" spells.
+public float4 covSegQuad(uint position, uint widthBp, float yOffset,
+                         float segHeight, float relDepth, float2 local,
+                         Uniforms u) {
   float2 xx = expandMinWidthX(
-    bpToClipX(position, u), bpToClipX(position + 1u, u), u.canvasW);
+    bpToClipX(position, u), bpToClipX(position + widthBp, u), u.canvasW);
   float bottom = covBottom(u);
   float k = covBarScale(relDepth, u);
   float segBot = bottom + yOffset * k;

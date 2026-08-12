@@ -18,26 +18,21 @@ import hpmath;
 public static const uint VERTS_PER_INSTANCE = 6u;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
+// `relDepth` is depths[bin] / regionMaxDepth, the same packing the SNP and
+// modification segments carry (see snpCoverage.slang) — normalizeDepth recovers
+// the raw depth from it. The bin spans `u.binSize` bp: 1 for per-bp coverage,
+// wider once the worker downsamples (packCoverageArea).
 struct Instance {
   uint  position : ATTR0;
-  float depth    : ATTR1;
+  float relDepth : ATTR1;
 };
 
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
-  float2 local = quadLocal(vid);
-
-  float2 xx = expandMinWidthX(
-    bpToClipX(inst.position, u),
-    bpToClipX(inst.position + uint(u.binSize), u),
-    u.canvasW);
-  float x1 = xx.x;
-  float x2 = xx.y;
-
-  float bottom = covBottom(u);
-  float barTop = bottom + covBarScale(inst.depth, u);
-  o.position = flippedQuadPos(x1, x2, bottom, barTop, local, u);
+  // The whole bar: y span 0..1 of itself. Same quad the segments stack inside.
+  o.position = covSegQuad(inst.position, uint(u.binSize), 0.0, 1.0,
+                          inst.relDepth, quadLocal(vid), u);
   o.color = float4(unpackRGBA(u.colorCoverage).xyz, 1.0);
   return o;
 }
