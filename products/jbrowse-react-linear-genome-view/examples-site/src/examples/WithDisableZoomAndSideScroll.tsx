@@ -45,6 +45,10 @@ export default function WithDisableZoomAndSideScroll() {
       },
     ],
     plugins: [MyPlugin],
+    // the lock is not only a gesture lock: navTo/moveTo reach the view through
+    // the same two actions, so this picks the displayed region but the view
+    // opens at its default scale rather than on this window. A view that has to
+    // start somewhere specific wants its bpPerPx/offsetPx in a defaultSession
     location: 'ctgA:1105..1221',
   })
   return <JBrowseLinearGenomeView viewState={state} />

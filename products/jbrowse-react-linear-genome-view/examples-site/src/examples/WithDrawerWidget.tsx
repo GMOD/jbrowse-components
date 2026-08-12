@@ -24,6 +24,10 @@ export default function WithDrawerWidget() {
           },
         },
       ],
+      // the height the view is clamped to *while a drawer is open*, so the
+      // drawer has a definite scroll region. '100vh' is the default and is
+      // spelled out here only because this is the page about the drawer — any
+      // CSS height works ('600px', '80%')
       drawerViewHeight: '100vh',
       defaultSession: {
         name: 'Drawer Widget Example',

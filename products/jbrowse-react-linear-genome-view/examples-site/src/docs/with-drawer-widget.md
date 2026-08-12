@@ -1,11 +1,11 @@
-Widgets — the hierarchical track selector, feature details — open in a modal
-dialog by default. Passing `drawerViewHeight` to `createViewState` puts them in
-a resizable side drawer instead, the way JBrowse Web does it.
+Widgets — the hierarchical track selector, feature details — open in a resizable
+side drawer, the way JBrowse Web does it. It moves left or right via the ⋮ menu,
+minimizes and closes.
 
-It accepts any CSS height (`'100vh'`, `'600px'`, `'80%'`) and constrains the
-view's grid container while a drawer is open, so the drawer has a fixed scroll
-region. With no drawer visible the view sizes to its parent as usual. The drawer
-resizes, moves left or right via the ⋮ menu, minimizes and closes.
+The view is otherwise content-height, so it can sit in a page that grows with
+it. `drawerViewHeight` on `createViewState` is the height it is clamped to
+_while a drawer is open_, giving the drawer a definite scroll region. It accepts
+any CSS height (`'600px'`, `'80%'`) and defaults to `'100vh'`.
 
 This demo calls
 [`activateTrackSelector`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-activatetrackselector)
