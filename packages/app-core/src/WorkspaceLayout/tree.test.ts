@@ -1,19 +1,28 @@
 import {
-  addViewToPanel,
+  addViewToTab,
   isBranch,
-  moveViewToPanel,
+  moveTabToPanel,
   normalize,
   panels,
   removePanel,
   removeView,
   setSizes,
   splitPanel,
+  tabs,
 } from './tree.ts'
 
 import type { LayoutTree, PanelNode } from './tree.ts'
 
+// one tab per panel unless a test says otherwise, since the tab level is
+// orthogonal to every structural rule below
+let seq = 0
 function panel(id: string, viewIds: string[] = [], size = 1): PanelNode {
-  return { id, size, viewIds }
+  seq += 1
+  const tabId = `${id}-tab${seq}`
+  return { id, size, tabs: [{ id: tabId, viewIds }], activeTabId: tabId }
+}
+function tabIdOf(node: LayoutTree, panelId: string) {
+  return panels(node).find(p => p.id === panelId)!.tabs[0]!.id
 }
 
 const sizesOf = (node: LayoutTree) =>
@@ -128,7 +137,7 @@ describe('normalize', () => {
     expectCanonical(once)
   })
 
-  test('an empty panel survives — it is what a new empty tab is', () => {
+  test('an empty tab survives — it is what a new empty tab is', () => {
     const result = normalize({
       id: 'root',
       size: 1,
@@ -210,37 +219,42 @@ describe('removePanel', () => {
   test('removing the last panel leaves an empty one to put the next view in', () => {
     const result = removePanel(panel('p1', ['v1']), 'p1')
     expect(isBranch(result)).toBe(false)
-    expect((result as PanelNode).viewIds).toEqual([])
+    expect((result as PanelNode).tabs).toEqual([])
   })
 })
 
-describe('views', () => {
-  test('a view moves atomically — never in two panels, never in none', () => {
-    const split = splitPanel(
-      panel('p1', ['v1', 'v2']),
-      'p1',
-      'row',
-      panel('p2'),
+describe('views and tabs', () => {
+  test('a tab moves atomically — never in two panels, never in none', () => {
+    const split = splitPanel(panel('p1', ['v1']), 'p1', 'row', panel('p2'))
+    const movedTab = tabIdOf(split, 'p1')
+    const result = moveTabToPanel(split, movedTab, 'p2')
+
+    const homes = panels(result).filter(p =>
+      p.tabs.some(t => t.id === movedTab),
     )
-    const result = moveViewToPanel(split, 'v2', 'p2')
-    const homes = panels(result).filter(p => p.viewIds.includes('v2'))
     expect(homes.map(p => p.id)).toEqual(['p2'])
-    expect(
-      panels(result)
-        .flatMap(p => p.viewIds)
-        .sort(),
-    ).toEqual(['v1', 'v2'])
+    expect(tabs(result).flatMap(t => t.viewIds)).toEqual(['v1'])
+  })
+
+  test('a moved tab becomes the active one in its new panel', () => {
+    const split = splitPanel(panel('p1', ['v1']), 'p1', 'row', panel('p2'))
+    const movedTab = tabIdOf(split, 'p1')
+    const result = moveTabToPanel(split, movedTab, 'p2')
+    const target = panels(result).find(p => p.id === 'p2')!
+    expect(target.activeTabId).toBe(movedTab)
   })
 
   test('adding a view twice is a no-op', () => {
-    const once = addViewToPanel(panel('p1'), 'p1', 'v1')
-    expect(addViewToPanel(once, 'p1', 'v1')).toEqual(once)
+    const base = panel('p1')
+    const tabId = base.tabs[0]!.id
+    const once = addViewToTab(base, tabId, 'v1')
+    expect(addViewToTab(once, tabId, 'v1')).toEqual(once)
   })
 
-  test('removing a view leaves its panel standing', () => {
+  test('removing a view leaves its tab standing', () => {
     const result = removeView(panel('p1', ['v1']), 'v1')
     expect(result.id).toBe('p1')
-    expect((result as PanelNode).viewIds).toEqual([])
+    expect((result as PanelNode).tabs[0]!.viewIds).toEqual([])
   })
 })
 
@@ -268,10 +282,10 @@ test('any sequence of operations leaves a canonical tree', () => {
     } else if (roll < 0.7 && ids.length > 1) {
       tree = removePanel(tree, target)
     } else if (roll < 0.85) {
-      const views = panels(tree).flatMap(p => p.viewIds)
-      const view = views[Math.floor(rng() * views.length)]
-      if (view) {
-        tree = moveViewToPanel(tree, view, target)
+      const all = tabs(tree)
+      const tab = all[Math.floor(rng() * all.length)]
+      if (tab) {
+        tree = moveTabToPanel(tree, tab.id, target)
       }
     } else if (isBranch(tree)) {
       tree = setSizes(
@@ -281,9 +295,11 @@ test('any sequence of operations leaves a canonical tree', () => {
       )
     }
     expectCanonical(tree)
-    // no view is ever duplicated or stranded
-    const all = panels(tree).flatMap(p => p.viewIds)
-    expect(new Set(all).size).toBe(all.length)
+    // no view and no tab is ever duplicated or stranded
+    const allViews = tabs(tree).flatMap(t => t.viewIds)
+    expect(new Set(allViews).size).toBe(allViews.length)
+    const allTabs = tabs(tree).map(t => t.id)
+    expect(new Set(allTabs).size).toBe(allTabs.length)
   }
 })
 

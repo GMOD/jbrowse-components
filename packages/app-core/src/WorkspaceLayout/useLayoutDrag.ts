@@ -6,9 +6,18 @@ import type { DropZone } from './dropZone.ts'
 import type { WorkspaceLayout } from './model.ts'
 
 export interface DragState {
-  viewId: string
+  tabId: string
   panelId: string
   zone: DropZone
+}
+
+export interface TabDragHandlers {
+  onTabPointerDown: (
+    tabId: string,
+    event: React.PointerEvent<HTMLElement>,
+  ) => void
+  onTabPointerMove: (event: React.PointerEvent<HTMLElement>) => void
+  onTabPointerUp: (event: React.PointerEvent<HTMLElement>) => void
 }
 
 /**
@@ -24,11 +33,13 @@ export interface DragState {
  * undo history — which is the mistake `dockviewLayout` made in the other
  * direction, persisting something that was really a view of live state.
  */
-export function useLayoutDrag(layout: WorkspaceLayout) {
+export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
+  drag: DragState | undefined
+} {
   const [drag, setDrag] = useState<DragState | undefined>(undefined)
   // the pointer has gone down on a tab but may still turn out to be a click
   const pendingRef = useRef<
-    { viewId: string; x: number; y: number } | undefined
+    { tabId: string; x: number; y: number } | undefined
   >(undefined)
 
   const resolveTarget = useCallback((x: number, y: number) => {
@@ -47,8 +58,8 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
   }, [])
 
   const onTabPointerDown = useCallback(
-    (viewId: string, event: React.PointerEvent<HTMLElement>) => {
-      pendingRef.current = { viewId, x: event.clientX, y: event.clientY }
+    (tabId: string, event: React.PointerEvent<HTMLElement>) => {
+      pendingRef.current = { tabId, x: event.clientX, y: event.clientY }
       event.currentTarget.setPointerCapture(event.pointerId)
     },
     [],
@@ -61,7 +72,7 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
         return
       }
       // a few pixels of slop, so a tab click is a click and not a zero-distance
-      // drag that lands the view back where it started
+      // drag that lands the tab back where it started
       const moved =
         Math.abs(event.clientX - pending.x) +
         Math.abs(event.clientY - pending.y)
@@ -69,7 +80,7 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
         return
       }
       const target = resolveTarget(event.clientX, event.clientY)
-      setDrag(target ? { viewId: pending.viewId, ...target } : undefined)
+      setDrag(target ? { tabId: pending.tabId, ...target } : undefined)
     },
     [drag, resolveTarget],
   )
@@ -86,14 +97,14 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
       }
       const split = splitForZone(current.zone)
       if (split) {
-        layout.dropViewInNewSplit(
-          current.viewId,
+        layout.dropTabInNewSplit(
+          current.tabId,
           current.panelId,
           split.direction,
           split.before,
         )
       } else {
-        layout.dropViewInPanel(current.viewId, current.panelId)
+        layout.dropTabInPanel(current.tabId, current.panelId)
       }
     },
     [drag, layout],

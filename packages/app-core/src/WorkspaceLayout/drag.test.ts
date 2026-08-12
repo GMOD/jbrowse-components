@@ -1,7 +1,7 @@
 import { applySnapshot, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { WorkspaceLayoutMixin } from './model.ts'
-import { isBranch, panels } from './tree.ts'
+import { isBranch } from './tree.ts'
 
 const TestSession = types.compose(
   'TestSession',
@@ -9,98 +9,94 @@ const TestSession = types.compose(
   WorkspaceLayoutMixin(),
 )
 
-// two panels side by side: left holds view-1 and view-2, right holds view-3
+// two cells side by side. left has two tabs (view-1, view-2), right has one
+// (view-3) — the shape every drag question needs.
 function twoPanels() {
   const session = TestSession.create({ name: 't' })
   const left = session.panels[0]!.id
-  session.addViewToPanel(left, 'view-1')
-  session.addViewToPanel(left, 'view-2')
-  const right = session.splitPanel(left, 'row')
-  session.addViewToPanel(right, 'view-3')
-  return { session, left, right }
+  const tabA = session.tabs[0]!.id
+  session.addViewToTab(tabA, 'view-1')
+  const tabB = session.addTab(left, ['view-2']).id
+  const rightPanel = session.splitPanel(left, 'row')
+  const right = rightPanel.id
+  const tabC = rightPanel.tabs[0]!.id
+  session.addViewToTab(tabC, 'view-3')
+  return { session, left, right, tabA, tabB, tabC }
 }
 
-test('dropping a tab in another panel moves it, and only it', () => {
-  const { session, left, right } = twoPanels()
+test('dropping a tab in another cell moves it, and only it', () => {
+  const { session, left, right, tabB } = twoPanels()
 
-  session.dropViewInPanel('view-2', right)
+  session.dropTabInPanel(tabB, right)
 
-  expect(session.panelContainingView('view-2')?.id).toBe(right)
+  expect(session.findTab(tabB)?.panel.id).toBe(right)
   expect(session.panelContainingView('view-1')?.id).toBe(left)
   expect(session.panels.length).toBe(2)
   expect(session.activePanelId).toBe(right)
 })
 
-test('dragging the last view out of a panel collapses it', () => {
-  const { session, left, right } = twoPanels()
+test('dragging the last tab out of a cell collapses it', () => {
+  const { session, left, tabC } = twoPanels()
 
-  session.dropViewInPanel('view-3', left)
+  session.dropTabInPanel(tabC, left)
 
   expect(session.panels.length).toBe(1)
   expect(session.panels[0]!.id).toBe(left)
   expect(session.panels[0]!.size).toBe(1)
-  expect(
-    panels(session.tree)
-      .flatMap(p => p.viewIds)
-      .sort(),
-  ).toEqual(['view-1', 'view-2', 'view-3'])
-  void right
+  expect(session.panels[0]!.tabs).toHaveLength(3)
 })
 
 test('dropping on an edge splits and lands in the new half', () => {
-  const { session, right } = twoPanels()
+  const { session, right, tabA } = twoPanels()
 
-  const created = session.dropViewInNewSplit('view-1', right, 'column', false)
+  const created = session.dropTabInNewSplit(tabA, right, 'column', false)
 
-  expect(session.panelContainingView('view-1')?.id).toBe(created)
+  expect(session.findTab(tabA)?.panel.id).toBe(created)
   expect(session.panels.length).toBe(3)
-  // right was split vertically, so the row still has two children
   expect(isBranch(session.tree) && session.tree.children.length).toBe(2)
   expect(session.activePanelId).toBe(created)
 })
 
 // The case that would otherwise need a guard: the gesture is a no-op, and it
 // falls out of pruning the empty source rather than being special-cased.
-test('dropping a panel’s only view on its own edge collapses back', () => {
-  const { session, right } = twoPanels()
+test('dropping a cell’s only tab on its own edge collapses back', () => {
+  const { session, right, tabC } = twoPanels()
 
-  session.dropViewInNewSplit('view-3', right, 'row', false)
+  session.dropTabInNewSplit(tabC, right, 'row', false)
 
   expect(session.panels.length).toBe(2)
-  expect(session.panelContainingView('view-3')).toBeDefined()
-  expect(session.panels.every(p => p.viewIds.length > 0)).toBe(true)
+  expect(session.findTab(tabC)).toBeDefined()
+  expect(session.panels.every(p => p.tabs.length > 0)).toBe(true)
 })
 
-test('an empty panel made on purpose survives a drag elsewhere', () => {
-  const { session, left, right } = twoPanels()
-  const empty = session.splitPanel(right, 'column')
+test('a cell with tabs left over is not pruned', () => {
+  const { session, right, tabA, left } = twoPanels()
 
-  session.dropViewInPanel('view-1', right)
+  session.dropTabInPanel(tabA, right)
 
-  // the deliberate empty panel is still there; only a drag's own source is pruned
-  expect(session.panels.map(p => p.id)).toContain(empty)
+  // left still has tabB, so it stays
+  expect(session.panels.map(p => p.id).sort()).toEqual([left, right].sort())
   expect(session.panelContainingView('view-2')?.id).toBe(left)
 })
 
 test('a drop is a single action, so undo takes back the whole gesture', () => {
-  const { session, right } = twoPanels()
+  const { session, right, tabA } = twoPanels()
   const before = getSnapshot(session)
 
-  session.dropViewInNewSplit('view-1', right, 'column', false)
+  session.dropTabInNewSplit(tabA, right, 'column', false)
   expect(session.panels.length).toBe(3)
 
-  // one action in, one snapshot back out
   applySnapshot(session, before)
 
   expect(session.panels.length).toBe(2)
-  expect(session.panelContainingView('view-1')?.id).toBe(session.panels[0]!.id)
+  expect(session.findTab(tabA)?.panel.id).toBe(session.panels[0]!.id)
 })
 
 test('sizes stay normalised through a drag', () => {
-  const { session, right } = twoPanels()
+  const { session, right, tabA } = twoPanels()
   session.setSizes((session.layout as unknown as { id: string }).id, [0.8, 0.2])
 
-  session.dropViewInNewSplit('view-1', right, 'column', false)
+  session.dropTabInNewSplit(tabA, right, 'column', false)
 
   const root = session.tree
   expect(isBranch(root)).toBe(true)
@@ -110,4 +106,16 @@ test('sizes stay normalised through a drag', () => {
     // the left pane kept its 80% — a split on the right does not move it
     expect(root.children[0]!.size).toBeCloseTo(0.8, 6)
   }
+})
+
+test('a moved tab keeps its views and its title', () => {
+  const { session, right, tabB } = twoPanels()
+  session.renameTab(tabB, 'Renamed')
+
+  session.dropTabInPanel(tabB, right)
+
+  const moved = session.findTab(tabB)!
+  expect(moved.panel.id).toBe(right)
+  expect(moved.tab.title).toBe('Renamed')
+  expect(moved.tab.viewIds).toEqual(['view-2'])
 })

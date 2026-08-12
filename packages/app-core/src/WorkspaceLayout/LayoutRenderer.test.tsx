@@ -10,35 +10,46 @@ const TestSession = types.compose(
   WorkspaceLayoutMixin(),
 )
 
+const noDrag = {
+  onTabPointerDown: () => {},
+  onTabPointerMove: () => {},
+  onTabPointerUp: () => {},
+}
+
 function renderLayout(session: ReturnType<typeof TestSession.create>) {
   return render(
     <LayoutRenderer
       node={session.tree}
       layout={session}
-      renderPanel={(panelId, viewIds) => (
-        <div data-testid={`panel-${panelId}`}>{viewIds.join(',')}</div>
+      dragHandlers={noDrag}
+      renderTabLabel={tab => <span>{tab.title ?? tab.id}</span>}
+      renderTabContent={tab => (
+        <div data-testid={`content-${tab.id}`}>{tab.viewIds.join(',')}</div>
       )}
     />,
   )
 }
 
-test('renders one panel per leaf, with its views', () => {
+test('each cell shows only its active tab', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id
-  session.addViewToPanel(p1, 'view-1')
-  const p2 = session.splitPanel(p1, 'row')
-  session.addViewToPanel(p2, 'view-2')
+  const first = session.tabs[0]!.id
+  session.addViewToTab(first, 'view-1')
+  const second = session.addTab(p1, ['view-2']).id
 
   renderLayout(session)
 
-  expect(screen.getByTestId(`panel-${p1}`).textContent).toBe('view-1')
-  expect(screen.getByTestId(`panel-${p2}`).textContent).toBe('view-2')
+  // second was added last, so it is active
+  expect(screen.getByTestId(`content-${second}`).textContent).toBe('view-2')
+  expect(screen.queryByTestId(`content-${first}`)).toBeNull()
+  // but both tabs are in the strip
+  expect(document.querySelectorAll('[role="tab"]')).toHaveLength(2)
 })
 
 test('a splitter sits between each pair of siblings, not at the edges', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id
-  const p2 = session.splitPanel(p1, 'row')
+  const p2 = session.splitPanel(p1, 'row').id
   session.splitPanel(p2, 'row')
 
   const { container } = renderLayout(session)
@@ -55,7 +66,7 @@ test('sizes become flex-grow, so the browser does the resize maths', () => {
 
   const { container } = renderLayout(session)
 
-  const grows = [...container.querySelectorAll('[data-testid^="panel-"]')].map(
+  const grows = [...container.querySelectorAll('[data-panel-id]')].map(
     el => el.parentElement!.style.flexGrow,
   )
   expect(grows).toEqual(['0.7', '0.3'])
@@ -64,7 +75,7 @@ test('sizes become flex-grow, so the browser does the resize maths', () => {
 test('a nested split renders as a nested flex container', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id
-  const p2 = session.splitPanel(p1, 'row')
+  const p2 = session.splitPanel(p1, 'row').id
   session.splitPanel(p2, 'column')
 
   const { container } = renderLayout(session)
@@ -75,5 +86,14 @@ test('a nested split renders as a nested flex container', () => {
     el => (el as HTMLElement).style.flexDirection === 'column',
   )
   expect(nested).toBeDefined()
-  expect(container.querySelectorAll('[data-testid^="panel-"]')).toHaveLength(3)
+  expect(container.querySelectorAll('[data-panel-id]')).toHaveLength(3)
+})
+
+test('a renamed tab shows its title', () => {
+  const session = TestSession.create({ name: 't' })
+  session.renameTab(session.tabs[0]!.id, 'My comparison')
+
+  renderLayout(session)
+
+  expect(screen.getByText('My comparison')).toBeDefined()
 })

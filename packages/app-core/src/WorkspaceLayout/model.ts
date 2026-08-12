@@ -1,19 +1,26 @@
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import {
-  addViewToPanel,
-  moveViewToPanel,
+  addTab,
+  addViewToTab,
+  findTab,
+  moveTabToPanel,
   normalize,
   panelContainingView,
   panels,
   pruneEmptyPanel,
   removePanel,
+  removeTab,
   removeView,
+  renameTab,
+  setActiveTab,
   setSizes,
   splitPanel,
+  tabContainingView,
+  tabs,
 } from './tree.ts'
 
-import type { LayoutTree, PanelNode } from './tree.ts'
+import type { LayoutTree, PanelNode, TabNode } from './tree.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -23,19 +30,32 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * nothing to reconcile, no event to echo, and no window during which the two
  * disagree — which is the entire content of `useDockviewController`.
  *
- * Compare what this replaces: `dockviewLayout` (an opaque blob dockview owned
- * and we mirrored), `panelViewAssignments` (panel -> views, ours), and
- * `activePanelId`. The first two said overlapping things in two vocabularies.
- * Here a panel simply *contains* its views.
+ * Three levels, matching what the workspace actually has and what a generic
+ * window manager cannot quite express:
+ *
+ *   branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked)
+ *
+ * dockview models the first three as branch/group/panel and stops there; the
+ * vertical stack of views inside a tab is ours, which is why
+ * `panelViewAssignments` had to exist alongside dockview's own serialized grid.
+ * Here it is one tree, and a tab simply *contains* its views.
  *
  * Every action is `tree -> tree` through the pure functions in `tree.ts`, so
  * undo is `applySnapshot` on this node and nothing else has to be told.
  */
 
+const LayoutTab = types.model('LayoutTab', {
+  id: types.identifier,
+  viewIds: types.array(types.string),
+  /** set only by an explicit rename; otherwise the name is derived from views */
+  title: types.maybe(types.string),
+})
+
 const LayoutPanel = types.model('LayoutPanel', {
   id: types.identifier,
   size: types.optional(types.number, 1),
-  viewIds: types.array(types.string),
+  tabs: types.array(LayoutTab),
+  activeTabId: types.maybe(types.string),
 })
 
 const LayoutBranch = types.model('LayoutBranch', {
@@ -60,19 +80,25 @@ const LayoutNode = types.union(
 )
 
 let counter = 0
-function nextPanelId() {
+function nextId(kind: 'panel' | 'tab') {
   counter += 1
-  return `panel-${counter}`
+  return `${kind}-${counter}`
+}
+
+function emptyPanel(): PanelNode {
+  const tabId = nextId('tab')
+  return {
+    id: nextId('panel'),
+    size: 1,
+    tabs: [{ id: tabId, viewIds: [] }],
+    activeTabId: tabId,
+  }
 }
 
 export function WorkspaceLayoutMixin() {
   return types
     .model({
-      layout: types.optional(LayoutNode, () => ({
-        id: nextPanelId(),
-        size: 1,
-        viewIds: [],
-      })),
+      layout: types.optional(LayoutNode, emptyPanel),
       activePanelId: types.maybe(types.string),
     })
     .views(self => ({
@@ -86,14 +112,29 @@ export function WorkspaceLayoutMixin() {
       get panels(): PanelNode[] {
         return panels(self.tree)
       },
+      get tabs(): TabNode[] {
+        return tabs(self.tree)
+      },
+      findTab(tabId: string) {
+        return findTab(self.tree, tabId)
+      },
+      tabContainingView(viewId: string) {
+        return tabContainingView(self.tree, viewId)
+      },
       panelContainingView(viewId: string) {
         return panelContainingView(self.tree, viewId)
       },
-      /** The views a panel renders, in `session.views` order. */
-      viewIdsForPanel(panelId: string, order: string[]) {
-        const found = panels(self.tree).find(p => p.id === panelId)
-        const members = new Set(found?.viewIds ?? [])
+      /** The views a tab renders, in `session.views` order. */
+      viewIdsForTab(tabId: string, order: string[]) {
+        const members = new Set(findTab(self.tree, tabId)?.tab.viewIds ?? [])
         return order.filter(id => members.has(id))
+      },
+      /** The tab a panel is showing, or its first. */
+      activeTabOf(panelId: string) {
+        const panel = panels(self.tree).find(p => p.id === panelId)
+        return (
+          panel?.tabs.find(t => t.id === panel.activeTabId) ?? panel?.tabs[0]
+        )
       },
     }))
     .actions(self => {
@@ -102,23 +143,26 @@ export function WorkspaceLayoutMixin() {
       }
       return {
         apply,
+        setActivePanelId(panelId: string | undefined) {
+          self.activePanelId = panelId
+        },
+        setActiveTab(panelId: string, tabId: string) {
+          apply(setActiveTab(self.tree, panelId, tabId))
+          self.activePanelId = panelId
+        },
+        renameTab(tabId: string, title: string | undefined) {
+          apply(renameTab(self.tree, tabId, title))
+        },
+        /** Split a grid cell; the new cell gets one empty tab. */
         splitPanel(
           panelId: string,
           direction: 'row' | 'column',
           before = false,
         ) {
-          const newId = nextPanelId()
-          apply(
-            splitPanel(
-              self.tree,
-              panelId,
-              direction,
-              { id: newId, size: 1, viewIds: [] },
-              before,
-            ),
-          )
-          self.activePanelId = newId
-          return newId
+          const panel = emptyPanel()
+          apply(splitPanel(self.tree, panelId, direction, panel, before))
+          self.activePanelId = panel.id
+          return panel
         },
         closePanel(panelId: string) {
           apply(removePanel(self.tree, panelId))
@@ -126,91 +170,105 @@ export function WorkspaceLayoutMixin() {
             self.activePanelId = panels(self.tree)[0]?.id
           }
         },
-        addViewToPanel(panelId: string, viewId: string) {
-          apply(addViewToPanel(self.tree, panelId, viewId))
+        /** "New empty tab": a tab in an existing cell, showing the launcher. */
+        addTab(panelId: string, viewIds: string[] = []) {
+          const tab: TabNode = { id: nextId('tab'), viewIds }
+          apply(addTab(self.tree, panelId, tab))
+          self.activePanelId = panelId
+          return tab
+        },
+        closeTab(tabId: string) {
+          apply(removeTab(self.tree, tabId))
+        },
+        addViewToTab(tabId: string, viewId: string) {
+          apply(addViewToTab(self.tree, tabId, viewId))
         },
         removeView(viewId: string) {
           apply(removeView(self.tree, viewId))
         },
-        moveViewToPanel(viewId: string, panelId: string) {
-          apply(moveViewToPanel(self.tree, viewId, panelId))
-          self.activePanelId = panelId
-        },
-        setSizes(branchId: string, sizes: number[]) {
-          apply(setSizes(self.tree, branchId, sizes))
-        },
         /**
-         * Drop a dragged view into an existing panel, as a tab.
+         * Drop a dragged tab into an existing panel, as a tab.
          *
-         * One action, so the tree never exists in a state where the view is in
+         * One action, so the tree never exists in a state where the tab is in
          * both panels or neither. The imperative bridge needed an explicit
          * `runInAction` around the unassign+reassign pair for exactly this, and
          * a comment explaining that without it the reconcile autorun would
          * observe the gap and re-home the view.
          */
-        dropViewInPanel(viewId: string, targetPanelId: string) {
-          const source = panelContainingView(self.tree, viewId)
-          let next = moveViewToPanel(self.tree, viewId, targetPanelId)
+        dropTabInPanel(tabId: string, targetPanelId: string, index?: number) {
+          const source = findTab(self.tree, tabId)?.panel
+          let next = moveTabToPanel(self.tree, tabId, targetPanelId, index)
           if (source && source.id !== targetPanelId) {
             next = pruneEmptyPanel(next, source.id)
           }
           apply(next)
           self.activePanelId = targetPanelId
         },
-        /** Drop a dragged view onto a panel edge: split, and land in the new half. */
-        dropViewInNewSplit(
-          viewId: string,
+        /** Drop a dragged tab on a panel edge: split, and land in the new half. */
+        dropTabInNewSplit(
+          tabId: string,
           targetPanelId: string,
           direction: 'row' | 'column',
           before: boolean,
         ) {
-          const source = panelContainingView(self.tree, viewId)
-          const newId = nextPanelId()
+          const source = findTab(self.tree, tabId)?.panel
+          const panel: PanelNode = {
+            id: nextId('panel'),
+            size: 1,
+            tabs: [],
+          }
           let next = splitPanel(
             self.tree,
             targetPanelId,
             direction,
-            { id: newId, size: 1, viewIds: [] },
+            panel,
             before,
           )
-          next = moveViewToPanel(next, viewId, newId)
-          // Dragging a panel's only view onto that same panel's edge prunes the
+          next = moveTabToPanel(next, tabId, panel.id)
+          // Dragging a panel's only tab onto that same panel's edge prunes the
           // now-empty source, which collapses the split — the gesture undoes
           // itself rather than leaving a blank half, without needing a case.
           if (source) {
             next = pruneEmptyPanel(next, source.id)
           }
           apply(next)
-          self.activePanelId = newId
-          return newId
+          self.activePanelId = panel.id
+          return panel.id
         },
-        setActivePanelId(panelId: string | undefined) {
-          self.activePanelId = panelId
+        setSizes(branchId: string, sizes: number[]) {
+          apply(setSizes(self.tree, branchId, sizes))
         },
         /**
-         * Put any view that no panel holds into the active panel. The only
-         * reconciliation left, and it is one-directional: views are owned
-         * elsewhere (`session.views`), so a newly launched one has to land
-         * somewhere. Nothing reads back.
+         * Put any view that no tab holds into the active panel's active tab,
+         * and drop members the session no longer has.
+         *
+         * The only reconciliation left, and it is one-directional: views are
+         * owned elsewhere (`session.views`), so a newly launched one has to
+         * land somewhere. Nothing reads back.
          */
         homeUnassignedViews(viewIds: string[]) {
-          const home =
-            (self.activePanelId &&
-            panels(self.tree).some(p => p.id === self.activePanelId)
-              ? self.activePanelId
-              : undefined) ?? panels(self.tree)[0]?.id
-          if (!home) {
+          let next = self.tree
+          const all = panels(next)
+          const activePanel =
+            all.find(p => p.id === self.activePanelId) ?? all[0]
+          if (!activePanel) {
             return
           }
-          let next = self.tree
+          let homeTabId =
+            activePanel.tabs.find(t => t.id === activePanel.activeTabId)?.id ??
+            activePanel.tabs[0]?.id
+          if (!homeTabId) {
+            const tab: TabNode = { id: nextId('tab'), viewIds: [] }
+            next = addTab(next, activePanel.id, tab)
+            homeTabId = tab.id
+          }
           for (const viewId of viewIds) {
-            if (!panelContainingView(next, viewId)) {
-              next = addViewToPanel(next, home, viewId)
+            if (!tabContainingView(next, viewId)) {
+              next = addViewToTab(next, homeTabId, viewId)
             }
           }
-          // views the session no longer has stop being members
-          for (const panel of panels(next)) {
-            for (const viewId of panel.viewIds) {
+          for (const tab of tabs(next)) {
+            for (const viewId of tab.viewIds) {
               if (!viewIds.includes(viewId)) {
                 next = removeView(next, viewId)
               }

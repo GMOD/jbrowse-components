@@ -28,30 +28,17 @@ const Harness = observer(function Harness({
 }: {
   session: ReturnType<typeof TestSession.create>
 }) {
-  const { drag, onTabPointerDown, onTabPointerMove, onTabPointerUp } =
-    useLayoutDrag(session)
+  const { drag, ...dragHandlers } = useLayoutDrag(session)
   return (
     <LayoutRenderer
       node={session.tree}
       layout={session}
       drag={drag}
-      renderPanel={(panelId, viewIds) => (
-        <div>
-          {viewIds.map(viewId => (
-            <button
-              key={viewId}
-              data-testid={`tab-${viewId}`}
-              onPointerDown={e => {
-                onTabPointerDown(viewId, e)
-              }}
-              onPointerMove={onTabPointerMove}
-              onPointerUp={onTabPointerUp}
-            >
-              {viewId} in {panelId}
-            </button>
-          ))}
-        </div>
+      dragHandlers={dragHandlers}
+      renderTabLabel={tab => (
+        <span data-testid={`tab-${tab.id}`}>{tab.id}</span>
       )}
+      renderTabContent={tab => <div>{tab.viewIds.join(',')}</div>}
     />
   )
 })
@@ -85,46 +72,47 @@ beforeAll(() => {
 function setup() {
   const session = TestSession.create({ name: 't' })
   const left = session.panels[0]!.id
-  session.addViewToPanel(left, 'view-1')
-  session.addViewToPanel(left, 'view-2')
-  const right = session.splitPanel(left, 'row')
-  session.addViewToPanel(right, 'view-3')
+  const tabA = session.tabs[0]!.id
+  session.addViewToTab(tabA, 'view-1')
+  const rightPanel = session.splitPanel(left, 'row')
+  const right = rightPanel.id
+  session.addViewToTab(rightPanel.tabs[0]!.id, 'view-3')
 
   stubGeometry({
     [left]: { left: 0, top: 0, width: 400, height: 400 } as DOMRect,
     [right]: { left: 400, top: 0, width: 400, height: 400 } as DOMRect,
   })
   render(<Harness session={session} />)
-  return { session, left, right }
+  return { session, left, right, tabA }
 }
 
-test('dragging a tab into the middle of another panel moves it there', () => {
-  const { session, right } = setup()
-  const tab = screen.getByTestId('tab-view-1')
+test('dragging a tab into the middle of another cell moves it there', () => {
+  const { session, right, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
 
   act(() => {
     fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
     fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
   })
-  // the panel under the pointer shows where it would land
   expect(document.querySelector('[data-drop-indicator="center"]')).toBeTruthy()
 
   act(() => {
     fireEvent.pointerUp(tab, { clientX: 600, clientY: 200 })
   })
 
-  expect(session.panelContainingView('view-1')?.id).toBe(right)
-  expect(session.panels.length).toBe(2)
+  expect(session.findTab(tabA)?.panel.id).toBe(right)
+  // the left cell had only that tab, so it collapsed
+  expect(session.panels.length).toBe(1)
   expect(document.querySelector('[data-drop-indicator]')).toBeNull()
 })
 
-test('dragging a tab to a panel edge splits it', () => {
-  const { session } = setup()
-  const tab = screen.getByTestId('tab-view-1')
+test('dragging a tab to a cell edge splits it', () => {
+  const { session, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
 
   act(() => {
     fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
-    // far right of the right-hand panel
+    // far right of the right-hand cell
     fireEvent.pointerMove(tab, { clientX: 790, clientY: 200 })
   })
   expect(document.querySelector('[data-drop-indicator="right"]')).toBeTruthy()
@@ -133,15 +121,15 @@ test('dragging a tab to a panel edge splits it', () => {
     fireEvent.pointerUp(tab, { clientX: 790, clientY: 200 })
   })
 
-  expect(session.panels.length).toBe(3)
-  const home = session.panelContainingView('view-1')!
-  expect(home.viewIds).toEqual(['view-1'])
+  // left collapsed as its only tab left; right split into two
+  expect(session.panels.length).toBe(2)
+  expect(session.findTab(tabA)!.tab.viewIds).toEqual(['view-1'])
 })
 
 test('a click on a tab is not a zero-distance drag', () => {
-  const { session, left } = setup()
+  const { session, left, tabA } = setup()
   const before = session.panels.map(p => p.id)
-  const tab = screen.getByTestId('tab-view-1')
+  const tab = screen.getByTestId(`tab-${tabA}`)
 
   act(() => {
     fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
@@ -150,12 +138,12 @@ test('a click on a tab is not a zero-distance drag', () => {
   })
 
   expect(session.panels.map(p => p.id)).toEqual(before)
-  expect(session.panelContainingView('view-1')?.id).toBe(left)
+  expect(session.findTab(tabA)?.panel.id).toBe(left)
 })
 
-test('releasing outside every panel drops nothing', () => {
-  const { session, left } = setup()
-  const tab = screen.getByTestId('tab-view-1')
+test('releasing outside every cell drops nothing', () => {
+  const { session, left, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
 
   act(() => {
     fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
@@ -163,6 +151,21 @@ test('releasing outside every panel drops nothing', () => {
     fireEvent.pointerUp(tab, { clientX: 5000, clientY: 5000 })
   })
 
-  expect(session.panelContainingView('view-1')?.id).toBe(left)
+  expect(session.findTab(tabA)?.panel.id).toBe(left)
   expect(session.panels.length).toBe(2)
+})
+
+test('clicking a tab makes it active without moving anything', () => {
+  const { session, left } = setup()
+  const other = session.addTab(left, ['view-2']).id
+  const first = session.panels.find(p => p.id === left)!.tabs[0]!.id
+
+  const tab = screen.getByTestId(`tab-${first}`)
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerUp(tab, { clientX: 10, clientY: 10 })
+  })
+
+  expect(session.activeTabOf(left)?.id).toBe(first)
+  expect(session.findTab(other)?.panel.id).toBe(left)
 })

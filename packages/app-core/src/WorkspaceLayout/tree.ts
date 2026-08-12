@@ -15,12 +15,26 @@
  * and no second owner to disagree with.
  */
 
+/**
+ * One tab. Its content is a **vertical stack of views**, which is JBrowse's own
+ * concept and the reason a generic window manager never fits cleanly: dockview
+ * has a group holding tabs, and we need a third level under that.
+ */
+export interface TabNode {
+  id: string
+  /** membership only — `session.views` is the order (see app-core/CLAUDE.md) */
+  viewIds: string[]
+  /** set only when the user renames it; otherwise derived from the views */
+  title?: string
+}
+
+/** A cell of the grid: the space a tab strip and one visible tab live in. */
 export interface PanelNode {
   id: string
   /** share of the parent branch's space, relative to its siblings */
   size: number
-  /** membership only — `session.views` is the order (see app-core/CLAUDE.md) */
-  viewIds: string[]
+  tabs: TabNode[]
+  activeTabId?: string
 }
 
 export interface BranchNode {
@@ -44,8 +58,28 @@ export function findPanel(node: LayoutTree, panelId: string) {
   return panels(node).find(p => p.id === panelId)
 }
 
+export function tabs(node: LayoutTree): TabNode[] {
+  return panels(node).flatMap(p => p.tabs)
+}
+
+export function findTab(node: LayoutTree, tabId: string) {
+  const panel = panels(node).find(p => p.tabs.some(t => t.id === tabId))
+  return panel
+    ? { panel, tab: panel.tabs.find(t => t.id === tabId)! }
+    : undefined
+}
+
+export function tabContainingView(node: LayoutTree, viewId: string) {
+  const panel = panels(node).find(p =>
+    p.tabs.some(t => t.viewIds.includes(viewId)),
+  )
+  return panel
+    ? { panel, tab: panel.tabs.find(t => t.viewIds.includes(viewId))! }
+    : undefined
+}
+
 export function panelContainingView(node: LayoutTree, viewId: string) {
-  return panels(node).find(p => p.viewIds.includes(viewId))
+  return tabContainingView(node, viewId)?.panel
 }
 
 /**
@@ -63,9 +97,9 @@ export function panelContainingView(node: LayoutTree, viewId: string) {
  * silently reparented. Here it is representable AND canonicalised, which is
  * what makes `size` work at any depth rather than only on the top-level split.
  *
- * Empty panels are NOT dropped. A panel with no views is a real state — it is
- * what "new empty tab" creates, and what remains when the last view in a split
- * is closed but the user still wants the space.
+ * Empty panels are NOT dropped, and neither are empty tabs. A tab with no views
+ * is exactly what "new empty tab" creates — it shows the view launcher — so
+ * pruning empties wholesale would delete the thing the user just asked for.
  */
 export function normalize(node: LayoutTree): LayoutTree {
   if (!isBranch(node)) {
@@ -153,34 +187,8 @@ export function splitPanel(
 export function removePanel(root: LayoutTree, panelId: string): LayoutTree {
   const removed = mapNode(root, panelId, () => undefined)
   // Removing the only panel leaves nothing to render, which is not a state the
-  // workspace has: the caller gets an empty panel to put the next view in.
-  return removed ? normalize(removed) : { ...(root as PanelNode), viewIds: [] }
-}
-
-export function addViewToPanel(
-  root: LayoutTree,
-  panelId: string,
-  viewId: string,
-): LayoutTree {
-  return (
-    mapNode(root, panelId, found =>
-      isBranch(found) || found.viewIds.includes(viewId)
-        ? found
-        : { ...found, viewIds: [...found.viewIds, viewId] },
-    ) ?? root
-  )
-}
-
-/** Remove a view from whichever panel holds it, leaving the panel in place. */
-export function removeView(root: LayoutTree, viewId: string): LayoutTree {
-  const home = panelContainingView(root, viewId)
-  return home
-    ? (mapNode(root, home.id, found =>
-        isBranch(found)
-          ? found
-          : { ...found, viewIds: found.viewIds.filter(id => id !== viewId) },
-      ) ?? root)
-    : root
+  // workspace has: the caller gets an empty panel to put the next tab in.
+  return removed ? normalize(removed) : { ...(root as PanelNode), tabs: [] }
 }
 
 /** Set the sizes of one branch's children, e.g. from a splitter drag. */
@@ -203,33 +211,163 @@ export function setSizes(
   )
 }
 
+/** Rebuild `root` with `replacer` applied to the panel with id `panelId`. */
+function mapPanel(
+  root: LayoutTree,
+  panelId: string,
+  replacer: (panel: PanelNode) => PanelNode,
+): LayoutTree {
+  return (
+    mapNode(root, panelId, found =>
+      isBranch(found) ? found : replacer(found),
+    ) ?? root
+  )
+}
+
+// --- tabs ------------------------------------------------------------------
+//
+// A tab is the unit the user drags, closes and renames; a view is what lives
+// inside one. Keeping them separate is what dockview models as group/panel, and
+// it is the level the first version of this tree left out entirely.
+
+export function addTab(
+  root: LayoutTree,
+  panelId: string,
+  tab: TabNode,
+): LayoutTree {
+  return mapPanel(root, panelId, panel => ({
+    ...panel,
+    tabs: [...panel.tabs, tab],
+    activeTabId: tab.id,
+  }))
+}
+
 /**
- * Drop a panel that has been left empty, unless it is the only one.
- *
- * Deliberately NOT a normalisation rule. An empty panel is a legitimate state —
- * it is exactly what "new empty tab" creates — so removing empty panels
- * wholesale would delete the thing the user just asked for. It is instead a
- * step the *drag* gesture takes about its own source panel, because dragging
- * the last view out of a split and leaving a blank half is the one place an
- * empty panel is clearly not what was meant.
+ * Close a tab. The panel stays — an empty panel shows the view launcher, which
+ * is a state the user can reach deliberately.
  */
-export function pruneEmptyPanel(root: LayoutTree, panelId: string): LayoutTree {
-  const found = findPanel(root, panelId)
-  return found && found.viewIds.length === 0 && panels(root).length > 1
-    ? removePanel(root, panelId)
+export function removeTab(root: LayoutTree, tabId: string): LayoutTree {
+  const home = findTab(root, tabId)
+  if (!home) {
+    return root
+  }
+  return mapPanel(root, home.panel.id, panel => {
+    const remaining = panel.tabs.filter(t => t.id !== tabId)
+    return {
+      ...panel,
+      tabs: remaining,
+      activeTabId:
+        panel.activeTabId === tabId
+          ? // fall to the neighbour on the left, as every tabbed UI does
+            (remaining[
+              Math.max(panel.tabs.findIndex(t => t.id === tabId) - 1, 0)
+            ]?.id ?? undefined)
+          : panel.activeTabId,
+    }
+  })
+}
+
+/**
+ * Move a tab into another panel, at `index` if given.
+ *
+ * One function returning one tree, so there is no instant at which the tab is
+ * in both panels or neither — the state the imperative bridge had to wrap an
+ * explicit `runInAction` around to hide from its own reconcile autorun.
+ */
+export function moveTabToPanel(
+  root: LayoutTree,
+  tabId: string,
+  targetPanelId: string,
+  index?: number,
+): LayoutTree {
+  const home = findTab(root, tabId)
+  if (!home) {
+    return root
+  }
+  const { tab } = home
+  const detached = mapPanel(removeTab(root, tabId), targetPanelId, panel => {
+    const at = index ?? panel.tabs.length
+    return {
+      ...panel,
+      tabs: [...panel.tabs.slice(0, at), tab, ...panel.tabs.slice(at)],
+      activeTabId: tab.id,
+    }
+  })
+  return detached
+}
+
+export function setActiveTab(
+  root: LayoutTree,
+  panelId: string,
+  tabId: string,
+): LayoutTree {
+  return mapPanel(root, panelId, panel =>
+    panel.tabs.some(t => t.id === tabId)
+      ? { ...panel, activeTabId: tabId }
+      : panel,
+  )
+}
+
+export function renameTab(
+  root: LayoutTree,
+  tabId: string,
+  title: string | undefined,
+): LayoutTree {
+  const home = findTab(root, tabId)
+  return home
+    ? mapPanel(root, home.panel.id, panel => ({
+        ...panel,
+        tabs: panel.tabs.map(t => (t.id === tabId ? { ...t, title } : t)),
+      }))
+    : root
+}
+
+// --- views inside tabs -----------------------------------------------------
+
+export function addViewToTab(
+  root: LayoutTree,
+  tabId: string,
+  viewId: string,
+): LayoutTree {
+  const home = findTab(root, tabId)
+  return home
+    ? mapPanel(root, home.panel.id, panel => ({
+        ...panel,
+        tabs: panel.tabs.map(t =>
+          t.id === tabId && !t.viewIds.includes(viewId)
+            ? { ...t, viewIds: [...t.viewIds, viewId] }
+            : t,
+        ),
+      }))
+    : root
+}
+
+/** Take a view out of whatever tab holds it, leaving the tab in place. */
+export function removeView(root: LayoutTree, viewId: string): LayoutTree {
+  const home = tabContainingView(root, viewId)
+  return home
+    ? mapPanel(root, home.panel.id, panel => ({
+        ...panel,
+        tabs: panel.tabs.map(t => ({
+          ...t,
+          viewIds: t.viewIds.filter(id => id !== viewId),
+        })),
+      }))
     : root
 }
 
 /**
- * Move a view into another panel — the drag-a-tab gesture, and the only one
- * that has to be atomic. Expressed as one function returning one tree, so
- * there is no instant at which the view is in both panels or neither, which is
- * the state the imperative bridge had to batch an MST action to avoid.
+ * Drop a panel that has been left with no tabs, unless it is the only one.
+ *
+ * Deliberately NOT a normalisation rule. A panel with no tabs is reachable on
+ * purpose, so pruning empties wholesale would delete a space the user asked
+ * for. It is a step the *drag* gesture takes about its own source panel,
+ * because dragging the last tab out of a split and leaving a blank half is the
+ * one place an empty panel is clearly not what was meant.
  */
-export function moveViewToPanel(
-  root: LayoutTree,
-  viewId: string,
-  targetPanelId: string,
-): LayoutTree {
-  return addViewToPanel(removeView(root, viewId), targetPanelId, viewId)
+export function pruneEmptyPanel(root: LayoutTree, panelId: string): LayoutTree {
+  const found = findPanel(root, panelId)
+  return found && found.tabs.length === 0 && panels(root).length > 1
+    ? removePanel(root, panelId)
+    : root
 }

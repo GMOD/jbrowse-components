@@ -2,12 +2,11 @@ import { Fragment, useCallback, useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
-import { indicatorRect } from './dropZone.ts'
+import { PanelView } from './PanelView.tsx'
 
-import type { DropZone } from './dropZone.ts'
 import type { WorkspaceLayout } from './model.ts'
-import type { BranchNode, LayoutTree } from './tree.ts'
-import type { DragState } from './useLayoutDrag.ts'
+import type { BranchNode, LayoutTree, PanelNode, TabNode } from './tree.ts'
+import type { DragState, TabDragHandlers } from './useLayoutDrag.ts'
 
 /**
  * The layout, rendered. There is no imperative api and no event to listen to:
@@ -23,31 +22,43 @@ import type { DragState } from './useLayoutDrag.ts'
 interface Props {
   node: LayoutTree
   layout: WorkspaceLayout
-  renderPanel: (panelId: string, viewIds: string[]) => React.ReactNode
-  /** the in-flight drag, so the panel under the pointer can show where it lands */
+  renderTabLabel: (tab: TabNode) => React.ReactNode
+  renderTabContent: (tab: TabNode) => React.ReactNode
+  renderPanelActions?: (panel: PanelNode) => React.ReactNode
+  dragHandlers: TabDragHandlers
+  /** the in-flight drag, so the cell under the pointer can show where it lands */
   drag?: DragState
 }
 
 export const LayoutRenderer = observer(function LayoutRenderer({
   node,
   layout,
-  renderPanel,
+  renderTabLabel,
+  renderTabContent,
+  renderPanelActions,
+  dragHandlers,
   drag,
 }: Props) {
   if (!('children' in node)) {
     return (
       <div
-        data-panel-id={node.id}
         style={{
-          position: 'relative',
           flexGrow: node.size,
           flexBasis: 0,
           minWidth: 0,
           minHeight: 0,
+          display: 'flex',
         }}
       >
-        {renderPanel(node.id, node.viewIds)}
-        {drag?.panelId === node.id && <DropIndicator zone={drag.zone} />}
+        <PanelView
+          panel={node}
+          layout={layout}
+          renderTabLabel={renderTabLabel}
+          renderTabContent={renderTabContent}
+          renderPanelActions={renderPanelActions}
+          dragHandlers={dragHandlers}
+          dropZone={drag?.panelId === node.id ? drag.zone : undefined}
+        />
       </div>
     )
   }
@@ -68,7 +79,10 @@ export const LayoutRenderer = observer(function LayoutRenderer({
           <LayoutRenderer
             node={child}
             layout={layout}
-            renderPanel={renderPanel}
+            renderTabLabel={renderTabLabel}
+            renderTabContent={renderTabContent}
+            renderPanelActions={renderPanelActions}
+            dragHandlers={dragHandlers}
             drag={drag}
           />
         </Fragment>
@@ -175,30 +189,6 @@ const Splitter = observer(function Splitter({
         cursor: horizontal ? 'col-resize' : 'row-resize',
         background: 'rgba(128,128,128,0.35)',
         touchAction: 'none',
-      }}
-    />
-  )
-})
-
-/**
- * Where the view would land if released now. Half the panel for an edge, the
- * whole panel for a tab drop — the same shape dockview draws, because it reads
- * unambiguously and users already know it.
- */
-const DropIndicator = observer(function DropIndicator({
-  zone,
-}: {
-  zone: DropZone
-}) {
-  return (
-    <div
-      data-drop-indicator={zone}
-      style={{
-        position: 'absolute',
-        pointerEvents: 'none',
-        background: 'rgba(64,128,255,0.30)',
-        outline: '1px solid rgba(64,128,255,0.8)',
-        ...indicatorRect(zone),
       }}
     />
   )
