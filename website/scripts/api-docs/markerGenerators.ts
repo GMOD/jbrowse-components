@@ -11,6 +11,7 @@ import { writeJexlDocs } from './generateJexlDocs.ts'
 import { writeMenuDocs } from './generateMenuDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
+import { writeSearchResultDocs } from './generateSearchResultDocs.ts'
 import { writeShaderExportDocs } from './generateShaderExportDocs.ts'
 
 import type { SourceCorpus } from './util.ts'
@@ -55,6 +56,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Example plugin tree',
     write: (_corpus, opts) => writeExamplePluginDocs(opts),
+  },
+  {
+    label: 'Search result field table',
+    write: (_corpus, opts) => writeSearchResultDocs(opts),
   },
   {
     label: 'Shader export table',

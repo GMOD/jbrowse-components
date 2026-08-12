@@ -1,11 +1,19 @@
 export interface BaseResultArgs {
+  /** #resultField primary display text, and the fallback for `displayString` */
   label: string
+  /** #resultField alternate display text; falls back to `label` */
   displayString?: string
+  /** #resultField where to navigate, e.g. `chr1:1000..2000`. A hit with neither this nor `results` is treated as a refName */
   locString?: string
+  /** #resultField a refName to navigate to; `RefSequenceResult` reads it in place of `locString` */
   refName?: string
+  /** #resultField the track to open or highlight alongside the navigation */
   trackId?: string
+  /** #resultField nested hits, shown as a disambiguation dialog instead of navigating */
   results?: BaseResult[]
   /**
+   * #resultField this hit matched the query exactly, as the adapter judges it
+   *
    * Whether this hit matched the query exactly, as the adapter judges it —
    * which is not something a caller can recompute. Trix calls a hit exact when
    * *any* indexed attribute equals the query, so searching a feature's ID
