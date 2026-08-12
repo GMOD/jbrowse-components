@@ -28,12 +28,13 @@ function mockFeature(opts: {
 
 const config = mockDisplayConfig()
 
-function coordsOf(feature: Feature) {
-  return transcriptCoords(findGlyph(feature, config)({ feature, config }))
+function coordsOf(feature: Feature, over?: Partial<typeof config>) {
+  const c = { ...config, ...over }
+  return transcriptCoords(findGlyph(feature, c)({ feature, config: c }))
 }
 
-function exonsOf(feature: Feature) {
-  return coordsOf(feature)?.exons
+function exonsOf(feature: Feature, over?: Partial<typeof config>) {
+  return coordsOf(feature, over)?.exons
 }
 
 // exon rows present: the authoritative source, used as-is
@@ -91,6 +92,55 @@ describe('transcriptCoords', () => {
       subfeatures: [mockFeature({ type: 'CDS', start: 0, end: 100 })],
     })
     expect(exonsOf(transcript)).toEqual([0, 100])
+  })
+
+  // A CDS-only transcript's untranslated overhang is evidenced only by its own
+  // bounds, so those cap the outermost exons — the same reconstruction the
+  // renderer's implied UTRs make, but derived here from the feature rather than
+  // borrowed from what got drawn.
+  it('stretches a CDS-only transcript to its own bounds', () => {
+    const transcript = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 500,
+      subfeatures: [
+        mockFeature({ type: 'CDS', start: 50, end: 100 }),
+        mockFeature({ type: 'CDS', start: 200, end: 300 }),
+        mockFeature({ type: 'CDS', start: 400, end: 450 }),
+      ],
+    })
+    expect(exonsOf(transcript)).toEqual([0, 100, 200, 300, 400, 500])
+  })
+
+  // The exons a coordinate is counted on come from the FEATURE, never from what
+  // the glyph drew. `subParts` and `impliedUTRs` decide which rows are rendered;
+  // routing coordinates through that list made an HGVS position change when
+  // someone edited a rendering slot — `subParts: 'CDS'` alone silently dropped
+  // every UTR position off transcripts annotated without exon rows.
+  it('ignores the display slots that decide which subparts are drawn', () => {
+    const cdsUtr = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 500,
+      subfeatures: [
+        mockFeature({ type: 'five_prime_UTR', start: 0, end: 50 }),
+        mockFeature({ type: 'CDS', start: 50, end: 100 }),
+        mockFeature({ type: 'CDS', start: 200, end: 300 }),
+        mockFeature({ type: 'CDS', start: 400, end: 450 }),
+        mockFeature({ type: 'three_prime_UTR', start: 450, end: 500 }),
+      ],
+    })
+    const whole = [0, 100, 200, 300, 400, 500]
+    expect(exonsOf(cdsUtr, { subParts: 'CDS' })).toEqual(whole)
+    expect(exonsOf(cdsUtr, { impliedUTRs: false })).toEqual(whole)
+
+    const cdsOnly = mockFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 200,
+      subfeatures: [mockFeature({ type: 'CDS', start: 50, end: 150 })],
+    })
+    expect(exonsOf(cdsOnly, { impliedUTRs: false })).toEqual([0, 200])
   })
 
   it('carries the coding extent, and omits it for a non-coding transcript', () => {
