@@ -276,6 +276,32 @@ test('Add row defaults to an assembly connected to the current bottom row', () =
   ).not.toBeInTheDocument()
 })
 
+// The default comes from getConnectedAssemblies, which reads the other endpoint
+// off every synteny track naming the bottom row — and a track config is free to
+// name an assembly the session has no configuration for. Defaulting the row to
+// one puts a value in the Select that is not among its options, so the row
+// renders blank: the user clicks Add row and gets an unnamed one.
+//
+// rn7's datasets are the ghost one first and a usable one second, so taking the
+// head of the list is exactly what has to be skipped.
+test('Add row skips a connected assembly the session cannot open', () => {
+  setup({
+    // no `ghost` assembly, though a track names one
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [
+      syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
+      syntenyTrack('rn7_ghost', ['rn7', 'ghost']),
+      syntenyTrack('rn7_mm39', ['rn7', 'mm39']),
+    ],
+  })
+  goManual()
+  // move the bottom row onto rn7, whose first dataset is the unopenable one
+  pickAssembly(1, 'rn7')
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'rn7', 'mm39'])
+})
+
 test('Add row selects the pair it just created', () => {
   // otherwise the track panel keeps showing the pair the user had been on, and
   // the row they asked for is configured only if they go find its chain icon

@@ -98,7 +98,19 @@ export function getConnectedAssemblies(
       readConfObject(track, 'assemblyNames') as string[],
       assemblyManager,
     )) {
-      if (name !== canonicalAssembly) {
+      // Only assemblies the session can actually open. A track config is free
+      // to name one the session has no configuration for — a hub whose
+      // assemblies were never loaded, a config one was removed from — and the
+      // caller feeds this into a row that becomes an AssemblySelector value.
+      // A value that is not one of the Select's options renders as an empty
+      // field, so "Add row" produced an unnamed row rather than the connected
+      // default it exists to give. `getCanonicalAssemblyName` is undefined for
+      // a name the manager cannot resolve; getAddRowOptions filters its own
+      // list on the same test, for the same reason.
+      if (
+        name !== canonicalAssembly &&
+        assemblyManager.getCanonicalAssemblyName(name) !== undefined
+      ) {
         names.add(name)
       }
     }
