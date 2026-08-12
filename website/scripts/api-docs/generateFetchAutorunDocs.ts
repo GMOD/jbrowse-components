@@ -1,12 +1,10 @@
 import * as ts from 'typescript'
 
 import {
-  isMain,
   lastTaggedLine,
   markdownTable,
   parseSourceFileSyntactic,
   rewriteMarkerBlock,
-  runMarkerScript,
 } from './util.ts'
 
 // Render the fetch-lifecycle autorun table into the data-fetching guide and the
@@ -185,8 +183,4 @@ export function writeFetchAutorunDocs({ check = false } = {}) {
   return rewriteMarkerBlock('FETCH_AUTORUNS', render(collectAutoruns()), {
     check,
   })
-}
-
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Fetch autoruns table', writeFetchAutorunDocs)
 }

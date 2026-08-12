@@ -1,12 +1,10 @@
 import * as ts from 'typescript'
 
 import {
-  isMain,
   jsDocText,
   markdownTable,
   parseSourceFileSyntactic,
   rewriteMarkerBlock,
-  runMarkerScript,
 } from './util.ts'
 
 // Render the custom-palette-key table into the hand-written theming guide from
@@ -145,8 +143,4 @@ export function writePaletteDocs({ check = false } = {}) {
   return rewriteMarkerBlock('PALETTE_KEYS', renderTable(collectPaletteKeys()), {
     check,
   })
-}
-
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Palette keys table', writePaletteDocs)
 }

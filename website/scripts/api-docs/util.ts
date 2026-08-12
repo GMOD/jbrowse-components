@@ -1814,11 +1814,44 @@ export function lastTaggedLine(comment: string, tag: string) {
 }
 
 // Recursively list every non-test .ts/.tsx source under a directory, skipping
-// build output. Used by the regex-scanning generators (extension points,
-// display foundations) that read tags straight from source text rather than
-// through the TypeScript program.
+// build output.
 export function listSources(dir: string): string[] {
   return walkFiles(dir, isTsSource, BUILD_DIRS)
+}
+
+// The sources the text-scanning generators read tags out of, read once.
+//
+// Five of them used to walk the tree themselves with `listSources` and read
+// every file again — five full walks and five full reads per run, and three
+// different answers about what "the source tree" is. Two scanned
+// `packages`+`plugins` and two `packages`+`plugins`+`products`, so the same tag
+// written in a product was documented by one generator and silently ignored by
+// the other; and a filesystem walk sees gitignored files, which the
+// program-driven half of the pipeline (`getAllFiles`) does not.
+//
+// So the list comes from `getAllFiles` now, the same list the TypeScript
+// program is built over, narrowed to what `listSources` used to yield: no test
+// files (a `#extensionPoint` in a fixture is not an extension point) and no
+// `.js`, which `getAllFiles` includes for the program's benefit and which
+// carries no tags.
+export interface SourceCorpus {
+  files: string[]
+  read: (file: string) => string
+}
+
+export function sourceCorpus(files: string[]): SourceCorpus {
+  const texts = new Map<string, string>()
+  return {
+    files: files.filter(f => isTsSource(f.split('/').at(-1)!)),
+    read(file) {
+      let text = texts.get(file)
+      if (text === undefined) {
+        text = readSourceIfPresent(file) ?? ''
+        texts.set(file, text)
+      }
+      return text
+    },
+  }
 }
 
 // Recursively list every published .md doc under a directory. Shared by the
@@ -1992,40 +2025,6 @@ export function rewriteGroupedMarkerBlocks(
     }
   }
   return { stale, seen }
-}
-
-// True when this module is the process entry point rather than one of
-// generate.ts's imports. Call it as `isMain(import.meta.filename)` — the
-// filename is passed in rather than read here so util.ts stays free of
-// `import.meta`, which jest transforms to CJS and cannot parse (see format.ts).
-//
-// Every marker generator carries a CLI tail, and generate.ts imports all of
-// them to run in one process, so each has to stay inert on import or its table
-// would be generated twice in one `pnpm gendocs`. That test used to be
-// `process.argv[1]?.endsWith('<the file's own name>')` — a hardcoded copy of
-// the filename, in ten files. A rename that missed one turned the script into a
-// silent no-op: it exits 0 having generated nothing, and `pnpm autogen --check`
-// judges these generators on exit status alone, so a stale table would report
-// as up to date.
-export function isMain(moduleFilename: string) {
-  return moduleFilename === process.argv[1]
-}
-
-// CLI entry shared by the marker-block generators (color/jexl/extension-point).
-// Runs the writer; in --check mode a stale-docs list exits non-zero so CI fails.
-// Each caller still guards on argv[1] so importing from generate.ts stays inert.
-export function runMarkerScript(
-  label: string,
-  write: (opts: { check: boolean }) => string[],
-) {
-  const stale = write({ check: process.argv.includes('--check') })
-  if (stale.length) {
-    console.error(
-      `${label} out of date — run \`pnpm autogen\`:\n${stale.map(f => `  ${f}`).join('\n')}`,
-    )
-    process.exit(1)
-  }
-  console.log(`${label} up to date`)
 }
 
 // Every source file the generators document, tracked plus untracked-but-not-

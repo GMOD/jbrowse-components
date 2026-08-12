@@ -1,13 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-import {
-  isMain,
-  listSources,
-  markdownTable,
-  rewriteMarkerBlock,
-  runMarkerScript,
-} from './util.ts'
+import { markdownTable, rewriteMarkerBlock } from './util.ts'
+
+import type { SourceCorpus } from './util.ts'
 
 // Render the standalone-helper-package table into the imports guide from the
 // workspace manifests, because the hand-written version was not merely stale
@@ -80,13 +76,14 @@ function readManifest(dir: string) {
 // generated `website/docs/api/` directory on purpose: that directory is itself
 // generated, and reading one generated artifact to build another makes the two
 // order-dependent within a single `pnpm autogen` run.
-function hasApiExports(dir: string) {
-  return listSources(dir).some(f =>
-    /#api(?![A-Za-z0-9_])/.test(fs.readFileSync(f, 'utf8')),
+function hasApiExports(corpus: SourceCorpus, dir: string) {
+  const prefix = `${dir}/`
+  return corpus.files.some(
+    f => f.startsWith(prefix) && /#api(?![A-Za-z0-9_])/.test(corpus.read(f)),
   )
 }
 
-export function collectHelperPackages(): Pkg[] {
+export function collectHelperPackages(corpus: SourceCorpus): Pkg[] {
   const out: Pkg[] = []
   for (const entry of fs.readdirSync(PACKAGES_DIR, { withFileTypes: true })) {
     const dir = path.join(PACKAGES_DIR, entry.name)
@@ -98,7 +95,7 @@ export function collectHelperPackages(): Pkg[] {
       pkg.private ||
       pkg.name === '@jbrowse/core' ||
       !fs.existsSync(path.join(dir, 'src')) ||
-      !hasApiExports(path.join(dir, 'src'))
+      !hasApiExports(corpus, path.join(dir, 'src'))
     ) {
       continue
     }
@@ -140,14 +137,13 @@ function renderTable(packages: Pkg[]) {
   )
 }
 
-export function writeHelperPackageDocs({ check = false } = {}) {
+export function writeHelperPackageDocs(
+  corpus: SourceCorpus,
+  { check = false } = {},
+) {
   return rewriteMarkerBlock(
     'HELPER_PACKAGES',
-    renderTable(collectHelperPackages()),
+    renderTable(collectHelperPackages(corpus)),
     { check },
   )
-}
-
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Helper package table', writeHelperPackageDocs)
 }

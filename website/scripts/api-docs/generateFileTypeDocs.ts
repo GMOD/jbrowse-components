@@ -1,17 +1,14 @@
 import {
-  getAllFiles,
-  isMain,
   jsDocText,
   markdownTable,
   parsePipeTags,
   parseSourceFileSyntactic,
-  readSourceIfPresent,
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
-  runMarkerScript,
   tableCell,
 } from './util.ts'
 
+import type { SourceCorpus } from './util.ts'
 import type { Node } from 'typescript'
 
 // Render the format -> adapter -> track type tables into the "Supported file
@@ -62,10 +59,10 @@ function tagValue(comment: string, tag: string) {
 // group and preserving source order within a group. The tags sit in the same
 // JSDoc comment as `#config`, which is attached to the configSchema variable
 // statement.
-function collectFormats(files: string[], groups: Record<string, Row[]>) {
-  for (const file of files) {
-    const text = readSourceIfPresent(file)
-    if (!text?.includes('#fileFormat')) {
+function collectFormats(corpus: SourceCorpus, groups: Record<string, Row[]>) {
+  for (const file of corpus.files) {
+    const text = corpus.read(file)
+    if (!text.includes('#fileFormat')) {
       continue
     }
     const visit = (node: Node) => {
@@ -123,9 +120,12 @@ function renderTable(rows: Row[]) {
 
 // In `check` mode, report which docs have a stale table instead of rewriting —
 // used by CI to fail when an adapter changed but the docs were not regenerated.
-export function writeFileTypeDocs(files: string[], { check = false } = {}) {
+export function writeFileTypeDocs(
+  corpus: SourceCorpus,
+  { check = false } = {},
+) {
   const groups: Record<string, Row[]> = {}
-  collectFormats(files, groups)
+  collectFormats(corpus, groups)
   const { stale, seen } = rewriteGroupedMarkerBlocks(
     'FILE_TYPES',
     (group, file) => {
@@ -212,12 +212,4 @@ export function writeGotchaDocs(
     },
     { check },
   ).stale
-}
-
-// Run as a script: `node docs/generateFileTypeDocs.ts [--check]`. The
-// display-type table needs the whole-repo DisplayType scan that generate.ts
-// already does, so it is regenerated there and only verified here.
-if (isMain(import.meta.filename)) {
-  const files = await getAllFiles()
-  runMarkerScript('File type tables', opts => writeFileTypeDocs(files, opts))
 }

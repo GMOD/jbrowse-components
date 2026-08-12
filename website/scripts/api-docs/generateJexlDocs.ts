@@ -1,16 +1,13 @@
-import fs from 'node:fs'
-
 import * as ts from 'typescript'
 
 import {
-  isMain,
   jsDocText,
-  listSources,
   parsePipeTags,
   parseSourceFileSyntactic,
   rewriteMarkerBlock,
-  runMarkerScript,
 } from './util.ts'
+
+import type { SourceCorpus } from './util.ts'
 
 // Render the jexl function catalog into the jexl config guide straight from the
 // `j.addFunction(...)` / `j.addBinaryOp(...)` registrations, so the documented
@@ -42,7 +39,6 @@ import {
 // costing a full parse of every source file in the repo.
 
 const CORE_SOURCE = 'packages/core/src/util/jexl.ts'
-const SOURCE_DIRS = ['packages', 'plugins', 'products']
 const TAG = '#jexlFunction'
 
 interface Entry {
@@ -62,10 +58,9 @@ function parseJexlTags(comment: string | undefined, where: string): Entry[] {
 // Every file carrying at least one tag: core's first, so its categories keep
 // leading the catalog, then the rest in path order so a plugin's position in the
 // output does not depend on directory-listing order.
-function taggedSources() {
-  const rest = SOURCE_DIRS.flatMap(dir => listSources(dir))
-    .filter(f => f !== CORE_SOURCE)
-    .filter(f => fs.readFileSync(f, 'utf8').includes(TAG))
+function taggedSources(corpus: SourceCorpus) {
+  const rest = corpus.files
+    .filter(f => f !== CORE_SOURCE && corpus.read(f).includes(TAG))
     .sort()
   return [CORE_SOURCE, ...rest]
 }
@@ -73,7 +68,7 @@ function taggedSources() {
 // Collect tagged functions grouped by their category, preserving source order of
 // both the categories and the functions within each. Tags sit on the expression
 // statement wrapping each `j.addFunction(...)` / `j.addBinaryOp(...)` call.
-function collectFunctions(files: string[]) {
+function collectFunctions(corpus: SourceCorpus, files: string[]) {
   const groups = new Map<string, Entry[]>()
   for (const file of files) {
     const visit = (node: ts.Node) => {
@@ -89,7 +84,7 @@ function collectFunctions(files: string[]) {
       }
       node.forEachChild(visit)
     }
-    visit(parseSourceFileSyntactic(file))
+    visit(parseSourceFileSyntactic(file, corpus.read(file)))
   }
   return groups
 }
@@ -112,15 +107,10 @@ function renderCatalog(groups: Map<string, Entry[]>) {
 // In `check` mode, report which docs have a stale catalog instead of rewriting —
 // used by CI to fail when a jexl function changed but the docs were not
 // regenerated.
-export function writeJexlDocs({ check = false } = {}) {
+export function writeJexlDocs(corpus: SourceCorpus, { check = false } = {}) {
   return rewriteMarkerBlock(
     'JEXL_CATALOG',
-    renderCatalog(collectFunctions(taggedSources())),
+    renderCatalog(collectFunctions(corpus, taggedSources(corpus))),
     { check },
   )
-}
-
-// Run as a script: `node docs/generateJexlDocs.ts [--check]`.
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Jexl catalog', writeJexlDocs)
 }

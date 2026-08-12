@@ -126,22 +126,16 @@ const GENERATORS: Generator[] = [
     argv: web('generate-og-image.ts'),
   },
   { name: 'doc snippets', argv: web('sync-doc-snippets.ts') },
-  { name: 'color tables', argv: api('generateColorDocs.ts') },
-  { name: 'jexl catalog', argv: api('generateJexlDocs.ts') },
-  { name: 'extension point index', argv: api('generateExtensionPointDocs.ts') },
-  { name: 'file type tables', argv: api('generateFileTypeDocs.ts') },
   {
-    name: 'display foundations table',
-    argv: api('generateDisplayFoundationDocs.ts'),
+    // The ten `<!-- TABLE START -->` blocks spliced into the hand-written
+    // guides and agent-docs. One entry, not ten: each was its own `node`
+    // process paying ~2.5s to load TypeScript before scanning, and gendocs
+    // below then generated all ten again. They still need an entry of their
+    // own — five of the blocks land in `developer_guides`/`agent-docs`, which
+    // gendocs' diffPaths do not cover. `markers.ts <label>` narrows to one.
+    name: 'marker tables',
+    argv: api('markers.ts'),
   },
-  {
-    name: 'cross-cutting mixins table',
-    argv: api('generateCrossCuttingMixinDocs.ts'),
-  },
-  { name: 'fetch autoruns table', argv: api('generateFetchAutorunDocs.ts') },
-  { name: 'palette keys table', argv: api('generatePaletteDocs.ts') },
-  { name: 'helper package table', argv: api('generateHelperPackageDocs.ts') },
-  { name: 're-export module table', argv: api('generateReExportDocs.ts') },
   {
     // The config-slot manifest `jbrowse validate` checks against, read out of
     // the live ConfigurationSchema objects. It rides autogen so a new slot (or a

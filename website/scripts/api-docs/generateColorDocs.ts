@@ -1,13 +1,11 @@
 import * as ts from 'typescript'
 
 import {
-  isMain,
   jsDocText,
   markdownTable,
   parsePipeTags,
   parseSourceFileSyntactic,
   rewriteGroupedMarkerBlocks,
-  runMarkerScript,
 } from './util.ts'
 
 // Render small color-swatch tables into the hand-written guides, sourced from
@@ -141,9 +139,4 @@ export function writeColorDocs({ check = false } = {}) {
     }
   }
   return stale
-}
-
-// Run as a script: `node docs/generateColorDocs.ts [--check]`.
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Color tables', writeColorDocs)
 }

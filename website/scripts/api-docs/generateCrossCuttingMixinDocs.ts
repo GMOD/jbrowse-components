@@ -1,13 +1,6 @@
-import fs from 'fs'
+import { composeCalls, markdownTable, rewriteMarkerBlock } from './util.ts'
 
-import {
-  composeCalls,
-  isMain,
-  listSources,
-  markdownTable,
-  rewriteMarkerBlock,
-  runMarkerScript,
-} from './util.ts'
+import type { SourceCorpus } from './util.ts'
 
 // Render the cross-cutting-mixin table in the architecture spec from the source,
 // the way `generateDisplayFoundationDocs` already does for the foundations.
@@ -41,7 +34,6 @@ import {
 // foundations table needs its tag because a display can also *inherit* a
 // foundation by extending another display's whole model, and no compose call
 // records that.
-const SOURCE_DIRS = ['packages', 'plugins']
 
 // `#stateModel <Name>` followed, within the same JSDoc, by the tag. Same
 // comment-body walk as the foundations scan, so a tag can't be picked up from
@@ -102,43 +94,38 @@ function collectComposes(file: string, src: string) {
   })
 }
 
-export function collectCrossCuttingMixins() {
+export function collectCrossCuttingMixins(corpus: SourceCorpus) {
   const defs = new Map<string, string>()
   const composedBy = new Map<string, Set<string>>()
-  for (const dir of SOURCE_DIRS) {
-    for (const file of listSources(dir)) {
-      const src = fs.readFileSync(file, 'utf8')
-      for (const [, name, supplies] of src.matchAll(DEF)) {
-        // A `|` would silently split the markdown cell it lands in and shift
-        // every column after it, so reject it where it is written rather than
-        // rendering a broken table.
-        if (supplies!.includes('|')) {
-          throw new Error(
-            `#crossCuttingMixin ${name} contains a "|", which breaks the markdown table cell`,
-          )
-        }
-        // The rendered cell has to read as a sentence to someone with
-        // ARCHITECTURE.md open and nothing else — that doc is handed to agents
-        // directly, so a reference in it has to resolve from inside it. A
-        // positional one ("see below the table") resolves only until the table
-        // moves, and reads as nonsense in the source file the tag lives in.
-        // Name the thing instead.
-        if (/\b(above|below|earlier|later) the table\b/.test(supplies!)) {
-          throw new Error(
-            `#crossCuttingMixin ${name} points at where something sits in the rendered table. Name what it refers to instead — the tag is also read in ${file}, where the table does not exist.`,
-          )
-        }
-        defs.set(name!, supplies!.replace(TRAILING_COMMENT_END, '').trim())
-      }
-      if (!src.includes('.compose(')) {
-        continue
-      }
-      for (const { mixin, composer } of collectComposes(file, src)) {
-        composedBy.set(
-          mixin,
-          (composedBy.get(mixin) ?? new Set()).add(composer),
+  for (const file of corpus.files) {
+    const src = corpus.read(file)
+    for (const [, name, supplies] of src.matchAll(DEF)) {
+      // A `|` would silently split the markdown cell it lands in and shift
+      // every column after it, so reject it where it is written rather than
+      // rendering a broken table.
+      if (supplies!.includes('|')) {
+        throw new Error(
+          `#crossCuttingMixin ${name} contains a "|", which breaks the markdown table cell`,
         )
       }
+      // The rendered cell has to read as a sentence to someone with
+      // ARCHITECTURE.md open and nothing else — that doc is handed to agents
+      // directly, so a reference in it has to resolve from inside it. A
+      // positional one ("see below the table") resolves only until the table
+      // moves, and reads as nonsense in the source file the tag lives in.
+      // Name the thing instead.
+      if (/\b(above|below|earlier|later) the table\b/.test(supplies!)) {
+        throw new Error(
+          `#crossCuttingMixin ${name} points at where something sits in the rendered table. Name what it refers to instead — the tag is also read in ${file}, where the table does not exist.`,
+        )
+      }
+      defs.set(name!, supplies!.replace(TRAILING_COMMENT_END, '').trim())
+    }
+    if (!src.includes('.compose(')) {
+      continue
+    }
+    for (const { mixin, composer } of collectComposes(file, src)) {
+      composedBy.set(mixin, (composedBy.get(mixin) ?? new Set()).add(composer))
     }
   }
   return [...defs]
@@ -176,14 +163,13 @@ function renderTable(mixins: CrossCuttingMixin[]) {
   )
 }
 
-export function writeCrossCuttingMixinDocs({ check = false } = {}) {
+export function writeCrossCuttingMixinDocs(
+  corpus: SourceCorpus,
+  { check = false } = {},
+) {
   return rewriteMarkerBlock(
     'CROSS_CUTTING_MIXINS',
-    renderTable(collectCrossCuttingMixins()),
+    renderTable(collectCrossCuttingMixins(corpus)),
     { check },
   )
-}
-
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Cross-cutting mixins table', writeCrossCuttingMixinDocs)
 }

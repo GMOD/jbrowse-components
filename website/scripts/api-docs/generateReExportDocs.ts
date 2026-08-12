@@ -1,12 +1,10 @@
 import * as ts from 'typescript'
 
 import {
-  isMain,
   lastTaggedLine,
   markdownTable,
   parseSourceFileSyntactic,
   rewriteMarkerBlock,
-  runMarkerScript,
 } from './util.ts'
 
 // Render the `@jbrowse/core` re-export table into the dependencies guide from
@@ -99,8 +97,4 @@ export function writeReExportDocs({ check = false } = {}) {
     renderTable(collectReExports()),
     { check },
   )
-}
-
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Re-export module table', writeReExportDocs)
 }

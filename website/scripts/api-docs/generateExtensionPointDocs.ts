@@ -1,12 +1,6 @@
-import fs from 'fs'
+import { markdownTable, rewriteMarkerBlock } from './util.ts'
 
-import {
-  isMain,
-  listSources,
-  markdownTable,
-  rewriteMarkerBlock,
-  runMarkerScript,
-} from './util.ts'
+import type { SourceCorpus } from './util.ts'
 
 // Render a completeness index of every extension point into the hand-written
 // extension_points guide, sourced from the actual registration/fire sites so the
@@ -25,9 +19,6 @@ import {
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
-// Source trees scanned for `#extensionPoint` tags.
-const SOURCE_DIRS = ['packages', 'plugins', 'products']
-
 interface ExtensionPoint {
   id: string
   kind: string
@@ -36,10 +27,9 @@ interface ExtensionPoint {
 }
 
 // `#extensionPoint <id> | <sync|async> | <description>` occurrences in one file.
-function collectFromFile(file: string, points: ExtensionPoint[]) {
+function collectFromFile(text: string, points: ExtensionPoint[]) {
   const re =
     /#extensionPoint\s+([\w-]+)\s*\|\s*(sync|async)\s*\|\s*([^\n*]+?)\s*(?:\*\/|\n)/g
-  const text = fs.readFileSync(file, 'utf8')
   let m: RegExpExecArray | null
   while ((m = re.exec(text)) !== null) {
     points.push({ id: m[1], kind: m[2], description: m[3].trim() })
@@ -52,8 +42,7 @@ function collectFromFile(file: string, points: ExtensionPoint[]) {
 // — a typed point with no `#extensionPoint` tag is an error below. (A point that
 // is neither typed nor tagged still slips through; typing it is the fix, and is
 // wanted anyway.)
-function collectRegistryKeys(file: string, keys: Map<string, string>) {
-  const text = fs.readFileSync(file, 'utf8')
+function collectRegistryKeys(text: string, keys: Map<string, string>) {
   const blocks = /interface ExtensionPointRegistry\s*\{/g
   let m: RegExpExecArray | null
   while ((m = blocks.exec(text)) !== null) {
@@ -103,14 +92,13 @@ function shapeOf(args: string) {
   return args === 'undefined' ? 'notify' : 'single'
 }
 
-function collectExtensionPoints(): ExtensionPoint[] {
+function collectExtensionPoints(corpus: SourceCorpus): ExtensionPoint[] {
   const points: ExtensionPoint[] = []
   const registryKeys = new Map<string, string>()
-  for (const dir of SOURCE_DIRS) {
-    for (const file of listSources(dir)) {
-      collectFromFile(file, points)
-      collectRegistryKeys(file, registryKeys)
-    }
+  for (const file of corpus.files) {
+    const text = corpus.read(file)
+    collectFromFile(text, points)
+    collectRegistryKeys(text, registryKeys)
   }
   const tagged = new Set(points.map(p => p.id))
   const untagged = [...registryKeys.keys()].filter(k => !tagged.has(k)).sort()
@@ -150,15 +138,13 @@ function renderTable(points: ExtensionPoint[]) {
 // In `check` mode, report which docs have a stale index instead of rewriting —
 // used by CI to fail when an extension point was added but the docs were not
 // regenerated.
-export function writeExtensionPointDocs({ check = false } = {}) {
+export function writeExtensionPointDocs(
+  corpus: SourceCorpus,
+  { check = false } = {},
+) {
   return rewriteMarkerBlock(
     'EXTENSION_POINTS_INDEX',
-    renderTable(collectExtensionPoints()),
+    renderTable(collectExtensionPoints(corpus)),
     { check },
   )
-}
-
-// Run as a script: `node docs/generateExtensionPointDocs.ts [--check]`.
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Extension point index', writeExtensionPointDocs)
 }

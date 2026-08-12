@@ -1,0 +1,79 @@
+import { writeColorDocs } from './generateColorDocs.ts'
+import { writeCrossCuttingMixinDocs } from './generateCrossCuttingMixinDocs.ts'
+import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
+import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
+import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
+import { writeFileTypeDocs } from './generateFileTypeDocs.ts'
+import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
+import { writeJexlDocs } from './generateJexlDocs.ts'
+import { writePaletteDocs } from './generatePaletteDocs.ts'
+import { writeReExportDocs } from './generateReExportDocs.ts'
+
+import type { SourceCorpus } from './util.ts'
+
+// Every marker-block generator that needs nothing from the TypeScript program —
+// one list, so `generate.ts` (which writes them as part of a full run) and
+// `markers.ts` (which is what `pnpm autogen` invokes to verify them) cannot
+// disagree about the set.
+//
+// They were ten separate autogen entries, each its own `node` process, and each
+// paid ~2.5s to `import typescript` before doing its own walk of the source
+// tree — `generateColorDocs` parses exactly one file and still took 2.7s. A run
+// therefore spent ~25s on process startup alone, and then `pnpm gendocs`
+// generated all ten again in its own process, because generate.ts calls the
+// same writers.
+//
+// Splitting them out was still right: `gendocs`'s autogen entry diffs a list of
+// paths that does not include `website/docs/developer_guides` or `agent-docs`,
+// and five of these blocks live there — so without a `--check` of their own
+// they would have no gate at all. One process gives them that gate for the cost
+// of one TypeScript load.
+export interface MarkerGenerator {
+  // Names the table in the run's output, and what `markers.ts <filter>` matches.
+  label: string
+  // Returns the docs whose block content changed (empty when up to date).
+  write: (corpus: SourceCorpus, opts: { check: boolean }) => string[]
+}
+
+export const MARKER_GENERATORS: MarkerGenerator[] = [
+  {
+    label: 'Color tables',
+    write: (_corpus, opts) => writeColorDocs(opts),
+  },
+  {
+    label: 'Jexl catalog',
+    write: (corpus, opts) => writeJexlDocs(corpus, opts),
+  },
+  {
+    label: 'Extension point index',
+    write: (corpus, opts) => writeExtensionPointDocs(corpus, opts),
+  },
+  {
+    label: 'File type tables',
+    write: (corpus, opts) => writeFileTypeDocs(corpus, opts),
+  },
+  {
+    label: 'Display foundations table',
+    write: (corpus, opts) => writeDisplayFoundationDocs(corpus, opts),
+  },
+  {
+    label: 'Cross-cutting mixins table',
+    write: (corpus, opts) => writeCrossCuttingMixinDocs(corpus, opts),
+  },
+  {
+    label: 'Fetch autoruns table',
+    write: (_corpus, opts) => writeFetchAutorunDocs(opts),
+  },
+  {
+    label: 'Palette keys table',
+    write: (_corpus, opts) => writePaletteDocs(opts),
+  },
+  {
+    label: 'Helper package table',
+    write: (corpus, opts) => writeHelperPackageDocs(corpus, opts),
+  },
+  {
+    label: 'Re-export module table',
+    write: (_corpus, opts) => writeReExportDocs(opts),
+  },
+]

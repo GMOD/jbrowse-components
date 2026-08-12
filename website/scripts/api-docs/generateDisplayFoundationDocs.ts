@@ -1,13 +1,6 @@
-import fs from 'fs'
+import { composeCalls, markdownTable, rewriteMarkerBlock } from './util.ts'
 
-import {
-  composeCalls,
-  isMain,
-  listSources,
-  markdownTable,
-  rewriteMarkerBlock,
-  runMarkerScript,
-} from './util.ts'
+import type { SourceCorpus } from './util.ts'
 
 // Render the display-foundations table into the hand-written creating_display
 // guide from the source itself, so the "used by" column can't drift. It already
@@ -40,8 +33,6 @@ import {
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
-const SOURCE_DIRS = ['packages', 'plugins']
-
 // `#stateModel <Name>` followed, within the same JSDoc, by one of the two tags.
 // The `[^*]*(?:\*(?!/)[^*]*)*?` run walks comment body without escaping the
 // block, so a tag can't be picked up from the next JSDoc down the file.
@@ -62,29 +53,27 @@ interface Foundation {
 //
 // Structural, deliberately: this is the one column the architecture spec kept by
 // hand, and it is a restatement of a call three lines below the tag.
-function composedMixins(file: string, name: string) {
-  return composeCalls(file)
+function composedMixins(corpus: SourceCorpus, file: string, name: string) {
+  return composeCalls(file, corpus.read(file))
     .filter(call => call.name === name)
     .flatMap(call => call.mixins)
 }
 
-export function collectFoundations() {
+export function collectFoundations(corpus: SourceCorpus) {
   const defs = new Map<string, string>()
   const defFiles = new Map<string, string>()
   const uses = new Map<string, string[]>()
-  for (const dir of SOURCE_DIRS) {
-    for (const file of listSources(dir)) {
-      const src = fs.readFileSync(file, 'utf8')
-      if (!src.includes('#displayFoundation')) {
-        continue
-      }
-      for (const [, name, brings] of src.matchAll(DEF)) {
-        defs.set(name!, brings!.trim())
-        defFiles.set(name!, file)
-      }
-      for (const [, model, foundation] of src.matchAll(USE)) {
-        uses.set(foundation!, [...(uses.get(foundation!) ?? []), model!])
-      }
+  for (const file of corpus.files) {
+    const src = corpus.read(file)
+    if (!src.includes('#displayFoundation')) {
+      continue
+    }
+    for (const [, name, brings] of src.matchAll(DEF)) {
+      defs.set(name!, brings!.trim())
+      defFiles.set(name!, file)
+    }
+    for (const [, model, foundation] of src.matchAll(USE)) {
+      uses.set(foundation!, [...(uses.get(foundation!) ?? []), model!])
     }
   }
   for (const foundation of uses.keys()) {
@@ -97,7 +86,7 @@ export function collectFoundations() {
   const foundations: Foundation[] = [...defs].map(([name, brings]) => ({
     name,
     brings,
-    composes: composedMixins(defFiles.get(name)!, name),
+    composes: composedMixins(corpus, defFiles.get(name)!, name),
     displays: [...(uses.get(name) ?? [])].sort((a, b) => a.localeCompare(b)),
   }))
   // Most-used first, so the common case leads; name breaks ties for stability.
@@ -129,8 +118,11 @@ function renderStackTable(foundations: Foundation[]) {
   )
 }
 
-export function writeDisplayFoundationDocs({ check = false } = {}) {
-  const foundations = collectFoundations()
+export function writeDisplayFoundationDocs(
+  corpus: SourceCorpus,
+  { check = false } = {},
+) {
+  const foundations = collectFoundations(corpus)
   return [
     ...rewriteMarkerBlock('DISPLAY_FOUNDATIONS', renderTable(foundations), {
       check,
@@ -141,8 +133,4 @@ export function writeDisplayFoundationDocs({ check = false } = {}) {
       { check },
     ),
   ]
-}
-
-if (isMain(import.meta.filename)) {
-  runMarkerScript('Display foundations table', writeDisplayFoundationDocs)
 }

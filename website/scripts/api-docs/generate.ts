@@ -7,31 +7,23 @@ import {
   writeApiDocs,
   writeApiReadmes,
 } from './generateApiDocs.ts'
-import { writeColorDocs } from './generateColorDocs.ts'
 import {
   accumulateConfig,
   writeConfigDocs,
   writePromotableSlotDocs,
 } from './generateConfigDocs.ts'
-import { writeCrossCuttingMixinDocs } from './generateCrossCuttingMixinDocs.ts'
-import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
-import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
-import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
 import {
   writeDisplayTypeDocs,
-  writeFileTypeDocs,
   writeGotchaDocs,
 } from './generateFileTypeDocs.ts'
-import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
-import { writeJexlDocs } from './generateJexlDocs.ts'
-import { writePaletteDocs } from './generatePaletteDocs.ts'
-import { writeReExportDocs } from './generateReExportDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
+import { MARKER_GENERATORS } from './markerGenerators.ts'
 import {
   assertEveryDisplayTypeIsDocumented,
   createDocProgram,
   extractWithComment,
   getAllFiles,
+  sourceCorpus,
 } from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'
@@ -200,16 +192,12 @@ async function main() {
   ])
   writeApiDocs(api)
   writeApiReadmes(api)
-  writeColorDocs()
-  writeJexlDocs()
-  writeExtensionPointDocs()
-  writeDisplayFoundationDocs()
-  writeCrossCuttingMixinDocs()
-  writeFetchAutorunDocs()
-  writePaletteDocs()
-  writeHelperPackageDocs()
-  writeReExportDocs()
-  writeFileTypeDocs(files)
+  // The program-independent marker tables, from the one list markers.ts also
+  // runs — so the set can't drift between a full run and the `--check` gate.
+  const corpus = sourceCorpus(files)
+  for (const { write } of MARKER_GENERATORS) {
+    write(corpus, { check: false })
+  }
   writeDisplayTypeDocs(displayTypesByTrack, configNames)
   writeGotchaDocs(
     new Map(
