@@ -58,9 +58,9 @@ const useStyles = makeStyles()(theme => ({
     minWidth: 0,
   },
   // The name is what yields when the drawer is narrow: it shrinks and
-  // ellipsises while the adornment beside it keeps its full width, because a
-  // few words half-truncated ("vs pea") read as damage rather than as
-  // information. Needs the whole flex chain above it to allow shrinking —
+  // truncates with an ellipsis while the adornment beside it keeps its full
+  // width, because a few words half-truncated ("vs pea") read as damage rather
+  // than as information. Needs the whole flex chain above it to allow shrinking —
   // rowContent, the label, and this — since each one's automatic minimum size
   // would otherwise be its own content.
   name: {
