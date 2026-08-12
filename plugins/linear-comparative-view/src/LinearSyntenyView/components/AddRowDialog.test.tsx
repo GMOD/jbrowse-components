@@ -93,3 +93,17 @@ test('a session with a connecting dataset offers it instead', async () => {
   expect(screen.getByRole('combobox', { name: 'Synteny dataset' })).toBeTruthy()
   expect(screen.queryByText(/No synteny dataset in this session/)).toBeNull()
 })
+
+// `ghost` is named by the dataset and configured by nothing. Adding that row
+// fails its init with "Assembly ghost not found", which sets the view's error,
+// and showImportForm reads the view's error — so the option the dialog offered
+// swapped the user's working stack for the import form. An option that cannot
+// be opened is not an option.
+test('a dataset naming an unloaded assembly is not offered', async () => {
+  await openDialog([['volvox2', 'ghost']])
+
+  expect(screen.queryByRole('combobox', { name: 'Synteny dataset' })).toBeNull()
+  expect(
+    screen.getByText(/No synteny dataset in this session connects to volvox2/),
+  ).toBeTruthy()
+})

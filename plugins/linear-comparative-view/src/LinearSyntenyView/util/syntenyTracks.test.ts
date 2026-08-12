@@ -14,6 +14,9 @@ const track = (trackId: string, assemblyNames: string[]) =>
 const session = (
   tracks: AnyConfigurationModel[],
   connectionTracks?: AnyConfigurationModel[],
+  // names the session holds no assembly for, which is what the real manager
+  // answers undefined for
+  unloaded: string[] = [],
 ) =>
   ({
     tracks,
@@ -22,7 +25,7 @@ const session = (
     // every other name is already canonical
     assemblyManager: {
       getCanonicalAssemblyName: (name: string) =>
-        name === 'hg19' ? 'hg38' : name,
+        unloaded.includes(name) ? undefined : name === 'hg19' ? 'hg38' : name,
     },
     connectionInstances: connectionTracks
       ? [{ tracks: connectionTracks }]
@@ -69,6 +72,47 @@ test('a self-alignment dataset adds the same assembly again', () => {
   expect(options).toEqual([
     { trackId: 'hg38_self', name: 'hg38_self', newAssembly: 'hg38' },
   ])
+})
+
+// Not a broken row but a broken view: the row's init fails with "Assembly X
+// not found", which sets the whole synteny view's error, and showImportForm
+// reads that error — so an offered option replaced the working stack with the
+// import form.
+test('a dataset whose other endpoint has no assembly is not an option', () => {
+  expect(
+    getAddRowOptions(
+      session([track('hg38_ghost', ['hg38', 'ghost'])], undefined, ['ghost']),
+      'hg38',
+    ),
+  ).toEqual([])
+})
+
+test('an unloaded endpoint does not hide the datasets either side of it', () => {
+  const options = getAddRowOptions(
+    session(
+      [
+        track('hg38_ghost', ['hg38', 'ghost']),
+        track('hg38_mm39', ['hg38', 'mm39']),
+      ],
+      undefined,
+      ['ghost'],
+    ),
+    'hg38',
+  )
+  expect(options).toEqual([
+    { trackId: 'hg38_mm39', name: 'hg38_mm39', newAssembly: 'mm39' },
+  ])
+})
+
+// its one endpoint is the terminal row's own assembly, which is live by
+// construction, so the filter above must not take it
+test('a self-alignment survives the loaded-assembly filter', () => {
+  expect(
+    getAddRowOptions(
+      session([track('hg38_self', ['hg38', 'hg38'])], undefined, ['ghost']),
+      'hg38',
+    ),
+  ).toEqual([{ trackId: 'hg38_self', name: 'hg38_self', newAssembly: 'hg38' }])
 })
 
 // the terminal row names the assembly canonically while the dataset names an

@@ -36,17 +36,36 @@ export function getAddRowOptions(
     [terminalAssembly],
     assemblyManager,
   )
-  return tracks.map(track => {
-    const assemblyNames = canonicalAssemblyNames(
-      readConfObject(track, 'assemblyNames') as string[],
-      assemblyManager,
-    )
-    return {
-      trackId: readConfObject(track, 'trackId') as string,
-      name: getTrackName(track, session),
-      newAssembly:
-        assemblyNames.find(name => name !== canonicalTerminal) ??
-        canonicalTerminal,
-    }
-  })
+  return (
+    tracks
+      .map(track => {
+        const assemblyNames = canonicalAssemblyNames(
+          readConfObject(track, 'assemblyNames') as string[],
+          assemblyManager,
+        )
+        return {
+          trackId: readConfObject(track, 'trackId') as string,
+          name: getTrackName(track, session),
+          newAssembly:
+            assemblyNames.find(name => name !== canonicalTerminal) ??
+            canonicalTerminal,
+        }
+      })
+      // Every option has to be one `appendRow` can actually open, and a track
+      // config is free to name an assembly the session doesn't have — a hub
+      // whose assemblies were never loaded, or a config one was removed from.
+      // Picking one of those is not a broken row but a broken view: the row's
+      // init fails with "Assembly X not found", which sets the whole synteny
+      // view's error, and `showImportForm` reads that error — so choosing an
+      // offered option replaced the user's working stack with the import form.
+      //
+      // `getCanonicalAssemblyName` is the exact test, since it is undefined for
+      // a name the manager cannot resolve and is what the row's init resolves
+      // through. A self-alignment's endpoint is the terminal row's own
+      // assembly, which is live by construction, so it survives this.
+      .filter(
+        o =>
+          assemblyManager.getCanonicalAssemblyName(o.newAssembly) !== undefined,
+      )
+  )
 }
