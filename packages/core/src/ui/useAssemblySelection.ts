@@ -5,6 +5,17 @@ import type { AbstractSessionModel } from '../util/index.ts'
 // scope a localStorage key to this host/path/config so reloads (and embedded
 // apps sharing a host) see their own value. Shared by the remembered-assembly
 // and recent-locations persistence
+//
+// The near-twin is data-management's `configScopedKey`, and the two must NOT be
+// merged even though they are the same idea. They disagree on every detail that
+// reaches the output: this one includes the host, joins unfiltered (so a page
+// with no `?config=` genuinely stores a literal `null` segment) and assumes a
+// browser; that one omits the host, filters empty parts out, and answers
+// `'empty'` off-window. So a "cleanup" that unified them would re-key every
+// stored setting on both sides at once — remembered assembly and recent
+// locations here, hidden columns and widths there — and every user would find
+// their settings silently back at the defaults. Touch either spelling only as a
+// deliberate migration.
 export function instanceScopedKey(prefix: string, suffix: string) {
   const config = new URLSearchParams(window.location.search).get('config')
   return [
