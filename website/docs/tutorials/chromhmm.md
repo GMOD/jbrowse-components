@@ -234,7 +234,7 @@ Those colors are what the two blocks below are read by: red active TSS, yellow
 enhancer and green transcription in the upper one, grey Polycomb in the lower,
 speckled olive where the same bases are bivalent.
 
-<Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA with 500 kb of flank, one row each, ordered by Cluster rows by similarity so the dendrogram is in the sidebar. Boxed and labeled: the anterior genes HOXA1 to HOXA7, and the posterior HOXA9 to HOXA13. The clustering splits the rows in two and that split is what the figure is for: one block of epigenomes opens the cluster, carrying active-TSS red and transcription green across both boxes, and the rest hold the same sequence in Polycomb orange and quiescent grey. A HOX cluster is repressed in most tissues and opened in the ones that use it. The stripe between the dendrogram and the painting is each row's Roadmap tissue group in Roadmap's own group color, keyed under Row groups, so which tissues fall either side of the split can be read off an axis the clustering never saw."/>
+<Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA, one row each, ordered by Cluster rows by similarity. One block of epigenomes opens the cluster; the rest hold it repressed. The stripe left of the painting is each row's Roadmap tissue group."/>
 
 That config has no `rowOrder`, which is the other thing that changes at this
 scale. It would be 127 lines whose only job is to keep related tissues adjacent,

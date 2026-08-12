@@ -417,7 +417,7 @@ it reads there (`01`, primary solid tumor), the same tumors the
 
 It anchors indels off the MAF's own `CONTEXT` column. A MAF writes a deletion as
 its deleted bases against a `-` alt, where VCF needs both alleles to share a
-flanking base that no coordinate column carries. That base is in `CONTEXT`, the
+preceding base that no coordinate column carries. That base is in `CONTEXT`, the
 reference sequence the caller recorded around the call, so no reference FASTA is
 fetched and nothing has to be kept in sync with one. The conversion is checked
 against the reference allele each row also states, and a row whose context

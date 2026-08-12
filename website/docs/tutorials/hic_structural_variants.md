@@ -59,9 +59,9 @@ and it is there so the window has something to be checked against. GM12878 is a
 B-lymphoblastoid line, so B-cell accessibility is the nearest public annotation
 of which sequence here is regulatory, and it turns a gene desert into something
 the domain has a reason to contain. All twelve lineages are drawn rather than
-just the B rows: each of them is more accessible inside the domain than in the
-flanking sequence, so the lane says the contacted DNA is regulatory rather than
-that it is B-specific.
+just the B rows: each of them is more accessible inside the domain than outside
+it, so the lane says the contacted DNA is regulatory rather than that it is
+B-specific.
 
 The window itself is a domain-and-loop pair rather than a slice of chromosome
 picked for its genes. Over a whole cell line the two files hold thousands of
@@ -183,14 +183,14 @@ that call for every Hi-C experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments),
 both derived from the matrix already loaded.
 
-<Figure src="/img/hic/compartment_switch.png" caption="Whether a stretch of the genome is open or closed is a property of the cell, not of the sequence. A normal lymphoblastoid line and a leukemia line put the same TCF4 band in opposite compartments, and the frame edges, where the two agree, are what makes that a switch rather than a scaling difference. No contact matrix here: a compartment appears only once a matrix is divided by its distance expectation, and the eigenvector is that computation, published." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree. No contact matrix here, since a compartment appears only once a matrix is divided by its distance expectation, and the eigenvector is that computation, published." links="Open this view=hic/compartment_switch" />
 
 The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
 K562, and the reason to believe it is the same reason the translocation was
-believable: the flanks. The sequence either side of it, from the same two files
-and the same pipeline, agrees. A difference that appears in one block while its
-neighbours match is a difference in the data; one that appears everywhere is a
-difference in how the two files were made.
+believable: the sequence either side of it, from the same two files and the same
+pipeline, agrees. A difference that appears in one block while its neighbours
+match is a difference in the data; one that appears everywhere is a difference
+in how the two files were made.
 
 Two things make this comparison harder than it looks, and both are set up in the
 figure rather than left to the reader:

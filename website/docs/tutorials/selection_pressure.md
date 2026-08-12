@@ -151,7 +151,7 @@ links as beziers, which separates neighbours that would otherwise stack.
 
 ## Reading the plot
 
-<Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Every gene here is blue, under purifying selection, except lysozyme (LYZ), whose ratio is above the ramp's pivot of 1. Its immediate neighbour YEATS4 is at the other end of the ramp. The detail panel carries the substitution count and Fisher p behind each colour, which is where a ratio over 1 has to be checked." src="/img/selection_pressure/lysozyme.png" />
+<Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot of 1; its immediate neighbour YEATS4 is at the other end. The detail panel carries the substitution count and Fisher p behind each colour." src="/img/selection_pressure/lysozyme.png" />
 
 The neighbourhood is collinear, so the ribbons run parallel and colour is the
 only thing that varies across them. Lysozyme is a good gene to find there:

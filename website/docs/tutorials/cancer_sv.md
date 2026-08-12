@@ -99,7 +99,7 @@ every read crossing the junction has its remainder aligned elsewhere. The
 matched normal at the same locus is clean, which is what separates a somatic
 event from a mapping artifact.
 
-<Figure caption="Left: COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip; normal reads read through, and the nanomonsv records between them name chr12 and chr10 in their ALT. Right: the same event as a breakpoint split view over every locus the chain visits, tumor reads only, where the reads leaving the chr3 panel reappear in the chr10 and chr12 panels and come back to chr3." src="/img/cancer_sv/multihop_reads.png" />
+<Figure caption="Left: COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip where normal reads read through, and the nanomonsv records between them name chr12 and chr10 in their ALT. Right: the same event as a breakpoint split view over every locus the chain visits, tumor reads only." src="/img/cancer_sv/multihop_reads.png" />
 
 Soft clipping is off by default. Turn it on from the track menu with **Show soft
 clipping**. These pileups are deep enough that the track asks before downloading
@@ -153,7 +153,7 @@ since a closed cycle is a shape already fully on screen. The evidence for the
 assumption is the reads, and it is the dialog above: **Reconstruct derivative
 allele** ranks whole routes by how many molecules independently take each.
 
-<Figure caption="Opening the split view from the record rather than the import form, in three steps. 1: right-click the breakend and choose Open breakpoint split view. 2: the dialog, where the shape, the window each panel opens at, and whether to follow further breakends are set together. 3: the result, three panels because the chain runs chr3 to chr10 to chr12, with the reads that cross each junction drawn as connectors between the pileups." src="/img/cancer_sv/split_view_from_breakend.png" />
+<Figure caption="Opening the split view from the record rather than the import form. 1: right-click the breakend and choose Open breakpoint split view. 2: the dialog, where the shape, the window each panel opens at, and whether to follow further breakends are set together. 3: the result, three panels because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
 
 For one read rather than the pileup, right-click a read and choose **Linear read
 vs ref**. That builds a synteny view with the read as its own assembly along the
@@ -342,11 +342,11 @@ and chr12 inserts with chr3 returning inverted.
 ## Checking the reconstruction
 
 Zoomed to the kilobase holding the junctions, the two inserts are the same width
-as the arms flanking them. Realigned against the derivative, reads that the
-reference split into four pieces run straight through: none of the 29 spanning
-reads clips at any of the four junction positions, and depth does not dip at
-them. Both the reconstruction and this check come from the reads, so the figure
-is evidence rather than illustration.
+as the arms either side of them. Realigned against the derivative, reads that
+the reference split into four pieces run straight through: none of the 29
+spanning reads clips at any of the four junction positions, and depth does not
+dip at them. Both the reconstruction and this check come from the reads, so the
+figure is evidence rather than illustration.
 
 <Figure caption="The stitching at base scale, over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. The pileup under the reference row stops in a straight line on the junction; the one under the allele crosses every join at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
 
@@ -358,7 +358,7 @@ carries a panel per locus the allele visits, so every connector runs between two
 segments that are both on screen. A connector drawn dashed would mean the
 opposite, that the read passes through a segment no panel is showing.
 
-<Figure caption="COLO829 tumour ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped, and the curves follow the same molecules onto 199 bp of chr10, onto 183 bp of chr12, and back to chr3. Realigned to the derivative (right) they cross the junction at flat depth. The panes are at different zooms and each carries its own scale bar." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
+<Figure caption="COLO829 tumour ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped, and the curves follow the same molecules onto 199 bp of chr10, onto 183 bp of chr12, and back to chr3. Realigned to the derivative (right) they cross the junction at flat depth. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 
 ## The transcript view
 
@@ -417,7 +417,7 @@ between the two, and with both partners displayed those curves cross from one
 region into the other. **Show... → Show only split alignments** then drops every
 read that stays on one chromosome, so the pileup is the fusion's own support.
 
-<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked. Coverage drops after the BCR band and starts at the ABL1 band, the arcs over the coverage are the reads' own exon junctions, and each row below is one molecule running from its chr22 alignment across to its chr9 supplementary." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked. The arcs over the coverage are the reads' own exon junctions, and each row below is one molecule running from its chr22 alignment across to its chr9 supplementary." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
 roughly seven copies, while the chr22 partners sit at one, so what is amplified

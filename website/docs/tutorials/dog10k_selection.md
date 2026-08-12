@@ -66,7 +66,7 @@ on the scale the plot draws, so only the column has to be named.
 Opening the assembly without a location shows all of its regions at once, so the
 display lays the autosomes out side by side rather than one at a time.
 
-<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, drawn as a Manhattan track, with three body-size genes labelled at the windows they fall in. Bottom: two megabases of chr15, the same scan rebinned to 20 kb, where the labelled point above resolves into a sweep sitting on IGF1. The highlighted band is the single 200 kb window the top half scored it as." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
+<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, drawn as a Manhattan track, with three body-size genes labelled at the windows they fall in. Bottom: two megabases of chr15, the same scan rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The highlighted band is the single 200 kb window the top half scored it as." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak names a region rather than a variant, and the
 run of high windows on chr10 is one region's worth. A genome-wide scan has to
@@ -74,8 +74,8 @@ bin wide enough to hold down twelve thousand windows' worth of noise, which is
 what makes the _IGF1_ peak a single bar up there. Two megabases does not, so the
 lower half is the same panel and the same estimator rebinned to 20 kb, and the
 peak turns out to have a shape: a block of high windows sitting on the gene,
-falling away into flanks the 200 kb bin had averaged it together with. Rerunning
-the build script over one region is all that takes:
+falling away either side into sequence the 200 kb bin had averaged it together
+with. Rerunning the build script over one region is all that takes:
 
 ```bash
 WINDOW=20000 REGIONS=chr15:40600000-42600000 \
@@ -178,18 +178,18 @@ not a detail. Every record is one column of equal width, so a window's width in
 the frame is a count of records rather than a span of chromosome: widen it and
 the extra columns are as wide as the informative ones. The build script prints
 which sites actually separate the two size classes, a minority of those in the
-slice, and this window is that span with a margin of undifferentiated flank on
-each side. That flank is what the Fst lane needs in order to show a run rather
-than a level: framed on the differentiated sites alone, every point in view is
-high and nothing says where the signal starts or stops.
+slice, and this window is that span with a margin of undifferentiated sequence
+on each side. That margin is what the Fst lane needs in order to show a run
+rather than a level: framed on the differentiated sites alone, every point in
+view is high and nothing says where the signal starts or stops.
 
 Clustering reads the region on screen, so where you run it matters as much as
 what you frame afterwards: over the whole window the separating columns are
-diluted by the flank around them. Zoom to the core, cluster there, then widen
-back out, and the row order is kept because it orders rows by name rather than
-re-deriving from what is in view. A session can say that instead of performing
-it, since the display takes `clusterRegion` beside `runClustering`, which is
-what the figure below does.
+diluted by the undifferentiated sites around them. Zoom to the core, cluster
+there, then widen back out, and the row order is kept because it orders rows by
+name rather than re-deriving from what is in view. A session can say that
+instead of performing it, since the display takes `clusterRegion` beside
+`runClustering`, which is what the figure below does.
 
 ## Reading it
 

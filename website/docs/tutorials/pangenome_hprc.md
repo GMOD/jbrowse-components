@@ -266,7 +266,7 @@ layout bows the same edge out by the length of the backbone it bypasses, which
 states a size but not a position, because FMMM leaves the arc's two ends
 wherever the simulation puts them.
 
-<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT gene annotation, so the boxed CFHR3 and CFHR1 sit on the reference and on HG00099 and are absent from HG01109, whose alignment stops and resumes across the span. The dashed arc under the graph's reference row is that same gap, labelled 84.7 kb." src="/img/pangenome/hprc_cfhr_deletion.png" />
+<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT gene annotation, so CFHR3 and CFHR1 sit on the reference and on HG00099 and are absent from HG01109. The dashed arc under the graph's reference row is that same gap, labelled 84.7 kb." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
 Hovering one of these edges gives the interval and the bp it removes. A deletion
 has nothing to draw at the position it occurs, which is what a linear view is
@@ -284,11 +284,11 @@ allele whose interior falls outside it draws as a short arm off the backbone
 rather than as a closed loop. The figure below is cut from
 `chr1:103,500,000-103,850,000`, wider than the amylase entry in the table
 further down, because at the table's window the bubble fills the pane with no
-flank beside it and the drawing cannot say where in the locus the complexity
+backbone beside it and the drawing cannot say where in the locus the complexity
 sits. Widening until the backbone chain is in frame is the usual remedy when a
 cut comes back as a single tangle.
 
-<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The flanks draw as one chain of backbone segments, and every crossing in the 126-node drawing is inside the amylase bubble at the end of that chain, so the window says where the complexity is as well as what it is." src="/img/pangenome/hprc_amylase_graph.png" />
+<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The sequence either side draws as one chain of backbone segments, and every crossing in the 126-node drawing is inside the amylase bubble at the end of that chain, so the window says where the complexity is as well as what it is." src="/img/pangenome/hprc_amylase_graph.png" />
 
 The graph's own bubble index says what that window holds, and tabix reads it
 over HTTP without the browser. The bubble spanning AMY1A and AMY1B is the first
@@ -507,11 +507,11 @@ banded one is a short reference span. In the middle the boxed node is the CHM13
 sequence that hangs off it, attached at a small anchor.
 
 The part beside them is the same measurement at a scale that can answer whether
-the L1 density means anything, since a 180 kb window has only its own flanks to
-be dense against. Open the LINE row alone over the last 3 Mb of the chromosome
-and set the track's **Resolution** low, so each drawn value averages about 100
-kb rather than 3 kb: at 5 kb the allele is invisible inside the spikes, and at
-its own scale it is a block.
+the L1 density means anything, since a 180 kb window has only its own
+surroundings to be dense against. Open the LINE row alone over the last 3 Mb of
+the chromosome and set the track's **Resolution** low, so each drawn value
+averages about 100 kb rather than 3 kb: at 5 kb the allele is invisible inside
+the spikes, and at its own scale it is a block.
 
 <Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean, where the shaded allele is the tallest sustained level in the frame." src="/img/pangenome/hprc_chm13_allele.png" />
 
@@ -693,7 +693,7 @@ segment count as its `score`, so the only change is the track type, since a
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three lanes off two files: the bubble file as a curve of segments per bubble, the same bubbles as the tier's segments lane, and the tier as a graph whose backbone nodes carry the megabases they span. The blank column is 1q12, the heterochromatic band beside the centromere, where nothing aligns so no bubbles are called." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three lanes off two files: the bubble file as a curve of segments per bubble, the same bubbles as the tier's segments lane, and the tier as a graph. The blank column is 1q12, the heterochromatic band beside the centromere, where nothing aligns so no bubbles are called." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 The graph is 474 nodes against about 751,000 segments in the graph itself, laid
 out in 18 ms. The chain alternates strictly, 237 backbone nodes and 237 bubbles,
@@ -754,19 +754,20 @@ inverted haplotype look alike to the graph, and the callset does not settle it
 either: `INV` is declared in the wave VCF's header and no record at these loci
 carries it.
 
-The alignments do settle it, and the test is the flanks rather than the block. A
-haplotype whose whole window aligns reverse says nothing, since its contig may
-simply be deposited that way. A block that reverses between forward flanks is an
-inversion.
+The alignments do settle it, and the test is the sequence either side rather
+than the block. A haplotype whose whole window aligns reverse says nothing,
+since its contig may simply be deposited that way. A block that reverses while
+the sequence either side of it stays forward is an inversion.
 [`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
 runs that classification over HPRC's published all-vs-GRCh38 PAF at the bubble
-above, prints the split it finds (64 haplotypes reverse it between forward
-flanks, 23 keep it forward, and the rest are mixed or reverse throughout and are
-evidence for neither), and slices out one of each. Which one of each matters,
-because 1q21.1 is a segmental duplication and every haplotype here also aligns
-inverted paralogs somewhere nearby: each of those crosses on screen exactly the
-way the inversion does, so the script keeps only haplotypes whose alignments
-inside the drawn window are the inversion and its two forward flanks.
+above, prints the split it finds (64 haplotypes reverse the block while keeping
+its surroundings forward, 23 keep it forward, and the rest are mixed or reverse
+throughout and are evidence for neither), and slices out one of each. Which one
+of each matters, because 1q21.1 is a segmental duplication and every haplotype
+here also aligns inverted paralogs somewhere nearby: each of those crosses on
+screen exactly the way the inversion does, so the script keeps only haplotypes
+whose alignments inside the drawn window are the inversion and the forward
+sequence either side.
 
 Each haplotype row carries its own CAT gene annotation, which states the same
 event a second way and without reference to the ribbon. The pair boxed on each

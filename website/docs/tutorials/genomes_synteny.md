@@ -73,7 +73,7 @@ The last frame also switches the ribbon to curves and to **Transparent indels**,
 both covered [below](#ribbon-display-settings), which turns the one gap in it
 into a hole that lines up against the RepeatMasker track above. The element
 under it is an L1HS, the youngest human LINE-1 subfamily, and the chimp panel
-keeps every flanking repeat but not that one.
+keeps every other repeat in the window but not that one.
 
 <Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats." src="/img/genomes_synteny/launch_sequence.png" />
 

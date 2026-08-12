@@ -165,15 +165,16 @@ but they do not have to be: the SNV callset already carries a per-sample `DP` at
 every site, so one tabix slice of it, stripped to the depth field, covers every
 canid in the collection.
 
-Depth is converted to copy number by comparison within each dog. That dog's own
-flanking sequence is copy number two, so it serves as the denominator:
+Depth is converted to copy number by comparison within each dog. The sequence
+around the element in that same dog is copy number two, so it serves as the
+denominator:
 
 ```
-CN = 2 * depth over the element / depth over that dog's flanks
+CN = 2 * depth over the element / depth over the sequence around it
 ```
 
-This needs no copy-number caller, and it carries its own check: the flanks have
-to come back out at two.
+This needs no copy-number caller, and it carries its own check: that surrounding
+sequence has to come back out at two.
 
 Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
 evidence and is painted at 1 kb resolution. A narrower window would buy that
@@ -214,7 +215,7 @@ each one carries across the window rather than sorted on one column: **Cluster
 rows by similarity** in the track menu, or `runClustering`. What that groups is
 extents, so animals whose expansion starts and ends in the same place land
 together, and the blocks either side of the gene are the deletion polymorphisms
-in the flanking sequence.
+there.
 
 One number does not reproduce: this estimate puts far more of the collection at
 three or more copies than the paper reports, and the two depth sources agree too
@@ -248,9 +249,9 @@ bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 
 It reads depth over this gene straight out of each published CRAM, paints the 15
 dogs, then slices the callset's own depth field and paints the other 1,972. It
-prints each dog's copy number over the element beside the spread of its flanks,
-and the agreement between the two measurements, so both figures can be checked
-against the numbers that produced them.
+prints each dog's copy number over the element beside the spread of the sequence
+around it, and the agreement between the two measurements, so both figures can
+be checked against the numbers that produced them.
 
 ## See also
 

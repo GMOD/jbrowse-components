@@ -55,7 +55,7 @@ back, and their orthologs still fall into chromosome-scale blocks. The teleost
 genome duplication shows up as a matter of counting: a human chromosome answers
 to one or two chicken chromosomes, and to more zebrafish ones.
 
-<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish. One vertebrates_orthogroups track backs all four bands. autoDiagonalize has reordered each row's chromosomes; Color by → Reference anchors every band on the row above. Chicken against frog is nearly one chromosome to one; gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
+<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish, all four bands off one vertebrates_orthogroups track. Chicken against frog is nearly one chromosome to one; gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
 Every band draws one line per ortholog, so a band resolves into wedges only
 where a chromosome's orthologs mostly land on one chromosome of the row below.

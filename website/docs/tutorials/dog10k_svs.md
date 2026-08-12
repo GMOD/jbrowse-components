@@ -295,7 +295,7 @@ first column the sample name, every other column an attribute, and `colorBy`
 naming the one that paints the swatch. The RNASE1 track is that same config with
 the other slice's `uri`.
 
-<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase, dark blue where an animal carries it. Right: a 223 bp insertion in pancreatic ribonuclease, each carrier drawn as a marker sized by the inserted bases. Each record is drawn once above its own genotype rows, so the lane says what kind of variant the column below it is. Same 86 animals in the same order in both, so a row can be read straight across: the dogs carry the amylase duplication and the wolves carry the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
+<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease, each carrier a marker sized by the inserted bases. Same 86 animals in the same order in both, so a row reads straight across: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
 The three Arctic breeds are drawn together to test a reading rather than to make
 one. Two of the three Greenland Dogs lack the duplication, but the third carries
@@ -423,8 +423,8 @@ parent gene, and one record cannot say which. That is why the swatch says what a
 breed looks like rather than what it carries: the spaniels are exactly the rows
 where the two disagree, and a swatch keyed on the genotype would have hidden
 them. Placing either insertion needs the other side of the junction, reads
-spanning retrocopy into flanking sequence, which is a different query against a
-different callset.
+spanning retrocopy into the sequence it landed in, which is a different query
+against a different callset.
 
 ### The retrocopy itself, as sequence {#the-retrocopy-itself-as-sequence}
 
@@ -501,8 +501,8 @@ both sides.
 The two records agree at 207 codons but their spans against chr18 differ, so the
 two retrocopies took the same coding sequence and different amounts of UTR. This
 still does not place either insertion: a retrocopy's deposited sequence is the
-insert, ending in its poly(A) tail, so it carries no flank to align anywhere
-else.
+insert, ending in its poly(A) tail, so none of its landing site comes with it to
+align anywhere else.
 
 ### Across the collection
 

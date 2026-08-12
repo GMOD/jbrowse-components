@@ -69,7 +69,7 @@ The view opens at residue zoom, which on a protein this long is a window on its
 N terminus. **Fit horizontally**, under the toolbar's fit and zoom button, puts
 the whole alignment on screen, which is the zoom the domain blocks read at.
 
-<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu with both plugins' launchers boxed, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds, fitted to the width. Twelve of the twenty-three species offered have an NLRP1 ortholog. The pyrin block is on the great apes and the marmoset and on no other row; the NACHT-to-CARD core to the right of it is in every row." />
+<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. Twelve of the twenty-three species offered have an NLRP1 ortholog. The pyrin block is on the great apes and the marmoset and on no other row; the NACHT-to-CARD core is in every row." />
 
 ## Reading the overlay
 

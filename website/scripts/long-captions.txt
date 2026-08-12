@@ -7,17 +7,7 @@
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
 config_guides/variant_track.md /img/ld/lct_haploblock.png
-tutorials/cancer_sv.md /img/cancer_sv/multihop_reads.png
-tutorials/cancer_sv.md /img/cancer_sv/split_view_from_breakend.png
-tutorials/chromhmm.md /img/chromhmm.png
-tutorials/dog10k_svs.md /img/dog10k-diet-genes.png
-tutorials/hic_structural_variants.md /img/hic/compartment_switch.png
-tutorials/homoeolog_synteny.md /img/homoeolog_synteny/wheat_vs_oat.png
-tutorials/ld_human.md /img/ld/lct_haploblock.png
-tutorials/ld_human.md /img/ld/lct_pooled_vs_panel.png
 tutorials/mappability_qc.md /img/qc/smn_block_and_reads.png
-tutorials/pangenome_ecoli.md /img/pangenome/pggb_untangle_rows.png
-tutorials/selection_pressure.md /img/selection_pressure/lysozyme.png
 user_guides/gene_track.md /img/dtu/dtu_colored_gene_glyph.png
 user_guides/hic_track.md /img/hic/compartment_switch.png
 user_guides/multirow_feature_track.md /img/chromhmm.png

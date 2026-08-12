@@ -562,7 +562,7 @@ different shape in that lane.
 
 <Figure caption="The linear genome view start screen: click Show all regions in assembly to lay out every chromosome across the view." src="/img/sv_cgiab/cnv_show_all_regions.png" />
 
-<Figure caption="Chromosome 5: the segmented copy ratio, tumor (red) and normal (blue) indexcov coverage as overlapping scatter on a fixed 0-3 axis, B-allele frequency, and the benchmark CNV calls. Tumor coverage steps up over the gain and down across the q-arm while the normal stays flat, and the BAF lane says what each step is: one band at 0.5, then a 1/3 and 2/3 pair, then two bands at 0 and 1." src="/img/sv_cgiab/cnv_with_bed_track.png" />
+<Figure caption="Chromosome 5: the segmented copy ratio, tumor (red) and normal (blue) indexcov coverage as overlapping scatter on a fixed 0-3 axis, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF lane says what each step is: one band at 0.5, then a 1/3 and 2/3 pair, then two bands at 0 and 1." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 Raw coverage is only a sanity check on existing calls. For a signal that reads
 directly as copy number, use the depth, BAF, and copy-number tracks built above.
@@ -635,7 +635,7 @@ chromosome with the depth track above the BAF:
 The q-arm event is invisible to depth alone, which is why the two tracks are
 read together.
 
-<Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF, and the benchmark CNV calls. The p-arm (covering TP53) is a single-copy loss with LOH (CNA_20, CN 1, 1+0): the segment steps down, BAF splits to 0 and 1. The q-arm is copy-neutral LOH (CNA_21, CN 2, 2+0): copy ratio and depth are flat across it, yet the BAF is still split, the one event neither copy-number lane can see." src="/img/sv_cgiab/cnv_chr17_loh.png" />
+<Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF, and the benchmark CNV calls. The p-arm (covering TP53) is a single-copy loss with LOH (CNA_20, CN 1, 1+0). The q-arm is copy-neutral LOH (CNA_21, CN 2, 2+0): copy ratio and depth stay flat across it, yet the BAF is still split, the one event neither copy-number lane can see." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
 The depth and BAF combinations read as a compact decision table:
 
@@ -664,7 +664,7 @@ imbalance of a 2+1 gain rather than the full drop of a complete haplotype loss.
 Because the event is a couple of megabases rather than an arm, zoom to it: at
 whole-chromosome scale it is a handful of pixels wide.
 
-<Figure caption="KRAS on chr12: the gene's MANE Select transcript, boxed, over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) the copy-ratio segment rises above its flanks, its edges landing on the called boundaries, while the BAF separates into bands at 1/3 and 2/3 against the flanks' single 0.5 band." src="/img/sv_cgiab/driver_kras_gain.png" />
+<Figure caption="KRAS on chr12: the gene's MANE Select transcript over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) the copy-ratio segment's edges land on the called boundaries and the BAF separates into bands at 1/3 and 2/3." src="/img/sv_cgiab/driver_kras_gain.png" />
 
 `SMAD4` on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
 TP53 event. Two controls are in the same picture: the balanced p-arm, and the

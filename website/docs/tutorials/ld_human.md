@@ -74,7 +74,7 @@ along, leaving a stretch of correlated variants. Two things decide whether that
 stretch reads as a block: the window you cut, and which samples went into the
 file.
 
-<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in. Pooling every panel breaks the block into a mosaic and leaves the recombination curve spiky throughout; one panel resolves it into a single block with the curve flat across it. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release, on an axis starting above the bulk of the distribution so the low-Fst variants do not fill the lane; rs4988235, the lactase-persistence allele, is the highest point in the frame."/>
+<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: every panel pooled, then one panel. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release; rs4988235, the lactase-persistence allele, is the highest point in the frame."/>
 
 Nothing about the display changed between those two lanes.
 
@@ -162,7 +162,7 @@ and
 [`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
 model properties, which is what the figure below does.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises, in one view over the same window. Below the triangle, 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order: the pale slab is one haplotype, unbroken across the block and ending either side of the highlighted gene under the triangle's own edges. Its rows are exactly the ones carrying rs4988235-A in this slice, which the clustering gathers into a single clade."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises, in one view over the same window. Below the triangle, 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The pale slab's rows are exactly the ones carrying rs4988235-A, which the clustering gathers into one clade."/>
 
 **Ordering is what makes a block visible, not colour and not row count.** Left
 in file order the same matrix is a plaid at any size, because a block is a set

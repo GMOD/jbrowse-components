@@ -389,7 +389,7 @@ event reads twice over:
 
 Each row carries its own genes and both bands from the all-vs-all PAF. The
 NCTC86 band runs unbroken across the island; the Sakai band breaks before it and
-resumes past its right edge, with alignment on both flanks. The ringed segment,
+resumes past its right edge, with alignment either side. The ringed segment,
 `s502`, is a block in K-12's segments lane and the long node carrying the
 island.
 

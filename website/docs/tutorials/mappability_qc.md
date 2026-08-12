@@ -37,7 +37,7 @@ Nothing about the pileup itself announces it.
 
 ## The block, and the reads inside it
 
-<Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, a wide span of chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read (ONT) SV callset. Coverage runs at full depth into the block, drops across the flagged span, and returns at its right-hand edge, and the callset lane has a hole over the same span. Bottom, a window inside it with SMN1 banded at the left: the same coverage lane, Umap k100 mappability summarized by minimum, and NA12878 reads colored by mapping quality. The mappability lane is on the floor across most of the frame, the pileup over it is red (MAPQ 0) across the same span and multi-colored after it, and the coverage lane steps up at the same coordinate." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
+<Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, a wide span of chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read (ONT) SV callset. Bottom, a window inside it: the same coverage lane, Umap k100 mappability summarized by minimum, and NA12878 reads colored by mapping quality. Every lane turns over at the same coordinate." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
 The affected sequence is not the gene but a much larger block containing it, so
 a locus can be inside one of these regions without being inside anything that
@@ -146,9 +146,9 @@ MAPQ 0 reads were dropped before the average was taken.
 ## What it does to a callset
 
 The long-read lane in the wide figure is empty across the block. Counting over
-the flagged block and the equal-width flank on either side of it,
+the flagged block and an equal-width window on either side of it,
 `scan_mappability_qc.sh` finds the callset nearly silent inside and populated on
-both flanks, where the older DGV catalogue carries records throughout.
+both sides, where the older DGV catalogue carries records throughout.
 
 Widen the same count to the whole chromosome and the picture changes. Both
 catalogues put a larger share of their calls inside the flagged regions than

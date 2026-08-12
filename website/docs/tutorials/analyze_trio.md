@@ -231,7 +231,7 @@ so there's nothing to see. Zoom to a few hundred kb around one boundary instead,
 where the block-step is obvious and the genotype columns resolve into individual
 variants. Start with the paternal crossover near chr1:29.7 Mb:
 
-<Figure caption="Paternal crossover at chr1:29,697,418, in a 400 kb window. Up top the painting steps from Father hap2 (light blue) to Father hap1 (dark blue), and an arrow drops to the same breakpoint in the genotypes. The tinted frames read that switch off the raw genotypes: yellow ties Child hap1 to Father hap2 on the left, purple ties it to Father hap1 on the right, and the two abut at the breakpoint." src="/img/trio-crossover-paternal.png"/>
+<Figure caption="Paternal crossover at chr1:29,697,418, in a 400 kb window. Up top the painting steps from Father hap2 (light blue) to Father hap1 (dark blue). The tinted frames read that switch off the raw genotypes: yellow ties Child hap1 to Father hap2, purple ties it to Father hap1." src="/img/trio-crossover-paternal.png"/>
 
 The maternal chromosome does the same thing at its own boundaries. Near
 chr1:55.8 Mb the child's maternal haplotype steps between the mother's two

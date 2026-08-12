@@ -347,7 +347,7 @@ own `itemRgb`, so nothing here can drift from what the file says. The white gaps
 are where a strain has no untangle segment on that stretch of K12 at all, which
 is the same accessory sequence the depth and presence projections below measure.
 
-<Figure caption="odgi untangle over the whole K12 chromosome, one row per strain, grey where the strain runs the same way as K12 and red where it runs backwards. IAI39 is inverted over five long stretches; the one other red mark on the page is a 1.4 kb block in CFT073, so the comparison and its control are the same picture. The boxed 594 kb is the arm boxed in the dotplot above. The white gaps are where a strain has no untangle segment at all, which is accessory sequence." src="/img/pangenome/pggb_untangle_rows.png" />
+<Figure caption="odgi untangle over the whole K12 chromosome, one row per strain, grey where the strain runs the same way as K12 and red where it runs backwards. IAI39 is inverted over five long stretches and the only other red mark is a 1.4 kb block in CFT073, so the comparison and its control are the same picture. White gaps are accessory sequence, where a strain has no untangle segment at all." src="/img/pangenome/pggb_untangle_rows.png" />
 
 Neither picture is proof on its own, and that is why both are here. A red band
 is one column of the untangle PAF, and a descending run in the dotplot is the
@@ -612,7 +612,7 @@ the element carry it as a single labelled deletion.
 
 Nothing in that picture came from the pangenome graph, which is what makes it a
 check on the projection rather than a restatement of it. It also shows the thing
-a depth curve cannot: where the two flanks are joined in a genome that lacks the
+a depth curve cannot: where the two sides are joined in a genome that lacks the
 element.
 
 The peaks go the other way. `odgi depth` counts path **steps**, and the graph

@@ -178,7 +178,7 @@ Then search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
 alongside π. Both dip together over the swept window, where either statistic
 alone would be ambiguous.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). Both dip over the highlighted window against their flanking background: the joint trough is the hard-sweep signature."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). Both dip over the highlighted window against their background either side: the joint trough is the hard-sweep signature."/>
 
 Each pair of values reads differently, which is what the stack is for:
 
