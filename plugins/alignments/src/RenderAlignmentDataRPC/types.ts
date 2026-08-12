@@ -363,6 +363,7 @@ export type ChainPileupData = PileupDataResult &
     Pick<
       PileupDataResult,
       | 'readChainIndices'
+      | 'readChainHasSupp'
       | 'chainAbsMinStarts'
       | 'chainAbsMaxEnds'
       | 'chainDistances'

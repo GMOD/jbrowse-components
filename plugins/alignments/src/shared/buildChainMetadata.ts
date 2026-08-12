@@ -125,16 +125,29 @@ function mateSplitKinds(chain: ChainFeatureData[], summary: ChainSummary) {
   return { mate0SplitKind, mate1SplitKind }
 }
 
-// The read-fill marker for a chain that has no split to report: 0 = no
-// supplementary segment at all, 1 = supplementary framed against a forward
-// primary, 2 = against a reverse primary. For a paired chain (two
-// opposite-strand primaries) `primaryStrand` is whichever was iterated last, but
-// that's fine — the fwd-vs-rev distinction is only read on the unpaired branch
-// of the read-fill classifier (colorUtils), where a chain has exactly one
-// primary. Paired chains that DID split overwrite this per-mate with the split
-// markers (see buildChainResultFields).
+/**
+ * The read-fill marker for a chain that has no split to report: 0 = no
+ * supplementary segment at all, 1 = supplementary framed against a forward
+ * primary, 2 = against a reverse primary. For a paired chain (two
+ * opposite-strand primaries) `primaryStrand` is whichever was iterated last, but
+ * that's fine — the fwd-vs-rev distinction is only read on the unpaired branch
+ * of the read-fill classifier (colorUtils), where a chain has exactly one
+ * primary. Paired chains that DID split overwrite this per-mate with the split
+ * markers (see buildChainResultFields).
+ *
+ * `primaryStrand` 0 (no primary in the chain at all) resolves to 1, the same
+ * unframed answer colorUtils gives an unrecognized marker — "we don't know"
+ * looks like "not flipped". Exported because a chain can straddle displayed
+ * regions and this runs per region: `reconcileChainSuppAcrossRegions` re-answers
+ * it from the union, and must encode the answer the same way rather than the
+ * same way again.
+ */
+export function chainSuppFill(hasSupp: boolean, primaryStrand: number) {
+  return hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
+}
+
 function suppType(summary: ChainSummary) {
-  return summary.hasSupp ? (summary.primaryStrand === -1 ? 2 : 1) : 0
+  return chainSuppFill(summary.hasSupp, summary.primaryStrand)
 }
 
 // How far apart a chain reaches, the key chain layout packs by. Normally the
