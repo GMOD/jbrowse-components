@@ -41,8 +41,8 @@ export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
 
 ### Required items
 
-`ConnectionType` requires five, including the two prose fields a user reads when
-picking a connection out of the list:
+`ConnectionType` requires five, two of which a user reads while choosing a
+connection from the "Add connection" list:
 
 - `name`: the name JBrowse uses internally and in configuration files to refer
   to this type of connection
@@ -58,9 +58,9 @@ picking a connection out of the list:
 
 ### Optional items
 
-- `displayName`: what the "Add connection" list shows, falling back to `name` as
-  it does on every pluggable element. A connection is picked out of a list of
-  them, so it is worth setting to something readable.
+- `displayName`: what that list shows, falling back to `name` as it does on
+  every pluggable element. Worth setting to something readable, since `name` is
+  an identifier.
 - `configEditorComponent`: by default the user configures the connection with
   the built-in config editor. A custom React component can be supplied instead;
   it receives a `model` prop whose `target` is the connection config. Set a slot
