@@ -8,6 +8,8 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
+import { navigateToSelectedOption } from '../../searchUtils.ts'
+
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -64,6 +66,33 @@ function setupWithChromosome() {
             seq: 'A'.repeat(100),
           },
         ],
+      },
+    },
+  })
+  const model = session.views[0]
+  return { model, session: getSession(model) }
+}
+
+// a haplotype-resolved assembly, which is the shape globbing exists for: the
+// useful selection is "all of hap1", never a hand-kept list of its scaffolds
+function setupHaplotypes() {
+  const session = createTestSession({ sessionSnapshot }) as any
+  session.addAssemblyConf({
+    name: 'volvox',
+    sequence: {
+      trackId: 'ref0',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: ['ctg1_hap1', 'ctg2_hap1', 'ctg1_hap2', 'ctg2_hap2'].map(
+          refName => ({
+            refName,
+            uniqueId: refName,
+            start: 0,
+            end: 100,
+            seq: 'A'.repeat(100),
+          }),
+        ),
       },
     },
   })
@@ -224,6 +253,105 @@ describe('RefNameAutocomplete', () => {
     await user.click(screen.getByText('ctgA:1..100'))
 
     expect(onSelect).toHaveBeenCalledWith(result)
+  })
+
+  // The whole reason a glob belongs in the picker rather than in the locstring
+  // parser: the matches are listed, and counted, before anything is committed
+  // to. These two go through the real navigation path — no bulk-navigation code
+  // exists, the "show all" row just carries the multi-region locstring the box
+  // has always accepted.
+  it("lists a glob's matches with one row that takes all of them", async () => {
+    const user = userEvent.setup()
+    const { session } = setupHaplotypes()
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        fetchResults={async () => []}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+    await user.type(input, '*_hap1')
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Show all 2 regions matching *_hap1'),
+      ).toBeTruthy()
+    }, patience)
+    // the individual matches are listed under it, and hap2 is not
+    expect(screen.getByText('ctg1_hap1')).toBeTruthy()
+    expect(screen.queryByText('ctg1_hap2')).toBeNull()
+  })
+
+  it('pressing enter on a glob does what that row does', async () => {
+    // the property the shared matcher exists for: Enter and the row answer for
+    // the same typed text. Enter used to reach the text index, which can never
+    // answer a glob, and report no results over a list the box was showing
+    const user = userEvent.setup()
+    const { model, session } = setupHaplotypes()
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        fetchResults={async () => []}
+        onSelect={option => {
+          navigateToSelectedOption({
+            model,
+            assemblyName: 'volvox',
+            option,
+          }).catch(() => {})
+        }}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+    await user.type(input, '*_hap1{Enter}')
+
+    await waitFor(() => {
+      expect(
+        model.displayedRegions.map((r: { refName: string }) => r.refName),
+      ).toEqual(['ctg1_hap1', 'ctg2_hap1'])
+    }, patience)
+  })
+
+  it('picking that row displays every match, via the multi-region path', async () => {
+    const user = userEvent.setup()
+    const { model, session } = setupHaplotypes()
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        fetchResults={async () => []}
+        onSelect={option => {
+          navigateToSelectedOption({
+            model,
+            assemblyName: 'volvox',
+            option,
+          }).catch(() => {})
+        }}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+    await user.type(input, '*_hap1')
+    await waitFor(
+      () => screen.getByText('Show all 2 regions matching *_hap1'),
+      patience,
+    )
+    await user.click(screen.getByText('Show all 2 regions matching *_hap1'))
+
+    await waitFor(() => {
+      expect(
+        model.displayedRegions.map((r: { refName: string }) => r.refName),
+      ).toEqual(['ctg1_hap1', 'ctg2_hap1'])
+    }, patience)
   })
 
   it('calls onChange for each typed character', async () => {

@@ -1,9 +1,11 @@
 import { RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
 import {
+  MAX_GLOB_REGIONS,
   UnknownRefNameError,
   dedupe,
   getEnv,
   getSession,
+  matchRefNames,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -182,6 +184,40 @@ export async function handleSelectedRegion({
       .every(entry => checkRef(entry, isRef))
   ) {
     await navToLocstrings()
+  } else if (input.includes('*') && !!assembly) {
+    // Enter does what the dropdown's "Show all N regions matching …" row does,
+    // for the same text. It is NOT a blind resolution: that row, and the matches
+    // under it, have been on screen the whole time the pattern was being typed,
+    // which is the reason a glob belongs in the picker at all. What would be
+    // indefensible is the two disagreeing — Enter reporting no results over a
+    // list the box is showing is the same failure the exact-first search pass
+    // was written to end, and a glob is precisely the query the text index can
+    // never answer, since nothing PREFIX-matches the literal `chr*`.
+    //
+    // Ordered after the refName check, so a contig whose name really contains
+    // `*` — GRCh38's HLA decoys — navigates to itself rather than being read as
+    // a pattern. Same literal-first rule as selectNamedRegions.
+    const names = matchRefNames(assembly, input, MAX_GLOB_REGIONS)
+    if (names.length > MAX_GLOB_REGIONS) {
+      // Refused rather than truncated, and said out loud. Opening the first
+      // thousand of a wider match is the one outcome that would look like it
+      // worked.
+      getSession(model).notify(
+        `"${input}" matches more than ${MAX_GLOB_REGIONS} regions — narrow the pattern`,
+        'warning',
+      )
+    } else if (names.length) {
+      await model.navToLocations(
+        parseLocStrings(names.join(' '), assemblyName, (ref, asm) =>
+          assemblyManager.isValidRefName(ref, asm),
+        ),
+        assemblyName,
+      )
+    } else {
+      // matched nothing: a pattern is not a feature name, so there is no index
+      // to fall through to, and the miss is the whole answer
+      throw new SearchResultsNotFoundError(`No results found for "${input}"`)
+    }
   } else {
     // Ask once, unrestricted, and read exactness off the hits. Prefer the
     // exact ones so a precise name navigates straight to its feature instead

@@ -1,5 +1,11 @@
 import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
 import { measureText } from '../../util/index.ts'
+import {
+  MAX_GLOB_REGIONS,
+  matchRefNames,
+} from '../../util/selectNamedRegions.ts'
+
+import type { RefNameMatchSource } from '../../util/selectNamedRegions.ts'
 
 // matches the rendered font-size of the TextField
 const INPUT_FONT_SIZE = 14
@@ -33,30 +39,59 @@ export function cap(options: Option[]) {
     : options
 }
 
-// The browse/pre-fetch fallback list, shown while a typed query is in flight
-// and when it comes back empty (typed queries otherwise resolve through
-// fetchResults). An assembly can hold ~10^6 refNames, so match and materialize
-// in one bounded pass rather than building a million option objects or slicing
-// first — slicing first would hide every refName past the cap from the filter,
-// so a substring of a late scaffold's name matched nothing. Collecting one past
-// the cap lets `cap` still render its "keep typing" hint.
+/**
+ * One option carrying every match as a whitespace-separated locstring — the
+ * multi-region form the box already accepts, and the form it already displays
+ * once a view holds more than one region. So picking it takes exactly the path
+ * typing those names by hand takes (`parseLocStrings` → `navToLocations` →
+ * `setDisplayedRegions` + `showAllRegions`), and there is no bulk-navigation
+ * code anywhere to keep in step with the single-region kind.
+ *
+ * It goes first in the list, and it is the reason a glob belongs in the picker
+ * rather than in the locstring parser: the set is on screen, and counted, before
+ * it is committed to. A pattern typed straight at the parser would resolve to
+ * however many regions it happened to match, sight unseen.
+ */
+function selectAllOption(matches: string[], pattern: string): Option {
+  return {
+    result: new BaseResult({
+      label: `Show all ${matches.length} regions matching ${pattern}`,
+      locString: matches.join(' '),
+    }),
+  }
+}
+
+/**
+ * The browse/pre-fetch fallback list, shown while a typed query is in flight and
+ * when it comes back empty (typed queries otherwise resolve through
+ * fetchResults).
+ *
+ * The matching itself is `matchRefNames`, in core beside the glob semantics,
+ * because Enter answers for the same typed text and the two must not each grow
+ * their own reading of it. What is left here is presentation: how many rows to
+ * materialize, and the bulk row.
+ *
+ * A glob may gather up to MAX_GLOB_REGIONS for that bulk row; a plain query
+ * never needs more than the visible list, so it keeps the tighter bound and the
+ * cost it always had. Collecting one past MAX_OPTIONS is what lets `cap` render
+ * its "keep typing" hint.
+ */
 export function getRefNameOptions(
-  regions: readonly { refName: string }[],
+  assembly: RefNameMatchSource | undefined,
   inputValue: string,
 ) {
-  const query = inputValue.toLowerCase()
-  const options: Option[] = []
-  for (const { refName } of regions) {
-    if (refName.toLowerCase().includes(query)) {
-      options.push({
-        result: new RefSequenceResult({ refName, label: refName }),
-      })
-      if (options.length > MAX_OPTIONS) {
-        break
-      }
-    }
-  }
-  return options
+  const isGlob = inputValue.includes('*')
+  const matches = matchRefNames(
+    assembly,
+    inputValue,
+    isGlob ? MAX_GLOB_REGIONS : MAX_OPTIONS,
+  )
+  const options: Option[] = matches.slice(0, MAX_OPTIONS + 1).map(refName => ({
+    result: new RefSequenceResult({ refName, label: refName }),
+  }))
+  return isGlob && matches.length > 1 && matches.length <= MAX_GLOB_REGIONS
+    ? [selectAllOption(matches, inputValue), ...options]
+    : options
 }
 
 // group hits sharing a display string into a single multi-result option (the

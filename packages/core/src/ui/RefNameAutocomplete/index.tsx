@@ -128,7 +128,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
       options={
         hasSearchResults
           ? searchOptions
-          : getRefNameOptions(assembly?.regions ?? [], searchQuery)
+          : getRefNameOptions(assembly, searchQuery)
       }
       getOptionDisabled={option => !!option.isLimit}
       // both sources arrive already matched against a query — searchOptions

@@ -141,7 +141,12 @@ export {
   intersection2,
 } from './range.ts'
 export { dedupe } from './dedupe.ts'
-export { selectNamedRegions } from './selectNamedRegions.ts'
+export {
+  MAX_GLOB_REGIONS,
+  matchRefNames,
+  selectNamedRegions,
+} from './selectNamedRegions.ts'
+export type { RefNameMatchSource } from './selectNamedRegions.ts'
 export { isValidTag, tagRegex } from './tags.ts'
 export { formatRelativeTime } from './formatRelativeTime.ts'
 export { fetchJson } from './fetchJson.ts'

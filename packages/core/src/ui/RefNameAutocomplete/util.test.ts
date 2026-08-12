@@ -1,4 +1,5 @@
 import BaseResult from '../../TextSearch/BaseResults.ts'
+import { MAX_GLOB_REGIONS } from '../../util/selectNamedRegions.ts'
 import {
   cap,
   coerceToResult,
@@ -29,7 +30,14 @@ describe('cap', () => {
 })
 
 describe('getRefNameOptions', () => {
-  const regions = (refNames: string[]) => refNames.map(refName => ({ refName }))
+  // an assembly with no aliases of its own. `allRefNames` still lists every
+  // region, because buildRefNameMaps identity-maps each one — an assembly whose
+  // regions are loaded always answers to at least its own names
+  const regions = (refNames: string[]) => ({
+    regions: refNames.map(refName => ({ refName })),
+    allRefNames: refNames,
+    getCanonicalRefName: (n: string) => n,
+  })
 
   it('matches case-insensitively on a substring of the refName', () => {
     expect(
@@ -58,6 +66,170 @@ describe('getRefNameOptions', () => {
     expect(getRefNameOptions(many, 'scaffold4999').map(getOptionLabel)).toEqual(
       ['scaffold4999'],
     )
+  })
+})
+
+describe('getRefNameOptions globs', () => {
+  // an assembly with no aliases of its own. `allRefNames` still lists every
+  // region, because buildRefNameMaps identity-maps each one — an assembly whose
+  // regions are loaded always answers to at least its own names
+  const regions = (refNames: string[]) => ({
+    regions: refNames.map(refName => ({ refName })),
+    allRefNames: refNames,
+    getCanonicalRefName: (n: string) => n,
+  })
+  const hap = regions([
+    'chr1_hap1',
+    'chr2_hap1',
+    'chr1_hap2',
+    'chr2_hap2',
+    'chrUn',
+  ])
+  const labels = (options: ReturnType<typeof getRefNameOptions>) =>
+    options.map(getOptionLabel)
+
+  it('reads * as an anchored glob', () => {
+    // a bare `_hap1` substring-matches the same two, but `*_hap1` is anchored,
+    // so this is the glob's answer rather than the substring filter's
+    expect(labels(getRefNameOptions(hap, '*_hap1')).slice(1)).toEqual([
+      'chr1_hap1',
+      'chr2_hap1',
+    ])
+  })
+
+  it('offers one option that selects every match, as a multi-region locstring', () => {
+    const [all] = getRefNameOptions(hap, '*_hap1')
+    expect(all!.result.getLabel()).toBe('Show all 2 regions matching *_hap1')
+    // the whitespace-separated form parseLocStrings already takes, so picking
+    // this needs no navigation code of its own
+    expect(all!.result.getLocation()).toBe('chr1_hap1 chr2_hap1')
+  })
+
+  it('offers no bulk row when the glob matches a single region', () => {
+    expect(labels(getRefNameOptions(hap, '*Un'))).toEqual(['chrUn'])
+  })
+
+  it('leaves a query with no * exactly as it was', () => {
+    expect(labels(getRefNameOptions(hap, 'hap1'))).toEqual([
+      'chr1_hap1',
+      'chr2_hap1',
+    ])
+  })
+
+  // `*` is a legal refName character — GRCh38's ALT decoys are HLA allele names
+  // — so the literal reading has to survive alongside the pattern one
+  const hla = regions([
+    'HLA-A*01:01:01:01',
+    'HLA-A*02:53N',
+    'HLA-A*24:01:01:01',
+  ])
+
+  it('finds a refName that itself contains a *, typed in full', () => {
+    // the glob reading of this text is ^HLA-A.*01:01:01:01$, which happens to
+    // match only the allele typed — but the substring reading finds it too, so
+    // it is in the list either way, which is the property that matters
+    expect(labels(getRefNameOptions(hla, 'HLA-A*01:01:01:01'))).toEqual([
+      'HLA-A*01:01:01:01',
+    ])
+  })
+
+  it('globs a starred name that names no refName exactly', () => {
+    expect(labels(getRefNameOptions(hla, 'HLA-A*')).slice(1)).toEqual([
+      'HLA-A*01:01:01:01',
+      'HLA-A*02:53N',
+      'HLA-A*24:01:01:01',
+    ])
+  })
+
+  it('keeps a literal hit the anchored glob would have dropped', () => {
+    // the union is doing real work here: `^a.*b$` does not match the embedded
+    // form, and the substring filter — which is what the box has always done —
+    // is the only reason it is still offered
+    expect(
+      labels(getRefNameOptions(regions(['a*b', 'xxa*byy']), 'a*b')),
+    ).toEqual(['Show all 2 regions matching a*b', 'a*b', 'xxa*byy'])
+  })
+
+  it('withholds the bulk row past the ceiling rather than truncating it', () => {
+    const many = regions(
+      Array.from(
+        { length: MAX_GLOB_REGIONS + 5 },
+        (_, i) => `scaffold${i}_alt`,
+      ),
+    )
+    const options = getRefNameOptions(many, '*_alt')
+    // a bulk row reading "all of them" that navigates to the first thousand is
+    // the one thing not worth offering; the individual rows still list
+    expect(options[0]!.result.getLabel()).toBe('scaffold0_alt')
+    expect(options).toHaveLength(101)
+  })
+
+  it('still bounds the visible list for a glob matching thousands', () => {
+    const many = regions(
+      Array.from({ length: 5000 }, (_, i) => `scaffold${i}_alt`),
+    )
+    expect(getRefNameOptions(many, '*_alt')).toHaveLength(101)
+  })
+})
+
+describe('getRefNameOptions aliases', () => {
+  // an Ensembl/NCBI-named assembly carrying UCSC aliases, which is the ordinary
+  // case for anyone whose FASTA and whose habits disagree
+  const aliasOf: Record<string, string> = { chr1: '1', chr2: '2', chrM: 'MT' }
+  const ensembl = {
+    regions: [{ refName: '1' }, { refName: '2' }, { refName: 'MT' }],
+    // as an assembly builds it: aliases AND the canonical names, identity-mapped
+    allRefNames: ['chr1', 'chr2', 'chrM', '1', '2', 'MT'],
+    getCanonicalRefName: (n: string) => aliasOf[n] ?? n,
+  }
+  const labels = (options: ReturnType<typeof getRefNameOptions>) =>
+    options.map(getOptionLabel)
+
+  it('globs against aliases and labels with the canonical name', () => {
+    // the bug: matching `regions` alone saw only 1/2/MT, so `chr*` — which the
+    // text-search half of this same dropdown can never answer, since nothing
+    // PREFIX-matches the literal `chr*` — found nothing at all
+    expect(labels(getRefNameOptions(ensembl, 'chr*')).slice(1)).toEqual([
+      '1',
+      '2',
+      'MT',
+    ])
+  })
+
+  it('takes a region once when several of its names match', () => {
+    const many = {
+      regions: [{ refName: '1' }],
+      allRefNames: ['chr1', 'NC_000001.11', '1'],
+      getCanonicalRefName: () => '1',
+    }
+    expect(labels(getRefNameOptions(many, '*1*'))).toEqual(['1'])
+  })
+
+  it('lists alias matches in assembly order, not alias-list order', () => {
+    const scrambled = { ...ensembl, allRefNames: ['chrM', 'chr2', 'chr1'] }
+    expect(labels(getRefNameOptions(scrambled, 'chr*')).slice(1)).toEqual([
+      '1',
+      '2',
+      'MT',
+    ])
+  })
+
+  it('substring queries reach aliases too, so the two readings agree', () => {
+    expect(labels(getRefNameOptions(ensembl, 'chrM'))).toEqual(['MT'])
+  })
+
+  it('lists nothing for an unloaded assembly, without consulting the aliases', () => {
+    // setLoaded writes regions and refNameAliases together, so this is the only
+    // shape "not loaded yet" takes — there is no half-loaded assembly with
+    // regions but no names, and so no canonical-only path to fall back to.
+    // getCanonicalRefName THROWS in this state, which is what the call asserts
+    const unloaded = {
+      getCanonicalRefName: () => {
+        throw new Error('aliases not loaded')
+      },
+    }
+    expect(getRefNameOptions(unloaded, '*')).toEqual([])
+    expect(getRefNameOptions(undefined, 'chr')).toEqual([])
   })
 })
 
