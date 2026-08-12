@@ -54,6 +54,8 @@ type Ctx = CanvasRenderingContext2D | SvgCanvas
 // `mismatch.slang`'s snapped left edge — see the `js-skip: expandMinWidthX`
 // note in alignmentsUniforms.slang).
 //
+// `w` is the mark's TRUE span, `px2 - px`, never a seam-fudged or already-
+// clamped one: it is the sub-pixel *test*, and the shader tests the true span.
 // Returns a number rather than a {left,width} pair: these loops run per covered
 // bp, and an object per bin would allocate.
 export function minWidthLeft(px: number, px2: number, w: number) {
@@ -172,11 +174,22 @@ export function drawCoverageBins(
       bottom - normalizeDepth(f32[off + FIELD.bandBottom]!) * effectiveH
     const bandTop =
       bottom - normalizeDepth(f32[off + FIELD.bandTop]!) * effectiveH
-    const w = px2 - px + widthCompensation
+    // The seam fudge widens the bar; it must not also decide whether the bar is
+    // sub-pixel. `minWidthLeft` mirrors `expandMinWidthX`, which centers at a
+    // TRUE span under 1 CSS px — feeding it the fudged width moved that switch
+    // to a span under 0.2px, so every bar between 1 and 5 bp/px stayed anchored
+    // at its left edge where the GPU had centered it. That is the same
+    // half-pixel offset the three call sites in this file were fixed for
+    // (ba14fd5669); this one was fixed with the wrong width and so kept it over
+    // most of the zoom range where the clamp fires. The fudge stays in the
+    // WIDTH at every zoom: sub-pixel bars tile at ~1px pitch, and two opaque
+    // fills whose antialiased coverage of one pixel sums to 1 composite to
+    // 1-(1-a)(1-b) < 1, i.e. a visible seam.
+    const rawW = px2 - px
     ctx.fillRect(
-      minWidthLeft(px, px2, w),
+      minWidthLeft(px, px2, rawW),
       bandTop,
-      Math.max(w, 1),
+      Math.max(rawW + widthCompensation, 1),
       bandBottom - bandTop,
     )
   }

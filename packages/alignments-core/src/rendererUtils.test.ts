@@ -144,6 +144,75 @@ describe('drawCoverageBins', () => {
     )
     expect(calls.length).toBe(0)
   })
+
+  // The seam fudge is a width, not a vote on whether the bar is sub-pixel.
+  // `expandMinWidthX` centers at a TRUE span under 1 CSS px; passing the fudged
+  // width to `minWidthLeft` moved that switch to a span under 0.2px, so every
+  // bar between 1 and 5 bp/px stayed left-anchored while the GPU centered it —
+  // and while the SNP segment stacked ON that bar (no fudge, so already
+  // centered) went the other way. Same bar, same bp, two pivots.
+  it('centers a sub-pixel bar on its span, fudge or no fudge', () => {
+    // 0.5 px per bp: the bar is sub-pixel, but 0.5 + 0.8 is not.
+    const bpToX = (bp: number) => (bp - 100) * 0.5
+    const left = (compensation: number) => {
+      const { ctx, calls } = makeCtx()
+      drawCoverageBins(
+        ctx,
+        packCoverageBinsCanvas2D(new Float32Array([0.5]), 100),
+        identity,
+        50,
+        'blue',
+        bpToX,
+        200,
+        compensation,
+      )
+      return (calls.find(c => c.method === 'fillRect')!.args as number[])[0]!
+    }
+    // midpoint 0.25, minus half of the 1px minimum
+    expect(left(0)).toBeCloseTo(-0.25)
+    expect(left(0.8)).toBeCloseTo(-0.25)
+  })
+
+  it('a sub-pixel bar and the SNP segment inside it share a left edge', () => {
+    const bpToX = (bp: number) => (bp - 100) * 0.5
+    const bar = makeCtx()
+    drawCoverageBins(
+      bar.ctx,
+      packCoverageBinsCanvas2D(new Float32Array([1]), 100),
+      identity,
+      50,
+      'blue',
+      bpToX,
+      200,
+      0.8,
+    )
+    const snp = makeCtx()
+    const snpBuf = new ArrayBuffer(20)
+    new Uint32Array(snpBuf)[0] = 100
+    new Float32Array(snpBuf).set([0, 0.5, 1, 1], 1)
+    drawSnpSegments(
+      snp.ctx,
+      snpBuf,
+      identity,
+      1,
+      50,
+      {
+        baseA: 'red',
+        baseC: '',
+        baseG: '',
+        baseT: '',
+        baseN: '',
+        mismatch: '',
+        deletion: '',
+        insertion: '',
+      },
+      bpToX,
+      200,
+    )
+    const x = (c: ReturnType<typeof makeCtx>) =>
+      (c.calls.find(f => f.method === 'fillRect')!.args as number[])[0]!
+    expect(x(bar)).toBeCloseTo(x(snp))
+  })
 })
 
 describe('drawSnpSegments', () => {
