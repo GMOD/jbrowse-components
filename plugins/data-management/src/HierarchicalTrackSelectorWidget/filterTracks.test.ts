@@ -43,6 +43,23 @@ function trackConf(trackId: string, assemblyNames: string[]) {
 // until it has, a selector reads an empty assemblyNameMap — a window the app
 // spends in a loading state and a test would otherwise spend asserting on the
 // wrong answer.
+//
+// Worth stating exactly what the gate waits for, because the shape looked for a
+// while like a MobX caching bug and is not one. `assemblyManagerAfterAttach` is
+// created in `afterAttach`, so its FIRST run is a reaction scheduled to the end
+// of the surrounding action rather than something that happens during setup.
+// Instrumenting both ends gives, in order: `assemblyNameMap` computed over 0
+// assemblies, then the autorun firing with an assemblyList of 1, then
+// `assemblyNameMap` recomputed over 1. So the computed is not stale — it
+// re-evaluates and answers correctly the moment anything asks again. Nothing
+// asks again here, because `trackIds` reads `allTracks` once, imperatively,
+// outside any reaction; the app re-reads through an observer and recovers on
+// its own. Removing the gate therefore fails the two tests whose first read is
+// their assertion, and leaves passing the one whose first read expects an empty
+// list anyway.
+//
+// That is why this is a gate and not a workaround: the initialization really is
+// asynchronous, and awaiting it is what a single imperative read has to do.
 async function selectorFor(session: TestSession, assemblyName: string) {
   const { assemblyManager } = session
   await when(

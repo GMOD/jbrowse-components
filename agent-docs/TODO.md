@@ -29,7 +29,6 @@ Exploratory concepts that are *not* committed work live in
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
-| [Why a track selector's answer depends on read order](#why-a-track-selectors-answer-depends-on-read-order) | track selector, mobx | run the reproduction below, it is two lines |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
@@ -195,49 +194,6 @@ report done, which reads as a timeout forever.
 An earlier attempt was reverted (`839113dabe`) — re-query the selector per
 attempt rather than holding the handle, and prove the mechanism on a targeted
 reproduction first.
-
-### Why a track selector's answer depends on read order
-
-`model.allTracks` returns different results depending on what was read before
-it, which should be impossible for a computed over settled state. Reproduction,
-in the track selector's `filterTracks.test.ts`:
-
-1. Delete the `await when(...)` gate at the top of `selectorFor`.
-2. Run the file. Two of the three tests fail with an empty track list — not a
-   wrong list, an empty one, missing even the reference sequence track.
-3. Now add a read of the assembly manager *before* `allTracks` is read — a bare
-   `console.log` of `assemblyManager.assemblies.length` inside `trackIds` is
-   enough — and all three pass again.
-
-At the moment of failure the widget is fully formed: `model.view` resolves,
-`model.assemblyNames` is `['GRCh38']`, and `assemblyManager.assemblies.length`
-is 1. Read directly at that instant,
-`getCanonicalAssemblyName('GRCh38')` answers `GRCh38`; read moments later from
-inside `filterTracks`, the same call answers `undefined`, which is what empties
-the list. So it is not that the assembly manager is unpopulated — it is that
-something is handing `filterTracks` a stale view of it.
-
-The suspect is a computed evaluated inside an untracked call stack and cached
-without its dependencies. The widget's `afterAttach` installs
-`TrackSelectorInit`, whose `loadCategoryModes` calls
-`self.collapseTopLevelCategories()` — an **action**, so untracked — and that
-reads `self.hierarchy`, hence `allTracks`, hence `assemblyNameMap`. That is the
-exact hazard `CLAUDE.md` warns about for autoruns, one layer down: a computed
-that evaluates while observed but records nothing never invalidates. It fits,
-but it has not been proven, and a wrong fix here is worse than none.
-
-Why it matters beyond the test: the same first-read window exists in the app,
-between a session loading and the drawer being opened. It has never been
-reported, which is consistent with the drawer being opened by a human several
-frames later, and with a re-render papering over it. But the tests needed the
-gate to be deterministic, and three commits' worth of assembly-name logic now
-sit on top of a subsystem whose initialization order nobody has explained.
-
-**First move:** confirm or kill the untracked-computed theory. `_isComputing` /
-`isComputingDerivation`, or a `keepAlive`/`observe` on `assemblyNameMap` around
-the failing read, should say in minutes which it is. If it holds, the fix is
-probably to stop `loadCategoryModes` reaching `hierarchy` through an action —
-it only wants the category ids, which `allTracks` can supply without the tree.
 
 ### Make the webgl blank verdict readable
 
