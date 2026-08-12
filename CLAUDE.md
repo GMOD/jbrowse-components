@@ -166,6 +166,23 @@ checkout, so ordinary git is yours to use without asking.
   `*.generated.ts` while your `.slang` sources are still uncommitted — which has
   happened, and reads afterwards as their commit having changed your shader.
   Commit sources promptly, or work in a worktree.
+- **Check `gen:shaders`' EXIT CODE, not its output and not `git status`.** A
+  `.slang` that fails to compile leaves its `.generated.ts` **untouched**, so
+  the failure looks exactly like a file that needed no regen: the source shows
+  modified, the generated module does not, and a second `gen:shaders` followed
+  by a clean `git status` reads as "already in sync". Nothing downstream
+  disagrees either — `tsc` and jest import the stale generated module and pass,
+  because the only thing that changed is a `.slang` neither of them reads. The
+  run says `gen:shaders failed: 1 of 51 .slang file(s) failed` and exits 1, and
+  that line is the whole signal; piping to `grep -c 'ok:'` counts the survivors
+  and hides it. A shader edit is verified by grepping the emitted WGSL for the
+  thing you changed, which is one command and is conclusive.
+- **A pass naming a packed colour uniform must `import colorPack;` itself.**
+  Slang does not re-export through an import, so `import alignmentsUniforms` is
+  not enough to call `unpackRGBA` even though that module uses it — the pattern
+  every named-colour pass carries is the pair (`mismatch.slang`, `read.slang`).
+  This is the most likely thing to be behind the silent stale-generated case
+  above, since it is a compile error in the one file you just edited.
 - **`jest.config.js`'s `.claude/` ignore is load-bearing — don't re-diagnose
   it.** Without it a nested agent worktree gives jest-haste-map duplicate
   `packages/__mocks__/**` and duplicate `plugins/*/package.json`, and the latter
