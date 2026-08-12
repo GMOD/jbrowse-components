@@ -205,7 +205,7 @@ function allKnownTypes(workspace: Map<string, WorkspacePackage>): Set<string> {
 // spec fingerprints
 // ---------------------------------------------------------------------------
 
-export interface SpecFingerprint {
+interface SpecFingerprint {
   name: string
   mode: ScreenshotSpec['mode']
   // registered type names this spec's session (and its resolved config tracks)
@@ -314,7 +314,7 @@ function indexConfig(configPath: string): Map<string, string[]> {
   return out
 }
 
-export function buildFingerprints(): SpecFingerprint[] {
+function buildFingerprints(): SpecFingerprint[] {
   const workspace = readWorkspace()
   const known = allKnownTypes(workspace)
   const configCache = new Map<string, Map<string, string[]> | undefined>()

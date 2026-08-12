@@ -38,7 +38,7 @@ import type { ScreenshotSpec } from './screenshot-spec-types.ts'
 // The repo-relative figure path(s) a spec writes, in the spelling figures.lock
 // uses. A cli spec writes two: jb2export's own output under
 // products/jbrowse-img/img and the website mirror captureCliSpec copies it to.
-export function manifestPathsFor(spec: ScreenshotSpec): string[] {
+function manifestPathsFor(spec: ScreenshotSpec): string[] {
   const rel = (abs: string) =>
     path.relative(repoRoot, abs).split(path.sep).join('/')
   const website = rel(path.join(outDir, `${spec.name}.png`))
