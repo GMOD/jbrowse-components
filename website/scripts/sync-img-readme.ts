@@ -2,7 +2,7 @@
 // the spec that actually produced the picture underneath it.
 //
 // The README's figures are rendered by `pnpm screenshots` from the `cliSpec`
-// entries in screenshot-spec-helpers.ts. Nothing tied those specs to the
+// entries in specs/jbrowse-img.ts. Nothing tied those specs to the
 // commands the README prints beside them, and they drifted: the SKBR3 coverage
 // example documented `--width 1400 --out skbr3_coverage.png` while the figure
 // above it was rendered at `--width 1900` and committed as `skbr3_cov.png`. A
@@ -36,7 +36,7 @@ import { join } from 'node:path'
 
 import { readManifest } from './figure-paths.ts'
 import { storeUrl } from './figure-store.ts'
-import { jbrowseImgSpecs } from './screenshot-spec-helpers.ts'
+import { jbrowseImgSpecs } from './specs/jbrowse-img.ts'
 
 const manifest = readManifest()
 
@@ -245,7 +245,7 @@ function sync(source: string) {
     if (!spec) {
       problems.push({
         line: i + 1,
-        message: `no cliSpec named "${name}" — add one in screenshot-spec-helpers.ts or drop the marker`,
+        message: `no cliSpec named "${name}" — add one in specs/jbrowse-img.ts or drop the marker`,
       })
       out.push(line)
       i++

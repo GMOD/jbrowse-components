@@ -419,9 +419,16 @@ export function buildFingerprints(): SpecFingerprint[] {
 // ---------------------------------------------------------------------------
 
 // The most common change by far is to a spec file itself, and that case needs no
-// heuristic at all: import the module and read the names it exports. Anything
-// this can't attribute (jbrowseImgSpecs, which lives in the helpers barrel) just
-// doesn't get the spec-file shortcut and falls through to the other rules.
+// heuristic at all: import the module and read the names it exports. A spec this
+// can't attribute just doesn't get the shortcut and falls through to the other
+// rules — which is why a spec belongs in specs/, not in the helpers barrel. The
+// jb2export CLI specs used to live in screenshot-spec-helpers.ts, and every edit
+// to one of them matched the `website/scripts/screenshot-` global trigger and
+// re-rendered all ~355 figures instead of the ~25 it could have moved.
+//
+// Any array export whose entries look like specs counts, so a module can split
+// its list in two (specs/jbrowse-img.ts keeps its `CliSpec[]` separate from its
+// one composed figure) without falling off this map.
 export async function specFileOwners(): Promise<Map<string, string>> {
   const out = new Map<string, string>()
   const specsDir = path.join(__dirname, 'specs')
