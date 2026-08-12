@@ -505,6 +505,36 @@ name:
 &session=spec-{...}&sessionName=My%20Analysis
 ```
 
+#### Linear genome view init options
+
+Besides `assembly`, `loc`, `tracks` and `displayedRegionNames`, the spec takes
+any property the view itself declares. The ones worth naming:
+
+- `bpPerPx` and `offsetPx`: the zoom and the horizontal scroll. `loc` is what
+  you want almost always — it reads, and it survives an assembly whose regions
+  were rebuilt. Reach for these two only to reproduce a viewport to the pixel.
+- `displayedRegions`: the regions the view lays out, as full
+  `{refName, start, end, assemblyName}` objects. `displayedRegionNames` names
+  the same thing by refName and is the shorter form; this is the escape hatch
+  for showing part of a chromosome, which a name cannot express.
+- `hideHeader`: drop the header bar entirely — location box, navigation buttons
+  and overview.
+- `hideHeaderOverview`: keep the header, drop the whole-chromosome overview
+  strip below it.
+- `hideNoTracksActive`: suppress the "No tracks active" placeholder, for an
+  embed that opens with no tracks on purpose.
+- `scalebarOnly`: render the header and coordinate scalebar and nothing else — a
+  ruler to sit beside something drawn elsewhere.
+- `showGridlines`: vertical gridlines in the track area (default `true`).
+- `showCytobands`: the cytoband ideogram in the overview, where the assembly has
+  one (default `true`).
+- `showTrackOutlines`: the 1px border around each track (default `true`).
+- `labelsVisible`: inline labels on highlight and bookmark chips (default
+  `true`).
+- `trackSelectorType`: vestigial — the hierarchical selector is the only one
+  that exists, so the value is ignored. It is accepted because saved sessions
+  and configs persist it.
+
 #### Glob region names
 
 An entry in `displayedRegionNames` containing `*` is a glob matched against the
@@ -687,6 +717,31 @@ circle auto-fits its container, so `height` is what sizes the drawing.
   ]
 }
 ```
+
+#### Circular view init options
+
+As with the linear genome view, the spec also takes the view's own declared
+properties:
+
+- `bpPerPx` and `offsetRadians`: zoom and rotation — the circle's equivalents of
+  the linear view's `bpPerPx`/`offsetPx`. Pair them with `autoFit: false`, or
+  the first resize refits over them.
+- `autoFit`: whether the circle keeps re-fitting its container on resize
+  (default `true`). It clears itself the moment the user zooms or pans, so a
+  view they arrived at by hand survives a resize and a reload.
+- `paddingPx`: blank margin between the circle and the edge of the figure.
+- `spacingPx`: the gap drawn between adjacent chromosome arcs.
+- `minimumRadiusPx`: how far in the circle may be zoomed, as a floor on the
+  radius; it is what caps `bpPerPx`.
+- `minVisibleWidth`: arcs thinner than this many pixels are elided instead of
+  drawn, which is what stops a few thousand unplaced contigs becoming a ring of
+  hairlines.
+- `hideVerticalResizeHandle`, `hideTrackSelectorButton`, `disableImportForm`:
+  chrome switches for an embed that drives the view itself. `disableImportForm`
+  suppresses the form even on an error — what the SV inspector's circle wants,
+  since its assembly comes from the sheet beside it and a form there would offer
+  a control that cannot work.
+- `trackSelectorType`: vestigial, the same way it is on the linear genome view.
 
 ### Dotplot view
 
@@ -917,6 +972,34 @@ Supported init fields:
   of fitting each to the pane width, so a size difference between rows (a genome
   duplication, polyploidy) shows as length rather than being hidden by the
   per-row stretch. Applied after `autoDiagonalize`.
+- `opacityByIdentity`: fade each alignment block by its own percent identity, so
+  identity-dropoff zones read without spending the color channel on them.
+  Orthogonal to `colorBy`.
+- `drawLocationMarkers`: continue the query row's scalebar grid down through the
+  ribbons — a tick at each round query coordinate, joined to the coordinate the
+  alignment pairs it with.
+- `lodMode`: level-of-detail tier for PIF adapters. `auto` (default) follows the
+  adapter's bpPerPx threshold, `fine` forces the per-row CIGAR tier, `coarse`
+  forces the no-CIGAR tier where the file has one.
+- `overdrawPx`: how far past the viewport edge ribbons are still drawn, which
+  keeps a pan from revealing unpainted strips. Effective only up to the pan
+  buffer (2000px, or half the viewport when that is wider) — beyond it the
+  worker has emitted no CIGAR detail or location markers, so the ribbons are
+  drawn but stop being detailed partway along.
+- `trackColorBy`: `{ "<trackId>": "<mode>" }`, overriding the view-wide
+  `colorBy` for one track. A track not named follows the view.
+- `trackColors`: `{ "<trackId>": "<color>" }`, the explicit color a track takes
+  under `colorBy: "track"`. A track not named takes the next palette slot.
+
+Two more are accepted because the view declares them, and are almost never what
+an author wants to write:
+
+- `levels`: the synteny bands themselves, one per adjacent pair of rows. Filling
+  them is what `tracks` does — one entry per level — and sizing them is
+  `levelHeights`; reach for `levels` only to author a band's full state.
+- `viewTrackConfigs`: inline track configs belonging to this view alone, rather
+  than to the session. It exists for the read-vs-reference dotplot, whose track
+  would mean nothing anywhere else.
 
 Each entry in `views` is a linear genome view, so besides `loc`, `assembly` and
 `tracks` it takes that view's own launch props (`trackLabels`, `colorByCDS`,
