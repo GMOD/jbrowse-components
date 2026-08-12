@@ -1,5 +1,7 @@
 import { when } from 'mobx'
 
+import { whenViewSettled } from '../util/whenViewSettled.ts'
+
 /**
  * The contract every GPU display's `renderSvg` relies on: a `svgReady` gate
  * (the per-display terminal-state getter — see MultiRegionDisplayMixin /
@@ -85,13 +87,10 @@ export async function awaitSvgReady(
 }
 
 /**
- * The view-level counterpart, for the wait every `renderToSvg` opens with.
- * `initialized` folds in the view's assemblies, so an assembly that failed to
- * load leaves it false forever — and a bare `when(() => view.initialized)` then
- * hangs the export with the dialog's spinner up and nothing said, the same
- * failure mode on screen the views cure by falling back to their import form.
- * Every view exposes a resolved `error` beside `initialized`; waiting on both
- * and throwing turns that hang into the dialog's error banner.
+ * The view-level counterpart, for the wait every `renderToSvg` opens with:
+ * `whenViewSettled` in the export's own vocabulary. Why the bare
+ * `when(() => view.initialized)` it replaced could not fail — only hang — is
+ * documented there.
  *
  * Only a view that never initialized is fatal *here*. A track error on an
  * initialized view is fatal too, but it is the displays' readiness waits that
@@ -101,8 +100,7 @@ export async function awaitViewInitialized(view: {
   initialized: boolean
   error: unknown
 }) {
-  await when(() => view.initialized || !!view.error)
-  if (!view.initialized) {
+  if (!(await whenViewSettled(view))) {
     // the wait only resolves on one of the two, so `error` is set here — and
     // routing it through the shared thrower keeps one wording for "the export
     // failed", whichever half of the export noticed

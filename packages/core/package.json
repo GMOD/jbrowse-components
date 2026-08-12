@@ -190,7 +190,8 @@
     "./util/useRowVirtualScroll": "./src/util/useRowVirtualScroll.ts",
     "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
-    "./util/wheelZoom": "./src/util/wheelZoom.ts"
+    "./util/wheelZoom": "./src/util/wheelZoom.ts",
+    "./util/whenViewSettled": "./src/util/whenViewSettled.ts"
   },
   "files": [
     "esm"
@@ -924,6 +925,10 @@
       "./util/wheelZoom": {
         "types": "./esm/util/wheelZoom.d.ts",
         "import": "./esm/util/wheelZoom.js"
+      },
+      "./util/whenViewSettled": {
+        "types": "./esm/util/whenViewSettled.d.ts",
+        "import": "./esm/util/whenViewSettled.js"
       }
     },
     "typesVersions": {
@@ -1440,6 +1445,9 @@
         ],
         "util/wheelZoom": [
           "esm/util/wheelZoom.d.ts"
+        ],
+        "util/whenViewSettled": [
+          "esm/util/whenViewSettled.d.ts"
         ]
       }
     }
