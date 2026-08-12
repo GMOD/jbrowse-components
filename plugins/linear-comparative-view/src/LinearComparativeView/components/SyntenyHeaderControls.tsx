@@ -2,6 +2,7 @@ import { Divider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
+import FollowSyntenyToggle from './FollowSyntenyToggle.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
@@ -14,6 +15,12 @@ const SyntenyHeaderControls = observer(function SyntenyHeaderControls({
   return (
     <>
       <Divider orientation="vertical" flexItem />
+      {/*
+        With the synteny controls rather than beside ScrollZoomToggle, because
+        following needs alignments to follow — a comparative view with no
+        synteny track has nothing for it to do.
+      */}
+      <FollowSyntenyToggle model={model} />
       <ColorBySelector model={model} />
       <SyntenySettingsPopover model={model} />
     </>

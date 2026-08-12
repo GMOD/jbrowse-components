@@ -136,6 +136,15 @@ function stateModelFactory(pluginManager: PluginManager) {
        * slate, so a transient failure stays recoverable.
        */
       volatileError: undefined as unknown,
+      /**
+       * #volatile
+       * The follow found no alignment over the anchor row's window on its last
+       * pass, so the other rows are holding position. What the header's follow
+       * button reports; without it the rows simply stop tracking, which is the
+       * same picture as a broken follow. Volatile because it describes the
+       * current window, not the session.
+       */
+      followUnaligned: false,
     }))
     .views(self => ({
       /**
@@ -230,6 +239,19 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * Written by the follow's autorun and read only by the header, which is
+       * what keeps it from being a dependency of the very pass that writes it.
+       *
+       * In THIS block, ahead of afterAttach, rather than with the other follow
+       * actions below: a later block's actions are not on the `self` an earlier
+       * one sees, so anything afterAttach calls has to be declared before it —
+       * the same reason `reconcileLevels` is here.
+       */
+      setFollowUnaligned(arg: boolean) {
+        self.followUnaligned = arg
+      },
       /**
        * #action
        * Reconcile the levels array to the views array: exactly one synteny

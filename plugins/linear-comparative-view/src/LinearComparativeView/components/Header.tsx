@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 import HeaderSearchBoxRow from './HeaderSearchBoxRow.tsx'
-import RowSyncButton from './RowSyncButton.tsx'
 import ScrollZoomToggle from './ScrollZoomToggle.tsx'
 import SyntenyHeaderControls from './SyntenyHeaderControls.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
@@ -36,7 +35,6 @@ const Header = observer(function Header({
       <TrackSelectorMenuButton model={model} />
       <ViewOptionsMenuButton model={model} prefs={prefs} />
       <ScrollZoomToggle model={model} />
-      <RowSyncButton model={model} />
 
       {syntenyModel ? <SyntenyHeaderControls model={syntenyModel} /> : null}
 

@@ -28,7 +28,12 @@ describe('rowSyncMenuItems', () => {
 
   function labelled(items: MenuItem[], label: string) {
     return items.find(i => 'label' in i && i.label === label) as
-      | { checked?: boolean; onClick?: () => void; subMenu?: MenuItem[] }
+      | {
+          checked?: boolean
+          subLabel?: string
+          onClick?: () => void
+          subMenu?: MenuItem[]
+        }
       | undefined
   }
 
@@ -50,31 +55,49 @@ describe('rowSyncMenuItems', () => {
     }
   })
 
-  test('the anchor picker is only offered while following', () => {
-    expect(labelled(build().subMenu, 'Anchor row')).toBeUndefined()
+  test('the two couplings say how they differ, since the labels do not', () => {
+    // by pixels vs by the alignment is the whole distinction, and "Link scroll
+    // and zoom" next to "Follow the matching region" does not carry it
+    const { subMenu } = build()
+    expect(labelled(subMenu, 'Link scroll and zoom')?.subLabel).toMatch(/pixel/)
+    expect(labelled(subMenu, 'Follow the matching region')?.subLabel).toMatch(
+      /align/,
+    )
+  })
+
+  test('the anchor rows are only offered while following', () => {
+    expect(labelled(build().subMenu, 'hg002mat')).toBeUndefined()
     expect(
-      labelled(build({ followSynteny: true }).subMenu, 'Anchor row'),
+      labelled(build({ followSynteny: true }).subMenu, 'hg002mat'),
     ).toBeDefined()
   })
 
-  test('the anchor picker names the rows by assembly and marks the current one', () => {
+  test('the anchor rows sit inline under a subheader, not in a nested submenu', () => {
+    // which row drives is half of what there is to set here; a second level put
+    // it three deep from the hamburger for no gain
+    const { subMenu } = build({ followSynteny: true })
+    expect(subMenu.some(i => i.type === 'subHeader')).toBe(true)
+    expect(subMenu.some(i => 'subMenu' in i)).toBe(false)
+  })
+
+  test('the anchor rows are named by assembly, with the current one marked', () => {
     // offered even for a plain two-row view: which haplotype drives and which
     // follows is the whole choice, and nothing about the pan reveals it
-    const rows = labelled(
-      build({ followSynteny: true, followAnchorIndex: 1 }).subMenu,
-      'Anchor row',
-    )!.subMenu!
-    expect(rows.map(r => ('label' in r ? r.label : undefined))).toEqual([
-      'hg002mat',
-      'hg002pat',
-    ])
-    expect(labelled(rows, 'hg002pat')?.checked).toBe(true)
+    const { subMenu } = build({ followSynteny: true, followAnchorIndex: 1 })
+    expect(labelled(subMenu, 'hg002mat')?.checked).toBe(false)
+    expect(labelled(subMenu, 'hg002pat')?.checked).toBe(true)
   })
 
   test('picking a mode goes through the one setter that clears the other flag', () => {
     const { subMenu, calls } = build()
     labelled(subMenu, 'Follow the matching region')?.onClick?.()
     expect(calls).toEqual(['follow'])
+  })
+
+  test('picking an anchor row hands back its index, not its label', () => {
+    const { subMenu, calls } = build({ followSynteny: true })
+    labelled(subMenu, 'hg002pat')?.onClick?.()
+    expect(calls).toEqual([1])
   })
 })
 

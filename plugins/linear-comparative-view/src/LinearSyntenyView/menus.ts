@@ -1,3 +1,4 @@
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
 
@@ -132,66 +133,66 @@ interface RowSyncModel {
   setFollowAnchorIndex: (idx: number) => void
 }
 
+const ROW_SYNC_MODES = [
+  { value: 'independent', label: 'Independent' },
+  {
+    value: 'link',
+    label: 'Link scroll and zoom',
+    subLabel: 'Rows move together by pixels',
+  },
+  {
+    // "matching", not "syntenic", because at whole-genome zoom a CIGAR-less
+    // tier is interpolated across the block rather than walked — close enough
+    // to follow by, not a base-level correspondence
+    value: 'follow',
+    label: 'Follow the matching region',
+    subLabel: 'Rows move to what aligns to the anchor',
+  },
+] as const
+
 /**
  * How the genome rows track each other — three MUTUALLY EXCLUSIVE modes, so a
  * radio group rather than the two independent checkboxes this would otherwise
  * be. They are exclusive in substance, not just in presentation: a pixel lock
  * and a synteny follow disagree about where a row belongs the moment an indel
- * separates them, and with both on the row is placed twice per pan.
+ * separates them, and with both on the row is placed twice per pan. The two
+ * subLabels are what tell them apart — the whole difference is *by pixels* vs
+ * *by the alignment*, and neither label says that on its own.
  *
- * The anchor picker only appears while following, and it is offered even for the
- * ordinary two-row view: which haplotype drives and which follows is exactly the
- * choice someone comparing two of them wants, and there is no way to infer it
- * from the pan itself.
+ * ONE SUBMENU, ANCHOR ROWS INLINE UNDER A SUBHEADER, rather than a nested
+ * "Anchor row" submenu: which row drives is half of what there is to set here,
+ * and a second level put it three deep from the hamburger for no gain — the
+ * rows are radio rows in the same group style as the modes above them, and
+ * only appear when there is a follow for them to anchor.
+ *
+ * The anchor picker is offered even for the ordinary two-row view: which
+ * haplotype drives and which follows is exactly the choice someone comparing
+ * two of them wants, and nothing about the pan reveals it.
  */
 export function rowSyncMenuItems(model: RowSyncModel): MenuItem[] {
   const { linkViews, followSynteny, followAnchorIndex } = model
+  const mode = followSynteny ? 'follow' : linkViews ? 'link' : 'independent'
   return [
     {
       label: 'Row sync',
       icon: LinkIcon,
       subMenu: [
-        {
-          label: 'Independent',
-          type: 'radio' as const,
-          checked: !linkViews && !followSynteny,
-          onClick: () => {
-            model.setRowSyncMode('independent')
-          },
-        },
-        {
-          label: 'Link scroll and zoom',
-          type: 'radio' as const,
-          checked: linkViews,
-          onClick: () => {
-            model.setRowSyncMode('link')
-          },
-        },
-        {
-          // "matching", not "syntenic", because at whole-genome zoom a
-          // CIGAR-less tier is interpolated across the block rather than walked
-          // — close enough to follow by, not a base-level correspondence
-          label: 'Follow the matching region',
-          type: 'radio' as const,
-          checked: followSynteny,
-          onClick: () => {
-            model.setRowSyncMode('follow')
-          },
-        },
+        ...radioItems(ROW_SYNC_MODES, mode, m => {
+          model.setRowSyncMode(m)
+        }),
         ...(followSynteny
           ? [
-              { type: 'divider' as const },
-              {
-                label: 'Anchor row',
-                subMenu: model.views.map((view, idx) => ({
+              { type: 'subHeader' as const, label: 'Anchor row' },
+              ...radioItems(
+                model.views.map((view, idx) => ({
+                  value: `${idx}`,
                   label: rowLabel(view, idx),
-                  type: 'radio' as const,
-                  checked: followAnchorIndex === idx,
-                  onClick: () => {
-                    model.setFollowAnchorIndex(idx)
-                  },
                 })),
-              },
+                `${followAnchorIndex}`,
+                idx => {
+                  model.setFollowAnchorIndex(Number(idx))
+                },
+              ),
             ]
           : []),
       ],

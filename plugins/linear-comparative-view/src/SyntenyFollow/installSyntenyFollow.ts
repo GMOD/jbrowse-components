@@ -28,6 +28,7 @@ export interface SyntenyFollowHost extends IStateTreeNode {
   followAnchorIndex: number
   views: LinearGenomeViewModel[]
   levels: FollowLevel[]
+  setFollowUnaligned: (arg: boolean) => void
 }
 
 // One level's resolved intent for this pass, everything observable already read.
@@ -197,6 +198,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // dependency set is complete before anything awaits. `execute` below is
         // async and its reads would not be tracked.
         const steps: FollowStep[] = []
+        // Levels that HAVE alignments loaded and still found none over the
+        // anchor window — the state the header reports, see setFollowUnaligned.
+        // Loading is deliberately not counted: a level whose fetch has not
+        // landed has no answer yet rather than no answer, and flagging it would
+        // blink a warning on every pan.
+        let unaligned = false
         for (const { level, linearSyntenyDisplays } of self.levels) {
           const { stayingIndex, movingIndex, toMate } = followDirection(
             level,
@@ -262,11 +269,18 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // insertion, a centromere, a panel parked off the end of the file.
           // The moving panel HOLDS POSITION rather than being sent somewhere
           // invented, and picks the follow back up when the anchor pans into
-          // aligned sequence again.
+          // aligned sequence again. Reported rather than only silent: a row
+          // that stops tracking with nothing said is the same picture as a
+          // broken follow.
           if (best) {
             steps.push(best)
+          } else if (linearSyntenyDisplays.some(d => d.featureData)) {
+            unaligned = true
           }
         }
+        // Written, never read here — reading it would make the autorun a
+        // dependency of its own write. The header is the only consumer.
+        self.setFollowUnaligned(unaligned)
         // `execute` reads no observables — everything it needs is in the step —
         // so it does not matter that an async function runs synchronously up to
         // its first await, and the CIGAR-less path (which awaits nothing before

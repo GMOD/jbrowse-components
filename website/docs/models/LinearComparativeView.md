@@ -36,6 +36,7 @@ the whole surface.
 | --- | --- |
 | <span id="volatile-width">**width**</span><br><code>width: undefined as number &#124; undefined</code> |  |
 | <span id="volatile-volatileerror">**volatileError**</span><br><code>volatileError: undefined as unknown</code> | View-level failure (e.g. an `init` block that couldn't be applied). Volatile on purpose: a reload re-runs the init autorun from a clean slate, so a transient failure stays recoverable. |
+| <span id="volatile-followunaligned">**followUnaligned**</span><br><code>followUnaligned: false</code> | The follow found no alignment over the anchor row's window on its last pass, so the other rows are holding position. What the header's follow button reports; without it the rows simply stop tracking, which is the same picture as a broken follow. Volatile because it describes the current window, not the session. |
 
 ## Getters
 
@@ -67,6 +68,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="action-setfollowunaligned">**setFollowUnaligned**</span><br><code>(arg: boolean) =&gt; void</code> | Written by the follow's autorun and read only by the header, which is what keeps it from being a dependency of the very pass that writes it.<br><br>In THIS block, ahead of afterAttach, rather than with the other follow actions below: a later block's actions are not on the `self` an earlier one sees, so anything afterAttach calls has to be declared before it — the same reason `reconcileLevels` is here. | LinearComparativeView |
 | <span id="action-reconcilelevels">**reconcileLevels**</span><br><code>() =&gt; void</code> | Reconcile the levels array to the views array: exactly one synteny level per gap between adjacent views (N views -> N-1 levels). Grows or shrinks from the end, preserving existing levels and their tracks. The single source of truth for the views/levels invariant. | LinearComparativeView |
 | <span id="action-setwidth">**setWidth**</span><br><code>(newWidth: number) =&gt; void</code> |  | LinearComparativeView |
 | <span id="action-seterror">**setError**</span><br><code>(e: unknown) =&gt; void</code> |  | LinearComparativeView |
