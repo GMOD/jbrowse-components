@@ -6,10 +6,12 @@ const PreviewMessages = observer(function PreviewMessages({
   orphanIndexCount,
   warnings,
   skippedCount,
+  needsSetupCount,
 }: {
   orphanIndexCount: number
   warnings: string[]
   skippedCount: number
+  needsSetupCount: number
 }) {
   return (
     <>
@@ -29,6 +31,15 @@ const PreviewMessages = observer(function PreviewMessages({
         <Typography variant="body2" color="error">
           {skippedCount} {pluralize(skippedCount, 'row')} with unrecognized
           types will not be added
+        </Typography>
+      ) : null}
+      {needsSetupCount > 0 ? (
+        <Typography variant="body2" color="warning">
+          {needsSetupCount} {pluralize(needsSetupCount, 'row')}{' '}
+          {pluralize(needsSetupCount, 'needs', 'need')} settings a filename
+          cannot supply (a synteny file needs its assembly pair, for one) and
+          will not be added — use the single-track workflow for{' '}
+          {pluralize(needsSetupCount, 'it', 'them')}
         </Typography>
       ) : null}
     </>

@@ -438,6 +438,7 @@ export {
 export {
   type AddTrackComponentModel,
   type AddTrackComponentProps,
+  adapterNeedsAddTrackComponent,
   addAddTrackComponent,
 } from './addTrackComponent.ts'
 export {

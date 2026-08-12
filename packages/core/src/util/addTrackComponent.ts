@@ -31,6 +31,15 @@ declare module '../PluginManager.ts' {
       result: ComponentType<AddTrackComponentProps>
       props: AddTrackComponentProps
     }
+    // The same claims as the point above, as a plain list. The fold there can
+    // only answer "which component for this model", which needs a model — and a
+    // caller asking whether a format is configurable at all has an adapter name
+    // and nothing else. Both are written by addAddTrackComponent, so a plugin
+    // still states its adapters once.
+    'Core-addTrackComponentAdapterTypes': {
+      args: readonly string[]
+      result: readonly string[]
+    }
   }
 }
 
@@ -60,4 +69,31 @@ export function addAddTrackComponent(
         : accumulated
     },
   )
+  pluginManager.contributeToExtensionPoint(
+    /** #extensionPoint Core-addTrackComponentAdapterTypes | sync | Adapter types whose add-track form contributes required config */
+    'Core-addTrackComponentAdapterTypes',
+    () => [...adapterTypes],
+  )
+}
+
+/**
+ * Whether a picker claims this adapter, i.e. the file alone does not describe
+ * the track. A synteny picker contributes the assembly pair — on the adapter
+ * *and* as the track's `assemblyNames`, because a synteny view only offers
+ * tracks covering every assembly it displays — so a config built without one
+ * lands in the session and then never appears in the view it was made for.
+ *
+ * For workflows that guess a config straight from a filename and so cannot run
+ * the picker: ask before offering to add the track, and send the user to the
+ * single-track form instead. The list is written by `addAddTrackComponent`, so
+ * it covers every plugin that registers one rather than a hardcoded set that
+ * goes stale when the next plugin lands.
+ */
+export function adapterNeedsAddTrackComponent(
+  pluginManager: PluginManager,
+  adapterType: string,
+) {
+  return pluginManager
+    .evaluateExtensionPoint('Core-addTrackComponentAdapterTypes', [])
+    .includes(adapterType)
 }

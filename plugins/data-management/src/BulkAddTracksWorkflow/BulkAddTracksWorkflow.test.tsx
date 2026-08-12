@@ -101,6 +101,24 @@ test('an unrecognized file type is flagged and not added', () => {
   expect(getByRole('button', { name: 'Add 0 tracks' })).toBeTruthy()
 })
 
+// a .paf guesses to PAFAdapter/SyntenyTrack, so it looked addable — but the
+// assembly pair lives in the synteny add-track form, and a synteny track listing
+// one assembly is never offered by filterTracks in the view it was made for. It
+// used to be added anyway and simply never appear.
+test('a synteny file is held back for the single-track workflow, not added', () => {
+  const { session, model } = getSession()
+  const before = session.sessionTracks.length
+  const { getByLabelText, getByRole, getByText } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  pasteUrls(getByLabelText, 'https://x.com/a.paf')
+
+  expect(getByText(/use the single-track workflow/)).toBeTruthy()
+  const button = getByRole('button', { name: 'Add 0 tracks' })
+  expect((button as HTMLButtonElement).disabled).toBe(true)
+  expect(session.sessionTracks.length).toBe(before)
+})
+
 test('warns about ftp urls that JBrowse cannot access', () => {
   const { model } = getSession()
   const { getByLabelText, getByText } = render(

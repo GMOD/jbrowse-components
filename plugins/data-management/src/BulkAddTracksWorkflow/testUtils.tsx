@@ -1,6 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import { addAddTrackComponent } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import Alignments from '@jbrowse/plugin-alignments'
 import Variants from '@jbrowse/plugin-variants'
@@ -31,15 +32,35 @@ class FakeViewPlugin extends Plugin {
 }
 
 /**
+ * Claims `adapterTypes` for an add-track picker, the way the synteny and GWAS
+ * plugins do. Lets a test exercise "this format needs the single-track form"
+ * against a format the alignments/variants plugins already guess, rather than
+ * pulling a whole extra plugin in to get one real claim.
+ */
+export function fakeAddTrackComponentPlugin(adapterTypes: string[]) {
+  return new (class extends Plugin {
+    name = 'FakeAddTrackComponentPlugin'
+
+    install(pluginManager: PluginManager) {
+      addAddTrackComponent(pluginManager, {
+        adapterTypes,
+        component: () => null,
+      })
+    }
+  })()
+}
+
+/**
  * An AddTrackWidget model wired to a session with the alignments and variants
  * plugins installed, enough for `guessAdapter`/`guessTrackType` to resolve real
  * track types in unit tests.
  */
-export function makeModel() {
+export function makeModel(extraPlugins: Plugin[] = []) {
   const pluginManager = new PluginManager([
     new FakeViewPlugin(),
     new Alignments(),
     new Variants(),
+    ...extraPlugins,
   ])
   pluginManager.createPluggableElements()
   pluginManager.configure()

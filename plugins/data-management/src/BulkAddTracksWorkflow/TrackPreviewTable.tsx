@@ -29,11 +29,22 @@ interface PreviewGridRow {
 }
 
 function detectedTypeLabel(row: TrackConfRow) {
-  if (row.status === 'ok') {
-    return `${row.trackType} (${row.adapterType})`
-  } else {
+  if (row.status === 'unknown') {
     return 'Unrecognized file type'
   }
+  const type = `${row.trackType} (${row.adapterType})`
+  // the type is right; what is missing is the config only the single-track form
+  // collects, so say that rather than implying the format wasn't recognized
+  return row.status === 'needsSetup' ? `${type} — needs setup` : type
+}
+
+// error for a row nothing could read, warning for one that was read fine but
+// cannot be finished here
+function statusColor(status: TrackStatus) {
+  if (status === 'ok') {
+    return 'text.primary'
+  }
+  return status === 'unknown' ? 'error' : 'warning'
 }
 
 const TrackPreviewTable = observer(function TrackPreviewTable({
@@ -67,10 +78,7 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
       headerName: 'Detected type',
       flex: 1,
       renderCell: ({ row }) => (
-        <Typography
-          variant="body2"
-          color={row.status === 'ok' ? 'text.primary' : 'error'}
-        >
+        <Typography variant="body2" color={statusColor(row.status)}>
           {row.type}
         </Typography>
       ),

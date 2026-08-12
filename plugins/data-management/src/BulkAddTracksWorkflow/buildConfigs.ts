@@ -1,3 +1,4 @@
+import { adapterNeedsAddTrackComponent, getEnv } from '@jbrowse/core/util'
 import {
   UNKNOWN,
   getFileName,
@@ -8,9 +9,17 @@ import {
 import { locationId } from './pairLocations.ts'
 
 import type { LocationPair } from './pairLocations.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-export type TrackStatus = 'ok' | 'unknown'
+/**
+ * `needsSetup` is a format whose add-track form contributes config a filename
+ * cannot: a synteny file needs its assembly pair, and a config built without one
+ * is added to the session and then never offered in the view it was made for.
+ * Guessing gets no closer, so the row is shown and excluded rather than added
+ * broken.
+ */
+export type TrackStatus = 'ok' | 'unknown' | 'needsSetup'
 
 export interface TrackConfRow {
   id: string
@@ -34,8 +43,16 @@ export interface TrackConfRow {
   status: TrackStatus
 }
 
-function statusOf(adapterType: string): TrackStatus {
-  return adapterType === UNKNOWN ? 'unknown' : 'ok'
+function statusOf(
+  adapterType: string,
+  pluginManager: PluginManager,
+): TrackStatus {
+  if (adapterType === UNKNOWN) {
+    return 'unknown'
+  }
+  return adapterNeedsAddTrackComponent(pluginManager, adapterType)
+    ? 'needsSetup'
+    : 'ok'
 }
 
 /**
@@ -52,6 +69,7 @@ export function buildTrackConfigs({
   model: IAnyStateTreeNode
   assembly: string
 }): TrackConfRow[] {
+  const { pluginManager } = getEnv(model)
   return pairs.map(pair => {
     const adapter = guessAdapter(pair.file, pair.index, '', model)
     const adapterType = adapter.type
@@ -70,7 +88,7 @@ export function buildTrackConfigs({
       adapterType,
       indexName: pair.index ? getFileName(pair.index) : undefined,
       indexId: pair.index ? locationId(pair.index) : undefined,
-      status: statusOf(adapterType),
+      status: statusOf(adapterType, pluginManager),
     }
   })
 }

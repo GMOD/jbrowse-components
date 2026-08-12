@@ -8,7 +8,10 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface BulkPreview {
   rows: TrackConfRow[]
+  /** rows whose file type nothing recognized */
   skippedCount: number
+  /** rows that need the single-track workflow to be configured at all */
+  needsSetupCount: number
   orphanIndexCount: number
   warnings: string[]
 }
@@ -36,7 +39,8 @@ export function summarizeBulkInput({
   })
   return {
     rows,
-    skippedCount: rows.filter(row => row.status !== 'ok').length,
+    skippedCount: rows.filter(row => row.status === 'unknown').length,
+    needsSetupCount: rows.filter(row => row.status === 'needsSetup').length,
     orphanIndexCount: orphanIndexes.length,
     warnings: locationWarnings(locations),
   }
