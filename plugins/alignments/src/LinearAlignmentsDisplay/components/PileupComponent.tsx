@@ -24,7 +24,7 @@ import ArcDebugOverlay from './ArcDebugOverlay.tsx'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import HighlightOverlay from './HighlightOverlay.tsx'
-import InsertSizeAxis from './InsertSizeAxis.tsx'
+import { InsertSizeAxisStack } from './InsertSizeAxis.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
@@ -553,11 +553,6 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
   if (insertSizeTickSections.length === 0) {
     return null
   }
-  // The arc band is a sticky-capable band top like coverage — same tier, same
-  // projection, rather than a second inline `isGrouped ? -scrollTop : 0`. One
-  // shift for every section, because each section's ticks already carry its own
-  // `arcBandTop` in content space.
-  const yShift = bandScreenTop(0, model.scrollModel)
   return (
     <svg
       style={{
@@ -571,15 +566,14 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
         width: AXIS_SVG_WIDTH,
       }}
     >
-      <g transform={`translate(0, ${yShift})`}>
-        {insertSizeTickSections.map(({ groupKey, ticks }) => (
-          <InsertSizeAxis
-            key={sectionKey(groupKey)}
-            ticks={ticks}
-            down={readConnectionsDown}
-          />
-        ))}
-      </g>
+      <InsertSizeAxisStack
+        sections={insertSizeTickSections}
+        down={readConnectionsDown}
+        // The arc band is a sticky-capable band top like coverage — same tier,
+        // same projection, rather than a second inline
+        // `isGrouped ? -scrollTop : 0`.
+        yShift={bandScreenTop(0, model.scrollModel)}
+      />
     </svg>
   )
 })

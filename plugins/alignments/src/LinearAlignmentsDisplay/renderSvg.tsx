@@ -16,7 +16,7 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { getAlignmentsLegendSections } from '../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
-import InsertSizeAxis from './components/InsertSizeAxis.tsx'
+import { InsertSizeAxisStack } from './components/InsertSizeAxis.tsx'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
@@ -159,15 +159,17 @@ function AlignmentsSvgBody({
           canvasWidth={canvasWidth}
         />
       ) : null}
+      {/* Insert-size (TLEN) scale bars, read-cloud mode only — one per section
+          that reserves an arc band, the way CoverageScaleBars does for
+          coverage. All this supplies that the on-screen host doesn't is `x`:
+          the export has no CSS box to anchor the axis in. The shift is the same
+          sticky-capable band-top projection. */}
       {insertSizeTickSections.length > 0 ? (
-        <InsertSizeScaleBars
+        <InsertSizeAxisStack
           sections={insertSizeTickSections}
           down={model.readConnectionsDown}
-          canvasWidth={canvasWidth}
-          // A sticky-capable band top like coverage, so it takes the same
-          // projection the on-screen InsertSizeAxisHost applies. One shift for
-          // all of them: each section's ticks carry its own `arcBandTop`.
           yShift={bandScreenTop(0, scroll)}
+          x={insertSizeAxisBoxLeft(canvasWidth, model.readConnectionsDown)}
         />
       ) : null}
       {model.showsGroupLabels ? (
@@ -274,34 +276,6 @@ export function CoverageScaleBars({
         ),
       )}
     </>
-  )
-}
-
-// Insert-size (TLEN) scale bars, read-cloud mode only — one per section that
-// reserves an arc band, the way `CoverageScaleBars` above does for coverage. The
-// axis lays itself out inside its own box (`InsertSizeAxis`, shared with
-// PileupComponent's InsertSizeAxisHost); all this supplies is where that box
-// goes, which is the only thing that differs from the on-screen overlay's
-// CSS-anchored one.
-function InsertSizeScaleBars({
-  sections,
-  down,
-  canvasWidth,
-  yShift,
-}: {
-  sections: LinearAlignmentsDisplayModel['insertSizeTickSections']
-  down: boolean
-  canvasWidth: number
-  yShift: number
-}) {
-  return (
-    <g
-      transform={`translate(${insertSizeAxisBoxLeft(canvasWidth, down)}, ${yShift})`}
-    >
-      {sections.map(({ groupKey, ticks }) => (
-        <InsertSizeAxis key={sectionKey(groupKey)} ticks={ticks} down={down} />
-      ))}
-    </g>
   )
 }
 

@@ -2,6 +2,7 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { leftAxisSpineX } from '../coverageAxisStyle.ts'
 import TlenAxisLabel from './TlenAxisLabel.tsx'
+import { sectionKey } from './sectionScreen.ts'
 
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
@@ -51,5 +52,37 @@ export default function InsertSizeAxis({
       <YScaleBar ticks={ticks} orientation="right" />
       {caption}
     </>
+  )
+}
+
+/**
+ * Every reserved arc band's axis, in stacking order, under one shift.
+ *
+ * One shift for all of them because each section's ticks already carry its own
+ * `arcBandTop` in content space, and `bandScreenTop` is affine — so the
+ * caller's `bandScreenTop(0, …)` completes the projection for every section at
+ * once. Both hosts pass exactly that; what differs is only where the axis box
+ * sits, which is `x` (a CSS-anchored 0 on screen, `insertSizeAxisBoxLeft` on
+ * the export). Kept together for the reason the single {@link InsertSizeAxis}
+ * exists: the last thing these two spelled separately drifted by 5px and every
+ * exported figure carried it.
+ */
+export function InsertSizeAxisStack({
+  sections,
+  down,
+  yShift,
+  x = 0,
+}: {
+  sections: { groupKey: string; ticks: YScaleTicks }[]
+  down: boolean
+  yShift: number
+  x?: number
+}) {
+  return (
+    <g transform={`translate(${x}, ${yShift})`}>
+      {sections.map(({ groupKey, ticks }) => (
+        <InsertSizeAxis key={sectionKey(groupKey)} ticks={ticks} down={down} />
+      ))}
+    </g>
   )
 }
