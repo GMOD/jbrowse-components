@@ -67,11 +67,13 @@ handle) gate on `canSizeGroupHeights`.
 awkward special case follows from that, including that the fit cap uses the
 Normal height rather than the configured one.
 
-Naming trap: `getConf(self, 'featureHeight')` is the raw slot but the
-`self.featureHeight` getter is the fit-squeezed value, so editors that mutate
-the size must read `configuredFeatureHeight`. `fittedHeightPx` is a **pitch**,
-`featureHeight` a **body**; the volatile bridging them breaks a MobX cycle, so
-don't collapse it.
+Naming trap: `self.featureHeight` is the **fit-squeezed** value, so editors that
+mutate the size must read `configuredFeatureHeight` — which is
+`resolveConf(self, 'featureHeight')`, not `getConf`. The slot is promotable, so
+a raw `getConf` read hands back the `undefined` inherit sentinel rather than a
+size; `configuredFeatureHeight` is the only spelling of "the configured
+fixed-mode size". `fittedHeightPx` is a **pitch**, `featureHeight` a **body**;
+the volatile bridging them breaks a MobX cycle, so don't collapse it.
 
 Grow mode is `HeightModeMixin`'s in full — this display supplies only
 `growTargetHeight` (the stacked-sections height) and super-captures
