@@ -237,9 +237,19 @@ export function WorkspaceLayoutMixin() {
         addViewToTab(tabId: string, viewId: string) {
           apply(addViewToTab(self.tree, tabId, viewId))
         },
-        removeView(viewId: string) {
-          apply(removeView(self.tree, viewId))
-        },
+        // NO `removeView` HERE. This mixin is composed into the session, where
+        // `removeView(view)` is already the action that takes a view out of
+        // `session.views` — part of AbstractSessionModel, and what every close
+        // button and every host calls. A same-named action here does not extend
+        // it, it *replaces* it (types.compose merges, last one wins), so the
+        // session action stopped being reachable at all: closing a view pruned
+        // the layout tree and left the view in the session forever, and
+        // `session.removeView(view)` passed a model where this wanted an id, so
+        // it matched nothing and even the pruning was a no-op.
+        //
+        // Nothing needs one either way: `home` below drops any tab entry whose
+        // view is no longer in `session.views`, so removing the view is the
+        // whole operation and the tree follows.
         /**
          * Drop a dragged tab into an existing panel, as a tab.
          *
