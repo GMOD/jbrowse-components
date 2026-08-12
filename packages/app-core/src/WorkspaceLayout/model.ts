@@ -128,23 +128,13 @@ export function WorkspaceLayoutMixin() {
       /**
        * The plain tree the pure functions take.
        *
-       * `getSnapshot` rather than a JSON round trip: MST keeps the snapshot on
-       * a `keepAlive` computed, so this is cached and referentially stable
-       * instead of re-serialising the whole layout on every read — and an
-       * action here reads it several times. The stability also matters on the
-       * way back in: `apply` assigns a tree built by spreading this one, so an
-       * untouched subtree is the very object MST already holds and its
-       * reconcile short-circuits on identity rather than walking it.
+       * `getSnapshot` is a `keepAlive` computed, so this is cached and
+       * referentially stable — which also lets MST's reconcile short-circuit on
+       * identity when `apply` writes an untouched subtree back.
        *
-       * Safe because nothing mutates it. Every function in `tree.ts` is
-       * `tree in -> tree out` over spreads, which is the same property that
-       * lets them be tested exhaustively.
-       *
-       * **Deliberately uncast.** The models below and the interfaces in
-       * `tree.ts` are two spellings of one shape and nothing else makes them
-       * agree, so this assignment is where they are checked — add a field to
-       * `PanelNode` without adding it to `LayoutPanel` and it stops compiling
-       * here. A cast would take that check away and give nothing back.
+       * Uncast on purpose: the models below and the interfaces in `tree.ts` are
+       * two spellings of one shape, and this assignment is the only thing that
+       * checks they agree.
        */
       get tree(): LayoutTree {
         return getSnapshot(self.layout)
@@ -169,6 +159,11 @@ export function WorkspaceLayoutMixin() {
       panelContainingView(viewId: string) {
         return panelContainingView(self.tree, viewId)
       },
+      /** The views a tab renders: its members, in `session.views` order. */
+      viewIdsForTab(tabId: string, order: string[]) {
+        const members = new Set(findTab(self.tree, tabId)?.tab.viewIds ?? [])
+        return order.filter(id => members.has(id))
+      },
       /** The tab a panel is showing, or its first. */
       activeTabOf(panelId: string) {
         const panel = panels(self.tree).find(p => p.id === panelId)
@@ -180,10 +175,6 @@ export function WorkspaceLayoutMixin() {
         self.layout = cast(normalize(next) as never)
       }
 
-      // Put any view no tab holds into the active cell's active tab, and drop
-      // members the session no longer has. The rule itself is `homeViews` in
-      // `tree.ts`, with the rest of the tree surgery and under the same
-      // randomised test; this only supplies what the pure function cannot know.
       function home(tree: LayoutTree, viewIds: string[]) {
         return homeViews(tree, viewIds, self.activePanelId, () => nextId('tab'))
       }
@@ -191,15 +182,12 @@ export function WorkspaceLayoutMixin() {
       /**
        * The shape ViewMenu's two "give this view a home of its own" moves share.
        *
-       * Home first: from the classic stack nothing has been assigned to a tab
-       * yet, and the old code forked here instead — the live dockview api when
-       * the workspace was up, an `init` when it was not. Then take the view out
-       * of wherever homing put it, let `place` put it back somewhere new, and
-       * prune the tab it left if that emptied it.
+       * Homing first is what removed the old fork here — the live dockview api
+       * when the workspace was up, an `init` when it was not — because from the
+       * classic stack nothing has been assigned to a tab yet.
        *
-       * Returns where the view came from, or `undefined` when it is not in the
-       * session at all — in which case nothing is applied, since `place` is
-       * what would have made the new home and it never runs.
+       * Returns where the view came from, or `undefined` if it is not in the
+       * session, in which case nothing is applied.
        */
       function rehomeView(
         viewId: string,
@@ -216,10 +204,8 @@ export function WorkspaceLayoutMixin() {
         return from
       }
 
-      // NB `apply` is deliberately not returned. It takes a whole tree, so as an
-      // action it would be a public "set the layout to this" on the session —
-      // and the session is a plugin-facing surface where nothing announces that
-      // a member is unused. Every gesture below is a named action instead.
+      // `apply` is deliberately not returned: it takes a whole tree, so as an
+      // action it is a public "set the layout to this" on the session.
       return {
         setActivePanelId(panelId: string | undefined) {
           self.activePanelId = panelId
@@ -312,14 +298,9 @@ export function WorkspaceLayoutMixin() {
           before: boolean,
         ) {
           const source = findTab(self.tree, tabId)?.panel
-          // Split first, move second — so a tab that is not there must be
-          // rejected before the split, or the cell it would have filled is
-          // left behind empty.
-          //
-          // The target is checked for the reason `splitPanel` checks its own
-          // result: splitting a cell that is not there inserts nothing, and
-          // this would then set activePanelId to a cell nobody draws and
-          // report the id back as if the drop had landed.
+          // Both checked BEFORE the split: a missing tab leaves the new cell
+          // behind empty, and a missing target splits nothing while this goes
+          // on to point activePanelId at a cell nobody draws.
           if (!source || !self.hasPanel(targetPanelId)) {
             return undefined
           }
@@ -377,11 +358,9 @@ export function WorkspaceLayoutMixin() {
         /**
          * ViewMenu's "move to new tab": the view leaves its tab for a new one.
          *
-         * `allViewIds` is EVERY view in the session, not just this one, and is
-         * required for that reason. Homing is two-directional about membership
-         * — it drops any view the list does not name — so defaulting it to
-         * `[viewId]` (which it did) unhomed every other view in the workspace,
-         * and the homing autorun then swept them all into one tab.
+         * `allViewIds` is EVERY view in the session, and is required for that
+         * reason — homing drops any view the list does not name, so the
+         * `[viewId]` default this used to carry unhomed all the others.
          */
         moveViewToNewTab(viewId: string, allViewIds: string[]) {
           const tab: TabNode = { id: nextId('tab'), viewIds: [viewId] }

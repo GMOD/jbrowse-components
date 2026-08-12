@@ -34,13 +34,9 @@ interface Props {
 }
 
 /**
- * A node's share of its parent's space.
- *
- * `flexGrow: size` with `flexBasis: 0` is the whole grid engine: the children
- * divide whatever space the parent has in proportion to their sizes, so a
- * window resize is the browser's problem. The two `min*: 0` are what stop a
- * flex item refusing to shrink below its content — without them a wide view
- * pushes its own cell past its share.
+ * A node's share of its parent's space — the whole grid engine. The `min*: 0`
+ * are what stop a flex item refusing to shrink below its content; without them
+ * a wide view pushes its own cell past its share.
  */
 function paneStyle(size: number): React.CSSProperties {
   return {
@@ -79,15 +75,10 @@ export const LayoutRenderer = observer(function LayoutRenderer(props: Props) {
 })
 
 /**
- * The pixels the two panes either side of a handle currently occupy.
- *
- * Read from the DOM because nothing in the tree knows one: sizes are shares of
- * a container whose width is the browser's business. Both input paths need it —
- * the pointer to convert its travel into a share, the keyboard only to apply
- * the minimum — so it is measured here rather than cached with the drag.
- *
- * The handle's siblings are the panes: every child of the flex container except
- * the other handles, which is what `data-splitter` marks them for.
+ * The pixels the two panes either side of a handle occupy. Read from the DOM
+ * because sizes are shares of a container whose width only the browser knows.
+ * The panes are the handle's siblings minus the other handles, which is what
+ * `data-splitter` marks.
  */
 function measurePairPx(
   handle: HTMLElement,

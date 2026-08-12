@@ -41,15 +41,10 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
   >(undefined)
 
   /**
-   * The drag, mirrored into a ref, so the handlers can read it without
-   * depending on it.
-   *
-   * This is what keeps the handlers identity-stable across a drag, and that is
-   * not a micro-optimisation: they are part of `PanelChrome`, which every panel
-   * holds, so handlers that changed on every pointer move re-rendered every
-   * cell — and a cell's render rebuilds its `ViewStack`. Dragging one tab
-   * across the window re-rendered every view in the workspace, at pointer-event
-   * rate, for a caret moving a few pixels.
+   * The drag, mirrored into a ref so the handlers can read it without depending
+   * on it — which keeps them identity-stable. They go into `PanelChrome`, so
+   * handlers that changed on every pointer move re-rendered every cell in the
+   * workspace, and a cell's render rebuilds its `ViewStack`.
    */
   const dragRef = useRef<DragState | undefined>(undefined)
   const showDrag = useCallback((next: DragState | undefined) => {
@@ -167,10 +162,8 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
    * the drag is rebuilt from `pending` on every move, so cancelling the visible
    * state alone would let the next pixel of movement resume it.
    *
-   * Bound only while a drag is up — `drag` is the dependency here on purpose,
-   * where the handlers avoid it: a keydown listener on `window` for the whole
-   * life of the workspace is a listener in every session that never drags a
-   * tab.
+   * `drag` is the dependency here on purpose, where the handlers avoid it: the
+   * listener should exist only while a drag does.
    */
   useEffect(() => {
     if (!drag) {

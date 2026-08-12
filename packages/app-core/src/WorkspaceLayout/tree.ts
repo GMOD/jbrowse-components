@@ -65,11 +65,7 @@ export function tabs(node: LayoutTree): TabNode[] {
   return panels(node).flatMap(p => p.tabs)
 }
 
-/**
- * A tab together with the panel holding it. Both finders below answer this,
- * because every caller needs the panel too — the tab alone cannot say where it
- * is, and the tree carries no parent pointers to walk back up.
- */
+/** A tab and the panel holding it — there are no parent pointers to walk. */
 export interface TabHome {
   panel: PanelNode
   tab: TabNode
@@ -92,13 +88,7 @@ export function findTab(node: LayoutTree, tabId: string) {
   return homeOf(node, t => t.id === tabId)
 }
 
-/**
- * The tab a panel is showing: the one it names, or its first.
- *
- * `activeTabId` is a `maybe` and a panel with no tabs has nothing to show, so
- * the fallback is the rule rather than a defensive check — and it is one rule,
- * read by the model's `activeTabOf`, by homing, and by the strip that draws it.
- */
+/** The tab a panel is showing: the one it names, or its first. */
 export function activeTabIn(panel: PanelNode): TabNode | undefined {
   return panel.tabs.find(t => t.id === panel.activeTabId) ?? panel.tabs[0]
 }
@@ -152,14 +142,10 @@ export function normalize(node: LayoutTree): LayoutTree {
 /**
  * Rescale a set of siblings so their sizes sum to `total`.
  *
- * One rule, both places it is needed: rule 4 renormalises to 1, and rule 3
- * rescales a flattened branch's children to the share that branch itself held —
- * so a child at half of a branch that was a third of its parent ends up at a
- * sixth, keeping its share OF THE WHOLE.
- *
- * Siblings summing to nothing take equal shares. That is a repair rather than a
- * guard: canonical form says every size is above zero, so the alternative is
- * dividing by zero and putting the whole branch at `NaN`.
+ * Rule 4 renormalises to 1; rule 3 rescales a flattened branch's children to
+ * the share that branch held, so a child at half of a branch that was a third
+ * of its parent ends up at a sixth. Siblings summing to nothing take equal
+ * shares — the alternative is dividing by zero.
  */
 function scaleSizes(children: LayoutTree[], total = 1): LayoutTree[] {
   const sum = children.reduce((acc, c) => acc + c.size, 0)
@@ -266,16 +252,7 @@ function mapPanel(
   )
 }
 
-/**
- * Rebuild `root` with `replacer` applied to the tab with id `tabId`.
- *
- * The bottom rung of the ladder — `mapNode` addresses any node, `mapPanel` a
- * cell, this a tab. A tab has no parent pointer, so reaching one means finding
- * its panel first and rebuilding that; written out per operation, that lookup
- * and the `tabs.map` around it were three copies wide.
- *
- * Not exported: every gesture on a tab is one of the named operations below.
- */
+/** Rebuild `root` with `replacer` applied to the tab with id `tabId`. */
 function mapTab(
   root: LayoutTree,
   tabId: string,
@@ -444,20 +421,12 @@ export function removeView(root: LayoutTree, viewId: string): LayoutTree {
 /**
  * Make the tree's membership agree with the session's list of views.
  *
- * The only reconciliation left in the design, and it is one-directional:
- * `session.views` owns which views exist, so a newly launched one has to land
- * somewhere and one the session has dropped has to stop being named. Nothing
- * reads back — the layout never tells the session about a view.
+ * The only reconciliation left, and one-directional: `session.views` owns which
+ * views exist, and nothing reads back.
  *
- * Both halves matter and the second is the sharp one. Passing a list that does
- * not name every view the session has does not "leave the rest alone": it
- * unhomes them, and the caller's next homing pass then sweeps them all into one
- * tab. `viewIds` is the session's whole set, always.
- *
- * Pure, and here rather than in the model, so the randomised operation sequence
- * in `tree.test.ts` can drive it alongside every other operation. It was the
- * one piece of tree surgery outside that test, and it is the piece that runs on
- * every change to `session.views`.
+ * **`viewIds` is the session's WHOLE set.** A shorter list does not leave the
+ * rest alone — it unhomes them, and the next homing pass sweeps them into one
+ * tab.
  */
 export function homeViews(
   root: LayoutTree,
@@ -473,8 +442,7 @@ export function homeViews(
   let next = root
   let homeTabId = activeTabIn(target)?.id
   if (!homeTabId) {
-    // a panel with no tabs is legal (a drag leaves them behind), but it cannot
-    // be where a view lands, so the arrival brings one with it
+    // a panel with no tabs is legal, but it cannot be where a view lands
     homeTabId = nextTabId()
     next = addTab(next, target.id, { id: homeTabId, viewIds: [] })
   }
@@ -483,9 +451,8 @@ export function homeViews(
       next = addViewToTab(next, homeTabId, viewId)
     }
   }
-  // read the memberships once, then drop. `removeView` returns a new tree each
-  // call, so walking a list taken from a tree it has already replaced is a trap
-  // rather than a shortcut.
+  // read the memberships once, then drop: `removeView` returns a new tree each
+  // call, so a list taken from a tree it has already replaced goes stale
   const owned = new Set(viewIds)
   const departed = tabs(next)
     .flatMap(t => t.viewIds)

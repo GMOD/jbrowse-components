@@ -85,19 +85,13 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
   )
 
   /**
-   * Memoised, and the reason is not tidiness.
+   * Memoised because this reaches every panel, so a fresh one per render
+   * defeats `observer`'s memo for all of them and each re-render rebuilds a
+   * `ViewStack`. `drag` is deliberately NOT in here — it goes down its own prop
+   * so it reaches only the cell it describes.
    *
-   * This object is a prop of every panel in the workspace, so a fresh one per
-   * render defeats `observer`'s memo for all of them — and a panel's render
-   * rebuilds its `ViewStack`. With the in-flight drag as React state, that made
-   * dragging one tab re-render every view in the workspace at pointer-event
-   * rate. `useLayoutDrag` keeps `handlers` stable for the same reason; the
-   * `drag` below is deliberately NOT in here, so it reaches the one cell it
-   * describes without going through this.
-   *
-   * `observer(function(){})` is not compiled by the React Compiler (see the
-   * root CLAUDE.md), so this memo is not something a build step would do
-   * anyway.
+   * Nothing does this for us: `observer(function(){})` is not compiled by the
+   * React Compiler.
    */
   const chrome = useMemo<PanelChrome>(
     () => ({
