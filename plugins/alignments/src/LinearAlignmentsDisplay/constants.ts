@@ -44,8 +44,6 @@ export const ColorScheme: Record<ShaderScheme, number> = {
   tag: CS_TAG,
 }
 
-export const ALIGNMENTS_FUDGE_FACTOR = 0.8
-
 // Linked-reads layout mode. 'off' → ordinary pileup; 'normal' → chain layout
 // grouping mates/supplementary alignments onto shared rows with connecting
 // lines. Bezier connection curves are orthogonal to layout (see the

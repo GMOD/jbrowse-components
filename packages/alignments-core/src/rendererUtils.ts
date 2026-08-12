@@ -170,6 +170,26 @@ export function packCoverageBinsCanvas2D(
   return buf as Canvas2DCoverageBuffer
 }
 
+/**
+ * How much wider than its true span a Canvas2D coverage bar is drawn, so that
+ * adjacent bars overlap instead of showing a seam.
+ *
+ * A Canvas2D-only correction, and the reason it has no GPU twin is the
+ * compositing model rather than an oversight: sub-pixel bars tile at ~1px pitch,
+ * and two opaque fills whose antialiased coverage of one pixel sums to 1
+ * composite to 1-(1-a)(1-b) < 1 — a visible gap — where the shader resolves the
+ * union coverage once and stays opaque. It goes into the WIDTH only, never into
+ * the sub-pixel test (see `fillSpanRect`).
+ *
+ * Lives here, beside the one function that spends it, because both plugins
+ * drawing a Canvas2D coverage band have to spend the SAME number: it was
+ * `ALIGNMENTS_FUDGE_FACTOR` — an uncommented 0.8 named for its plugin rather
+ * than its job — with MAF carrying its own literal 0.8 under a comment saying
+ * "mirrors alignments", which is the shape a constant takes just before the two
+ * copies stop matching.
+ */
+export const COVERAGE_BAR_SEAM_FUDGE_PX = 0.8
+
 export function drawCoverageBins(
   ctx: Ctx,
   buffer: Canvas2DCoverageBuffer,

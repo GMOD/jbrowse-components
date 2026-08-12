@@ -58,6 +58,7 @@ export { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 export { interbaseEdgePx } from './interbaseEdge.generated.ts'
 export {
   CANVAS2D_COVERAGE,
+  COVERAGE_BAR_SEAM_FUDGE_PX,
   drawCoverageBins,
   drawIndicators,
   drawInterbaseSegments,
@@ -89,7 +90,6 @@ export {
   computeVisibleCoverageStats,
   countSnpsAtPosition,
   downsampleDenseMax,
-  downsampleMinMax,
   downsampleStatsBins,
   findSignificantInBin,
   interbaseDepthAt,

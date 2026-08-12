@@ -1,4 +1,5 @@
 import {
+  COVERAGE_BAR_SEAM_FUDGE_PX,
   DEFAULT_CIGAR_OP_DRAW_COLORS,
   drawCoverageBins,
   drawIndicators,
@@ -70,9 +71,7 @@ export function drawMafCoverage(
         coverageColor,
         bpToX,
         canvasWidth,
-        // widen each bar slightly so adjacent depth bars overlap instead of
-        // showing subpixel gaps from bpToX rounding (mirrors alignments)
-        0.8,
+        COVERAGE_BAR_SEAM_FUDGE_PX,
       )
       drawSnpSegments(
         ctx,

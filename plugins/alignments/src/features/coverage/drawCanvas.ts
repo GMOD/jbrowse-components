@@ -1,7 +1,9 @@
-import { drawCoverageBins } from '@jbrowse/alignments-core'
+import {
+  COVERAGE_BAR_SEAM_FUDGE_PX,
+  drawCoverageBins,
+} from '@jbrowse/alignments-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { ALIGNMENTS_FUDGE_FACTOR } from '../../LinearAlignmentsDisplay/constants.ts'
 
 import type { CoverageRegionFields } from './buildRegion.ts'
 import type { CoverageScale } from './coverageScale.ts'
@@ -27,6 +29,6 @@ export function drawCoverageBars(
     rgb255(state.colors.colorCoverage),
     bpToX,
     viewWidth,
-    ALIGNMENTS_FUDGE_FACTOR,
+    COVERAGE_BAR_SEAM_FUDGE_PX,
   )
 }
