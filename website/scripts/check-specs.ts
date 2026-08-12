@@ -5,21 +5,23 @@
 // and generate-screenshots runs the same function before it renders anything.
 //
 // Needs no browser and no build, so it runs in `pnpm check-docs` with the rest
-// of the validators. Lives here rather than in a *.test.ts because jest doesn't
-// cover website/ outside scripts/api-docs.
+// of the validators. The rules themselves live in screenshot-spec-rules.ts,
+// where screenshotSpecs.test.ts can reach them without importing the spec
+// barrel — jest cannot transform the puppeteer ESM that barrel pulls in.
 //
 //   node website/scripts/check-specs.ts
 
 import { reportProblems } from './check-utils.ts'
-import { countRawCallouts, specs, validateSpecs } from './screenshot-specs.ts'
+import { countRawCallouts, validateSpecs } from './screenshot-spec-rules.ts'
+import { specs } from './screenshot-specs.ts'
 
-const problems = validateSpecs()
+const problems = validateSpecs(specs)
 
 // The raw-pixel ratchet, alongside them: a callout or a click that names a
 // viewport coordinate instead of the thing it is aiming at. It cannot fail on
 // the ones already there — they are deliberate, and countRawCallouts says which
 // kinds — only on a NEW one, and it asks for the baseline back when one goes.
-const { found, baseline } = countRawCallouts()
+const { found, baseline } = countRawCallouts(specs)
 const ratchet =
   found.length > baseline
     ? [
@@ -32,7 +34,7 @@ const ratchet =
     : found.length < baseline
       ? [
           `Only ${found.length} hand-placed viewport coordinates left, down from ${baseline}.`,
-          '  Lower BASELINE in screenshot-specs.ts so the ratchet holds the gain.',
+          '  Lower CALLOUT_BASELINE in screenshot-spec-rules.ts so the ratchet holds the gain.',
         ]
       : []
 

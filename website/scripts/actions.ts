@@ -276,7 +276,17 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     await page.mouse.up()
   } else if (action.type === 'scroll') {
     const el = await resolveTarget(page, action)
-    await el?.evaluate(node => {
+    // Reports whether it found something to scroll, because the answer used to
+    // be discarded: no horizontally-scrollable ancestor meant the whole action
+    // quietly did nothing, and a `scroll` is only ever written because its
+    // target is off the right edge — so the frame is captured with the subject
+    // out of shot and the run reports success. That is the same silent-no-op
+    // this file already throws on for an unknown action type.
+    //
+    // It legitimately finds nothing when the layout STOPS overflowing (the
+    // display got shorter rows, the viewport got wider), which is exactly the
+    // drift a spec should be told about rather than absorb.
+    const scrolled = await el?.evaluate(node => {
       let ancestor: HTMLElement | null = node.parentElement
       while (ancestor) {
         const style = getComputedStyle(ancestor)
@@ -288,17 +298,28 @@ export async function runAction(page: Page, action: ScreenshotAction) {
         }
         ancestor = ancestor.parentElement
       }
-      if (ancestor) {
-        const targetRect = node.getBoundingClientRect()
-        const containerRect = ancestor.getBoundingClientRect()
-        const targetCenter =
-          targetRect.left -
-          containerRect.left +
-          ancestor.scrollLeft +
-          targetRect.width / 2
-        ancestor.scrollLeft = targetCenter - ancestor.clientWidth / 2
+      if (!ancestor) {
+        return false
       }
+      const targetRect = node.getBoundingClientRect()
+      const containerRect = ancestor.getBoundingClientRect()
+      const targetCenter =
+        targetRect.left -
+        containerRect.left +
+        ancestor.scrollLeft +
+        targetRect.width / 2
+      ancestor.scrollLeft = targetCenter - ancestor.clientWidth / 2
+      return true
     })
+    if (!scrolled) {
+      throw new Error(
+        `scroll: no horizontally-scrollable ancestor overflows for ${
+          action.selector
+            ? `selector "${action.selector}"`
+            : `text "${action.text}"`
+        } — nothing to scroll, so the target is already in view or the layout changed`,
+      )
+    }
   } else if (action.type === 'press') {
     if (!action.key) {
       throw new Error('press action needs a key')

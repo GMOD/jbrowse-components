@@ -95,7 +95,8 @@ import {
   recordTooltip,
   recordUnpainted,
 } from './screenshot-report.ts'
-import { specs, validateSpecs } from './screenshot-specs.ts'
+import { validateSpecs } from './screenshot-spec-rules.ts'
+import { specs } from './screenshot-specs.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
 import type { RunTotals } from './screenshot-report.ts'
@@ -381,9 +382,6 @@ async function captureEachStage(
       }
       await captureUrl(page, stageSpec, port)
     }
-    // Resized before the stage acts, not just before its shot, so the actions
-    // hit the layout they are captured against. Width is left alone — the
-    // frames stack with `-append`.
     if (stage.closeMenusFirst) {
       await closeOpenMenus(page, spec.name)
     }
@@ -714,7 +712,7 @@ async function main() {
   // Before anything is rendered: a duplicate name or a compose part that names
   // no spec is an hour of capture producing a wrong figure, and neither fails on
   // its own (see validateSpecs). Same check CI runs via check-specs.ts.
-  const specProblems = validateSpecs()
+  const specProblems = validateSpecs(specs)
   if (specProblems.length > 0) {
     console.error(
       `${specProblems.length} screenshot spec problem(s):\n${specProblems
