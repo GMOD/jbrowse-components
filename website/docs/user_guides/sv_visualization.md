@@ -313,6 +313,32 @@ HG008-T ones are the C-GIAB draft benchmark's, whose T2T tumor assembly puts
 both loci on one contig with the orientation flip the reads describe
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
 
+### Which events it recovers
+
+Run over every junction in two somatic callsets rather than at chosen loci, what
+recall depends on is event size, because the reconstruction reads split
+alignments and an aligner represents a short deletion inside one read's CIGAR
+instead of splitting it. Below, COLO829 against its ONT calls and HG008-T
+against the C-GIAB benchmark:
+
+| Event size       | COLO829, ONT | HG008-T, PacBio HiFi |
+| ---------------- | ------------ | -------------------- |
+| < 1 kb           | 1 / 9        | 4 / 40               |
+| 1 - 10 kb        | 6 / 10       | 17 / 26              |
+| 10 - 100 kb      | 16 / 16      | 17 / 18              |
+| > 100 kb         | 17 / 17      | 54 / 54              |
+| interchromosomal | 11 / 11      | 14 / 14              |
+
+Where the junction is recovered it is the first or second route listed in every
+case in both datasets, and its two ends land a median of 1 to 2 bp from the
+called breakend. At the same windows in each matched normal, no somatic junction
+is recovered.
+
+So the tool is for events large enough that the aligner splits the read across
+them, which is what the segment sizes beside each row let you check. Routes do
+appear at loci with no event, in both the normal and at random positions, which
+is what the caveat above the list is about.
+
 ## Breakpoint split view
 
 The breakpoint split view opens two synchronized panels side-by-side, each
