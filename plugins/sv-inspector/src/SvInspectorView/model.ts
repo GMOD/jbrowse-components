@@ -79,10 +79,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
         /**
          * #property
+         * the height of the whole view in pixels, sheet and circle together
          */
         height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
+         * restrict the circular half to the chromosomes the loaded rows
+         * actually touch, instead of drawing an arc for every one in the
+         * assembly
          */
         onlyDisplayRelevantRegionsInCircularView: types.stripDefault(
           types.boolean,

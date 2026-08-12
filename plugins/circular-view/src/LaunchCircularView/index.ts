@@ -25,6 +25,8 @@ export interface LaunchCircularViewArgs extends Omit<
   'type' | 'init' | 'tracks' | 'displayedRegions'
 > {
   session: AbstractSessionModel
+  // the assembly whose chromosomes the circle draws. Optional because a spec
+  // view is untyped user input; without one the view opens on its import form
   assembly?: string
   // whole chromosomes to draw, in this order; the rest of the assembly's
   // contigs are left off the circle

@@ -37,11 +37,11 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('BreakpointSplitView')</code> |  | BreakpointSplitView |
-| <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, defaultHeight)</code> |  | BreakpointSplitView |
-| <span id="property-showintraviewlinks">**showIntraviewLinks**</span><br><code>showIntraviewLinks: types.stripDefault(types.boolean, true)</code> |  | BreakpointSplitView |
-| <span id="property-linkviews">**linkViews**</span><br><code>linkViews: types.stripDefault(types.boolean, false)</code> |  | BreakpointSplitView |
-| <span id="property-interactiveoverlay">**interactiveOverlay**</span><br><code>interactiveOverlay: types.stripDefault(types.boolean, true)</code> |  | BreakpointSplitView |
-| <span id="property-showheader">**showHeader**</span><br><code>showHeader: types.stripDefault(types.boolean, true)</code> |  | BreakpointSplitView |
+| <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, defaultHeight)</code> | the height of the whole view in pixels, panels and overlay together | BreakpointSplitView |
+| <span id="property-showintraviewlinks">**showIntraviewLinks**</span><br><code>showIntraviewLinks: types.stripDefault(types.boolean, true)</code> | draw the links whose two ends land in the same panel, as well as the ones that cross between panels | BreakpointSplitView |
+| <span id="property-linkviews">**linkViews**</span><br><code>linkViews: types.stripDefault(types.boolean, false)</code> | sync scroll and zoom across the panels, so panning one pans them all | BreakpointSplitView |
+| <span id="property-interactiveoverlay">**interactiveOverlay**</span><br><code>interactiveOverlay: types.stripDefault(types.boolean, true)</code> | make the alignment squiggles drawn between the panels clickable, rather than a static overlay | BreakpointSplitView |
+| <span id="property-showheader">**showHeader**</span><br><code>showHeader: types.stripDefault(types.boolean, true)</code> | show the view's own header bar, above the panels' own | BreakpointSplitView |
 | <span id="property-views">**views**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>views: types.array( pluginManager.getViewType('LinearGenomeView…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>views: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.getViewType('LinearGenomeView')&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;.stateModel as LinearGenomeViewStateModel,&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  | BreakpointSplitView |
 | <span id="property-init">**init**</span><br><code>init: types.frozen&lt;BreakpointSplitViewInitView[] &#124; undefined&gt;()</code> | declarative child panels (loc/assembly/tracks) resolved into `views` once the view has a width; used for initializing from a session snapshot. Transient — stripped by postProcessSnapshot. | BreakpointSplitView |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseViewModel](../baseviewmodel#property-id) |

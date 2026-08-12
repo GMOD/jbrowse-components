@@ -45,25 +45,39 @@ import type { SourceCorpus } from './util.ts'
 // composes in, which only the shared TypeScript program knows. generate.ts
 // calls this one directly, and its `gendocs` autogen entry is the gate.
 //
-// NOTHING HERE NAMES A FILE. Every input is found by scanning the same file
-// list the rest of the api-docs generators walk, for a tag at the declaration:
+// NOTHING HERE NAMES A FILE, AND NOTHING HERE LISTS A VIEW TYPE. Every input is
+// found by scanning the same file list the rest of the api-docs generators
+// walk:
 //
-//   #launchKeys <ViewType>   the bucket of keys resolved on load and discarded,
-//                            as opposed to state the model holds. On the object
-//                            literal or interface that defines the bucket.
+//   'LaunchView-<type>': { args: X }   the ExtensionPointRegistry augmentation
+//                            each launcher declares. This is the registry of
+//                            what a session spec can launch, so it decides
+//                            which view types need a table AND names their
+//                            args interface — no tag involved.
+//   #launchKeys <ViewType>   for the views whose launch keys live in a separate
+//                            Commands interface or key map rather than on the
+//                            args interface itself.
 //   #valueList <key>         a const string array whose members are the values
 //                            that key accepts, spelled out in its row.
+//   #property                the model half, including everything composed in.
 //
 // Path constants were the first cut and they were the wrong shape: this file
 // exists because hand-maintained lists go stale, and a hardcoded
 // `plugins/<a>/src/<b>/types.ts` is one more of them — it survives a rename
 // silently in the worst case, since a bucket that resolves to nothing renders
-// an empty section rather than failing. The tags cannot: an unresolvable
-// `#launchKeys` group is fatal below.
+// an empty section rather than failing.
+//
+// Four things are fatal, and each is a silent-omission mode this generator hit
+// in its own first two passes rather than a hypothetical: a spec-settable key
+// with no description, a launchable view type no page documents, a `ViewInit<>`
+// Commands interface with no `#launchKeys` tag, and a partly-described launch
+// bucket. The last three all render something that looks complete and is short.
 
 // Never settable from a spec whatever the model declares, because the launcher
-// reserves them. Mirrors RESERVED in the linear genome view's initKeys.ts.
-const RESERVED = new Set(['id', 'type', 'init'])
+// reserves them. `id`/`type`/`init` mirror RESERVED in the linear genome view's
+// initKeys.ts; `session` is on every Launch*Args interface and is supplied by
+// the launcher, never written in a link.
+const RESERVED = new Set(['id', 'type', 'init', 'session'])
 
 // Keys that are the spec's own structure rather than a setting, and are the
 // subject of the prose around every marker already.
@@ -124,6 +138,18 @@ interface Scan {
   // lost `autoDiagonalize` — the key was in the doc before this generator, and
   // its absence afterwards looked like a key that had never existed.
   commandTypes: Set<string>
+  // viewType -> the Launch*Args interface, off the
+  // `'LaunchView-<type>': { args: X }` entries each launcher adds to
+  // PluginManager's ExtensionPointRegistry. That declaration IS the registry of
+  // what a session spec can launch, so it answers "which view types need a
+  // table" without a list to keep in step, and it names the interface too.
+  launchArgs: Map<string, string>
+  // interface name -> the keys its `extends Omit<SnapshotIn<Model>, 'a' | 'b'>`
+  // takes away. Those are the model properties the launcher builds itself
+  // (`spreadsheet` and `importWizard` are built from the init blob, `views` is
+  // replaced by the declarative form), so they are declared, are not settable,
+  // and would otherwise render as rows telling a reader to write them.
+  omitted: Map<string, Set<string>>
 }
 
 function stringArrayOf(decl: ts.VariableDeclaration) {
@@ -144,11 +170,33 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
   const interfaces = new Map<string, SpecKey[]>()
   const valueLists = new Map<string, string[]>()
   const commandTypes = new Set<string>()
+  const launchArgs = new Map<string, string>()
+  const omitted = new Map<string, Set<string>>()
 
   for (const file of corpus.files) {
     const source = parseSourceFileSyntactic(file, corpus.read(file))
     const text = source.getFullText()
     const walk = (node: ts.Node) => {
+      // `'LaunchView-<type>': { args: LaunchXViewArgs; result: ... }` inside a
+      // `declare module '@jbrowse/core/PluginManager'` ExtensionPointRegistry
+      // augmentation. Matched on the key, not on the enclosing interface name,
+      // so it does not care how a launcher spells its augmentation.
+      if (ts.isPropertySignature(node) && node.name) {
+        const key = node.name.getText().replaceAll(/['"]/g, '')
+        const viewType = /^LaunchView-(.+)$/.exec(key)?.[1]
+        if (viewType && node.type && ts.isTypeLiteralNode(node.type)) {
+          for (const m of node.type.members) {
+            if (
+              ts.isPropertySignature(m) &&
+              m.name?.getText() === 'args' &&
+              m.type &&
+              ts.isTypeReferenceNode(m.type)
+            ) {
+              launchArgs.set(viewType, m.type.typeName.getText())
+            }
+          }
+        }
+      }
       // `export type XViewInit = ViewInit<XViewStateModel, XViewCommands>`
       if (
         ts.isTypeReferenceNode(node) &&
@@ -169,6 +217,30 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
             docs: docsAbove(m, text),
           }))
         interfaces.set(node.name.text, keys)
+        for (const clause of node.heritageClauses ?? []) {
+          for (const t of clause.types) {
+            if (
+              t.expression.getText() === 'Omit' &&
+              t.typeArguments?.length === 2
+            ) {
+              // the second argument is the removed key, or a union of them
+              const removed = t.typeArguments[1]!
+              const literals = ts.isUnionTypeNode(removed)
+                ? removed.types
+                : [removed]
+              omitted.set(
+                node.name.text,
+                new Set(
+                  literals.flatMap(l =>
+                    ts.isLiteralTypeNode(l) && ts.isStringLiteral(l.literal)
+                      ? [l.literal.text]
+                      : [],
+                  ),
+                ),
+              )
+            }
+          }
+        }
         const viewType = tagAbove(node, text, 'launchKeys')
         if (viewType) {
           buckets.push({
@@ -228,7 +300,14 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
       `${untagged.join(', ')} — used as the Commands half of a \`ViewInit<>\`, so a session spec can set these keys, but carrying no \`#launchKeys <ViewType>\` tag. The URL parameters page would render that view's table from its model properties alone and silently omit every launcher key. Tag the interface.`,
     )
   }
-  return { buckets, interfaces, valueLists, commandTypes }
+  return { buckets, interfaces, valueLists, commandTypes, launchArgs, omitted }
+}
+
+// The model properties this view's launcher builds itself, so a spec cannot set
+// them however the model declares them.
+function omittedFor(viewType: string, scan: Scan) {
+  const argsName = scan.launchArgs.get(viewType)
+  return argsName ? (scan.omitted.get(argsName) ?? new Set()) : new Set()
 }
 
 // The model page a key's full row lives on, so the table can link a name to its
@@ -240,14 +319,31 @@ function modelAnchor(declaredBy: string, name: string) {
   return `/docs/models/${declaredBy.toLowerCase()}#property-${name.toLowerCase()}`
 }
 
+// Two idioms in the repo put a view's launch keys in two places, and a view
+// uses one or the other:
+//
+// - the synteny and dotplot views declare a `Commands` interface and feed it to
+//   `ViewInit<Model, Commands>`; their Launch*Args then wraps that, so its own
+//   members are just plumbing and the keys come off the tagged interface.
+// - the spreadsheet, SV inspector and breakpoint views have no Commands type.
+//   Their Launch*Args is `Omit<SnapshotIn<Model>, …>` plus the launch keys
+//   declared inline, so those members ARE the bucket.
+//
+// Both are read, and neither is special-cased by name: a view that has no keys
+// under one idiom contributes nothing from it.
 function launchKeysFor(viewType: string, scan: Scan): SpecKey[] {
-  const buckets = scan.buckets.filter(b => b.viewType === viewType)
-  return buckets
+  const tagged = scan.buckets
+    .filter(b => b.viewType === viewType)
     .flatMap(b => [
       ...b.keys,
       ...b.extends.flatMap(name => scan.interfaces.get(name) ?? []),
     ])
-    .filter(k => !STRUCTURAL.has(k.name))
+  const argsName = scan.launchArgs.get(viewType)
+  const inline = argsName ? (scan.interfaces.get(argsName) ?? []) : []
+  const seen = new Set<string>()
+  return [...tagged, ...inline]
+    .filter(k => !STRUCTURAL.has(k.name) && !RESERVED.has(k.name))
+    .filter(k => (seen.has(k.name) ? false : seen.add(k.name)))
     .sort((a, b) => a.name.localeCompare(b.name))
 }
 
@@ -265,11 +361,13 @@ function renderGroup(
   // A launch key shadows the model property of the same name: the launcher
   // consumes it, so the row a reader needs is the launch key's.
   const launchNames = new Set(launch.map(k => k.name))
+  const launcherBuilds = omittedFor(viewType, scan)
   const props = resolvedProperties(models, viewType)
     .filter(
       p =>
         !RESERVED.has(p.member.name) &&
         !STRUCTURAL.has(p.member.name) &&
+        !launcherBuilds.has(p.member.name) &&
         !launchNames.has(p.member.name),
     )
     .sort((a, b) => a.member.name.localeCompare(b.member.name))
@@ -299,7 +397,25 @@ function renderGroup(
   // form does not, and does not need to: those keys are the simple URL params,
   // each already documented in its own section further up the page, so a table
   // of eight empty cells would be worse than the sentence.
+  // A bucket is all-described or none-described, and mixing is fatal rather
+  // than partial. The none-described form is the linear genome view's, whose
+  // keys are the simple URL params and are each documented in their own section
+  // further up the page; rendering those as a table of empty cells would be
+  // worse than the sentence. But a bucket where SOME carry a comment renders as
+  // a table, and dropping the rest from it is the silent omission this whole
+  // generator exists to prevent — it is how the dotplot lost `autoDiagonalize`,
+  // reproduced one layer down.
   const described = launch.filter(k => k.docs)
+  if (described.length && described.length !== launch.length) {
+    throw new Error(
+      `${viewType}: ${launch
+        .filter(k => !k.docs)
+        .map(k => k.name)
+        .join(
+          ', ',
+        )} — launch keys with no comment above them, in a bucket whose other keys have one. The table renders from the described keys, so these would be dropped from a list that reads as complete. Describe them at the declaration site.`,
+    )
+  }
   const head = described.length
     ? [
         '**Launch keys**, which name something to do on load rather than state the view holds:',
@@ -339,14 +455,23 @@ export function writeSpecKeyDocs(
     group => renderGroup(group, models, scan),
     { check },
   )
-  // A tagged bucket no page renders is a tag that does nothing — the same
-  // silent-no-op the path constants used to risk, caught from the other end.
-  const unrendered = [...new Set(scan.buckets.map(b => b.viewType))].filter(
-    v => !seen.has(v),
-  )
-  if (unrendered.length) {
+  // Every view type a launcher registers is one a session spec can open, so
+  // every one of them needs a table. Read off the `LaunchView-<type>` registry
+  // entries rather than a list here, which is the point: adding a launchable
+  // view is how a view type comes to exist, and this fails that change until
+  // the page documents it.
+  //
+  // A tagged bucket no page renders is caught by the same comparison from the
+  // other end — the tag is a claim that the keys are documented somewhere.
+  const undocumented = [
+    ...new Set([
+      ...scan.launchArgs.keys(),
+      ...scan.buckets.map(b => b.viewType),
+    ]),
+  ].filter(v => !seen.has(v))
+  if (undocumented.length) {
     throw new Error(
-      `#launchKeys tags name ${unrendered.join(', ')}, but no doc has a \`<!-- SPEC_KEYS <type> START -->\` marker for them, so the keys they declare are documented nowhere.`,
+      `${undocumented.join(', ')} — a session spec can launch these, but no doc has a \`<!-- SPEC_KEYS <type> START -->\` marker for them, so what they accept is documented nowhere.`,
     )
   }
   return stale

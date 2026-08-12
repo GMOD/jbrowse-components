@@ -56,10 +56,12 @@ export default function stateModelFactory() {
           type: types.literal('SpreadsheetView'),
           /**
            * #property
+           * the height of the sheet in pixels
            */
           height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
+           * chrome switch, for an embed that sizes the view itself
            */
           hideVerticalResizeHandle: types.stripDefault(types.boolean, false),
 

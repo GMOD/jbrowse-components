@@ -17,10 +17,15 @@ export interface LaunchSvInspectorViewArgs extends Omit<
   'type' | 'init' | 'circularView' | 'spreadsheetView'
 > {
   session: AbstractSessionModel
+  // the assembly both halves are read against. With only this and no `uri`, the
+  // view opens on its import form with that assembly already selected rather
+  // than the first one in the config
   assembly: string
-  // a spec view is untyped user input, so both of these can be absent: without
-  // a uri the view opens on the import form
+  // the file to load. A spec view is untyped user input, so this can be absent,
+  // and the view then opens on the import form
   uri?: string
+  // the file's format. Otherwise detected from the extension, falling back to
+  // VCF, so name it for a file the extension does not identify
   fileType?: string
   // search-box text for the spreadsheet half, applied once the file is loaded.
   // The circular half draws the rows it leaves, so this is what makes a chord

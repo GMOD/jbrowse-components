@@ -84,22 +84,29 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         type: types.literal('BreakpointSplitView'),
         /**
          * #property
+         * the height of the whole view in pixels, panels and overlay together
          */
         height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
+         * draw the links whose two ends land in the same panel, as well as the
+         * ones that cross between panels
          */
         showIntraviewLinks: types.stripDefault(types.boolean, true),
         /**
          * #property
+         * sync scroll and zoom across the panels, so panning one pans them all
          */
         linkViews: types.stripDefault(types.boolean, false),
         /**
          * #property
+         * make the alignment squiggles drawn between the panels clickable,
+         * rather than a static overlay
          */
         interactiveOverlay: types.stripDefault(types.boolean, true),
         /**
          * #property
+         * show the view's own header bar, above the panels' own
          */
         showHeader: types.stripDefault(types.boolean, true),
         /**

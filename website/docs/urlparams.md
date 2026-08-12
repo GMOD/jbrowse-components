@@ -782,13 +782,24 @@ properties:
 
 <!-- SPEC_KEYS CircularView START -->
 
+**Launch keys**, which name something to do on load rather than state the view
+holds:
+
+<!-- prettier-ignore -->
+| Launch key | What it does |
+| --- | --- |
+| `assembly` | the assembly whose chromosomes the circle draws. Optional because a spec view is untyped user input; without one the view opens on its import form |
+| `displayedRegionNames` | whole chromosomes to draw, in this order; the rest of the assembly's contigs are left off the circle |
+
+**Properties**, which are whatever the state model declares and the view
+restores natively:
+
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
 | [`autoFit`](/docs/models/circularview#property-autofit) | whether the view keeps re-fitting to its container on resize. Cleared once the user manually zooms/pans so their view (persisted via bpPerPx/offsetRadians) is preserved across resizes and reloads. |
 | [`bpPerPx`](/docs/models/circularview#property-bpperpx) | the zoom level, base-pairs per pixel. Capped by `minimumRadiusPx`, and refit over by the first resize unless `autoFit` is false. |
 | [`disableImportForm`](/docs/models/circularview#property-disableimportform) | suppress the import form even on an error — what the SV inspector's circle wants, since its assembly comes from the sheet beside it and a form there would offer a control that cannot work |
-| [`displayedRegions`](/docs/models/circularview#property-displayedregions) | the regions the circle lays out, one arc each, in this order. `displayedRegionNames` names the same thing by refName and is the shorter form. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`height`](/docs/models/circularview#property-height) | the height of the view in pixels. The circle auto-fits its container, so this is what sizes the drawing. |
 | [`hideTrackSelectorButton`](/docs/models/circularview#property-hidetrackselectorbutton) | chrome switch, for an embed that drives the view itself |
@@ -1107,10 +1118,21 @@ tracks, and each `tracks` entry takes inline display options the same way the
 [LGV's do](#advanced-track-configuration).
 
 Alongside `views`, the spec accepts every setting the view's menu offers:
-`height`, `showIntraviewLinks` (the links that stay within one panel, on by
-default), `linkViews` (sync scroll and zoom across the panels, off by default),
-`interactiveOverlay` (clickable alignment squiggles, on by default), and
-`showHeader`.
+
+<!-- SPEC_KEYS BreakpointSplitView START -->
+
+<!-- prettier-ignore -->
+| Property | What it does |
+| --- | --- |
+| [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [`height`](/docs/models/breakpointsplitview#property-height) | the height of the whole view in pixels, panels and overlay together |
+| [`interactiveOverlay`](/docs/models/breakpointsplitview#property-interactiveoverlay) | make the alignment squiggles drawn between the panels clickable, rather than a static overlay |
+| [`linkViews`](/docs/models/breakpointsplitview#property-linkviews) | sync scroll and zoom across the panels, so panning one pans them all |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`showHeader`](/docs/models/breakpointsplitview#property-showheader) | show the view's own header bar, above the panels' own |
+| [`showIntraviewLinks`](/docs/models/breakpointsplitview#property-showintraviewlinks) | draw the links whose two ends land in the same panel, as well as the ones that cross between panels |
+
+<!-- SPEC_KEYS BreakpointSplitView END -->
 
 ### Spreadsheet view
 
@@ -1126,16 +1148,34 @@ default), `linkViews` (sync scroll and zoom across the panels, off by default),
 }
 ```
 
-`uri` is optional: with only an `assembly` the view opens on its import form
-with that assembly already selected, rather than the first one in the config.
+<!-- SPEC_KEYS SpreadsheetView START -->
 
-`fileType` is one of `VCF`, `BED`, `BEDPE`, or `STAR-Fusion`. It is otherwise
-detected from the extension and falls back to `VCF`, so name it for a file the
-extension doesn't identify — a URL with no extension, or the `STAR-Fusion`
-output, which has none of its own.
+**Launch keys**, which name something to do on load rather than state the view
+holds:
 
-`filterText` presets the search box, applied once the file has loaded, so a link
-can open on a subset of the rows rather than on the whole callset.
+<!-- prettier-ignore -->
+| Launch key | What it does |
+| --- | --- |
+| `assembly` | the assembly the sheet's rows are read against. With only this and no `uri`, the view opens on its import form with that assembly already selected rather than the first one in the config |
+| `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
+| `filterText` | search-box text, applied once the file is loaded |
+| `uri` | the file to load into the sheet. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |
+
+**Properties**, which are whatever the state model declares and the view
+restores natively:
+
+<!-- prettier-ignore -->
+| Property | What it does |
+| --- | --- |
+| [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [`height`](/docs/models/spreadsheetview#property-height) | the height of the sheet in pixels |
+| [`hideVerticalResizeHandle`](/docs/models/spreadsheetview#property-hideverticalresizehandle) | chrome switch, for an embed that sizes the view itself |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+
+<!-- SPEC_KEYS SpreadsheetView END -->
+
+`fileType` is one of `VCF`, `BED`, `BEDPE` or `STAR-Fusion` — a URL with no
+extension needs it, and so does `STAR-Fusion` output, which has none of its own.
 
 ### SV inspector
 
@@ -1151,9 +1191,35 @@ can open on a subset of the rows rather than on the whole callset.
 }
 ```
 
-It takes the same optional `uri`, `fileType` and `filterText` as the spreadsheet
-view above, plus a `height`. The circular view draws the rows the filter leaves,
-so `filterText` is what makes a chord subset reachable from a link.
+The circular half draws the rows the spreadsheet half's filter leaves, so
+`filterText` is what makes a chord subset reachable from a link.
+
+<!-- SPEC_KEYS SvInspectorView START -->
+
+**Launch keys**, which name something to do on load rather than state the view
+holds:
+
+<!-- prettier-ignore -->
+| Launch key | What it does |
+| --- | --- |
+| `assembly` | the assembly both halves are read against. With only this and no `uri`, the view opens on its import form with that assembly already selected rather than the first one in the config |
+| `fileType` | the file's format. Otherwise detected from the extension, falling back to VCF, so name it for a file the extension does not identify |
+| `filterText` | search-box text for the spreadsheet half, applied once the file is loaded. The circular half draws the rows it leaves, so this is what makes a chord subset reachable from a link |
+| `uri` | the file to load. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |
+
+**Properties**, which are whatever the state model declares and the view
+restores natively:
+
+<!-- prettier-ignore -->
+| Property | What it does |
+| --- | --- |
+| [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [`height`](/docs/models/svinspectorview#property-height) | the height of the whole view in pixels, sheet and circle together |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`onlyDisplayRelevantRegionsInCircularView`](/docs/models/svinspectorview#property-onlydisplayrelevantregionsincircularview) | restrict the circular half to the chromosomes the loaded rows actually touch, instead of drawing an arc for every one in the assembly |
+| [`spreadsheetWidthFraction`](/docs/models/svinspectorview#property-spreadsheetwidthfraction) | share of the view's width given to the spreadsheet, the rest goes to the circular view. Persisted so dragging the divider survives both a window resize and a session reload |
+
+<!-- SPEC_KEYS SvInspectorView END -->
 
 ### Plugin-provided view types
 
