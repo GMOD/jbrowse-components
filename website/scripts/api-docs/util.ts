@@ -689,20 +689,6 @@ function resolveBaseConfigDeclId(checker: ts.TypeChecker, node: ts.Node) {
     : undefined
 }
 
-// The models a `#stateModel` declaration composes. Two patterns are covered:
-//
-//   A. `types.compose('Name', Base, Mixin(), types.model({...}))` — each
-//      argument is resolved (alias-followed); `Mixin` resolves directly,
-//      `Mixin(args)` reduces to its head identifier, and the string-literal name
-//      and inline `types.model(...)` (any `types.*` literal) yield no identifier
-//      and are skipped.
-//   B. `return BaseFactory(args).views(...).actions(...)` — a model built by
-//      extending another factory's result rather than composing. The base is the
-//      head identifier of the factory's own returned chain.
-//
-// Deduped by declId/name, in source order. Requires the #stateModel JSDoc to sit
-// on the model's factory (or its `types.compose`), not an unrelated preceding
-// declaration.
 // Whether a `#stateModel` tag landed on something that can plausibly BUILD a
 // model, as opposed to a plain piece of data.
 //
@@ -754,6 +740,20 @@ function definesStateModel(node: ts.Node) {
   return found
 }
 
+// The models a `#stateModel` declaration composes. Two patterns are covered:
+//
+//   A. `types.compose('Name', Base, Mixin(), types.model({...}))` — each
+//      argument is resolved (alias-followed); `Mixin` resolves directly,
+//      `Mixin(args)` reduces to its head identifier, and the string-literal name
+//      and inline `types.model(...)` (any `types.*` literal) yield no identifier
+//      and are skipped.
+//   B. `return BaseFactory(args).views(...).actions(...)` — a model built by
+//      extending another factory's result rather than composing. The base is the
+//      head identifier of the factory's own returned chain.
+//
+// Deduped by declId/name, in source order. Requires the #stateModel JSDoc to sit
+// on the model's factory (or its `types.compose`), not an unrelated preceding
+// declaration — which is what `definesStateModel` above checks.
 function resolveComposedModels(checker: ts.TypeChecker, node: ts.Node) {
   const out: ComposedRef[] = []
   const seen = new Set<string>()
@@ -1837,15 +1837,6 @@ export function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-// Collapse the whitespace a formatter adds when it pads markdown table columns,
-// so a freshness (--check) comparison sees the block's *content* and not its
-// formatting (a committed table may be padded; the generators emit them
-// compact). Regions outside the markers are byte-identical between current and
-// regenerated, so normalizing them is a no-op for the comparison.
-export function normalizeMarkerWhitespace(s: string) {
-  return s.replaceAll(/[ \t]+/g, ' ').replaceAll(/-+/g, '-')
-}
-
 // The docs both marker sweeps walk. agent-docs is swept alongside the published
 // guides: the architecture spec restates several of the same tables the guides
 // do, and hand-mirroring one into the other is the drift these generators exist
@@ -1909,6 +1900,17 @@ export function replaceMarkerRegions({
 // changed (used by --check to flag stale generated blocks without rewriting).
 // Shared by the single-marker generators (jexl catalog, extension-point index);
 // the color tables use a per-group variant of the same idea.
+//
+// The --check comparison is byte-exact, and has to stay that way. It used to
+// normalize whitespace and hyphen runs first, from a time when the committed
+// tables were column-padded by the formatter and the generators emitted them
+// compact — `markdownTable` now pins the compact form with `prettier-ignore`,
+// so the two agree byte for byte and the normalization only cost accuracy:
+// every cell is already whitespace-collapsed by `tableCell`/`codeCell`, so the
+// space clause matched nothing, while the `-+` clause silently passed a stale
+// doc whose only change was a hyphen run. Renaming a documented flag from
+// `--force` to `-force`, or an em-dash `--` to `-`, regenerated the table and
+// reported it up to date.
 export function rewriteMarkerBlock(
   marker: string,
   block: string,
@@ -1928,10 +1930,7 @@ export function rewriteMarkerBlock(
         file,
       })
       if (check) {
-        if (
-          normalizeMarkerWhitespace(updated) !==
-          normalizeMarkerWhitespace(original)
-        ) {
+        if (updated !== original) {
           stale.push(file)
         }
       } else if (updated !== original) {
@@ -1985,10 +1984,7 @@ export function rewriteGroupedMarkerBlocks(
       })
     }
     if (check) {
-      if (
-        normalizeMarkerWhitespace(updated) !==
-        normalizeMarkerWhitespace(original)
-      ) {
+      if (updated !== original) {
         stale.push(file)
       }
     } else if (updated !== original) {

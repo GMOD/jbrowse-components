@@ -21,7 +21,7 @@ import { join } from 'node:path'
 
 import {
   checkOrWrite,
-  markdownTable,
+  markdownTableLines,
   parseFrontmatter,
   spliceGeneratedBlock,
 } from './check-utils.ts'
@@ -53,11 +53,22 @@ interface Adr {
   row: string
 }
 
+// The index is the only thing that lists the ADRs, so a file this loop skips is
+// a decision nobody can find. Anything but the README that isn't named
+// `adr-NNN-<slug>.md` is therefore an error rather than a quiet `continue` — a
+// mis-numbered or mis-cased name is exactly the mistake that would otherwise
+// leave a new ADR written, committed, and absent from the table with every
+// check still green.
 function collectAdrs() {
   const adrs: Adr[] = []
   for (const file of readdirSync(adrDir)) {
     const num = /^adr-(\d+)-.*\.md$/.exec(file)?.[1]
     if (num === undefined) {
+      if (file !== 'README.md' && file.endsWith('.md')) {
+        throw new Error(
+          `${file}: not named \`adr-NNN-<slug>.md\`, so it would be silently missing from the ADR index. Rename it (or move it out of ${adrDir})`,
+        )
+      }
       continue
     }
     const fm = parseFrontmatter(readFileSync(join(adrDir, file), 'utf8'))
@@ -89,7 +100,7 @@ checkOrWrite({
   content: spliceGeneratedBlock({
     path: indexPath,
     marker: 'ADR INDEX',
-    body: markdownTable(
+    body: markdownTableLines(
       ['ADR', 'Status', 'Decision'],
       collectAdrs().map(a => a.row),
     ),

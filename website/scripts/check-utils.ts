@@ -114,10 +114,19 @@ export function parseFrontmatter(
   return result
 }
 
-// Compact pipe table. The generated index pages want it dense: the formatter
-// otherwise pads every cell out to its column's widest member, so one long
-// description reflows every row into the diff.
-export function markdownTable(headers: string[], rows: string[]): string[] {
+// Compact pipe table, as lines. The generated index pages want it dense: the
+// formatter otherwise pads every cell out to its column's widest member, so one
+// long description reflows every row into the diff.
+//
+// Named for its return type because api-docs/util.ts exports a `markdownTable`
+// of its own, with the same parameters and a different return (one joined
+// string, led by a `prettier-ignore`), and that file imports this one — so the
+// two were a single mistaken import away from a table rendered as
+// `[object Object]` or a `.join` on a string.
+export function markdownTableLines(
+  headers: string[],
+  rows: string[],
+): string[] {
   return [
     `| ${headers.join(' | ')} |`,
     `| ${headers.map(() => '---').join(' | ')} |`,
@@ -145,6 +154,20 @@ export function spliceGeneratedBlock({
   if (from === -1 || to === -1) {
     throw new Error(`${path}: missing ${begin} / ${end} markers`)
   }
+  // Both authoring mistakes below produce a plausible-looking file rather than
+  // an error, which is why they are checked rather than commented about. An END
+  // above its BEGIN splices the table into the middle of the prose and deletes
+  // whatever sat between them; a second pair is simply never regenerated, and
+  // `--check` agrees the file is current because the text it compares is the
+  // same either way.
+  if (to < from) {
+    throw new Error(`${path}: ${end} appears above ${begin}`)
+  }
+  if (existing.includes(begin, from + 1)) {
+    throw new Error(
+      `${path}: more than one ${begin} — only the first would be regenerated`,
+    )
+  }
   return (
     existing.slice(0, from) +
     [begin, '', ...body, ''].join('\n') +
@@ -152,30 +175,54 @@ export function spliceGeneratedBlock({
   )
 }
 
-// The `--check`/write dance every generator repeated: in check mode fail with
-// `staleHint` when the committed file differs from freshly-generated `content`;
-// otherwise write it.
-export function checkOrWrite({
-  path,
-  content,
-  label,
-  staleHint,
-}: {
+interface Generated {
   path: string
   content: string
   label: string
-  staleHint: string
-}) {
-  if (check) {
-    if (readFileSync(path, 'utf8') !== content) {
-      console.error(`${label} is out of date — ${staleHint}`)
-      process.exit(1)
+}
+
+// The `--check`/write dance every generator repeated: in check mode fail with
+// `staleHint` when a committed file differs from its freshly-generated
+// `content`; otherwise write it.
+//
+// Every artifact is judged before anything exits, so one run names all of them.
+// Exiting on the first stale file is the failure mode scripts/autogen.ts exists
+// to end — a run that reports only the first problem turns "regenerate and
+// commit" into fix, push, discover the next one. It was live here: the three
+// guide indexes are generated in one loop, so a stale `user_guide.md` hid a
+// stale `developer_guide.md` behind it.
+export function checkOrWriteAll(generated: Generated[], staleHint: string) {
+  if (!check) {
+    for (const { path, content } of generated) {
+      writeFileSync(path, content)
+      console.log(`wrote ${path}`)
     }
-    console.log(`${label} is up to date`)
-  } else {
-    writeFileSync(path, content)
-    console.log(`wrote ${path}`)
+    return
   }
+  const stale = generated.filter(
+    ({ path, content }) => readFileSync(path, 'utf8') !== content,
+  )
+  if (stale.length > 0) {
+    console.error(
+      stale.length === 1
+        ? `${stale[0]!.label} is out of date — ${staleHint}`
+        : `${stale.length} generated files are out of date — ${staleHint}:\n${stale
+            .map(g => `  ${g.label}`)
+            .join('\n')}`,
+    )
+    process.exit(1)
+  }
+  for (const { label } of generated) {
+    console.log(`${label} is up to date`)
+  }
+}
+
+// One artifact, the common case.
+export function checkOrWrite({
+  staleHint,
+  ...generated
+}: Generated & { staleHint: string }) {
+  checkOrWriteAll([generated], staleHint)
 }
 
 // The base path a built `dist/` actually emitted its links under, read back off

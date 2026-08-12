@@ -55,7 +55,7 @@ import * as ts from 'typescript'
 import {
   checkOrWrite,
   isFile,
-  markdownTable,
+  markdownTableLines,
   spliceGeneratedBlock,
   walkFiles,
 } from './check-utils.ts'
@@ -1121,7 +1121,7 @@ checkOrWrite({
           : `${onSvgChrome} of ${rows.length}`
       } reach \`${SVG_CHROME}\`.`,
       '',
-      ...markdownTable(
+      ...markdownTableLines(
         ['Display type', 'Chrome', 'Component', 'SVG chrome', 'renderSvg'],
         rows.map(
           r =>

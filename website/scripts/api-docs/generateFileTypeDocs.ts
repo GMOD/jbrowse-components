@@ -8,6 +8,7 @@ import {
   readSourceIfPresent,
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
+  runMarkerScript,
   tableCell,
 } from './util.ts'
 
@@ -217,14 +218,6 @@ export function writeGotchaDocs(
 // display-type table needs the whole-repo DisplayType scan that generate.ts
 // already does, so it is regenerated there and only verified here.
 if (isMain(import.meta.filename)) {
-  const stale = writeFileTypeDocs(await getAllFiles(), {
-    check: process.argv.includes('--check'),
-  })
-  if (stale.length) {
-    console.error(
-      `File type tables out of date, run \`pnpm autogen\`:\n${stale.map(f => `  ${f}`).join('\n')}`,
-    )
-    process.exit(1)
-  }
-  console.log('File type tables up to date')
+  const files = await getAllFiles()
+  runMarkerScript('File type tables', opts => writeFileTypeDocs(files, opts))
 }

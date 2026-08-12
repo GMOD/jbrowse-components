@@ -14,7 +14,7 @@ import {
   USER_CATEGORIES,
   guideRank,
 } from '../src/lib/guide-categories.ts'
-import { checkOrWrite, parseFrontmatter } from './check-utils.ts'
+import { checkOrWriteAll, parseFrontmatter } from './check-utils.ts'
 import { docsDir } from './paths.ts'
 
 interface Page {
@@ -303,7 +303,6 @@ function assertScalarContinuations(content: string, label: string) {
   }
 }
 
-const staleHint = 'run `pnpm autogen`'
 const guides = [
   { file: 'user_guide.md', content: buildUserGuide() },
   { file: 'config_guide.md', content: buildConfigGuide() },
@@ -311,5 +310,14 @@ const guides = [
 ]
 for (const { file, content } of guides) {
   assertScalarContinuations(content, file)
-  checkOrWrite({ path: join(docsDir, file), content, label: file, staleHint })
 }
+// All three at once, so a stale user_guide.md doesn't hide a stale
+// developer_guide.md behind it.
+checkOrWriteAll(
+  guides.map(({ file, content }) => ({
+    path: join(docsDir, file),
+    content,
+    label: file,
+  })),
+  'run `pnpm autogen`',
+)

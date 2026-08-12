@@ -22,7 +22,7 @@ import { join } from 'node:path'
 
 import {
   checkOrWrite,
-  markdownTable,
+  markdownTableLines,
   parseFrontmatter,
   spliceGeneratedBlock,
 } from './check-utils.ts'
@@ -79,7 +79,7 @@ checkOrWrite({
   content: spliceGeneratedBlock({
     path: indexPath,
     marker: 'REFERENCE INDEX',
-    body: markdownTable(
+    body: markdownTableLines(
       ['Doc', 'Read when'],
       collectReferenceDocs().map(
         d => `| [${d.name}](${d.file}) | ${d.description} |`,
