@@ -441,8 +441,15 @@ export const CGIAB_ASM_PIF_TRACK = {
 // this is the alias the specs read by.
 export const displayReady = displaySettled
 
+// `renderer=webgl` is a pin, and the figure corpus needs one. Every capture runs
+// headless, headless Chrome is SwiftShader, and the ladder now steps over a
+// software rasterizer (createHal.ts) — so without this the next regen would
+// silently redraw every figure on Canvas2D. That is a real visual change across
+// the whole corpus arriving as a side effect of a rendering decision, which is
+// the sort of thing a before/after comparison is supposed to catch rather than
+// cause. Moving the corpus to another backend should be a deliberate edit here.
 export function sessionSpec(config: string, session: object) {
-  return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
+  return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot&renderer=webgl`
 }
 
 // The overwhelmingly common spec shape: a session with a single

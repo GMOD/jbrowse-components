@@ -1,8 +1,25 @@
 import { getGpuOverride, isGpuRenderingDisabled } from '../gpuDevice.ts'
+import { getGraphicsCapabilities } from '../graphicsCapabilities.ts'
 import { WebGL2Hal } from './webgl2Hal.ts'
 import { WebGPUHal } from './webgpuHal.ts'
 
 import type { GpuHal, PassDescriptor } from './types.ts'
+
+// Per copy of this module rather than on the globalThis cell, deliberately: a
+// second bundled copy warning a second time is a duplicate console line, which
+// is the "a memo per copy is fine" case ADR-030's amendment carves out. Nothing
+// reads it.
+let warnedSoftwareRasterizer = false
+
+function warnSoftwareRasterizerOnce(glRenderer: string | undefined) {
+  if (warnedSoftwareRasterizer) {
+    return
+  }
+  warnedSoftwareRasterizer = true
+  console.warn(
+    `[GPU] WebGL2 here is software-rendered (${glRenderer ?? 'unknown driver'}), where it costs several times Canvas2D on the main thread — rendering with Canvas2D instead. Pass ?renderer=webgl to use WebGL2 anyway.`,
+  )
+}
 
 // Ladder: WebGPU → WebGL2 → Canvas2D (null). The `?renderer=` URL param pins it
 // to a single rung for debugging — `webgpu`, `webgl`, or `canvas2d`/`canvas` —
@@ -50,6 +67,37 @@ export async function createGpuHal(
       throw failures?.length
         ? new AggregateError(failures, message)
         : new Error(message)
+    }
+  }
+  // The one machine where the WebGL2 rung is the wrong answer even though it
+  // works: a software rasterizer. Measured on one ordinary view — 1 view, 3
+  // volvox tracks, and *no scroll churn at all* — headless Chrome (SwiftShader),
+  // three runs each: WebGL2 blocks the main thread for 1.3-5.5 s in a single
+  // task and 2.1-8.8 s in total, while Canvas2D never exceeds 339 ms and never
+  // once produces a task over 500 ms. GPU_CONTEXT_BUDGET.md has the churn case
+  // at ~25x; this is the floor, and it is the load-time pipeline build rather
+  // than the per-pass rebuild the churn number measures.
+  //
+  // Stepping over the rung rather than pinning the page is the difference that
+  // matters: `gpuOverride` means "a human asked for this", and spending it on a
+  // decision the app made would leave nothing able to tell the two apart —
+  // including the About widget and the bug report the user is about to send.
+  //
+  // Only when nothing was pinned. `?renderer=webgl` means that rung, and the
+  // browser-test runner sets it for every GPU arm (`appendGpuParam`), so the
+  // cross-backend gate keeps comparing canvas2d against a real WebGL2 render
+  // rather than against a second Canvas2D one — it runs under SwiftShader, so
+  // without that pin this check would quietly make it compare a backend with
+  // itself and pass.
+  //
+  // `softwareWebgl` is `undefined` wherever the browser withholds
+  // WEBGL_debug_renderer_info (Firefox under privacy.resistFingerprinting), and
+  // that must not read as `true`: an unknown rasterizer keeps the WebGL2 rung.
+  if (override === null) {
+    const { softwareWebgl, glRenderer } = await getGraphicsCapabilities()
+    if (softwareWebgl) {
+      warnSoftwareRasterizerOnce(glRenderer)
+      return null
     }
   }
   try {

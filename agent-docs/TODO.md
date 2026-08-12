@@ -776,32 +776,23 @@ was gating: an unremarkable session reaches the ceiling, so **track-level
 mount/release is worth building**, and so is anything that shares a context
 across displays.
 
-Do the cheap environment check first, though. The `createGpuHal` ladder takes
-WebGL2 whenever a context can be created, and under software rendering that is
-~25x more main-thread cost than Canvas2D for the same session (on a real GPU the
-ordering reverses, ~2x the other way).
+**The software-rasterizer half is done as of 2026-08-12, and it shrinks what is
+left here.** Detection landed first (`glRenderer` / `softwareWebgl` off the probe
+context), then the routing: `createGpuHal` steps over the WebGL2 rung when the
+rasterizer is software and nothing was pinned. Measured on one view with three
+tracks and no churn — WebGL2 blocks the main thread 1.3-5.5 s in a single task,
+Canvas2D never exceeds 0.34 s and never once exceeds 500 ms. Both the numbers and
+the two things that must not break (the cross-backend gate, the figure corpus)
+are in
+[reference/GPU_CONTEXT_BUDGET.md](reference/GPU_CONTEXT_BUDGET.md).
 
-**The detection half landed 2026-08-12** — `getGraphicsCapabilities` reads
-`UNMASKED_RENDERER_WEBGL` off the probe context it already creates (only when
-WebGPU is absent, i.e. exactly the machines this is about) and exposes
-`glRenderer` / `softwareWebgl`. The driver string shows in the stack-trace
-dialog; analytics carries the coarse `software-rendering` bit, so **how many
-users are in that cell is now a question the data can answer** — ask it before
-building the rest.
-
-What is left is the routing, and it is not a one-line change to
-`effectiveRenderer`: that function only *reports*. The ladder is `createGpuHal`
-in render-core, so the check goes there — **below the `?renderer=` pin**, which
-is the whole safety story. Every browser test renders on SwiftShader, so a check
-that outranked the pin would make the cross-backend gate compare canvas2d
-against canvas2d: 66 pairs agreeing perfectly and proving nothing.
-
-It cannot, as long as it sits below the pin, and the suite is already pinned end
-to end — `runWithRenderingBackend` always sets `snapshotConfig.backend` (default
-`canvas2d`) and every test url is built through `appendGpuParam`. `createGpuHal`
-already treats a pin as binding rather than as a preference. An earlier version
-of this paragraph said the suite was unpinned and that pinning it was the first
-move; it was already pinned, and the first move is the analytics number.
+**So re-measure the population before building the structural work.** The
+remaining group is *hardware* GL with no WebGPU and 17+ tracks: a machine with
+WebGPU builds no WebGL2 display context at all, and software ones now take
+Canvas2D. Canvas2D is ~2x worse for that group, so it cannot simply be routed
+too — and the analytics `software-rendering` bit says how much of the no-WebGPU
+population has already been taken out of it. Ask that before spending on context
+pooling or track-level mount/release.
 
 ### MAF fetch cost on long blocks
 

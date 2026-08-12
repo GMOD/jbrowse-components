@@ -60,7 +60,7 @@ Three things the lazy mount did **not** fix:
   a handful of canvases are live. `VIEW_VISIBILITY_ROOT_MARGIN` is inert and
   making it live is a measured regression; `ViewContainer.tsx` carries the why.
 
-## Cost is the driver's, and the app cannot see which driver it has
+## Cost is the driver's, and the ladder now steps around it
 
 The same session and the same churn, per scroll pass, 12 views x 3 tracks:
 
@@ -75,29 +75,65 @@ expensive on a real GPU.** A CPU trace of the SwiftShader case puts 2320 of
 Chrome's async compile lands. Programs are per-context, so each rebuilt context
 recompiles the set, and compiling on a CPU rasterizer is what costs.
 
-The ladder in `createGpuHal` takes WebGL2 whenever a context can be created, so a
-user whose Chrome is software-rendering — GPU blocklisted, a VM, remote desktop,
-an old driver — gets the most expensive cell of that table. The ladder is the
-thing that would have to change; `effectiveRenderer` only names the rung it
+A user whose Chrome is software-rendering — GPU blocklisted, a VM, remote
+desktop, an old driver — used to get the most expensive cell of that table,
+because the ladder took WebGL2 whenever a context could be created. The ladder
+was the thing that had to change; `effectiveRenderer` only names the rung it
 lands on, and an earlier version of this paragraph blamed that reporting
 function, which would have sent someone to patch a string.
 
-**The app can now see it, and still does not act on it.** As of 2026-08-12 the
-probe reads `WEBGL_debug_renderer_info` / `UNMASKED_RENDERER_WEBGL` off the
-context it already creates — free, and only on the no-WebGPU population, which is
-the only one whose rasterizer matters. `GraphicsCapabilities.glRenderer` carries
-the driver string and `softwareWebgl` the verdict (`undefined`, not `false`,
-where the browser withholds the extension). The string is local to the
-stack-trace dialog, like `gpuVendor`; analytics gets the coarse
-`software-rendering` bit, which is the number that would justify the ladder
-change.
+### The churn number is not the reason — the floor is
 
-**Routing those users to Canvas2D is the open decision, and the thing it must
-not break is the cross-backend gate.** Every browser test renders on SwiftShader
-— CI passes `--swiftshader`, and headless Chrome picks it anyway (see the table
-in CROSS_BACKEND_GATE.md) — so a rasterizer check that ignored the `?renderer=`
-pin would turn the gate's webgl side into a second canvas2d render, and 66 pairs
-would agree perfectly while proving nothing.
+The 25x above is a churn workload, and churn was the wrong thing to build the
+case on: it repays a per-context shader compile over and over, so it flatters
+the argument in a way an ordinary session would not reproduce. **One view with
+three tracks and no churn at all** — the SCROLL passes measure zero long tasks,
+because a single view never leaves the mount band — measured headless (which is
+SwiftShader), three runs per arm, 2026-08-12:
+
+| arm      | long tasks, total | worst single task | tasks over 500 ms |
+| -------- | ----------------- | ----------------- | ----------------- |
+| webgl2   | 2.1 / 8.8 / 2.1 s | 1.3 / 5.5 / 1.3 s | 1 / 2 / 1         |
+| canvas2d | 0.69 / 1.4 / 0.95 s | 0.15 / 0.34 / 0.22 s | 0 / 0 / 0     |
+
+So the crossover holds far below the pathological case, the WebGL arm is wildly
+variable while the Canvas2D arm is not, and the cost is **the load-time pipeline
+build**, not the per-pass rebuild the churn number attributes it to. `over500`
+is the cleanest line to read: one or two per load on WebGL2, never once on
+Canvas2D. Reproduce with
+`node browser-tests/workspaces-freeze-stress.ts --views=1 --tracks=3 --mode=classic`,
+which reports LOAD separately from the scroll passes.
+
+**`createGpuHal` therefore steps over the WebGL2 rung when the rasterizer is
+software and nothing was pinned**, falling to Canvas2D exactly as it does on a
+machine with no WebGL2 at all. It is not a `setGpuOverride` — that field means "a
+human asked for this", and spending it here would leave nothing able to tell an
+app decision from a user's, including the About widget and the bug report the
+user is about to send.
+
+**How it sees it.** The probe reads `WEBGL_debug_renderer_info` /
+`UNMASKED_RENDERER_WEBGL` off the context it already creates — free, and only on
+the no-WebGPU population, which is the only one whose rasterizer matters.
+`GraphicsCapabilities.glRenderer` carries the driver string and `softwareWebgl`
+the verdict. That verdict is `undefined`, not `false`, where the browser
+withholds the extension (Firefox under `privacy.resistFingerprinting`), and the
+ladder treats undefined as "keep WebGL2" — an unrecognized rasterizer must never
+read as a software one. The string stays local to the stack-trace dialog, like
+`gpuVendor`; analytics gets the coarse `software-rendering` bit.
+
+**Two things the check must not break, both of which render on SwiftShader.**
+
+- **The cross-backend gate.** CI passes `--swiftshader` and headless Chrome picks
+  it anyway (see the table in CROSS_BACKEND_GATE.md), so a rasterizer check that
+  ignored the `?renderer=` pin would turn the gate's webgl side into a second
+  canvas2d render, and 66 pairs would agree perfectly while proving nothing. The
+  pin wins for exactly this reason, `appendGpuParam` sets it on every GPU arm,
+  and `createRenderingBackend.test.ts` pins the property directly.
+- **The figure corpus.** `website/scripts/snapshot.ts` runs headless and used to
+  pin nothing, so a regen would have silently redrawn every figure on Canvas2D —
+  a whole-corpus visual change arriving as a side effect. `sessionSpec` now
+  appends `renderer=webgl`, which is where to change it if the corpus should ever
+  move backends deliberately.
 
 **The pin is already the protection, and it is already in place.**
 `runWithRenderingBackend` sets `snapshotConfig.backend` for every run (it
