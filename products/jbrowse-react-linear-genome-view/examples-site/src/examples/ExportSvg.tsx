@@ -31,19 +31,19 @@ export default function ExportSvg() {
   // exportSvg is an async action on the view model — it renders every track
   // through the SVG code path and hands the result to FileSaver. format 'png'
   // rasterizes the same markup. See #action-exportsvg in the docs below.
-  function download(format: 'svg' | 'png') {
+  async function download(format: 'svg' | 'png') {
     setBusy(true)
     setError(undefined)
-    Promise.resolve(
-      ref.current?.session.view.exportSvg({
+    try {
+      await ref.current?.session.view.exportSvg({
         filename: `volvox.${format}`,
         format,
-      }),
-    )
-      .catch(setError)
-      .finally(() => {
-        setBusy(false)
       })
+    } catch (e) {
+      setError(e)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -53,7 +53,7 @@ export default function ExportSvg() {
           disabled={busy}
           style={{ marginRight: 8 }}
           onClick={() => {
-            download('svg')
+            void download('svg')
           }}
         >
           Export SVG
@@ -61,7 +61,7 @@ export default function ExportSvg() {
         <button
           disabled={busy}
           onClick={() => {
-            download('png')
+            void download('png')
           }}
         >
           Export PNG

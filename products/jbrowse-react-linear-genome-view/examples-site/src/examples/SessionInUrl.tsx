@@ -104,14 +104,17 @@ export default function SessionInUrl() {
         <button
           type="button"
           onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ;(async () => {
-              const encoded = await encodeSession(state)
-              writeSessionParam(encoded)
-              setStatus(
-                `saved to the URL (${encoded.length} chars) — copy the address bar, or reload to restore it`,
-              )
-            })()
+            void encodeSession(state)
+              .then(encoded => {
+                writeSessionParam(encoded)
+                setStatus(
+                  `saved to the URL (${encoded.length} chars) — copy the address bar, or reload to restore it`,
+                )
+              })
+              .catch((e: unknown) => {
+                console.error(e)
+                setStatus(`could not save the session to the URL: ${e}`)
+              })
           }}
         >
           Save this view to the URL
