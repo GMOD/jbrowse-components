@@ -5,6 +5,7 @@ import slugify from 'slugify'
 import { writeDoc } from './format.ts'
 import {
   assertSingleHeader,
+  assertUniquePages,
   codeCell,
   collectTransitive,
   containsTag,
@@ -404,6 +405,14 @@ export function writeModelDocs(
   const dir = 'website/docs/models'
   fs.mkdirSync(dir, { recursive: true })
   const withHeader = withHeaders(byFile)
+  assertUniquePages(
+    '#stateModel',
+    withHeader.map(m => ({
+      name: m.header.name,
+      slug: m.header.id,
+      filename: m.filename,
+    })),
+  )
   const index: ModelIndex = {
     byDeclId: mapByKey(withHeader, m => m.header.selfDeclId),
     bySlug: mapByKey(withHeader, m => m.header.id),

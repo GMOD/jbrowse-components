@@ -11,6 +11,7 @@ import {
 import { writeDoc } from './format.ts'
 import {
   assertSingleHeader,
+  assertUniquePages,
   codeBlock,
   codeCell,
   collectTransitive,
@@ -467,30 +468,39 @@ function isBaseSchema(header: ConfigHeader, links: DisplayLinkContext) {
 const MANIFEST =
   'products/jbrowse-cli/src/commands/validate/configManifest.generated.ts'
 
-const shorthandKeysByAdapter = (() => {
-  const text = fs.readFileSync(MANIFEST, 'utf8')
-  const json =
-    /export const configManifest: ConfigManifest = (\{[\s\S]*\})\n/.exec(
-      text,
-    )?.[1]
-  const parsed = json
-    ? (JSON.parse(json) as {
-        adapters: Record<string, { shorthandKeys?: string[] }>
-      })
-    : undefined
-  if (!parsed?.adapters.BamAdapter) {
-    // A manifest this cannot read would silently mark every adapter as having
-    // no shorthand, which reads as a fact rather than as a missing file.
-    throw new Error(`could not read adapter shorthands from ${MANIFEST}`)
+// Read on first use rather than at module scope. Importing this module is how
+// generate.ts reaches `accumulateConfig`, and an eager read made the import
+// itself throw when the manifest was absent — a failure attributed to whatever
+// happened to be running, rather than to the generator that needs the file.
+let adapterShorthands: Record<string, { shorthandKeys?: string[] }> | undefined
+
+function shorthandKeysByAdapter() {
+  if (!adapterShorthands) {
+    const text = fs.readFileSync(MANIFEST, 'utf8')
+    const json =
+      /export const configManifest: ConfigManifest = (\{[\s\S]*\})\n/.exec(
+        text,
+      )?.[1]
+    const parsed = json
+      ? (JSON.parse(json) as {
+          adapters: Record<string, { shorthandKeys?: string[] }>
+        })
+      : undefined
+    if (!parsed?.adapters.BamAdapter) {
+      // A manifest this cannot read would silently mark every adapter as having
+      // no shorthand, which reads as a fact rather than as a missing file.
+      throw new Error(`could not read adapter shorthands from ${MANIFEST}`)
+    }
+    adapterShorthands = parsed.adapters
   }
-  return parsed.adapters
-})()
+  return adapterShorthands
+}
 
 function shorthandLine(name: string, category: string, isBase: boolean) {
   if (category !== 'Adapter' || isBase) {
     return ''
   }
-  const keys = shorthandKeysByAdapter[name]?.shorthandKeys ?? []
+  const keys = shorthandKeysByAdapter()[name]?.shorthandKeys ?? []
   if (!keys.length) {
     return `This adapter has no \`uri\` [shorthand](${FILE_TYPES_GUIDE}#the-uri-shorthand) — give it the location slots below.`
   }
@@ -1268,9 +1278,17 @@ export function writeConfigDocs(
   const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
   resolveInheritedSlotMeta(withHeader, index)
-  // Before the write loop, so a run that would emit a blank cell fails without
-  // leaving the page it would have appeared on rewritten on disk.
+  // Both before the write loop, so a run that would emit a blank cell — or
+  // write one page for two types — fails without having rewritten anything.
   assertNoBlankSlotDescriptions(slotsMissingDescription(withHeader))
+  assertUniquePages(
+    '#config',
+    withHeader.map(c => ({
+      name: c.header.name,
+      slug: c.header.id,
+      filename: c.filename,
+    })),
+  )
   const extendedBy = extendedByMap(withHeader, index)
   const links: DisplayLinkContext = {
     displayTypesByTrack,

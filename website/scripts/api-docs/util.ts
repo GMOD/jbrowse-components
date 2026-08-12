@@ -1659,6 +1659,50 @@ export function withHeaders<T extends { header?: object }>(
 // wins on collision, matching `new Map(entries)`). Shared by both generators'
 // index construction: byDeclId from an optional declaration id, byName/bySlug
 // from the always-present name/slug.
+// Fail when two documented entities would write the same page, or answer to the
+// same link slug.
+//
+// This is `assertSingleHeader` one scope out, with the same consequence and the
+// same argument for being fatal. That one catches two differently-named
+// `#config`/`#stateModel` blocks in ONE file, because the accumulators key by
+// filename and the second overwrites the first. Across files nothing checked:
+// the page path is built from the entity's name, so a name used twice writes
+// one page twice and the loser vanishes with no diff (the page is still there,
+// still current-looking, describing the other type). `mapByKey` last-wins the
+// same way, so every "extends"/"composes" link that resolved through the name
+// would quietly point at the survivor.
+//
+// The slug is checked alongside the name because links resolve through
+// `slugify(name)`, and two names can differ while their slugs do not
+// (`LinearGCContentDisplay` / `LinearGcContentDisplay`) — that pair renders two
+// correct pages and cross-links them to whichever landed last.
+export function assertUniquePages(
+  kind: string,
+  entities: { name: string; slug: string; filename: string }[],
+) {
+  const collisions = new Map<string, string[]>()
+  for (const key of ['name', 'slug'] as const) {
+    const byKey = new Map<string, string[]>()
+    for (const e of entities) {
+      byKey.set(e[key], [...(byKey.get(e[key]) ?? []), e.filename])
+    }
+    for (const [value, files] of byKey) {
+      if (files.length > 1) {
+        collisions.set(`${key} "${value}"`, files)
+      }
+    }
+  }
+  if (collisions.size) {
+    throw new Error(
+      `${collisions.size} ${kind} name/slug collision(s) — each would write one page for two types, and every link resolving through the name would point at whichever was generated last. Rename one of each pair:\n${[
+        ...collisions,
+      ]
+        .map(([what, files]) => `  ${what}: ${files.join(', ')}`)
+        .join('\n')}`,
+    )
+  }
+}
+
 export function mapByKey<T>(
   items: T[],
   key: (item: T) => string | undefined,

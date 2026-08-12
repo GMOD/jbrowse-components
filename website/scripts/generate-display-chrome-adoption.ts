@@ -94,13 +94,25 @@ interface Registration {
   model: string
 }
 
+// Memoized: resolution walks the same modules from many starting points — one
+// display's registration reaches `renderDisplaySvg.tsx` and every other
+// display's does too, so a run parsed it 38 times, and 171 parses covered ~60
+// distinct files. Nothing here mutates a tree, so one parse per file is the
+// same answer for a third of the work.
+const parsed = new Map<string, ts.SourceFile>()
+
 function parse(file: string) {
-  return ts.createSourceFile(
-    file,
-    readFileSync(file, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-  )
+  let src = parsed.get(file)
+  if (!src) {
+    src = ts.createSourceFile(
+      file,
+      readFileSync(file, 'utf8'),
+      ts.ScriptTarget.Latest,
+      true,
+    )
+    parsed.set(file, src)
+  }
+  return src
 }
 
 function literal(node: ts.Node | undefined): string | undefined {
