@@ -295,29 +295,48 @@ rotation in `FetchMixin`), not a scheduler.
 **Retire when** a session-level priority queue with a max-in-flight cap lands, or
 `fetchRegions` at least sorts `needed` by distance from viewport center.
 
-### Every RPC worker spawns its own BGZF inflate pool
+### Per-JS-context scoping multiplies by the RPC pool
 
-**Status:** Open.
+**Status:** Open. Measured 2026-08-12, `browser-tests/percontext-probe.ts`.
 
-`sharedBgzfWorkerPool()` memoizes per JS context and adapters run one sticky RPC
-worker per track, so the pool multiplies by the RPC pool rather than being shared
-across it: `clamp(hardwareConcurrency - 1, 1, 5)` RPC workers x
-`min(hardwareConcurrency, 4)` inflate workers is **up to 20** on any machine with
-six or more cores. Each inflate worker holds its own copy of the inlined wasm
-bundle, so each carries an independent grow-only `WebAssembly.Memory` — the same
-grow-only memory REJECTED_IDEAS.md names behind the transient RPC-worker peaks —
-and nothing calls `destroySharedWorkerPool`, so they outlive the last bgzip track.
+Three read-path resources are scoped per JS context, and adapters are sticky per
+track to one of `clamp(hardwareConcurrency - 1, 1, 5)` RPC workers — so each
+multiplies by however many workers a session spreads its tracks over. On a
+production build, 16 cores, N alignments tracks with distinct adapter configs
+whose reads carry no MD tag:
+
+| tracks | RPC workers | bgzf pool workers | reference fetches |
+| ------ | ----------- | ----------------- | ----------------- |
+| 1      | 1           | 4                 | 1                 |
+| 5      | 5           | 20                | 5                 |
+| 8      | 5           | 20                | 5                 |
+
+Eight tracks give five of each, not eight, so both track the context count
+rather than the track count — the caches work, their scope is the problem.
+
+- **The inflate pool.** 20 workers, each with its own copy of the inlined wasm
+  bundle and so its own grow-only `WebAssembly.Memory` — the memory
+  REJECTED_IDEAS.md names behind the transient RPC-worker peaks. Nothing calls
+  `destroySharedWorkerPool`, so they outlive the last bgzip track.
+- **`RemoteFileWithRangeCache`.** Its chunk `Map` is module-global, so the same
+  reference sequence is downloaded once per worker for tracks sharing an
+  assembly and a viewport. Nothing above it dedupes — there is no session-level
+  sequence cache, and each alignments adapter builds its own sequence
+  sub-adapter inside its own worker.
+- **`SharedBudget`** (ADR-064) is the one that should stay per context: a worker
+  OOMs on its own heap. Threads and the network are machine-wide and are being
+  bounded from inside a context that cannot see the others.
 
 `@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` for
-exactly this, naming JBrowse's data workers as the case. Neither symbol appears
+the pool half, naming JBrowse's data workers as the case; neither symbol appears
 in this repo. It is not a free win — one shared pool of four is a loss when five
 tracks load at once, which is when it is noticed — so the sizing has to be
 settled with it. [BAM_STACK_INTEGRATION.md](BAM_STACK_INTEGRATION.md) seam 1 has
 the three things to settle and why node cannot measure any of them.
 
-**Retire when** one pool serves every RPC worker over a `MessagePort`, sized
-against a browser measurement of the several-tracks-at-once case rather than the
-library's per-context default.
+**Retire when** one pool and one byte cache serve every RPC worker over a
+`MessagePort` — the same channel does both — sized against a browser measurement
+of the several-tracks-at-once case rather than the library's per-context default.
 
 ### Worker payloads are collect-then-return
 

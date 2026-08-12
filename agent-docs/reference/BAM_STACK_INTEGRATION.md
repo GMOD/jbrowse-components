@@ -100,52 +100,92 @@ resolve the reference, so filtering there is free.
 `cacheBudget`. Dividing it by track count is the obvious alternative and is
 measurably worse than doing nothing (ADR-064).
 
-## Seam 1 — every RPC worker spawns its own inflate pool
+## Seam 1 — per-context scoping multiplies by the RPC pool
 
-**The one live gap, and the library already built the fix.**
+**The live gap, and the biggest one. Measured, not reasoned.**
 
-`sharedBgzfWorkerPool()` calls `getSharedWorkerPool()`, which memoizes **per JS
-context**. Adapters run under `WorkerPoolRpcDriver`, which assigns one sticky
-RPC worker per `rpcSessionId` — that is per track — round-robin over
-`clamp(hardwareConcurrency - 1, 1, 5)` workers. So the pool is per RPC worker,
-not per session:
+Three things in the read path are scoped **per JS context**, and adapters are
+sticky per track to one of `clamp(hardwareConcurrency - 1, 1, 5)` RPC workers
+(`WorkerPoolRpcDriver.getWorker`, keyed on `rpcSessionId` =
+`adapterConfigCacheKey(adapter)`). So each of the three multiplies by however
+many workers a session spreads its tracks over.
 
-```
-5 RPC workers  x  min(hardwareConcurrency, 4) inflate workers  =  up to 20
-```
+`browser-tests/percontext-probe.ts` counts it on a production build. N
+alignments tracks with distinct adapter configs, reads carrying no MD tag so
+every track fetches reference bases, one 10 kb window, 16 cores:
 
-on any machine with six or more cores, plus the RPC workers themselves. Each
-inflate worker runs its own copy of the inlined wasm bundle, so each carries an
-independent `WebAssembly.Memory` — and that memory is grow-only, which
-REJECTED_IDEAS.md already names as the root cause of the transient RPC-worker
-peaks (deep CRAM, ~997 MB down to 7 MB after GC). Nothing calls
-`destroySharedWorkerPool`, so those heaps live for the life of the worker
-whether or not a bgzip-backed track is still open.
+| tracks | RPC workers | bgzf pool workers | reference fetches |
+| ------ | ----------- | ----------------- | ----------------- |
+| 1      | 1           | 4                 | 1                 |
+| 5      | 5           | 20                | 5                 |
+| 8      | 5           | **20**            | **5**             |
+
+**The 8-track row is the whole result.** Eight tracks over five workers is five
+of each, not eight — so both quantities track the number of JS contexts, not
+the number of tracks. Two tracks sharing a worker share its inflate pool and
+its cached bytes. The caches work; their scope is what is wrong.
+
+### The pool
+
+`sharedBgzfWorkerPool()` calls `getSharedWorkerPool()`, which memoizes per
+context, so `5 x min(hardwareConcurrency, 4)` = **20 inflate workers** on any
+machine with six or more cores, plus the RPC workers themselves. Each runs its
+own copy of the inlined wasm bundle, so each carries an independent
+`WebAssembly.Memory` — and that memory is grow-only, which REJECTED_IDEAS.md
+already names as the root cause of the transient RPC-worker peaks (deep CRAM,
+~997 MB down to 7 MB after GC). Nothing calls `destroySharedWorkerPool`, so
+those heaps outlive the last bgzip track.
 
 `@gmod/bgzf-filehandle` documents this case in `docs/worker-pool.md` and ships
 `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` / `createPoolPort` for it, naming
 JBrowse's data workers as the motivating consumer. Neither symbol appears
 anywhere in this repo.
 
-The obvious wiring — one pool on the main thread, a `MessagePort` per RPC
-worker — is **not** a free win, and that is why this is written down rather
-than done. Three things to settle first:
+### The range cache
 
-- It trades 20 inflate workers for 4. That is the point when one track is
-  loading, and a loss when five are, which is exactly when a reader notices.
-  The right shape is probably one shared pool sized to `hardwareConcurrency`
-  rather than to 4, but that number is currently the library's default and has
-  never been measured above it.
+`RemoteFileWithRangeCache`'s chunk `Map` is module-global, i.e. per context, so
+**the same reference sequence is downloaded once per RPC worker** — five times
+for one region, for tracks that share an assembly and a viewport. Nothing
+above it dedupes: there is no session-level sequence cache, and each
+alignments adapter builds its own sequence sub-adapter inside its own worker
+(`BaseAlignmentsAdapter.getSequenceAdapter`).
+
+On the fixture that is 5 x 249 KB of a 255 KB FASTA, which is nothing. On a
+real assembly it is the region's sequence per pan per worker, and the `.fai`
+went 6x (five workers plus the main thread). The browser's own HTTP cache
+absorbed some of the repeats in some runs and not others — which is the point:
+whether the bytes are re-fetched is left to cache headers rather than decided
+by the app.
+
+### Why neither is wired yet
+
+The third per-context scope, `SharedBudget` (ADR-064), is **defensible and
+should stay** — a worker OOMs on its own heap, so per-worker is the scope that
+matters. Threads and the network are not like that: they are machine-wide, and
+are being bounded from inside a context that cannot see the others.
+
+But the obvious fix is not free, which is why this is written down rather than
+done. Three things to settle:
+
+- Sharing one pool trades 20 inflate workers for 4. That is right when one
+  track is loading and wrong when five are, which is exactly when a reader
+  notices. The right shape is probably one shared pool sized to
+  `hardwareConcurrency`, but 4 is the library's default and has never been
+  measured above it.
 - `BgzfWorkerPoolClient` copies the compressed input once more per chunk so the
   transfer detaches a buffer it owns. The library calls this small against the
-  inflate; it has not been measured in this repo.
+  inflate; it has not been measured here.
 - The port has to reach an RPC worker at boot, through `makeWorker`, and
   survive the worker being re-booted after an error (`LazyWorker.invalidate`).
+  The range cache needs the same channel, so build it once.
 
-Measuring it needs a browser: `getSharedWorkerPool` returns `undefined` under
-node, so every vitest bench in all three repos is blind to the pool. See
+Measuring any of it needs a browser: `getSharedWorkerPool` returns `undefined`
+under node, so every vitest bench in all three repos is blind to the pool. See
 [BGZF_WORKER_POOL.md](BGZF_WORKER_POOL.md) for the harness and for the three
-benchmark traps that have produced fake numbers here.
+benchmark traps that have produced fake numbers here, and
+`percontext-probe.ts`'s header for the four that cost a run each building this
+one — chiefly that jb2bench's BAMs all carry MD, so on that corpus the
+reference is never fetched and the whole question is invisible.
 
 ## Seam 2 — the chunk cache key slides as a query pans
 

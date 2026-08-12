@@ -51,7 +51,7 @@ Exploratory concepts that are *not* committed work live in
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
-| [Share one BGZF inflate pool](#share-one-bgzf-inflate-pool-across-the-rpc-workers) | bgzf, RPC, limits | the library has the fix; the open question is pool size |
+| [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | multiplication measured; time the shared pool at three sizes |
 | [Overlap the reference fetch](#overlap-the-reference-fetch-with-the-alignment-fetch) | alignments | time the sequence read on a cold MD-less query |
 
 ## Ready to build: small and self-contained
@@ -991,34 +991,51 @@ are already gone — `setVisibleRows` compares before writing (`sameVisibleRowFl
 in `SpreadsheetModel.tsx`), so what is left is genuine filter changes only, and
 that is what needs timing.
 
-### Share one BGZF inflate pool across the RPC workers
+### Give the RPC workers one inflate pool and one byte cache between them
 
-`sharedBgzfWorkerPool()` memoizes per JS context, and adapters run one sticky RPC
-worker per track, so the inflate pool multiplies by the RPC pool instead of being
-shared across it — up to **20** inflate workers on a six-core machine, each with
-its own grow-only wasm heap, none of them ever torn down.
-`@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` /
-`createPoolPort` for precisely this and names JBrowse's data workers as the case;
-neither symbol appears in this repo.
+**The multiplication is measured; what is open is the sizing.**
+`browser-tests/percontext-probe.ts`, production build, 16 cores:
+
+| tracks | RPC workers | bgzf pool workers | reference fetches |
+| ------ | ----------- | ----------------- | ----------------- |
+| 1      | 1           | 4                 | 1                 |
+| 5      | 5           | 20                | 5                 |
+| 8      | 5           | 20                | 5                 |
+
+Eight tracks give five of each, so both scale with JS contexts rather than with
+tracks: `sharedBgzfWorkerPool()` and `RemoteFileWithRangeCache`'s chunk map are
+both per context, and adapters are sticky per track to one of
+`clamp(hardwareConcurrency - 1, 1, 5)` workers. Twenty inflate workers each hold
+a grow-only wasm heap and none is ever torn down; the same reference sequence is
+downloaded once per worker for tracks sharing an assembly and a viewport.
 [reference/BAM_STACK_INTEGRATION.md](reference/BAM_STACK_INTEGRATION.md) seam 1.
 
-**Measure the several-tracks-at-once case first, because the naive wiring is a
-regression there.** One shared pool of four replaces twenty workers with four:
-right when a single track is loading, wrong when five are, which is the moment a
-reader notices. So the question to answer is not "does the port hop work" — it
-does, the library has it — but **how big the shared pool should be**, and 4 is
-only the library's per-context default, never measured above. Get a number for a
-five-bgzip-track session at `hardwareConcurrency`, at 4, and at today's 5x4, then
-wire it.
+`@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` /
+`createPoolPort` for the pool half and names JBrowse's data workers as the case;
+neither symbol appears in this repo. **Both halves want the same
+`MessagePort`-at-boot channel through `makeWorker`, so build that once** and
+carry the byte cache over it too rather than solving the pool alone.
 
-Two smaller things fall out of the same measurement and may be worth taking
-alone: nothing calls `destroySharedWorkerPool` when the last bgzip track closes,
-and `sweepIdleCache` is exported for a tab-hidden sweep that no in-tree code
+**What is still unmeasured is how big the shared pool should be**, and that is
+the thing to get before wiring, because the naive answer is a regression: one
+shared pool of four replaces twenty workers with four, which is right when a
+single track is loading and wrong when five are — the moment a reader notices.
+Time a five-bgzip-track session at `hardwareConcurrency`, at 4, and at today's
+5x4. Do not skip the third arm; it is the status quo and it is not obviously
+worse.
+
+Do **not** touch `SharedBudget` (ADR-064) while doing this. Per context is the
+right scope for it — a worker OOMs on its own heap — and only threads and the
+network are being bounded from the wrong place.
+
+Two smaller things fall out of the same work and may be worth taking alone:
+nothing calls `destroySharedWorkerPool` when the last bgzip track closes, and
+`sweepIdleCache` is exported for a tab-hidden sweep that no in-tree code
 registers.
 
 Node cannot measure any of it — `getSharedWorkerPool` returns `undefined` there,
-so every vitest bench in all three repos reports parity forever. Use the
-puppeteer harness and heed the three traps in
+so every vitest bench in all three repos reports parity forever. Use
+`percontext-probe.ts` and heed the traps in its header and in
 [reference/BGZF_WORKER_POOL.md](reference/BGZF_WORKER_POOL.md).
 
 ### Overlap the reference fetch with the alignment fetch
