@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { Dialog, ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
 import {
@@ -36,10 +36,21 @@ type RunState =
   | { phase: 'done'; summary: string }
   | { phase: 'failed'; error: unknown }
 
+const EMPTY_STATS: DiagonalizeStats = { totalReordered: 0, totalReversed: 0 }
+
 function summarize(stats: DiagonalizeStats | undefined) {
   return stats
     ? `Done: reordered ${stats.totalReordered} regions, reversed ${stats.totalReversed}`
     : 'No alignments to reorder'
+}
+
+// A stop is not an undo. The synteny cascade commits each level before running
+// the next, so whatever it had already applied is still applied — and closing
+// on that silently left a stack half-reordered with nothing saying so.
+function summarizeStopped({ totalReordered, totalReversed }: DiagonalizeStats) {
+  return totalReordered || totalReversed
+    ? `Stopped after reordering ${totalReordered} regions, reversed ${totalReversed}. The rows below that were not reached — re-run to finish.`
+    : 'Stopped. Nothing had been reordered yet.'
 }
 
 /**
@@ -65,8 +76,15 @@ export default function DiagonalizeDialog({
   const { classes } = useStyles()
   const [state, setState] = useState<RunState>({ phase: 'idle' })
 
+  // What the run has committed, and whether the user asked it to stop. A ref
+  // rather than state: nothing renders either mid-flight, they only have to
+  // survive until the run settles — and the stop flag has to be readable from
+  // the callbacks without re-entering render.
+  const runRef = useRef({ stopped: false, applied: EMPTY_STATS })
+
   async function start() {
     const stopToken = createStopToken()
+    runRef.current = { stopped: false, applied: EMPTY_STATS }
     setState({ phase: 'running', stopToken, status: 'Preparing' })
     // One window per run, so the RPC's ~40/s download ticks don't drive a
     // React render each. Local to the run rather than a hook: its lifetime is
@@ -75,9 +93,15 @@ export default function DiagonalizeDialog({
     try {
       const stats = await run({
         stopToken,
+        onProgress: applied => {
+          runRef.current.applied = applied
+        },
         // a status arriving after the run was cancelled or finished must not
-        // resurrect the running phase
+        // resurrect the running phase, or talk over "Stopping"
         statusCallback: status => {
+          if (runRef.current.stopped) {
+            return
+          }
           throttle.run(() => {
             setState(prev =>
               prev.phase === 'running' ? { ...prev, status } : prev,
@@ -87,8 +111,18 @@ export default function DiagonalizeDialog({
       })
       setState({ phase: 'done', summary: summarize(stats) })
     } catch (error) {
-      console.error(error)
-      setState({ phase: 'failed', error })
+      // A stop surfaces here as the abort rejecting out of the runner, which is
+      // not a failure to report — but everything the cascade had already
+      // committed still stands, so it reports that instead of vanishing.
+      if (runRef.current.stopped) {
+        setState({
+          phase: 'done',
+          summary: summarizeStopped(runRef.current.applied),
+        })
+      } else {
+        console.error(error)
+        setState({ phase: 'failed', error })
+      }
     }
   }
 
@@ -127,9 +161,17 @@ export default function DiagonalizeDialog({
           <Button
             variant="contained"
             color="secondary"
+            disabled={state.status === 'Stopping'}
             onClick={() => {
+              // stays open rather than closing: the cascade commits level by
+              // level, so the run has to settle and say what it left applied
+              runRef.current.stopped = true
               stopStopToken(state.stopToken)
-              handleClose()
+              setState(prev =>
+                prev.phase === 'running'
+                  ? { ...prev, status: 'Stopping' }
+                  : prev,
+              )
             }}
           >
             Stop

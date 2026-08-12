@@ -28,6 +28,11 @@ function renderDialog(
 
 const stats = { totalReordered: 3, totalReversed: 1 }
 
+let closed = false
+beforeEach(() => {
+  closed = false
+})
+
 // The reorder is a long RPC over remote alignment files, so it fails for
 // reasons that have nothing to do with the request. The only way back to Start
 // was to close the dialog and pick the menu item again.
@@ -62,6 +67,60 @@ test('a finished run offers only Close', async () => {
   expect(screen.queryByText('Start')).toBeNull()
   expect(screen.queryByText('Retry')).toBeNull()
   expect(screen.getByText('Close')).toBeTruthy()
+})
+
+// A stacked run commits each level before starting the next, so a stop leaves
+// the rows above the stop point reordered and the ones below untouched. Closing
+// on that said nothing at all about it.
+test('a stop reports what the cascade had already committed', async () => {
+  let stop = () => {}
+  renderDialog(
+    ({ stopToken, onProgress }) =>
+      new Promise<DiagonalizeStats>((_resolve, reject) => {
+        onProgress?.({ totalReordered: 7, totalReversed: 2 })
+        stop = () => {
+          reject(new Error(`aborted ${String(stopToken)}`))
+        }
+      }),
+    () => {
+      closed = true
+    },
+  )
+
+  fireEvent.click(screen.getByText('Start'))
+  fireEvent.click(screen.getByText('Stop'))
+  stop()
+
+  expect(
+    await screen.findByText(
+      /Stopped after reordering 7 regions, reversed 2\. The rows below that were not reached/,
+    ),
+  ).toBeTruthy()
+  // the point of the change: it reports rather than vanishing
+  expect(closed).toBe(false)
+  expect(screen.getByText('Close')).toBeTruthy()
+})
+
+// the dotplot applies once at the end, so an abort there really did change
+// nothing — saying "the rows below were not reached" would be a lie
+test('a stop with nothing committed says so', async () => {
+  let stop = () => {}
+  renderDialog(
+    () =>
+      new Promise<DiagonalizeStats>((_resolve, reject) => {
+        stop = () => {
+          reject(new Error('aborted'))
+        }
+      }),
+  )
+
+  fireEvent.click(screen.getByText('Start'))
+  fireEvent.click(screen.getByText('Stop'))
+  stop()
+
+  expect(
+    await screen.findByText('Stopped. Nothing had been reordered yet.'),
+  ).toBeTruthy()
 })
 
 // closing mid-run would leave the RPC going with nothing showing its progress,

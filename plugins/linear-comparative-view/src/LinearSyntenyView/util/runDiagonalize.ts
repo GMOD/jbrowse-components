@@ -100,6 +100,10 @@ export async function runDiagonalize(
         model.views[i + 1]!.setDisplayedRegions(result.newRegions)
         totalReversed += result.stats.regionsReversed
         totalReordered += result.stats.regionsReordered
+        // committed, not merely computed: the next level diagonalizes against
+        // the row this one just reordered, so anything reported here survives
+        // a stop on a later level
+        opts.onProgress?.({ totalReordered, totalReversed })
       }
     }
   }
