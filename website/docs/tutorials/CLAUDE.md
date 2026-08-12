@@ -10,9 +10,14 @@ label. Backticks are right for a string the reader types into the location box
 (``type `TNNT3` into the location box``), which is an input rather than a gene.
 Two more cases that look like drift and are not: a protein product is roman
 where its gene is italic ("carry no CYP1A2 protein"), and a fusion or hybrid
-name is one token rather than two genes (`BCR-ABL1`, `RHD-CE`). Italics are
-underscores, never `*asterisks*` — one line in the corpus used those and nothing
-else does.
+name is one token rather than two genes (`BCR-ABL1`, `RHD-CE`).
+
+Don't pick the emphasis marker; the formatter owns it. It writes `_underscores_`
+everywhere except where the span touches a non-space character, which underscore
+emphasis does not parse against, and there it writes asterisks instead. That is
+the whole story behind the one `*ABL1*×*BCR*` in the corpus, which is not drift
+and will revert on commit if you "fix" it. Spacing the operator
+(`_ABL1_ × _BCR_`) is the way to keep underscores, if you want them.
 
 **Few numbers in prose, and none that assert a result.** The test is what the
 number is doing. A number that _names_ something is fine and often necessary: a
