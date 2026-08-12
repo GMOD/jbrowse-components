@@ -1,4 +1,8 @@
-import { ARC_WIDTH_MAX_SCALE, arcLineWidth } from './arcLineWidth.ts'
+import {
+  ARC_WIDTH_MAX_SCALE,
+  ARC_WIDTH_PER_DOUBLING,
+  arcLineWidth,
+} from './arcLineWidth.ts'
 
 describe('arcLineWidth', () => {
   // The guarantee that makes coalescing safe to turn on everywhere: a feed
@@ -17,6 +21,20 @@ describe('arcLineWidth', () => {
 
   test('a deep pileup is capped rather than drawing a band', () => {
     expect(arcLineWidth(100_000, 2)).toBe(2 * ARC_WIDTH_MAX_SCALE)
+  })
+
+  // Where the cap starts binding is DERIVED from the two constants, not chosen,
+  // so it is the thing to state and the thing to pin: the comment on
+  // ARC_WIDTH_MAX_SCALE claimed 128 reads for a while, which is the width at
+  // 128 (4.85x) mistaken for the support the ceiling is reached at.
+  test('the ceiling binds at the support the two constants imply', () => {
+    const crossover = 2 ** ((ARC_WIDTH_MAX_SCALE - 1) / ARC_WIDTH_PER_DOUBLING)
+    expect(crossover).toBeCloseTo(43.9, 1)
+    // One read short of it still rises; one past it is already flat.
+    expect(arcLineWidth(Math.floor(crossover), 2)).toBeLessThan(
+      2 * ARC_WIDTH_MAX_SCALE,
+    )
+    expect(arcLineWidth(Math.ceil(crossover), 2)).toBe(2 * ARC_WIDTH_MAX_SCALE)
   })
 
   // Support is a count and cannot be 0, but the arrays are Uint32 and a bug

@@ -22,8 +22,14 @@ export const ARC_WIDTH_PER_DOUBLING = 0.55
 
 // Ceiling in multiples of the configured width. Without one a deep amplicon
 // (support in the thousands) draws an arc thicker than the band is tall, and
-// the band is sized from the arc apexes rather than from the strokes. 4x is
-// reached at 128 reads, which is past the point where more ink says anything.
+// the band is sized from the arc apexes rather than from the strokes.
+//
+// The two constants together fix where the curve stops rising:
+// 2^((MAX_SCALE - 1) / PER_DOUBLING) = 2^(3/0.55), i.e. about 44 reads — past
+// the point where more ink says anything, and still well above the support a
+// junction in an ordinary pileup carries. `arcLineWidth.test.ts` pins that
+// crossover, because it is a derived number and this comment said 128 for a
+// while (the width AT 128, 4.85x, read back as the width the cap is).
 export const ARC_WIDTH_MAX_SCALE = 4
 
 export function arcLineWidth(support: number, baseWidth: number) {
