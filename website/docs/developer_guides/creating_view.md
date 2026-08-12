@@ -53,7 +53,7 @@ export default function DotplotViewF(pluginManager: PluginManager) {
 ```
 
 `name` is what a session snapshot and a URL spec store; `displayName` is what
-the "Add" menu shows. The state model is a
+the view launcher's dropdown shows. The state model is a
 [mobx-state-tree](https://mobx-state-tree.js.org/) model (see
 [](/docs/developer_guides/mst_patterns)) and the React component receives
 `{ model }` as a prop.
@@ -61,6 +61,31 @@ the "Add" menu shows. The state model is a
 Wrap the component in `React.lazy` as every built-in view does — the view's
 whole component tree then stays out of the initial bundle until a session
 actually opens one.
+
+`ViewType` takes two more options, neither of which any built-in view needs:
+
+- **`extendedName`** names another view type whose displays yours should also
+  accept. Display types register against exactly one view type, so a subtype of
+  `LinearGenomeView` otherwise starts with none of the displays every track
+  already has. `addViewType` collects the displays matching your `name` _or_
+  your `extendedName`.
+- **`viewMetadata: { hiddenFromGUI: true }`** keeps the type out of the view
+  launcher's dropdown, for a view that only ever arrives from a spec, a
+  connection, or another view's action.
+
+## Making the view launchable from a session spec
+
+Registering the view type is what lets a session snapshot _restore_ one. Opening
+one from a URL is separate: `loadSessionSpec` dispatches on the spec's `type` to
+a `LaunchView-<name>` extension point, and a view type with no registered point
+cannot be launched from a spec — reported by name rather than failing silently.
+
+Register one to make yours launchable, exporting the args interface and
+augmenting `ExtensionPointRegistry` beside it. The spreadsheet view's launcher
+is the worked example, under
+[TypeScript types for extension points](/docs/developer_guides/extension_points#typescript-types-for-extension-points);
+[the LaunchView points](/docs/developer_guides/extension_points#launchview-points)
+covers what the launcher is handed and which spec keys never reach it.
 
 ## Reference implementations in this repo
 
