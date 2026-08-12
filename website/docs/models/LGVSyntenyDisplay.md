@@ -109,7 +109,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> | synteny features open the SyntenyFeatureWidget; the inherited `selectFeature` action reads this getter, so no override is needed. | LGVSyntenyDisplay |
-| <span id="getter-featurenoun">**featureNoun**</span><br><code>string</code> | A row here is a PAF block, not a read — the group-label chips say "Show all features". Matches the `noun` the menu builders below are passed. | LGVSyntenyDisplay |
+| <span id="getter-featurenoun">**featureNoun**</span><br><code>string</code> | A row here is a PAF block, not a read — the group-label chips say "Show all features". The ONE place that word is chosen: the two menu builders below that take a `noun` read it from here rather than spelling it again, so the chips and the menus cannot end up naming the same row two different things. | LGVSyntenyDisplay |
 | <span id="getter-hideselfalignments">**hideSelfAlignments**</span><br><code>boolean</code> | Whether the view's own assembly lane is hidden — see the slot. | LGVSyntenyDisplay |
 | <span id="getter-hiddengroupkeys">**hiddenGroupKeys**</span><br><code>ReadonlySet&lt;string&gt;</code> | The lane an all-vs-all track draws for the view's own assembly: its mate-assembly group key IS that assembly name. Hidden as a group key rather than filtered out of the fetch, so unchecking the option shows it again without a refetch. | LGVSyntenyDisplay |
 | <span id="getter-haslodcapableadapter">**hasLodCapableAdapter**</span><br><code>boolean</code> | Whether this track's adapter has tiered storage to switch between — gates the "Level of detail" menu. | LGVSyntenyDisplay |

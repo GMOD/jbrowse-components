@@ -31,6 +31,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "useSliceWorkerPool",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "cramLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
         },
