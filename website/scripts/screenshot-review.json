@@ -55,8 +55,8 @@
     "name": "alignments/read_cloud",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:29:49.170Z",
-    "hash": "bb25575a7e80c33b689a84613fd1a7fe40191ce1"
+    "reviewedAt": "2026-08-11T22:33:55.342Z",
+    "hash": "0d3b5ee019abb4b75ac8d95b856df373f3fb3f5b"
   },
   "dotplot": {
     "name": "dotplot",
@@ -179,10 +179,10 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "answered",
-    "note": "i still think we might need an example like this that uses long reads. short reads are hard to see the coverage patterns clearly. NOT DONE, and this is a status rather than a fix -- it needs a new hosted dataset, so I would rather say exactly how far it got than ship a figure of the wrong event. The narrow version is already closed: HG02768 is not in the 1000G ONT set and HGSV_2721 is a private singleton, the only carrier of 3202 (REJECTED_IDEAS). What I checked today is the BROAD version, a different INVdup in long reads, and the cohort is NOT the obstacle -- the ensemble callset has plenty of INVdup records with an ONT carrier (chr1 alone: HGSV_259 in HG00240, HGSV_566 in three, HGSV_1196 in dozens including HG00337 at 1/1). Three candidates, three misses, all measured: (1) HG00337 own ONT over HGSV_1196 is 93 reads, 2 with a strand flip and no junction repeating -- whatever the Illumina caller saw at 1.2 kb, minimap2 on R9 does not draw. (2) Sniffles DUP-inside-INV pairs are mostly VNTR: GM18501 chr7:100,957,464 is 584 supplementary alignments in 6 kb and 2 flipped reads, i.e. the MUC3A/MUC12 array. (3) A single-sided STRAND on a Sniffles INV IS the fold-back signature and does find real ones -- GM18501 chr12:86,845,555-86,858,474 is textbook, 57 of 121 reads carrying forward/reverse/forward with both junctions on the same two bases -- but depth over its interior is flat (~47x against ~47x flanking, spikes only at the breakpoints), so it is a heterozygous 12.9 kb INVERSION, which is what inversion_long_read already shows. So the thing that lands this is a scan rather than another locus: for every INVdup record with an ONT carrier, fetch that carrier reads and score both halves -- reads with an intra-read strand flip whose junctions agree, AND interior/flank depth ratio > 1 -- then rank. Hundreds of remote range queries, a slice and a re-host at the end (same treatment HG00151 got). All of the above is written into REJECTED_IDEAS so the next attempt starts from the scan. Say the word and I will run it.",
-    "reviewedAt": "2026-08-11T16:39:56.730Z",
-    "hash": "c614fd81e90db9f2b43949668a54a1c8d0397bff"
+    "status": "bad",
+    "note": "it says magenta in the text annotation, but does not say what that is. that is a split read with opposite pointing alignments (inversion) so very strong signal of inversion. it is still sort of unclear to 'naked eye' how it is also a dup. please try to help users understand.",
+    "reviewedAt": "2026-08-12T01:57:45.115Z",
+    "hash": "2e571464b93e5c661dcf4a695b287729b0888eb7"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -229,8 +229,8 @@
     "name": "about_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:29:05.187Z",
-    "hash": "728d777194120db5ec9087406941ccb1b7207f89"
+    "reviewedAt": "2026-08-11T22:33:52.478Z",
+    "hash": "7ba60133854c390318fa6cd4fd1d844d7155a0f2"
   },
   "add_hg38_assembly": {
     "name": "add_hg38_assembly",
@@ -276,8 +276,8 @@
     "name": "alignments/select_arc_display",
     "status": "good",
     "note": "FIXED in the app, not the spec: readConnectionsHeight's default went 40 -> 25 with the per-section arc reservation (6821f0198e), but that reservation is what fixed the grouped stack a lane at a time, so the height drop was paying for a problem already solved and the arcs had no room to separate. Default is 35 now; this figure takes it (it sets no height of its own).",
-    "reviewedAt": "2026-08-10T15:29:51.403Z",
-    "hash": "327c7b50a4e595a7804747edf7d4be9b0f65cae7"
+    "reviewedAt": "2026-08-11T21:26:48.822Z",
+    "hash": "331ffab376df227b0e237002b2c0d564c2318b36"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -676,8 +676,8 @@
     "name": "multi-sv-trio",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:37:23.751Z",
-    "hash": "f13aaf09fd78f141015b951dcc618e4dd5534e37"
+    "reviewedAt": "2026-08-12T01:57:48.426Z",
+    "hash": "19804d66703d675bcb5d1e3674295e0a58f3e6b5"
   },
   "product_architecture": {
     "name": "product_architecture",
@@ -1217,8 +1217,8 @@
     "name": "display_settings_url_snapshot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-11T15:40:54.660Z",
-    "hash": "b408708378a6e6f0b55b14b76fd1ce37e5a84617"
+    "reviewedAt": "2026-08-11T21:28:02.950Z",
+    "hash": "58b520c85037f718858284ae88fd74944093bdde"
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
@@ -1305,8 +1305,8 @@
     "name": "inversion_long_read",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-11T16:14:19.000Z",
-    "hash": "a416ec2bfe5796af338bb02f7edd43e56e3519d2"
+    "reviewedAt": "2026-08-12T01:56:26.339Z",
+    "hash": "d01dd6d4108b450951d5850d3cc57d72cdc62236"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1347,8 +1347,8 @@
     "name": "cookbook_color_by_strand",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:31:08.074Z",
-    "hash": "bce33aa81b6da70116648708061a769a2e627178"
+    "reviewedAt": "2026-08-11T21:04:27.363Z",
+    "hash": "657c597598fdf4694fc2993a8d463741d77597a7"
   },
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
@@ -1679,8 +1679,8 @@
     "name": "tcga/cohort_cnv_erbb2",
     "status": "good",
     "note": "please render the gene track more compact, and add red text annotation saying what the user is seeing e.g ",
-    "reviewedAt": "2026-08-10T23:13:07.739Z",
-    "hash": "2ef7ca47efc62cf4941bfaff91d69debe66acc0c"
+    "reviewedAt": "2026-08-11T20:08:19.809Z",
+    "hash": "b7b047814ea848e2becc6e5a7f12a43f3ef2b5fc"
   },
   "tcga/cohort_cnv_genome": {
     "name": "tcga/cohort_cnv_genome",
@@ -1746,9 +1746,9 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "good",
-    "note": "read-arcs band 200 -> 150. An arc's apex is its genomic span in px clamped to the band, and this card is 0.41 px/bp, so everything spanning the 1.3 kb duplication was over the ceiling either way — the extra 50px was clamped mass. 150 still resolves a pair up to ~370bp below the ceiling, where this library's concordant inserts sit. Viewport came down 50px with it (the run's blank-below-content report).",
-    "reviewedAt": "2026-08-10T15:33:10.558Z",
-    "hash": "47dc0d5e44cebcec7ff15687446c077ff8d23125"
+    "note": "RIGHT, AND THEY DO NOW. The two halves of the frame were on different color schemes: arcColorByType defaults to insertSizeAndOrientation while the reads were set to pairOrientation, so a pair spanning the duplication drew a red arc over a grey read and the same pair was keyed two ways in one picture. Moved the READS to match rather than the arcs, because insertSizeAndOrientation is a superset of what they were on: short insert wins outright, then abnormal orientation, then insert size. So LL green, RR navy and the magenta split reads all still paint (the subject of the card is untouched) and the long-insert pairs now carry the red their arcs already had, which you can see under the red arcs on the right. Reconciling the other way would have meant coloring the arcs by orientation, i.e. deleting the long-insert signal to make the two agree. The legend is data-driven and now lists Long insert and Short insert alongside the orientation rows.",
+    "reviewedAt": "2026-08-11T22:33:59.258Z",
+    "hash": "c2e0e0e6a1566630b5bd9f073f2a01c9b05f676f"
   },
   "genomes_synteny/launch_dialog": {
     "name": "genomes_synteny/launch_dialog",
@@ -1907,8 +1907,8 @@
     "name": "genomes_synteny/launch_sequence",
     "status": "good",
     "note": "i do not like the 'varying' text sizes'. previous notes: please make the red textboxes larger. DONE 2026-08-08: all three step labels are fontSize 30, up from 20 -- which was BELOW the annotation overlay's own default of 22, on the four-panel grid's only signposts, read at whatever size a 2x2 of 900px frames lands at on the page.  FIXED: all four step labels are now fontSize 30. Stage 4's was the only one left at 20, and it was left there because it was the longest line on the grid; it is shortened to '(4) Chimp tracks on, transparent indels' instead, so no panel's signpost is a different size from its neighbours'. Stage 4's viewportHeight also went 690 -> 704, which is the 13.5 css px the run's own CONTENT CLIPPED report said it was cutting off the chimp RepeatMasker row.",
-    "reviewedAt": "2026-08-09T14:12:25.173921Z",
-    "hash": "a7edbcec83d23fe8a33fee992e1f593fb3ba4673"
+    "reviewedAt": "2026-08-11T20:07:55.156Z",
+    "hash": "8be8767d17bb188983aa944d4db10f66d1260ab0"
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",
@@ -1921,8 +1921,8 @@
     "name": "multiway_synteny/ecoli_launch_from_selection",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T22:58:17.089Z",
-    "hash": "222ce9777d11a7174945072de00938be3abc1576"
+    "reviewedAt": "2026-08-11T20:53:38.661Z",
+    "hash": "c427077b14fff6f5112cd15d837ca54e3d6d2bc7"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
@@ -2350,10 +2350,10 @@
   },
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
-    "status": "answered",
-    "note": "please enable view as pairs/link supplementary reads in first row. make everything as compact as possible to improve y-screen real estate usage. DONE, both, and at this zoom the chaining is what finishes the figure: with linkedReads on the hg38 lane a molecule pieces share a row across all three windows, so the row breaks exactly where the reference does -- and the lane below shows the same molecule unbroken through the same joins. One row, read left to right, IS the comparison. COMPACT PASS: hg38 reads featureHeight 3 in 170 px, hg38 genes 75 -> 55 and compact, der3 genes 130 -> 95 and compact, ribbon band 180 -> 140. Frame 1385 -> 1115. ONE THING DELIBERATELY NOT TAKEN TO THE FLOOR: the der3 read lane is featureHeight 6, not the Compact preset 3. This capture is 3200 px wide and the page draws it about a third of that, so a 3 px row publishes at 1 px and 28 of them are hash again -- the exact failure featureHeight 8 was set to fix two rounds ago. 6 is 2 px published, which is where a bar survives; the lane still gave back 85 px. The tutorial card band was re-derived off the new frame in the same commit (a crop fraction only survives a re-render of the same layout).",
-    "reviewedAt": "2026-08-11T16:39:36.024Z",
-    "hash": "0d0255b33bfcaf83df370ebef7ffacd3fcf83165"
+    "status": "bad",
+    "note": "hmm. not sure i like supercompact. i just want to be able to see wtf is going on and i cant. need more height to these tracks. reduce height of the syteny ribbons. reduce height of the canvas tracks. increase height of the alignments track oh hg38 and try to improve the bezier renderings if it is possible. previous notes: SUPER-COMPACT, both read lanes. featureHeight 1 on each, which is the Super-compact preset (gap derives to 0). Two things had to move with it. (1) heightMode goes fit -> grow on the hg38 lane: while fitting, featureHeight is DERIVED from the lane height over the row count and the configured value is ignored, so asking for 1px in fit mode would have looked applied and done nothing. Grow takes the pitch from the spec and sizes the lane to its rows, which also guarantees nothing scrolls out of sight inside a lane -- the one failure the run size checks cannot see. (2) The der3 lane had argued its way UP to 6 twice, on the ground that this capture is 3200px wide and the page draws it about a third of that, so a 1px row publishes at a third of a pixel. That reasoning is still in the comment and was overridden knowing it; the lane is 28px where it was 175, and what it shows now is the shape of the stack rather than any individual read. Frame 1115 -> 901. One knock-on worth flagging: the \"the derivative allele\" pill was anchored at fracY 0.88 of the read lane, which was a comfortable margin at 175px and became a label taller than the lane, lying across the data it names. It now anchors to the foot of the gene lane above, so it sits immediately over the reads without covering them.",
+    "reviewedAt": "2026-08-11T21:44:31.129Z",
+    "hash": "8f039d507ce959245f52bbc499972da42844f3d9"
   },
   "cancer_sv/k562_cn_amplicon": {
     "name": "cancer_sv/k562_cn_amplicon",
@@ -2378,10 +2378,10 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "answered",
-    "note": "please enable view as pairs/link supplementary reads in first row. make everything as compact as possible to improve y-screen real estate usage. DONE, both. LINKED READS on the hg38 lane, so a molecule chr3 / chr10 / chr12 segments share ONE row across the three windows of that panel and a row is a molecule rather than an alignment. It also pays for itself: chaining collapses the 53 records into ~29 rows, so the lane fits in 200 px. Worth recording since the last round removed chaining from the OTHER lane for the dark tint -- it does not come back here. Sampled the new PNG for the two tint colours (0.6x of the strand fills, 142,83,83 and 86,86,130): zero pixels. The overlap the der3 lane suffers is an artefact of the contig carrying the chr3 arm twice, and hg38 does not. COMPACT PASS over everything: hg38 reads featureHeight 3 with a 40 px band, der3 reads to the Compact pitch of 3 (170 px for the same ~41 rows that took 320), both gene lanes 70 -> 50 and 120 -> 90, ribbon band 160 -> 110. Frame 1450 -> 1100, which is 800 px off where this figure stood two rounds ago while carrying one more track than it did then. Both read lanes measured off the capture rather than off a row count: the der3 rows occupy 122 css px of the 130 available, nothing scrolled.",
-    "reviewedAt": "2026-08-11T16:39:25.135Z",
-    "hash": "2375a603215210b91f305a34701a84a574cba637"
+    "status": "bad",
+    "note": "see notes in cancer_sv/derivative_inserts",
+    "reviewedAt": "2026-08-11T21:44:46.786Z",
+    "hash": "174eb37a6554c7ae732b7a9262f09f3e08974ab5"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
@@ -2930,9 +2930,9 @@
   },
   "hg002_haplotypes_follow_panel": {
     "name": "hg002_haplotypes_follow_panel",
-    "status": "answered",
+    "status": "good",
     "note": "this figure is sort of subtle. (a) way too much stuff on the screen (b) unclear what is being right clicked in the first image (c) unclear why we are doing this (d) this only works with lgvsyntenydisplay? what about in the linearsyntenyviewhelper? -- ANSWERED, three fixes and one finding. (a) THE GENE LANES ARE OUT, which fixes a claim as well as the clutter: an earlier round added them so the same genes would sit at different offsets before the move and under each other after it, and they do not -- Liftoff names each haplotype copy after whichever hg38 paralog it matched, so the after-frame put FAM85B / ENPP7P1 over LOC729732 / ENPP7P3, two lanes of different names under a caption saying they correspond. (It is the same naming that sank hg002_haplotypes_hetsites.) What records the move without inviting that comparison is the chain lane itself, which is also the thing being right-clicked: before, the maternal panel carries the block and the paternal lane is EMPTY, because those coordinates land in the gap past this block end; after, both lanes carry it and the ribbon closes between them. Frame 640 -> 445 per stage, and each frame is now four rows instead of six. (b) A RING ON THE CLICK, drawn off the SAME anchor the rightclick action takes so it cannot drift from it. A context menu opens at the pointer, so the menu top-left corner was already the answer -- true, and not something a reader knows to read. A ring rather than a box because the block right-clicked spans the whole window, so a box around it is a box around the lane. (c) BOTH TITLES SAY WHY: \"(1) Same numbers in both panels, and no chain under the paternal one\" and \"(2) The paternal panel jumps to the sequence that does correspond\". The old pair named what the panels held; these name the problem the menu item exists for. (d) NO, AND HERE IS WHAT THE RIBBON HAS: LinearSyntenyDisplay (the band LinearSyntenyViewHelper draws) does have its own right-click menu -- SyntenyContextMenu, LinearSyntenyRendering -- and it carries exactly one item, \"Center on feature\", which centres BOTH panels on the clicked alignment. So the ribbon is not menu-less, but it cannot express \"keep this panel, move the other one\", which is what the LGV track item does and the whole point of the figure. Adding that to the ribbon needs a decision the ribbon cannot make on its own: it sits BETWEEN two panels, so it would have to offer two items (move the upper, move the lower) or pick one. Say the word and I will add the pair; it is a small change to that menu.",
-    "reviewedAt": "2026-08-11T16:39:10.977Z",
+    "reviewedAt": "2026-08-11T20:07:58.595Z",
     "hash": "4e3aa55c2cea74c9cf6305f72af720bb0b3c8f21"
   },
   "jbrowse-img/sv_review_pair": {

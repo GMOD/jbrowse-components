@@ -3087,3 +3087,5 @@ not as a data-loading walkthrough.
 
 **Fiber-seq.** Already covered as a section of `methylation.md`, including the
 no-enzyme control figure. Not a separate tutorial.
+
+byo session save/restore, linked views, and base-level sequence
