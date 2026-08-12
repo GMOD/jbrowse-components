@@ -11,7 +11,6 @@ import {
 } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { observable } from 'mobx'
@@ -24,6 +23,7 @@ import {
   displayCanShowCigar,
   genomeViewsMenuItems,
   removeRowMenuItems,
+  rowSyncMenuItems,
   rowViewMenuItems,
 } from './menus.ts'
 
@@ -650,15 +650,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...genomeViewsMenuItems(self),
             ...cigarModeMenuItems(self),
             ...lodMenuItems(self),
-            {
-              label: 'Link views',
-              type: 'checkbox',
-              checked: self.linkViews,
-              icon: LinkIcon,
-              onClick: () => {
-                self.setLinkViews(!self.linkViews)
-              },
-            },
+            ...rowSyncMenuItems(self),
             {
               label: 'Export SVG',
               icon: PhotoCameraIcon,

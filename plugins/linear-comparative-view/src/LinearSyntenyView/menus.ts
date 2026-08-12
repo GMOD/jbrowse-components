@@ -1,3 +1,4 @@
+import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
 
 import type { CigarMode } from './types.ts'
@@ -12,6 +13,14 @@ import type { LodTier } from '@jbrowse/synteny-core'
 // Each takes the narrow structural slice it reads rather than the whole view
 // model: the model chain can then pass `self` with no cast, and each section
 // documents its own dependencies.
+
+// A row label that stays true whatever the assemblies are called: the assembly
+// name where there is one, and the row's position where a row is still loading.
+// Shared by the three sections that list the rows, so they can't drift into
+// naming the same row two different things in one menu.
+function rowLabel(view: { assemblyNames: string[] }, idx: number) {
+  return view.assemblyNames[0] ?? `View ${idx + 1}`
+}
 
 interface RemoveRowModel {
   views: unknown[]
@@ -82,7 +91,7 @@ export function genomeViewsMenuItems(model: GenomeViewsModel): MenuItem[] {
               },
             },
             ...model.views.map((view, idx) => ({
-              label: view.assemblyNames[0] ?? `View ${idx + 1}`,
+              label: rowLabel(view, idx),
               type: 'checkbox' as const,
               checked: !model.isViewCompact(idx),
               onClick: () => {
@@ -107,9 +116,85 @@ export function rowViewMenuItems(model: RowViewMenusModel): MenuItem[] {
     {
       label: 'Row view menus',
       subMenu: model.views.map((view, idx) => ({
-        label: view.assemblyNames[0] ?? `View ${idx + 1}`,
+        label: rowLabel(view, idx),
         subMenu: view.menuItems(),
       })),
+    },
+  ]
+}
+
+interface RowSyncModel {
+  views: { assemblyNames: string[] }[]
+  linkViews: boolean
+  followSynteny: boolean
+  followAnchorIndex: number
+  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  setFollowAnchorIndex: (idx: number) => void
+}
+
+/**
+ * How the genome rows track each other — three MUTUALLY EXCLUSIVE modes, so a
+ * radio group rather than the two independent checkboxes this would otherwise
+ * be. They are exclusive in substance, not just in presentation: a pixel lock
+ * and a synteny follow disagree about where a row belongs the moment an indel
+ * separates them, and with both on the row is placed twice per pan.
+ *
+ * The anchor picker only appears while following, and it is offered even for the
+ * ordinary two-row view: which haplotype drives and which follows is exactly the
+ * choice someone comparing two of them wants, and there is no way to infer it
+ * from the pan itself.
+ */
+export function rowSyncMenuItems(model: RowSyncModel): MenuItem[] {
+  const { linkViews, followSynteny, followAnchorIndex } = model
+  return [
+    {
+      label: 'Row sync',
+      icon: LinkIcon,
+      subMenu: [
+        {
+          label: 'Independent',
+          type: 'radio' as const,
+          checked: !linkViews && !followSynteny,
+          onClick: () => {
+            model.setRowSyncMode('independent')
+          },
+        },
+        {
+          label: 'Link scroll and zoom',
+          type: 'radio' as const,
+          checked: linkViews,
+          onClick: () => {
+            model.setRowSyncMode('link')
+          },
+        },
+        {
+          // "matching", not "syntenic", because at whole-genome zoom a
+          // CIGAR-less tier is interpolated across the block rather than walked
+          // — close enough to follow by, not a base-level correspondence
+          label: 'Follow the matching region',
+          type: 'radio' as const,
+          checked: followSynteny,
+          onClick: () => {
+            model.setRowSyncMode('follow')
+          },
+        },
+        ...(followSynteny
+          ? [
+              { type: 'divider' as const },
+              {
+                label: 'Anchor row',
+                subMenu: model.views.map((view, idx) => ({
+                  label: rowLabel(view, idx),
+                  type: 'radio' as const,
+                  checked: followAnchorIndex === idx,
+                  onClick: () => {
+                    model.setFollowAnchorIndex(idx)
+                  },
+                })),
+              },
+            ]
+          : []),
+      ],
     },
   ]
 }

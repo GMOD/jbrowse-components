@@ -1,6 +1,7 @@
 import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
+import type { SpanOfInterest } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -29,47 +30,32 @@ export function visibleSpanOnRefName(
 }
 
 /**
- * Send one panel of a synteny view to the region the clicked band matches,
- * leaving its neighbour where it is.
+ * The slice of the other axis that one loaded alignment puts opposite `window`,
+ * resolved in the worker.
  *
- * THE WINDOW, NOT THE FEATURE'S MIDPOINT, which is the whole difference from
- * "Center on feature": a published liftOver-style chain is one feature tens of
- * Mb long, so its midpoint is nowhere near what either panel is showing. And a
- * span rather than a point, so the moved panel matches the staying panel's
- * SCALE too and the band between them comes back near-vertical.
- *
- * THE WALK HAPPENS IN THE WORKER. The main thread holds no CIGARs for a band
- * -- the bulk path is typed arrays, deliberately, because a whole-genome PAF is
+ * THE WALK HAPPENS IN THE WORKER. The main thread holds no CIGARs for a band --
+ * the bulk path is typed arrays, deliberately, because a whole-genome PAF is
  * millions of blocks and a chromosome-scale CIGAR runs to tens of megabytes --
- * so this asks the worker to resolve the one clicked alignment and hands back
- * three numbers. `undefined` means the block carried no CIGAR after all, which
- * the menu already gates against; navigating on an interpolated guess is what
- * this deliberately does not do.
+ * so this asks the worker to resolve the one alignment and hands back three
+ * numbers. `undefined` means the block carried no CIGAR after all.
+ *
+ * Shared by the click-driven move below and by the synteny follow, which differ
+ * in what they do with a `undefined`: the move has none of the answer and hides
+ * its menu item, the follow falls back to interpolating across the block (see
+ * interpolateFollowSpan for why the two answer that differently).
  */
-export async function moveMatchingPanel({
+export async function resolveMatchingSpan({
   model,
   feat,
-  stayingView,
-  movingView,
+  window,
   toMate,
 }: {
   model: LinearSyntenyDisplayModel
   feat: FeatPos
-  stayingView: LinearGenomeViewModel
-  movingView: LinearGenomeViewModel
+  window: SpanOfInterest
   toMate: boolean
 }) {
-  const session = getSession(model)
-  // not named `window`: this runs on the main thread, where that shadows the
-  // global and reads as a mistake even where it is not one
-  const stayingWindow = visibleSpanOnRefName(
-    stayingView,
-    toMate ? feat.refName : feat.mate.refName,
-  )
-  if (!stayingWindow) {
-    return
-  }
-  const span = await session.rpcManager.call(
+  return getSession(model).rpcManager.call(
     getRpcSessionId(model),
     'SyntenyResolveMatchingRegion',
     {
@@ -86,13 +72,57 @@ export async function moveMatchingPanel({
         },
       ],
       featureId: feat.id,
-      window: stayingWindow,
+      window,
       toMate,
       // the resolved tier, matching the fetch that produced this feature id:
       // ids are not comparable across a tiered PIF's two tiers
       lodMode: model.lodTier,
     },
   )
+}
+
+/**
+ * Send one panel of a synteny view to the region the clicked band matches,
+ * leaving its neighbour where it is.
+ *
+ * THE WINDOW, NOT THE FEATURE'S MIDPOINT, which is the whole difference from
+ * "Center on feature": a published liftOver-style chain is one feature tens of
+ * Mb long, so its midpoint is nowhere near what either panel is showing. And a
+ * span rather than a point, so the moved panel matches the staying panel's
+ * SCALE too and the band between them comes back near-vertical.
+ *
+ * NO CIGAR, NO MOVE. `resolveMatchingSpan` answers `undefined` for a block that
+ * carries none, which the menu already gates against; navigating on an
+ * interpolated guess is what this deliberately does not do.
+ */
+export async function moveMatchingPanel({
+  model,
+  feat,
+  stayingView,
+  movingView,
+  toMate,
+}: {
+  model: LinearSyntenyDisplayModel
+  feat: FeatPos
+  stayingView: LinearGenomeViewModel
+  movingView: LinearGenomeViewModel
+  toMate: boolean
+}) {
+  // not named `window`: this runs on the main thread, where that shadows the
+  // global and reads as a mistake even where it is not one
+  const stayingWindow = visibleSpanOnRefName(
+    stayingView,
+    toMate ? feat.refName : feat.mate.refName,
+  )
+  if (!stayingWindow) {
+    return
+  }
+  const span = await resolveMatchingSpan({
+    model,
+    feat,
+    window: stayingWindow,
+    toMate,
+  })
   if (!span) {
     return
   }

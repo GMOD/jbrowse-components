@@ -106,7 +106,13 @@ function windowSignature(regions: Region[]) {
   return regions.map(r => `${r.refName}:${r.start}-${r.end}`).join(',')
 }
 
-function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
+// Exported for the synteny follow, which picks a feature by scanning the packed
+// arrays itself and so holds a FEATURE index rather than the instance index
+// `getFeature` below translates from.
+export function getFeatureAtIndex(
+  data: SyntenyFeatureData,
+  i: number,
+): FeatPos {
   const identity = data.attributes.identity?.[i] ?? -1
   return {
     id: data.featureIds[i]!,

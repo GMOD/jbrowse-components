@@ -10,6 +10,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
 import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
+import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -77,6 +78,22 @@ function stateModelFactory(pluginManager: PluginManager) {
          * them all
          */
         linkViews: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * Move the non-anchor genome rows to whatever region aligns to the
+         * anchor row, re-resolved through the synteny data each time the anchor
+         * settles. The synteny-aware alternative to `linkViews`, which locks the
+         * rows in PIXELS and so drifts apart as soon as an indel accumulates —
+         * the two are mutually exclusive (see setRowSyncMode).
+         */
+        followSynteny: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * Which genome row drives the others while `followSynteny` is on. Every
+         * other row is placed by mapping this one's window outward one level at
+         * a time. Clamped to the views array by reconcileLevels.
+         */
+        followAnchorIndex: types.stripDefault(types.number, 0),
         /**
          * #property
          * One synteny band per adjacent pair of `views`. Each holds its own
@@ -227,6 +244,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         while (self.levels.length > Math.max(self.views.length - 1, 0)) {
           self.levels.pop()
         }
+        // The follow anchor addresses a row, so it is clamped here rather than
+        // in its setter: every path that changes the views array comes through
+        // this one (afterAttach, setViews, addView, removeLastRow), and a
+        // snapshot can arrive with an anchor its views cannot support.
+        self.followAnchorIndex = Math.min(
+          Math.max(self.followAnchorIndex, 0),
+          Math.max(self.views.length - 1, 0),
+        )
       },
     }))
     .actions(self => ({
@@ -240,6 +265,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         // doesn't link showTrack/hideTrack, doesn't make sense in synteny
         // views most time
         installLinkedViewSync(self, ['horizontalScroll', 'zoomTo'])
+        // The synteny-aware sibling of the line above, and mutually exclusive
+        // with it (setRowSyncMode). Installed unconditionally: its autorun's
+        // first read is the flag, so it costs one observable read while off.
+        installSyntenyFollow(self)
         addDisposer(
           self,
           autorun(
@@ -319,6 +348,24 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
+      },
+      /**
+       * #action
+       * The one way to change how the rows track each other, so the two flags
+       * can't both be on. They fight if they are: `linkViews` replays the
+       * anchor's own scroll/zoom onto every row, which is precisely the pixel
+       * lock the follow then has to undo on the next settle, and the moving row
+       * visibly jumps twice.
+       */
+      setRowSyncMode(mode: 'independent' | 'link' | 'follow') {
+        self.linkViews = mode === 'link'
+        self.followSynteny = mode === 'follow'
+      },
+      /**
+       * #action
+       */
+      setFollowAnchorIndex(idx: number) {
+        self.followAnchorIndex = idx
       },
       /**
        * #action
