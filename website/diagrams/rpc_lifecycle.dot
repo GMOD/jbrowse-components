@@ -1,0 +1,55 @@
+// A there-and-back trip does not lay out as two clusters: main-thread nodes sit
+// at BOTH ends of the flow, so graphviz packs the worker cluster to one side and
+// the arrows read backwards. Side is carried by fill colour instead, with the
+// flow running straight down.
+digraph rpc_lifecycle {
+  rankdir=TB
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="One RPC call, and the two steps that are not a plain round trip"
+  nodesep=0.4
+  ranksep=0.4
+
+  node [shape=box, fontname="Helvetica", fontsize=12, style=filled]
+  edge [fontname="Helvetica", fontsize=10, color="#555555"]
+
+  // green = main thread, blue = worker
+  call [label="rpcManager.call(sessionId, name, args)", fillcolor="#dcedc8"]
+  ser [label="serializeArguments()\nrenames refNames into the adapter's scheme,\nreplaces statusCallback with a side channel", fillcolor="#f1f8e9"]
+  wdeser [label="deserializeArguments()\nread your args off this, not off the raw args", fillcolor="#e3f2fd"]
+  exec [label="execute()  ← your code", fillcolor="#e1f5fe"]
+  ret [label="return value,\nor rpcResult(value, transferList)", fillcolor="#e3f2fd"]
+  deser [label="deserializeReturn()", fillcolor="#f1f8e9"]
+  result [label="result", peripheries=2, fillcolor="#dcedc8"]
+
+  status [
+    label="statusCallback\non the main thread\n(loading UI)"
+    style="filled,dashed"
+    fillcolor="#fff3e0"
+    color="#ef6c00"
+  ]
+
+  legend_main [label="main thread", fillcolor="#dcedc8", shape=note, fontsize=10]
+  legend_worker [label="worker\n(sticky per sessionId)", fillcolor="#e3f2fd", shape=note, fontsize=10]
+
+  call -> ser
+  ser -> wdeser [label="  structured clone"]
+  wdeser -> exec
+  exec -> ret
+  ret -> deser [label="  structured clone,\n  or transferred zero-copy"]
+  deser -> result
+
+  // The one function-shaped thing that crosses, and it never actually crosses.
+  exec -> status [
+    label="  reports progress\n  while execute() runs"
+    style=dashed
+    constraint=false
+    color="#ef6c00"
+    fontcolor="#ef6c00"
+  ]
+
+  { rank=same; exec; status }
+  { rank=same; call; legend_main }
+  { rank=same; ser; legend_worker }
+}

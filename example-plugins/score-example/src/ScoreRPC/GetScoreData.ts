@@ -6,7 +6,6 @@ import { buildScoreResult } from './buildScoreResult.ts'
 
 import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
 
-// #region registry
 // Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
 // at every call site: the args are checked and the return type is inferred,
 // instead of both being `any`.
@@ -18,7 +17,6 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     }
   }
 }
-// #endregion
 
 export default class GetScoreData extends RpcMethodType {
   name = 'GetScoreData'
@@ -41,13 +39,11 @@ export default class GetScoreData extends RpcMethodType {
     // crossed the boundary, the RPC layer replaced it with a side channel and
     // rebuilt one here. Hand it to whatever does the slow work rather than only
     // bracketing that work, so the message tracks the download.
-    // #region status
     statusCallback?.('Fetching features')
     const features = await dataAdapter.getFeaturesArray(region, {
       stopToken,
       statusCallback,
     })
-    // #endregion
     return buildScoreResult(features, scoreColumn)
   }
 }

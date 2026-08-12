@@ -4,31 +4,18 @@ description: How to register and call RPC methods that run in web workers
 guide_category: Core concepts
 ---
 
-JBrowse runs data-intensive work (parsing adapters, computing layouts, encoding
-GPU buffers) inside web workers via an RPC layer. The main thread dispatches
-calls by name; a pool of workers receives them and returns results via
-structured clone.
-
-**TL;DR:** Subclass `RpcMethodType` with an `execute()`, register it with
-`addRpcMethod` in your plugin's `install()`, and call it with
-`rpcManager.call(sessionId, name, args)`. Only structured-clone-safe values
-cross the boundary.
+**TL;DR:** JBrowse runs data-intensive work — parsing adapters, computing
+layouts, encoding GPU buffers — in web workers behind an RPC layer. Subclass
+`RpcMethodType` with an `execute()`, register it with `addRpcMethod` in your
+plugin's `install()`, and call it with `rpcManager.call(sessionId, name, args)`.
+Only structured-clone-safe values cross the boundary.
 
 ## The RPC lifecycle
 
-```
-Main thread                          Worker
-───────────                          ──────
-rpcManager.call('MyMethod', args)
-  → serializeArguments()
-  → structured-clone to worker    →  deserializeArguments()
-                                      execute() ← your code
-  ← deserializeReturn()          ←  structured-clone back
-result
-```
+<Figure caption="Serialize and deserialize are hooks, not plumbing: the serialize step is where refNames are renamed and functions are stripped, which is why a method taking regions extends a rename base rather than overriding it. The dashed edge is the one function-shaped thing that crosses, and it does not actually cross — a side channel reports progress while execute() is still running." src="/img/rpc_lifecycle.png" />
 
-Sessions are sticky: a `sessionId` is pinned to one worker (round-robin), so
-adapter caches stay warm across calls from the same session.
+Sessions are sticky: a `sessionId` is pinned to one worker, so adapter caches
+stay warm across calls from the same session.
 
 ## Implementing an RPC method
 
@@ -129,8 +116,9 @@ export default abstract class RpcMethodTypeWithRenameRegions<
 There are two siblings for the shapes that differ:
 `RpcMethodTypeWithRenameRegion` for a method taking a single `region` rather
 than a `regions` array, and `RpcMethodTypeWithFiltersAndRenameRegions`, which
-additionally deserializes a serialized filter chain. Core's `CoreGetFeatures`
-and `CoreGetRegionByteEstimate` both use the plural one.
+additionally deserializes a serialized filter chain. `CoreGetFeatures`,
+`CoreGetRegionByteEstimate` and `CoreGetExportData` all use the plural one; the
+MAF methods use the filtered one.
 
 ### Returning ArrayBuffers zero-copy
 
@@ -279,48 +267,23 @@ the `statusCallback` in the call above; a per-region display gets it from
 `makeRegionStatusCallback`, which routes each region's messages to that region's
 slot in the loading UI.
 
-In the worker it arrives deserialized and is called normally — pass it down to
-whatever does the slow work, usually the adapter:
-
-<!-- include: example-plugins/score-example/src/ScoreRPC/GetScoreData.ts#status -->
-
-```ts
-statusCallback?.('Fetching features')
-const features = await dataAdapter.getFeaturesArray(region, {
-  stopToken,
-  statusCallback,
-})
-```
+In the worker it arrives deserialized and is called normally. Hand it down to
+whatever does the slow work rather than only bracketing that work, so the
+message tracks the download — `GetScoreData` above passes it into
+`getFeaturesArray` for exactly that reason.
 
 ## Type-registering your method
 
-Add an augmentation to `RpcRegistry` so `rpcManager.call` is fully typed. It
-goes in the file that defines the method, which is why it appears at the top of
-`GetScoreData` above:
-
-<!-- include: example-plugins/score-example/src/ScoreRPC/GetScoreData.ts#registry -->
-
-```ts
-// Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
-// at every call site: the args are checked and the return type is inferred,
-// instead of both being `any`.
-declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcRegistry {
-    GetScoreData: {
-      args: GetScoreDataArgs
-      return: ScoreRegionData
-    }
-  }
-}
-```
-
-Without it both overloads fall back to `any`, so a misspelled arg or a wrong
-assumption about the return type compiles.
+The `declare module '@jbrowse/core/rpc/RpcRegistry'` block at the top of
+`GetScoreData` above is what types `rpcManager.call` at every call site. Without
+it both overloads fall back to `any`, so a misspelled arg or a wrong assumption
+about the return type compiles. It goes in the file that defines the method, so
+the two can't drift.
 
 ## Worker count and configuration
 
-The default worker count is `clamp(hardwareConcurrency - 1, 1, 5)`. Users can
-override it per-driver in config:
+`workerCount` defaults to `0`, which means "decide from hardware":
+`clamp(hardwareConcurrency - 1, 1, 5)`. Set it to pin a count instead:
 
 ```json
 {
