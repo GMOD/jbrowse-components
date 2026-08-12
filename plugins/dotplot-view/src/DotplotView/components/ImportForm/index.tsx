@@ -72,6 +72,24 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const [regionsX, setRegionsX] = useState('')
   const [regionsY, setRegionsY] = useState('')
 
+  // Changing an axis's assembly drops what was typed for that axis. `*_MATERNAL`
+  // is typed ABOUT a particular assembly, so carrying it to a different one is
+  // never what was meant — at best its names don't exist there and the axis
+  // comes back unrestricted with a warning, at worst they do and the plot is
+  // quietly of the wrong thing. LinearSyntenyView's applyRows makes the same
+  // reset per row, and this form was the one that didn't.
+  function setAxis(
+    next: string,
+    current: string,
+    setAssembly: (arg: string) => void,
+    setRegions: (arg: string) => void,
+  ) {
+    setAssembly(next)
+    if (next !== current) {
+      setRegions('')
+    }
+  }
+
   // the track's own row order plus the Swap flag, not `quick.rows`: Swap
   // transposes the pair on the axes rather than reversing the row list, which
   // for an all-vs-all track would have picked out a different pair entirely
@@ -133,6 +151,10 @@ const DotplotImportForm = observer(function DotplotImportForm({
             // the axes open on the chosen track instead of resetting
             setAssemblyX(quickX)
             setAssemblyY(quickY)
+            // the handover brings the track's axes, so nothing typed against
+            // whatever the Manual form was showing before still applies
+            setRegionsX('')
+            setRegionsY('')
             applyQuickSelection()
           }}
           onQuickLaunch={() => {
@@ -174,7 +196,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
               selected={assemblyX}
               session={session}
               onChange={asm => {
-                setAssemblyX(asm)
+                setAxis(asm, assemblyX, setAssemblyX, setRegionsX)
               }}
             />
             <ChromosomeFilter
@@ -189,7 +211,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
               selected={assemblyY}
               session={session}
               onChange={asm => {
-                setAssemblyY(asm)
+                setAxis(asm, assemblyY, setAssemblyY, setRegionsY)
               }}
             />
             <ChromosomeFilter

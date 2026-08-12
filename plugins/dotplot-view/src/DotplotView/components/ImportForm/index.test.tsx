@@ -102,6 +102,11 @@ const launchButton = () => screen.getByRole('button', { name: 'Launch' })
 const axisSelect = (axis: 'X' | 'Y') =>
   screen.getByRole('combobox', { name: `${axis}-axis assembly` })
 
+// by testid, not by label: both boxes share a placeholder, and the testid is
+// what ChromosomeFilter puts on the input for exactly this
+const chromosomeBox = (axis: 'x' | 'y') =>
+  screen.getByTestId(`chromosome-filter-${axis}`)
+
 const goManual = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Manual' }))
 }
@@ -188,6 +193,42 @@ test('Manual launch sets the axes the user picked, x first', () => {
   const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
   fireEvent.click(launchButton())
   expect(model.assemblyNames).toEqual(['hg38', 'mm39'])
+})
+
+test('the chromosome box reaches the init as that axis displayedRegionNames', () => {
+  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+  fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA, ctgB' } })
+  fireEvent.click(launchButton())
+  expect(model.init).toEqual({
+    views: [
+      { assembly: 'hg38', displayedRegionNames: ['ctgA', 'ctgB'] },
+      { assembly: 'mm39', displayedRegionNames: [] },
+    ],
+  })
+})
+
+test('changing an axis assembly drops the chromosomes typed for it', () => {
+  // the names were typed about hg38; on rn7 they are at best unrestricting the
+  // axis with a warning, at worst plotting the wrong thing quietly
+  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA' } })
+  fireEvent.change(chromosomeBox('y'), { target: { value: 'ctgB' } })
+  fireEvent.mouseDown(axisSelect('X'))
+  fireEvent.click(screen.getByRole('option', { name: 'rn7' }))
+  expect(chromosomeBox('x')).toHaveValue('')
+  // the other axis is untouched — its assembly did not change
+  expect(chromosomeBox('y')).toHaveValue('ctgB')
+})
+
+test('switching to Manual drops chromosomes typed against the axes it replaces', () => {
+  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+  goManual()
+  fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA' } })
+  // back to Quick start and in again: the handover re-seats both axes, so what
+  // was typed against the previous pair does not survive it
+  fireEvent.click(screen.getByRole('button', { name: 'Quick start' }))
+  goManual()
+  expect(chromosomeBox('x')).toHaveValue('')
 })
 
 test('the track picker offers a connection-supplied synteny track', () => {
