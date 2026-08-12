@@ -3,7 +3,8 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { indexTracks } from '@jbrowse/text-indexing'
 
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { Track, indexType } from '@jbrowse/text-indexing'
+import type { indexType } from '@jbrowse/text-indexing'
+import type { Track } from '@jbrowse/text-indexing-core'
 
 interface TextIndexRpcMethodArgs {
   sessionId: string

@@ -105,7 +105,6 @@ export { stringifyBedGraph } from './saveTrackFormats/bedGraph.ts'
 export { scoreAxisConfigSchemaFields } from './shared/wiggleConfigSchemaFields.ts'
 export { remapRetiredAutoscale } from './shared/remapRetiredAutoscale.ts'
 export { WiggleScoreConfigMixin } from './shared/WiggleScoreConfigMixin.ts'
-export { SMALL_POINT_MAX_DIAMETER_PX } from '@jbrowse/wiggle-core'
 export {
   WiggleFamilySvgFrame,
   svgLegendRightPx,
@@ -118,9 +117,3 @@ export type {
 export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
 export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'
 export type { MultiWiggleDisplayModel } from './MultiLinearWiggleDisplay/components/multiWiggleDisplayTypes.ts'
-
-export type {
-  SourceRenderData,
-  WiggleGPURenderState,
-  WiggleRenderingBackend,
-} from '@jbrowse/wiggle-core'

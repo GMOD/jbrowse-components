@@ -8,7 +8,7 @@ import {
 import { currentRegionSignature } from './regionSignature.ts'
 
 import type { Feature } from '@jbrowse/core/util'
-import type { DisplayStatusPhase } from '@jbrowse/plugin-linear-genome-view'
+import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
  * Shared fetch/gating model for both arc displays. Composes the

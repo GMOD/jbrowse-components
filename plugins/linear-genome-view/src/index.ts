@@ -147,22 +147,11 @@ export type {
 // JBrowse's own displays render without MUI, or with DisplayChromeBase to also
 // keep MUI out of the bundle. See components/chromeOverlays.ts.
 export { plainChromeOverlays } from './BaseLinearDisplay/index.ts'
-// re-exported so LGV plugins that host their own (non-GPU) chrome can share the
-// single terminal-state precedence instead of re-encoding it (arc's SVG chrome,
-// which uses the `Status` variants — same ranking, minus the phase a display
-// with no rendering backend cannot reach)
-export {
-  computeDisplayPhase,
-  computeDisplayStatusPhase,
-  computeLoadingTerm,
-} from '@jbrowse/render-core/displayPhase'
-export type {
-  DisplayLoadingInputs,
-  DisplayPhase,
-  DisplayPhaseInputs,
-  DisplayStatusPhase,
-  DisplayStatusPhaseInputs,
-} from '@jbrowse/render-core/displayPhase'
+// The terminal-state precedence used by chrome that hosts its own (non-GPU)
+// rendering lives in `@jbrowse/render-core/displayPhase` and is imported from
+// there — by this plugin's internals and by arc's SVG chrome alike. It is
+// deliberately not mirrored here: one module owns the ranking, and consumers
+// name that module.
 export type {
   ByteEstimate,
   GateViewport,

@@ -85,6 +85,7 @@
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/text-indexing": "workspace:^",
+    "@jbrowse/text-indexing-core": "workspace:^",
     "@mui/icons-material": "^9.3.1",
     "@mui/material": "^9.3.1",
     "@mui/x-data-grid": "^9.11.0",

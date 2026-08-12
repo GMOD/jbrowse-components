@@ -14,7 +14,7 @@ import {
 import {
   defaultAttributesToIndex,
   defaultFeatureTypesToExclude,
-} from '@jbrowse/text-indexing'
+} from '@jbrowse/text-indexing-core'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

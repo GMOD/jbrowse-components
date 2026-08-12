@@ -1,36 +1,7 @@
-export {
-  createReadlineInterface,
-  decodeURIComponentNoThrow,
-  defaultAttributesToIndex,
-  defaultFeatureTypesToExclude,
-  generateMeta,
-  getLocalOrRemoteStream,
-  guessAdapterFromFileName,
-  indexFiles,
-  indexGff3,
-  indexGtf,
-  indexVcf,
-  indexableAdapters,
-  isSupportedIndexingAdapter,
-  isURL,
-  makeLocation,
-  parseAttributes,
-  sanitizeForFilename,
-} from '@jbrowse/text-indexing-core'
-export type {
-  Gff3IndexerOptions,
-  Gff3Adapter,
-  Gff3TabixAdapter,
-  GtfAdapter,
-  IndexableFormat,
-  IndexerOptions,
-  LocalPathLocation,
-  Track,
-  TrackIndexProgress,
-  UriLocation,
-  VcfAdapter,
-  VcfTabixAdapter,
-} from '@jbrowse/text-indexing-core'
+// This package is the desktop-facing wrapper around `@jbrowse/text-indexing-core`
+// — it adds `indexTracks` and the config helpers below, and nothing else. It
+// deliberately re-exports none of core's surface: a symbol gets one import path,
+// so the two packages cannot drift into disagreeing about the same name.
 export { createTextSearchConf, findTrackConfigsToIndex } from './util.ts'
 export type {
   Assembly,
