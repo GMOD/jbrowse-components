@@ -11,7 +11,8 @@ import { getPluginManager, setup } from './util.tsx'
 // track cannot unmount anything — the container has to repaint, or the departed
 // track's pixels stay up. Both keep the same shape (resolved render state, keys
 // hashed per display, unconditional repaint); these are the tests that hold
-// them to it. See agent-docs/ARCHITECTURE.md "the empty frame is load-bearing".
+// them to it. See agent-docs/reference/SHARED_CANVAS_VIEWS.md "the empty frame
+// is load-bearing".
 
 setup()
 

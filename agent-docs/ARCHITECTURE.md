@@ -242,123 +242,23 @@ gate](#the-region-too-large-gate-summary)).
 and not a migration nobody finished; folding them onto `FetchMixin` was proposed
 and rejected in
 [ADR-054](architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md),
-which is the thing to read before re-proposing it. Both
-comparative displays (`LinearSyntenyDisplay`, `DotplotDisplay`) compose
-`BaseDisplay` + `SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their
-fetch in a bare autorun. Neither gets `FetchMixin`'s cancel/stale machinery,
-`RegionTooLargeMixin` or `loadedRegions`; instead the pieces are shared à la
-carte — the mixin holds `fetching` / `loadedFetchKey` / `assembliesSwapped` plus
-the overridable `fetchInert` hook (see "the on-screen twin" under SVG export),
-`createStopTokenRotation` (core) does latest-wins token rotation plus the
-`isCurrent()` guard every post-await write is gated on, and the debounce is
-`leadingEdgeDebounce`, the same scheduler `installGlobalFetchAutorun` uses.
-`installComparativeFetchAutorun` (`@jbrowse/synteny-core`) welds those two
-together with the loading/error flags and the refName rename into one skeleton
-both displays install, so each supplies only a `prepare` gate (the tracked
-reads), a `run` (every await), and a synchronous `commit` the skeleton calls
-only while the fetch is still current. The skeleton logs whatever it `setError`s,
-so neither display overrides `setError` to log it a second time.
-`installAssemblySwapCheck` is the companion installer for the one-shot
-reversed-assembly check, off the fetch path — shared for its two `isAlive`
-guards (teardown fires the parent atom the gate reads; the RPC resolves long
-after a view can be closed), each invisible until a user closes a view
-mid-load. They also answer the
-shared `dataCurrent` freshness question and run the shared `computeSvgReady`
-policy, just via a signature compare (`isDataCurrent` over `dotplotFetchKey` /
-synteny's `currentFetchKey`) rather than spatial coverage — which is where the
-stale-capture bugs lived
-([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md) §"On-screen capture gate").
-Both autoruns track the one signature computed (`currentFetchKey`) plus
-`adapterConfig`, and read every value behind it `untracked`, so a pan inside the
-buffered window can't refire the fetch. The third tracked read is
-`SyntenyFetchStateMixin`'s `reloadCounter`, taken **before** `prepare()`'s
-bail-outs: after a failure every fetch input is unchanged, so `prepare`
-recomputes the same key and nothing refires the autorun — which is why clearing
-the error was not enough and the banner's Retry was inert on both views. Same
-law, and the same one-line fix, as the global family's `reloadCounter`; see [the
-trigger list](#the-global-fetch-trigger-list-must-be-read-unconditionally).
-`installComparativeFetchAutorun.test.ts` ("reload() refires the fetch with no
-input change") pins it.
-Both scope their fetch through the shared `syntenyFetchRegions`
-(`@jbrowse/synteny-core`): the visible blocks widened by a pan buffer and
-snapped to a buffer-sized grid, so a pan inside the buffer neither refetches nor
-exposes an unfetched strip, and the freshness key stays stable across the
-gesture. Synteny scopes its query axis, dotplot its h axis; neither scopes the
-other axis, because the fetch is one-dimensional in both.
+which is the thing to read before re-proposing it. Both comparative displays
+(`LinearSyntenyDisplay`, `DotplotDisplay`) compose `BaseDisplay` +
+`SyntenyFetchStateMixin` (`@jbrowse/synteny-core`) and own their fetch in a bare
+autorun, assembled from shared parts — `createStopTokenRotation`,
+`leadingEdgeDebounce`, `isDataCurrent`, `syntenyFetchRegions` — that
+`installComparativeFetchAutorun` welds into one skeleton. And both put their
+`RenderLifecycleMixin` *above* the display, so one canvas is shared by several
+displays and is laid out by the model that owns it.
 
-Both put their `RenderLifecycleMixin` *above* the display, so one canvas is
-shared by several displays: dotplot on the view itself, synteny on
-`LinearSyntenyViewHelper` — the per-level (row-gap) model — so a 3-row stack has
-two canvases, one per band, each shared by that level's synteny tracks. That is
-what makes their upload callbacks keyed rather than per-region: they diff through
-`createKeyedUploadSync` and delete each departed key individually, because an
-active-set prune computed from one display's map would wipe its siblings'
-buffers.
-
-**A shared canvas is laid out by the model that owns it, never by the displays
-drawing on it.** The canvas is absolutely positioned over the whole band, so it
-contributes no height; the band has to reserve its own (`level.height` for a
-synteny level). Sizing it from the displays instead looks equivalent — every
-display in a level reports the level's height — right up to the legal case of a
-band with *no* display: an assembly pair with no synteny dataset between it (the
-import form launches those deliberately), or the last track on a level hidden.
-`LinearComparativeRenderArea` reserved 0px there while its canvas still painted
-the level's height, overlapping the genome row below. The SVG export never had
-the bug because `SVGLinearSyntenyView` lays its rows out from `level.height`
-directly — the on-screen path is the one that has to be told.
-
-**The key is `sharedBackendKey(self.id)` — a hash of the display's node id,
-never its index in the parent's list.** An index renumbers the moment a sibling
-is hidden or reordered, and then the survivor's key names a slot holding another
-display's bytes: the identity diff sees a changed reference and re-uploads every
-later display's whole buffer (a full re-pack of every segment), and any frame
-that lands between the two draws one display's geometry under another's
-parameters. Dotplot keyed by track index until that was fixed.
-
-A shared canvas also makes the **empty frame load-bearing**, and that is why
-this family's render callback is *unconditional* where the per-region family's
-is gated. When each display owns its canvas, hiding a track unmounts the canvas
-with it. When the canvas belongs to the container, nothing else ever repaints
-it — so a callback that skips the tick "because no display has geometry" leaves
-the hidden track's pixels on screen, its buffer deleted and nothing drawn over
-them. Both plugins' backends clear before drawing, so painting zero displays
-*is* the wipe. One shape, in both:
-
-- `renderState` is a **resolved getter**, never `undefined`; an empty
-  `displayKeys` / `perTrack` is a real frame.
-- `canRender` carries the "view isn't measured yet" precondition
-  (`view.initialized`), so the autorun pair idles instead of the state going
-  nullable.
-- `backend.render(state)` returns `void` and always repaints the whole canvas:
-  clear, then draw every key it holds geometry for.
-- The callback returns `true` — the canvas now reflects the model, which is what
-  lets `canvasDrawn`, and so `settled` and the `*_done` testid, resolve on a
-  view or level that legitimately has nothing to show.
-
-**Both views publish that `settled` as `data-display-drawn`, a *required* prop on
-`RenderCanvas`.** The per-view `synteny_canvas_done` / `dotplot_webgl_canvas_done`
-testids still exist and are still what a spec's own `readySelector` names, but the
-attribute is what `PENDING_DISPLAYS` (`@jbrowse/browser-test-utils`) waits on, so
-these two answer "has everything painted?" with the same attribute every LGV
-display does. It is required because the previous version enumerated views by
-hand: `PENDING_DISPLAYS` named `synteny_canvas` and simply forgot dotplot, so an
-unpainted dotplot counted as finished and a capture could land on it blank — and
-a third, hand-copied version of the list lived in the desktop harness, already
-stale and matching only by accident. **A readiness signal published as a required
-prop cannot forget a view; a selector list can.** Reach for that shape whenever a
-cross-cutting check would otherwise be a list someone has to remember to append
-to — it is the same move as `fetchInert` being a mixin hook rather than a getter
-each display invents.
-
-`canvasDrawn` therefore means "painted at least once" here rather than "real
-content reached the canvas" (ADR-009, written for the per-region family, whose
-loading scrim reads it through `computeLoadingTerm`'s
-`rendersCanvas && !canvasDrawn` term). Nothing is lost: both `settled`
-getters carry data-readiness separately through `displaysSettled`, and neither
-view drives a scrim off `canvasDrawn`. Dotplot keyed by track index and gated
-its render on having geometry until both were fixed; synteny reached the same
-place by a different route, with a nullable state and a `clear()` method on the
-backend interface for the empty case.
+That second half is what makes them a shape rather than a variation: keyed
+uploads instead of per-region ones, `sharedBackendKey(self.id)` instead of a list
+index, an unconditional render callback because the empty frame is what erases a
+hidden track, and readiness published as a required prop. All of it, plus the
+fetch skeleton's contract, is
+[reference/SHARED_CANVAS_VIEWS.md](reference/SHARED_CANVAS_VIEWS.md) — read it
+before touching either view, or before building any container that owns a canvas
+its children draw on.
 
 Circular view's `ChordVariantDisplay` is a fourth shape, off this axis
 entirely: it paints main-thread JSX SVG (radial, so on screen it keeps a bespoke
@@ -1192,13 +1092,14 @@ that is what makes them worth listing rather than trusting to review.
 - Don't mutate per-region values in place; emit fresh objects.
 - Don't key a shared backend by a list index. Use `sharedBackendKey(self.id)` —
   an index renumbers the moment a sibling is hidden, aliasing one display's
-  buffer onto another's slot. See [display stacks](#display-stacks).
+  buffer onto another's slot.
 - Don't size a shared canvas from the displays drawing on it; the model that
   owns it lays it out. A band with no display is legal, and reserving 0px there
   while the canvas still paints overlaps the row below.
 - Don't skip a shared canvas's render tick when there is nothing to draw — an
-  empty frame is what erases a hidden track (see "the empty frame is
-  load-bearing" above).
+  empty frame is what erases a hidden track. Those three, and the rest of the
+  shared-canvas contract, are
+  [reference/SHARED_CANVAS_VIEWS.md](reference/SHARED_CANVAS_VIEWS.md).
 - Don't fold a scalar into a per-instance array. If a setting multiplies every
   element by the same number — plot-wide opacity is the case that bit — it
   belongs in the uniform or draw params, not re-packed across every instance.

@@ -106,7 +106,8 @@ That is the shape for a display that owns its canvas. The two views whose canvas
 is **shared by several displays** (dotplot, the synteny level) invert the gate:
 their `render` repaints unconditionally and returns `true`, because nothing else
 repaints that canvas and an empty frame is what erases a hidden track. See
-ADR-009's scope clause and ARCHITECTURE.md, "the empty frame is load-bearing".
+ADR-009's scope clause and
+[SHARED_CANVAS_VIEWS.md](SHARED_CANVAS_VIEWS.md#the-empty-frame-is-load-bearing).
 
 ## What the mixin owns
 
