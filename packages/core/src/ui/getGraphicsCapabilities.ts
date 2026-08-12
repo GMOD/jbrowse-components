@@ -7,6 +7,50 @@ export interface GraphicsCapabilities {
   webgl2?: boolean
   gpuVendor?: string
   gpuArchitecture?: string
+  /**
+   * `UNMASKED_RENDERER_WEBGL` from the WebGL2 probe — the real driver string
+   * ("SwiftShader Device", "Mesa Intel(R) UHD Graphics 630"), not the masked
+   * one, which is a fixed placeholder. Present only when the probe ran (no
+   * WebGPU) and the browser exposes `WEBGL_debug_renderer_info`; Firefox with
+   * `privacy.resistFingerprinting` does not. It identifies hardware far more
+   * precisely than `gpuVendor`/`gpuArchitecture` do, so like them it stays
+   * local — the stack-trace dialog the user chooses to copy — and never goes to
+   * analytics. `softwareWebgl` is the coarse bit that does.
+   */
+  glRenderer?: string
+  /**
+   * Whether that driver string names a software rasterizer. `undefined` means
+   * unknown (no probe, or no extension), which is deliberately not `false`: the
+   * distinction is the whole value of the field.
+   */
+  softwareWebgl?: boolean
+}
+
+// Substrings of UNMASKED_RENDERER_WEBGL that mean "no GPU is involved". Kept
+// conservative and specific — a wrong `true` here would describe a real GPU as
+// software, and the reports built from it are what a later ladder decision would
+// rest on. Chrome's SwiftShader arrives as an ANGLE string ("ANGLE (Google,
+// Vulkan 1.3.0 (SwiftShader Device ...))"), which is why these are substring
+// tests rather than equality.
+const SOFTWARE_RENDERER_MARKERS = [
+  'swiftshader',
+  'llvmpipe',
+  'lavapipe',
+  'softpipe',
+  'software rasterizer',
+  'software renderer',
+  'microsoft basic render driver',
+]
+
+/**
+ * Whether a `UNMASKED_RENDERER_WEBGL` string names a software rasterizer, where
+ * WebGL costs ~25x Canvas2D on the main thread for the same session (measured;
+ * on real hardware the ordering reverses at ~2x). Exported for its test — the
+ * marker list is the part that can be wrong.
+ */
+export function isSoftwareRenderer(glRenderer: string) {
+  const lower = glRenderer.toLowerCase()
+  return SOFTWARE_RENDERER_MARKERS.some(marker => lower.includes(marker))
 }
 
 async function probeWebgpu() {
@@ -41,6 +85,10 @@ async function probeWebgpu() {
  * evicts this one first (it is the oldest, and nothing draws to it or
  * re-acquires it), so the eviction cascade in GPU_CONTEXT_BUDGET.md cannot
  * start here.
+ *
+ * The driver string comes off the same context, so it is free where it matters:
+ * this only runs when WebGPU is absent, which is the population that renders on
+ * WebGL2 and so the only one whose rasterizer changes anything.
  */
 function probeWebgl2() {
   const canvas = document.createElement('canvas')
@@ -48,7 +96,23 @@ function probeWebgl2() {
   // buffer is pure waste until GC takes it
   canvas.width = 1
   canvas.height = 1
-  return !!canvas.getContext('webgl2')
+  const gl = canvas.getContext('webgl2')
+  if (!gl) {
+    return { webgl2: false }
+  }
+  // UNMASKED_RENDERER_WEBGL, not RENDERER — the masked one is a fixed
+  // placeholder string ("WebKit WebGL") that names nothing
+  const ext = gl.getExtension('WEBGL_debug_renderer_info')
+  const glRenderer = ext
+    ? (gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) as string | null)
+    : null
+  return glRenderer
+    ? {
+        webgl2: true,
+        glRenderer,
+        softwareWebgl: isSoftwareRenderer(glRenderer),
+      }
+    : { webgl2: true }
 }
 
 let capabilities: Promise<GraphicsCapabilities> | undefined
@@ -72,7 +136,7 @@ let capabilities: Promise<GraphicsCapabilities> | undefined
  */
 export function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
   capabilities ??= probeWebgpu().then(gpu =>
-    gpu.webgpu ? gpu : { ...gpu, webgl2: probeWebgl2() },
+    gpu.webgpu ? gpu : { ...gpu, ...probeWebgl2() },
   )
   return capabilities
 }

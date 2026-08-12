@@ -1,4 +1,9 @@
-import { preferredRenderer } from './getGraphicsCapabilities.ts'
+import {
+  isSoftwareRenderer,
+  preferredRenderer,
+} from './getGraphicsCapabilities.ts'
+
+const UNMASKED_RENDERER_WEBGL = 0x9246
 
 // jsdom has no navigator.gpu; define a minimal stub. `value` on a property
 // descriptor is untyped, so the partial adapter needs no cast.
@@ -32,7 +37,23 @@ function mockGetContext(webgl2Context: object | null) {
         : null) as unknown as HTMLCanvasElement['getContext'])
 }
 
-const mockWebgl2 = (supported: boolean) => mockGetContext(supported ? {} : null)
+// A WebGL2 context that answers the driver-string query, or withholds the
+// extension the way Firefox does under privacy.resistFingerprinting.
+function webgl2Context(glRenderer: string | null) {
+  return {
+    getExtension: (name: string) =>
+      name === 'WEBGL_debug_renderer_info' && glRenderer !== null
+        ? { UNMASKED_RENDERER_WEBGL }
+        : null,
+    getParameter: (parameter: number) =>
+      parameter === UNMASKED_RENDERER_WEBGL ? glRenderer : null,
+  }
+}
+
+const mockWebgl2 = (supported: boolean) =>
+  mockGetContext(
+    supported ? webgl2Context('Mesa Intel(R) UHD Graphics 630') : null,
+  )
 
 afterEach(() => {
   jest.restoreAllMocks()
@@ -85,16 +106,84 @@ test('no WebGPU falls through to the WebGL2 probe', async () => {
 
 test('the probe never loses its context deliberately', async () => {
   mockGpu(undefined)
-  // A context whose extension lookup would answer — if the probe asked for
-  // WEBGL_lose_context, this would record it. It must not: loseContext() is
-  // driver-wide on Firefox (ADR-005) and logs to the console on both browsers.
+  // The probe does ask for one extension (the driver string), so this records
+  // which. It must never be WEBGL_lose_context: loseContext() is driver-wide on
+  // Firefox (ADR-005) and logs to the console on both browsers.
   const getExtension = jest.fn()
   mockGetContext({ getExtension })
   const { getGraphicsCapabilities } = await loadFreshModule()
 
   await getGraphicsCapabilities()
 
-  expect(getExtension).not.toHaveBeenCalled()
+  expect(getExtension).not.toHaveBeenCalledWith('WEBGL_lose_context')
+})
+
+test('reads the unmasked driver string and flags a software rasterizer', async () => {
+  mockGpu(undefined)
+  mockGetContext(
+    webgl2Context('ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device))'),
+  )
+  const { getGraphicsCapabilities } = await loadFreshModule()
+
+  const caps = await getGraphicsCapabilities()
+
+  expect(caps.glRenderer).toContain('SwiftShader')
+  expect(caps.softwareWebgl).toBe(true)
+})
+
+test('a real GPU is not flagged', async () => {
+  mockGpu(undefined)
+  mockGetContext(webgl2Context('Mesa Intel(R) UHD Graphics 630'))
+  const { getGraphicsCapabilities } = await loadFreshModule()
+
+  const caps = await getGraphicsCapabilities()
+
+  expect(caps.glRenderer).toBe('Mesa Intel(R) UHD Graphics 630')
+  expect(caps.softwareWebgl).toBe(false)
+})
+
+test('a withheld extension leaves the rasterizer unknown, not false', async () => {
+  mockGpu(undefined)
+  // Firefox with privacy.resistFingerprinting
+  mockGetContext(webgl2Context(null))
+  const { getGraphicsCapabilities } = await loadFreshModule()
+
+  const caps = await getGraphicsCapabilities()
+
+  expect(caps.webgl2).toBe(true)
+  expect(caps.glRenderer).toBeUndefined()
+  expect(caps.softwareWebgl).toBeUndefined()
+})
+
+test('a WebGPU machine reports no driver string, since nothing probed', async () => {
+  mockGpu({ info: { vendor: 'apple', architecture: 'metal-3' } })
+  mockGetContext(webgl2Context('ANGLE (SwiftShader Device)'))
+  const { getGraphicsCapabilities } = await loadFreshModule()
+
+  const caps = await getGraphicsCapabilities()
+
+  expect(caps.glRenderer).toBeUndefined()
+  expect(caps.softwareWebgl).toBeUndefined()
+})
+
+test('isSoftwareRenderer knows the rasterizers and leaves hardware alone', () => {
+  for (const software of [
+    'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)))',
+    'llvmpipe (LLVM 15.0.7, 256 bits)',
+    'lavapipe (LLVM 17.0.6, 256 bits)',
+    'Software Rasterizer',
+    'Microsoft Basic Render Driver',
+  ]) {
+    expect(isSoftwareRenderer(software)).toBe(true)
+  }
+  for (const hardware of [
+    'Mesa Intel(R) UHD Graphics 630',
+    'ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 Direct3D11 vs_5_0 ps_5_0, D3D11)',
+    'Apple M1 Pro',
+    'AMD Radeon Pro 5500M OpenGL Engine',
+  ]) {
+    expect(isSoftwareRenderer(hardware)).toBe(false)
+  }
 })
 
 test('the probe is memoized: repeat calls create no further contexts', async () => {

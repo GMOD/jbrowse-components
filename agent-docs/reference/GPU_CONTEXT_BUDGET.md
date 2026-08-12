@@ -78,9 +78,24 @@ recompiles the set, and compiling on a CPU rasterizer is what costs.
 `preferredRenderer` returns WebGL2 whenever a context exists
 (`getGraphicsCapabilities` reports `webgl2: !!gl`), so a user whose Chrome is
 software-rendering — GPU blocklisted, a VM, remote desktop, an old driver — gets
-the most expensive cell of that table. The probe still creates a context on
-exactly that population (no WebGPU is what makes it probe at all), so reading
-`WEBGL_debug_renderer_info` / `UNMASKED_RENDERER_WEBGL` off it is free.
+the most expensive cell of that table.
+
+**The app can now see it, and still does not act on it.** As of 2026-08-12 the
+probe reads `WEBGL_debug_renderer_info` / `UNMASKED_RENDERER_WEBGL` off the
+context it already creates — free, and only on the no-WebGPU population, which is
+the only one whose rasterizer matters. `GraphicsCapabilities.glRenderer` carries
+the driver string and `softwareWebgl` the verdict (`undefined`, not `false`,
+where the browser withholds the extension). The string is local to the
+stack-trace dialog, like `gpuVendor`; analytics gets the coarse
+`software-rendering` bit, which is the number that would justify the ladder
+change.
+
+**Routing those users to Canvas2D is the open decision, and its blast radius is
+the test suite, not the app.** Headless Chrome is SwiftShader (see the table in
+CROSS_BACKEND_GATE.md), and `appendGpuParam` only pins `?renderer=` when a
+snapshot config names a backend — so an unpinned browser test would silently
+start exercising Canvas2D on a change that reads as a user-facing perf fix. Any
+implementation has to pin the suite first and say which runs it pinned.
 
 ## The probe's own context
 

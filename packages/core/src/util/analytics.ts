@@ -54,7 +54,15 @@ export async function writeAWSAnalytics(
     ).length
 
     // which rendering backend the ladder resolves to (WebGPU/WebGL2/Canvas2D)
-    const renderer = preferredRenderer(await getGraphicsCapabilities())
+    const capabilities = await getGraphicsCapabilities()
+    const renderer = preferredRenderer(capabilities)
+    // The coarse bit only. `glRenderer` names the exact driver and stays local
+    // to the stack-trace dialog, the same line vendor/architecture hold — this
+    // says whether a WebGL2 user is on a rasterizer, which is the population
+    // that pays ~25x Canvas2D on the main thread and the number that decides
+    // whether the ladder should route around it. 'unknown' where nothing probed
+    // or the browser withholds the extension, which must not read as 'false'.
+    const softwareRendering = capabilities.softwareWebgl ?? 'unknown'
 
     const { jbrowse: config, session, version: ver } = rootModel
     const { tracks, assemblies, plugins } = config
@@ -91,6 +99,7 @@ export async function writeAWSAnalytics(
 
       electron: isElectron,
       renderer,
+      'software-rendering': softwareRendering,
       loadTime: (Date.now() - initialTimestamp) / 1000,
       jb2: true,
     }
