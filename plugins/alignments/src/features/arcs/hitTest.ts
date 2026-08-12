@@ -79,6 +79,71 @@ interface Candidate<T> {
   outside: number
 }
 
+/**
+ * The ranking WITHIN one family, which both families use.
+ *
+ * Two buckets, and the split is the decision:
+ *
+ * ON THE INK (`outside <= 0`) — the cursor is literally over this mark. Stroke
+ * width IS support (`arcLineWidth`: a 10-read mark paints roughly three times
+ * the ink of a singleton), so ranking these on distance to the centre line, as
+ * this used to, reported whichever hairline the cursor was nearest and threw
+ * away the target the per-mark tolerance had just widened. Heaviest wins
+ * instead, which is also the mark painted on top — `resolveArcs` orders both
+ * feeds by support — so the hover and the picture name the same one.
+ *
+ * NEAR THE INK — reached only through `ARC_HIT_SLOP_PX`, so the cursor is over
+ * blank band and the answer is a best guess. Nearest wins, measured from each
+ * mark's own ink rather than its centre so a fat mark is not beaten by a
+ * hairline it is visibly wider than. Consulted only when nothing is on ink.
+ *
+ * `>=` on both supports, so equal candidates resolve to the LAST considered —
+ * the one painted over the other, both scans running ascending.
+ *
+ * Shared because the arcs and the ticks were two spellings of it, each with the
+ * same five locals and the same tie-breaks, under comments on the tick side
+ * saying it was the "same two-bucket ranking as the arcs". Two instances of one
+ * rule is a missing function — the argument `placement.ts` makes for the
+ * geometry, applied to the ranking. One object per scan (two per mousemove);
+ * the per-mark loops it serves still only write numbers.
+ */
+function bestMark() {
+  let onInk = -1
+  let onInkSupport = -1
+  let nearest = -1
+  let nearestOutside = Number.POSITIVE_INFINITY
+  let nearestSupport = -1
+  return {
+    consider(index: number, support: number, outside: number) {
+      if (outside > ARC_HIT_SLOP_PX) {
+        return
+      }
+      if (outside <= 0) {
+        if (support >= onInkSupport) {
+          onInk = index
+          onInkSupport = support
+        }
+      } else if (
+        outside < nearestOutside ||
+        (outside === nearestOutside && support >= nearestSupport)
+      ) {
+        nearest = index
+        nearestOutside = outside
+        nearestSupport = support
+      }
+    },
+    // `outside` 0 for an on-ink winner: `pickBetween` reads it as the on-ink
+    // flag, so it must not carry the negative depth into the stroke.
+    best() {
+      return onInk !== -1
+        ? { index: onInk, outside: 0 }
+        : nearest === -1
+          ? undefined
+          : { index: nearest, outside: nearestOutside }
+    },
+  }
+}
+
 function arcHitAt(data: ArcsUploadData, i: number): ArcHitResult {
   return {
     kind: 'arc',
@@ -167,57 +232,37 @@ function pickBetween(
 }
 
 // The ticks: full-band verticals, so the distance is purely horizontal and the
-// band gate above has already settled Y. Same two-bucket ranking as the arcs —
-// heaviest among those on the ink, nearest among those merely near it — since
-// `resolveArcs` orders the tick feed by support too, making heaviest and
-// last-drawn the same tick.
+// band gate above has already settled Y. `bestMark` is the ranking, shared with
+// the arcs — `resolveArcs` orders the tick feed by support too, so heaviest and
+// last-drawn are the same tick here as well.
 function tickCandidate(
   canvasX: number,
   data: ArcsUploadData,
   opts: ArcHitOptions,
 ): Candidate<ArcLineHitResult> | undefined {
   const { bpToScreenX, lineWidth } = opts
-  let onInk = -1
-  let onInkSupport = -1
-  let nearest = -1
-  let nearestOutside = Number.POSITIVE_INFINITY
-  let nearestSupport = -1
-
+  const picker = bestMark()
   for (let i = 0; i < data.numArcLines; i++) {
     const support = data.arcLineSupport[i]!
     const halfWidth = arcLineWidth(support, lineWidth) / 2
-    const outside =
-      Math.abs(canvasX - bpToScreenX(data.arcLinePositions[i]!)) - halfWidth
-    if (outside > ARC_HIT_SLOP_PX) {
-      continue
-    }
-    if (outside <= 0) {
-      if (support >= onInkSupport) {
-        onInk = i
-        onInkSupport = support
-      }
-    } else if (
-      outside < nearestOutside ||
-      (outside === nearestOutside && support >= nearestSupport)
-    ) {
-      nearest = i
-      nearestOutside = outside
-      nearestSupport = support
-    }
+    picker.consider(
+      i,
+      support,
+      Math.abs(canvasX - bpToScreenX(data.arcLinePositions[i]!)) - halfWidth,
+    )
   }
-
-  const found = onInk === -1 ? nearest : onInk
-  return found === -1
+  const found = picker.best()
+  return found === undefined
     ? undefined
     : {
         hit: {
           kind: 'tick',
-          index: found,
-          bp: data.arcLinePositions[found]!,
-          support: data.arcLineSupport[found]!,
-          partnerRefNames: data.arcLinePartnerRefNames[found] ?? [],
+          index: found.index,
+          bp: data.arcLinePositions[found.index]!,
+          support: data.arcLineSupport[found.index]!,
+          partnerRefNames: data.arcLinePartnerRefNames[found.index] ?? [],
         },
-        outside: onInk === -1 ? nearestOutside : 0,
+        outside: found.outside,
       }
 }
 
@@ -236,73 +281,36 @@ function arcCandidate(
   // against that single frame instead of twice against the two directions.
   const localY = (canvasY - anchorY) * (pairedArcsDown ? 1 : -1)
 
-  // The candidates split in two, because the two are answered differently.
-  //
-  // ON THE INK (`outside <= 0`): the cursor is literally over this arc. Stroke
-  // width IS support (`arcLineWidth` — a 10-read arc paints roughly three times
-  // the ink of a singleton), so ranking these on distance to the centre line, as
-  // this used to, reported whichever hairline the cursor was nearest and threw
-  // away the target the per-arc tolerance had just widened. Heaviest wins
-  // instead, which is also the arc painted on top since `resolveArcs` orders the
-  // feed by support — so the hover and the picture name the same one.
-  //
-  // NEAR THE INK: reached only through the slop, so the cursor is over blank
-  // band and the answer is a best guess. Nearest wins, measured from each arc's
-  // own ink rather than its centre so a fat arc is not beaten by a hairline it
-  // is visibly wider than. Consulted only when the cursor is on nothing.
-  //
-  // Indices, not objects: this runs per mousemove over the whole feed.
-  let onInk = -1
-  let onInkSupport = -1
-  let nearest = -1
-  let nearestOutside = Number.POSITIVE_INFINITY
-  let nearestSupport = -1
-
+  // `bestMark` is the two-bucket ranking — see it for why on-ink is settled by
+  // support and near-ink by distance. What is local to the arcs is the DISTANCE
+  // fed to it, which needs a placement per arc where a tick needs one subtract.
+  const picker = bestMark()
   for (let i = 0; i < data.numArcs; i++) {
     const support = data.arcSupport[i]!
     const halfWidth = arcLineWidth(support, lineWidth) / 2
     // Nothing is drawn on the far side of the anchor line, and the stroke does
     // not cross it either: at the feet the tangent is vertical, so the stroke
     // there runs horizontally, out to the sides rather than down. Without this
-    // the mirrored half of the conic answers hovers over blank band.
-    if (localY < -(halfWidth + ARC_HIT_SLOP_PX)) {
-      continue
-    }
-    // `destY` is the apex height above the anchor on the drawn side, which is
-    // the frame `localY` is in — so an up band and a down band are one case
-    // here, and the flat/dome Y split is `arcPlacement`'s to make rather than
-    // this file's to remember.
-    const { sx1, sx2, destY, isFlat } = arcPlacement(data, i, opts)
-    const dist = isFlat
-      ? flatDistance(canvasX, localY, sx1, sx2, destY)
-      : curveDistance(canvasX, localY, sx1, sx2, destY, screenWidthPx)
-    // How far past this arc's own ink the cursor is: the quantity that both
-    // gates the hit and sorts the two buckets above.
-    const outside = dist - halfWidth
-    if (outside > ARC_HIT_SLOP_PX) {
-      continue
-    }
-    // `>=` on both, so equal candidates resolve to the LAST drawn — the one
-    // painted over the other. Scanning ascending, that is the later index.
-    if (outside <= 0) {
-      if (support >= onInkSupport) {
-        onInk = i
-        onInkSupport = support
-      }
-    } else if (
-      outside < nearestOutside ||
-      (outside === nearestOutside && support >= nearestSupport)
-    ) {
-      nearest = i
-      nearestOutside = outside
-      nearestSupport = support
+    // the mirrored half of the conic answers hovers over blank band. Ahead of
+    // `arcPlacement` because it is the one rejection that costs nothing.
+    if (localY >= -(halfWidth + ARC_HIT_SLOP_PX)) {
+      // `destY` is the apex height above the anchor on the drawn side, which is
+      // the frame `localY` is in — so an up band and a down band are one case
+      // here, and the flat/dome Y split is `arcPlacement`'s to make rather than
+      // this file's to remember.
+      const { sx1, sx2, destY, isFlat } = arcPlacement(data, i, opts)
+      const dist = isFlat
+        ? flatDistance(canvasX, localY, sx1, sx2, destY)
+        : curveDistance(canvasX, localY, sx1, sx2, destY, screenWidthPx)
+      // How far past this arc's own ink the cursor is: the quantity that both
+      // gates the hit and sorts the two buckets.
+      picker.consider(i, support, dist - halfWidth)
     }
   }
-
-  const found = onInk === -1 ? nearest : onInk
-  return found === -1
+  const found = picker.best()
+  return found === undefined
     ? undefined
-    : { hit: arcHitAt(data, found), outside: onInk === -1 ? nearestOutside : 0 }
+    : { hit: arcHitAt(data, found.index), outside: found.outside }
 }
 
 // The read cloud's flat connector: a horizontal segment at the arc's Y, widened
