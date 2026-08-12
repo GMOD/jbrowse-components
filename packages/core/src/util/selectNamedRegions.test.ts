@@ -89,6 +89,56 @@ describe('selectNamedRegions', () => {
     ).toEqual(['HLA-A*01:01:01:01', 'HLA-A*02:53N', 'HLA-A*24:01:01:01'])
   })
 
+  // An Ensembl/NCBI-named assembly carrying UCSC aliases, which is the ordinary
+  // case for anyone whose FASTA and whose habits disagree
+  const ensembl = [region('1'), region('2'), region('MT')]
+  const ucscAliases = { chr1: '1', chr2: '2', chrM: 'MT' } as Record<
+    string,
+    string
+  >
+  // as an assembly builds it: aliases AND the canonical names, identity-mapped
+  const allRefNames = [...Object.keys(ucscAliases), ...['1', '2', 'MT']]
+  const canonical = (n: string) => ucscAliases[n] ?? n
+
+  it('matches a glob against aliases, not only canonical names', () => {
+    // the bug this replaced: `chr1` resolved and `chr*` did not, on the same
+    // assembly, so the literal worked where the pattern silently found nothing
+    expect(
+      selectNamedRegions(ensembl, ['chr*'], canonical, allRefNames).map(
+        r => r.refName,
+      ),
+    ).toEqual(['1', '2', 'MT'])
+  })
+
+  it('emits alias matches in assembly order, not alias-map order', () => {
+    const reversed = ['chrM', 'chr2', 'chr1']
+    expect(
+      selectNamedRegions(ensembl, ['chr*'], canonical, reversed).map(
+        r => r.refName,
+      ),
+    ).toEqual(['1', '2', 'MT'])
+  })
+
+  it('takes a region once when several of its aliases match', () => {
+    expect(
+      selectNamedRegions(
+        [region('1')],
+        ['*1'],
+        (n: string) => (n === 'chr1' || n === 'NC_1' ? '1' : n),
+        ['chr1', 'NC_1', '1'],
+      ),
+    ).toHaveLength(1)
+  })
+
+  it('falls back to canonical names when the assembly has no alias list yet', () => {
+    expect(
+      selectNamedRegions(ensembl, ['chr*'], canonical).map(r => r.refName),
+    ).toEqual([])
+    expect(
+      selectNamedRegions(ensembl, ['*'], canonical).map(r => r.refName),
+    ).toEqual(['1', '2', 'MT'])
+  })
+
   it('an exact hit does not also pull in the glob reading of the same entry', () => {
     // the entry names one contig, so it contributes one — not that contig plus
     // everything else ending in the same four fields

@@ -529,6 +529,19 @@ makes `["chr1_hap1", "*_hap1"]` read as "chr1 first, then the rest of hap1". A
 name matching nothing is dropped, and a list that matches nothing at all is
 reported rather than silently showing the whole genome.
 
+Globs match the assembly's **aliases** as well as its own names, the same as an
+exact entry does, so `["chr*"]` works on an assembly whose FASTA calls its
+chromosomes `1`, `2`, `3`. A region is taken once however many of its names
+match.
+
+What a glob will not do is separate the main chromosomes from the rest of a
+UCSC-style assembly, because that naming makes the unplaced and alt contigs
+extensions of the names you want: on hg38 `chr*` also takes `chrUn_GL000195v1`
+and `chr1_KI270706v1_random`, and even `chr1*` takes `chr10` through `chr19`.
+There is no negation. Globs are for name families an assembly actually separates
+— `*_hap1`, `*_MATERNAL`, `*_alt` — and a main-chromosome subset is still best
+written as a list.
+
 The same field, and the same matching, is available on [`&regions=`](#regions),
 on the [circular view](#circular-view), on each axis of a
 [dotplot](#dotplot-view), and on each row of a

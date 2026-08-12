@@ -230,6 +230,7 @@ function applyInitDisplayedRegions(
         names,
         assemblyName,
         getCanonicalRefName: n => all.getCanonicalRefName(n),
+        allRefNames: all.allRefNames,
         notify: message => {
           session.notify(message, 'warning')
         },

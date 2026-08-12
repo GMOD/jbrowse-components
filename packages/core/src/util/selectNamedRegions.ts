@@ -45,15 +45,32 @@ export function globToRegExp(pattern: string) {
  * is reinterpreted as a pattern.
  *
  * Selecting from the assembly's own region objects (rather than synthesizing
- * them) keeps coordinates and lengths correct; `getCanonicalRefName` lets an
- * exact name resolve through the assembly's aliases.
+ * them) keeps coordinates and lengths correct.
+ *
+ * BOTH READINGS GO THROUGH THE ASSEMBLY'S ALIASES, and they have to, because
+ * only one of them used to. An exact name has always resolved via
+ * `getCanonicalRefName`, so `['chr1']` picks out a contig an Ensembl-named
+ * assembly calls `1` — but the glob was tested against `region.refName`, the
+ * canonical name alone, so `['chr*']` on that same assembly matched nothing at
+ * all. The literal working where the pattern silently fails is the worst
+ * possible split: the caller has no way to tell "this assembly has no such
+ * contigs" from "globs don't see the names you're using". Pass `allRefNames`
+ * (canonical names AND aliases — `buildRefNameMaps` identity-maps every region,
+ * so it is a strict superset) and a pattern sees what a literal sees. Omitted,
+ * matching falls back to canonical names, which is what it did before.
  */
 export function selectNamedRegions(
   regions: readonly Region[],
   names: readonly string[],
   getCanonicalRefName: (name: string) => string | undefined,
+  allRefNames?: readonly string[],
 ): Region[] {
   const byRefName = new Map(regions.map(r => [r.refName, r]))
+  // every name a glob may match on. `allRefNames` is undefined until the
+  // assembly's aliases load, and empty for an assembly that declares none
+  const candidates = allRefNames?.length
+    ? allRefNames
+    : regions.map(r => r.refName)
   const out: Region[] = []
   const seen = new Set<string>()
   const take = (r: Region | undefined) => {
@@ -68,8 +85,18 @@ export function selectNamedRegions(
       take(exact)
     } else if (name.includes('*')) {
       const re = globToRegExp(name)
+      // Resolve every matching NAME to the region it names, then walk `regions`
+      // to emit them — the two passes are what keeps a glob's contribution in
+      // ASSEMBLY order. Matching over `candidates` directly would order by the
+      // alias map instead, which is the order the alias file happened to list.
+      const hits = new Set<string>()
+      for (const candidate of candidates) {
+        if (re.test(candidate)) {
+          hits.add(getCanonicalRefName(candidate) ?? candidate)
+        }
+      }
       for (const r of regions) {
-        if (re.test(r.refName)) {
+        if (hits.has(r.refName)) {
           take(r)
         }
       }
@@ -120,15 +147,24 @@ export function resolveNamedRegions({
   names,
   assemblyName,
   getCanonicalRefName,
+  allRefNames,
   notify,
 }: {
   regions: readonly Region[]
   names: readonly string[]
   assemblyName: string
   getCanonicalRefName: (name: string) => string | undefined
+  // the assembly's aliases as well as its canonical names, so a glob sees what
+  // a literal sees — see selectNamedRegions
+  allRefNames?: readonly string[]
   notify: (message: string) => void
 }): Region[] | undefined {
-  const picked = selectNamedRegions(regions, names, getCanonicalRefName)
+  const picked = selectNamedRegions(
+    regions,
+    names,
+    getCanonicalRefName,
+    allRefNames,
+  )
   if (picked.length) {
     return picked
   }

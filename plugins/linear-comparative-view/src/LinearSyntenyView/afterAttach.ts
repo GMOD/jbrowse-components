@@ -26,6 +26,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 function rowRegions(
   asm: {
     regions?: Region[]
+    allRefNames?: string[]
     getCanonicalRefName: (n: string) => string | undefined
   },
   assemblyName: string,
@@ -46,6 +47,7 @@ function rowRegions(
       names,
       assemblyName,
       getCanonicalRefName: n => asm.getCanonicalRefName(n),
+      allRefNames: asm.allRefNames,
       notify,
     }) ?? all
   )
