@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { dropZoneAt, splitForZone, stripDropAt } from './dropZone.ts'
 
@@ -33,14 +33,29 @@ export interface TabDragHandlers {
  * undo history — which is the mistake `dockviewLayout` made in the other
  * direction, persisting something that was really a view of live state.
  */
-export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
-  drag: DragState | undefined
-} {
+export function useLayoutDrag(layout: WorkspaceLayout) {
   const [drag, setDrag] = useState<DragState | undefined>(undefined)
   // the pointer has gone down on a tab but may still turn out to be a click
   const pendingRef = useRef<
     { tabId: string; x: number; y: number } | undefined
   >(undefined)
+
+  /**
+   * The drag, mirrored into a ref, so the handlers can read it without
+   * depending on it.
+   *
+   * This is what keeps the handlers identity-stable across a drag, and that is
+   * not a micro-optimisation: they are part of `PanelChrome`, which every panel
+   * holds, so handlers that changed on every pointer move re-rendered every
+   * cell — and a cell's render rebuilds its `ViewStack`. Dragging one tab
+   * across the window re-rendered every view in the workspace, at pointer-event
+   * rate, for a caret moving a few pixels.
+   */
+  const dragRef = useRef<DragState | undefined>(undefined)
+  const showDrag = useCallback((next: DragState | undefined) => {
+    dragRef.current = next
+    setDrag(next)
+  }, [])
 
   const resolveTarget = useCallback((x: number, y: number) => {
     const under = document.elementsFromPoint(x, y)
@@ -98,13 +113,13 @@ export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
       const moved =
         Math.abs(event.clientX - pending.x) +
         Math.abs(event.clientY - pending.y)
-      if (!drag && moved < 5) {
+      if (!dragRef.current && moved < 5) {
         return
       }
       const target = resolveTarget(event.clientX, event.clientY)
-      setDrag(target ? { tabId: pending.tabId, ...target } : undefined)
+      showDrag(target ? { tabId: pending.tabId, ...target } : undefined)
     },
-    [drag, resolveTarget],
+    [resolveTarget, showDrag],
   )
 
   const onTabPointerUp = useCallback(
@@ -112,8 +127,8 @@ export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
       const pending = pendingRef.current
       pendingRef.current = undefined
       event.currentTarget.releasePointerCapture(event.pointerId)
-      const current = drag
-      setDrag(undefined)
+      const current = dragRef.current
+      showDrag(undefined)
       if (!pending || !current) {
         return
       }
@@ -138,7 +153,7 @@ export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
         layout.dropTabInPanel(current.tabId, current.panelId)
       }
     },
-    [drag, layout],
+    [layout, showDrag],
   )
 
   /**
@@ -151,6 +166,11 @@ export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
    * Clearing `pendingRef` as well as the drag state is the part that matters:
    * the drag is rebuilt from `pending` on every move, so cancelling the visible
    * state alone would let the next pixel of movement resume it.
+   *
+   * Bound only while a drag is up — `drag` is the dependency here on purpose,
+   * where the handlers avoid it: a keydown listener on `window` for the whole
+   * life of the workspace is a listener in every session that never drags a
+   * tab.
    */
   useEffect(() => {
     if (!drag) {
@@ -159,14 +179,21 @@ export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         pendingRef.current = undefined
-        setDrag(undefined)
+        showDrag(undefined)
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [drag])
+  }, [drag, showDrag])
 
-  return { drag, onTabPointerDown, onTabPointerMove, onTabPointerUp }
+  // one object, memoised: it goes into `PanelChrome`, which every panel holds,
+  // so a fresh one per render is a re-render of every cell in the workspace
+  const handlers = useMemo(
+    () => ({ onTabPointerDown, onTabPointerMove, onTabPointerUp }),
+    [onTabPointerDown, onTabPointerMove, onTabPointerUp],
+  )
+
+  return { drag, handlers }
 }

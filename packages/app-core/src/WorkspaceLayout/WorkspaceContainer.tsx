@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { autorun } from 'mobx'
@@ -12,6 +12,7 @@ import { useLayoutDrag } from './useLayoutDrag.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
+import type { PanelChrome } from './panelChrome.ts'
 
 const ViewLauncher = lazy(() => import('../ui/App/ViewLauncher.tsx'))
 
@@ -53,7 +54,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
   session: WorkspaceSession
 }) {
   const { classes } = useStyles()
-  const { drag, ...dragHandlers } = useLayoutDrag(session)
+  const { drag, handlers } = useLayoutDrag(session)
 
   useEffect(
     () =>
@@ -69,16 +70,70 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
   // and it is ONE function because two callers now need it (the tab's own ⋮
   // menu, and middle-clicking the tab). Spelled out at each, one of them ends
   // up dropping the tab and leaving its views in the session forever.
-  const closeTab = (tabId: string) => {
-    const tab = session.findTab(tabId)?.tab
-    if (!tab) {
-      return
-    }
-    for (const view of viewsOf(session, tab.viewIds)) {
-      session.removeView(view)
-    }
-    session.closeTab(tabId)
-  }
+  const closeTab = useCallback(
+    (tabId: string) => {
+      const tab = session.findTab(tabId)?.tab
+      if (!tab) {
+        return
+      }
+      for (const view of viewsOf(session, tab.viewIds)) {
+        session.removeView(view)
+      }
+      session.closeTab(tabId)
+    },
+    [session],
+  )
+
+  /**
+   * Memoised, and the reason is not tidiness.
+   *
+   * This object is a prop of every panel in the workspace, so a fresh one per
+   * render defeats `observer`'s memo for all of them — and a panel's render
+   * rebuilds its `ViewStack`. With the in-flight drag as React state, that made
+   * dragging one tab re-render every view in the workspace at pointer-event
+   * rate. `useLayoutDrag` keeps `handlers` stable for the same reason; the
+   * `drag` below is deliberately NOT in here, so it reaches the one cell it
+   * describes without going through this.
+   *
+   * `observer(function(){})` is not compiled by the React Compiler (see the
+   * root CLAUDE.md), so this memo is not something a build step would do
+   * anyway.
+   */
+  const chrome = useMemo<PanelChrome>(
+    () => ({
+      dragHandlers: handlers,
+      onTabClose: closeTab,
+      renderPanelActions: panel => (
+        <WorkspacePanelActions panel={panel} session={session} />
+      ),
+      renderTabLabel: tab => (
+        <WorkspaceTab
+          tab={tab}
+          views={viewsOf(session, tab.viewIds)}
+          session={session}
+          layout={session}
+          onClose={() => {
+            closeTab(tab.id)
+          }}
+        />
+      ),
+      renderTabContent: tab => {
+        const views = viewsOf(session, tab.viewIds)
+        return views.length > 0 ? (
+          <div className={classes.stack}>
+            <ViewStack views={views} session={session} />
+          </div>
+        ) : (
+          <div className={classes.empty}>
+            <Suspense fallback={null}>
+              <ViewLauncher session={session} />
+            </Suspense>
+          </div>
+        )
+      },
+    }),
+    [session, handlers, closeTab, classes.stack, classes.empty],
+  )
 
   return (
     <div className={classes.container} data-testid="workspace">
@@ -86,38 +141,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
         node={session.tree}
         layout={session}
         drag={drag}
-        chrome={{
-          dragHandlers,
-          onTabClose: closeTab,
-          renderPanelActions: panel => (
-            <WorkspacePanelActions panel={panel} session={session} />
-          ),
-          renderTabLabel: tab => (
-            <WorkspaceTab
-              tab={tab}
-              views={viewsOf(session, tab.viewIds)}
-              session={session}
-              layout={session}
-              onClose={() => {
-                closeTab(tab.id)
-              }}
-            />
-          ),
-          renderTabContent: tab => {
-            const views = viewsOf(session, tab.viewIds)
-            return views.length > 0 ? (
-              <div className={classes.stack}>
-                <ViewStack views={views} session={session} />
-              </div>
-            ) : (
-              <div className={classes.empty}>
-                <Suspense fallback={null}>
-                  <ViewLauncher session={session} />
-                </Suspense>
-              </div>
-            )
-          },
-        }}
+        chrome={chrome}
       />
     </div>
   )

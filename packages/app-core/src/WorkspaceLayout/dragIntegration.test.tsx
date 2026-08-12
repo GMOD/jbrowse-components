@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { types } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { observer } from 'mobx-react'
@@ -6,6 +8,8 @@ import JBrowseTabMenu from '../ui/App/JBrowseTabMenu.tsx'
 import { LayoutRenderer } from './LayoutRenderer.tsx'
 import { WorkspaceLayoutMixin } from './model.ts'
 import { useLayoutDrag } from './useLayoutDrag.ts'
+
+import type { TabNode } from './tree.ts'
 
 /**
  * The wiring, end to end: a pointer gesture on a tab reaches the layout.
@@ -34,14 +38,14 @@ const Harness = observer(function Harness({
   tabMenu?: boolean
   onTabClose?: (tabId: string) => void
 }) {
-  const { drag, ...dragHandlers } = useLayoutDrag(session)
+  const { drag, handlers } = useLayoutDrag(session)
   return (
     <LayoutRenderer
       node={session.tree}
       layout={session}
       drag={drag}
       chrome={{
-        dragHandlers,
+        dragHandlers: handlers,
         onTabClose,
         renderTabLabel: tab => (
           <>
@@ -437,6 +441,84 @@ describe('reordering within a strip', () => {
     expect(order()).toEqual([b, c, a])
     expect(session.panels).toHaveLength(1)
   })
+})
+
+/**
+ * A drag must not re-render the cells it passes over.
+ *
+ * `PanelChrome` is a prop of every panel, so anything in it that changes per
+ * render defeats `observer`'s memo for all of them at once — and a panel's
+ * render rebuilds its `ViewStack`, which is a stack of genome views. With the
+ * in-flight drag as React state that is pointer-event rate.
+ *
+ * The half of that inside this package is `useLayoutDrag` keeping `handlers`
+ * identity-stable while the drag changes, which it does by reading the drag
+ * from a ref. The other half is the caller memoising the chrome object, which
+ * `WorkspaceContainer` does and which the harness below copies — the assertion
+ * is meaningless without it, so it is spelled out rather than shared.
+ */
+test('a drag in flight does not re-render the cells it crosses', () => {
+  const drawn: string[] = []
+  const Harness = observer(function Harness({
+    session,
+  }: {
+    session: ReturnType<typeof TestSession.create>
+  }) {
+    const { drag, handlers } = useLayoutDrag(session)
+    const chrome = useMemo(
+      () => ({
+        dragHandlers: handlers,
+        renderTabLabel: (tab: TabNode) => (
+          <span data-testid={`tab-${tab.id}`}>{tab.id}</span>
+        ),
+        renderTabContent: (tab: TabNode) => {
+          drawn.push(tab.id)
+          return <div>{tab.viewIds.join(',')}</div>
+        },
+      }),
+      [handlers],
+    )
+    return (
+      <LayoutRenderer
+        node={session.tree}
+        layout={session}
+        drag={drag}
+        chrome={chrome}
+      />
+    )
+  })
+
+  const session = TestSession.create({ name: 't' })
+  const left = session.panels[0]!.id
+  const tabA = session.tabs[0]!.id
+  session.addViewToTab(tabA, 'view-1')
+  const rightPanel = session.splitPanel(left, 'row')!
+  const tabB = rightPanel.tabs[0]!.id
+  session.addViewToTab(tabB, 'view-3')
+  stubGeometry({
+    [left]: { left: 0, top: 0, width: 400, height: 400 } as DOMRect,
+    [rightPanel.id]: { left: 400, top: 0, width: 400, height: 400 } as DOMRect,
+  })
+  render(<Harness session={session} />)
+
+  const tab = screen.getByTestId(`tab-${tabA}`)
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+  })
+  drawn.length = 0
+
+  // four more moves, all inside the right-hand cell
+  act(() => {
+    for (const x of [610, 620, 630, 640]) {
+      fireEvent.pointerMove(tab, { clientX: x, clientY: 200 })
+    }
+  })
+
+  // the cell under the pointer redraws — it is the one showing the indicator
+  expect(drawn).toContain(tabB)
+  // the cell the drag started in has nothing new to say and must hold still
+  expect(drawn).not.toContain(tabA)
 })
 
 test('clicking a tab makes it active without moving anything', () => {

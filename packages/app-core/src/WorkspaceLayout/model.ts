@@ -216,8 +216,11 @@ export function WorkspaceLayoutMixin() {
         return from
       }
 
+      // NB `apply` is deliberately not returned. It takes a whole tree, so as an
+      // action it would be a public "set the layout to this" on the session —
+      // and the session is a plugin-facing surface where nothing announces that
+      // a member is unused. Every gesture below is a named action instead.
       return {
-        apply,
         setActivePanelId(panelId: string | undefined) {
           self.activePanelId = panelId
         },
