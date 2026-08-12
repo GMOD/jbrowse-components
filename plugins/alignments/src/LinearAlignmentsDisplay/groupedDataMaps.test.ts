@@ -1,5 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   buildSashimiDownKeys,
@@ -23,13 +24,13 @@ function data(
   readChainIndices?: number[],
   chainNames?: string[],
 ): PileupDataResult {
-  return {
+  return makePileupDataResult({
     readIds,
     readChainIndices: readChainIndices
       ? new Uint32Array(readChainIndices)
       : undefined,
     chainNames,
-  } as unknown as PileupDataResult
+  })
 }
 
 function grouped(
@@ -331,12 +332,12 @@ test('buildReadIdsByChainName keyed by name never collides across groups', () =>
 
 // [start, end, count] per junction.
 function junctionData(junctions: [number, number, number][]): PileupDataResult {
-  return {
+  return makePileupDataResult({
     sashimiX1: new Uint32Array(junctions.map(j => j[0])),
     sashimiX2: new Uint32Array(junctions.map(j => j[1])),
     sashimiCounts: new Uint32Array(junctions.map(j => j[2])),
     sashimiStrands: new Int8Array(junctions.length),
-  } as unknown as PileupDataResult
+  })
 }
 
 // Two interleaving junctions, the second thinly supported.

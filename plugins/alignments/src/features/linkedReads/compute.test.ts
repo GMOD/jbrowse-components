@@ -7,6 +7,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   connectionEndpoints,
   readGroupConnections,
@@ -50,7 +51,7 @@ function makeData(opts: {
     readPositions[i * 2] = opts.positions[i]![0]!
     readPositions[i * 2 + 1] = opts.positions[i]![1]!
   }
-  return {
+  return makePileupDataResult({
     readNames: opts.names,
     readIds: opts.names.map((_, i) => `id${i}`),
     readFlags: new Uint16Array(opts.flags),
@@ -60,7 +61,7 @@ function makeData(opts: {
     readYs: new Uint16Array(opts.ys),
     readClipAtStart: Uint32Array.from(opts.clips ?? opts.names.map(() => 0)),
     readInterchrom: Uint8Array.from(opts.interchrom ?? opts.names.map(() => 0)),
-  } as unknown as PileupDataResult
+  })
 }
 
 function makeEntry(
@@ -836,10 +837,10 @@ describe('computeLinkedReadLinesByRegion', () => {
 
 describe('groupReadsByName', () => {
   const named = (names: string[]) =>
-    ({
+    makePileupDataResult({
       readIds: names.map((n, i) => `${n}-${i}`),
       readNames: names,
-    }) as unknown as PileupDataResult
+    })
 
   it('groups reads by name across regions', () => {
     const byName = groupReadsByName(

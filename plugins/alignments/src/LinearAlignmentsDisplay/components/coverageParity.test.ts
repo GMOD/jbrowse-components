@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/render-core/hal'
 
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
 import {
   ALIGNMENTS_PASSES,
@@ -174,11 +175,11 @@ const EMPTY_PILEUP_STUBS = {
 }
 
 function makeMinimalPileupResult(cov: CoverageUploadData) {
-  return {
+  return makePileupDataResult({
     ...makeMinimalReadData(),
     ...EMPTY_PILEUP_STUBS,
     ...cov,
-  } as unknown as PileupDataResult
+  })
 }
 
 // The single-section, single-region `sync` input both backends take.
@@ -482,11 +483,11 @@ describe('GPU sync rebuild transaction', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const cov = makeCoverageData()
 
-    const withOverlap = {
+    const withOverlap = makePileupDataResult({
       ...makeMinimalPileupResult(cov),
       overlapPositions: new Uint32Array([REGION_START, REGION_START + 5]),
       overlapYs: new Uint16Array([0]),
-    } as unknown as PileupDataResult
+    })
 
     gpu.sync(oneRegion(withOverlap))
     expect(hal.getBufferCount(0, 'overlap')).toBeGreaterThan(0)
@@ -541,7 +542,7 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const cov = makeCoverageData()
     // One read, so the read pass has an instance to rewrite.
-    const laidOut = {
+    const laidOut = makePileupDataResult({
       ...makeMinimalPileupResult(cov),
       readIds: ['r1'],
       readPositions: new Uint32Array([REGION_START, REGION_START + 10]),
@@ -557,7 +558,7 @@ describe('GPU sync skips regions whose data is unchanged', () => {
       segmentReadIndices: new Uint32Array([0]),
       segmentEdgeFlags: new Uint8Array([3]),
       numSegments: 1,
-    } as unknown as PileupDataResult
+    })
 
     gpu.sync(oneRegion(laidOut))
     const before = uploadsFor(hal)

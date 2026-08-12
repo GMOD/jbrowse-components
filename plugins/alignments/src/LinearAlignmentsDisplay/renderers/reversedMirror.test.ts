@@ -1,5 +1,6 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import {
   Canvas2DAlignmentsRenderer,
@@ -119,8 +120,7 @@ function recordingCtx() {
 function pileupData(): PileupDataResult {
   const readStarts = [1005, 1030]
   const readEnds = [1020, 1044]
-  return {
-    regionStart: START,
+  return makePileupDataResult({
     readPositions: new Uint32Array([
       readStarts[0]!,
       readEnds[0]!,
@@ -246,7 +246,7 @@ function pileupData(): PileupDataResult {
     interbaseCovColorTypes: new Uint8Array(),
     indicatorPositions: new Uint32Array(),
     indicatorColorTypes: new Uint8Array(),
-  } as unknown as PileupDataResult
+  })
 }
 
 const triple: [number, number, number] = [0.5, 0.5, 0.5]

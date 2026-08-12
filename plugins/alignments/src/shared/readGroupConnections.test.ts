@@ -7,6 +7,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
+import { basePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   readGroupConnections,
   resolveReadGroup,
@@ -35,16 +36,17 @@ interface Entry {
 // which is the cross-region duplicate the readId dedup exists for.
 function entries(specs: ReadSpec[], region = 0): Entry[] {
   const n = specs.length
-  const data = {
+  const data: PileupDataResult = {
+    ...basePileupDataResult(n),
     readPositions: new Uint32Array(specs.flatMap(s => [s.start, s.end])),
     readFlags: new Uint16Array(specs.map(s => s.flags)),
     readStrands: new Int8Array(specs.map(s => s.strand)),
+    // optional, so the base leaves it out — this suite is about read-order
+    // sorting, which is the one thing it decides
     readClipAtStart: new Uint32Array(specs.map(s => s.clipAtStart ?? 0)),
     readIds: specs.map(s => s.id),
     readNames: specs.map(() => 'readA'),
-    readPairOrientations: new Uint8Array(n),
-    readInsertSizes: new Float32Array(n),
-  } as unknown as PileupDataResult
+  }
   return specs.map((s, readIdx) => ({
     data,
     readIdx,

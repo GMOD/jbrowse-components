@@ -19,6 +19,7 @@ const PALETTE = makeTestPalette({
   colorSupplementary: [0.5, 0.5, 0.5],
   colorSplitInversion: [0.6, 0.6, 0.6],
 })
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import {
   LINKED_READ_COLOR_INTERCHROM,
@@ -59,7 +60,7 @@ function makeData(opts: {
     readPositions[i * 2] = opts.positions[i]![0]!
     readPositions[i * 2 + 1] = opts.positions[i]![1]!
   }
-  return {
+  return makePileupDataResult({
     readNames: opts.names,
     readIds: opts.ids ?? opts.names.map((_, i) => `id${i}`),
     readFlags: new Uint16Array(opts.flags),
@@ -70,7 +71,7 @@ function makeData(opts: {
     ),
     readYs: new Uint16Array(opts.ys),
     readInterchrom: Uint8Array.from(opts.interchrom ?? opts.names.map(() => 0)),
-  } as unknown as PileupDataResult
+  })
 }
 
 const baseOpts = {

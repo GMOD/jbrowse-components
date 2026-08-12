@@ -7,6 +7,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
+import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import {
   ARC_SHAPE_ARC,
@@ -40,115 +41,11 @@ function arcAt(arcs: ComputedArc[], p1Bp: number, p2Bp: number) {
 }
 
 function makePileupData(
-  overrides: Partial<PileupDataResult> & {
-    regionStart: number
-  },
+  overrides: Partial<PileupDataResult>,
 ): PileupDataResult {
   const n = (overrides.readPositions?.length ?? 0) / 2
   return {
-    readPositions: new Uint32Array(n * 2),
-    readYs: new Uint16Array(n),
-    readFlags: new Uint16Array(n),
-    readMapqs: new Uint8Array(n),
-    readInsertSizes: new Float32Array(n),
-    readPairOrientations: new Uint8Array(n),
-    readStrands: new Int8Array(n),
-    readInterchrom: new Uint8Array(n),
-    readIds: Array.from({ length: n }, (_, i) => `id${i}`),
-    readNames: Array.from({ length: n }, (_, i) => `read${i}`),
-    readTagColors: new Uint32Array(0),
-    readColorCategories: new Uint8Array(0),
-    segmentPositions: new Uint32Array(n * 2),
-    segmentReadIndices: new Uint32Array(n),
-    segmentEdgeFlags: new Uint8Array(n),
-    numSegments: n,
-    gapPositions: new Uint32Array(0),
-    gapYs: new Uint16Array(0),
-    gapLengths: new Uint32Array(0),
-    gapTypes: new Uint8Array(0),
-    gapReadIndices: new Uint32Array(0),
-    gapFrequencies: new Uint8Array(0),
-    mismatchPositions: new Uint32Array(0),
-    mismatchYs: new Uint16Array(0),
-    mismatchBases: new Uint8Array(0),
-    mismatchStrands: new Int8Array(0),
-    mismatchReadIndices: new Uint32Array(0),
-    mismatchFrequencies: new Uint8Array(0),
-    mismatchQuals: new Uint8Array(0),
-    softclipBasePositions: new Uint32Array(0),
-    softclipBaseYs: new Uint16Array(0),
-    softclipBaseBases: new Uint8Array(0),
-    softclipBaseReadIndices: new Uint32Array(0),
-    interbasePositions: new Uint32Array(0),
-    interbaseYs: new Uint16Array(0),
-    interbaseLengths: new Uint32Array(0),
-    interbaseTypes: new Uint8Array(0),
-    interbaseReadIndices: new Uint32Array(0),
-    interbaseSequences: [],
-    interbaseFrequencies: new Uint8Array(0),
-    coverageDepths: new Float32Array(0),
-    coverageFwdDepths: new Float32Array(0),
-    coverageRevDepths: new Float32Array(0),
-    coverageMaxDepth: 0,
-    coverageStartPos: 0,
-    coverageStatsBinSize: 1,
-    coverageStatsMins: new Float32Array(0),
-    coverageStatsMaxs: new Float32Array(0),
-    coverageStatsSums: new Float64Array(0),
-    coverageStatsSumSqs: new Float64Array(0),
-    coverageBinSize: 1,
-    coverageGpuBinCount: 0,
-    coveragePackedBuffer: new ArrayBuffer(0),
-    snpPositions: new Uint32Array(0),
-    snpYOffsets: new Float32Array(0),
-    snpHeights: new Float32Array(0),
-    snpColorTypes: new Uint8Array(0),
-    snpRelDepths: new Float32Array(0),
-    snpPackedBuffer: new ArrayBuffer(0),
-    interbaseCovPositions: new Uint32Array(0),
-    interbaseCovYOffsets: new Float32Array(0),
-    interbaseCovHeights: new Float32Array(0),
-    interbaseCovColorTypes: new Uint8Array(0),
-    interbaseMaxCount: 0,
-    interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPositions: new Uint32Array(0),
-    indicatorColorTypes: new Uint8Array(0),
-    indicatorPackedBuffer: new ArrayBuffer(0),
-    modificationPositions: new Uint32Array(0),
-    modificationYs: new Uint16Array(0),
-    modificationColors: new Uint32Array(0),
-    modificationReadIndices: new Uint32Array(0),
-    perBaseQualPositions: new Uint32Array(0),
-    perBaseQualYs: new Uint16Array(0),
-    perBaseQualScores: new Uint8Array(0),
-    perBaseQualReadIndices: new Uint32Array(0),
-    perBaseLetterPositions: new Uint32Array(0),
-    perBaseLetterYs: new Uint16Array(0),
-    perBaseLetterBases: new Uint8Array(0),
-    perBaseLetterReadIndices: new Uint32Array(0),
-    modCovPositions: new Uint32Array(0),
-    modCovYOffsets: new Float32Array(0),
-    modCovHeights: new Float32Array(0),
-    modCovColors: new Uint32Array(0),
-    modCovRelDepths: new Float32Array(0),
-    modCovPackedBuffer: new ArrayBuffer(0),
-    sashimiX1: new Uint32Array(0),
-    sashimiX2: new Uint32Array(0),
-    sashimiStrands: new Int8Array(0),
-    sashimiCounts: new Uint32Array(0),
-    maxY: 0,
-    numInsertions: 0,
-    numSoftclips: 0,
-    numHardclips: 0,
-    detectedModifications: [],
-    connectingLinePositions: new Uint32Array(0),
-    connectingLineYs: new Uint16Array(0),
-    overlapPositions: new Uint32Array(0),
-    overlapYs: new Uint16Array(0),
-    linkedReadLinePositions: new Uint32Array(0),
-    linkedReadLineYs: new Uint16Array(0),
-    linkedReadLineColorTypes: new Uint8Array(0),
-    numLinkedReadLines: 0,
+    ...basePileupDataResult(n),
     ...overrides,
   }
 }
@@ -178,7 +75,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('paired-end same-chromosome produces arc', () => {
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -210,7 +106,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('inter-chromosomal paired-end produces vertical lines when drawInter=true', () => {
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -251,7 +146,6 @@ describe('computeArcsFromPileupData', () => {
     // therefore leave the arc path entirely and come out as two ticks — which,
     // carrying no color, cannot pick up the RL slot however the scheme is set.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -283,7 +177,6 @@ describe('computeArcsFromPileupData', () => {
     // than the opaque Canvas2D mirror strokes. Coalescing is what puts the
     // count somewhere it can be drawn and reported instead of thrown away.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100, 1000, 1100, 1000, 1100]),
       readFlags: new Uint16Array(3).fill(SAM_FLAG_PAIRED),
       readStrands: new Int8Array([1, 1, 1]),
@@ -327,7 +220,6 @@ describe('computeArcsFromPileupData', () => {
     // wrong answer, and arrival order is not stable across runs, so the list is
     // sorted for the same reason `arcs.sort` carries a total tie-break.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100, 1000, 1100]),
       readFlags: new Uint16Array(2).fill(SAM_FLAG_PAIRED),
       readStrands: new Int8Array([1, 1]),
@@ -354,7 +246,6 @@ describe('computeArcsFromPileupData', () => {
     // arcs — and `hitTestArcBand` reads the same order as its tie-break. Two
     // breakpoints, the lighter one fetched first.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100, 1500, 1600, 1500, 1600]),
       readFlags: new Uint16Array(3).fill(SAM_FLAG_PAIRED),
       readStrands: new Int8Array([1, 1, 1]),
@@ -378,7 +269,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('inter-chromosomal produces nothing when drawInter=false', () => {
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -417,7 +307,6 @@ describe('computeArcsFromPileupData', () => {
     // 8 kb away on chr1 — the two kinds of not-loaded partner, in one fetch, so
     // each setting's answer is visible against the other's.
     const offScreenMates = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100, 2000, 2100]),
       readFlags: new Uint16Array(2).fill(SAM_FLAG_PAIRED),
       readStrands: new Int8Array([1, 1]),
@@ -469,7 +358,6 @@ describe('computeArcsFromPileupData', () => {
     // takes the same gate — otherwise "Show inter-chromosomal pairs" had no
     // split-read evidence to draw whenever off-screen mates were off.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([0]),
       readStrands: new Int8Array([1]),
@@ -493,7 +381,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('single-region reads with drawLongRange=false are skipped', () => {
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -520,7 +407,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('mate-unmapped reads are skipped for paired-end arcs', () => {
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_MATE_UNMAPPED]),
       readStrands: new Int8Array([1]),
@@ -550,7 +436,6 @@ describe('computeArcsFromPileupData', () => {
     // locus, and carries unset TLEN / orientation — no mate link should anchor
     // at it, matching how every other path drops secondary alignments.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_SECONDARY]),
       readStrands: new Int8Array([1]),
@@ -577,7 +462,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('supplementary alignment SA tag produces arcs for long reads', () => {
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([0]),
       readStrands: new Int8Array([1]),
@@ -607,7 +491,6 @@ describe('computeArcsFromPileupData', () => {
     // chr1:3001. Both the mate link and the SA split junction must be emitted —
     // the mate being off-screen must not suppress the within-read junction.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -642,7 +525,6 @@ describe('computeArcsFromPileupData', () => {
     // placeholder CIGAR, one with a non-numeric position. None should produce
     // an arc; the unrelated trailing valid entry should be the only one drawn.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([0]),
       readStrands: new Int8Array([1]),
@@ -674,7 +556,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('cross-region reads (same name in two regions) produce arcs', () => {
     const data0 = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR]),
       readStrands: new Int8Array([1]),
@@ -683,7 +564,6 @@ describe('computeArcsFromPileupData', () => {
       readNames: ['readA'],
     })
     const data1 = makePileupData({
-      regionStart: 5000,
       readPositions: new Uint32Array([5000, 5100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR]),
       readStrands: new Int8Array([1]),
@@ -720,7 +600,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('orientation coloring: RL gives colorType 6', () => {
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -747,7 +626,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('insert size coloring uses worker-provided insertSizeStats', () => {
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -776,7 +654,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('very-long-range pairs are plain arcs (no bp-based line conversion)', () => {
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -818,7 +695,6 @@ describe('computeArcsFromPileupData', () => {
     // orientation and insertSizeAndOrientation modes — matching the read fill.
     const mkData = () =>
       makePileupData({
-        regionStart: 0,
         readPositions: new Uint32Array([0, 100]),
         readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
         readStrands: new Int8Array([1]),
@@ -853,7 +729,6 @@ describe('computeArcsFromPileupData', () => {
   test('read cloud colors by orientation like arcs (insertSizeAndOrientation)', () => {
     const mkData = (orient: number) =>
       makePileupData({
-        regionStart: 0,
         readPositions: new Uint32Array([0, 100]),
         readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
         readStrands: new Int8Array([1]),
@@ -897,7 +772,6 @@ describe('computeArcsFromPileupData', () => {
     // is what that height MEANS, and it is the one a tooltip may report: the
     // hover used to read `yBp` back and call it the template length.
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -935,7 +809,6 @@ describe('computeArcsFromPileupData', () => {
     // without `yBp` they merged, losing one line and crediting the survivor
     // with both reads.
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([0, 100, 0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED, SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1, 1]),
@@ -969,7 +842,6 @@ describe('computeArcsFromPileupData', () => {
     // all: the jitter hashes the endpoints, so two genuinely identical pairs
     // land on the same Y and still sum.
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([0, 100, 0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED, SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1, 1]),
@@ -995,7 +867,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('read cloud colors long inserts red like arcs (slot 1)', () => {
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([0, 100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -1023,7 +894,6 @@ describe('computeArcsFromPileupData', () => {
   test('read cloud drops concordant FR pairs within insert-size stats band', () => {
     const mkPair = (tlen: number) =>
       makePileupData({
-        regionStart: 0,
         readPositions: new Uint32Array([0, 100]),
         readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
         readStrands: new Int8Array([1]),
@@ -1062,7 +932,6 @@ describe('computeArcsFromPileupData', () => {
     // indistinguishable from a 1bp insert. The span is the trustworthy signal,
     // the same reason getArcColorType prefers it for the long-insert override.
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -1096,7 +965,6 @@ describe('computeArcsFromPileupData', () => {
     // test above covers the same read WITHOUT stats, where the filter is
     // short-circuited, which is why this went unnoticed.
     const data = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -1127,7 +995,6 @@ describe('computeArcsFromPileupData', () => {
     // mapped mate: nothing locates the other end. Substituting this read's own
     // refName and bp 0 drew a full-chromosome arc down to the origin.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -1152,7 +1019,6 @@ describe('computeArcsFromPileupData', () => {
   test('read cloud SA-tag arcs color by strand like arcs (inversion→7, same-strand→8)', () => {
     const mkSplit = (primaryStrand: number, saStrand: '+' | '-') =>
       makePileupData({
-        regionStart: 1000,
         readPositions: new Uint32Array([1000, 1500]),
         readFlags: new Uint16Array([0]),
         readStrands: new Int8Array([primaryStrand]),
@@ -1190,7 +1056,6 @@ describe('computeArcsFromPileupData', () => {
     // by the supplementary's tlen=0.
     const mkInViewSplit = (s1: number, s2: number) =>
       makePileupData({
-        regionStart: 1000,
         readPositions: new Uint32Array([1000, 1500, 3001, 3201]),
         readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
         readStrands: new Int8Array([s1, s2]),
@@ -1239,7 +1104,6 @@ describe('computeArcsFromPileupData', () => {
     // traverses a1→a2→b2→b1, so the junction joins a.end (a2=1500) to b.end
     // (b2=3201) — the breakpoint — not b.start (b1=3001), the far edge.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500, 3001, 3201]),
       readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
       readStrands: new Int8Array([1, -1]),
@@ -1262,7 +1126,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('SA-tag split inversion connects a.end↔b.end (b rev)', () => {
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([0]),
       readStrands: new Int8Array([1]),
@@ -1290,7 +1153,6 @@ describe('computeArcsFromPileupData', () => {
     // p1Ref===p2Ref test and is misclassified inter-chromosomal (a connector
     // line); the normalizer collapses `chr1`→`1` so it's the intended arc.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([0]),
       readStrands: new Int8Array([1]),
@@ -1326,7 +1188,6 @@ describe('computeArcsFromPileupData', () => {
     // Genomic order is seg0<seg1<seg2, but clip-at-start makes read order
     // seg1→seg2→seg0, so the two junctions are (seg1,seg2) and (seg2,seg0).
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 2000, 2200, 3000, 3200]),
       readFlags: new Uint16Array([
         SAM_FLAG_SUPPLEMENTARY,
@@ -1376,7 +1237,6 @@ describe('computeArcsFromPileupData', () => {
     'fuses an off-region-edge segment with its SA twin ($name)',
     ({ clip, flankCigar }) => {
       const data = makePileupData({
-        regionStart: 900,
         // flank (fwd, true start 100, reaching into the region) + rev middle
         readPositions: new Uint32Array([100, 2000, 2001, 2200]),
         readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
@@ -1419,7 +1279,6 @@ describe('computeArcsFromPileupData', () => {
   // this endpoint at 900, the region edge, instead of the true 100.
   test('an off-region-edge segment anchors its arc at its true start', () => {
     const data = makePileupData({
-      regionStart: 900,
       readPositions: new Uint32Array([100, 2000, 2001, 2200]),
       readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
       readStrands: new Int8Array([1, -1]),
@@ -1451,7 +1310,6 @@ describe('computeArcsFromPileupData', () => {
     // chr1:9000 and is known only from the SA tags. The chain must be A→B→C, not
     // a single misleading A→C join across the hidden segment.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 5000, 5200]),
       readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
       readStrands: new Int8Array([1, 1]),
@@ -1508,7 +1366,6 @@ describe('computeArcsFromPileupData', () => {
     // strands (split-inversion slot 7), not fall into the paired insert-size
     // branch.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 3000, 3200, 5000, 5200]),
       readFlags: new Uint16Array([
         SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
@@ -1548,7 +1405,6 @@ describe('computeArcsFromPileupData', () => {
     // mate-unmapped reads, deleting this junction while the read fill still
     // colored it a split.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 3000, 3200]),
       readFlags: new Uint16Array([
         SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_MATE_UNMAPPED,
@@ -1587,7 +1443,6 @@ describe('computeArcsFromPileupData', () => {
     // most SV evidence. Entry count can't distinguish "both mates present" from
     // "one mate, two segments"; the mate partition can.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500, 3000, 3200]),
       readFlags: new Uint16Array([
         SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
@@ -1621,7 +1476,6 @@ describe('computeArcsFromPileupData', () => {
 
   test('a split read whose mate is off screen draws no mate link when long-range is off', () => {
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1500, 3000, 3200]),
       readFlags: new Uint16Array([
         SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
@@ -1657,7 +1511,6 @@ describe('computeArcsFromPileupData', () => {
     // and never stepped through B. It must now behave like the unpaired path:
     // A→B→C when long-range is on, nothing within the read when it is off.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 5000, 5200, 5500, 5700]),
       readFlags: new Uint16Array([
         SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
@@ -1726,7 +1579,6 @@ describe('computeArcsFromPileupData', () => {
     // junction rather than a spurious mate arc to readNextPositions (0 for an
     // unpaired read).
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 1800, 2000, 5000, 5200]),
       readFlags: new Uint16Array([
         SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
@@ -1762,7 +1614,6 @@ describe('computeArcsFromPileupData', () => {
     // paired-insert rule: a junction has no TLEN to classify, so the split
     // branch has to resolve before the insert class either way.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1200, 1400, 1600, 1000, 1500]),
       readFlags: new Uint16Array([
         SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
@@ -1823,7 +1674,6 @@ describe('computeArcsByGroup', () => {
       names.push(`${tag}${i}`, `${tag}${i}`)
     })
     return makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array(positions),
       readFlags: new Uint16Array(flags),
       readStrands: new Int8Array(strands),
@@ -1872,7 +1722,6 @@ describe('an arc is uploaded only to the regions it reaches', () => {
 
   function localPair(base: number, name: string, ids: [string, string]) {
     const data = makePileupData({
-      regionStart: base,
       readPositions: new Uint32Array([
         base,
         base + 100,
@@ -1916,7 +1765,6 @@ describe('an arc is uploaded only to the regions it reaches', () => {
     // One pair with a mate in each window: the two blocks each paint the foot
     // they hold and the leg leaving toward the other, so both need the arc.
     const near = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR]),
       readStrands: new Int8Array([1]),
@@ -1926,7 +1774,6 @@ describe('an arc is uploaded only to the regions it reaches', () => {
     })
     near.readIds[0] = 'c1'
     const far = makePileupData({
-      regionStart: 900000,
       readPositions: new Uint32Array([900000, 900100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR]),
       readStrands: new Int8Array([1]),
@@ -1957,7 +1804,6 @@ describe('an arc is uploaded only to the regions it reaches', () => {
     // Both mates off-chromosome, so each end drops a tick; only the one on chr1
     // is in a displayed region at all, and only in the region containing it.
     const data = makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
       readStrands: new Int8Array([1]),
@@ -2147,7 +1993,6 @@ describe('identical arcs coalesce and carry their support', () => {
   // junction with n-read support looks like coming out of the fetch.
   function pairedReadsAt(starts: number[], mateBp: number) {
     return makePileupData({
-      regionStart: 1000,
       readPositions: new Uint32Array(starts.flatMap(s => [s, s + 100])),
       readFlags: new Uint16Array(starts.map(() => SAM_FLAG_PAIRED)),
       readStrands: new Int8Array(starts.map(() => 1)),
@@ -2212,7 +2057,6 @@ describe('identical arcs coalesce and carry their support', () => {
         [
           0,
           makePileupData({
-            regionStart: 1000,
             // two reads at 1000 pointing right to 2000, two at 2000 pointing
             // left to 1000 — one junction, four reads
             readPositions: new Uint32Array([
@@ -2289,7 +2133,6 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
   // read2's primary is on screen. The pair is RL (orientation 2); read1's
   // supplementary, having flipped at the split junction, computes LR (1).
   const splitMateOffScreenPrimary = makePileupData({
-    regionStart: 0,
     readPositions: new Uint32Array([1000, 1100, 5000, 5100]),
     readFlags: new Uint16Array([
       SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
@@ -2341,7 +2184,6 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
     // own orientation, so which endpoint is read makes no difference — this is
     // the case that must not move.
     const bothPrimaries = makePileupData({
-      regionStart: 0,
       readPositions: new Uint32Array([1000, 1100, 5000, 5100]),
       readFlags: new Uint16Array([
         SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,

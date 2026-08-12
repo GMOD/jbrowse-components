@@ -4,6 +4,7 @@ import {
   colorRevStrand,
 } from '@jbrowse/core/ui/theme'
 
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   SASHIMI_APEX_CLEARANCE_PX,
   computeSashimiArcs,
@@ -22,12 +23,12 @@ function makeData(counts: number[]): PileupDataResult {
     sashimiX1[i] = 100 + i * 100
     sashimiX2[i] = 200 + i * 100
   }
-  return {
+  return makePileupDataResult({
     sashimiX1,
     sashimiX2,
     sashimiCounts: new Uint32Array(counts),
     sashimiStrands: new Int8Array(n),
-  } as unknown as PileupDataResult
+  })
 }
 
 // Side assignment is `junctions.ts`'s job (one decision, shared with the layout
@@ -83,12 +84,12 @@ test('drops every arc when threshold exceeds all counts', () => {
 
 test('wider junctions get taller arcs (span-scaled nesting)', () => {
   // Three junctions of increasing span share a start at bp 100.
-  const data = {
+  const data = makePileupDataResult({
     sashimiX1: new Uint32Array([100, 100, 100]),
     sashimiX2: new Uint32Array([150, 300, 1100]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
     sashimiStrands: new Int8Array([0, 0, 0]),
-  } as unknown as PileupDataResult
+  })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   // up-mode: a taller arc rises further, so its apex labelY is smaller.
   expect(arcs[0]!.labelY).toBeGreaterThan(arcs[1]!.labelY)
@@ -100,12 +101,12 @@ test('wider junctions get taller arcs (span-scaled nesting)', () => {
 // space whose baseline is 0, so the numbers below read directly against the
 // 40px strip.
 const deepestDownArc = () => {
-  const data = {
+  const data = makePileupDataResult({
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([100_100]),
     sashimiCounts: new Uint32Array([5]),
     sashimiStrands: new Int8Array([0]),
-  } as unknown as PileupDataResult
+  })
   return computeSashimiArcs({
     ...baseOpts(data, 0),
     downJunctionKeys: down(['chr1', 100, 100_100]),
@@ -133,12 +134,12 @@ test('the up band spends its whole height on the arc, clearance-free', () => {
   // draws into the scalebar margin the histogram already reserves — charging it
   // the same clearance took 16% off every arc in the default 45px band (35px of
   // drawable height) to buy a rare left-edge overlap with the axis text.
-  const data = {
+  const data = makePileupDataResult({
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([100_100]),
     sashimiCounts: new Uint32Array([5]),
     sashimiStrands: new Int8Array([0]),
-  } as unknown as PileupDataResult
+  })
   const arc = computeSashimiArcs(baseOpts(data, 0))[0]!
   // baseline is the histogram's own zero line at effectiveHeight (100 - 2*5),
   // and the apex rises MAX_ARC_FRAC of that full height above it.
@@ -170,12 +171,12 @@ test('a sashimi band shorter than its label clearance flattens, never inverts', 
 })
 
 test('suppresses the count label on sub-pixel-narrow junctions', () => {
-  const data = {
+  const data = makePileupDataResult({
     sashimiX1: new Uint32Array([100, 100]),
     sashimiX2: new Uint32Array([105, 400]),
     sashimiCounts: new Uint32Array([5, 5]),
     sashimiStrands: new Int8Array([0, 0]),
-  } as unknown as PileupDataResult
+  })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   expect(arcs[0]!.showLabel).toBe(false)
   expect(arcs[1]!.showLabel).toBe(true)
@@ -184,12 +185,12 @@ test('suppresses the count label on sub-pixel-narrow junctions', () => {
 test('suppresses the count label when the digits, not the span, overflow', () => {
   // Same 30px span, different counts. A flat span threshold showed both; a
   // 5-digit count needs ~36px of text and has to stay suppressed.
-  const data = {
+  const data = makePileupDataResult({
     sashimiX1: new Uint32Array([100, 500]),
     sashimiX2: new Uint32Array([130, 530]),
     sashimiCounts: new Uint32Array([5, 12345]),
     sashimiStrands: new Int8Array([0, 0]),
-  } as unknown as PileupDataResult
+  })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   const showByStart = new Map(arcs.map(a => [a.start, a.showLabel]))
   expect(showByStart.get(100)).toBe(true)
@@ -199,12 +200,12 @@ test('suppresses the count label when the digits, not the span, overflow', () =>
 test('tints arcs with the read-alignment strand colors', () => {
   // Each arc reuses the matching read strand color, so a junction reads the same
   // hue as the reads supporting it; 0 (no read carried a strand tag) is neutral.
-  const data = {
+  const data = makePileupDataResult({
     sashimiX1: new Uint32Array([100, 300, 500]),
     sashimiX2: new Uint32Array([200, 400, 600]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
     sashimiStrands: new Int8Array([1, -1, 0]),
-  } as unknown as PileupDataResult
+  })
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   const strokeByStart = new Map(arcs.map(a => [a.start, a.stroke]))
   expect(strokeByStart.get(100)).toBe(colorFwdStrand)
@@ -213,12 +214,12 @@ test('tints arcs with the read-alignment strand colors', () => {
 })
 
 test('places each arc on the side its junction key was assigned', () => {
-  const data = {
+  const data = makePileupDataResult({
     sashimiX1: new Uint32Array([100, 200, 500]),
     sashimiX2: new Uint32Array([300, 400, 600]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
     sashimiStrands: new Int8Array([0, 0, 0]),
-  } as unknown as PileupDataResult
+  })
   const arcs = computeSashimiArcs({
     ...baseOpts(data, 0),
     downJunctionKeys: down(['chr1', 200, 400]),
@@ -250,18 +251,18 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
   // (the fetch is uncapped); the 5-vs-8 here is synthetic to prove the merge
   // collapses to one arc and keeps the higher count, rather than rendering two
   // arcs that share an identical refName:start:end:strand React key.
-  const region0 = {
+  const region0 = makePileupDataResult({
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([1100]),
     sashimiCounts: new Uint32Array([5]),
     sashimiStrands: new Int8Array([0]),
-  } as unknown as PileupDataResult
-  const region1 = {
+  })
+  const region1 = makePileupDataResult({
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([1100]),
     sashimiCounts: new Uint32Array([8]),
     sashimiStrands: new Int8Array([0]),
-  } as unknown as PileupDataResult
+  })
   const arcs = computeSashimiArcs({
     ...baseOpts(region0, 0),
     rpcDataMap: new Map([
@@ -284,12 +285,12 @@ test('a shared junction whose copies disagree on strand still renders once', () 
   // per-strand duplication `computeSashimiJunctions` collapses within a region.
   // The heavier copy wins the tint along with the count.
   const region = (count: number, strand: number) =>
-    ({
+    makePileupDataResult({
       sashimiX1: new Uint32Array([100]),
       sashimiX2: new Uint32Array([1100]),
       sashimiCounts: new Uint32Array([count]),
       sashimiStrands: new Int8Array([strand]),
-    }) as unknown as PileupDataResult
+    })
   const arcs = computeSashimiArcs({
     ...baseOpts(region(5, -1), 0),
     rpcDataMap: new Map([

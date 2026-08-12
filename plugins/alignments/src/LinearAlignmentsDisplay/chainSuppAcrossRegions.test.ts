@@ -1,5 +1,6 @@
 import { SAM_FLAG_REVERSE, SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
+import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   CHAIN_FILL_NO_SUPP,
   CHAIN_FILL_SPLIT_INVERSION,
@@ -20,13 +21,13 @@ function region(opts: {
   strands: number[]
   chainHasSupp: number[]
 }): PileupDataResult {
-  return {
+  return makePileupDataResult({
     chainNames: opts.chainNames,
     readChainIndices: Uint32Array.from(opts.chainIndices),
     readFlags: Uint16Array.from(opts.flags),
     readStrands: Int8Array.from(opts.strands),
     readChainHasSupp: Uint8Array.from(opts.chainHasSupp),
-  } as unknown as PileupDataResult
+  })
 }
 
 function fills(map: Map<number, PileupDataResult>, idx: number) {
@@ -178,7 +179,7 @@ test('a single-region map is returned untouched', () => {
 
 // Pileup mode carries no chain arrays at all; the pass must not invent any.
 test('non-chain data passes through', () => {
-  const plain = { readFlags: new Uint16Array(2) } as unknown as PileupDataResult
+  const plain = makePileupDataResult({ readFlags: new Uint16Array(2) })
   const map = new Map([
     [0, plain],
     [1, plain],

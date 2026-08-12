@@ -1,3 +1,4 @@
+import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { computeSashimiArcs } from './computeOverlay.ts'
 import { downJunctionKeys, mergeJunctions } from './junctions.ts'
 
@@ -53,12 +54,12 @@ const FLIPPED_EXONS: TestRegion[] = [...EXONS]
 
 // The worker emits one entry per junction per region, in absolute genomic bp.
 function junctions(specs: [number, number, number][]): PileupDataResult {
-  return {
+  return makePileupDataResult({
     sashimiX1: new Uint32Array(specs.map(s => s[0])),
     sashimiX2: new Uint32Array(specs.map(s => s[1])),
     sashimiCounts: new Uint32Array(specs.map(s => s[2])),
     sashimiStrands: new Int8Array(specs.length),
-  } as unknown as PileupDataResult
+  })
 }
 
 // A read carrying a junction spans it, so a BAM overlap query returns that read
