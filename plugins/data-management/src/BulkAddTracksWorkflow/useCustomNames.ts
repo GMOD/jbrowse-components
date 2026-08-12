@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { withEditedName } from './util.ts'
+import { withEditedName, withoutName } from './util.ts'
 
 /**
  * The names the user typed over the automatic ones, keyed by row id (the data
@@ -22,14 +22,7 @@ export function useCustomNames() {
     },
 
     forgetRow(id: string) {
-      setCustomNames(prev => {
-        if (!(id in prev)) {
-          return prev
-        }
-        const next = { ...prev }
-        delete next[id]
-        return next
-      })
+      setCustomNames(prev => withoutName(prev, id))
     },
   }
 }

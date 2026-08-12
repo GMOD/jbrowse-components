@@ -3,6 +3,7 @@ import {
   isSessionWithAddTracks,
   isUriLocation,
   makeTrackId,
+  pluralize,
 } from '@jbrowse/core/util'
 import { stripFileExtension } from '@jbrowse/core/util/tracks'
 import { transaction } from 'mobx'
@@ -73,6 +74,23 @@ export function resolveTrackNames({
 }
 
 /**
+ * The custom-name map with any rename of `id` dropped, so the row falls back to
+ * its automatic name. Returns the map unchanged when there was no rename, so a
+ * no-op doesn't re-render.
+ */
+export function withoutName(
+  customNames: Record<string, string>,
+  id: string,
+): Record<string, string> {
+  if (!(id in customNames)) {
+    return customNames
+  }
+  const next = { ...customNames }
+  delete next[id]
+  return next
+}
+
+/**
  * The custom-name map after a name cell is committed. A commit that leaves the
  * name at (or clears it back to) the automatic one records nothing: the grid
  * fires `processRowUpdate` on every commit, including one where nothing was
@@ -93,21 +111,11 @@ export function withEditedName({
 }): Record<string, string> {
   const trimmed = name.trim()
   if (!trimmed || trimmed === autoName) {
-    if (!(id in customNames)) {
-      return customNames
-    }
-    const next = { ...customNames }
-    delete next[id]
-    return next
+    return withoutName(customNames, id)
   }
   return customNames[id] === trimmed
     ? customNames
     : { ...customNames, [id]: trimmed }
-}
-
-/** Pick the singular or plural wording for a count (1 is singular). */
-export function plural(count: number, singular: string, plural: string) {
-  return count === 1 ? singular : plural
 }
 
 /**
@@ -134,17 +142,17 @@ export function locationWarnings(locations: FileLocation[]): string[] {
   const warnings: string[] = []
   if (ftp > 0) {
     warnings.push(
-      `${ftp} ${plural(ftp, 'URL uses', 'URLs use')} the ftp protocol, which JBrowse cannot access`,
+      `${ftp} ${pluralize(ftp, 'URL uses', 'URLs use')} the ftp protocol, which JBrowse cannot access`,
     )
   }
   if (relative > 0) {
     warnings.push(
-      `${relative} ${plural(relative, 'URL is', 'URLs are')} relative; provide an absolute URL (e.g. https://) unless a relative URL is intended`,
+      `${relative} ${pluralize(relative, 'URL is', 'URLs are')} relative; provide an absolute URL (e.g. https://) unless a relative URL is intended`,
     )
   }
   if (http > 0) {
     warnings.push(
-      `${http} http:// ${plural(http, 'URL', 'URLs')} may be blocked because this page is served over https`,
+      `${http} http:// ${pluralize(http, 'URL')} may be blocked because this page is served over https`,
     )
   }
   return warnings
@@ -199,11 +207,17 @@ export function submitBulkTracks({
         }
       }
     }
-    finishAddTrack(model)
+    // Only on a batch that landed something. Finishing dismisses the widget and
+    // clears the form, so doing it when every config was rejected would throw
+    // away the list the user assembled — the expensive part of this workflow —
+    // behind the snackbars explaining why it failed, with nothing to retry from.
+    if (added > 0) {
+      finishAddTrack(model)
+    }
   })
   if (added > 0 && !showInView) {
     session.notify(
-      `Added ${added} ${plural(added, 'track', 'tracks')} to the session that ${plural(added, 'was', 'were')} not displayed because assembly "${assembly}" is not open in this view`,
+      `Added ${added} ${pluralize(added, 'track')} to the session that ${pluralize(added, 'was', 'were')} not displayed because assembly "${assembly}" is not open in this view`,
       'warning',
     )
   }

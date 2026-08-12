@@ -18,19 +18,26 @@ export function useBulkLocations() {
   const [text, setText] = useState('')
   const [localLocations, setLocalLocations] = useState<FileLocation[]>([])
 
-  // Dedupe by location id so a URL pasted twice collapses to one row and the
-  // orphan-index accounting stays accurate.
+  // Dedupe by location id so a URL pasted twice — or the same file dropped
+  // twice — collapses to one row rather than adding the track twice.
   const raw = mode === 'remote' ? parseUrlList(text) : localLocations
   const locations = [
     ...new Map(raw.map(loc => [locationId(loc), loc])).values(),
   ]
 
+  // Rewrites the input itself, functionally: removal is the one edit that
+  // arrives from a row rather than from the field, so reading the list captured
+  // at render would drop a second removal batched into the same tick.
   function removeLocations(ids: Set<string>) {
-    const kept = locations.filter(loc => !ids.has(locationId(loc)))
     if (mode === 'remote') {
-      setText(kept.map(locationId).join('\n'))
+      setText(prev =>
+        parseUrlList(prev)
+          .map(locationId)
+          .filter(id => !ids.has(id))
+          .join('\n'),
+      )
     } else {
-      setLocalLocations(kept)
+      setLocalLocations(prev => prev.filter(loc => !ids.has(locationId(loc))))
     }
   }
 
