@@ -2,10 +2,13 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment, rightClick } from './testEnv.ts'
+import {
+  clickContextMenuItem,
+  createTestEnvironment,
+  rightClick,
+} from './testEnv.ts'
 
 import type { TestDisplay } from './testEnv.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
@@ -26,21 +29,6 @@ const splitRegions = [
   { assemblyName: 'volvox', start: 8000, end: 9100, refName: 'ctgA' },
 ]
 
-function flatten(items: MenuItem[]): MenuItem[] {
-  return items.flatMap(m => ('subMenu' in m ? flatten(m.subMenu) : [m]))
-}
-
-function clickLabel(display: TestDisplay, label: string) {
-  const item = flatten(display.contextMenuItems()).find(
-    m => 'label' in m && m.label === label,
-  )
-  if (item && 'onClick' in item) {
-    item.onClick()
-  } else {
-    throw new Error(`no clickable menu item labeled "${label}"`)
-  }
-}
-
 function loadGene(display: TestDisplay) {
   display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), 10, ctgA)
   display.setLoadedRegion(0, ctgA)
@@ -53,7 +41,7 @@ describe('feature "Zoom to feature" context menu', () => {
     loadGene(display)
 
     rightClick(display, gene)
-    clickLabel(display, 'Zoom to feature')
+    clickContextMenuItem(display, 'Zoom to feature')
 
     // 1050..9000 grown ~20% each side and clamped to the region: the gene is
     // framed, not pinned to the viewport edges
@@ -74,7 +62,7 @@ describe('feature "Zoom to feature" context menu', () => {
 
     rightClick(display, gene)
     expect(() => {
-      clickLabel(display, 'Zoom to feature')
+      clickContextMenuItem(display, 'Zoom to feature')
     }).not.toThrow()
 
     // zoomed to the part of the gene the clicked block shows (1050..2000, grown
@@ -98,7 +86,7 @@ describe('feature "Zoom to feature" context menu', () => {
       clientX: 0,
       clientY: 0,
     })
-    clickLabel(display, 'Zoom to feature')
+    clickContextMenuItem(display, 'Zoom to feature')
 
     // the second block, filling the viewport (region 0 trails behind as a
     // zero-width edge block). Clamping to region 0 instead would have zoomed

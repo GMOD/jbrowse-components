@@ -4,10 +4,14 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment, rightClick } from './testEnv.ts'
+import {
+  clickContextMenuItem,
+  createTestEnvironment,
+  rightClick,
+} from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { TestDisplay } from './testEnv.ts'
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
@@ -31,25 +35,7 @@ const eden1: SubfeatureInfo = {
   displayLabel: 'EDEN.1',
 }
 
-type Env = ReturnType<typeof createTestEnvironment>
-type Display = ReturnType<Env['createDisplay']>['display']
-
-function flatten(items: MenuItem[]): MenuItem[] {
-  return items.flatMap(m => ('subMenu' in m ? flatten(m.subMenu) : [m]))
-}
-
-function clickLabel(display: Display, label: string) {
-  const item = flatten(display.contextMenuItems()).find(
-    m => 'label' in m && m.label === label,
-  )
-  if (item && 'onClick' in item) {
-    item.onClick()
-  } else {
-    throw new Error(`no clickable menu item labeled "${label}"`)
-  }
-}
-
-function loadGene(display: Display, subfeatureInfos: SubfeatureInfo[]) {
+function loadGene(display: TestDisplay, subfeatureInfos: SubfeatureInfo[]) {
   display.setRpcData(
     0,
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos }),
@@ -66,7 +52,7 @@ describe('feature "Get sequence" context menu', () => {
     loadGene(display, [])
 
     rightClick(display, gene)
-    clickLabel(display, 'Get sequence')
+    clickContextMenuItem(display, 'Get sequence')
 
     expect(session.queuedDialogs).toHaveLength(1)
     expect(session.queuedDialogs[0]![1]).toMatchObject({
@@ -83,7 +69,7 @@ describe('feature "Get sequence" context menu', () => {
     loadGene(display, [eden1])
 
     rightClick(display, gene, eden1)
-    clickLabel(display, 'Get sequence')
+    clickContextMenuItem(display, 'Get sequence')
 
     // the panel needs the gene to fetch (only it is addressable by the RPC) but
     // must render the isoform the user right-clicked

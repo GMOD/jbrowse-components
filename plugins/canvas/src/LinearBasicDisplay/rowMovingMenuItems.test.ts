@@ -2,11 +2,14 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment, rightClick } from './testEnv.ts'
+import {
+  clickContextMenuItem,
+  createTestEnvironment,
+  rightClick,
+} from './testEnv.ts'
 
 import type { FlatbushItem } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { TestDisplay } from './testEnv.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 
 // Which right-click actions are allowed to MOVE the clicked feature, and what
 // has to follow when one does. "Pin to top" is the one that moves it, and the
@@ -15,21 +18,6 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // somewhere they could not see it.
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
-
-function flatten(items: MenuItem[]): MenuItem[] {
-  return items.flatMap(m => ('subMenu' in m ? flatten(m.subMenu) : [m]))
-}
-
-function clickLabel(display: TestDisplay, label: string) {
-  const item = flatten(display.contextMenuItems()).find(
-    m => 'label' in m && m.label === label,
-  )
-  if (item && 'onClick' in item) {
-    item.onClick()
-  } else {
-    throw new Error(`no clickable menu item labeled "${label}"`)
-  }
-}
 
 // `rows` fully-overlapping features, so the packer stacks them one per row and a
 // feature's row index is unambiguous.
@@ -88,7 +76,7 @@ describe('right-click actions that move a row', () => {
     const before = topOf(display, deepest.featureId)
 
     rightClick(display, deepest)
-    clickLabel(display, 'Highlight feature')
+    clickContextMenuItem(display, 'Highlight feature')
 
     // the box is drawn where the user is looking, not after yanking the feature
     // to row 0 (which reshuffled every other row too)
@@ -101,7 +89,7 @@ describe('right-click actions that move a row', () => {
     const { display, deepest } = scrolledStack()
 
     rightClick(display, deepest)
-    clickLabel(display, 'Pin to top')
+    clickContextMenuItem(display, 'Pin to top')
 
     // row 0, and in view — pinning without the scroll reset sent the feature to
     // topPx 0 while the viewport stayed at 780, so it vanished upward
@@ -113,9 +101,9 @@ describe('right-click actions that move a row', () => {
     const { display, deepest } = scrolledStack()
 
     rightClick(display, deepest)
-    clickLabel(display, 'Pin to top')
+    clickContextMenuItem(display, 'Pin to top')
     display.setScrollTop(200)
-    clickLabel(display, 'Unpin from top')
+    clickContextMenuItem(display, 'Unpin from top')
 
     // unpinning returns the feature to its natural row; it is not a request to
     // look at anything, so it must not yank the viewport

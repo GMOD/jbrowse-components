@@ -2,10 +2,14 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createTestEnvironment, rightClick } from './testEnv.ts'
+import {
+  contextMenuLabels,
+  createTestEnvironment,
+  rightClick,
+} from './testEnv.ts'
 
 import type { SubfeatureInfo } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { TestDisplay } from './testEnv.ts'
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
@@ -29,21 +33,7 @@ const transcript: SubfeatureInfo = {
   displayLabel: 'EDEN.1',
 }
 
-type Display = ReturnType<
-  ReturnType<typeof createTestEnvironment>['createDisplay']
->['display']
-
-function flatten(items: MenuItem[]): MenuItem[] {
-  return items.flatMap(m => ('subMenu' in m ? flatten(m.subMenu) : [m]))
-}
-
-function menuLabels(display: Display) {
-  return flatten(display.contextMenuItems()).map(m =>
-    'label' in m ? m.label : '',
-  )
-}
-
-function open(display: Display, hgvsLabel?: string, tooltipText?: string) {
+function open(display: TestDisplay, hgvsLabel?: string, tooltipText?: string) {
   display.setRpcData(
     0,
     makeFeatureData({ flatbushItems: [gene], subfeatureInfos: [transcript] }),
@@ -62,7 +52,9 @@ describe('HGVS position context menu', () => {
     const { display } = createDisplay()
     open(display, 'EDEN.1:c.93+1')
 
-    expect(menuLabels(display)).toContain('Copy HGVS position (EDEN.1:c.93+1)')
+    expect(contextMenuLabels(display)).toContain(
+      'Copy HGVS position (EDEN.1:c.93+1)',
+    )
   })
 
   // Absent rather than disabled: zoomed out, or off a transcript, there is no
@@ -73,10 +65,10 @@ describe('HGVS position context menu', () => {
     open(display)
 
     expect(
-      menuLabels(display).some(l => String(l).startsWith('Copy HGVS')),
+      contextMenuLabels(display).some(l => String(l).startsWith('Copy HGVS')),
     ).toBe(false)
     // the rest of the menu is unaffected
-    expect(menuLabels(display)).toContain('Open feature details')
+    expect(contextMenuLabels(display)).toContain('Open feature details')
   })
 })
 
@@ -86,7 +78,7 @@ describe('Copy tooltip context menu item', () => {
     const { display } = createDisplay()
     open(display, undefined, 'EDEN.1\nexon 2/3 c.93+1')
 
-    expect(menuLabels(display)).toContain('Copy tooltip text')
+    expect(contextMenuLabels(display)).toContain('Copy tooltip text')
   })
 
   // Absent rather than disabled: nothing to copy when the hit resolved no
@@ -96,7 +88,7 @@ describe('Copy tooltip context menu item', () => {
     const { display } = createDisplay()
     open(display)
 
-    expect(menuLabels(display)).not.toContain('Copy tooltip text')
+    expect(contextMenuLabels(display)).not.toContain('Copy tooltip text')
   })
 })
 
@@ -109,7 +101,9 @@ describe('Feature info (JSON) copy', () => {
     const { display } = createDisplay()
     open(display)
 
-    expect(menuLabels(display)).toContain('Copy EDEN.1 attributes (JSON)')
-    expect(menuLabels(display)).toContain('Copy EDEN attributes (JSON)')
+    expect(contextMenuLabels(display)).toContain(
+      'Copy EDEN.1 attributes (JSON)',
+    )
+    expect(contextMenuLabels(display)).toContain('Copy EDEN attributes (JSON)')
   })
 })

@@ -18,6 +18,7 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Shared display-instantiation harness: builds a PluginManager with a
@@ -245,6 +246,37 @@ export function createTestEnvironment(opts?: {
 export type TestDisplay = ReturnType<
   ReturnType<typeof createTestEnvironment>['createDisplay']
 >['display']
+
+// The feature menu is a tree — the highlight scopes, the show/hide family and
+// the copy entries each earn a submenu — but a test names the ROW it wants, not
+// the path to it. So flatten before matching, and let a row that moves into or
+// out of a submenu stay one test.
+export function flattenMenuItems(items: MenuItem[]): MenuItem[] {
+  return items.flatMap(m =>
+    'subMenu' in m ? flattenMenuItems(m.subMenu) : [m],
+  )
+}
+
+// Every label the open context menu offers, submenus included.
+export function contextMenuLabels(display: TestDisplay) {
+  return flattenMenuItems(display.contextMenuItems()).map(m =>
+    'label' in m ? m.label : '',
+  )
+}
+
+// Click the context-menu row with this label. Throws — rather than silently
+// doing nothing — when no such row exists, so a renamed or dropped item fails
+// where the test names it instead of one assertion later.
+export function clickContextMenuItem(display: TestDisplay, label: string) {
+  const item = flattenMenuItems(display.contextMenuItems()).find(
+    m => 'label' in m && m.label === label,
+  )
+  if (item && 'onClick' in item) {
+    item.onClick()
+  } else {
+    throw new Error(`no clickable menu item labeled "${label}"`)
+  }
+}
 
 // Right-click on `item`, resolving `subfeature` when the click landed on one —
 // what FeatureComponent's handleContextMenu does, minus the hit test. The click
