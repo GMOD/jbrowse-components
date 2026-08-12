@@ -6,7 +6,10 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
-import { launchBreakpointSplitView } from '@jbrowse/sv-core'
+import {
+  hasBreakpointSplitView,
+  launchBreakpointSplitView,
+} from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
@@ -515,21 +518,29 @@ export function getContextMenuItems(
               })
             },
           },
-          {
-            label: 'Open breakpoint split view',
-            onClick: () => {
-              const view = getContainingView(self) as LGV
-              const assemblyName = view.assemblyNames[0]
-              if (assemblyName) {
-                launchBreakpointSplitView({
-                  session: getSession(self),
-                  view,
-                  assemblyName,
-                  feature: buildPairedEndMateFeature(mateFields),
-                })
-              }
-            },
-          },
+          // gated like every other launch site: `@jbrowse/react-linear-genome-view`
+          // bundles this plugin without breakpoint-split-view, and an ungated row
+          // there opens the choice dialog only to fail on `addView` once the
+          // reader has answered it
+          ...(hasBreakpointSplitView(self)
+            ? [
+                {
+                  label: 'Open breakpoint split view',
+                  onClick: () => {
+                    const view = getContainingView(self) as LGV
+                    const assemblyName = view.assemblyNames[0]
+                    if (assemblyName) {
+                      launchBreakpointSplitView({
+                        session: getSession(self),
+                        view,
+                        assemblyName,
+                        feature: buildPairedEndMateFeature(mateFields),
+                      })
+                    }
+                  },
+                },
+              ]
+            : []),
         ],
       })
     }

@@ -2,6 +2,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { SimpleFeature, assembleLocStringRaw } from '@jbrowse/core/util'
 import {
   breakpointSplitViewId,
+  hasBreakpointSplitView,
   launchBreakpointSplitView,
 } from '@jbrowse/sv-core'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
@@ -43,20 +44,27 @@ export default function FeatureMenu({
             }
           },
         },
-        {
-          label: 'Open in breakpoint split view',
-          onClick: () => {
-            launchBreakpointSplitView({
-              session,
-              feature: new SimpleFeature(feature),
-              assemblyName,
-              stableViewId: breakpointSplitViewId(
-                spreadsheetViewId,
-                assemblyName,
-              ),
-            })
-          },
-        },
+        // gated like every other launch site: a host that ships the sheet
+        // without breakpoint-split-view would otherwise offer a row that opens
+        // the choice dialog and fails on `addView` once it is answered
+        ...(hasBreakpointSplitView(session)
+          ? [
+              {
+                label: 'Open in breakpoint split view',
+                onClick: () => {
+                  launchBreakpointSplitView({
+                    session,
+                    feature: new SimpleFeature(feature),
+                    assemblyName,
+                    stableViewId: breakpointSplitViewId(
+                      spreadsheetViewId,
+                      assemblyName,
+                    ),
+                  })
+                },
+              },
+            ]
+          : []),
       ]}
     >
       <ArrowDropDownIcon />
