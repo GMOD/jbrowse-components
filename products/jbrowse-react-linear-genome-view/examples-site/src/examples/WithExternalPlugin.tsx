@@ -7,11 +7,11 @@ import {
   loadPlugins,
 } from '@jbrowse/react-linear-genome-view2'
 
-type ViewState = ReturnType<typeof createViewState>
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 export default function WithExternalPlugin() {
   const [error, setError] = useState<unknown>()
-  const [viewState, setViewState] = useState<ViewState>()
+  const [viewState, setViewState] = useState<ViewModel>()
 
   useEffect(() => {
     void (async () => {

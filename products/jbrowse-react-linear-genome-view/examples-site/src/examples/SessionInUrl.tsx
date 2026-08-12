@@ -7,9 +7,10 @@ import {
   encodeSession,
 } from '@jbrowse/react-linear-genome-view2'
 
-import type { SessionSnapshot } from '@jbrowse/react-linear-genome-view2'
-
-type ViewState = ReturnType<typeof createViewState>
+import type {
+  SessionSnapshot,
+  ViewModel,
+} from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'volvox',
@@ -74,7 +75,7 @@ export default function SessionInUrl() {
   // empty session first and then replaced. With no session to decode there is
   // nothing to wait for, so build the normal starting state right here rather
   // than rendering nothing and setting it from the effect below.
-  const [state, setState] = useState<ViewState | undefined>(() =>
+  const [state, setState] = useState<ViewModel | undefined>(() =>
     readSessionParam() ? undefined : build(),
   )
   const [status, setStatus] = useState('')

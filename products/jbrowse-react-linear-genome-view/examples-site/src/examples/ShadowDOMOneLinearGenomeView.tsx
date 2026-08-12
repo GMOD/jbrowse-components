@@ -10,15 +10,14 @@ import r2wc from '@r2wc/react-to-web-component'
 import { createPortal } from 'react-dom'
 
 import type { EmotionCache } from '@emotion/cache'
-
-type ViewState = ReturnType<typeof createViewState>
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const ShadowComponent = () => {
   const nodeRef = useRef<HTMLDivElement>(null)
   const nodeForPinRef = useRef(null)
   const [rootNode, setRootNode] = useState<ShadowRoot>()
   const [cacheNode, setCacheNode] = useState<EmotionCache>()
-  const [config, setConfig] = useState<ViewState>()
+  const [config, setConfig] = useState<ViewModel>()
   useEffect(() => {
     if (!nodeRef.current) {
       return

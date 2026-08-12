@@ -6,12 +6,12 @@ import {
   createViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
-type ViewState = ReturnType<typeof createViewState>
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 export default function WithErrorHandler() {
   // createViewState builds the whole model synchronously, so it either hands
   // back an engine or throws — there is no third, still-loading state
-  const [result] = useState<{ viewState: ViewState } | { error: unknown }>(
+  const [result] = useState<{ viewState: ViewModel } | { error: unknown }>(
     () => {
       try {
         return {

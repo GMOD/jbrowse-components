@@ -9,11 +9,8 @@ import {
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type ViewState = ReturnType<typeof useCreateViewState>
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 // reading the visible regions is synchronous observable state.
 // coarseVisibleLocStrings is the debounced twin of visibleLocStrings, and it
@@ -22,7 +19,7 @@ type ViewState = ReturnType<typeof useCreateViewState>
 const VisibleRegions = observer(function VisibleRegions({
   viewState,
 }: {
-  viewState: ViewState
+  viewState: ViewModel
 }) {
   const view = viewState.session.view
   return view.initialized ? (
@@ -33,13 +30,13 @@ const VisibleRegions = observer(function VisibleRegions({
 // reading actual feature data needs an RPC round-trip, keyed off the debounced
 // coarseDynamicBlocks so a drag doesn't fire a fetch per frame
 const VisibleFeatures = observer(function VisibleFeatures({
-  session,
+  viewState,
 }: {
-  session: { rpcManager: RpcManager; view: LinearGenomeViewModel }
+  viewState: ViewModel
 }) {
   const [features, setFeatures] = useState<Feature[]>()
   const [error, setError] = useState<unknown>()
-  const { rpcManager, view } = session
+  const { rpcManager, view } = viewState.session
 
   useEffect(() => {
     // each run supersedes the one before it. Two pans in quick succession leave
@@ -136,7 +133,7 @@ export default function ObserveVisible() {
     <div>
       <JBrowseLinearGenomeView viewState={state} />
       <VisibleRegions viewState={state} />
-      <VisibleFeatures session={state.session} />
+      <VisibleFeatures viewState={state} />
     </div>
   )
 }

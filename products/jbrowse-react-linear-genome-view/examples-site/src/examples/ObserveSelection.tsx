@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-type ViewState = ReturnType<typeof useCreateViewState>
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 // session.selection is set to a Feature whenever the user clicks one (the same
 // path that opens the feature-details widget). An observer re-renders when it
@@ -13,7 +13,7 @@ type ViewState = ReturnType<typeof useCreateViewState>
 const SelectedFeature = observer(function SelectedFeature({
   viewState,
 }: {
-  viewState: ViewState
+  viewState: ViewModel
 }) {
   const { selection } = viewState.session
   return isFeature(selection) ? (
