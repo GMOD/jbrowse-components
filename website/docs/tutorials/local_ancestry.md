@@ -41,12 +41,15 @@ on an otherwise dog background, and a German Shepherd should carry essentially
 none. That makes the pair a local-ancestry problem with a built-in control.
 
 Two more breeds ride along, both taken from the Dog10K paper's own discussion of
-wolf-like dogs. The Shiloh Shepherd shares more of its doubleton (F2) sites with
-wolves than any other breed dog in the collection, though the paper's
-D-statistics find no significant excess over German Shepherds. The Tamaskan is a
-wolf-lookalike bred from ordinary sled and herding dogs. Painting all of them at
-once asks whether a genome-wide sharing statistic and a wolfish appearance point
-at the same thing local ancestry does.
+wolf-like dogs:
+
+- the **Shiloh Shepherd** shares more of its doubleton (F2) sites with wolves
+  than any other breed dog in the collection, though the paper's D-statistics
+  find no significant excess over German Shepherds
+- the **Tamaskan** is a wolf-lookalike bred from ordinary sled and herding dogs
+
+Painting all of them at once asks whether a genome-wide sharing statistic and a
+wolfish appearance point at the same thing local ancestry does.
 
 Then the rest of the dog world, because two wolfdog breeds on their own can only
 show that a documented cross leaves blocks. One dog from each of the 219 breeds

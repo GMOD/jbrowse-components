@@ -334,12 +334,16 @@ survive and the private columns go. See
 [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)
 for the sliders themselves.
 
-Two things to keep in mind. The threshold is an allele frequency over called
-alleles, and each somatic call here is one alt allele out of two, so a mutation
-carried by 10% of the cohort sits at 0.05. And a tumor suppressor is the case
-where this filter has little to keep: _CDH1_'s truncating mutations are spread
-along the gene rather than piled on one codon, so a threshold high enough to
-isolate a hotspot empties the window the histology figure above is built on.
+Two things to keep in mind:
+
+- the threshold is an allele frequency over called alleles, and each somatic
+  call here is one alt allele out of two, so a mutation carried by 10% of the
+  cohort sits at 0.05
+- a tumor suppressor is the case where this filter has little to keep. _CDH1_'s
+  truncating mutations are spread along the gene rather than piled on one codon,
+  so a threshold high enough to isolate a hotspot empties the window the
+  histology figure above is built on
+
 Recurrence filtering is for hotspot genes.
 
 ## Use your own cohort

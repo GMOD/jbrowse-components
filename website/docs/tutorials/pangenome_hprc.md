@@ -301,16 +301,19 @@ tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz \
 ```
 
 After the span: segments, paths, the inversion flag, then the lengths of the
-shortest and longest allele the bubble holds. Two columns further out
-(`cut -f13,14`, dropped from the query above) carry those two alleles as
-**sequence**, so a bubble's own sequence is one tabix query away and the adapter
-puts it in the feature details panel. The segments and links projections drop
-sequence entirely, being coordinate BEDs, so going from an interior node id back
-to its bases means the GFA itself: `gfatools view -l <segment> -r 0` prints the
-S-line, and `gfatools gfa2fa` writes the whole graph out as FASTA. Bubbles are
-indexed under the graph's PanSN names and the alleles under plain GRCh38
-contigs, which is why only the bubble track config carries
-`assemblyNameToPanSN`.
+shortest and longest allele the bubble holds. Three things follow from the rest
+of the file:
+
+- two columns further out (`cut -f13,14`, dropped from the query above) carry
+  those two alleles as **sequence**, so a bubble's own sequence is one tabix
+  query away and the adapter puts it in the feature details panel
+- the segments and links projections drop sequence entirely, being coordinate
+  BEDs, so going from an interior node id back to its bases means the GFA
+  itself: `gfatools view -l <segment> -r 0` prints the S-line, and
+  `gfatools gfa2fa` writes the whole graph out as FASTA
+- bubbles are indexed under the graph's PanSN names and the alleles under plain
+  GRCh38 contigs, which is why only the bubble track config carries
+  `assemblyNameToPanSN`
 
 Copy number is not among those numbers, and that is a property of these two
 projections rather than of the release. `gfatools bubble` and the rGFA tags

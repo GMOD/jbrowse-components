@@ -128,12 +128,16 @@ urartu answers with two, its chromosome 4 taking both of the first two blocks,
 so the 4AL/5AL exchange is already there in the diploid donor. The distal block
 is still on urartu's chromosome 7, so the 4AL/7BS one is not.
 
-Two more rows finish the dating. Durum and wild emmer, the A+B tetraploids,
-answer for the whole of 4A on their own 4A, distal block included. T.
-timopheevii, formed from the same A-genome donor but independently of that
-lineage, sits with urartu instead: its 4At carries the first two blocks and the
-distal one is on a chromosome 7. The 7BS exchange therefore happened in the
-durum and bread wheat lineage, after it split from timopheevii's.
+Two more rows finish the dating:
+
+- **durum and wild emmer**, the A+B tetraploids, answer for the whole of 4A on
+  their own 4A, distal block included
+- **T. timopheevii**, formed from the same A-genome donor but independently of
+  that lineage, sits with urartu instead: its 4At carries the first two blocks
+  and the distal one is on a chromosome 7
+
+The 7BS exchange therefore happened in the durum and bread wheat lineage, after
+it split from timopheevii's.
 
 ## The conversion
 

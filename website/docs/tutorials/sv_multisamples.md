@@ -78,13 +78,17 @@ with its id, class and size, so a band in the matrix reads off a named record.
 Cell coloring by **SV type** is the other way to ask that question, shown in the
 [multi-variant track guide](/docs/user_guides/multivariant_track).
 
-Three lanes read below, over NCBI RefSeq genes: the callset as a genotype
-matrix, one row per sample and sorted by genotype at the _RHD_ deletion; the
-same records drawn ordinarily and colored by SV class, so a band in the matrix
-reads off a named record; and QuicK-mer2 copy number for 2504 individuals, one
-row each and clustered on this window, where blue is a copy lost against the
-diploid white and red a copy gained. The olive no-call column is a copy-number
-gain in the lane beneath it.
+Three lanes read below, over NCBI RefSeq genes:
+
+- the callset as a genotype matrix, one row per sample, sorted by genotype at
+  the _RHD_ deletion
+- the same records drawn ordinarily and colored by SV class, so a band in the
+  matrix reads off a named record
+- QuicK-mer2 copy number for 2504 individuals, one row each and clustered on
+  this window, where blue is a copy lost against the diploid white and red a
+  copy gained
+
+The olive no-call column is a copy-number gain in the lane beneath it.
 
 <Figure caption="The 1KGP ensemble SV callset over the RHD locus on chr1, with the panel's sequencing depth under it. The deletion draws as a wide block, splitting the cohort into three bands in the matrix and three levels in the depth." src="/img/multisv_rhd.png" />
 
