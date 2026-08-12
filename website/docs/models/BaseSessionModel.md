@@ -22,7 +22,6 @@ the whole surface.
 | --- | --- |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-name">**name**</span><br><code>name: types.string</code> |  |
-| <span id="property-margin">**margin**</span><br><code>margin: types.stripDefault(types.number, 0)</code> |  |
 | <span id="property-focusedviewid">**focusedViewId**</span><br><code>focusedViewId: types.maybe(types.string)</code> | used to keep track of which view is in focus |
 | <span id="property-highlightsvisible">**highlightsVisible**</span><br><code>highlightsVisible: types.stripDefault(types.boolean, true)</code> | one session-wide toggle for all region highlight bands (URL/view highlights and bookmark overlays) |
 

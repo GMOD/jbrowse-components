@@ -19,7 +19,6 @@ the whole surface.
 | --- | --- | --- |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseSessionModel](../basesessionmodel#property-id) |
 | <span id="property-name">**name**</span><br><code>name: types.string</code> |  | [BaseSessionModel](../basesessionmodel#property-name) |
-| <span id="property-margin">**margin**</span><br><code>margin: types.stripDefault(types.number, 0)</code> |  | [BaseSessionModel](../basesessionmodel#property-margin) |
 | <span id="property-focusedviewid">**focusedViewId**</span><br><code>focusedViewId: types.maybe(types.string)</code> | <span data-pagefind-ignore>used to keep track of which view is in focus</span> | [BaseSessionModel](../basesessionmodel#property-focusedviewid) |
 | <span id="property-highlightsvisible">**highlightsVisible**</span><br><code>highlightsVisible: types.stripDefault(types.boolean, true)</code> | <span data-pagefind-ignore>one session-wide toggle for all region highlight bands (URL/view highlights and bookmark overlays)</span> | [BaseSessionModel](../basesessionmodel#property-highlightsvisible) |
 

@@ -97,10 +97,6 @@ export function BaseSessionModel<
       name: types.string,
       /**
        * #property
-       */
-      margin: types.stripDefault(types.number, 0),
-      /**
-       * #property
        * used to keep track of which view is in focus
        */
       focusedViewId: types.maybe(types.string),
