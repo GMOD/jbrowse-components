@@ -1,7 +1,7 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json' with { type: 'json' }
-import { createView, doBeforeEach, setup } from './util.tsx'
+import { createView, doBeforeEach, getTestSession, setup } from './util.tsx'
 
 setup()
 
@@ -166,3 +166,23 @@ test('failed search resets input to visible location', async () => {
   }, delay)
   consoleMock.mockRestore()
 }, 70_000)
+
+// `grow` reached the locstring branch of handleSelectedRegion but not the
+// single-search-hit branch, which hardcoded 0.2 — so a session spec's `grow`,
+// or sv-core's navToLoc, was honoured or overwritten depending on whether the
+// input happened to parse as a locstring rather than resolve to a feature.
+test('an explicit grow reaches a feature hit, not only a locstring', async () => {
+  const { view } = getTestSession()
+  view.setWidth(800)
+  await view.navToLocString('eden.1', 'volvox', 0)
+  const exact = view.visibleLocStrings
+
+  const { view: padded } = getTestSession()
+  padded.setWidth(800)
+  await padded.navToLocString('eden.1', 'volvox')
+
+  // the feature's own bounds, with nothing added
+  expect(exact).toBe('ctgA:1,055..9,005')
+  // the default is still 20% either side for a search hit that asked for none
+  expect(padded.visibleLocStrings).toBe('ctgA:1..10,590')
+}, 40_000)

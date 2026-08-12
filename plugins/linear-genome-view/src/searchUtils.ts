@@ -68,14 +68,21 @@ export async function navigateToSelectedOption({
   }
 }
 
+// A search hit lands with context around it rather than flush to the feature's
+// own edges, which is what this default is; a caller that asked for a specific
+// padding gets that instead.
+const SEARCH_HIT_GROW = 0.2
+
 export async function navToOption({
   option,
   model,
   assemblyName,
+  grow,
 }: {
   model: LinearGenomeViewModel
   option: BaseResult
   assemblyName: string
+  grow?: number
 }) {
   // getLocation() can be an empty string when a result reports hasLocation()
   // but carries no coordinates; treat that as "no location" and fall back to
@@ -90,7 +97,7 @@ export async function navToOption({
       assemblyManager.isValidRefName(ref, asm),
     ),
     assemblyName,
-    0.2,
+    grow ?? SEARCH_HIT_GROW,
   )
   if (trackId && isAlive(model)) {
     model.showTrack(trackId)
@@ -202,10 +209,15 @@ export async function handleSelectedRegion({
     if (results.length > 1) {
       model.setSearchResults(results, input, assemblyName)
     } else if (results.length === 1) {
+      // `grow` reached the locstring branch above but not this one, so a
+      // caller's padding — a session spec's `grow`, sv-core's navToLoc — was
+      // honoured or silently replaced by 0.2 depending on whether the input
+      // happened to parse as a locstring rather than resolve to a feature
       await navToOption({
         option: results[0]!,
         model,
         assemblyName,
+        grow,
       })
     } else {
       // no search hits: still try to resolve the input as a locstring (bare
