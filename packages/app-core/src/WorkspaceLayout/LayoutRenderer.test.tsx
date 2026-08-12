@@ -1,4 +1,6 @@
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
+import { hexToRgb } from '@mui/material'
 import { render, screen } from '@testing-library/react'
 
 import { LayoutRenderer } from './LayoutRenderer.tsx'
@@ -137,5 +139,26 @@ test('the cell wrapper carries the size, and does not collapse either', () => {
   expect(wrappers.map(w => w.style.flexGrow)).toEqual(['0.7', '0.3'])
   expect(wrappers.every(w => Number.parseFloat(w.style.minWidth) === 0)).toBe(
     true,
+  )
+})
+
+// The workspace chrome is deliberately NOT paper: dockview shipped a dark
+// stylesheet and the bar reads as chrome in a light theme too, matching the app
+// bar above it. Pinned because "follow the theme" is the obvious thing to write
+// and is wrong here — the old header-action components coloured their buttons
+// `primary.contrastText`, which only reads on a primary-coloured bar.
+test('the tab strip is primary chrome, not the paper colour', () => {
+  const session = TestSession.create({ name: 't' })
+  const { container } = renderLayout(session)
+
+  const strip = container.querySelector('[role="tablist"]')!
+  // the same theme the component resolves through, so this asserts "primary
+  // chrome" rather than one hard-coded navy that a theme change would falsify
+  const theme = createJBrowseTheme()
+  expect(getComputedStyle(strip).backgroundColor).toBe(
+    hexToRgb(theme.palette.primary.main),
+  )
+  expect(getComputedStyle(strip).color).toBe(
+    hexToRgb(theme.palette.primary.contrastText),
   )
 })

@@ -12,20 +12,14 @@ import type { TabNode } from './tree.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
+  // Only the label and its menu. The background, the selected state and the
+  // hover live on the strip's own `[role=tab]` wrapper, which is where the
+  // selection is known — two places styling one tab is how they drift.
   tab: {
     display: 'flex',
     alignItems: 'center',
-    padding: '0 4px',
     gap: 4,
-    maxWidth: 240,
-    borderRight: `1px solid ${theme.palette.divider}`,
-    background: theme.palette.background.paper,
-    '&[aria-selected="true"]': {
-      background: theme.palette.action.selected,
-    },
-    '&:hover .jbrowse-tab-menu': {
-      visibility: 'visible',
-    },
+    minWidth: 0,
   },
   title: {
     overflow: 'hidden',
@@ -36,8 +30,8 @@ const useStyles = makeStyles()(theme => ({
   editInput: {
     fontSize: '0.8rem',
     padding: '2px 4px',
-    color: 'inherit',
-    backgroundColor: theme.palette.action.selected,
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.background.paper,
     borderRadius: theme.shape.borderRadius,
     flex: 1,
   },

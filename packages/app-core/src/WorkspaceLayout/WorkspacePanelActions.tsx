@@ -14,7 +14,7 @@ import type { PanelNode } from './tree.ts'
 
 const useStyles = makeStyles()(theme => ({
   actions: { display: 'flex', alignItems: 'center', flex: '0 0 auto' },
-  button: { padding: 4, color: theme.palette.text.secondary },
+  button: { padding: 4, color: theme.palette.primary.contrastText },
   icon: { fontSize: 16 },
 }))
 

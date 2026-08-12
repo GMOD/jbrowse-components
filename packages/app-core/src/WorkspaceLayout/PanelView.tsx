@@ -33,13 +33,38 @@ const useStyles = makeStyles()(theme => ({
     minHeight: 0,
     background: theme.palette.background.default,
   },
+  // Chrome, not paper — dark in a light theme too, which is what dockview's
+  // dark stylesheet gave us and what the app bar above it already does. The
+  // old header-action components are the evidence this was always the intent:
+  // they coloured their buttons `primary.contrastText`, which only reads on a
+  // primary-coloured bar.
   tabStrip: {
     display: 'flex',
     alignItems: 'stretch',
     flex: '0 0 auto',
     minHeight: 28,
-    background: theme.palette.background.paper,
-    borderBottom: `1px solid ${theme.palette.divider}`,
+    background: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+  },
+  // An inactive tab sits on the chrome; the active one is cut out of it in the
+  // content's own colour, so the tab reads as the front of the panel below it.
+  tab: {
+    display: 'flex',
+    alignItems: 'center',
+    touchAction: 'none',
+    cursor: 'pointer',
+    maxWidth: 240,
+    padding: '0 4px',
+    color: 'inherit',
+    borderRight: `1px solid ${alpha(theme.palette.primary.contrastText, 0.2)}`,
+    '&:hover': {
+      background: alpha(theme.palette.primary.contrastText, 0.08),
+    },
+    '&[aria-selected="true"]': {
+      background: theme.palette.background.default,
+      color: theme.palette.text.primary,
+    },
+    '&:hover .jbrowse-tab-menu': { visibility: 'visible' },
   },
   tabs: {
     display: 'flex',
@@ -119,7 +144,7 @@ export const PanelView = observer(function PanelView({
               }}
               onPointerMove={dragHandlers.onTabPointerMove}
               onPointerUp={dragHandlers.onTabPointerUp}
-              style={{ touchAction: 'none', cursor: 'pointer' }}
+              className={classes.tab}
             >
               {renderTabLabel(tab)}
             </div>
