@@ -113,11 +113,21 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
       const sequenceAdapter = span ? await this.getSequenceAdapter() : undefined
       const regionSeq =
         sequenceAdapter && span
-          ? await sequenceAdapter.getSequence({
-              refName: originalRefName ?? refName,
-              start: span.start,
-              end: span.end,
-            })
+          ? await sequenceAdapter.getSequence(
+              {
+                refName: originalRefName ?? refName,
+                start: span.start,
+                end: span.end,
+              },
+              // The opts every other read on this path already carries, and the
+              // only one that was going without them. Without the stop token a
+              // pan that lands mid-fetch still decodes and returns the whole
+              // region's residues to a query nobody is waiting for; without the
+              // callback the reader sees no phase at all for it, which on an
+              // MD-less BAM is a real wait between 'Downloading alignments' and
+              // 'Processing alignments'.
+              { stopToken, statusCallback },
+            )
           : undefined
       // Packed once for the whole fetch, not per read: the walk then compares
       // two bases per byte against the read's own packed SEQ.
