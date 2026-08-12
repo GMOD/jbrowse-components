@@ -75,10 +75,12 @@ expensive on a real GPU.** A CPU trace of the SwiftShader case puts 2320 of
 Chrome's async compile lands. Programs are per-context, so each rebuilt context
 recompiles the set, and compiling on a CPU rasterizer is what costs.
 
-`preferredRenderer` returns WebGL2 whenever a context exists
-(`getGraphicsCapabilities` reports `webgl2: !!gl`), so a user whose Chrome is
-software-rendering — GPU blocklisted, a VM, remote desktop, an old driver — gets
-the most expensive cell of that table.
+The ladder in `createGpuHal` takes WebGL2 whenever a context can be created, so a
+user whose Chrome is software-rendering — GPU blocklisted, a VM, remote desktop,
+an old driver — gets the most expensive cell of that table. The ladder is the
+thing that would have to change; `effectiveRenderer` only names the rung it
+lands on, and an earlier version of this paragraph blamed that reporting
+function, which would have sent someone to patch a string.
 
 **The app can now see it, and still does not act on it.** As of 2026-08-12 the
 probe reads `WEBGL_debug_renderer_info` / `UNMASKED_RENDERER_WEBGL` off the

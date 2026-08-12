@@ -37,6 +37,7 @@
     "./globalRenderingBackend": "./src/globalRenderingBackend.ts",
     "./globalUploadSync": "./src/globalUploadSync.ts",
     "./gpuDevice": "./src/gpuDevice.ts",
+    "./graphicsCapabilities": "./src/graphicsCapabilities.ts",
     "./hal": "./src/hal/index.ts",
     "./installPerRegionLifecycle": "./src/installPerRegionLifecycle.ts",
     "./OverlayCanvas": "./src/OverlayCanvas.tsx",
@@ -52,6 +53,7 @@
     "./shaders/rowRect": "./src/shaders/rowRect.js.generated.ts",
     "./shaders/rowRectConsts": "./src/shaders/rowRect.generated.ts",
     "./slangPass": "./src/slangPass.ts",
+    "./useGraphicsCapabilities": "./src/useGraphicsCapabilities.ts",
     "./useRenderingBackend": "./src/useRenderingBackend.ts",
     "./useTabVisibilityRerender": "./src/useTabVisibilityRerender.ts"
   },
@@ -120,6 +122,10 @@
         "types": "./esm/gpuDevice.d.ts",
         "import": "./esm/gpuDevice.js"
       },
+      "./graphicsCapabilities": {
+        "types": "./esm/graphicsCapabilities.d.ts",
+        "import": "./esm/graphicsCapabilities.js"
+      },
       "./hal": {
         "types": "./esm/hal/index.d.ts",
         "import": "./esm/hal/index.js"
@@ -180,6 +186,10 @@
         "types": "./esm/slangPass.d.ts",
         "import": "./esm/slangPass.js"
       },
+      "./useGraphicsCapabilities": {
+        "types": "./esm/useGraphicsCapabilities.d.ts",
+        "import": "./esm/useGraphicsCapabilities.js"
+      },
       "./useRenderingBackend": {
         "types": "./esm/useRenderingBackend.d.ts",
         "import": "./esm/useRenderingBackend.js"
@@ -220,6 +230,9 @@
         ],
         "gpuDevice": [
           "esm/gpuDevice.d.ts"
+        ],
+        "graphicsCapabilities": [
+          "esm/graphicsCapabilities.d.ts"
         ],
         "hal": [
           "esm/hal/index.d.ts"
@@ -265,6 +278,9 @@
         ],
         "slangPass": [
           "esm/slangPass.d.ts"
+        ],
+        "useGraphicsCapabilities": [
+          "esm/useGraphicsCapabilities.d.ts"
         ],
         "useRenderingBackend": [
           "esm/useRenderingBackend.d.ts"

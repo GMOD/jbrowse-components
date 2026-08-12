@@ -140,3 +140,15 @@ export {
   setGpuOverride,
 } from './gpuDevice.ts'
 export type { GpuOverride } from './gpuDevice.ts'
+
+// --- Graphics capabilities ---
+export {
+  effectiveRenderer,
+  getGraphicsCapabilities,
+  isSoftwareRenderer,
+} from './graphicsCapabilities.ts'
+export type {
+  GraphicsCapabilities,
+  RendererName,
+} from './graphicsCapabilities.ts'
+export { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'

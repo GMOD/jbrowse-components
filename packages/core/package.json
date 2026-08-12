@@ -108,14 +108,12 @@
     "./ui/buildExtraTrackMenuItems": "./src/ui/buildExtraTrackMenuItems.ts",
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/filterMenuItems": "./src/ui/filterMenuItems.ts",
-    "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
     "./ui/legendSpec": "./src/ui/legendSpec.ts",
     "./ui/menuItems": "./src/ui/menuItems.ts",
     "./ui/palette": "./src/ui/palette.ts",
     "./ui/showSubMenu": "./src/ui/showSubMenu.ts",
     "./ui/styleTheme": "./src/ui/styleTheme.ts",
     "./ui/theme": "./src/ui/theme.ts",
-    "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
     "./ui/useMouseTracking": "./src/ui/useMouseTracking.ts",
     "./ui/zIndexes": "./src/ui/zIndexes.ts",
     "./util": "./src/util/index.ts",
@@ -217,6 +215,7 @@
     "@jbrowse/jexl": "^3.0.2",
     "@jbrowse/mobx-state-tree": "^6.1.0",
     "@jbrowse/quick-lru": "^7.3.5",
+    "@jbrowse/render-core": "workspace:^",
     "@leeoniya/ufuzzy": "^1.0.19",
     "@mui/icons-material": "^9.3.1",
     "@mui/material": "^9.3.1",
@@ -594,10 +593,6 @@
         "types": "./esm/ui/filterMenuItems.d.ts",
         "import": "./esm/ui/filterMenuItems.js"
       },
-      "./ui/getGraphicsCapabilities": {
-        "types": "./esm/ui/getGraphicsCapabilities.d.ts",
-        "import": "./esm/ui/getGraphicsCapabilities.js"
-      },
       "./ui/legendSpec": {
         "types": "./esm/ui/legendSpec.d.ts",
         "import": "./esm/ui/legendSpec.js"
@@ -621,10 +616,6 @@
       "./ui/theme": {
         "types": "./esm/ui/theme.d.ts",
         "import": "./esm/ui/theme.js"
-      },
-      "./ui/useGraphicsCapabilities": {
-        "types": "./esm/ui/useGraphicsCapabilities.d.ts",
-        "import": "./esm/ui/useGraphicsCapabilities.js"
       },
       "./ui/useMouseTracking": {
         "types": "./esm/ui/useMouseTracking.d.ts",
@@ -1197,9 +1188,6 @@
         "ui/filterMenuItems": [
           "esm/ui/filterMenuItems.d.ts"
         ],
-        "ui/getGraphicsCapabilities": [
-          "esm/ui/getGraphicsCapabilities.d.ts"
-        ],
         "ui/legendSpec": [
           "esm/ui/legendSpec.d.ts"
         ],
@@ -1217,9 +1205,6 @@
         ],
         "ui/theme": [
           "esm/ui/theme.d.ts"
-        ],
-        "ui/useGraphicsCapabilities": [
-          "esm/ui/useGraphicsCapabilities.d.ts"
         ],
         "ui/useMouseTracking": [
           "esm/ui/useMouseTracking.d.ts"

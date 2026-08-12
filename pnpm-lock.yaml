@@ -416,6 +416,9 @@ importers:
       '@jbrowse/quick-lru':
         specifier: ^7.3.5
         version: 7.3.5
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../render-core
       '@leeoniya/ufuzzy':
         specifier: ^1.0.19
         version: 1.0.19
@@ -1545,6 +1548,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.1.0
         version: 6.1.0(mobx@7.0.0)
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
       '@mui/icons-material':
         specifier: ^9.3.1
         version: 9.3.1(@mui/material@9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)

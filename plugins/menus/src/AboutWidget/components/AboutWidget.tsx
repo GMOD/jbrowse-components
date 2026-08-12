@@ -1,10 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ExternalLink } from '@jbrowse/core/ui'
-import { preferredRenderer } from '@jbrowse/core/ui/getGraphicsCapabilities'
-import { useGraphicsCapabilities } from '@jbrowse/core/ui/useGraphicsCapabilities'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
+import { effectiveRenderer } from '@jbrowse/render-core/graphicsCapabilities'
+import { useGraphicsCapabilities } from '@jbrowse/render-core/useGraphicsCapabilities'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Accordion,
@@ -89,7 +89,7 @@ const AboutWidget = observer(function AboutWidget({
           <AccordionDetails>
             <ul>
               {graphicsCapabilities ? (
-                <li>Graphics: {preferredRenderer(graphicsCapabilities)}</li>
+                <li>Graphics: {effectiveRenderer(graphicsCapabilities)}</li>
               ) : null}
               <li>
                 Rendering:{' '}

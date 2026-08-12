@@ -1,1 +1,4 @@
-{ "extends": "../../tsconfig.base.esm.json" }
+{
+  "extends": "../../tsconfig.base.esm.json",
+  "references": [{ "path": "../render-core/tsconfig.build.esm.json" }]
+}

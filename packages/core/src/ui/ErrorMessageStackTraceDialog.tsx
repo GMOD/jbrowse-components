@@ -1,3 +1,6 @@
+import { effectiveRenderer } from '@jbrowse/render-core/graphicsCapabilities'
+import { useGraphicsCapabilities } from '@jbrowse/render-core/useGraphicsCapabilities'
+
 import { readConfObject } from '../configuration/index.ts'
 import { hasSharedArrayBuffer } from '../util/stopToken.ts'
 import { useFetch } from '../util/useFetch.ts'
@@ -6,9 +9,7 @@ import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx
 import InfoDialog from './InfoDialog.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import { formatErrorStack } from './formatErrorStack.ts'
-import { preferredRenderer } from './getGraphicsCapabilities.ts'
 import { mapStackTrace } from './mapStackTrace.ts'
-import { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 
@@ -40,14 +41,14 @@ export default function ErrorMessageStackTraceDialog({
     () => mapStackTrace(stackTrace),
   )
 
-  // The rung the ladder *prefers*, not a list of the ones available: it already
-  // says which rungs exist, since Canvas2D means neither and WebGL2 means no
-  // WebGPU. Preferred rather than in use because a `?renderer=` pin or the GPU
-  // banner's "disable GPU" overrides it page-wide, and that state lives in
-  // render-core, which core does not depend on — the URL line below carries the
-  // pin, the banner case is not reported at all.
+  // The rung actually drawing, not a list of the ones available: it already says
+  // which rungs exist, since Canvas2D means neither and WebGL2 means no WebGPU.
+  // It accounts for a `?renderer=` pin and for the GPU banner's "disable GPU",
+  // which matters most in exactly this dialog — a user reporting a rendering bug
+  // has often already clicked that button, and until this moved to render-core
+  // the report they sent still said WebGL2.
   const graphicsInfo = graphicsCapabilities
-    ? `Graphics: ${preferredRenderer(graphicsCapabilities)}`
+    ? `Graphics: ${effectiveRenderer(graphicsCapabilities)}`
     : ''
   const gpuInfo = graphicsCapabilities?.gpuVendor
     ? `GPU: ${graphicsCapabilities.gpuVendor}${graphicsCapabilities.gpuArchitecture ? ` (${graphicsCapabilities.gpuArchitecture})` : ''}`

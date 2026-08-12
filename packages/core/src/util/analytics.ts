@@ -1,8 +1,9 @@
-import { readConfObject } from '../configuration/index.ts'
 import {
+  effectiveRenderer,
   getGraphicsCapabilities,
-  preferredRenderer,
-} from '../ui/getGraphicsCapabilities.ts'
+} from '@jbrowse/render-core/graphicsCapabilities'
+
+import { readConfObject } from '../configuration/index.ts'
 import { isElectron, rIC } from '../util/index.ts'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -53,9 +54,13 @@ export async function writeAWSAnalytics(
       track => readConfObject(track, 'assemblyNames').length > 1,
     ).length
 
-    // which rendering backend the ladder resolves to (WebGPU/WebGL2/Canvas2D)
+    // which rendering backend is actually drawing (WebGPU/WebGL2/Canvas2D) —
+    // capabilities *and* any page-wide pin, so a session that fell back to
+    // Canvas2D is counted as Canvas2D rather than as what the hardware could
+    // have done. Reporting the capability answer here is what made "how many
+    // users end up on Canvas2D" unanswerable.
     const capabilities = await getGraphicsCapabilities()
-    const renderer = preferredRenderer(capabilities)
+    const renderer = effectiveRenderer(capabilities)
     // The coarse bit only. `glRenderer` names the exact driver and stays local
     // to the stack-trace dialog, the same line vendor/architecture hold — this
     // says whether a WebGL2 user is on a rasterizer, which is the population

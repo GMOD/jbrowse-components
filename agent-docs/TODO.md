@@ -776,10 +776,10 @@ was gating: an unremarkable session reaches the ceiling, so **track-level
 mount/release is worth building**, and so is anything that shares a context
 across displays.
 
-Do the cheap environment check first, though. `preferredRenderer` picks WebGL2
-whenever a context exists, and under software rendering that is ~25x more
-main-thread cost than Canvas2D for the same session (on a real GPU the ordering
-reverses, ~2x the other way).
+Do the cheap environment check first, though. The `createGpuHal` ladder takes
+WebGL2 whenever a context can be created, and under software rendering that is
+~25x more main-thread cost than Canvas2D for the same session (on a real GPU the
+ordering reverses, ~2x the other way).
 
 **The detection half landed 2026-08-12** — `getGraphicsCapabilities` reads
 `UNMASKED_RENDERER_WEBGL` off the probe context it already creates (only when
@@ -790,7 +790,7 @@ users are in that cell is now a question the data can answer** — ask it before
 building the rest.
 
 What is left is the routing, and it is not a one-line change to
-`preferredRenderer`: that function only *reports*. The ladder is
+`effectiveRenderer`: that function only *reports*. The ladder is
 `createGpuHal` in render-core, and headless Chrome is SwiftShader while
 `appendGpuParam` pins `?renderer=` only for snapshot runs that name a backend —
 so routing software rasterizers to Canvas2D silently moves every unpinned
