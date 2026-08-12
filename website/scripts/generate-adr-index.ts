@@ -59,35 +59,44 @@ interface Adr {
 // mis-numbered or mis-cased name is exactly the mistake that would otherwise
 // leave a new ADR written, committed, and absent from the table with every
 // check still green.
+// Every file is judged before anything throws, so one run names all of them.
+// Adding a batch of ADRs is the normal case here, and the same omission tends
+// to repeat across the batch — reporting the first would mean one round trip
+// per file.
 function collectAdrs() {
   const adrs: Adr[] = []
+  const problems: string[] = []
   for (const file of readdirSync(adrDir)) {
     const num = /^adr-(\d+)-.*\.md$/.exec(file)?.[1]
     if (num === undefined) {
       if (file !== 'README.md' && file.endsWith('.md')) {
-        throw new Error(
-          `${file}: not named \`adr-NNN-<slug>.md\`, so it would be silently missing from the ADR index. Rename it (or move it out of ${adrDir})`,
+        problems.push(
+          `${file}: not named \`adr-NNN-<slug>.md\`, so it would be silently missing from the index. Rename it, or move it out of the directory`,
         )
       }
       continue
     }
     const fm = parseFrontmatter(readFileSync(join(adrDir, file), 'utf8'))
-    if (!fm) {
-      throw new Error(`${file}: missing frontmatter (need status + summary)`)
-    }
-    const { status, summary } = fm
+    const { status, summary } = fm ?? {}
     if (status === undefined || summary === undefined) {
-      throw new Error(`${file}: frontmatter needs both status and summary`)
-    }
-    if (!STATUSES.includes(status as (typeof STATUSES)[number])) {
-      throw new Error(
+      problems.push(`${file}: frontmatter needs both status and summary`)
+    } else if (!STATUSES.includes(status as (typeof STATUSES)[number])) {
+      problems.push(
         `${file}: status "${status}" is not one of ${STATUSES.join(', ')}`,
       )
+    } else {
+      adrs.push({
+        sortKey: Number(num),
+        row: `| [${num}](${file}) | ${status} | ${summary} |`,
+      })
     }
-    adrs.push({
-      sortKey: Number(num),
-      row: `| [${num}](${file}) | ${status} | ${summary} |`,
-    })
+  }
+  if (problems.length) {
+    throw new Error(
+      `${problems.length} ADR(s) cannot be indexed:\n${problems
+        .map(p => `  ${p}`)
+        .join('\n')}`,
+    )
   }
   for (const { range, sortKey, note } of REMOVED) {
     adrs.push({ sortKey, row: `| ${range} | Removed | ${note} |` })

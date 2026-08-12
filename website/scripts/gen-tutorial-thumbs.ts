@@ -473,12 +473,17 @@ const slugs = new Set([
   ...(await mdSlugs(join(docsDir, 'tutorials'))),
   ...(await mdSlugs(docsDir)),
 ])
+// Both directions are collected before either is reported: they are two halves
+// of one mismatch, and a page rename produces one of each — so exiting on the
+// orphan meant fixing it, re-running, and only then being told about the card
+// with no thumb behind it.
+const problems: string[] = []
+
 const orphans = Object.keys(THUMB_SPECS).filter(k => !slugs.has(k))
 if (orphans.length > 0) {
-  console.error(
+  problems.push(
     `✗ no docs/tutorials page for: ${orphans.join(', ')} — drop the spec (and its webp), or point it at the page's new slug`,
   )
-  process.exit(1)
 }
 
 // And the other direction. index.astro renders an <img> for every card key it
@@ -492,9 +497,13 @@ const uncarded = (await mdSlugs(join(docsDir, 'tutorials'))).filter(
   s => !(s in THUMB_SPECS) && !TUTORIAL_NO_THUMB.has(s),
 )
 if (uncarded.length > 0) {
-  console.error(
+  problems.push(
     `✗ no thumbnail spec for: ${uncarded.join(', ')} — add one pointing at a figure the page embeds, or add the slug to TUTORIAL_NO_THUMB for the chromeless card`,
   )
+}
+
+if (problems.length > 0) {
+  console.error(problems.join('\n'))
   process.exit(1)
 }
 
