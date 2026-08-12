@@ -108,6 +108,7 @@
     "./ui/buildExtraTrackMenuItems": "./src/ui/buildExtraTrackMenuItems.ts",
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/filterMenuItems": "./src/ui/filterMenuItems.ts",
+    "./ui/gpuFallback": "./src/ui/gpuFallback.ts",
     "./ui/legendSpec": "./src/ui/legendSpec.ts",
     "./ui/menuItems": "./src/ui/menuItems.ts",
     "./ui/palette": "./src/ui/palette.ts",
@@ -592,6 +593,10 @@
       "./ui/filterMenuItems": {
         "types": "./esm/ui/filterMenuItems.d.ts",
         "import": "./esm/ui/filterMenuItems.js"
+      },
+      "./ui/gpuFallback": {
+        "types": "./esm/ui/gpuFallback.d.ts",
+        "import": "./esm/ui/gpuFallback.js"
       },
       "./ui/legendSpec": {
         "types": "./esm/ui/legendSpec.d.ts",
@@ -1187,6 +1192,9 @@
         ],
         "ui/filterMenuItems": [
           "esm/ui/filterMenuItems.d.ts"
+        ],
+        "ui/gpuFallback": [
+          "esm/ui/gpuFallback.d.ts"
         ],
         "ui/legendSpec": [
           "esm/ui/legendSpec.d.ts"

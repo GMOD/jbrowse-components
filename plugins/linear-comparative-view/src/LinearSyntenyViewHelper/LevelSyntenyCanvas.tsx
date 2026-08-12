@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useRef } from 'react'
 
-import { ErrorBanner } from '@jbrowse/core/ui'
+import { ErrorBanner, GpuFallbackButton } from '@jbrowse/core/ui'
 import { getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useScrollZoomHintState } from '@jbrowse/core/util/usePanZoom'
@@ -303,6 +303,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
         // with no button and the only way out was reloading the tab.
         <ErrorBanner
           error={combinedError}
+          // gated on `gpuError`, NOT `combinedError` — the latter is a joined
+          // string (see above), and the lost-context flag lives on the error
+          // object, so the predicate would answer false for every real context
+          // loss and the button would never appear. Retry is `retry` alone
+          // here: switching backend fixes the GPU half, and a display's fetch
+          // error is not its to clear.
+          extraAction={<GpuFallbackButton error={gpuError} onRetry={retry} />}
           onReset={() => {
             if (gpuError) {
               retry()

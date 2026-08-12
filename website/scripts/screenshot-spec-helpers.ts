@@ -178,15 +178,15 @@ export const HG38_GENCODE_PROMOTER_TRACK = {
 // this is the alias the specs read by.
 export const displayReady = displaySettled
 
-// `renderer=webgl` is a pin, and the figure corpus needs one. Every capture runs
-// headless, headless Chrome is SwiftShader, and the ladder now steps over a
-// software rasterizer (createHal.ts) — so without this the next regen would
-// silently redraw every figure on Canvas2D. That is a real visual change across
-// the whole corpus arriving as a side effect of a rendering decision, which is
-// the sort of thing a before/after comparison is supposed to catch rather than
-// cause. Moving the corpus to another backend should be a deliberate edit here.
+// Deliberately carries NO `renderer=` pin, though the figure corpus needs one.
+// These urls have a second consumer: `gen-gallery-links.ts` bakes them into
+// `galleryLinks.generated.ts`, which is what a website visitor clicks to open a
+// demo. Pinning here reached those links too, so a visitor on a software
+// rasterizer would have been forced onto WebGL — the exact machine the ladder in
+// `createHal.ts` exists to route away from it. The pin belongs at capture time
+// instead; `snapshot.ts` adds it there.
 export function sessionSpec(config: string, session: object) {
-  return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot&renderer=webgl`
+  return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
 // The overwhelmingly common spec shape: a session with a single

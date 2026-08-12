@@ -1,9 +1,12 @@
-import { isAlive } from '@jbrowse/mobx-state-tree'
+// the subpath, not the `@jbrowse/core/ui` barrel: this file is the MUI-free
+// chrome, and gpuFallback.ts is React-free for exactly that reason
 import {
-  isGpuRenderingDisabled,
-  setGpuOverride,
-} from '@jbrowse/render-core/gpuDevice'
-import { isGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
+  GPU_FALLBACK_LABEL,
+  GPU_FALLBACK_TOOLTIP,
+  disableGpuRendering,
+  shouldOfferGpuFallback,
+} from '@jbrowse/core/ui/gpuFallback'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import { tooLargeBannerText } from '../../shared/regionTooLargeUtils.ts'
@@ -120,20 +123,21 @@ const PlainRenderError = observer(function PlainRenderError({
           contexts across every view, so retrying only helps if capacity has
           since freed. This is the remedy that always works, and the MUI set
           offers it too -- dropping it here would leave an embedder's users
-          with a dead track and no way out. Hidden once the GPU is already off,
-          where it is a no-op. */}
-      {isGpuContextLostError(error) && !isGpuRenderingDisabled() ? (
+          with a dead track and no way out. The predicate and the wording are
+          shared with that set (`GpuFallbackButton`); only the markup differs,
+          because this chrome cannot reach for MUI. */}
+      {shouldOfferGpuFallback(error) ? (
         <button
           type="button"
           style={button}
           data-testid="use_canvas2d_button"
-          title="Stop using the GPU for the rest of this session and draw with Canvas2D instead. Slower on dense data, but unaffected by how many views are open."
+          title={GPU_FALLBACK_TOOLTIP}
           onClick={() => {
-            setGpuOverride('canvas2d')
+            disableGpuRendering()
             onRetry()
           }}
         >
-          Use Canvas2D
+          {GPU_FALLBACK_LABEL}
         </button>
       ) : null}
     </div>

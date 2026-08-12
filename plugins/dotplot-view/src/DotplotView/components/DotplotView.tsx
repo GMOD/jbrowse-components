@@ -1,6 +1,11 @@
 import { lazy } from 'react'
 
-import { ErrorBanner, ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
+import {
+  ErrorBanner,
+  GpuFallbackButton,
+  ResizeHandle,
+  ViewLoadingScreen,
+} from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
@@ -99,7 +104,18 @@ const DotplotCanvas = observer(function DotplotCanvas({
         has always passed it; this one was the odd one out. */}
       {handle.error ? (
         <div className={classes.interactive}>
-          <ErrorBanner error={handle.error} onReset={handle.retry} />
+          {/* A dotplot is one shared canvas, so it cannot be what exhausted the
+              page's ~16 WebGL contexts — it is only ever the view that got
+              evicted when some other view did. That makes the page-wide escape
+              more useful here than where the budget was spent, not less, and it
+              was missing entirely. Renders nothing for any other error. */}
+          <ErrorBanner
+            error={handle.error}
+            onReset={handle.retry}
+            extraAction={
+              <GpuFallbackButton error={handle.error} onRetry={handle.retry} />
+            }
+          />
         </div>
       ) : null}
     </>

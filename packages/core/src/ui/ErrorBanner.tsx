@@ -6,6 +6,8 @@ import RedErrorMessageBox from './RedErrorMessageBox.tsx'
 import StackTraceButton from './StackTraceButton.tsx'
 import { parseError } from './parseError.ts'
 
+import type { ReactNode } from 'react'
+
 const useStyles = makeStyles()(theme => ({
   bg: {
     background: theme.palette.divider,
@@ -29,14 +31,17 @@ const useStyles = makeStyles()(theme => ({
 function ErrorButtons({
   error,
   onReset,
+  extraAction,
 }: {
   error: unknown
   onReset?: () => void
+  extraAction?: ReactNode
 }) {
   const { classes } = useStyles()
   const hasStack = typeof error === 'object' && error && 'stack' in error
   return (
     <div className={classes.iconFloat}>
+      {extraAction}
       {hasStack ? <StackTraceButton error={error} color="primary" /> : null}
       {onReset ? (
         <Tooltip title="Retry">
@@ -57,9 +62,15 @@ function ErrorButtons({
 function ErrorBanner({
   error,
   onReset,
+  extraAction,
 }: {
   error: unknown
   onReset?: () => void
+  // Remedy specific to one kind of error, shown left of the shared stack-trace
+  // and retry buttons — the same slot and the same order `ErrorBar` gives it, so
+  // the two error presentations stay recognizable as each other. The GPU
+  // banners' "Use Canvas2D" is the only one.
+  extraAction?: ReactNode
 }) {
   const { classes } = useStyles()
   const errorText = `${error}`
@@ -72,7 +83,7 @@ function ErrorBanner({
   return (
     <RedErrorMessageBox>
       {displayText.slice(0, 10000)}
-      <ErrorButtons error={error} onReset={onReset} />
+      <ErrorButtons error={error} onReset={onReset} extraAction={extraAction} />
       {snapshotValue !== undefined ? (
         <>
           <div className={classes.message}>{message}</div>
