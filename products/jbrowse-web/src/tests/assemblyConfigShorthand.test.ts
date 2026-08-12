@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { createTestSession } from '../rootModel/index.ts'
+import { createTestSession } from '../rootModel/test_util.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

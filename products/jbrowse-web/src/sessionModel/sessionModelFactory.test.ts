@@ -7,7 +7,7 @@ import {
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
-import { createTestSession } from '../rootModel/index.ts'
+import { createTestSession } from '../rootModel/test_util.ts'
 import sessionModelFactory from './index.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

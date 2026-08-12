@@ -1,4 +1,4 @@
-import { createTestSession } from '../rootModel/index.ts'
+import { createTestSession } from '../rootModel/test_util.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 

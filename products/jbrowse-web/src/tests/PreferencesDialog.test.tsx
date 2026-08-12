@@ -4,7 +4,7 @@ import { PreferencesDialog } from '@jbrowse/product-core'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
-import { createTestSession } from '../rootModel/index.ts'
+import { createTestSession } from '../rootModel/test_util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

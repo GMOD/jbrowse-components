@@ -60,6 +60,7 @@
     "@jbrowse/app-core": "workspace:*",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-hic": "workspace:^",
-    "@jbrowse/plugin-variants": "workspace:^"
+    "@jbrowse/plugin-variants": "workspace:^",
+    "@jbrowse/web": "workspace:^"
   }
 }

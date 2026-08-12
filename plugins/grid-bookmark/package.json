@@ -54,5 +54,8 @@
       }
     }
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "devDependencies": {
+    "@jbrowse/web": "workspace:^"
+  }
 }

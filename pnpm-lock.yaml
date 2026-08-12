@@ -934,6 +934,10 @@ importers:
       react-dom:
         specifier: '>=16.8.4'
         version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@jbrowse/web':
+        specifier: workspace:^
+        version: link:../../products/jbrowse-web
 
   plugins/canvas:
     dependencies:
@@ -1003,6 +1007,10 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@jbrowse/web':
+        specifier: workspace:^
+        version: link:../../products/jbrowse-web
 
   plugins/comparative-adapters:
     dependencies:
@@ -1124,6 +1132,9 @@ importers:
       '@jbrowse/plugin-variants':
         specifier: workspace:^
         version: link:../variants
+      '@jbrowse/web':
+        specifier: workspace:^
+        version: link:../../products/jbrowse-web
 
   plugins/dotplot-view:
     dependencies:
@@ -1169,6 +1180,10 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@jbrowse/web':
+        specifier: workspace:^
+        version: link:../../products/jbrowse-web
 
   plugins/gccontent:
     dependencies:
@@ -1256,6 +1271,10 @@ importers:
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
+    devDependencies:
+      '@jbrowse/web':
+        specifier: workspace:^
+        version: link:../../products/jbrowse-web
 
   plugins/gtf:
     dependencies:
@@ -1454,6 +1473,10 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@jbrowse/web':
+        specifier: workspace:^
+        version: link:../../products/jbrowse-web
 
   plugins/linear-genome-view:
     dependencies:
@@ -1484,6 +1507,10 @@ importers:
       react-dom:
         specifier: '>=19.0.0'
         version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@jbrowse/web':
+        specifier: workspace:^
+        version: link:../../products/jbrowse-web
 
   plugins/maf:
     dependencies:

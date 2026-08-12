@@ -7,7 +7,7 @@
   "main": "build",
   "dir": "src",
   "exports": {
-    "./testUtils": "./src/rootModel/index.ts",
+    "./testUtils": "./src/rootModel/test_util.ts",
     "./makeWorkerInstance": "./src/makeWorkerInstance.ts"
   },
   "scripts": {
