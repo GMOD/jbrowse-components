@@ -187,3 +187,32 @@ volatile back through the layout it feeds.
 Screen-x is not start/end-ordered — keep new sashimi geometry on the normalized
 fields. In shaders use `bpToClipX`/`bpToLinear`, never
 `hpClipX(hpSplitUint(…))`.
+
+## The arc band draws two families, and answers for both
+
+Curved/flat arcs (`arc`, `arcFlat`, `arcMarker`) and interchromosomal connector
+ticks (`arcLine`) share one rect, one Y scale and one palette, and they overlap
+freely. `hitTestArcBand` is the single entry point for that reason: which one a
+hover resolves to is a question about **paint order**, and the answer belongs
+beside the scan rather than at each call site. Both renderers run the line pass
+last (`drawArcsPass`; `drawArcs` strokes the ticks after the curves), so a tick
+is always the later ink. The rule is two-tier — on-ink beats near-ink either
+way, the tick wins among on-ink, and a near-ink tie goes the same way — because
+"tick always" would let a full-band vertical shadow every arc crossing it.
+
+**Both families carry `support` and both spend it the same way.** An arc and a
+tick are each ONE junction that `resolveArcs` coalesced, and `arcLineWidth` is
+the one curve turning that count into ink for Canvas2D, the SVG export and both
+GPU passes (resolved CPU-side at pack time; no shader evaluates it). Coalescing
+without keeping the count is the trap to avoid — deduping ticks alone left a
+40-read translocation drawing exactly like one mismapped pair.
+
+**Ask `hasArcBandInk`, not `numArcs`.** A lane whose only interchromosomal
+partner is off-region carries ticks and no arcs, so an arc-count gate reserves
+the band, paints it, and then treats it as empty. The one deliberate exception
+is `resolveArcBandDebug`, which answers "why is this arc this shape" and so has
+nothing to say about a tick.
+
+The endpoint squares are the one mark with no hit test of its own, covered by
+the bar's tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is
+arithmetic, not design, so `hitTest.test.ts` pins it.
