@@ -99,35 +99,31 @@ column and row stay empty.
 
 ## The 8p23.1 inversion
 
-Taking one blue block at a time is a linear synteny view's job rather than a
-dotplot's. Open **Add → Linear synteny view** and pick
-`T2T-HG002 v1.2 (diploid)` in both rows. That gives two panels of the same
-assembly, and each panel's search box takes it to one haplotype:
-`chr8_MATERNAL:5,250,000-14,250,000` on top, the same range on `chr8_PATERNAL`
-below. The same chromosome boxes are on this form too, one per row, if you want
-the whole-genome comparison as ribbons instead of as a plot.
-
-Set the ribbons to **Strand** from the palette icon here as well, and turn that
-same track on from each panel's own track selector. In a plain linear view it
-draws as blocks on that panel's ruler rather than as ribbons between the panels,
-and those blocks are what the right-click further down acts on.
-
 Chromosome 8 carries an inversion polymorphism at 8p23.1 that HG002 is
-heterozygous for (Bosch _et al._ 2009), so it is one of the places where the two
-haplotypes of one person differ at a scale a whole-chromosome view can show. It
-is the one sweep crossing a frame of otherwise flat ribbons, and the collinear
-flanks either side are what make it read as an inversion.
+heterozygous for (Bosch _et al._ 2009), so the two haplotypes of one person
+differ there at a scale a whole-chromosome view can show. Open **Add → Linear
+synteny view**, then:
 
-Genes underneath the ribbons make the sweep easier to read, since they show the
-same sequence arriving in the opposite order on the other haplotype. The
-assembly has no annotation of its own, but the JHU Liftoff annotation is
-published beside it, one bgzipped GFF per haplotype, with contig names that
-already match. It annotates v1.1, which is the newest gene set the project
-publishes, and on chromosome 8 the two assembly versions are close enough that
-the gene lanes still land where the ribbons do. Its records carry the gene
-symbol in `gene_name` and no `Name`, so the label points there. Load the file
-once per haplotype: `MAT` below, and the same config with `PAT` in the name and
-the URL, under its own `trackId`, for the other panel.
+- pick `T2T-HG002 v1.2 (diploid)` in both rows
+- go to `chr8_MATERNAL:5,250,000-14,250,000` in the top panel's search box, and
+  the same range on `chr8_PATERNAL` below
+- pick **Strand** from the palette icon
+- turn the chain track on in each panel's own track selector, where it draws as
+  blocks on that panel's ruler rather than as ribbons between the panels
+
+The collinear flanks either side are what make the sweep read as an inversion.
+Those panel blocks are what the right-click in the next section acts on.
+
+Genes read the inversion a second way. The assembly has no annotation of its
+own, but the JHU Liftoff GFFs are published beside it, one per haplotype, on
+contig names that already match:
+
+- they annotate v1.1, the newest gene set the project publishes, and on
+  chromosome 8 the lanes still land where the v1.2 ribbons do
+- the gene symbol is in `gene_name` and there is no `Name`, so the label points
+  there
+- load one file per haplotype; the other panel takes the same config with `PAT`
+  in the name and the URL, under its own `trackId`
 
 ```json addtrack
 {
@@ -146,12 +142,14 @@ the URL, under its own `trackId`, for the other panel.
 }
 ```
 
-`geneGlyphMode` keeps the longest coding transcript of each gene, which is what
-makes the lane one row deep rather than a stack of every RefSeq isoform. **Color
-by... → Strand** on each gene lane then paints forward red and reverse blue,
-matching the ribbons. At this zoom no gene in that lane can carry a label; a
-second track over the same GFF, cut to a few genes with **Filter by...** in its
-track menu, can.
+Then, on each gene lane:
+
+- `geneGlyphMode` keeps the longest coding transcript, so the lane is one row
+  deep rather than a stack of every RefSeq isoform
+- **Color by... → Strand** paints forward red and reverse blue, matching the
+  ribbons
+- no gene can carry a label at this zoom; a second track over the same GFF, cut
+  to a few genes with **Filter by...**, can
 
 <Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand throughout: forward red, reverse blue. The inverted block is the long blue bar in both panels and the sweep crossing between them. The labeled lane beside the ribbons carries the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
