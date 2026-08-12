@@ -4,6 +4,7 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment, rightClick } from './testEnv.ts'
 
+import type { FlatbushItem } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { TestDisplay } from './testEnv.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -57,9 +58,8 @@ function stackedData(rows: number) {
 }
 
 function topOf(display: TestDisplay, featureId: string) {
-  return display.laidOutDataMap
-    .get(0)!
-    .flatbushItems.find(i => i.featureId === featureId)!.topPx
+  const items: FlatbushItem[] = display.laidOutDataMap.get(0)!.flatbushItems
+  return items.find(i => i.featureId === featureId)!.topPx
 }
 
 // A track deeper than its 100px viewport, scrolled down to the bottom feature.

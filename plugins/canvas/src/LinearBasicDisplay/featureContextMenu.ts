@@ -4,6 +4,7 @@ import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { getContainingView, getSession, pluralize } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import BiotechIcon from '@mui/icons-material/Biotech'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -439,7 +440,12 @@ function copyJsonItem(
           featureId,
           displayedRegionIndex,
         )
-        if (parent) {
+        // isAlive for the same reason selectFeatureById and the collapse-introns
+        // dialog opener take it: the track can be unticked while the fetch is in
+        // flight, and copyText reaches getSession(self), which throws on a
+        // detached node — here as an unhandled rejection, since the whole body
+        // is a floating promise.
+        if (parent && isAlive(self)) {
           const target = subfeature
             ? findSubfeatureById(parent, subfeature.featureId)
             : parent
