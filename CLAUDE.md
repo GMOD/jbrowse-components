@@ -29,6 +29,16 @@ checkout, so ordinary git is yours to use without asking.
   runs, the more likely a fast-forward stops being possible.
 - **Don't push to `origin` (GMOD/jbrowse-components) or open a PR unless
   asked.** Local commits and local merges are yours; publishing is not.
+- **Never `git stash` here, worktree or not — the stack is repo-global.** Every
+  worktree shares one stash list, so `git stash pop` takes whatever is on top,
+  which is routinely another agent's work: `git stash` when you have no local
+  changes prints "No local changes to save" and creates nothing, and the `pop`
+  you wrote to undo it then applies THEIR entry into your tree, usually as
+  conflicts. The pop keeps the entry on a conflict, so the recovery is
+  `git reset --hard HEAD` and a check that `git stash list` still holds it — but
+  a clean apply would have dropped it. Commit to your branch instead; to test a
+  tree without your changes, check out the file or compare against `main`
+  (`git diff main -- <path>`).
 - The primary checkout is shared with other agents and usually carries
   uncommitted work. Keep it clean when you can — continuous landing only works
   while main's checkout can fast-forward. If you must work there directly, use
