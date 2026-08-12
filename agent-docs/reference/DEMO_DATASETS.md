@@ -75,6 +75,26 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   numbers as forward coordinates puts the inversion 127 Mb from where it is,
   which looks exactly like a translocation.
 
+- **Sparse, short-block synteny → the `demos/grape_peach_cacao` MCScan track.**
+  The opposite shape from every chain and PAF demo, and the one that exposes
+  code assuming a window sits inside one alignment: whole-genome zoom loads
+  ~1000 blocks, and the widest is 127 kb against a 27.8 Mb chromosome. It is
+  what a follow-the-matching-region window-vs-block bug was found on.
+
+  **Don't read a length ratio here as a bug.** These are GENE anchors, so the
+  correspondence is legitimately many-to-one and legitimately non-proportional,
+  and the ratios are large enough to look like arithmetic gone wrong. Measured
+  at `NC_081805.1:5,000,000-5,200,000` (grape chr1): 11 blocks overlap, six
+  separate grape genes (5,040,769 / 5,045,458 / 5,050,839 / 5,065,605 /
+  5,072,407 / 5,085,527) all map to the SAME peach interval
+  `NC_034009.1:31,382,557-31,384,385` — a tandem family collapsed onto one gene
+  — and the one long block, grape 5,135,037-5,236,268, is 101 kb against 11 kb
+  of peach. So 200 kb of grape corresponds to ~36 kb of peach and that is the
+  data, not a mapping error.
+
+  refNames are RefSeq accessions, not `chr1`/`Pp01`: grape chr1 is
+  `NC_081805.1` (27.8 Mb), peach chr1 is `NC_034009.1` (47.9 Mb).
+
 ## Datasets tried and rejected
 
 - **DGRP In(2L)t for an LD triangle.** Measured on `dgrp_In2Lt_2L.vcf.gz`: a
