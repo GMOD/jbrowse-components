@@ -46,42 +46,23 @@ from the cached byte estimate, which a blocked display re-takes once per settled
 viewport, so it releases itself and needs no imperative clear; keeping the
 estimate is what stops the banner flickering on an ordinary clear.
 
-## FetchVisibleRegions: the core fetch trigger
+## The whole chain
 
-This autorun fires on any change to the viewport, after the debounce quoted in
-the table above. For each visible region block it checks whether the data is
-already loaded and still valid:
+<Figure caption="Both dashed edges close the same loop: every fetch ends by bumping fetchGeneration, which re-fires the autorun to ask whether anything is still missing. That is also how a blocked display releases itself — it keeps re-measuring once per settled viewport rather than waiting for something to clear the banner." src="/img/fetch_chain.png" />
 
-```
-view.visibleRegions changes
-  ↓ (debounced)
-for each visible block:
-  loadedRegion = loadedRegions.get(block.displayedRegionIndex)
-  boundsValid  = refName matches AND start/end within loaded bounds
-  cacheValid   = self.isCacheValid(block.displayedRegionIndex)   ← override hook
-
-  if boundsValid AND cacheValid → skip (already have data)
-  else → add to `needed`
-
-if needed.length > 0:
-  self.fetchNeeded(needed)
-```
-
-Regions are buffered (wider than the viewport) so panning doesn't immediately
-trigger a new fetch.
+`boundsValid` compares the block against the loaded bounds, and those are
+buffered wider than the viewport, so a small pan finds them still covering and
+fetches nothing. `isCacheValid` is the override hook beside it, for a display
+whose data goes stale for reasons the bounds can't see.
 
 ## Implementing fetchNeeded
 
-`fetchNeeded` is the hook you override to make RPC calls. The mixin's primitive
-is `fetchRegions(needed, work)`, which handles cancellation, stop tokens, and
-byte estimation. Most displays don't call it directly: they use the
-`fetchEachRegion` wrapper, which runs one RPC per region in parallel and applies
-the two `ctx.isStale()` guards for you. Forgetting either guard is a stale-data
-write, so the wrapper is a correctness primitive, not just a convenience. Prefer
-it. `LinearScoreDisplay`'s is a whole one, sitting in an
-`.actions(self => ({ ... }))` block, with `getRpcSessionId` from
-`@jbrowse/core/util/tracks`, `getSession` from `@jbrowse/core/util` and
-`fetchEachRegion` from `@jbrowse/plugin-linear-genome-view`:
+`fetchNeeded` is the hook you override to make RPC calls. Reach for
+`fetchEachRegion`, which runs one RPC per region in parallel over the
+`fetchRegions(needed, work)` primitive and applies both `ctx.isStale()` guards
+for you — forgetting either is a stale-data write, so it is a correctness
+primitive rather than a convenience. `LinearScoreDisplay`'s is a whole one,
+sitting in an `.actions(self => ({ ... }))` block:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#fetchNeeded -->
 
@@ -248,9 +229,20 @@ Two things fall out of that for free:
   rather than re-approving each locus. The declarative equivalent is the
   `forceLoad` config slot.
 
-Regions under 20 kb never gate, and adapters that summarize at screen resolution
-(BigWig, HiC, sequence) are exempt for free: they report no byte estimate, and
-no estimate means no byte axis in the verdict.
+The verdict has two axes and they stop gating for different reasons, which is
+worth keeping straight:
+
+- The **byte** axis drops out when the adapter offers no index estimate, which
+  is how adapters that summarize at screen resolution (BigWig, HiC, sequence)
+  cost nothing to support. It has no span floor.
+- The **density** axis stops below `AUTO_FORCE_LOAD_BP` (20 kb), the one place
+  that span is compared.
+
+"Exempt" in this mixin means force-loaded, not un-measurable — `gateExempt` is
+`configForceLoad || forceLoadTrack` and lifts **both** axes.
+[REGION_TOO_LARGE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REGION_TOO_LARGE.md)
+is the full account, including the four bugs the predecessor had from an axis
+name claiming a term it did not have.
 
 A display that fetches outside `fetchRegions` calls the same gate itself with
 `if (await self.byteGateBlocksFetch(regions, ctx)) return` (see arc's
@@ -259,45 +251,25 @@ A display that fetches outside `fetchRegions` calls the same gate itself with
 
 ## FetchMixin: cancellation and staleness
 
-`MultiRegionDisplayMixin` composes `FetchMixin`, which owns the stop-token
-lifecycle. Each call to `fetchRegions()` rotates the stop token:
+`MultiRegionDisplayMixin` composes [`FetchMixin`](/docs/models/fetchmixin),
+which owns the stop-token lifecycle. Each `fetchRegions()` mints a fresh
+`stopToken`, signals the previous one to stop so in-flight adapter calls abort,
+and captures `fetchGeneration` as its staleness epoch.
 
-- A new unique `stopToken` is created and captured as `activeStopToken`
-- The prior token is signaled to stop (any in-flight adapter calls abort)
-- `fetchGeneration` is captured at the start of the fetch
-- `isStale()` returns `true` if `fetchGeneration` has advanced since the token
-  was created (i.e. if a newer fetch has started)
-- On completion (success or error), `fetchGeneration` increments once,
-  re-triggering `FetchVisibleRegions` to check if anything still needs loading
-
-`isLoading` is `true` while `activeStopToken !== undefined`.
-`FetchVisibleRegions` guards against firing mid-fetch with
-`untracked(() => self.isLoading)`, which reads the value without tracking it as
-a reactive dependency.
+That counter bumps once at every fetch **end** — success, error, or cancel — and
+does two jobs with the one bump: `isStale()` compares it against the epoch, so
+the superseded flow returns true and drops its results, and
+`FetchVisibleRegions` reads it to re-evaluate once the fetch is over.
+`isLoading` is `true` while `activeStopToken` is set, and the fetch autorun
+reads it through `untracked(() => self.isLoading)` so guarding on it doesn't
+make it a trigger.
 
 ## Composing the mixin
 
-`MultiRegionDisplayMixin` supplies only the fetch/render lifecycle. Compose it
-alongside `BaseDisplay` and `TrackHeightMixin`, which supply the display
-identity and `height` respectively, then add the `rpcDataMap` volatile, the
-`rpcProps` view and the `setRpcData`/`fetchNeeded` actions above.
-`LinearScoreDisplay` in [](/docs/developer_guides/plotting_features) is that
-model whole and compiling; read the composition there rather than from a
-skeleton here.
-
-## Full flow summary
-
-```
-visibleRegions changes → FetchVisibleRegions (600ms) → fetchNeeded(needed)
-  → fetchRegions(needed, work):
-      rotate stop token
-      check byte estimate → regionTooLarge? stop here
-      call work(ctx):
-          rpcManager.call('MyRpcMethod', { ...rpcProps(), region, stopToken })
-          if !ctx.isStale(): setRpcData(regionIndex, result)
-      increment fetchGeneration
-  → FetchVisibleRegions re-fires → nothing needed → done
-```
+Compose it alongside `BaseDisplay` and `TrackHeightMixin`, then add the
+`rpcDataMap` volatile, the `rpcProps` view and the `setRpcData`/`fetchNeeded`
+actions above. `LinearScoreDisplay` in
+[](/docs/developer_guides/plotting_features) is that model whole and compiling.
 
 ## See also
 

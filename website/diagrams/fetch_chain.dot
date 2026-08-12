@@ -1,0 +1,79 @@
+digraph fetch_chain {
+  rankdir=TB
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="The fetch chain: viewport change to loaded data, and back to rest"
+  nodesep=0.35
+  ranksep=0.45
+
+  node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
+  edge [fontname="Helvetica", fontsize=10, color="#555555"]
+
+  viewport [label="view.visibleRegions changes", fillcolor="#e1f5fe"]
+
+  // ── What the autorun decides ─────────────────────────────────────
+  subgraph cluster_trigger {
+    label="FetchVisibleRegions (debounced 600 ms)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#e3f2fd"
+    color="#90caf9"
+
+    check [
+      shape=diamond
+      label="per visible block:\nboundsValid && isCacheValid()?"
+      fillcolor="#ffffff"
+    ]
+    needed [label="collect into `needed`", fillcolor="#e1f5fe"]
+  }
+
+  // ── What the display owns ────────────────────────────────────────
+  subgraph cluster_fetch {
+    label="fetchNeeded → fetchRegions(needed, work)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#f1f8e9"
+    color="#aed581"
+
+    rotate [label="rotate stop token\ncapture fetchGeneration", fillcolor="#dcedc8"]
+    bytes [shape=diamond, label="byte estimate\nover budget?", fillcolor="#ffffff"]
+    work [label="work(ctx)\nrpcManager.call(…, rpcProps(), stopToken)"]
+    stale [shape=diamond, label="ctx.isStale()?", fillcolor="#ffffff"]
+    commit [label="setRpcData(regionIndex, result)", fillcolor="#dcedc8"]
+    bump [label="increment fetchGeneration", fillcolor="#dcedc8"]
+  }
+
+  toolarge [
+    label="regionTooLarge banner\n+ Force load"
+    style="filled,dashed"
+    fillcolor="#fff3e0"
+  ]
+  done [label="nothing needed — at rest", peripheries=2, fillcolor="#e1f5fe"]
+
+  viewport -> check
+  check -> done [label="yes, already loaded"]
+  check -> needed [label="no"]
+  needed -> rotate
+  rotate -> bytes
+  bytes -> toolarge [label="yes, stop here"]
+  bytes -> work [label="no"]
+  work -> stale
+  stale -> commit [label="no"]
+  stale -> bump [label="yes — drop results"]
+  commit -> bump
+
+  // Both feedback edges are constraint=false: they close the loop but must not
+  // pull their targets back up a rank, which is what left the entry node
+  // stranded mid-graph and crossed every edge around it.
+  bump -> check [label="re-fires", style=dashed, constraint=false]
+  toolarge -> check [
+    label="re-measures once\nper settled viewport"
+    style=dashed
+    constraint=false
+  ]
+}

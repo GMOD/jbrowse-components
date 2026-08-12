@@ -13,6 +13,7 @@ that mapping, so nothing here needs to restate it.
 | `product_architecture.dot`      | `docs/developer_guide.md` (state model / React)   |
 | `wolfdog_ancestry_pipeline.dot` | `docs/tutorials/local_ancestry.md` (The pipeline) |
 | `feature_plotting_threads.dot`  | `docs/developer_guides/plotting_features.md`      |
+| `fetch_chain.dot`               | `docs/developer_guides/data_fetching.md`          |
 | `gpu_display_lifecycle.dot`     | `docs/developer_guides/creating_gpu_display.md`   |
 | `gpu_display_tldr.dot`          | same page, the simplified version above it        |
 
