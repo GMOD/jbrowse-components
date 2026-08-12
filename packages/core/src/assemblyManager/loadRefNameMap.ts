@@ -52,26 +52,17 @@ export async function loadRefNameMap(
       // Forwarded rather than dropped (unlike stopToken above), because the
       // adapter's index download happens here during refname mapping
       // (getRefNames -> setup) and this is the only place its "Downloading
-      // index" progress could surface.
+      // index" progress can surface. For an in-memory adapter it is not an
+      // index but the whole file — GWAS LD coloring resolves a second map
+      // against its PLINK `.ld` sub-adapter, and that adapter parses all of it
+      // to answer `getRefNames`.
       //
-      // **Latent: no production caller supplies one, so it is always undefined
-      // and that progress never surfaces.** Don't read the forwarding as
-      // evidence the status works — if you are here because an index download
-      // reports nothing, this is why. `renameRegionsForAdapter` and
-      // circular-view's chord display build their opts literally
-      // (`{ sessionId }`, `{ stopToken, sessionId }`); `renameRegionsIfNeeded`
-      // forwards the RPC args, and `BaseRpcDriver.call` destructures
-      // `statusCallback` off *before* calling `serializeArguments`, since
-      // everything reaching the worker has to be structured-cloneable.
-      //
-      // Making it real is not the one-liner it looks like, and the blocker is
-      // the memoization, not the plumbing. Passing the whole args in and
-      // stripping the callback off the *result* would leave the wire payload
-      // identical and light this up for every RPC — but
-      // `getRefNameMapForAdapter` caches one promise per adapter-config key, so
-      // the first caller donates its callback to everyone who later awaits that
-      // entry, including callers whose display is already being torn down.
-      // Publish per-waiter, or guard at the display end, before wiring it.
+      // This was latent for a while, and what revived it is one line elsewhere
+      // that is easy to undo by tidying: `BaseRpcDriver.call` strips
+      // `statusCallback` off the *result* of `serializeArguments` rather than
+      // off the args going in. Strip it going in and the rename pass — which
+      // runs inside serialization — is handed undefined for every RPC there is,
+      // which is what it was.
       statusCallback: options.statusCallback,
     },
     { timeout: 1000000 },

@@ -48,12 +48,21 @@ export default abstract class BaseRpcDriver {
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
 
     // statusCallback is an out-of-band progress handle, not data: each transport
-    // wires up its own channel for it, so keep it out of the serialized payload
-    // entirely. Everything that remains must be structured-cloneable; the worker
+    // wires up its own channel for it, so it must not reach the serialized
+    // payload. Everything that does must be structured-cloneable; the worker
     // postMessage clones it and throws on anything that isn't, surfacing bad data
     // at the boundary instead of silently dropping it.
-    const { statusCallback, ...rest } = args
-    const serializedArgs = await rpcMethod.serializeArguments(rest, this.name)
+    //
+    // Stripped on the way OUT rather than on the way in, so `serializeArguments`
+    // can see it. That is not cosmetic: serialization is where the refName map
+    // is resolved, and resolving one downloads the adapter's index (and for an
+    // in-memory adapter, the whole file). Destructuring the callback off first
+    // left that download with nothing to report through — `loadRefNameMap`
+    // forwards a `statusCallback` for exactly this and, for every RPC, was
+    // handed undefined. The wire payload is identical either way.
+    const { statusCallback } = args
+    const { statusCallback: _outOfBand, ...serializedArgs } =
+      await rpcMethod.serializeArguments(args, this.name)
 
     const result = await this.transport(
       pluginManager,
