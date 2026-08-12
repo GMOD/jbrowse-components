@@ -92,12 +92,27 @@ stack-trace dialog, like `gpuVendor`; analytics gets the coarse
 `software-rendering` bit, which is the number that would justify the ladder
 change.
 
-**Routing those users to Canvas2D is the open decision, and its blast radius is
-the test suite, not the app.** Headless Chrome is SwiftShader (see the table in
-CROSS_BACKEND_GATE.md), and `appendGpuParam` only pins `?renderer=` when a
-snapshot config names a backend — so an unpinned browser test would silently
-start exercising Canvas2D on a change that reads as a user-facing perf fix. Any
-implementation has to pin the suite first and say which runs it pinned.
+**Routing those users to Canvas2D is the open decision, and the thing it must
+not break is the cross-backend gate.** Every browser test renders on SwiftShader
+— CI passes `--swiftshader`, and headless Chrome picks it anyway (see the table
+in CROSS_BACKEND_GATE.md) — so a rasterizer check that ignored the `?renderer=`
+pin would turn the gate's webgl side into a second canvas2d render, and 66 pairs
+would agree perfectly while proving nothing.
+
+**The pin is already the protection, and it is already in place.**
+`runWithRenderingBackend` sets `snapshotConfig.backend` for every run (it
+defaults to `canvas2d`, so it is never unset), and `helpers.ts` builds every test
+url through `appendGpuParam`, which appends `renderer=<backend>`. So the suite is
+pinned end to end, and the routing only has to honor a pin the way `createGpuHal`
+already honors one — "a pin is not a preference" is that file's existing
+doctrine. What is *not* pinned is the standalone scripts that build their own
+urls, and most of those pass `renderer=` explicitly too.
+
+This paragraph first claimed the opposite — that the suite was unpinned and had
+to be pinned before the ladder could change. It was written from
+`appendGpuParam`'s early return without checking who sets `snapshotConfig.backend`,
+which is every run. The prerequisite for routing is the analytics number, not a
+test-harness change.
 
 Measured on this box the same day, loading jbrowse-web with real tracks and
 reading the string the detection reads:

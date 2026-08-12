@@ -790,11 +790,18 @@ users are in that cell is now a question the data can answer** — ask it before
 building the rest.
 
 What is left is the routing, and it is not a one-line change to
-`effectiveRenderer`: that function only *reports*. The ladder is
-`createGpuHal` in render-core, and headless Chrome is SwiftShader while
-`appendGpuParam` pins `?renderer=` only for snapshot runs that name a backend —
-so routing software rasterizers to Canvas2D silently moves every unpinned
-browser test off WebGL. Pin the suite first.
+`effectiveRenderer`: that function only *reports*. The ladder is `createGpuHal`
+in render-core, so the check goes there — **below the `?renderer=` pin**, which
+is the whole safety story. Every browser test renders on SwiftShader, so a check
+that outranked the pin would make the cross-backend gate compare canvas2d
+against canvas2d: 66 pairs agreeing perfectly and proving nothing.
+
+It cannot, as long as it sits below the pin, and the suite is already pinned end
+to end — `runWithRenderingBackend` always sets `snapshotConfig.backend` (default
+`canvas2d`) and every test url is built through `appendGpuParam`. `createGpuHal`
+already treats a pin as binding rather than as a preference. An earlier version
+of this paragraph said the suite was unpinned and that pinning it was the first
+move; it was already pinned, and the first move is the analytics number.
 
 ### MAF fetch cost on long blocks
 
