@@ -3,10 +3,9 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { followAnchorWindow } from './followAnchorWindow.ts'
-import { applyFollowTransform, followTransform } from './followTransform.ts'
-import { followWindowMapping } from './followWindowMapping.ts'
-import { interpolateFollowSpan } from './interpolateFollowSpan.ts'
-import { planFollowStep, windowInsideFeat } from './planFollowStep.ts'
+import { followFrameSpan } from './followFrameSpan.ts'
+import { followTransform } from './followTransform.ts'
+import { planFollowStep } from './planFollowStep.ts'
 import { positionViewOnSpan } from './positionViewOnSpan.ts'
 import { resolveFollowSpan } from './resolveFollowSpan.ts'
 
@@ -200,6 +199,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     autorun(
       function syntenyFollowAutorun() {
         if (!self.followSynteny) {
+          // so the header's warning form does not survive the mode being
+          // switched off over unaligned sequence and greet the next person who
+          // switches it back on. One write, since `followSynteny` is the only
+          // thing this pass reads while off.
+          self.setFollowUnaligned(false)
           return
         }
         // Every observable read happens in this synchronous pass, so the
@@ -276,9 +280,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // indels and where the RPC's CIGAR walk is the only thing this pass cannot
   // reproduce. That case measured 9.8%, most of it the CIGAR detail.
   //
-  // READS THE ANCHOR ROW AND THE LOADED FEATURES, NEVER THE FOLLOWED ROW.
-  // `positionViewOnSpan` writes that row's zoom and offset, so tracking
-  // anything on it here would be a dependency on this pass's own write.
+  // READS EACH LEVEL'S STAYING ROW AND THE LOADED FEATURES, NEVER ITS MOVING
+  // ROW. `positionViewOnSpan` writes that row's zoom and offset, so tracking
+  // anything on it here would be a dependency on this pass's own write. In a
+  // stack of three or more an interior row is both — placed by the level nearer
+  // the anchor and read by the one beyond it — which is why `followPairs` comes
+  // back ordered OUTWARD FROM THE ANCHOR: the nearer level's write lands before
+  // the farther level reads it, so one pass settles the stack instead of one
+  // pass per level.
   addDisposer(
     self,
     autorun(
@@ -304,19 +313,20 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           const state = levelStates.get(level.level)
           const feat = state?.feat
           const data = state?.display?.featureData
-          if (!feat || !data) {
+          if (!state || !feat || !data) {
             continue
           }
-          const span = windowInsideFeat(feat, window, toMate)
-            ? // the CIGAR-walked answer, carried forward affinely — better than
-              // re-interpolating the block, which is what this pass would
-              // otherwise have to do without the RPC
-              ((state.transform
-                ? applyFollowTransform(state.transform, window)
-                : undefined) ?? interpolateFollowSpan({ feat, window, toMate }))
-            : (followWindowMapping({ data, window, toMate, mateAssembly }) ??
-              interpolateFollowSpan({ feat, window, toMate }))
-          positionViewOnSpan(movingView, span)
+          const span = followFrameSpan({
+            feat,
+            data,
+            window,
+            toMate,
+            mateAssembly,
+            transform: state.transform,
+          })
+          if (span) {
+            positionViewOnSpan(movingView, span)
+          }
         }
       },
       { name: 'SyntenyFollowFrame' },
