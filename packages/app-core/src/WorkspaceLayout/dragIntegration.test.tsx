@@ -2,6 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
+import JBrowseTabMenu from '../ui/App/JBrowseTabMenu.tsx'
 import { LayoutRenderer } from './LayoutRenderer.tsx'
 import { WorkspaceLayoutMixin } from './model.ts'
 import { useLayoutDrag } from './useLayoutDrag.ts'
@@ -25,8 +26,11 @@ const TestSession = types.compose(
 
 const Harness = observer(function Harness({
   session,
+  tabMenu,
 }: {
   session: ReturnType<typeof TestSession.create>
+  /** draw the real per-tab menu in the label, as `WorkspaceContainer` does */
+  tabMenu?: boolean
 }) {
   const { drag, ...dragHandlers } = useLayoutDrag(session)
   return (
@@ -36,7 +40,17 @@ const Harness = observer(function Harness({
       drag={drag}
       dragHandlers={dragHandlers}
       renderTabLabel={tab => (
-        <span data-testid={`tab-${tab.id}`}>{tab.id}</span>
+        <>
+          <span data-testid={`tab-${tab.id}`}>{tab.id}</span>
+          {tabMenu ? (
+            <JBrowseTabMenu
+              onRename={() => {}}
+              onClose={() => {
+                session.closeTab(tab.id)
+              }}
+            />
+          ) : null}
+        </>
       )}
       renderTabContent={tab => <div>{tab.viewIds.join(',')}</div>}
     />
@@ -69,7 +83,7 @@ beforeAll(() => {
   Element.prototype.releasePointerCapture = () => {}
 })
 
-function setup() {
+function setup(tabMenu?: boolean) {
   const session = TestSession.create({ name: 't' })
   const left = session.panels[0]!.id
   const tabA = session.tabs[0]!.id
@@ -82,8 +96,8 @@ function setup() {
     [left]: { left: 0, top: 0, width: 400, height: 400 } as DOMRect,
     [right]: { left: 400, top: 0, width: 400, height: 400 } as DOMRect,
   })
-  render(<Harness session={session} />)
-  return { session, left, right, tabA }
+  const { container } = render(<Harness session={session} tabMenu={tabMenu} />)
+  return { session, left, right, tabA, container }
 }
 
 test('dragging a tab into the middle of another cell moves it there', () => {
@@ -153,6 +167,53 @@ test('releasing outside every cell drops nothing', () => {
 
   expect(session.findTab(tabA)?.panel.id).toBe(left)
   expect(session.panels.length).toBe(2)
+})
+
+// A tab's own ⋮ menu did nothing at all, and the cause is one line away from
+// here rather than in the menu: the strip takes POINTER CAPTURE on pointerdown
+// so a drag survives leaving the tab, and a captured pointer drags the
+// compatibility mouse events along with it — the `click` that follows is
+// delivered to the capturing tab, not to the button under the finger, so the
+// button is never told it was pressed.
+//
+// jsdom implements neither capture nor that retargeting (`setPointerCapture` is
+// stubbed to nothing above), so it cannot reproduce the symptom and a test that
+// only clicked the button passed against the broken code. What is testable is
+// the fix: a press that starts on the menu never becomes a drag, so there is no
+// capture to retarget anything.
+test('a press on a tab menu never starts a drag, so its click survives', () => {
+  const { session, left, tabA, container } = setup(true)
+  const before = session.panels.map(p => p.id)
+  const menuButton = container.querySelector('.jbrowse-tab-menu button')!
+
+  act(() => {
+    fireEvent.pointerDown(menuButton, { clientX: 10, clientY: 10 })
+    // well past the drag slop, and over the OTHER cell: were this a drag it
+    // would light an indicator and land the tab there on release
+    fireEvent.pointerMove(menuButton, { clientX: 600, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+  act(() => {
+    fireEvent.pointerUp(menuButton, { clientX: 600, clientY: 200 })
+  })
+
+  expect(session.findTab(tabA)?.panel.id).toBe(left)
+  expect(session.panels.map(p => p.id)).toEqual(before)
+})
+
+test('the tab menu opens on click', () => {
+  const { container } = setup(true)
+  // by selector, not `getByRole`: the button is `visibility: hidden` until its
+  // tab is hovered, which takes it out of the accessibility tree jsdom exposes
+  const menuButton = container.querySelector('.jbrowse-tab-menu button')!
+
+  act(() => {
+    fireEvent.click(menuButton)
+  })
+
+  expect(screen.getByText('Rename tab')).toBeTruthy()
+  expect(screen.getByText('Close tab')).toBeTruthy()
 })
 
 test('clicking a tab makes it active without moving anything', () => {

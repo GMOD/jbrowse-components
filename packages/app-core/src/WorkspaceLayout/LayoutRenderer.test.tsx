@@ -1,4 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { defaultStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { colord } from '@jbrowse/core/util/colord'
 import { types } from '@jbrowse/mobx-state-tree'
 import { render, screen } from '@testing-library/react'
@@ -159,6 +160,43 @@ test('the tab strip is dockview chrome, not the MUI theme', () => {
   expect(style.backgroundColor).not.toBe(
     colord(createJBrowseTheme().palette.background.paper).toRgbString(),
   )
+})
+
+// The other half of that rule, and the one that shipped wrong: dockview's dark
+// theme also colours the surface its content sits on, and transcribing THAT
+// made a light JBrowse theme come up dark everywhere a view did not reach the
+// bottom of its cell — the frame swallowing the thing it frames. The strip is
+// chrome; the body is content and follows the theme.
+test('the panel body is content, so it follows the theme rather than the chrome', () => {
+  const session = TestSession.create({ name: 't' })
+  const { container } = renderLayout(session)
+
+  const panel = container.querySelector('[data-panel-id]')!
+  const strip = container.querySelector('[role="tablist"]')!
+  // the theme `makeStyles` hands a component with no provider mounted, which is
+  // what this bare render has
+  expect(getComputedStyle(panel).backgroundColor).toBe(
+    colord(defaultStyleTheme.palette.background.default).toRgbString(),
+  )
+  expect(getComputedStyle(panel).backgroundColor).not.toBe(
+    getComputedStyle(strip).backgroundColor,
+  )
+})
+
+// The strip's children are the tab list and then the panel's own buttons, so a
+// tab list that takes the leftover space puts the `+` hard against the right
+// edge of the cell — arbitrarily far from the tabs it adds to, and reading as
+// part of the window chrome rather than of the panel.
+test('the tab list does not grow, so the panel actions stay beside the tabs', () => {
+  const session = TestSession.create({ name: 't' })
+  const { container } = renderLayout(session)
+
+  const tabs = container.querySelector('[role="tab"]')!.parentElement!
+  const style = getComputedStyle(tabs)
+  expect(style.flexGrow).toBe('0')
+  // but it must still SHRINK, or a cell too narrow for its tabs pushes the
+  // buttons off the strip instead of scrolling the tabs under them
+  expect(style.flexShrink).toBe('1')
 })
 
 // All four states dockview enumerates. The focused panel's selected tab is the

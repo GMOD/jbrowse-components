@@ -13,13 +13,26 @@
  * than matching it. Don't wire them to `theme.palette`: a light strip reads as
  * content, which is exactly what it looked like before this file existed.
  *
+ * **This is the chrome only, and the panel BODY is not chrome.** dockview also
+ * has a `--dv-group-view-background-color` (`#1e1e1e`) for the surface a tab's
+ * content sits on, and transcribing it is what made a light JBrowse theme come
+ * up dark below the views — the frame swallowing the thing it frames. The body
+ * follows `theme.palette.background.default` in `PanelView` instead, so the
+ * cell matches every other surface the app draws content on. It is deliberately
+ * absent here rather than present and unused, since an unused colour named
+ * after the panel reads as a value someone forgot to wire up.
+ *
+ * A consequence worth knowing before "fixing" it: dockview's selected tab is
+ * `#1e1e1e` **because** the body was, so the tab merged into its content. Ours
+ * cannot merge into a light body, and the four values below are kept anyway —
+ * darker-than-the-strip still reads as selected, and it is the one cue that
+ * survives being the only dark band on screen.
+ *
  * Kept in one module because four components draw parts of the same chrome, and
  * the four-way tab colouring below is a rule about the whole, not about any one
  * of them.
  */
 export const dv = {
-  /** the panel body, behind and below whatever the tab holds */
-  groupBackground: '#1e1e1e',
   /** the tab strip itself */
   tabsBackground: '#252526',
 
