@@ -214,6 +214,7 @@ export {
   localStorageGetItem,
   localStorageGetJSON,
   localStorageGetNumber,
+  localStorageGetStringArray,
   localStorageRemoveItem,
   localStorageSetBoolean,
   localStorageSetItem,

@@ -1,6 +1,6 @@
 import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
-  localStorageGetJSON,
+  localStorageGetStringArray,
   localStorageRemoveItem,
   localStorageSetJSON,
 } from '@jbrowse/core/util'
@@ -18,14 +18,11 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 // persists (see assertPluginsTrusted).
 const STORAGE_KEY = 'jbrowse-trusted-plugins'
 
-function readTrusted(): Set<string> {
-  const stored = localStorageGetJSON<unknown>(STORAGE_KEY, [])
-  // filtered rather than cast: a corrupt entry here would otherwise put a
-  // non-string into the trust set, where it can only ever fail to match a
-  // plugin URL — but silently, and forever
-  return new Set(
-    Array.isArray(stored) ? stored.filter(x => typeof x === 'string') : [],
-  )
+// A string list, not a raw JSON read: a corrupt entry would otherwise put a
+// non-string into the trust set, where it can only ever fail to match a plugin
+// URL — but silently, and forever.
+function readTrusted() {
+  return new Set(localStorageGetStringArray(STORAGE_KEY))
 }
 
 // Records the user's approval of a set of plugins so the warning dialog doesn't

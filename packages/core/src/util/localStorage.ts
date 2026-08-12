@@ -199,6 +199,23 @@ export function localStorageGetJSON<T>(key: string, defaultVal: T): T {
 }
 
 /**
+ * The list of strings at `key` — absent, unreadable, malformed, or holding
+ * anything else all read as empty.
+ *
+ * The element filter is the part {@link localStorageGetJSON} cannot do: a
+ * stored array of the wrong element type parses fine and then behaves as a list
+ * of values that match nothing, which looks the same as an empty list except
+ * that it is never noticed. Three keys wanted exactly this and each spelled it
+ * out — hidden facet columns, trusted plugin URLs, and the desktop safe-mode
+ * marker, which additionally has to survive the bare `1` older builds wrote
+ * there.
+ */
+export function localStorageGetStringArray(key: string) {
+  const parsed = localStorageGetJSON<unknown>(key, [])
+  return Array.isArray(parsed) ? parsed.filter(x => typeof x === 'string') : []
+}
+
+/**
  * Writes `val` as JSON, except when it is null/undefined — those are skipped
  * rather than stored, so a tri-state setting whose "unset" value means "follow
  * the config" leaves whatever was there instead of pinning `null` over it.

@@ -1,6 +1,7 @@
 import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import {
   localStorageGetItem,
+  localStorageGetStringArray,
   localStorageRemoveItem,
   localStorageSetItem,
 } from '@jbrowse/core/util'
@@ -39,32 +40,19 @@ function readSafeModeReason(): SafeModeReason | undefined {
       : undefined
 }
 
-function readSuspects(): string[] {
-  const raw = localStorageGetItem(LOADING_MARKER)
-  if (!raw) {
-    return []
-  }
-  try {
-    const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed)
-      ? parsed.filter(s => typeof s === 'string')
-      : []
-  } catch {
-    // "1" from a build before the marker carried names, or anything else that
-    // is not the list we wrote. It still means "a launch did not finish", which
-    // readSafeModeReason has already taken from it; there is just nobody to name.
-    return []
-  }
-}
-
 // Read once, at module load: the marker is cleared during a successful boot, so
 // asking later would answer a different question than the one callers mean.
-// Nothing is accused under `?safeMode`, where the user asked for this and no
-// launch failed — so the marker is only parsed when it is what turned safe mode
-// on.
+//
+// The names are only read when the marker is what turned safe mode on. Nothing
+// is accused under `?safeMode`, where the user asked for this and no launch
+// failed. `localStorageGetStringArray` absorbs the "1" a build before the marker
+// carried names wrote there: it reads as no names, and still reads as set, which
+// is all readSafeModeReason ever took from it.
 const safeModeReason = readSafeModeReason()
 const safeModeSuspects =
-  safeModeReason === 'previousLaunchFailed' ? readSuspects() : []
+  safeModeReason === 'previousLaunchFailed'
+    ? localStorageGetStringArray(LOADING_MARKER)
+    : []
 
 /**
  * Why global plugins are being skipped this launch, or undefined when they are

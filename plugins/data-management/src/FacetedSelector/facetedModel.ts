@@ -2,8 +2,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import {
   coarseStripHTML,
   localStorageGetBoolean,
-  localStorageGetJSON,
   localStorageGetNumber,
+  localStorageGetStringArray,
   localStorageSetBoolean,
   localStorageSetJSON,
   localStorageSetNumber,
@@ -39,14 +39,6 @@ export const MIN_PANEL_WIDTH = 100
 // dataset, so hiding one shouldn't carry over to an unrelated config.
 function hiddenColumnsKey(assemblyNames: string[]) {
   return configScopedKey('facet-hiddenColumns', assemblyNames)
-}
-
-// Tolerant of a corrupt/missing entry (falls back to none hidden). The filter
-// is the part localStorageGetJSON can't do: a stored array of the wrong element
-// type parses fine and then hides nothing while looking like it hid something.
-function readHiddenColumns(key: string): string[] {
-  const parsed = localStorageGetJSON<unknown>(key, [])
-  return Array.isArray(parsed) ? parsed.filter(x => typeof x === 'string') : []
 }
 
 /**
@@ -135,8 +127,11 @@ export function facetedStateTreeF() {
         self.getTracks = getTracks
         self.session = session
         self.assemblyNames = assemblyNames
+        // a string list, not a raw JSON read: an entry of the wrong element
+        // type parses fine and then hides nothing while looking like it hid
+        // something
         self.hiddenColumns.replace(
-          readHiddenColumns(hiddenColumnsKey(assemblyNames)),
+          localStorageGetStringArray(hiddenColumnsKey(assemblyNames)),
         )
       },
       /**
