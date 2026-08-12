@@ -15,6 +15,13 @@ linear view and the space between them fills with the contacts between the two,
 which in a normal karyotype is background, and in K562 is the Philadelphia
 chromosome.
 
+## Prerequisites
+
+- nothing to install to read along: every track is a public ENCODE object served
+  with CORS and byte ranges
+- for the [scan script](#run-the-scan), `java` and `curl`, which is what
+  `juicer_tools` needs; the script downloads `juicer_tools` itself
+
 ## What Hi-C measures, and what it looks like
 
 Hi-C counts how often two stretches of the genome are found touching each other
