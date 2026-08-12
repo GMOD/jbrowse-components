@@ -19,7 +19,7 @@
 // or pass a directory to scan somewhere else.
 import { readFileSync } from 'node:fs'
 
-import { reportProblems, walkFiles } from './check-utils.ts'
+import { assertDirExists, reportProblems, walkFiles } from './check-utils.ts'
 import { distDir as defaultDistDir } from './paths.ts'
 
 const distDir = process.argv[2] ?? defaultDistDir
@@ -43,6 +43,11 @@ function duplicateIds(html: string) {
   }
   return [...dupes]
 }
+
+assertDirExists(
+  distDir,
+  distDir === defaultDistDir ? 'run `pnpm build` first.' : undefined,
+)
 
 const errorLines: string[] = []
 let checked = 0

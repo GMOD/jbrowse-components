@@ -4,7 +4,13 @@
 // validator walks the docs tree collecting problems — this centralizes the
 // boilerplate all of them repeated.
 import { spawnSync } from 'node:child_process'
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 
@@ -25,6 +31,22 @@ export function walkFiles(
     }
     return match(entry.name) ? [full] : []
   })
+}
+
+/**
+ * Exit with a legible message when a directory a check is about to walk does
+ * not exist. Several of these checks read the BUILT site, and without this
+ * `walkFiles` falls straight into node:fs and prints a `scandir` stack — which
+ * reads as a broken script rather than as "you have not run `pnpm build`", and
+ * the wrong one of those gets acted on. `hint` carries the build advice for the
+ * default dist path, so a check that also accepts a directory argument does not
+ * tell someone to build when they simply mistyped a path.
+ */
+export function assertDirExists(dir: string, hint?: string) {
+  if (!existsSync(dir)) {
+    console.error(hint ? `${dir} not found — ${hint}` : `${dir} not found`)
+    process.exit(1)
+  }
 }
 
 // statSync guarded against a missing path.

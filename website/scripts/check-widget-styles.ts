@@ -28,7 +28,7 @@ import { join, relative } from 'node:path'
 import { launch } from 'puppeteer'
 import handler from 'serve-handler'
 
-import { reportProblems, walkFiles } from './check-utils.ts'
+import { assertDirExists, reportProblems, walkFiles } from './check-utils.ts'
 import { distDir } from './paths.ts'
 
 import type { Page } from 'puppeteer'
@@ -243,6 +243,8 @@ function layerOrderProblems(htmlPath: string) {
 function findPage(pages: string[], marker: string) {
   return pages.find(p => readFileSync(p, 'utf8').includes(marker))
 }
+
+assertDirExists(distDir, 'run `pnpm build` first.')
 
 const pages = walkFiles(distDir, name => name.endsWith('.html')).sort()
 const problems: string[] = []
