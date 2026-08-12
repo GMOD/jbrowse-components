@@ -339,9 +339,15 @@ export function makePin(
   slot: string,
   ...value: [] | [unknown]
 ): Pin {
+  // One walk of the cascade feeds both halves. The value-omitted form's
+  // on-value IS the settled value, and `active` compares against the raw
+  // promoted default of that same resolution — taking the two from separate
+  // `resolveSlot` calls read as though they could disagree, and cost a second
+  // walk per pin on a menu that builds a dozen of them.
+  const res = resolveSlot(self, slot)
   // rest-tuple, not `value?: unknown`: the promote-current case has to stay
   // distinguishable from an explicit `undefined` rather than collapsing into it.
-  const onValue = value.length ? value[0] : resolveSlot(self, slot).value
+  const onValue = value.length ? value[0] : res.value
   // The value-omitted form can't fail this — the cascade only ever settles on a
   // usable value — so this is entirely about a caller-supplied one. An on-value
   // the cascade would refuse builds a pin that is inert *and* silent: clicking
@@ -359,7 +365,10 @@ export function makePin(
       `cannot pin ${JSON.stringify(onValue)} as the default for config slot "${slot}": the cascade refuses it, so the pin could never light up`,
     )
   }
-  const active = isPromotableDefault(self, slot, onValue)
+  // `isPromotableDefault` off the resolution already in hand — same comparison,
+  // same `deepEqual`, no second walk. The snackbar below still calls the named
+  // predicate, because it must re-derive the answer at click time.
+  const active = deepEqual(res.promoted, onValue)
   return {
     slot,
     active,

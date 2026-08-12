@@ -1,8 +1,8 @@
-import { checkboxItem, radioItems } from './toggleMenuItems.ts'
+import { checkboxItem, radioItem, radioItems } from './toggleMenuItems.ts'
 
 import type { Pin } from '../configuration/promotableDefaults.ts'
 import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
-import type { CheckboxItemOptions, RadioOption } from './toggleMenuItems.ts'
+import type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 
 // Every builder here describes the trailing pin (`pin`) rather than
 // rendering it. That is what keeps this module — and therefore every state
@@ -43,7 +43,7 @@ export function promotableToggleItem({
   checked: boolean
   onToggle: () => void
   pin: Pin
-} & CheckboxItemOptions): CheckboxMenuItem {
+} & SettingRowOptions): CheckboxMenuItem {
   return {
     ...checkboxItem(label, checked, onToggle, opts),
     pin: { control: pin, label },
@@ -60,32 +60,26 @@ export function promotableToggleItem({
 // or a display whose slot isn't promotable at all (the shared colorBy menu on
 // gwas/variants); and the alignments size presets, whose group is gated row by
 // row (`needsContent`) and mixes in a non-promotable "Custom..." peer.
-// `keepMenuOpen` is passed through as in `promotableToggleItem`.
+//
+// **The row itself is `radioItem`'s**, for the reason `promotableToggleItem`'s
+// is `checkboxItem`'s: it was a second literal, and it had drifted the same way
+// its checkbox sibling had — naming `subLabel`/`helpText`/`keepMenuOpen` by hand
+// and so silently dropping `disabled` and `disabledHelpText`, which the
+// alignments size presets have to bolt back on afterwards (`needsContent`).
 export function promotableRadioItem({
   label,
-  subLabel,
-  helpText,
   checked,
   onClick,
   pin,
-  keepMenuOpen,
+  ...opts
 }: {
   label: string
-  subLabel?: string
-  helpText?: string
   checked: boolean
   onClick: () => void
   pin?: Pin
-  keepMenuOpen?: boolean
-}): RadioMenuItem {
+} & SettingRowOptions): RadioMenuItem {
   return {
-    label,
-    subLabel,
-    helpText,
-    type: 'radio',
-    checked,
-    onClick,
-    keepMenuOpen,
+    ...radioItem(label, checked, onClick, opts),
     ...(pin && {
       pin: { control: pin, label },
     }),

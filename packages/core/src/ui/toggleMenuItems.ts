@@ -10,16 +10,17 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 // live in `promotableMenuItems.ts`; reach for those when the setting has a
 // `Pin`.
 
-// The row decorations neither builder decides for itself. `subLabel` renders
+// The row decorations no builder here decides for itself. `subLabel` renders
 // inline under the label; `helpText` claims a "?" column that
 // `getMenuColumnFlags` then reserves on EVERY row of the menu, so prefer a
 // subLabel for a short clarifier and keep helpText for real prose.
-// `keepMenuOpen: false` is for a checkbox whose click opens a dialog.
+// `keepMenuOpen: false` is for a settings row whose click opens a dialog.
 //
-// Named rather than inlined because `promotableToggleItem` builds its row
-// *through* `checkboxItem` and has to offer the same set — spelling it twice is
-// how the two drifted, the promotable one silently lacking `disabled`.
-export interface CheckboxItemOptions {
+// One bag for both row kinds, named rather than inlined, because each
+// promotable builder builds its row *through* the plain one here and has to
+// offer the same set — spelling it twice is how the two drifted, the promotable
+// checkbox silently lacking `disabled` and the promotable radio the same three.
+export interface SettingRowOptions {
   helpText?: string
   subLabel?: string
   disabled?: boolean
@@ -31,13 +32,31 @@ export function checkboxItem(
   label: string,
   checked: boolean,
   onToggle: () => void,
-  opts?: CheckboxItemOptions,
+  opts?: SettingRowOptions,
 ): CheckboxMenuItem {
   return {
     label,
     type: 'checkbox',
     checked,
     onClick: onToggle,
+    ...opts,
+  }
+}
+
+// One radio row. The singular of `radioItems`, and what
+// `promotableRadioItem` builds through, so a lone radio row and a member of a
+// group are the same object plus or minus its pin.
+export function radioItem(
+  label: string,
+  checked: boolean,
+  onClick: () => void,
+  opts?: SettingRowOptions,
+): RadioMenuItem {
+  return {
+    label,
+    type: 'radio',
+    checked,
+    onClick,
     ...opts,
   }
 }
@@ -56,14 +75,14 @@ export function radioItems<T extends string>(
   current: T | undefined,
   setMode: (m: T) => void,
 ): RadioMenuItem[] {
-  return options.map(({ value, label, subLabel, helpText }) => ({
-    label,
-    subLabel,
-    helpText,
-    type: 'radio' as const,
-    checked: current === value,
-    onClick: () => {
-      setMode(value)
-    },
-  }))
+  return options.map(({ value, label, ...opts }) =>
+    radioItem(
+      label,
+      current === value,
+      () => {
+        setMode(value)
+      },
+      opts,
+    ),
+  )
 }

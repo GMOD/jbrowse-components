@@ -22,11 +22,13 @@ components in every host's first paint. **Build a row from
 
 Each promotable builder is its plain counterpart **plus a pin**, and is written
 that way — `promotableToggleItem` builds its row through `checkboxItem`,
-`promotableRadioItems` through `radioItems`. So a change to what a settings row
-_is_ reaches both forms, which is the failure `checkboxItem`'s own comment
-records (a menu regressing by omission). The two literals had already drifted:
-the promotable checkbox silently dropped
-`subLabel`/`disabled`/`disabledHelpText`.
+`promotableRadioItem` through `radioItem`, `promotableRadioItems` through
+`radioItems`. So a change to what a settings row _is_ reaches both forms, which
+is the failure `checkboxItem`'s own comment records (a menu regressing by
+omission). Both literals had drifted the same way before they were shared: each
+named its decorations by hand and so silently dropped
+`subLabel`/`disabled`/`disabledHelpText`. `SettingRowOptions` is the one bag
+both kinds of row take, so there is nothing left to spell twice.
 
 The same rule inside a row: a menu item describes its trailing control
 (`pin: { control, label }`) and `menuItemAdornment.tsx` builds `PinAdornment`
