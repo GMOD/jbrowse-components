@@ -1,11 +1,10 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { searchBoxPrefsMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observer } from 'mobx-react'
 
 import type { LinearComparativeViewModel } from '../model.ts'
-import type { SearchBoxPrefs } from '@jbrowse/plugin-linear-genome-view'
+import type { SearchBoxPrefs } from './useSearchBoxPrefs.ts'
 
 const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model,
@@ -14,6 +13,8 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model: LinearComparativeViewModel
   prefs: SearchBoxPrefs
 }) {
+  const { showSearchBoxes, setShowSearchBoxes, sideBySide, setSideBySide } =
+    prefs
   return (
     <CascadingMenuButton
       tooltip="View options"
@@ -32,7 +33,38 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
           icon: VisibilityIcon,
           subMenu: [
             ...model.showMenuItems(),
-            ...searchBoxPrefsMenuItems(prefs),
+            {
+              label: 'Show search boxes',
+              type: 'checkbox' as const,
+              checked: showSearchBoxes,
+              onClick: () => {
+                setShowSearchBoxes(!showSearchBoxes)
+              },
+            },
+            {
+              label: 'Search box orientation',
+              subMenu: [
+                {
+                  label: 'Side-by-side',
+                  type: 'radio' as const,
+                  checked: sideBySide,
+                  onClick: () => {
+                    setSideBySide(true)
+                  },
+                },
+                {
+                  // "Stacked", not "Vertical": the breakpoint split view's menu
+                  // names the same state, and these two drifted. See
+                  // useSearchBoxPrefs.ts
+                  label: 'Stacked',
+                  type: 'radio' as const,
+                  checked: !sideBySide,
+                  onClick: () => {
+                    setSideBySide(false)
+                  },
+                },
+              ],
+            },
           ],
         },
       ]}

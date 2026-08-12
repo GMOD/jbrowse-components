@@ -10,7 +10,6 @@ const useStyles = makeStyles()(theme => ({
   bp: {
     display: 'flex',
     alignItems: 'center',
-    color: theme.palette.text.secondary,
   },
   searchBox: {
     display: 'flex',

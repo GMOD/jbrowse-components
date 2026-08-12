@@ -187,15 +187,6 @@ export {
 // straight from the component rather than through `LinearGenomeView/index.ts`
 // so the view registration module holds no React component at all.
 export { default as SearchBox } from './LinearGenomeView/components/SearchBox.tsx'
-// The multi-view headers' search-box settings live beside the search box they
-// are about, not in core: only the views that stack several LGVs in one header
-// (linear-comparative, breakpoint-split) have them, and both already depend on
-// this plugin.
-export {
-  type SearchBoxPrefs,
-  searchBoxPrefsMenuItems,
-  useSearchBoxPrefs,
-} from './searchBoxPrefs.ts'
 export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
 export {
   linearGenomeViewPropKeys,
