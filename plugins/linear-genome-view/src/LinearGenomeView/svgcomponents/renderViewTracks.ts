@@ -20,7 +20,15 @@ export interface SvgExportTrack {
   displays: {
     height: number
     svgLegendWidth?: () => number
-    renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
+    /**
+     * Optional, and the option is the point: SVG export is a substantial extra
+     * implementation for a display type, and a third-party plugin that has not
+     * written one should cost its own track a place in the figure, not cost
+     * everyone in the session the ability to export at all. A display without
+     * one is dropped from the export the same way a minimized track is, and
+     * `skippedTracks` carries it back out so the user is told which.
+     */
+    renderSvg?: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
   }[]
 }
 
@@ -32,6 +40,12 @@ export interface ViewTracksSvg<T> {
   tracksHeight: number
   /** 0 unless `reserveLegendWidth` was asked for */
   legendWidth: number
+  /**
+   * Visible tracks left out because their display implements no `renderSvg`.
+   * Not an error, but not nothing either — a figure quietly missing a track is
+   * its own trap, so callers report these once per export.
+   */
+  skippedTracks: T[]
 }
 
 /**
@@ -79,9 +93,14 @@ export async function renderViewTracks<T extends SvgExportTrack>({
   // a legend, so its displays float theirs over the plot instead.
   reserveLegendWidth?: boolean
 }): Promise<ViewTracksSvg<T>> {
-  const tracks = [...view.pinnedTracks, ...view.unpinnedTracks].filter(
+  const visible = [...view.pinnedTracks, ...view.unpinnedTracks].filter(
     t => !t.minimized,
   )
+  // Partitioned before anything is measured, so a skipped track reserves no
+  // height and takes no place in the label gutter — the alternative is a figure
+  // with a labelled empty band where the track would have been.
+  const tracks = visible.filter(t => t.displays[0]?.renderSvg)
+  const skippedTracks = visible.filter(t => !t.displays[0]?.renderSvg)
   const legendWidth = reserveLegendWidth
     ? max(
         tracks.map(track => track.displays[0]!.svgLegendWidth?.() ?? 0),
@@ -94,7 +113,7 @@ export async function renderViewTracks<T extends SvgExportTrack>({
   const displayResults = await awaitSvgRenders(
     tracks.map(async track => ({
       track,
-      result: await track.displays[0]!.renderSvg({
+      result: await track.displays[0]!.renderSvg!({
         ...opts,
         theme,
         legendWidth,
@@ -106,5 +125,6 @@ export async function renderViewTracks<T extends SvgExportTrack>({
     displayResults,
     tracksHeight: totalHeight(tracks, textHeight, trackLabels),
     legendWidth,
+    skippedTracks,
   }
 }

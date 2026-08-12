@@ -9,6 +9,7 @@ import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
+  notifySkippedSvgTracks,
   trackLabelLeftOffset,
 } from './util.ts'
 
@@ -50,7 +51,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   // own readiness wait — block renderers await their byte estimate inside
   // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout inside
   // their own `renderSvg` implementations.
-  const { tracks, displayResults, tracksHeight, legendWidth } =
+  const { tracks, displayResults, tracksHeight, legendWidth, skippedTracks } =
     await renderViewTracks({
       view: model,
       opts,
@@ -61,6 +62,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       // canvas below so a legend sits beside the plot rather than over it
       reserveLegendWidth: true,
     })
+  notifySkippedSvgTracks(session, skippedTracks)
 
   // The view geometry is read *after* the displays' waits, never before —
   // SVGHeader re-reads both of these when it renders (later still, inside

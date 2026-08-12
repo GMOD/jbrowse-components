@@ -263,6 +263,33 @@ export function svgTrackName(
   return coarseStripHTML(getTrackName(track.configuration, session))
 }
 
+/**
+ * Tell the user which visible tracks the export left out because their display
+ * type implements no `renderSvg`. Called once per export, after the renders, by
+ * each of the three view exports — the stacked ones flatten every row's
+ * `skippedTracks` into one call rather than notifying per row.
+ *
+ * Skipping is deliberate (see `SvgExportTrack.renderSvg`), so this is
+ * informational rather than an error. But it is not silent: a figure that is
+ * quietly short a track is worse than one whose author was told why, and the
+ * reader of the file has no way to tell the difference afterwards.
+ */
+export function notifySkippedSvgTracks(
+  session: AbstractSessionModel,
+  skipped: { configuration: AnyConfigurationModel }[],
+) {
+  if (skipped.length === 0) {
+    return
+  }
+  const names = skipped.map(t => svgTrackName(t, session)).join(', ')
+  session.notify(
+    `Not included in the SVG: ${names}. ${
+      skipped.length === 1 ? 'Its display type does' : 'Their display types do'
+    } not support SVG export.`,
+    'info',
+  )
+}
+
 // Horizontal gutter reserved for 'left' track labels (0 in every other mode).
 // Takes an already-minimized-filtered track list, so the reserved width matches
 // the labels that actually get drawn.

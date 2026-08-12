@@ -12,6 +12,7 @@ import {
   defaultTextHeight,
   getRowHeaderLayout,
   labelOffset,
+  notifySkippedSvgTracks,
   renderViewTracks,
   trackLabelLeftOffset,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -67,6 +68,11 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     views.map(view =>
       renderViewTracks({ view, opts, theme, textHeight, trackLabels }),
     ),
+  )
+  // one message for the whole stack, not one per row
+  notifySkippedSvgTracks(
+    session,
+    rowTracks.flatMap(r => r.skippedTracks),
   )
   const heights = rowTracks.map(r => r.tracksHeight + offset)
 

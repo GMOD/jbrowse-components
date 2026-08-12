@@ -124,6 +124,57 @@ test('minimized tracks are dropped from both the render and the measurement', as
   expect(tracksHeight).toBe(100 + TEXT_HEIGHT + trackSpacing)
 })
 
+// `renderSvg` is optional so that a display type which never implemented it
+// costs its own track a place in the figure rather than costing the whole
+// session the ability to export. It used to be called unconditionally, so such
+// a display threw and awaitSvgRenders aggregated the throw into an export
+// failure that saved nothing.
+test('a display with no renderSvg is skipped, not thrown on', async () => {
+  const log: string[] = []
+  const supported = makeTrack('supported', { height: 100 }, log)
+  const unsupported = makeTrack('unsupported', { height: 100 }, log) as {
+    name: string
+    minimized: boolean
+    displays: { height: number; renderSvg?: unknown }[]
+  }
+  delete unsupported.displays[0]!.renderSvg
+
+  const { tracks, displayResults, tracksHeight, skippedTracks } = await run({
+    pinned: [],
+    unpinned: [supported, unsupported as ReturnType<typeof makeTrack>],
+  })
+
+  expect(tracks.map(t => t.name)).toEqual(['supported'])
+  expect(displayResults.map(r => r.track.name)).toEqual(['supported'])
+  expect(skippedTracks.map(t => t.name)).toEqual(['unsupported'])
+  // and it reserves no height: a labelled empty band where the track would
+  // have been is the other way to get this wrong
+  expect(tracksHeight).toBe(100 + TEXT_HEIGHT + trackSpacing)
+})
+
+test('a skipped track does not enter the legend measurement', async () => {
+  const log: string[] = []
+  const supported = makeTrack('supported', { height: 10, legendWidth: 40 }, log)
+  const unsupported = makeTrack(
+    'unsupported',
+    { height: 10, legendWidth: 300 },
+    log,
+  ) as { displays: { renderSvg?: unknown }[] }
+  delete unsupported.displays[0]!.renderSvg
+
+  const { legendWidth } = await run(
+    {
+      pinned: [],
+      unpinned: [supported, unsupported as ReturnType<typeof makeTrack>],
+    },
+    { reserveLegendWidth: true },
+  )
+
+  // the widest legend belongs to a track that is not drawn, so reserving for it
+  // would leave a 300px empty gutter beside the figure
+  expect(legendWidth).toBe(40)
+})
+
 test('pinned tracks lead, as they do on screen', async () => {
   const log: string[] = []
   const { tracks } = await run({

@@ -245,6 +245,7 @@ export {
   getRowHeaderLayout,
   labelBaselineFromTop,
   labelOffset,
+  notifySkippedSvgTracks,
   totalHeight,
   trackBoxHeight,
   trackBoxOffsets,
