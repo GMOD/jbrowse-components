@@ -71,7 +71,14 @@ describe('getRefNameOptions', () => {
 })
 
 describe('getRefNameOptions globs', () => {
-  const regions = (refNames: string[]) => refNames.map(refName => ({ refName }))
+  // an assembly with no aliases of its own. `allRefNames` still lists every
+  // region, because buildRefNameMaps identity-maps each one — an assembly whose
+  // regions are loaded always answers to at least its own names
+  const regions = (refNames: string[]) => ({
+    regions: refNames.map(refName => ({ refName })),
+    allRefNames: refNames,
+    getCanonicalRefName: (n: string) => n,
+  })
   const hap = regions([
     'chr1_hap1',
     'chr2_hap1',
@@ -160,6 +167,67 @@ describe('getRefNameOptions globs', () => {
       Array.from({ length: 5000 }, (_, i) => `scaffold${i}_alt`),
     )
     expect(getRefNameOptions(many, '*_alt')).toHaveLength(101)
+  })
+})
+
+describe('getRefNameOptions aliases', () => {
+  // an Ensembl/NCBI-named assembly carrying UCSC aliases, which is the ordinary
+  // case for anyone whose FASTA and whose habits disagree
+  const aliasOf: Record<string, string> = { chr1: '1', chr2: '2', chrM: 'MT' }
+  const ensembl = {
+    regions: [{ refName: '1' }, { refName: '2' }, { refName: 'MT' }],
+    // as an assembly builds it: aliases AND the canonical names, identity-mapped
+    allRefNames: ['chr1', 'chr2', 'chrM', '1', '2', 'MT'],
+    getCanonicalRefName: (n: string) => aliasOf[n] ?? n,
+  }
+  const labels = (options: ReturnType<typeof getRefNameOptions>) =>
+    options.map(getOptionLabel)
+
+  it('globs against aliases and labels with the canonical name', () => {
+    // the bug: matching `regions` alone saw only 1/2/MT, so `chr*` — which the
+    // text-search half of this same dropdown can never answer, since nothing
+    // PREFIX-matches the literal `chr*` — found nothing at all
+    expect(labels(getRefNameOptions(ensembl, 'chr*')).slice(1)).toEqual([
+      '1',
+      '2',
+      'MT',
+    ])
+  })
+
+  it('takes a region once when several of its names match', () => {
+    const many = {
+      regions: [{ refName: '1' }],
+      allRefNames: ['chr1', 'NC_000001.11', '1'],
+      getCanonicalRefName: () => '1',
+    }
+    expect(labels(getRefNameOptions(many, '*1*'))).toEqual(['1'])
+  })
+
+  it('lists alias matches in assembly order, not alias-list order', () => {
+    const scrambled = { ...ensembl, allRefNames: ['chrM', 'chr2', 'chr1'] }
+    expect(labels(getRefNameOptions(scrambled, 'chr*')).slice(1)).toEqual([
+      '1',
+      '2',
+      'MT',
+    ])
+  })
+
+  it('substring queries reach aliases too, so the two readings agree', () => {
+    expect(labels(getRefNameOptions(ensembl, 'chrM'))).toEqual(['MT'])
+  })
+
+  it('lists nothing for an unloaded assembly, without consulting the aliases', () => {
+    // setLoaded writes regions and refNameAliases together, so this is the only
+    // shape "not loaded yet" takes — there is no half-loaded assembly with
+    // regions but no names, and so no canonical-only path to fall back to.
+    // getCanonicalRefName THROWS in this state, which is what the call asserts
+    const unloaded = {
+      getCanonicalRefName: () => {
+        throw new Error('aliases not loaded')
+      },
+    }
+    expect(getRefNameOptions(unloaded, '*')).toEqual([])
+    expect(getRefNameOptions(undefined, 'chr')).toEqual([])
   })
 })
 

@@ -65,14 +65,23 @@ function selectAllOption(matches: string[], pattern: string): Option {
   }
 }
 
+// The part of an Assembly this needs, duck-typed so the matching can be tested
+// without building one.
+export interface RefNameSource {
+  regions?: readonly { refName: string }[]
+  // canonical names AND aliases. Undefined until the assembly's aliases load
+  allRefNames?: readonly string[]
+  getCanonicalRefName: (name: string) => string | undefined
+}
+
 /**
  * The browse/pre-fetch fallback list, shown while a typed query is in flight and
  * when it comes back empty (typed queries otherwise resolve through
- * fetchResults). An assembly can hold ~10^6 refNames, so match and materialize
- * in one bounded pass rather than building a million option objects or slicing
- * first — slicing first would hide every refName past the cap from the filter,
- * so a substring of a late scaffold's name matched nothing. Collecting one past
- * the cap lets `cap` still render its "keep typing" hint.
+ * fetchResults). An assembly can hold ~10^6 refNames, so this stays bounded:
+ * matching stops once it has one hit past whichever cap applies, and nothing is
+ * sliced before filtering — slicing first would hide every refName past the cap
+ * from the filter, so a substring of a late scaffold's name matched nothing.
+ * That extra hit is what lets `cap` render its "keep typing" hint.
  *
  * A query containing `*` is ALSO read as an anchored glob, the same reading
  * `selectNamedRegions` gives a `displayedRegionNames` entry — so `*_MATERNAL`
@@ -84,21 +93,61 @@ function selectAllOption(matches: string[], pattern: string): Option {
  * and not a resolver — an extra row in a list the user is looking at costs
  * nothing, where an extra region in a resolved set is a wrong answer.
  *
- * Only a glob query does the extra scanning. A plain substring query takes the
- * same bounded path, and costs the same, as it always has.
+ * BOTH READINGS MATCH ALIASES, and resolve their hits to the canonical name, so
+ * a pattern sees the names a user actually types. `chr*` has to work on an
+ * assembly whose FASTA calls its chromosomes `1`, `2`, `3`, and matching
+ * `regions` alone — canonical names only — meant it silently matched nothing
+ * there. `searchRefNames`, which fills this same dropdown whenever the text
+ * index answers, has always searched `allRefNames`; a glob is precisely the
+ * query it can never answer (nothing PREFIX-matches the literal `chr*`), so
+ * without this the two halves of one dropdown disagreed about which names exist.
+ * Labelling with the canonical name is also its choice, and for its reason: it
+ * is the name the view will display.
  */
 export function getRefNameOptions(
-  assembly: RefNameMatchSource | undefined,
+  assembly: RefNameSource | undefined,
   inputValue: string,
 ) {
+  const regions = assembly?.regions ?? []
   const query = inputValue.toLowerCase()
   const glob = query.includes('*') ? globToRegExp(query, 'i') : undefined
+  // A glob may gather up to MAX_SELECT_ALL for its bulk row; a plain query never
+  // needs more than the visible list, so it keeps the tighter bound it had.
+  const ceiling = glob ? MAX_SELECT_ALL : MAX_OPTIONS
+  // Every name the assembly answers to — aliases and canonical alike, since
+  // buildRefNameMaps identity-maps each region, so this is never short of
+  // `regions`. There is deliberately no canonical-only fallback for "aliases
+  // haven't loaded": `setLoaded` writes regions and refNameAliases in ONE
+  // action, so an absent list means an unloaded assembly, whose `regions` is
+  // equally absent and which therefore has nothing to list either way. Writing
+  // the fallback anyway would mean a glob quietly matching a smaller set of
+  // names in a state that cannot arise — the silent half-answer this whole
+  // alias fix exists to remove. It is also what makes getCanonicalRefName safe
+  // to call, since that THROWS before aliases load and is only ever reached
+  // here for a name that came out of this list.
+  const candidates = assembly?.allRefNames ?? []
+  const canonical = (n: string) => assembly?.getCanonicalRefName(n) ?? n
+
+  // Which regions match, by canonical name. Several aliases collapsing onto one
+  // region is the ordinary case (`chr1`, `NC_000001.11` and `1` are one contig),
+  // so this is a Set rather than a count.
+  const hits = new Set<string>()
+  for (const name of candidates) {
+    if (name.toLowerCase().includes(query) || glob?.test(name)) {
+      hits.add(canonical(name))
+      if (hits.size > ceiling) {
+        break
+      }
+    }
+  }
+
+  // Emitted by walking `regions`, so the list is in ASSEMBLY order rather than
+  // whatever order the alias file happened to list its names in — the same
+  // two-pass shape, for the same reason, as selectNamedRegions' glob branch.
   const options: Option[] = []
-  // gathered only for a glob, and only to build the bulk option below; one past
-  // the ceiling is all it takes to know the ceiling was passed
   const matches: string[] = []
   for (const { refName } of regions) {
-    if (!(refName.toLowerCase().includes(query) || glob?.test(refName))) {
+    if (!hits.has(refName)) {
       continue
     }
     if (options.length <= MAX_OPTIONS) {
@@ -106,16 +155,9 @@ export function getRefNameOptions(
         result: new RefSequenceResult({ refName, label: refName }),
       })
     }
-    if (glob && matches.length <= MAX_SELECT_ALL) {
-      matches.push(refName)
-    }
-    // stop once neither list can learn anything more: the options are one past
-    // their cap, which is all `cap` needs to render its hint, and the match list
-    // is one past the ceiling, which withholds the bulk option either way
-    if (
-      options.length > MAX_OPTIONS &&
-      (!glob || matches.length > MAX_SELECT_ALL)
-    ) {
+    matches.push(refName)
+    // every hit is placed, so there is nothing later in `regions` to find
+    if (matches.length === hits.size) {
       break
     }
   }
