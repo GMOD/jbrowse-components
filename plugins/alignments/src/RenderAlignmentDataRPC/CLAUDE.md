@@ -22,7 +22,11 @@ GPU_RENDERING.md §"Whole-map synced".
 
 `chainGroupingKey` is the single source of truth for by-name grouping. It
 returns the QNAME for primary/supplementary but a **unique synthetic key for
-secondary alignments**, so a multimapper never joins its primary's chain.
+secondary alignments**, so a multimapper never joins its primary's chain — and
+for a feature with **no name at all**, which is not a SAM case: a PAF/synteny
+block carries no QNAME, and keyed by the empty one every block in the region
+became a single chain the moment `linkedReads` was set on LGVSyntenyDisplay.
+`groupReadsByName` (both twins) skips a nameless read for the same reason.
 
 **Keep every dimension a closed set; `MAX_GROUPS` is only the backstop.** Each
 group allocates region-width depth arrays and its own GPU coverage buffer, so a
