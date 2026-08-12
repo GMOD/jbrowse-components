@@ -4,6 +4,13 @@ import {
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
+// The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
+// the same import the bezier overlay makes. This pass spelled it
+// `colorType % css.length`, the wrap that file's `min` explicitly replaced: it
+// agrees with the clamp on every slot in use and resolves an out-of-range one to
+// a different REAL colour instead of the last slot, which is drift review cannot
+// see.
+import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
   LINKED_READ_LINE_ALPHA,
   LINKED_READ_LINE_WIDTH_PX,
@@ -66,7 +73,8 @@ export function drawLinkedReadLines(
       const endBp = region.linkedReadLinePositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      ctx.strokeStyle = css[region.linkedReadLineColorTypes[i]! % css.length]!
+      ctx.strokeStyle =
+        css[linkedReadColorSlot(region.linkedReadLineColorTypes[i]!)]!
       ctx.beginPath()
       ctx.moveTo(x1, y1)
       ctx.lineTo(x2, y2)

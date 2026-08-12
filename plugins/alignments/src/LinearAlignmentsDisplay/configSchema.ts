@@ -364,7 +364,12 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         // See promotableDefaults.ts.
         defaultValue: undefined,
         promotedBase: 'off',
-        description: 'Linked-read (barcode-chain) layout mode',
+        // Chains by QNAME — mates plus supplementary (split) segments onto one
+        // row. NOT a linked-read barcode (BX/MI) grouping, which this has never
+        // done and which the old wording ('barcode-chain') sent readers looking
+        // for. The menu row is "View as pairs / link supplementary alignments".
+        description:
+          'View as pairs / link supplementary alignments: put a read, its mate and its split segments on one row',
       },
       /**
        * #slot
@@ -421,7 +426,12 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       drawSingletons: {
         type: 'boolean',
         defaultValue: true,
-        description: 'Draw reads whose mate is unmapped',
+        // The filter is `filterChainFeatures`, which drops QNAME chains of ONE:
+        // reads whose mate AND whose supplementary segments are all absent from
+        // the view. An unmapped mate (flag 0x8) is a different question and this
+        // slot has never asked it — the menu helpText already said so.
+        description:
+          'Draw reads whose mate and split/supplementary segments are all absent from the view (samtools "singletons")',
       },
       /**
        * #slot
@@ -454,8 +464,11 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       colorSupplementaryChains: {
         type: 'boolean',
         defaultValue: false,
+        // Not paired-only: `readColorCategory` puts this override above both the
+        // paired and the unpaired split classifiers deliberately (5b8aa129d9 had
+        // scoped it to pairs, which made the tickbox a no-op on long reads).
         description:
-          'Paint paired supplementary chains a flat supplementary color',
+          'Paint every chain carrying a supplementary segment a flat supplementary color, paired or not',
       },
       /**
        * #slot
