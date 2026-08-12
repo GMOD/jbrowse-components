@@ -321,7 +321,7 @@ junction crossed by thirty reads is one thick curve rather than thirty identical
 curves stacked on the same pixels, so the arcs rank the evidence instead of only
 locating it. Thickness is on a log scale, and a connection supported by a single
 read draws at the width
-[`readConnectionsLineWidth`](/docs/config/LinearAlignmentsDisplay/#slot-readconnectionslinewidth)
+[`readConnectionsLineWidth`](/docs/config/linearalignmentsdisplay/#slot-readconnectionslinewidth)
 sets. Arcs coalesce only on exactly equal endpoints: junctions a few bases apart
 stay separate curves, because at long-read scale they are usually separate
 events. Which mate a read names first does not matter — a junction is one arc

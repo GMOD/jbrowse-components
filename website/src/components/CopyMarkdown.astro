@@ -1,7 +1,8 @@
 ---
-import { base, site } from 'astro:config/client'
+import { site } from 'astro:config/client'
 
 import { absolutizeMarkdownLinks } from '../lib/absolutize-markdown-links.ts'
+import { baseUrl } from '../lib/base-url.ts'
 import { retargetCodeBaseInMarkdown } from '../lib/code-base.ts'
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
 }
 
 const { markdown, title } = Astro.props
-const origin = `${site ?? ''}${base.replace(/\/$/, '')}`
+const origin = `${site ?? ''}${baseUrl}`
 const raw = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(markdown, origin))}`
 ---
 
@@ -48,6 +49,10 @@ const raw = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(
   const copyIcon = btn?.querySelector('.copy-icon')
   const checkIcon = btn?.querySelector('.check-icon')
   const original = label?.textContent
+  // Cancelled on re-click, so a second copy restarts the 1.5s rather than
+  // inheriting the first click's deadline — without this the button snapped
+  // back to "Copy markdown" while still reading "Copied!" from the newer press.
+  let reset
 
   btn?.addEventListener('click', async () => {
     // clipboard.writeText rejects on insecure origins and where the API is
@@ -66,7 +71,8 @@ const raw = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(
       checkIcon?.setAttribute('style', '')
       btn.classList.add('copied')
     }
-    setTimeout(() => {
+    clearTimeout(reset)
+    reset = setTimeout(() => {
       if (label) {
         label.textContent = original ?? 'Copy markdown'
       }

@@ -8,6 +8,19 @@ import page from '../styles/page.module.css'
 import styles from '../styles/search.module.css'
 
 const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
+
+// The filterable buckets, in the order they are offered and ranked. One list
+// rather than three: the checkboxes, the enabled-set and the sort priority were
+// each written out per category, so adding a bucket (or renaming one, as the
+// 2026-07 reorg did) meant three edits that nothing tied together. 'other' is
+// deliberately absent — it is the always-shown fallthrough, so it has no
+// checkbox and sorts last (see renderResults).
+const FILTERS = [
+  { id: 'user', label: 'User guides' },
+  { id: 'config', label: 'Config guides' },
+  { id: 'developer', label: 'Developer guides' },
+  { id: 'autogen', label: 'Reference (config schema, state models)' },
+]
 ---
 
 <BaseLayout
@@ -28,44 +41,42 @@ const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
       <span class={styles.count} id="search-count"></span>
     </div>
     <div class={styles.filters}>
-      <label class={styles.filterLabel}>
-        <input type="checkbox" id="filter-user" checked /> User guides
-      </label>
-      <label class={styles.filterLabel}>
-        <input type="checkbox" id="filter-config" checked /> Config guides
-      </label>
-      <label class={styles.filterLabel}>
-        <input type="checkbox" id="filter-developer" checked /> Developer guides
-      </label>
-      <label class={styles.filterLabel}>
-        <input type="checkbox" id="filter-autogen" checked /> Reference (config schema,
-        state models)
-      </label>
+      {
+        FILTERS.map(filter => (
+          <label class={styles.filterLabel}>
+            <input
+              type="checkbox"
+              id={`filter-${filter.id}`}
+              data-category={filter.id}
+              checked
+            />{' '}
+            {filter.label}
+          </label>
+        ))
+      }
     </div>
     <ul id="search-results" class={styles.results}></ul>
   </div>
 </BaseLayout>
 
-<script is:inline define:vars={{ baseUrl, searchCategories }}>
+<script is:inline define:vars={{ baseUrl, searchCategories, FILTERS }}>
   const input = document.getElementById('search-input')
   const countEl = document.getElementById('search-count')
   const resultsList = document.getElementById('search-results')
-  const filterUser = document.getElementById('filter-user')
-  const filterConfig = document.getElementById('filter-config')
-  const filterDeveloper = document.getElementById('filter-developer')
-  const filterAutogen = document.getElementById('filter-autogen')
+  const checkboxes = [
+    ...document.querySelectorAll('input[type="checkbox"][data-category]'),
+  ]
 
   let pagefind
   let debounce
   let lastResults = []
 
-  const CATEGORY_PRIORITY = {
-    user: 0,
-    config: 1,
-    developer: 2,
-    autogen: 3,
-    other: 4,
-  }
+  // Rank is the offered order, with the unfilterable 'other' bucket after every
+  // named one. Read off FILTERS so it cannot disagree with the checkboxes.
+  const CATEGORY_PRIORITY = Object.fromEntries([
+    ...FILTERS.map((filter, i) => [filter.id, i]),
+    ['other', FILTERS.length],
+  ])
 
   // searchCategories is generated from sidebars.json (buildSearchCategoryMap
   // in docs-sidebar.ts) so this stays in sync with the actual sidebar
@@ -81,20 +92,14 @@ const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
   }
 
   function renderResults() {
-    const enabled = new Set()
-    if (filterUser.checked) {
-      enabled.add('user')
+    // 'other' is never filtered out — it is where a page with no bucket lands,
+    // so no checkbox may hide it.
+    const enabled = new Set(['other'])
+    for (const checkbox of checkboxes) {
+      if (checkbox.checked) {
+        enabled.add(checkbox.dataset.category)
+      }
     }
-    if (filterConfig.checked) {
-      enabled.add('config')
-    }
-    if (filterDeveloper.checked) {
-      enabled.add('developer')
-    }
-    if (filterAutogen.checked) {
-      enabled.add('autogen')
-    }
-    enabled.add('other')
 
     const visible = lastResults.filter(item => enabled.has(item.category))
     countEl.textContent = `${visible.length} result${visible.length === 1 ? '' : 's'}`
@@ -140,6 +145,9 @@ const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
     const pf = await getPagefind()
     const { results: found } = await pf.search(query)
     const items = await Promise.all(found.slice(0, 40).map(r => r.data()))
+    if (input.value !== query) {
+      return // a newer keystroke already superseded this search (as SearchBox.astro)
+    }
     lastResults = items
       .map(item => ({ ...item, category: getCategory(item.url) }))
       .sort(
@@ -148,12 +156,7 @@ const searchCategories = buildSearchCategoryMap(await getCollection('docs'))
     renderResults()
   }
 
-  for (const checkbox of [
-    filterUser,
-    filterConfig,
-    filterDeveloper,
-    filterAutogen,
-  ]) {
+  for (const checkbox of checkboxes) {
     checkbox.addEventListener('change', renderResults)
   }
 

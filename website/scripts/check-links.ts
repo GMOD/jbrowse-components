@@ -171,7 +171,12 @@ for (const [anchor, label] of [
   const byFile = new Map<string, string[]>()
   for (const p of group) {
     const rel = p.file.slice(distDir.length + 1)
-    byFile.set(rel, [...(byFile.get(rel) ?? []), p.link])
+    const links = byFile.get(rel)
+    if (links) {
+      links.push(p.link)
+    } else {
+      byFile.set(rel, [p.link])
+    }
   }
   errorLines.push(`Found ${group.length} ${label}:\n`)
   for (const [file, links] of byFile) {
