@@ -1,29 +1,28 @@
-import { useEffect, useRef, useState } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { dv, tabColors } from './dockviewTheme.ts'
+import { TabStrip } from './TabStrip.tsx'
+import { dv } from './dockviewTheme.ts'
 import { indicatorRect } from './dropZone.ts'
+import { tabDomId, tabPanelDomId } from './panelChrome.ts'
+import { activeTabIn } from './tree.ts'
 
 import type { DropTarget } from './dropZone.ts'
 import type { WorkspaceLayout } from './model.ts'
-import type { PanelNode, TabNode } from './tree.ts'
-import type { TabDragHandlers } from './useLayoutDrag.ts'
+import type { PanelChrome } from './panelChrome.ts'
+import type { PanelNode } from './tree.ts'
 
 /**
  * One cell of the grid: a tab strip, and the content of whichever tab is
  * showing.
  *
- * The strip's structure is layout and lives here; what a tab is *called* and
- * what it *contains* are the app's, and arrive as render props. That split is
- * why this file knows nothing about JBrowse views.
+ * The strip and its state are `TabStrip`; this is the frame around them, and
+ * has no state of its own — it is a function of its node, which is the whole
+ * point of the layout being one MST tree.
  *
- * The strip is dockview's dark theme, transcribed in `dockviewTheme.ts` — see
- * there for why it is fixed rather than derived from the MUI theme. The line
- * between the two is the strip's lower edge: everything above it is chrome and
- * is dark in either JBrowse theme, everything below it is content and follows
- * the theme.
+ * The line between chrome and content is the strip's lower edge: everything
+ * above it is dockview's dark theme in either JBrowse theme (see
+ * `dockviewTheme.ts`), everything below it follows the app's.
  */
 
 const useStyles = makeStyles()(theme => ({
@@ -43,49 +42,6 @@ const useStyles = makeStyles()(theme => ({
     // dockview's — see `dockviewTheme.ts`. A cell is taller than its views
     // whenever they don't fill it, so this is most of what a panel shows.
     background: theme.palette.background.default,
-  },
-  tabStrip: {
-    display: 'flex',
-    flexShrink: 0,
-    boxSizing: 'border-box',
-    height: dv.tabsHeight,
-    fontSize: dv.tabsFontSize,
-    background: dv.tabsBackground,
-  },
-  tabs: {
-    display: 'flex',
-    overflowX: 'auto',
-    // shrink but never GROW: the panel actions are the next child of the strip,
-    // so a tab list that takes the leftover space pushes the `+` to the far
-    // right edge, arbitrarily far from the tab it acts on. `0 1 auto` sizes the
-    // list to its tabs and leaves the `+` beside the last one, and the shrink
-    // half is what makes it scroll here rather than push the `+` off the strip.
-    flex: '0 1 auto',
-    minWidth: 0,
-    // the strip is chrome, so a scrollbar across it would be noise
-    scrollbarWidth: 'none',
-    '&::-webkit-scrollbar': { display: 'none' },
-  },
-  tab: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
-    boxSizing: 'border-box',
-    maxWidth: 240,
-    padding: '0.25rem 0.5rem',
-    cursor: 'pointer',
-    userSelect: 'none',
-    touchAction: 'none',
-    borderRight: `1px solid ${dv.tabDividerColor}`,
-    '&:hover .jbrowse-tab-menu': { visibility: 'visible' },
-    // a keyboard user needs the ⋮ too, and hover is not a thing they can do
-    '&:focus-within .jbrowse-tab-menu': { visibility: 'visible' },
-    // the strip is dark in either theme, so the focus ring is the drop
-    // indicator's blue rather than the UA default black-on-dark
-    '&:focus-visible': {
-      outline: `2px solid ${dv.edgeDockIndicatorColor}`,
-      outlineOffset: -2,
-    },
   },
   content: {
     flex: 1,
@@ -117,143 +73,19 @@ const useStyles = makeStyles()(theme => ({
 interface PanelViewProps {
   panel: PanelNode
   layout: WorkspaceLayout
-  renderTabLabel: (tab: TabNode) => React.ReactNode
-  renderTabContent: (tab: TabNode) => React.ReactNode
-  /** the panel's own buttons — new tab, split, close */
-  renderPanelActions?: (panel: PanelNode) => React.ReactNode
-  dragHandlers: TabDragHandlers
+  chrome: PanelChrome
   /** where an in-flight drag would land in THIS cell, if it is over this one */
   drop?: DropTarget
-  /** middle-click on a tab, which every tabbed UI closes it with */
-  onTabClose?: (tabId: string) => void
-}
-
-/**
- * The tab strip is a `tablist`, so the ids it wires `aria-controls` /
- * `aria-labelledby` with have to be DOM ids. Tab ids are `types.identifier` and
- * so unique within the tree, which is what makes prefixing them enough.
- */
-const tabDomId = (tabId: string) => `jbrowse-tab-${tabId}`
-const tabPanelDomId = (panelId: string) => `jbrowse-tabpanel-${panelId}`
-
-/**
- * A wheel event's delta in PIXELS.
- *
- * `deltaY` is only pixels when `deltaMode` says so. Firefox reports whole lines
- * for a mouse wheel — `deltaMode: 1`, `deltaY: ±3` — where Chrome reports
- * `deltaMode: 0`, `deltaY: ±100`. Using the raw number moves the strip three
- * pixels per notch there: scrolling, technically, and unusable in practice.
- *
- * The line height is nominal rather than measured. `getComputedStyle` per wheel
- * event to resolve a `line-height: normal` that is itself font-dependent buys
- * accuracy nobody can perceive in a scroll gesture, and the strip is a fixed
- * 35px of chrome in one size.
- */
-const WHEEL_LINE_PX = 16
-
-function wheelDeltaPixels(event: React.WheelEvent, pageSize: number) {
-  switch (event.deltaMode) {
-    case 1:
-      return event.deltaY * WHEEL_LINE_PX
-    case 2:
-      return event.deltaY * pageSize
-    default:
-      return event.deltaY
-  }
 }
 
 export const PanelView = observer(function PanelView({
   panel,
   layout,
-  renderTabLabel,
-  renderTabContent,
-  renderPanelActions,
-  dragHandlers,
+  chrome,
   drop,
-  onTabClose,
 }: PanelViewProps) {
   const { classes } = useStyles()
-  const active =
-    panel.tabs.find(t => t.id === panel.activeTabId) ?? panel.tabs[0]
-  const groupActive = layout.activePanelId === panel.id
-
-  // Roving tabindex: the strip is ONE tab stop, and the arrow keys move within
-  // it. Focus is tracked separately from selection because activation here is
-  // manual (see below), so the two genuinely differ while arrowing.
-  const stripRef = useRef<HTMLDivElement>(null)
-  const [focusedTabId, setFocusedTabId] = useState<string | undefined>(
-    undefined,
-  )
-  const roving = panel.tabs.find(t => t.id === focusedTabId)?.id ?? active?.id
-
-  // by dataset rather than an interpolated attribute selector: a tab id is
-  // nanoid output and would need CSS.escape, which jsdom does not have
-  function tabElement(tabId: string | undefined) {
-    return [...(stripRef.current?.children ?? [])].find(
-      child => (child as HTMLElement).dataset.tabId === tabId,
-    ) as HTMLElement | undefined
-  }
-
-  function focusTab(tabId: string) {
-    setFocusedTabId(tabId)
-    // focusing scrolls it into view on its own, which is the whole reason the
-    // keyboard could always reach an overflowing strip when the mouse could not
-    tabElement(tabId)?.focus()
-  }
-
-  /**
-   * Keep the shown tab in view.
-   *
-   * The strip scrolls, so a tab can become current while sitting outside it —
-   * `+` on a full strip appends a tab, makes it active, and leaves the user
-   * looking at the tabs it scrolled past. Clicking never needs this (you
-   * clicked something visible) and arrowing gets it from `focus()`, so this is
-   * for the tab that becomes current without being touched.
-   *
-   * `block: 'nearest'` so it cannot scroll an ancestor vertically. jsdom has no
-   * scrollIntoView at all, but `config/jest/scrollIntoView.js` already no-ops it
-   * for the whole suite — don't add an optional call for that, it reads as a
-   * browser that might not have the method.
-   */
-  useEffect(() => {
-    tabElement(active?.id)?.scrollIntoView({
-      block: 'nearest',
-      inline: 'nearest',
-    })
-  }, [active?.id])
-
-  /**
-   * MANUAL activation: arrows move focus, Enter/Space selects.
-   *
-   * The automatic form (arrowing selects as it goes) is the more common reading
-   * of the tabs pattern, and is wrong here for the reason WAI-ARIA names as its
-   * exception — showing a tab is expensive. Only the selected tab's views are
-   * mounted, and a JBrowse view costs a WebGL2 context per display against a
-   * ceiling of 16, so arrowing across five tabs would build and tear down five
-   * sets of them to pass through.
-   */
-  function onTabKeyDown(event: React.KeyboardEvent, tabId: string) {
-    const ids = panel.tabs.map(t => t.id)
-    const i = ids.indexOf(tabId)
-    const step =
-      event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
-    let next: string | undefined
-    if (step !== 0) {
-      next = ids[(i + step + ids.length) % ids.length]
-    } else if (event.key === 'Home') {
-      next = ids[0]
-    } else if (event.key === 'End') {
-      next = ids.at(-1)
-    } else if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      layout.setActiveTab(panel.id, tabId)
-      return
-    }
-    if (next !== undefined) {
-      event.preventDefault()
-      focusTab(next)
-    }
-  }
+  const active = activeTabIn(panel)
 
   return (
     <div
@@ -263,89 +95,18 @@ export const PanelView = observer(function PanelView({
         // clicking anywhere in a cell makes it the one a new view lands in.
         // Capture, so it still registers when the click is consumed by a
         // control inside the view.
-        if (!groupActive) {
+        if (layout.activePanelId !== panel.id) {
           layout.setActivePanelId(panel.id)
         }
       }}
     >
-      {/* the strip is the chrome; the `tablist` inside it is the tabs ALONE,
-          because a tablist's children have to be tabs and the panel actions
-          beside them are not */}
-      <div data-tab-strip className={classes.tabStrip}>
-        <div
-          role="tablist"
-          ref={stripRef}
-          className={classes.tabs}
-          // A mouse wheel only has a vertical axis, and this scrolls
-          // horizontally — so without translating it, a strip with more tabs
-          // than fit is reachable by trackpad swipe and by keyboard and NOT AT
-          // ALL by mouse. The scrollbar is hidden on purpose (the strip is
-          // chrome) which removes the other way of noticing there is more.
-          //
-          // `deltaX` is a trackpad's own horizontal axis and the browser has
-          // already applied it; taking the larger axis leaves that gesture
-          // alone rather than doubling it.
-          onWheel={event => {
-            const el = stripRef.current
-            if (!el || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-              return
-            }
-            el.scrollLeft += wheelDeltaPixels(event, el.clientWidth)
-          }}
-        >
-          {panel.tabs.map(tab => (
-            <div
-              key={tab.id}
-              role="tab"
-              id={tabDomId(tab.id)}
-              data-tab-id={tab.id}
-              aria-selected={tab.id === active?.id}
-              // only the shown tab has a panel in the DOM to control — the rest
-              // are not rendered, so pointing at an absent id would be a lie
-              aria-controls={
-                tab.id === active?.id ? tabPanelDomId(panel.id) : undefined
-              }
-              tabIndex={tab.id === roving ? 0 : -1}
-              onKeyDown={event => {
-                onTabKeyDown(event, tab.id)
-              }}
-              onFocus={() => {
-                setFocusedTabId(tab.id)
-              }}
-              onPointerDown={event => {
-                // The middle button closes rather than drags, and its default
-                // action is the browser's autoscroll — which would otherwise
-                // start the moment a tab is middle-pressed.
-                //
-                // Cancelling pointerdown suppresses the compatibility mouse
-                // events (which is what stops the autoscroll) and NOT `click` /
-                // `auxclick`: Pointer Events L3 dispatches those two
-                // independently of that mapping. So the close below still
-                // fires, which is the thing this looks like it would break.
-                if (event.button === 1) {
-                  event.preventDefault()
-                  return
-                }
-                layout.setActiveTab(panel.id, tab.id)
-                dragHandlers.onTabPointerDown(tab.id, event)
-              }}
-              onAuxClick={event => {
-                if (event.button === 1) {
-                  event.preventDefault()
-                  onTabClose?.(tab.id)
-                }
-              }}
-              onPointerMove={dragHandlers.onTabPointerMove}
-              onPointerUp={dragHandlers.onTabPointerUp}
-              className={classes.tab}
-              style={tabColors(groupActive, tab.id === active?.id)}
-            >
-              {renderTabLabel(tab)}
-            </div>
-          ))}
-        </div>
-        {renderPanelActions?.(panel)}
-      </div>
+      <TabStrip
+        panel={panel}
+        layout={layout}
+        chrome={chrome}
+        active={active}
+        groupActive={layout.activePanelId === panel.id}
+      />
 
       <div
         role="tabpanel"
@@ -356,24 +117,42 @@ export const PanelView = observer(function PanelView({
         aria-labelledby={active ? tabDomId(active.id) : undefined}
         className={classes.content}
       >
-        {active ? renderTabContent(active) : null}
+        {active ? chrome.renderTabContent(active) : null}
       </div>
 
-      {drop?.strip ? (
-        // a caret in the strip, not a wash over half the cell: the drop is
-        // between two tabs and shading the panel would say the wrong thing
-        <div
-          data-drop-caret={drop.strip.index}
-          className={classes.caret}
-          style={{ left: drop.strip.left }}
-        />
-      ) : drop ? (
-        <div
-          data-drop-indicator={drop.zone}
-          className={classes.indicator}
-          style={indicatorRect(drop.zone)}
-        />
-      ) : null}
+      <DropIndicator drop={drop} classes={classes} />
     </div>
   )
+})
+
+/**
+ * Where a drop would land, drawn over the cell.
+ *
+ * A strip drop gets a caret at the gap rather than a wash over half the cell:
+ * it is a position in the tab order, and shading half the panel would say
+ * "split this cell", which is the wrong thing.
+ */
+const DropIndicator = observer(function DropIndicator({
+  drop,
+  classes,
+}: {
+  drop?: DropTarget
+  classes: { indicator: string; caret: string }
+}) {
+  if (drop?.strip) {
+    return (
+      <div
+        data-drop-caret={drop.strip.index}
+        className={classes.caret}
+        style={{ left: drop.strip.left }}
+      />
+    )
+  }
+  return drop ? (
+    <div
+      data-drop-indicator={drop.zone}
+      className={classes.indicator}
+      style={indicatorRect(drop.zone)}
+    />
+  ) : null
 })

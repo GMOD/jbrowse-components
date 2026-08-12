@@ -86,35 +86,37 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
         node={session.tree}
         layout={session}
         drag={drag}
-        dragHandlers={dragHandlers}
-        onTabClose={closeTab}
-        renderPanelActions={panel => (
-          <WorkspacePanelActions panel={panel} session={session} />
-        )}
-        renderTabLabel={tab => (
-          <WorkspaceTab
-            tab={tab}
-            views={viewsOf(session, tab.viewIds)}
-            session={session}
-            layout={session}
-            onClose={() => {
-              closeTab(tab.id)
-            }}
-          />
-        )}
-        renderTabContent={tab => {
-          const views = viewsOf(session, tab.viewIds)
-          return views.length > 0 ? (
-            <div className={classes.stack}>
-              <ViewStack views={views} session={session} />
-            </div>
-          ) : (
-            <div className={classes.empty}>
-              <Suspense fallback={null}>
-                <ViewLauncher session={session} />
-              </Suspense>
-            </div>
-          )
+        chrome={{
+          dragHandlers,
+          onTabClose: closeTab,
+          renderPanelActions: panel => (
+            <WorkspacePanelActions panel={panel} session={session} />
+          ),
+          renderTabLabel: tab => (
+            <WorkspaceTab
+              tab={tab}
+              views={viewsOf(session, tab.viewIds)}
+              session={session}
+              layout={session}
+              onClose={() => {
+                closeTab(tab.id)
+              }}
+            />
+          ),
+          renderTabContent: tab => {
+            const views = viewsOf(session, tab.viewIds)
+            return views.length > 0 ? (
+              <div className={classes.stack}>
+                <ViewStack views={views} session={session} />
+              </div>
+            ) : (
+              <div className={classes.empty}>
+                <Suspense fallback={null}>
+                  <ViewLauncher session={session} />
+                </Suspense>
+              </div>
+            )
+          },
         }}
       />
     </div>

@@ -40,11 +40,13 @@ const Harness = observer(function Harness({
     <LayoutRenderer
       node={session.tree}
       layout={session}
-      dragHandlers={noDrag}
-      renderTabLabel={tab => <span>{tab.title ?? tab.id}</span>}
-      renderTabContent={tab => (
-        <div data-testid={`content-${tab.id}`}>{tab.viewIds.join(',')}</div>
-      )}
+      chrome={{
+        dragHandlers: noDrag,
+        renderTabLabel: tab => <span>{tab.title ?? tab.id}</span>,
+        renderTabContent: tab => (
+          <div data-testid={`content-${tab.id}`}>{tab.viewIds.join(',')}</div>
+        ),
+      }}
     />
   )
 })
@@ -344,10 +346,12 @@ test('the panel actions are in the strip but not in the tablist', () => {
     <LayoutRenderer
       node={session.tree}
       layout={session}
-      dragHandlers={noDrag}
-      renderTabLabel={tab => <span>{tab.id}</span>}
-      renderTabContent={() => null}
-      renderPanelActions={() => <button type="button">add</button>}
+      chrome={{
+        dragHandlers: noDrag,
+        renderTabLabel: tab => <span>{tab.id}</span>,
+        renderTabContent: () => null,
+        renderPanelActions: () => <button type="button">add</button>,
+      }}
     />,
   )
 

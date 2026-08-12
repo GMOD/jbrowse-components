@@ -5,10 +5,12 @@ import { observer } from 'mobx-react'
 
 import { PanelView } from './PanelView.tsx'
 import { dv } from './dockviewTheme.ts'
+import { isBranch } from './tree.ts'
 
 import type { WorkspaceLayout } from './model.ts'
-import type { BranchNode, LayoutTree, PanelNode, TabNode } from './tree.ts'
-import type { DragState, TabDragHandlers } from './useLayoutDrag.ts'
+import type { PanelChrome } from './panelChrome.ts'
+import type { BranchNode, LayoutTree } from './tree.ts'
+import type { DragState } from './useLayoutDrag.ts'
 
 /**
  * The layout, rendered. There is no imperative api and no event to listen to:
@@ -24,74 +26,51 @@ import type { DragState, TabDragHandlers } from './useLayoutDrag.ts'
 interface Props {
   node: LayoutTree
   layout: WorkspaceLayout
-  renderTabLabel: (tab: TabNode) => React.ReactNode
-  renderTabContent: (tab: TabNode) => React.ReactNode
-  renderPanelActions?: (panel: PanelNode) => React.ReactNode
-  dragHandlers: TabDragHandlers
-  /** middle-click on a tab; the caller pairs it with closing that tab's views */
-  onTabClose?: (tabId: string) => void
+  /** the app's half of a panel, forwarded unchanged all the way down */
+  chrome: PanelChrome
   /** the in-flight drag, so the cell under the pointer can show where it lands */
   drag?: DragState
 }
 
-export const LayoutRenderer = observer(function LayoutRenderer({
-  node,
-  layout,
-  renderTabLabel,
-  renderTabContent,
-  renderPanelActions,
-  dragHandlers,
-  onTabClose,
-  drag,
-}: Props) {
-  if (!('children' in node)) {
+/**
+ * A node's share of its parent's space.
+ *
+ * `flexGrow: size` with `flexBasis: 0` is the whole grid engine: the children
+ * divide whatever space the parent has in proportion to their sizes, so a
+ * window resize is the browser's problem. The two `min*: 0` are what stop a
+ * flex item refusing to shrink below its content — without them a wide view
+ * pushes its own cell past its share.
+ */
+function paneStyle(size: number): React.CSSProperties {
+  return {
+    display: 'flex',
+    flexGrow: size,
+    flexBasis: 0,
+    minWidth: 0,
+    minHeight: 0,
+  }
+}
+
+export const LayoutRenderer = observer(function LayoutRenderer(props: Props) {
+  const { node, layout, drag } = props
+  if (!isBranch(node)) {
     return (
-      <div
-        style={{
-          flexGrow: node.size,
-          flexBasis: 0,
-          minWidth: 0,
-          minHeight: 0,
-          display: 'flex',
-        }}
-      >
+      <div style={paneStyle(node.size)}>
         <PanelView
           panel={node}
           layout={layout}
-          renderTabLabel={renderTabLabel}
-          renderTabContent={renderTabContent}
-          renderPanelActions={renderPanelActions}
-          dragHandlers={dragHandlers}
-          onTabClose={onTabClose}
+          chrome={props.chrome}
           drop={drag?.panelId === node.id ? drag : undefined}
         />
       </div>
     )
   }
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: node.direction,
-        flexGrow: node.size,
-        flexBasis: 0,
-        minWidth: 0,
-        minHeight: 0,
-      }}
-    >
+    <div style={{ ...paneStyle(node.size), flexDirection: node.direction }}>
       {node.children.map((child, i) => (
         <Fragment key={child.id}>
           {i > 0 && <Splitter branch={node} index={i} layout={layout} />}
-          <LayoutRenderer
-            node={child}
-            layout={layout}
-            renderTabLabel={renderTabLabel}
-            renderTabContent={renderTabContent}
-            renderPanelActions={renderPanelActions}
-            dragHandlers={dragHandlers}
-            onTabClose={onTabClose}
-            drag={drag}
-          />
+          <LayoutRenderer {...props} node={child} />
         </Fragment>
       ))}
     </div>

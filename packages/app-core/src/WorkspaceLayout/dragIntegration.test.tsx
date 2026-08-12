@@ -40,22 +40,24 @@ const Harness = observer(function Harness({
       node={session.tree}
       layout={session}
       drag={drag}
-      dragHandlers={dragHandlers}
-      onTabClose={onTabClose}
-      renderTabLabel={tab => (
-        <>
-          <span data-testid={`tab-${tab.id}`}>{tab.id}</span>
-          {tabMenu ? (
-            <JBrowseTabMenu
-              onRename={() => {}}
-              onClose={() => {
-                session.closeTab(tab.id)
-              }}
-            />
-          ) : null}
-        </>
-      )}
-      renderTabContent={tab => <div>{tab.viewIds.join(',')}</div>}
+      chrome={{
+        dragHandlers,
+        onTabClose,
+        renderTabLabel: tab => (
+          <>
+            <span data-testid={`tab-${tab.id}`}>{tab.id}</span>
+            {tabMenu ? (
+              <JBrowseTabMenu
+                onRename={() => {}}
+                onClose={() => {
+                  session.closeTab(tab.id)
+                }}
+              />
+            ) : null}
+          </>
+        ),
+        renderTabContent: tab => <div>{tab.viewIds.join(',')}</div>,
+      }}
     />
   )
 })
