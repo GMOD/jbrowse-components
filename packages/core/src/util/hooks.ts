@@ -141,7 +141,11 @@ export function useCreateOnce<T>(create: () => T): T {
  * makes that true.
  *
  * Deliberately not covered: a subtree hidden with `<Activity>`, which destroys
- * effects and re-creates them a task later rather than synchronously.
+ * effects and re-creates them a TASK later rather than synchronously, so the
+ * cancel below cannot reach it. Measured, not assumed — `useFinalUnmount.test.tsx`
+ * pins that hiding tears the value down and showing does not rebuild it, since
+ * `useCreateOnce`'s ref survives the hide. A host that needs a view to survive
+ * being hidden owns the engine itself and keeps it outside the hidden tree.
  */
 export function useFinalUnmount(cleanup: () => void) {
   const stableCleanup = useEventCallback(cleanup)
@@ -153,6 +157,15 @@ export function useFinalUnmount(cleanup: () => void) {
       teardownPending.current = true
       queueMicrotask(() => {
         if (teardownPending.current) {
+          // cleared BEFORE running, so the teardown happens once however many
+          // microtasks are in flight. A StrictMode mount queues one that its
+          // own re-setup cancels — but only if that microtask has drained
+          // before the next cleanup. Unmount inside the same synchronous block
+          // as the mount (a test, a route that redirects on its first effect)
+          // and it has not: the stale microtask finds the flag set again by the
+          // real cleanup and fires, then the real one fires too. Idempotent
+          // teardowns hid it, which is every caller in the tree today.
+          teardownPending.current = false
           stableCleanup()
         }
       })
