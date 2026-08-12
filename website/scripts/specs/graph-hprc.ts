@@ -347,6 +347,20 @@ function hprcSegmentsLane(domain: { start: number; end: number }) {
   }
 }
 
+// The hg38 gene lane every figure on this page carries, collapsed to one
+// longest coding transcript and compact. Seven copies of the same four keys,
+// which is what a lane shared across a page should be — and the height is the
+// only thing any of them varied.
+function hg38GeneLane(height: number) {
+  return {
+    trackId: 'hg38_ncbiRefSeq_ucsc',
+    type: 'LinearBasicDisplay',
+    geneGlyphMode: 'longestCoding',
+    displayMode: 'compact',
+    height,
+  }
+}
+
 // A haplotype row's own genes: HPRC's CAT annotation of that assembly, sliced to
 // the window by scripts/build_hprc_cfhr_synteny.sh and
 // scripts/build_hprc_inversion_synteny.sh. Same glyph settings as the hg38 lane
@@ -571,16 +585,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
           // either - it is about the axis the graph shares with the tracks -
           // and pangenome/hprc_c4_subgraph and hprc_lpa_kiv2 both carry the
           // bubbles lane on windows where its labels fit.
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
-            hprcSegmentsLane(MHC_REGION),
-          ],
+          tracks: [hg38GeneLane(70), hprcSegmentsLane(MHC_REGION)],
         },
         {
           type: 'GraphGenomeView',
@@ -1019,16 +1024,10 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: C4_WINDOW,
           tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              // compact/longest-isoform, as everywhere else in this set: at the
-              // default glyph mode the C4A/C4B duplication stacks deep enough
-              // that the lane's last row is clipped by the one below it
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
+            // the C4A/C4B duplication is why the lane is collapsed here: at
+            // the default glyph mode it stacks deep enough that the last row
+            // is clipped by the one below it
+            hg38GeneLane(70),
             {
               trackId: 'hprc_minigraph_bubbles',
               type: 'LinearBasicDisplay',
@@ -1201,16 +1200,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               // alignment records overlap by a few kb of breakpoint homology,
               // which is where the ribbons cross.
               highlight: [{ ...CFHR_DELETED, color: 'rgba(60,65,72,0.10)' }],
-              tracks: [
-                {
-                  trackId: 'hg38_ncbiRefSeq_ucsc',
-                  type: 'LinearBasicDisplay',
-                  geneGlyphMode: 'longestCoding',
-                  displayMode: 'compact',
-                  height: 70,
-                },
-                hprcSegmentsLane(CFHR_REGION),
-              ],
+              tracks: [hg38GeneLane(70), hprcSegmentsLane(CFHR_REGION)],
             },
             {
               assembly: CFHR_NONCARRIER,
@@ -1355,13 +1345,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               loc: INV_WINDOW,
               highlight: [{ ...INV_BLOCK, color: 'rgba(60,65,72,0.10)' }],
               tracks: [
-                {
-                  trackId: 'hg38_ncbiRefSeq_ucsc',
-                  type: 'LinearBasicDisplay',
-                  geneGlyphMode: 'longestCoding',
-                  displayMode: 'compact',
-                  height: 70,
-                },
+                hg38GeneLane(70),
                 {
                   trackId: 'hprc_minigraph_bubbles',
                   type: 'LinearBasicDisplay',
@@ -1502,13 +1486,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: AMY_WINDOW,
           tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
+            hg38GeneLane(70),
             // No bubbles lane. Three bubbles land in this window and each label
             // is two lines ending in a combinatorial path count (269,401 through
             // the amylase bubble alone), so the right-hand two are cut off
@@ -2068,13 +2046,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: LPA_WINDOW,
           tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
+            hg38GeneLane(70),
             {
               trackId: 'hprc_minigraph_bubbles',
               type: 'LinearBasicDisplay',
@@ -2245,13 +2217,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           loc: 'chr6:32,510,000-32,600,000',
           highlight: [MHC_MARKED_DELETION],
           tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 60,
-            },
+            hg38GeneLane(60),
             hprcSegmentsLane(MHC_CLASSII_REGION),
             {
               trackId: 'hprc2_wave_grch38',
