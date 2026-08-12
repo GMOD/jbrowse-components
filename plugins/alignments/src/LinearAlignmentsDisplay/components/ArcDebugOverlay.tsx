@@ -108,29 +108,50 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
         const labelled = [...band.shapes]
           .sort((a, b) => b.rx - a.rx)
           .slice(0, 6)
+        // The block's own scissor rect. Drawing the band full-width said the
+        // pass was scissored to the track, which is the one thing this overlay
+        // exists to show and was the one thing it got wrong — and in the
+        // multi-region view the region loop above was added to serve, it drew
+        // every region's band as the same rect on top of itself.
+        const clipId = `arc-debug-clip-${model.id}-${bi}`
         return (
           <g key={bi}>
+            <defs>
+              <clipPath id={clipId}>
+                <rect
+                  x={band.clipLeft}
+                  y={band.arcsTop}
+                  width={band.screenWidthPx}
+                  height={band.arcsH}
+                />
+              </clipPath>
+            </defs>
             <rect
               className={classes.band}
-              x={0}
+              x={band.clipLeft}
               y={band.arcsTop}
-              width="100%"
+              width={band.screenWidthPx}
               height={band.arcsH}
             />
-            <line
-              className={classes.ceiling}
-              x1={0}
-              x2="100%"
-              y1={band.legacyCeilingY}
-              y2={band.legacyCeilingY}
-            />
-            {band.shapes.map((s, i) => (
-              <path key={i} className={classes.shape} d={s.d} />
-            ))}
+            {/* Clipped to the same rect the renderers cut the paint to. An
+                unclipped trace over a clipped paint is a disagreement this
+                overlay would report as a finding, having created it. */}
+            <g clipPath={`url(#${clipId})`}>
+              <line
+                className={classes.ceiling}
+                x1={band.clipLeft}
+                x2={band.clipLeft + band.screenWidthPx}
+                y1={band.legacyCeilingY}
+                y2={band.legacyCeilingY}
+              />
+              {band.shapes.map((s, i) => (
+                <path key={i} className={classes.shape} d={s.d} />
+              ))}
+            </g>
             {labelled.map((s, i) => (
               <g
                 key={`l${i}`}
-                transform={`translate(6 ${band.arcsTop + 12 + i * 12})`}
+                transform={`translate(${band.clipLeft + 6} ${band.arcsTop + 12 + i * 12})`}
               >
                 <rect
                   className={classes.labelBg}

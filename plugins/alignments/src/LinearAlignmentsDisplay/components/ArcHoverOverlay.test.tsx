@@ -23,8 +23,13 @@ function renderOverlay(hoveredArcHighlight: ArcHighlight | undefined) {
   return container
 }
 
+// A block that does NOT start at the canvas origin, which is the case the
+// horizontal clip exists for — a multi-region view, or a region panned so its
+// block covers only part of the track.
 const HIGHLIGHT = {
   d: 'M 200 100 A 200 30 0 0 1 600 100',
+  clipLeft: 150,
+  clipWidth: 500,
   clipTop: 20,
   clipHeight: 80,
   lineWidth: 2,
@@ -55,6 +60,17 @@ test('the mark is clipped to the arc band, as the arc pass is', () => {
   expect(container.querySelector('path')!.getAttribute('clip-path')).toContain(
     container.querySelector('clipPath')!.id,
   )
+})
+
+test('and to the block, which the arc pass is also scissored to', () => {
+  // The same argument turned sideways: that semicircle runs `rx` px to either
+  // side of its midpoint, so a cross-region or off-screen-mate arc leaves
+  // through the block's EDGE rather than its ceiling. The renderers cut it there
+  // (GPU `scissorX`/`scissorW`, Canvas2D `ctx.rect(scissorX, …, scissorW, …)`);
+  // a full-width clip let the highlight run on across the next region.
+  const rect = renderOverlay(HIGHLIGHT).querySelector('clipPath rect')!
+  expect(rect.getAttribute('x')).toBe(String(HIGHLIGHT.clipLeft))
+  expect(rect.getAttribute('width')).toBe(String(HIGHLIGHT.clipWidth))
 })
 
 test('the overlay never takes the pointer', () => {
