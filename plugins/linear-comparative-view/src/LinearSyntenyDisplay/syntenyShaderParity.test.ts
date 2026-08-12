@@ -293,8 +293,16 @@ test('the outline and centerline strokes trace it too', () => {
     'downward',
   )
 
+  // A degenerate (zero-width) instance, so its centerline endpoints are its
+  // corners — which is exactly the KIND_MARKER case this branch draws.
   const center = recordingCtx()
-  strokeCenterline(center.ctx, 100, 220, yTop, height, true)
+  strokeCenterline(
+    center.ctx,
+    { sx1: 100, sx2: 100, sx3: 220, sx4: 220 },
+    yTop,
+    height,
+    true,
+  )
   expect(center.beziers).toHaveLength(1)
   expectTracesShaderCurve(center.beziers[0]!, 100, 220, 'downward')
 })

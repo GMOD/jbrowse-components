@@ -116,7 +116,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         drawLocationMarkers: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * pixels beyond the visible viewport edge that synteny lines are still drawn
+         * pixels beyond the visible viewport edge that synteny lines are still
+         * drawn. Effective up to the pan buffer (`syntenyPanBufferPx`: 2000px,
+         * or half the viewport when that is wider) — the worker emits CIGAR
+         * detail and location markers only that far, so a larger value draws
+         * ribbons whose detail stops partway along them.
          */
         overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX),
         /**

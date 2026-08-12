@@ -193,8 +193,6 @@ export function drawSyntenyTrack(
     // predicate itself is now the shader's, generated (adr-051), so the
     // threshold can't drift even though the shading below still can.
     if (isMarker) {
-      const xt = (c.sx1 + c.sx2) * 0.5
-      const xb = (c.sx3 + c.sx4) * 0.5
       style.stroke(
         ctx,
         abgrRed(packed),
@@ -202,7 +200,7 @@ export function drawSyntenyTrack(
         abgrBlue(packed),
         abgrAlpha(packed) / 255,
       )
-      strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
+      strokeCenterline(ctx, c, yTop, height, drawCurves)
       continue
     }
 
@@ -239,11 +237,9 @@ export function drawSyntenyTrack(
     // place, so it can only be the clicked one after a zoom-out.
     const perpW = ribbonPerpWidth(c, height)
     if (perpW < 1) {
-      const xt = (c.sx1 + c.sx2) * 0.5
-      const xb = (c.sx3 + c.sx4) * 0.5
       const widthFade = thinWidthFade(perpW, fadeThinAlignments && !isCigar)
       style.stroke(ctx, r, g, b, fa * widthFade)
-      strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
+      strokeCenterline(ctx, c, yTop, height, drawCurves)
     } else {
       style.fill(ctx, r, g, b, fa)
       buildFeaturePath(ctx, c, yTop, height, drawCurves)

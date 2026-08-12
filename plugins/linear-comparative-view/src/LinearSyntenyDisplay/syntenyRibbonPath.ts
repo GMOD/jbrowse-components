@@ -108,19 +108,35 @@ export function strokeFeatureSideEdges(
   ctx.stroke()
 }
 
-// Stroke the ribbon centerline (xt at top → xb at bottom) — the centerline
-// sibling of strokeFeatureSideEdges. Used for sub-pixel-thin features and
-// zero-width KIND_MARKER ticks, where a 1px centerline stroke renders cleanly
-// at any slope instead of ctx.fill()ing a degenerate sliver. Caller sets
+// The ribbon's centerline endpoints: the midpoint of its top edge and of its
+// bottom edge. A KIND_MARKER tick's two edges are each a single point, so this
+// returns that point unchanged for one.
+function centerlineTopX(c: ProjectedCorners) {
+  return (c.sx1 + c.sx2) * 0.5
+}
+
+function centerlineBottomX(c: ProjectedCorners) {
+  return (c.sx3 + c.sx4) * 0.5
+}
+
+// Stroke the ribbon centerline — the centerline sibling of
+// strokeFeatureSideEdges. Used for sub-pixel-thin features and zero-width
+// KIND_MARKER ticks, where a 1px centerline stroke renders cleanly at any slope
+// instead of ctx.fill()ing a degenerate sliver. Caller sets
 // strokeStyle/lineWidth first.
+//
+// Takes the corners rather than the two midpoints, so the one place that knows
+// how a centerline is derived from a ribbon is this file — the same place
+// ribbonPerpWidth measures the slope of that centerline.
 export function strokeCenterline(
   ctx: CanvasLike,
-  xt: number,
-  xb: number,
+  c: ProjectedCorners,
   yTop: number,
   height: number,
   isCurve: boolean,
 ) {
+  const xt = centerlineTopX(c)
+  const xb = centerlineBottomX(c)
   const yBot = yTop + height
   ctx.beginPath()
   ctx.moveTo(xt, yTop)
@@ -204,9 +220,7 @@ export function projectCorners(
 // perpCoverage — measured from the whole ribbon's corners here, per-fragment
 // from each edge's own foreshortening there.
 export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
-  const xt = (c.sx1 + c.sx2) * 0.5
-  const xb = (c.sx3 + c.sx4) * 0.5
-  const slope = (xb - xt) / Math.max(height, 1)
+  const slope = (centerlineBottomX(c) - centerlineTopX(c)) / Math.max(height, 1)
   const perpFactor = Math.sqrt(1 + slope * slope)
   return Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3)) / perpFactor
 }
@@ -216,7 +230,7 @@ export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
 // browser's antialiasing of it.
 const HULL_CULL_PAD_PX = 1
 
-// Drop an instance that can't paint a visible pixel, by two independent tests.
+// Drop an instance that can't paint a visible pixel, by two tests.
 //
 // Hull: a ribbon's horizontal extent is bounded by its four corners (the curve
 // mode's bezier control points are the corners themselves, so the curve stays
@@ -249,20 +263,19 @@ export function isRibbonCulled(
   const topMax = Math.max(c.sx1, c.sx2)
   const botMin = Math.min(c.sx3, c.sx4)
   const botMax = Math.max(c.sx3, c.sx4)
+  // The canvas edge and the overdraw band were two separate hull tests, which
+  // is one test at whichever pad is tighter: with the default 1000px overdraw
+  // the canvas-edge one culled nothing the band's had not, and it only bites at
+  // all when overdrawPx is under a pixel.
+  const hullPad = Math.min(HULL_CULL_PAD_PX, overdrawPx)
   if (
-    Math.max(topMax, botMax) < -HULL_CULL_PAD_PX ||
-    Math.min(topMin, botMin) > viewWidth + HULL_CULL_PAD_PX
+    Math.max(topMax, botMax) < -hullPad ||
+    Math.min(topMin, botMin) > viewWidth + hullPad
   ) {
     return true
   }
   const leftLimit = -overdrawPx
   const rightLimit = viewWidth + overdrawPx
-  if (
-    Math.max(topMax, botMax) < leftLimit ||
-    Math.min(topMin, botMin) > rightLimit
-  ) {
-    return true
-  }
   return (
     !isMarker &&
     (topMax < leftLimit ||

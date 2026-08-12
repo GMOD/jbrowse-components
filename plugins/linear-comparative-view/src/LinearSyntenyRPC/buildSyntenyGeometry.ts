@@ -279,10 +279,10 @@ export function buildSyntenyGeometry({
   // accumulate the exact upper-bound capacity. visitCigarRenderedSegments emits
   // a segment only when bp1 OR bp2 has advanced > 1 px from the segment start,
   // so per-feature visitor emissions are bounded by widthPx0 + widthPx1
-  // regardless of CIGAR length. Markers are bounded by the ladder's own travel,
-  // (widthPx0 + widthPx1) / 2 px at one per MARKER_SPACING_PX — a bound that
-  // holds whether the ladder is fed one whole-feature span or every rendered
-  // CIGAR segment, since the segments' widths sum to the feature's. These
+  // regardless of CIGAR length. Markers are bounded by how many grid steps fit
+  // in the feature's QUERY span — a bound that holds whether the grid is asked
+  // over one whole-feature span or over every rendered CIGAR segment, since the
+  // segments partition that same span (see the markerBudget below). These
   // bounds are strict, so a single allocation matches actual usage — no
   // growable buffers.
   let capacity = 0
@@ -409,8 +409,11 @@ export function buildSyntenyGeometry({
 
     for (let n = 0; n < stepCount; n++) {
       const markerBp1 = anchor + (firstStep + n) * markerPitchBp
-      const t =
-        bp1End === bp1Start ? 0 : (markerBp1 - bp1Start) / (bp1End - bp1Start)
+      // No zero-travel guard on the divide: a span with bp1End === bp1Start has
+      // lo === hi, so stepCount is 0 and this line is never reached. That is the
+      // same fact the half-open note above states about insertions, which are
+      // the only way to get one.
+      const t = (markerBp1 - bp1Start) / (bp1End - bp1Start)
       const markerBp2 = bp2Start + (bp2End - bp2Start) * t
 
       // Culled by the HULL of the tick's two ends, which is the same rule both

@@ -2,6 +2,7 @@ import { SingleSlider } from '@jbrowse/core/ui'
 import {
   MinLengthSlider,
   OpacitySlider,
+  PAN_BUFFER_PX,
   SettingRow,
   SettingToggleGroup,
   SettingsPopover,
@@ -61,13 +62,25 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
         label="Overdraw:"
         help="Extra pixels drawn beyond the visible area. Higher values keep off-screen synteny lines visible when scrolling, but may reduce performance."
       >
+        {/*
+          Capped at the pan buffer, which is what the worker emits out to
+          (syntenyPanBufferPx: this floor, or half the viewport on a wide view).
+          Past it there is no CIGAR detail and there are no location markers,
+          because the geometry stage culled them — so the slider used to offer
+          5x more overdraw than there was anything to draw, and spending it
+          bought ribbons whose ticks stopped partway along. The floor rather
+          than the width-scaled value so this holds at every viewport size
+          without plumbing the width in; a wide view leaves a little on the
+          table, and overdraw beyond one screen is already past what panning
+          reveals before the fetch window rolls over.
+        */}
         <SingleSlider
           value={overdrawPx}
           onChange={val => {
             model.setOverdrawPx(val)
           }}
           min={0}
-          max={10000}
+          max={PAN_BUFFER_PX}
           step={100}
           valueLabelDisplay="auto"
           size="small"
