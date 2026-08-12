@@ -1,8 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+
+// relative, not through the `util` barrel: that barrel re-exports this file
+import {
+  localStorageGetJSON,
+  localStorageRemoveItem,
+  localStorageSetItem,
+} from './localStorage.ts'
 
 import type { RefObject } from 'react'
 
@@ -85,52 +92,134 @@ export function useWidthSetter(view: {
   return ref
 }
 
-function readLocalStorage<T>(
-  key: string,
-  initialValue: T,
-  enabled: boolean,
-): T {
-  if (typeof window === 'undefined' || !enabled) {
-    return initialValue
+// The value each key currently holds, shared by every hook instance using it.
+// Two things depend on it: a functional update resolves against the *current*
+// value rather than the one captured by the render that produced the setter,
+// and a write from one instance is visible to the others without re-parsing.
+// Evicted, never merely refreshed, when another tab writes the key.
+const valueCache = new Map<string, unknown>()
+const listeners = new Map<string, Set<() => void>>()
+
+function readCached<T>(key: string, initialValue: T): T {
+  if (!valueCache.has(key)) {
+    valueCache.set(key, localStorageGetJSON(key, initialValue))
   }
-  try {
-    const item = window.localStorage.getItem(key)
-    return item ? JSON.parse(item) : initialValue
-  } catch (error) {
-    console.error(error)
-    return initialValue
+  return valueCache.get(key) as T
+}
+
+function notify(key: string) {
+  for (const fn of listeners.get(key) ?? []) {
+    fn()
   }
 }
 
-// Hook from https://usehooks.com/useLocalStorage/
+// Installed once, on the first subscription rather than at module scope, so
+// importing this file from a worker or a test never touches `window`.
+let storageListenerInstalled = false
+
+function installStorageListener() {
+  if (storageListenerInstalled || typeof window === 'undefined') {
+    return
+  }
+  storageListenerInstalled = true
+  // Another tab wrote one of our keys. `key === null` is a clear() and
+  // invalidates everything.
+  window.addEventListener('storage', e => {
+    if (e.storageArea !== window.localStorage) {
+      return
+    }
+    if (e.key === null) {
+      valueCache.clear()
+      for (const k of listeners.keys()) {
+        notify(k)
+      }
+    } else if (listeners.has(e.key)) {
+      valueCache.delete(e.key)
+      notify(e.key)
+    }
+  })
+}
+
+function subscribe(key: string, fn: () => void) {
+  installStorageListener()
+  let set = listeners.get(key)
+  if (!set) {
+    set = new Set()
+    listeners.set(key, set)
+  }
+  set.add(fn)
+  return () => {
+    set.delete(fn)
+    if (!set.size) {
+      listeners.delete(key)
+    }
+  }
+}
+
+function resolveUpdate<T>(value: T | ((val: T) => T), prev: T) {
+  return typeof value === 'function' ? (value as (val: T) => T)(prev) : value
+}
+
+/**
+ * `useState` backed by a localStorage key.
+ *
+ * Originally https://usehooks.com/useLocalStorage/, which is per-instance: two
+ * components on the same key each kept their own copy, so toggling a setting in
+ * one BreakpointSplitView header left a second one open beside it showing the
+ * old value until it remounted. Instances on a key now share one value and one
+ * subscription, which also picks up writes from other tabs for free — the thing
+ * the grid-bookmark widget had to hand-roll a `storage` listener for.
+ *
+ * `enabled: false` keeps the value in component state only: nothing is read,
+ * written or shared. Callers use it for a key that isn't meaningful yet (no
+ * assembly chosen, so nothing to scope the key to).
+ */
 export function useLocalStorage<T>(
   key: string,
   initialValue: T,
   enabled = true,
 ) {
   const [storedValue, setStoredValue] = useState<T>(() =>
-    readLocalStorage(key, initialValue, enabled),
+    enabled ? readCached(key, initialValue) : initialValue,
   )
-  // re-read when the key changes at runtime (the useState initializer only runs
-  // once); render-phase reset rather than an effect
-  const [prevKey, setPrevKey] = useState(key)
-  if (key !== prevKey) {
-    setPrevKey(key)
-    setStoredValue(readLocalStorage(key, initialValue, enabled))
+  // re-read when the key or `enabled` changes at runtime (the useState
+  // initializer only runs once); render-phase reset rather than an effect
+  const [prev, setPrev] = useState({ key, enabled })
+  if (key !== prev.key || enabled !== prev.enabled) {
+    setPrev({ key, enabled })
+    setStoredValue(enabled ? readCached(key, initialValue) : initialValue)
   }
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore =
-        typeof value === 'function'
-          ? (value as (val: T) => T)(storedValue)
-          : value
-      setStoredValue(valueToStore)
-      if (typeof window !== 'undefined' && enabled) {
-        window.localStorage.setItem(key, JSON.stringify(valueToStore))
-      }
-    } catch (error) {
-      console.error(error)
+
+  // initialValue is deliberately not a dependency: callers pass inline literals
+  // (`[]`, `{}`), and it only ever decides what an absent key reads as
+  const initialRef = useRef(initialValue)
+  initialRef.current = initialValue
+  useEffect(() => {
+    if (!enabled) {
+      return
     }
-  }
+    return subscribe(key, () => {
+      setStoredValue(readCached(key, initialRef.current))
+    })
+  }, [key, enabled])
+
+  const setValue = useEventCallback((value: T | ((val: T) => T)) => {
+    if (!enabled) {
+      setStoredValue(prevValue => resolveUpdate(value, prevValue))
+      return
+    }
+    const next = resolveUpdate(value, readCached(key, initialRef.current))
+    valueCache.set(key, next)
+    if (next === undefined) {
+      // clearing the key, not storing the string "undefined" — which is what
+      // `setItem(key, JSON.stringify(undefined))` writes, and which then throws
+      // on the way back in. `useAssemblySelection` holds a `string | undefined`
+      localStorageRemoveItem(key)
+    } else {
+      localStorageSetItem(key, JSON.stringify(next))
+    }
+    notify(key)
+  })
+
   return [storedValue, setValue] as const
 }
