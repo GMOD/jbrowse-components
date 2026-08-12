@@ -255,6 +255,12 @@ export function createLinearGenomeView(
     const hasSession = opts.session !== undefined
     const viewState = createViewState({
       assembly: resolved.assembly,
+      // forwarded so the *assembly* gets the same substitution — its sequence
+      // adapter is a location like any other, and only createViewState has the
+      // pluginManager that expands a `{ type, uri }` shorthand into one.
+      // Registration is keyed on the bytes, so registering the same input in
+      // both places mints one blob rather than two.
+      localFiles: opts.localFiles,
       // only full configs seed the config catalog; loose specs need the
       // pluginManager the build creates, so they are resolved just below
       tracks: tracks

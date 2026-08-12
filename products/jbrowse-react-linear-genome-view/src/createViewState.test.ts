@@ -129,6 +129,43 @@ test('localFiles reach the built config, index sibling and all', () => {
   })
 })
 
+// The case a host with no server most likely has: the genome itself is a file
+// on disk. The assembly's sequence adapter is the same shape as a track's, so
+// it gets the same substitution — without it, `localFiles` can only decorate a
+// genome someone else is already hosting.
+test('an assembly can come from local files too', () => {
+  const state = createViewState({
+    assembly: {
+      name: 'mine',
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'mine-ref',
+        adapter: { type: 'BgzipFastaAdapter', uri: 'genome.fa.gz' },
+      },
+    },
+    localFiles: {
+      'genome.fa.gz': new Uint8Array([1]),
+      'genome.fa.gz.fai': new Uint8Array([2]),
+      'genome.fa.gz.gzi': new Uint8Array([3]),
+    },
+  })
+
+  const { adapter } = getSnapshot(state.config.assembly.sequence) as {
+    adapter: {
+      fastaLocation: { locationType: string; name: string }
+      faiLocation: { locationType: string; name: string }
+      gziLocation: { locationType: string; name: string }
+    }
+  }
+  expect(adapter.fastaLocation).toMatchObject({
+    locationType: 'BlobLocation',
+    name: 'genome.fa.gz',
+  })
+  // both index siblings, derived by the adapter from the one name given
+  expect(adapter.faiLocation.locationType).toBe('BlobLocation')
+  expect(adapter.gziLocation.locationType).toBe('BlobLocation')
+})
+
 test('a remote track alongside a local one is untouched', () => {
   const state = createViewState({
     assembly,

@@ -119,19 +119,22 @@ export default function createViewState(opts: ViewStateOptions) {
   // `{ type, uri }` shorthand first, because that is the form the substitution
   // recognizes — see normalizeAdapterSnapshots
   const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
+  const local = <T>(node: T) =>
+    blobs
+      ? resolveLocalFileUris(
+          normalizeAdapterSnapshots(node, pluginManager),
+          blobs,
+        )
+      : node
   const stateTree = model.create(
     {
       config: {
         configuration,
-        assembly,
-        tracks: blobs
-          ? tracks?.map(track =>
-              resolveLocalFileUris(
-                normalizeAdapterSnapshots(track, pluginManager),
-                blobs,
-              ),
-            )
-          : tracks,
+        // the assembly too, not only the tracks: its sequence adapter is the
+        // same shape, and a host whose genome is a file on disk rather than a
+        // hub — a non-model organism, an in-house build — has nowhere to put it
+        assembly: local(assembly),
+        tracks: tracks?.map(local),
         internetAccounts,
         aggregateTextSearchAdapters,
       },

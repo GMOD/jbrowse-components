@@ -82,21 +82,24 @@ export default function createViewState(
   // `{ type, uri }` shorthand first, because that is the form the substitution
   // recognizes — see normalizeAdapterSnapshots
   const blobs = localFiles ? registerLocalFiles(localFiles) : undefined
-  const tracks = blobs
-    ? config.tracks?.map(track =>
-        resolveLocalFileUris(
-          normalizeAdapterSnapshots(track, pluginManager),
+  const local = <T>(node: T) =>
+    blobs
+      ? resolveLocalFileUris(
+          normalizeAdapterSnapshots(node, pluginManager),
           blobs,
-        ),
-      )
-    : config.tracks
+        )
+      : node
   // annotated so the reads below are checked: `model` erases its session type
   // (see ViewModel), and a session is always passed here
   const stateTree: ViewModel = model.create(
     {
       jbrowse: {
         ...config,
-        tracks,
+        tracks: config.tracks?.map(local),
+        // the assemblies too, not only the tracks: a sequence adapter is the
+        // same shape, and a host whose genome is a file on disk rather than a
+        // hub — a non-model organism, an in-house build — has nowhere to put it
+        assemblies: config.assemblies.map(local),
         // The plugins the host loaded for us belong in the app's own plugin
         // list, not only in the plugin manager. `onPluginsUpdated` answers
         // "what does a rebuild have to load" out of `jbrowse.plugins`, so a
