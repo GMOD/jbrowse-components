@@ -1,6 +1,6 @@
 import BaseResult from '../../TextSearch/BaseResults.ts'
+import { MAX_GLOB_REGIONS } from '../../util/selectNamedRegions.ts'
 import {
-  MAX_SELECT_ALL,
   cap,
   coerceToResult,
   getDeduplicatedResult,
@@ -152,7 +152,10 @@ describe('getRefNameOptions globs', () => {
 
   it('withholds the bulk row past the ceiling rather than truncating it', () => {
     const many = regions(
-      Array.from({ length: MAX_SELECT_ALL + 5 }, (_, i) => `scaffold${i}_alt`),
+      Array.from(
+        { length: MAX_GLOB_REGIONS + 5 },
+        (_, i) => `scaffold${i}_alt`,
+      ),
     )
     const options = getRefNameOptions(many, '*_alt')
     // a bulk row reading "all of them" that navigates to the first thousand is
