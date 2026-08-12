@@ -110,6 +110,16 @@ No drama or stakes, no rhetorical framing of a method, no reveals held for
 effect, no conclusion one picture can't support. Applies to captions, gallery
 descriptions, TL;DRs, and headings too.
 
+**Don't argue with the previous version of the page.** Correcting a doc leaves a
+strong pull toward writing the correction rather than the fact — "X is the
+second thing tried, **not the first**", "these are part of the contract, **not
+extras**", a paragraph justifying a behavior by describing the implementation it
+replaced. The reader never saw the old text, so the contrast lands as an
+argument with nobody, and the thing they came for (the order, the list, what to
+do) is now the subordinate clause. State the behavior; put what it used to say
+in the commit message, which is where the next author looks for it. The tell is
+a sentence that only parses if you already know the old wording.
+
 ## The TL;DR
 
 Every page under `user_guides/`, `config_guides/`, `developer_guides/` and
