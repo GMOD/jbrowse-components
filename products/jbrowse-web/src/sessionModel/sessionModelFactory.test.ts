@@ -14,6 +14,48 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
+/**
+ * Rewrites the workspace layout's panel and tab ids to `panel-1`, `tab-1`, ...
+ * in first-seen order, so a session snapshot can be compared at all: those ids
+ * are random per session by design (WorkspaceLayout's `nextId`, which explains
+ * why a counter would collide with a restored snapshot).
+ *
+ * Same id in, same placeholder out — which keeps the one cross-reference in
+ * there worth checking, `activeTabId` naming a tab that is in `tabs`. A blanket
+ * `expect.any(String)` matcher per id would drop it.
+ *
+ * Walks rather than round-tripping through JSON: a key whose value is
+ * `undefined` is part of what is being asserted here, and `JSON.stringify`
+ * deletes it.
+ */
+function withStableLayoutIds(value: unknown, seen = new Map<string, string>()) {
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) {
+      return node.map(walk)
+    }
+    if (node && typeof node === 'object') {
+      return Object.fromEntries(
+        Object.entries(node).map(([key, val]) => [key, walk(val)]),
+      )
+    }
+    if (typeof node === 'string') {
+      const kind = /^(panel|tab)-/.exec(node)?.[1]
+      if (kind) {
+        const known = seen.get(node)
+        if (known) {
+          return known
+        }
+        const same = [...seen.values()].filter(v => v.startsWith(kind))
+        const placeholder = `${kind}-${same.length + 1}`
+        seen.set(node, placeholder)
+        return placeholder
+      }
+    }
+    return node
+  }
+  return walk(value)
+}
+
 describe('JBrowseWebSessionModel', () => {
   it('creates with no parent and just a name', () => {
     const pluginManager = new PluginManager()
@@ -29,7 +71,7 @@ describe('JBrowseWebSessionModel', () => {
     )
 
     const { id, ...rest } = getSnapshot(session)
-    expect(rest).toMatchSnapshot()
+    expect(withStableLayoutIds(rest)).toMatchSnapshot()
   })
 
   it('accepts a custom drawer width', () => {

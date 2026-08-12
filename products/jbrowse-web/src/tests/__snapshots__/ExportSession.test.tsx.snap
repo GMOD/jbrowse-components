@@ -7,6 +7,17 @@ exports[`export session with alignments and gff tracks 1`] = `
       "hierarchicalTrackSelector": "hierarchicalTrackSelector",
     },
     "id": "test-id-0",
+    "layout": {
+      "activeTabId": "tab-test-id-1",
+      "id": "panel-test-id-2",
+      "size": 1,
+      "tabs": [
+        {
+          "id": "tab-test-id-1",
+          "viewIds": [],
+        },
+      ],
+    },
     "sessionPlugins": [],
     "trackConfigDeltas": {},
     "views": [
@@ -27,11 +38,11 @@ exports[`export session with alignments and gff tracks 1`] = `
             "displays": [
               {
                 "configuration": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay",
-                "id": "test-id-2",
+                "id": "test-id-4",
                 "type": "LinearAlignmentsDisplay",
               },
             ],
-            "id": "test-id-1",
+            "id": "test-id-3",
             "type": "AlignmentsTrack",
           },
           {
@@ -39,11 +50,11 @@ exports[`export session with alignments and gff tracks 1`] = `
             "displays": [
               {
                 "configuration": "gff3tabix_genes-LinearBasicDisplay",
-                "id": "test-id-4",
+                "id": "test-id-6",
                 "type": "LinearBasicDisplay",
               },
             ],
-            "id": "test-id-3",
+            "id": "test-id-5",
             "type": "FeatureTrack",
           },
         ],

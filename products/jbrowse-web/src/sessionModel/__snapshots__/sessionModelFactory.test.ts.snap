@@ -2,7 +2,20 @@
 
 exports[`JBrowseWebSessionModel creates with no parent and just a name 1`] = `
 {
+  "activePanelId": undefined,
   "focusedViewId": undefined,
+  "layout": {
+    "activeTabId": "tab-1",
+    "id": "panel-1",
+    "size": 1,
+    "tabs": [
+      {
+        "id": "tab-1",
+        "title": undefined,
+        "viewIds": [],
+      },
+    ],
+  },
   "name": "testSession",
   "sessionPlugins": [],
   "trackConfigDeltas": {},
