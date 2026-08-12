@@ -371,6 +371,89 @@ worse. `extendsOffScreen` is the remaining one that is read-derived, and it can
 flip for the same reason; it is informational and shown only when the candidates
 disagree about it, so it has not been worth a field.
 
+## The batch study, and what it settled
+
+`scripts/derivative_path_study.ts` runs the real `computeReadChains` +
+`computeDerivativePaths` at every junction two somatic callsets report, with two
+control sets. 215 junctions, two cancers, two chemistries. Run it as
+`fetch <dataset>` then `score <dataset>`; the fetch is minutes of remote range
+queries and the corpus it writes is gitignored and refetchable.
+
+The two datasets differ in the way that decides what a number means:
+
+| | comparator | reads | independent? |
+| --- | --- | --- | --- |
+| `colo829` | nanomonsv PASS calls, 63 junctions | ONT ~60x | **no** -- same molecules |
+| `cgiab` | C-GIAB V0.5 draft benchmark PASS, 152 junctions | HiFi 116x | **yes** -- GIAB's own, from several technologies and from assemblies |
+
+**Recall is a step function in event size, and it replicates.** A junction
+counts as recovered when a proposed route asserts it with both ends within
+100 bp.
+
+| Event size | COLO829 | HG008-T |
+| --- | --- | --- |
+| < 1 kb | 1 / 9 (11%) | 4 / 40 (10%) |
+| 1 - 10 kb | 6 / 10 (60%) | 17 / 26 (65%) |
+| 10 - 100 kb | 16 / 16 (100%) | 17 / 18 (94%) |
+| > 100 kb | 17 / 17 (100%) | 54 / 54 (100%) |
+| interchromosomal | 11 / 11 (100%) | 14 / 14 (100%) |
+| all | 51 / 63 (81%) | 106 / 152 (70%) |
+
+Two independent callsets on different chemistries agree to within 5 points in
+every bin. **Above 10 kb and interchromosomal, 129 of 130.**
+
+**The misses are the aligner's representation, not the grouping.** The study
+asks, of each missed junction, whether the reads carry it as a CIGAR deletion of
+about the called length instead of as a split alignment. 11 of COLO829's 12
+misses, and 39 of HG008-T's 46, are in-CIGAR: the event is in the data, is not a
+chain, and nothing reading SA tags could reach it. One COLO829 miss had no reads
+in its window. **Seven HG008-T junctions are missed with reads present and no
+in-read deletion either**, and those seven are the only genuinely unexplained
+failures in the whole study; nobody has looked at them yet.
+
+**Rank is not the weak link.** Where the junction is recovered it is rank 1 in
+48 of 51 (COLO829) and 96 of 106 (HG008-T), and rank 1 or 2 in **every single
+case in both**. Breakpoint agreement, taking the worse of a junction's two ends:
+median 2 bp / max 40 bp on COLO829, median 1 bp / max 99 bp on HG008-T.
+
+**The controls hold.** The matched normal recovers **0** somatic junctions in
+both, at the same windows. It does propose routes elsewhere -- 40% of COLO829
+windows, 4% of HG008-T's, the gap being 60x ONT against 35x HiFi -- and so do
+random loci (28% and 3%). That is the dialog's caveat, quantified: routes appear
+at ordinary loci, and read count alone does not separate them.
+
+**`minReads = 2` is the knee, and now there is a curve to point at.** Window
+size (5/10/20 kb) does not move recall at all in either dataset, and neither
+does the junction tolerance anywhere from 5 to 100 bp. `minReads` is the only
+parameter that trades:
+
+| minReads | COLO829 recall | routes per random locus | HG008-T recall | routes per random locus |
+| --- | --- | --- | --- | --- |
+| 1 | 84% | 3.77 | 73% | 1.80 |
+| 2 | 81% | 0.30 | 70% | 0.37 |
+| 3 | 76% | 0.02 | 70% | 0.17 |
+
+Dropping to 1 buys 3 points of recall for a 12x increase in routes at loci with
+no event. That is the defence of the default, and it is the first one that is
+not an argument.
+
+**What the study still does not do.** It scores against callsets, so a junction
+neither caller reports is invisible to it; there is no false-DISCOVERY rate,
+only a route count at control loci, because nothing here can say a route at a
+random locus is wrong. And the size curve is a property of the ALIGNER
+(minimap2/ngmlr here) as much as of this code, so it should be re-measured
+before quoting it for a different aligner.
+
+**Two bugs in the harness, both worth knowing.** Its first run lower-cased the
+VCF's CHROM to fold mate-refName case and then fetched that spelling, so `chrX`
+became `chrx` and six loci silently returned no reads -- the same leak this file
+already records against `sv_multihop.py`'s `--loci`, reproduced from scratch by
+someone who had read the warning. Control loci now come from the alignment
+file's own `@SQ` header so the naming universe is the reads' by construction.
+And 116x HiFi SAM overflowed node's maximum string length: `SEQ` and `QUAL` are
+over 95% of those bytes and nothing in the study reads them, so the fetch
+projects to six fields inside the pipeline.
+
 ## Reads on the allele: built, reverted, do not re-add
 
 The in-app reconstruction (`Reconstruct derivative allele...`, a
