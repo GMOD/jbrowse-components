@@ -3,6 +3,93 @@ import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
 /**
+ * What one anchor coordinate has learned from the blocks seen so far: the
+ * widest block containing it, and failing that the nearest block ending to its
+ * left and the nearest starting to its right.
+ *
+ * A mutable bag, one per coordinate per call, because the loop that fills it
+ * runs per frame over every loaded block — see the note at the loop.
+ */
+interface Accumulator {
+  x: number
+  /** width of the widest containing block, -1 for none */
+  insideWidth: number
+  /** where that block puts `x` */
+  insideAt: number
+  /** the nearest block ending left of `x`, and where its right edge lands */
+  leftEnd: number
+  leftAt: number
+  /** the nearest block starting right of `x`, and where its left edge lands */
+  rightStart: number
+  rightAt: number
+}
+
+function newAccumulator(x: number): Accumulator {
+  return {
+    x,
+    insideWidth: -1,
+    insideAt: 0,
+    leftEnd: Number.NEGATIVE_INFINITY,
+    leftAt: 0,
+    rightStart: Number.POSITIVE_INFINITY,
+    rightAt: 0,
+  }
+}
+
+/** Show one block to a coordinate, in whichever of the three roles it plays. */
+function offer(
+  a: Accumulator,
+  aLo: number,
+  aHi: number,
+  atLo: number,
+  atHi: number,
+) {
+  if (a.x >= aLo && a.x <= aHi) {
+    // the widest containing block wins, matching pickFollowFeature
+    if (aHi - aLo > a.insideWidth) {
+      a.insideWidth = aHi - aLo
+      a.insideAt =
+        aHi > aLo ? atLo + ((a.x - aLo) / (aHi - aLo)) * (atHi - atLo) : atLo
+    }
+  } else if (aHi < a.x) {
+    if (aHi > a.leftEnd) {
+      a.leftEnd = aHi
+      a.leftAt = atHi
+    }
+  } else if (aLo < a.rightStart) {
+    // starts right of `x`, which is the only case left, and nearer than any
+    // other seen so far
+    a.rightStart = aLo
+    a.rightAt = atLo
+  }
+}
+
+/**
+ * The coordinate's mapped position.
+ *
+ * Inside a block, through that block. Between two, linearly between the
+ * neighbours' facing edges — which is continuous, because at a block boundary
+ * the gap interpolation starts from exactly the value the block itself gives
+ * there. Off either end, the outermost block's edge: past the last alignment
+ * nothing is known, and extrapolating a scale measured elsewhere would invent a
+ * correspondence rather than admit there is none.
+ */
+function resolve(a: Accumulator) {
+  if (a.insideWidth >= 0) {
+    return a.insideAt
+  }
+  const hasLeft = a.leftEnd !== Number.NEGATIVE_INFINITY
+  const hasRight = a.rightStart !== Number.POSITIVE_INFINITY
+  if (hasLeft && hasRight) {
+    return (
+      a.leftAt +
+      ((a.x - a.leftEnd) / (a.rightStart - a.leftEnd)) * (a.rightAt - a.leftAt)
+    )
+  }
+  return hasLeft ? a.leftAt : hasRight ? a.rightAt : undefined
+}
+
+/**
  * Where the anchor window maps to, across every alignment under it.
  *
  * A CONTINUOUS function of the window, which is the whole reason this is not
@@ -44,114 +131,94 @@ export function followWindowMapping({
   const otherStarts = toMate ? data.mateStarts : data.starts
   const otherEnds = toMate ? data.mateEnds : data.ends
 
-  const qualifies = (i: number) =>
-    refNames[i] === window.refName &&
-    (mateAssembly === undefined || data.mateAssemblyNames[i] === mateAssembly)
-  const overlapOf = (i: number) =>
-    Math.min(Math.max(starts[i]!, ends[i]!), window.end) -
-    Math.max(Math.min(starts[i]!, ends[i]!), window.start)
+  const mateAssemblyNames = data.mateAssemblyNames
+  const {
+    refName: windowRefName,
+    start: windowStartBp,
+    end: windowEndBp,
+  } = window
+  const n = refNames.length
 
-  const overlapByRefName = new Map<string, number>()
-  for (let i = 0; i < refNames.length; i++) {
-    if (qualifies(i) && overlapOf(i) > 0) {
-      const key = otherRefNames[i]!
-      overlapByRefName.set(key, (overlapByRefName.get(key) ?? 0) + overlapOf(i))
+  // Which contig of the other assembly most of the window aligns to, totalled
+  // in two PARALLEL ARRAYS rather than a Map. A Map costs a hash, a get and a
+  // set per element, and this walks every loaded block: at 500k that alone
+  // measured most of the pass. The names are few — one contig in the ordinary
+  // case, a handful across a rearrangement — so a linear scan of the array is
+  // shorter than hashing, and `lastName` makes the common run of identical
+  // names a pointer compare and nothing else.
+  const names: string[] = []
+  const totals: number[] = []
+  let lastName: string | undefined
+  let lastIdx = -1
+  for (let i = 0; i < n; i++) {
+    if (
+      refNames[i] !== windowRefName ||
+      (mateAssembly !== undefined && mateAssemblyNames[i] !== mateAssembly)
+    ) {
+      continue
     }
+    const overlap =
+      Math.min(Math.max(starts[i]!, ends[i]!), windowEndBp) -
+      Math.max(Math.min(starts[i]!, ends[i]!), windowStartBp)
+    if (overlap <= 0) {
+      continue
+    }
+    const name = otherRefNames[i]!
+    if (name !== lastName) {
+      lastName = name
+      lastIdx = names.indexOf(name)
+      if (lastIdx < 0) {
+        lastIdx = names.length
+        names.push(name)
+        totals.push(0)
+      }
+    }
+    totals[lastIdx]! += overlap
   }
   let target: string | undefined
   let best = 0
-  for (const [refName, overlap] of overlapByRefName) {
-    if (overlap > best) {
-      best = overlap
-      target = refName
+  for (let i = 0; i < names.length; i++) {
+    if (totals[i]! > best) {
+      best = totals[i]!
+      target = names[i]
     }
   }
   if (target === undefined) {
     return undefined
   }
 
-  // One block, in the form the mapping below needs: both axes ascending, with
-  // `flip` carrying the orientation so a reverse-strand block still maps its
-  // left edge to the mate's right.
-  const block = (i: number) => {
+  // BOTH EDGES IN ONE PASS, AND NOTHING ALLOCATED INSIDE IT. This runs per
+  // frame while a drag is in progress, over every loaded block, and a
+  // whole-genome PAF's loaded set runs to hundreds of thousands of them. The
+  // readable version — a helper returning a small object per block, called once
+  // per edge — measured 51ms a frame at 500k blocks, three times a 60fps
+  // budget, and the object churn rather than the arithmetic was almost all of
+  // it: a single bare pass over the same arrays costs 5ms.
+  const windowStart = newAccumulator(windowStartBp)
+  const windowEnd = newAccumulator(windowEndBp)
+  for (let i = 0; i < n; i++) {
+    if (
+      otherRefNames[i] !== target ||
+      refNames[i] !== windowRefName ||
+      (mateAssembly !== undefined && mateAssemblyNames[i] !== mateAssembly)
+    ) {
+      continue
+    }
     const aLo = Math.min(starts[i]!, ends[i]!)
     const aHi = Math.max(starts[i]!, ends[i]!)
     const bLo = Math.min(otherStarts[i]!, otherEnds[i]!)
     const bHi = Math.max(otherStarts[i]!, otherEnds[i]!)
+    // `atLo`/`atHi` are the mate coordinates this block's LEFT and RIGHT anchor
+    // edges map to, so a reverse-strand block simply reports them swapped and
+    // one interpolation formula serves both orientations.
     const flip = data.strands[i] === -1
-    return {
-      aLo,
-      aHi,
-      // the mate coordinate this block's left and right anchor edges map to
-      atLo: flip ? bHi : bLo,
-      atHi: flip ? bLo : bHi,
-      within: (x: number) =>
-        aHi > aLo
-          ? (flip ? bHi : bLo) +
-            ((x - aLo) / (aHi - aLo)) *
-              ((flip ? bLo : bHi) - (flip ? bHi : bLo))
-          : bLo,
-    }
+    const atLo = flip ? bHi : bLo
+    const atHi = flip ? bLo : bHi
+    offer(windowStart, aLo, aHi, atLo, atHi)
+    offer(windowEnd, aLo, aHi, atLo, atHi)
   }
-
-  /**
-   * One anchor coordinate mapped onto the target contig.
-   *
-   * Inside a block, through that block. Between two, linearly between the
-   * neighbours' facing edges — which is continuous, because at a block boundary
-   * the gap interpolation starts from exactly the value the block itself gives
-   * there. Off either end, the outermost block's edge: past the last alignment
-   * nothing is known, and extrapolating a scale measured elsewhere would invent
-   * a correspondence rather than admit there is none.
-   */
-  const mapCoord = (x: number) => {
-    let inside: number | undefined
-    let leftEnd: number | undefined
-    let leftAt = 0
-    let rightStart: number | undefined
-    let rightAt = 0
-    for (let i = 0; i < refNames.length; i++) {
-      if (!qualifies(i) || otherRefNames[i] !== target) {
-        continue
-      }
-      const b = block(i)
-      if (x >= b.aLo && x <= b.aHi) {
-        // the widest containing block wins, matching pickFollowFeature
-        if (inside === undefined || b.aHi - b.aLo > inside) {
-          inside = b.aHi - b.aLo
-          leftEnd = undefined
-          rightStart = undefined
-          leftAt = b.within(x)
-        }
-      } else if (inside === undefined && b.aHi < x) {
-        if (leftEnd === undefined || b.aHi > leftEnd) {
-          leftEnd = b.aHi
-          leftAt = b.atHi
-        }
-      } else if (inside === undefined && b.aLo > x) {
-        if (rightStart === undefined || b.aLo < rightStart) {
-          rightStart = b.aLo
-          rightAt = b.atLo
-        }
-      }
-    }
-    if (inside !== undefined) {
-      return leftAt
-    }
-    if (leftEnd !== undefined && rightStart !== undefined) {
-      return (
-        leftAt + ((x - leftEnd) / (rightStart - leftEnd)) * (rightAt - leftAt)
-      )
-    }
-    return leftEnd !== undefined
-      ? leftAt
-      : rightStart !== undefined
-        ? rightAt
-        : undefined
-  }
-
-  const p = mapCoord(window.start)
-  const q = mapCoord(window.end)
+  const p = resolve(windowStart)
+  const q = resolve(windowEnd)
   if (p === undefined || q === undefined) {
     return undefined
   }

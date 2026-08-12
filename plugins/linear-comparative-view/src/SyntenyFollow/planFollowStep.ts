@@ -44,6 +44,26 @@ export interface FollowStep {
  * insertion, a centromere, a row parked off the end of the file. The caller
  * holds the row where it is rather than sending it somewhere invented.
  */
+/**
+ * Whether the anchor window lies wholly inside one alignment — the test that
+ * decides between the exact walk and the window mapping.
+ *
+ * Shared with the per-frame pass, which answers it against the block the last
+ * settle chose rather than re-picking one: re-picking costs a full scan of
+ * every loaded block, and being a frame or two stale here only routes the
+ * placement to the mapping, which is correct either way.
+ */
+export function windowInsideFeat(
+  feat: FeatPos,
+  window: FollowWindow,
+  toMate: boolean,
+) {
+  const [aStart, aEnd] = toMate
+    ? [feat.start, feat.end]
+    : [feat.mate.start, feat.mate.end]
+  return aStart <= window.start && aEnd >= window.end
+}
+
 export function planFollowStep({
   displays,
   window,
@@ -74,16 +94,13 @@ export function planFollowStep({
     if (candidate && (!best || candidate.overlap > bestOverlap)) {
       bestOverlap = candidate.overlap
       const feat = getFeatureAtIndex(data, candidate.index)
-      const [aStart, aEnd] = toMate
-        ? [feat.start, feat.end]
-        : [feat.mate.start, feat.mate.end]
       best = {
         display,
         feat,
         window,
         toMate,
         hasCigar: data.hasCigar,
-        windowInsideFeat: aStart <= window.start && aEnd >= window.end,
+        windowInsideFeat: windowInsideFeat(feat, window, toMate),
         envelope: followWindowMapping({ data, window, toMate, mateAssembly }),
       }
     }

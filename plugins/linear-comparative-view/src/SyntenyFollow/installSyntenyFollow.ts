@@ -4,12 +4,16 @@ import { autorun } from 'mobx'
 
 import { followAnchorWindow } from './followAnchorWindow.ts'
 import { applyFollowTransform, followTransform } from './followTransform.ts'
+import { followWindowMapping } from './followWindowMapping.ts'
 import { interpolateFollowSpan } from './interpolateFollowSpan.ts'
-import { planFollowStep } from './planFollowStep.ts'
+import { planFollowStep, windowInsideFeat } from './planFollowStep.ts'
 import { positionViewOnSpan } from './positionViewOnSpan.ts'
 import { resolveFollowSpan } from './resolveFollowSpan.ts'
 
-import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
+import type {
+  FeatPos,
+  LinearSyntenyDisplayModel,
+} from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 import type { FollowTransform } from './followTransform.ts'
@@ -45,6 +49,10 @@ export interface SyntenyFollowHost extends IStateTreeNode {
 interface LevelState {
   // the alignment this level followed last, for pickFollowFeature's hysteresis
   featureId?: string
+  // and the alignment itself, plus the display it came from, so the per-frame
+  // pass can place the row without re-picking one — see windowInsideFeat
+  feat?: FeatPos
+  display?: LinearSyntenyDisplayModel
   // latest-wins guard. A pan issues one resolve per settled position and the RPC
   // is not ordered, so a slow earlier one can land after a fast later one and
   // park the panel at a window the user has already left.
@@ -148,6 +156,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       return
     }
     state.featureId = step.feat.id
+    state.feat = step.feat
+    state.display = step.display
     // Cached even when the row is already in place: this is what the per-frame
     // pass steers by, so it has to be refreshed on every resolve rather than
     // only on the ones that move something.
@@ -284,27 +294,28 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           if (!window) {
             continue
           }
+          // The block the last settle chose, rather than re-picking one. That
+          // choice costs a full scan of every loaded block, and this pass is
+          // already paying for one in `followWindowMapping`; a whole-genome
+          // PAF's loaded set runs to hundreds of thousands, where each scan is
+          // a measurable slice of a frame. Nothing is placed until the first
+          // settle populates this, which is a few hundred ms after the mode is
+          // switched on.
           const state = levelStates.get(level.level)
-          const step = planFollowStep({
-            displays: level.linearSyntenyDisplays,
-            window,
-            toMate,
-            mateAssembly,
-            incumbentId: state?.featureId,
-          })
-          if (!step) {
+          const feat = state?.feat
+          const data = state?.display?.featureData
+          if (!feat || !data) {
             continue
           }
-          const span = step.windowInsideFeat
+          const span = windowInsideFeat(feat, window, toMate)
             ? // the CIGAR-walked answer, carried forward affinely — better than
               // re-interpolating the block, which is what this pass would
               // otherwise have to do without the RPC
-              ((state?.transform
+              ((state.transform
                 ? applyFollowTransform(state.transform, window)
-                : undefined) ??
-              interpolateFollowSpan({ feat: step.feat, window, toMate }))
-            : (step.envelope ??
-              interpolateFollowSpan({ feat: step.feat, window, toMate }))
+                : undefined) ?? interpolateFollowSpan({ feat, window, toMate }))
+            : (followWindowMapping({ data, window, toMate, mateAssembly }) ??
+              interpolateFollowSpan({ feat, window, toMate }))
           positionViewOnSpan(movingView, span)
         }
       },
