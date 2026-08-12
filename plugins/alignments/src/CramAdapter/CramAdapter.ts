@@ -182,6 +182,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
         // track. Its own budget, not the bytes one: this cache weighs decoded
         // records, and a budget summing records with bytes bounds neither
         cacheBudget: decodedRecordsBudget,
+        useSliceWorkerPool: this.getConf('useSliceWorkerPool'),
         numSliceWorkers: sliceWorkerCount(),
       })
       this.configureResult = { cram, index }

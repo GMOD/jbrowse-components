@@ -63,6 +63,22 @@ const configSchema = ConfigurationSchema(
     },
 
     /**
+     * #slot useSliceWorkerPool
+     */
+    // On by default, matching @gmod/cram. The slot exists so the pool can be
+    // turned off without rebuilding — which is how its effect on a real track
+    // gets measured, since the decode happens in an RPC worker where no test
+    // hook reaches. Also an escape hatch for a host that cannot spawn nested
+    // workers.
+    useSliceWorkerPool: {
+      type: 'boolean',
+      description:
+        'decode CRAM slices on a pool of workers rather than in the thread that asked',
+      defaultValue: true,
+      advanced: true,
+    },
+
+    /**
      * #slot cramLocation
      * location of the CRAM file
      */
