@@ -115,10 +115,24 @@ in a light JBrowse theme too, the way the app bar is.
 - `@jbrowse/react-app2/styles.css` stays exported and is now empty. Owning that
   entry point is what let the dependency go without breaking a single embedder's
   import — the one part of ADR-057's reasoning that paid off exactly as written.
-- **Deliberately unbuilt**, and the honest residual: tab overflow (the strip
-  scrolls), keyboard/a11y, and min-size constraints (flex alone lets a panel
-  shrink to nothing). Scoped out by the maintainer at the time; none is blocked
-  by the design.
+- **Three things were scoped out at the time and have since been built**, which
+  is the part of this ADR most likely to be read as still true: tab overflow
+  (the strip translates the wheel and scrolls the current tab into view),
+  keyboard/a11y (a roving tabindex on the strip, an operable splitter), and
+  min-size constraints. The last is `splitter.ts` and is dockview's own number —
+  `MINIMUM_DOCKVIEW_GROUP_PANEL_WIDTH` is 100 — because a flex share of zero is
+  legal and a pane dragged to it takes its tab strip with it. None was blocked
+  by the design, which is what the original entry predicted.
+- **Cross-referencing the dependency after removing it is cheap and worth
+  doing.** Reading `dockview-core@8.0.0` — from npm; the package is gone from
+  every `package.json` and from the lockfile — settled three questions that
+  would otherwise have been guesses: the
+  remove-then-insert index adjustment for a same-strip tab move is character for
+  character what dockview does, the 100px group minimum above was simply
+  missing, and the two deliberate divergences are now written down as
+  divergences — corners resolve to the proportionally deeper edge rather than by
+  a fixed left/right/top/bottom priority, and closing a tab falls to its left
+  neighbour rather than to dockview's most-recently-used.
 - **The lesson worth keeping is about the estimate, not the engine.** ADR-057
   was reopened four times and re-derived the same answer each time from a number
   nobody had checked. A day of building replaced it, and the answer inverted.

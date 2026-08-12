@@ -44,7 +44,11 @@ export interface StripDrop {
  * same reason: at 0.5 the centre vanishes entirely.
  *
  * Corners go to whichever edge the pointer is proportionally deeper into, so
- * the diagonal is the tie-break and neither axis silently wins.
+ * the diagonal is the tie-break and neither axis silently wins. **This is a
+ * deliberate divergence from dockview**, whose `calculateQuadrantAsPercentage`
+ * tests left, right, top, bottom in that order and returns the first hit — so
+ * in its top-left corner `left` always wins, however far into the top band the
+ * pointer is. Its band is 20% where this defaults to 25%.
  */
 export function dropZoneAt(
   rect: Rect,

@@ -325,8 +325,12 @@ export function removeTab(root: LayoutTree, tabId: string): LayoutTree {
       tabs: remaining,
       activeTabId:
         panel.activeTabId === tabId
-          ? // fall to the neighbour on the left, as every tabbed UI does —
-            // which for the leftmost tab is the one that slid into its place
+          ? // Fall to the neighbour on the left — which for the leftmost tab is
+            // the one that slid into its place. A deliberate divergence from
+            // dockview, which opened `mostRecentlyUsed[0]`: that needs a
+            // per-panel MRU list in the tree, which is state to persist, keep
+            // pruned and hold as an invariant, for a difference nobody has
+            // asked about.
             remaining[Math.max(at - 1, 0)]?.id
           : panel.activeTabId,
     }
@@ -348,6 +352,11 @@ export function removeTab(root: LayoutTree, tabId: string): LayoutTree {
  * 2 on screen; taking A out first makes that gap index 1, and inserting at 2
  * lands it after C instead. Adjusting here rather than in the caller keeps the
  * whole "remove then insert" mechanic inside the one function that does it.
+ *
+ * dockview reaches the same rule from the other end and it is worth knowing
+ * they agree, since this is the fiddliest arithmetic in the file: its tabs
+ * container computes `insertionIndex - (sourceIndex !== -1 && sourceIndex <
+ * insertionIndex ? 1 : 0)`, which is the condition below with the same bounds.
  */
 export function moveTabToPanel(
   root: LayoutTree,

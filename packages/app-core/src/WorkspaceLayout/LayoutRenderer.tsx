@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 
 import { PanelView } from './PanelView.tsx'
 import { dv } from './dockviewTheme.ts'
+import { pairSpan, withBoundaryAt } from './splitter.ts'
 import { isBranch } from './tree.ts'
 
 import type { WorkspaceLayout } from './model.ts'
@@ -78,39 +79,35 @@ export const LayoutRenderer = observer(function LayoutRenderer(props: Props) {
 })
 
 /**
- * Drags the boundary between children `index - 1` and `index`.
+ * The pixels the two panes either side of a handle currently occupy.
  *
- * Reads the two panes' real pixel sizes on pointerdown and moves the boundary
- * within their combined space, so only the pair either side of the handle
- * changes — every other pane holds still, which is what a splitter is expected
- * to do and what "just scale everything" gets wrong.
+ * Read from the DOM because nothing in the tree knows one: sizes are shares of
+ * a container whose width is the browser's business. Both input paths need it —
+ * the pointer to convert its travel into a share, the keyboard only to apply
+ * the minimum — so it is measured here rather than cached with the drag.
+ *
+ * The handle's siblings are the panes: every child of the flex container except
+ * the other handles, which is what `data-splitter` marks them for.
  */
+function measurePairPx(
+  handle: HTMLElement,
+  index: number,
+  horizontal: boolean,
+) {
+  const panes = [...(handle.parentElement?.children ?? [])].filter(
+    el => !Object.hasOwn((el as HTMLElement).dataset, 'splitter'),
+  )
+  const before = panes[index - 1]?.getBoundingClientRect()
+  const after = panes[index]?.getBoundingClientRect()
+  if (!before || !after) {
+    return 0
+  }
+  return horizontal ? before.width + after.width : before.height + after.height
+}
+
 // dockview's sash is a transparent grab strip with a 1px separator line drawn
 // down the middle of it — the line is what you see, the 4px is what you can
 // hit. Its dark theme deliberately gives the sash no hover colour at all.
-/** The space the two panes either side of the boundary before `index` share. */
-function pairSpan(sizes: number[], index: number) {
-  return sizes[index - 1]! + sizes[index]!
-}
-
-/**
- * `sizes` with that boundary moved to `position`, measured in the same units.
- *
- * The move stays inside the pair, so every other pane holds still — what a
- * splitter is expected to do, and what "just scale everything" gets wrong. The
- * clamp lets a pane be dragged to nothing but never through zero, which would
- * flip the pair and make the handle jump. The pointer and the arrow keys are
- * the same gesture at different resolutions and both land here.
- */
-function withBoundaryAt(sizes: number[], index: number, position: number) {
-  const pair = pairSpan(sizes, index)
-  const before = Math.min(Math.max(position, 0), pair)
-  const next = [...sizes]
-  next[index - 1] = before
-  next[index] = pair - before
-  return next
-}
-
 const useSplitterStyles = makeStyles()({
   splitter: {
     flex: `0 0 ${dv.sashSize}px`,
@@ -137,6 +134,13 @@ const useSplitterStyles = makeStyles()({
   },
 })
 
+/**
+ * Drags the boundary between children `index - 1` and `index`.
+ *
+ * The DOM half only: it measures, and hands position and pair span to
+ * `splitter.ts`, which decides where the boundary is allowed to land. Same
+ * split as the drag — geometry pure, wiring dumb.
+ */
 const Splitter = observer(function Splitter({
   branch,
   index,
@@ -158,26 +162,14 @@ const Splitter = observer(function Splitter({
 
   const onPointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      const container = event.currentTarget.parentElement
-      if (!container) {
-        return
-      }
-      // every other child of this flex container, in order; the two panes are
-      // the elements either side of this handle
-      const panes = [...container.children].filter(
-        el => !Object.hasOwn((el as HTMLElement).dataset, 'splitter'),
-      )
-      const before = panes[index - 1]?.getBoundingClientRect()
-      const after = panes[index]?.getBoundingClientRect()
-      if (!before || !after) {
+      const pairPx = measurePairPx(event.currentTarget, index, horizontal)
+      if (pairPx <= 0) {
         return
       }
       dragRef.current = {
         axis: horizontal ? 'clientX' : 'clientY',
         start: horizontal ? event.clientX : event.clientY,
-        pairPx: horizontal
-          ? before.width + after.width
-          : before.height + after.height,
+        pairPx,
         startSizes: branch.children.map(c => c.size),
       }
       event.currentTarget.setPointerCapture(event.pointerId)
@@ -188,7 +180,7 @@ const Splitter = observer(function Splitter({
   const onPointerMove = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       const drag = dragRef.current
-      if (!drag || drag.pairPx <= 0) {
+      if (!drag) {
         return
       }
       // the pointer's travel as a fraction of the pair's pixels, applied to the
@@ -201,6 +193,7 @@ const Splitter = observer(function Splitter({
           sizes,
           index,
           sizes[index - 1]! + delta * pairSpan(sizes, index),
+          drag.pairPx,
         ),
       )
     },
@@ -246,7 +239,17 @@ const Splitter = observer(function Splitter({
         return
       }
       event.preventDefault()
-      layout.setSizes(branch.id, withBoundaryAt(sizes, index, moved))
+      // Home/End mean "as far as this goes", which is the minimum rather than
+      // zero — the same stop the drag hits
+      layout.setSizes(
+        branch.id,
+        withBoundaryAt(
+          sizes,
+          index,
+          moved,
+          measurePairPx(event.currentTarget, index, horizontal),
+        ),
+      )
     },
     [branch, index, horizontal, layout],
   )

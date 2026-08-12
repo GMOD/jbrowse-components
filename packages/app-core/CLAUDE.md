@@ -61,7 +61,23 @@ LayoutRenderer the grid: branches, panes, splitters
 PanelView      one cell: the frame, the tabpanel, the drop indicator
 TabStrip       the strip and everything with state in it (+ one tab)
 useLayoutDrag  the DOM half of dragging a tab; geometry is dropZone.ts
+splitter.ts    moving a boundary between two panes, and the pane minimum
 ```
+
+**Reading dockview's source is the cheapest way to settle "did we get this right
+or merely get it working"**, and worth doing when you touch the grid, the sash
+or the dnd. It has already found one missing constraint (`MIN_PANE_PX`) and
+confirmed the fiddliest arithmetic here (the same-strip move index) matches
+character for character. Where we differ on purpose the comment says so and
+names dockview's version — corner drop resolution and the tab that becomes
+active on close are the two.
+
+**Get it from npm, not from `node_modules`.** The dependency is gone from every
+`package.json` and from the lockfile; what is left in the primary checkout's
+`.pnpm/` is orphaned store content from an install predating the removal, and
+the next `pnpm install` there deletes it. The comments below cite **8.0.0**,
+which is the version that shipped, so `npm pack dockview-core@8.0.0` (or the tag
+on GitHub) is the copy the citations were checked against.
 
 `PanelChrome` is worth naming because it is the seam. `LayoutRenderer` and
 everything under it knows nothing about views, assemblies or sessions — what a
@@ -148,9 +164,18 @@ one. Here nesting is preserved and canonicalised, so `size` works at any depth.
 A branch's children divide its space in proportion to their `size`, whatever
 that space becomes, so a window resize is the browser's problem. This is the
 pixel maths a grid engine is most likely to get subtly wrong, and we do not do
-any of it. The one place sizes are computed is the splitter drag, which moves
-the boundary _within the combined space of the pair either side of it_ so every
-other pane holds still.
+any of it. The one place sizes are computed is `splitter.ts`, which moves the
+boundary _within the combined space of the pair either side of it_ so every
+other pane holds still — pure, and tested without a DOM, the same split as
+`dropZone.ts`.
+
+**`MIN_PANE_PX` is the one pixel in the design, and it is dockview's.** A share
+of zero is a perfectly legal `flex-grow`, so without a floor a pane can be
+dragged — or `Home`'d — to nothing, taking its tab strip and its views with it
+and leaving a 4px sash flush against its neighbour to get it back. 100px is
+`MINIMUM_DOCKVIEW_GROUP_PANEL_WIDTH`, so it is the constraint the workspace
+shipped with before the grid was ours. Converting it into a share needs the
+pair's pixel span, which is the only reason the handle measures anything.
 
 ## Drag-and-drop: geometry is pure, wiring is thin
 
