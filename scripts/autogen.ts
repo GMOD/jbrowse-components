@@ -14,6 +14,7 @@
 // --check is not side-effect free for those.
 
 import { spawnSync } from 'node:child_process'
+import { rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -223,6 +224,40 @@ function showDiff(paths: string[]) {
   })
 }
 
+// Put back what a `--check` run dirtied, so a check leaves the tree as it found
+// it. Only ever called with the files that were clean before the generator ran
+// (`after` is computed by excluding `before`), so it cannot discard anyone's
+// work in progress.
+//
+// Without this, `--check` is a command that silently modifies the tree, and the
+// modifications look exactly like your own: a `git add -A` after one sweeps
+// regenerated docs into an unrelated commit. That happened three times in one
+// session in this repo, twice caught only by reading `git status` carefully
+// before committing. The tree-dirtying is inherent — a generator with no
+// `--check` of its own has to write to be compared — but it does not have to
+// survive the run.
+function restore(paths: string[]) {
+  if (paths.length === 0) {
+    return
+  }
+  const tracked = new Set(
+    spawnSync('git', ['ls-files', '--', ...paths], {
+      cwd: root,
+      encoding: 'utf8',
+    })
+      .stdout.trim()
+      .split('\n')
+      .filter(Boolean),
+  )
+  const known = paths.filter(p => tracked.has(p))
+  if (known.length > 0) {
+    spawnSync('git', ['checkout', 'HEAD', '--', ...known], { cwd: root })
+  }
+  for (const p of paths.filter(f => !tracked.has(f))) {
+    rmSync(join(root, p), { force: true })
+  }
+}
+
 // Two different outcomes, kept apart because the remedy is not the same. An
 // artifact that is merely out of date is fixed by `pnpm autogen` and a commit.
 // A generator that CRASHED produced nothing to commit, and telling someone to
@@ -259,6 +294,10 @@ for (const { name, argv, diffPaths } of selected) {
         showDiff(after)
         stale.push(name)
       }
+      // Unconditionally, not just when stale: a generator can rewrite a file to
+      // byte-identical content and still leave it looking touched to tooling
+      // that stats rather than diffs.
+      restore(after)
     }
   } else if (run(argv, check ? ['--check'] : []).status !== 0) {
     stale.push(name)
