@@ -27,6 +27,14 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * Both directions clamp to the block first, so a window wider than the
  * alignment (or one starting off its end) lands back on the block's own ends
  * rather than extrapolating off the far side of the mate.
+ *
+ * ONE FORMULA FOR BOTH DIRECTIONS, over an anchor axis `a` and a placed axis
+ * `b` that swap with `toMate`. The two used to be written out separately and
+ * are the same function: express the window edge as a fraction along `a` and
+ * read that fraction off `b`, from its far end when the strands disagree. The
+ * two spellings differed only in a degenerate corner — a reverse-strand block
+ * of zero length on the anchor axis collapsed onto `b`'s near corner in one
+ * direction and its far corner in the other.
  */
 export function interpolateFollowSpan({
   feat,
@@ -38,35 +46,31 @@ export function interpolateFollowSpan({
   toMate: boolean
 }): ResolvedSpan {
   const { start, end, mate, strand } = feat
-  const featLen = end - start
-  const mateLen = mate.end - mate.start
-  const clamp = (x: number, lo: number, hi: number) =>
-    Math.min(Math.max(x, lo), hi)
-  const span = (a: number, b: number, refName: string) => ({
-    refName,
-    start: Math.floor(Math.min(a, b)),
+  const aStart = toMate ? start : mate.start
+  const aEnd = toMate ? end : mate.end
+  const bStart = toMate ? mate.start : start
+  const bEnd = toMate ? mate.end : end
+  const aLen = aEnd - aStart
+  const bLen = bEnd - bStart
+
+  const at = (x: number) => {
+    // a zero-length block has no interior to interpolate across; both ends
+    // collapse onto b's near corner
+    const u =
+      aLen > 0 ? (Math.min(Math.max(x, aStart), aEnd) - aStart) / aLen : 0
+    // a reverse-strand block runs the other way along the placed axis, so the
+    // walk counts down from its far end and the two ends arrive swapped
+    return strand === -1 ? bEnd - u * bLen : bStart + u * bLen
+  }
+  const p = at(window.start)
+  const q = at(window.end)
+  const lo = Math.floor(Math.min(p, q))
+  return {
+    refName: toMate ? mate.refName : feat.refName,
+    start: lo,
     // at least one base: a window narrower than the rounding, or a zero-length
     // block, would otherwise produce an inverted span that assembles into an
     // inverted locstring
-    end: Math.max(Math.floor(Math.min(a, b)) + 1, Math.ceil(Math.max(a, b))),
-  })
-
-  if (toMate) {
-    const lo = clamp(window.start, start, end)
-    const hi = clamp(window.end, start, end)
-    // a zero-length block has no interior to interpolate across; both ends
-    // collapse onto the mate's near corner
-    const offset = (x: number) =>
-      featLen > 0 ? ((x - start) / featLen) * mateLen : 0
-    // a reverse-strand block runs the other way along the mate, so the walk
-    // counts down from its far end and the two ends arrive swapped
-    const place = (o: number) => (strand === -1 ? mate.end - o : mate.start + o)
-    return span(place(offset(lo)), place(offset(hi)), mate.refName)
+    end: Math.max(lo + 1, Math.ceil(Math.max(p, q))),
   }
-
-  const lo = clamp(window.start, mate.start, mate.end)
-  const hi = clamp(window.end, mate.start, mate.end)
-  const offset = (x: number) => (strand === -1 ? mate.end - x : x - mate.start)
-  const frac = (o: number) => (mateLen > 0 ? (o / mateLen) * featLen : 0)
-  return span(start + frac(offset(lo)), start + frac(offset(hi)), feat.refName)
 }
