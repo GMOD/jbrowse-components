@@ -1399,15 +1399,6 @@ strict percentages: `7` and `3` lay out the same as `70` and `30`.
 
 Drag the divider to adjust from there; the position is saved with the session.
 
-:::note
-
-Earlier releases applied `size` to the top-level split only, and only when every
-panel there carried one — anything else was discarded, with a notification
-saying so. Nested sizes now apply, so an existing link lays out the way it
-always read.
-
-:::
-
 #### Tabs instead of a split
 
 `"direction": "tabs"` puts its children in one tab group rather than dividing

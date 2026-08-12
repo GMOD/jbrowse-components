@@ -141,8 +141,3 @@ space among its children.
 `size` is a proportion, not a strict percentage: `7`/`3` and `70`/`30` are the
 same split. A panel left unsized takes an equal share of what the sized ones
 leave over, so `70` beside a bare panel is 70/30.
-
-Older docs describe nested sizes as discarded with a notification. That was
-dockview's constraint — it forced branch orientation to alternate by depth, so a
-nested container had no single branch to size against — and it went with
-dockview.
