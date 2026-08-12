@@ -148,7 +148,7 @@ function AlignmentsSvgBody({
             drawAlignmentLabels(ctx, labels, contrastMap, palette)
           }}
         />
-        <SashimiArcsSvg model={model} palette={palette} />
+        <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
         <PileupBezierArcsSvg model={model} view={view} />
       </SvgClipRect>
       {model.showCoverage && coverageTicks ? (
@@ -224,7 +224,7 @@ function ColorKey({
 
 // One coverage y-axis per stacked section's coverage band. Mirrors the
 // on-screen `CoverageAxisHost`, which makes a three-way choice: a band under
-// COMPACT_AXIS_HEIGHT can't fit tick labels and shows a single `[0, max]`
+// COMPACT_AXIS_HEIGHT can't fit tick labels and shows a single `[min, max]`
 // right-aligned; a full axis goes right whenever the group label chips are
 // drawn, so it clears them, and left otherwise.
 //
@@ -258,7 +258,7 @@ export function CoverageScaleBars({
             fontFamily="sans-serif"
             textAnchor="end"
           >
-            {compactAxisLabel(ticks.items.at(-1)?.value ?? 0)}
+            {compactAxisLabel(ticks)}
           </text>
         ) : (
           <g
