@@ -121,7 +121,7 @@ assembly's chromosomes, in the order given, handy for dropping unplaced/alt
 contigs or reordering. Names resolve through the assembly's aliases. It is
 ignored when `&loc=` is set (which navigates to a single region instead), and it
 requires `&assembly=`. This is the simple-URL form of the session-spec
-[`displayedRegionNames`](#linear-genome-view) field, and takes the same
+[`displayedRegionNames`](#fields-every-view-takes) field, and takes the same
 [globs](#glob-region-names).
 
 ### &highlight=
@@ -331,15 +331,20 @@ which have their own way to carry a track (a spec's
 
 ## Session spec
 
-### Linear genome view
+A "session spec" encodes a session as JSON in the URL, as the value of
+`&session=`, prefixed `spec-`:
 
-A "session spec" encodes a session as JSON in the URL. Each view object lists
-the keys that view launches with, flat as below. A spec is arguments to a view's
-launcher, so nothing is nested. A `defaultSession` in a config writes the same
-settings under an `init` block instead, because there the view is a saved state
-snapshot (see [Config / session files](/docs/automating#config--session-files));
-moving a view between the two means reshaping it, and pasting an `init` block
-into a spec is reported rather than silently ignored. The embedded
+```
+&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5100"}]}
+```
+
+Each view object lists the keys that view launches with, flat as below. A spec
+is arguments to a view's launcher, so nothing is nested. A `defaultSession` in a
+config writes the same settings under an `init` block instead, because there the
+view is a saved state snapshot (see
+[Config / session files](/docs/automating#config--session-files)); moving a view
+between the two means reshaping it, and pasting an `init` block into a spec is
+reported rather than silently ignored. The embedded
 `@jbrowse/react-linear-genome-view2` component takes the `init` form via
 `defaultSession.view.init` (it does not parse URLs itself).
 
@@ -371,44 +376,14 @@ The `views` array accepts multiple views opened simultaneously. Each can specify
 the whole genome. Different view types accept different params: dotplot, for
 example, takes two assemblies.
 
-Two fields work on every view type: `displayName` sets the title shown in the
-view header (and on its workspace tab, see
-[tiled views](#tiled-views--workspaces)), and `id` pins the created view's id so
-another view in the same spec can point at it (e.g. an MsaView's
-`connectedViewId`).
+### Session-wide fields
 
-`displayedRegionNames` is the spec form of [`&regions=`](#regions), with the
-same meaning: when `loc` is omitted it restricts the whole-genome overview to
-these chromosomes, in this order. Volvox showing only its two contigs, order
-reversed:
+Alongside `views`, four top-level arrays furnish the session the views open
+into. They are applied in this order — assemblies, then connections, then
+tracks, then the views — so each can name what the ones before it registered.
 
-```json live config=test_data/volvox/config.json
-{
-  "views": [
-    {
-      "type": "LinearGenomeView",
-      "assembly": "volvox",
-      "displayedRegionNames": ["ctgB", "ctgA"],
-      "tracks": ["gff3tabix_genes"]
-    }
-  ]
-}
-```
-
-Names may be [globs](#glob-region-names).
-
-A `LinearGenomeView` view object accepts the same fields as the simple params
-above — `nav`, `tracklist`, `highlight` — plus `grow` (expand `loc` by this
-fraction on each side for context, so `0.2` pads 20%; ignored without a `loc`),
-`showCenterLine`, `colorByCDS`, `showAminoAcids`, `showHighlightChips` (draw the
-interactive chip on each highlight band, otherwise a bare colored band), and
-`trackLabels` (`"overlapping"`, `"offset"`, or `"hidden"`). A key in neither set
-is a typo, and the launcher names it in a console warning rather than dropping
-it silently.
-
-A top-level `sessionTracks` array can dynamically register tracks into the
-session before the views open, equivalent to combining `&sessionTracks=` with a
-simple URL:
+A `sessionTracks` array registers track configs into the session before the
+views open, equivalent to combining `&sessionTracks=` with a simple URL:
 
 ```json
 {
@@ -431,12 +406,11 @@ simple URL:
 }
 ```
 
-A top-level `sessionAssemblies` array registers assemblies into the session, the
-counterpart to `sessionTracks`. Assemblies are added _before_ the tracks and
-views, so `sessionTracks` and each view's `assembly` can reference them by name.
-This makes a spec fully self-contained: a novel assembly, its tracks, and the
-views over them, with nothing baked into the served config (pair it with
-`?config=none`):
+A `sessionAssemblies` array registers assemblies, the counterpart to
+`sessionTracks`. Because assemblies are added first, `sessionTracks` and each
+view's `assembly` can reference them by name. This makes a spec fully
+self-contained: a novel assembly, its tracks, and the views over them, with
+nothing baked into the served config (pair it with `?config=none`):
 
 ```json
 {
@@ -465,13 +439,12 @@ views over them, with nothing baked into the served config (pair it with
 }
 ```
 
-A top-level `sessionConnections` array attaches connections — UCSC track hubs,
-JBrowse hubs — to the session. Each entry is a connection config, and it stays
-with the session: opening the link never writes the connection into the
-config.json the instance serves, whoever opens it. Connections are added after
-`sessionAssemblies` and before the tracks and views, and the spec waits for each
-one to finish fetching before launching its views, so a view can name an
-assembly or a trackId the connection supplies:
+A `sessionConnections` array attaches connections — UCSC track hubs, JBrowse
+hubs. Each entry is a connection config, and it stays with the session: opening
+the link never writes the connection into the config.json the instance serves,
+whoever opens it. The spec waits for each connection to finish fetching before
+launching its views, so a view can name an assembly or a trackId the connection
+supplies:
 
 ```json
 {
@@ -504,6 +477,9 @@ it starts (a single-file hub's `defaultPos`), which is what `&hubURL=` on its
 own does. As soon as the spec has views of its own, that is taken as the launch
 instruction and the connection doesn't open a competing one.
 
+A `layout` object tiles the views into a workspace rather than stacking them —
+see [tiled views](#tiled-views--workspaces).
+
 [`&sessionName=`](#sessionname) sets a spec's session name, the same as for any
 other launch type:
 
@@ -511,42 +487,32 @@ other launch type:
 &session=spec-{...}&sessionName=My%20Analysis
 ```
 
-#### Linear genome view init options
+### Fields every view takes
 
-Besides `assembly`, `loc`, `tracks` and `displayedRegionNames`, the spec takes
-any property the view itself declares. The ones worth naming:
+`displayName` sets the title shown in the view header (and on its workspace tab,
+see [tiled views](#tiled-views--workspaces)). `id` pins the created view's id so
+another view in the same spec can point at it (e.g. an MsaView's
+`connectedViewId`).
 
-- `bpPerPx` and `offsetPx`: the zoom and the horizontal scroll. `loc` is what
-  you want almost always — it reads, and it survives an assembly whose regions
-  were rebuilt. Reach for these two only to reproduce a viewport to the pixel.
-- `displayedRegions`: the regions the view lays out, as full
-  `{refName, start, end, assemblyName}` objects. `displayedRegionNames` names
-  the same thing by refName and is the shorter form; this is the escape hatch
-  for showing part of a chromosome, which a name cannot express.
-- `hideHeader`: drop the header bar entirely — location box, navigation buttons
-  and overview.
-- `hideHeaderOverview`: keep the header, drop the whole-chromosome overview
-  strip below it.
-- `hideNoTracksActive`: suppress the "No tracks active" placeholder, for an
-  embed that opens with no tracks on purpose.
-- `scalebarOnly`: render the header and coordinate scalebar and nothing else — a
-  ruler to sit beside something drawn elsewhere.
-- `showGridlines`: vertical gridlines in the track area (default `true`).
-- `showCytobands`: the cytoband ideogram in the overview, where the assembly has
-  one.
-- `showTrackOutlines`: the 1px border around each track.
-- `labelsVisible`: inline labels on highlight and bookmark chips (default
-  `true`).
+`displayedRegionNames` is the spec form of [`&regions=`](#regions), with the
+same meaning: when `loc` is omitted it restricts the whole-genome overview to
+these chromosomes, in this order. Names may be [globs](#glob-region-names). It
+works on the linear genome view, the [circular view](#circular-view), and each
+axis of a [dotplot](#dotplot-view) — volvox showing only its two contigs, order
+reversed:
 
-`showCytobands` and `showTrackOutlines` are the two whose default is the
-visitor's own stored preference rather than a fixed value — both are menu
-settings persisted in `localStorage`, so a spec that omits them opens however
-that visitor last left them. Set them explicitly in a link that has to look the
-same for everyone.
-
-- `trackSelectorType`: vestigial — the hierarchical selector is the only one
-  that exists, so the value is ignored. It is accepted because saved sessions
-  and configs persist it.
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "displayedRegionNames": ["ctgB", "ctgA"],
+      "tracks": ["gff3tabix_genes"]
+    }
+  ]
+}
+```
 
 #### Glob region names
 
@@ -628,6 +594,64 @@ is equivalent to the `displaySnapshot` form above. Any key other than `trackId`
 and `trackSnapshot` is treated as a display setting. Use the explicit
 `displaySnapshot` form when you also pass `trackSnapshot`, so the two stay
 visually separated.
+
+### Linear genome view
+
+A `LinearGenomeView` object takes two kinds of key, and the launcher sorts them
+that way.
+
+**Launch keys** are resolved once on attach and then discarded, because they
+have no direct representation in the view's state. There are exactly eight:
+`assembly`, `loc`, `grow` (expand `loc` by this fraction on each side for
+context, so `0.2` pads 20%; ignored without a `loc`), `displayedRegionNames`,
+`tracks`, `tracklist`, `nav` and `highlight` — the
+[simple params](#linear-genome-view-simple) plus `grow`.
+
+**View properties** are whatever the state model declares, which the view
+restores natively. `showCenterLine`, `colorByCDS`, `showAminoAcids`,
+`showHighlightChips` (draw the interactive chip on each highlight band,
+otherwise a bare colored band) and `trackLabels` (`"overlapping"`, `"offset"` or
+`"hidden"`) are the frequently-wanted ones; the rest are below.
+
+A key in neither bucket is a typo, and the launcher names it in a console
+warning rather than dropping it silently.
+
+#### Linear genome view properties
+
+Besides the eight launch keys, the spec takes any property the view itself
+declares. The ones worth naming:
+
+- `bpPerPx` and `offsetPx`: the zoom and the horizontal scroll. `loc` is what
+  you want almost always — it reads, and it survives an assembly whose regions
+  were rebuilt. Reach for these two only to reproduce a viewport to the pixel.
+- `displayedRegions`: the regions the view lays out, as full
+  `{refName, start, end, assemblyName}` objects. `displayedRegionNames` names
+  the same thing by refName and is the shorter form; this is the escape hatch
+  for showing part of a chromosome, which a name cannot express.
+- `hideHeader`: drop the header bar entirely — location box, navigation buttons
+  and overview.
+- `hideHeaderOverview`: keep the header, drop the whole-chromosome overview
+  strip below it.
+- `hideNoTracksActive`: suppress the "No tracks active" placeholder, for an
+  embed that opens with no tracks on purpose.
+- `scalebarOnly`: render the header and coordinate scalebar and nothing else — a
+  ruler to sit beside something drawn elsewhere.
+- `showGridlines`: vertical gridlines in the track area (default `true`).
+- `showCytobands`: the cytoband ideogram in the overview, where the assembly has
+  one.
+- `showTrackOutlines`: the 1px border around each track.
+- `labelsVisible`: inline labels on highlight and bookmark chips (default
+  `true`).
+
+`showCytobands` and `showTrackOutlines` are the two whose default is the
+visitor's own stored preference rather than a fixed value — both are menu
+settings persisted in `localStorage`, so a spec that omits them opens however
+that visitor last left them. Set them explicitly in a link that has to look the
+same for everyone.
+
+- `trackSelectorType`: vestigial — the hierarchical selector is the only one
+  that exists, so the value is ignored. It is accepted because saved sessions
+  and configs persist it.
 
 #### Live example: alignments display settings
 
@@ -734,7 +758,7 @@ circle auto-fits its container, so `height` is what sizes the drawing.
 }
 ```
 
-#### Circular view init options
+#### Circular view properties
 
 As with the linear genome view, the spec also takes the view's own declared
 properties:
@@ -807,13 +831,12 @@ so the reorder runs over the restricted set.
 }
 ```
 
-#### Dotplot view init options
+#### Dotplot view properties
 
-Like the synteny view, the dotplot spec accepts extra top-level fields applied
-on load:
+The dotplot spec accepts extra top-level fields applied on load:
 
 - `colorBy`: same color modes as the
-  [synteny view](#linear-synteny-view-init-options) (e.g. `strand`, `identity`,
+  [synteny view](#linear-synteny-view-properties) (e.g. `strand`, `identity`,
   `mappingQuality`), applied to each dotplot display.
 - `minAlignmentLength`: hide alignments shorter than this many bp.
 - `autoDiagonalize`: reorder the vertical axis to follow the horizontal axis
@@ -864,49 +887,6 @@ As with the linear genome view, include `assemblyName` when the band must be
 tied to a specific axis assembly (e.g. a non-self plot); a bare loc string
 resolves by refName against whichever axis contains it.
 
-### Spreadsheet view
-
-```json live config=test_data/volvox/config.json
-{
-  "views": [
-    {
-      "type": "SpreadsheetView",
-      "uri": "test_data/volvox/volvox.filtered.vcf.gz",
-      "assembly": "volvox"
-    }
-  ]
-}
-```
-
-`uri` is optional: with only an `assembly` the view opens on its import form
-with that assembly already selected, rather than the first one in the config.
-
-`fileType` is one of `VCF`, `BED`, `BEDPE`, or `STAR-Fusion`. It is otherwise
-detected from the extension and falls back to `VCF`, so name it for a file the
-extension doesn't identify — a URL with no extension, or the `STAR-Fusion`
-output, which has none of its own.
-
-`filterText` presets the search box, applied once the file has loaded, so a link
-can open on a subset of the rows rather than on the whole callset.
-
-### SV inspector
-
-```json live config=test_data/volvox/config.json
-{
-  "views": [
-    {
-      "type": "SvInspectorView",
-      "uri": "test_data/volvox/volvox.dup.vcf.gz",
-      "assembly": "volvox"
-    }
-  ]
-}
-```
-
-It takes the same optional `uri`, `fileType` and `filterText` as the spreadsheet
-view above, plus a `height`. The circular view draws the rows the filter leaves,
-so `filterText` is what makes a chord subset reachable from a link.
-
 ### Linear synteny view
 
 A self-self alignment is allowed:
@@ -940,7 +920,7 @@ above `["*_PATERNAL"]`) instead of stacking both interleaved. Use it instead of
 `loc`, not alongside: `loc` navigates within what a row displays, and takes
 precedence.
 
-#### Linear synteny view init options
+#### Linear synteny view properties
 
 The synteny view spec accepts extra top-level fields that set the view's initial
 display state on load. This opens the same view colored by strand, with curved
@@ -1032,6 +1012,27 @@ entries take inline display options the same way the
 [LGV's do](#advanced-track-configuration) — a shorter `LGVSyntenyDisplay`
 height, say.
 
+#### Linear synteny view (multi-way)
+
+The `tracks` field is a multidimensional array. Each sub-array corresponds to
+the synteny tracks at one level of the multi-way view:
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": [["volvox_ins.paf"], ["volvox_del.paf"]],
+      "views": [
+        { "loc": "ctgA:1-50000", "assembly": "volvox_ins" },
+        { "loc": "ctgA:1000-50000", "assembly": "volvox" },
+        { "loc": "ctgA:1000-44000", "assembly": "volvox_del" }
+      ]
+    }
+  ]
+}
+```
+
 ### Breakpoint split view
 
 ```json live config=test_data/volvox/config.json
@@ -1067,26 +1068,48 @@ default), `linkViews` (sync scroll and zoom across the panels, off by default),
 `interactiveOverlay` (clickable alignment squiggles, on by default), and
 `showHeader`.
 
-### Linear synteny view (multi-way)
-
-The `tracks` field is a multidimensional array. Each sub-array corresponds to
-the synteny tracks at one level of the multi-way view:
+### Spreadsheet view
 
 ```json live config=test_data/volvox/config.json
 {
   "views": [
     {
-      "type": "LinearSyntenyView",
-      "tracks": [["volvox_ins.paf"], ["volvox_del.paf"]],
-      "views": [
-        { "loc": "ctgA:1-50000", "assembly": "volvox_ins" },
-        { "loc": "ctgA:1000-50000", "assembly": "volvox" },
-        { "loc": "ctgA:1000-44000", "assembly": "volvox_del" }
-      ]
+      "type": "SpreadsheetView",
+      "uri": "test_data/volvox/volvox.filtered.vcf.gz",
+      "assembly": "volvox"
     }
   ]
 }
 ```
+
+`uri` is optional: with only an `assembly` the view opens on its import form
+with that assembly already selected, rather than the first one in the config.
+
+`fileType` is one of `VCF`, `BED`, `BEDPE`, or `STAR-Fusion`. It is otherwise
+detected from the extension and falls back to `VCF`, so name it for a file the
+extension doesn't identify — a URL with no extension, or the `STAR-Fusion`
+output, which has none of its own.
+
+`filterText` presets the search box, applied once the file has loaded, so a link
+can open on a subset of the rows rather than on the whole callset.
+
+### SV inspector
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "type": "SvInspectorView",
+      "uri": "test_data/volvox/volvox.dup.vcf.gz",
+      "assembly": "volvox"
+    }
+  ]
+}
+```
+
+It takes the same optional `uri`, `fileType` and `filterText` as the spreadsheet
+view above, plus a `height`. The circular view draws the rows the filter leaves,
+so `filterText` is what makes a chord subset reachable from a link.
 
 ### Plugin-provided view types
 
@@ -1326,7 +1349,10 @@ Containers nested inside containers:
 Views 0 and 1 stack in the left panel; the right side splits vertically, view 2
 above view 3.
 
-## Other session options
+## Other session formats
+
+Besides `spec-`, `&session=` takes four formats that each carry a session
+snapshot rather than instructions for building one.
 
 ### &session=json-
 
@@ -1343,48 +1369,8 @@ actually contains.
 &session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"name":"MsaView","url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
 ```
 
-This loads a session with an extra plugin loaded.
-
-#### Loading a plugin from a URL
-
-The `sessionPlugins` array above is the only way to name a plugin in the URL
-itself: no query parameter takes one, and a [session spec](#session-spec) has no
-field for it, so anything else has to come from the config JBrowse loads. It
-takes the same definitions a config's `plugins` array takes, and works in every
-session format that carries a snapshot — `json-`, `encoded-`, `share-` and
-`local-`. A plugin loaded this way belongs to that session rather than being
-installed for the user, and travels with it through the Share button.
-
-Four things govern one written by hand:
-
-- **`name` is required for a UMD bundle** — the `.umd.production.min.js` builds
-  the plugin store publishes. The loader resolves the bundle as the global
-  `JBrowsePlugin<Name>`, so a definition carrying only a `url` loads the script
-  and then finds nothing in it.
-- **An unrecognized plugin prompts the visitor.** Anything not served from
-  `https://jbrowse.org/plugins/` and not listed in the
-  [plugin store](https://jbrowse.org/jb2/plugin_store/) opens a "this session
-  has the following unknown plugins" dialog, naming each one, before the session
-  loads — a plugin is arbitrary javascript running with the page's privileges,
-  and a session URL arrives from whoever sent it. Accepting can remember that
-  url for this origin. A config's `plugins` are gated the same way, but only
-  when the config is cross-origin, which is why a config served beside JBrowse
-  never prompts.
-- **A JSON session is state, not spec shorthand.** Opening a plugin's view type
-  this way means writing that view's real snapshot, not the flat
-  [spec](#plugin-provided-view-types) arguments its launcher takes. Build the
-  session in the app and copy it out of Share → gear → "Plaintext JSON" rather
-  than authoring one from scratch.
-- **These URLs get long.** Put the session
-  [in the fragment](#query-string-or-hash-fragment) to stay under the
-  request-line limit that answers a long query string with HTTP 414 — and note
-  that a fragment containing `=` makes JBrowse ignore the query string
-  altogether, so `?config=…#session=json-…` loads the default `config.json`, not
-  the named one. Move `config=` into the fragment as well.
-
-If the point is for everyone opening a config to have the plugin, put it in that
-config's own `plugins` array instead. `sessionPlugins` is for one session, or
-one link.
+The `sessionPlugins` array in there loads an extra plugin with the session — see
+[below](#loading-a-plugin-from-a-url).
 
 ### &session=encoded-
 
@@ -1422,6 +1408,47 @@ https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
 See
 [this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-session-sharing-with-shortened-urls-work-in-jbrowse-web)
+
+### Loading a plugin from a URL
+
+A snapshot's `sessionPlugins` array is the only way to name a plugin in the URL
+itself: no query parameter takes one, and a [session spec](#session-spec) has no
+field for it, so anything else has to come from the config JBrowse loads. It
+takes the same definitions a config's `plugins` array takes, and works in all
+four formats above — `json-`, `encoded-`, `share-` and `local-`. A plugin loaded
+this way belongs to that session rather than being installed for the user, and
+travels with it through the Share button.
+
+Four things govern one written by hand:
+
+- **`name` is required for a UMD bundle** — the `.umd.production.min.js` builds
+  the plugin store publishes. The loader resolves the bundle as the global
+  `JBrowsePlugin<Name>`, so a definition carrying only a `url` loads the script
+  and then finds nothing in it.
+- **An unrecognized plugin prompts the visitor.** Anything not served from
+  `https://jbrowse.org/plugins/` and not listed in the
+  [plugin store](https://jbrowse.org/jb2/plugin_store/) opens a "this session
+  has the following unknown plugins" dialog, naming each one, before the session
+  loads — a plugin is arbitrary javascript running with the page's privileges,
+  and a session URL arrives from whoever sent it. Accepting can remember that
+  url for this origin. A config's `plugins` are gated the same way, but only
+  when the config is cross-origin, which is why a config served beside JBrowse
+  never prompts.
+- **A JSON session is state, not spec shorthand.** Opening a plugin's view type
+  this way means writing that view's real snapshot, not the flat
+  [spec](#plugin-provided-view-types) arguments its launcher takes. Build the
+  session in the app and copy it out of Share → gear → "Plaintext JSON" rather
+  than authoring one from scratch.
+- **These URLs get long.** Put the session
+  [in the fragment](#query-string-or-hash-fragment) to stay under the
+  request-line limit that answers a long query string with HTTP 414 — and note
+  that a fragment containing `=` makes JBrowse ignore the query string
+  altogether, so `?config=…#session=json-…` loads the default `config.json`, not
+  the named one. Move `config=` into the fragment as well.
+
+If the point is for everyone opening a config to have the plugin, put it in that
+config's own `plugins` array instead. `sessionPlugins` is for one session, or
+one link.
 
 ## See also
 
