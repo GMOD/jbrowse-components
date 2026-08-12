@@ -6,10 +6,7 @@ import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx
 import InfoDialog from './InfoDialog.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import { formatErrorStack } from './formatErrorStack.ts'
-import {
-  availableRenderers,
-  preferredRenderer,
-} from './getGraphicsCapabilities.ts'
+import { preferredRenderer } from './getGraphicsCapabilities.ts'
 import { mapStackTrace } from './mapStackTrace.ts'
 import { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'
 
@@ -34,9 +31,7 @@ export default function ErrorMessageStackTraceDialog({
   error: unknown
   extra?: unknown
 }) {
-  // `full`: the environment block lists every backend the machine offers, which
-  // is the one place the WebGL2 answer matters even on a WebGPU machine
-  const graphicsCapabilities = useGraphicsCapabilities({ full: true })
+  const graphicsCapabilities = useGraphicsCapabilities()
   const errorText = error ? `${error}` : ''
   const stackTrace = formatErrorStack(error)
 
@@ -45,8 +40,11 @@ export default function ErrorMessageStackTraceDialog({
     () => mapStackTrace(stackTrace),
   )
 
+  // The backend in use, not a list of the ones available: the preferred renderer
+  // already says which rungs exist, since Canvas2D means neither and WebGL2
+  // means no WebGPU. See getGraphicsCapabilities.
   const graphicsInfo = graphicsCapabilities
-    ? `Graphics: ${preferredRenderer(graphicsCapabilities)} (${availableRenderers(graphicsCapabilities).join(', ')})`
+    ? `Graphics: ${preferredRenderer(graphicsCapabilities)}`
     : ''
   const gpuInfo = graphicsCapabilities?.gpuVendor
     ? `GPU: ${graphicsCapabilities.gpuVendor}${graphicsCapabilities.gpuArchitecture ? ` (${graphicsCapabilities.gpuArchitecture})` : ''}`

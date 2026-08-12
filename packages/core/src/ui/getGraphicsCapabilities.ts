@@ -3,7 +3,6 @@ export interface GraphicsCapabilities {
   /**
    * `undefined` when the WebGL2 probe was skipped, which is what
    * `getGraphicsCapabilities` does whenever WebGPU answered first — see there.
-   * Only `getFullGraphicsCapabilities` guarantees a boolean.
    */
   webgl2?: boolean
   gpuVendor?: string
@@ -53,7 +52,6 @@ function probeWebgl2() {
 }
 
 let capabilities: Promise<GraphicsCapabilities> | undefined
-let fullCapabilities: Promise<GraphicsCapabilities> | undefined
 
 /**
  * What the rendering ladder resolves to, memoized for the page: capabilities
@@ -63,28 +61,20 @@ let fullCapabilities: Promise<GraphicsCapabilities> | undefined
  *
  * **The WebGL2 probe is skipped when WebGPU is available**, leaving `webgl2`
  * undefined, because it is the rung below and nothing reads it: `preferredRenderer`
- * returns WebGPU regardless. That makes the automatic startup path — the analytics
- * ping — create no WebGL2 context at all on a WebGPU machine. Use
- * `getFullGraphicsCapabilities` where the WebGL2 answer itself is the point.
+ * returns WebGPU regardless. So a WebGPU machine creates no WebGL2 context at all.
+ *
+ * Nothing needs the skipped rung resolved, and a "probe everything" variant was
+ * deleted for it: `preferredRenderer` already encodes the whole capability
+ * vector, since `Canvas2D` means neither rung exists and `WebGL2` means WebGPU
+ * is missing. The only bit a full probe adds is whether a WebGPU machine *also*
+ * has WebGL2 — which no shipping browser answers no to, and which nothing would
+ * do anything with. Report the preferred renderer instead of a list.
  */
 export function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
   capabilities ??= probeWebgpu().then(gpu =>
     gpu.webgpu ? gpu : { ...gpu, webgl2: probeWebgl2() },
   )
   return capabilities
-}
-
-/**
- * Every rung resolved, WebGL2 included even when WebGPU already decided the
- * ladder — for diagnostics that list what a machine can do rather than what it
- * will use (`availableRenderers` in the stack-trace dialog). Costs the one
- * WebGL2 context `getGraphicsCapabilities` skips, once per page.
- */
-export function getFullGraphicsCapabilities(): Promise<GraphicsCapabilities> {
-  fullCapabilities ??= getGraphicsCapabilities().then(c =>
-    c.webgl2 === undefined ? { ...c, webgl2: probeWebgl2() } : c,
-  )
-  return fullCapabilities
 }
 
 export function preferredRenderer(c: GraphicsCapabilities) {
@@ -95,21 +85,4 @@ export function preferredRenderer(c: GraphicsCapabilities) {
     return 'WebGL2'
   }
   return 'Canvas2D'
-}
-
-/**
- * The backends this machine offers, best first. An unprobed WebGL2 (see
- * `GraphicsCapabilities.webgl2`) is not listed — pass capabilities from
- * `getFullGraphicsCapabilities` for a complete list.
- */
-export function availableRenderers(c: GraphicsCapabilities) {
-  const list = []
-  if (c.webgpu) {
-    list.push('WebGPU')
-  }
-  if (c.webgl2) {
-    list.push('WebGL2')
-  }
-  list.push('Canvas2D')
-  return list
 }

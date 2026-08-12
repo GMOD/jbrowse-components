@@ -1,7 +1,4 @@
-import {
-  availableRenderers,
-  preferredRenderer,
-} from './getGraphicsCapabilities.ts'
+import { preferredRenderer } from './getGraphicsCapabilities.ts'
 
 // jsdom has no navigator.gpu; define a minimal stub. `value` on a property
 // descriptor is untyped, so the partial adapter needs no cast.
@@ -103,49 +100,20 @@ test('the probe never loses its context deliberately', async () => {
 test('the probe is memoized: repeat calls create no further contexts', async () => {
   mockGpu(undefined)
   const getContext = mockWebgl2(true)
-  const { getGraphicsCapabilities, getFullGraphicsCapabilities } =
-    await loadFreshModule()
+  const { getGraphicsCapabilities } = await loadFreshModule()
 
   await getGraphicsCapabilities()
   await getGraphicsCapabilities()
-  await getFullGraphicsCapabilities()
 
   expect(getContext).toHaveBeenCalledTimes(1)
 })
 
-test('getFullGraphicsCapabilities resolves WebGL2 that WebGPU let us skip', async () => {
-  mockGpu({ info: { vendor: 'nvidia', architecture: 'ampere' } })
-  const getContext = mockWebgl2(true)
-  const { getGraphicsCapabilities, getFullGraphicsCapabilities } =
-    await loadFreshModule()
-
-  expect((await getGraphicsCapabilities()).webgl2).toBeUndefined()
-  const full = await getFullGraphicsCapabilities()
-
-  expect(full.webgpu).toBe(true)
-  expect(full.webgl2).toBe(true)
-  expect(availableRenderers(full)).toEqual(['WebGPU', 'WebGL2', 'Canvas2D'])
-  // once for the full probe, never for the cheap one
-  expect(getContext).toHaveBeenCalledTimes(1)
-})
-
+// preferredRenderer is the whole capability vector, which is why nothing needs
+// the skipped rung resolved: each answer names the rungs that exist.
 test('preferredRenderer prefers WebGPU, then WebGL2, then Canvas2D', () => {
   expect(preferredRenderer({ webgpu: true, webgl2: true })).toBe('WebGPU')
-  // the shape the cheap probe returns on a WebGPU machine
+  // the shape the probe returns on a WebGPU machine, where WebGL2 goes unprobed
   expect(preferredRenderer({ webgpu: true })).toBe('WebGPU')
   expect(preferredRenderer({ webgpu: false, webgl2: true })).toBe('WebGL2')
   expect(preferredRenderer({ webgpu: false, webgl2: false })).toBe('Canvas2D')
-})
-
-test('availableRenderers lists supported backends with Canvas2D always last', () => {
-  expect(availableRenderers({ webgpu: true, webgl2: true })).toEqual([
-    'WebGPU',
-    'WebGL2',
-    'Canvas2D',
-  ])
-  expect(availableRenderers({ webgpu: false, webgl2: false })).toEqual([
-    'Canvas2D',
-  ])
-  // an unprobed rung is not claimed
-  expect(availableRenderers({ webgpu: true })).toEqual(['WebGPU', 'Canvas2D'])
 })
