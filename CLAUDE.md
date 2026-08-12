@@ -223,6 +223,17 @@ way. A third reading growing elsewhere is how the above starts over.
   `packages/__mocks__/**` and duplicate `plugins/*/package.json`, and the latter
   is a hard `_assertNoDuplicates` throw that fails every cross-package suite.
   Already fixed (`824e95eda3`).
+- **Your test runs get 2 jest workers, deliberately — don't raise it.**
+  `jest.config.js` reads `CLAUDECODE`, which the CLI exports into every command
+  it runs, and hands agent sessions 2 where an interactive run gets 4. The point
+  is the machine-wide total, which no per-run config can see: each concurrent
+  agent worktree sizes itself independently, so several sessions at a
+  "reasonable" per-run number still saturate the box together. Two sessions at
+  the old `maxWorkers: '50%'` measured 8 workers **each** on a 16-core machine.
+  If a run genuinely needs more, `JEST_MAX_WORKERS=<n>` outranks the tier for
+  that one command — but a scoped `pnpm test <dir>` is nearly always the better
+  answer, since wall-clock here is dominated by the serial transform prefix
+  rather than by worker count.
 - Two TypeScript versions on purpose: `typescript` 6.x for lint, aliased
   `typescript7` for `pnpm typecheck`. Don't unify them.
 - The `@jbrowse/core/*` modules in `ReExports/modules.ts` are the ABI external

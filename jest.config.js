@@ -5,6 +5,35 @@ import os from 'node:os'
 // was actually given. os.cpus().length reports every core on the box regardless.
 const cpuCount = os.availableParallelism?.() ?? os.cpus().length
 
+// Worker budget, most specific wins. See the maxWorkers comment below for why
+// each tier is where it is.
+function resolveMaxWorkers() {
+  // 1. Explicit override, for the run that genuinely wants the whole box.
+  //    `JEST_MAX_WORKERS=12 pnpm test <dir>`. Ignored unless it parses to >0, so
+  //    a stray empty or garbage value falls through instead of pinning to NaN.
+  const override = Number(process.env.JEST_MAX_WORKERS)
+  if (Number.isInteger(override) && override > 0) {
+    return override
+  }
+
+  // 2. Agent sessions get 2. Claude Code exports CLAUDECODE=1 into every command
+  //    it runs, and it is not in any shell profile here, so it marks agent runs
+  //    and only agent runs — a human `pnpm test` in a normal terminal never sees
+  //    it. Several agent worktrees run suites concurrently and each one sizes
+  //    itself independently, so the machine-wide total is (per-run budget) x
+  //    (however many agents), which is what actually saturates the box: two
+  //    sessions at the old '50%' measured 8 workers each on a 16-core machine,
+  //    16 total, and nothing in a per-run config could see the other half.
+  //    2 keeps a handful of concurrent agents inside the core count, and stays
+  //    at the >1 floor the OOM note below requires.
+  if (process.env.CLAUDECODE) {
+    return 2
+  }
+
+  // 3. Interactive runs: half the machine, clamped.
+  return Math.min(4, Math.max(2, Math.floor(cpuCount / 2)))
+}
+
 const baseConfig = {
   // Pinned off /tmp (jest defaults to /tmp/jest_<uid>). Cache warmth is the
   // single biggest lever on jest startup here: transpiling the plugin graph
@@ -84,30 +113,32 @@ const baseConfig = {
 }
 
 export default {
-  // Clamped both ways, and each end has a reason.
+  // Never a bare percentage, and never unbounded. resolveMaxWorkers() above has
+  // the tiers; the reasons for the numbers are here.
   //
-  // Floor of 2: '25%' resolves to a single worker on 4-core CI runners, which
-  // Jest runs in-band in the main process. The full-app integration suites each
-  // retain ~140MB (root model + RPC workers + autoruns are not torn down), so a
-  // lone accumulating process climbs to the heap ceiling and OOMs. Using >1
-  // worker plus workerIdleMemoryLimit recycles a worker once it grows past the
-  // limit, capping memory regardless of the per-suite leak.
+  // Floor of 2, which every tier respects: '25%' resolves to a single worker on
+  // 4-core CI runners, which Jest runs in-band in the main process. The full-app
+  // integration suites each retain ~140MB (root model + RPC workers + autoruns
+  // are not torn down), so a lone accumulating process climbs to the heap
+  // ceiling and OOMs. Using >1 worker plus workerIdleMemoryLimit recycles a
+  // worker once it grows past the limit, capping memory regardless of the
+  // per-suite leak.
   //
   // Ceiling of 4: a bare percentage scales with the machine, and on a big dev
   // box that is 8+ workers each entitled to workerIdleMemoryLimit before it is
-  // recycled — enough to wedge the whole machine, and it is multiplied again by
-  // however many agent worktrees are running suites at the same time. Suite
-  // wall-clock is dominated by the serial transform prefix and by a handful of
-  // slow integration files, so the workers past ~4 buy much less than they cost.
+  // recycled — enough to wedge the whole machine. Suite wall-clock is dominated
+  // by the serial transform prefix and by a handful of slow integration files,
+  // so the workers past ~4 buy much less than they cost.
   //
   // This has to live in the config rather than in a `--maxWorkers` flag on the
   // package.json scripts: ~15 package-level `test` scripts invoke `jest`
   // directly (`cd ../..; jest --passWithNoTests <pkg>`) and would ignore a flag
   // set on the root script. An explicit `--maxWorkers` on the command line still
-  // overrides this when a run genuinely wants the whole box.
+  // outranks everything here, since jest applies argv over config.
   //
-  // At 4 CPUs this is 2, identical to the '50%' it replaces, so CI is unchanged.
-  maxWorkers: Math.min(4, Math.max(2, Math.floor(cpuCount / 2))),
+  // CI is unchanged: it sets neither env var, and at 4 CPUs the clamp yields 2,
+  // exactly what the '50%' this replaced yielded there.
+  maxWorkers: resolveMaxWorkers(),
   workerIdleMemoryLimit: '1500MB',
   // must live at the root: jest drops testTimeout from entries in `projects`,
   // so a copy inside baseConfig silently leaves every test on the 5s default
