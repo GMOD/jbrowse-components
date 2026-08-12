@@ -8,6 +8,7 @@ import {
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { DNA } from '@jbrowse/core/ui/Icons'
+import { indexedDBAvailable } from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
@@ -283,7 +284,7 @@ export default function RootModel({
         // but the helpers only touch fields/actions already composed in.
         const model = self as unknown as WebRootModel
         setupSessionStorageAutosave(model)
-        if (typeof indexedDB === 'undefined') {
+        if (!indexedDBAvailable()) {
           // no autosave database here (jsdom, a locked-down browser profile).
           // An empty list rather than `undefined`, which means "still opening"
           // — the session manager would otherwise sit on its loading message

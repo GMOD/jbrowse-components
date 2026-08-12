@@ -1,7 +1,7 @@
-import { useLocalStorage } from '../util/hooks.ts'
-import { checkboxItem, radioItems } from './menuItems.ts'
+import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
+import { useLocalStorage } from '@jbrowse/core/util/hooks'
 
-import type { MenuItem } from './menuItems.ts'
+import type { MenuItem } from '@jbrowse/core/ui/menuItems'
 
 /**
  * Search-box visibility/orientation for a multi-view header, persisted per

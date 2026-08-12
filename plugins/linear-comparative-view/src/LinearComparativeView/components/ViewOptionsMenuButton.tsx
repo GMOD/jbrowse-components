@@ -1,11 +1,11 @@
-import { searchBoxPrefsMenuItems } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { searchBoxPrefsMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observer } from 'mobx-react'
 
 import type { LinearComparativeViewModel } from '../model.ts'
-import type { SearchBoxPrefs } from '@jbrowse/core/ui'
+import type { SearchBoxPrefs } from '@jbrowse/plugin-linear-genome-view'
 
 const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model,

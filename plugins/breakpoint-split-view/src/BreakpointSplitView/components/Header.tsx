@@ -1,6 +1,9 @@
-import { searchBoxPrefsMenuItems, useSearchBoxPrefs } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import {
+  searchBoxPrefsMenuItems,
+  useSearchBoxPrefs,
+} from '@jbrowse/plugin-linear-genome-view'
 import LinkIcon from '@mui/icons-material/Link'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import TuneIcon from '@mui/icons-material/Tune'

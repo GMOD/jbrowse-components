@@ -229,7 +229,7 @@ export { makeTrackId } from './makeTrackId.ts'
 export { matchTrackId } from './matchTrackId.ts'
 
 export { drawImageOntoCanvasContext } from './offscreenCanvasPonyfill.ts'
-export { isElectron, isNode, rIC } from './environment.ts'
+export { indexedDBAvailable, isElectron, isNode, rIC } from './environment.ts'
 export { isWebWorker } from './isWebWorker.ts'
 export {
   sessionStorageAvailable,

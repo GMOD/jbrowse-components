@@ -18,6 +18,24 @@ export const isNode =
     (globalThis as { process?: unknown }).process,
   ) === '[object process]'
 
+// Whether there is an IndexedDB to open. The two callers gate on it rather than
+// catching, so the absence stays silent: opening it anyway throws a
+// ReferenceError that reads like a real failure, and that is the reason every
+// test run had to filter "indexedDB" out of console.error wholesale.
+//
+// Guarded like the Web Storage globals (see util/webStorage.ts): a bare
+// `typeof indexedDB` invokes the same getter, which throws rather than answering
+// in a cross-origin iframe with third-party storage blocked. So the probe that
+// exists to avoid a throw was itself the throw, in the one environment where it
+// matters — an embedded product on someone else's page.
+export function indexedDBAvailable() {
+  try {
+    return typeof indexedDB !== 'undefined'
+  } catch {
+    return false
+  }
+}
+
 // the real idle callback where the realm has one, otherwise a short timeout.
 // jsdom has neither, so tests install a synchronous shim
 // (config/jest/requestIdleCallback.js) rather than this branching on the

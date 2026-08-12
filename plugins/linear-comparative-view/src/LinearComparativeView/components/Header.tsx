@@ -1,5 +1,5 @@
-import { useSearchBoxPrefs } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useSearchBoxPrefs } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
