@@ -147,6 +147,43 @@ describe('collectRenderData peptide overlay', () => {
     const result = collect(layout)
     expect(result.aminoAcidOverlay).toBeUndefined()
   })
+
+  // The repeated CDS row dedupedSortedCDS exists for (Gencode v36). It dedupes
+  // the residues, but the layout keeps BOTH rows, and both resolve the same
+  // `start-end` entry — so each residue used to be drawn twice: two stacked
+  // rects, two overlay items for the hover and the codon hit test to walk, and
+  // two identical <text> runs in an SVG export.
+  it('draws a repeated CDS row once, not once per copy', () => {
+    const cdsA = mockFeature({ type: 'CDS', id: 'cdsA', start: 100, end: 109 })
+    const cdsDup = mockFeature({
+      type: 'CDS',
+      id: 'cdsB',
+      start: 100,
+      end: 109,
+    })
+    const mRNA = mockFeature({
+      type: 'mRNA',
+      id: 'tx1',
+      start: 100,
+      end: 109,
+      subfeatures: [cdsA, cdsDup],
+    })
+    const result = collect(
+      {
+        feature: mRNA,
+        glyphType: 'ProcessedTranscript',
+        y: 0,
+        height: 10,
+        totalLayoutHeight: 10,
+        children: [boxLayout(cdsA), boxLayout(cdsDup)],
+      },
+      { peptideDataMap: new Map([['tx1', { protein: 'MFK' }]]) },
+    )
+    // 9 coding bases, so 3 codons — and one rect apiece, with no leftover box
+    // rect from the skipped copy painted over them.
+    expect(result.aminoAcidOverlay).toHaveLength(3)
+    expect(result.rectYs).toHaveLength(3)
+  })
 })
 
 // Viral polyprotein: gene → one CDS (the whole ORF) → mature_protein_region

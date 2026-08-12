@@ -61,6 +61,16 @@ function emitExonRects(
   // exon path: CDS children align 1:1 with the translation segments, so each
   // child's residues are an exact `start-end` key lookup
   const aminoAcidsBySeg = aminoAcidsByFeature(transcriptFeature, ctx)
+  // Segments already drawn as codons. The residues are deduped and the CHILDREN
+  // are not: dedupedSortedCDS collapses a repeated CDS row — Gencode v36 emits
+  // them, which is the whole reason it exists — so the protein isn't
+  // frameshifted, but both copies survive into the layout and both resolve the
+  // same map entry. Every residue of that segment was then emitted twice: two
+  // stacked rects, two overlay items for the hover and the codon hit test to
+  // walk, and two identical <text> runs in an SVG export. A repeat is skipped
+  // outright rather than falling through to the box below, which would paint a
+  // flat rect over the codons it duplicates.
+  const drawnSegments = new Set<string>()
 
   for (const childLayout of transcript.children) {
     const childFeature = childLayout.feature
@@ -69,9 +79,14 @@ function emitExonRects(
 
     // amino-acid segments key off CDS bounds, so any child matching one is
     // coding — UTR sizing never applies on this branch
-    const aminoAcids = aminoAcidsBySeg?.get(`${childStart}-${childEnd}`)
+    const key = `${childStart}-${childEnd}`
+    const aminoAcids = aminoAcidsBySeg?.get(key)
 
     if (aminoAcids?.length) {
+      if (drawnSegments.has(key)) {
+        continue
+      }
+      drawnSegments.add(key)
       emitCodonRects(
         {
           aminoAcids,
