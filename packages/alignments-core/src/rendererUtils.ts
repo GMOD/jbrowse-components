@@ -1,4 +1,4 @@
-import { coverageLayout } from './coverageBandBox.ts'
+import { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 import {
   INSTANCE_OFFSET_F32 as INDICATOR_F32,
   INSTANCE_OFFSET_U32 as INDICATOR_U32,
@@ -306,6 +306,12 @@ export function drawIndicators(
   }
 }
 
+// Half the width of one interbase bar. The bar is 1 CSS px centered on the bp
+// boundary, matching interbaseHistogram.slang's `barW = 2.0 / u.canvasW` quad
+// centered on `cx`. Named so the draw and its cull cannot disagree about how
+// wide the mark they are placing is.
+const INTERBASE_BAR_HALF_W = 0.5
+
 export function drawInterbaseSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
@@ -316,19 +322,14 @@ export function drawInterbaseSegments(
   coverageHeight: number,
   domainMax: number,
 ) {
-  if (interbaseMaxCount === 0 || domainMax === 0) {
+  const interbaseHeight = interbaseBarHeightPx(
+    coverageHeight,
+    interbaseMaxCount,
+    domainMax,
+  )
+  if (interbaseHeight === 0) {
     return
   }
-
-  // Inverted clip/insertion bars scale to half the coverage drawing height
-  // (matches origin/main's `range: [0, height/2]`), so they grow with the
-  // track rather than being clipped at a fixed pixel cap. The worker bakes each
-  // bar as a fraction of the region's raw peak depth (interbaseMaxCount); divide
-  // it back out and multiply by the display's autoscaled domain so the bars
-  // track the same depth scale as the coverage bars (origin/main parity).
-  const interbaseHeight =
-    (coverageLayout(coverageHeight).effectiveH / 2) *
-    (interbaseMaxCount / domainMax)
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
@@ -339,12 +340,19 @@ export function drawInterbaseSegments(
     const pos = u32[off + INTERBASE_U32.position]!
     // Unlike the bar layers, the mark here is a 1px bar centered on the bp
     // BOUNDARY, and bpToX(pos) is that boundary in either orientation — so `px`
-    // stays the anchor. Only the cull needs both edges ordered: as `px > width
-    // || px2 < 0` it assumed px < px2 and dropped marks at either viewport edge
-    // on a reversed block.
+    // is both the anchor and the whole geometry, and the cull is the mark's own
+    // extent, exactly as in drawIndicators above. It used to cull on the bp
+    // CELL (`bpToX(pos)`..`bpToX(pos + 1)`), which is neither the drawn span nor
+    // ordered on a reversed block: it dropped the half of a bar still showing at
+    // either viewport edge — and every block boundary in a multi-region view is
+    // such an edge — while interbaseHistogram.slang emits the quad and lets the
+    // scissor clip it, so the GPU drew the sliver Canvas2D and the SVG export
+    // did not.
     const px = bpToX(pos)
-    const px2 = bpToX(pos + 1)
-    if (Math.min(px, px2) > viewWidth || Math.max(px, px2) < 0) {
+    if (
+      px + INTERBASE_BAR_HALF_W < 0 ||
+      px - INTERBASE_BAR_HALF_W > viewWidth
+    ) {
       continue
     }
     const yOffset = f32[off + INTERBASE_F32.yOffset]!
@@ -358,7 +366,7 @@ export function drawInterbaseSegments(
     const segTop = interbaseEdgePx(yOffset, interbaseHeight)
     const segBottom = interbaseEdgePx(yOffset + segH, interbaseHeight)
     ctx.fillStyle = colorLut[colorType - 1] ?? colorLut[0]!
-    ctx.fillRect(px - 0.5, segTop, 1, segBottom - segTop)
+    ctx.fillRect(px - INTERBASE_BAR_HALF_W, segTop, 1, segBottom - segTop)
   }
 }
 

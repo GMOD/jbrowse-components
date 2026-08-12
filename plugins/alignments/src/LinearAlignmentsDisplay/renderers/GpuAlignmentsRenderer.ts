@@ -1,4 +1,4 @@
-import { coverageLayout } from '@jbrowse/alignments-core'
+import { interbaseBarHeightPx } from '@jbrowse/alignments-core'
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
 import {
@@ -198,17 +198,15 @@ function fillFrameUniforms(
   i[UI.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   i[UI.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
   f[U.binSize] = region.binSize
-  // Scale clip/insertion bars to half the coverage drawing height (matches
-  // origin/main + the Canvas2D path in drawInterbaseSegments). The worker bakes
-  // each bar as a fraction of the region's raw peak depth (interbaseMaxCount ===
-  // region.maxDepth); renormalize onto the display's autoscaled coverage domain
-  // via depthScale so clip bars track the same domain as the coverage bars
-  // (otherwise they render too short when the fetched peak exceeds the nice
-  // rounded visible domain — e.g. at SV breakpoints).
-  f[U.interbaseHeight] =
-    region.interbaseMaxCount > 0
-      ? (coverageLayout(state.coverageHeight).effectiveH / 2) * f[U.depthScale]!
-      : 0
+  // The same rule drawInterbaseSegments and hitTestInterbase read — see
+  // `interbaseBarHeightPx`. This used to spell the ratio `region.maxDepth /
+  // domainMax` by reusing `depthScale`, which is the interbase bars' scale only
+  // while `interbaseMaxCount === region.maxDepth`.
+  f[U.interbaseHeight] = interbaseBarHeightPx(
+    state.coverageHeight,
+    region.interbaseMaxCount,
+    domainMax,
+  )
   f[U.insertUpper] = region.insertSizeStats?.upper ?? NO_INSERT_UPPER
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
   i[UI.colorScheme] = state.colorScheme

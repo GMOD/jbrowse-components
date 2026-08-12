@@ -1,9 +1,10 @@
-import { coverageLayout } from './coverageBandBox.ts'
+import { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 import { INDICATOR_TRIANGLE_HW } from './labelConstants.ts'
 import {
   CANVAS2D_COVERAGE,
   drawCoverageBins,
   drawIndicators,
+  drawInterbaseSegments,
   drawModCovSegments,
   drawSnpSegments,
   emptyCanvas2DCoverageBuffer,
@@ -616,6 +617,95 @@ describe('drawIndicators', () => {
     drawIndicators(ctx, buf, interbaseColors, () => pos, 200)
 
     expect(calls.filter(c => c.method === 'moveTo')).toHaveLength(0)
+  })
+})
+
+describe('drawInterbaseSegments', () => {
+  const interbaseColors = {
+    insertion: 'purple',
+    softclip: 'cyan',
+    hardclip: 'orange',
+  }
+  // coverageHeight 90 → effectiveH 80 → half-band 40; maxCount/domainMax = 1.
+  const COV_HEIGHT = 90
+  const MAX_COUNT = 20
+  const DOMAIN_MAX = 20
+  const VIEW = 200
+
+  // One full-height insertion segment at bp 100.
+  function oneSegment() {
+    const buf = new ArrayBuffer(16)
+    const u32 = new Uint32Array(buf)
+    const f32 = new Float32Array(buf)
+    u32[0] = 100
+    f32[1] = 0 // yOffset
+    f32[2] = 1 // segHeight
+    f32[3] = 1 // colorType: insertion
+    return buf
+  }
+
+  function draw(bpToX: (bp: number) => number, domainMax = DOMAIN_MAX) {
+    const { ctx, calls } = makeCtx()
+    drawInterbaseSegments(
+      ctx,
+      oneSegment(),
+      MAX_COUNT,
+      interbaseColors,
+      bpToX,
+      VIEW,
+      COV_HEIGHT,
+      domainMax,
+    )
+    return calls.filter(c => c.method === 'fillRect')
+  }
+
+  it('draws a 1px bar centered on the bp boundary', () => {
+    // Both edges snap to whole px: top floor(4.5 + 0.5) = 5, bottom
+    // floor(4.5 + 40 + 0.5) = 45.
+    expect(draw(bp => bp - 50)[0]!.args).toEqual([49.5, 5, 1, 40])
+  })
+
+  // The mark is 1px wide and CENTERED on `bpToX(pos)`, so half of it still shows
+  // when the boundary itself is half a pixel outside. interbaseHistogram.slang
+  // emits the quad and lets the scissor clip it, so culling the bp CELL
+  // (bpToX(pos)..bpToX(pos + 1)) dropped a sliver the GPU draws — at every block
+  // boundary of a multi-region view, not just the two ends of the canvas.
+  it.each([
+    ['overlapping the left edge', -0.4],
+    ['overlapping the right edge', VIEW + 0.4],
+  ])('draws a bar %s', (_name, px) => {
+    expect(draw(() => px)).toHaveLength(1)
+  })
+
+  it.each([
+    ['fully past the left edge', -0.6],
+    ['fully past the right edge', VIEW + 0.6],
+  ])('still culls a bar %s', (_name, px) => {
+    expect(draw(() => px)).toHaveLength(0)
+  })
+
+  it('draws nothing before the coverage domain resolves', () => {
+    expect(draw(bp => bp - 50, 0)).toHaveLength(0)
+  })
+})
+
+describe('interbaseBarHeightPx', () => {
+  // The height the GPU uniform, the Canvas2D draw and the hit test all read.
+  it('is half the coverage drawing height at the region peak', () => {
+    // coverageHeight 90 → effectiveH 80; peak depth == domain → half-band.
+    expect(interbaseBarHeightPx(90, 20, 20)).toBe(40)
+  })
+
+  it('shortens when the domain is rounded up past the region peak', () => {
+    expect(interbaseBarHeightPx(90, 20, 40)).toBe(20)
+  })
+
+  it.each([
+    ['no interbase events', 0, 20],
+    ['the domain has not resolved', 20, undefined],
+    ['an empty domain', 20, 0],
+  ])('is 0 when %s', (_name, maxCount, domainMax) => {
+    expect(interbaseBarHeightPx(90, maxCount, domainMax)).toBe(0)
   })
 })
 

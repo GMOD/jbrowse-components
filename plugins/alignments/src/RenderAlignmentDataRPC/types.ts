@@ -196,7 +196,13 @@ export interface PileupDataResult {
   interbaseCovYOffsets: Float32Array // cumulative height below this segment (normalized 0-1)
   interbaseCovHeights: Float32Array // height of this segment (normalized 0-1)
   interbaseCovColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
-  interbaseMaxCount: number // max total count at any position (for scaling)
+  // The denominator the heights above were baked against: the region's PEAK READ
+  // DEPTH, floored at 1, or 0 when the region has no interbase events at all.
+  // Not a count of interbase events despite the name — a bar of N events is
+  // `N / interbaseMaxCount` here and `interbaseBarHeightPx` puts it back on the
+  // display's autoscaled depth axis, which is what makes the interbase bars
+  // readable against the coverage bars beside them.
+  interbaseMaxCount: number
   // Pre-packed GPU buffer for PASS_INTERBASE (worker-built).
   interbasePackedBuffer: ArrayBuffer
 

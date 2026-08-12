@@ -22,3 +22,38 @@ export function coverageLayout(coverageHeight: number) {
     bottom: covBottomOffsetPx(coverageHeight, YSCALEBAR_LABEL_OFFSET),
   }
 }
+
+/**
+ * Full-scale height in px of the interbase histogram — what a bar whose stacked
+ * fractions sum to 1 occupies, hanging from just below the indicator triangles.
+ * 0 means "draw nothing": no interbase events, or the autoscaled domain has not
+ * resolved yet (`coarseDynamicBlocks` is 500ms-debounced).
+ *
+ * Inverted clip/insertion bars scale to HALF the coverage drawing height
+ * (origin/main's `range: [0, height/2]`), so they grow with the track rather
+ * than being clipped at a fixed pixel cap. The worker bakes each segment as a
+ * fraction of the region's raw peak depth (`interbaseMaxCount`); dividing it
+ * back out and multiplying by the display's autoscaled domain is what makes a
+ * bar of N events the same height in every region of the view, on the same axis
+ * the coverage bars use — otherwise they render too short when the fetched peak
+ * exceeds the nice rounded visible domain (SV breakpoints), or too tall when a
+ * caller passes the region's own peak as the domain.
+ *
+ * Shared because there are three readings of it and they had drifted into two
+ * formulas: the Canvas2D draw, the hit test that must match the drawn rectangle,
+ * and the `interbaseHeight` uniform `interbaseHistogram.slang` hangs its bars
+ * from. The uniform used to spell the ratio `region.maxDepth / domainMax`, which
+ * agrees with `interbaseMaxCount / domainMax` only while the region has any read
+ * depth at all — at depth 0 the worker's `Math.max(maxDepth, 1)` floor means the
+ * two disagree by the whole bar.
+ */
+export function interbaseBarHeightPx(
+  coverageHeight: number,
+  interbaseMaxCount: number,
+  domainMax: number | undefined,
+) {
+  return interbaseMaxCount > 0 && domainMax !== undefined && domainMax > 0
+    ? (coverageLayout(coverageHeight).effectiveH / 2) *
+        (interbaseMaxCount / domainMax)
+    : 0
+}

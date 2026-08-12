@@ -52,7 +52,7 @@ export { InstanceBuilder } from './InstanceBuilder.ts'
 // import site", which is the opposite of what happened: consumers used both
 // specifiers, sometimes in the same file, for names that are the same value.
 // One owner, named at every call site.
-export { coverageLayout } from './coverageBandBox.ts'
+export { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 export {
   CANVAS2D_COVERAGE,
   drawCoverageBins,
