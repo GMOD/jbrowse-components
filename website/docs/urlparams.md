@@ -861,23 +861,34 @@ The dotplot spec accepts extra top-level fields applied on load:
 
 <!-- SPEC_KEYS DotplotView START -->
 
+**Launch keys**, which name something to do on load rather than state the view
+holds:
+
+<!-- prettier-ignore -->
+| Launch key | What it does |
+| --- | --- |
+| `autoDiagonalize` | After tracks load, automatically run the chromosome diagonalization pass so the bottom/vertical axis follows the top/horizontal axis. The canvas is hidden behind a "Reordering chromosomes…" spinner during the wait, so the user doesn't see an undiagonalized flash. |
+| `colorBy` | Initial colorBy. Use 'query' (chromosome painting) for whole-genome views where the default red is hard to distinguish across many ribbons. One of `default`, `strand`, `query`, `target`, `reference`, `identity`, `meanQueryIdentity`, `mappingQuality`, `dnds`, `track`. |
+| `highlight` | loc-strings ("chr1:100-200") or JSON objects matching HighlightType, mirroring LinearGenomeView's init.highlight |
+| `minAlignmentLength` | Per-feature alignment-length filter applied at the renderer. Hides chains shorter than this many bp; cuts the genome-scale hairball. |
+| `showColorLegend` | Show the floating color-by legend on load. Set false to hide it (e.g. a curated demo/screenshot where the legend would clutter the figure). |
+
+**Properties**, which are whatever the state model declares and the view
+restores natively:
+
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
 | [`alpha`](/docs/models/dotplotview#property-alpha) | Plot-wide alpha applied to every point. View-level for the same reason lineWidth is: the only control is view-level, so storing it per display meant a track shown after the slider moved rendered at the default while the slider said otherwise. |
 | [`assemblyNames`](/docs/models/dotplotview#property-assemblynames) | the two assemblies being compared, horizontal axis first. A spec normally names these per axis instead, as `views[0].assembly` and `views[1].assembly`. |
-| [`colorBy`](/docs/models/trackcolorsmixin#property-colorby) | The color-by mode the whole view renders with, unless a track overrides it in `trackColorBy`. |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
 | [`drawCigar`](/docs/models/dotplotview#property-drawcigar) | resolve each alignment's CIGAR into the drawn shape rather than plotting it as a single straight segment |
 | [`height`](/docs/models/dotplotview#property-height) | the height of the plot in pixels |
-| [`highlight`](/docs/models/highlightsmixin#property-highlight) | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu |
 | [`hview`](/docs/models/dotplotview#property-hview) | the horizontal axis, as a full 1D view state. A spec writes `views[0]` instead, which the launcher resolves into this. |
 | [`lineWidth`](/docs/models/dotplotview#property-linewidth) | Screen-space line width (CSS pixels) applied to every dotplot display in this view. View-level because the GPU pass renders all displays with one uniform. |
 | [`lockAspectRatio`](/docs/models/dotplotview#property-lockaspectratio) | When true, hview and vview are kept at the same bpPerPx so the dotplot stays square. Wheel zoom already preserves the ratio; box-zoom and other independent ops trigger an autorun resync. |
 | [`lodMode`](/docs/models/dotplotview#property-lodmode) | Level-of-detail tier override for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine'/'coarse' force a tier. Stored view-level so all displays render at the same tier and the menu doesn't need to fan out per display. |
-| [`minAlignmentLength`](/docs/models/dotplotview#property-minalignmentlength) | Hide alignments shorter than this many bp. Enforced per feature in buildLineSegments. Cuts whole-genome hairball noise. View-level, see alpha. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
-| [`showColorLegend`](/docs/models/trackcolorsmixin#property-showcolorlegend) | Show the floating color-by legend. Dismissible via the legend's close button; re-enable from the color-by (palette) menu. |
 | [`showHighlightChips`](/docs/models/highlightsmixin#property-showhighlightchips) | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default |
 | [`trackColorBy`](/docs/models/trackcolorsmixin#property-trackcolorby) | trackId -> color-by mode for that track alone. Absent means the track follows the view-wide `colorBy`. |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: 'track'`. Absent means the track takes an automatic slot from the palette. |

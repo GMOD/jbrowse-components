@@ -20,6 +20,11 @@ export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
  * The init keys `DotplotView` writes code for — things to DO, and the names
  * that mean something here other than what the model's property of the same
  * name means. `DOTPLOT_INIT_COMMANDS` is the runtime twin of this list.
+ *
+ * #launchKeys DotplotView — the URL parameters page renders this interface, and
+ * the one it extends, as the view's launch-key table. The `//` comment above
+ * each field is what that table shows, so a field added without one fails the
+ * docs build rather than rendering a blank cell.
  */
 export interface DotplotViewCommands extends SyntenyViewSharedInit {
   views: {

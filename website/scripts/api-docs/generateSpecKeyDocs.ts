@@ -116,6 +116,14 @@ interface Scan {
   // every interface seen, tagged or not, so an extends clause resolves
   interfaces: Map<string, SpecKey[]>
   valueLists: Map<string, string[]>
+  // the Commands type argument of every `ViewInit<Model, Commands>`, which is
+  // the structural definition of "this view has a launch-key bucket". Compared
+  // against the tagged set below, because an untagged one is invisible in the
+  // rendered page: the table still builds, out of the model's properties
+  // alone, and simply lacks the launcher's own keys. That is how the dotplot
+  // lost `autoDiagonalize` — the key was in the doc before this generator, and
+  // its absence afterwards looked like a key that had never existed.
+  commandTypes: Set<string>
 }
 
 function stringArrayOf(decl: ts.VariableDeclaration) {
@@ -135,11 +143,23 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
   const buckets: TaggedBucket[] = []
   const interfaces = new Map<string, SpecKey[]>()
   const valueLists = new Map<string, string[]>()
+  const commandTypes = new Set<string>()
 
   for (const file of corpus.files) {
     const source = parseSourceFileSyntactic(file, corpus.read(file))
     const text = source.getFullText()
     const walk = (node: ts.Node) => {
+      // `export type XViewInit = ViewInit<XViewStateModel, XViewCommands>`
+      if (
+        ts.isTypeReferenceNode(node) &&
+        node.typeName.getText() === 'ViewInit' &&
+        node.typeArguments?.length === 2
+      ) {
+        const commands = node.typeArguments[1]!
+        if (ts.isTypeReferenceNode(commands)) {
+          commandTypes.add(commands.typeName.getText())
+        }
+      }
       if (ts.isInterfaceDeclaration(node)) {
         const keys = node.members
           .filter(ts.isPropertySignature)
@@ -200,7 +220,15 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
     }
     walk(source)
   }
-  return { buckets, interfaces, valueLists }
+  const untagged = [...commandTypes].filter(
+    name => !buckets.some(b => b.keys === interfaces.get(name)),
+  )
+  if (untagged.length) {
+    throw new Error(
+      `${untagged.join(', ')} — used as the Commands half of a \`ViewInit<>\`, so a session spec can set these keys, but carrying no \`#launchKeys <ViewType>\` tag. The URL parameters page would render that view's table from its model properties alone and silently omit every launcher key. Tag the interface.`,
+    )
+  }
+  return { buckets, interfaces, valueLists, commandTypes }
 }
 
 // The model page a key's full row lives on, so the table can link a name to its
