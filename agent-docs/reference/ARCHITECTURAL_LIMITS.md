@@ -329,14 +329,41 @@ rather than the track count — the caches work, their scope is the problem.
 
 `@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` for
 the pool half, naming JBrowse's data workers as the case; neither symbol appears
-in this repo. It is not a free win — one shared pool of four is a loss when five
-tracks load at once, which is when it is noticed — so the sizing has to be
-settled with it. [BAM_STACK_INTEGRATION.md](BAM_STACK_INTEGRATION.md) seam 1 has
-the three things to settle and why node cannot measure any of them.
+in this repo.
 
-**Retire when** one pool and one byte cache serve every RPC worker over a
-`MessagePort` — the same channel does both — sized against a browser measurement
-of the several-tracks-at-once case rather than the library's per-context default.
+**The thread count is not what makes this worth fixing** — that was the original
+framing and it was measured out. `browser-tests/pool-oversub-probe.ts`, 4 cores
+under `taskset` (3 RPC workers x 4 = 12 inflate workers, ~4x oversubscribed), 5
+no-MD tracks, min of 3:
+
+| arm                             | rpc | inflate | min    |
+| ------------------------------- | --- | ------- | ------ |
+| today, build 1                  | 3   | 12      | 2586ms |
+| today, build 2, identical code  | 3   | 12      | 2984ms |
+| `workerCount=1` (one pool)      | 1   | 4       | 2759ms |
+| pool capped to 1 per context    | 3   | 3       | 3382ms |
+
+The two `today` rows are the same code built twice and differ by 15%, wider than
+every gap between arms — so the only safe reading is that **no arm beat the
+status quo**, and cutting the inflate workers to 3 was slower in every batch.
+Per-chunk parallelism is worth more than avoiding oversubscription, which makes
+sense: the pool exists to split one chunk across workers, and starving it of
+that costs more than the threads do.
+
+That also lowers the risk of the shared-pool work rather than raising it. The
+`capped to 1` arm is strictly worse than one shared pool of four — fewer threads
+AND no per-chunk parallelism — and cost only ~13%, inside the drift. So the
+"one shared pool of four regresses the several-tracks case" worry above is not
+supported.
+
+**What is left is memory**, and it is unmeasured: 20 grow-only
+`WebAssembly.Memory` instances that nothing tears down. JS heap counters will not
+show it — wasm memory is outside `Runtime.getHeapUsage` — so measuring it needs
+process-level RSS per target, not the usual heap snapshot.
+
+**Retire when** either that memory is measured and found not to matter, or one
+pool and one byte cache serve every RPC worker over a `MessagePort` (the same
+channel does both).
 
 ### Worker payloads are collect-then-return
 

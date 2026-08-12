@@ -52,7 +52,7 @@ Exploratory concepts that are *not* committed work live in
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
-| [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | multiplication measured; time the shared pool at three sizes |
+| [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 
 ## Ready to build: small and self-contained
 
@@ -1003,13 +1003,25 @@ neither symbol appears in this repo. **Both halves want the same
 `MessagePort`-at-boot channel through `makeWorker`, so build that once** and
 carry the byte cache over it too rather than solving the pool alone.
 
-**What is still unmeasured is how big the shared pool should be**, and that is
-the thing to get before wiring, because the naive answer is a regression: one
-shared pool of four replaces twenty workers with four, which is right when a
-single track is loading and wrong when five are — the moment a reader notices.
-Time a five-bgzip-track session at `hardwareConcurrency`, at 4, and at today's
-5x4. Do not skip the third arm; it is the status quo and it is not obviously
-worse.
+**Do not take this on for the thread count — that premise is measured out.**
+`pool-oversub-probe.ts` at 4 cores under `taskset`, where the multiplication is
+worst (3 RPC x 4 = 12 inflate workers, ~4x oversubscribed): no arm beat the
+status quo, and cutting the inflate workers to 3 was slower in every batch.
+Per-chunk parallelism is worth more than avoiding oversubscription. Two builds
+of identical code differed by 15%, wider than any gap between arms, so nothing
+finer than "no win here" can be read off it.
+
+The sizing worry that used to be written here — that one shared pool of four
+would regress the several-tracks case — is not supported either: the "capped to
+1 per context" arm is strictly worse than that and cost ~13%, inside the drift.
+
+**What is left is memory, and it is unmeasured**: 20 grow-only
+`WebAssembly.Memory` instances that nothing tears down (nothing calls
+`destroySharedWorkerPool`). Measure that BEFORE building anything, and note the
+usual tools do not see it — wasm memory is outside `Runtime.getHeapUsage`, so
+this wants process-level RSS per target rather than a heap snapshot. If the
+memory turns out not to matter either, close this entry rather than building the
+channel; the duplication is then untidy and free.
 
 Do **not** touch `SharedBudget` (ADR-064) while doing this. Per context is the
 right scope for it — a worker OOMs on its own heap — and only threads and the

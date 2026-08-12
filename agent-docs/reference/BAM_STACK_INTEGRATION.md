@@ -167,11 +167,14 @@ are being bounded from inside a context that cannot see the others.
 But the obvious fix is not free, which is why this is written down rather than
 done. Three things to settle:
 
-- Sharing one pool trades 20 inflate workers for 4. That is right when one
-  track is loading and wrong when five are, which is exactly when a reader
-  notices. The right shape is probably one shared pool sized to
-  `hardwareConcurrency`, but 4 is the library's default and has never been
-  measured above it.
+- **The speed argument is gone.** `pool-oversub-probe.ts` took the
+  multiplication to its worst case — 4 cores under `taskset`, 12 inflate
+  workers, ~4x oversubscribed — and no arm beat the status quo; cutting the
+  inflate workers to 3 was slower in every batch. Per-chunk parallelism is worth
+  more than avoiding oversubscription. The remaining argument is the 20
+  grow-only wasm heaps, which is unmeasured and which JS heap counters cannot
+  see. Weigh that before building the channel, and be willing to close the item
+  instead: untidy and free is a fine place for this to end.
 - `BgzfWorkerPoolClient` copies the compressed input once more per chunk so the
   transfer detaches a buffer it owns. The library calls this small against the
   inflate; it has not been measured here.
