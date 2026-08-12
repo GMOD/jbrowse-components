@@ -1,6 +1,6 @@
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
-import type { WiggleSourceData } from '../util.ts'
+import type { WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // One source per cell, grouped and coloured the way a per-cell signal store
 // ships them: many rows, few groups, one colour per group.

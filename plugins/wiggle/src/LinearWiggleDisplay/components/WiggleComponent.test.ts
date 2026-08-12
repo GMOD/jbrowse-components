@@ -3,7 +3,7 @@ import { SINGLE_WIGGLE_SOURCE_NAME } from '../../util.ts'
 import { createTestEnvironment } from '../testEnv.ts'
 
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
-import type { WiggleDataResult } from '../../util.ts'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 function makeData(numFeatures = 2, withNeg = false): WiggleDataResult {
   return {

@@ -6,7 +6,7 @@ import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { processFeaturesFromArrays } from '../util.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { WiggleDataResult } from '../util.ts'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 function makeEmptyWiggleData(): WiggleDataResult {
   return {

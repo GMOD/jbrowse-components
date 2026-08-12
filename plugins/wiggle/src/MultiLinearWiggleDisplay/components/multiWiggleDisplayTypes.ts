@@ -1,13 +1,16 @@
 import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
-import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../../util.ts'
+import type { WiggleFeatureUnderMouse } from '../../util.ts'
 import type { MultiWiggleContextHit } from './findHit.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
 } from '@jbrowse/tree-sidebar'
-import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
+import type {
+  WiggleDataResult,
+  WiggleGpuDisplayModel,
+} from '@jbrowse/wiggle-core'
 
 export interface MultiWiggleDisplayModel
   extends WiggleGpuDisplayModel, WiggleGpuProps {

@@ -14,11 +14,12 @@ import {
   processFeaturesFromArrays,
 } from '../util.ts'
 
-import type { RawFeatureArrays, SourceInfo, WiggleDataResult } from '../util.ts'
+import type { RawFeatureArrays } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface FetchOpts {
   bpPerPx: number

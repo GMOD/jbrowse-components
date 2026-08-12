@@ -1,8 +1,6 @@
-import {
-  featuresToRaw,
-  makeScoreNormalizer,
-  processFeaturesFromArrays,
-} from './util.ts'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+
+import { featuresToRaw, processFeaturesFromArrays } from './util.ts'
 
 const normalizeScore = (
   score: number,

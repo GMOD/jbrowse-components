@@ -12,9 +12,12 @@ import {
 } from './wiggleComponentUtils.ts'
 import { makeSummaryLayers } from './wiggleLayers.ts'
 
-import type { WiggleDataResult } from '../util.ts'
 import type { WiggleLayer } from './wiggleLayers.ts'
-import type { SourceRenderData, WiggleSourceData } from '@jbrowse/wiggle-core'
+import type {
+  SourceRenderData,
+  WiggleDataResult,
+  WiggleSourceData,
+} from '@jbrowse/wiggle-core'
 
 // The render layers one source contributes, chosen by summaryScoreMode but
 // independent of where the source sits on screen. buildSourceRenderData stamps

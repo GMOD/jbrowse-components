@@ -5,8 +5,7 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { getEffectiveScores } from '@jbrowse/wiggle-core'
 
-import type { FeatureArrays } from '../util.ts'
-import type { SourceRenderData } from '@jbrowse/wiggle-core'
+import type { FeatureArrays, SourceRenderData } from '@jbrowse/wiggle-core'
 
 function lightenColor(
   rgb: [number, number, number],

@@ -13,10 +13,10 @@ import {
   processFeaturesFromArrays,
 } from '../util.ts'
 
-import type { WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface ExecuteParams {
   pluginManager: PluginManager

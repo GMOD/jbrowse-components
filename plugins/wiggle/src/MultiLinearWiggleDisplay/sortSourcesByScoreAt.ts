@@ -1,6 +1,6 @@
 import { findFeatureAtBp } from '../shared/wiggleHitTest.ts'
 
-import type { WiggleDataResult } from '../util.ts'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // Rows ordered by the score each source carries at genomic `bp` — the wiggle
 // analogue of the multi-row feature display's "sort rows by color here" and of

@@ -24,7 +24,6 @@ import MultiWiggleSvgScales, {
 
 import type { ScoreRamp } from '../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
-import type { WiggleDataResult } from '../util.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type {
   ExportSvgDisplayOptions,
@@ -35,7 +34,11 @@ import type {
   ClusterHierarchyNode,
   ClusterProvenance,
 } from '@jbrowse/tree-sidebar'
-import type { WiggleGPURenderState, YScaleTicks } from '@jbrowse/wiggle-core'
+import type {
+  WiggleDataResult,
+  WiggleGPURenderState,
+  YScaleTicks,
+} from '@jbrowse/wiggle-core'
 import type React from 'react'
 
 /**

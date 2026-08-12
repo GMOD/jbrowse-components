@@ -8,12 +8,12 @@ import {
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { installClearHoverOnViewportChange } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
-
 import {
   autoscaleDomainFromStats,
   computeScoreStats,
   getNiceDomain,
-} from '../util.ts'
+} from '@jbrowse/wiggle-core'
+
 import {
   RESOLUTION_MAX,
   RESOLUTION_MIN,
@@ -22,9 +22,10 @@ import {
 } from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
-import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
+import type { WiggleFeatureUnderMouse } from '../util.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 import type { ObservableMap } from 'mobx'
 
 // The visible per-source feature arrays that feed autoscale, clipped to the

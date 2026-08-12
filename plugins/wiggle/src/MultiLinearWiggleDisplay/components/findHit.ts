@@ -8,11 +8,8 @@ import {
 } from '../../shared/wiggleHitTest.ts'
 
 import type { MouseRegion } from '../../shared/wiggleHitTest.ts'
-import type {
-  WiggleDataResult,
-  WiggleFeatureUnderMouse,
-  WiggleTooltipRow,
-} from '../../util.ts'
+import type { WiggleFeatureUnderMouse, WiggleTooltipRow } from '../../util.ts'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface VisibleSource {
   name: string

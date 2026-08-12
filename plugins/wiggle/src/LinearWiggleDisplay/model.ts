@@ -36,14 +36,16 @@ import {
 import { SINGLE_WIGGLE_SOURCE_NAME, WIGGLE_RENDERINGS } from '../util.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
-import type { WiggleDataResult } from '../util.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
+import type {
+  WiggleDataResult,
+  WiggleRenderingBackend,
+} from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'
 

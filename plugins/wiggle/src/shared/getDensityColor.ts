@@ -1,4 +1,5 @@
-import { makeScoreNormalizer } from '../util.ts'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+
 import { densityGradientT } from './shaders/wiggle.js.generated.ts'
 
 // Density-color factory: maps a score to an "rgb(r,g,b)" string that fades

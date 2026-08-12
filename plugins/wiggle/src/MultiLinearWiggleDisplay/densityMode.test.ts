@@ -1,6 +1,6 @@
 import { createTestEnvironment, makeSource } from './testEnv.ts'
 
-import type { WiggleSourceData } from '../util.ts'
+import type { WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // One binned feature covering the visible window, whose whisker bounds sit far
 // outside its average: the whole point is that the two summary modes disagree

@@ -3,9 +3,10 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { executeRenderMultiWiggleData } from './executeRenderMultiWiggleData.ts'
 
-import type { RawFeatureArrays, WiggleDataResult } from '../util.ts'
+import type { RawFeatureArrays } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
 

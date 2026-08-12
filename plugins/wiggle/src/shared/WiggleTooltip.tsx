@@ -1,9 +1,8 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
-
-import { toP } from '../util.ts'
 
 import type { WiggleFeatureUnderMouse, WiggleTooltipRow } from '../util.ts'
 import type { MouseState } from '@jbrowse/core/ui'

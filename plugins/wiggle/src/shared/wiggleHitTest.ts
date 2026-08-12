@@ -2,12 +2,9 @@
 // bp, and the tooltip/feature-widget payloads built from the hit. Shared by
 // single-wiggle and multi-wiggle so hover, the cursor guides and
 // click-to-select can't disagree about what is under the pointer.
-import type {
-  WiggleFeatureUnderMouse,
-  WiggleSourceData,
-  WiggleTooltipRow,
-} from '../util.ts'
+import type { WiggleFeatureUnderMouse, WiggleTooltipRow } from '../util.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
+import type { WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // Binary search for the feature at a given base-pair offset.
 // featurePositions is sorted by start (featurePositions[i*2]), so we find the

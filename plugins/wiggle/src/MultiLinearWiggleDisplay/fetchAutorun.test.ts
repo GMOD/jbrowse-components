@@ -3,7 +3,7 @@ import { waitFor } from '@testing-library/react'
 import { processFeaturesFromArrays } from '../util.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { WiggleDataResult } from '../util.ts'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // The RenderMultiWiggleData RPC result for a region the adapter has no features
 // in: getFallbackSourceArrays groups zero features into zero source arrays and

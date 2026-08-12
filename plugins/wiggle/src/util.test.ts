@@ -1,10 +1,10 @@
 import {
   computeAutoscaleDomain,
-  formatScore,
-  getFilename,
   getNiceDomain,
   getScale,
-} from './util.ts'
+} from '@jbrowse/wiggle-core'
+
+import { formatScore, getFilename } from './util.ts'
 
 test('linear scale', () => {
   const scaleType = 'linear'

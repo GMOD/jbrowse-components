@@ -3,7 +3,7 @@ import { reconcileLayout } from '@jbrowse/tree-sidebar'
 
 import { buildSources } from './sourcesLogic.ts'
 
-import type { SourceInfo } from '../util.ts'
+import type { SourceInfo } from '@jbrowse/wiggle-core'
 
 const adapter = (count: number): SourceInfo[] =>
   Array.from({ length: count }, (_, i) => ({ name: `source_${i}` }))

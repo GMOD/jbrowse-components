@@ -58,7 +58,7 @@ import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { buildSources } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
-import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
+import type { Source } from '../util.ts'
 import type { MultiWiggleContextHit } from './components/findHit.ts'
 import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
@@ -67,7 +67,11 @@ import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { RowSortSpec } from '@jbrowse/tree-sidebar'
-import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
+import type {
+  SourceInfo,
+  WiggleDataResult,
+  WiggleRenderingBackend,
+} from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(

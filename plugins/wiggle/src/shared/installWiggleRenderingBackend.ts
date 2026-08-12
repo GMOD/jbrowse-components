@@ -2,11 +2,11 @@ import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegion
 
 import { buildSourceRenderData } from './buildSourceRenderData.ts'
 
-import type { WiggleDataResult } from '../util.ts'
 import type { WiggleGpuProps } from './buildSourceRenderData.ts'
 import type { LifecycleHost } from '@jbrowse/render-core/installPerRegionLifecycle'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
+  WiggleDataResult,
   WiggleGPURenderState,
   WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'

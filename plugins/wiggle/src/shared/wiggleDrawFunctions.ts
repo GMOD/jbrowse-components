@@ -1,12 +1,12 @@
 import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
-import { appendPointMarker, SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
-
 import {
-  WIGGLE_FUDGE_FACTOR,
-  WIGGLE_MIN_PX,
+  appendPointMarker,
   makeScoreNormalizer,
-} from '../util.ts'
+  SCALE_TYPE_LOG,
+} from '@jbrowse/wiggle-core'
+
+import { WIGGLE_FUDGE_FACTOR, WIGGLE_MIN_PX } from '../util.ts'
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'

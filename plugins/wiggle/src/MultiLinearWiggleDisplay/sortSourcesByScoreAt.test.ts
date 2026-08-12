@@ -1,7 +1,7 @@
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { makeSource } from './testEnv.ts'
 
-import type { WiggleDataResult } from '../util.ts'
+import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // One source with [start, end, score] features, in the shape the RPC ships.
 function withFeatures(

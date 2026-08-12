@@ -14,9 +14,9 @@ import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } fro
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-import type { WiggleDataResult, WiggleSourceData } from '../util.ts'
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { WiggleDataResult, WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // A minimal but fully-typed zero-feature source: enough to populate
 // `sourcesVolatile` (which is what unblocks clustering and the row-count menu

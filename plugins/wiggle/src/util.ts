@@ -1,31 +1,5 @@
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
-export {
-  autoscaleDomainFromStats,
-  computeAutoscaleDomain,
-  computeScoreExtent,
-  computeScoreStats,
-  domainFromStats,
-  getEffectiveScores,
-  getNiceDomain,
-  getOrigin,
-  getScale,
-  makeScoreNormalizer,
-  toP,
-} from '@jbrowse/wiggle-core'
-export type {
-  Dataset,
-  FeatureArrays,
-  ScaleOpts,
-  ScoreStats,
-  SourceInfo,
-  WiggleDataResult,
-  WiggleFeatureArrays,
-  WiggleSourceData,
-} from '@jbrowse/wiggle-core'
-
-export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
-
 // Rendering-type tables live in renderingTypes.ts (import-free) so non-UI
 // consumers can pull the menu labels without loading the wiggle-core barrel;
 // re-exported here so existing `../util.ts` importers are unaffected.

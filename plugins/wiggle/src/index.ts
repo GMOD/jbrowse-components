@@ -46,6 +46,10 @@ export default class WigglePlugin extends Plugin {
   }
 }
 
+// Only what this plugin implements. The score-scaling helpers and the wiggle
+// data/render types belong to `@jbrowse/wiggle-core` and are imported from
+// there — mirroring them here gave the same value two import paths and no
+// consumer ever took this one.
 export {
   MULTI_WIGGLE_RENDERING_GROUPS,
   MULTI_WIGGLE_RENDERING_TYPES,
@@ -56,35 +60,15 @@ export {
   WIGGLE_POS_COLOR_DEFAULT,
   WIGGLE_RENDERINGS,
   WIGGLE_RENDERING_TYPES,
-  YSCALEBAR_LABEL_OFFSET,
-  autoscaleDomainFromStats,
-  computeAutoscaleDomain,
-  computeScoreExtent,
-  computeScoreStats,
-  domainFromStats,
   featuresToRaw,
   formatScore,
-  getEffectiveScores,
   getFilename,
-  getNiceDomain,
-  getOrigin,
-  getScale,
-  makeScoreNormalizer,
   processFeaturesFromArrays,
-  toP,
 } from './util.ts'
 export type {
-  Dataset,
-  FeatureArrays,
   RawFeatureArrays,
-  ScaleOpts,
-  ScoreStats,
   Source,
-  SourceInfo,
-  WiggleDataResult,
-  WiggleFeatureArrays,
   WiggleFeatureUnderMouse,
-  WiggleSourceData,
   WiggleTooltipRow,
 } from './util.ts'
 

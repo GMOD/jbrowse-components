@@ -1,8 +1,8 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import type { SourceInfo, WiggleDataResult } from '../util.ts'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface RenderMultiWiggleDataArgs {
   sessionId: string

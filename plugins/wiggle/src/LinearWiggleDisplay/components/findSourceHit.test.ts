@@ -1,6 +1,6 @@
 import { findSourceHit } from '../../shared/wiggleHitTest.ts'
 
-import type { WiggleSourceData } from '../../util.ts'
+import type { WiggleSourceData } from '@jbrowse/wiggle-core'
 
 function makeSource(
   features: {
