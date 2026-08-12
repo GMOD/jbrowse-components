@@ -71,13 +71,11 @@ interface ArcSettings {
   cloud?: boolean
   drawInter: boolean
   drawLongRange: boolean
-  // Normalize a raw BAM refName (from an SA tag or RNEXT — which use the file's
-  // own naming, e.g. `chr1`) to the assembly-canonical refName the fetched
-  // reads carry (e.g. `1`). Without this a split junction between a fetched
-  // read (`1`) and its SA segment (`chr1`) reads as inter-chromosomal and paints
-  // as a connector tick instead of the intra-chromosomal split-inversion arc.
+  // See `CanonicalRefName`. Without it a split junction between a fetched read
+  // (`1`) and its SA segment (`chr1`) reads as inter-chromosomal and paints as a
+  // connector tick instead of the intra-chromosomal split-inversion arc.
   // Optional: omitted (tests / no assembly) means no aliasing — identity.
-  canonicalRefName?: (refName: string) => string
+  canonicalRefName?: CanonicalRefName
 }
 
 // A pair is concordant FR (the modal, "normal" insert) when its tlen sits
@@ -471,15 +469,25 @@ function computePairingInfo(rpcDataMap: ReadonlyMap<number, PileupDataResult>) {
   return { hasPaired, stats }
 }
 
-// Dependencies threaded through pending-arc collection: the long-range gate and
-// the assembly refName normalizer. `canonicalRefName` maps a raw BAM refName
-// (SA tag / RNEXT — the file's own naming, e.g. `chr1`) to the assembly-
-// canonical name the fetched reads carry (e.g. `1`). Bundled so the whole chain
-// tree threads one value; keeping every SegAln/PendingArc refName canonical is
-// what stops a same-chr split junction from reading as inter-chromosomal.
+// Maps a raw BAM refName (SA tag / RNEXT — the file's own naming, e.g. `chr1`)
+// to the assembly-canonical name the fetched reads carry (e.g. `1`). Keeping
+// every SegAln/PendingArc refName canonical is what stops a same-chr split
+// junction from reading as inter-chromosomal.
+type CanonicalRefName = (refName: string) => string
+
+// Dependencies threaded through pending-arc EMISSION: the normalizer above plus
+// the long-range gate.
+//
+// Chain BUILDING takes only the normalizer, which is why that is the narrower
+// parameter below rather than this bundle. `drawLongRange` decides whether a
+// junction touching an off-screen segment is emitted as an arc; it says nothing
+// about which segments a read has, so a chain builder handed this whole struct
+// had to be given a value for a field it could not read — and `computeReadChains`
+// duly set `drawLongRange: true` under a comment explaining that nothing would
+// look at it.
 interface ArcChainContext {
   drawLongRange: boolean
-  canonicalRefName: (refName: string) => string
+  canonicalRefName: CanonicalRefName
 }
 
 function entrySeg(entry: ReadEntry): SegAln {
@@ -507,7 +515,10 @@ function segLocusKey(seg: SegAln) {
 // The off-screen segments one entry's SA tag names, canonical-refName'd.
 // Truncated / placeholder-CIGAR / non-numeric-position SA records parse to a
 // zero-length or NaN span and would emit a junk arc, so they're dropped here.
-function saSegments(entry: ReadEntry, ctx: ArcChainContext): SegAln[] {
+function saSegments(
+  entry: ReadEntry,
+  canonicalRefName: CanonicalRefName,
+): SegAln[] {
   const { data, readIdx } = entry
   return featurizeSA(
     data.readSuppAlignments?.[readIdx],
@@ -517,7 +528,7 @@ function saSegments(entry: ReadEntry, ctx: ArcChainContext): SegAln[] {
   )
     .filter(sa => Number.isFinite(sa.start) && sa.end > sa.start)
     .map(sa => ({
-      refName: ctx.canonicalRefName(sa.refName),
+      refName: canonicalRefName(sa.refName),
       start: sa.start,
       end: sa.end,
       strand: sa.strand,
@@ -533,16 +544,19 @@ function saSegments(entry: ReadEntry, ctx: ArcChainContext): SegAln[] {
 // off-screen segment and keeps a same-chr split junction from reading as
 // inter-chromosomal. `entries` arrives already deduped by readId and stripped of
 // secondary alignments — resolveReadGroup's partition owns both rules.
+// Takes the normalizer alone, not an `ArcChainContext`: the SA walk is how a
+// read's segments are DISCOVERED, so it always runs, and `drawLongRange` only
+// decides which of the resulting junctions are drawn (`unpairedChainArcs`).
 function unpairedReadChain(
   entries: ReadEntry[],
-  ctx: ArcChainContext,
+  canonicalRefName: CanonicalRefName,
 ): SegAln[] {
   const byPos = new Map<string, SegAln>()
   // On-screen segments first, so a segment described by BOTH a fetched record
   // and a sibling's SA tag keeps the on-screen record (first writer wins).
   for (const seg of [
     ...entries.map(entrySeg),
-    ...entries.flatMap(e => saSegments(e, ctx)),
+    ...entries.flatMap(e => saSegments(e, canonicalRefName)),
   ]) {
     const key = segLocusKey(seg)
     if (!byPos.has(key)) {
@@ -571,20 +585,13 @@ function unpairedReadChain(
 export function computeReadChains(
   rpcDataMap: ReadonlyMap<number, PileupDataResult>,
   regions: RegionInfo[],
-  canonicalRefName?: (refName: string) => string,
+  canonicalRefName: CanonicalRefName = refName => refName,
 ): SegAln[][] {
-  const ctx: ArcChainContext = {
-    // Not the user's off-screen-mate setting: a derivative path is exactly the
-    // thing whose segments leave the current view, so the SA walk always runs.
-    // It gates arc EMISSION, and this builds no arcs.
-    drawLongRange: true,
-    canonicalRefName: canonicalRefName ?? (refName => refName),
-  }
   const chains: SegAln[][] = []
   for (const entries of groupReadsByName(rpcDataMap, regions).values()) {
     chains.push(
       ...resolveReadGroup<ReadEntry, SegAln[]>(entries, {
-        chainMate: segs => [unpairedReadChain(segs, ctx)],
+        chainMate: segs => [unpairedReadChain(segs, canonicalRefName)],
         // A mate link joins two mates of one fragment; it is not a junction on
         // a single molecule, so it contributes no segment to a path.
         mateLink: () => [],
@@ -633,7 +640,7 @@ function unpairedChainArcs(
   entries: ReadEntry[],
   ctx: ArcChainContext,
 ): PendingArc[] {
-  const chain = unpairedReadChain(entries, ctx)
+  const chain = unpairedReadChain(entries, ctx.canonicalRefName)
   const arcs: PendingArc[] = []
   for (let j = 0; j < chain.length - 1; j++) {
     const a1 = chain[j]!
