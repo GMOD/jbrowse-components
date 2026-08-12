@@ -1,5 +1,5 @@
 import { buildTrackConfigs } from './buildConfigs.ts'
-import { isIndexFile, pairLocations } from './pairLocations.ts'
+import { pairLocations } from './pairLocations.ts'
 import { locationWarnings } from './util.ts'
 
 import type { TrackConfRow } from './buildConfigs.ts'
@@ -16,8 +16,8 @@ export interface BulkPreview {
 /**
  * Pure derivation from a deduped location list to everything the preview UI
  * needs: one row per data/index pair, and the counts behind the orphan-index /
- * skipped-row / URL-warning messages. Kept out of the component so the (subtle)
- * orphan accounting is testable in isolation.
+ * skipped-row / URL-warning messages. Kept out of the component so it is
+ * testable in isolation.
  */
 export function summarizeBulkInput({
   locations,
@@ -28,18 +28,16 @@ export function summarizeBulkInput({
   model: IAnyStateTreeNode
   assembly: string
 }): BulkPreview {
-  const pairs = pairLocations(locations)
+  const { pairs, orphanIndexes } = pairLocations(locations)
   const rows = buildTrackConfigs({
     pairs,
     model,
     assembly,
   })
-  const orphanIndexCount =
-    locations.filter(isIndexFile).length - pairs.filter(p => p.index).length
   return {
     rows,
     skippedCount: rows.filter(row => row.status !== 'ok').length,
-    orphanIndexCount,
+    orphanIndexCount: orphanIndexes.length,
     warnings: locationWarnings(locations),
   }
 }

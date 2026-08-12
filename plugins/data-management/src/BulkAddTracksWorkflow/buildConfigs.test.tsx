@@ -6,7 +6,7 @@ import type { FileLocation } from '@jbrowse/core/util/types'
 
 function build(locations: FileLocation[]) {
   return buildTrackConfigs({
-    pairs: pairLocations(locations),
+    pairs: pairLocations(locations).pairs,
     model: makeModel(),
     assembly: 'volvox',
   })

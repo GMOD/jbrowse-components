@@ -30,6 +30,23 @@ test('an index with no matching data file is counted as an orphan', () => {
   expect(orphanIndexCount).toBe(1)
 })
 
+// the count used to be (index files pasted) - (index files paired), so any data
+// file offered a second sidecar reported one as having "no matching data file"
+test('a second sidecar for one data file is not counted as an orphan', () => {
+  const { rows, orphanIndexCount } = summarize([
+    uri('/a.bam'),
+    uri('/a.bam.bai'),
+    uri('/a.bam.csi'),
+  ])
+  expect(rows).toHaveLength(1)
+  expect(orphanIndexCount).toBe(0)
+})
+
+test('an index whose kind fits no data file present is still an orphan', () => {
+  const { orphanIndexCount } = summarize([uri('/s.bam'), uri('/s.tbi')])
+  expect(orphanIndexCount).toBe(1)
+})
+
 test('an unrecognized extension is a skipped row, not addable', () => {
   const { rows, skippedCount } = summarize([uri('/mystery.qqq')])
   expect(rows).toHaveLength(1)

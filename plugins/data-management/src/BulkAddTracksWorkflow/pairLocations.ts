@@ -4,28 +4,40 @@ import type { FileLocation } from '@jbrowse/core/util/types'
 
 // Recognized index/sidecar file suffixes. A pasted file ending in one of these
 // is treated as the index of a data file rather than a track of its own.
-export const INDEX_SUFFIXES = [
-  '.bai',
-  '.csi',
-  '.crai',
-  '.tbi',
-  '.fai',
-  '.gzi',
-  '.idx',
-]
+const INDEX_SUFFIXES = ['.bai', '.csi', '.crai', '.tbi', '.fai', '.gzi', '.idx']
 
 export interface LocationPair {
   file: FileLocation
   index?: FileLocation
 }
 
+export interface PairedLocations {
+  pairs: LocationPair[]
+  /**
+   * Index files no data file in the batch could have indexed — a `.tbi` pasted
+   * without its `.vcf.gz`, or one whose kind fits nothing present. Not the same
+   * as "unused": an index that merely lost the race for a data file's single
+   * index slot (the `.gzi` beside the `.fai` of one `.fa.gz`, a `.csi` beside a
+   * `.bai`) is left out, because its data file is right there and every adapter
+   * needing a second sidecar derives it from the data file's own URL anyway.
+   */
+  orphanIndexes: FileLocation[]
+}
+
+/**
+ * Identity of a location within one batch: two locations with the same id are
+ * the same file. The full path for a URI or a local path, so same-named files
+ * in different directories stay distinct; the bare filename for a blob or file
+ * handle, which carries no path — and whose opaque id is minted fresh on every
+ * drop, so identifying by that would let the same file dropped twice through as
+ * two tracks. Doubles as the pairing key, which is why a dropped `foo.bam` and
+ * `foo.bam.bai` can find each other at all.
+ */
 export function locationId(loc: FileLocation) {
   if ('uri' in loc) {
     return loc.uri
   } else if ('localPath' in loc) {
     return loc.localPath
-  } else if ('blobId' in loc) {
-    return loc.blobId
   } else {
     return getFileName(loc)
   }
@@ -37,19 +49,6 @@ export function locationId(loc: FileLocation) {
 function stripLastExt(name: string) {
   const dot = name.lastIndexOf('.')
   return dot === -1 ? name : name.slice(0, dot)
-}
-
-// Key used to match data files to their index sidecars. Uses the full path
-// (uri/localPath) so same-named files in different directories don't collide;
-// blob/file-handle locations have no path, so fall back to their filename.
-function pairingId(loc: FileLocation) {
-  if ('uri' in loc) {
-    return loc.uri
-  } else if ('localPath' in loc) {
-    return loc.localPath
-  } else {
-    return getFileName(loc)
-  }
 }
 
 function indexSuffixOf(name: string) {
@@ -86,11 +85,6 @@ function canIndex(suffix: string, dataExtension: string) {
   return indexedExtensions[suffix]?.includes(dataExtension) ?? true
 }
 
-/** True if the location's filename ends in a recognized index suffix. */
-export function isIndexFile(loc: FileLocation) {
-  return indexSuffixOf(getFileName(loc)) !== undefined
-}
-
 /**
  * Splits a flat list of locations into data files paired with their index
  * sidecars. Mirrors the JBrowse 1 FileDialog pairing rules: an index `I`
@@ -98,29 +92,33 @@ export function isIndexFile(loc: FileLocation) {
  * `stripExt(D)` + suffix of a kind that can index `D` (e.g. `foo.bai`, but not
  * `foo.tbi`, for `foo.bam` — see `indexedExtensions`). Data files with no explicit index
  * are emitted with `index: undefined` so `guessAdapter` can infer it from the
- * URL. Unmatched index files are dropped. Data files repeated under the same
- * location (e.g. a URL pasted twice) collapse to a single entry.
+ * URL. Index files no data file could have claimed come back separately as
+ * `orphanIndexes`. Locations repeated under the same id (e.g. a URL pasted
+ * twice) collapse to a single entry.
  */
-export function pairLocations(locations: FileLocation[]): LocationPair[] {
-  const named = locations.map(loc => {
-    const name = getFileName(loc)
-    return {
-      loc,
-      lower: pairingId(loc).toLowerCase(),
-      suffix: indexSuffixOf(name),
-      extension: fileExtension(name),
-    }
-  })
-  // Dedupe data files repeated under the same location (e.g. a URL pasted
-  // twice). Callers that pre-dedupe (the workflow component) keep this as a
-  // harmless no-op; direct callers and tests rely on it.
-  const dataEntries = [
+export function pairLocations(locations: FileLocation[]): PairedLocations {
+  // Dedupe by location id (e.g. a URL pasted twice). Callers that pre-dedupe
+  // (the workflow component) keep this as a harmless no-op; direct callers and
+  // tests rely on it.
+  const entries = [
     ...new Map(
-      named
-        .filter(e => e.suffix === undefined)
-        .map(e => [locationId(e.loc), e] as const),
+      locations.map(loc => {
+        const id = locationId(loc)
+        const name = getFileName(loc)
+        return [
+          id,
+          {
+            loc,
+            lower: id.toLowerCase(),
+            suffix: indexSuffixOf(name),
+            extension: fileExtension(name),
+          },
+        ] as const
+      }),
     ).values(),
   ]
+  const dataEntries = entries.filter(e => e.suffix === undefined)
+
   // Build a map from stripLastExt(indexLower) → index entries for O(N) lookup.
   // Index "foo.bam.bai" → key "foo.bam" (matches data "foo.bam" directly).
   // Index "foo.bai"     → key "foo"     (matches data "foo.bam" via stripLastExt).
@@ -129,27 +127,54 @@ export function pairLocations(locations: FileLocation[]): LocationPair[] {
   // the data file picks the one it can actually use rather than whichever was
   // pasted first.
   const indexMap = new Map<string, { loc: FileLocation; suffix: string }[]>()
-  for (const { loc, lower, suffix } of named) {
+  for (const { loc, lower, suffix } of entries) {
     if (suffix !== undefined) {
       const key = stripLastExt(lower)
-      const entries = indexMap.get(key)
-      if (entries) {
-        entries.push({ loc, suffix })
+      const found = indexMap.get(key)
+      if (found) {
+        found.push({ loc, suffix })
       } else {
         indexMap.set(key, [{ loc, suffix }])
       }
     }
   }
 
+  // The same two rules `take` applies below, asked of the whole list instead of
+  // one data file: an index nothing here could have taken is one the user
+  // pasted without its data file, which is the only case worth reporting. Runs
+  // before the pairing pass because it is a question about the input, not about
+  // who won which slot — and because `take` empties the map as it goes.
+  const longFormKeys = new Set(dataEntries.map(e => e.lower))
+  const shortFormKeys = new Map<string, string[]>()
+  for (const { lower, extension } of dataEntries) {
+    const stem = stripLastExt(lower)
+    const found = shortFormKeys.get(stem)
+    if (found) {
+      found.push(extension)
+    } else {
+      shortFormKeys.set(stem, [extension])
+    }
+  }
+  const orphanIndexes = [...indexMap].flatMap(([key, indexes]) =>
+    longFormKeys.has(key)
+      ? []
+      : indexes
+          .filter(
+            ({ suffix }) =>
+              !shortFormKeys.get(key)?.some(ext => canIndex(suffix, ext)),
+          )
+          .map(({ loc }) => loc),
+  )
+
   // Claim the first index at `key` this data file accepts, removing it so a
   // later data file can't be handed the same one.
   function take(key: string, accepts: (suffix: string) => boolean) {
-    const entries = indexMap.get(key)
-    const idx = entries?.findIndex(e => accepts(e.suffix)) ?? -1
-    return idx === -1 ? undefined : entries?.splice(idx, 1)[0]
+    const found = indexMap.get(key)
+    const idx = found?.findIndex(e => accepts(e.suffix)) ?? -1
+    return idx === -1 ? undefined : found?.splice(idx, 1)[0]
   }
 
-  return dataEntries.map(({ loc, lower: dataLower, extension }) => {
+  const pairs = dataEntries.map(({ loc, lower: dataLower, extension }) => {
     const match =
       // long form: the index names its data file, so take it at its word
       take(dataLower, () => true) ??
@@ -157,4 +182,6 @@ export function pairLocations(locations: FileLocation[]): LocationPair[] {
       take(stripLastExt(dataLower), suffix => canIndex(suffix, extension))
     return { file: loc, index: match?.loc }
   })
+
+  return { pairs, orphanIndexes }
 }
