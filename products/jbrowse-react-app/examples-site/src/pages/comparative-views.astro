@@ -7,11 +7,11 @@ import CreateAppSynteny from '../examples/CreateAppSynteny.tsx'
 import createAppSyntenyCode from '../examples/CreateAppSynteny.tsx?raw'
 import MultiwaySyntenyExample from '../examples/MultiwaySyntenyExample.tsx'
 import multiwaySyntenyCode from '../examples/MultiwaySyntenyExample.tsx?raw'
-import { pages, section } from '../examples.ts'
+import { getPage, section } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
 
-const page = pages.find(p => p.slug === 'comparative-views')!
+const page = getPage('comparative-views')
 const dotplot = section(page, 'dotplot-example')
 const synteny = section(page, 'synteny-example')
 const createAppSection = section(page, 'create-app-synteny')

@@ -9,11 +9,11 @@ import FitToContainer from '../examples/FitToContainer.tsx'
 import fitToContainerCode from '../examples/FitToContainer.tsx?raw'
 import WithWebWorker from '../examples/WithWebWorker.tsx'
 import withWebWorkerCode from '../examples/WithWebWorker.tsx?raw'
-import { pages, section } from '../examples.ts'
+import { getPage, section } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
 
-const page = pages.find(p => p.slug === 'customizing-the-app')!
+const page = getPage('customizing-the-app')
 const darkTheme = section(page, 'dark-theme')
 const observeSession = section(page, 'observe-session')
 const sessionInUrl = section(page, 'session-in-url')

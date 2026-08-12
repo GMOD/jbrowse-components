@@ -1,4 +1,4 @@
-import { flattenExamples } from './exampleModel.ts'
+import { findPage, flattenExamples } from './exampleModel.ts'
 
 import type { ExamplePage } from './exampleModel.ts'
 
@@ -192,3 +192,6 @@ export const pages: ExamplePage[] = [
 ]
 
 export const examples = flattenExamples(pages)
+
+// bound to this site's `pages` so page files call getPage('slug') directly
+export const getPage = (slug: string) => findPage(pages, slug)

@@ -3,11 +3,11 @@ import EmbeddedPlugin from '../examples/EmbeddedPlugin.tsx'
 import embeddedPluginCode from '../examples/EmbeddedPlugin.tsx?raw'
 import WithExternalPlugin from '../examples/WithExternalPlugin.tsx'
 import withExternalPluginCode from '../examples/WithExternalPlugin.tsx?raw'
-import { pages, section } from '../examples.ts'
+import { getPage, section } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
 
-const page = pages.find(p => p.slug === 'plugins')!
+const page = getPage('plugins')
 const embedded = section(page, 'embedded-plugin')
 const external = section(page, 'with-external-plugin')
 ---
