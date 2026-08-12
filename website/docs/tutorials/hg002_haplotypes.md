@@ -10,13 +10,10 @@ tutorial_category: Synteny & comparative genomics
 data: hosted
 ---
 
-**TL;DR:** T2T-HG002 v1.2 ships both haplotypes in one FASTA, as contigs named
+**TL;DR:** T2T-HG002 v1.2 ships both haplotypes as contigs of one FASTA, named
 `chr1_MATERNAL` and `chr1_PATERNAL`, so JBrowse loads it as a single assembly
 and maternal against paternal is a self-alignment. The Q100 project publishes
-the chain between the two haplotypes, so there is nothing to align. A dotplot
-with one haplotype per axis shows the two are collinear chromosome by
-chromosome; 8p23.1 is the largest block that is not, and draws as a sweep
-between the panels of a linear view.
+the chain between them, so there is nothing to align.
 
 ## Prerequisites
 
@@ -66,9 +63,8 @@ same assembly, since the two haplotypes are contigs of one:
 ## The whole genome first
 
 With those two in place, the first thing to ask a haplotype-resolved assembly is
-whether anything moved between chromosomes at all. That is a dotplot's question
-rather than a linear view's: one panel pair per chromosome is not a shape anyone
-reads, and a dotplot answers it in one frame.
+whether anything moved between chromosomes at all. A dotplot answers that in one
+frame.
 
 Open **Add → Dotplot view**. Both axis dropdowns already read
 `T2T-HG002 v1.2 (diploid)`, since it is the only assembly here, and an axis set
@@ -78,22 +74,16 @@ paternal contig on both axes, interleaved.
 Switch to **Manual** and use the chromosome box beside each assembly. Each takes
 a comma-separated list of contig names, where `*` matches any characters, so
 `*_MATERNAL` on the X axis and `*_PATERNAL` on the Y axis give one haplotype per
-axis. Leave a box empty and you get the whole assembly, which is what most
-datasets want.
+axis. Leave a box empty and you get the whole assembly.
 
 <Figure caption="The dotplot import form in Manual mode. Both axes are the same assembly, and the chromosome boxes cut each one down to a single haplotype. The Q100 chain is already selected as the synteny track." src="/img/hg002_haplotypes_import_form.png" />
 
 Press **Launch**, then click the palette icon in the view's header and pick
 **Strand**. Without it the plot is one black diagonal; with it the collinear
-blocks are red and the inverted ones blue, which is the only other signal at
-this scale.
+blocks are red and the inverted ones blue.
 
-The plot is a clean per-chromosome diagonal: every maternal chromosome aligns to
-its paternal counterpart along its whole length, and nothing crosses between
-chromosomes. The blue ticks on it are the inverted blocks, and the largest of
-them is the subject of the next section. HG002 is male, so `chrX_MATERNAL` and
-`chrY_PATERNAL` have nothing on the other haplotype to chain to, and their
-column and row stay empty.
+HG002 is male, so `chrX_MATERNAL` and `chrY_PATERNAL` have nothing on the other
+haplotype to chain to, and their column and row stay empty.
 
 <Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with its own counterpart on the diagonal; the blue ticks are inverted blocks and the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
 
@@ -110,9 +100,6 @@ synteny view**, then:
 - pick **Strand** from the palette icon
 - turn the chain track on in each panel's own track selector, where it draws as
   blocks on that panel's ruler rather than as ribbons between the panels
-
-The collinear flanks either side are what make the sweep read as an inversion.
-Those panel blocks are what the right-click in the next section acts on.
 
 Genes read the inversion a second way. The assembly has no annotation of its
 own, but the JHU Liftoff GFFs are published beside it, one per haplotype, on
