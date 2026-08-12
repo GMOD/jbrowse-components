@@ -10,7 +10,7 @@ import { WorkspacePanelActions } from './WorkspacePanelActions.tsx'
 import { WorkspaceTab } from './WorkspaceTab.tsx'
 import { useLayoutDrag } from './useLayoutDrag.ts'
 
-import type { DockviewSessionType } from '../ui/App/types.ts'
+import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
 
 const ViewLauncher = lazy(() => import('../ui/App/ViewLauncher.tsx'))
@@ -36,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type WorkspaceSession = DockviewSessionType & WorkspaceLayout
+type WorkspaceSession = WorkspaceSessionType & WorkspaceLayout
 
 /**
  * The workspace. Compare `TiledViewsContainer` + `useDockviewController`, which
@@ -65,6 +65,21 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
     [session],
   )
 
+  // The layout does not own views, so closing a tab is explicitly the pair —
+  // and it is ONE function because two callers now need it (the tab's own ⋮
+  // menu, and middle-clicking the tab). Spelled out at each, one of them ends
+  // up dropping the tab and leaving its views in the session forever.
+  const closeTab = (tabId: string) => {
+    const tab = session.findTab(tabId)?.tab
+    if (!tab) {
+      return
+    }
+    for (const view of viewsOf(session, tab.viewIds)) {
+      session.removeView(view)
+    }
+    session.closeTab(tabId)
+  }
+
   return (
     <div className={classes.container} data-testid="workspace">
       <LayoutRenderer
@@ -72,6 +87,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
         layout={session}
         drag={drag}
         dragHandlers={dragHandlers}
+        onTabClose={closeTab}
         renderPanelActions={panel => (
           <WorkspacePanelActions panel={panel} session={session} />
         )}
@@ -81,6 +97,9 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
             views={viewsOf(session, tab.viewIds)}
             session={session}
             layout={session}
+            onClose={() => {
+              closeTab(tab.id)
+            }}
           />
         )}
         renderTabContent={tab => {

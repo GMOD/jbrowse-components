@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import JBrowseTabMenu from '../ui/App/JBrowseTabMenu.tsx'
 
-import type { DockviewSessionType } from '../ui/App/types.ts'
+import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
 import type { TabNode } from './tree.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
@@ -55,7 +55,7 @@ const useStyles = makeStyles()(theme => ({
 export function tabDisplayName(
   tab: TabNode,
   views: AbstractViewModel[],
-  session: DockviewSessionType,
+  session: WorkspaceSessionType,
 ) {
   if (tab.title) {
     return tab.title
@@ -81,11 +81,19 @@ export const WorkspaceTab = observer(function WorkspaceTab({
   views,
   session,
   layout,
+  onClose,
 }: {
   tab: TabNode
   views: AbstractViewModel[]
-  session: DockviewSessionType
+  session: WorkspaceSessionType
   layout: WorkspaceLayout
+  /**
+   * Closing a tab closes the views it held, and the layout does not own views —
+   * so the pair is one function at the call site rather than spelled out here.
+   * The strip's middle-click needs the same pair, and two spellings of "and
+   * also remove the views" is how one of them comes to be missing it.
+   */
+  onClose: () => void
 }) {
   const { classes } = useStyles()
   const [editing, setEditing] = useState(false)
@@ -145,13 +153,7 @@ export const WorkspaceTab = observer(function WorkspaceTab({
               setDraft(title)
               setEditing(true)
             }}
-            onClose={() => {
-              // closing a tab closes the views it held, same as before
-              for (const view of views) {
-                session.removeView(view)
-              }
-              layout.closeTab(tab.id)
-            }}
+            onClose={onClose}
           />
         </>
       )}

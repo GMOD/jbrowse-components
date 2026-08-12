@@ -28,6 +28,8 @@ interface Props {
   renderTabContent: (tab: TabNode) => React.ReactNode
   renderPanelActions?: (panel: PanelNode) => React.ReactNode
   dragHandlers: TabDragHandlers
+  /** middle-click on a tab; the caller pairs it with closing that tab's views */
+  onTabClose?: (tabId: string) => void
   /** the in-flight drag, so the cell under the pointer can show where it lands */
   drag?: DragState
 }
@@ -39,6 +41,7 @@ export const LayoutRenderer = observer(function LayoutRenderer({
   renderTabContent,
   renderPanelActions,
   dragHandlers,
+  onTabClose,
   drag,
 }: Props) {
   if (!('children' in node)) {
@@ -59,6 +62,7 @@ export const LayoutRenderer = observer(function LayoutRenderer({
           renderTabContent={renderTabContent}
           renderPanelActions={renderPanelActions}
           dragHandlers={dragHandlers}
+          onTabClose={onTabClose}
           drop={drag?.panelId === node.id ? drag : undefined}
         />
       </div>
@@ -85,6 +89,7 @@ export const LayoutRenderer = observer(function LayoutRenderer({
             renderTabContent={renderTabContent}
             renderPanelActions={renderPanelActions}
             dragHandlers={dragHandlers}
+            onTabClose={onTabClose}
             drag={drag}
           />
         </Fragment>

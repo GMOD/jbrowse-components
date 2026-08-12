@@ -124,6 +124,8 @@ interface PanelViewProps {
   dragHandlers: TabDragHandlers
   /** where an in-flight drag would land in THIS cell, if it is over this one */
   drop?: DropTarget
+  /** middle-click on a tab, which every tabbed UI closes it with */
+  onTabClose?: (tabId: string) => void
 }
 
 /**
@@ -142,6 +144,7 @@ export const PanelView = observer(function PanelView({
   renderPanelActions,
   dragHandlers,
   drop,
+  onTabClose,
 }: PanelViewProps) {
   const { classes } = useStyles()
   const active =
@@ -238,8 +241,21 @@ export const PanelView = observer(function PanelView({
                 setFocusedTabId(tab.id)
               }}
               onPointerDown={event => {
+                // the middle button closes rather than drags, and its default
+                // action is the browser's autoscroll — which would otherwise
+                // start the moment a tab is middle-pressed
+                if (event.button === 1) {
+                  event.preventDefault()
+                  return
+                }
                 layout.setActiveTab(panel.id, tab.id)
                 dragHandlers.onTabPointerDown(tab.id, event)
+              }}
+              onAuxClick={event => {
+                if (event.button === 1) {
+                  event.preventDefault()
+                  onTabClose?.(tab.id)
+                }
               }}
               onPointerMove={dragHandlers.onTabPointerMove}
               onPointerUp={dragHandlers.onTabPointerUp}

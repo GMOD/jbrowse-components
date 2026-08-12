@@ -7,8 +7,9 @@ import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
 
 export { type Menu } from '../../menus.ts'
 
-// What a workspace needs of the session it drives.
-export type DockviewSessionType = SessionWithFocusedViewAndDrawerWidgets & {
+// What a workspace needs of the session it drives. Named for dockview until the
+// workspace stopped being dockview; nothing about the shape was ever its.
+export type WorkspaceSessionType = SessionWithFocusedViewAndDrawerWidgets & {
   renameCurrentSession: (arg: string) => void
   snackbarMessages: SnackbarMessage[]
   popSnackbarMessage: () => unknown
@@ -22,7 +23,7 @@ export type DockviewSessionType = SessionWithFocusedViewAndDrawerWidgets & {
 // around the views. Declared as an extension rather than a parallel list: App
 // hands the same session to ViewsContainer and on to the workspace, so the two
 // have to stay assignable, and they used to restate three members each to do it.
-export type AppSession = DockviewSessionType & {
+export type AppSession = WorkspaceSessionType & {
   menus: () => Menu[]
   errorDialog: ErrorDialogState | undefined
   setErrorDialog: (state: ErrorDialogState | undefined) => void

@@ -105,19 +105,59 @@ other pane holds still.
 
 ## Drag-and-drop: geometry is pure, wiring is thin
 
-`dropZoneAt` is a pure function over a rect: edge bands, the corner tie-break,
-what counts as the middle. It is tested without a DOM or a synthetic pointer.
-`useLayoutDrag` is the DOM half and is deliberately dumb.
+Two pure functions over rects, both tested without a DOM or a synthetic pointer.
+`dropZoneAt` answers which half of a cell — edge bands, the corner tie-break,
+what counts as the middle. `stripDropAt` answers which GAP between tabs, by
+midpoint, which is what makes it total: every x belongs to exactly one gap, so
+there is no dead band where a drop degrades into appending.
 
-The React test stubs geometry and therefore covers **wiring only**, and says so.
-A test that stubs the thing it is checking proves nothing, and drag-and-drop is
-mostly geometry.
+**The strip is tested before the panel.** It sits inside the panel's own top
+edge band, so `dropZoneAt` alone reads a drop between two tabs as "split this
+cell upwards". A strip drop draws a caret at the gap rather than washing half
+the cell, which would say the wrong thing.
+
+`useLayoutDrag` is the DOM half and is deliberately dumb. The React test stubs
+geometry and therefore covers **wiring only**, and says so. A test that stubs
+the thing it is checking proves nothing, and drag-and-drop is mostly geometry.
 
 Pointer events, not HTML5 DnD — for pointer capture, so releasing outside the
-window ends the drag instead of leaving it stuck on.
+window ends the drag instead of leaving it stuck on. Escape cancels, from a
+`window` listener: capture routes pointer events to the tab and does nothing for
+the keyboard. It clears `pendingRef` as well as the drag state, because the drag
+is rebuilt from `pending` on every move and clearing only what is on screen lets
+the next pixel of movement resume it.
 
 **The in-flight drag is React state, never MST.** It is transient UI; putting it
 in the session would put every intermediate hover into the undo history.
+
+**`index` counts the strip the user is looking at.** `moveTabToPanel` adjusts
+for its own remove-then-insert, because within one panel the two orderings
+differ exactly when the tab starts left of the gap it was dropped in — dragging
+A to the gap between B and C in `[A, B, C]` is index 2 on screen and index 1
+once A is out. Across panels there is no shift.
+
+## Only the shown tab is mounted, and that is the constraint, not an oversight
+
+`PanelView` renders the active tab's content and nothing else. Next to
+dockview's always-mounted panels that reads as a gap to close, and closing it
+would break the thing it looks like it would help: each display costs a WebGL2
+context, the ceiling is 16, and `useViewVisibility` already tears views down
+when they scroll off — see `agent-docs/reference/GPU_CONTEXT_BUDGET.md`.
+
+It is also why the tab strip activates **manually** from the keyboard (arrows
+move focus, Enter/Space shows). Automatic activation is the more common reading
+of the WAI tabs pattern, and its documented exception is exactly this: arrowing
+across five tabs would build and tear down five sets of views in passing.
+
+## Keyboard: the strip is one tab stop, the splitter is operable
+
+A roving tabindex, so a panel with eight tabs is one stop rather than eight
+between the user and the view. `role="tablist"` wraps the tabs **alone** — a
+tablist's children have to be tabs, and the panel's own +/× buttons are not. The
+splitter is focusable and takes the arrows, Home and End, moving 2% of the pair
+per press: the same "within the pair either side of it" rule the drag follows.
+Both roles were being claimed before any of this existed, which is worse than
+plain divs — an affordance announced and then not there.
 
 ## Undo is `applySnapshot`, and nothing has to be told
 
@@ -158,10 +198,16 @@ A capability-detecting caller cannot tell you it lost a capability.
 ## Closing a tab or a panel closes its views
 
 The layout does not own views, so the two go together explicitly at the call
-site: `WorkspaceTab`'s close and `WorkspacePanelActions`' close both
+site: `WorkspaceContainer`'s `closeTab` and `WorkspacePanelActions`' close both
 `session.removeView` the views first, then drop the tab or the cell. Homing runs
 in the other direction only — `homeUnassignedViews` puts a newly launched view
 somewhere and drops members the session no longer has, and nothing reads back.
+
+`closeTab` is **one function with two callers** — the tab's own ⋮ menu and
+middle-clicking the tab — rather than the pair spelled out at each. Spelled
+twice, one of them ends up dropping the tab and leaving its views in the session
+forever, which nothing reports. `WorkspaceTab` and `PanelView` therefore take a
+close callback rather than building one; neither knows what a view is.
 
 ## `@jbrowse/react-app2/styles.css` is intentionally empty
 

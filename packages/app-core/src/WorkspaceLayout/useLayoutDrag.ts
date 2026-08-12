@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { dropZoneAt, splitForZone, stripDropAt } from './dropZone.ts'
 
@@ -140,6 +140,33 @@ export function useLayoutDrag(layout: WorkspaceLayout): TabDragHandlers & {
     },
     [drag, layout],
   )
+
+  /**
+   * Escape abandons an in-flight drag.
+   *
+   * On `window`, because pointer capture routes POINTER events to the tab and
+   * does nothing for the keyboard — focus is wherever it was when the drag
+   * started, which is usually not the tab.
+   *
+   * Clearing `pendingRef` as well as the drag state is the part that matters:
+   * the drag is rebuilt from `pending` on every move, so cancelling the visible
+   * state alone would let the next pixel of movement resume it.
+   */
+  useEffect(() => {
+    if (!drag) {
+      return
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        pendingRef.current = undefined
+        setDrag(undefined)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [drag])
 
   return { drag, onTabPointerDown, onTabPointerMove, onTabPointerUp }
 }

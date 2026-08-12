@@ -1,11 +1,11 @@
 import { tabDisplayName } from './WorkspaceTab.tsx'
 
-import type { DockviewSessionType } from '../ui/App/types.ts'
+import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 
 const session = {
   assemblyManager: { getDisplayName: (n: string) => `${n}!` },
-} as unknown as DockviewSessionType
+} as unknown as WorkspaceSessionType
 
 const view = (v: Partial<AbstractViewModel>) => v as AbstractViewModel
 const tab = (title?: string) => ({ id: 't', viewIds: [], title })

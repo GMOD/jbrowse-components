@@ -10,7 +10,7 @@ import { observer } from 'mobx-react'
 
 import { dv } from './dockviewTheme.ts'
 
-import type { DockviewSessionType } from '../ui/App/types.ts'
+import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
 import type { PanelNode } from './tree.ts'
 
@@ -41,7 +41,7 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
   session,
 }: {
   panel: PanelNode
-  session: DockviewSessionType & WorkspaceLayout
+  session: WorkspaceSessionType & WorkspaceLayout
 }) {
   const { classes } = useStyles()
   const canClose = session.panels.length > 1

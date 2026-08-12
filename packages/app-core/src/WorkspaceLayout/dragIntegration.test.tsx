@@ -27,10 +27,12 @@ const TestSession = types.compose(
 const Harness = observer(function Harness({
   session,
   tabMenu,
+  onTabClose,
 }: {
   session: ReturnType<typeof TestSession.create>
   /** draw the real per-tab menu in the label, as `WorkspaceContainer` does */
   tabMenu?: boolean
+  onTabClose?: (tabId: string) => void
 }) {
   const { drag, ...dragHandlers } = useLayoutDrag(session)
   return (
@@ -39,6 +41,7 @@ const Harness = observer(function Harness({
       layout={session}
       drag={drag}
       dragHandlers={dragHandlers}
+      onTabClose={onTabClose}
       renderTabLabel={tab => (
         <>
           <span data-testid={`tab-${tab.id}`}>{tab.id}</span>
@@ -109,7 +112,7 @@ beforeAll(() => {
   Element.prototype.releasePointerCapture = () => {}
 })
 
-function setup(tabMenu?: boolean) {
+function setup(tabMenu?: boolean, onTabClose?: (tabId: string) => void) {
   const session = TestSession.create({ name: 't' })
   const left = session.panels[0]!.id
   const tabA = session.tabs[0]!.id
@@ -122,9 +125,85 @@ function setup(tabMenu?: boolean) {
     [left]: { left: 0, top: 0, width: 400, height: 400 } as DOMRect,
     [right]: { left: 400, top: 0, width: 400, height: 400 } as DOMRect,
   })
-  const { container } = render(<Harness session={session} tabMenu={tabMenu} />)
+  const { container } = render(
+    <Harness session={session} tabMenu={tabMenu} onTabClose={onTabClose} />,
+  )
   return { session, left, right, tabA, container }
 }
+
+// Pointer capture routes POINTER events to the tab and does nothing for the
+// keyboard, so the listener is on `window` — focus during a drag is wherever it
+// was when the drag started, which is not the tab.
+test('Escape abandons a drag in flight, and it does not resume', () => {
+  const { session, left, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeTruthy()
+
+  act(() => {
+    fireEvent.keyDown(window, { key: 'Escape' })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+  // the drag is rebuilt from `pending` on every move, so cancelling only what
+  // is on screen would let the next pixel of movement bring it back
+  act(() => {
+    fireEvent.pointerMove(tab, { clientX: 650, clientY: 220 })
+    fireEvent.pointerUp(tab, { clientX: 650, clientY: 220 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+  expect(session.findTab(tabA)?.panel.id).toBe(left)
+  expect(session.panels).toHaveLength(2)
+})
+
+describe('middle-click closes a tab', () => {
+  // RTL has no `fireEvent.auxClick`, and `auxclick` is the event React's
+  // `onAuxClick` listens for — a plain `click` never carries button 1
+  const auxClick = (el: Element, button: number) =>
+    fireEvent(
+      el,
+      new MouseEvent('auxclick', { button, bubbles: true, cancelable: true }),
+    )
+
+  test('the middle button closes rather than dragging', () => {
+    const closed: string[] = []
+    const { session, tabA } = setup(false, id => closed.push(id))
+    const tab = screen.getByTestId(`tab-${tabA}`)
+    const before = session.panels.map(p => p.id)
+
+    act(() => {
+      fireEvent.pointerDown(tab, { button: 1, clientX: 10, clientY: 10 })
+      // a middle-press that wanders must not become a drag
+      fireEvent.pointerMove(tab, { button: 1, clientX: 600, clientY: 200 })
+    })
+    expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+    act(() => {
+      auxClick(tab, 1)
+    })
+
+    expect(closed).toEqual([tabA])
+    // the handler reports; the CALLER closes, because closing a tab also has to
+    // close its views and the layout does not own them
+    expect(session.panels.map(p => p.id)).toEqual(before)
+  })
+
+  test('the right button does nothing, so the context menu is left alone', () => {
+    const closed: string[] = []
+    const { tabA } = setup(false, id => closed.push(id))
+    const tab = screen.getByTestId(`tab-${tabA}`)
+
+    act(() => {
+      auxClick(tab, 2)
+    })
+
+    expect(closed).toEqual([])
+  })
+})
 
 test('dragging a tab into the middle of another cell moves it there', () => {
   const { session, right, tabA } = setup()
