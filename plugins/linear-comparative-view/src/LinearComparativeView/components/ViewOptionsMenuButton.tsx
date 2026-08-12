@@ -1,3 +1,4 @@
+import { searchBoxPrefsMenuItems } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -13,8 +14,6 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model: LinearComparativeViewModel
   prefs: SearchBoxPrefs
 }) {
-  const { showSearchBoxes, setShowSearchBoxes, sideBySide, setSideBySide } =
-    prefs
   return (
     <CascadingMenuButton
       tooltip="View options"
@@ -33,35 +32,7 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
           icon: VisibilityIcon,
           subMenu: [
             ...model.showMenuItems(),
-            {
-              label: 'Show search boxes',
-              type: 'checkbox' as const,
-              checked: showSearchBoxes,
-              onClick: () => {
-                setShowSearchBoxes(!showSearchBoxes)
-              },
-            },
-            {
-              label: 'Search box orientation',
-              subMenu: [
-                {
-                  label: 'Side-by-side',
-                  type: 'radio' as const,
-                  checked: sideBySide,
-                  onClick: () => {
-                    setSideBySide(true)
-                  },
-                },
-                {
-                  label: 'Vertical',
-                  type: 'radio' as const,
-                  checked: !sideBySide,
-                  onClick: () => {
-                    setSideBySide(false)
-                  },
-                },
-              ],
-            },
+            ...searchBoxPrefsMenuItems(prefs),
           ],
         },
       ]}

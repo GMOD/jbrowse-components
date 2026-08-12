@@ -43,7 +43,11 @@ export { default as AssemblySelector } from './AssemblySelector.tsx'
 export { useAssemblySelection } from './useAssemblySelection.ts'
 export { useRecentLocations } from './useRecentLocations.ts'
 export type { RecentLocation } from './useRecentLocations.ts'
-export { type SearchBoxPrefs, useSearchBoxPrefs } from './useSearchBoxPrefs.ts'
+export {
+  type SearchBoxPrefs,
+  searchBoxPrefsMenuItems,
+  useSearchBoxPrefs,
+} from './useSearchBoxPrefs.ts'
 export {
   ADORNMENT_RESERVE_PX,
   HELP_BUTTON_RESERVE_PX,

@@ -1,4 +1,4 @@
-import { useSearchBoxPrefs } from '@jbrowse/core/ui'
+import { searchBoxPrefsMenuItems, useSearchBoxPrefs } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import LinkIcon from '@mui/icons-material/Link'
@@ -47,8 +47,8 @@ const Header = observer(function Header({
 }) {
   const { classes } = useStyles()
   const { views } = model
-  const { showSearchBoxes, setShowSearchBoxes, sideBySide, setSideBySide } =
-    useSearchBoxPrefs('bsv', views.length)
+  const prefs = useSearchBoxPrefs('bsv', views.length)
+  const { showSearchBoxes, sideBySide } = prefs
   return (
     <div className={classes.header}>
       <div className={classes.buttons}>
@@ -88,37 +88,7 @@ const Header = observer(function Header({
         <CascadingMenuButton
           size="small"
           title="Display settings"
-          menuItems={() => [
-            {
-              label: 'Show search boxes',
-              type: 'checkbox',
-              checked: showSearchBoxes,
-              onClick: () => {
-                setShowSearchBoxes(!showSearchBoxes)
-              },
-            },
-            {
-              label: 'Search box orientation',
-              subMenu: [
-                {
-                  label: 'Side-by-side',
-                  type: 'radio',
-                  checked: sideBySide,
-                  onClick: () => {
-                    setSideBySide(true)
-                  },
-                },
-                {
-                  label: 'Stacked',
-                  type: 'radio',
-                  checked: !sideBySide,
-                  onClick: () => {
-                    setSideBySide(false)
-                  },
-                },
-              ],
-            },
-          ]}
+          menuItems={() => searchBoxPrefsMenuItems(prefs)}
         >
           <TuneIcon />
         </CascadingMenuButton>
