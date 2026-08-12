@@ -179,9 +179,9 @@ the frame is a count of records rather than a span of chromosome: widen it and
 the extra columns are as wide as the informative ones. The build script prints
 which sites actually separate the two size classes, a minority of those in the
 slice, and this window is that span with a margin of undifferentiated flank on
-each side. That flank is not padding. It is what the Fst lane needs in order to
-show a run rather than a level: framed on the differentiated sites alone, every
-point in view is high and nothing says where the signal starts or stops.
+each side. That flank is what the Fst lane needs in order to show a run rather
+than a level: framed on the differentiated sites alone, every point in view is
+high and nothing says where the signal starts or stops.
 
 Clustering reads the region on screen, so where you run it matters as much as
 what you frame afterwards: over the whole window the separating columns are

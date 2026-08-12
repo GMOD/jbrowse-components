@@ -248,10 +248,7 @@ Shepherd. So the alleles say plainly that they are wolves while the painting
 says half dog, and this tutorial does not resolve which part of the inference
 gives way: the two measurements ask different questions, one about alleles one
 at a time and one about whole haplotypes matched against a panel of
-twenty-eight. What it does settle is which way to read the disagreement. Where a
-painting and the raw alleles disagree, the painting is the model's answer, and
-the reason to run the cruder measurement at all is that it has no model to be
-the answer of.
+twenty-eight.
 
 ### What the two wolf-like breeds do
 

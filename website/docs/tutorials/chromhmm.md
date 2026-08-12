@@ -250,9 +250,8 @@ takes one `{ match, group, color }` per Roadmap tissue group, tints each
 matching row's sidebar swatch and keys it beside the state colors. The build
 script writes those entries from the `GROUP` and `COLOR` columns of the same
 `EID_metadata.tab` the labels come from, so nothing about the assignment is
-hand-made. Reading the stripe down the clustered blocks is then the point: the
-tissue is an axis the clustering never saw, so where the two agree it is the
-data saying so and not the ordering.
+hand-made. The tissue is an axis the clustering never saw, so where the stripe
+and the blocks agree it is the data saying so and not the ordering.
 
 ## Reproduce it end to end
 
