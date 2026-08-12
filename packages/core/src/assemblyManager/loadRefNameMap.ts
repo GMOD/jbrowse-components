@@ -49,9 +49,29 @@ export async function loadRefNameMap(
       // stopToken intentionally not passed, fixes issues like #2221.
       // alternative fix #2540 was proposed but non-working currently
       stopToken: undefined,
-      // statusCallback IS forwarded (unlike stopToken): the data adapter's index
-      // download happens here during refname mapping (getRefNames -> setup), so
-      // this is the only place its "Downloading index" progress can surface.
+      // Forwarded rather than dropped (unlike stopToken above), because the
+      // adapter's index download happens here during refname mapping
+      // (getRefNames -> setup) and this is the only place its "Downloading
+      // index" progress could surface.
+      //
+      // **Latent: no production caller supplies one, so it is always undefined
+      // and that progress never surfaces.** Don't read the forwarding as
+      // evidence the status works — if you are here because an index download
+      // reports nothing, this is why. `renameRegionsForAdapter` and
+      // circular-view's chord display build their opts literally
+      // (`{ sessionId }`, `{ stopToken, sessionId }`); `renameRegionsIfNeeded`
+      // forwards the RPC args, and `BaseRpcDriver.call` destructures
+      // `statusCallback` off *before* calling `serializeArguments`, since
+      // everything reaching the worker has to be structured-cloneable.
+      //
+      // Making it real is not the one-liner it looks like, and the blocker is
+      // the memoization, not the plumbing. Passing the whole args in and
+      // stripping the callback off the *result* would leave the wire payload
+      // identical and light this up for every RPC — but
+      // `getRefNameMapForAdapter` caches one promise per adapter-config key, so
+      // the first caller donates its callback to everyone who later awaits that
+      // entry, including callers whose display is already being torn down.
+      // Publish per-waiter, or guard at the display end, before wiring it.
       statusCallback: options.statusCallback,
     },
     { timeout: 1000000 },
