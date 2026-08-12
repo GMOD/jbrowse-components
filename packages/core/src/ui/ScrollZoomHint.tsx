@@ -3,7 +3,7 @@ import { Button, Fade, Paper, Typography } from '@mui/material'
 import { createPortal } from 'react-dom'
 
 import { makeStyles } from '../util/tss-react/index.ts'
-import { HINT_ATTR } from '../util/usePanZoom.ts'
+import { SCROLL_ZOOM_HINT_ATTR } from '../util/usePanZoom.ts'
 import { MUI_TOOLTIP_Z_INDEX } from './zIndexes.ts'
 
 // roughly half the prompt's width and its height, used only to keep it clear of
@@ -80,7 +80,9 @@ function ScrollZoomHint({
           left: `clamp(${HALF_WIDTH}px, ${at.x}px, calc(100vw - ${HALF_WIDTH}px))`,
           top: `clamp(0px, ${at.y + CURSOR_GAP}px, calc(100vh - ${HEIGHT}px))`,
         }}
-        {...{ [HINT_ATTR]: '' }}
+        // the marker that tells the dismiss-on-a-press-elsewhere listener that
+        // a press landing here is aimed at the button below, not at the app
+        {...{ [SCROLL_ZOOM_HINT_ATTR]: '' }}
         // `mousemove`, not `mouseenter`: the prompt is drawn just below the
         // cursor and near the bottom of the window it is clamped up *onto* it,
         // so it routinely appears under a pointer that never moved. An enter

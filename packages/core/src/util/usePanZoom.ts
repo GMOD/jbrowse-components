@@ -113,7 +113,7 @@ const HINT_MAX_MS = 15000
  * rather than a ref because the state hook doesn't render the prompt — the host
  * does, and there are two of them (core's card, an embedder's caption).
  */
-export const HINT_ATTR = 'data-scroll-zoom-hint'
+export const SCROLL_ZOOM_HINT_ATTR = 'data-scroll-zoom-hint'
 
 // Quiet needed after a wheel before its verdict is taken. Same idiom (and order
 // of magnitude) as wheelZoom's ZOOM_ACTIVE_WINDOW_MS and scrollLatch's
@@ -239,18 +239,13 @@ export function useScrollZoomHintState({
     }
   }, [])
 
-  function restartLinger() {
-    clearTimeout(lingerTimer.current)
-    lingerTimer.current = setTimeout(() => {
-      shown.current = false
-      setShow(false)
-    }, lingerMs)
-  }
-
+  // Every way the prompt goes down runs through here — the linger expiring, the
+  // backstop, escape, the host's own button. One exit path, so none of them can
+  // leave a timer or the hold behind for the next raise to trip over.
   function dismiss() {
     clearTimeout(lingerTimer.current)
     clearTimeout(maxTimer.current)
-    // a verdict still pending would raise the prompt again a moment after it
+    // a verdict still settling would raise the prompt again a moment after it
     // was dismissed, which reads as the dismissal not having worked
     clearTimeout(settleTimer.current)
     shown.current = false
@@ -259,6 +254,11 @@ export function useScrollZoomHintState({
     // and the next prompt can't be kept up by wheeling on
     held.current = false
     setShow(false)
+  }
+
+  function restartLinger() {
+    clearTimeout(lingerTimer.current)
+    lingerTimer.current = setTimeout(dismiss, lingerMs)
   }
 
   // the wheel has gone quiet: if nothing scrolled around the time of the last
@@ -275,7 +275,6 @@ export function useScrollZoomHintState({
     setMounted(true)
     setShow(true)
     restartLinger()
-    clearTimeout(maxTimer.current)
     maxTimer.current = setTimeout(dismiss, HINT_MAX_MS)
     onShow?.()
   }
@@ -302,65 +301,64 @@ export function useScrollZoomHintState({
   // stable, so the listeners below bind once per raise rather than every render
   const dismissNow = useEventCallback(dismiss)
 
-  // While it is up, take it down at the first sign the user is done with it —
-  // and bound only to `show`, so a view that has never hinted binds nothing.
+  // While it is up, take it down at the first sign the user is done with it.
+  // Bound only while `show`, so a view that has never hinted binds nothing.
   //
-  // The timers alone are not enough. Each of these is a case where the prompt
-  // has outlived its moment but no timer is going to notice: the pointer that
-  // holds it open never fires its `mouseleave` (the tab was switched, the card
-  // moved out from under a resting cursor), or the timer is running fine and
-  // the user has simply moved on and wants it gone now.
+  // The timers are not enough on their own. Each of these is a moment the
+  // prompt has outlived and no timer can see: the pointer holding it open never
+  // fires its `mouseleave` (the tab was switched away, or the card was drawn
+  // under a cursor that then stopped moving), or the user has simply moved on
+  // and wants it gone now rather than in a few seconds.
   useEffect(() => {
     if (!show) {
       return
     }
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+    const onKeyDown = (event: Event) => {
+      if (event instanceof KeyboardEvent && event.key === 'Escape') {
         dismissNow()
       }
     }
-    const onPointerDown = (event: PointerEvent) => {
+    const onPointerDown = (event: Event) => {
       // a press on the prompt itself is aimed at its button — dismissing here
       // would unmount it before the click landed
       if (
         !(
           event.target instanceof Element &&
-          event.target.closest(`[${HINT_ATTR}]`)
+          event.target.closest(`[${SCROLL_ZOOM_HINT_ATTR}]`)
         )
       ) {
         dismissNow()
       }
     }
-    const onWheel = (event: WheelEvent) => {
-      // they did the thing it asked for: the prompt has been read and has
-      // nothing left to say, so it shouldn't sit over the zoom it just taught
-      if (event.ctrlKey || event.metaKey) {
+    const onWheel = (event: Event) => {
+      // they did the thing it asked for, so it has nothing left to say and no
+      // business sitting over the zoom it just taught
+      if (event instanceof WheelEvent && (event.ctrlKey || event.metaKey)) {
         dismissNow()
       }
     }
-    // A backgrounded tab is the way `held` gets stuck for good: the pointer is
-    // on the card, the user switches away, and the `mouseleave` that would
-    // release it is never dispatched. Also the moment nobody is looking, which
-    // is the other reason to spend the prompt now rather than on their return.
-    const onHide = () => {
-      dismissNow()
+    // `visibilitychange` and `blur` both dismiss outright in either direction:
+    // a backgrounded tab is how the pointer hold gets stuck for good (the
+    // `mouseleave` is never dispatched), and a prompt nobody was there to read
+    // has no second showing coming to it.
+    const bindings: [EventTarget, string, EventListener][] = [
+      [document, 'keydown', onKeyDown],
+      [document, 'pointerdown', onPointerDown],
+      [document, 'wheel', onWheel],
+      [document, 'visibilitychange', dismissNow],
+      [window, 'blur', dismissNow],
+    ]
+    // capture, so a handler inside the app that stops propagation can't hide a
+    // dismissal from us; passive, since none of these preventDefault. Shared by
+    // both loops — a remove whose options disagree leaves the listener bound.
+    const opts = { capture: true, passive: true }
+    for (const [target, type, handler] of bindings) {
+      target.addEventListener(type, handler, opts)
     }
-    document.addEventListener('keydown', onKeyDown)
-    document.addEventListener('pointerdown', onPointerDown, { capture: true })
-    document.addEventListener('wheel', onWheel, {
-      capture: true,
-      passive: true,
-    })
-    window.addEventListener('blur', onHide)
-    document.addEventListener('visibilitychange', onHide)
     return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      document.removeEventListener('pointerdown', onPointerDown, {
-        capture: true,
-      })
-      document.removeEventListener('wheel', onWheel, { capture: true })
-      window.removeEventListener('blur', onHide)
-      document.removeEventListener('visibilitychange', onHide)
+      for (const [target, type, handler] of bindings) {
+        target.removeEventListener(type, handler, opts)
+      }
     }
   }, [show, dismissNow])
 
@@ -394,10 +392,17 @@ export function useScrollZoomHintState({
      * released by an event that doesn't always arrive.
      */
     setZoomHintHeld: (value: boolean) => {
+      if (!shown.current) {
+        // A hold taken while it isn't up would never be released: the card is
+        // still in the DOM through its fade-out and can be moved over there,
+        // and nothing is running to time it out. It would then suppress the
+        // *next* raise's keep-alive instead of this one's.
+        return
+      }
       held.current = value
       if (value) {
         clearTimeout(lingerTimer.current)
-      } else if (shown.current) {
+      } else {
         restartLinger()
       }
     },

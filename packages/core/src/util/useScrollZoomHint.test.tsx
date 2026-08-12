@@ -2,7 +2,7 @@ import { useRef } from 'react'
 
 import { act, render } from '@testing-library/react'
 
-import { HINT_ATTR, useScrollZoomHint } from './usePanZoom.ts'
+import { SCROLL_ZOOM_HINT_ATTR, useScrollZoomHint } from './usePanZoom.ts'
 
 // The wheel decision matrix belongs to wheelZoom.test and the drag half to
 // usePanZoom.test; what is tested here is the second gate — that the prompt
@@ -247,6 +247,21 @@ test('a held prompt still goes away eventually', () => {
   expect(el.textContent).toBe('')
 })
 
+test('a hold taken while it is down is ignored', () => {
+  const { el } = setup()
+  // the card is still in the DOM through its fade-out, so the pointer can
+  // reach it after the prompt is logically gone
+  act(() => {
+    held(true)
+  })
+  wheel(el)
+  settle()
+  expect(el.textContent).toBe('hint')
+  // that stale hold must not be keeping this raise alive
+  advance(LINGER_MS)
+  expect(el.textContent).toBe('')
+})
+
 test('escape takes it down', () => {
   const { el } = setup()
   wheel(el)
@@ -265,7 +280,7 @@ test('a press anywhere else takes it down, a press on it does not', () => {
 
   // the prompt's own element, marked so its button's press isn't a dismissal
   const card = document.createElement('div')
-  card.setAttribute(HINT_ATTR, '')
+  card.setAttribute(SCROLL_ZOOM_HINT_ATTR, '')
   document.body.append(card)
   act(() => {
     card.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
