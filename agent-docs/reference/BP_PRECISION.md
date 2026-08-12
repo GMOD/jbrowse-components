@@ -191,6 +191,50 @@ build geometry: dotplot builds on the main thread, so it has a seam between the
 data and the vertex buffer; synteny builds in the worker, where the geometry
 object **is** the RPC payload and no seam exists. ADR-067 has the reasoning.
 
+### Why there is a Float64 stage at all
+
+Both plugins hold absolute cumBp in **Float64** before the subtraction, and that
+is a precision requirement rather than a leftover. It is easy to read
+"window-relative Float32" as meaning the pipeline is Float32 throughout and the
+wide arrays are dead weight; it is the other way round.
+
+**The subtraction is what cancels the genome-scale magnitude, so it can only do
+that while the magnitude is still exact.** Narrow cumBp to Float32 first and the
+rounding has already happened *at genome scale* — ~256 bp at 3 Gbp, per the
+opening of this doc — so `cumBp − base` returns a small number that is precisely
+wrong, and no later arithmetic recovers it. Doing the difference in Float64 and
+narrowing the *result* is the whole trick: the answer is sub-pixel before it ever
+meets a 24-bit mantissa.
+
+uint32 is not the alternative it looks like. The `< 2³²` rule is **per
+chromosome** ([Genome-size limits](#genome-size-limits)); cumBp is whole-assembly
+and overflows it on a large one. Float64 is the only representation that is both
+wide enough to hold cumBp and exact enough (integers to 2⁵³) for the difference
+to be right.
+
+Both halves are pinned, and the dotplot one is the direct test of this property:
+`dotplotPrecision.test.ts` ("window-relative Float32 upload is sub-pixel vs
+absolute Float64") reproduces the upload and the shader's reconstruction at a
+base of 8×10⁸ and compares it against the exact float64 answer;
+`buildSyntenyGeometry.precision.test.ts` ("on-screen corner at genome scale is
+stored window-relative + sub-pixel") asserts at a 1.5 Gbp locus that the stored
+corner is small-magnitude and still reconstructs to the right screen X. A change
+that narrowed earlier would fail them.
+
+Where each stage lives:
+
+| | absolute Float64 cumBp | subtracts the base |
+| --- | --- | --- |
+| synteny | `executeSyntenyFeaturesAndPositions` → `p11_cumBp`…`p22_cumBp` (+ `queryGridAnchors`) | `buildSyntenyGeometry`, into the Float32 `bp1`…`bp4` |
+| dotplot | `dotplotGeometry`'s `buildLineSegments` → `x1`/`y1`/`x2`/`y2`, kept absolute through the model | `instanceInterleave`, at GPU upload only |
+
+**The trap next door:** the `Uint32Array`s sitting beside synteny's Float64
+corners — `starts` / `ends` / `mateStarts` / `mateEnds` — are chromosome-**local**
+feature coords, carried for the feature-detail panel and the min-length cull.
+They are not the drawn positions and are not in the same space. Reaching for them
+because they are the ones that look like plain coordinates is the mistake the
+comment above them exists to prevent.
+
 ### Should synteny adopt dotplot's shape? Asked, declined on bytes
 
 Synteny is the one that puts relative coordinates into the data model and across
