@@ -320,7 +320,8 @@ for each display type the track supports.
 
 ## Reading config values
 
-The full signatures for `getConf` and `readConfObject` are in the
+Which reader you want follows from what you are holding and what the slot is.
+The full signatures are in the
 [configuration API reference](/docs/api/core-configuration).
 
 Use `getConf` when you hold a **state model** that has a `.configuration` member
@@ -376,6 +377,24 @@ have a raw config and should call `readConfObject` instead of `getConf`.
 Both accept a path array for nested access —
 `getConf(self, ['adapter', 'sequenceAdapter'])`, or the adapter form shown under
 [configuration internals](#configuration-internals) below.
+
+Use [`resolveConf`](/docs/api/core-configuration#resolveconf) on a
+**promotable** slot, and only there. `getConf` stays raw, so it returns the
+`undefined` inherit sentinel along with the real values — a type you cannot hand
+to a consumer expecting a real setting, which is how the compiler points at the
+read that should have been `resolveConf`. Never silence that with
+`?? someDefault`: it bypasses the cascade rather than walking it. `resolveConf`
+throws on a plain slot for the mirror-image reason — there is no cascade to
+walk.
+
+Writes go through [`setConf`](/docs/api/core-configuration#setconf), not a bare
+`self.configuration.setSlot('x', v)`. `setConf` constrains the slot name against
+the schema the same way `getConf` does, so on a model whose schema is concrete a
+typo is a compile error. `setSlot` takes a plain `string` and cannot do that; it
+throws at runtime instead, naming the slots the schema does declare. That
+runtime check is the backstop for the writes the compile-time one cannot see —
+anything through a mixin or a widened factory, where the concrete schema is
+erased.
 
 ## ConfigurationReference
 
