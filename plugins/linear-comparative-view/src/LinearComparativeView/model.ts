@@ -317,7 +317,21 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       reconcileLevels() {
         while (self.levels.length < self.views.length - 1) {
-          self.levels.push(cast({ level: self.levels.length }))
+          self.levels.push(
+            cast({
+              level: self.levels.length,
+              // A band added to a stack that already has one matches its
+              // neighbour rather than arriving at the type's 100px default.
+              // The default is only ever right for the first level: past that
+              // the stack has already been given a height — the band budget
+              // `autoScaleLevelHeights` split across it, or one the user
+              // dragged — and a level materialized at 100 among 64s reads as a
+              // mis-sized row. Growth doesn't re-split the budget (that would
+              // discard a hand-resize); "Auto-scale level heights" re-applies
+              // it on demand.
+              height: self.levels.at(-1)?.height,
+            }),
+          )
         }
         while (self.levels.length > Math.max(self.views.length - 1, 0)) {
           self.levels.pop()
