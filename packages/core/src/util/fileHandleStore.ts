@@ -53,6 +53,17 @@ let counter = 0
  * for the same file. Bounded the way the autosaved sessions are — keep the
  * newest N, drop the rest.
  *
+ * "Newest" is FIRST-picked, not last-used, and the two genuinely differ here.
+ * An id is minted once and then reused: `findStoredHandleId` hands the original
+ * id back on every re-pick, precisely so the row count tracks the number of
+ * distinct files rather than the number of times they were reopened. The id
+ * carries its mint time, so a file opened daily since January ages from
+ * January, and is evicted ahead of one picked once last week. That is the
+ * tradeoff and not an oversight: re-minting on re-pick would refresh the age
+ * but orphan every stored FileHandleLocation naming the old id, and pruning on
+ * true last-use would mean storing a timestamp beside the handle, which is a
+ * schema version bump for a store whose worst case is one re-pick.
+ *
  * Losing an old handle costs a re-pick, which is the same thing that happens
  * when the browser drops its permission, and never the data: a FileHandleLocation
  * that cannot be resolved is reported by ensureFileHandleReady and offered back
@@ -60,14 +71,18 @@ let counter = 0
  */
 const MAX_STORED_HANDLES = 200
 
-/** the `Date.now()` a `fh<ms>-<n>` id was minted at, or 0 for anything else */
+/**
+ * The `Date.now()` a `fh<ms>-<n>` id was minted at, or 0 for anything else.
+ * Minted at FIRST pick and never refreshed — see MAX_STORED_HANDLES for why
+ * this is the file's age rather than its last use.
+ */
 function handleIdTime(id: string) {
   return +(/^fh(\d+)-/.exec(id)?.[1] ?? 0)
 }
 
 /**
- * Which stored handles the pruner drops: everything past the newest
- * MAX_STORED_HANDLES.
+ * Which stored handles the pruner drops: everything past the
+ * MAX_STORED_HANDLES first-picked most recently.
  *
  * Split out and exported for the same reason staleSessionIds is — jsdom has no
  * IndexedDB, so the transaction around it never runs under jest, and this is the

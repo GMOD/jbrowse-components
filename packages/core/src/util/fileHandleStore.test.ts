@@ -27,6 +27,17 @@ test('does not mutate the caller array', () => {
   expect(keys).toEqual(before)
 })
 
+// The tradeoff MAX_STORED_HANDLES documents. A re-pick reuses the original id
+// (findStoredHandleId hands it back), so reopening a file never reaches this
+// function at all: a file opened every day since its id was minted is dropped
+// ahead of one picked a single time yesterday. Pinned so the docstring and the
+// behaviour can't drift apart again.
+test('a re-picked file is not freshened — only mint time decides', () => {
+  const daily = 'fh1700000000000-0' // first picked long ago, reopened daily
+  const pickedOnce = ids(200, 1_800_000_000_000) // each picked once, recently
+  expect(staleHandleIds([daily, ...pickedOnce])).toEqual([daily])
+})
+
 test('ids in an unrecognized format sort oldest and are dropped first', () => {
   const keys = ['legacy-key', ...ids(200)]
   expect(staleHandleIds(keys)).toEqual(['legacy-key'])
