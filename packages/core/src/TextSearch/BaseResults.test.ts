@@ -17,6 +17,20 @@ test('create LocationResult', () => {
   expect(locationResult.getLocation()).toEqual('chr1:1-900')
 })
 
+// only the adapter can judge exactness — trix calls a hit exact when any
+// indexed attribute equals the query, which is not recoverable from the label
+// or the display string — so it rides on the result
+test('exactness defaults off and survives the constructor', () => {
+  expect(new BaseResult({ label: 'Apple3' }).isExact()).toBe(false)
+  expect(
+    new BaseResult({
+      label: 'Apple3',
+      displayString: 'Apple3 (rna-Apple3)',
+      exact: true,
+    }).isExact(),
+  ).toBe(true)
+})
+
 test('create RefSequenceResult', () => {
   const refSeqResult = new RefSequenceResult({
     refName: 'chr1',

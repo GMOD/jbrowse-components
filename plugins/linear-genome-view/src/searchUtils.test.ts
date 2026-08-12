@@ -90,6 +90,51 @@ describe('fetchResults refname matching', () => {
       }),
     ).toEqual(['ctgB'])
   })
+
+  // exactness rides on the hits so one unrestricted search answers both
+  // questions handleSelectedRegion asks
+  describe('exactness tagging', () => {
+    const exactness = async (queryString: string, assembly: Assembly) =>
+      Object.fromEntries(
+        (await fetchResults({ queryString, assemblyName, assembly })).map(r => [
+          r.getLabel(),
+          r.isExact(),
+        ]),
+      )
+
+    it('tags the whole-name match and not its prefixes', async () => {
+      expect(
+        await exactness('chr1', fakeAssembly(['chr1', 'chr10', 'chr11'])),
+      ).toEqual({ chr1: true, chr10: false, chr11: false })
+    })
+
+    it('an alias matching exactly makes its canonical refname exact', async () => {
+      // the canonical name is ctgB, which is not the query — but contigB is,
+      // and that is the name the user typed
+      expect(
+        await exactness(
+          'contigb',
+          fakeAssembly(['contigB', 'contigBravo'], {
+            contigB: 'ctgB',
+            contigBravo: 'ctgB',
+          }),
+        ),
+      ).toEqual({ ctgB: true })
+    })
+
+    it('collapsing an exact and an inexact alias keeps the hit exact', async () => {
+      // scan order must not decide it: contigBravo is inexact and lands first
+      expect(
+        await exactness(
+          'contigb',
+          fakeAssembly(['contigBravo', 'contigB'], {
+            contigB: 'ctgB',
+            contigBravo: 'ctgB',
+          }),
+        ),
+      ).toEqual({ ctgB: true })
+    })
+  })
 })
 
 describe('checkRef', () => {

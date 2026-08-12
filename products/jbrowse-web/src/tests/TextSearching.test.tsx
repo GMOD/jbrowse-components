@@ -186,3 +186,23 @@ test('an explicit grow reaches a feature hit, not only a locstring', async () =>
   // the default is still 20% either side for a search hit that asked for none
   expect(padded.visibleLocStrings).toBe('ctgA:1..10,590')
 }, 40_000)
+
+// A name that prefixes several features but equals none used to cost two reads
+// of the same index: an exact search, then the broad one on its miss. The
+// adapters answer 'exact' by filtering exactly the broad list, so the flag now
+// rides on the hits and one read answers both.
+test('enter reads the index once, exact miss or not', async () => {
+  const { session, view } = getTestSession()
+  view.setWidth(800)
+  const search = jest.spyOn(session.textSearchManager, 'search')
+
+  // "apple" prefixes Apple2/Apple3 and matches no attribute exactly
+  await view.navToLocString('apple', 'volvox')
+  expect(search).toHaveBeenCalledTimes(1)
+
+  // and the exact-hit path is still one read, as it always was
+  search.mockClear()
+  await view.navToLocString('eden.1', 'volvox')
+  expect(search).toHaveBeenCalledTimes(1)
+  expect(view.visibleLocStrings).toBe('ctgA:1..10,590')
+}, 40_000)

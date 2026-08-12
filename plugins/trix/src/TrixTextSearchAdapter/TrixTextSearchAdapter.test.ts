@@ -123,6 +123,26 @@ describe('TrixTextSearchAdapter', () => {
     expect(results[0]!.getLocation()).toEqual('ctgA:17400..23000')
   })
 
+  it('tags exactness on an unrestricted search, so one read answers both', async () => {
+    // the caller asks once and reads the flag rather than asking for exact
+    // hits and then, on a miss, for all of them — two reads of one index
+    const results = await adapter.searchIndex({ queryString: 'rna-Apple3' })
+    expect(results.filter(r => r.isExact()).map(r => r.getLabel())).toEqual([
+      'Apple3',
+    ])
+
+    // "apple" prefixes Apple2/Apple3 and equals no indexed attribute
+    const prefixOnly = await adapter.searchIndex({ queryString: 'apple' })
+    expect(prefixOnly.length).toBeGreaterThan(1)
+    expect(prefixOnly.some(r => r.isExact())).toBe(false)
+
+    // "eden" is a feature in its own right as well as a prefix of EDEN.1/.2/.3
+    const eden = await adapter.searchIndex({ queryString: 'eden' })
+    expect(eden.filter(r => r.isExact()).map(r => r.getLabel())).toEqual([
+      'EDEN',
+    ])
+  })
+
   it('drops a superseded query rather than formatting its hits', async () => {
     const stopToken = createStopToken()
     stopStopToken(stopToken)

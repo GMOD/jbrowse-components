@@ -115,24 +115,23 @@ export default class TrixTextSearchAdapter
             : `${label} (${context})`
 
         // exact match succeeds when any indexed attribute (name, id,
-        // description, ...) equals the query, so e.g. searching an ID works
+        // description, ...) equals the query, so e.g. searching an ID works.
+        // Carried on the result as well as filtered on: only this adapter can
+        // judge it, and a caller that has the flag can ask one unrestricted
+        // question instead of an exact one and then a broad one
         const exact = attrs.some(a => a.toLowerCase() === query)
 
-        return {
+        return new BaseResult({
+          locString: loc,
+          label,
+          displayString,
+          trackId,
           exact,
-          result: new BaseResult({
-            locString: loc,
-            label,
-            displayString,
-            trackId,
-          }),
-        }
+        })
       })
 
-    const matches =
-      args.searchType === 'exact'
-        ? formatted.filter(({ exact }) => exact)
-        : formatted
-    return matches.map(({ result }) => result)
+    return args.searchType === 'exact'
+      ? formatted.filter(r => r.isExact())
+      : formatted
   }
 }

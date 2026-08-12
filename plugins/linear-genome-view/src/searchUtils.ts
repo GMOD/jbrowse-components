@@ -183,24 +183,28 @@ export async function handleSelectedRegion({
   ) {
     await navToLocstrings()
   } else {
-    const search = (searchType: SearchType | undefined) =>
-      fetchResults({
-        queryString: input,
-        searchType,
-        assemblyName,
-        textSearchManager,
-        assembly,
-      })
-
-    // Exact first, so a precise name navigates straight to its feature instead
+    // Ask once, unrestricted, and read exactness off the hits. Prefer the
+    // exact ones so a precise name navigates straight to its feature instead
     // of opening a picker of everything it prefixes ("EDEN" must not pop a
-    // dialog for EDEN.1/.2/.3). But an exact miss is not a no-result: the
-    // autocomplete dropdown searched unrestricted, so anything it just listed
-    // has to be reachable here too. Without the retry, typing a name the
-    // dropdown had hits for (e.g. "apple" -> Apple2, Apple3) and pressing
-    // enter reported `No results found for "apple"`.
-    const exactResults = await search('exact')
-    const results = exactResults.length ? exactResults : await search(undefined)
+    // dialog for EDEN.1/.2/.3) — but an exact miss is not a no-result, since
+    // the autocomplete dropdown searched unrestricted and anything it just
+    // listed has to be reachable here too (typing "apple" and pressing enter
+    // once reported `No results found for "apple"` for a query the dropdown
+    // had two hits for).
+    //
+    // This used to be two searches, an exact one and then a broad one on the
+    // miss, which is two reads of the same index for the same query — the
+    // adapters answer 'exact' by filtering exactly this list. An adapter that
+    // tags nothing simply never wins the exact pass, which is the behaviour it
+    // had when it returned nothing for searchType: 'exact'.
+    const allResults = await fetchResults({
+      queryString: input,
+      assemblyName,
+      textSearchManager,
+      assembly,
+    })
+    const exactResults = allResults.filter(r => r.isExact())
+    const results = exactResults.length ? exactResults : allResults
 
     // the view may have been closed/detached while the text-search RPC ran
     if (!isAlive(model)) {
@@ -297,19 +301,24 @@ function searchRefNames(
   searchType?: SearchType,
 ) {
   const q = queryString.toLowerCase()
-  const canonicalHits = new Set<string>()
+  // canonical name -> whether any alias of it matched the query exactly, so
+  // "contigb" is an exact hit on ctgB even though the canonical name is not
+  // the query. Same collapsing as before, now carrying the flag through it
+  const canonicalHits = new Map<string, boolean>()
   for (const ref of assembly.allRefNames ?? []) {
     const lower = ref.toLowerCase()
-    const isMatch = searchType === 'exact' ? lower === q : lower.startsWith(q)
+    const exact = lower === q
+    const isMatch = searchType === 'exact' ? exact : lower.startsWith(q)
     if (isMatch) {
-      canonicalHits.add(assembly.getCanonicalRefName(ref) ?? ref)
+      const canonical = assembly.getCanonicalRefName(ref) ?? ref
+      canonicalHits.set(canonical, exact || !!canonicalHits.get(canonical))
       if (canonicalHits.size >= MAX_REFNAME_HITS) {
         break
       }
     }
   }
   return [...canonicalHits].map(
-    r => new RefSequenceResult({ label: r, refName: r }),
+    ([r, exact]) => new RefSequenceResult({ label: r, refName: r, exact }),
   )
 }
 

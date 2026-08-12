@@ -69,12 +69,16 @@ export default class JBrowse1TextSearchAdapter
                 label: typeof result === 'object' ? result.name : result,
               }),
           )),
+      // the bucket is keyed by the query, so everything in its `exact` list
+      // matched it exactly — which is what lets a caller ask once rather than
+      // asking for exact hits and then for all of them
       ...results.exact.map(
         ([name, trackIndex, , refName, start, end]) =>
           new BaseResult({
             locString: `${refName || name}:${start}-${end}`,
             label: name,
             trackId: tracks[trackIndex],
+            exact: true,
           }),
       ),
       // the index encodes an overflow bucket as a pseudo-hit; it is a message,

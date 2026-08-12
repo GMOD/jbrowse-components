@@ -53,6 +53,16 @@ export interface BaseTextSearchArgs {
 `searchType` is advisory — nothing enforces it, so an adapter that ignores
 `'exact'` simply returns its prefix hits and the ranker floats the exact one.
 
+**Prefer tagging exactness over filtering on it.** Set `exact: true` on the
+results that matched the query precisely (see the fields table below) and the
+search box gets what it needs from a single unrestricted search. Only the
+adapter can make that judgement — trix calls a hit exact when _any_ indexed
+attribute equals the query, so searching a feature's ID matches exactly even
+though neither the label nor the display string is the query — which is why it
+travels on the result rather than being recomputed by the caller. Honouring
+`searchType === 'exact'` as a filter still works and is what the built-ins do as
+well, but on its own it costs the search box two reads of one index.
+
 ## Implementing the adapter
 
 `JBrowse1TextSearchAdapter` is the smaller of the two built-ins and shows the
@@ -133,12 +143,16 @@ export default class JBrowse1TextSearchAdapter
                 label: typeof result === 'object' ? result.name : result,
               }),
           )),
+      // the bucket is keyed by the query, so everything in its `exact` list
+      // matched it exactly — which is what lets a caller ask once rather than
+      // asking for exact hits and then for all of them
       ...results.exact.map(
         ([name, trackIndex, , refName, start, end]) =>
           new BaseResult({
             locString: `${refName || name}:${start}-${end}`,
             label: name,
             trackId: tracks[trackIndex],
+            exact: true,
           }),
       ),
       // the index encodes an overflow bucket as a pseudo-hit; it is a message,
@@ -159,16 +173,24 @@ normal outcome rather than a failure.
 
 ## BaseResult fields
 
-| Field           | Type          | Purpose                                              |
-| --------------- | ------------- | ---------------------------------------------------- |
-| `label`         | string        | Primary display text; used for exact-match filtering |
-| `displayString` | string?       | Alternate display text (falls back to `label`)       |
-| `locString`     | string?       | Location to navigate to, e.g. `chr1:1000..2000`      |
-| `trackId`       | string?       | If set, the view opens or highlights this track      |
-| `results`       | BaseResult[]? | Nested results; shown in a disambiguation dialog     |
+| Field           | Type          | Purpose                                             |
+| --------------- | ------------- | --------------------------------------------------- |
+| `label`         | string        | Primary display text                                |
+| `displayString` | string?       | Alternate display text (falls back to `label`)      |
+| `locString`     | string?       | Location to navigate to, e.g. `chr1:1000..2000`     |
+| `trackId`       | string?       | If set, the view opens or highlights this track     |
+| `results`       | BaseResult[]? | Nested results; shown in a disambiguation dialog    |
+| `exact`         | boolean?      | This hit matched the query exactly, as you judge it |
 
 Results with `locString` navigate directly. Results with nested `results` show a
 dialog. Results with neither treat the label as a reference name.
+
+Pressing Enter navigates straight to the single `exact` hit when there is one
+and otherwise offers everything that matched, so `exact` is what keeps a precise
+name from opening a picker of everything it prefixes. Note that neither the
+label nor the display string is used to decide this: they are display text, and
+a hit that matched on an ID or a description has neither of them equal to the
+query.
 
 `RefSequenceResult`, the subclass the assembly's own refNames come back as,
 takes a `refName` instead and uses it as the `locString`.
