@@ -1,13 +1,20 @@
 import type { Region } from './types/index.ts'
 
-// `*` is the only metacharacter; everything else in a name is matched literally,
-// so a refName containing regex punctuation (`chr1.1`, `scaffold[2]`) can't turn
-// into an accidental pattern.
-function globToRegExp(pattern: string) {
+/**
+ * `*` is the only metacharacter; everything else in a name is matched literally,
+ * so a refName containing regex punctuation (`chr1.1`, `scaffold[2]`) can't turn
+ * into an accidental pattern. Anchored, so a pattern names whole refNames.
+ *
+ * Exported because the search box's refName picker reads the same syntax, and
+ * one reading of `*` is the whole point: a pattern that selects a set in a
+ * session spec has to select the same set when typed into the box. The picker
+ * passes `'i'`, since its matching has always been case-insensitive.
+ */
+export function globToRegExp(pattern: string, flags?: string) {
   const escaped = pattern.replaceAll(/[.*+?^${}()|[\]\\]/g, m =>
     m === '*' ? '.*' : `\\${m}`,
   )
-  return new RegExp(`^${escaped}$`)
+  return new RegExp(`^${escaped}$`, flags)
 }
 
 /**

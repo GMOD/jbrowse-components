@@ -1,5 +1,6 @@
 import BaseResult from '../../TextSearch/BaseResults.ts'
 import {
+  MAX_SELECT_ALL,
   cap,
   coerceToResult,
   getDeduplicatedResult,
@@ -58,6 +59,99 @@ describe('getRefNameOptions', () => {
     expect(getRefNameOptions(many, 'scaffold4999').map(getOptionLabel)).toEqual(
       ['scaffold4999'],
     )
+  })
+})
+
+describe('getRefNameOptions globs', () => {
+  const regions = (refNames: string[]) => refNames.map(refName => ({ refName }))
+  const hap = regions([
+    'chr1_hap1',
+    'chr2_hap1',
+    'chr1_hap2',
+    'chr2_hap2',
+    'chrUn',
+  ])
+  const labels = (options: ReturnType<typeof getRefNameOptions>) =>
+    options.map(getOptionLabel)
+
+  it('reads * as an anchored glob', () => {
+    // a bare `_hap1` substring-matches the same two, but `*_hap1` is anchored,
+    // so this is the glob's answer rather than the substring filter's
+    expect(labels(getRefNameOptions(hap, '*_hap1')).slice(1)).toEqual([
+      'chr1_hap1',
+      'chr2_hap1',
+    ])
+  })
+
+  it('offers one option that selects every match, as a multi-region locstring', () => {
+    const [all] = getRefNameOptions(hap, '*_hap1')
+    expect(all!.result.getLabel()).toBe('Show all 2 regions matching *_hap1')
+    // the whitespace-separated form parseLocStrings already takes, so picking
+    // this needs no navigation code of its own
+    expect(all!.result.getLocation()).toBe('chr1_hap1 chr2_hap1')
+  })
+
+  it('offers no bulk row when the glob matches a single region', () => {
+    expect(labels(getRefNameOptions(hap, '*Un'))).toEqual(['chrUn'])
+  })
+
+  it('leaves a query with no * exactly as it was', () => {
+    expect(labels(getRefNameOptions(hap, 'hap1'))).toEqual([
+      'chr1_hap1',
+      'chr2_hap1',
+    ])
+  })
+
+  // `*` is a legal refName character — GRCh38's ALT decoys are HLA allele names
+  // — so the literal reading has to survive alongside the pattern one
+  const hla = regions([
+    'HLA-A*01:01:01:01',
+    'HLA-A*02:53N',
+    'HLA-A*24:01:01:01',
+  ])
+
+  it('finds a refName that itself contains a *, typed in full', () => {
+    // the glob reading of this text is ^HLA-A.*01:01:01:01$, which happens to
+    // match only the allele typed — but the substring reading finds it too, so
+    // it is in the list either way, which is the property that matters
+    expect(labels(getRefNameOptions(hla, 'HLA-A*01:01:01:01'))).toEqual([
+      'HLA-A*01:01:01:01',
+    ])
+  })
+
+  it('globs a starred name that names no refName exactly', () => {
+    expect(labels(getRefNameOptions(hla, 'HLA-A*')).slice(1)).toEqual([
+      'HLA-A*01:01:01:01',
+      'HLA-A*02:53N',
+      'HLA-A*24:01:01:01',
+    ])
+  })
+
+  it('keeps a literal hit the anchored glob would have dropped', () => {
+    // the union is doing real work here: `^a.*b$` does not match the embedded
+    // form, and the substring filter — which is what the box has always done —
+    // is the only reason it is still offered
+    expect(
+      labels(getRefNameOptions(regions(['a*b', 'xxa*byy']), 'a*b')),
+    ).toEqual(['Show all 2 regions matching a*b', 'a*b', 'xxa*byy'])
+  })
+
+  it('withholds the bulk row past the ceiling rather than truncating it', () => {
+    const many = regions(
+      Array.from({ length: MAX_SELECT_ALL + 5 }, (_, i) => `scaffold${i}_alt`),
+    )
+    const options = getRefNameOptions(many, '*_alt')
+    // a bulk row reading "all of them" that navigates to the first thousand is
+    // the one thing not worth offering; the individual rows still list
+    expect(options[0]!.result.getLabel()).toBe('scaffold0_alt')
+    expect(options).toHaveLength(101)
+  })
+
+  it('still bounds the visible list for a glob matching thousands', () => {
+    const many = regions(
+      Array.from({ length: 5000 }, (_, i) => `scaffold${i}_alt`),
+    )
+    expect(getRefNameOptions(many, '*_alt')).toHaveLength(101)
   })
 })
 

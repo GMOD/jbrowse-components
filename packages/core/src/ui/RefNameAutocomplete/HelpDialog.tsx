@@ -26,6 +26,13 @@ export default function HelpDialog({
           are allowed in the start and end coordinates. A space-separated list
           of locstrings can be used to open up multiple chromosomes at a time
         </li>
+        <li>
+          Find a group of reference sequences by typing a pattern containing{' '}
+          <code>*</code>, which stands for any run of characters. The matches
+          appear in the dropdown, with a row at the top that opens all of them
+          at once. Useful on a fragmented or haplotype-resolved assembly, where
+          the useful selection is a pattern rather than a list you keep by hand.
+        </li>
       </ul>
       <h3>Example Searches</h3>
       <ul>
@@ -53,6 +60,10 @@ export default function HelpDialog({
         <li>
           <code>chr1 100 200</code> - use whitespace separated refname, start,
           end
+        </li>
+        <li>
+          <code>*_hap1</code> - list every reference sequence whose name ends in
+          _hap1, and offer to open all of them
         </li>
       </ul>
     </InfoDialog>
