@@ -116,6 +116,24 @@ test('a cached transform answers for a window inside the block', () => {
   ).toEqual({ refName: 'Pp02', start: 2_102_000, end: 2_103_000 })
 })
 
+// Why the cached transform is only ever taken from a single-block resolve (see
+// installSyntenyFollow): with no transform the frame pass interpolates the
+// block, which reads the strand off the block itself and puts the window's left
+// on the mate's RIGHT. A forward transform cached from an envelope resolve says
+// the opposite, and there is no strand to give it — the envelope is a union
+// several blocks contributed to.
+test('an inverted block places the window on the opposite half of its mate', () => {
+  const inverted = { ...feat, strand: -1 }
+  expect(
+    followFrameSpan({
+      feat: inverted,
+      data: { ...data, strands: Int8Array.from([-1]) },
+      window: win(100_000, 102_000),
+      toMate: true,
+    }),
+  ).toEqual({ refName: 'Pp01', start: 1_108_000, end: 1_110_000 })
+})
+
 test('a transform measured on another contig falls back to the block', () => {
   expect(
     followFrameSpan({

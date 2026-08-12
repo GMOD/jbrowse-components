@@ -19,8 +19,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * than the requested one, because `zoomTo` clamps to the view's limits and an
  * offset in the unclamped units lands somewhere else entirely.
  *
- * False when the span is not inside the displayed regions at all, which is the
- * caller's signal that a real navigation is needed instead.
+ * False when the span is not inside the displayed regions at all — the followed
+ * row is showing one contig and the follow has mapped onto another. The frame
+ * pass leaves the row alone there rather than acting on it: changing what a row
+ * displays is a real navigation, and the exact pass's `navToLocString` is
+ * already on its way to do exactly that.
  */
 export function positionViewOnSpan(
   view: LinearGenomeViewModel,

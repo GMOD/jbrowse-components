@@ -160,13 +160,25 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // Cached even when the row is already in place: this is what the per-frame
     // pass steers by, so it has to be refreshed on every resolve rather than
     // only on the ones that move something.
-    state.transform = followTransform(
-      step.window,
-      span,
-      // an inverted correspondence runs the other way, and the resolved span is
-      // always min..max, so the direction cannot be read back off it
-      step.windowInsideFeat && step.feat.strand === -1,
-    )
+    //
+    // ONLY FROM THE SINGLE-BLOCK ANSWER, which is the only case the per-frame
+    // pass applies it to. An envelope resolve maps the window onto a union
+    // several blocks contributed to, so there is no one strand to carry — and a
+    // forward transform cached from one, then applied after a zoom in to an
+    // INVERTED alignment, placed the row mirrored inside that block for the
+    // ~500ms until the next settle: half a second of motion running the wrong
+    // way, in exactly the mode that exists to keep the ribbons vertical.
+    // Dropping it instead falls the frame pass back to interpolating the block,
+    // which reads the strand off the block itself.
+    state.transform = step.windowInsideFeat
+      ? followTransform(
+          step.window,
+          span,
+          // an inverted correspondence runs the other way, and the resolved
+          // span is always min..max, so the direction cannot be read back off it
+          step.feat.strand === -1,
+        )
+      : undefined
     if (alreadyShowing(movingWindow, span)) {
       return
     }
