@@ -800,7 +800,8 @@ Do the cheap environment check first, though. `preferredRenderer` picks WebGL2
 whenever a context exists, and under software rendering that is ~25x more
 main-thread cost than Canvas2D for the same session (on a real GPU the ordering
 reverses, ~2x the other way). Reading `UNMASKED_RENDERER_WEBGL` off the probe
-`getGraphicsCapabilities` already creates is free.
+`getGraphicsCapabilities` already creates is free — and the probe now runs only
+when WebGPU is absent, i.e. exactly on the machines this check is about.
 
 ### MAF fetch cost on long blocks
 

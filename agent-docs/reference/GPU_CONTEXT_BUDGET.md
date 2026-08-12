@@ -14,7 +14,9 @@ budget is a track budget.
 Measured 2026-08-05, Chrome 151, by walking `--tracks` up on a single LGV.
 Identical on a real Intel UHD 630 and on SwiftShader, so the ceiling is a
 browser/ANGLE property rather than a driver one — but what happens *past* it is
-not. Contexts created (the +1 is the `getGraphicsCapabilities` probe):
+not. Contexts created (the +1 is the `getGraphicsCapabilities` probe, which as of
+2026-08-12 is only made when WebGPU is *absent* — on a WebGPU machine the
+startup path creates none, so re-measuring there gives 16 / 0):
 
 | tracks | real GPU | SwiftShader |
 | ------ | -------- | ----------- |
@@ -76,8 +78,23 @@ recompiles the set, and compiling on a CPU rasterizer is what costs.
 `preferredRenderer` returns WebGL2 whenever a context exists
 (`getGraphicsCapabilities` reports `webgl2: !!gl`), so a user whose Chrome is
 software-rendering — GPU blocklisted, a VM, remote desktop, an old driver — gets
-the most expensive cell of that table. The probe already creates a context, so
-reading `WEBGL_debug_renderer_info` / `UNMASKED_RENDERER_WEBGL` off it is free.
+the most expensive cell of that table. The probe still creates a context on
+exactly that population (no WebGPU is what makes it probe at all), so reading
+`WEBGL_debug_renderer_info` / `UNMASKED_RENDERER_WEBGL` off it is free.
+
+## The probe's own context
+
+`getGraphicsCapabilities` is memoized per page and holds its probe context until
+GC rather than releasing it with `WEBGL_lose_context.loseContext()`. That call
+was removed on 2026-08-12 for the reason ADR-005 removed it from
+`WebGL2Hal.dispose()` — it is effectively driver-wide on Firefox, so probing
+while tracks were on screen knocked out their live contexts — and because both
+browsers log the loss to the console, which users read as a fault.
+
+The held context cannot start the cascade above: it is the oldest, so it is the
+first thing an over-ceiling page evicts, and nothing draws to it or re-acquires
+it. Before the memo, each reopening of the About widget or the stack-trace dialog
+made another one.
 
 ## Measuring it: pass `--headed=true`
 

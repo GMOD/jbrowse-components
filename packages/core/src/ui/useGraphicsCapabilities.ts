@@ -1,9 +1,18 @@
 import { useFetch } from '../util/useFetch.ts'
-import { getGraphicsCapabilities } from './getGraphicsCapabilities.ts'
+import {
+  getFullGraphicsCapabilities,
+  getGraphicsCapabilities,
+} from './getGraphicsCapabilities.ts'
 
-export function useGraphicsCapabilities() {
-  const { data } = useFetch(['graphicsCapabilities'], () =>
-    getGraphicsCapabilities(),
+/**
+ * `full` resolves the WebGL2 rung even when WebGPU already decided the ladder,
+ * at the cost of one WebGL2 context per page — for a caller that lists every
+ * backend rather than naming the one in use. Both probes are memoized, so a
+ * dialog reopening costs nothing either way.
+ */
+export function useGraphicsCapabilities({ full = false } = {}) {
+  const { data } = useFetch(['graphicsCapabilities', full], () =>
+    full ? getFullGraphicsCapabilities() : getGraphicsCapabilities(),
   )
   return data ?? null
 }

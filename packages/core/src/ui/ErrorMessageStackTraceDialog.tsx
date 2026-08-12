@@ -34,7 +34,9 @@ export default function ErrorMessageStackTraceDialog({
   error: unknown
   extra?: unknown
 }) {
-  const graphicsCapabilities = useGraphicsCapabilities()
+  // `full`: the environment block lists every backend the machine offers, which
+  // is the one place the WebGL2 answer matters even on a WebGPU machine
+  const graphicsCapabilities = useGraphicsCapabilities({ full: true })
   const errorText = error ? `${error}` : ''
   const stackTrace = formatErrorStack(error)
 
