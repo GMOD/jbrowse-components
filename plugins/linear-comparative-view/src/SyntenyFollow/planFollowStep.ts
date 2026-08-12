@@ -1,5 +1,5 @@
 import { getFeatureAtIndex } from '../LinearSyntenyDisplay/model.ts'
-import { followEnvelope } from './followEnvelope.ts'
+import { followWindowMapping } from './followWindowMapping.ts'
 import { pickFollowFeature } from './pickFollowFeature.ts'
 
 import type {
@@ -84,7 +84,7 @@ export function planFollowStep({
         toMate,
         hasCigar: data.hasCigar,
         windowInsideFeat: aStart <= window.start && aEnd >= window.end,
-        envelope: followEnvelope({ data, window, toMate, mateAssembly }),
+        envelope: followWindowMapping({ data, window, toMate, mateAssembly }),
       }
     }
   }

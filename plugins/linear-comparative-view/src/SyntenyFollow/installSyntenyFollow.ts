@@ -4,6 +4,7 @@ import { autorun } from 'mobx'
 
 import { followAnchorWindow } from './followAnchorWindow.ts'
 import { applyFollowTransform, followTransform } from './followTransform.ts'
+import { interpolateFollowSpan } from './interpolateFollowSpan.ts'
 import { planFollowStep } from './planFollowStep.ts'
 import { positionViewOnSpan } from './positionViewOnSpan.ts'
 import { resolveFollowSpan } from './resolveFollowSpan.ts'
@@ -249,15 +250,25 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
 
   // The per-frame half, and the reason the follow moves rather than teleports.
   //
-  // It steers by the cached transform alone — no fetch, no RPC, no scan of the
-  // loaded blocks, just the anchor's LIVE window through an affine map and one
-  // synchronous placement. That is what makes it affordable at pointer rate,
-  // and what makes it safe to track the undebounced blocks the exact pass
-  // deliberately does not.
+  // IT REPLANS AGAINST THE LIVE WINDOW rather than extrapolating the last exact
+  // answer, and only the RPC is left out. Extrapolating was the first version
+  // and it tracked a drag perfectly and then snapped on settle — measured on
+  // grape/peach at 43% of a screen at 5 Mb and 66% at 20 Mb, which is the same
+  // complaint one step further along. The reason is structural: past the width
+  // of a single alignment the exact answer is the ENVELOPE, and an envelope is
+  // not an affine function of the window — blocks enter and leave it as the
+  // anchor pans, so its edges move in steps no cached mapping can predict. The
+  // envelope is also the half that costs nothing: main-thread arithmetic over
+  // typed arrays the display already holds.
   //
-  // READS THE ANCHOR ROW AND NOTHING ELSE. `positionViewOnSpan` writes the
-  // followed row's zoom and offset, so tracking anything on that row here would
-  // be a dependency on this pass's own write.
+  // So the cached transform is kept for exactly the case it models well — a
+  // window inside one alignment, where the correspondence IS affine outside the
+  // indels and where the RPC's CIGAR walk is the only thing this pass cannot
+  // reproduce. That case measured 9.8%, most of it the CIGAR detail.
+  //
+  // READS THE ANCHOR ROW AND THE LOADED FEATURES, NEVER THE FOLLOWED ROW.
+  // `positionViewOnSpan` writes that row's zoom and offset, so tracking
+  // anything on it here would be a dependency on this pass's own write.
   addDisposer(
     self,
     autorun(
@@ -265,25 +276,36 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         if (!self.followSynteny) {
           return
         }
-        for (const { level, stayingView, movingView } of self.followPairs) {
-          // READ THE ANCHOR WINDOW BEFORE TESTING THE TRANSFORM, even though the
-          // transform is what decides whether it gets used. The transform lives
-          // in plain JS, so it notifies nothing: bailing out above this line on
-          // the first pass — when no resolve has happened yet and there is
-          // none — left the autorun with no dependency on the anchor at all,
-          // and it then never ran again. It read as the per-frame pass simply
-          // not working, which is what it was.
+        for (const pair of self.followPairs) {
+          const { level, stayingView, movingView, toMate, mateAssembly } = pair
           const window = followAnchorWindow(
             stayingView.dynamicBlocks.contentBlocks,
           )
-          const transform = levelStates.get(level.level)?.transform
-          const span =
-            window && transform
-              ? applyFollowTransform(transform, window)
-              : undefined
-          if (span) {
-            positionViewOnSpan(movingView, span)
+          if (!window) {
+            continue
           }
+          const state = levelStates.get(level.level)
+          const step = planFollowStep({
+            displays: level.linearSyntenyDisplays,
+            window,
+            toMate,
+            mateAssembly,
+            incumbentId: state?.featureId,
+          })
+          if (!step) {
+            continue
+          }
+          const span = step.windowInsideFeat
+            ? // the CIGAR-walked answer, carried forward affinely — better than
+              // re-interpolating the block, which is what this pass would
+              // otherwise have to do without the RPC
+              ((state?.transform
+                ? applyFollowTransform(state.transform, window)
+                : undefined) ??
+              interpolateFollowSpan({ feat: step.feat, window, toMate }))
+            : (step.envelope ??
+              interpolateFollowSpan({ feat: step.feat, window, toMate }))
+          positionViewOnSpan(movingView, span)
         }
       },
       { name: 'SyntenyFollowFrame' },
