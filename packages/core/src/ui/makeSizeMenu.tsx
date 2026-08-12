@@ -30,8 +30,18 @@ const sizeRowFallbackHeight = 46
 
 // One inline menu row: the live value/slider with a reset button and, for a
 // promotable slot, a pin to make the current value the session-wide default.
-// `getValue` is a thunk read inside the observer so the slider tracks the model
-// while the menu stays open (a captured number would go stale mid-drag).
+//
+// `getValue` is a thunk, read inside `SizeSliderRow`'s own observer, so the
+// slider tracks the model while the menu stays open. Not because the built row
+// is never rebuilt — `CascadingMenu` calls a `MenuItemsGetter` inside its own
+// observer render, so a menu built from a getter does rebuild on the write —
+// but because `menuItems` may equally be a plain `MenuItem[]`, which nothing
+// rebuilds, and a captured number would then go stale mid-drag.
+//
+// It does NOT isolate this row from the rebuild: `makePromotableSizeMenu` reads
+// the slot eagerly for the pin and the reset gate, so a getter-built menu still
+// re-derives every row on every drag frame. Worth knowing before treating the
+// thunk as a perf boundary; making it one means deriving those two lazily too.
 //
 // `commitOnRelease` is for callers whose onChange is expensive (e.g. the
 // alignments modification threshold fires a tier-1 worker refetch, GC-content

@@ -145,10 +145,12 @@ export {
 // Not on the React-free `menuItems.ts` entry beside the two builders above: this
 // reads a config's slot table, so it pulls `configuration/promotableSlots.ts`
 // in, and that entry exists precisely to stay out of every plugin's eager graph.
-export {
-  pinnedSlots,
-  promotableSlotsWithoutPin,
-} from './promotablePinCoverage.ts'
+//
+// `pinnedSlots`, the walk underneath it, stays module-private: the question a
+// caller has is "which promotable slots does this menu miss", and answering the
+// half of it that lists what a menu *does* offer needs the schema's slot table
+// to mean anything.
+export { promotableSlotsWithoutPin } from './promotablePinCoverage.ts'
 export const VIEW_HEADER_HEIGHT = 28
 export {
   GRADIENT_LEGEND_HEIGHT,
