@@ -6,6 +6,18 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config GoogleDriveOAuthInternetAccount
+ *
+ * #example
+ * The Google endpoints and scopes are pre-filled, so an entry needs only your
+ * own OAuth app's `clientId`.
+ * ```js
+ * {
+ *   type: 'GoogleDriveOAuthInternetAccount',
+ *   internetAccountId: 'googleDriveOAuth',
+ *   name: 'Google Drive',
+ *   clientId: 'your-client-id.apps.googleusercontent.com',
+ * }
+ * ```
  */
 
 const GoogleDriveOAuthConfigSchema = ConfigurationSchema(

@@ -2,6 +2,16 @@ import { ConfigurationSchema } from '../../configuration/index.ts'
 
 /**
  * #config CytobandAdapter
+ *
+ * #example
+ * Configured on an assembly's `cytobands`, not on a track — it draws the
+ * ideogram banding in the linear view's overview bar:
+ * ```js
+ * {
+ *   type: 'CytobandAdapter',
+ *   uri: 'https://example.com/hg38.cytoBand.txt.gz',
+ * }
+ * ```
  */
 
 const configSchema = ConfigurationSchema(

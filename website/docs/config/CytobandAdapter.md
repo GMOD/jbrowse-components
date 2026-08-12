@@ -8,18 +8,25 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Built into JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/CytobandAdapter/configSchema.ts).
 
-## Overview
+## Example usage
 
-### CytobandAdapter - Pre-processor / simplified config
+Configured on an assembly's `cytobands`, not on a track — it draws the ideogram
+banding in the linear view's overview bar:
 
-preprocessor to allow minimal config:
-
-```json
+```js
 {
-  "type": "CytobandAdapter",
-  "uri": "yourfile.bed"
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'CytobandAdapter',
+    uri: 'https://example.com/hg38.cytoBand.txt.gz',
+  },
 }
 ```
+
+_See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 

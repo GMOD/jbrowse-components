@@ -9,21 +9,48 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/RefNameAliasAdapter/configSchema.ts).
 
-## Overview
+## Example usage
+
+Used as an assembly's `refNameAliases`, where the bare `{ uri }` form is
+shorthand for this adapter:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'RefNameAliasAdapter',
+    uri: 'https://example.com/hg38.chromAlias.txt',
+  },
+}
+```
+
+### Example: named column
+
+When the primary column — the one whose values match your FASTA — is not the
+first, name it. `refNameColumnHeaderName` reads the last `#`-prefixed line as
+the header; `refNameColumn` takes a zero-based index instead.
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'RefNameAliasAdapter',
+    uri: 'https://example.com/aliases.txt',
+    refNameColumnHeaderName: 'ucsc',
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
 
 can read "chromAliases" type files from UCSC or any tab separated file of
 refName aliases
-
-### RefNameAliasAdapter - Pre-processor / simplified config
-
-preprocessor to allow minimal config:
-
-```json
-{
-  "type": "RefNameAliasAdapter",
-  "uri": "yourfile.chromAlias.txt"
-}
-```
 
 ## Config slots
 

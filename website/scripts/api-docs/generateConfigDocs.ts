@@ -504,10 +504,18 @@ function readManifest() {
     // that shape means wrapping and running the real `validateConfig`, which is
     // what `check-config-blocks` does for the guides; displays are left to it.
     //
+    // TEXT SEARCH adapters are left out for a different reason: the manifest
+    // computes `shorthandKeys` only for `group === 'adapter'`
+    // (`generateConfigManifest`), so a text search adapter that does accept a
+    // shorthand records none — TrixTextSearchAdapter's `preProcessSnapshot`
+    // expands `uri` into its three file paths, and checking against its slot
+    // list alone reports that `uri` as unknown. A gate that rejects correct
+    // documentation is worse than a narrower one.
+    //
     // `migratedDisplayKeys` is not a type table and is dropped by the shape
     // guard.
     manifestByType = Object.fromEntries(
-      (['adapters', 'textSearchAdapters', 'connections', 'tracks'] as const)
+      (['adapters', 'connections', 'tracks'] as const)
         .flatMap(category =>
           Object.entries(parsed[category] ?? {}).map(
             ([name, entry]) => [name, { ...entry, category }] as const,

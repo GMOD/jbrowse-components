@@ -9,18 +9,24 @@ Auto-generated config schema for the current JBrowse release — see the
 `data-management` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts).
 
-## Overview
+## Example usage
 
-### UCSCTrackHubConnection - Pre-processor / simplified config
+An entry in the config's `connections`. The hub's `hub.txt` is read on connect
+and every track it declares for a matching assembly is added to the session —
+nothing is written into your config, so the hub stays the source of truth.
+`assemblyNames` limits which of the hub's genomes are used.
 
-preprocessor to allow minimal config, where `uri` points at the hub.txt:
-
-```json
+```js
 {
-  "type": "UCSCTrackHubConnection",
-  "uri": "https://mysite.com/path/to/hub.txt"
+  type: 'UCSCTrackHubConnection',
+  connectionId: 'ucsc_hub_example',
+  name: 'My track hub',
+  assemblyNames: ['hg38'],
+  hubTxtLocation: { uri: 'https://example.com/hub.txt' },
 }
 ```
+
+_See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 

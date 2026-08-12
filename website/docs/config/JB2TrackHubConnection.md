@@ -9,18 +9,24 @@ Auto-generated config schema for the current JBrowse release — see the
 `data-management` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts).
 
-## Overview
+## Example usage
 
-### JB2TrackHubConnection - Pre-processor / simplified config
+An entry in the config's `connections`, pointing at another JBrowse 2
+`config.json`. Its tracks — and any assemblies it declares that the session
+lacks — are added on connect, so one instance can publish a track set that
+others subscribe to.
 
-preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
-
-```json
+```js
 {
-  "type": "JB2TrackHubConnection",
-  "uri": "https://mysite.com/path/to/config.json"
+  type: 'JB2TrackHubConnection',
+  connectionId: 'jb2_hub_example',
+  name: 'Shared JBrowse 2 tracks',
+  assemblyNames: ['hg38'],
+  configJsonLocation: { uri: 'https://example.com/jbrowse/config.json' },
 }
 ```
+
+_See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 

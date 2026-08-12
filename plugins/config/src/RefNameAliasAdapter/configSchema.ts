@@ -8,6 +8,28 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config RefNameAliasAdapter
  * can read "chromAliases" type files from UCSC or any tab separated file of
  * refName aliases
+ *
+ * #example
+ * Used as an assembly's `refNameAliases`, where the bare `{ uri }` form is
+ * shorthand for this adapter:
+ * ```js
+ * {
+ *   type: 'RefNameAliasAdapter',
+ *   uri: 'https://example.com/hg38.chromAlias.txt',
+ * }
+ * ```
+ *
+ * #example named column
+ * When the primary column — the one whose values match your FASTA — is not the
+ * first, name it. `refNameColumnHeaderName` reads the last `#`-prefixed line as
+ * the header; `refNameColumn` takes a zero-based index instead.
+ * ```js
+ * {
+ *   type: 'RefNameAliasAdapter',
+ *   uri: 'https://example.com/aliases.txt',
+ *   refNameColumnHeaderName: 'ucsc',
+ * }
+ * ```
  */
 
 export const normalizeSnapshot = normalizeUriSnapshot

@@ -9,20 +9,48 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/NcbiSequenceReportAliasAdapter/configSchema.ts).
 
-## Overview
+## Example usage
 
-can read "sequence_report.tsv" type files from NCBI
+Used as an assembly's `refNameAliases`. The file ships beside any RefSeq
+assembly on NCBI datasets, and aliases the RefSeq, GenBank and UCSC-style names
+of every sequence at once:
 
-### NcbiSequenceReportAliasAdapter - Pre-processor / simplified config
-
-preprocessor to allow minimal config:
-
-```json
+```js
 {
-  "type": "NcbiSequenceReportAliasAdapter",
-  "uri": "sequence_report.tsv"
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'NcbiSequenceReportAliasAdapter',
+    uri: 'https://example.com/GCF_000001405.40_sequence_report.tsv',
+  },
 }
 ```
+
+### Example: keeping the FASTA's own names
+
+With an NCBI FASTA (`NC_000001.11`), the default shows UCSC-style names (`chr1`)
+and fetches bases under the accession. Set `useNameOverride: false` to display
+the accessions instead, with `chr1` still searchable as an alias.
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'NcbiSequenceReportAliasAdapter',
+    uri: 'https://example.com/GCF_000001405.40_sequence_report.tsv',
+    useNameOverride: false,
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
+can read "sequence_report.tsv" type files from NCBI
 
 ## Config slots
 

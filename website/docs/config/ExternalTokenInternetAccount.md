@@ -9,6 +9,23 @@ Auto-generated config schema for the current JBrowse release — see the
 `authentication` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/ExternalTokenModel/configSchema.ts).
 
+## Example usage
+
+For a token the user pastes in, or that an embedding portal hands over. JBrowse
+does not obtain the token itself — it prompts for one, then sends it on every
+request to a matching domain.
+
+```js
+{
+  type: 'ExternalTokenInternetAccount',
+  internetAccountId: 'portalToken',
+  name: 'Data portal token',
+  domains: ['api.myportal.org'],
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 ## Related links
 
 - **State model:** [runtime API](../../models/externaltokeninternetaccount)

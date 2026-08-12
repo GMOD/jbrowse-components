@@ -3,6 +3,21 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 
 /**
  * #config UCSCTrackHubConnection
+ *
+ * #example
+ * An entry in the config's `connections`. The hub's `hub.txt` is read on
+ * connect and every track it declares for a matching assembly is added to the
+ * session — nothing is written into your config, so the hub stays the source of
+ * truth. `assemblyNames` limits which of the hub's genomes are used.
+ * ```js
+ * {
+ *   type: 'UCSCTrackHubConnection',
+ *   connectionId: 'ucsc_hub_example',
+ *   name: 'My track hub',
+ *   assemblyNames: ['hg38'],
+ *   hubTxtLocation: { uri: 'https://example.com/hub.txt' },
+ * }
+ * ```
  */
 
 const UCSCTrackHubConnection = ConfigurationSchema(

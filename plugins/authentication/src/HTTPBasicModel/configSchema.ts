@@ -5,6 +5,20 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config HTTPBasicInternetAccount
+ *
+ * #example
+ * An entry in the config's `internetAccounts`. JBrowse prompts for the username
+ * and password the first time a file under one of `domains` is opened, and
+ * sends them as an `Authorization: Basic …` header from then on.
+ * ```js
+ * {
+ *   type: 'HTTPBasicInternetAccount',
+ *   internetAccountId: 'myLabServer',
+ *   name: 'My lab server',
+ *   description: 'Sequencing data behind the lab htaccess',
+ *   domains: ['data.mylab.org'],
+ * }
+ * ```
  */
 
 const HTTPBasicConfigSchema = ConfigurationSchema(

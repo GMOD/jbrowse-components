@@ -9,6 +9,22 @@ Auto-generated config schema for the current JBrowse release — see the
 `authentication` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/configSchema.ts).
 
+## Example usage
+
+The Google endpoints and scopes are pre-filled, so an entry needs only your own
+OAuth app's `clientId`.
+
+```js
+{
+  type: 'GoogleDriveOAuthInternetAccount',
+  internetAccountId: 'googleDriveOAuth',
+  name: 'Google Drive',
+  clientId: 'your-client-id.apps.googleusercontent.com',
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 ## Related links
 
 - **State model:** [runtime API](../../models/googledriveoauthinternetaccount)

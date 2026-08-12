@@ -3,6 +3,21 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 
 /**
  * #config JB2TrackHubConnection
+ *
+ * #example
+ * An entry in the config's `connections`, pointing at another JBrowse 2
+ * `config.json`. Its tracks — and any assemblies it declares that the session
+ * lacks — are added on connect, so one instance can publish a track set that
+ * others subscribe to.
+ * ```js
+ * {
+ *   type: 'JB2TrackHubConnection',
+ *   connectionId: 'jb2_hub_example',
+ *   name: 'Shared JBrowse 2 tracks',
+ *   assemblyNames: ['hg38'],
+ *   configJsonLocation: { uri: 'https://example.com/jbrowse/config.json' },
+ * }
+ * ```
  */
 
 const JB2TrackHubConnection = ConfigurationSchema(

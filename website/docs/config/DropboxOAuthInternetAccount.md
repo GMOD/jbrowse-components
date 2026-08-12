@@ -9,6 +9,23 @@ Auto-generated config schema for the current JBrowse release — see the
 `authentication` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/DropboxOAuthModel/configSchema.ts).
 
+## Example usage
+
+The Dropbox endpoints are pre-filled, so an entry needs only your own OAuth
+app's `clientId`. Leave `domains` off and the account is still selectable by
+hand in the Add Track form.
+
+```js
+{
+  type: 'DropboxOAuthInternetAccount',
+  internetAccountId: 'dropboxOAuth',
+  name: 'Dropbox',
+  clientId: 'your-dropbox-app-key',
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 ## Related links
 
 - **State model:** [runtime API](../../models/dropboxoauthinternetaccount)

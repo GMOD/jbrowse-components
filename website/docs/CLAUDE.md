@@ -90,7 +90,10 @@ and the check knows the difference: a **track**'s example owns its outer keys,
 and everything else may be written inside the config that holds it (a
 `ReferenceSequenceTrack` around a sequence adapter), where the `adapter` is what
 gets checked. Internet accounts and the root schemas aren't in the manifest, so
-they are skipped rather than guessed at.
+they are skipped rather than guessed at; **text search adapters are skipped
+too** because the manifest computes `shorthandKeys` only for
+`group === 'adapter'`, so a Trix example's real `uri` would read as an unknown
+key. Widen the check by fixing the manifest, not by removing the skip.
 
 ## Avoiding drift in hand-written docs
 

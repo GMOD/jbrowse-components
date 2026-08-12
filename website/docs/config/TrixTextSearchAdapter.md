@@ -8,22 +8,31 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Provided by the `trix` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts).
 
-## Overview
+## Example usage
 
-### TrixTextSearchAdapter - Pre-processor / simplified config
+`jbrowse text-index` writes this entry into `aggregateTextSearchAdapters` for
+you. The `uri` shorthand points at the `.ix`; the sibling `.ixx` and
+`_meta.json` are derived from it, so all three only need spelling out when they
+are named against convention.
 
-preprocessor to allow minimal config: `uri` points at the `.ix` file and the
-sibling `.ixx` and `_meta.json` are derived from it (the `jbrowse text-index`
-naming convention):
-
-```json
+```js
 {
-  "type": "TrixTextSearchAdapter",
-  "uri": "file.ix",
-  "assemblyNames": ["hg19"],
-  "textSearchAdapterId": "hg19SearchIndex"
+  type: 'TextSearchAdapter',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'TrixTextSearchAdapter',
+    textSearchAdapterId: 'hg38-index',
+    uri: 'trix/hg38.ix',
+    assemblyNames: ['hg38'],
+  },
 }
 ```
+
+_See the **Config slots** section below for all available configuration fields._
+
+## Overview
 
 ### TrixTextSearchAdapter - Identifier
 

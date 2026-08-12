@@ -5,6 +5,19 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config ExternalTokenInternetAccount
+ *
+ * #example
+ * For a token the user pastes in, or that an embedding portal hands over.
+ * JBrowse does not obtain the token itself — it prompts for one, then sends it
+ * on every request to a matching domain.
+ * ```js
+ * {
+ *   type: 'ExternalTokenInternetAccount',
+ *   internetAccountId: 'portalToken',
+ *   name: 'Data portal token',
+ *   domains: ['api.myportal.org'],
+ * }
+ * ```
  */
 
 const ExternalTokenConfigSchema = ConfigurationSchema(

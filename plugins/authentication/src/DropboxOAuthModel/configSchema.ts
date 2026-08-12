@@ -6,6 +6,19 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config DropboxOAuthInternetAccount
+ *
+ * #example
+ * The Dropbox endpoints are pre-filled, so an entry needs only your own OAuth
+ * app's `clientId`. Leave `domains` off and the account is still selectable by
+ * hand in the Add Track form.
+ * ```js
+ * {
+ *   type: 'DropboxOAuthInternetAccount',
+ *   internetAccountId: 'dropboxOAuth',
+ *   name: 'Dropbox',
+ *   clientId: 'your-dropbox-app-key',
+ * }
+ * ```
  */
 
 const DropboxOAuthConfigSchema = ConfigurationSchema(
