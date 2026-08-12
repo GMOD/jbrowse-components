@@ -1,6 +1,7 @@
 import {
   INDICATOR_TRIANGLE_H,
   interbaseBarHeightPx,
+  interbaseEdgePx,
 } from '@jbrowse/alignments-core'
 
 import { interbaseTypeName } from '../../shared/types.ts'
@@ -116,33 +117,38 @@ export function hitTestInterbase(
       // `bin.interbase[type]` for its count/length rows, and the context menu
       // offers "Sort by" it.
       //
-      // `cursorY` is the cursor as a stack fraction, the same units yOffset and
-      // segHeight are in. The segments at one position tile the stack with no
-      // gaps, so the one the cursor is in is the SHALLOWEST whose bottom edge is
-      // at or below it — which needs only each segment's `yEnd`, and answers
-      // above the stack (every edge qualifies, so the topmost wins) as well as
-      // inside it. Below the stack nothing qualifies; that is the BAR_HIT_PAD_PX
-      // slack, and it falls back to the bottom-most segment, whose edge the
-      // cursor is just under.
-      const cursorY = (canvasY - INDICATOR_TRIANGLE_H) / interbaseHeight
-      let maxYEnd = 0
+      // The segments at one position tile the stack with no gaps, so the one the
+      // cursor is in is the SHALLOWEST whose bottom edge is at or below it —
+      // which needs only each segment's bottom edge, and answers above the stack
+      // (every edge qualifies, so the topmost wins) as well as inside it. Below
+      // the stack nothing qualifies; that is the BAR_HIT_PAD_PX slack, and it
+      // falls back to the bottom-most segment, whose edge the cursor is under.
+      //
+      // Compared in SCREEN PX through `interbaseEdgePx` — interbaseHistogram
+      // .slang's own edge math, which snaps both edges to whole pixels — rather
+      // than as a stack fraction. That is what makes "the actual drawn bar
+      // rectangle" above literally true: an unsnapped comparison puts each
+      // boundary up to half a pixel off the one that was painted.
+      let barBottomPx = 0
       let bottomType = 0
-      let hitYEnd = Infinity
+      let hitEdgePx = Infinity
       let hitType = 0
       for (let i = 0; i < interbaseCovPositions.length; i++) {
         if (interbaseCovPositions[i] === pos) {
-          const yEnd = interbaseCovYOffsets[i]! + interbaseCovHeights[i]!
-          if (yEnd > maxYEnd) {
-            maxYEnd = yEnd
+          const edgePx = interbaseEdgePx(
+            interbaseCovYOffsets[i]! + interbaseCovHeights[i]!,
+            interbaseHeight,
+          )
+          if (edgePx > barBottomPx) {
+            barBottomPx = edgePx
             bottomType = interbaseCovColorTypes[i]!
           }
-          if (yEnd >= cursorY && yEnd < hitYEnd) {
-            hitYEnd = yEnd
+          if (edgePx >= canvasY && edgePx < hitEdgePx) {
+            hitEdgePx = edgePx
             hitType = interbaseCovColorTypes[i]!
           }
         }
       }
-      const barBottomPx = INDICATOR_TRIANGLE_H + maxYEnd * interbaseHeight
       if (canvasY <= barBottomPx + BAR_HIT_PAD_PX) {
         hit = {
           type: 'indicator',

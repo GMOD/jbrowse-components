@@ -4,8 +4,8 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // coverageHeight=90, YSCALEBAR_LABEL_OFFSET=5 → effectiveH=80 → effectiveH/2=40.
 // interbaseMaxCount/domainMax = 20/20 = 1 → interbaseHeight=40.
-// A full-height (yOffset=0,height=1) bar at 1005 spans
-// [INDICATOR_TRIANGLE_H(4.5), 4.5 + 1*40 = 44.5].
+// Edges snap to whole px through interbaseEdgePx (floor(4.5 + y*40 + 0.5)), so a
+// full-height (yOffset=0,height=1) bar at 1005 spans px [5, 45].
 const COV_HEIGHT = 90
 const DOMAIN_MAX = 20
 
@@ -134,9 +134,9 @@ describe('hitTestInterbase histogram bars', () => {
   })
 
   // A stacked bar: insertion occupies [0, 0.2] of the stack and softclip
-  // [0.2, 1.0], i.e. px [4.5, 12.5] and [12.5, 44.5]. Which type the hover means
-  // is which SEGMENT is under the cursor, not which segment is tallest —
-  // clicking opens a widget titled by this type and showing only its counts.
+  // [0.2, 1.0], i.e. px [5, 13] and [13, 45]. Which type the hover means is which
+  // SEGMENT is under the cursor, not which segment is tallest — clicking opens a
+  // widget titled by this type and showing only its counts.
   const stackedAt1005 = {
     interbaseCovPositions: new Uint32Array([1005, 1005]),
     interbaseCovYOffsets: new Float32Array([0, 0.2]),
