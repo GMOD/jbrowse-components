@@ -154,3 +154,38 @@ device handles, policy flags, caches the host tears down — either shares a cel
 or does not belong in a package we tell third parties to bundle. `@jbrowse/core`
 has the same shape one layer up (`dataAdapterCache`'s `adapterCache`), which is
 why that module is now served as ABI instead.
+
+## Amendment (2026-08): the curated barrel is gone; the `exports` map is alone
+
+Decision 1's "`src/index.ts` is the curated public barrel, marked
+`@experimental`" no longer holds, and the sentence beside it — "the package's
+`exports` map *is* the public API contract — decoupled from file layout" — is
+what survived. Both were written as one idea. They turned out to be two, and
+they disagreed.
+
+The barrel exported 90 names. 88 of them were the same symbols the `exports` map
+already served on their own subpaths, so almost every symbol in this package had
+two import paths and nothing kept them in agreement. The other two were
+`RecoveryBudget` / `RecoveryVerdict`, `useRenderingBackend` internals — which the
+barrel's own docblock said it did not re-export ("internal building blocks …
+intentionally not re-exported here"). So the curation the barrel claimed was not
+happening: it was a union of the subpaths, plus a leak.
+
+The usage went the other way too, decisively. In-tree there were 336 subpath
+imports against 15 barrel ones, and the 15 wanted three symbols
+(`OverlayCanvas`, and `getDpr`/`MAX_CANVAS_DIM_PX`/`clampBlockScissor` out of
+`canvas2dUtils`). Those moved to subpaths and `src/index.ts` was deleted, along
+with `main` and the `"."` entry in both `exports` and the generated
+`publishConfig`.
+
+Note what this does *not* change. Decision 3 stands untouched — the surface is
+still static-import-only and still absent from `ReExports`. The
+`@experimental` notice moved to `packages/render-core/CLAUDE.md`; the window it
+describes is the reason this was a change worth making now rather than a
+compatibility burden to carry.
+
+`publicApi.test.ts` lost its barrel-snapshot case and kept the other four, which
+are the ones that pin the contract that actually exists: the subpath list, no
+wildcard, workspace/`publishConfig` parity, and every declared subpath resolving
+to a file. A guard on a second spelling of a surface only ever proves the second
+spelling is pinned — never that the two spellings say the same thing.

@@ -1,8 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import * as barrel from './index.ts'
-
 // ADR-030 makes this package's `exports` map the public API contract, decoupled
 // from file layout, and marks the surface `@experimental` until it is frozen
 // under semver. The follow-up it named — "add an export-surface guard test in
@@ -16,8 +14,14 @@ import * as barrel from './index.ts'
 // only: a consumer pins a version and rebuilds on its own schedule, so a
 // removal breaks a *compile*, not a deployment. What is worth guarding here is
 // different — that the surface only changes when someone means it to. Hence a
-// symmetric snapshot: additions show up too, which is the point for a package
-// whose whole claim is a small curated barrel.
+// symmetric snapshot: additions show up too.
+//
+// There was a fifth case here, pinning the names re-exported from a `src/index.ts`
+// barrel. The barrel is gone (see the package CLAUDE.md): it duplicated 88 of
+// its 90 names from the subpath map below, contributed two `useRenderingBackend`
+// internals it claimed not to re-export, and had 15 in-repo importers against
+// the subpaths' 336. Pinning a second spelling of the same surface only ever
+// guaranteed the two spellings were pinned, not that they agreed.
 //
 // Update with `jest -u` and say in the commit message what moved and why.
 
@@ -35,14 +39,6 @@ const manifest = JSON.parse(
 ) as Manifest
 
 describe('render-core public surface', () => {
-  it('pins the barrel exports', () => {
-    // Runtime names only — a type-only export has no key here. That is the
-    // right line for this guard: a removed type is a compile error in the
-    // consumer's own build, a removed value is one too, but only the value can
-    // also be a silent `undefined` if someone reaches for it dynamically.
-    expect(Object.keys(barrel).sort()).toMatchSnapshot()
-  })
-
   it('pins the subpath exports', () => {
     expect(Object.keys(manifest.exports).sort()).toMatchSnapshot()
   })

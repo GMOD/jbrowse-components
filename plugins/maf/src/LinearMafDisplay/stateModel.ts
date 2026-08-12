@@ -19,7 +19,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core'
+import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import {
   installPerRegionLifecycle,
   regionDataMap,

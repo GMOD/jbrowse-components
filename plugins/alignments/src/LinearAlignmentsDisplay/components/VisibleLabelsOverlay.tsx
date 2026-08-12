@@ -1,5 +1,5 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { OverlayCanvas } from '@jbrowse/render-core'
+import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
 import { drawAlignmentLabels } from './drawAlignmentLabels.ts'

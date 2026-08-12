@@ -19,14 +19,12 @@
     "directory": "packages/render-core"
   },
   "author": "JBrowse Team",
-  "main": "src/index.ts",
   "//files": "src/shaders ships the shared .slang modules (hpmath, colorPack, pointGlyph) that any shader imports. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
   "files": [
     "esm",
     "src/shaders"
   ],
   "exports": {
-    ".": "./src/index.ts",
     "./RenderCanvas": "./src/RenderCanvas.tsx",
     "./RenderLifecycleMixin": "./src/RenderLifecycleMixin.ts",
     "./blockClipUtils": "./src/blockClipUtils.ts",
@@ -75,13 +73,7 @@
   "//publishConfig": "Generated from `exports` above by scripts/generate-publish-exports.ts (`pnpm autogen`) — edit that map, never this one. The two describe the same subpaths against different trees, and only this one is what an installed consumer resolves, so drift between them is invisible until someone unpacks the tarball. It used to end in a `./*` wildcard, which served every emitted file including the ones src/index.ts withholds as internal.",
   "publishConfig": {
     "access": "public",
-    "main": "esm/index.js",
-    "types": "esm/index.d.ts",
     "exports": {
-      ".": {
-        "types": "./esm/index.d.ts",
-        "import": "./esm/index.js"
-      },
       "./RenderCanvas": {
         "types": "./esm/RenderCanvas.d.ts",
         "import": "./esm/RenderCanvas.js"

@@ -1,4 +1,4 @@
-import { clampBlockScissor } from '@jbrowse/render-core'
+import { clampBlockScissor } from '@jbrowse/render-core/canvas2dUtils'
 
 import { arcLineWidth } from '../../features/arcs/arcLineWidth.ts'
 import {

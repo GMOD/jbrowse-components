@@ -1,4 +1,4 @@
-import { OverlayCanvas } from '@jbrowse/render-core'
+import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
 import { drawMafSummaryBars } from '../../LinearMafRenderer/rendering/summaryBars.ts'

@@ -1,5 +1,5 @@
 import { colorLongreadInv } from '@jbrowse/core/ui/palette'
-import { OverlayCanvas } from '@jbrowse/render-core'
+import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
 import { drawInversions } from '../../LinearMafRenderer/rendering/inversions.ts'

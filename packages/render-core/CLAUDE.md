@@ -1,7 +1,26 @@
 # @jbrowse/render-core
 
+GPU/Canvas2D rendering primitives for JBrowse displays: the hardware abstraction
+layer (HAL), the MST draw-lifecycle mixin, per-region / global backend base
+classes, the shared clip / canvas geometry utilities, and the React backend
+hooks.
+
+**@experimental** — names and signatures may change before this package is
+frozen under semver. A third-party plugin depending on it should pin an exact
+version and expect to rebuild on upgrades.
+
 Conceptual reference is `agent-docs/reference/GPU_RENDERING.md`; this is only
 what bites when editing _this package_.
+
+**There is no barrel — the `exports` map is the API, one subpath per module.**
+`src/index.ts` used to re-export a curated surface alongside the subpaths, which
+meant every symbol had two import paths that nothing kept in agreement. It was
+also 88/90 redundant with the subpath map, and the two names it did not share
+(`RecoveryBudget`, `RecoveryVerdict`) are `useRenderingBackend` internals the
+barrel's own docblock said it did not re-export. Every in-repo consumer already
+imported subpaths — 336 subpath imports against 15 barrel ones — so the barrel
+went and those 15 moved. Adding a module means adding its `exports` entry and
+running `pnpm autogen`; it does not mean adding a re-export anywhere.
 
 **It must not depend on `@jbrowse/core`** — the dependency runs the other way,
 and keeping this a leaf is what lets a third-party display use it without
