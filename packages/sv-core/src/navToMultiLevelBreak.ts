@@ -40,21 +40,13 @@ export async function navToMultiLevelBreak({
    */
   stops?: { refName: string; pos: number }[]
 }) {
-  const {
-    coverage,
-    region: r1,
-    mateRegion: r2,
-  } = await getBreakendAssemblyRegions({
+  const { assembly, coverage } = await getBreakendAssemblyRegions({
     feature,
     session,
     assemblyName,
   })
   const { refName, pos, mateRefName, matePos } = coverage
 
-  // Regions come from getBreakendAssemblyRegions for the record's own two ends,
-  // so the two-panel case resolves exactly as it always did; a longer chain
-  // resolves its extra stops against the same assembly.
-  const assembly = await session.assemblyManager.waitForAssembly(assemblyName)
   const chain =
     stops !== undefined && stops.length > 0
       ? stops
@@ -62,13 +54,11 @@ export async function navToMultiLevelBreak({
           { refName, pos },
           { refName: mateRefName, pos: matePos },
         ]
-  const panels = chain.map((stop, idx) => {
-    const region =
-      idx === 0 && stop.refName === refName
-        ? r1
-        : idx === 1 && stop.refName === mateRefName
-          ? r2
-          : assembly?.regions?.find(r => r.refName === stop.refName)
+  // Every stop resolves the same way, the record's own two ends included:
+  // `getBreakendAssemblyRegions` found those by this exact lookup against this
+  // exact assembly, so special-casing them here only said the same thing twice.
+  const panels = chain.map(stop => {
+    const region = assembly.regions?.find(r => r.refName === stop.refName)
     if (!region) {
       throw new Error(
         `region ${stop.refName} not found in assembly ${assemblyName}`,

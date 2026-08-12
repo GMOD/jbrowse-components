@@ -196,7 +196,10 @@ export async function getBreakendAssemblyRegions({
       `regions ${refName}, ${mateRefName} not found in assembly ${assemblyName}`,
     )
   }
-  return { coverage, region, mateRegion }
+  // the assembly comes back out because resolving a third locus against it is
+  // what a chain walk needs, and awaiting it a second time is a second chance
+  // for the two to be different objects
+  return { assembly, coverage, region, mateRegion }
 }
 
 export function makeTitle(f: Feature) {
@@ -309,13 +312,16 @@ export function splitRegionAtPosition<
 
 /**
  * #api
- * Stable id for the breakpoint split view spawned from a row of a spreadsheet,
- * shared by every entry point (the sheet's row menu, and the SV inspector's
- * chord clicks) so they reuse one view instead of stacking a new one each.
+ * Stable id for the breakpoint split view a given launcher spawns, so repeated
+ * launches from the same place reuse one view instead of stacking a new one
+ * each time. `ownerId` is whatever the launcher is: a spreadsheet view (shared
+ * by the sheet's row menu and the SV inspector's chord clicks, which then land
+ * in the same view), or a variant feature widget.
+ *
+ * Spelling it out inline is the same string until it isn't — the dialog appends
+ * its own shape suffix to whatever it is handed, so a launcher that respells the
+ * prefix quietly gets a second view rather than a broken one.
  */
-export function breakpointSplitViewId(
-  spreadsheetViewId: string,
-  assemblyName: string,
-) {
-  return `${spreadsheetViewId}_${assemblyName}_breakpointsplitview`
+export function breakpointSplitViewId(ownerId: string, assemblyName: string) {
+  return `${ownerId}_${assemblyName}_breakpointsplitview`
 }

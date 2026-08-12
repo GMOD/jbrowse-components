@@ -7,6 +7,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import {
+  breakpointSplitViewId,
   getAssemblyName,
   hasBreakpointSplitView,
   launchBreakpointSplitView,
@@ -67,7 +68,7 @@ const LaunchSvPanel = observer(function LaunchSvPanel({
                     end: start + 1,
                     mate: { refName, start: end, end: end + 1 },
                   }),
-                  stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
+                  stableViewId: breakpointSplitViewId(model.id, assemblyName),
                 })
               }}
             >

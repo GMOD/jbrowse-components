@@ -2,6 +2,7 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { ActionLink } from '@jbrowse/core/ui'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import {
+  breakpointSplitViewId,
   getAssemblyName,
   hasBreakpointSplitView,
   launchBreakpointSplitView,
@@ -64,7 +65,7 @@ const LaunchBreakpointSplitViewPanel = observer(
             view: model.view,
             assemblyName,
             feature: new SimpleFeature(feature),
-            stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
+            stableViewId: breakpointSplitViewId(model.id, assemblyName),
           })
         }}
       >
