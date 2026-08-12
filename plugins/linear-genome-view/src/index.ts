@@ -214,6 +214,14 @@ export type {
 // tarballs don't ship and consumers can't resolve. check-declaration-leaks
 // guards this; see issue #4678.
 export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
+// The scalebar's grid, published because it is a contract other views draw
+// against rather than an internal of this one: the synteny view's location
+// markers continue this ruler down through the ribbons, and pin their pitch AND
+// PHASE against this function rather than re-deriving them (which is how they
+// came to sit one base off it). `Tick` comes with it so the declaration doesn't
+// leak the source path — see the note above.
+export { makeTicks } from './LinearGenomeView/util.ts'
+export type { Tick } from './LinearGenomeView/util.ts'
 export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'

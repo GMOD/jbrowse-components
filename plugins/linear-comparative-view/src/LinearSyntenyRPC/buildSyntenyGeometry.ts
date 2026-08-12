@@ -73,7 +73,9 @@ export const MIN_CIGAR_PX_WIDTH = 2
 //
 // (120, 15) is LinearGenomeView's own scalebar contract (makeTicks), so the
 // grid IS the ruler's rather than merely resembling it, at whatever pitch the
-// current zoom put the ruler on.
+// current zoom put the ruler on. Its pitch is not the whole contract: the ruler
+// has a PHASE too, and taking only the pitch left every tick one base off the
+// gridline it continues — see RULER_GRID_ORIGIN.
 //
 // HALVED, so a tick sits on every labelled gridline AND on the midpoint between
 // each adjacent pair — see MARKER_PITCH_DIVISOR.
@@ -146,6 +148,22 @@ const MARKER_PITCH_DIVISOR = 2
 // for what that distinction cost.
 const MIN_MARKER_FEATURE_PX = 30
 
+// The genomic coordinate the ruler's grid is in phase with, which is NOT zero.
+//
+// LinearGenomeView draws the gridline for a round coordinate N at the LEFT EDGE
+// of the base it labels, i.e. at 0-based N-1: `makeTicks` walks multiples of the
+// pitch and emits `{ base: base - 1 }`, `makeBlockTicks` places it at
+// `(base - start) / bpPerPx`, and the scalebar labels it `base + 1`. So the grid
+// is the coordinates congruent to -1 mod the pitch, and anchoring the ticks at
+// multiples of the pitch instead put every one of them one base to the RIGHT of
+// the gridline it is meant to continue.
+//
+// A base is a base, so this is invisible at the zooms these figures are usually
+// read at — but the ruler's pitch floors at 5bp, and at base-level zoom (0.02
+// bp/px) one base is 50px against a 250px pitch: a fifth of the way to the next
+// tick, which is where the tick stops reading as that gridline at all.
+export const RULER_GRID_ORIGIN = -1
+
 // The marker grid's pitch in query-axis bp at this zoom: the query view's own
 // scalebar pitch, subdivided.
 //
@@ -202,11 +220,11 @@ export function buildSyntenyGeometry({
   p12_cumBp: Float64Array
   p21_cumBp: Float64Array
   p22_cumBp: Float64Array
-  // Per feature, the query axis's cumBp at genomic coordinate 0 of the
-  // displayed region it was placed in (`cumBpAtGenomicZero`). Only its residue
-  // mod the grid pitch is read: it is what turns "a round coordinate of this
-  // chromosome" into "this cumBp", and it is per feature because a view can
-  // show several regions at once, each with its own offset into cumBp.
+  // Per feature, the query axis's cumBp at RULER_GRID_ORIGIN of the displayed
+  // region it was placed in (`cumBpAtGenomicCoord`). Only its residue mod the
+  // grid pitch is read: it is what turns "a gridline of this chromosome's
+  // scalebar" into "this cumBp", and it is per feature because a view can show
+  // several regions at once, each with its own offset into cumBp.
   queryGridAnchors: Float64Array
   strands: Int8Array
   parsedCigars: ArrayLike<number>[]

@@ -2,6 +2,7 @@ import { CIGAR_D, CIGAR_M } from '@jbrowse/cigar-utils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 
 import {
+  RULER_GRID_ORIGIN,
   buildSyntenyGeometry,
   markerGridPitch,
 } from './buildSyntenyGeometry.ts'
@@ -35,8 +36,11 @@ function buildWithMarkers(widthBp: number, cigar: number[] = []) {
     p12_cumBp: new Float64Array([widthBp]),
     p21_cumBp: new Float64Array([0]),
     p22_cumBp: new Float64Array([widthBp]),
-    // genomic 0 is at cumBp 0, so the grid is at plain multiples of the pitch
-    queryGridAnchors: new Float64Array([0]),
+    // A forward region starting at genomic 0, so cumBp IS the genomic
+    // coordinate and the anchor is the grid origin itself: ticks land at
+    // RULER_GRID_ORIGIN plus multiples of the pitch (99, 199, ...), one base
+    // below each round coordinate, which is where the scalebar draws them.
+    queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([1]),
     parsedCigars: [cigar],
     starts: new Uint32Array([0]),
@@ -62,10 +66,11 @@ test('markers land on the query axis grid, not at fractions of the feature', () 
   const g = buildWithMarkers(1000)
   const markers = markerIndices(g.kinds)
 
-  // Half-open in the query axis: the tick at the feature's far edge belongs to
-  // whatever comes next, so 1000 is not one of these.
+  // One base below each round coordinate, because that is where the scalebar
+  // puts the gridline it labels with that coordinate — the ruler's phase, not
+  // an off-by-one here. See RULER_GRID_ORIGIN.
   expect(markers.map(i => g.bp1[i])).toEqual([
-    0, 100, 200, 300, 400, 500, 600, 700, 800, 900,
+    99, 199, 299, 399, 499, 599, 699, 799, 899, 999,
   ])
 
   // Each marker is a vertical tick: a point on each axis (top span and bottom
@@ -84,7 +89,7 @@ test('the grid is absolute, so panning does not slide the markers', () => {
     p12_cumBp: new Float64Array([1030]),
     p21_cumBp: new Float64Array([30]),
     p22_cumBp: new Float64Array([1030]),
-    queryGridAnchors: new Float64Array([0]),
+    queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([1]),
     parsedCigars: [[]],
     starts: new Uint32Array([30]),
@@ -98,8 +103,10 @@ test('the grid is absolute, so panning does not slide the markers', () => {
     viewOff1: 0,
     viewWidth: 1100,
   })
+  // The same ten positions the un-moved feature above took, not the same ten
+  // offsets into the feature.
   expect(markerIndices(g.kinds).map(i => g.bp1[i])).toEqual([
-    100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
+    99, 199, 299, 399, 499, 599, 699, 799, 899, 999,
   ])
 })
 
@@ -140,7 +147,7 @@ test('markers follow the CIGAR through a deletion', () => {
     p12_cumBp: new Float64Array([1000]),
     p21_cumBp: new Float64Array([0]),
     p22_cumBp: new Float64Array([900]),
-    queryGridAnchors: new Float64Array([0]),
+    queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([1]),
     parsedCigars: [[op(500, CIGAR_M), op(100, CIGAR_D), op(400, CIGAR_M)]],
     starts: new Uint32Array([0]),
@@ -158,11 +165,13 @@ test('markers follow the CIGAR through a deletion', () => {
   // Ticks are still on the query grid — the deletion moves where they LAND on
   // the target axis, never where they sit on the query one.
   expect(markers.map(i => g.bp1[i])).toEqual([
-    0, 100, 200, 300, 400, 500, 600, 700, 800, 900,
+    99, 199, 299, 399, 499, 599, 699, 799, 899, 999,
   ])
   // Query 600 and up is past the deletion, so those pair 100bp back. The tick at
-  // 500 is the deletion's own left edge, still paired at 0.
+  // 599 falls INSIDE the deletion, which is a span of query with no target to
+  // travel over: it pairs at the target coordinate the whole deletion collapses
+  // to (500), which is 99 back rather than a round 100.
   expect(markers.map(i => g.bp1[i]! - g.bp3[i]!)).toEqual([
-    0, 0, 0, 0, 0, 0, 100, 100, 100, 100,
+    0, 0, 0, 0, 0, 99, 100, 100, 100, 100,
   ])
 })

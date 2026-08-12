@@ -111,15 +111,22 @@ export function cumBpInEntry(entry: RegionIndexEntry, coord: number) {
   return entry.bpBefore + (r.reversed ? r.end - clamped : clamped - r.start)
 }
 
-// The cumBp that genomic coordinate 0 of this region's refName maps to, i.e.
-// `cumBpInEntry` with the clamp removed and extrapolated back to the origin.
-// Deliberately outside the region — usually far outside, and negative for a
-// forward region — because it is a PHASE, not a position: a consumer laying a
-// round-genomic-coordinate grid over cumBp needs only `anchor mod pitch` to
-// know where the grid's ticks fall. Direction is not encoded, and does not need
-// to be: a reversed region walks the same grid backwards, which is the same set
-// of tick positions.
-export function cumBpAtGenomicZero(entry: RegionIndexEntry) {
+// The cumBp a genomic coordinate of this region's refName maps to, i.e.
+// `cumBpInEntry` with the clamp removed, so the answer may be outside the
+// region — usually far outside, and negative for a coordinate before a forward
+// region's start. That is the point: a consumer laying a round-genomic-
+// coordinate grid over cumBp asks for one coordinate ON the grid and reads the
+// result as a PHASE, needing only `anchor mod pitch` to know where every tick
+// falls.
+//
+// DIRECTION IS ENCODED, and has to be. A reversed region walks the same grid
+// backwards, so for a grid symmetric about the origin the phase comes out the
+// same either way and this looks like it could drop the `reversed` arm — it
+// held that shape once. But the scalebar's grid is NOT symmetric about the
+// origin: it sits one bp below each round coordinate (see the caller in
+// buildSyntenyGeometry), and a grid offset from the origin lands on the other
+// side of it when the axis is reversed.
+export function cumBpAtGenomicCoord(entry: RegionIndexEntry, coord: number) {
   const r = entry.region
-  return entry.bpBefore + (r.reversed ? r.end : -r.start)
+  return entry.bpBefore + (r.reversed ? r.end - coord : coord - r.start)
 }

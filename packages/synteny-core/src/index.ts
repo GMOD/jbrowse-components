@@ -1,7 +1,7 @@
 export {
   bpToCumBp,
   buildBpRegionIndex,
-  cumBpAtGenomicZero,
+  cumBpAtGenomicCoord,
   cumBpInEntry,
   findRegionEntry,
 } from './bpRegionIndex.ts'
