@@ -22,7 +22,9 @@ reference others may hold, not as free-form prose.
 **Rendering and displays**
 
 - [Alignments](#alignments) — read-pair links, coverage decomposition by MAPQ /
-  discordancy / HP, large-region viewing for dense BAM, SBX duplex `yc` coloring
+  discordancy / HP, large-region viewing for dense BAM, SBX duplex `yc` coloring,
+  why CRAM decode parallelism is not the lever and what the profile points at
+  instead
 - [Methylation plotting](#methylation-plotting) — HP-stratified aggregate lines,
   per-read matrix
 - [Multi-sample variant display](#multi-sample-variant-display) — genotype-quality
@@ -136,6 +138,42 @@ reads (Illumina/HiFi) where most mismatches are real variants, not errors.
 
 **Typed-array refactor.** Worker return is flat parallel arrays — could regroup into
 sub-objects (mods, sashimi, coverage). Flat is simple but long; just an idea.
+
+**CRAM decode parallelism is not the lever; allocation might be.** `@gmod/cram`
+13.2.0 decodes slices on a worker pool, and nested inside our RPC worker that is
+worth 2.1–3.6x **on the decode alone** (its `docs/WORKERS.md`). End to end in a
+pan it measured ~1.1x on the deepest fixture and ~1.0 on typical ones, and the
+CPU profile says why. Profiling a 1000x-shortread CRAM render across every
+thread:
+
+| thread             | idle       |
+| ------------------ | ---------- |
+| main               | 68.9%      |
+| RPC worker         | 29.5% (+12% GC) |
+| slice worker (× 4) | 72.2% each |
+
+**The slice workers are starved, not saturated.** Nothing is CPU-bound, so
+adding decode throughput pushes on the end that is already waiting. The one
+large productive-but-wasteful cost is the RPC worker's **12% GC (724 ms)**.
+
+The hypothesis that number is consistent with — *not* a measured finding, and it
+needs an allocation profile before anyone acts on it — is that we allocate one
+`CramSlightlyLazyFeature` per record (153,677 of them for that fixture) and then
+serialize the lot out of the worker. That is the same problem `@gmod/cram`
+already solved *inside* itself with the read-feature arena and the tag/quality
+columns, stopping one layer short of us. If it holds, the fix is columnar all
+the way to the renderer rather than a wrapper per read, which is the same
+direction as the typed-array item above.
+
+**There is also a structural ceiling worth knowing before optimizing here.** The
+pool's win scales with how much one query decodes — 1.64x at 19 kb, 2.69x at
+100 kb, falling back to 1.87x at 250 kb as the host-side deserialize (serial)
+takes over. But a pileup is gated on estimated fetch bytes (5 MB for CRAM) and
+screen density, and 100 kb of that fixture is ~11.9 MB, so we refuse it with a
+force-load banner. The crossover is near 40 kb, which pins an interactive pileup
+to the shallow end of that curve permanently. The library's headline numbers are
+therefore not collectable by our pileup by construction — they are collectable by
+an export, a whole-region scan, or a force-load.
 
 **Color-by → coverage summarization.** The coverage track is already a decomposition
 engine, not a flat depth bar: `snpCoverage` partitions a column's depth by base,
