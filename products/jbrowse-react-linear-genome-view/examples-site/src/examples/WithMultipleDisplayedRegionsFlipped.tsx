@@ -2,26 +2,6 @@ import {
   JBrowseLinearGenomeView,
   useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
-import { observer } from 'mobx-react'
-
-import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
-
-const FlipView = observer(function FlipView({ state }: { state: ViewModel }) {
-  const view = state.session.view
-  const isFlipped = view.displayedRegions[0]?.reversed ?? false
-  return (
-    <div>
-      <button
-        onClick={() => {
-          view.horizontallyFlip()
-        }}
-      >
-        {isFlipped ? 'Unflip' : 'Flip horizontally'}
-      </button>
-      <JBrowseLinearGenomeView viewState={state} />
-    </div>
-  )
-})
 
 export default function WithMultipleDisplayedRegionsFlipped() {
   const state = useCreateViewState({
@@ -60,5 +40,21 @@ export default function WithMultipleDisplayedRegionsFlipped() {
       },
     },
   })
-  return <FlipView state={state} />
+  return (
+    <div>
+      {/* horizontallyFlip() reverses the *arrangement*: the regions swap
+          places and each one's own `reversed` flips with them. So there is no
+          "is the view flipped" bit to read back — with these two regions,
+          region 0 is forward-facing both before and after. The scalebar is
+          what shows it */}
+      <button
+        onClick={() => {
+          state.session.view.horizontallyFlip()
+        }}
+      >
+        Flip horizontally
+      </button>
+      <JBrowseLinearGenomeView viewState={state} />
+    </div>
+  )
 }
