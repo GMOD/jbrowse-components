@@ -73,12 +73,14 @@ const reported = new WeakSet<AddItemAction>()
 // recursively copy the array spine so the item helpers never mutate a root
 // model's own literal or a thunk's internals; leaf items (with their
 // onClick/icon) are shared by ref
+function cloneMenuItem(item: MenuItem): MenuItem {
+  return 'subMenu' in item
+    ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
+    : item
+}
+
 function cloneMenuItems(items: MenuItem[]): MenuItem[] {
-  return items.map(item =>
-    'subMenu' in item
-      ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
-      : item,
-  )
+  return items.map(item => cloneMenuItem(item))
 }
 
 function materialize(menuItems: MenuItemsGetter) {
@@ -124,7 +126,13 @@ function applyItemActions(items: MenuItem[], actions: AddItemAction[]) {
   for (const action of actions) {
     try {
       const target = resolveSubMenu(items, action.menuPath)
-      insertAt(target, action.menuItem, action.position)
+      // the contributed item is cloned for the same reason the definitions are:
+      // a contributed sub-menu is a path a LATER contribution can resolve into,
+      // and `resolveSubMenu` hands back the array it found. Inserted by
+      // reference, that array is the action's own payload — which outlives the
+      // resolution, so each open pushes another copy into it and the sub-menu
+      // grows by one item every time the menu is opened or re-rendered
+      insertAt(target, cloneMenuItem(action.menuItem), action.position)
     } catch (error) {
       if (!reported.has(action)) {
         reported.add(action)

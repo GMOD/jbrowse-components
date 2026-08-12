@@ -272,6 +272,42 @@ describe('item contributions', () => {
     expect(menus[0]!.menuItems()).not.toBe(definitions[0]!.menuItems)
   })
 
+  // a contributed sub-menu is a path later contributions resolve into, so the
+  // array they land in has to be a copy: writing into the action's own payload
+  // survives the resolution, and the item then reappears once per open
+  it('does not accumulate in a sub-menu another contribution supplied', () => {
+    const actions: MenuAction[] = [
+      {
+        type: 'addItem',
+        menuPath: ['Add'],
+        menuItem: {
+          label: 'My plugin',
+          subMenu: [item('Its own view')],
+        } as unknown as MenuItem,
+      },
+      {
+        type: 'addItem',
+        menuPath: ['Add', 'My plugin'],
+        menuItem: item('A second view'),
+      },
+    ]
+    const menus = run([{ label: 'Add', menuItems: [] }], actions)
+    const opened = () => menus[0]!.menuItems()
+    const expected = [
+      {
+        label: 'My plugin',
+        subMenu: [{ label: 'Its own view' }, { label: 'A second view' }],
+      },
+    ]
+    expect(opened()).toEqual(expected)
+    expect(opened()).toEqual(expected)
+    // and the replay the next menus() evaluation does starts from the same
+    // actions, so the payload must not have been written to either
+    expect(
+      run([{ label: 'Add', menuItems: [] }], actions)[0]!.menuItems(),
+    ).toEqual(expected)
+  })
+
   // menus() replays the whole action log on every re-render, and a menu can be
   // opened any number of times; neither may accumulate
   it('is stable across replays and repeated opens', () => {
