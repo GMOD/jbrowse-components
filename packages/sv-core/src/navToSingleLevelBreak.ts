@@ -1,4 +1,5 @@
 import { gatherOverlaps, getSession, stripTrackIds } from '@jbrowse/core/util'
+import { bpToOffset, compareBpOffsets } from '@jbrowse/core/util/Base1DUtils'
 import { when } from 'mobx'
 
 import {
@@ -9,6 +10,7 @@ import {
 
 import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 function singleLevelSnap(feature: Feature, regions: Region[]) {
   return {
@@ -23,6 +25,41 @@ function singleLevelSnap(feature: Feature, regions: Region[]) {
   }
 }
 
+/**
+ * `getBreakendAssemblyRegions`, with the two ends put in the order a single row
+ * lays them out.
+ *
+ * `gatherOverlaps` groups by refName and, within a refName, sorts by start — so
+ * the row reads left to right in genomic order. A BND may name a mate *upstream*
+ * of itself (`chr1:2000000  ]chr1:1000000]`, which is the other half of every
+ * reciprocal pair), and then the record's own end is the right-hand one. Taken
+ * in record order, the two windows below are built backwards: they overlap,
+ * merge into everything between the breakends, and the view frames the middle of
+ * the deletion rather than either end of it.
+ *
+ * Only a same-contig pair can be out of order. Across two contigs the row order
+ * is the order the regions are handed to `gatherOverlaps`, which is the record's
+ * own end first.
+ */
+async function orderedBreakendEnds(args: {
+  feature: Feature
+  session: AbstractSessionModel
+  assemblyName: string
+}) {
+  const { coverage, region, mateRegion } =
+    await getBreakendAssemblyRegions(args)
+  const { refName, pos, mateRefName, matePos } = coverage
+  return refName === mateRefName && matePos < pos
+    ? {
+        // refName === mateRefName here, so swapping the positions is the whole
+        // of the swap and `region`/`mateRegion` are the same region anyway
+        coverage: { ...coverage, pos: matePos, matePos: pos },
+        region,
+        mateRegion,
+      }
+    : { coverage, region, mateRegion }
+}
+
 export async function singleLevelFocusedSnapshotFromBreakendFeature({
   feature,
   session,
@@ -34,7 +71,7 @@ export async function singleLevelFocusedSnapshotFromBreakendFeature({
   assemblyName: string
   windowSize?: number
 }) {
-  const { coverage, region, mateRegion } = await getBreakendAssemblyRegions({
+  const { coverage, region, mateRegion } = await orderedBreakendEnds({
     feature,
     session,
     assemblyName,
@@ -65,7 +102,7 @@ export async function singleLevelEncompassingSnapshotFromBreakendFeature({
   session: AbstractSessionModel
   assemblyName: string
 }) {
-  const { coverage, region, mateRegion } = await getBreakendAssemblyRegions({
+  const { coverage, region, mateRegion } = await orderedBreakendEnds({
     feature,
     session,
     assemblyName,
@@ -76,6 +113,57 @@ export async function singleLevelEncompassingSnapshotFromBreakendFeature({
       { ...region, assemblyName },
       { ...mateRegion, assemblyName },
     ]),
+  }
+}
+
+/**
+ * Frame the whole breakend span, padded by `windowSize`, across the view.
+ *
+ * Both ends are resolved to `BpOffset`s — `moveTo`'s units, bp within a
+ * displayed region — rather than to the pixel offsets `bpToPx` reports, and
+ * clamped into their region first: a breakend within `windowSize` of a contig's
+ * end otherwise names a coordinate no displayed region holds, which reads back
+ * as "unable to navigate" for a locus the view is perfectly able to show.
+ */
+function moveToEncompass({
+  lgv,
+  refName,
+  startPos,
+  mateRefName,
+  endPos,
+  windowSize,
+}: {
+  lgv: LinearGenomeViewModel
+  refName: string
+  startPos: number
+  mateRefName: string
+  endPos: number
+  windowSize: number
+}) {
+  const { displayedRegions } = lgv
+  const clamped = (name: string, coord: number) => {
+    const r = displayedRegions.find(r => r.refName === name)
+    return r ? Math.min(Math.max(coord, r.start), r.end) : coord
+  }
+  const l0 = bpToOffset({
+    refName,
+    coord: clamped(refName, startPos - windowSize),
+    displayedRegions,
+  })
+  const r0 = bpToOffset({
+    refName: mateRefName,
+    coord: clamped(mateRefName, endPos + windowSize),
+    displayedRegions,
+  })
+  if (l0 && r0) {
+    // `orderedBreakendEnds` has already put the ends in row order, but the two
+    // windows can still cross once padded — a pair closer together than
+    // `windowSize` — and moveTo computes a negative bpPerPx from a backwards
+    // pair rather than refusing
+    const [a, b] = compareBpOffsets(l0, r0) <= 0 ? [l0, r0] : [r0, l0]
+    lgv.moveTo(a, b)
+  } else {
+    getSession(lgv).notify('Unable to navigate to breakpoint')
   }
 }
 
@@ -147,15 +235,13 @@ export async function navToSingleLevelBreak({
     }
   } else {
     // for encompassing view, fit the whole range
-    const l0 = lgv.bpToPx({
-      coord: Math.max(0, startPos - windowSize),
+    moveToEncompass({
+      lgv,
       refName,
+      startPos,
+      mateRefName,
+      endPos,
+      windowSize,
     })
-    const r0 = lgv.bpToPx({ coord: endPos + windowSize, refName: mateRefName })
-    if (l0 && r0) {
-      lgv.moveTo({ ...l0, offset: l0.offsetPx }, { ...r0, offset: r0.offsetPx })
-    } else {
-      getSession(lgv).notify('Unable to navigate to breakpoint')
-    }
   }
 }

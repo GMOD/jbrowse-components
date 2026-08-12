@@ -277,6 +277,53 @@ export function bpToPx({
   return undefined
 }
 
+/**
+ * The {@link BpOffset} a 0-based genomic coord sits at — a region index plus an
+ * offset in **bp** from that region's left screen edge, which is the shape
+ * `moveTo` and `computeMoveToLayout` take.
+ *
+ * `bpToPx` above answers the neighbouring question in pixels and returns an
+ * `index` too, so `{...bpToPx(...), offset: hit.offsetPx}` type-checks and is
+ * wrong: `moveTo` re-adds the bp of every region before `index`, which
+ * `offsetPx` has already counted, and divides by a bpPerPx that was never in
+ * the units to begin with. Reach for this when the destination is a coordinate
+ * rather than a pixel.
+ *
+ * Undefined when no displayed region holds the coord, same as `bpToPx`; a
+ * caller that means "as far as the region goes" clamps before asking.
+ */
+export function bpToOffset({
+  refName,
+  coord,
+  displayedRegions,
+}: {
+  refName: string
+  coord: number
+  displayedRegions: {
+    refName: string
+    start: number
+    end: number
+    reversed?: boolean
+  }[]
+}): BpOffset | undefined {
+  for (const [index, r] of displayedRegions.entries()) {
+    if (refName === r.refName && coord >= r.start && coord <= r.end) {
+      return { refName, index, offset: bpOffsetInRegion(r, coord) }
+    }
+  }
+  return undefined
+}
+
+/**
+ * Screen order of two {@link BpOffset}s: negative when `a` is to the left of
+ * `b`. `moveTo` takes its arguments left-to-right and computes a negative
+ * bpPerPx from a backwards pair, so a caller deriving the two from data that
+ * can name them in either order sorts with this first.
+ */
+export function compareBpOffsets(a: BpOffset, b: BpOffset) {
+  return a.index - b.index || a.offset - b.offset
+}
+
 // Convenience wrapper around bpToPx that matches the shape used by
 // Base1DView's .bpToPx() view method — returns just the offsetPx.
 export function layoutBpToPx(
