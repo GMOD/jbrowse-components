@@ -98,9 +98,17 @@ export async function checkDemoHeights(page: Page): Promise<string[]> {
  * session in the URL is applied.
  */
 export async function checkSessionUrlRoundTrip(page: Page): Promise<string[]> {
-  // scoped to .demo: the doc prose above it renders code blocks that carry
-  // their own copy buttons
-  const button = await page.$('#session-in-url .demo button')
+  // The save button by its name, not the first button in the demo. Scoped to
+  // .demo because the doc prose above it renders code blocks with their own
+  // copy buttons — and matched by text because a demo is free to put its save
+  // button in the app's own toolbar (react-app's `headerButtons`), behind that
+  // toolbar's menus. Taking the first button there opens the File menu and
+  // reports as "save did not write a session to the url".
+  const buttons = await page.$$('#session-in-url .demo button')
+  const labels = await Promise.all(
+    buttons.map(b => b.evaluate(el => el.textContent)),
+  )
+  const button = buttons[labels.findIndex(text => /save/i.test(text))]
   if (!button) {
     return ['session-in-url: save button not rendered']
   }

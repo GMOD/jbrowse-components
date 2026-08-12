@@ -1,34 +1,45 @@
 import { useEffect, useState } from 'react'
 
-import { JBrowse, decodeSession, encodeSession } from '@jbrowse/react-app2'
+import {
+  JBrowseApp,
+  decodeSession,
+  encodeSession,
+  useCreateViewState,
+} from '@jbrowse/react-app2'
 
-import type { SessionSnapshot, ViewModel } from '@jbrowse/react-app2'
+import type { SessionSnapshot } from '@jbrowse/react-app2'
 
 const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
-const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
-
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'volvox_gff3',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
-    adapter: { type: 'Gff3TabixAdapter', uri: `${base}/volvox.sort.gff3.gz` },
-  },
-]
-
-// what opens with no session in the URL, and what File > New session returns to
-const views = [
-  {
-    type: 'LinearGenomeView',
-    init: {
-      assembly: 'volvox',
-      loc: 'ctgA:1..50000',
-      tracks: ['volvox_gff3'],
+const config = {
+  assemblies: [{ name: 'volvox', uri: `${base}/volvox.2bit` }],
+  tracks: [
+    {
+      type: 'FeatureTrack',
+      trackId: 'volvox_gff3',
+      name: 'Volvox genes',
+      assemblyNames: ['volvox'],
+      adapter: { type: 'Gff3TabixAdapter', uri: `${base}/volvox.sort.gff3.gz` },
     },
+  ],
+  // what opens with no session in the URL, and what File > New session returns
+  // to. `<JBrowse>` spells this as a `views` prop; held as a config it is the
+  // same snapshot, and it is what the restored session below layers on top of
+  defaultSession: {
+    name: 'Session in URL',
+    views: [
+      {
+        id: 'view-0',
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'volvox',
+          loc: 'ctgA:1..50000',
+          tracks: ['volvox_gff3'],
+        },
+      },
+    ],
   },
-]
+}
 
 // The session goes in the hash fragment rather than the query string. The
 // fragment is never sent to the server, so a long session can't overflow the
@@ -46,6 +57,52 @@ function writeSessionParam(value: string) {
   window.history.replaceState(null, '', `#${params.toString()}`)
 }
 
+// The engine is built here rather than by `<JBrowse>` because the Save button
+// below needs it *while rendering*, to close over it. A `ref` on `<JBrowse>`
+// hands the engine back a render after mount, which is a render of the toolbar
+// with a button that cannot do anything yet; holding the engine yourself means
+// there is never a moment where it is missing. `<JBrowseApp>` is what the
+// props component renders internally, so nothing is given up by dropping to it.
+function App({ session, note }: { session?: SessionSnapshot; note: string }) {
+  const viewState = useCreateViewState({ config, session })
+  const [status, setStatus] = useState(note)
+
+  return (
+    <div>
+      <div style={{ padding: 8, fontSize: 13, background: '#8881' }}>
+        {status || 'navigate or open a track, then save from the app toolbar'}
+      </div>
+      <JBrowseApp
+        viewState={viewState}
+        // your own controls, rendered in the app's toolbar beside the session
+        // name — the slot JBrowse Web fills with its Share button. The button
+        // has to be yours because only your app knows the URL its page is
+        // served at, and whether that page restores a session at all.
+        headerButtons={
+          <button
+            type="button"
+            onClick={() => {
+              void encodeSession(viewState)
+                .then(encoded => {
+                  writeSessionParam(encoded)
+                  setStatus(
+                    `saved to the URL (${encoded.length} chars) — copy the address bar, or reload to restore it`,
+                  )
+                })
+                .catch((e: unknown) => {
+                  console.error(e)
+                  setStatus(`could not save the session to the URL: ${e}`)
+                })
+            }}
+          >
+            Save to URL
+          </button>
+        }
+      />
+    </div>
+  )
+}
+
 export default function SessionInUrl() {
   // undefined while the URL is being decoded, null once there is nothing to
   // restore — so the app isn't built with an empty session first and replaced.
@@ -54,8 +111,7 @@ export default function SessionInUrl() {
   const [session, setSession] = useState<SessionSnapshot | null | undefined>(
     () => (readSessionParam() ? undefined : null),
   )
-  const [viewState, setViewState] = useState<ViewModel | null>(null)
-  const [status, setStatus] = useState('')
+  const [note, setNote] = useState('')
 
   useEffect(() => {
     const param = readSessionParam()
@@ -65,50 +121,20 @@ export default function SessionInUrl() {
     decodeSession(param)
       .then(snap => {
         setSession(snap)
-        setStatus(`restored "${snap.name}" from the URL`)
+        setNote(`restored "${snap.name}" from the URL`)
       })
       .catch((e: unknown) => {
         // a truncated or hand-edited link shouldn't strand the user on a
-        // blank app: fall back to the declarative views and say so
+        // blank app: fall back to the config's own views and say so
         console.error(e)
         setSession(null)
-        setStatus(`could not restore the session in the URL: ${e}`)
+        setNote(`could not restore the session in the URL: ${e}`)
       })
   }, [])
 
-  if (session === undefined) {
-    return null
-  }
-
-  return (
-    <div>
-      <div style={{ padding: 8, fontSize: 13, background: '#8881' }}>
-        <button
-          type="button"
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ;(async () => {
-              if (viewState) {
-                const encoded = await encodeSession(viewState)
-                writeSessionParam(encoded)
-                setStatus(
-                  `saved to the URL (${encoded.length} chars) — copy the address bar, or reload to restore it`,
-                )
-              }
-            })()
-          }}
-        >
-          Save this view to the URL
-        </button>{' '}
-        {status || 'navigate or open a track, then save'}
-      </div>
-      <JBrowse
-        ref={setViewState}
-        assemblies={assemblies}
-        tracks={tracks}
-        views={views}
-        session={session ?? undefined}
-      />
-    </div>
+  // the engine is built out of the decoded session, so it can't be built until
+  // there is one — hence the separate component, mounted once we know
+  return session === undefined ? null : (
+    <App session={session ?? undefined} note={note} />
   )
 }
