@@ -39,6 +39,27 @@ test('a read that throws falls back rather than propagating', () => {
   expect(localStorageGetBoolean('a', true)).toBe(true)
 })
 
+// The guards make a failed write indistinguishable from a successful one,
+// which is right for the autoruns that persist settings and wrong for anything
+// that reads the key back to learn the current value: it would read its own
+// default and report it as what is stored.
+test('a write reports whether the store took it', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  expect(localStorageSetItem('a', '1')).toBe(true)
+  expect(localStorageRemoveItem('a')).toBe(true)
+  jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new DOMException('quota', 'QuotaExceededError')
+  })
+  jest.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+    throw new DOMException('blocked', 'SecurityError')
+  })
+  expect(localStorageSetItem('a', '1')).toBe(false)
+  expect(localStorageRemoveItem('a')).toBe(false)
+  // warn is stubbed rather than asserted on: `warnedOnWrite` is a module-level
+  // latch, so whether the line lands here depends on test order
+  expect(warn).toBeDefined()
+})
+
 test('remove is guarded the same way', () => {
   localStorageSetItem('a', '1')
   localStorageRemoveItem('a')

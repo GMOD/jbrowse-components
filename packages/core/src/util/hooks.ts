@@ -6,6 +6,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 // relative, not through the `util` barrel: that barrel re-exports this file
 import {
+  localStorageAvailable,
   localStorageGetJSON,
   localStorageRemoveItem,
   localStorageSetItem,
@@ -168,23 +169,39 @@ function resolveUpdate<T>(value: T | ((val: T) => T), prev: T) {
  *
  * `enabled: false` keeps the value in component state only: nothing is read,
  * written or shared. Callers use it for a key that isn't meaningful yet (no
- * assembly chosen, so nothing to scope the key to).
+ * assembly chosen, so nothing to scope the key to). A page with no usable store
+ * at all — an RPC worker, SSR, a cross-origin iframe with third-party storage
+ * blocked, which is the embedded products on someone else's page — runs in that
+ * same mode, because reading a key back through a store that dropped the write
+ * answers the default and would report it as the stored value: the control
+ * would revert the instant the user moved it.
  */
 export function useLocalStorage<T>(
   key: string,
   initialValue: T,
   enabled = true,
 ) {
+  // one concept, not two: `persists` is "this key is really backed by the
+  // store", and everything below branches on it rather than on `enabled`
+  const persists = enabled && localStorageAvailable()
   const [storedValue, setStoredValue] = useState<T>(() =>
-    enabled ? localStorageGetJSON(key, initialValue) : initialValue,
+    persists ? localStorageGetJSON(key, initialValue) : initialValue,
   )
-  // re-read when the key or `enabled` changes at runtime (the useState
+  // re-read when the key or `persists` changes at runtime (the useState
   // initializer only runs once); render-phase reset rather than an effect
-  const [prev, setPrev] = useState({ key, enabled })
-  if (key !== prev.key || enabled !== prev.enabled) {
-    setPrev({ key, enabled })
+  const [prev, setPrev] = useState({ key, persists })
+  // Latched when the store refuses a write. Until then the store is the base
+  // every update resolves against, which is what makes two `setValue(v => …)`
+  // calls in one handler both land. Afterwards it cannot be: the store still
+  // holds the value the user changed away from, so every later update would
+  // recompute the same `next` from it and the control would move once and then
+  // stick. Reset with the key, since the refusal was about this one.
+  const storeRefusedRef = useRef(false)
+  if (key !== prev.key || persists !== prev.persists) {
+    setPrev({ key, persists })
+    storeRefusedRef.current = false
     setStoredValue(
-      enabled ? localStorageGetJSON(key, initialValue) : initialValue,
+      persists ? localStorageGetJSON(key, initialValue) : initialValue,
     )
   }
 
@@ -193,16 +210,16 @@ export function useLocalStorage<T>(
   const initialRef = useRef(initialValue)
   initialRef.current = initialValue
   useEffect(() => {
-    if (!enabled) {
+    if (!persists) {
       return
     }
     return subscribe(key, () => {
       setStoredValue(localStorageGetJSON(key, initialRef.current))
     })
-  }, [key, enabled])
+  }, [key, persists])
 
   const setValue = useEventCallback((value: T | ((val: T) => T)) => {
-    if (!enabled) {
+    if (!persists || storeRefusedRef.current) {
       setStoredValue(prevValue => resolveUpdate(value, prevValue))
       return
     }
@@ -210,15 +227,25 @@ export function useLocalStorage<T>(
       value,
       localStorageGetJSON(key, initialRef.current),
     )
-    if (next === undefined) {
-      // clearing the key, not storing the string "undefined" — which is what
-      // `setItem(key, JSON.stringify(undefined))` writes, and which then throws
-      // on the way back in. `useAssemblySelection` holds a `string | undefined`
-      localStorageRemoveItem(key)
+    const wrote =
+      next === undefined
+        ? // clearing the key, not storing the string "undefined" — which is what
+          // `setItem(key, JSON.stringify(undefined))` writes, and which then
+          // throws on the way back in. `useAssemblySelection` holds a
+          // `string | undefined`
+          localStorageRemoveItem(key)
+        : localStorageSetItem(key, JSON.stringify(next))
+    if (wrote) {
+      notify(key)
     } else {
-      localStorageSetItem(key, JSON.stringify(next))
+      // The store read fine and then refused the write: quota exhausted, or
+      // Safari private browsing. Notifying would hand every instance what the
+      // store still holds — the value the user just changed away from — so the
+      // control would snap back. Fall to the same component-local mode
+      // `enabled: false` runs in.
+      storeRefusedRef.current = true
+      setStoredValue(next)
     }
-    notify(key)
   })
 
   return [storedValue, setValue] as const

@@ -209,6 +209,7 @@ export {
 } from './intervals.ts'
 export { springAnimate } from './springAnimate.ts'
 export {
+  localStorageAvailable,
   localStorageGetBoolean,
   localStorageGetItem,
   localStorageGetJSON,

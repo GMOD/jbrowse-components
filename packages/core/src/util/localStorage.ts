@@ -31,6 +31,21 @@ function getStore() {
   return store ?? undefined
 }
 
+/**
+ * Whether there is a store to persist to at all — the first two failures above,
+ * both of which are decided once for the page.
+ *
+ * Every accessor here is safe without this; what it answers is the different
+ * question of whether persistence is *real*. With no store, a write is dropped
+ * and the matching read answers the default, so a caller that round-trips a
+ * value through a key (rather than merely saving one) has to know, or it reads
+ * back its own default and calls it the stored value. `useLocalStorage` is that
+ * caller.
+ */
+export function localStorageAvailable() {
+  return getStore() !== undefined
+}
+
 // One warning per page, not one per failed write: the autoruns that persist
 // settings re-run on every change, so a persistent failure (quota, private
 // browsing) would otherwise fill the console with the same line. Same doctrine
@@ -46,9 +61,20 @@ export function localStorageGetItem(key: string) {
   }
 }
 
+/**
+ * Returns whether the store took the value. Nearly every caller ignores that —
+ * a setting that could not be persisted is not worth interrupting anyone over —
+ * but a caller that reads the key back to learn the current value needs to know
+ * that the read will not reflect this write.
+ */
 export function localStorageSetItem(key: string, value: string) {
+  const s = getStore()
+  if (!s) {
+    return false
+  }
   try {
-    getStore()?.setItem(key, value)
+    s.setItem(key, value)
+    return true
   } catch (e) {
     if (!warnedOnWrite) {
       warnedOnWrite = true
@@ -57,14 +83,22 @@ export function localStorageSetItem(key: string, value: string) {
         e,
       )
     }
+    return false
   }
 }
 
+/** Returns whether the store took the removal; see {@link localStorageSetItem}. */
 export function localStorageRemoveItem(key: string) {
+  const s = getStore()
+  if (!s) {
+    return false
+  }
   try {
-    getStore()?.removeItem(key)
+    s.removeItem(key)
+    return true
   } catch {
     // nothing useful to do: the value we wanted gone is unreachable anyway
+    return false
   }
 }
 

@@ -95,3 +95,29 @@ test('enabled=false keeps the value out of storage entirely', async () => {
   expect(screen.getByTestId('a').textContent).toBe('1')
   expect(localStorage.getItem('k-off')).toBeNull()
 })
+
+// A store that refuses the write is the one case where re-reading it — the
+// thing that keeps instances in step — reports the value the user just changed
+// away from. Quota exhaustion and Safari private browsing both look like this,
+// and without the fallback the control silently snaps back on every click.
+test('a write the store refuses still moves the control', async () => {
+  const user = userEvent.setup()
+  const setItem = jest
+    .spyOn(Storage.prototype, 'setItem')
+    .mockImplementation(() => {
+      throw new DOMException('quota', 'QuotaExceededError')
+    })
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  try {
+    render(<Counter storageKey="k-quota" testId="a" />)
+    await user.click(screen.getByTestId('a'))
+    expect(screen.getByTestId('a').textContent).toBe('1')
+    // and it keeps counting from where it got to, rather than re-resolving
+    // each update against the value the store never took
+    await user.click(screen.getByTestId('a'))
+    expect(screen.getByTestId('a').textContent).toBe('2')
+  } finally {
+    setItem.mockRestore()
+    warn.mockRestore()
+  }
+})
