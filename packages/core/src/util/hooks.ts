@@ -92,20 +92,12 @@ export function useWidthSetter(view: {
   return ref
 }
 
-// The value each key currently holds, shared by every hook instance using it.
-// Two things depend on it: a functional update resolves against the *current*
-// value rather than the one captured by the render that produced the setter,
-// and a write from one instance is visible to the others without re-parsing.
-// Evicted, never merely refreshed, when another tab writes the key.
-const valueCache = new Map<string, unknown>()
+// The mounted hooks watching each key. Deliberately NOT a value cache beside
+// it: localStorage is itself the shared value, and a second copy of it only
+// creates a way for the two to disagree — a `localStorage.clear()` (a factory
+// reset, a test's teardown) would leave every mounted hook showing what it had
+// before, and the cache has no way to hear about it.
 const listeners = new Map<string, Set<() => void>>()
-
-function readCached<T>(key: string, initialValue: T): T {
-  if (!valueCache.has(key)) {
-    valueCache.set(key, localStorageGetJSON(key, initialValue))
-  }
-  return valueCache.get(key) as T
-}
 
 function notify(key: string) {
   for (const fn of listeners.get(key) ?? []) {
@@ -122,19 +114,17 @@ function installStorageListener() {
     return
   }
   storageListenerInstalled = true
-  // Another tab wrote one of our keys. `key === null` is a clear() and
-  // invalidates everything.
+  // Another tab wrote one of our keys. `key === null` is a clear(), which is
+  // every key at once.
   window.addEventListener('storage', e => {
     if (e.storageArea !== window.localStorage) {
       return
     }
     if (e.key === null) {
-      valueCache.clear()
-      for (const k of listeners.keys()) {
+      for (const k of [...listeners.keys()]) {
         notify(k)
       }
     } else if (listeners.has(e.key)) {
-      valueCache.delete(e.key)
       notify(e.key)
     }
   })
@@ -164,11 +154,17 @@ function resolveUpdate<T>(value: T | ((val: T) => T), prev: T) {
  * `useState` backed by a localStorage key.
  *
  * Originally https://usehooks.com/useLocalStorage/, which is per-instance: two
- * components on the same key each kept their own copy, so toggling a setting in
- * one BreakpointSplitView header left a second one open beside it showing the
- * old value until it remounted. Instances on a key now share one value and one
- * subscription, which also picks up writes from other tabs for free — the thing
- * the grid-bookmark widget had to hand-roll a `storage` listener for.
+ * components on the same key each kept their own copy of it, so toggling a
+ * setting in one BreakpointSplitView header left a second one open beside it
+ * showing the old value until it remounted. Instances on a key now subscribe to
+ * each other's writes, and to other tabs' — the thing the grid-bookmark widget
+ * had to hand-roll a `storage` listener for.
+ *
+ * The store is read on every notify rather than cached, so nothing here can go
+ * stale against a `localStorage.clear()`. Which also means a functional update
+ * resolves against what is actually stored: two `setValue(v => …)` calls in one
+ * handler used to keep only the second, because both resolved against the value
+ * captured by the render that produced the setter.
  *
  * `enabled: false` keeps the value in component state only: nothing is read,
  * written or shared. Callers use it for a key that isn't meaningful yet (no
@@ -180,14 +176,16 @@ export function useLocalStorage<T>(
   enabled = true,
 ) {
   const [storedValue, setStoredValue] = useState<T>(() =>
-    enabled ? readCached(key, initialValue) : initialValue,
+    enabled ? localStorageGetJSON(key, initialValue) : initialValue,
   )
   // re-read when the key or `enabled` changes at runtime (the useState
   // initializer only runs once); render-phase reset rather than an effect
   const [prev, setPrev] = useState({ key, enabled })
   if (key !== prev.key || enabled !== prev.enabled) {
     setPrev({ key, enabled })
-    setStoredValue(enabled ? readCached(key, initialValue) : initialValue)
+    setStoredValue(
+      enabled ? localStorageGetJSON(key, initialValue) : initialValue,
+    )
   }
 
   // initialValue is deliberately not a dependency: callers pass inline literals
@@ -199,7 +197,7 @@ export function useLocalStorage<T>(
       return
     }
     return subscribe(key, () => {
-      setStoredValue(readCached(key, initialRef.current))
+      setStoredValue(localStorageGetJSON(key, initialRef.current))
     })
   }, [key, enabled])
 
@@ -208,8 +206,10 @@ export function useLocalStorage<T>(
       setStoredValue(prevValue => resolveUpdate(value, prevValue))
       return
     }
-    const next = resolveUpdate(value, readCached(key, initialRef.current))
-    valueCache.set(key, next)
+    const next = resolveUpdate(
+      value,
+      localStorageGetJSON(key, initialRef.current),
+    )
     if (next === undefined) {
       // clearing the key, not storing the string "undefined" — which is what
       // `setItem(key, JSON.stringify(undefined))` writes, and which then throws
