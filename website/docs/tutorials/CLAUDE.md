@@ -21,6 +21,17 @@ no thought, and the one `*ABL1*×*BCR*` in the corpus is formatter output rather
 than drift: an edit to underscores reverts on commit, which is how this was
 found. Space the operator (`_ABL1_ × _BCR_`) if you want underscores there.
 
+**A menu path in prose spells the label the way the app does**, ellipsis
+included: `**Color by... → Modifications**`, not `**Color by → Modifications**`.
+`Group by...`, `Sort by...` and `Show...` were already unanimous on this and
+`Color by` was split nine ways to five. `check-menu-paths.ts` polices the `→`
+separator and `check-menu-labels.ts` the labels, but the latter normalizes the
+ellipsis away, so neither check sees this. In a **caption** the same path stays
+bare (`Color by → Reference anchors both bands`), because a caption describes
+what is in the frame rather than telling anyone to click; that split is
+deliberate, and the four bare ones left in the corpus are three captions and a
+link label.
+
 **Few numbers in prose, and none that assert a result.** The test is what the
 number is doing. A number that _names_ something is fine and often necessary: a
 variant's size (`a 7.8 kb deletion in an intron of NHEJ1`), a coordinate, a bin
