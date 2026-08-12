@@ -86,8 +86,14 @@ const stale: string[] = []
 // point at, only source that could be written to be pointed at. Writing an
 // example module into a published package to satisfy a docs checker is a bigger
 // decision than this ratchet should make on its own, so the debt is recorded
-// instead. Convert it by adding that example and lower this back to 19.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '20')
+// instead. Convert it by adding that example and lower this by one more.
+//
+// 20 -> 18 on 2026-08-12: `automating.md` hand-wrote `InitState` and
+// `TrackInit` as paraphrases, and the InitState one had already lost the
+// difference between the two kinds of key it documents — `drawer_widgets.md`
+// includes the real declaration and says the split matters. Both are includes
+// now, `TrackInit` having gained a region marker at its declaration.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '18')
 let unIncluded = 0
 
 for (const path of docFiles(docsDir)) {

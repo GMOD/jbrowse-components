@@ -19,17 +19,63 @@ instance see [](/docs/agents_capture); for the Python/notebook API see
 
 ## The `init` fields
 
+`InitState` is the set below. Beneath it is `LinearGenomeViewLaunchProps`, the
+other half of what a launch may set: every plain view property, derived from the
+model rather than listed, which is why a setting you can reach from a menu is
+generally settable at launch too.
+
+<!-- include: plugins/linear-genome-view/src/LinearGenomeView/types.ts#initState -->
+
 ```typescript
-{
-  assembly: string        // required: assembly name
-  loc?: string            // initial location, e.g. 'chr1:1,000-2,000' (omit loc to show the whole genome)
-  grow?: number           // zoom out around loc for context, e.g. 0.2 pads 20% each side
-  displayedRegionNames?: string[] // without loc, restrict the whole-genome view to these chromosomes, in order
-  tracks?: TrackInit[]    // tracks to open (id strings, or objects; see below)
-  tracklist?: boolean     // open the track selector drawer (default: false)
-  nav?: boolean           // show the navigation header (default: true)
-  highlight?: (string | HighlightType)[] // regions to highlight
+export interface InitState {
+  /**
+   * A locstring, or several separated by spaces to open a discontinuous view:
+   * `'chr3:25,325,000-25,361,000 chr10:58,716,500-58,718,500'`. Multiple
+   * regions are the only declarative way to frame something spread across loci
+   * (a derivative allele against its sources, a gene's partners in a fusion) --
+   * `displayedRegionNames` takes whole chromosomes, not intervals.
+   */
+  loc?: string
+  // fractional zoom-out applied around `loc` for context (passed to
+  // navToLocString's `grow`), e.g. 0.2 pads a region by 20% on each side.
+  // Ignored without `loc`.
+  grow?: number
+  assembly: string
+  // restrict a whole-genome view to these assembly refNames (whole
+  // chromosomes), in the order given — e.g. the main chromosomes without the
+  // unplaced/alt contigs. Names resolve through the assembly's aliases. Ignored
+  // when `loc` is set (which navigates to a single region instead).
+  displayedRegionNames?: string[]
+  tracks?: TrackInit[]
+  tracklist?: boolean
+  nav?: boolean
+  // a string entry is a locstring or a JSON-encoded HighlightType (the URL
+  // wire-format); programmatic callers (createViewState/session JSON) can pass
+  // a HighlightType object directly
+  highlight?: (string | HighlightType)[]
 }
+
+// Plain persisted view props a launch spec may set inline alongside init keys.
+// Unlike InitState these need no resolution — LaunchView forwards them straight
+// onto the view snapshot, where MST restores and validates them natively.
+//
+// EVERY declared property of the view, derived, minus the init keys (which mean
+// something else here: `tracks` is trackIds to open, not built track models)
+// and the view's identity. Nothing is listed, so a property is settable from a
+// spec — and type-checked — from the line that declares it.
+//
+// It used to be a hand-written eight, and the model has grown past it:
+// `hideHeader`, `hideHeaderOverview`, `hideNoTracksActive`, `labelsVisible`,
+// `scalebarOnly`, `showCytobands`, `showGridlines` and `showTrackOutlines` were
+// all declared, all settable from the menu, and all dropped in silence by a
+// spec that named them — which is most of what a figure or an embed wants to
+// say. `partitionLaunchKeys` reads the same set off the model at runtime.
+export type LinearGenomeViewLaunchProps = Partial<
+  Omit<
+    SnapshotIn<LinearGenomeViewStateModel>,
+    keyof InitState | 'id' | 'type' | 'init'
+  >
+>
 ```
 
 `loc` takes several whitespace-separated locstrings
@@ -41,12 +87,23 @@ intervals, and is ignored when `loc` is set. `grow` needs a `loc` to expand.
 A `TrackInit` is either a track id string, or an object that also sets initial
 display options:
 
+<!-- include: packages/core/src/util/tracks.ts#trackInit -->
+
 ```typescript
-{
-  trackId: string
-  trackSnapshot?: object   // overrides on the track
-  displaySnapshot?: object // overrides on the display, e.g. { height: 250 }
-}
+export type TrackInit =
+  | string
+  | {
+      trackId: string
+      // rarely-needed escape hatches: `trackSnapshot` applies to the track
+      // config node, `displaySnapshot` explicitly to the display node. Any
+      // OTHER key on this object is treated as a display-snapshot prop, so the
+      // common case sets display options inline with no nesting:
+      // `{ trackId, showDescriptions: false }` rather than
+      // `{ trackId, displaySnapshot: { showDescriptions: false } }`.
+      trackSnapshot?: Record<string, unknown>
+      displaySnapshot?: Record<string, unknown>
+      [key: string]: unknown
+    }
 ```
 
 Any other key on that object is folded into the display snapshot, so

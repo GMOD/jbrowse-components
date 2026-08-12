@@ -747,6 +747,7 @@ export function pickDisplayForView({
     : { type, conf: declaredDisplays.find(d => d.type === type) }
 }
 
+// #region trackInit
 export type TrackInit =
   | string
   | {
@@ -761,6 +762,7 @@ export type TrackInit =
       displaySnapshot?: Record<string, unknown>
       [key: string]: unknown
     }
+// #endregion
 
 // Resolve a session-spec `TrackInit` into the (trackId, trackSnapshot,
 // displaySnapshot) triple that `showTrackGeneric` expects. Display props written

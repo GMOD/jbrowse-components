@@ -102,7 +102,10 @@ key. Widen the check by fixing the manifest, not by removing the skip.
 - **Don't hand-list a directory's pages** — use `<!-- doclist:<dir> -->`.
 - **Prefer an `include:` marker over a copied code fence**, pointed at compiled
   tested source. `sync-doc-snippets --check` ratchets the count of un-included
-  fences under `developer_guides/`, so convert one and lower the baseline.
+  fences across **every hand-written page** — not just `developer_guides/`,
+  which is where it started — so convert one and lower `DOC_FENCE_BASELINE`. The
+  marker fills an existing fence rather than creating one, so write an empty
+  ` ```ts ` block under it and run `pnpm sync-doc-snippets`.
 - **Write `displayDefaults`, not a `displays` array**, unless the example
   selects a non-default display type or needs real `displayId`s.
 - **Show a whole track config, not a fragment** — a reader has to be able to
