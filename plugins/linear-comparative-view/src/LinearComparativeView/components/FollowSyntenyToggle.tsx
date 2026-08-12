@@ -24,12 +24,9 @@ const useStyles = makeStyles()({
  * the other rows hold position — and a row that stops tracking with nothing
  * said looks exactly like a broken follow.
  *
- * The approximate case is the one the mode is quietest about. Zoomed out past a
- * single alignment, or on a tier that carries no CIGAR, the row is placed by
- * mapping the window proportionally — close, but not the base-level
- * correspondence the ribbons imply. It takes priority over "click to stop"
- * because it says something the user cannot otherwise find out, and yields to
- * the unaligned wording because a row that is holding was not placed at all.
+ * The approximate case yields to it, since a row that is holding was never
+ * placed at all, and beats "click to stop", since nothing else in the view
+ * distinguishes a proportional placement from a walked one.
  */
 export function followToggleTitle({
   followSynteny,
@@ -91,9 +88,8 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
       title={followToggleTitle({
         followSynteny,
         unaligned: followUnaligned,
-        // NOT a second icon state. Being approximate is the normal condition of
-        // a zoomed-out view rather than something to fix, and an icon that is
-        // lit most of the time reports nothing.
+        // wording, not a second icon state: approximate is the normal condition
+        // of a zoomed-out view, and an icon lit most of the time reports nothing
         approximate: followApproximate,
         anchorAssembly: views[followAnchorIndex]?.assemblyNames[0],
       })}

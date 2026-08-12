@@ -139,25 +139,22 @@ test('a window wider than any one alignment does not zoom the followed row in', 
   }, timeout)
 })
 
-// interpolateFollowSpan asks whoever calls it to tell the user the answer is an
-// approximation, and for a long time nobody did: the envelope and the CIGAR
-// walk place a row identically as far as the screen is concerned, so a view
-// zoomed out past one alignment reports itself as following exactly.
+// The envelope and the CIGAR walk place a row identically as far as the screen
+// is concerned, so a view zoomed out past one alignment used to report itself
+// as following exactly.
 test('the view says when a placement was proportional rather than walked', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
   view.setRowSyncMode('follow')
 
-  // inside one alignment, and this file's rows all carry CIGARs, so the walk is
-  // available and taken
+  // inside one alignment, and this file's rows all carry CIGARs
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
   await waitFor(() => {
     expect(windowOf(target!).start).toBeGreaterThan(29500)
   }, timeout)
   expect(view.followApproximate).toBe(false)
 
-  // wider than any one alignment: the answer is now the envelope, which
-  // interpolates each window edge through the block it lands in
+  // wider than any one alignment, so the answer is now the envelope
   await query!.navToLocString('ctgA:1..49186', QUERY_ASM)
   await waitFor(() => {
     expect(view.followApproximate).toBe(true)
@@ -309,27 +306,19 @@ test('following an all-vs-all track walks the CIGAR rather than scaling the bloc
   }, timeout)
 }, 60000)
 
-// THREE ROWS, which is where the follow stops being one mapping and becomes a
-// chain: an alignment only says anything about the pair it is drawn between, so
-// a row two levels from the anchor is placed from a row that is itself being
-// placed. Every test above anchors a two-row view, where there is one level and
-// no chain at all.
+// Three rows, where a row two levels from the anchor is placed from a row that
+// is itself being placed. Every test above uses two.
 //
-// What these do NOT cover is the ORDER the levels are visited in. `followPairs`
-// sorts them outward from the anchor so one pass settles the stack, and a
-// follow visiting them in level order still converges — a pass later per level,
-// which waitFor cannot see and which a monotonic scroll probe cannot either
-// (a row placed from a stale neighbour still moves, just behind it). That
-// property is pinned where it can be measured, on `followDistance` in
+// These do NOT cover the ORDER the levels are visited in: a follow visiting
+// them in level order still converges a pass later, which neither waitFor nor a
+// monotonic scroll probe can see. That stays on `followDistance` in
 // followDirection.test.ts.
 //
 // volvox_all_vs_all holds all three pairs and its adapter indexes both sides of
-// each record, so one track serves both levels whichever way round the rows go.
-// The offsets make the three rows tell each other apart: volvox_del is 45141bp
-// against volvox's 50001 (28498M 4860D 16643M) and volvox_ins is 54801 against
-// the same 50001 (31198M 4800I 18803M), so a locus at 30000 on volvox_del is
-// 34860 on volvox and 39660 on volvox_ins — each step ~4.8kb, far larger than
-// any tolerance below.
+// each record, so one track serves both levels either way round. volvox_del is
+// 45141bp against volvox's 50001 (28498M 4860D 16643M) and volvox_ins is 54801
+// against the same 50001 (31198M 4800I 18803M), so 30000 on volvox_del is 34860
+// on volvox and 39660 on volvox_ins.
 const DEL_LOCUS = 30000
 const VOLVOX_LOCUS = 34860
 const INS_LOCUS = 39660
@@ -358,12 +347,9 @@ async function openThreeRowView() {
   return view
 }
 
-// Anchoring the BOTTOM row is the longest chain a three-row stack has: level 1
-// places the middle row from the anchor, level 0 then places the top row from
-// the middle. The tight-scroll block at the end is the same case under the
-// per-frame pass rather than the settled one — a chain that only the exact pass
-// carries would leave the far row still through a drag, which is the complaint
-// the frame pass exists to answer, one row further out.
+// The longest chain a three-row stack has, asserted settled and then again
+// under the per-frame pass: a chain only the exact pass carries would leave the
+// far row still through a drag.
 test('anchoring the bottom row carries the follow up two levels', async () => {
   const view = await openThreeRowView()
   const [ins, volvox, del] = view.views
@@ -401,10 +387,8 @@ test('anchoring the bottom row carries the follow up two levels', async () => {
   }
 }, 60000)
 
-// Anchoring the middle row runs one level in each direction at once: level 0
-// maps the anchor back onto the feature axis to place the top row, level 1 maps
-// it onto the mate axis to place the bottom one. Nothing else exercises both
-// values of `toMate` against the same anchor.
+// One level in each direction at once — the only case exercising both values of
+// `toMate` against a single anchor.
 test('anchoring the middle row drives both neighbours outward', async () => {
   const view = await openThreeRowView()
   const [ins, volvox, del] = view.views

@@ -201,13 +201,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // landed has no answer yet rather than no answer, and flagging it would
         // blink a warning on every pan.
         let unaligned = false
-        // Levels whose placement will be a PROPORTIONAL mapping rather than a
-        // CIGAR walk, which is what `interpolateFollowSpan` asks its callers to
-        // say out loud. Two ways in: a window wider than one alignment resolves
-        // to the envelope, and a CIGAR-less tier (a PIF's coarse rows, a plain
-        // PAF) has none to walk at any width. Both are the ordinary state of a
-        // zoomed-out view rather than a fault, so this is tooltip wording and
-        // not a second warning icon.
+        // Levels whose placement will be a proportional mapping rather than a
+        // CIGAR walk, which interpolateFollowSpan asks its callers to say.
         let approximate = false
         for (const pair of self.followPairs) {
           const { level, stayingView, movingView, toMate, mateAssembly } = pair
@@ -235,15 +230,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           })
           if (step) {
             work.push([pair, step, movingWindow])
-            // READ OFF THE PLAN, NOT THE ANSWER, so it is written in the same
-            // synchronous pass as `unaligned` rather than from an async
-            // continuation that could land a frame stale. The one case that
-            // misses: `hasCigar` is per-FETCH, so a file that MIXES them (a
-            // chain set with a few CIGAR-less rows, a PAF concatenated from two
-            // runs) reports exact for a block that had none and was interpolated
-            // anyway. That is the rare shape `resolveFollowSpan` already
-            // documents, and under-reporting it leaves the tooltip no worse off
-            // than saying nothing, which is what it did before.
+            // Off the plan rather than the answer, so it lands in this
+            // synchronous pass. `hasCigar` is per-FETCH, so a file mixing them
+            // under-reports here — no worse than the silence this replaces.
             if (!step.windowInsideFeat || !step.hasCigar) {
               approximate = true
             }

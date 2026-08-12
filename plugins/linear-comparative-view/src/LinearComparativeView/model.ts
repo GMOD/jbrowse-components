@@ -151,13 +151,11 @@ function stateModelFactory(pluginManager: PluginManager) {
       followUnaligned: false,
       /**
        * #volatile
-       * The follow placed a row by mapping the anchor window PROPORTIONALLY
+       * The follow placed a row by mapping the anchor window proportionally
        * rather than by walking a CIGAR, so its position is close but not
-       * base-exact. True whenever the window is wider than one alignment (the
-       * answer is then the envelope) or the resolved tier carries no CIGAR at
-       * all — both of which are the ordinary state of a zoomed-out view. What
-       * the header's follow tooltip reports, since nothing else distinguishes
-       * a mode that is following exactly from one that is estimating.
+       * base-exact — a window wider than one alignment, or a tier carrying no
+       * CIGAR. What the header's follow tooltip reports; nothing else in the
+       * view distinguishes the two.
        */
       followApproximate: false,
     }))
@@ -321,9 +319,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * The other half of what the follow reports about itself, on the same
-       * terms as setFollowUnaligned above: written by the autorun, read only by
-       * the header.
+       * Same terms as setFollowUnaligned above: written by the autorun, read
+       * only by the header.
        */
       setFollowApproximate(arg: boolean) {
         self.followApproximate = arg

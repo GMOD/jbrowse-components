@@ -42,9 +42,8 @@ test('the unaligned wording is only reachable while following', () => {
 })
 
 test('it says when the row was placed proportionally rather than walked', () => {
-  // zoomed out past one alignment, or on a CIGAR-less tier, the position is an
-  // estimate — and nothing else in the view distinguishes that from the exact
-  // case, since the ribbons are drawn the same way either way
+  // the ribbons are drawn the same way either way, so nothing else in the view
+  // distinguishes an estimate from a walked answer
   expect(
     followToggleTitle({
       followSynteny: true,
