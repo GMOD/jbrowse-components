@@ -1,15 +1,17 @@
 import {
   buildReadVsRefNames,
-  buildReadVsRefTemporaryAssembly,
+  buildSyntheticAssembly,
 } from '@jbrowse/alignments-core'
 import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
 import { gatherOverlaps } from '@jbrowse/core/util'
 
-import type { ReadVsRefTemporaryAssembly } from '@jbrowse/alignments-core'
+import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
+
+import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface ReadVsRefSpec {
-  temporaryAssembly: ReadVsRefTemporaryAssembly
+  temporaryAssembly: SyntheticAssembly
   viewSpec: {
     type: 'LinearSyntenyView'
     displayName: string
@@ -82,10 +84,11 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
   const refLen = lgvRegions.reduce((a, r) => a + r.end - r.start, 0)
 
   return {
-    temporaryAssembly: buildReadVsRefTemporaryAssembly({
-      readName,
-      readAssembly,
-      readAssemblyDisplayName,
+    temporaryAssembly: buildSyntheticAssembly({
+      refName: readName,
+      assemblyName: readAssembly,
+      displayName: readAssemblyDisplayName,
+      sequenceTrackName: 'Read sequence',
       totalLength,
       seq: featSeq,
       trackId: seqTrackId,
@@ -151,35 +154,5 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
         },
       ],
     },
-  }
-}
-
-function buildSequenceTrack(
-  rand: () => number,
-  assemblyNames: string[] | undefined,
-  trackId: string,
-) {
-  return {
-    id: `${rand()}`,
-    type: 'ReferenceSequenceTrack',
-    ...(assemblyNames ? { assemblyNames } : {}),
-    configuration: trackId,
-    displays: [
-      {
-        id: `${rand()}`,
-        type: 'LinearReferenceSequenceDisplay',
-        height: 35,
-        // Inline config (not just a displayId string) so showReverse/
-        // showTranslation actually override the config-schema defaults —
-        // a bare id here resolves to the track's auto-injected stub display
-        // config, which ignores sibling snapshot fields.
-        configuration: {
-          type: 'LinearReferenceSequenceDisplay',
-          displayId: `${trackId}-LinearReferenceSequenceDisplay`,
-          showReverse: false,
-          showTranslation: false,
-        },
-      },
-    ],
   }
 }

@@ -27,6 +27,20 @@ export interface DerivativeSegment {
 
 export interface DerivativeCandidate {
   segments: DerivativeSegment[]
+  /**
+   * Opaque identity of the ROUTE, stable across recomputation: it is the
+   * grouping key itself, so two candidate lists computed from different read
+   * sets agree on it exactly when they are describing one allele.
+   *
+   * Nothing may parse it — its spelling is `pathSignature`'s business. It
+   * exists because a consumer holding "which candidate did the user pick" has
+   * nothing else honest to hold. `locString` and `segments` both carry the
+   * OUTER edges, which come from whichever supporting read was widest, so they
+   * move when a wider read lands while the list is on screen; `readCount` and
+   * `refNames` move or collide for their own reasons. The junctions are the
+   * allele, and this is the junctions.
+   */
+  pathId: string
   // Number of distinct reads whose chain describes this path.
   readCount: number
   // Space-separated locstrings, in derivative order, `[rev]` on flipped
@@ -305,7 +319,7 @@ export function computeDerivativePaths(
   }
 
   const candidates: DerivativeCandidate[] = []
-  for (const group of groups.values()) {
+  for (const [signature, group] of groups) {
     if (group.length < minReads) {
       continue
     }
@@ -321,6 +335,7 @@ export function computeDerivativePaths(
     const segments = segmentsFromChain(oriented, flank)
     candidates.push({
       segments,
+      pathId: signature,
       readCount: group.length,
       locString: derivativeLocString(segments),
       refNames: [...new Set(segments.map(seg => seg.refName))],

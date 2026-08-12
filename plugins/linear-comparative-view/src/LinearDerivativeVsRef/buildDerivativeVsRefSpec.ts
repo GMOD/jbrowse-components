@@ -1,9 +1,13 @@
+import { buildSyntheticAssembly } from '@jbrowse/alignments-core'
 import {
   assembleLocString,
   gatherOverlaps,
   getBpDisplayStr,
 } from '@jbrowse/core/util'
 
+import { buildSequenceTrack } from '../syntenyLaunchSequenceTrack.ts'
+
+import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
 // "Linear read vs ref" for a reconstruction rather than a read. Same view, same
@@ -56,27 +60,7 @@ export interface DerivativeVsRefSpec {
       displayMode: string
     }
   }
-  temporaryAssembly: {
-    name: string
-    displayName: string
-    sequence: {
-      type: 'ReferenceSequenceTrack'
-      name: string
-      trackId: string
-      assemblyNames: string[]
-      adapter: {
-        type: 'FromConfigSequenceAdapter'
-        noAssemblyManager: true
-        features: {
-          start: number
-          end: number
-          seq: string
-          refName: string
-          uniqueId: string
-        }[]
-      }
-    }
-  }
+  temporaryAssembly: SyntheticAssembly
   viewSpec: {
     type: 'LinearSyntenyView'
     displayName: string
@@ -113,6 +97,31 @@ export function derivativePathLabel(candidate: DerivativeCandidate) {
   return candidate.segments
     .map(seg => `${seg.refName}${seg.strand === -1 ? ' (inverted)' : ''}`)
     .join(' → ')
+}
+
+/**
+ * How a spec asks for one particular row of the picker, e.g.
+ * `derivative-path-chr3-chr10-chr12rev-chr3rev`.
+ *
+ * Names the ROUTE rather than the row number, because rank is stable but not
+ * meaningful: two routes tied on support are ordered by segment count, so at
+ * COLO829's chr9 fold-back the two-segment allele the tutorial is about sits
+ * under a three-segment one. A spec keyed on position silently captures the
+ * wrong allele under the right caption.
+ *
+ * Every segment in derivative order with `rev` on the flipped ones, rather than
+ * the deduplicated `refNames`. On that same fold-back `9 → 9 (inverted)` and
+ * `9 → 9` are both two segments on one chromosome, so the deduplicated form
+ * gave the two rows ONE id — the failure above, in the id meant to prevent it.
+ *
+ * Not `pathId`, which is opaque and carries coordinates: this one is read by a
+ * person writing a spec. It is a locator, not an identity — for "which row did
+ * the user pick", hold `pathId`.
+ */
+export function derivativePathTestId(candidate: DerivativeCandidate) {
+  return `derivative-path-${candidate.segments
+    .map(seg => `${seg.refName}${seg.strand === -1 ? 'rev' : ''}`)
+    .join('-')}`
 }
 
 export function buildDerivativeVsRefSpec(
@@ -234,35 +243,23 @@ export function buildDerivativeVsRefSpec(
         displayMode: 'compact',
       },
     },
-    temporaryAssembly: {
-      name: derivativeAssembly,
-      // the name above is an id, and the stamp in it is only there so a relaunch
-      // cannot collide with a still-open view's assembly. A panel header shows
-      // the display name instead, so it does not show a wall-clock timestamp.
+    temporaryAssembly: buildSyntheticAssembly({
+      refName,
+      assemblyName: derivativeAssembly,
+      // the assembly name is an id, and the stamp in it is only there so a
+      // relaunch cannot collide with a still-open view's assembly. A panel
+      // header shows the display name instead, so it does not show a wall-clock
+      // timestamp.
       displayName: `${refName} derivative`,
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        name: 'Derivative allele',
-        trackId: seqTrackId,
-        assemblyNames: [derivativeAssembly],
-        adapter: {
-          type: 'FromConfigSequenceAdapter',
-          noAssemblyManager: true,
-          // No bases: the path is a structure, not a consensus. An empty seq is
-          // the same case a hard-clipped read vs ref already produces, and the
-          // sequence track renders as unavailable rather than as wrong bases.
-          features: [
-            {
-              start: 0,
-              end: totalLength,
-              seq: '',
-              refName,
-              uniqueId: `${refName}-seq`,
-            },
-          ],
-        },
-      },
-    },
+      sequenceTrackName: 'Derivative allele',
+      totalLength,
+      // No bases: the path is a structure, not a consensus. Same case as a
+      // hard-clipped read vs ref, and the sequence track renders as unavailable
+      // rather than as wrong bases.
+      seq: undefined,
+      trackId: seqTrackId,
+      uniqueId: `${refName}-seq`,
+    }),
     viewSpec: {
       type: 'LinearSyntenyView',
       displayName: `${refName} (${candidate.readCount} reads) vs ${trackAssembly}`,
@@ -329,31 +326,5 @@ export function buildDerivativeVsRefSpec(
         },
       ],
     },
-  }
-}
-
-function buildSequenceTrack(
-  rand: () => number,
-  assemblyNames: string[] | undefined,
-  trackId: string,
-) {
-  return {
-    id: `${rand()}`,
-    type: 'ReferenceSequenceTrack',
-    ...(assemblyNames ? { assemblyNames } : {}),
-    configuration: trackId,
-    displays: [
-      {
-        id: `${rand()}`,
-        type: 'LinearReferenceSequenceDisplay',
-        height: 35,
-        configuration: {
-          type: 'LinearReferenceSequenceDisplay',
-          displayId: `${trackId}-LinearReferenceSequenceDisplay`,
-          showReverse: false,
-          showTranslation: false,
-        },
-      },
-    ],
   }
 }

@@ -15,6 +15,7 @@ const CANDIDATE: DerivativeCandidate = {
     { refName: 'chr3', start: 25_352_683, end: 25_359_111, strand: -1 },
   ],
   readCount: 29,
+  pathId: 'der3',
   locString: '',
   refNames: ['chr3', 'chr10', 'chr12'],
   extendsOffScreen: false,

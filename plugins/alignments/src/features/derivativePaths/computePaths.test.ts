@@ -307,6 +307,54 @@ describe('computeDerivativePaths', () => {
         .extendsOffScreen,
     ).toBe(false)
   })
+
+  // The picker is an observer over a live getter, opened on a pileup that is
+  // usually still streaming, and it holds the user's chosen route by `pathId`.
+  // So what a wider read must not do is rename the route it joins.
+  it('keeps one route’s pathId while its own reads widen it', () => {
+    // Same junctions throughout; only how far the first read runs into the
+    // outer arm differs, which is what a read arriving later routinely changes.
+    const narrow = der3Chain()
+    narrow[0] = seg('chr3', 25_340_000, 25_359_568, 1, 0)
+    const wide = der3Chain()
+
+    const before = computeDerivativePaths({ chains: [narrow, narrow] })
+    const after = computeDerivativePaths({ chains: [narrow, narrow, wide] })
+
+    expect(before).toHaveLength(1)
+    expect(after).toHaveLength(1)
+    expect(after[0]!.pathId).toBe(before[0]!.pathId)
+    // ...and this is why it cannot be locString: the representative is the
+    // widest chain, so the outer edge — and every string built from it — moves.
+    expect(after[0]!.locString).not.toBe(before[0]!.locString)
+    expect(after[0]!.segments[0]!.start).toBeLessThan(
+      before[0]!.segments[0]!.start,
+    )
+  })
+
+  it('gives two genuinely different routes two pathIds', () => {
+    const other = der3Chain()
+    other[3] = seg('chr3', 25_352_683, 25_359_111, 1, 33_126)
+    const candidates = computeDerivativePaths({
+      chains: [der3Chain(), der3Chain(), other, other],
+    })
+    expect(candidates).toHaveLength(2)
+    expect(candidates[0]!.pathId).not.toBe(candidates[1]!.pathId)
+  })
+
+  // A candidate and the same candidate read from the other end are one allele,
+  // and the grouping already folds them together — so the id it hands out has
+  // to be the folded one rather than the direction this particular read set
+  // happened to be dominated by.
+  it('gives one pathId to an allele read from either end', () => {
+    const forward = der3Chain()
+    const reverse = [...der3Chain()]
+      .reverse()
+      .map(s => ({ ...s, strand: -s.strand }))
+    const a = computeDerivativePaths({ chains: [forward, forward] })
+    const b = computeDerivativePaths({ chains: [reverse, reverse] })
+    expect(a[0]!.pathId).toBe(b[0]!.pathId)
+  })
 })
 
 describe('derivativeLocString', () => {

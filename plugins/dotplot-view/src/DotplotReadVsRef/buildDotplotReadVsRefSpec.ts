@@ -1,15 +1,15 @@
 import {
   buildReadVsRefNames,
-  buildReadVsRefTemporaryAssembly,
+  buildSyntheticAssembly,
 } from '@jbrowse/alignments-core'
 import { buildReadVsRefFeatures } from '@jbrowse/cigar-utils'
 import { gatherOverlaps, sum } from '@jbrowse/core/util'
 
-import type { ReadVsRefTemporaryAssembly } from '@jbrowse/alignments-core'
+import type { SyntheticAssembly } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface DotplotReadVsRefSpec {
-  temporaryAssembly: ReadVsRefTemporaryAssembly
+  temporaryAssembly: SyntheticAssembly
   viewSpec: {
     type: 'DotplotView'
     displayName: string
@@ -77,10 +77,11 @@ export function buildDotplotReadVsRefSpec({
     // The synthetic read assembly must be registered for the DotplotView to
     // initialize (assembliesInitialized gates on every assemblyName resolving);
     // it is torn down by DotplotView.beforeDestroy via removeTemporaryAssembly.
-    temporaryAssembly: buildReadVsRefTemporaryAssembly({
-      readName,
-      readAssembly,
-      readAssemblyDisplayName,
+    temporaryAssembly: buildSyntheticAssembly({
+      refName: readName,
+      assemblyName: readAssembly,
+      displayName: readAssemblyDisplayName,
+      sequenceTrackName: 'Read sequence',
       totalLength,
       // No bases: a dotplot draws no sequence track, and the assembly's region
       // comes from the feature's start/end (mergeFeaturesToRegions), not from

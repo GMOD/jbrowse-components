@@ -8,6 +8,7 @@ function candidate(
   return {
     segments: segments.map(s => ({ strand: 1, ...s })),
     readCount: 4,
+    pathId: segments.map(s => `${s.refName}:${s.start}:${s.strand}`).join('|'),
     locString: '',
     refNames: [...new Set(segments.map(s => s.refName))],
     extendsOffScreen: false,

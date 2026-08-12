@@ -42,8 +42,8 @@ export {
   visitCsOps,
 } from '@jbrowse/cigar-utils'
 export type { ClipMismatch, Mismatch } from '@jbrowse/cigar-utils'
-export { buildReadVsRefTemporaryAssembly } from './buildReadVsRefTemporaryAssembly.ts'
-export type { ReadVsRefTemporaryAssembly } from './buildReadVsRefTemporaryAssembly.ts'
+export { buildSyntheticAssembly } from './buildSyntheticAssembly.ts'
+export type { SyntheticAssembly } from './buildSyntheticAssembly.ts'
 export { buildReadVsRefNames } from './readVsRefNaming.ts'
 export { getTag } from './getTag.ts'
 export {

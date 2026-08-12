@@ -25,6 +25,7 @@ import DerivativePathStrip from './DerivativePathStrip.tsx'
 import {
   buildDerivativeVsRefSpec,
   derivativePathLabel,
+  derivativePathTestId,
 } from './buildDerivativeVsRefSpec.ts'
 import { buildSplitViewFromPath } from './buildSplitViewFromPath.ts'
 import { segmentSizeSummary } from './derivativePathStrip.ts'
@@ -198,11 +199,19 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // this dialog is opened over a pileup that is often still streaming, which is
   // exactly when a new route can outrank the one under the cursor. Holding an
   // index means the selection silently slides onto a different allele between
-  // the click and the draw. `locString` names the route itself.
-  const [selectedLoc, setSelectedLoc] = useState<string>()
+  // the click and the draw.
+  //
+  // `pathId` and not `locString`, which was the same bug one step quieter.
+  // A locstring carries the path's OUTER edges, and those come from whichever
+  // supporting read is widest -- so one wider read landing in the group the user
+  // already picked rewrites its locstring, the lookup misses, and the selection
+  // drops back to row 0. Same streaming that motivates holding a route at all,
+  // and it needs no re-ranking to fire. `pathId` is the junctions, which is what
+  // makes two reads one allele in the first place.
+  const [selectedPathId, setSelectedPathId] = useState<string>()
   const selected = Math.max(
     0,
-    candidates.findIndex(c => c.locString === selectedLoc),
+    candidates.findIndex(c => c.pathId === selectedPathId),
   )
   const [error, setError] = useState<unknown>()
   // WHAT to draw, kept here beside WHICH route because both are properties of
@@ -449,35 +458,13 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 data-testid="derivative-path-candidates"
                 value={selected}
                 onChange={event => {
-                  setSelectedLoc(candidates[+event.target.value]?.locString)
+                  setSelectedPathId(candidates[+event.target.value]?.pathId)
                 }}
               >
                 {candidates.map((candidate, idx) => (
                   <FormControlLabel
-                    key={candidate.locString}
-                    // Names the ROUTE, not the row number, so a caller that
-                    // wants a particular allele asks for it rather than for
-                    // whatever currently sorts to position N. Rank is not
-                    // stable: two routes tied on support are ordered by segment
-                    // count, so at COLO829's chr9 fold-back the two-segment
-                    // allele the tutorial is about sits under a three-segment
-                    // one. A spec keyed on the index silently captures the
-                    // wrong allele under the right caption, which is the
-                    // failure this exists to prevent.
-                    //
-                    // Every segment in derivative order, with `rev` on the
-                    // flipped ones, rather than the deduplicated `refNames` and
-                    // a count. On that same fold-back, `9 -> 9 (inverted)` and
-                    // `9 -> 9` are both two segments on one chromosome, so the
-                    // deduplicated form gave the two rows ONE id and a spec
-                    // asking for it got whichever came first — the failure
-                    // above, in the id meant to prevent it.
-                    data-testid={`derivative-path-${candidate.segments
-                      .map(
-                        seg =>
-                          `${seg.refName}${seg.strand === -1 ? 'rev' : ''}`,
-                      )
-                      .join('-')}`}
+                    key={candidate.pathId}
+                    data-testid={derivativePathTestId(candidate)}
                     value={idx}
                     control={<Radio />}
                     label={
