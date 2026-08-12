@@ -97,6 +97,32 @@ describe('right-click actions that move a row', () => {
     expect(display.scrollTop).toBeGreaterThan(0)
   })
 
+  it('"Pin to top" brings the viewport with the feature', () => {
+    const { display, deepest } = scrolledStack()
+
+    rightClick(display, deepest)
+    clickLabel(display, 'Pin to top')
+
+    // row 0, and in view — pinning without the scroll reset sent the feature to
+    // topPx 0 while the viewport stayed at 780, so it vanished upward
+    expect(topOf(display, deepest.featureId)).toBe(0)
+    expect(display.scrollTop).toBe(0)
+  })
+
+  it('"Unpin from top" leaves the scroll where the user put it', () => {
+    const { display, deepest } = scrolledStack()
+
+    rightClick(display, deepest)
+    clickLabel(display, 'Pin to top')
+    display.setScrollTop(200)
+    clickLabel(display, 'Unpin from top')
+
+    // unpinning returns the feature to its natural row; it is not a request to
+    // look at anything, so it must not yank the viewport
+    expect(display.pinnedFeatureCount).toBe(0)
+    expect(display.scrollTop).toBe(200)
+  })
+
   it('leaves the searched-highlight pin alone', () => {
     // a text-search highlight carries no featureId and names a feature the user
     // cannot see, so it still earns the pin that surfaces it

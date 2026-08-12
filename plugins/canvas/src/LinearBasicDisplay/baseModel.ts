@@ -1848,8 +1848,18 @@ export default function baseStateModelFactory(
         // Pin/unpin a feature to the top of the layout. Toggling mutates the
         // observable array, which reruns the layout (see pinnedFeatureIdSet)
         // and animates the feature to/from its top row via the Y morph.
+        //
+        // Pinning also resets scroll, for the reason `showAllHidden` does: the
+        // feature lands in a top row, and a track scrolled past that row would
+        // show the user's "Pin to top" making the feature vanish upward. A pin
+        // does not shrink the content, so the layout autorun's maxScroll clamp
+        // never fires here. Unpinning leaves the scroll alone — that returns the
+        // feature to its natural row and is not a request to look at anything.
         togglePinnedFeature(featureId: string) {
           toggleArrayMember(self.pinnedFeatureIds, featureId)
+          if (self.pinnedFeatureIds.includes(featureId)) {
+            self.setScrollTop(0)
+          }
         },
 
         /**
