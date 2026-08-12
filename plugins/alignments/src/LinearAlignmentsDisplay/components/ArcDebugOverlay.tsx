@@ -115,6 +115,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
         // every region's band as the same rect on top of itself.
         const clipId = `arc-debug-clip-${model.id}-${bi}`
         return (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- positional list, rebuilt whole from the model each render; nothing here holds state to mis-reuse
           <g key={bi}>
             <defs>
               <clipPath id={clipId}>
@@ -145,11 +146,13 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
                 y2={band.legacyCeilingY}
               />
               {band.shapes.map((s, i) => (
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- the arc's own dedup key (`arcKey`) does not cross into `ArcsUploadData`, and x1/x2/yBp alone can collide across color and shape types
                 <path key={i} className={classes.shape} d={s.d} />
               ))}
             </g>
             {labelled.map((s, i) => (
               <g
+                // eslint-disable-next-line @eslint-react/no-array-index-key -- the index IS the identity here: it is the label's row in the stack, as the transform below reads
                 key={`l${i}`}
                 transform={`translate(${band.clipLeft + 6} ${band.arcsTop + 12 + i * 12})`}
               >

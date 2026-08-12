@@ -77,9 +77,8 @@ function stubGeometry(rects: Record<string, DOMRect>) {
       return rects[`tab:${el.dataset.tabId}`]
     }
     if ('tabStrip' in el.dataset) {
-      const panelId = el
-        .closest('[data-panel-id]')
-        ?.getAttribute('data-panel-id')
+      const panelId =
+        el.closest<HTMLElement>('[data-panel-id]')?.dataset.panelId
       return panelId ? rects[`strip:${panelId}`] : undefined
     }
     return undefined
@@ -398,10 +397,10 @@ describe('reordering within a strip', () => {
     const { a } = setupStrip()
     const dragging = dragTabTo(a, 220, 10)
 
-    const caret = document.querySelector('[data-drop-caret]')
+    const caret = document.querySelector<HTMLElement>('[data-drop-caret]')
     expect(caret).toBeTruthy()
-    expect(caret!.getAttribute('data-drop-caret')).toBe('2')
-    expect((caret as HTMLElement).style.left).toBe('200px')
+    expect(caret!.dataset.dropCaret).toBe('2')
+    expect(caret!.style.left).toBe('200px')
     expect(document.querySelector('[data-drop-indicator]')).toBeNull()
 
     dragging.drop()

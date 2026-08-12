@@ -222,6 +222,7 @@ const Highlights = observer(function Highlights({
       <div
         // highlights have no id and can legitimately duplicate, so the index
         // only breaks ties between otherwise-identical regions
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- ^ that tie-break is the point; without it two identical regions share a key
         key={`${highlight.refName}-${highlight.start}-${i}`}
         // this site's smoke test clicks the buttons above and measures the
         // band, because the three cases the method survives are invisible until

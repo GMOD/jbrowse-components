@@ -324,6 +324,11 @@ export function useScrollZoomHintState({
       if (
         !(
           event.target instanceof Element &&
+          // No `CSS.escape`: jsdom has no `CSS` at all, so the escape this rule
+          // autofixes to is a ReferenceError in every test that presses while
+          // the prompt is up. The interpolated value is the fixed module
+          // constant above, not user input.
+          // eslint-disable-next-line unicorn/require-css-escape
           event.target.closest(`[${SCROLL_ZOOM_HINT_ATTR}]`)
         )
       ) {
