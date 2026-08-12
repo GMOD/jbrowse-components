@@ -10,7 +10,10 @@ import {
   INSTANCE_OFFSET_U32 as INTERBASE_U32,
   INSTANCE_STRIDE_WORDS as INTERBASE_STRIDE,
 } from './interbaseHistogramLayout.generated.ts'
-import { drawIndicatorTriangle } from './labelConstants.ts'
+import {
+  INDICATOR_TRIANGLE_HW,
+  drawIndicatorTriangle,
+} from './labelConstants.ts'
 import {
   INSTANCE_OFFSET_F32 as MOD_COV_F32,
   INSTANCE_OFFSET_U32 as MOD_COV_U32,
@@ -256,7 +259,22 @@ export function drawIndicators(
   for (let i = 0; i < indicatorCount; i++) {
     const off = i * INDICATOR_STRIDE
     const px = bpToX(u32[off + INDICATOR_U32.position]!)
-    if (px >= 0 && px < viewWidth) {
+    // The mark is a 7px triangle CENTERED on `px`, so the cull is its EXTENT,
+    // not its center — a center just past an edge still shows several pixels
+    // inside it. `indicator.slang` does no x-cull at all: it emits the triangle
+    // and lets the scissor clip it, so testing the center alone dropped, here
+    // and therefore in the SVG export, a sliver the GPU draws. Not just the two
+    // ends of the canvas — every block boundary in a multi-region view is such
+    // an edge, and the block clip rect already keeps the overhang honest.
+    //
+    // Unlike the bar layers above there is no reversed-block subtlety: a
+    // triangle is symmetric about `px`, and `bpToX(pos)` is that bp boundary in
+    // either orientation (same reason drawInterbaseSegments keeps `px` as its
+    // anchor).
+    if (
+      px + INDICATOR_TRIANGLE_HW >= 0 &&
+      px - INDICATOR_TRIANGLE_HW <= viewWidth
+    ) {
       ctx.fillStyle =
         colorLut[f32[off + INDICATOR_F32.colorType]! - 1] ?? colorLut[0]!
       drawIndicatorTriangle(ctx, px)

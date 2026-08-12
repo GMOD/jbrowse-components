@@ -1,4 +1,5 @@
 import { coverageLayout } from './coverageBandBox.ts'
+import { INDICATOR_TRIANGLE_HW } from './labelConstants.ts'
 import {
   CANVAS2D_COVERAGE,
   drawCoverageBins,
@@ -25,7 +26,9 @@ function makeCtx() {
       calls.push({ method: 'fillRect', args: [x, y, w, h] })
     },
     beginPath() {},
-    moveTo() {},
+    moveTo(x: number, y: number) {
+      calls.push({ method: 'moveTo', args: [x, y] })
+    },
     lineTo() {},
     closePath() {},
     fill() {},
@@ -567,17 +570,52 @@ describe('drawIndicators', () => {
     expect(styleCalls.some(c => c.args[0] === 'cyan')).toBe(true)
   })
 
+  // The position is a uint32 in the position slot — writing it through the f32
+  // view stored the BIT PATTERN of 300.0 (1133248512), which this culled for
+  // being a billion px off screen rather than for being at 300.
   it('skips indicators outside viewport', () => {
     const buf = new ArrayBuffer(8)
     const f32 = new Float32Array(buf)
-    f32[0] = 300
+    const u32 = new Uint32Array(buf)
+    u32[0] = 300
     f32[1] = 1
 
     const { ctx, calls } = makeCtx()
     drawIndicators(ctx, buf, interbaseColors, (bp: number) => bp, 200)
 
-    const fillCalls = calls.filter(c => c.method === 'fillRect')
-    expect(fillCalls.length).toBe(0)
+    expect(calls.filter(c => c.method === 'moveTo')).toHaveLength(0)
+  })
+
+  // The mark is a 7px-wide triangle CENTERED on its bp, so one whose center sits
+  // just past an edge still shows several pixels inside it. indicator.slang does
+  // no x-cull at all — it emits the triangle and lets the scissor clip it — so
+  // culling on the center alone dropped, in Canvas2D and therefore in the SVG
+  // export, a sliver the GPU draws. Every block boundary in a multi-region view
+  // is such an edge, not just the two ends of the canvas.
+  it.each([
+    ['just inside the left edge', -INDICATOR_TRIANGLE_HW + 1],
+    ['just inside the right edge', 200 + INDICATOR_TRIANGLE_HW - 1],
+  ])('draws a triangle overlapping the viewport: %s', (_name, pos) => {
+    const buf = new ArrayBuffer(8)
+    const f32 = new Float32Array(buf)
+    f32[1] = 1
+    const { ctx, calls } = makeCtx()
+    drawIndicators(ctx, buf, interbaseColors, () => pos, 200)
+
+    expect(calls.filter(c => c.method === 'moveTo')).toHaveLength(1)
+  })
+
+  it.each([
+    ['fully past the left edge', -INDICATOR_TRIANGLE_HW - 1],
+    ['fully past the right edge', 200 + INDICATOR_TRIANGLE_HW + 1],
+  ])('still culls one that cannot show: %s', (_name, pos) => {
+    const buf = new ArrayBuffer(8)
+    const f32 = new Float32Array(buf)
+    f32[1] = 1
+    const { ctx, calls } = makeCtx()
+    drawIndicators(ctx, buf, interbaseColors, () => pos, 200)
+
+    expect(calls.filter(c => c.method === 'moveTo')).toHaveLength(0)
   })
 })
 
