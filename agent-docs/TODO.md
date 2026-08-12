@@ -52,7 +52,7 @@ Exploratory concepts that are *not* committed work live in
 | [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | multiplication measured; time the shared pool at three sizes |
-| [Overlap the reference fetch](#overlap-the-reference-fetch-with-the-alignment-fetch) | alignments | time the sequence read on a cold MD-less query |
+| [A bigger reference fixture](#a-reference-fixture-big-enough-to-ab-a-sequence-prefetch-in-the-browser) | alignments, browser tests | reads over tens of Mb; 255 KB fits in one cache chunk |
 
 ## Ready to build: small and self-contained
 
@@ -1038,30 +1038,30 @@ so every vitest bench in all three repos reports parity forever. Use
 `percontext-probe.ts` and heed the traps in its header and in
 [reference/BGZF_WORKER_POOL.md](reference/BGZF_WORKER_POOL.md).
 
-### Overlap the reference fetch with the alignment fetch
+### A reference fixture big enough to A/B a sequence prefetch in the browser
 
-`BamAdapter.getFeatures` awaits all of `getRecordsForRange`, then computes
-`seqFetchSpan`, then fetches sequence — two round trips end to end on every BAM
-whose reads carry no MD, which is most long-read data (minimap2 and bwa both
-leave MD off unless asked).
+Falls out of closing seam 3, and is the only part of it left. The reference read
+is now issued alongside the alignment fetch
+([BAM_STACK_INTEGRATION.md](reference/BAM_STACK_INTEGRATION.md) seam 3), and the
+BASELINE is measured — serial at every latency, ~20% of a cold query at 60ms —
+but the fix itself is verified only by ordering assertions in
+`referencePrefetch.test.ts`, not by a timing A/B.
 
-The records are not needed to bound the fetch. `seqFetchSpan` clamps to
-`[regionStart, regionEnd)`, so the queried region is already an upper bound on
-what it can return, and `PackedReference` carries its own `start` — a reference
-packed for the whole region locates any read in itself and the walk windows to
-the viewport anyway. So the read can be issued concurrently and the records used
-only to decide whether to *use* it.
+The obstacle is the fixture, not the harness. `hg19mod.fa` is 255 KB, smaller
+than one 256 KiB `RemoteFileWithRangeCache` chunk, so the first query caches the
+whole genome and a pan issues no reference request at all — while the prefetch
+is gated on having already seen an MD-less read and so cannot engage on the
+first query. The one query that fixture shows the cost on is the one the fix
+cannot help, and no amount of probe work gets around that.
 
-Unconditionally that wastes a fetch on every BAM that does carry MD. MD-ness is a
-property of the file rather than of the query, so the guard is a sticky
-per-adapter flag set the first time `seqFetchSpan` returns non-null: the win on
-the files that need it, nothing on the files that do not.
-
-**Measure the sequence read's share of a cold MD-less query first.**
-`RemoteFileWithRangeCache` may already be serving it out of a chunk the reference
-sequence track pulled in, in which case there is no round trip to overlap and
-this is not worth the flag. [reference/BAM_STACK_INTEGRATION.md](reference/BAM_STACK_INTEGRATION.md)
-seam 3.
+What is needed is a fixture whose reference is big enough that panning misses
+that chunk cache: reads spread over tens of Mb rather than 250 kb, against a
+reference of the same span. Then `seqfetch-timing-probe.ts` runs unchanged (it
+already measures the pan rather than the first load) and gives a real before /
+after. Worth doing for the pool work too — the same fixture is what would let
+[the inflate pool entry](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them)
+measure byte-cache sharing on something other than a file that fits in one
+chunk.
 
 ## Auto-detect when to use first-of-pair strand?
 

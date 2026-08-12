@@ -23,6 +23,47 @@ import type { Region } from '@jbrowse/core/util/types'
 export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
   protected configureResult?: { bam: BamFile<BamSlightlyLazyFeature> }
 
+  /**
+   * Whether a query on this file has ever turned up a read with no MD tag, and
+   * so whether the next query should fetch reference bases speculatively rather
+   * than waiting to find out.
+   *
+   * Sticky and never cleared, because it gates a PREFETCH rather than a
+   * decision: `seqFetchSpan` still decides per query whether the result is
+   * used, so the worst a stale `true` costs is one unused read. Clearing it on
+   * a query whose reads all carried MD would make a file with a mixed tail flap
+   * between prefetching and not.
+   */
+  private needsReference = false
+
+  /**
+   * The region's reference bases, or undefined if no sequence adapter is
+   * configured (a ChromSizesAdapter assembly is legitimate and serves none).
+   *
+   * The whole region rather than the reads' span: this is called before the
+   * records exist, and the region is the span's upper bound anyway since
+   * `seqFetchSpan` clamps to it.
+   */
+  private async fetchRegionSeq(
+    region: Region & { originalRefName?: string },
+    opts?: BaseOptions,
+  ) {
+    const sequenceAdapter = await this.getSequenceAdapter()
+    return sequenceAdapter?.getSequence(
+      {
+        refName: region.originalRefName ?? region.refName,
+        start: region.start,
+        end: region.end,
+      },
+      // The opts every other read on this path already carries, and the only
+      // one that was going without them. Without the stop token a pan that
+      // lands mid-fetch still decodes and returns the whole region's residues
+      // to a query nobody is waiting for; without the callback the reader sees
+      // no phase at all for it.
+      { stopToken: opts?.stopToken, statusCallback: opts?.statusCallback },
+    )
+  }
+
   protected configure() {
     if (!this.configureResult) {
       // #region nestedRead
@@ -79,12 +120,32 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
       filterBy?: FilterBy
     },
   ) {
-    const { refName, start, end, originalRefName } = region
+    // originalRefName is not read here — fetchRegionSeq resolves it, since the
+    // reference read is the only consumer of the assembly-side name
+    const { refName, start, end } = region
     const { stopToken, filterBy, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       const { bam } = this.configure()
       checkStopToken(stopToken)
+
+      // Started BEFORE the alignment fetch is awaited, so the two round trips
+      // overlap. Only once this file is known to hold MD-less reads — see
+      // `needsReference` — and deliberately not awaited here; the await is
+      // below, after the records land and `span` says whether it is wanted.
+      //
+      const prefetched = this.needsReference
+        ? this.fetchRegionSeq(region, opts)
+        : undefined
+      // Marks the promise handled so a rejection nobody has awaited yet does not
+      // surface as an unhandled rejection — a sequence source can 404 on a
+      // contig the BAM has and the assembly does not, which is the ordinary
+      // shape of a refName mismatch. It does NOT swallow the error: attaching a
+      // handler here leaves `prefetched` itself rejected, so the await below
+      // still throws exactly where the un-prefetched path would. Degrading to
+      // "no reference" instead would make the same failure behave differently
+      // depending on whether it was the first query.
+      prefetched?.catch(() => {})
 
       // A failed region fetch (e.g. a transient network error mid-pan) must not
       // wipe the header/index caches — those are memoized in setup() and only
@@ -107,32 +168,37 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
         flagInclude = 0,
         flagExclude = 0,
       } = filterBy ?? {}
-      // only reads lacking an MD tag need the reference, so defer loading the
-      // sequence adapter (and the fetch) until we know at least one does
+      // Only reads lacking an MD tag need the reference, and whether ANY does is
+      // only knowable once the records are in — hence `span` below. But the
+      // SPAN itself needs no records: seqFetchSpan clamps to [start, end), so
+      // the queried region is already an upper bound on what it can return, and
+      // a PackedReference carries its own start, so one packed for the whole
+      // region locates any read in itself and the walk windows to the viewport
+      // regardless. That is what lets the read be issued alongside the
+      // alignment fetch instead of after it — measured serial at every latency,
+      // and ~20% of a cold query at a CDN-like RTT (seqfetch-timing-probe.ts).
       const span = seqFetchSpan(records, start, end)
-      const sequenceAdapter = span ? await this.getSequenceAdapter() : undefined
-      const regionSeq =
-        sequenceAdapter && span
-          ? await sequenceAdapter.getSequence(
-              {
-                refName: originalRefName ?? refName,
-                start: span.start,
-                end: span.end,
-              },
-              // The opts every other read on this path already carries, and the
-              // only one that was going without them. Without the stop token a
-              // pan that lands mid-fetch still decodes and returns the whole
-              // region's residues to a query nobody is waiting for; without the
-              // callback the reader sees no phase at all for it, which on an
-              // MD-less BAM is a real wait between 'Downloading alignments' and
-              // 'Processing alignments'.
-              { stopToken, statusCallback },
-            )
-          : undefined
+      // MD-ness is a property of the FILE — the aligner either wrote MD or it
+      // did not — so one query's answer predicts the next one's. This is what
+      // keeps the prefetch above free on a BAM that carries MD: the gate never
+      // opens, and no query on it ever reads sequence at all.
+      if (span) {
+        this.needsReference = true
+      }
+      // `prefetched ?? this.fetchRegionSeq(…)` is WRONG here and was caught by
+      // referencePrefetch.test.ts: `??` evaluates its right side eagerly, so it
+      // read sequence on the first query of every BAM including the MD-carrying
+      // ones — defeating the gate it sits under. The fetch has to be inside the
+      // `span` branch.
+      const regionSeq = span
+        ? await (prefetched ?? this.fetchRegionSeq(region, opts))
+        : undefined
       // Packed once for the whole fetch, not per read: the walk then compares
-      // two bases per byte against the read's own packed SEQ.
-      const packedRef =
-        regionSeq && span ? packReference(regionSeq, span.start) : undefined
+      // two bases per byte against the read's own packed SEQ. Anchored at the
+      // region rather than at `span`, because that is what was fetched.
+      const packedRef = regionSeq
+        ? packReference(regionSeq, region.start)
+        : undefined
 
       await withProgress(
         {

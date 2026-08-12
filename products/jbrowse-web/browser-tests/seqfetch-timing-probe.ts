@@ -31,6 +31,21 @@
 // trips rather than work: strip the latency and the reference read collapses to
 // 9ms while the `gap` — JS that would still run — stays put.
 //
+// THIS PROBE MEASURES THE BASELINE AND CANNOT MEASURE THE FIX, and the reason
+// is worth knowing before you try. The fixture's reference is a 255 KB FASTA,
+// which is smaller than one 256 KiB RemoteFileWithRangeCache chunk — so the
+// first query caches the whole genome and a pan issues NO reference request at
+// all (measured: the pan's entire trace is one nomd1.bam read). Meanwhile the
+// prefetch is gated on having already seen an MD-less read, so it cannot engage
+// on the first query by construction. The two miss each other completely: the
+// only query this fixture shows the cost on is the one the fix cannot help.
+//
+// So a browser A/B of the fix needs a reference big enough that panning misses
+// that chunk cache — a real assembly, or a synthetic one with reads spread over
+// tens of Mb. Until then the ordering claim is asserted deterministically in
+// plugins/alignments/src/BamAdapter/referencePrefetch.test.ts, which is a better
+// test of it anyway.
+//
 // Fixture and traps: see percontext-probe.ts's header (same fixture). TRACKS=1
 // by default here -- several tracks contend for RPC workers and connections,
 // which blurs the phase boundary this is trying to see.
@@ -45,6 +60,9 @@ import type { CDPSession, Page } from 'puppeteer'
 const CONFIG = 'test_data/jb2bench_link/seqfetch_config.json'
 const ASSEMBLY = 'hg19mod'
 const LOC = process.env.LOC || 'chr22_mask:100000..110000'
+// A non-overlapping window, so the pan is a genuine cold query rather than one
+// served out of @gmod/bam's parsed-chunk cache
+const PAN_LOC = process.env.PAN_LOC || 'chr22_mask:150000..160000'
 const TRACKS = Number(process.env.TRACKS || 1)
 const LATENCY_MS = Number(process.env.LATENCY_MS ?? 60)
 
@@ -163,14 +181,37 @@ await page.goto(
   `http://localhost:${port}/?config=${CONFIG}&session=${encodeSessionSpec(spec)}&sessionName=SeqTiming`,
   { waitUntil: 'load', timeout: 300000 },
 )
-await page
-  .waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout: 300000, polling: 250 },
-  )
-  .catch(() => {})
-await sleep(20000)
+async function quiet() {
+  await page
+    .waitForFunction(
+      () =>
+        document.querySelectorAll('[data-testid="loading-overlay"]').length ===
+        0,
+      { timeout: 300000, polling: 250 },
+    )
+    .catch(() => {})
+  await sleep(20000)
+}
+
+await quiet()
+
+// Measure the PAN, not the first load. Two reasons, and the second is the one
+// that matters. A first load is unrepresentative anyway — it builds the
+// sequence sub-adapter and reads its .fai, which a pan does not. And any
+// prefetch of the reference has to be gated on having already SEEN an MD-less
+// read on this file, since nothing in the header says whether MD is present, so
+// on the first query it cannot have engaged yet by construction. Measuring the
+// first load therefore reports the unprefetched path whatever the code does.
+timed.length = 0
+pending.clear()
+await page.evaluate(l => {
+  ;(
+    window as unknown as {
+      JBrowseSession?: { views?: { navToLocString: (s: string) => void }[] }
+    }
+  ).JBrowseSession?.views?.[0]?.navToLocString(l)
+}, PAN_LOC)
+await quiet()
 
 const bam = phase(n => n.endsWith('.bam') || n.endsWith('.bam.bai'))
 const ref = bam

@@ -208,29 +208,52 @@ Note what does **not** save it: `RemoteFileWithRangeCache` absorbs the
 re-download, so a pan re-reads no bytes. It re-inflates and re-parses them,
 which is 70-90% of a cold query (`@gmod/bam` ADR 0003).
 
-## Seam 3 — the reference fetch is serial, and its span is knowable up front
+## Seam 3 — the reference fetch was serial (measured, then closed)
 
-`getFeatures` awaits the whole of `getRecordsForRange` before it can call
-`seqFetchSpan`, and only then issues the sequence read. On a BAM whose reads
+`getFeatures` used to await the whole of `getRecordsForRange` before calling
+`seqFetchSpan`, and only then issue the sequence read. On a BAM whose reads
 carry no MD — minimap2 and bwa both leave it off unless asked, so most long-read
-data — every query pays the two round trips end to end.
+data — every query paid the two round trips end to end.
 
-The span does not need the records. `seqFetchSpan` clamps its answer to
-`[regionStart, regionEnd)`, so the queried region is already an upper bound on
-what it can return, and `PackedReference` carries its own `start` — a reference
-packed for the whole region locates any read in itself, and the walk windows to
-the viewport regardless. So the fetch could be issued concurrently with
-`getRecordsForRange` and the records used only to decide whether to *use* it.
+`seqfetch-timing-probe.ts` measured it under emulated latency, because on
+localhost the read is ~1ms and the cost is round trips rather than bytes. One
+no-MD long-read track, 10 kb window; **serial in every arm** — the reference
+read never once started before the last BAM byte landed:
 
-The cost of doing that unconditionally is a wasted sequence fetch on every BAM
-that does carry MD. The cheap guard is that MD-ness is a property of the file
-rather than of the query — one query's answer predicts the next one's — so a
-sticky per-adapter flag set the first time `seqFetchSpan` returns non-null gets
-the win on the files that need it and costs nothing on the files that do not.
+| RTT   | bam phase | reference | gap  | removable | share |
+| ----- | --------- | --------- | ---- | --------- | ----- |
+| 0ms   | 69ms      | 142→151   | 74ms | 9ms       | 6%    |
+| 20ms  | 148ms     | 182→218   | 34ms | 36ms      | 17%   |
+| 60ms  | 291ms     | 335→417   | 43ms | 82ms      | 20%   |
+| 150ms | 651ms     | 707→895   | 56ms | 188ms     | 21%   |
 
-Not built, and not measured. The thing to measure is the sequence read's share
-of a cold MD-less query, against a `RemoteFileWithRangeCache` that may already
-be serving it from a chunk the reference sequence track pulled in.
+Two numbers, because the obvious one overstates: the **tail** (everything after
+the last BAM byte) is 27-34%, but it includes `gap`, which is the filter loop
+and building the sequence sub-adapter and would still run. **Removable** is the
+reads themselves — ~20% at a CDN-like RTT. The 0ms arm is the control that says
+which it is: strip the latency and the read collapses to 9ms while `gap` stays.
+
+The fix is that the span never needed the records. `seqFetchSpan` clamps to
+`[regionStart, regionEnd)`, so the queried region is already its upper bound,
+and `PackedReference` carries its own `start` — one packed for the whole region
+locates any read in itself and the walk windows to the viewport regardless. So
+the read is now issued alongside the alignment fetch and the records only decide
+whether to *use* it, gated on `needsReference`: MD-ness is a property of the
+file, so one query's answer predicts the next one's, and a BAM that carries MD
+never opens the gate at all.
+
+**Two traps, both of which bit here.** `prefetched ?? this.fetchRegionSeq(…)`
+evaluates its right side eagerly, so it read sequence on the first query of
+every BAM including the MD-carrying ones — defeating the gate it sat under, and
+caught only because `referencePrefetch.test.ts` asserts the MD case reads
+nothing. And the browser probe **cannot** measure the fix: its fixture's
+reference is a 255 KB FASTA, smaller than one 256 KiB `RemoteFileWithRangeCache`
+chunk, so the first query caches the whole genome and a pan issues no reference
+request at all — while the gate means the prefetch cannot engage on the first
+query. The only query that fixture shows the cost on is the one the fix cannot
+help. Ordering is the real claim, so it is asserted deterministically in the
+unit test instead; a browser A/B needs a reference big enough that panning
+misses that chunk cache.
 
 ## Things checked and found already integrated
 
