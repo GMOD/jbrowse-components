@@ -5,12 +5,21 @@ guide_category: Plugins
 ---
 
 **TL;DR:** implement `renderSvg()` on your display by returning
-`renderDisplaySvg(model, opts, YourSvgBody)` and painting through `PaintLayer`;
-displays without a `renderSvg` are skipped by "Export SVG".
+`renderDisplaySvg(model, opts, YourSvgBody)` and painting through `PaintLayer`.
+Every display in a non-minimized track needs one — the export calls it with no
+fallback.
 
 The Linear Genome View's `exportSvg()` action calls each visible display's
 `renderSvg()`, collecting the returned React nodes and rendering them into a
 server-side SVG via `renderToSvg`.
+
+**`renderSvg` is not optional.** The export takes every non-minimized track,
+calls `renderSvg` on its first display, and aggregates the results — a display
+that does not implement it throws, and the throw is collected like any other
+render failure, so the export dialog reports an error and saves nothing. Leaving
+it off does not quietly omit your track from the figure; it stops anyone in that
+session exporting at all. (`svgLegendWidth` on the same display _is_ optional
+and is called with `?.()`, which is the contrast worth noticing.)
 
 ## PaintLayer
 
