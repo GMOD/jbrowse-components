@@ -44,6 +44,13 @@ test('a missing file is an error, not an empty list', async () => {
   await expect(invoke('getGlobalPlugins')).rejects.toThrow()
 })
 
+test('writes through a temp file and leaves none behind', async () => {
+  // atomic, so a crash mid-write cannot leave a truncated list — which the read
+  // above refuses to treat as an empty one, and so would fail every session open
+  await invoke('setGlobalPlugins', plugins)
+  expect(fs.readdirSync(dir).filter(f => f.endsWith('.tmp'))).toEqual([])
+})
+
 test('a file that parses but is not a list is refused here', async () => {
   // rather than downstream, where it reaches the renderer and is spread into a
   // plugin list — a TypeError naming neither the file nor what is wrong with it

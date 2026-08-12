@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 
 import { ENCODING, stringify } from '../paths.ts'
+import { writeFileAtomic } from '../writeFileAtomic.ts'
 import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
@@ -9,11 +10,11 @@ export async function writeGlobalPlugins(
   paths: AppPaths,
   plugins: unknown[] = [],
 ) {
-  await fs.promises.writeFile(
-    paths.globalPluginsPath,
-    stringify(plugins),
-    ENCODING,
-  )
+  // Atomic, like the session files: a truncated globalPlugins.json is the one
+  // that costs the most, since the read below deliberately refuses to treat an
+  // unreadable list as an empty one — so a half-written file fails every session
+  // open until the user finds the reset button in the dialog.
+  await writeFileAtomic(paths.globalPluginsPath, stringify(plugins))
 }
 
 // Plugins the user installs for every session, kept outside any one config in

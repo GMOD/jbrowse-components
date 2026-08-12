@@ -13,6 +13,7 @@ import {
   stringify,
 } from '../paths.ts'
 import { logError } from '../util.ts'
+import { writeFileAtomic } from '../writeFileAtomic.ts'
 import { ipcHandle } from './channels.ts'
 import { writeGlobalPlugins } from './globalPluginHandlers.ts'
 import { relativeUrisToLocalPaths } from './relativeUrisToLocalPaths.ts'
@@ -29,32 +30,6 @@ const THUMBNAIL_WIDTH = 500
 // testing, and testing it is what makes these paths reachable from a test at all.
 function isNotFound(e: unknown) {
   return (e as NodeJS.ErrnoException | null)?.code === 'ENOENT'
-}
-
-// Session files and recent_sessions.json are rewritten whole, the autosave doing
-// so once a second for as long as a session is open. writeFile truncates the
-// destination first, so a crash, a full disk, or the app being killed mid-write
-// leaves a truncated file where the user's session used to be — and the odds of
-// landing in that window are proportional to how often it is written.
-//
-// Write a sibling temp file and rename it into place instead: rename is atomic,
-// so a reader sees the whole old file or the whole new one, never half of
-// either. The temp is in the destination's own directory, so the rename never
-// has to cross a filesystem, and its name carries the pid and a counter so two
-// writers (two saves of the same session racing) can't share one.
-let tmpFileCounter = 0
-
-async function writeFileAtomic(filePath: string, data: string) {
-  const tmpPath = `${filePath}.${process.pid}.${tmpFileCounter++}.tmp`
-  try {
-    await writeFile(tmpPath, data, ENCODING)
-    await rename(tmpPath, filePath)
-  } catch (e) {
-    // the write failed or never landed; don't leave the fragment next to the
-    // user's session file
-    await unlink(tmpPath).catch(() => {})
-    throw e
-  }
 }
 
 // A session that was never saved with a window up has no thumbnail, and a file
