@@ -122,6 +122,20 @@ const AddRowDialog = observer(function AddRowDialog({
         />
       </RadioGroup>
 
+      {/* Says why "Existing dataset" is greyed out, and sits outside the mode
+      branch below rather than in it: the mode that branch would have shown it
+      in is precisely the one a dataset-less session can never be in, since
+      `mode` starts on 'custom' when there is nothing to pick and the radio back
+      to 'existing' is disabled. A note rather than an ErrorBanner — the upload
+      form under it is a working way to add the row, so nothing has failed. */}
+      {options.length ? null : (
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          No synteny dataset in this session connects to {terminalAssembly} —
+          open a new track instead, or load a dataset that references this
+          assembly.
+        </Typography>
+      )}
+
       {mode === 'existing' ? (
         options.length ? (
           <TextField
@@ -140,11 +154,7 @@ const AddRowDialog = observer(function AddRowDialog({
               </MenuItem>
             ))}
           </TextField>
-        ) : (
-          <ErrorBanner
-            error={`No synteny tracks found connecting to ${terminalAssembly}. Open a new track instead, or load a dataset that references this assembly.`}
-          />
-        )
+        ) : null
       ) : (
         <>
           <Typography gutterBottom>Assembly to add as the new row:</Typography>
