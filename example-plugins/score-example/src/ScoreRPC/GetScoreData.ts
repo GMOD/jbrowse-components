@@ -1,3 +1,4 @@
+// #exampleFile shared | worker: fetch features from the adapter, then pack
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 

@@ -1,3 +1,4 @@
+// #exampleFile shared | extends Canvas2DPerRegionRenderingBackend; the SVG-export path too
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import { drawScoreBlocks } from './drawScore.ts'

@@ -1,3 +1,4 @@
+// #exampleFile shared | config slots (color, scoreColumn)
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**

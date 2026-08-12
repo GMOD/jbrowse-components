@@ -1,6 +1,7 @@
 import { writeColorDocs } from './generateColorDocs.ts'
 import { writeCrossCuttingMixinDocs } from './generateCrossCuttingMixinDocs.ts'
 import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
+import { writeExamplePluginDocs } from './generateExamplePluginDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
 import { writeFileTypeDocs } from './generateFileTypeDocs.ts'
@@ -44,6 +45,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Jexl catalog',
     write: (corpus, opts) => writeJexlDocs(corpus, opts),
+  },
+  {
+    label: 'Example plugin tree',
+    write: (_corpus, opts) => writeExamplePluginDocs(opts),
   },
   {
     label: 'Menu tables',

@@ -1,3 +1,4 @@
+// #exampleFile shared | ScoreRenderState and the backend type
 import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 

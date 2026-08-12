@@ -1,3 +1,4 @@
+// #exampleFile shared | pure packer, unit-tested without a worker
 import type { ScoreRegionData } from './rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 

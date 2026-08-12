@@ -1,3 +1,4 @@
+// #exampleFile gpu | vertex + fragment for one pass; compiled by gen:shaders
 // Score display: one box per feature. The box spans start->end horizontally and
 // its height is score (0..1) x canvasHeight, grown up from the bottom. A single
 // uniform ABGR color fills every box. This is the minimal per-region GPU pass

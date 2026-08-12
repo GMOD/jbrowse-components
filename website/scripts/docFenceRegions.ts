@@ -12,14 +12,25 @@ export const REGION_MARKER = /^\s*(\/\/|#)\s*#(end)?region\b/
 const REGION_START = /^\s*(\/\/|#)\s*#region\b/
 const REGION_END = /^\s*(\/\/|#)\s*#endregion\b/
 
+// A whole-line tag that exists for a doc generator and is not part of the
+// example. `#exampleFile` heads every score-example source so the walkthrough
+// file trees can be rendered from the directory; publishing it inside the code
+// fence would put a line in the reader's copy that does nothing in their plugin.
+// Same reasoning as dropping the region markers themselves.
+const DOC_TAG_MARKER = /^\s*(\/\/|#)\s*#exampleFile\b/
+
+function isToolingLine(line: string) {
+  return REGION_MARKER.test(line) || DOC_TAG_MARKER.test(line)
+}
+
 /**
- * Drop every region marker line, for a whole-file include.
+ * Drop every marker line, for a whole-file include.
  */
 export function stripRegionMarkers(source: string) {
   return source
     .replace(/\n+$/, '')
     .split('\n')
-    .filter(l => !REGION_MARKER.test(l))
+    .filter(l => !isToolingLine(l))
     .join('\n')
 }
 
@@ -56,7 +67,7 @@ export function extractRegion(source: string, file: string, region: string) {
   if (end === -1) {
     throw new Error(`${file}: "#region ${region}" has no "#endregion"`)
   }
-  const body = rest.slice(0, end).filter(l => !REGION_MARKER.test(l))
+  const body = rest.slice(0, end).filter(l => !isToolingLine(l))
   const indent = Math.min(
     ...body.filter(l => l.trim()).map(l => l.length - l.trimStart().length),
   )

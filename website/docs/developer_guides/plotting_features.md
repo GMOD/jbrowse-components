@@ -14,14 +14,13 @@ thousands of features per frame); move to
 Canvas2D can't hold 60fps (roughly ≳100K features per frame). Both paths share
 the same model, fetch chain, and lifecycle, so starting here never boxes you in.
 
-This is a **build-step plugin** path: it bundles `@jbrowse/render-core` and
-composes mixins from `@jbrowse/plugin-linear-genome-view`, neither of which a
-[no-build plugin](/docs/developer_guides/no_build_plugin) can pull in. You build
-against those packages' exported APIs, a larger and faster-moving surface than
-[`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
-versions you develop against. `@jbrowse/render-core` is not on npm yet — it
-first publishes in the next release; until then, build against a
-`jbrowse-components` checkout.
+A [build-step plugin](/docs/developer_guides/simple_plugin), not a
+[no-build](/docs/developer_guides/no_build_plugin) one: it bundles
+`@jbrowse/render-core` and composes mixins from
+`@jbrowse/plugin-linear-genome-view`, whose surface is larger and faster-moving
+than [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
+versions you develop against. `@jbrowse/render-core` first publishes in the next
+release; until then, build against a `jbrowse-components` checkout.
 
 <Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and plots them per block on the main thread. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
 
@@ -56,22 +55,39 @@ whose renderer is ~30 lines; this guide mirrors its shape.
 
 ## Files to create
 
+`example-plugins/score-example/` is the finished plugin — a standalone package
+CI installs from a packed tarball and asserts renders, so it stays buildable
+against the published packages. It ships both renderers, so the `[GPU only]`
+rows are the ones a Canvas2D display skips:
+
+<!-- EXAMPLE_PLUGIN_TREE START -->
+
 ```
-src/LinearScoreDisplay/
-├── model.ts                       MST model: fetch + renderState + lifecycle
-├── index.ts                       registers the display type
-├── configSchema.ts                config slots (color, height, …)
-└── components/
-    ├── ScoreDisplayComponent.tsx  React: <DisplayChrome> + <canvas>
-    ├── Canvas2DScoreRenderer.ts   the backend, plus its one-line factory
-    ├── drawScore.ts               pure draw function (also used by SVG export)
-    └── scoreTypes.ts              ScoreRenderState + backend type
-src/ScoreRPC/
-├── index.ts                       RPC registration
-├── GetScoreData.ts                worker: fetch features -> ScoreRegionData
-├── buildScoreResult.ts            pure packer (unit-tested)
-└── rpcTypes.ts                    ScoreRegionData + RPC arg types
+src/
+  index.ts                       the plugin class; installs the display, the RPC method and the feature panel
+  LinearScoreDisplay/
+    configSchema.ts              config slots (color, scoreColumn)
+    index.ts                     registers the display type
+    model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend
+    components/
+      Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend; the SVG-export path too
+      GpuScoreRenderer.ts        [GPU only] extends GpuPerRegionRenderingBackend; packs instances, writes uniforms
+      ScoreDisplayComponent.tsx  React: DisplayChrome wrapping the canvas
+      ScoreRendererFactory.ts    the factory DisplayChrome calls; picks GPU or Canvas2D
+      drawScore.ts               pure draw function over a Ctx2D
+      scoreTypes.ts              ScoreRenderState and the backend type
+      shaders/
+        score.slang              [GPU only] vertex + fragment for one pass; compiled by gen:shaders
+  ScoreFeaturePanel/
+    index.tsx                    adds a panel to the feature details widget
+  ScoreRPC/
+    GetScoreData.ts              worker: fetch features from the adapter, then pack
+    buildScoreResult.ts          pure packer, unit-tested without a worker
+    index.ts                     registers the RPC method
+    rpcTypes.ts                  ScoreRegionData and the RPC arg types
 ```
+
+<!-- EXAMPLE_PLUGIN_TREE END -->
 
 ## Step 1: Define the data the worker returns
 
@@ -519,32 +535,25 @@ worked example.
 
 ## SVG export
 
-Because `drawScoreBlocks` takes a `Ctx2D`, SVG export calls the exact same
-function with an `SvgCanvas` and emits vector output, with no second rendering
-implementation. Add a `renderSvg` action per
+`drawScoreBlocks` takes a `Ctx2D`, so SVG export calls it with an `SvgCanvas`
+and emits vector output from the same code. Add a `renderSvg` action per
 [](/docs/developer_guides/svg_export).
 
-## When to move to the GPU path
+## Moving to the GPU path
 
-Stay on Canvas2D until a profile shows it can't keep up. The GPU path (WebGPU
-with WebGL2/Canvas2D fallback) is worth its extra cost (a `.slang` shader, an
-instance packer, a GPU backend class) only at high feature counts. The model,
-fetch chain, `renderState`, hit-testing, and the Canvas2D renderer you just
-wrote all carry over unchanged — SVG export keeps running through that renderer
-either way. You add a GPU renderer and move the factory from
+Everything above carries over unchanged — model, fetch chain, `renderState`,
+hit-testing, and the Canvas2D renderer, which SVG export keeps using either way.
+You add a `.slang` shader and a GPU renderer, and move the factory from
 `createCanvas2DBackend` to `createRenderingBackend`. See
 [](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
 
-- `example-plugins/score-example/` - the complete plugin this guide builds, as a
-  standalone package. CI installs it from a packed tarball and asserts it
-  renders, so it stays buildable against the published packages
 - `plugins/sequence/src/LinearReferenceSequenceDisplay/` - the simplest
   Canvas2D-only display (this guide mirrors it)
 - `plugins/gwas/src/LinearManhattanDisplay/` - a real feature-plotting display
-  (scored scatter) that ships both a Canvas2D renderer and a GPU renderer behind
-  one model, plus hit-testing and LD coloring
+  (scored scatter) that ships both renderers behind one model, plus hit-testing
+  and LD coloring
 - `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
   feature display with the dual GPU + Canvas2D path
 

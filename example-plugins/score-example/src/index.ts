@@ -1,3 +1,4 @@
+// #exampleFile shared | the plugin class; installs the display, the RPC method and the feature panel
 import Plugin from '@jbrowse/core/Plugin'
 
 import LinearScoreDisplayF from './LinearScoreDisplay/index.ts'

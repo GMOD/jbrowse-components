@@ -1,3 +1,4 @@
+// #exampleFile shared | registers the display type
 import { lazy } from 'react'
 
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'

@@ -1,3 +1,4 @@
+// #exampleFile gpu | extends GpuPerRegionRenderingBackend; packs instances, writes uniforms
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'

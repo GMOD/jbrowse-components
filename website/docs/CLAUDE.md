@@ -11,9 +11,9 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 `GOTCHA`, `PROMOTABLE_SLOTS`, `DISPLAY_FOUNDATIONS`, `CROSS_CUTTING_MIXINS`,
 `FETCH_AUTORUNS`, `PALETTE_KEYS`, `HELPER_PACKAGES`, `REEXPORT_MODULES`,
 `MENU_ITEM_TYPES`, `MENU_ITEM_FIELDS`, `MENU_ITEM_BUILDERS`, `MENU_ACTIONS`,
-`SPEC_KEYS`). Each renders from a JSDoc tag, a registration, or a manifest at
-the definition site — document a new one by tagging the source. Everything else
-under `docs/` is hand-written.
+`SPEC_KEYS`, `EXAMPLE_PLUGIN_TREE`). Each renders from a JSDoc tag, a
+registration, or a manifest at the definition site — document a new one by
+tagging the source. Everything else under `docs/` is hand-written.
 
 `SPEC_KEYS` is the grouped one on `urlparams.md`:
 `<!-- SPEC_KEYS <ViewType> -->` renders what a session spec may set on that

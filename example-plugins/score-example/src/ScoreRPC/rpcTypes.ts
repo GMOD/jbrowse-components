@@ -1,3 +1,4 @@
+// #exampleFile shared | ScoreRegionData and the RPC arg types
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 

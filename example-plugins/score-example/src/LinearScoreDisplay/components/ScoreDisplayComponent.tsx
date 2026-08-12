@@ -1,3 +1,4 @@
+// #exampleFile shared | React: DisplayChrome wrapping the canvas
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 

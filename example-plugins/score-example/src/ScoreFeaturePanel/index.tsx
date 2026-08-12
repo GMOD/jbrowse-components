@@ -1,3 +1,4 @@
+// #exampleFile shared | adds a panel to the feature details widget
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { addFeaturePanel } from '@jbrowse/core/ui'
 

@@ -1,3 +1,4 @@
+// #exampleFile shared | the factory DisplayChrome calls; picks GPU or Canvas2D
 import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
 
 import { Canvas2DScoreRenderer } from './Canvas2DScoreRenderer.ts'

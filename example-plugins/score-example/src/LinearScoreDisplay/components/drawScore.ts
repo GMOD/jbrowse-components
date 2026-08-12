@@ -1,3 +1,4 @@
+// #exampleFile shared | pure draw function over a Ctx2D
 import {
   bpToScreenPx,
   forEachClippedBlock,

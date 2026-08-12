@@ -1,3 +1,4 @@
+// #exampleFile shared | registers the RPC method
 import GetScoreData from './GetScoreData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

@@ -67,35 +67,45 @@ or WebGL2 directly. See the
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
 for the full lifecycle and `packages/render-core/CLAUDE.md` for HAL invariants.
 
-This guide builds `example-plugins/score-example/`, a standalone package (one
-`.slang` shader, a GPU renderer, a Canvas2D fallback) that CI installs from a
-packed tarball and asserts renders, so it stays buildable against the published
-packages. For real references: `plugins/gwas/src/LinearManhattanDisplay/` is the
-simplest per-region streamed case (a scored scatter, GPU + Canvas2D behind one
-model); `plugins/canvas/src/LinearBasicDisplay/` is the fullest (four shader
-passes) but uses the whole-map `laidOutDataMap` form for cross-region layout, so
-start from Manhattan when your regions are independent.
+For real references, `plugins/gwas/src/LinearManhattanDisplay/` is the simplest
+per-region streamed case. `plugins/canvas/src/LinearBasicDisplay/` is the
+fullest (four shader passes) but uses the whole-map `laidOutDataMap` form for
+cross-region layout, so start from Manhattan when your regions are independent.
+[](/docs/developer_guides/plotting_features) lists the rest.
 
 ## Files to create
 
+The same `example-plugins/score-example/` the Canvas2D guide builds, with the
+`[GPU only]` rows added:
+
+<!-- EXAMPLE_PLUGIN_TREE START -->
+
 ```
-src/LinearScoreDisplay/
-├── model.ts                       MST model: startRenderingBackend + renderState
-├── index.ts                       registers the display type
-├── configSchema.ts                config slots
-└── components/
-    ├── ScoreDisplayComponent.tsx  React: <DisplayChrome> + <canvas>
-    ├── ScoreRendererFactory.ts    createRenderingBackend dispatch
-    ├── GpuScoreRenderer.ts        extends GpuPerRegionRenderingBackend
-    ├── Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend
-    ├── drawScore.ts               pure draw function (also used by SVG export)
-    ├── scoreTypes.ts              ScoreRenderState + backend type
-    └── shaders/score.slang        vertex + fragment for one pass
-src/ScoreRPC/
-├── index.ts                       RPC registration
-├── GetScoreData.ts                worker: fetch features -> ScoreRegionData
-└── rpcTypes.ts                    RPC arg + result types
+src/
+  index.ts                       the plugin class; installs the display, the RPC method and the feature panel
+  LinearScoreDisplay/
+    configSchema.ts              config slots (color, scoreColumn)
+    index.ts                     registers the display type
+    model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend
+    components/
+      Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend; the SVG-export path too
+      GpuScoreRenderer.ts        [GPU only] extends GpuPerRegionRenderingBackend; packs instances, writes uniforms
+      ScoreDisplayComponent.tsx  React: DisplayChrome wrapping the canvas
+      ScoreRendererFactory.ts    the factory DisplayChrome calls; picks GPU or Canvas2D
+      drawScore.ts               pure draw function over a Ctx2D
+      scoreTypes.ts              ScoreRenderState and the backend type
+      shaders/
+        score.slang              [GPU only] vertex + fragment for one pass; compiled by gen:shaders
+  ScoreFeaturePanel/
+    index.tsx                    adds a panel to the feature details widget
+  ScoreRPC/
+    GetScoreData.ts              worker: fetch features from the adapter, then pack
+    buildScoreResult.ts          pure packer, unit-tested without a worker
+    index.ts                     registers the RPC method
+    rpcTypes.ts                  ScoreRegionData and the RPC arg types
 ```
+
+<!-- EXAMPLE_PLUGIN_TREE END -->
 
 ## Step 1: Define data types
 
