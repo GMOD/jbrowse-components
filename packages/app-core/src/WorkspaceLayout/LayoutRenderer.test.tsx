@@ -467,6 +467,32 @@ test('a mouse wheel over the strip scrolls it sideways', () => {
   expect(list.scrollLeft).toBe(80)
 })
 
+// `deltaY` is only pixels when `deltaMode` says so. Firefox reports whole LINES
+// for a mouse wheel (mode 1, deltaY ±3) where Chrome reports pixels (mode 0,
+// ±100), so taking the number at face value moves the strip three pixels per
+// notch there — which is scrolling, technically, and unusable. Chrome-only
+// verification cannot see this, which is why it is pinned here.
+test('a wheel reporting lines or pages is converted to pixels', () => {
+  const session = TestSession.create({ name: 't' })
+  const { container } = renderLayout(session)
+  const list = container.querySelector('[role="tablist"]') as HTMLElement
+
+  // one Firefox mouse-wheel notch
+  list.scrollLeft = 0
+  fireEvent.wheel(list, { deltaY: 3, deltaX: 0, deltaMode: 1 })
+  expect(list.scrollLeft).toBe(48)
+
+  // pages are the strip's own visible width; jsdom measures 0, so this asserts
+  // the multiplication happened rather than a distance
+  list.scrollLeft = 0
+  Object.defineProperty(list, 'clientWidth', {
+    value: 400,
+    configurable: true,
+  })
+  fireEvent.wheel(list, { deltaY: 2, deltaX: 0, deltaMode: 2 })
+  expect(list.scrollLeft).toBe(800)
+})
+
 // A trackpad swipe already arrives as deltaX and the browser has applied it.
 // Adding deltaY on top would scroll twice as far as the fingers moved.
 test('a horizontal gesture is left to the browser', () => {

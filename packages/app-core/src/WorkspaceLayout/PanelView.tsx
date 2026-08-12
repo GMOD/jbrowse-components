@@ -136,6 +136,32 @@ interface PanelViewProps {
 const tabDomId = (tabId: string) => `jbrowse-tab-${tabId}`
 const tabPanelDomId = (panelId: string) => `jbrowse-tabpanel-${panelId}`
 
+/**
+ * A wheel event's delta in PIXELS.
+ *
+ * `deltaY` is only pixels when `deltaMode` says so. Firefox reports whole lines
+ * for a mouse wheel — `deltaMode: 1`, `deltaY: ±3` — where Chrome reports
+ * `deltaMode: 0`, `deltaY: ±100`. Using the raw number moves the strip three
+ * pixels per notch there: scrolling, technically, and unusable in practice.
+ *
+ * The line height is nominal rather than measured. `getComputedStyle` per wheel
+ * event to resolve a `line-height: normal` that is itself font-dependent buys
+ * accuracy nobody can perceive in a scroll gesture, and the strip is a fixed
+ * 35px of chrome in one size.
+ */
+const WHEEL_LINE_PX = 16
+
+function wheelDeltaPixels(event: React.WheelEvent, pageSize: number) {
+  switch (event.deltaMode) {
+    case 1:
+      return event.deltaY * WHEEL_LINE_PX
+    case 2:
+      return event.deltaY * pageSize
+    default:
+      return event.deltaY
+  }
+}
+
 export const PanelView = observer(function PanelView({
   panel,
   layout,
@@ -264,7 +290,7 @@ export const PanelView = observer(function PanelView({
             if (!el || Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
               return
             }
-            el.scrollLeft += event.deltaY
+            el.scrollLeft += wheelDeltaPixels(event, el.clientWidth)
           }}
         >
           {panel.tabs.map(tab => (
