@@ -15,7 +15,7 @@ data: hosted
 and maternal against paternal is a self-alignment. The Q100 project publishes
 the chain between the two haplotypes, so there is nothing to align. A dotplot
 with one haplotype per axis shows the two are collinear chromosome by
-chromosome; 8p23.1 is one of the blocks that is not, and draws as a sweep
+chromosome; 8p23.1 is the largest block that is not, and draws as a sweep
 between the panels of a linear view.
 
 ## Prerequisites
@@ -29,10 +29,8 @@ between the panels of a linear view.
 
 ## The config
 
-There is not much to set up here, which is most of the appeal of this dataset.
-The Q100 project serves the assembly and the alignment between the haplotypes
-itself, so nothing has to be downloaded, converted or indexed, and the whole
-tutorial is two URLs and a view.
+The Q100 project serves both the assembly and the alignment between the
+haplotypes, so nothing here has to be downloaded, converted or indexed.
 
 Start with the assembly, one entry in `assemblies`. It needs a name and the URL
 of its sequence and nothing else: the adapter comes from the file extension, and
@@ -69,67 +67,67 @@ same assembly, since the two haplotypes are contigs of one:
 
 With those two in place, the first thing to ask a haplotype-resolved assembly is
 whether anything moved between chromosomes at all. That is a dotplot's question
-rather than a linear view's: twenty-three pairs of ribbons is not a shape anyone
+rather than a linear view's: one panel pair per chromosome is not a shape anyone
 reads, and a dotplot answers it in one frame.
 
 Open **Add → Dotplot view**. Both axis dropdowns already read
-`T2T-HG002 v1.2 (diploid)`, because it is the only assembly here, which is
-exactly the problem this dataset poses. The two haplotypes are contigs of one
-assembly, so an axis set to that assembly carries both of them, and a plot of it
-against itself puts every maternal and paternal contig on both axes,
-interleaved.
+`T2T-HG002 v1.2 (diploid)`, since it is the only assembly here, and an axis set
+to it carries both haplotypes: left alone, the plot puts every maternal and
+paternal contig on both axes, interleaved.
 
 Switch to **Manual** and use the chromosome box beside each assembly. Each takes
 a comma-separated list of contig names, where `*` matches any characters, so
 `*_MATERNAL` on the X axis and `*_PATERNAL` on the Y axis give one haplotype per
-axis. Leave a box empty and you get the whole assembly, which is what every
-other dataset wants. These boxes exist for the fragmented ones.
+axis. Leave a box empty and you get the whole assembly, which is what most
+datasets want.
 
 <Figure caption="The dotplot import form in Manual mode. Both axes are the same assembly, and the chromosome boxes cut each one down to a single haplotype. The Q100 chain is already selected as the synteny track." src="/img/hg002_haplotypes_import_form.png" />
 
-Press **Launch**, then turn on **Color by... → Strand** from the palette icon in
-the view's header. Without it the plot is one black diagonal; with it the
-collinear blocks are red and the inverted ones blue, which is the only other
-signal at this scale.
+Press **Launch**, then click the palette icon in the view's header and pick
+**Strand**. Without it the plot is one black diagonal; with it the collinear
+blocks are red and the inverted ones blue, which is the only other signal at
+this scale.
 
-What comes back is a clean per-chromosome diagonal: every maternal chromosome
-aligns to its paternal counterpart along its whole length, and nothing crosses
-between chromosomes. The blue ticks on it are the inverted blocks, and the
-largest of them is the subject of the next section. The `chrX_MATERNAL` column
-and the `chrY_PATERNAL` row are empty, which is not a loading failure: a male
-sample's sex chromosomes have no counterpart on the other haplotype to chain to.
+The plot is a clean per-chromosome diagonal: every maternal chromosome aligns to
+its paternal counterpart along its whole length, and nothing crosses between
+chromosomes. The blue ticks on it are the inverted blocks, and the largest of
+them is the subject of the next section. HG002 is male, so `chrX_MATERNAL` and
+`chrY_PATERNAL` have nothing on the other haplotype to chain to, and their
+column and row stay empty.
 
 <Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with its own counterpart on the diagonal; the blue ticks are inverted blocks and the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
 
 ## The 8p23.1 inversion
 
-The blue blocks are worth taking one at a time, which is a linear synteny view's
-job rather than a dotplot's. Open **Add → Linear synteny view** and pick
+Taking one blue block at a time is a linear synteny view's job rather than a
+dotplot's. Open **Add → Linear synteny view** and pick
 `T2T-HG002 v1.2 (diploid)` in both rows. That gives two panels of the same
-assembly, so put the maternal copy of a chromosome on top and the paternal
-below, and type a locus into either panel's search box to move it. The same
-chromosome boxes are on this form too, one per row, if you want the whole-genome
-comparison as ribbons instead of as a plot.
+assembly, and each panel's search box takes it to one haplotype:
+`chr8_MATERNAL:5,250,000-14,250,000` on top, the same range on `chr8_PATERNAL`
+below. The same chromosome boxes are on this form too, one per row, if you want
+the whole-genome comparison as ribbons instead of as a plot.
 
-It is worth turning that same track on from each panel's own track selector as
-well. In a plain linear view it draws as blocks on that panel's ruler rather
-than as ribbons between the panels, and those blocks are what the right-click
-further down acts on.
+Set the ribbons to **Strand** from the palette icon here as well, and turn that
+same track on from each panel's own track selector. In a plain linear view it
+draws as blocks on that panel's ruler rather than as ribbons between the panels,
+and those blocks are what the right-click further down acts on.
 
 Chromosome 8 carries an inversion polymorphism at 8p23.1 that HG002 is
 heterozygous for (Bosch _et al._ 2009), so it is one of the places where the two
-haplotypes of one person differ at a scale a whole-chromosome view can show.
-Colored by strand it is the one sweep crossing an otherwise flat frame, and the
-collinear flanks either side are what make it read as an inversion.
+haplotypes of one person differ at a scale a whole-chromosome view can show. It
+is the one sweep crossing a frame of otherwise flat ribbons, and the collinear
+flanks either side are what make it read as an inversion.
 
 Genes underneath the ribbons make the sweep easier to read, since they show the
 same sequence arriving in the opposite order on the other haplotype. The
-assembly has no annotation of its own, but the JHU Liftoff annotation of HG002
-v1.1 is published beside it, one bgzipped GFF per haplotype, with contig names
-that already match. Its records carry the gene symbol in `gene_name` and no
-`Name`, so point the label there, and load the file once per haplotype (`MAT`
-here; the other panel takes the same config with `PAT` in the name and the URL,
-under its own `trackId`):
+assembly has no annotation of its own, but the JHU Liftoff annotation is
+published beside it, one bgzipped GFF per haplotype, with contig names that
+already match. It annotates v1.1, which is the newest gene set the project
+publishes, and on chromosome 8 the two assembly versions are close enough that
+the gene lanes still land where the ribbons do. Its records carry the gene
+symbol in `gene_name` and no `Name`, so the label points there. Load the file
+once per haplotype: `MAT` below, and the same config with `PAT` in the name and
+the URL, under its own `trackId`, for the other panel.
 
 ```json addtrack
 {
@@ -142,15 +140,18 @@ under its own `trackId`):
     "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz"
   },
   "displayDefaults": {
+    "geneGlyphMode": "longestCoding",
     "labels": { "name": "jexl:feature.gene_name || feature.name || feature.id" }
   }
 }
 ```
 
-**Color by... → Strand** on each gene lane paints forward red and reverse blue,
-which is the scheme the ribbons already use, so one vocabulary covers the frame.
-At this zoom no gene in that lane can carry a label; a second track over the
-same GFF, cut to a few genes with **Filter by...** in its track menu, can.
+`geneGlyphMode` keeps the longest coding transcript of each gene, which is what
+makes the lane one row deep rather than a stack of every RefSeq isoform. **Color
+by... → Strand** on each gene lane then paints forward red and reverse blue,
+matching the ribbons. At this zoom no gene in that lane can carry a label; a
+second track over the same GFF, cut to a few genes with **Filter by...** in its
+track menu, can.
 
 <Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand throughout: forward red, reverse blue. The inverted block is the long blue bar in both panels and the sweep crossing between them. The labeled lane beside the ribbons carries the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
@@ -167,7 +168,7 @@ options → Show... → Show location markers**. It draws lines through the ribb
 at regularly spaced positions, each joining a point on the top row to the point
 it maps to on the bottom.
 
-<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the chain blocks on its own haplotype's coordinates. The panels have drifted apart, so nothing in the frame lines up; the ring marks the right-clicked block. After the move the paternal panel is elsewhere and both lanes carry the block the ribbon joins. The last two frames turn on location markers, whose lines through the ribbon pair up positions across the two panels." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the Q100 chain blocks on its own haplotype's coordinates. Right-clicking a block moves the other panel onto the sequence it matches; location markers then join positions across the ribbon." src="/img/hg002_haplotypes_follow_panel.png" />
 
 ## See also
 
