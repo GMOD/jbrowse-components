@@ -266,6 +266,30 @@ function mapPanel(
   )
 }
 
+/**
+ * Rebuild `root` with `replacer` applied to the tab with id `tabId`.
+ *
+ * The bottom rung of the ladder — `mapNode` addresses any node, `mapPanel` a
+ * cell, this a tab. A tab has no parent pointer, so reaching one means finding
+ * its panel first and rebuilding that; written out per operation, that lookup
+ * and the `tabs.map` around it were three copies wide.
+ *
+ * Not exported: every gesture on a tab is one of the named operations below.
+ */
+function mapTab(
+  root: LayoutTree,
+  tabId: string,
+  replacer: (tab: TabNode) => TabNode,
+): LayoutTree {
+  const home = findTab(root, tabId)
+  return home
+    ? mapPanel(root, home.panel.id, panel => ({
+        ...panel,
+        tabs: panel.tabs.map(t => (t.id === tabId ? replacer(t) : t)),
+      }))
+    : root
+}
+
 // --- tabs ------------------------------------------------------------------
 //
 // A tab is the unit the user drags, closes and renames; a view is what lives
@@ -380,13 +404,7 @@ export function renameTab(
   tabId: string,
   title: string | undefined,
 ): LayoutTree {
-  const home = findTab(root, tabId)
-  return home
-    ? mapPanel(root, home.panel.id, panel => ({
-        ...panel,
-        tabs: panel.tabs.map(t => (t.id === tabId ? { ...t, title } : t)),
-      }))
-    : root
+  return mapTab(root, tabId, tab => ({ ...tab, title }))
 }
 
 // --- views inside tabs -----------------------------------------------------
@@ -396,29 +414,20 @@ export function addViewToTab(
   tabId: string,
   viewId: string,
 ): LayoutTree {
-  const home = findTab(root, tabId)
-  return home
-    ? mapPanel(root, home.panel.id, panel => ({
-        ...panel,
-        tabs: panel.tabs.map(t =>
-          t.id === tabId && !t.viewIds.includes(viewId)
-            ? { ...t, viewIds: [...t.viewIds, viewId] }
-            : t,
-        ),
-      }))
-    : root
+  return mapTab(root, tabId, tab =>
+    tab.viewIds.includes(viewId)
+      ? tab
+      : { ...tab, viewIds: [...tab.viewIds, viewId] },
+  )
 }
 
 /** Take a view out of whatever tab holds it, leaving the tab in place. */
 export function removeView(root: LayoutTree, viewId: string): LayoutTree {
   const home = tabContainingView(root, viewId)
   return home
-    ? mapPanel(root, home.panel.id, panel => ({
-        ...panel,
-        tabs: panel.tabs.map(t => ({
-          ...t,
-          viewIds: t.viewIds.filter(id => id !== viewId),
-        })),
+    ? mapTab(root, home.tab.id, tab => ({
+        ...tab,
+        viewIds: tab.viewIds.filter(id => id !== viewId),
       }))
     : root
 }

@@ -88,6 +88,29 @@ export const LayoutRenderer = observer(function LayoutRenderer(props: Props) {
 // dockview's sash is a transparent grab strip with a 1px separator line drawn
 // down the middle of it — the line is what you see, the 4px is what you can
 // hit. Its dark theme deliberately gives the sash no hover colour at all.
+/** The space the two panes either side of the boundary before `index` share. */
+function pairSpan(sizes: number[], index: number) {
+  return sizes[index - 1]! + sizes[index]!
+}
+
+/**
+ * `sizes` with that boundary moved to `position`, measured in the same units.
+ *
+ * The move stays inside the pair, so every other pane holds still — what a
+ * splitter is expected to do, and what "just scale everything" gets wrong. The
+ * clamp lets a pane be dragged to nothing but never through zero, which would
+ * flip the pair and make the handle jump. The pointer and the arrow keys are
+ * the same gesture at different resolutions and both land here.
+ */
+function withBoundaryAt(sizes: number[], index: number, position: number) {
+  const pair = pairSpan(sizes, index)
+  const before = Math.min(Math.max(position, 0), pair)
+  const next = [...sizes]
+  next[index - 1] = before
+  next[index] = pair - before
+  return next
+}
+
 const useSplitterStyles = makeStyles()({
   splitter: {
     flex: `0 0 ${dv.sashSize}px`,
@@ -168,21 +191,25 @@ const Splitter = observer(function Splitter({
       if (!drag || drag.pairPx <= 0) {
         return
       }
+      // the pointer's travel as a fraction of the pair's pixels, applied to the
+      // pair's share — so the handle tracks the pointer whatever the units are
       const delta = (event[drag.axis] - drag.start) / drag.pairPx
-      const pairShare = drag.startSizes[index - 1]! + drag.startSizes[index]!
-      // clamped so a pane can be dragged to nothing but never through zero,
-      // which would flip the pair and make the handle jump
-      const next = [...drag.startSizes]
-      const moved = Math.min(
-        Math.max(drag.startSizes[index - 1]! + delta * pairShare, 0),
-        pairShare,
+      const sizes = drag.startSizes
+      layout.setSizes(
+        branch.id,
+        withBoundaryAt(
+          sizes,
+          index,
+          sizes[index - 1]! + delta * pairSpan(sizes, index),
+        ),
       )
-      next[index - 1] = moved
-      next[index] = pairShare - moved
-      layout.setSizes(branch.id, next)
     },
     [branch.id, index, layout],
   )
+
+  const endDrag = useCallback(() => {
+    dragRef.current = undefined
+  }, [])
 
   const onPointerUp = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -199,12 +226,12 @@ const Splitter = observer(function Splitter({
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       const sizes = branch.children.map(c => c.size)
-      const pairShare = sizes[index - 1]! + sizes[index]!
+      const pair = pairSpan(sizes, index)
       const decrease = horizontal ? 'ArrowLeft' : 'ArrowUp'
       const increase = horizontal ? 'ArrowRight' : 'ArrowDown'
       // 2% of the PAIR per press, matching the drag: the boundary moves within
       // the two panes either side of it and every other pane holds still
-      const step = pairShare * 0.02
+      const step = pair * 0.02
       let moved: number | undefined
       if (event.key === decrease) {
         moved = sizes[index - 1]! - step
@@ -213,24 +240,23 @@ const Splitter = observer(function Splitter({
       } else if (event.key === 'Home') {
         moved = 0
       } else if (event.key === 'End') {
-        moved = pairShare
+        moved = pair
       }
       if (moved === undefined) {
         return
       }
       event.preventDefault()
-      const next = [...sizes]
-      next[index - 1] = Math.min(Math.max(moved, 0), pairShare)
-      next[index] = pairShare - next[index - 1]!
-      layout.setSizes(branch.id, next)
+      layout.setSizes(branch.id, withBoundaryAt(sizes, index, moved))
     },
     [branch, index, horizontal, layout],
   )
 
   // the pane BEFORE the handle, as a percentage of the pair it divides — which
   // is what the handle actually moves
-  const pair = branch.children[index - 1]!.size + branch.children[index]!.size
-  const valueNow = Math.round((branch.children[index - 1]!.size / pair) * 100)
+  const sizes = branch.children.map(c => c.size)
+  const valueNow = Math.round(
+    (sizes[index - 1]! / pairSpan(sizes, index)) * 100,
+  )
 
   return (
     <div
@@ -246,6 +272,10 @@ const Splitter = observer(function Splitter({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
+      // capture can end without a pointerup — the browser drops it if the
+      // element is removed, and then the next pointer that merely passes over
+      // the handle would go on resizing from the stale start sizes
+      onLostPointerCapture={endDrag}
       className={cx(
         classes.splitter,
         horizontal ? classes.horizontal : classes.vertical,
