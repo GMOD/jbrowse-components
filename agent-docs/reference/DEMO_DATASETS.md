@@ -51,6 +51,30 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   3/2,567) and is the wrong pick, because at 2,500 reads the pileup cannot be
   drawn and the figure is two bands with nothing under them.
 
+- **Synteny against a real diploid → the `demos/hg002` mat-vs-pat chain.** Two
+  loci out of it, both measured off the file rather than picked by reputation,
+  and between them they cover what synteny code gets wrong:
+  - **An inversion → `chr8_MATERNAL:7,822,846-11,688,252` against
+    `chr8_PATERNAL:7,774,085-11,631,556`.** 3.87 Mb, the largest inverted block
+    in the file (8p23.1), with collinear chains either side of both breakpoints
+    — so one pan crosses from collinear into inverted and out again. Inside it
+    maternal coordinates run BACKWARDS along paternal, which is the case that
+    separates code handling strand from code that merely compiles.
+  - **Hap-specific sequence → `chr8_MATERNAL:12,061,654-12,122,837`.** 61 kb
+    covered by no chain at all, the largest such stretch on the maternal chr8.
+    A window inside it is the "there is legitimately no answer" case, which
+    otherwise only shows up as a feature that silently stops working.
+
+  Two things about the data itself. The track is a **self-alignment** — both
+  `assemblyNames` are `hg002v1.2`, one diploid assembly holding both haplotypes
+  as `chr*_MATERNAL`/`chr*_PATERNAL` — so it exercises the paths that special-case
+  a genome against itself. And **a `-` strand chain stores its query coordinates
+  in reverse-complement space**: the header reads
+  `chr8_PATERNAL - 135,155,257 139,012,728`, and the forward coordinates above are
+  `qSize - qEnd .. qSize - qStart` against `qSize` 146,786,813. Reading those
+  numbers as forward coordinates puts the inversion 127 Mb from where it is,
+  which looks exactly like a translocation.
+
 ## Datasets tried and rejected
 
 - **DGRP In(2L)t for an LD triangle.** Measured on `dgrp_In2Lt_2L.vcf.gz`: a
