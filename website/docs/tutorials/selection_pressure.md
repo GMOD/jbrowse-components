@@ -139,8 +139,8 @@ is the `.blocks` shape
 
 `attributeColumns` names the columns after the two gene columns, so each becomes
 a feature attribute visible in the detail panel, and `dn` with `ds` together
-drive **Color by → dN/dS**. `syn_subs` and `fisher_p` are what a reader checks a
-colour against once the ramp has drawn their eye to it.
+drive **Color by... → dN/dS**. `syn_subs` and `fisher_p` are what a reader
+checks a colour against once the ramp has drawn their eye to it.
 
 That ramp's middle is 1 and its top is 2, fixed rather than scaled to the data:
 which side of 1 a pair falls on is the question being asked, and an auto-scaled
@@ -209,12 +209,12 @@ It needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 ## See also
 
-- [](/docs/tutorials/homoeolog_synteny) - the same measurement between the
+- [](/docs/tutorials/homoeolog_synteny), the same measurement between the
   subgenomes a polyploid carries of itself
-- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) - ortholog tables from
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao), ortholog tables from
   Ensembl Compara, OrthoFinder and reciprocal best hits
-- [](/docs/tutorials/mcscan_synteny_grape_peach) - the two MCScan adapters on
-  two genomes
+- [](/docs/tutorials/mcscan_synteny_grape_peach), the two MCScan adapters on two
+  genomes
 
 ## References
 

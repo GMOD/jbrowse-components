@@ -223,7 +223,7 @@ and the bigWigs straight from local disk with no web server.
 
 ## Color the reads
 
-In the alignments track menu, pick **Color by** then **Bisulfite / EM-seq**,
+In the alignments track menu, pick **Color by...** then **Bisulfite / EM-seq**,
 then a cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**.
 Methylated cytosines paint red, and **Show unmethylated (blue)** adds the
 converted sites in blue, which is what separates an unmethylated cytosine from

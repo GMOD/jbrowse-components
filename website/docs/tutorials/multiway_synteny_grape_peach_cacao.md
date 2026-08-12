@@ -153,7 +153,7 @@ that the table format has nowhere to keep:
 ```
 
 Each named column becomes a feature attribute, so it shows in the detail panel
-and gets its own entry in **Color by**, scaled to the values in view.
+and gets its own entry in **Color by...**, scaled to the values in view.
 
 The script's refName and strand handling is described in the
 [pairwise MCScan tutorial](/docs/tutorials/mcscan_synteny_grape_peach#coming-from-mcscanx).
@@ -398,8 +398,8 @@ It needs everything under [Prerequisites](#prerequisites) on your `PATH`.
 ## See also
 
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
-- [](/docs/tutorials/homoeolog_synteny) - the same self-comparison with the
-  pairs computed rather than downloaded, so it runs on any assembly
+- [](/docs/tutorials/homoeolog_synteny), the same self-comparison with the pairs
+  computed rather than downloaded, so it runs on any assembly
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/genomes_synteny) for hosted pairwise alignments with no
   setup

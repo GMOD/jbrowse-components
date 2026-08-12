@@ -732,7 +732,7 @@ For more on these views, see the
 
 The C-GIAB PacBio HiFi BAMs carry per-read 5mC calls in their `MM`/`ML` tags,
 and JBrowse renders those with no extra files: open the tumor reads and set
-**Color by** → **Modifications** from the track menu. The tags survive the
+**Color by...** → **Modifications** from the track menu. The tags survive the
 conversion to CRAM above, so the reads loaded for the SV walkthroughs already
 carry them.
 

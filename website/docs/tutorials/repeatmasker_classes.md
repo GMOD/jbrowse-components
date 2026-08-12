@@ -170,10 +170,10 @@ the minus strand `C`.
 
 ## See also
 
-- [](/docs/tutorials/genomes_basics) - opening a hosted genome and finding a
+- [](/docs/tutorials/genomes_basics), opening a hosted genome and finding a
   track in the same catalog this one comes from
-- [](/docs/user_guides/multirow_feature_track) - the display itself, including
+- [](/docs/user_guides/multirow_feature_track), the display itself, including
   clustering, row sorting and the derived-value form GenArk needs
-- [](/docs/cookbook#colors) - the same track colored by class instead of
+- [](/docs/cookbook#colors), the same track colored by class instead of
   partitioned by it, and the jexl lookup table that does it
-- [](/docs/tutorials/chromhmm) - the same display over a cohort of cell types
+- [](/docs/tutorials/chromhmm), the same display over a cohort of cell types

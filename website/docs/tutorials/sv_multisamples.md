@@ -139,9 +139,9 @@ the read's mapping quality.
 
 That makes the residue separable from real coverage with a display setting
 rather than a reprocessing step. Open HG00113's pileup inside the deleted span
-and set **Color by → Mapping quality**: the ramp runs red at MAPQ 0 through to
-green at MAPQ 60, and reads the aligner could not confidently place come out red
-rather than sitting in the grey a thin real signal would.
+and set **Color by... → Mapping quality**: the ramp runs red at MAPQ 0 through
+to green at MAPQ 60, and reads the aligner could not confidently place come out
+red rather than sitting in the grey a thin real signal would.
 
 Residual coverage inside a called deletion turns up wherever the deleted
 sequence has a close paralog, so this is a useful lane to reach for beyond this

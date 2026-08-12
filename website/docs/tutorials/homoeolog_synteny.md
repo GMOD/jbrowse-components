@@ -180,7 +180,7 @@ reads. A self-comparison names one assembly twice, in `blockAssemblies`, in
 
 `attributeColumns` names the columns after the two gene columns. Each becomes a
 feature attribute, so it shows in the detail panel when a link is clicked, and
-`dn` with `ds` together drive **Color by → dN/dS**. `syn_subs` and `fisher_p`
+`dn` with `ds` together drive **Color by... → dN/dS**. `syn_subs` and `fisher_p`
 are the evidence behind a colour: how many synonymous differences the ratio
 divided by, and a Fisher exact test against neutrality.
 
@@ -268,12 +268,12 @@ It needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 ## See also
 
-- [](/docs/tutorials/mcscan_synteny_grape_peach) - the same adapter on two
+- [](/docs/tutorials/mcscan_synteny_grape_peach), the same adapter on two
   genomes, and the config shape for a genome against its own ancient
   duplications
-- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) - ortholog tables from
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao), ortholog tables from
   Ensembl Compara, OrthoFinder and reciprocal best hits
-- [](/docs/tutorials/orthofinder_synteny) - orthogroups across five vertebrates
+- [](/docs/tutorials/orthofinder_synteny), orthogroups across five vertebrates
 
 ## References
 

@@ -170,7 +170,7 @@ own is a matter of swapping the window:
 1. Open the hosted hg38 config and turn on **Umap M100**, **gnomAD v3 Genome
    Coverage - Mean Coverage**, and the **GIAB Problematic Regions** and
    **Problematic Regions** annotation tracks.
-2. Add your reads and set **Color by** → **Mapping quality** from the track
+2. Add your reads and set **Color by...** → **Mapping quality** from the track
    menu. Turn on **Show legend** in the same menu.
 3. Take a second window of the same width, from the same sample, outside every
    flagged interval, and put the two side by side. A red pileup on its own has

@@ -51,7 +51,7 @@ kind: every primary tumor in a TCGA project stacked as its own row, so a
 copy-number change shared across the cohort reads as a vertical stripe running
 down hundreds of samples.
 
-<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain (red, up) and loss (blue, down) frequency per 100kb. Recurrent events read as vertical stripes through the stack, each under a peak in the frequency track." src="/img/tcga/cohort_cnv_genome.png" />
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain (red, up) and loss (blue, down) frequency per 100 kb. Recurrent events read as vertical stripes through the stack, each under a peak in the frequency track." src="/img/tcga/cohort_cnv_genome.png" />
 
 ## Load it into JBrowse
 
@@ -134,7 +134,7 @@ Zooming to a single locus turns the stripe back into per-tumor calls, and
 clustering on just that window sorts the cohort into its copy-number classes
 there.
 
-<Figure caption="chr17:39.0-40.5Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure above." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="chr17:39.0-40.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure above." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 Do not read proportions off this display. At 1104 rows in a few hundred pixels
 each row is well under one pixel tall, so rows alias together and the saturated
@@ -145,7 +145,7 @@ rows carry them.
 ## Add a recurrence track
 
 A second track fixes what the stack cannot: the same calls collapsed to per-bin
-frequencies, so the count the stack blurs gets its own axis. Each 100kb bin of
+frequencies, so the count the stack blurs gets its own axis. Each 100 kb bin of
 `tcga_brca_cnv_recurrence.bedGraph.gz` carries the percent of the cohort gained
 and the percent lost, on the same log2 cutoffs the stack colors by (gain above
 0.3, loss below -0.3), so a stripe and its peak count the same tumors:
@@ -250,7 +250,7 @@ Each subtype gets its own pair of rows, gain in red over loss in blue, with the
 bottom row of each block holding the tumors whose receptor calls do not resolve
 a subtype.
 
-<Figure caption="Gain and loss frequency per 100kb across the 22 autosomes and chrX, tallied separately for each receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row, and 16q loss is the event that row is missing; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
+<Figure caption="Gain and loss frequency per 100 kb across the 22 autosomes and chrX, tallied separately for each receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row, and 16q loss is the event that row is missing; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
 The rows can only be read against each other because
 [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
@@ -280,20 +280,20 @@ for a picture a few hundred pixels tall. The same calls binned onto a fixed grid
 answer that view out of one level of a resolution pyramid instead.
 
 `tcga_brca_cnv.zarr` holds the 1104 tumors as a samples-by-bins matrix in a
-[Zarr v3](https://zarr.dev/) store, one array per level from 10kb bins up to
-3Mb. `MultiWiggleZarrAdapter` reads the coarsest level whose bins are still no
+[Zarr v3](https://zarr.dev/) store, one array per level from 10 kb bins up to 3
+Mb. `MultiWiggleZarrAdapter` reads the coarsest level whose bins are still no
 wider than a screen pixel, so a screenful costs a chunk or two at any zoom.
 Bytes over the wire for three views, counted through each reader:
 
-| View                  | BED + tabix | Zarr store | Zarr requests |
-| --------------------- | ----------- | ---------- | ------------- |
-| ERBB2, a 200kb window | 411 KB      | 14 KB      | 1             |
-| chr17 end to end      | 411 KB      | 237 KB     | 12            |
-| whole genome          | 5843 KB     | 1176 KB    | 4             |
+| View                   | BED + tabix | Zarr store | Zarr requests |
+| ---------------------- | ----------- | ---------- | ------------- |
+| ERBB2, a 200 kb window | 411 KB      | 14 KB      | 1             |
+| chr17 end to end       | 411 KB      | 237 KB     | 12            |
+| whole genome           | 5843 KB     | 1176 KB    | 4             |
 
 The first row is the widest gap and most of it is not the binning. TCGA segments
 average 2.6 Mb, so a query has to reach back to wherever an overlapping segment
-started, and tabix reads the same 411 KB for a 200kb window as for the whole
+started, and tabix reads the same 411 KB for a 200 kb window as for the whole
 chromosome: 1218 lines returned in the first case against 18,867 in the second.
 Set against that, the store is 25 MB on disk to the BED's 5.9 MB. It earns its
 place on the zoomed-out views and on cohorts larger than this one, not as a
@@ -355,7 +355,7 @@ Clustering is scoped to the blocks in view either way, so the row order above is
 genome-wide only because the figure's view is.
 
 Binning is also the one thing this representation loses. A focal amplification
-narrower than the base 10kb bin is averaged with its neighbours rather than
+narrower than the base 10 kb bin is averaged with its neighbours rather than
 drawn at its own amplitude, where the stack keeps the caller's exact interval at
 every zoom. For SNP 6.0 segments, whose mean length is 2.6 Mb, that costs
 nothing; for exome or WGS callers emitting kilobase segments it would.

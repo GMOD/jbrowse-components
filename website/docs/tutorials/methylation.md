@@ -52,7 +52,7 @@ assembly already configured in JBrowse (see the
 }
 ```
 
-Set **Color by → Modifications** from the track menu and each read is painted
+Set **Color by... → Modifications** from the track menu and each read is painted
 with its own 5mC calls, no extra processing and no methylation caller. Two modes
 are offered: one paints only the positions the MM tag reports as modified, the
 other (IGV's "2-color" scheme) also fills in every CpG the tag left implicit, so

@@ -195,13 +195,13 @@ labelling which is which, is the figure pipeline's job, not jb2export's.
 
 ## See also
 
-- [](/docs/tutorials/cancer_sv) - the same dataset, following one multi-hop
-  event all the way to a reconstructed allele
-- [](/docs/tutorials/sv_visualization_cgiab) - the same triage done
+- [](/docs/tutorials/cancer_sv), the same dataset, following one multi-hop event
+  all the way to a reconstructed allele
+- [](/docs/tutorials/sv_visualization_cgiab), the same triage done
   interactively, on PacBio HiFi
-- [](/docs/jbrowse-img) - every `jb2export` mode and flag
-- [](/docs/user_guides/sv_inspector_view) - the interactive callset table
-- [](/docs/user_guides/sv_visualization) - what each SV picture in JBrowse shows
+- [](/docs/jbrowse-img), every `jb2export` mode and flag
+- [](/docs/user_guides/sv_inspector_view), the interactive callset table
+- [](/docs/user_guides/sv_visualization), what each SV picture in JBrowse shows
 
 ## References
 

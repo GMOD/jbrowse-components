@@ -98,8 +98,8 @@ hexaploid's and draws a one-to-one correspondence between the two as a wedge.
 
 The track lists every genome in the set, so any pair of them opens as a two-row
 view with no second file. This one puts Aegilops tauschii's seven chromosomes
-over bread wheat 4A alone, with **Color by → Query** painting each link by the
-tauschii chromosome it leaves rather than by the single chromosome they all
+over bread wheat 4A alone, with **Color by... → Query** painting each link by
+the tauschii chromosome it leaves rather than by the single chromosome they all
 arrive at.
 
 <Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track as the six-row figure. Color by → Query gives each chromosome its own color. 4A resolves into three blocks in order along it: 4D over most of its length, then 5D, then 7D at the far end." src="/img/orthofinder_synteny/wheat_4a.png" />
