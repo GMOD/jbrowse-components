@@ -108,17 +108,22 @@ describe('transcriptPosition on a non-coding transcript', () => {
     expect(hgvsAt(lncRNA, 100)).toBe('n.100+1')
   })
 
-  // A coding extent that starts inside an intron cannot be numbered from the A
-  // of a start codon that is not transcribed, so it falls back to `n.` rather
-  // than emitting a c. coordinate counted off a base that isn't there. Only
-  // malformed annotation reaches this.
-  it('falls back to n. when the coding bounds are not exonic', () => {
+  // A coding extent starting inside an intron cannot be numbered from the A of a
+  // start codon that is not transcribed. `n.` is NOT the answer: the transcript
+  // codes, and saying `n.151` claims otherwise in the syntax a clinical variant
+  // is written in. Only malformed annotation reaches this; the exon numbering
+  // beside it is measured independently and still stands.
+  it('names no coordinate when a coding transcript cannot be numbered', () => {
     const broken: TranscriptCoords = {
       exons: [0, 100, 200, 300],
       strand: 1,
       coding: [150, 300],
     }
-    expect(hgvsAt(broken, 250)).toBe('n.151')
+    expect(hgvsAt(broken, 250)).toBeUndefined()
+    expect(transcriptPosition(broken, 250)).toMatchObject({
+      exonNumber: 2,
+      exonCount: 2,
+    })
   })
 })
 

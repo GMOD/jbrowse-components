@@ -20,8 +20,9 @@ interface ExonicPosition {
 // at base zoom, the c./n. coordinate of the same base — and because a coordinate
 // paired with an exon number resolved separately is a pair that can disagree.
 export interface TranscriptPosition extends ExonicPosition {
-  // `c.` when the transcript codes, `n.` when it doesn't; see hgvsCoordinate
-  hgvs: string
+  // `c.` when the transcript codes, `n.` when it doesn't, and absent when it
+  // codes but can't be numbered; see hgvsCoordinate
+  hgvs?: string
 }
 
 // One exon on the transcription axis, as an inclusive [first, last] pair.
@@ -95,26 +96,23 @@ function locateOnAxis(axis: AxisExon[], pos: number) {
 
 // The transcribed-base indices of the first and last coding bases. On the -
 // strand the coding extent's high end is the start codon, so the two genomic
-// bounds swap roles. Undefined for a non-coding transcript, and also when the
-// coding bounds don't land in an exon — malformed input rather than something to
-// silently number as if it were coding.
+// bounds swap roles. Undefined when the coding bounds don't land in an exon:
+// c.1 is the A of a start codon, and a start codon that isn't transcribed can't
+// have positions counted off it. Malformed annotation only.
 //
 // Takes the axis the caller already built: this walks it twice more, and
 // rebuilding it each time is what made naming one base cost three axes.
-function codingIndexRange(coords: TranscriptCoords, axis: AxisExon[]) {
-  const { coding, strand } = coords
-  let range: [number, number] | undefined
-  if (coding) {
-    const [low, high] = coding
-    const firstBp = strand === -1 ? high - 1 : low
-    const lastBp = strand === -1 ? low : high - 1
-    const first = locateOnAxis(axis, toAxis(coords, firstBp))
-    const last = locateOnAxis(axis, toAxis(coords, lastBp))
-    if (first?.offset === 0 && last?.offset === 0) {
-      range = [first.index, last.index]
-    }
-  }
-  return range
+function codingIndexRange(
+  coords: TranscriptCoords,
+  axis: AxisExon[],
+  [low, high]: [number, number],
+) {
+  const reverse = coords.strand === -1
+  const first = locateOnAxis(axis, toAxis(coords, reverse ? high - 1 : low))
+  const last = locateOnAxis(axis, toAxis(coords, reverse ? low : high - 1))
+  return first?.offset === 0 && last?.offset === 0
+    ? ([first.index, last.index] as const)
+    : undefined
 }
 
 function offsetSuffix(offset: number) {
@@ -128,13 +126,26 @@ function offsetSuffix(offset: number) {
 // Positions before the start codon are negative (`c.-24`) and those after the
 // stop codon carry `*` (`c.*17`); intronic positions add an offset from the
 // nearer exon boundary (`c.87+1`, `c.88-1`), including in the UTRs (`c.-24+1`).
+//
+// Nothing at all for a transcript that codes but whose coding extent can't be
+// placed on it. `n.` is not the fallback: the two prefixes are a claim about
+// which kind of transcript this is, so numbering an mRNA `n.151` states that it
+// is non-coding in the exact syntax a variant is reported in — and reads as an
+// answer rather than as the absence of one. The exon readout beside it is
+// measured independently and survives.
 function hgvsCoordinate(
-  range: [number, number] | undefined,
+  coords: TranscriptCoords,
+  axis: AxisExon[],
   { index, offset }: ExonicPosition,
 ) {
   const suffix = offsetSuffix(offset)
-  if (!range) {
+  const { coding } = coords
+  if (!coding) {
     return `n.${index + 1}${suffix}`
+  }
+  const range = codingIndexRange(coords, axis, coding)
+  if (!range) {
+    return undefined
   }
   const [firstCoding, lastCoding] = range
   return index < firstCoding
@@ -162,9 +173,6 @@ export function transcriptPosition(
   const axis = transcriptionAxis(coords)
   const located = locateOnAxis(axis, toAxis(coords, bpPos))
   return located
-    ? {
-        ...located,
-        hgvs: hgvsCoordinate(codingIndexRange(coords, axis), located),
-      }
+    ? { ...located, hgvs: hgvsCoordinate(coords, axis, located) }
     : undefined
 }
