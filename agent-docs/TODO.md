@@ -43,7 +43,6 @@ Exploratory concepts that are *not* committed work live in
 | [PanSN prefixes in the add-track form](#offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form) | comparative | the error half shipped; this is the discovery half |
 | [Synteny clicked outline in tiled mode](#the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode) | synteny | get the visual call — hull silhouette or per-tile |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
-| [Tabix byte gate over-reports](#the-tabix-byte-gate-sums-every-candidate-chunk-not-the-ones-a-query-reads) | variants, gff3, limits | the forecast was tried once and measured wrong; use that fixture |
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | one streaming pass over the TAF, then an S3 write |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
@@ -757,32 +756,6 @@ implementer's call, hence here rather than in the small-items section.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
-
-### The tabix byte gate sums every candidate chunk, not the ones a query reads
-
-`getRegionByteSize` on the nine tabix adapters calls `TabixIndexedFile.
-bytesForRegions`, which sums `optimizeChunks` over every chunk `blocksForRange`
-offers. `@gmod/bam` had the same shape and fixed it: `estimatedBytesForRegions`
-runs `chunksLikelyRead` first, and its ADR 0017 measured the difference at
-**5.6x** on a deep ONT BAM — 43.5MB reported against the 7.8MB a 380bp window
-actually reads. The over-report matters because it is what the "too much data"
-banner reads, and a reader cannot answer it by zooming: every window narrower
-than a linear-index interval resolves to the same chunks and the same number.
-
-**Measure before porting, and expect it to be harder than it looks.** The
-forecast was already tried in tabix-js once and measured WRONG — on the 1000
-Genomes SV callset, whose 1.4Mb deletions pin the linear-index entry at the data
-start, it forecast 0.04MB against the 0.22MB the query read. That is what
-motivated the empty-prefix fallback now in `@gmod/bam`'s `chunksLikelyRead`, so
-a port carrying the fallback may well be fine — but "may well be" is the whole
-question and that fixture is where to ask it.
-
-There is a second reason not to copy it across unread: the two libraries do not
-read chunks the same way. `@gmod/bam` reads a fixed first batch and checks an
-early stop once (its ADR 0010); tabix-js starts its read-ahead at one and
-doubles per chunk consumed, because its scan can return inside the first chunk.
-The forecast's premise is "the prefix of chunks by offset is what gets read",
-and that premise fits the two designs differently.
 
 ### Cut WebGL2 contexts per display
 
