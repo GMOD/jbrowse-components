@@ -530,10 +530,11 @@ makes `["chr1_hap1", "*_hap1"]` read as "chr1 first, then the rest of hap1". A
 name matching nothing is dropped, and a list that matches nothing at all is
 reported rather than silently showing the whole genome.
 
-Globs match the assembly's **aliases** as well as its own names, the same as an
-exact entry does, so `["chr*"]` works on an assembly whose FASTA calls its
-chromosomes `1`, `2`, `3`. A region is taken once however many of its names
-match.
+Globs match the assembly's **aliases** as well as its own names, and match
+**case-insensitively**, both the same as an exact entry does — so `["chr*"]`
+works on an assembly whose FASTA calls its chromosomes `1`, `2`, `3`, and
+`["CHR*"]` works wherever `["chr*"]` does. A region is taken once however many
+of its names match.
 
 What a glob will not do is separate the main chromosomes from the rest of a
 UCSC-style assembly, because that naming makes the unplaced and alt contigs

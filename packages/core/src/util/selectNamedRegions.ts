@@ -12,12 +12,13 @@ import type { Region } from './types/index.ts'
  * which is the same split the alias fix removed and is no more tellable apart
  * from "this assembly has no such contigs" here than it was there. No caller
  * wants the other behaviour, so it is baked in rather than passed.
-
- * Exported because the search box's refName matching reads the same syntax,
- * and one reading of `*` is the whole point: a pattern that selects a set in
- * a session spec has to select the same set when typed into the box.
+ *
+ * Module-private, and worth keeping that way: both readings of `*` — the
+ * resolver's and the search box's — live in this file precisely so a pattern
+ * that selects a set in a session spec selects the same set typed into the box.
+ * A third caller reaching in from elsewhere is how that stops being true.
  */
-export function globToRegExp(pattern: string) {
+function globToRegExp(pattern: string) {
   const escaped = pattern.replaceAll(/[.*+?^${}()|[\]\\]/g, m =>
     m === '*' ? '.*' : `\\${m}`,
   )
