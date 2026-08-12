@@ -1,3 +1,4 @@
+import { writeAdapterBaseDocs } from './generateAdapterBaseDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
 import { writeCrossCuttingMixinDocs } from './generateCrossCuttingMixinDocs.ts'
 import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
@@ -46,6 +47,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Jexl catalog',
     write: (corpus, opts) => writeJexlDocs(corpus, opts),
+  },
+  {
+    label: 'Adapter base table',
+    write: (_corpus, opts) => writeAdapterBaseDocs(opts),
   },
   {
     label: 'Example plugin tree',

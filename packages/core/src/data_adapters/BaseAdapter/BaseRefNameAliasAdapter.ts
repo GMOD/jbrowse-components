@@ -6,6 +6,7 @@ export interface Alias {
   aliases: string[]
   override?: boolean
 }
+/** #adapterBase BaseRefNameAliasAdapter | refName aliases, e.g. `chr1` for `1` */
 export interface BaseRefNameAliasAdapter extends BaseAdapter {
   getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
 }

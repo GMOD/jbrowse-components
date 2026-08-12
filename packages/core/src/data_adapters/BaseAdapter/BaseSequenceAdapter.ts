@@ -5,6 +5,7 @@ import type { NoAssemblyRegion } from '../../util/index.ts'
 import type { RegionsAdapter } from '../BaseAdapter/index.ts'
 import type { BaseOptions } from './types.ts'
 
+/** #adapterBase BaseSequenceAdapter | a region list plus the sequence for a queried region; extends the feature adapter */
 export abstract class BaseSequenceAdapter<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,
 >

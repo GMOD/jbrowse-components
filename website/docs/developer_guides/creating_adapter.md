@@ -19,23 +19,24 @@ drawing, state, and menus.
 
 ## Adapter types
 
-- **Feature adapter** - Takes a request for a _region_ (chromosome, start, end)
-  and returns _features_ (genes, reads, variants, etc.) in that region.
-  Examples: [BAM](https://samtools.github.io/hts-specs/SAMv1.pdf) and
-  [VCF](https://samtools.github.io/hts-specs/VCFv4.3.pdf) adapters.
-- **Regions adapter** - Defines what regions are in an assembly
-  (chromosomes/contigs/scaffolds and their sizes). Example:
-  [chrom.sizes](https://software.broadinstitute.org/software/igv/chromSizes)
-  adapter.
-- **Sequence adapter** - Combines regions and feature adapters: returns the
-  region list and sequences for queried regions. Examples:
-  [FASTA](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp)
-  and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) adapters.
-- **RefName alias adapter** - Returns alias data for reference sequence names,
-  e.g. "chr1" → "1". See [](/docs/developer_guides/refname_aliasing).
-- **Text search adapter** - Searches text search indexes and returns results.
-  Example: the trix adapter. See
-  [creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter).
+<!-- ADAPTER_BASES START -->
+
+<!-- prettier-ignore -->
+| Extend | You supply | It returns |
+| --- | --- | --- |
+| `BaseFeatureDataAdapter` | `getRefNames()`, `getFeatures()` | features overlapping a region — genes, reads, variants. The common case |
+| `BaseRefNameAliasAdapter` | `getRefNameAliases()` | refName aliases, e.g. `chr1` for `1` |
+| `BaseSequenceAdapter` | `getRefNames()`, `getFeatures()`, `getRegions()` | a region list plus the sequence for a queried region; extends the feature adapter |
+| `BaseTextSearchAdapter` | `searchIndex()` | search-box hits out of a text index |
+| `CytobandAdapter` | `getData()` | cytoband features for the ideogram |
+| `RegionsAdapter` | `getRegions()` | which regions an assembly has, and how long each is |
+
+<!-- ADAPTER_BASES END -->
+
+Two have guides of their own: [](/docs/developer_guides/refname_aliasing) and
+[](/docs/developer_guides/creating_text_search_adapter).
+[](/docs/config_guides/file_types) maps every format JBrowse already reads to
+the adapter that reads it, which is the place to check before writing one.
 
 ## What a feature adapter implements
 
@@ -133,20 +134,18 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
+    // no try/catch: ObservableCreate forwards a rejected callback to
+    // observer.error itself
     return ObservableCreate<Feature>(async observer => {
-      try {
-        const { start, end, refName } = query
-        const { intervalTreeMap } = await this.loadData(opts)
-        const tree = intervalTreeMap[refName]
-        if (tree) {
-          for (const f of tree(opts.statusCallback).search([start, end])) {
-            observer.next(new Gff3Feature(f, f.uniqueId))
-          }
+      const { start, end, refName } = query
+      const { intervalTreeMap } = await this.loadData(opts)
+      const tree = intervalTreeMap[refName]
+      if (tree) {
+        for (const f of tree(opts.statusCallback).search([start, end])) {
+          observer.next(new Gff3Feature(f, f.uniqueId))
         }
-        observer.complete()
-      } catch (e) {
-        observer.error(e)
       }
+      observer.complete()
     }, opts.stopToken)
   }
 }
@@ -156,7 +155,6 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
   the memo on rejection so a failed load retries. Range-streaming adapters (BAM,
   tabix) skip it and read the index per query.
 - Prefix `uniqueId` with `this.id`: two tracks over one file must not collide.
-- The `try`/`catch` is redundant, see [getFeatures](#getfeatures).
 
 For an API instead of a file, only the callback body changes: `fetch` with
 `opts?.signal`, then `observer.next(new SimpleFeature(...))` per hit.

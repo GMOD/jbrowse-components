@@ -12,12 +12,21 @@ export const REGION_MARKER = /^\s*(\/\/|#)\s*#(end)?region\b/
 const REGION_START = /^\s*(\/\/|#)\s*#region\b/
 const REGION_END = /^\s*(\/\/|#)\s*#endregion\b/
 
-// A whole-line tag that exists for a doc generator and is not part of the
-// example. `#exampleFile` heads every score-example source so the walkthrough
-// file trees can be rendered from the directory; publishing it inside the code
-// fence would put a line in the reader's copy that does nothing in their plugin.
-// Same reasoning as dropping the region markers themselves.
-const DOC_TAG_MARKER = /^\s*(\/\/|#)\s*#exampleFile\b/
+// Tags that drive a doc GENERATOR and say nothing to someone reading the code:
+// `#exampleFile` heads every score-example source so the walkthrough file trees
+// render from the directory, `#adapterBase` heads each adapter base so the
+// custom-adapter guide's table does. Published inside a fence they are a line in
+// the reader's copy that does nothing in their plugin — same reasoning as
+// dropping the region markers themselves.
+//
+// Deliberately NOT every `#tag`. `#config`, `#slot`, `#stateModel`, `#getter`
+// and friends document the code they sit on, so a reader who copies them keeps
+// something meaningful; only a tag whose entire audience is a generator belongs
+// here. Both comment styles, since these sit in `//` lines and one-line JSDoc.
+const DOC_ONLY_TAGS = ['exampleFile', 'adapterBase']
+const DOC_TAG_MARKER = new RegExp(
+  String.raw`^\s*(?://|#|/\*\*)\s*#(?:${DOC_ONLY_TAGS.join('|')})\b`,
+)
 
 function isToolingLine(line: string) {
   return REGION_MARKER.test(line) || DOC_TAG_MARKER.test(line)

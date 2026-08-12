@@ -16,6 +16,7 @@ import type { Observable } from 'rxjs'
  * Base class for feature adapters to extend. Defines some methods that
  * subclasses must implement.
  */
+/** #adapterBase BaseFeatureDataAdapter | features overlapping a region — genes, reads, variants. The common case */
 export abstract class BaseFeatureDataAdapter<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,
 > extends BaseAdapter<CONF> {

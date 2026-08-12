@@ -74,20 +74,18 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
+    // no try/catch: ObservableCreate forwards a rejected callback to
+    // observer.error itself
     return ObservableCreate<Feature>(async observer => {
-      try {
-        const { start, end, refName } = query
-        const { intervalTreeMap } = await this.loadData(opts)
-        const tree = intervalTreeMap[refName]
-        if (tree) {
-          for (const f of tree(opts.statusCallback).search([start, end])) {
-            observer.next(new Gff3Feature(f, f.uniqueId))
-          }
+      const { start, end, refName } = query
+      const { intervalTreeMap } = await this.loadData(opts)
+      const tree = intervalTreeMap[refName]
+      if (tree) {
+        for (const f of tree(opts.statusCallback).search([start, end])) {
+          observer.next(new Gff3Feature(f, f.uniqueId))
         }
-        observer.complete()
-      } catch (e) {
-        observer.error(e)
       }
+      observer.complete()
     }, opts.stopToken)
   }
 }
