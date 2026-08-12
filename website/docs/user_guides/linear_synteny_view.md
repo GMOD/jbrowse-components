@@ -86,13 +86,39 @@ panel's coordinates run right to left.
 Each genome panel is a full linear genome view and, by default, is controlled
 independently:
 
-- scroll, zoom, and pan either panel on its own; ribbons redraw to follow.
-  **Link views** in the hamburger menu instead replays a pan or zoom in one
-  panel onto the others, so the two move together — useful once the panels are
-  lined up on the region you want to walk along
+- scroll, zoom, and pan either panel on its own; ribbons redraw to follow
 - type a region or gene name into a panel's search box to jump it there
 - add tracks (genes, alignments, coverage) to either side from its track
   selector, useful for reading what a syntenic block actually contains
+
+### Making the panels move together
+
+**Row sync** in the hamburger menu couples the panels, in one of two ways:
+
+- **Link scroll and zoom** replays a pan or zoom in one panel onto the others,
+  so they move together by pixels. Useful once the panels are already lined up
+  on the region you want to walk along, and on comparisons close enough that
+  they stay lined up
+- **Follow the matching region** instead keeps the other panels on whatever
+  aligns to one anchor panel, re-resolved through the synteny data as you move.
+  Where the pixel lock drifts apart as indels accumulate between the two
+  genomes, this re-derives the correspondence, so the ribbons stay near-vertical
+  however far you pan
+
+Following is the mode to reach for when comparing two haplotypes or two
+assemblies of the same genome, where the coordinates diverge but the sequence
+does not. Turning it on adds an **Anchor row** section to the same menu, naming
+which panel drives; the others are placed from it, outward one level at a time
+in a stack of three or more.
+
+The header's arrows button toggles following on and off without opening the
+menu, and shows whether it is running. It changes to a warning form where
+nothing aligns to the anchor's window at all — a haplotype-specific insertion, a
+centromere, a panel off the end of the alignments — which is the case where the
+other panels hold their position rather than move.
+
+A followed panel can still be panned by hand; it returns to the matching region
+once it settles. Turn following off to keep it where you put it.
 
 ## Interacting with the ribbons
 
@@ -116,6 +142,10 @@ independently:
   of a tiered PIF all describe a block without describing the correspondence
   inside it, so there is no matching region to resolve; zooming in far enough to
   load the fine tier brings the items back
+- To keep a panel on the matching region as you move rather than sending it
+  there once, use **Follow the matching region** above. It works on CIGAR-less
+  alignments too, interpolating across the block where the click-driven items
+  decline to guess
 
 ## Coloring the ribbons
 
