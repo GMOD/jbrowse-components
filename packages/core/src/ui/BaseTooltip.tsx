@@ -6,9 +6,9 @@ import {
   useFloating,
   useInteractions,
 } from '@floating-ui/react'
-import { Portal, useTheme } from '@mui/material'
+import { createPortal } from 'react-dom'
 
-import { usePalette } from './PaletteContext.tsx'
+import { useStyleTheme } from './PaletteContext.tsx'
 import { alpha, grey } from './palette.ts'
 import { TOOLTIP_Z_INDEX } from './zIndexes.ts'
 
@@ -75,12 +75,12 @@ export default function BaseTooltip({
   clientPoint?: { x: number; y: number }
   children: React.ReactNode
 }) {
-  // the theme is read for one thing only: the portal container a shadow-DOM
-  // embed configures through `MuiPopper.defaultProps.container`, which every
-  // other portaled thing in JBrowse honours too. It contributes no styling.
-  const theme = useTheme()
-  const popperTheme = theme.components?.MuiPopper
-  const palette = usePalette()
+  // The style theme is read for two things and neither is a Material import:
+  // the colors below, and the portal container a shadow-DOM embed configures
+  // through `MuiPopper.defaultProps.container` — the same slot every other
+  // portaled thing in JBrowse honours, lifted onto the style theme by
+  // `resolveStyleTheme` so reading it here costs no UI toolkit.
+  const { palette, portalContainer } = useStyleTheme()
   const { refs, floatingStyles, context } = useFloating({
     placement,
     strategy: 'fixed',
@@ -91,28 +91,42 @@ export default function BaseTooltip({
 
   const clientPoint = useClientPoint(context, clientPointCoords)
   const { getFloatingProps } = useInteractions([clientPoint])
-  return (
-    <Portal container={popperTheme?.defaultProps?.container}>
-      <div
-        ref={refs.setFloating}
-        style={{
-          ...tooltipBaseStyle,
-          backgroundColor: alpha(grey[700], 0.9),
-          color: palette.common.white,
-          // after the base style, so the strategy's `position: fixed` wins
-          ...floatingStyles,
-          zIndex: TOOLTIP_Z_INDEX,
-          // workaround for tooltips flashing at top left corner of screen
-          // when first appearing
-          visibility:
-            floatingStyles.transform === 'translate(0px, 0px)'
-              ? 'hidden'
-              : undefined,
-        }}
-        {...getFloatingProps()}
-      >
-        {children}
-      </div>
-    </Portal>
+
+  // `document.body` is the default, which is what MUI's `Portal` did. Resolved
+  // at render rather than in an effect: a tooltip only ever mounts in response
+  // to a pointer, so there is no first paint to be wrong about and no
+  // hydration pass to mismatch — but the `document` guard stays, because this
+  // module is reachable from a server render even when this component is not.
+  const target =
+    (typeof portalContainer === 'function'
+      ? portalContainer()
+      : portalContainer) ??
+    (typeof document === 'undefined' ? undefined : document.body)
+  if (!target) {
+    return null
+  }
+
+  return createPortal(
+    <div
+      ref={refs.setFloating}
+      style={{
+        ...tooltipBaseStyle,
+        backgroundColor: alpha(grey[700], 0.9),
+        color: palette.common.white,
+        // after the base style, so the strategy's `position: fixed` wins
+        ...floatingStyles,
+        zIndex: TOOLTIP_Z_INDEX,
+        // workaround for tooltips flashing at top left corner of screen
+        // when first appearing
+        visibility:
+          floatingStyles.transform === 'translate(0px, 0px)'
+            ? 'hidden'
+            : undefined,
+      }}
+      {...getFloatingProps()}
+    >
+      {children}
+    </div>,
+    target,
   )
 }

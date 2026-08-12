@@ -64,6 +64,29 @@ test('the style theme itself reaches no Material UI', () => {
   expect([...bare.keys()].filter(spec => isMui(spec))).toEqual([])
 })
 
+// The hover tooltip every display renders, and the second thing this file
+// guards for the same reason the first is here.
+//
+// It imported `Portal` and `useTheme` from `@mui/material` — the theme for one
+// value, the shadow-DOM portal container — so a host that mounted
+// `DisplayUIProvider` specifically to keep Material UI off its screen got a
+// Material component back the moment a pointer crossed a feature. Nothing
+// Material was *drawn*, which is why neither half of
+// jbrowse-build-your-own's census could see it: `Portal` renders no element of
+// its own to carry a `Mui*` class, and the chip sets `fontFamily: inherit`,
+// which is exactly what defeats that file's Roboto fingerprint. A census is
+// blind here by construction, so the guard has to be static.
+//
+// The container now rides on `JBrowseStyleTheme.portalContainer`, read from the
+// same config slot as before, and the portal is `react-dom`'s `createPortal`.
+test('the hover tooltip reaches no Material UI', () => {
+  const bare = reach(path.join(__dirname, '../../ui/BaseTooltip.tsx'))
+  const offenders = [...bare].filter(([spec]) => isMui(spec))
+  expect(
+    offenders.map(([spec, trail]) => `${spec} via ${trail.join(' -> ')}`),
+  ).toEqual([])
+})
+
 // The tracer is only worth trusting if it can see a violation, and the one it
 // exists to catch is transitive. `ui/theme.ts` is the module that legitimately
 // builds the MUI theme, so it is the exact negative case.

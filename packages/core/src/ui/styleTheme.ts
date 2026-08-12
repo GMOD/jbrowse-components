@@ -73,11 +73,37 @@ export interface JBrowseTypography {
  * used to be reached for; a literal reads better at each of those five sites,
  * and `ui/zIndexes.ts` already owns the layering that matters.
  */
+/**
+ * Where a portaled overlay is mounted. An element, a function returning one
+ * (which is what a shadow-DOM host writes, since its root does not exist when
+ * the config is built), or absent for `document.body`.
+ */
+export type PortalContainer =
+  | Element
+  | (() => Element | null | undefined)
+  | null
+  | undefined
+
 export interface JBrowseStyleTheme {
   palette: JBrowsePalette
   spacing: (...args: number[]) => string
   shape: { borderRadius: number }
   typography: JBrowseTypography
+  /**
+   * Where JBrowse's own portaled overlays mount. Read by `BaseTooltip`, which
+   * is the one piece of display chrome that has to escape its track's
+   * `contain: strict` box and so cannot render in place.
+   *
+   * It exists here so that reading it costs no UI toolkit. The tooltip used to
+   * take it off the Material theme (`useTheme().components.MuiPopper`), which
+   * put `@mui/material` in the import graph of a component every display
+   * renders on hover — including for a host that mounted `DisplayUIProvider`
+   * precisely to avoid that. Nothing Material was drawn, so neither half of
+   * jbrowse-build-your-own's census could see it: `Portal` emits no classed
+   * element, and the chip sets `fontFamily: inherit`, which is what defeats the
+   * Roboto fingerprint.
+   */
+  portalContainer?: PortalContainer
 }
 
 export interface TypographyInput {
@@ -176,8 +202,23 @@ export function createTypography(input: TypographyInput = {}) {
   }
 }
 
+/**
+ * The portal container, as a config theme states it.
+ *
+ * Deliberately the slot Material UI's own portaled components already read, so
+ * a shadow-DOM embed keeps stating it once and every portal — MUI's popovers
+ * and menus, and JBrowse's tooltip — lands in the same node. Moving JBrowse's
+ * tooltip off the Material theme was about its *import graph*, not about giving
+ * embedders a second thing to configure, so the vocabulary stays put.
+ */
+export interface PortalInput {
+  components?: {
+    MuiPopper?: { defaultProps?: { container?: PortalContainer } }
+  }
+}
+
 /** A theme, as far as the style theme is concerned: colors plus sizing. */
-export interface StyleThemeInput extends ThemeInput, SizingInput {}
+export interface StyleThemeInput extends ThemeInput, SizingInput, PortalInput {}
 
 /** What `resolveStyleTheme` reads — `resolvePalette`'s arguments, plus sizing. */
 export interface StyleThemeArgs {
@@ -212,6 +253,13 @@ export function resolveStyleTheme(
     typography: createTypography(
       typeof typography === 'function' ? {} : typography,
     ),
+    // From `configTheme` rather than from `sizing`, and unconditionally rather
+    // than only for the default theme. A preset never states a portal
+    // container — it is a fact about where the app is mounted, not about how it
+    // looks — so a shadow-DOM embed that also picks a named theme must not lose
+    // its container to the preset merge that `sizing` performs.
+    portalContainer:
+      configTheme?.components?.MuiPopper?.defaultProps?.container,
   }
 }
 
