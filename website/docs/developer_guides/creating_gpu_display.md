@@ -12,31 +12,17 @@ and a Canvas2D renderer behind one factory, wire an MST model with
 
 :::note
 
-This is the scale-up path for large or dense datasets (roughly ≳100K features
-per frame). For typical annotation tracks, start with
-[](/docs/developer_guides/plotting_features), the shader-free Canvas2D path. The
-two share the same model, fetch chain, and lifecycle; only the renderer differs,
-so moving up later is a small change.
+The scale-up path, for roughly ≳100K features per frame. Start from
+[](/docs/developer_guides/plotting_features) otherwise; it builds the same
+plugin without the shader, so moving up later adds files rather than changing
+them.
 
-The
-[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
-is the source of truth for the lifecycle, mixins, and invariants; its
-[GPU rendering architecture](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
-and
-[Adding a new GPU display type](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#adding-a-new-gpu-display-type)
-sections mirror the steps below.
-
-`@jbrowse/render-core` and `@jbrowse/shader-tools` are **not on npm yet** — they
-first publish in the next release. Until then, author against a
-`jbrowse-components` checkout and copy the emitted `*.generated.ts` into your
-plugin. Both are `@experimental` when they land: names and signatures may change
-before they're frozen under semver, so pin an exact version and expect to
-rebuild on upgrade.
-
-`render-core`'s GPU surface is static-import-only (not exposed through JBrowse's
-runtime `ReExports` registry), so a GPU display must be a
-[build-step plugin](/docs/developer_guides/simple_plugin), not a
-[no-build plugin](/docs/developer_guides/no_build_plugin).
+`@jbrowse/render-core` and `@jbrowse/shader-tools` **first publish in the next
+release**. Until then, author against a `jbrowse-components` checkout and copy
+the emitted `*.generated.ts` into your plugin. Both land `@experimental`, so pin
+an exact version and expect to rebuild on upgrade. `render-core`'s GPU surface
+is static-import-only, which is what makes a GPU display a
+[build-step plugin](/docs/developer_guides/simple_plugin).
 
 :::
 
@@ -208,41 +194,55 @@ float4 fs_main(VsOut fragIn) : SV_Target {
 }
 ```
 
-Run `pnpm gen:shaders` after every edit. This emits `score.generated.ts` with:
-
-- `WGSL_SOURCE`, `GLSL_VERTEX`, `GLSL_FRAGMENT`
-- `INSTANCE_STRIDE_BYTES` / `INSTANCE_STRIDE_WORDS` and a typed
-  `packInstances()` that interleaves your parallel arrays into one instance
-  buffer
-- `INSTANCE_OFFSET_F32` / `_U32` / `_I32` — per-field word offsets, split by the
-  typed array each field's Slang type takes, for when you need your own pack
-  loop instead of `packInstances()`
-- `UNIFORMS_SIZE_BYTES`, `UNIFORM_OFFSET_F32` (Float32 indices), and a typed
-  `writeUniforms()` function
-- `GL_ATTRIBUTES` for WebGL2 binding
-
-**Never hand-edit `*.generated.ts`.**
-
-The codegen runs in your own repo:
+Run the codegen after every edit. In your own repo:
 
 ```bash
 pnpm add -D @jbrowse/shader-tools
-npx jbrowse-build-shaders        # or: ... build-shaders src/.../score.slang
+npx jbrowse-build-shaders
 ```
 
-Run it from your project root: it scans for `*.slang`, fetches a pinned `slangc`
-on first use, and writes each `*.generated.ts` next to its source (`hpmath` /
-`colorPack` resolve from your installed `@jbrowse/render-core`). Inside this
-repo the same tool runs as `pnpm gen:shaders`.
+It scans from the project root for `*.slang`, fetches a pinned `slangc` on first
+use, and writes each `*.generated.ts` next to its source (`hpmath` / `colorPack`
+resolve from your installed `@jbrowse/render-core`). Inside this repo the same
+tool is `pnpm gen:shaders`.
+
+What lands in `score.generated.ts`, and what a plugin imports from it:
+
+<!-- SHADER_EXPORTS START -->
+
+<!-- prettier-ignore -->
+| Export | What it is |
+| --- | --- |
+| `INSTANCE_STRIDE_BYTES` | bytes per instance in the packed buffer |
+| `INSTANCE_STRIDE_WORDS` | the same stride in 4-byte words |
+| `INSTANCE_OFFSET_F32 / _U32 / _I32` | per-field word indices, one map per typed-array view; only the views the instance fields actually use are emitted |
+| `WGSL_SOURCE` | the compiled WGSL, when the shader targets wgsl |
+| `GLSL_VERTEX` | the compiled WebGL2 vertex stage |
+| `GLSL_FRAGMENT` | the compiled WebGL2 fragment stage |
+| `BINDINGS` | every binding the shader declares, for HAL bind-group setup |
+| `VERTS_PER_INSTANCE` | vertices per instance, from the shader's const of that name; the draw call reads it |
+| `(your shader's consts)` | every other `public static const` in the shader, lifted by name |
+| `COMPUTE_ENTRY_POINT` | the compute entry point name, for a compute shader |
+| `WORKGROUP_SIZE_X` | the compute workgroup width |
+| `UNIFORMS_SIZE_BYTES` | size of the uniform block, the `uniformByteSize` a backend passes |
+| `UNIFORM_OFFSET_F32 / _U32 / _I32` | per-field indices into the uniform scratch buffer, one map per view |
+| `UNIFORM_SLOT_ARRAYS` | element counts for array-valued uniform slots |
+| `writeUniforms` | typed whole-block writer; the alternative to poking offsets |
+| `GL_ATTRIBUTES` | vertex attribute layout for the WebGL2 path |
+| `packInstances` | interleaves parallel arrays into one instance buffer |
+| `TEXTURES` | texture bindings the shader declares |
+
+<!-- SHADER_EXPORTS END -->
+
+Only what a given shader needs is emitted: no compute entry point for a
+render-only shader, and an `*_OFFSET_*` map only for the typed-array views its
+fields actually take.
 
 Genomic positions travel as absolute `uint` attributes; convert them with the
 `bpToClipX` wrapper above and nothing else. The `bpHi`/`bpLo` split it hides
 exists because float32 can't represent every base past ~16.7 Mbp, and it stays
 confined to that one line; in TypeScript outside uniform writes, use plain
 `bp - bpStart`.
-
-The `canvas_width` / `canvas_height` uniforms are CSS pixels, so don't scale by
-`devicePixelRatio` in your uniform writes.
 
 ## Step 3: GPU renderer
 
@@ -409,38 +409,27 @@ startRenderingBackend(backend: ScoreRenderingBackend) {
 
 `installPerRegionLifecycle` wraps the lower-level
 [`attachRenderingBackend`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
-contract (one upload autorun, one render autorun), giving each region key its
-own upload autorun to avoid O(N²) re-uploads as regions stream in. Only displays
-that lay features into Y-rows _across_ regions (`LinearBasicDisplay`,
-alignments) need the whole-map `laidOutDataMap` form instead. `fetchNeeded`
-calls `fetchEachRegion` and writes each region through `setRpcData`, exactly as
-on the Canvas2D path
-([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model));
-full detail in
-[the data fetching pipeline](/docs/developer_guides/data_fetching).
+contract, giving each region key its own upload autorun to avoid O(N²)
+re-uploads as regions stream in. Only displays that lay features into Y-rows
+_across_ regions (`LinearBasicDisplay`, alignments) need the whole-map
+`laidOutDataMap` form instead.
 
-Any change to `rpcProps()` triggers a full worker re-fetch (via
-`SettingsInvalidate`), so keep frequently-changing values (scroll, zoom) in
-`renderState`, not here. Settings that drive a main-thread buffer _re-encode_
-with no refetch (a color or scale change) go in a separate `gpuProps()` method
-(see the
+Three settings buckets, and putting one in the wrong place is the common
+mistake: `rpcProps()` refetches in the worker, so scroll and zoom must stay out
+of it; `renderState` is recomputed per frame and refetches nothing; and a
+setting that needs a main-thread buffer _re-encode_ but no refetch (a color, a
+scale) goes in `gpuProps()` (see the
 [`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)).
 
 ## Step 7: React component
 
-Render the canvas through the shared `DisplayChrome`. It frames your canvas
-(loading scrim, error bar, "region too large" banner) and handles WebGL/WebGPU
-context-loss recovery, and is the **only** place `useRenderingBackend` is
-called; a display must not call the hook itself
-([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-api)).
-Its render-prop child keeps it agnostic to how many canvases a display draws.
-
-It is the same component the Canvas2D path uses, unchanged —
+The same component the Canvas2D path uses, unchanged —
 [Plotting features, Step 5](/docs/developer_guides/plotting_features#step-5-the-react-component)
 shows it in full. `DisplayChrome` creates the HAL via `useRenderingBackend`,
 calls `model.startRenderingBackend(backend)` once the backend is live, and hands
-back the `canvasRef` to attach to your `<canvas>`; nothing in it knows whether
-the factory it was given resolved to a GPU or a Canvas2D backend.
+back the `canvasRef` to attach to your `<canvas>`. Nothing in it knows whether
+the factory resolved to a GPU or a Canvas2D backend, and its render-prop child
+keeps it agnostic to how many canvases a display draws.
 
 ## Step 8: Register the display
 

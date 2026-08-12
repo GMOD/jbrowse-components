@@ -286,7 +286,9 @@ export function instanceStride(attrs: InstanceAttr[]) {
 function instanceLayoutLines(attrs: InstanceAttr[]) {
   const stride = instanceStride(attrs)
   const lines = [
+    // #shaderExport INSTANCE_STRIDE_BYTES | bytes per instance in the packed buffer
     `export const INSTANCE_STRIDE_BYTES = ${stride}`,
+    // #shaderExport INSTANCE_STRIDE_WORDS | the same stride in 4-byte words
     `export const INSTANCE_STRIDE_WORDS = ${stride / 4}`,
     '',
   ]
@@ -297,6 +299,7 @@ function instanceLayoutLines(attrs: InstanceAttr[]) {
     }
     lines.push(
       `// Word indices into a ${VIEW_ARRAY[view]} view over the instance buffer.`,
+      // #shaderExport INSTANCE_OFFSET_F32 / _U32 / _I32 | per-field word indices, one map per typed-array view; only the views the instance fields actually use are emitted
       `export const INSTANCE_OFFSET_${view.toUpperCase()} = {`,
       ...fields.map(a => `  ${a.name}: ${a.offsetBytes / 4},`),
       '} as const',
@@ -343,12 +346,15 @@ export function emitShaderStrings(inputs: CodegenInputs) {
   const { baseName, wgsl, glslVertex, glslFragment } = inputs
   const lines = header(baseName)
   if (wgsl !== undefined) {
+    // #shaderExport WGSL_SOURCE | the compiled WGSL, when the shader targets wgsl
     lines.push(`export const WGSL_SOURCE = ${toStringLiteral(wgsl)}`, '')
   }
   if (glslVertex !== undefined) {
+    // #shaderExport GLSL_VERTEX | the compiled WebGL2 vertex stage
     lines.push(`export const GLSL_VERTEX = ${toStringLiteral(glslVertex)}`, '')
   }
   if (glslFragment !== undefined) {
+    // #shaderExport GLSL_FRAGMENT | the compiled WebGL2 fragment stage
     lines.push(
       `export const GLSL_FRAGMENT = ${toStringLiteral(glslFragment)}`,
       '',
@@ -400,6 +406,7 @@ export function emitInterface(inputs: CodegenInputs) {
     if (findEntryPoint(reflection, 'vertex')) {
       assertRenderBindingShape(`${baseName}.slang`, bindings)
     }
+    // #shaderExport BINDINGS | every binding the shader declares, for HAL bind-group setup
     lines.push('export const BINDINGS: readonly ShaderBinding[] = [')
     for (const b of bindings) {
       lines.push(
@@ -410,11 +417,13 @@ export function emitInterface(inputs: CodegenInputs) {
   }
 
   if (vertsPerInstance !== undefined) {
+    // #shaderExport VERTS_PER_INSTANCE | vertices per instance, from the shader's const of that name; the draw call reads it
     lines.push(`export const VERTS_PER_INSTANCE = ${vertsPerInstance}`, '')
   }
 
   if (exportedConsts) {
     for (const [name, value] of Object.entries(exportedConsts)) {
+      // #shaderExport (your shader's consts) | every other `public static const` in the shader, lifted by name
       lines.push(`export const ${name} = ${value}`, '')
     }
   }
@@ -426,10 +435,12 @@ export function emitInterface(inputs: CodegenInputs) {
   const cs = reflection.entryPoints.find(e => e.stage === 'compute')
   if (cs) {
     lines.push(
+      // #shaderExport COMPUTE_ENTRY_POINT | the compute entry point name, for a compute shader
       `export const COMPUTE_ENTRY_POINT = ${toStringLiteral(cs.name)}`,
       '',
     )
     if (cs.threadGroupSize) {
+      // #shaderExport WORKGROUP_SIZE_X | the compute workgroup width
       lines.push(`export const WORKGROUP_SIZE_X = ${cs.threadGroupSize[0]}`, '')
     }
   }
@@ -442,6 +453,7 @@ export function emitInterface(inputs: CodegenInputs) {
     // rather than loudly. See assertModeledFieldType.
     assertModeledStruct(`${baseName}.slang uniform block`, u)
     const totalBytes = cb.elementVarLayout.binding.size
+    // #shaderExport UNIFORMS_SIZE_BYTES | size of the uniform block, the `uniformByteSize` a backend passes
     lines.push(`export const UNIFORMS_SIZE_BYTES = ${totalBytes}`, '')
 
     // Per-view offset maps. Each uniform field appears only under the map
@@ -466,6 +478,7 @@ export function emitInterface(inputs: CodegenInputs) {
       if (fields.length > 0) {
         lines.push(
           `// Word indices into a ${VIEW_ARRAY[view]} view over the uniform buffer.`,
+          // #shaderExport UNIFORM_OFFSET_F32 / _U32 / _I32 | per-field indices into the uniform scratch buffer, one map per view
           `export const UNIFORM_OFFSET_${view.toUpperCase()} = {`,
         )
         for (const o of fields) {
@@ -499,6 +512,7 @@ export function emitInterface(inputs: CodegenInputs) {
         '// view over the uniform buffer (Uint32Array or Float32Array — the',
         '// field’s scalar type picks, same as UNIFORM_OFFSET_*). NOT',
         '// consecutive: std140 pads every array element to 16 bytes.',
+        // #shaderExport UNIFORM_SLOT_ARRAYS | element counts for array-valued uniform slots
         'export const UNIFORM_SLOT_ARRAYS = {',
       )
       for (const a of arrayFields) {
@@ -515,6 +529,7 @@ export function emitInterface(inputs: CodegenInputs) {
 
     const writtenFields = u.fields.filter(f => f.binding?.kind === 'uniform')
     lines.push(
+      // #shaderExport writeUniforms | typed whole-block writer; the alternative to poking offsets
       'export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {',
       ...declareViews(new Set(writtenFields.map(f => viewOf(f.type)))),
     )
@@ -568,6 +583,7 @@ export function emitInterface(inputs: CodegenInputs) {
 
     lines.push(
       ...instanceLayoutLines(attrs),
+      // #shaderExport GL_ATTRIBUTES | vertex attribute layout for the WebGL2 path
       `export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [`,
     )
     for (const a of attrs) {
@@ -597,6 +613,7 @@ export function emitInterface(inputs: CodegenInputs) {
     // locals, so the loop bound must not share a name with any field. Every
     // other such name is in PACK_INSTANCES_RESERVED, checked above.
     lines.push(
+      // #shaderExport packInstances | interleaves parallel arrays into one instance buffer
       'export function packInstances(',
       '  arrays: InstanceArrays,',
       '  numInstances: number,',
@@ -644,6 +661,7 @@ export function emitInterface(inputs: CodegenInputs) {
       // Emitted as a non-empty tuple type so it matches ShaderModule.TEXTURES
       // (which slangPass.ts requires to be `readonly [TextureBinding, ...TextureBinding[]]`).
       // Codegen only enters this branch when textures.length > 0.
+      // #shaderExport TEXTURES | texture bindings the shader declares
       'export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [',
     )
     for (let i = 0; i < textures.length; i++) {
@@ -665,6 +683,7 @@ export function emitConsts(baseName: string, consts: Record<string, number>) {
   return [
     ...header(baseName),
     ...Object.entries(consts).flatMap(([name, value]) => [
+      // #shaderExport (your shader's consts) | every other `public static const` in the shader, lifted by name
       `export const ${name} = ${value}`,
       '',
     ]),
