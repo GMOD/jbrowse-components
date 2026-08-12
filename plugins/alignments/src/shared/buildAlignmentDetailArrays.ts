@@ -42,7 +42,6 @@ export async function buildAlignmentDetailArrays({
   modifications,
   perBaseQualities,
   perBaseLetters,
-  detectedModifications,
   region,
   showSoftClipping = false,
   statusCallback,
@@ -56,7 +55,6 @@ export async function buildAlignmentDetailArrays({
   modifications: ModificationEntry[]
   perBaseQualities: PerBaseQualityEntry[]
   perBaseLetters: PerBaseLetterEntry[]
-  detectedModifications: Set<string>
   region: Region
   showSoftClipping?: boolean
   statusCallback: StatusCallback
@@ -77,11 +75,7 @@ export async function buildAlignmentDetailArrays({
         hardclips,
         regionStart,
       ),
-      modificationArrays: buildModificationArrays(
-        modifications,
-        regionStart,
-        detectedModifications,
-      ),
+      modificationArrays: buildModificationArrays(modifications, regionStart),
       perBaseQualityArrays: buildPerBaseQualityArrays(perBaseQualities),
       perBaseLetterArrays: buildPerBaseLetterArrays(perBaseLetters),
       segmentArrays: buildSegmentArrays(features, gaps, region),

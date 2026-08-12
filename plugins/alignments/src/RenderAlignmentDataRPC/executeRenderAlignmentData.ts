@@ -385,7 +385,6 @@ async function buildGroupResult(
     modifications,
     perBaseQualities,
     perBaseLetters,
-    detectedModifications,
     region,
     showSoftClipping: effShowSoftClipping,
     statusCallback,

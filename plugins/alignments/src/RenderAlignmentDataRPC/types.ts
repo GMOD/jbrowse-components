@@ -234,7 +234,8 @@ export interface PileupDataResult {
   // Raw probability 0-255; separate from alpha to avoid lossy quadratic roundtrip in tooltip.
   modificationProbabilities?: Uint8Array
   modificationReadIndices: Uint32Array // maps each modification to its parent read index
-  modificationTypeIndices?: Uint8Array // maps each modification to index in detectedModifications
+  modificationTypeIndices?: Uint8Array // index into modificationTypes
+  modificationTypes?: string[]
   // 1 = the no-mod bucket (this call says the base is UNmodified, and its
   // probability is the confidence of that). modType stays the canonical mod code
   // in both buckets, so this is the only thing that tells them apart.

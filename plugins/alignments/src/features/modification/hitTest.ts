@@ -46,7 +46,7 @@ export function hitTestModification(
     modificationProbabilities,
     modificationTypeIndices,
     modificationNoMod,
-    detectedModifications,
+    modificationTypes,
   } = resolved.rpcData
   // Nearest to the cursor, NOT `hits[0]`. Flatbush returns its packed
   // (Hilbert-sorted) tree order, which for the collinear points of one row is
@@ -70,7 +70,7 @@ export function hitTestModification(
   const typeIdx = modificationTypeIndices?.[idx]
   return {
     position: modificationPositions[idx]!,
-    modType: typeIdx !== undefined ? detectedModifications[typeIdx] : undefined,
+    modType: typeIdx !== undefined ? modificationTypes?.[typeIdx] : undefined,
     noMod: modificationNoMod?.[idx] === 1,
     probability: (modificationProbabilities?.[idx] ?? 255) / 255,
     color: `rgb(${abgrRed(colorPacked)},${abgrGreen(colorPacked)},${abgrBlue(colorPacked)})`,

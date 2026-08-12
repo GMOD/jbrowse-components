@@ -149,14 +149,14 @@ describe('hitTestModification', () => {
     expect(hit!.color).toBe('rgb(200,100,50)')
   })
 
-  it('resolves modType from detectedModifications index', () => {
+  it('resolves modType from the modificationTypes index', () => {
     const pos = 1000
     const rpcData = makeRpcData({
       modificationPositions: new Uint32Array([pos]),
       modificationColors: new Uint32Array([packAbgr(100, 200, 50, 180)]),
       modificationYs: new Uint16Array([0]),
       modificationTypeIndices: new Uint8Array([1]),
-      detectedModifications: ['5hmC', '5mC'],
+      modificationTypes: ['5hmC', '5mC'],
       modFlatbush: makeModFlatbush([pos], [0]),
     })
     const resolved = makeResolved(rpcData)
@@ -188,7 +188,7 @@ describe('hitTestModification', () => {
           ),
           modificationYs: new Uint16Array([0, 0, 0, 0]),
           modificationTypeIndices: new Uint8Array([0, 1, 2, 3]),
-          detectedModifications: ['a', 'b', 'c', 'd'],
+          modificationTypes: ['a', 'b', 'c', 'd'],
           modFlatbush: makeModFlatbush(positions, [0, 0, 0, 0]),
         }),
       )
@@ -268,7 +268,6 @@ describe('modification probability round-trip', () => {
 // consumer named the call "5mC" — labeling a blue UNmethylated mark with the
 // name of the modification it is the absence of, at the confidence it is absent.
 describe('no-mod bucket survives the packed arrays', () => {
-  const detected = new Set(['m'])
   const entry = (noMod: boolean) => ({
     readIndex: 0,
     position: 1000,
@@ -281,10 +280,9 @@ describe('no-mod bucket survives the packed arrays', () => {
   })
 
   function hitFor(noMod: boolean) {
-    const arrays = buildModificationArrays([entry(noMod)], 0, detected)
+    const arrays = buildModificationArrays([entry(noMod)], 0)
     const rpcData = makeRpcData({
       ...arrays,
-      detectedModifications: [...detected],
       modFlatbush: makeModFlatbush([1000], [0]),
     })
     return hitTestModification(makeResolved(rpcData), makeCoords(), 10)
@@ -303,5 +301,49 @@ describe('no-mod bucket survives the packed arrays', () => {
     const hit = hitFor(false)
     expect(hit?.noMod).toBe(false)
     expect(getModificationCallName(hit!.modType!, hit!.noMod)).toBe('5mC')
+  })
+})
+
+// Bisulfite reads no MM/ML tags, so the worker's `detectedModifications` is
+// always empty there while every mark still carries modType 'm'.
+describe('a mark whose type no MM tag announced', () => {
+  const bisulfiteEntry = (color: number, noMod: boolean) => ({
+    readIndex: 0,
+    position: 1000,
+    base: 'C',
+    modType: 'm',
+    strand: 1,
+    color,
+    // Bisulfite is a binary call, not a likelihood.
+    prob: 1,
+    noMod,
+  })
+
+  function hitFor(noMod: boolean) {
+    const arrays = buildModificationArrays(
+      [bisulfiteEntry(packAbgr(255, 0, 0, 255), noMod)],
+      0,
+    )
+    return hitTestModification(
+      makeResolved(
+        makeRpcData({ ...arrays, modFlatbush: makeModFlatbush([1000], [0]) }),
+      ),
+      makeCoords(),
+      10,
+    )
+  }
+
+  it('names the modification instead of reading "Unknown"', () => {
+    const hit = hitFor(false)
+    expect(hit?.modType).toBe('m')
+    expect(getModificationCallName(hit!.modType!, hit!.noMod)).toBe('5mC')
+  })
+
+  it('names the unmodified bucket too', () => {
+    const hit = hitFor(true)
+    expect(hit?.noMod).toBe(true)
+    expect(getModificationCallName(hit!.modType!, hit!.noMod)).toBe(
+      'Unmodified C',
+    )
   })
 })

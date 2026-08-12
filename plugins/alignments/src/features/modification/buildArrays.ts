@@ -2,10 +2,12 @@ import { withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 
+// `modificationTypes` is derived from the marks, not from the MM/ML parse's
+// `detectedModifications` (which the modifications menu owns). The two diverge
+// on bisulfite: no tags, so that set is empty while every mark carries 'm'.
 export function buildModificationArrays(
   modifications: ModificationEntry[],
   regionStart: number,
-  detectedModifications: Set<string>,
 ) {
   const filtered = modifications.filter(m => m.position >= regionStart)
   const modificationPositions = new Uint32Array(filtered.length)
@@ -22,7 +24,8 @@ export function buildModificationArrays(
   // both buckets, so type alone can't tell them apart — without this the hit
   // test labeled a blue unmodified mark with the mod's own name.
   const modificationNoMod = new Uint8Array(filtered.length)
-  const modTypeToIdx = new Map([...detectedModifications].map((t, i) => [t, i]))
+  const modificationTypes: string[] = []
+  const modTypeToIdx = new Map<string, number>()
   for (let i = 0; i < filtered.length; i++) {
     const m = filtered[i]!
     modificationPositions[i] = m.position
@@ -32,7 +35,13 @@ export function buildModificationArrays(
     modificationColors[i] = withAbgrAlpha(m.color, a)
     modificationProbabilities[i] = Math.round(m.prob * 255) & 0xff
     modificationReadIndices[i] = m.readIndex
-    modificationTypeIndices[i] = modTypeToIdx.get(m.modType) ?? 0
+    let typeIdx = modTypeToIdx.get(m.modType)
+    if (typeIdx === undefined) {
+      typeIdx = modificationTypes.length
+      modTypeToIdx.set(m.modType, typeIdx)
+      modificationTypes.push(m.modType)
+    }
+    modificationTypeIndices[i] = typeIdx
     modificationNoMod[i] = m.noMod ? 1 : 0
   }
   return {
@@ -43,5 +52,6 @@ export function buildModificationArrays(
     modificationReadIndices,
     modificationTypeIndices,
     modificationNoMod,
+    modificationTypes,
   }
 }
