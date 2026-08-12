@@ -64,3 +64,41 @@ test('a narrow view keeps the PAN_BUFFER_PX floor', () => {
   expect(markersAt({ viewWidth, screenX: viewWidth + 1100 })).toBeGreaterThan(0)
   expect(markersAt({ viewWidth, screenX: viewWidth + 2100 })).toBe(0)
 })
+
+// A tick spanning the band with NEITHER end inside it, which is what an
+// inversion wide enough to leave the frame on both sides produces: the top ends
+// sit far left of the buffer and the bottom ends far right of it, so testing the
+// two endpoints separately drops every tick while the ribbon under them stays.
+// Both renderers stop at the hull for a marker (isCulled, isRibbonCulled); the
+// emitter has to agree or the geometry never reaches them.
+test('a marker straddling the whole band is emitted, not culled per endpoint', () => {
+  const viewWidth = 800
+  const buffer = syntenyPanBufferPx(viewWidth) // 2000
+  // Query axis 3000..3800px (left of -2000 once the view offset is applied);
+  // target axis lands past the right edge of the buffer. Both endpoints are
+  // outside the band, in opposite directions.
+  const g = buildSyntenyGeometry({
+    p11_cumBp: new Float64Array([0]),
+    p12_cumBp: new Float64Array([800]),
+    p21_cumBp: new Float64Array([viewWidth + buffer + 500]),
+    p22_cumBp: new Float64Array([viewWidth + buffer + 1300]),
+    queryGridAnchors: new Float64Array([0]),
+    strands: new Int8Array([1]),
+    parsedCigars: [[]],
+    starts: new Uint32Array([0]),
+    ends: new Uint32Array([800]),
+    drawCIGAR: false,
+    drawCIGARMatchesOnly: false,
+    drawLocationMarkers: true,
+    bpPerPx0: 1,
+    bpPerPx1: 1,
+    // shifts the query ends to -3000..-2200, past the left edge of the band
+    viewOff0: 3000,
+    viewOff1: 0,
+    viewWidth,
+  })
+  expect(
+    [...g.kinds.subarray(0, g.instanceCount)].filter(k => k === KIND_MARKER)
+      .length,
+  ).toBeGreaterThan(0)
+})

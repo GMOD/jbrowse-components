@@ -340,11 +340,21 @@ export function buildSyntenyGeometry({
         bp1End === bp1Start ? 0 : (markerBp1 - bp1Start) / (bp1End - bp1Start)
       const markerBp2 = bp2Start + (bp2End - bp2Start) * t
 
+      // Culled by the HULL of the tick's two ends, which is the same rule both
+      // renderers apply (isCulled in syntenyTypes.slang, isRibbonCulled in
+      // syntenyRibbonPath.ts) — a marker is a line between one point per view, so
+      // the segment between them is on screen whenever the two ends straddle the
+      // band, even though NEITHER end is inside it. Testing the ends
+      // individually and dropping the tick when both fail is the per-edge rule
+      // for a ribbon, and it deleted exactly the ticks the renderers were fixed
+      // to keep: on an inversion the two ends are pulled apart by up to the
+      // ribbon's whole horizontal travel, so a tick well inside the frame at
+      // mid-height can have both endpoints outside the band.
       const screenTopX = markerBp1 * bpPerPxInv0 - viewOff0
       const screenBottomX = markerBp2 * bpPerPxInv1 - viewOff1
       if (
-        (screenTopX < emitLeft || screenTopX > emitRight) &&
-        (screenBottomX < emitLeft || screenBottomX > emitRight)
+        Math.max(screenTopX, screenBottomX) < emitLeft ||
+        Math.min(screenTopX, screenBottomX) > emitRight
       ) {
         continue
       }
@@ -467,7 +477,7 @@ export function buildSyntenyGeometry({
             )
           }
         }
-        // Outside the cull: a marker is culled by its own two ends, not by the
+        // Outside the cull: a marker is culled by its own hull, not by the
         // segment's — on a crossed ribbon a tick can leave the frame where its
         // segment stays, and vice versa.
         if (wantMarkers) {
