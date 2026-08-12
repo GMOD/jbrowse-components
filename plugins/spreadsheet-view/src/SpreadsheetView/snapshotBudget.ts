@@ -21,7 +21,9 @@ const SAMPLE_SIZE = 20
  * a sheet that might fit is measured exactly — and being wrong either way there
  * is expensive: too high drops rows the user cannot get back, since a sheet
  * with no cached URI has nothing to reload from, and too low overruns the
- * localStorage quota and loses the whole session.
+ * sessionStorage quota and loses the whole session. (sessionStorage, not
+ * localStorage: the session snapshot is mirrored there on every edit, and it is
+ * the one of the two stores that throws on a write rather than an async put.)
  */
 export function rowsExceedSnapshotBudget(rowSet: unknown) {
   const rows = (rowSet as { rows?: unknown[] } | undefined)?.rows

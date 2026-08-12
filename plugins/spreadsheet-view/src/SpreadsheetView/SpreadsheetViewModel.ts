@@ -301,7 +301,7 @@ export default function stateModelFactory() {
       }
       const { rowSet, ...spreadsheetRest } = spreadsheet
       // omit rows when a URI is cached (re-fetched on load) or too large for
-      // localStorage. The cheap test is deliberately first: a cached URI makes
+      // the session snapshot. The cheap test is deliberately first: a cached URI makes
       // the answer yes regardless of size
       const omitRows =
         !!rest.importWizard.cachedFileLocation ||
