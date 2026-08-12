@@ -3,6 +3,7 @@ import { ThemeProvider } from '@mui/material'
 import { StyleThemeProvider } from '../ui/PaletteContext.tsx'
 import { resolveStyleTheme } from '../ui/styleTheme.ts'
 import { createJBrowseTheme } from '../ui/theme.ts'
+import { resetSvgClipIds } from '../util/SvgCanvas.ts'
 import { renderToStaticMarkup } from '../util/renderToStaticMarkup.ts'
 import { SVGExportRoot } from './SvgExport.tsx'
 
@@ -88,6 +89,13 @@ export function wrapSvgExport({
   Wrapper?: React.FC<{ children: React.ReactNode }>
   children: React.ReactNode
 }) {
+  // One document, one clip-id numbering run. The counter SvgCanvas draws from is
+  // document-global because SVG ids are, so left alone it also spans documents
+  // and numbers each export from wherever the last one stopped — see
+  // resetSvgClipIds. This is the only place that can reset it: the render below
+  // is synchronous, so it is the one moment a whole document's ids are minted
+  // with no other export able to interleave.
+  resetSvgClipIds()
   // Both providers, from the same options — the export renders outside every
   // React tree the app mounted, so a `makeStyles` component here would
   // otherwise style itself from the *default* style theme and quietly ignore

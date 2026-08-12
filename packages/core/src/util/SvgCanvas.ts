@@ -64,7 +64,33 @@ function fontAttrs(font: string) {
   }
   return ` font-size="${Number.parseFloat(font) || 10}"`
 }
+// SVG ids are document-global (see svg/svgId.ts), so this counter has to be
+// too: one export mounts many SvgCanvas instances — a PaintLayer per display,
+// per band, per legend — and a per-instance counter would have every one of them
+// mint `svgcanvas-clip-0`, whereupon `url(#svgcanvas-clip-0)` resolves to the
+// first and every later layer is clipped to some other layer's rect.
+//
+// Document-global, not process-global: `resetSvgClipIds` below.
 let clipIdCounter = 0
+
+/**
+ * Restart clip-id numbering for a new export document.
+ *
+ * Without it the counter runs for the lifetime of the process, so an export is
+ * numbered from wherever the previous one stopped and the same view exported
+ * twice differs in every clip id. That is the churn `svgNodeId` was written to
+ * get rid of, arriving by a second route: diffing two saved SVGs shows changes
+ * that aren't real, and `jest -t` on any export test but the first fails its
+ * checked-in snapshot with a diff that is nothing but renumbering.
+ *
+ * Called by `wrapSvgExport`, and safe there and only there: the
+ * `renderToStaticMarkup` it wraps is synchronous, so every `PaintLayer` in the
+ * document draws before any other export can begin. Anything that resets on a
+ * boundary an `await` can cross would let two exports share a numbering run.
+ */
+export function resetSvgClipIds() {
+  clipIdCounter = 0
+}
 
 export class SvgCanvas {
   private parts: string[] = []
