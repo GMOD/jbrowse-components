@@ -1,3 +1,4 @@
+import { createElementId } from '@jbrowse/core/util/types/mst'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
 import { specForPendingMove, treeFromSpec, viewIdsInSpec } from './spec.ts'
@@ -82,10 +83,16 @@ const LayoutNode = types.union(
   LayoutPanel,
 )
 
-let counter = 0
+/**
+ * Panel and tab ids.
+ *
+ * Random, NOT a counter. These are `types.identifier`, so they must be unique
+ * within the tree — and a counter is reset by every page load while the restored
+ * snapshot still holds `panel-1`, `tab-1`, .... The first tab a returning user
+ * opened would mint an id the tree already had.
+ */
 function nextId(kind: 'panel' | 'tab') {
-  counter += 1
-  return `${kind}-${counter}`
+  return `${kind}-${createElementId()}`
 }
 
 function emptyPanel(): PanelNode {
@@ -199,6 +206,12 @@ export function WorkspaceLayoutMixin() {
         ) {
           const panel = emptyPanel()
           apply(splitPanel(self.tree, panelId, direction, panel, before))
+          // A split of a cell that is not there inserts nothing, so claiming
+          // the id anyway would leave activePanelId naming a cell nobody draws
+          // — and homing falls back on activePanelId.
+          if (!panels(self.tree).some(p => p.id === panel.id)) {
+            return undefined
+          }
           self.activePanelId = panel.id
           return panel
         },
@@ -210,6 +223,9 @@ export function WorkspaceLayoutMixin() {
         },
         /** "New empty tab": a tab in an existing cell, showing the launcher. */
         addTab(panelId: string, viewIds: string[] = []) {
+          if (!panels(self.tree).some(p => p.id === panelId)) {
+            return undefined
+          }
           const tab: TabNode = { id: nextId('tab'), viewIds }
           apply(addTab(self.tree, panelId, tab))
           self.activePanelId = panelId
@@ -235,8 +251,11 @@ export function WorkspaceLayoutMixin() {
          */
         dropTabInPanel(tabId: string, targetPanelId: string, index?: number) {
           const source = findTab(self.tree, tabId)?.panel
+          if (!source || !panels(self.tree).some(p => p.id === targetPanelId)) {
+            return
+          }
           let next = moveTabToPanel(self.tree, tabId, targetPanelId, index)
-          if (source && source.id !== targetPanelId) {
+          if (source.id !== targetPanelId) {
             next = pruneEmptyPanel(next, source.id)
           }
           apply(next)
@@ -250,6 +269,12 @@ export function WorkspaceLayoutMixin() {
           before: boolean,
         ) {
           const source = findTab(self.tree, tabId)?.panel
+          // Split first, move second — so a tab that is not there must be
+          // rejected before the split, or the cell it would have filled is
+          // left behind empty.
+          if (!source) {
+            return undefined
+          }
           const panel: PanelNode = {
             id: nextId('panel'),
             size: 1,
@@ -266,9 +291,7 @@ export function WorkspaceLayoutMixin() {
           // Dragging a panel's only tab onto that same panel's edge prunes the
           // now-empty source, which collapses the split — the gesture undoes
           // itself rather than leaving a blank half, without needing a case.
-          if (source) {
-            next = pruneEmptyPanel(next, source.id)
-          }
+          next = pruneEmptyPanel(next, source.id)
           apply(next)
           self.activePanelId = panel.id
           return panel.id

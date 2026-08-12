@@ -74,7 +74,7 @@ function setup() {
   const left = session.panels[0]!.id
   const tabA = session.tabs[0]!.id
   session.addViewToTab(tabA, 'view-1')
-  const rightPanel = session.splitPanel(left, 'row')
+  const rightPanel = session.splitPanel(left, 'row')!
   const right = rightPanel.id
   session.addViewToTab(rightPanel.tabs[0]!.id, 'view-3')
 
@@ -157,7 +157,7 @@ test('releasing outside every cell drops nothing', () => {
 
 test('clicking a tab makes it active without moving anything', () => {
   const { session, left } = setup()
-  const other = session.addTab(left, ['view-2']).id
+  const other = session.addTab(left, ['view-2'])!.id
   const first = session.panels.find(p => p.id === left)!.tabs[0]!.id
 
   const tab = screen.getByTestId(`tab-${first}`)

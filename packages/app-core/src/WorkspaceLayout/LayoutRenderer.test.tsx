@@ -35,7 +35,7 @@ test('each cell shows only its active tab', () => {
   const p1 = session.panels[0]!.id
   const first = session.tabs[0]!.id
   session.addViewToTab(first, 'view-1')
-  const second = session.addTab(p1, ['view-2']).id
+  const second = session.addTab(p1, ['view-2'])!.id
 
   renderLayout(session)
 
@@ -49,7 +49,7 @@ test('each cell shows only its active tab', () => {
 test('a splitter sits between each pair of siblings, not at the edges', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id
-  const p2 = session.splitPanel(p1, 'row').id
+  const p2 = session.splitPanel(p1, 'row')!.id
   session.splitPanel(p2, 'row')
 
   const { container } = renderLayout(session)
@@ -75,7 +75,7 @@ test('sizes become flex-grow, so the browser does the resize maths', () => {
 test('a nested split renders as a nested flex container', () => {
   const session = TestSession.create({ name: 't' })
   const p1 = session.panels[0]!.id
-  const p2 = session.splitPanel(p1, 'row').id
+  const p2 = session.splitPanel(p1, 'row')!.id
   session.splitPanel(p2, 'column')
 
   const { container } = renderLayout(session)

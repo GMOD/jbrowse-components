@@ -54,7 +54,7 @@ export function panels(node: LayoutTree): PanelNode[] {
   return isBranch(node) ? node.children.flatMap(panels) : [node]
 }
 
-export function findPanel(node: LayoutTree, panelId: string) {
+function findPanel(node: LayoutTree, panelId: string) {
   return panels(node).find(p => p.id === panelId)
 }
 
@@ -281,7 +281,10 @@ export function moveTabToPanel(
   index?: number,
 ): LayoutTree {
   const home = findTab(root, tabId)
-  if (!home) {
+  // The target has to be checked BEFORE the removal, not after. This function
+  // takes the tab out and puts it back, so a target that cannot be found and is
+  // not rejected here leaves the tab — and every view in it — nowhere at all.
+  if (!home || !findPanel(root, targetPanelId)) {
     return root
   }
   const { tab } = home

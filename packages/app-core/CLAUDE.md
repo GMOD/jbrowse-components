@@ -34,6 +34,35 @@ silently deleted tabs as a feature. Both middle levels are real:
 So nothing prunes empties as a rule. `pruneEmptyPanel` and `pruneEmptyTabIn`
 exist, and each is called only by the gesture that just emptied the thing.
 
+## Ids are random, not a counter
+
+`nextId` uses `createElementId()` (nanoid). Panel and tab ids are
+`types.identifier`, so they must be unique **within the tree** — and a
+module-level counter restarts at zero on every page load while the restored
+snapshot still holds `panel-1`, `tab-1`, .... The first tab a returning user
+opened would mint an id the tree already had.
+
+This shipped as a counter and the obvious test could not see it: within one run
+the counter keeps advancing, so ids never collide and the test passes against
+the broken code. `integrity.test.ts` restarts the module graph with
+`jest.resetModules()` and re-imports, which is the only version of that test
+worth having.
+
+## Every pure function is total, and the guard belongs in the function
+
+An MST action guarding its arguments protects that one caller. The pure
+functions in `tree.ts` are exported and callable directly, so each is total on
+its own — passing an id that is not in the tree returns the tree unchanged.
+
+`moveTabToPanel` is the one where this is not a nicety. It takes the tab out and
+then puts it back, so a target panel that is missing and not rejected **before
+the removal** leaves the tab, and every view in it, nowhere at all. Both layers
+are tested, because the model guard hides the tree bug from the model tests.
+
+The same shape one level up: `splitPanel` and `addTab` return `undefined` rather
+than claiming an id that was never inserted, because `activePanelId` is what
+homing falls back on and a dangling one puts views in a cell nobody draws.
+
 ## `session.views` is the order; a tab's `viewIds` is the grouping
 
 Unchanged from the dockview era, and still the rule. `viewIds` is membership

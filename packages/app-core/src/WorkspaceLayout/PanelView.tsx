@@ -16,7 +16,7 @@ import type { TabDragHandlers } from './useLayoutDrag.ts'
  * why this file knows nothing about JBrowse views.
  */
 
-export interface PanelViewProps {
+interface PanelViewProps {
   panel: PanelNode
   layout: WorkspaceLayout
   renderTabLabel: (tab: TabNode) => React.ReactNode

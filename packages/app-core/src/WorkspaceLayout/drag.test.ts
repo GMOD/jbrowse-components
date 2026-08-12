@@ -16,8 +16,8 @@ function twoPanels() {
   const left = session.panels[0]!.id
   const tabA = session.tabs[0]!.id
   session.addViewToTab(tabA, 'view-1')
-  const tabB = session.addTab(left, ['view-2']).id
-  const rightPanel = session.splitPanel(left, 'row')
+  const tabB = session.addTab(left, ['view-2'])!.id
+  const rightPanel = session.splitPanel(left, 'row')!
   const right = rightPanel.id
   const tabC = rightPanel.tabs[0]!.id
   session.addViewToTab(tabC, 'view-3')

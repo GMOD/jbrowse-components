@@ -18,7 +18,7 @@ function createSession() {
 test('a split is one action and the tree is immediately consistent', () => {
   const session = createSession()
   const left = session.panels[0]!.id
-  const right = session.splitPanel(left, 'row').id
+  const right = session.splitPanel(left, 'row')!.id
 
   expect(session.panels.map(p => p.id)).toEqual([left, right])
   expect(session.activePanelId).toBe(right)
@@ -28,7 +28,7 @@ test('a split is one action and the tree is immediately consistent', () => {
 test('a new tab lands in the cell it was asked for, and becomes active', () => {
   const session = createSession()
   const panelId = session.panels[0]!.id
-  const tab = session.addTab(panelId)
+  const tab = session.addTab(panelId)!
 
   const panel = session.panels[0]!
   expect(panel.tabs.map(t => t.id)).toEqual([session.tabs[0]!.id, tab.id])
@@ -41,8 +41,8 @@ test('closing a tab falls back to its left neighbour', () => {
   const session = createSession()
   const panelId = session.panels[0]!.id
   const first = session.tabs[0]!.id
-  const second = session.addTab(panelId).id
-  const third = session.addTab(panelId).id
+  const second = session.addTab(panelId)!.id
+  const third = session.addTab(panelId)!.id
   expect(session.activeTabOf(panelId)?.id).toBe(third)
 
   session.closeTab(third)
@@ -59,7 +59,7 @@ test('undo is applySnapshot, with nothing to notify', () => {
   const session = createSession()
   const before = getSnapshot(session)
 
-  const right = session.splitPanel(session.panels[0]!.id, 'row')
+  const right = session.splitPanel(session.panels[0]!.id, 'row')!
   session.addViewToTab(right.tabs[0]!.id, 'view-2')
   expect(session.panels.length).toBe(2)
 
@@ -97,7 +97,7 @@ test('a settled layout produces no further snapshots', () => {
 test('sizes survive a snapshot round trip at depth', () => {
   const session = createSession()
   const p1 = session.panels[0]!.id
-  const p2 = session.splitPanel(p1, 'row').id
+  const p2 = session.splitPanel(p1, 'row')!.id
   session.splitPanel(p2, 'column')
 
   const branch = session.layout as unknown as { id: string }
@@ -116,7 +116,7 @@ test('sizes survive a snapshot round trip at depth', () => {
 
 test('homing is one-directional: unassigned views land, departed views leave', () => {
   const session = createSession()
-  const right = session.splitPanel(session.panels[0]!.id, 'row')
+  const right = session.splitPanel(session.panels[0]!.id, 'row')!
 
   session.homeUnassignedViews(['view-1', 'view-2'])
   expect(session.panelContainingView('view-2')?.id).toBe(right.id)
@@ -128,7 +128,7 @@ test('homing is one-directional: unassigned views land, departed views leave', (
 
 test('closing a panel drops its tabs from the layout', () => {
   const session = createSession()
-  const right = session.splitPanel(session.panels[0]!.id, 'row')
+  const right = session.splitPanel(session.panels[0]!.id, 'row')!
   session.addViewToTab(right.tabs[0]!.id, 'view-2')
 
   session.closePanel(right.id)
@@ -161,7 +161,7 @@ test('a renamed tab keeps its title; an unnamed one has none to keep', () => {
 // half-applied tree to catch, and nothing outside the tree to notify.
 test('a reaction rearranging the workspace during a close is just two actions', () => {
   const session = createSession()
-  const right = session.splitPanel(session.panels[0]!.id, 'row')
+  const right = session.splitPanel(session.panels[0]!.id, 'row')!
   session.addViewToTab(right.tabs[0]!.id, 'view-2')
   session.addViewToTab(right.tabs[0]!.id, 'view-3')
 

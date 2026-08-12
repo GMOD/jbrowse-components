@@ -1,10 +1,12 @@
 import {
+  addTab,
   addViewToTab,
   isBranch,
   moveTabToPanel,
   normalize,
   panels,
   removePanel,
+  removeTab,
   removeView,
   setSizes,
   splitPanel,
@@ -312,3 +314,32 @@ function mulberry32(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
+
+// The pure functions are exported and callable directly, so each has to be
+// total on its own — a guard in the MST action above it protects that caller
+// and nobody else. `moveTabToPanel` takes the tab out before putting it back,
+// which makes a missing target a silent deletion rather than a no-op.
+describe('operations are total on bad arguments', () => {
+  const base = splitPanel(panel('p1', ['v1']), 'p1', 'row', panel('p2'))
+
+  test('moving to a panel that is not there changes nothing', () => {
+    const tabId = tabIdOf(base, 'p1')
+    const result = moveTabToPanel(base, tabId, 'nope')
+    expect(result).toEqual(base)
+    expect(tabs(result).flatMap(t => t.viewIds)).toEqual(['v1'])
+  })
+
+  test('moving a tab that is not there changes nothing', () => {
+    expect(moveTabToPanel(base, 'nope', 'p2')).toEqual(base)
+  })
+
+  test('splitting, removing and adding against a missing id are no-ops', () => {
+    expect(splitPanel(base, 'nope', 'row', panel('p9'))).toEqual(base)
+    expect(removePanel(base, 'nope')).toEqual(base)
+    expect(addTab(base, 'nope', { id: 't9', viewIds: [] })).toEqual(base)
+    expect(removeTab(base, 'nope')).toEqual(base)
+    expect(setSizes(base, 'nope', [0.5, 0.5])).toEqual(base)
+    expect(addViewToTab(base, 'nope', 'v9')).toEqual(base)
+    expect(removeView(base, 'nope')).toEqual(base)
+  })
+})
