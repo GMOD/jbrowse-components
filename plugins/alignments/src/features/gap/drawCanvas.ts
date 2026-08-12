@@ -1,4 +1,4 @@
-import { minWidthLeft } from '@jbrowse/alignments-core'
+import { fillSpanRect } from '@jbrowse/alignments-core'
 
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
@@ -55,15 +55,11 @@ export function drawGaps(
     const px = Math.min(x1, x2)
     const px2 = Math.max(x1, x2)
     const widthPx = px2 - px
-    const w = Math.max(1, widthPx)
-    // A sub-pixel gap is widened to 1px CENTERED on its span, because that is
-    // what gap.slang's `expandMinWidthX` does. Anchoring the widened mark at
-    // the gap's left edge put every Canvas2D gap up to half a pixel right of
-    // the GPU's once the deletion went under 1px — the same divergence the
-    // coverage marks were fixed for (see minWidthLeft), on the call site that
-    // fix missed. Both branches below share it: the shader widens once, before
-    // it splits deletion from skip.
-    const left = minWidthLeft(px, px2, widthPx)
+    // Both branches below draw through `fillSpanRect`, which widens a sub-pixel
+    // gap to 1px CENTERED on its span because that is what gap.slang's
+    // `expandMinWidthX` does — the shader widens once, before it splits deletion
+    // from skip. `widthPx` stays the TRUE span here because the fades below are
+    // the shader's and test the true span too.
 
     if (gapType === GAP_DELETION) {
       // Twin of gap.slang's deletion branch: the frequency fade, times the
@@ -77,7 +73,7 @@ export function drawGaps(
         continue
       }
       ctx.fillStyle = alpha >= 1 ? delCssOpaque : rgba255(delColorBase, alpha)
-      ctx.fillRect(left, y, w, fH)
+      fillSpanRect(ctx, px, px2, y, fH)
     } else if (gapType === GAP_SKIP) {
       // No clearRect needed: drawReads splits spliced reads into per-exon
       // segments, so the intron span is already unpainted. Just draw the 1px
@@ -85,7 +81,7 @@ export function drawGaps(
       // the read body solid under the line in vector SVG export.)
       ctx.fillStyle = skipCss
       const midY = y + fH / 2
-      ctx.fillRect(left, midY - 0.5, w, 1)
+      fillSpanRect(ctx, px, px2, midY - 0.5, 1)
     }
   }
 }

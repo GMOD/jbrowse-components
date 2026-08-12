@@ -65,6 +65,42 @@ export function minWidthLeft(px: number, px2: number, w: number) {
   return w < 1 ? (px + px2) / 2 - 0.5 : px
 }
 
+/**
+ * One sub-pixel-safe bar spanning ordered edges `px`..`px2`.
+ *
+ * The pivot and the 1px floor are ONE rule — the floor is what makes a mark
+ * sub-pixel and the pivot is where it then goes — and holding them apart at each
+ * call site is how the rule kept being applied half-right. Both halves have
+ * shipped wrong separately: the gap pass took the floor without the centering
+ * (ba14fd5669 fixed three sites and missed it), and the coverage bar had both
+ * but handed the pivot a seam-fudged width, moving the switch from a 1px span to
+ * a 0.2px one. Five call sites, one of them in another package; this is the rule
+ * itself rather than a piece of it.
+ *
+ * `widthCompensation` widens the DRAWN bar only, never the sub-pixel test: the
+ * test is `expandMinWidthX`'s and the shader tests the true span. That
+ * separation is exactly what the coverage bar got wrong.
+ *
+ * Allocates nothing per call, which is the bar for sharing anything out of these
+ * loops — they run per covered bp.
+ */
+export function fillSpanRect(
+  ctx: Ctx,
+  px: number,
+  px2: number,
+  top: number,
+  height: number,
+  widthCompensation = 0,
+) {
+  const w = px2 - px
+  ctx.fillRect(
+    minWidthLeft(px, px2, w),
+    top,
+    Math.max(w + widthCompensation, 1),
+    height,
+  )
+}
+
 // colorType: 1=A 2=C 3=G 4=T 5=N. N and any unknown type fall back to the muted
 // grey. Mirrors snpColor() in snpCoverage.slang so Canvas2D and GPU match.
 export function snpColorForType(colorType: number, colors: CigarOpDrawColors) {
@@ -188,13 +224,7 @@ export function drawCoverageBins(
     // WIDTH at every zoom: sub-pixel bars tile at ~1px pitch, and two opaque
     // fills whose antialiased coverage of one pixel sums to 1 composite to
     // 1-(1-a)(1-b) < 1, i.e. a visible seam.
-    const rawW = px2 - px
-    ctx.fillRect(
-      minWidthLeft(px, px2, rawW),
-      bandTop,
-      Math.max(rawW + widthCompensation, 1),
-      bandBottom - bandTop,
-    )
+    fillSpanRect(ctx, px, px2, bandTop, bandBottom - bandTop, widthCompensation)
   }
 }
 
@@ -235,13 +265,7 @@ export function drawSnpSegments(
     const segBottom = bottom - yOff * barH
     const segTop = segBottom - segH * barH
     ctx.fillStyle = snpColorForType(f32[off + SNP_F32.colorType]!, colors)
-    const w = px2 - px
-    ctx.fillRect(
-      minWidthLeft(px, px2, w),
-      segTop,
-      Math.max(w, 1),
-      segBottom - segTop,
-    )
+    fillSpanRect(ctx, px, px2, segTop, segBottom - segTop)
   }
 }
 
@@ -376,12 +400,6 @@ export function drawModCovSegments(
     const segBottom = bottom - yOffset * barH
     const segTop = segBottom - h * barH
     ctx.fillStyle = `rgba(${r},${g},${b},${a})`
-    const w = px2 - px
-    ctx.fillRect(
-      minWidthLeft(px, px2, w),
-      segTop,
-      Math.max(w, 1),
-      segBottom - segTop,
-    )
+    fillSpanRect(ctx, px, px2, segTop, segBottom - segTop)
   }
 }
