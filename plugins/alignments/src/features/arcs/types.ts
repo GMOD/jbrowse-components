@@ -18,13 +18,23 @@ export interface ArcsUploadData {
   // through `arcLineWidth` — none of them may re-derive that curve.
   arcSupport: Uint32Array
   numArcs: number
-  // How many of `numArcs` are flat (read-cloud) shapes, and the max `arcYBp`
-  // across them. Both precomputed in the pass that builds the arrays, so the
+  // How many of `numArcs` are flat (read-cloud) shapes, and the largest insert
+  // size among them. Both precomputed in the pass that builds the arrays, so the
   // `arcsYDomainBp` view reduces over regions rather than over every arc and
   // `packArcMarkers` sizes its buffer exactly — in arc mode the count is 0 and
   // the whole endpoint-marker pass is skipped.
   numFlatArcs: number
-  maxFlatArcYBp: number
+  // The max `arcSpanBp`, NOT the max `arcYBp` it used to be. This is what the
+  // read cloud's Y axis autoscales to and therefore what its top tick is
+  // LABELLED, so a domain taken off the drawn position carried the ±8% jitter
+  // into the ruler: a view whose largest insert is 10.0 kb printed "11kb" at the
+  // top of its axis, reproducibly, since the factor is a hash of the endpoints.
+  // Same defect the hover had before it started reporting `spanBp`.
+  //
+  // Arcs jittered ABOVE the domain then clamp to `availH` instead of separating,
+  // which is the whole cost and it is sub-pixel: on a log axis 8% over a 10 kb
+  // domain is log2(1.08)/log2(10000) — 0.8% of a band tens of px tall.
+  maxFlatArcSpanBp: number
   // One entry per connector tick (interchromosomal breakpoint marker). The tick
   // spans the full arc band, so no Y is stored, and every tick is
   // ARC_COLOR_INTERCHROM, so no color is stored either — see arcLine.slang.
@@ -76,7 +86,7 @@ export function emptyArcsUploadData(): ArcsUploadData {
     arcSupport: new Uint32Array(0),
     numArcs: 0,
     numFlatArcs: 0,
-    maxFlatArcYBp: 0,
+    maxFlatArcSpanBp: 0,
     arcLinePositions: new Uint32Array(0),
     arcLineSupport: new Uint32Array(0),
     arcLinePartnerRefNames: [],

@@ -1839,6 +1839,58 @@ describe('arcsToRegionResult', () => {
     expect(result.numArcLines).toBe(2)
     expect(Array.from(result.arcLinePositions)).toEqual([1500, 2500])
   })
+
+  // `arcsYDomainBp` is built from this and `insertSizeTicks` LABELS its top tick
+  // with that domain, so a max taken off the drawn `yBp` printed the largest
+  // insert size times the read cloud's ±8% jitter — a template length no read
+  // in view has, and reproducibly so, since the factor is a hash of the
+  // endpoints. Same defect the hover had before it moved to `spanBp`.
+  test('the flat max is the insert size, not the jittered Y it plots at', () => {
+    const flat = (spanBp: number, yBp: number) => ({
+      p1: { refName: 'chr1', bp: 1000 },
+      p2: { refName: 'chr1', bp: 1000 + spanBp },
+      colorType: 0,
+      shapeType: ARC_SHAPE_FLAT,
+      yBp,
+      spanBp,
+      support: 1,
+      key: `k${spanBp}`,
+    })
+    // The widest pair jitters DOWN and a narrower one jitters UP, so the two
+    // maxima disagree in both directions at once: 10000 is the answer, 10500 is
+    // what reading the drawn position gives.
+    const result = arcsToRegionResult(
+      [flat(10000, 9300), flat(9800, 10500)],
+      [],
+    )
+
+    expect(result.numFlatArcs).toBe(2)
+    expect(result.maxFlatArcSpanBp).toBe(10000)
+  })
+
+  test('a curved arc contributes no flat max', () => {
+    // Arc mode emits no flat shape at all, so the read cloud's axis must not be
+    // sized by one — `numFlatArcs` 0 is also what lets the marker pass be
+    // skipped wholesale.
+    const result = arcsToRegionResult(
+      [
+        {
+          p1: { refName: 'chr1', bp: 1000 },
+          p2: { refName: 'chr1', bp: 90000 },
+          colorType: 0,
+          shapeType: ARC_SHAPE_ARC,
+          yBp: 44500,
+          spanBp: 44500,
+          support: 1,
+          key: 'curve',
+        },
+      ],
+      [],
+    )
+
+    expect(result.numFlatArcs).toBe(0)
+    expect(result.maxFlatArcSpanBp).toBe(0)
+  })
 })
 
 // The arc/read-cloud colors get their own legend section, keyed off these — the

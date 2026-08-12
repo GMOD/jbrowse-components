@@ -2658,11 +2658,15 @@ export default function stateModelFactory(
           // Max across every group so all sections share one Y-domain (the same
           // comparability trick coverage uses with coverageMaxDepth). Ungrouped
           // has one group, so this reduces to the prior single-group max.
+          //
+          // The largest INSERT SIZE, not the largest drawn Y — `insertSizeTicks`
+          // labels its top tick with this number, so a domain carrying the
+          // cloud's ±8% jitter printed a template length no read has.
           let maxBp = 0
           for (const regionMap of self.arcsByGroup.values()) {
             for (const data of regionMap.values()) {
-              if (data.maxFlatArcYBp > maxBp) {
-                maxBp = data.maxFlatArcYBp
+              if (data.maxFlatArcSpanBp > maxBp) {
+                maxBp = data.maxFlatArcSpanBp
               }
             }
           }

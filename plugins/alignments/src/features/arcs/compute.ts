@@ -1075,7 +1075,10 @@ export function arcsToRegionResult(
   const arcSupport = new Uint32Array(regionArcs.length)
 
   let numFlatArcs = 0
-  let maxFlatArcYBp = 0
+  // The reported span, not the drawn `yBp`: the read cloud's Y axis autoscales
+  // to this and its top tick is labelled with it, so taking it off the jittered
+  // position printed a template length no read has. See `maxFlatArcSpanBp`.
+  let maxFlatArcSpanBp = 0
   for (let i = 0; i < regionArcs.length; i++) {
     const arc = regionArcs[i]!
     arcX1[i] = arc.p1.bp
@@ -1087,8 +1090,8 @@ export function arcsToRegionResult(
     arcSupport[i] = arc.support
     if (isFlatArcShape(arc.shapeType)) {
       numFlatArcs++
-      if (arc.yBp > maxFlatArcYBp) {
-        maxFlatArcYBp = arc.yBp
+      if (arc.spanBp > maxFlatArcSpanBp) {
+        maxFlatArcSpanBp = arc.spanBp
       }
     }
   }
@@ -1115,7 +1118,7 @@ export function arcsToRegionResult(
     arcSupport,
     numArcs: regionArcs.length,
     numFlatArcs,
-    maxFlatArcYBp,
+    maxFlatArcSpanBp,
     arcLinePositions,
     arcLineSupport,
     arcLinePartnerRefNames,
