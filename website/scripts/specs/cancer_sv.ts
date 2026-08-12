@@ -1834,6 +1834,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // all three: `Split segment (same strand)`, `Split segment (inverted)`
           // and plain `Reads` — same/flipped being relative to the chain's
           // primary, which is why the rows do not name a strand.
+          //
+          // AND THE LEFT/RIGHT ASYMMETRY THE REVIEWER SAW WAS A BUG, not the
+          // classification: `readChainHasSupp` was computed per WORKER CALL and
+          // a call sees one window, so a molecule whose primary is in the chr9
+          // window and whose supplementary is in the chr22 one was classified
+          // twice from half a molecule each time — the primary side reporting
+          // "not a split read" (plain) and the far side framing its segment
+          // against an invented forward primary. Which is exactly a left/right
+          // asymmetry, and exactly not what the legend claimed. Fixed in
+          // `reconcileChainSuppAcrossRegions`, so the framing now means what the
+          // rows say on both sides of the join, and plain `Reads` is left to the
+          // molecules whose other segment is in neither window.
           // `showLegend` is opt-in per track and off by default, so a figure
           // that leans on those colours has to ask for it.
           showLegend: true,
