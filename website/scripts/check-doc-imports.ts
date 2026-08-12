@@ -508,6 +508,11 @@ const DOC_THIRD_PARTY = new Set([
   // `withOrigin('api')`": dockview's own internal wrapper, and the asymmetry is
   // the caveat that section exists to record.
   'withOrigin',
+  // products/jbrowse-build-your-own/examples-site/CLAUDE.md: a rolldown config
+  // key, named because that section records what happened when the lever was
+  // pulled (104 KB a page worse) so nobody pulls it again. Naming the option is
+  // the whole point of the note, and it is not ours to define.
+  'advancedChunks',
 ])
 
 // Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per
