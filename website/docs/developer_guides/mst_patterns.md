@@ -120,6 +120,25 @@ trigger it into one computed, track only that, and read the raw values inside
 noisier — here an `offsetPx` change on every pan frame would refire a worker
 fetch whose result would be identical.
 
+:::warning An autorun must do its own reads — an MST action is an untracked one
+
+`untracked` above is deliberate. **An MST action is the same thing by accident:
+actions run untracked**, so moving an autorun's body into one leaves the autorun
+with no dependencies at all. It fires exactly once, never again, and nothing
+throws or warns.
+
+This is easy to walk into because factoring the body out is the obvious way to
+reuse it — from a menu item, or from a flush-on-teardown path that wants the
+same work on demand. The fix is to duplicate the reads in the autorun and say
+why in a comment; `RegionTooLargeMixin`'s byte gate is the worked example.
+
+The same trap wearing different clothes: `self.someAction(getSnapshot(self))`
+tracks fine, and only because the snapshot is taken in the argument list, before
+the action is entered. Move that read inside the action and the dependency
+disappears with it.
+
+:::
+
 ## Model composition
 
 `types.compose(name, ...types)` layers mixins onto a base model. It takes the
