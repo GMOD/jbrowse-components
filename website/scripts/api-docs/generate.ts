@@ -16,6 +16,7 @@ import {
   writeDisplayTypeDocs,
   writeGotchaDocs,
 } from './generateFileTypeDocs.ts'
+import { writeSpecKeyDocs } from './generateSpecKeyDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { MARKER_GENERATORS } from './markerGenerators.ts'
 import {
@@ -141,6 +142,11 @@ async function main() {
   )
   writePromotableSlotDocs(configs, displayToTrackType)
   const modelGaps = writeModelDocs(models, configNames)
+  // Not in MARKER_GENERATORS: this one needs `models` off the program, since
+  // half of what a spec can set on a view is the model's composed-in
+  // properties. After writeModelDocs, so the pages its rows link into exist by
+  // the time anything checks them.
+  writeSpecKeyDocs(models, sourceCorpus(files))
   writeCoverageGaps([
     {
       title: 'configs with no #example',

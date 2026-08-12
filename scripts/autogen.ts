@@ -183,6 +183,9 @@ const GENERATORS: Generator[] = [
       'website/docs/api',
       'website/docs/config_guides',
       'website/docs/user_guides',
+      // the SPEC_KEYS blocks: what a session spec may set on each view type,
+      // rendered from the views' own declarations
+      'website/docs/urlparams.md',
       'website/scripts/api-docs/coverage-gaps.txt',
       'packages/*/README.md',
       'plugins/*/README.md',

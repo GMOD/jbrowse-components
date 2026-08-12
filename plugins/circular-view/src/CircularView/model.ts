@@ -156,6 +156,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         offsetRadians: types.stripDefault(types.number, defaultOffsetRadians),
         /**
          * #property
+         * the zoom level, base-pairs per pixel. Capped by `minimumRadiusPx`,
+         * and refit over by the first resize unless `autoFit` is false.
          */
         bpPerPx: types.stripDefault(types.number, defaultBpPerPx),
         /**
@@ -174,27 +176,39 @@ function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * chrome switch, for an embed that drives the view itself
          */
         hideVerticalResizeHandle: types.stripDefault(types.boolean, false),
         /**
          * #property
+         * chrome switch, for an embed that drives the view itself
          */
         hideTrackSelectorButton: types.stripDefault(types.boolean, false),
         /**
          * #property
+         * suppress the import form even on an error — what the SV inspector's
+         * circle wants, since its assembly comes from the sheet beside it and a
+         * form there would offer a control that cannot work
          */
         disableImportForm: types.stripDefault(types.boolean, false),
 
         /**
          * #property
+         * the height of the view in pixels. The circle auto-fits its
+         * container, so this is what sizes the drawing.
          */
         height: types.stripDefault(types.number, defaultHeight),
-        /*
+        /**
          * #property
+         * the regions the circle lays out, one arc each, in this order.
+         * `displayedRegionNames` names the same thing by refName and is the
+         * shorter form.
          */
         displayedRegions: types.stripDefault(types.frozen<Region[]>(), []),
         /**
          * #property
+         * how far in the circle may be zoomed, as a floor on the radius; it is
+         * what caps bpPerPx
          */
         minimumRadiusPx: types.stripDefault(
           types.number,
@@ -202,14 +216,19 @@ function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
+         * the gap drawn between adjacent chromosome arcs
          */
         spacingPx: types.stripDefault(types.number, defaultSpacingPx),
         /**
          * #property
+         * blank margin between the circle and the edge of the figure
          */
         paddingPx: types.stripDefault(types.number, defaultPaddingPx),
         /**
          * #property
+         * arcs thinner than this many pixels are elided instead of drawn,
+         * which is what stops a few thousand unplaced contigs becoming a ring
+         * of hairlines
          */
         minVisibleWidth: types.stripDefault(
           types.number,

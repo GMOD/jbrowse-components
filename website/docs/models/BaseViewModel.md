@@ -16,7 +16,7 @@ JBrowse core.
 | --- | --- |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | displayName is displayed in the header of the view, or assembly names being used if none is specified |
-| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> |  |
+| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> | collapse the view to its header bar, keeping it in the session rather than closing it |
 
 ## Volatiles
 

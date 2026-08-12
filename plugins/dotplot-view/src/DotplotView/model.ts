@@ -242,6 +242,7 @@ export default function stateModelFactory(pm: PluginManager) {
           type: types.literal('DotplotView'),
           /**
            * #property
+           * the height of the plot in pixels
            */
           height: types.stripDefault(types.number, defaultHeight),
           /**
@@ -253,10 +254,15 @@ export default function stateModelFactory(pm: PluginManager) {
           trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
           /**
            * #property
+           * the two assemblies being compared, horizontal axis first. A spec
+           * normally names these per axis instead, as `views[0].assembly` and
+           * `views[1].assembly`.
            */
           assemblyNames: types.stripDefault(types.array(types.string), []),
           /**
            * #property
+           * resolve each alignment's CIGAR into the drawn shape rather than
+           * plotting it as a single straight segment
            */
           drawCigar: types.stripDefault(types.boolean, true),
           /**
@@ -301,10 +307,14 @@ export default function stateModelFactory(pm: PluginManager) {
           minAlignmentLength: types.stripDefault(types.number, 0),
           /**
            * #property
+           * the horizontal axis, as a full 1D view state. A spec writes
+           * `views[0]` instead, which the launcher resolves into this.
            */
           hview: types.optional(DotplotHView, {}),
           /**
            * #property
+           * the vertical axis, the counterpart to `hview`. A spec writes
+           * `views[1]`.
            */
           vview: types.optional(DotplotVView, {}),
 

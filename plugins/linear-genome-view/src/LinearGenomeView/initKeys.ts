@@ -10,6 +10,10 @@ import type { InitState } from './types.ts'
 // `showGridlines`, `showCytobands` and five others declared, menu-settable and
 // silently unreachable from any spec — the same failure LinearSyntenyView's
 // `drawLocationMarkers` had.
+//
+// #launchKeys LinearGenomeView — the URL parameters page renders this list
+// rather than restating it; each of these keys has its own `&param=` section
+// there, which is why no description is attached here.
 const knownInitKeyMap: Record<keyof InitState, true> = {
   loc: true,
   grow: true,

@@ -489,10 +489,10 @@ other launch type:
 
 ### Fields every view takes
 
-`displayName` sets the title shown in the view header (and on its workspace tab,
-see [tiled views](#tiled-views--workspaces)). `id` pins the created view's id so
-another view in the same spec can point at it (e.g. an MsaView's
-`connectedViewId`).
+`id` pins the created view's id so another view in the same spec can point at it
+(e.g. an MsaView's `connectedViewId`). It is the one key the launcher reserves —
+the rest of what every view takes comes from `BaseViewModel` and appears in each
+view's table below, `displayName` among them.
 
 `displayedRegionNames` is the spec form of [`&regions=`](#regions), with the
 same meaning: when `loc` is omitted it restricts the whole-genome overview to
@@ -598,60 +598,63 @@ visually separated.
 ### Linear genome view
 
 A `LinearGenomeView` object takes two kinds of key, and the launcher sorts them
-that way.
-
-**Launch keys** are resolved once on attach and then discarded, because they
-have no direct representation in the view's state. There are exactly eight:
-`assembly`, `loc`, `grow` (expand `loc` by this fraction on each side for
-context, so `0.2` pads 20%; ignored without a `loc`), `displayedRegionNames`,
-`tracks`, `tracklist`, `nav` and `highlight` — the
-[simple params](#linear-genome-view-simple) plus `grow`.
-
-**View properties** are whatever the state model declares, which the view
-restores natively. `showCenterLine`, `colorByCDS`, `showAminoAcids`,
-`showHighlightChips` (draw the interactive chip on each highlight band,
-otherwise a bare colored band) and `trackLabels` (`"overlapping"`, `"offset"` or
-`"hidden"`) are the frequently-wanted ones; the rest are below.
-
-A key in neither bucket is a typo, and the launcher names it in a console
-warning rather than dropping it silently.
+that way: the launch keys are the [simple params](#linear-genome-view-simple)
+plus `grow`, which expands `loc` by that fraction on each side for context (so
+`0.2` pads 20%, and it is ignored without a `loc`); everything else is a
+property the state model declares.
 
 #### Linear genome view properties
 
-Besides the eight launch keys, the spec takes any property the view itself
-declares. The ones worth naming:
+<!-- SPEC_KEYS LinearGenomeView START -->
 
-- `bpPerPx` and `offsetPx`: the zoom and the horizontal scroll. `loc` is what
-  you want almost always — it reads, and it survives an assembly whose regions
-  were rebuilt. Reach for these two only to reproduce a viewport to the pixel.
-- `displayedRegions`: the regions the view lays out, as full
+**Launch keys**, resolved once on attach and then discarded, because they have
+no direct representation in the view's state — `assembly`,
+`displayedRegionNames`, `grow`, `highlight`, `loc`, `nav`, `tracklist`. There
+are no others; a key outside this set and the table below is a typo, and the
+launcher names it in a console warning rather than dropping it silently.
+
+**Properties**, which are whatever the state model declares and the view
+restores natively:
+
+<!-- prettier-ignore -->
+| Property | What it does |
+| --- | --- |
+| [`bpPerPx`](/docs/models/lineargenomeview#property-bpperpx) | corresponds roughly to the zoom level, base-pairs per pixel |
+| [`colorByCDS`](/docs/models/lineargenomeview#property-colorbycds) | color CDS segments by reading frame |
+| [`displayedRegions`](/docs/models/lineargenomeview#property-displayedregions) | currently displayed regions, can be a single chromosome, arbitrary subsections, or the entire set of chromosomes in the genome, but it not advised to use the entire set of chromosomes if your assembly is very fragmented |
+| [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [`hideHeader`](/docs/models/lineargenomeview#property-hideheader) | drop the header bar entirely — location box, navigation buttons and overview |
+| [`hideHeaderOverview`](/docs/models/lineargenomeview#property-hideheaderoverview) | keep the header, drop the whole-chromosome overview strip below it |
+| [`hideNoTracksActive`](/docs/models/lineargenomeview#property-hidenotracksactive) | suppress the "No tracks active" placeholder, for an embed that opens with no tracks on purpose |
+| [`labelsVisible`](/docs/models/lineargenomeview#property-labelsvisible) | controls whether highlight/bookmark chip labels are shown inline |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`offsetPx`](/docs/models/lineargenomeview#property-offsetpx) | corresponds roughly to the horizontal scroll of the LGV |
+| [`scalebarOnly`](/docs/models/lineargenomeview#property-scalebaronly) | when true, only the header and coordinate scalebar are rendered |
+| [`showAminoAcids`](/docs/models/lineargenomeview#property-showaminoacids) | draw translated codons on coding features once zoomed in far enough: an alternating per-codon shading, and the amino acid letters on top of it at base-level zoom. Independent of `colorByCDS`, which only recolors the segments by frame. |
+| [`showCenterLine`](/docs/models/lineargenomeview#property-showcenterline) | show the "center line" |
+| [`showCytobands`](/docs/models/lineargenomeview#property-showcytobands) | whether to show the "cytobands" in the overview scale bar (the resolved, capability-gated value is the `effectiveShowCytobands` getter) |
+| [`showGridlines`](/docs/models/lineargenomeview#property-showgridlines) | show the "gridlines" in the track area |
+| [`showHighlightChips`](/docs/models/highlightsmixin#property-showhighlightchips) | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default |
+| [`showTrackOutlines`](/docs/models/lineargenomeview#property-showtrackoutlines) | show the track outlines |
+| [`trackLabels`](/docs/models/lineargenomeview#property-tracklabels) | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which results in the LinearGenomeViewPlugin config default being used). the resolved value is the `effectiveTrackLabels` getter. see LinearGenomeViewPlugin https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for how conf is used |
+| [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
+
+<!-- SPEC_KEYS LinearGenomeView END -->
+
+Three of those warrant more than their one-line description:
+
+- `bpPerPx` and `offsetPx` are the zoom and the horizontal scroll, and `loc` is
+  what you want almost always — it reads, and it survives an assembly whose
+  regions were rebuilt. Reach for these two only to reproduce a viewport to the
+  pixel.
+- `displayedRegions` gives the regions the view lays out as full
   `{refName, start, end, assemblyName}` objects. `displayedRegionNames` names
   the same thing by refName and is the shorter form; this is the escape hatch
   for showing part of a chromosome, which a name cannot express.
-- `hideHeader`: drop the header bar entirely — location box, navigation buttons
-  and overview.
-- `hideHeaderOverview`: keep the header, drop the whole-chromosome overview
-  strip below it.
-- `hideNoTracksActive`: suppress the "No tracks active" placeholder, for an
-  embed that opens with no tracks on purpose.
-- `scalebarOnly`: render the header and coordinate scalebar and nothing else — a
-  ruler to sit beside something drawn elsewhere.
-- `showGridlines`: vertical gridlines in the track area (default `true`).
-- `showCytobands`: the cytoband ideogram in the overview, where the assembly has
-  one.
-- `showTrackOutlines`: the 1px border around each track.
-- `labelsVisible`: inline labels on highlight and bookmark chips (default
-  `true`).
-
-`showCytobands` and `showTrackOutlines` are the two whose default is the
-visitor's own stored preference rather than a fixed value — both are menu
-settings persisted in `localStorage`, so a spec that omits them opens however
-that visitor last left them. Set them explicitly in a link that has to look the
-same for everyone.
-
-- `trackSelectorType`: vestigial — the hierarchical selector is the only one
-  that exists, so the value is ignored. It is accepted because saved sessions
-  and configs persist it.
+- `showCytobands` and `showTrackOutlines` default to the visitor's own stored
+  preference rather than to a fixed value — both are menu settings persisted in
+  `localStorage`, so a spec that omits them opens however that visitor last left
+  them. Set them explicitly in a link that has to look the same for everyone.
 
 #### Live example: alignments display settings
 
@@ -763,25 +766,32 @@ circle auto-fits its container, so `height` is what sizes the drawing.
 As with the linear genome view, the spec also takes the view's own declared
 properties:
 
-- `bpPerPx` and `offsetRadians`: zoom and rotation — the circle's equivalents of
-  the linear view's `bpPerPx`/`offsetPx`. Pair them with `autoFit: false`, or
-  the first resize refits over them.
-- `autoFit`: whether the circle keeps re-fitting its container on resize
-  (default `true`). It clears itself the moment the user zooms or pans, so a
-  view they arrived at by hand survives a resize and a reload.
-- `paddingPx`: blank margin between the circle and the edge of the figure.
-- `spacingPx`: the gap drawn between adjacent chromosome arcs.
-- `minimumRadiusPx`: how far in the circle may be zoomed, as a floor on the
-  radius; it is what caps `bpPerPx`.
-- `minVisibleWidth`: arcs thinner than this many pixels are elided instead of
-  drawn, which is what stops a few thousand unplaced contigs becoming a ring of
-  hairlines.
-- `hideVerticalResizeHandle`, `hideTrackSelectorButton`, `disableImportForm`:
-  chrome switches for an embed that drives the view itself. `disableImportForm`
-  suppresses the form even on an error — what the SV inspector's circle wants,
-  since its assembly comes from the sheet beside it and a form there would offer
-  a control that cannot work.
-- `trackSelectorType`: vestigial, the same way it is on the linear genome view.
+<!-- SPEC_KEYS CircularView START -->
+
+<!-- prettier-ignore -->
+| Property | What it does |
+| --- | --- |
+| [`autoFit`](/docs/models/circularview#property-autofit) | whether the view keeps re-fitting to its container on resize. Cleared once the user manually zooms/pans so their view (persisted via bpPerPx/offsetRadians) is preserved across resizes and reloads. |
+| [`bpPerPx`](/docs/models/circularview#property-bpperpx) | the zoom level, base-pairs per pixel. Capped by `minimumRadiusPx`, and refit over by the first resize unless `autoFit` is false. |
+| [`disableImportForm`](/docs/models/circularview#property-disableimportform) | suppress the import form even on an error — what the SV inspector's circle wants, since its assembly comes from the sheet beside it and a form there would offer a control that cannot work |
+| [`displayedRegions`](/docs/models/circularview#property-displayedregions) | the regions the circle lays out, one arc each, in this order. `displayedRegionNames` names the same thing by refName and is the shorter form. |
+| [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [`height`](/docs/models/circularview#property-height) | the height of the view in pixels. The circle auto-fits its container, so this is what sizes the drawing. |
+| [`hideTrackSelectorButton`](/docs/models/circularview#property-hidetrackselectorbutton) | chrome switch, for an embed that drives the view itself |
+| [`hideVerticalResizeHandle`](/docs/models/circularview#property-hideverticalresizehandle) | chrome switch, for an embed that drives the view itself |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far in the circle may be zoomed, as a floor on the radius; it is what caps bpPerPx |
+| [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, which is what stops a few thousand unplaced contigs becoming a ring of hairlines |
+| [`offsetRadians`](/docs/models/circularview#property-offsetradians) | similar to offsetPx in linear genome view |
+| [`paddingPx`](/docs/models/circularview#property-paddingpx) | blank margin between the circle and the edge of the figure |
+| [`spacingPx`](/docs/models/circularview#property-spacingpx) | the gap drawn between adjacent chromosome arcs |
+| [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
+
+<!-- SPEC_KEYS CircularView END -->
+
+`bpPerPx` and `offsetRadians` are the circle's zoom and rotation, the
+equivalents of the linear view's `bpPerPx`/`offsetPx`; pairing them with
+`autoFit: false` is what stops the first resize refitting over them.
 
 ### Dotplot view
 
@@ -835,14 +845,33 @@ so the reorder runs over the restricted set.
 
 The dotplot spec accepts extra top-level fields applied on load:
 
-- `colorBy`: same color modes as the
-  [synteny view](#linear-synteny-view-properties) (e.g. `strand`, `identity`,
-  `mappingQuality`), applied to each dotplot display.
-- `minAlignmentLength`: hide alignments shorter than this many bp.
-- `autoDiagonalize`: reorder the vertical axis to follow the horizontal axis
-  after the first render, lining up the main diagonal.
-- `showColorLegend`: set `false` to hide the floating color-by legend, for a
-  curated figure where it would clutter the plot.
+<!-- SPEC_KEYS DotplotView START -->
+
+<!-- prettier-ignore -->
+| Property | What it does |
+| --- | --- |
+| [`alpha`](/docs/models/dotplotview#property-alpha) | Plot-wide alpha applied to every point. View-level for the same reason lineWidth is: the only control is view-level, so storing it per display meant a track shown after the slider moved rendered at the default while the slider said otherwise. |
+| [`assemblyNames`](/docs/models/dotplotview#property-assemblynames) | the two assemblies being compared, horizontal axis first. A spec normally names these per axis instead, as `views[0].assembly` and `views[1].assembly`. |
+| [`colorBy`](/docs/models/trackcolorsmixin#property-colorby) | The color-by mode the whole view renders with, unless a track overrides it in `trackColorBy`. |
+| [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [`drawCigar`](/docs/models/dotplotview#property-drawcigar) | resolve each alignment's CIGAR into the drawn shape rather than plotting it as a single straight segment |
+| [`height`](/docs/models/dotplotview#property-height) | the height of the plot in pixels |
+| [`highlight`](/docs/models/highlightsmixin#property-highlight) | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu |
+| [`hview`](/docs/models/dotplotview#property-hview) | the horizontal axis, as a full 1D view state. A spec writes `views[0]` instead, which the launcher resolves into this. |
+| [`lineWidth`](/docs/models/dotplotview#property-linewidth) | Screen-space line width (CSS pixels) applied to every dotplot display in this view. View-level because the GPU pass renders all displays with one uniform. |
+| [`lockAspectRatio`](/docs/models/dotplotview#property-lockaspectratio) | When true, hview and vview are kept at the same bpPerPx so the dotplot stays square. Wheel zoom already preserves the ratio; box-zoom and other independent ops trigger an autorun resync. |
+| [`lodMode`](/docs/models/dotplotview#property-lodmode) | Level-of-detail tier override for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine'/'coarse' force a tier. Stored view-level so all displays render at the same tier and the menu doesn't need to fan out per display. |
+| [`minAlignmentLength`](/docs/models/dotplotview#property-minalignmentlength) | Hide alignments shorter than this many bp. Enforced per feature in buildLineSegments. Cuts whole-genome hairball noise. View-level, see alpha. |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`showColorLegend`](/docs/models/trackcolorsmixin#property-showcolorlegend) | Show the floating color-by legend. Dismissible via the legend's close button; re-enable from the color-by (palette) menu. |
+| [`showHighlightChips`](/docs/models/highlightsmixin#property-showhighlightchips) | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default |
+| [`trackColorBy`](/docs/models/trackcolorsmixin#property-trackcolorby) | trackId -> color-by mode for that track alone. Absent means the track follows the view-wide `colorBy`. |
+| [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: 'track'`. Absent means the track takes an automatic slot from the palette. |
+| [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
+| [`viewTrackConfigs`](/docs/models/dotplotview#property-viewtrackconfigs) | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere |
+| [`vview`](/docs/models/dotplotview#property-vview) | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. |
+
+<!-- SPEC_KEYS DotplotView END -->
 
 ```json
 {
@@ -946,64 +975,52 @@ ribbons and stronger opacity:
 
 Supported init fields:
 
-- `colorBy`: one of `default`, `strand`, `track`, `query`, `target`,
-  `reference`, `identity`, `meanQueryIdentity`, `mappingQuality`.
-  `query`/`target` paint ribbons by source/target chromosome, useful for
-  whole-genome views where the default grey blends ribbons into mud. `track`
-  gives each overlaid synteny track its own palette color.
-- `drawCurves`: render ribbons as bezier curves rather than straight chords.
-  Reads better at whole-genome scale where straight crossings stack into noise.
-- `alpha`: per-feature opacity in `[0,1]` (default `0.2`, tuned for dense
-  hairballs). Raise it (~`0.4`) when `minAlignmentLength` has thinned the view.
-- `minAlignmentLength`: hide chains shorter than this many bp at the renderer,
-  cutting the genome-scale hairball down to the large syntenic blocks.
-- `autoDiagonalize`: after tracks load, reorder the bottom axis to follow the
-  top axis so the main diagonal lines up (shown behind a "Reordering
-  chromosomes…" spinner). Best for whole-genome all-vs-all views.
-- `levelHeights`: array of pixel heights, one per synteny strip (level). For a
-  multi-way view, `levelHeights[i]` is the strip between `views[i]` and
-  `views[i+1]`.
-- `showColorLegend`: set `false` to hide the floating color-by legend.
-- `cigarMode`: `off`, `matches`, or `full` — how much of each alignment's CIGAR
-  to resolve into the ribbon.
-- `fadeThinAlignmentsMode`: `auto` (default), `on`, or `off`. `auto` fades
-  sub-pixel ribbons only once the view is dense enough to tangle, so a sparse
-  comparison between distant species isn't washed out by the fade.
-- `collapseEmptyRows`: open any genome row this spec gives no tracks collapsed
-  to its ruler. The "No tracks active" block costs ~90px a row, which across a
-  five-row launch is more of the viewport than the ribbons.
-- `sameScale`: put every genome row on one bp/px — the coarsest row's — instead
-  of fitting each to the pane width, so a size difference between rows (a genome
-  duplication, polyploidy) shows as length rather than being hidden by the
-  per-row stretch. Applied after `autoDiagonalize`.
-- `opacityByIdentity`: fade each alignment block by its own percent identity, so
-  identity-dropoff zones read without spending the color channel on them.
-  Orthogonal to `colorBy`.
-- `drawLocationMarkers`: continue the query row's scalebar grid down through the
-  ribbons — a tick at each round query coordinate, joined to the coordinate the
-  alignment pairs it with.
-- `lodMode`: level-of-detail tier for PIF adapters. `auto` (default) follows the
-  adapter's bpPerPx threshold, `fine` forces the per-row CIGAR tier, `coarse`
-  forces the no-CIGAR tier where the file has one.
-- `overdrawPx`: how far past the viewport edge ribbons are still drawn, which
-  keeps a pan from revealing unpainted strips. Effective only up to the pan
-  buffer (2000px, or half the viewport when that is wider) — beyond it the
-  worker has emitted no CIGAR detail or location markers, so the ribbons are
-  drawn but stop being detailed partway along.
-- `trackColorBy`: `{ "<trackId>": "<mode>" }`, overriding the view-wide
-  `colorBy` for one track. A track not named follows the view.
-- `trackColors`: `{ "<trackId>": "<color>" }`, the explicit color a track takes
-  under `colorBy: "track"`. A track not named takes the next palette slot.
+<!-- SPEC_KEYS LinearSyntenyView START -->
 
-Two more are accepted because the view declares them, and are almost never what
-an author wants to write:
+**Launch keys**, which name something to do on load rather than state the view
+holds:
 
-- `levels`: the synteny bands themselves, one per adjacent pair of rows. Filling
-  them is what `tracks` does — one entry per level — and sizing them is
-  `levelHeights`; reach for `levels` only to author a band's full state.
-- `viewTrackConfigs`: inline track configs belonging to this view alone, rather
-  than to the session. It exists for the read-vs-reference dotplot, whose track
-  would mean nothing anywhere else.
+<!-- prettier-ignore -->
+| Launch key | What it does |
+| --- | --- |
+| `autoDiagonalize` | After tracks load, automatically run the chromosome diagonalization pass so the bottom/vertical axis follows the top/horizontal axis. The canvas is hidden behind a "Reordering chromosomes…" spinner during the wait, so the user doesn't see an undiagonalized flash. |
+| `collapseEmptyRows` | Open any genome row this init gives no tracks collapsed to its ruler. The "No tracks active / Open track selector" block costs ~90px per row, which on a five-row launch is more of the viewport than the ribbons; a row is one click from expanding again (MiniControls, or the view menu's "Genome views" → "Expand all views"). Off by default so an authored session keeps its rows as written — the launch dialog turns it on, and offers a checkbox to not. |
+| `colorBy` | Initial colorBy. Use 'query' (chromosome painting) for whole-genome views where the default red is hard to distinguish across many ribbons. One of `default`, `strand`, `query`, `target`, `reference`, `identity`, `meanQueryIdentity`, `mappingQuality`, `dnds`, `track`. |
+| `levelHeights` | Pixel height of each synteny strip, one entry per level. Useful for whole-genome views where the default ~100px is too cramped for the ribbon detail to be readable. |
+| `minAlignmentLength` | Per-feature alignment-length filter applied at the renderer. Hides chains shorter than this many bp; cuts the genome-scale hairball. |
+| `sameScale` | Put every genome row on one bp/px, the coarsest row's, instead of fitting each to the pane width. The largest genome then fills the frame and the rest are drawn shorter in proportion, so a size difference between rows (polyploidy, a genome duplication) is visible as length rather than hidden by the per-row stretch — and orthologs between two rows line up at the same scale on both. Applied last, after any autoDiagonalize pass. |
+| `showColorLegend` | Show the floating color-by legend on load. Set false to hide it (e.g. a curated demo/screenshot where the legend would clutter the figure). |
+
+**Properties**, which are whatever the state model declares and the view
+restores natively:
+
+<!-- prettier-ignore -->
+| Property | What it does |
+| --- | --- |
+| [`alpha`](/docs/models/linearsyntenyview#property-alpha) | Per-feature opacity in [0,1]. The default is tuned for dense unfiltered hairballs; a whole-genome view with minAlignmentLength set can use a higher value (~0.4) for stronger color. |
+| [`cigarMode`](/docs/models/linearsyntenyview#property-cigarmode) | How per-base insertions and deletions inside each alignment are shown: 'full' paints indel wedges, 'matches' leaves them see-through, 'off' draws blocks only. |
+| [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [`drawCurves`](/docs/models/linearsyntenyview#property-drawcurves) | Render ribbons as bezier curves rather than straight chords. Reads much better at whole-genome scale, where straight crossings stack into noise. |
+| [`drawLocationMarkers`](/docs/models/linearsyntenyview#property-drawlocationmarkers) | Continue the query view's scalebar grid down through the ribbons: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with. |
+| [`fadeThinAlignmentsMode`](/docs/models/linearsyntenyview#property-fadethinalignmentsmode) | Whether to fade a sub-pixel-thin ribbon's opacity by its on-screen width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. 'auto' enables the fade once a display is dominated by sub-pixel ribbons (see LinearSyntenyDisplay.autoFadeThinAlignments); a genuinely sparse comparison (only a handful of ribbons) keeps full alpha so the fade doesn't wash it out. 'on'/'off' pin it. Resolved view-wide by the `fadeThinAlignments` getter, so all levels fade together. |
+| [`levels`](/docs/models/linearcomparativeview#property-levels) | One synteny band per adjacent pair of `views`. Each holds its own track list, which is why the track-selector and add-track widgets address them through `trackContainerFor` — a level is not a view and cannot be the target of their `view` reference. |
+| [`linkViews`](/docs/models/linearcomparativeview#property-linkviews) | sync scroll and zoom across the genome rows, so panning one pans them all |
+| [`lodMode`](/docs/models/linearsyntenyview#property-lodmode) | Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces the no-CIGAR tier (T/Q) when present. |
+| [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`opacityByIdentity`](/docs/models/linearsyntenyview#property-opacitybyidentity) | Fade alignment blocks by per-feature identity (lower identity = more transparent). Orthogonal to colorBy — surfaces identity-dropoff zones without consuming the color channel. |
+| [`overdrawPx`](/docs/models/linearsyntenyview#property-overdrawpx) | pixels beyond the visible viewport edge that synteny lines are still drawn. Effective up to the pan buffer (`syntenyPanBufferPx`: 2000px, or half the viewport when that is wider) — the worker emits CIGAR detail and location markers only that far, so a larger value draws ribbons whose detail stops partway along them. |
+| [`trackColorBy`](/docs/models/trackcolorsmixin#property-trackcolorby) | trackId -> color-by mode for that track alone. Absent means the track follows the view-wide `colorBy`. |
+| [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: 'track'`. Absent means the track takes an automatic slot from the palette. |
+| [`trackSelectorType`](/docs/models/linearcomparativeview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
+| [`viewTrackConfigs`](/docs/models/linearcomparativeview#property-viewtrackconfigs) | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere |
+
+<!-- SPEC_KEYS LinearSyntenyView END -->
+
+Two of those are accepted because the view declares them and are almost never
+what an author wants to write: filling `levels` is what `tracks` does — one
+entry per level — and sizing them is `levelHeights`, so reach for `levels` only
+to author a band's full state; and `viewTrackConfigs` exists for the
+read-vs-reference dotplot, whose track would mean nothing anywhere else.
 
 Each entry in `views` is a linear genome view, so besides `loc`, `assembly` and
 `tracks` it takes that view's own launch props (`trackLabels`, `colorByCDS`,

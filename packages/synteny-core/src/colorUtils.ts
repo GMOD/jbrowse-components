@@ -60,6 +60,9 @@ export type ColorScheme = keyof typeof colorSchemes
 // coerceColorBy needs a runtime membership test, and two hand-maintained copies
 // would let a newly added mode typecheck everywhere while coerceColorBy
 // silently rejected it back to 'default'.
+//
+// #valueList colorBy — and a third copy is what the URL parameters page had,
+// which named nine of these ten and had done since `dnds` was added.
 const syntenyColorByValues = [
   'default',
   'strand',

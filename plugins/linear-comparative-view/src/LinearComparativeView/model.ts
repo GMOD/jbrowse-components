@@ -73,6 +73,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
+         * sync scroll and zoom across the genome rows, so panning one pans
+         * them all
          */
         linkViews: types.stripDefault(types.boolean, false),
         /**

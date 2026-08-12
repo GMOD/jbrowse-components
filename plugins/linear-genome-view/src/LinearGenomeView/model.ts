@@ -359,16 +359,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * drop the header bar entirely — location box, navigation buttons and
+         * overview
          */
         hideHeader: types.stripDefault(types.boolean, false),
 
         /**
          * #property
+         * keep the header, drop the whole-chromosome overview strip below it
          */
         hideHeaderOverview: types.stripDefault(types.boolean, false),
 
         /**
          * #property
+         * suppress the "No tracks active" placeholder, for an embed that opens
+         * with no tracks on purpose
          */
         hideNoTracksActive: types.stripDefault(types.boolean, false),
 

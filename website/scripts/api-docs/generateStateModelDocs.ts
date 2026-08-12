@@ -398,6 +398,48 @@ function renderModel(
   })
 }
 
+/**
+ * Every `#property` a model ends up with — its own, plus the ones it inherits
+ * through `types.compose`, deduped at the most specific declaration and tagged
+ * with the model that declares each.
+ *
+ * Exported for the session-spec key tables, which document what a spec may set
+ * on a view. Own properties alone are not that set: `showHighlightChips` is
+ * declared by `HighlightsMixin` and a spec sets it on the linear genome view
+ * like any other, so a list built from the view's own file omits a key that
+ * works — and a missing row reads as "not settable" exactly the way a blank
+ * cell reads as "does nothing".
+ */
+export function resolvedProperties(
+  byFile: Record<string, StateModel>,
+  modelName: string,
+): { member: Member; declaredBy: string }[] {
+  const withHeader = withHeaders(byFile)
+  const index: ModelIndex = {
+    byDeclId: mapByKey(withHeader, m => m.header.selfDeclId),
+    bySlug: mapByKey(withHeader, m => m.header.id),
+  }
+  const model = withHeader.find(m => m.header.name === modelName)
+  if (!model) {
+    return []
+  }
+  return [
+    ...model.members.properties.map(member => ({
+      member,
+      declaredBy: modelName,
+    })),
+    ...collectInheritedMembers(
+      model.members,
+      collectAncestors(model, index),
+    ).flatMap(g =>
+      g.members.properties.map(member => ({
+        member,
+        declaredBy: g.model.header.name,
+      })),
+    ),
+  ]
+}
+
 export function writeModelDocs(
   byFile: Record<string, StateModel>,
   configNames: Set<string>,

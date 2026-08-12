@@ -10,10 +10,21 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 (`<!-- COLOR_TABLE … -->`, `FILE_TYPES`, `DISPLAY_TYPES`, `GOTCHA`,
 `PROMOTABLE_SLOTS`, `DISPLAY_FOUNDATIONS`, `CROSS_CUTTING_MIXINS`,
 `FETCH_AUTORUNS`, `PALETTE_KEYS`, `HELPER_PACKAGES`, `REEXPORT_MODULES`,
-`MENU_ITEM_TYPES`, `MENU_ITEM_FIELDS`, `MENU_ITEM_BUILDERS`, `MENU_ACTIONS`).
-Each renders from a JSDoc tag, a registration, or a manifest at the definition
-site — document a new one by tagging the source. Everything else under `docs/`
-is hand-written.
+`MENU_ITEM_TYPES`, `MENU_ITEM_FIELDS`, `MENU_ITEM_BUILDERS`, `MENU_ACTIONS`,
+`SPEC_KEYS`). Each renders from a JSDoc tag, a registration, or a manifest at
+the definition site — document a new one by tagging the source. Everything else
+under `docs/` is hand-written.
+
+`SPEC_KEYS` is the grouped one on `urlparams.md`:
+`<!-- SPEC_KEYS <ViewType> -->` renders what a session spec may set on that
+view, in the two buckets the launcher actually partitions on. Both halves are
+found by scanning, so **no path is written down** — `#launchKeys <ViewType>`
+tags the object literal or interface defining the load-time bucket,
+`#valueList <key>` tags the const array a key's accepted values come from, and
+the properties come off the model's `#property` tags including the ones it
+composes in. Adding a spec-settable key therefore means tagging it and nothing
+else; leaving one undescribed **fails** the run, and a `#launchKeys` group no
+page renders fails it too.
 
 The sweep also covers `agent-docs/`, which hosts the `DISPLAY_FOUNDATION_STACKS`
 and `FETCH_AUTORUNS` counterparts. A guide table and its architecture-spec twin

@@ -24,6 +24,11 @@ export type FadeThinMode = 'auto' | 'on' | 'off'
  * the runtime twin of this list.
  *
  * A new display setting does not belong here. See `LinearSyntenyViewInit`.
+ *
+ * #launchKeys LinearSyntenyView — the URL parameters page renders this
+ * interface, and the one it extends, as the view's launch-key table. The `//`
+ * comment above each field is what that table shows, so a field added without
+ * one fails the docs build rather than rendering a blank cell.
  */
 export interface LinearSyntenyViewCommands extends SyntenyViewSharedInit {
   // a row is an LGV, so it takes the LGV's own launch props (trackLabels,
