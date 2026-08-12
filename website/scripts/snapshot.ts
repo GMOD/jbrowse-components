@@ -27,6 +27,10 @@ import { launch } from 'puppeteer'
 
 import { drawAnnotations } from './annotations.ts'
 import { commitScreenshot, optimizePng } from './image-pipeline.ts'
+// one definition, shared with the corpus generator's own navigation
+// (`captureUrl`) — this entry is the smaller of the two capture paths, and they
+// must not disagree about which backend a figure was drawn on
+import { pinRenderer } from './screenshot-ready.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
 import type { Annotation } from './screenshot-spec-types.ts'
@@ -109,20 +113,6 @@ async function waitForReady(page: Page, spec: SnapshotSpec) {
     await page.waitForSelector(selector, { visible: true, timeout })
   }
   await settle(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
-}
-
-// Every capture runs headless, headless Chrome is SwiftShader, and the ladder in
-// `createHal.ts` steps over a software rasterizer — so without a pin a regen
-// would silently redraw the whole corpus on Canvas2D, a real visual change
-// across every figure arriving as a side effect of a rendering decision. Moving
-// the corpus to another backend should be a deliberate edit here.
-//
-// Applied at capture rather than in `sessionSpec`, which builds the same urls:
-// those are also baked into `galleryLinks.generated.ts` for the website gallery,
-// where a pin would force WebGL on a visitor whose machine cannot do it well.
-// Only the screenshot navigates through here.
-function pinRenderer(url: string) {
-  return `${url}${url.includes('?') ? '&' : '?'}renderer=webgl`
 }
 
 // Drive one prepared page through a spec and leave a finished, optimized PNG in

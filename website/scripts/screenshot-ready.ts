@@ -111,6 +111,23 @@ export async function waitForReady(
   }
 }
 
+/**
+ * Pin a capture to WebGL. Every figure is rendered headless, headless Chrome is
+ * SwiftShader, and `createGpuHal` steps over a software rasterizer — so without
+ * this a regen silently redraws the whole corpus on Canvas2D, a real visual
+ * change across every figure arriving as a side effect of a rendering decision.
+ * Moving the corpus to another backend should be a deliberate edit here.
+ *
+ * **Applied at capture, never in the url builder.** `sessionSpec` builds these
+ * same urls and has a second consumer — `gen-gallery-links.ts` bakes them into
+ * the website gallery, where a pin would force WebGL on the very visitors the
+ * ladder exists to route away from it. That is not hypothetical: it shipped, to
+ * 251 links, and took two commits to undo.
+ */
+export function pinRenderer(url: string) {
+  return `${url}${url.includes('?') ? '&' : '?'}renderer=webgl`
+}
+
 export async function captureUrl(
   page: Page,
   spec: SessionUrlSpec,
@@ -119,7 +136,7 @@ export async function captureUrl(
   const fullUrl = spec.url.startsWith('http')
     ? spec.url
     : `http://localhost:${port}/${spec.url}`
-  await page.goto(fullUrl, {
+  await page.goto(pinRenderer(fullUrl), {
     waitUntil:
       spec.waitUntil ??
       (spec.url.startsWith('http') ? 'domcontentloaded' : 'networkidle0'),

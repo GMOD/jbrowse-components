@@ -184,7 +184,8 @@ export const displayReady = displaySettled
 // demo. Pinning here reached those links too, so a visitor on a software
 // rasterizer would have been forced onto WebGL — the exact machine the ladder in
 // `createHal.ts` exists to route away from it. The pin belongs at capture time
-// instead; `snapshot.ts` adds it there.
+// instead: `pinRenderer` in screenshot-ready.ts, applied by both navigation
+// paths, plus the embedded harness which sets it through the product's API.
 export function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }

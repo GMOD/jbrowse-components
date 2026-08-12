@@ -35,8 +35,15 @@ function embeddedHarnessHtml(viewState: object) {
     <div id="root"></div>
     <script src="/jbrowse.umd.js"></script>
     <script>
-      const { createViewState, JBrowseLinearGenomeView, React, createRoot } =
+      const { createViewState, JBrowseLinearGenomeView, React, createRoot, setGpuOverride } =
         window.JBrowseReactLinearGenomeView
+      // Same WebGL pin every other capture gets, by the only route open to an
+      // embedded host: there is no url of ours to put ?renderer= in, so the
+      // product exports the setter instead. Before createViewState, because a
+      // canvas's context kind is permanent and an override arriving after the
+      // first view rendered leaves it on whatever it took. Optional-called so a
+      // UMD bundle predating the export still captures rather than throwing.
+      setGpuOverride?.('webgl')
       const viewState = createViewState(${JSON.stringify(viewState)})
       createRoot(document.getElementById('root')).render(
         React.createElement(JBrowseLinearGenomeView, { viewState }),

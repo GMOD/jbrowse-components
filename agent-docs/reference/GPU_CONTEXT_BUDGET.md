@@ -129,11 +129,23 @@ read as a software one. The string stays local to the stack-trace dialog, like
   canvas2d render, and 66 pairs would agree perfectly while proving nothing. The
   pin wins for exactly this reason, `appendGpuParam` sets it on every GPU arm,
   and `createRenderingBackend.test.ts` pins the property directly.
-- **The figure corpus.** `website/scripts/snapshot.ts` runs headless and used to
-  pin nothing, so a regen would have silently redrawn every figure on Canvas2D —
-  a whole-corpus visual change arriving as a side effect. `sessionSpec` now
-  appends `renderer=webgl`, which is where to change it if the corpus should ever
-  move backends deliberately.
+- **The figure corpus.** Every capture runs headless and pinned nothing, so a
+  regen would have silently redrawn every figure on Canvas2D — a whole-corpus
+  visual change arriving as a side effect. `pinRenderer` in
+  `website/scripts/screenshot-ready.ts` is the one place to change if the corpus
+  should ever move backends deliberately; `captureUrl` and `snapshot.ts` both
+  apply it, and the embedded harness sets the same pin through the product's
+  `setGpuOverride` export, having no url of ours to put a parameter in.
+
+  **Two attempts got this wrong before it was right, in opposite directions.**
+  Pinning inside `sessionSpec` looked like the tidy single place — but that
+  builder feeds `gen-gallery-links.ts` as well as the captures, so it forced
+  WebGL on 251 website gallery links, i.e. on exactly the visitors this whole
+  section is about. Moving the pin to `snapshot.ts::captureToTemp` then missed
+  the corpus entirely, because `generate-screenshots.ts` navigates through
+  `captureUrl` instead. If you touch this, enumerate the navigation paths first:
+  `renderSpecToTemp` branches to the embedded harness or `captureUrl`, and
+  `captureEachStage` re-enters `captureUrl` per stage.
 
 **The pin is already the protection, and it is already in place.**
 `runWithRenderingBackend` sets `snapshotConfig.backend` for every run (it
