@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 import CascadingMenuButton from './CascadingMenuButton.tsx'
 
 import type { MenuItem } from './Menu.tsx'
+import type { MenuItemClickHandler } from './MenuTypes.ts'
 import type { ButtonProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
@@ -34,13 +35,16 @@ function ButtonComponent(props: ButtonProps) {
 const DropDownMenu = observer(function DropDownMenu({
   menuTitle,
   menuItems,
+  onMenuItemClick,
 }: {
   menuTitle: string
   menuItems: MenuItem[] | (() => MenuItem[])
+  onMenuItemClick?: (callback: MenuItemClickHandler) => void
 }) {
   return (
     <CascadingMenuButton
       menuItems={menuItems}
+      onMenuItemClick={onMenuItemClick}
       color="inherit"
       ButtonComponent={ButtonComponent}
     >

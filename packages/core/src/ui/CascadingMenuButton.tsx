@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip'
 import CascadingMenu from './CascadingMenu.tsx'
 
 import type { MenuItemsGetter } from './CascadingMenu.tsx'
+import type { MenuItemClickHandler } from './MenuTypes.ts'
 import type { PopoverOrigin } from '@mui/material'
 
 // drop the menu below the trigger icon rather than overlapping it (MUI's
@@ -43,6 +44,9 @@ function CascadingMenuButton({
   setOpen,
   ButtonComponent = IconButton,
   onClick: onClickExtra,
+  onMenuItemClick = callback => {
+    callback()
+  },
   anchorOrigin = dropdownAnchorOrigin,
   transformOrigin = dropdownTransformOrigin,
   tooltip,
@@ -55,6 +59,9 @@ function CascadingMenuButton({
   stopPropagation?: boolean
   disabled?: boolean
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  // see CascadingMenuListProps; defaults to invoking the row's onClick with no
+  // argument, which is what a menu built against a model it closes over wants
+  onMenuItemClick?: (callback: MenuItemClickHandler) => void
   setOpen?: (arg: boolean) => void
   ButtonComponent?: React.FC<{
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
@@ -112,9 +119,7 @@ function CascadingMenuButton({
           transformOrigin={transformOrigin}
           menuItems={menuItems}
           closeAfterItemClick={closeAfterItemClick}
-          onMenuItemClick={callback => {
-            callback()
-          }}
+          onMenuItemClick={onMenuItemClick}
         />
       ) : null}
     </>

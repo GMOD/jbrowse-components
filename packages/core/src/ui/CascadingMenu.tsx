@@ -26,6 +26,7 @@ import type {
   ClickableMenuItem,
   CustomMenuItem,
   MenuItem as JBMenuItem,
+  MenuItemClickHandler,
   MenuItemsGetter,
 } from './MenuTypes.ts'
 import type { PopoverOrigin } from '@mui/material'
@@ -52,7 +53,10 @@ const useStyles = makeStyles()(theme => ({
 interface CascadingMenuListProps {
   menuItems: JBMenuItem[]
   closeAfterItemClick: boolean
-  onMenuItemClick: (callback: () => void) => void
+  // how a row's onClick is invoked, at every depth — the menu itself never
+  // calls it. A caller whose items expect a context argument supplies it here
+  // (`cb => { cb(session) }`) rather than rewriting the items to close over it
+  onMenuItemClick: (callback: MenuItemClickHandler) => void
   onCloseRoot: () => void
   // close this menu level and refocus its opener (ArrowLeft); undefined at the
   // root level where there is nothing to go back to
@@ -282,7 +286,7 @@ function CascadingMenuItem({
   hasEndAdornment: boolean
   sharedActionColumn: boolean
   closeAfterItemClick: boolean
-  onMenuItemClick: (callback: () => void) => void
+  onMenuItemClick: (callback: MenuItemClickHandler) => void
   onCloseRoot: () => void
   onNavigateBack?: () => void
   onMouseOver: () => void
@@ -436,7 +440,7 @@ function CascadingMenuList({
 }
 
 interface CascadingMenuProps {
-  onMenuItemClick: (callback: () => void) => void
+  onMenuItemClick: (callback: MenuItemClickHandler) => void
   closeAfterItemClick?: boolean
   menuItems: MenuItemsGetter
   open: boolean

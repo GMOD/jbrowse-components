@@ -6,7 +6,6 @@ import { Toolbar, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AppSession } from './types.ts'
-import type { MenuItem as JBMenuItem } from '@jbrowse/core/ui/Menu'
 
 const useStyles = makeStyles()(theme => ({
   grow: {
@@ -41,23 +40,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// bind the session into each item's onClick (the renderer invokes onClick with
-// no args), recursing into sub-menus; dividers/sub-headers pass through
-function wrapMenuItems(items: JBMenuItem[], session: AppSession): JBMenuItem[] {
-  return items.map(item =>
-    'subMenu' in item
-      ? { ...item, subMenu: wrapMenuItems(item.subMenu, session) }
-      : 'onClick' in item
-        ? {
-            ...item,
-            onClick: () => {
-              item.onClick(session)
-            },
-          }
-        : item,
-  )
-}
-
 const AppToolbar = observer(function AppToolbar({
   session,
   HeaderButtons = <div />,
@@ -74,7 +56,14 @@ const AppToolbar = observer(function AppToolbar({
         <DropDownMenu
           key={menu.label}
           menuTitle={menu.label}
-          menuItems={() => wrapMenuItems(menu.menuItems(), session)}
+          menuItems={menu.menuItems}
+          // a root model's menu items take the session as their argument, and
+          // the renderer decides how to invoke onClick — so this is the whole
+          // binding. It used to be a recursive rewrite of every row of every
+          // menu, rebuilt on each open, to arrive at the same call
+          onMenuItemClick={callback => {
+            callback(session)
+          }}
         />
       ))}
       <div className={classes.grow} />
