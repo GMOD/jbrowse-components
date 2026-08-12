@@ -1,6 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { colord } from '@jbrowse/core/util/colord'
 import { types } from '@jbrowse/mobx-state-tree'
-import { hexToRgb } from '@mui/material'
 import { render, screen } from '@testing-library/react'
 
 import { LayoutRenderer } from './LayoutRenderer.tsx'
@@ -156,9 +156,9 @@ test('the tab strip is primary chrome, not the paper colour', () => {
   // chrome" rather than one hard-coded navy that a theme change would falsify
   const theme = createJBrowseTheme()
   expect(getComputedStyle(strip).backgroundColor).toBe(
-    hexToRgb(theme.palette.primary.main),
+    colord(theme.palette.primary.main).toRgbString(),
   )
   expect(getComputedStyle(strip).color).toBe(
-    hexToRgb(theme.palette.primary.contrastText),
+    colord(theme.palette.primary.contrastText).toRgbString(),
   )
 })

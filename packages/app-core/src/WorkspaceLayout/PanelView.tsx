@@ -1,5 +1,6 @@
+import { emphasize } from '@jbrowse/core/util/color'
+import { colord } from '@jbrowse/core/util/colord'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { indicatorRect } from './dropZone.ts'
@@ -56,10 +57,11 @@ const useStyles = makeStyles()(theme => ({
     maxWidth: 240,
     padding: '0 4px',
     color: 'inherit',
-    borderRight: `1px solid ${alpha(theme.palette.primary.contrastText, 0.2)}`,
-    '&:hover': {
-      background: alpha(theme.palette.primary.contrastText, 0.08),
-    },
+    borderRight: `1px solid ${colord(theme.palette.primary.contrastText).alpha(0.2).toRgbString()}`,
+    // `emphasize` lightens a dark colour and darkens a light one, so the hover
+    // is legible whichever way a custom `primary` goes — a fixed white overlay
+    // would vanish on a light primary.
+    '&:hover': { background: emphasize(theme.palette.primary.main, 0.15) },
     '&[aria-selected="true"]': {
       background: theme.palette.background.default,
       color: theme.palette.text.primary,
@@ -88,7 +90,7 @@ const useStyles = makeStyles()(theme => ({
     // the panel is position:relative, so 1 is above its content and nothing
     // else — an app-wide z-index would let it cover menus and dialogs
     zIndex: 1,
-    background: alpha(theme.palette.primary.main, 0.3),
+    background: colord(theme.palette.primary.main).alpha(0.3).toRgbString(),
     outline: `1px solid ${theme.palette.primary.main}`,
   },
 }))
