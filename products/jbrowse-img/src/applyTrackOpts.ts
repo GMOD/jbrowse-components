@@ -122,7 +122,9 @@ const ALIGNMENTS_COMPACTNESS = {
 
 export type AssertCompactnessMatchesUpstream = AssertTrue<
   typeof ALIGNMENTS_COMPACTNESS extends {
-    [K in keyof typeof COMPACTNESS_PRESETS]: (typeof COMPACTNESS_PRESETS)[K]['featureHeight']
+    [
+      K in keyof typeof COMPACTNESS_PRESETS
+    ]: (typeof COMPACTNESS_PRESETS)[K]['featureHeight']
   }
     ? true
     : false

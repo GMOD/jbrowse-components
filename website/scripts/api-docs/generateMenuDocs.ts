@@ -221,10 +221,7 @@ function collect(corpus: SourceCorpus) {
 
 const code = (s: string) => `\`${s}\``
 
-export function writeMenuDocs(
-  corpus: SourceCorpus,
-  { check = false } = {},
-) {
+export function writeMenuDocs(corpus: SourceCorpus, { check = false } = {}) {
   const { itemTypes, fields, builders } = collect(corpus)
   return [
     ...rewriteMarkerBlock(
