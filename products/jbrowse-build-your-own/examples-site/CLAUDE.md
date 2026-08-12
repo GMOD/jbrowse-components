@@ -89,10 +89,36 @@ copy-paste and the answer is a different rule argued here, not more entries.
   which is why the figures moved rather than being waived.
 
   So the step is banked once, with this note, and the ratchet goes back to
-  normal from there: a further rise is a real regression again. The way to
-  reclaim the 11 KB is chunking config in `astro.config.mjs` — keeping the app
-  product's graph from merging into the single-view pages — **not** another
-  budget bump. Nobody has tried it yet.
+  normal from there: a further rise is a real regression again.
+
+  **The chunking config that was supposed to reclaim those 11 KB has now been
+  tried, and it costs 104 KB a page.** One rolldown `advancedChunks` group
+  naming a chunk per third-party package — so a chunk's contents follow the
+  module's own identity instead of which pages reach it together — decoupled the
+  pages and made every one of them enormously worse: `ultraminimal` 508 -> 645,
+  `index` 560 -> 664, `synteny` 675 -> 771. The reason is the thing the idea was
+  built on. Chunks are page-dependent _because_ rolldown cuts them by usage, and
+  that fine cut is what keeps a page from downloading a whole package for three
+  components of it — pin the boundary by package and every page pays for all of
+  `@mui/material`. Don't retry this without a plan for partially-used vendors;
+  the coupling is the price of the optimization, not a defect beside it.
+
+  **What that coupling costs, measured**, since the figure is what makes a
+  budget move readable: building the site with and without `synteny.astro` moves
+  each of the other eleven pages by ~13 KB gzip. Nothing about those pages
+  changed — their chunks were re-cut around a graph they never load. So when a
+  budget moves and the page it names is not the page anyone touched, this is
+  why, and the first thing to do is check whether a page was added or removed
+  before hunting an import.
+
+  **Rewriting an example to import lazily is not the lever either**, and it
+  backfired when tried: putting `LevelSyntenyCanvas` behind `React.lazy` in
+  `SyntenyRibbons.tsx` — sound on its face, since it drags 120 KB of compiled
+  synteny shaders — _raised_ every page (`synteny` 675 -> 686, `index` 560 ->
+  565), because the new lazy boundary re-partitioned the shared chunks again. It
+  also costs the thing the site exists for: an example is meant to be pasted and
+  run, so `lazy` belongs in one only when the example is _about_ deferring
+  something. Bundle size is not a reason to complicate one.
 
   **Every budget stepped up 1-2 KB again when `track-settings` landed, and that
   one is the same mechanism at a twelfth the size.** Not a second product this
