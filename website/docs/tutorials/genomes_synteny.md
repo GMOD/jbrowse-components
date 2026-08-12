@@ -144,14 +144,10 @@ wherever the two assemblies have an alignment.
 
 ## See also
 
-- [](/docs/tutorials/genomes_basics), the same site's track selector and the
-  hosted catalog these liftOver tracks are part of
-- [Synteny visualization](/docs/tutorials/synteny_visualization) for loading
-  your own alignments and configuring the views
+- [](/docs/tutorials/genomes_basics)
+- [Synteny visualization](/docs/tutorials/synteny_visualization)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-  and [All-vs-all synteny](/docs/tutorials/allvsall_synteny) for stacking more
-  than two genomes in one view
+- [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/user_guides/dotplot_view)
-- [The T2T human variation paper](https://www.science.org/doi/10.1126/science.abl3533),
-  whose Fig 5C is this locus
+- [The T2T human variation paper](https://www.science.org/doi/10.1126/science.abl3533)

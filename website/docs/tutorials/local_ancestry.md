@@ -315,13 +315,11 @@ their edges, and the short blocks in ordinary breeds do not.
 
 ## See also
 
-- [](/docs/tutorials/dog10k_svs),
-  [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof) and
-  [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection), the other
-  Dog10K tutorials, on the same assembly
-- [](/docs/tutorials/analyze_trio), the same display painted from hap-ibd
-  inheritance blocks
-- [](/docs/tutorials/bxd_qtl), the same display partitioned by strain
+- [](/docs/tutorials/dog10k_svs)
+- [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof)
+- [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
+- [](/docs/tutorials/analyze_trio)
+- [](/docs/tutorials/bxd_qtl)
 - [](/docs/user_guides/multirow_feature_track)
 - [](/docs/user_guides/multivariant_track)
 

@@ -309,8 +309,7 @@ timopheevii's chromosomes from its
 
 ## See also
 
-- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) for the same adapter
-  from a jcvi MCScan run
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/mcscan_synteny_grape_peach)
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/user_guides/linear_synteny_view)

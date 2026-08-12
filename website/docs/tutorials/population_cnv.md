@@ -332,15 +332,11 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and f
 
 ## See also
 
-- [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track), the
-  display's own menus and options
-- [](/docs/tutorials/tcga_cohort_cnv), the same one-row-per-sample idea for
-  somatic copy number across a tumor cohort, read from a Zarr store of its own
-- [](/docs/tutorials/scrna_pseudobulk), the same store format holding one row
-  per single cell rather than per individual
-- [Structural variants across samples](/docs/tutorials/sv_multisamples), the
-  balanced-rearrangement half of the same panel, and
-  [](/docs/tutorials/dog10k_svs) for both on a canine one
+- [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track)
+- [](/docs/tutorials/tcga_cohort_cnv)
+- [](/docs/tutorials/scrna_pseudobulk)
+- [Structural variants across samples](/docs/tutorials/sv_multisamples)
+- [](/docs/tutorials/dog10k_svs)
 - [Clustering](/docs/user_guides/clustering)
 
 ## References

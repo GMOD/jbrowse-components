@@ -194,14 +194,10 @@ list is measured the same way.
 
 ## See also
 
-- [](/docs/tutorials/sv_multisamples), a callset read on its own terms, without
-  this layer under it
-- [](/docs/tutorials/pangenome_hprc), the other answer to a locus short reads
-  cannot place: stop using one reference
-- [](/docs/user_guides/alignments_track), the rest of the coloring and filtering
-  options the read lane here uses two of
-- [](/docs/tutorials/genomes_synteny), another walkthrough built entirely on the
-  hosted UCSC configs
+- [](/docs/tutorials/sv_multisamples)
+- [](/docs/tutorials/pangenome_hprc)
+- [](/docs/user_guides/alignments_track)
+- [](/docs/tutorials/genomes_synteny)
 
 ## References
 

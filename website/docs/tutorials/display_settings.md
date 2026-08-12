@@ -170,8 +170,7 @@ for the full embedded setup.
 
 ## See also
 
-- [](/docs/tutorials/cli_desktop), building the `config.json` these settings go
-  into
+- [](/docs/tutorials/cli_desktop)
 - [Configuring tracks](/docs/config_guides/tracks)
 - [URL parameters](/docs/urlparams)
 - [](/docs/tutorials/embed_linear_genome_view)

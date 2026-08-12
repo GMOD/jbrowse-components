@@ -149,16 +149,12 @@ only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 
 ## See also
 
-- [](/docs/tutorials/genomes_synteny), the same site's pairwise alignments
-- [](/docs/tutorials/genomes_msa), building a protein alignment from a gene in
-  the same view
-- [](/docs/tutorials/repeatmasker_classes), another track from this catalog
-  reopened in a display the track menu already carries
-- [](/docs/user_guides/quantitative_track) for what else the phyloP track's menu
-  can do (plot type, scale, autoscale, colors)
-- [](/docs/user_guides/hub_url) for opening a hub that the site does not host
-- [](/docs/agents_hosted_data) for the same catalog addressed by URL rather than
-  by clicking
+- [](/docs/tutorials/genomes_synteny)
+- [](/docs/tutorials/genomes_msa)
+- [](/docs/tutorials/repeatmasker_classes)
+- [](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/hub_url)
+- [](/docs/agents_hosted_data)
 
 ## References
 

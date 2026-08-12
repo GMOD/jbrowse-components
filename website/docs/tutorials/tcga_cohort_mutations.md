@@ -427,13 +427,10 @@ the same tumor is one row name in both tracks.
 
 ## See also
 
-- [Multi-sample variant tracks](/docs/user_guides/multivariant_track), the
-  display's own menus, filters, and coloring
-- [Variant tracks](/docs/config_guides/variant_track), for the consequence and
-  metadata config
+- [Multi-sample variant tracks](/docs/user_guides/multivariant_track)
+- [Variant tracks](/docs/config_guides/variant_track)
 - [](/docs/user_guides/clustering)
-- [](/docs/tutorials/dog10k_selection), the same matrix display over a germline
-  panel
+- [](/docs/tutorials/dog10k_selection)
 - [jexl](/docs/config_guides/jexl)
 
 ## References

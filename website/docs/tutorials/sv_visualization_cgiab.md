@@ -333,8 +333,8 @@ directly.
 ### Subclonal copy number
 
 The tracks above average over every tumor cell, so a change carried by only part
-of the tumor reads as a muted, intermediate signal. That is not a hypothetical
-here: karyotyping across passages finds the arm-level losses shared by nearly
+of the tumor reads as a muted, intermediate signal. This line carries that
+mixture: karyotyping across passages finds the arm-level losses shared by nearly
 all cells but the genome-doubled fraction of the population growing between
 early and late passage, so ploidy is mixed
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
@@ -714,10 +714,9 @@ syntenic blocks read clearly.
 <Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot: GRCh38 chr3 and chr13 on top, the fused chr3_chr13_hap1 scaffold and chr13_hap2 below. The minimum alignment length was raised, so what remains is the arm-level blocks rather than a solid fan of short anchors." src="/img/sv_cgiab/synteny_view.png" />
 
 The chr3/chr13 fusion is one of 16 truncal interchromosomal rearrangements in
-this genome, and reading them off an assembly rather than off read alignments is
-the point of the C-GIAB tumor assembly: seven of the 16 hybrid chromosomes break
-in or near a centromere, some carry two centromeres or a fused one, and nine
-involve non-reciprocal foldback inversions
+this genome. Seven of the 16 hybrid chromosomes break in or near a centromere,
+some carry two centromeres or a fused one, and nine involve non-reciprocal
+foldback inversions
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). Those are
 exactly the breakpoints that reference-based callers leave unresolved, because
 the sequence on either side is satellite repeat. A scaffold named for two GRCh38
@@ -803,10 +802,8 @@ steps take hours.
 ## See also
 
 - [](/docs/tutorials/synteny_visualization)
-- [](/docs/tutorials/sv_callset_review), the same triage run headlessly over a
-  whole callset instead of one locus at a time
-- [](/docs/tutorials/cancer_sv), a somatic callset followed to a reconstructed
-  derivative allele
+- [](/docs/tutorials/sv_callset_review)
+- [](/docs/tutorials/cancer_sv)
 - [](/docs/user_guides/sv_visualization)
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/multiquantitative_track)

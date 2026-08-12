@@ -167,10 +167,8 @@ without a large download:
 - [](/docs/user_guides/alignments_track#grouping-reads)
 - [Bisulfite and EM-seq](/docs/tutorials/bisulfite)
 - [Phased trio](/docs/tutorials/analyze_trio)
-- [](/docs/tutorials/hg002_haplotypes), the same individual's two haplotypes
-  separated as assemblies rather than by read tag
-- [](/docs/tutorials/rnaseq), the per-read coloring and grouping menus this page
-  uses two of
+- [](/docs/tutorials/hg002_haplotypes)
+- [](/docs/tutorials/rnaseq)
 - [](/docs/user_guides/multiquantitative_track)
 - [modkit documentation](https://nanoporetech.github.io/modkit/)
 - [Gallery: methylation and base modifications](/gallery/#alignments)

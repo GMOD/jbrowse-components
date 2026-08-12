@@ -1127,8 +1127,7 @@ each haplotype's CAT annotation to the same window.
 
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_ecoli)
-- [](/docs/tutorials/mappability_qc), what the _SMN1_/_SMN2_ locus looks like on
-  one reference, which is the problem a graph answers
+- [](/docs/tutorials/mappability_qc)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/maf_track)

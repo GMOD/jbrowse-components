@@ -154,10 +154,8 @@ strand-specific BigWig from the aligner, loads separately as a
 
 ## See also
 
-- [](/docs/tutorials/scrna_pseudobulk), the same libraries read as one coverage
-  row per cell type rather than as a pileup
-- [](/docs/tutorials/methylation), the same per-read coloring and grouping
-  applied to base modifications
+- [](/docs/tutorials/scrna_pseudobulk)
+- [](/docs/tutorials/methylation)
 - [](/docs/user_guides/alignments_track)
 - [](/docs/user_guides/quantitative_track)
 - [Gene tracks](/docs/user_guides/gene_track)

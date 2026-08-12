@@ -161,8 +161,7 @@ For more on navigating it, see
 
 ## See also
 
-- [](/docs/tutorials/mappability_qc), the mapping-quality layer under a callset
-  like this one, at a locus where it decides the calls
+- [](/docs/tutorials/mappability_qc)
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/sv_visualization)
 - [Multi-sample variant displays](/docs/user_guides/multivariant_track)

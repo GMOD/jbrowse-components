@@ -91,16 +91,18 @@ anchor from higher up the page is still content, and belongs above the closing
 sections. `## Reproduce it end to end` goes after the data preparation it wraps
 up, which on most pages is just before those two.
 
-A `See also` entry may carry a **short qualifier naming the relationship** —
-"the same display partitioned by strain", "the germline counterpart" — which is
-what lets a reader pick out of a list of ten. It may not carry a sentence
-arguing something: a comparison worth making is prose, on the page, where it can
-be read rather than stumbled on. (This previously said bare links only, which 21
-of 36 tutorials ignored because the qualifier earns its place; the line now says
-what the corpus does.) Don't restate the prerequisite tool list inside
-Reproduce, point at `[Prerequisites](#prerequisites)`. Don't write a generic
-troubleshooting table: a failure worth documenting is one this dataset actually
-produces, and it goes in the prose where it happens.
+**A `See also` entry is a bare link and nothing else**, one link per bullet. No
+trailing qualifier, no parenthetical, no several links sharing one bullet and
+one description. The link text is the page title, which is what a reader picks
+from; a comparison worth making is prose, on the page, where it can be read
+rather than stumbled on at the bottom. This rule has been round-tripped once
+already: it said bare links, was relaxed to allow "a short qualifier naming the
+relationship" on the grounds that the corpus had drifted that way, and the
+qualifiers then grew into the sentences the relaxation was meant to exclude.
+Don't restate the prerequisite tool list inside Reproduce, point at
+`[Prerequisites](#prerequisites)`. Don't write a generic troubleshooting table:
+a failure worth documenting is one this dataset actually produces, and it goes
+in the prose where it happens.
 
 Don't sell the hosted data — the figures already carry their own live links.
 

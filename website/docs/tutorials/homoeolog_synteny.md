@@ -268,14 +268,10 @@ It needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 ## See also
 
-- [](/docs/tutorials/mcscan_synteny_grape_peach), the same adapter on two
-  genomes, and the config shape for a genome against its own ancient
-  duplications
-- [](/docs/tutorials/multiway_synteny_grape_peach_cacao), ortholog tables from
-  Ensembl Compara, OrthoFinder and reciprocal best hits
-- [](/docs/tutorials/orthofinder_synteny), orthogroups across five vertebrates
-- [](/docs/tutorials/hg002_haplotypes), the same genome-against-itself
-  arrangement on a diploid's two haplotypes rather than a polyploid's subgenomes
+- [](/docs/tutorials/mcscan_synteny_grape_peach)
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
+- [](/docs/tutorials/orthofinder_synteny)
+- [](/docs/tutorials/hg002_haplotypes)
 
 ## References
 

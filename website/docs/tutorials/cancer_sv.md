@@ -463,10 +463,8 @@ moves both coordinates of every breakend rather than just the POS column.
 
 ## See also
 
-- [](/docs/tutorials/sv_callset_review), the same callset triaged as a directory
-  of breakpoint images before any one event is followed
-- [](/docs/tutorials/hic_structural_variants), the same translocation read off
-  contact frequency rather than off reads
+- [](/docs/tutorials/sv_callset_review)
+- [](/docs/tutorials/hic_structural_variants)
 - [](/docs/user_guides/sv_visualization)
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/linear_synteny_view)

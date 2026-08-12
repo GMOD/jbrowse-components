@@ -334,14 +334,12 @@ cell count rather than its accessibility.
 
 ## See also
 
-- [](/docs/tutorials/scrna_pseudobulk), the same stacking for expression, plus
-  one row per cell under the pseudobulk rows
+- [](/docs/tutorials/scrna_pseudobulk)
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
 - [MultiWiggleAdapter config](/docs/config/multiwiggleadapter)
 - [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay)
 - [](/docs/user_guides/clustering)
-- [](/docs/tutorials/chromhmm), many cell types in one track from a single file
-  rather than one file each
+- [](/docs/tutorials/chromhmm)
 
 ## References
 

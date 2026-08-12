@@ -195,14 +195,11 @@ same tools listed under [Prerequisites](#prerequisites).
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [](/docs/user_guides/dotplot_view)
 - [](/docs/user_guides/linear_synteny_view)
-- [](/docs/tutorials/genomes_synteny), the same views on UCSC's hosted liftOver
-  chains
-- [](/docs/tutorials/hg002_haplotypes), the same two views on a published
-  alignment rather than one you run minimap2 for
+- [](/docs/tutorials/genomes_synteny)
+- [](/docs/tutorials/hg002_haplotypes)
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao)
-- [MAF track config guide](/docs/config_guides/maf_track) for multiway alignment
-  data rather than pairwise
+- [MAF track config guide](/docs/config_guides/maf_track)
 
 ## References
 

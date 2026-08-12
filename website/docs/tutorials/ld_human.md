@@ -224,10 +224,8 @@ inside the block for one panel against the pooled release.
 
 ## See also
 
-- [](/docs/tutorials/ld_mosquitoes) for a region too large to compute live, and
-  the checks to run before blaming the display
-- [](/docs/tutorials/population_genomics) for the same panel-level contrast as a
-  windowed scan rather than a pairwise matrix
+- [](/docs/tutorials/ld_mosquitoes)
+- [](/docs/tutorials/population_genomics)
 - [](/docs/user_guides/variant_track)
 - [](/docs/user_guides/gwas_track)
 - [Variant track configuration](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)

@@ -265,12 +265,9 @@ compare them with `>` and `<`, which coerce, rather than with a jexl `==`.
 
 ## See also
 
-- [](/docs/user_guides/hic_track), for resolution, color scales, normalization,
-  and the region-pair mechanism this tutorial leans on
+- [](/docs/user_guides/hic_track)
 - [](/docs/config_guides/hic_track)
-- [](/docs/tutorials/chromhmm), the other ENCODE annotation stacked
-  many-rows-deep
-- [](/docs/tutorials/cancer_sv), the same translocation question answered from
-  reads instead of contacts
+- [](/docs/tutorials/chromhmm)
+- [](/docs/tutorials/cancer_sv)
 - [](/docs/user_guides/sv_visualization)
 - [HiGlass](https://higlass.io/)

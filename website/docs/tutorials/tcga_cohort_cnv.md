@@ -478,18 +478,13 @@ serves both tracks.
 
 ## See also
 
-- [Multi-row feature tracks](/docs/user_guides/multirow_feature_track), the
-  display's own menus and options
-- [Quantitative tracks](/docs/user_guides/quantitative_track), for the
-  recurrence track's scale and color controls
-- [](/docs/tutorials/tcga_cohort_mutations), the same tumors' point mutations as
-  a genotype matrix, from the same GDC project
-- [](/docs/tutorials/bxd_qtl), the same multi-row display for strain genotypes
-- [](/docs/tutorials/chromhmm), the same display across cell types
-- [](/docs/tutorials/population_cnv), the germline counterpart: one row per
-  individual across a whole population, from per-sample bigWigs
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab), single-tumor
-  structural and copy-number variation
+- [Multi-row feature tracks](/docs/user_guides/multirow_feature_track)
+- [Quantitative tracks](/docs/user_guides/quantitative_track)
+- [](/docs/tutorials/tcga_cohort_mutations)
+- [](/docs/tutorials/bxd_qtl)
+- [](/docs/tutorials/chromhmm)
+- [](/docs/tutorials/population_cnv)
+- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)
 - [jexl](/docs/config_guides/jexl)
 
 ## References

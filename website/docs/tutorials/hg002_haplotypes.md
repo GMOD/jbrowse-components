@@ -172,15 +172,11 @@ it maps to on the bottom.
 
 ## See also
 
-- [](/docs/tutorials/homoeolog_synteny), the same self-alignment arrangement on
-  a polyploid rather than a diploid
-- [](/docs/tutorials/methylation), the same individual's haplotypes separated by
-  read tag rather than by assembly
-- [](/docs/tutorials/synteny_visualization), for aligning two genomes yourself
-  instead of using a published alignment
+- [](/docs/tutorials/homoeolog_synteny)
+- [](/docs/tutorials/methylation)
+- [](/docs/tutorials/synteny_visualization)
 - [](/docs/user_guides/linear_synteny_view)
-- [](/docs/user_guides/dotplot_view), the whole-chromosome view of the same
-  alignment
+- [](/docs/user_guides/dotplot_view)
 
 ## References
 

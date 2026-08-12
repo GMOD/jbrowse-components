@@ -255,10 +255,9 @@ read from the figure.
 
 ## See also
 
-- [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof),
-  [SVs (Dog10K)](/docs/tutorials/dog10k_svs) and
-  [](/docs/tutorials/local_ancestry), the other Dog10K tutorials, on the same
-  assembly
+- [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof)
+- [SVs (Dog10K)](/docs/tutorials/dog10k_svs)
+- [](/docs/tutorials/local_ancestry)
 - [](/docs/tutorials/population_genomics)
 - [](/docs/tutorials/bxd_qtl)
 - [](/docs/user_guides/multivariant_track)

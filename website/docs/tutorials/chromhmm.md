@@ -299,11 +299,9 @@ else in it changing.
 
 ## See also
 
-- [](/docs/tutorials/tcga_cohort_cnv), the same display colored from a numeric
-  column instead of `itemRgb`
-- [](/docs/tutorials/bxd_qtl), the same display for strain genotypes, alongside
-  a QTL scan
-- [](/docs/tutorials/analyze_trio), the same display for inheritance painting
+- [](/docs/tutorials/tcga_cohort_cnv)
+- [](/docs/tutorials/bxd_qtl)
+- [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/scatac_pseudobulk)
 - [](/docs/user_guides/clustering)
 - [Configuring tracks](/docs/config_guides/tracks)

@@ -195,15 +195,12 @@ labelling which is which, is the figure pipeline's job, not jb2export's.
 
 ## See also
 
-- [](/docs/tutorials/cancer_sv), the same dataset, following one multi-hop event
-  all the way to a reconstructed allele
-- [](/docs/tutorials/sv_visualization_cgiab), the same triage done
-  interactively, on PacBio HiFi
-- [](/docs/tutorials/mappability_qc), why a breakpoint image at a repeat can
-  look like a call and not be one
-- [](/docs/jbrowse-img), every `jb2export` mode and flag
-- [](/docs/user_guides/sv_inspector_view), the interactive callset table
-- [](/docs/user_guides/sv_visualization), what each SV picture in JBrowse shows
+- [](/docs/tutorials/cancer_sv)
+- [](/docs/tutorials/sv_visualization_cgiab)
+- [](/docs/tutorials/mappability_qc)
+- [](/docs/jbrowse-img)
+- [](/docs/user_guides/sv_inspector_view)
+- [](/docs/user_guides/sv_visualization)
 
 ## References
 
