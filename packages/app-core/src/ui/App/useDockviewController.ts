@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { autorun, runInAction } from 'mobx'
+import { autorun, observable, runInAction } from 'mobx'
 
 import {
   adoptSavedPanelOrder,
@@ -51,7 +51,15 @@ export function useDockviewController(session: DockviewSession) {
   // the origin cannot be forgotten, and it is correct for compound operations
   // (a drag that relocates a panel is one mutation, not three) because dockview
   // joins nested mutations into the outermost bracket.
+  //
+  // `undefined` also means "no mutation in flight", which is the second thing
+  // this ref is for — see the sync autorun, which refuses to run while one is.
   const mutationOriginRef = useRef<DockviewOrigin | undefined>(undefined)
+
+  // Set by the sync autorun so the end of a mutation can restart a run that
+  // deferred. A ref because the two live in different closures: the bracket is
+  // subscribed once in onReady, the autorun is rebuilt whenever `api` changes.
+  const resumeSyncRef = useRef<(() => void) | undefined>(undefined)
 
   const rearrangePanels = useCallback(
     (arrange: (api: DockviewApi) => void) => {
@@ -180,6 +188,13 @@ export function useDockviewController(session: DockviewSession) {
       })
       event.api.onDidMutateLayout(() => {
         mutationOriginRef.current = undefined
+        // The mutation is over but this is still the emitter announcing that,
+        // so dockview is mid-dispatch and a fresh mutation started from here
+        // would nest inside the listener loop. A microtask puts the deferred
+        // work on an empty stack, which is the whole point of deferring it.
+        queueMicrotask(() => {
+          resumeSyncRef.current?.()
+        })
       })
 
       // Only a user activating a panel is news. Our own addPanel/fromJSON
@@ -271,8 +286,49 @@ export function useDockviewController(session: DockviewSession) {
     if (!api) {
       return undefined
     }
-    return autorun(() => {
+
+    // Nothing here may touch dockview while dockview is mid-mutation, and this
+    // autorun lands there routinely: dockview's panel events are synchronous,
+    // our handlers for them write to the session, and an MST action flushes
+    // reactions the moment it returns. So a user closing a tab can arrive here
+    // from inside `_doRemovePanel`, and `fromJSON`/`clear` would then dispose
+    // groups whose events are still being dispatched — which is the shape of
+    // "invalid operation: resource is already disposed" — while `addPanel`
+    // re-enters an add already in flight.
+    //
+    // Rather than argue each caller safe, refuse to run there at all. A
+    // deferred run is restarted by `resumeSyncRef` on a microtask once dockview
+    // is out, and `resumeTick` is what lets an autorun re-run on demand.
+    //
+    // This is the invariant, not an optimization: the origin filter and the
+    // lastSeenLayout comparison each remove a *reason* to re-enter, and both
+    // still earn their keep, but only this makes re-entering impossible. The
+    // case it covers that they do not: a user gesture whose session write makes
+    // some *other* model set `init` — `setPendingMove` is public API precisely
+    // so plugins can do that — which had applyInit calling `api.clear()` inside
+    // the user's own close. That was surviving on the accident that
+    // `clearPanelAssignments` runs first and empties the assignments the
+    // remove handler would have read.
+    const resumeTick = observable.box(0)
+    let deferred = false
+    resumeSyncRef.current = () => {
+      if (deferred) {
+        deferred = false
+        runInAction(() => {
+          resumeTick.set(resumeTick.get() + 1)
+        })
+      }
+    }
+
+    const disposeAutorun = autorun(() => {
+      resumeTick.get()
       const { init: initLayout, dockviewLayout } = session
+      if (mutationOriginRef.current !== undefined) {
+        deferred = true
+        return
+      }
+      // After the guard, never before: recording a layout we then declined to
+      // apply is how an undo gets swallowed.
       const lastSeenLayout = lastSeenLayoutRef.current
       lastSeenLayoutRef.current = dockviewLayout
       if (initLayout) {
@@ -305,6 +361,11 @@ export function useDockviewController(session: DockviewSession) {
       }
       reconcilePanelAssignments(api, session)
     })
+
+    return () => {
+      resumeSyncRef.current = undefined
+      disposeAutorun()
+    }
   }, [session, api, applyInit])
 
   return { contextValue, onReady }

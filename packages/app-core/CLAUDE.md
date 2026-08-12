@@ -140,9 +140,33 @@ touched its disposed React part and threw
 Filtering `onDidActivePanelChange` on `origin === 'user'` removes the re-entry
 our _own_ api calls cause, which is where that crash came from. It cannot remove
 all of it — a user gesture that writes to the session is a mutation in flight
-too, and that write is one we want — so the guard above is what makes step 2
-safe, and the origin filter is what keeps it from being exercised constantly.
-Both, not either.
+too, and that write is one we want. Hence the third mechanism below.
+
+## The invariant: the autorun never touches dockview mid-mutation
+
+The two guards above each remove a _reason_ to re-enter dockview. Neither makes
+re-entering impossible, and the case that escapes both is not exotic: a user
+gesture writes to the session, some **other** model reacts to that write by
+setting `init` (`setPendingMove` is public API precisely so plugins can), and
+`applyInit` then calls `api.clear()` from inside the user's own close.
+
+So the autorun refuses to run while dockview is mid-mutation at all. It reads
+`mutationOriginRef` (`undefined` means no mutation in flight), sets a deferred
+flag, and returns; `onDidMutateLayout` resumes it on a **microtask** — not
+inline, because that event is itself a dispatch and a mutation started from
+there would nest inside the listener loop. `resumeTick` is an observable box
+purely so a deferred autorun can be re-run on demand.
+
+That case violated the invariant for a long time while looking fine, surviving
+on the accident that `applyInit` calls `clearPanelAssignments` _before_
+`api.clear()`, so the removes it triggers find no assignments to act on. Reorder
+those two lines and every view in the session is deleted, silently. That is why
+the invariant is tested as an invariant: `dockviewReentrancy.test.ts` asserts
+"no api call at mutation depth > 0" across every workspace operation, rather
+than asserting the symptom, which depends on which listener happens to run next.
+
+Removing any one of the three mechanisms fails a different test. They are not
+redundant.
 
 ## An assignment is what marks a view as "homed"
 
