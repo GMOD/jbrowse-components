@@ -1,15 +1,18 @@
 ---
 status: Accepted
-summary: "dockview stays an npm dependency; the friction at the workspaces seam is two state machines both owning layout, which vendoring the library would not collapse"
+summary: "dockview stays an npm dependency — neither vendored nor reimplemented; the friction is two state machines both owning layout, and dockview 8's mutation origin retires most of it"
 ---
 
 # ADR-057: dockview stays external; the seam is ours
 
 ## Status
 
-Accepted (2026-08). Recurring proposal — this ADR exists because the question
-has been reopened several times and each time re-derived the same answer from
-scratch.
+Accepted (2026-08). Amended 2026-08-12 to answer the **second** form of the
+proposal — replace dockview with our own MST-driven layout engine — and to
+record that dockview 8's `DockviewOrigin` changed the arithmetic.
+
+Recurring proposal. This ADR exists because the question has been reopened
+several times and each time re-derived the same answer from scratch.
 
 ## Context
 
@@ -21,15 +24,19 @@ length to explaining it, and that everything hard in `useDockviewController.ts`
 is keeping dockview and MST consistent rather than doing anything a window
 manager does.
 
-The recurring proposal is to vendor dockview into the repo: copy the source in,
-own it outright, and make the boundary disappear. A secondary complaint drives
-it — dockview obliges consumers to load a stylesheet, which is unusual for a
-package in our dependency tree and shows up in `@jbrowse/react-app2`'s public
-surface.
+The proposal arrives in two forms, and they need separate answers:
+
+1. **Vendor it** — copy the source in and own it outright. A secondary
+   complaint drives this one: dockview obliges consumers to load a stylesheet,
+   which is unusual in our dependency tree and shows up in
+   `@jbrowse/react-app2`'s public surface.
+2. **Replace it** — write our own tiling window manager, driven declaratively
+   from MST and rendered by React, and delete the imperative bridge.
 
 ## Decision
 
-**Keep dockview external.** Four reasons.
+**Keep dockview external, and do not reimplement it.** Four reasons for the
+first, one decisive measurement for the second.
 
 ### 1. The ownership-to-surface ratio is bad by two orders of magnitude
 
@@ -93,6 +100,66 @@ inspection: a fast-moving upstream we track at a cost of one commit per three
 majors is doing work for us. Vendoring freezes us at 7.0.4 and converts that
 into our backlog.
 
+*Amendment 2026-08-12:* now four majors. dockview 8 rode in on `4a976d7d6c`
+("Bump deps") with zero repair commits, and it carried the API that retired the
+seam's worst rule — see "What dockview 8 changed" below.
+
+## On rewriting it ourselves
+
+The instinct behind this one is sound and the ADR agrees with its diagnosis: the
+friction is that layout has two owners synced bidirectionally. Writing an
+MST-first engine would fix that. It would fix it by rebuilding, at full cost,
+the parts of dockview that have nothing to do with any bug we have had.
+
+Measured against `dockview-core` 8.0.0's 18.3k lines, the portion we actually
+use — and would therefore have to write — is roughly:
+
+| Area | Lines | Do our bugs live here? |
+| --- | ---: | --- |
+| gridview + splitview (recursive resizable grid, proportional relayout) | ~2,500 | no |
+| dnd + overlays + drop targets + tab reorder + drag ghost | ~3,300 | no |
+| tabs container (overflow, reorder, focus, a11y) | ~1,200 | no |
+| group/panel models + serialization | ~2,000 | partly — the serialized format |
+
+Call it 8–9k lines to reach parity with what users already have. The remaining
+~9k (paneview, popout windows, floating groups, edge groups, tab group chips,
+watermark, live region, theming) we do not use at all.
+
+The declarative React layout tree — the part that is appealing to write — is a
+day's work. The drag-and-drop third is a multi-week project with a long bug
+tail, and **not one seam bug has ever been in it**. Rewriting means replacing
+the healthy majority to cure the sick minority.
+
+Run the seam's own bug list against the diagnosis instead. Of six real bugs,
+five are ownership bugs (the layout echo truncating the redo stack; panel close
+skipping stacked views; the spec layout applied too late; the mid-mutation
+revert that produced `invalid operation: resource is already disposed`; and
+`size` honoured only at top level) and one is a plugin-API regression. Zero are
+"dockview does the wrong thing." A rewrite is aimed at the wrong target.
+
+## What dockview 8 changed
+
+`DockviewOrigin` (`'user' | 'api'`) is documented upstream as being for exactly
+this: *"Lets consumers (e.g. an undo stack, or a context-sync listener) treat
+the app's own programmatic changes differently from end-user gestures."* It
+arrives on `onDidActivePanelChange`, and `onWillMutateLayout` /
+`onDidMutateLayout` bracket each top-level structural mutation with
+`{kind, origin}`, joining nested calls into the outermost bracket.
+
+That is the seam's hardest question — *did the user do this, or did I?* — asked
+and answered by the library. `ef62502c0a` deleted
+`withSuppressedPanelRemoval` in favour of it and filtered the `activePanelId`
+write on `origin === 'user'`, which removes the re-entrancy class that caused
+the disposal crash rather than guarding its consequences.
+
+The flag was not merely redundant, it was **unenforceable**: nothing made a
+newly added restructure remember to wrap itself, and a forgotten wrap silently
+closes the user's views. Reading an origin cannot be forgotten.
+
+This is the second time tracking upstream has paid a dividend we did not ask
+for, and it is worth noticing which way that cuts: the argument for owning the
+code is that the boundary costs us. Here the boundary *delivered* the fix.
+
 ## On the CSS import
 
 The complaint is real in general and mostly already paid down here:
@@ -114,17 +181,35 @@ Consequences.
 
 ## What actually reduces the friction
 
-Not vendoring: **making MST the sole owner and dockview a pure projection.**
-Derive dockview's serialized grid from `DockviewLayoutNode`, `fromJSON` it, and
-never write `api.toJSON()` back. That retires the echo problem, `layoutsEqual`,
-the suppression flag, and makes undo correct by construction, because there is
-only one thing to rewind.
+Neither vendoring nor rewriting: **making MST the sole owner and dockview a
+projection.** Derive dockview's serialized grid from `DockviewLayoutNode`,
+`fromJSON` it, and stop treating `api.toJSON()` as a source of truth.
 
-The cost is real and already documented: `DockviewLayoutNode` is not isomorphic
-to dockview's grid — orientation alternates by depth — so we would have to model
-sizes and nesting ourselves. That is also exactly what blocks honouring `size`
-at depth today, so it is work with two payoffs. It is roughly the size of
-`dockviewUtils.ts`, not of a vendored library.
+*Amendment 2026-08-12 — most of this has now been collected, and the rest got
+smaller and more expensive.* The origin work above already retired the
+suppression flag and the echo-driven re-entrancy. What a full projection would
+still buy:
+
+- deleting `init` as a separate channel — under MST ownership the layout *is*
+  the state, so there is no request to apply late
+- deleting step 2 of the sync autorun (re-apply on undo) — undo would rewind the
+  tree and the projection would follow
+- `size` honoured at depth, which is a documented limitation today
+
+And what it would cost, beyond the exporter/importer pair:
+
+- **`dockviewLayout` is persisted.** It is in saved sessions and in shared
+  session URLs. Changing the storage format means either carrying an importer
+  for old blobs forever or breaking every saved workspace — a user-visible data
+  loss that none of the bugs above ever caused.
+- `layoutsEqual` does **not** go away with it. Splitter drags are not structural
+  mutations and produce no origin; the only signal is the coalesced
+  `onDidLayoutChange`, so sizes still have to be read back and compared.
+
+So the remaining payoff is one documented feature limitation, and the remaining
+cost includes a persisted-format migration. **Do not start this speculatively.**
+Do it when `size` at depth is actually wanted, and let that requirement pay for
+the migration.
 
 ## Consequences
 
@@ -140,3 +225,14 @@ at depth today, so it is work with two payoffs. It is roughly the size of
   the seam costs to maintain; or a `pnpm patch` entry has to be carried for more
   than a release or two, which is the signal that our needs and upstream's have
   actually diverged.
+- **For the rewrite specifically**, reopen if we need layout semantics dockview
+  structurally cannot express. Nested splits with independent sizing was the
+  near-miss; it turned out to be expressible by building the serialized grid
+  ourselves, which is the projection above and not a rewrite. "The seam is
+  annoying" is not a trigger — it has been the stated reason all four times, and
+  each time the annoyance turned out to be fixable in our own ~600 lines.
+- One upstream inconsistency is worth knowing and is **not** worth patching:
+  `DockviewApi.addGroup` is the only mutating method not wrapped in
+  `withOrigin('api')`, so our own `addGroup` reports `'user'`. It is harmless
+  because adding a group removes no panels, but don't write a rule that depends
+  on it. Noted in [app-core/CLAUDE.md](../../packages/app-core/CLAUDE.md).
