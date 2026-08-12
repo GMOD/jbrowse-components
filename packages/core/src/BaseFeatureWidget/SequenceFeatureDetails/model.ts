@@ -62,7 +62,7 @@ export function SequenceFeatureDetailsF() {
        * #volatile
        */
       showCoordinatesSetting: parseShowCoordinatesMode(
-        localStorageGetItem(`${p}-showCoordinatesSetting`) ?? undefined,
+        localStorageGetItem(`${p}-showCoordinatesSetting`),
       ),
       /**
        * #volatile

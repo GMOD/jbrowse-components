@@ -209,6 +209,7 @@ export {
   localStorageGetItem,
   localStorageGetJSON,
   localStorageGetNumber,
+  localStorageRemoveItem,
   localStorageSetBoolean,
   localStorageSetItem,
   localStorageSetJSON,

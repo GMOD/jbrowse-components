@@ -1,4 +1,9 @@
 import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
+import {
+  localStorageGetJSON,
+  localStorageRemoveItem,
+  localStorageSetJSON,
+} from '@jbrowse/core/util'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
@@ -14,27 +19,23 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 const STORAGE_KEY = 'jbrowse-trusted-plugins'
 
 function readTrusted(): Set<string> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return new Set(raw ? (JSON.parse(raw) as string[]) : [])
-  } catch (e) {
-    console.error(e)
-    return new Set()
-  }
+  const stored = localStorageGetJSON<unknown>(STORAGE_KEY, [])
+  // filtered rather than cast: a corrupt entry here would otherwise put a
+  // non-string into the trust set, where it can only ever fail to match a
+  // plugin URL — but silently, and forever
+  return new Set(
+    Array.isArray(stored) ? stored.filter(x => typeof x === 'string') : [],
+  )
 }
 
 // Records the user's approval of a set of plugins so the warning dialog doesn't
 // reappear for them on this origin after a refresh.
 export function rememberPlugins(defs: PluginDefinition[]) {
-  try {
-    const trusted = readTrusted()
-    for (const d of defs) {
-      trusted.add(pluginUrl(d))
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...trusted]))
-  } catch (e) {
-    console.error(e)
+  const trusted = readTrusted()
+  for (const d of defs) {
+    trusted.add(pluginUrl(d))
   }
+  localStorageSetJSON(STORAGE_KEY, [...trusted])
 }
 
 // True when every plugin has already been vouched for on this origin. An empty
@@ -52,9 +53,5 @@ export function listTrustedPlugins() {
 
 // Revokes every remembered plugin approval on this origin.
 export function forgetTrustedPlugins() {
-  try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch (e) {
-    console.error(e)
-  }
+  localStorageRemoveItem(STORAGE_KEY)
 }

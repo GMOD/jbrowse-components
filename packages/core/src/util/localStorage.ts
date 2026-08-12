@@ -1,18 +1,84 @@
-export function localStorageGetItem(item: string) {
-  return typeof localStorage !== 'undefined'
-    ? localStorage.getItem(item)
-    : undefined
+// Every accessor here is *total*: it falls back to the default rather than
+// throwing. That is not defensiveness for its own sake — nearly every caller is
+// a MobX autorun persisting a setting, and there a throw is doubly bad. It skips
+// the writes queued behind it in the same autorun body (the LGV persists six
+// keys in a row, the hierarchical track selector seven), and MobX reports it as
+// an uncaught reaction error on every subsequent tick.
+//
+// Three separate ways this can fail, and only the first is the obvious one:
+//
+// - no `localStorage` global at all — an RPC worker, SSR.
+// - reading `localStorage` THROWS rather than being undefined: a cross-origin
+//   iframe with third-party storage blocked, or Safari with cookies disabled.
+//   `typeof localStorage` invokes the same getter, so even the probe has to be
+//   guarded. This is the embedded-product case (`@jbrowse/react-*` on someone
+//   else's page), where it is also the least likely to be noticed by us.
+// - the store exists and reads fine, but `setItem` throws: quota exhausted, or
+//   Safari private browsing, which refuses every write.
+
+// Resolved once. `null` means "checked, unavailable" — distinct from the
+// `undefined` that means "not checked yet".
+let store: Storage | null | undefined
+
+function getStore() {
+  if (store === undefined) {
+    try {
+      store = typeof localStorage === 'undefined' ? null : localStorage
+    } catch {
+      store = null
+    }
+  }
+  return store ?? undefined
 }
 
-export function localStorageSetItem(str: string, item: string) {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem(str, item)
+// One warning per page, not one per failed write: the autoruns that persist
+// settings re-run on every change, so a persistent failure (quota, private
+// browsing) would otherwise fill the console with the same line. Same doctrine
+// as the `savingFailed` latch in jbrowse-web's session autosave.
+let warnedOnWrite = false
+
+/** The raw string stored at `key`, or undefined if absent or unreadable. */
+export function localStorageGetItem(key: string) {
+  try {
+    return getStore()?.getItem(key) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
+export function localStorageSetItem(key: string, value: string) {
+  try {
+    getStore()?.setItem(key, value)
+  } catch (e) {
+    if (!warnedOnWrite) {
+      warnedOnWrite = true
+      console.warn(
+        `Unable to persist settings to localStorage (key "${key}"); further failures are not reported`,
+        e,
+      )
+    }
+  }
+}
+
+export function localStorageRemoveItem(key: string) {
+  try {
+    getStore()?.removeItem(key)
+  } catch {
+    // nothing useful to do: the value we wanted gone is unreachable anyway
   }
 }
 
 export function localStorageGetNumber(key: string, defaultVal: number) {
-  const parsed = +(localStorageGetItem(key) ?? defaultVal)
-  return Number.isNaN(parsed) ? defaultVal : parsed
+  const stored = localStorageGetItem(key)
+  // rejected before the coercion rather than after it: `+''` is 0, so an entry
+  // written as the empty string would otherwise read back as a real 0 instead
+  // of falling back. isFinite rather than !isNaN so 'Infinity' falls back too —
+  // every one of these is a pixel width or a base-pair count.
+  if (!stored) {
+    return defaultVal
+  }
+  const parsed = +stored
+  return Number.isFinite(parsed) ? parsed : defaultVal
 }
 
 export function localStorageGetJSON<T>(key: string, defaultVal: T): T {
@@ -27,6 +93,11 @@ export function localStorageGetJSON<T>(key: string, defaultVal: T): T {
   return defaultVal
 }
 
+/**
+ * Writes `val` as JSON, except when it is null/undefined — those are skipped
+ * rather than stored, so a tri-state setting whose "unset" value means "follow
+ * the config" leaves whatever was there instead of pinning `null` over it.
+ */
 export function localStorageSetJSON(key: string, val: unknown) {
   if (val !== undefined && val !== null) {
     localStorageSetItem(key, JSON.stringify(val))
@@ -34,7 +105,12 @@ export function localStorageSetJSON(key: string, val: unknown) {
 }
 
 export function localStorageGetBoolean(key: string, defaultVal: boolean) {
-  return Boolean(localStorageGetJSON(key, defaultVal))
+  const stored = localStorageGetJSON<unknown>(key, defaultVal)
+  // falls back rather than coercing when the key holds something that is not a
+  // boolean (an older build's format, a hand-edited value). `Boolean(null)` is
+  // false, which would silently override a `true` default — which is what most
+  // of these are.
+  return typeof stored === 'boolean' ? stored : defaultVal
 }
 
 export function localStorageSetBoolean(key: string, value: boolean) {

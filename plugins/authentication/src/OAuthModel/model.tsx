@@ -3,7 +3,14 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { isElectron, sha256Base64Url, toBase64Url } from '@jbrowse/core/util'
+import {
+  isElectron,
+  localStorageGetItem,
+  localStorageRemoveItem,
+  localStorageSetItem,
+  sha256Base64Url,
+  toBase64Url,
+} from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { getResponseError } from '../util.ts'
@@ -137,20 +144,25 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       /**
        * #action
        */
+      // through the guarded helpers rather than `localStorage` directly: this
+      // runs on someone else's page in the embedded products, where reading the
+      // global at all throws if third-party storage is blocked. A refresh token
+      // that cannot be cached only costs an extra auth prompt; a throw here
+      // takes down the whole auth flow.
       storeRefreshToken(refreshToken: string) {
-        localStorage.setItem(self.refreshTokenKey, refreshToken)
+        localStorageSetItem(self.refreshTokenKey, refreshToken)
       },
       /**
        * #action
        */
       removeRefreshToken() {
-        localStorage.removeItem(self.refreshTokenKey)
+        localStorageRemoveItem(self.refreshTokenKey)
       },
       /**
        * #method
        */
       retrieveRefreshToken() {
-        return localStorage.getItem(self.refreshTokenKey)
+        return localStorageGetItem(self.refreshTokenKey)
       },
       /**
        * #action

@@ -2,7 +2,11 @@ import { Box, Button, FormControl, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { isFileSystemAccessSupported } from '../../util/fileHandleStore.ts'
-import { isElectron } from '../../util/index.ts'
+import {
+  isElectron,
+  localStorageGetItem,
+  localStorageSetItem,
+} from '../../util/index.ts'
 import {
   ensureFileHandleReady,
   getBlob,
@@ -37,21 +41,13 @@ const supportsFileSystemAccess = isFileSystemAccessSupported() && !isElectron
 const LAST_LOCAL_FILE_DIR_KEY = 'jbrowse-last-local-file-dir'
 
 function getLastLocalFileDir() {
-  try {
-    return localStorage.getItem(LAST_LOCAL_FILE_DIR_KEY) ?? undefined
-  } catch {
-    return undefined
-  }
+  return localStorageGetItem(LAST_LOCAL_FILE_DIR_KEY)
 }
 
 function setLastLocalFileDir(filePath: string) {
-  try {
-    const dir = dirFromPath(filePath)
-    if (dir) {
-      localStorage.setItem(LAST_LOCAL_FILE_DIR_KEY, dir)
-    }
-  } catch {
-    // storage unavailable (e.g. private browsing)
+  const dir = dirFromPath(filePath)
+  if (dir) {
+    localStorageSetItem(LAST_LOCAL_FILE_DIR_KEY, dir)
   }
 }
 
