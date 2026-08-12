@@ -359,12 +359,12 @@ tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.alleles.bed.gz \
 ```
 
 An empty answer needs reading carefully. `chr5:70,925,000-70,954,000`, over
-SMN1, returns nothing at all: minigraph merged SMN1 and SMN2 onto one path. That
-is the graph's general limitation rather than a curiosity of one locus.
-Near-identical segmental duplications collapse into a single path, which rules
-this graph out for the whole class of genes defined by one: SMN1/SMN2, RHD/RHCE,
-PMS2/PMS2CL and the CYP clusters among them. A quiet window means collapsed or
-invariant rather than checked and found nothing.
+_SMN1_, returns nothing at all: minigraph merged _SMN1_ and _SMN2_ onto one
+path. That is the graph's general limitation rather than a curiosity of one
+locus. Near-identical segmental duplications collapse into a single path, which
+rules this graph out for the whole class of genes defined by one: _SMN1_/_SMN2_,
+_RHD_/_RHCE_, _PMS2_/_PMS2CL_ and the CYP clusters among them. A quiet window
+means collapsed or invariant rather than checked and found nothing.
 
 ### Which haplotype an allele came from
 

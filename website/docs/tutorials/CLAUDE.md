@@ -12,12 +12,14 @@ Two more cases that look like drift and are not: a protein product is roman
 where its gene is italic ("carry no CYP1A2 protein"), and a fusion or hybrid
 name is one token rather than two genes (`BCR-ABL1`, `RHD-CE`).
 
-Don't pick the emphasis marker; the formatter owns it. It writes `_underscores_`
-everywhere except where the span touches a non-space character, which underscore
-emphasis does not parse against, and there it writes asterisks instead. That is
-the whole story behind the one `*ABL1*×*BCR*` in the corpus, which is not drift
-and will revert on commit if you "fix" it. Spacing the operator
-(`_ABL1_ × _BCR_`) is the way to keep underscores, if you want them.
+Don't pick the emphasis marker; the formatter owns it. `oxfmt` writes
+`_underscores_` almost always, and asterisks only where the span touches a
+**non-ASCII** character: `_X_×_Y_` and `_X_→_Y_` come back as `*X*×*Y*` and
+`*X*→*Y*`, while `_X_/_Y_`, `_X_-_Y_`, `_X_,_Y_`, `_X_(_Y_)`, `_X_+_Y_` and
+`_CDH1_'s` are all left alone. So a possessive or a slashed paralog pair needs
+no thought, and the one `*ABL1*×*BCR*` in the corpus is formatter output rather
+than drift: an edit to underscores reverts on commit, which is how this was
+found. Space the operator (`_ABL1_ × _BCR_`) if you want underscores there.
 
 **Few numbers in prose, and none that assert a result.** The test is what the
 number is doing. A number that _names_ something is fine and often necessary: a

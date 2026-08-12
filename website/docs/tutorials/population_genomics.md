@@ -55,7 +55,7 @@ and the π landscape, which dips at loci under selection such as the
 insecticide-resistance gene `Cyp6g1`
 ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
 
-## Build the scans
+## Building the scans
 
 Two inputs, both on stable HTTPS hosts. The genotypes are the DGRP freeze-2
 calls lifted to dm6 ([aertslab](https://resources.aertslab.org/DGRP2/)); the
@@ -101,7 +101,7 @@ being calibrated in absolute terms. [pixy](https://pixy.readthedocs.io/)
 dxy and Fst from an allSites VCF without that bias, one row per window, so its
 output packs into a bigWig the same way.
 
-## Loading in JBrowse
+## Loading it in JBrowse
 
 You need a dm6 assembly loaded, ideally with a FlyBase or RefSeq gene track so
 gene-name search works. See

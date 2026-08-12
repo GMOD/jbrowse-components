@@ -745,6 +745,12 @@ for the display modes, and the
 [methylation tutorial](/docs/tutorials/methylation) for the aggregate and
 allele-specific views.
 
+## Data availability
+
+Raw data from C-GIAB is under NCBI BioProject PRJNA200694. Processed data and
+benchmark call sets are available from the
+[NIST Cancer Genome in a Bottle page](https://www.nist.gov/programs-projects/cancer-genome-bottle).
+
 ## Where to go next
 
 Nothing above is specific to C-GIAB. Swap the VCF, the CRAMs and the assembly
@@ -766,12 +772,6 @@ Within C-GIAB itself there is more on the same FTP than this tutorial loads:
 - **HG009**, a second matched pair (PDAC liver metastasis with matched CD4+ T
   cells) on the
   [NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
-
-## Data availability
-
-Raw data from C-GIAB is under NCBI BioProject PRJNA200694. Processed data and
-benchmark call sets are available from the
-[NIST Cancer Genome in a Bottle page](https://www.nist.gov/programs-projects/cancer-genome-bottle).
 
 ## Reproduce it end to end
 

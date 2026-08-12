@@ -198,8 +198,8 @@ Three things in that figure travel to any gene-scale matrix:
   (or the handle under the band) drags the connector band open, which is what
   says whether a gene's calls pile on one codon or run the length of the
   transcript. A tumor suppressor is inactivated by any truncating call anywhere
-  in the coding sequence, so CDH1's fan lands in exon after exon, where PIK3CA's
-  comes off three codons.
+  in the coding sequence, so _CDH1_'s fan lands in exon after exon, where
+  _PIK3CA_'s comes off three codons.
 - A ClinVar track puts the germline record beside the somatic one, at a window
   narrow enough for the two to be lined up. It is the same variant display and
   the same coordinates, so a column of the matrix and a pathogenic tick in the
@@ -227,10 +227,10 @@ gap in the annotation rather than a fourth subtype. Hovering a column in the
 live view names its mutation and its consequence, and clicking one opens the
 variant popup with the per-tumor read counts.
 
-PIK3CA is the same gene-scale picture with the opposite geometry: its calls pile
-on two hotspots (H1047R in the kinase domain, E542K/E545K in the helical one) in
-the HR+/HER2- band rather than spreading, so its connector fan comes off a
-couple of points where TP53's and CDH1's land in exon after exon.
+_PIK3CA_ is the same gene-scale picture with the opposite geometry: its calls
+pile on two hotspots (H1047R in the kinase domain, E542K/E545K in the helical
+one) in the HR+/HER2- band rather than spreading, so its connector fan comes off
+a couple of points where _TP53_'s and _CDH1_'s land in exon after exon.
 
 ## Put a number on the bands
 
@@ -292,8 +292,8 @@ pinned: left to autoscale each row fits its own maximum and the groups look
 alike, which is the one thing this track exists to disprove. Open it above the
 matrix and each band has its own rate over it.
 
-The two rows of that bedGraph are each other's control. TP53 climbs from the
-HR+/HER2- column to the triple-negative one and PIK3CA falls across the same
+The two rows of that bedGraph are each other's control. _TP53_ climbs from the
+HR+/HER2- column to the triple-negative one and _PIK3CA_ falls across the same
 four columns, from one run of one script, so a number that tracked band size
 rather than rate could not produce both. Whichever way the reader expects a
 column to go, one of the two genes goes the other way.
@@ -306,9 +306,10 @@ rate and the cells beside it agree about what counts as a hit.
 
 Read it as a rate and not as a result. There is no background model and no
 significance test, and gene length enters the count directly: _TTN_ is 100 kb of
-coding sequence and outranks every driver on this page except TP53 and PIK3CA,
-on passenger mutations alone. The same caveat the copy-number page's frequency
-track carries, arriving here through length rather than through amplitude.
+coding sequence and outranks every driver on this page except _TP53_ and
+_PIK3CA_, on passenger mutations alone. The same caveat the copy-number page's
+frequency track carries, arriving here through length rather than through
+amplitude.
 
 ## Cluster the rows instead of grouping them
 
@@ -325,7 +326,7 @@ question is which clinical group carries it.
 The track menu's **Filter by... → Minor allele frequency** slider (and its
 [`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
 config slot) drops the low-frequency columns, which on somatic data means
-keeping only mutations recurrent across the cohort: at PIK3CA the hotspots
+keeping only mutations recurrent across the cohort: at _PIK3CA_ the hotspots
 survive and the private columns go. See
 [filtering by allele frequency and missingness](/docs/user_guides/multivariant_track#filtering-by-allele-frequency-and-missingness)
 for the sliders themselves.
@@ -333,7 +334,7 @@ for the sliders themselves.
 Two things to keep in mind. The threshold is an allele frequency over called
 alleles, and each somatic call here is one alt allele out of two, so a mutation
 carried by 10% of the cohort sits at 0.05. And a tumor suppressor is the case
-where this filter has little to keep: CDH1's truncating mutations are spread
+where this filter has little to keep: _CDH1_'s truncating mutations are spread
 along the gene rather than piled on one codon, so a threshold high enough to
 isolate a hotspot empties the window the histology figure above is built on.
 Recurrence filtering is for hotspot genes.
@@ -351,11 +352,11 @@ any TSV whose first column matches the VCF's sample names will do.
 
 ## Where to go next
 
-- [](/docs/tutorials/tcga_cohort_cnv), the same tumors' copy number as a
-  one-row-per-tumor painting, plus the cohort recurrence track. Its
-  [next steps](/docs/tutorials/tcga_cohort_cnv#where-to-go-next) are this page's
-  too: allele-specific copy number and the methylation arrays are open access at
-  the GDC and cover the same tumors
+The [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) paints the same tumors
+one row each, under a recurrence track, and its
+[next steps](/docs/tutorials/tcga_cohort_cnv#where-to-go-next) are this page's
+too: allele-specific copy number and the methylation arrays are both open access
+at the GDC and cover these tumors.
 
 ## Reproduce it end to end
 
@@ -430,6 +431,7 @@ the same tumor is one row name in both tracks.
 - [Multi-sample variant tracks](/docs/user_guides/multivariant_track)
 - [Variant tracks](/docs/config_guides/variant_track)
 - [](/docs/user_guides/clustering)
+- [](/docs/tutorials/tcga_cohort_cnv)
 - [](/docs/tutorials/dog10k_selection)
 - [jexl](/docs/config_guides/jexl)
 

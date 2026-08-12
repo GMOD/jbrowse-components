@@ -85,9 +85,9 @@ chain 1: 3 junctions across 3 chromosome(s)
 ```
 
 Those three junctions form a closed cycle, and the whole derivative path is
-under a kilobase spread across three chromosomes. The genes involved are RARB on
-chr3, a retinoic-acid receptor that acts as a tumor suppressor, BICC1 on chr10,
-and TRHDE on chr12.
+under a kilobase spread across three chromosomes. The genes involved are _RARB_
+on chr3, a retinoic-acid receptor that acts as a tumor suppressor, _BICC1_ on
+chr10, and _TRHDE_ on chr12.
 
 `--max-segment` is the knob that matters. It is the longest reference segment
 one read is assumed to bridge, so set it from your own read-length distribution.
@@ -330,9 +330,9 @@ python3 sv_multihop.py derive ... --genes ncbiRefSeq.gff.gz
 wrote der3_RARB.derivative_genes.gff3 (44 features from 41 reference rows)
 ```
 
-This allele carries RARB's first coding exon and its start codon, then the 183
-bp of chr12 that the second junction splices in, which is TRHDE coding sequence
-in reverse, then RARB again inverted.
+This allele carries _RARB_'s first coding exon and its start codon, then the 183
+bp of chr12 that the second junction splices in, which is _TRHDE_ coding
+sequence in reverse, then _RARB_ again inverted.
 
 Ribbons below are colored by the reference chromosome they come from, so the
 wide green one is the chr3 arm and the crossing ribbons at right are the chr10
@@ -433,12 +433,12 @@ linked-read run on K562 (ENCSR053AXS), whose large-SV calls are on hg19 and are
 lifted to hg38 by the build script. Its chr9 breakpoint for BCR-ABL1 is at
 130,731,760, the shaded stripe in the figure, which is where the copy-number
 lane above it steps up. The transcript junction the red arc uses is 122 kb to
-the right of that, inside ABL1's first intron: the amplicon boundary is a DNA
+the right of that, inside _ABL1_'s first intron: the amplicon boundary is a DNA
 break, and the transcript is spliced from it to the nearest exon.
 
 <Figure caption="Copy number in three windows, with the calls as arcs across them. Red, the STAR-Fusion RNA junctions, running from the amplified chr9q34 block to its chr22 partners XKR3 and BCR. Blue, the same two junctions called from 10X linked-read DNA. The shaded stripe is chr9:130,731,760, where the DNA arc ends and copy number steps up. The red arc ends 122 kb further in." src="/img/cancer_sv/k562_cn_amplicon.png" />
 
-This is the reasoning SplitThreader applied to the ERBB2 amplicon in SK-BR-3:
+This is the reasoning SplitThreader applied to the _ERBB2_ amplicon in SK-BR-3:
 copy-number steps and breakpoints that describe the same interval are evidence
 of one event. Here two independent assays put that interval's edge in the same
 place.
