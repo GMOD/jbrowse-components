@@ -315,10 +315,11 @@ describe('GpuWiggleRenderer', () => {
   })
 
   it('writes viewportWidth in CSS pixels regardless of devicePixelRatio', () => {
-    // viewportWidth feeds the shader's minClipW = 3 / viewportWidth, which
-    // must resolve to a stable 1.5 CSS-px minimum across DPRs to match the
-    // Canvas2D WIGGLE_MIN_PX path. Using a DPR-scaled value silently shrinks
-    // the floor on hi-DPI displays.
+    // viewportWidth is what `extendToMinWidthX` divides MIN_FILL_WIDTH_PX by to
+    // reach clip space, so it must be CSS px for the floor to stay a stable 1.5
+    // CSS px across DPRs and match the Canvas2D WIGGLE_MIN_PX path (the same
+    // generated constant). A DPR-scaled value silently halves the floor on
+    // hi-DPI displays.
     const originalDpr = globalThis.devicePixelRatio
     try {
       globalThis.devicePixelRatio = 2

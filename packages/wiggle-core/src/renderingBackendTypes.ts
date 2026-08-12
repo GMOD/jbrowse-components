@@ -1,4 +1,5 @@
 import {
+  MIN_FILL_WIDTH_PX as GENERATED_MIN_FILL_WIDTH_PX,
   NO_PREV_START as GENERATED_NO_PREV_START,
   RENDERING_TYPE_DENSITY as GENERATED_RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE as GENERATED_RENDERING_TYPE_LINE,
@@ -39,6 +40,14 @@ export const RENDERING_TYPE_LINE_CENTER: WiggleRenderingType =
 // nothing. wiggle.slang's, generated in, because the encoder writes it and the
 // shader tests for it.
 export const NO_PREV_START = GENERATED_NO_PREV_START
+
+// Narrowest an xyplot bar / density column paints, in CSS px, so a bin under a
+// pixel wide still shows. wiggle.slang's, generated in, because both backends
+// apply it: the shader through `extendToMinWidthX` and Canvas2D through
+// `Math.max(WIGGLE_MIN_PX, …)`, which is what re-exports this under that name.
+// It was a `1.5` in each, kept together by a comment in each pointing at the
+// other.
+export const MIN_FILL_WIDTH_PX = GENERATED_MIN_FILL_WIDTH_PX
 
 export interface WiggleGPURenderState {
   domainY: [number, number]

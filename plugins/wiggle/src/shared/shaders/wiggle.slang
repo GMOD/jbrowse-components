@@ -14,7 +14,7 @@
 // buffer. Generated into @jbrowse/wiggle-core (see consts-out) because that is
 // where `WiggleRenderingType` and `WiggleScaleType` are declared, and the
 // plugin reads them back from there.
-//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, NO_PREV_START
+//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, NO_PREV_START, MIN_FILL_WIDTH_PX
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 //! js-skip: scoreToY — diverges from JS makeScoreNormalizer on a degenerate (min == max) domain on purpose — JS returns 0, the shader avoids NaN. Unifying them is a product decision, not a codegen one; the part both backends must share is normalizeScore, which is exported
 
@@ -34,6 +34,13 @@ static const int SCALE_TYPE_LOG = 1;
 // prevStartEnd.x sentinel: no previous feature (source start). Larger than any
 // genomic coordinate, so it never collides with a real start.
 static const uint NO_PREV_START = 0xffffffffu;
+
+// Narrowest an xyplot bar / density column may paint, in CSS px, so a bin under
+// a pixel wide still shows instead of dropping out. `//! export-consts`ed and
+// read back as `WIGGLE_MIN_PX`: the Canvas2D path has to floor at the same
+// number the GPU does, and it spent a while as a literal here beside a comment
+// naming its TS twin — which is the arrangement adr-051 exists to retire.
+static const float MIN_FILL_WIDTH_PX = 1.5;
 
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
@@ -258,8 +265,11 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       sy = 1.0 - vPx.y * pxToClip;
     }
   } else {
-    // 1.5 CSS px minimum width matches WIGGLE_MIN_PX in the Canvas2D path.
-    sx2 = extendToMinWidthX(sx1, sx2, 1.5, u.viewportWidth);
+    // The min-width floor, anchored at the bin's start so it grows the way the
+    // Canvas2D `spanLeft` twin does. `u.viewportWidth` is CSS px (see
+    // GpuWiggleRenderer), which is what makes the floor the same 1.5 CSS px at
+    // every dpr rather than 1.5 device px.
+    sx2 = extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, u.viewportWidth);
     float2 q = quadLocal(vid);
     sx = lerp(sx1, sx2, q.x);
 

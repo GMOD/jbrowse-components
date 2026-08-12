@@ -1,3 +1,5 @@
+import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core'
+
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 // Rendering-type tables live in renderingTypes.ts (import-free) so non-UI
@@ -290,18 +292,25 @@ export function featuresToRaw(
 
 // Widen each Canvas2D bar slightly past its true pixel span so adjacent
 // histogram bars overlap by a fraction of a pixel instead of leaving thin
-// anti-aliased gaps between them. The GPU shader intentionally does NOT apply
-// this — it relies on its own min-clip-width floor (minClipW in wiggle.slang),
-// so the two backends' bar *widths* differ by sub-pixel amounts by design.
+// anti-aliased gaps between them. A fillRect at fractional coordinates
+// antialiases its own edges; adjacent GPU quads sharing an exact edge on a
+// multisampled target do not, so the shader deliberately omits this and the two
+// backends' bar *widths* differ by sub-pixel amounts by design.
 //
 // Only the width, though: which edge the bar is anchored on is shared, and both
 // backends anchor the bin's start (`spanLeft` here, `extendToMinWidthX` in the
 // shader). Anchoring the leftmost edge instead would shift every sub-floor bin
-// on a reversed block by up to WIGGLE_MIN_PX — an actual mismatch, not this
+// on a reversed block by up to the floor below — an actual mismatch, not this
 // deliberate sub-pixel one.
 export const WIGGLE_FUDGE_FACTOR = 0.8
 
-export const WIGGLE_MIN_PX = 1.5
+// The floor itself is NOT a second decision: it is wiggle.slang's own
+// `MIN_FILL_WIDTH_PX`, generated in (adr-051), under the name this module has
+// always published it as — the same shape `pointMarker.ts` re-exports
+// `SMALL_POINT_MAX_DIAMETER` in. It spent a while as a `1.5` on each side, each
+// with a comment naming the other, which is what a shared constant looks like
+// right up until one of them moves.
+export const WIGGLE_MIN_PX = MIN_FILL_WIDTH_PX
 
 // Shared by MultiWiggleAdapter (bigWigs shorthand entries) and the multiwiggle
 // add-track drop zone, so a dropped file and a pasted URL with the same

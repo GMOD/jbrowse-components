@@ -109,9 +109,15 @@ export class GpuWiggleRenderer
     // 'zero' uniform — MUST be 0.0, used by hp_to_clip_x for precision
     this.uniformF32[U.zero] = 0
     // viewportWidth stays in CSS units to match canvasHeight (per CLAUDE.md
-    // GPU conventions). The shader's `minClipW = 3 / viewportWidth` therefore
-    // resolves to a stable 1.5 CSS px floor across DPRs, matching
-    // WIGGLE_MIN_PX in the Canvas2D path.
+    // GPU conventions). `extendToMinWidthX` divides `MIN_FILL_WIDTH_PX` by it to
+    // reach clip space, so a CSS width is what makes the floor a stable 1.5 CSS
+    // px across DPRs rather than 1.5 DEVICE px — and `WIGGLE_MIN_PX`, the
+    // Canvas2D floor, is that same generated constant.
+    //
+    // `clip.scissorW`, therefore, and never `clip.pxW`, which is the same span
+    // in device px. GpuMafRenderer feeds `pxW` into the same-named uniform of a
+    // different shader, deliberately and with its own note; the two are not
+    // interchangeable.
     this.uniformF32[U.viewportWidth] = clip.scissorW
     this.uniformF32[U.scatterPointSize] = state.scatterPointSize
     this.uniformF32[U.lineWidth] = state.lineWidth

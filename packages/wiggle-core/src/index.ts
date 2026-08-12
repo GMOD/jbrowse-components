@@ -58,6 +58,7 @@ export { default as YScaleBar } from './YScaleBar.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 
 export {
+  MIN_FILL_WIDTH_PX,
   NO_PREV_START,
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,

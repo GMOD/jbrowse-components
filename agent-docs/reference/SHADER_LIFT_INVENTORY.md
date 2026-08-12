@@ -97,4 +97,5 @@ is no longer shared with anything.
 | `normalizeDepthScalar` | tests only — `coverageNormalizeParity.test.ts` |
 | `normalizeScore` | tests only — `normalizeScoreParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
+| `snapCellEdgePx` | nothing |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |

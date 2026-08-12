@@ -23,6 +23,8 @@ export const SCALE_TYPE_LOG = 1
 
 export const NO_PREV_START = 4294967295
 
+export const MIN_FILL_WIDTH_PX = 1.5
+
 export const UNIFORMS_SIZE_BYTES = 64
 
 // Word indices into a Float32Array view over the uniform buffer.
