@@ -248,6 +248,16 @@ function scanFilePaths(path: string, lines: string[]): Problem[] {
         continue
       }
       const ref = match[0].replace(/[./]+$/, '')
+      // A path INTO build output is absent by definition on a fresh checkout —
+      // these directories are gitignored, so CI has none of them and a developer
+      // has whichever ones they last built. Holding such a path to account asks
+      // the machine-dependent question, and the docs that name one are naming it
+      // precisely to say a fresh worktree has not built it. Same reasoning as
+      // BUILD_DIRS on the symbol side, where a stale local `esm/` made the
+      // checker disagree with CI about whether a reference resolved.
+      if (ref.split('/').some(seg => BUILD_DIRS.has(seg))) {
+        continue
+      }
       // Only hold a path to account when its package anchor really exists —
       // otherwise it's a placeholder/example path, not a live repo reference.
       if (repoPathExists(anchorOf(ref)) && !repoPathExists(ref)) {
@@ -469,6 +479,28 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // this' channel": names the volatile second channel that was deleted, in the
   // past tense, so the reader doesn't go looking for it.
   'pendingMove',
+  // packages/app-core/CLAUDE.md, "This replaced a try/finally flag": names the
+  // suppression flag dockview's mutation brackets made unnecessary, and says
+  // not to reintroduce one. The name is the thing a reader would otherwise
+  // grep for.
+  'withSuppressedPanelRemoval',
+])
+
+// Symbols belonging to a DEPENDENCY, named because our behaviour turns on
+// theirs. Absent from our tree by definition, and unlike DOC_ABSENT_ON_PURPOSE
+// the claim is that they exist — just not here. Kept separate so the two
+// reasons stay legible: an entry moving between the sets would mean something
+// quite different.
+//
+// Deliberately small. A doc naming an upstream symbol is usually better off
+// quoting the behaviour than the identifier; the ones here are cases where the
+// identifier is the evidence, because a reader checking the claim has to find
+// it in node_modules.
+const DOC_THIRD_PARTY = new Set([
+  // packages/app-core/CLAUDE.md, "the one method upstream does not wrap in
+  // `withOrigin('api')`": dockview's own internal wrapper, and the asymmetry is
+  // the caveat that section exists to record.
+  'withOrigin',
 ])
 
 // Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per
@@ -548,6 +580,7 @@ function scanSymbols(path: string, lines: string[]): Problem[] {
         if (
           !PLACEHOLDER.test(id) &&
           !DOC_ABSENT_ON_PURPOSE.has(id) &&
+          !DOC_THIRD_PARTY.has(id) &&
           !symbolCache!.has(id)
         ) {
           problems.push({
