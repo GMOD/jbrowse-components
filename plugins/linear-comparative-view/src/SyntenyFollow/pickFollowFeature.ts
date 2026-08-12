@@ -17,6 +17,23 @@ export interface FollowCandidate {
 }
 
 /**
+ * The hysteresis rule itself, as a function, because it is applied TWICE over
+ * the same margin: once inside a display, over the blocks it loaded, and once
+ * across the displays on a level, over each one's answer. A level carrying two
+ * synteny tracks otherwise settled the second comparison on raw overlap and
+ * flapped between the tracks' answers on the same few bp of rounding this
+ * exists to absorb.
+ */
+export function preferIncumbent<T extends FollowCandidate>(
+  best: T | undefined,
+  incumbent: T | undefined,
+) {
+  return incumbent && best && best.overlap < incumbent.overlap * SWITCH_MARGIN
+    ? incumbent
+    : best
+}
+
+/**
  * Which loaded alignment a follow should map the anchor window through: the one
  * covering the most of that window, biased toward the one already being
  * followed.
@@ -101,7 +118,5 @@ export function pickFollowFeature({
       incumbent = { index: i, overlap }
     }
   }
-  return incumbent && best && best.overlap < incumbent.overlap * SWITCH_MARGIN
-    ? incumbent
-    : best
+  return preferIncumbent(best, incumbent)
 }

@@ -1,6 +1,6 @@
 import { getFeatureAtIndex } from '../LinearSyntenyDisplay/model.ts'
 import { followWindowMapping } from './followWindowMapping.ts'
-import { pickFollowFeature } from './pickFollowFeature.ts'
+import { pickFollowFeature, preferIncumbent } from './pickFollowFeature.ts'
 
 import type {
   FeatPos,
@@ -83,6 +83,12 @@ export function windowOverlapsFeat(
   return aStart < window.end && aEnd > window.start
 }
 
+/** One display's answer, kept alongside where it came from. */
+interface FollowPick extends FollowCandidate {
+  display: LinearSyntenyDisplayModel
+  data: SyntenyFeatureData
+}
+
 /**
  * Which alignment this level should place its moving row from, across every
  * synteny track on it.
@@ -90,6 +96,14 @@ export function windowOverlapsFeat(
  * A level can carry more than one track. Each is asked for its best alignment
  * over the window and the widest wins, so a sparse track does not outvote the
  * one that actually covers the locus.
+ *
+ * THE SAME HYSTERESIS AS WITHIN A TRACK, applied again here. Each display
+ * already refuses to abandon the block it is following for a marginally wider
+ * one, and comparing their answers on raw overlap threw that away one level up:
+ * two tracks over the same locus (an all-vs-all file overlaid on a pairwise
+ * one, two aligners' output on the same pair) traded the follow back and forth
+ * on the rounding a pan produces, which is exactly the flapping between
+ * paralogous loci the margin exists to stop.
  *
  * `undefined` means no alignment covers the anchor window — a haplotype-specific
  * insertion, a centromere, a row parked off the end of the file. The caller
@@ -108,10 +122,8 @@ export function planFollowStep({
   mateAssembly?: string
   incumbentId?: string
 }): FollowStep | undefined {
-  let best:
-    | { display: LinearSyntenyDisplayModel; data: SyntenyFeatureData }
-    | undefined
-  let bestCandidate: FollowCandidate | undefined
+  let widest: FollowPick | undefined
+  let incumbent: FollowPick | undefined
   for (const display of displays) {
     const data = display.featureData
     if (!data) {
@@ -124,19 +136,31 @@ export function planFollowStep({
       mateAssembly,
       incumbentId,
     })
+    if (!candidate) {
+      continue
+    }
+    const pick = { ...candidate, display, data }
+    if (!widest || pick.overlap > widest.overlap) {
+      widest = pick
+    }
+    // Which display is holding the incumbent, read off the answer it gave
+    // rather than searched for: `pickFollowFeature` returns the incumbent when
+    // its own hysteresis kept it, so a display that has already abandoned it
+    // for a decisively better block of its own says nothing here — which is
+    // right, since that abandonment was legitimate.
     if (
-      candidate &&
-      (!bestCandidate || candidate.overlap > bestCandidate.overlap)
+      incumbentId !== undefined &&
+      data.featureIds[candidate.index] === incumbentId
     ) {
-      bestCandidate = candidate
-      best = { display, data }
+      incumbent = pick
     }
   }
-  if (!best || !bestCandidate) {
+  const best = preferIncumbent(widest, incumbent)
+  if (!best) {
     return undefined
   }
   const { display, data } = best
-  const feat = getFeatureAtIndex(data, bestCandidate.index)
+  const feat = getFeatureAtIndex(data, best.index)
   const inside = windowInsideFeat(feat, window, toMate)
   return {
     display,
