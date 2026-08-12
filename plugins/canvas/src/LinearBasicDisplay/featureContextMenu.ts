@@ -343,55 +343,70 @@ function showHideItem({ self, info }: MenuContext): MenuItem {
   }
 }
 
-// Applying a collected list is done from the "N selected" badge (see
-// SoloSelectionChip), so this only ever offers:
-//  - applied → show everything again (and optionally drop this feature)
-//  - otherwise → the one-shot isolate + add/remove this feature
+// The show-only list, as three rows that mean the same thing whether or not the
+// list is applied yet — narrow to this one, change this one's membership, and
+// (once applied) undo the whole thing. Applying a *collected* list is the "N
+// selected" badge's job (see SoloSelectionChip), which is why there is no
+// "apply" row here.
+//
+// "Show only this feature" leads in BOTH states, and used to be offered in
+// neither once applied: from a collected set it isolates this one, from an
+// applied set of several it narrows to this one, and both are `soloFeature`
+// replacing the list. Missing, an applied set of six could only be widened back
+// to everything and re-collected. Leading in both keeps the row from moving
+// under the cursor as the state changes, so clicking where "show only this" was
+// can't turn into "show everything again".
 //
 // One noun throughout — "show-only list" — so these rows and the chip's tooltip
 // name the same thing. It used to go by "set" in the add/remove rows and "view"
 // in the applied one, which read as two unrelated features.
 function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
   const inSoloList = self.soloFeatureIdSet.has(featureId)
-  const removeFromList = {
-    label: 'Remove from show-only list',
-    icon: PlaylistRemoveIcon,
-    onClick: () => {
-      self.toggleSoloFeature(featureId)
-    },
-  }
-  const allNoun = pluralize(2, self.featureNoun)
-  return self.soloApplied
-    ? [
-        {
-          label: `Show all ${allNoun} again`,
-          icon: FilterAltOffIcon,
-          onClick: () => {
-            self.clearSolo()
-          },
-        },
-        // Removing the only remaining one would empty the view, which
-        // "Show all ... again" above already covers.
-        ...(inSoloList && self.soloFeatureCount > 1 ? [removeFromList] : []),
-      ]
-    : [
-        {
-          label: `Show only this ${self.featureNoun}`,
-          icon: FilterAltIcon,
-          onClick: () => {
-            self.soloFeature(featureId)
-          },
-        },
-        inSoloList
-          ? removeFromList
-          : {
-              label: 'Add to show-only list',
-              icon: PlaylistAddIcon,
-              onClick: () => {
-                self.toggleSoloFeature(featureId)
-              },
+  // An applied list holding this feature and nothing else. Both per-feature rows
+  // are then `clearSolo` under another name — narrowing to the only member
+  // changes nothing, and dropping it empties the list, which un-applies — so
+  // only the undo row is offered.
+  const onlyThisApplied =
+    self.soloApplied && inSoloList && self.soloFeatureCount === 1
+  return [
+    ...(onlyThisApplied
+      ? []
+      : [
+          {
+            label: `Show only this ${self.featureNoun}`,
+            icon: FilterAltIcon,
+            onClick: () => {
+              self.soloFeature(featureId)
             },
-      ]
+          },
+          inSoloList
+            ? {
+                label: 'Remove from show-only list',
+                icon: PlaylistRemoveIcon,
+                onClick: () => {
+                  self.toggleSoloFeature(featureId)
+                },
+              }
+            : {
+                label: 'Add to show-only list',
+                icon: PlaylistAddIcon,
+                onClick: () => {
+                  self.toggleSoloFeature(featureId)
+                },
+              },
+        ]),
+    ...(self.soloApplied
+      ? [
+          {
+            label: `Show all ${pluralize(2, self.featureNoun)} again`,
+            icon: FilterAltOffIcon,
+            onClick: () => {
+              self.clearSolo()
+            },
+          },
+        ]
+      : []),
+  ]
 }
 
 // One item that copies `text`, naming what landed in both the menu and the
