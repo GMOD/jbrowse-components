@@ -265,6 +265,7 @@ export {
   openFeatureWidget,
 } from './openFeatureWidget.ts'
 export {
+  canonicalizeViewRefName,
   findParentThat,
   findParentThatIs,
   getContainingDisplay,

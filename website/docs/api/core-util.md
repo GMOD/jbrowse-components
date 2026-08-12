@@ -7,6 +7,39 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how
 to import these from a plugin.
 
+## canonicalizeViewRefName
+
+Resolve user-authored refName text against the assembly of the view containing
+`node` — the one normalization layer, which resolves aliases and casing
+together. Falls back to the input when the assembly is absent or its aliases
+have not loaded.
+
+Keyed off the VIEW's assembly rather than the track's, because the view is what
+the comparison is against: displayed regions, loaded regions and blocks all
+carry the refNames the view laid out.
+
+Reach for this wherever a refName a _person_ wrote is about to be compared
+against regions, features or blocks, which carry the assembly's canonical name.
+A refName a display copied off a region is canonical already and needs nothing;
+one that arrived in a session spec, a config slot or a URL is whatever the
+author read out of the location box.
+
+Skipping it fails silently and, worse, assembly-dependently: `chr12` matches on
+an assembly canonicalized `chr12` and matches nothing on one canonicalized `12`,
+so the same spec key works on one config and quietly does nothing on the next,
+with no error for anyone to act on.
+
+`initialized` gates the call rather than a try/catch, because
+`getCanonicalRefName` THROWS before the alias file has loaded — and the getters
+that read user specs run from the first render.
+
+```js
+// type signature
+(node: IAnyStateTreeNode, refName: string) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
 ## clampBandHeight
 
 Clamp one resize of a drag-resizable band.

@@ -16,6 +16,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   SimpleFeature,
+  canonicalizeViewRefName,
   getContainingTrack,
   getContainingView,
   getRpcSessionId,
@@ -1002,9 +1003,26 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The single read of the `sortedBy` slot, so the RPC args and the menu
+         * checkmarks cannot disagree about which sort is active.
+         *
+         * The refName is normalized here because this slot has two provenances
+         * and only one of them is safe. `setSortedByAtPosition` (the center-line
+         * "Sort by..." menu) writes a refName taken off the view's own region,
+         * canonical by construction; a config or session spec writes whatever
+         * the author typed. `sortLayout` gates the sort on
+         * `commonRefName === sortedBy.refName` against the loaded regions, so an
+         * aliased spec (`chr1` where the assembly is canonicalized `1`) leaves
+         * the reads unsorted with the menu still showing the sort as active.
          */
         get sortedBy(): SortedBy | undefined {
-          return getConf(self, 'sortedBy') ?? undefined
+          const sortedBy = getConf(self, 'sortedBy') as SortedBy | null
+          return sortedBy
+            ? {
+                ...sortedBy,
+                refName: canonicalizeViewRefName(self, sortedBy.refName),
+              }
+            : undefined
         },
 
         /**

@@ -12,6 +12,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
+  canonicalizeViewRefName,
   clamp,
   getContainingTrack,
   getContainingView,
@@ -758,20 +759,8 @@ export default function baseStateModelFactory(
         // producer for exactly this reason. Doing it here covers the provenance
         // that has no producer to fix it.
         get canonicalFeatureHighlights(): FeatureHighlight[] {
-          const { assemblyManager } = getSession(self)
-          const track = getContainingTrack(self)
-          const assemblyNames = readConfObject(
-            track.configuration,
-            'assemblyNames',
-          ) as string[]
-          const assembly = assemblyManager.get(assemblyNames[0]!)
-          // `initialized` gates the call, not a try/catch: getCanonicalRefName
-          // THROWS before the alias file has loaded, and this getter runs from
-          // the first render.
           return self.featureHighlights.map(h => ({
-            refName: assembly?.initialized
-              ? (assembly.getCanonicalRefName(h.refName) ?? h.refName)
-              : h.refName,
+            refName: canonicalizeViewRefName(self, h.refName),
             start: h.start,
             end: h.end,
             name: h.name,

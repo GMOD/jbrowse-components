@@ -26,7 +26,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // Builds a real LinearAlignmentsDisplay so the cross-feature coupling that
 // lives in the model actions (not the menu handlers) is tested against the
 // actual model rather than a mock that would just reimplement it.
-function createDisplay() {
+// `withRegions` gives the view a displayed region, which is the only thing that
+// makes it name an assembly (`assemblyNames` derives from them) — needed by
+// anything resolving a refName against it. Off by default: most cases here
+// exercise menu/action coupling that never looks at a region.
+function createDisplay({ withRegions = false } = {}) {
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory(pluginManager)
@@ -92,8 +96,22 @@ function createDisplay() {
       theme: createJBrowseTheme(),
       palette: resolvePalette(),
       // the feature-details lookup asks for the region's sequence adapter, and
-      // reports a failed lookup through notify
-      assemblyManager: { get: () => undefined },
+      // reports a failed lookup through notify — hence no `sequence` here.
+      // `getCanonicalRefName` carries one alias because user-authored refName
+      // text (the `sortedBy` slot) is normalized through it, and a stub that
+      // only ever answered identity could not tell a reader that normalizes
+      // from one that doesn't.
+      assemblyManager: {
+        get: (name: string) =>
+          name === 'volvox'
+            ? {
+                initialized: true,
+                getCanonicalRefName: (refName: string) =>
+                  refName === 'chrA' ? 'ctgA' : refName,
+                configuration: { sequence: undefined },
+              }
+            : undefined,
+      },
       notify: jest.fn(),
       notifyError: jest.fn(),
     }))
@@ -129,6 +147,11 @@ function createDisplay() {
   )
   // `renderState` reads `view.width`, which throws while volatileWidth is unset
   view.setWidth(800)
+  if (withRegions) {
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 },
+    ])
+  }
   return view.tracks[0]!.displays[0]!
 }
 
@@ -418,6 +441,47 @@ describe('the row cap sits with the other sizing controls', () => {
     const show = findMenu(display.trackMenuItems(), 'Show...')?.subMenu ?? []
     expect(show.length).toBeGreaterThan(0)
     expect(show.map(i => i.type)).toEqual(show.map(() => 'checkbox'))
+  })
+})
+
+// `sortLayout` gates the sort on `sortedBy.refName` matching the loaded
+// regions' own refName, which is canonical. The center-line menu writes a
+// canonical one (it reads the view's region), but this is a config slot, so a
+// config or session spec writes whatever the author typed. Unnormalized, an
+// aliased spec leaves the reads unsorted with the menu still showing the sort
+// as active — no error, and assembly-dependent, so it works on one config and
+// not the next.
+describe('sortedBy refName normalization', () => {
+  // The assembly is resolved off the VIEW, which names one only once it has
+  // regions — so a display whose view is still empty reads the slot back raw.
+  // That is the same window in which nothing has been laid out to sort.
+  test('an aliased refName resolves to the canonical one', () => {
+    const display = createDisplay({ withRegions: true })
+    // 'chrA' is the test assembly's alias for the canonical 'ctgA'
+    display.setSortSlot({
+      type: 'base',
+      pos: 100,
+      refName: 'chrA',
+      assemblyName: 'volvox',
+    })
+
+    expect(display.sortedBy?.refName).toBe('ctgA')
+    // everything else on the slot rides through untouched
+    expect(display.sortedBy?.pos).toBe(100)
+    expect(display.sortedBy?.type).toBe('base')
+  })
+
+  test('a canonical refName is left alone, and no sort stays undefined', () => {
+    const display = createDisplay({ withRegions: true })
+    expect(display.sortedBy).toBeUndefined()
+
+    display.setSortSlot({
+      type: 'base',
+      pos: 100,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+    })
+    expect(display.sortedBy?.refName).toBe('ctgA')
   })
 })
 

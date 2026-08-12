@@ -1,3 +1,4 @@
+import { canonicalizeViewRefName } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -51,16 +52,22 @@ export function setupRowSortAutorun(
         if (!spec) {
           return
         }
+        // Normalize before both the gate and the dispatch. The right-click
+        // entry point hands `sortRows` a refName copied off a region, but this
+        // one carries whatever a session author typed — an alias as often as
+        // the assembly's own name — and everything it is about to be compared
+        // against is canonical. Unnormalized, `{refName: 'chr17'}` on an
+        // assembly canonicalized `17` never satisfies the gate, so the sort
+        // never runs AND the flag never clears: it sits in the snapshot
+        // forever, doing nothing, saying nothing.
+        const refName = canonicalizeViewRefName(self, spec.refName)
         const loaded = [...self.loadedRegions.values()].some(
-          r =>
-            r.refName === spec.refName &&
-            r.start <= spec.pos &&
-            spec.pos < r.end,
+          r => r.refName === refName && r.start <= spec.pos && spec.pos < r.end,
         )
         if (!loaded) {
           return
         }
-        opts.sortRows(spec.refName, spec.pos)
+        opts.sortRows(refName, spec.pos)
         if (isAlive(self)) {
           self.setSortRowsBy(undefined)
         }

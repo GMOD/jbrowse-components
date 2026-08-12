@@ -51,6 +51,26 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
     expect(display.layout.map(s => s.name)).toEqual(['b', 'c', 'a'])
   })
 
+  // The provenance this prop exists for is a session or figure spec, where the
+  // refName is typed by hand — so it is an alias as often as the assembly's own
+  // name, while `loadedRegions` is canonical. Unnormalized the gate never
+  // passes, which is indistinguishable from the region simply not being loaded:
+  // no sort, no clear, no error.
+  it('ranks the rows when the spec names the region by an alias', async () => {
+    const { createDisplay } = environmentWith({ a: 1, b: 5, c: 3 })
+    // 'chrA' is the test assembly's alias for the canonical 'ctgA'
+    const { display } = createDisplay({
+      sortRowsBy: { refName: 'chrA', pos: 600 },
+    })
+
+    jest.advanceTimersByTime(700)
+    await waitFor(() => {
+      expect(display.sources.map(s => s.name)).toEqual(['b', 'c', 'a'])
+    })
+
+    expect(display.sortRowsBy).toBeUndefined()
+  })
+
   it('holds the trigger rather than spending it on a region that never loads', async () => {
     // sorting against no data ranks every row equally — it would clear the flag
     // and leave a figure showing unsorted rows with nothing to say why

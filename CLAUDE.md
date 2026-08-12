@@ -163,6 +163,38 @@ session spec goes through and `matchRefNames`, which the search box's dropdown
 and its enter key share — and `globToRegExp` is module-private to keep it that
 way. A third reading growing elsewhere is how the above starts over.
 
+### A display reading a refName out of its own state calls `canonicalizeViewRefName`
+
+The rule above is usually met about _matching_. The other half is **storage**,
+and it is the half that keeps being missed, because two of the three ways a
+refName reaches a display are safe by construction and hide the third:
+
+- a right-click or a center-line menu copies the refName off the region it just
+  hit — canonical already;
+- a text search goes through a producer that canonicalizes
+  (`searchResultHighlight.ts` does, and says why);
+- a **session spec, config slot or URL** carries whatever a person typed, which
+  is whatever the location box showed them. Nothing normalizes it, and every
+  region, block and loaded span it is about to be compared against is canonical.
+
+`canonicalizeViewRefName(node, refName)` (`@jbrowse/core/util`) is that
+normalization, resolved against the containing view's assembly and falling back
+to the input before the aliases load — `getCanonicalRefName` **throws** until
+then, and these getters run from the first render.
+
+What makes this worth a rule rather than a fix is that it is
+**assembly-dependent**: `chr12` is right on an assembly canonicalized `chr12`
+and matches nothing on one canonicalized `12`. So the same spec key works in the
+demo config it was written against and quietly does nothing in the next one, and
+the figure that catches it is the one nobody re-ran. Three landed together —
+canvas `featureHighlights`, the tree-sidebar `sortRowsBy` shared by multi-wiggle
+and multi-row features, and the alignments `sortedBy` slot — and the last two
+also never clear their one-shot trigger, so the dead spec persists in the
+snapshot.
+
+Normalize once, where the state is read (a getter, or the autorun's single choke
+point), not at each comparison — the comparisons are the part that multiplies.
+
 ## Tooling
 
 - Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
