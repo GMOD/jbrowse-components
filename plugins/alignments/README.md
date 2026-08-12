@@ -43,7 +43,7 @@ rearrangement.
 
 ```js
 // type signature
-(rpcDataMap: ReadonlyMap<number, PileupDataResult>, regions: RegionInfo[], canonicalRefName?: ((refName: string) => string) | undefined) => SegAln[][]
+(rpcDataMap: ReadonlyMap<number, PileupDataResult>, regions: RegionInfo[], canonicalRefName?: CanonicalRefName) => SegAln[][]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/features/arcs/compute.ts)
