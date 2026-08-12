@@ -272,6 +272,11 @@ export interface ComputedArc {
   colorType: number
   shapeType: number
   yBp: number
+  // What the arc's Y MEANS, before the read cloud's jitter is folded into the
+  // plotted `yBp`: |TLEN| for a mate link, the breakpoint gap for a split
+  // junction, the genomic radius for a curved arc. The reported quantity, as
+  // opposed to the drawn one — see `ArcsUploadData.arcSpanBp`.
+  spanBp: number
   // How many connections were coalesced into this arc — see `resolveArcs`.
   // Always >= 1.
   support: number
@@ -368,9 +373,16 @@ function computeArcShape({
     return {
       shapeType: arc.isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
       yBp: Math.round(spanBp * jitter),
+      // The jitter is a DRAWING device — it exists so coincident lines don't
+      // stack into one — so the span survives it separately for anything that
+      // reports a number rather than a position. The hover read `yBp` back as
+      // "Insert size", which is that number times a deterministic factor in
+      // [0.92, 1.08]: a 10 kb insert was reported as anything from 9.2 to 10.8
+      // kb, and reproducibly so, since the factor is a hash of the endpoints.
+      spanBp,
     }
   }
-  return { shapeType: ARC_SHAPE_ARC, yBp: absrad }
+  return { shapeType: ARC_SHAPE_ARC, yBp: absrad, spanBp: absrad }
 }
 
 interface ReadEntry {
@@ -773,9 +785,21 @@ function poolArcScale(inputs: ArcInputs[]): ArcScale {
   }
 }
 
-// The identity of a drawn arc: two endpoints, a colour and a shape. Two
-// connections agreeing on all four produce the same pixels, which is what makes
-// them summable.
+// The identity of a drawn arc: two endpoints, a colour, a shape and the Y it
+// plots at. Two connections agreeing on all five produce the same pixels, which
+// is what makes them summable.
+//
+// `yBp` IS part of the key, and the argument for leaving it out — that it is
+// derived from the endpoints and the shape, so arcs agreeing on the rest agree
+// on it — holds in arc mode and fails in read cloud. There a mate link's Y is
+// |TLEN|, a field of the record rather than a function of the drawn endpoints,
+// and the two diverge exactly where the cloud is interesting: an outward-facing
+// (RL) pair anchors at its mates' inner edges while TLEN spans their outer
+// ones, so two RL pairs sharing those inner edges and differing in read length
+// carry different template lengths. They drew as two lines at two heights and
+// coalesced into one, which loses a line and reports the survivor as supported
+// by both reads. In arc mode `yBp` is the half-span, so adding it here groups
+// nothing differently.
 //
 // EXACT COORDINATES, deliberately, and it is the same rule sashimi's
 // `junctionKey` follows for the same reason. A tolerance looks like the obvious
@@ -797,6 +821,7 @@ function arcKey(a: {
   p2Bp: number
   colorType: number
   shapeType: number
+  yBp: number
 }) {
   // ENDPOINT ORDER IS NORMALIZED, because the drawn arc is symmetric in it and
   // so the key has to be. `strokeArc` centres on (p1+p2)/2 with |p2-p1|/2 as its
@@ -815,7 +840,7 @@ function arcKey(a: {
   const [r1, b1, r2, b2] = swap
     ? [a.p2Ref, a.p2Bp, a.p1Ref, a.p1Bp]
     : [a.p1Ref, a.p1Bp, a.p2Ref, a.p2Bp]
-  return `${r1}\0${b1}\0${r2}\0${b2}\0${a.colorType}\0${a.shapeType}`
+  return `${r1}\0${b1}\0${r2}\0${b2}\0${a.colorType}\0${a.shapeType}\0${a.yBp}`
 }
 
 // Colour + shape one group's resolved connections against the pooled scale,
@@ -832,9 +857,10 @@ function arcKey(a: {
 // being thrown away, and it removes the redundant instances rather than
 // stacking them: 57% of the arcs in that window were exact repeats.
 //
-// `yBp` is not part of the key because it is derived from the endpoints and
-// shape — including the read-cloud jitter, which hashes the same two bp to the
-// same offset (`pairJitter01`). Arcs that agree on the key agree on it.
+// The read-cloud jitter does not stop two identical pairs coalescing: it hashes
+// the same two bp to the same offset (`pairJitter01`), so arcs agreeing on the
+// endpoints agree on it. What it does NOT make agree is the span the offset
+// scales — see `arcKey`, which is why `yBp` is keyed on.
 function resolveArcs(
   pendingArcs: PendingArc[],
   { hasPaired, stats }: ArcScale,
@@ -904,9 +930,9 @@ function resolveArcs(
       hasPaired,
       stats,
     })
-    const { shapeType, yBp } = computeArcShape({ cloud, arc, absrad })
+    const { shapeType, yBp, spanBp } = computeArcShape({ cloud, arc, absrad })
 
-    const key = arcKey({ p1Ref, p1Bp, p2Ref, p2Bp, colorType, shapeType })
+    const key = arcKey({ p1Ref, p1Bp, p2Ref, p2Bp, colorType, shapeType, yBp })
     const seen = byKey.get(key)
     if (seen) {
       seen.support++
@@ -918,6 +944,7 @@ function resolveArcs(
       colorType,
       shapeType,
       yBp,
+      spanBp,
       support: 1,
     }
     byKey.set(key, computed)
@@ -968,6 +995,7 @@ export function arcsToRegionResult(
   const arcColorTypes = new Uint8Array(regionArcs.length)
   const arcShapeTypes = new Uint8Array(regionArcs.length)
   const arcYBp = new Uint32Array(regionArcs.length)
+  const arcSpanBp = new Uint32Array(regionArcs.length)
   const arcSupport = new Uint32Array(regionArcs.length)
 
   let numFlatArcs = 0
@@ -979,6 +1007,7 @@ export function arcsToRegionResult(
     arcColorTypes[i] = arc.colorType
     arcShapeTypes[i] = arc.shapeType
     arcYBp[i] = arc.yBp
+    arcSpanBp[i] = arc.spanBp
     arcSupport[i] = arc.support
     if (isFlatArcShape(arc.shapeType)) {
       numFlatArcs++
@@ -1001,6 +1030,7 @@ export function arcsToRegionResult(
     arcColorTypes,
     arcShapeTypes,
     arcYBp,
+    arcSpanBp,
     arcSupport,
     numArcs: regionArcs.length,
     numFlatArcs,

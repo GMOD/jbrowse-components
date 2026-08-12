@@ -28,6 +28,7 @@ function arc(
     colorType,
     shapeType,
     yBp: bp * 2,
+    spanBp: bp * 2,
     support,
   }
 }

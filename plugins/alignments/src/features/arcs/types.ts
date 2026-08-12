@@ -6,6 +6,13 @@ export interface ArcsUploadData {
   arcColorTypes: Uint8Array
   arcShapeTypes: Uint8Array
   arcYBp: Uint32Array
+  // What each arc's Y means, as opposed to where it draws. The read cloud
+  // multiplies `arcYBp` by a deterministic ±8% jitter so coincident pairs
+  // separate visually, so `arcYBp` is a position and this is the quantity —
+  // |TLEN| for a mate link, the breakpoint gap for a split junction. Nothing
+  // draws from it and no GPU pass packs it; it is what the hover reports, which
+  // read the jittered value and named it the insert size.
+  arcSpanBp: Uint32Array
   // Reads supporting each arc: how many identical connections `resolveArcs`
   // folded into it, always >= 1. The three draw paths turn it into stroke width
   // through `arcLineWidth` — none of them may re-derive that curve.
@@ -45,6 +52,7 @@ export function emptyArcsUploadData(): ArcsUploadData {
     arcColorTypes: new Uint8Array(0),
     arcShapeTypes: new Uint8Array(0),
     arcYBp: new Uint32Array(0),
+    arcSpanBp: new Uint32Array(0),
     arcSupport: new Uint32Array(0),
     numArcs: 0,
     numFlatArcs: 0,

@@ -3,7 +3,10 @@ import { formatArcTooltip, supportLabel } from './tooltipUtils.ts'
 
 import type { ArcHitResult } from '../../features/arcs/hitTest.ts'
 
-function hit(support: number, { x1 = 1000, x2 = 2000 } = {}): ArcHitResult {
+function hit(
+  support: number,
+  { x1 = 1000, x2 = 2000, yBp = 500, spanBp = 500 } = {},
+): ArcHitResult {
   return {
     index: 0,
     x1,
@@ -11,7 +14,8 @@ function hit(support: number, { x1 = 1000, x2 = 2000 } = {}): ArcHitResult {
     support,
     colorType: 0,
     shapeType: ARC_SHAPE_ARC,
-    yBp: 500,
+    yBp,
+    spanBp,
   }
 }
 
@@ -36,6 +40,18 @@ describe('formatArcTooltip', () => {
     expect(
       formatArcTooltip(hit(2), 'chr1', undefined, false).insertSize,
     ).toBeUndefined()
+  })
+
+  test('reports the true insert size, not the jittered Y it draws at', () => {
+    // Read cloud scales a line's Y by a deterministic factor in [0.92, 1.08] so
+    // coincident pairs separate on screen. Reading that position back reported
+    // a 10,000bp template as 9,270bp — reproducibly, since the factor hashes
+    // the endpoints, so it looked like a real number rather than a drawing
+    // artifact.
+    const jittered = hit(1, { yBp: 9270, spanBp: 10000 })
+    expect(formatArcTooltip(jittered, 'chr1', undefined, true).insertSize).toBe(
+      10000,
+    )
   })
 })
 

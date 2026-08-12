@@ -10,6 +10,7 @@ const ARCS = {
   arcX1: new Uint32Array([1200]),
   arcX2: new Uint32Array([1600]),
   arcYBp: new Uint32Array([40]),
+  arcSpanBp: new Uint32Array([40]),
   arcSupport: new Uint32Array([7]),
   arcShapeTypes: new Uint8Array([ARC_SHAPE_ARC]),
   arcColorTypes: new Uint8Array([0]),

@@ -33,7 +33,13 @@ export interface ArcHitResult {
   support: number
   colorType: number
   shapeType: number
+  // Where the arc plots, jitter included. The drawn position — measure against
+  // it, don't report it.
   yBp: number
+  // What that position means: |TLEN| for a read-cloud mate link, the breakpoint
+  // gap for a split junction, the genomic radius for a curve. The number a
+  // tooltip may show.
+  spanBp: number
 }
 
 function arcHitAt(data: ArcsUploadData, i: number): ArcHitResult {
@@ -45,6 +51,7 @@ function arcHitAt(data: ArcsUploadData, i: number): ArcHitResult {
     colorType: data.arcColorTypes[i]!,
     shapeType: data.arcShapeTypes[i]!,
     yBp: data.arcYBp[i]!,
+    spanBp: data.arcSpanBp[i]!,
   }
 }
 

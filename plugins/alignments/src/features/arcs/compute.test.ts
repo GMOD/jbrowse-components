@@ -706,6 +706,108 @@ describe('computeArcsFromPileupData', () => {
     expect(run(4).arcs[0]!.colorType).toBe(4)
   })
 
+  test('read cloud carries the true insert size beside the jittered Y', () => {
+    // `yBp` is where the line draws — |tlen| times a deterministic factor in
+    // [0.92, 1.08], so coincident pairs separate instead of stacking. `spanBp`
+    // is what that height MEANS, and it is the one a tooltip may report: the
+    // hover used to read `yBp` back and call it the template length.
+    const data = makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array([0, 100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([10000]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readA'],
+      readNextRefs: ['chr1'],
+      readNextPositions: new Uint32Array([9900]),
+    })
+    const arc = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
+      {
+        colorByType: 'insertSizeAndOrientation',
+        cloud: true,
+        drawInter: false,
+        drawLongRange: true,
+      },
+    ).arcs[0]!
+    expect(arc.shapeType).toBe(ARC_SHAPE_FLAT)
+    expect(arc.spanBp).toBe(10000)
+    // The jitter really is applied to the drawn Y — otherwise this test would
+    // pass with the two fields collapsed back into one.
+    expect(arc.yBp).not.toBe(arc.spanBp)
+    expect(arc.yBp).toBeGreaterThanOrEqual(9200)
+    expect(arc.yBp).toBeLessThanOrEqual(10800)
+  })
+
+  test('read cloud keeps two same-endpoint pairs that plot at different Y', () => {
+    // Coalescing is keyed on what a connection DRAWS, and in read cloud that
+    // includes a Y taken from TLEN rather than from the endpoints. An
+    // outward-facing (RL) pair anchors on its mates' inner edges while TLEN
+    // spans their outer ones, so two RL pairs can share both endpoints and
+    // carry different template lengths — two lines at two heights. Keyed
+    // without `yBp` they merged, losing one line and crediting the survivor
+    // with both reads.
+    const data = makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array([0, 100, 0, 100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED, SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([4000, 7000]),
+      readPairOrientations: new Uint8Array([2, 2]),
+      readNames: ['readA', 'readB'],
+      readNextRefs: ['chr1', 'chr1'],
+      readNextPositions: new Uint32Array([5000, 5000]),
+    })
+    const { arcs } = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
+      {
+        colorByType: 'orientation',
+        cloud: true,
+        drawInter: false,
+        drawLongRange: true,
+      },
+    )
+    expect(arcs).toHaveLength(2)
+    expect(arcs.map(a => a.support)).toEqual([1, 1])
+    expect(arcs.map(a => a.spanBp).sort((a, b) => a - b)).toEqual([4000, 7000])
+    // Identical endpoints, so the endpoint-derived half of the key agrees and
+    // only the Y separates them.
+    expect(arcs[0]!.p1.bp).toBe(arcs[1]!.p1.bp)
+    expect(arcs[0]!.p2.bp).toBe(arcs[1]!.p2.bp)
+  })
+
+  test('identical read-cloud pairs still coalesce into one supported arc', () => {
+    // The converse of the test above, and the reason `yBp` can be keyed on at
+    // all: the jitter hashes the endpoints, so two genuinely identical pairs
+    // land on the same Y and still sum.
+    const data = makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array([0, 100, 0, 100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED, SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1, 1]),
+      readInsertSizes: new Float32Array([4000, 4000]),
+      readPairOrientations: new Uint8Array([2, 2]),
+      readNames: ['readA', 'readB'],
+      readNextRefs: ['chr1', 'chr1'],
+      readNextPositions: new Uint32Array([5000, 5000]),
+    })
+    const { arcs } = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
+      {
+        colorByType: 'orientation',
+        cloud: true,
+        drawInter: false,
+        drawLongRange: true,
+      },
+    )
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.support).toBe(2)
+  })
+
   test('read cloud colors long inserts red like arcs (slot 1)', () => {
     const data = makePileupData({
       regionStart: 0,
@@ -1575,6 +1677,7 @@ describe('groupArcsByRef', () => {
         colorType: 0,
         shapeType: 0,
         yBp: 200,
+        spanBp: 200,
         support: 1,
       },
       {
@@ -1583,6 +1686,7 @@ describe('groupArcsByRef', () => {
         colorType: 1,
         shapeType: 1,
         yBp: 500,
+        spanBp: 500,
         support: 1,
       },
     ]
@@ -1608,6 +1712,7 @@ describe('arcsToRegionResult', () => {
         colorType: 0,
         shapeType: 0,
         yBp: 200,
+        spanBp: 200,
         support: 1,
       },
     ]

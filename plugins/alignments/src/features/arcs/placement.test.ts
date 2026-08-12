@@ -33,6 +33,7 @@ function arcsData(
     arcX1: new Uint32Array(arcs.map(a => a.x1)),
     arcX2: new Uint32Array(arcs.map(a => a.x2)),
     arcYBp: new Uint32Array(arcs.map(a => a.yBp)),
+    arcSpanBp: new Uint32Array(arcs.map(a => a.yBp)),
     arcSupport: new Uint32Array(arcs.map(() => 1)),
     arcShapeTypes: new Uint8Array(arcs.map(a => a.shape ?? ARC_SHAPE_ARC)),
     arcColorTypes: new Uint8Array(arcs.map(() => 0)),

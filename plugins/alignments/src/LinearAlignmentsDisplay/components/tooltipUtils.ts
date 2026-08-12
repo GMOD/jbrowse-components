@@ -479,9 +479,13 @@ export function formatArcTooltip(
     end: Math.max(hit.x1, hit.x2),
     support: hit.support,
     category,
-    // A flat line's Y IS |tlen| (that is what the read cloud plots); a curve's
-    // is the genomic radius, which is just half the span already shown above.
-    ...(isFlat ? { insertSize: hit.yBp } : {}),
+    // A flat line plots |tlen| (that is what the read cloud is); a curve plots
+    // the genomic radius, which is just half the span already shown above.
+    //
+    // `spanBp`, NOT the `yBp` it draws at: the read cloud scales a line's Y by
+    // a ±8% jitter so coincident pairs don't stack, and reading the drawn
+    // position back reported that jittered number as the template length.
+    ...(isFlat ? { insertSize: hit.spanBp } : {}),
   }
 }
 
