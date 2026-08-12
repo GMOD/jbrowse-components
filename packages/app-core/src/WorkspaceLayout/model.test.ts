@@ -184,3 +184,55 @@ test('a reaction rearranging the workspace during a close is just two actions', 
   expect(session.panels.length).toBe(1)
   dispose()
 })
+
+// The four whole-workspace commands the dockview header owned. They went with
+// that component in ea9cb165af and were not reimplemented, so these pin that
+// each shape reaches the tree rather than only the spec.
+test('tiling horizontally gives every view a cell of one row', () => {
+  const session = createSession()
+  session.addViewToTab(session.tabs[0]!.id, 'view-2')
+  session.addViewToTab(session.tabs[0]!.id, 'view-3')
+
+  session.tileViews('horizontal', ['view-1', 'view-2', 'view-3'])
+
+  expect(session.panels).toHaveLength(3)
+  expect(session.tabs.map(t => [...t.viewIds])).toEqual([
+    ['view-1'],
+    ['view-2'],
+    ['view-3'],
+  ])
+})
+
+test('tiling into tabs collapses the grid back to one cell', () => {
+  const session = createSession()
+  const right = session.splitPanel(session.panels[0]!.id, 'row')!
+  session.addViewToTab(right.tabs[0]!.id, 'view-2')
+
+  session.tileViews('tabs', ['view-1', 'view-2'])
+
+  expect(session.panels).toHaveLength(1)
+  expect(session.tabs.map(t => [...t.viewIds])).toEqual([
+    ['view-1'],
+    ['view-2'],
+  ])
+})
+
+test('a tiling leaves every view somewhere, and homing after it is a no-op', () => {
+  const session = createSession()
+  const ids = ['view-1', 'view-2', 'view-3', 'view-4', 'view-5']
+  for (const id of ids.slice(1)) {
+    session.addViewToTab(session.tabs[0]!.id, id)
+  }
+
+  session.tileViews('grid', ids)
+  const tiled = getSnapshot(session.layout)
+  // homing exists to place views no tab holds; a tiling has just placed them
+  // all, so it must have nothing left to do — otherwise the arrangement would
+  // be undone by the autorun that runs on every views change
+  session.homeUnassignedViews(ids)
+
+  expect(getSnapshot(session.layout)).toEqual(tiled)
+  for (const id of ids) {
+    expect(session.tabContainingView(id)).toBeDefined()
+  }
+})

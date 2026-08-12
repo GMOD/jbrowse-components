@@ -1,7 +1,12 @@
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
-import { specForPendingMove, treeFromSpec, viewIdsInSpec } from './spec.ts'
+import {
+  specForPendingMove,
+  tileLayoutSpec,
+  treeFromSpec,
+  viewIdsInSpec,
+} from './spec.ts'
 import {
   addTab,
   addViewToTab,
@@ -23,7 +28,7 @@ import {
   tabs,
 } from './tree.ts'
 
-import type { LayoutSpecNode, PendingMove } from './spec.ts'
+import type { LayoutSpecNode, PendingMove, TileMode } from './spec.ts'
 import type { LayoutTree, PanelNode, TabNode } from './tree.ts'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
@@ -375,6 +380,20 @@ export function WorkspaceLayoutMixin() {
           apply(next)
           self.activePanelId = panel.id
           return panel.id
+        },
+        /**
+         * The whole-workspace re-arrange: every view one cell, in one of four
+         * shapes. Restored from the dockview header's four "Global:" commands,
+         * which went with that component and were not reimplemented.
+         *
+         * `allViewIds` is passed in rather than read off the session for the
+         * same reason `moveViewToNewTab` takes it: this mixin owns the tree and
+         * has no view list of its own. Passing `session.views` order means the
+         * arrangement it states is already the order views render in, so unlike
+         * a session spec's layout there is nothing for `orderViews` to apply.
+         */
+        tileViews(mode: TileMode, allViewIds: string[]) {
+          this.applyLayoutSpec(tileLayoutSpec(allViewIds, mode))
         },
         homeUnassignedViews(viewIds: string[]) {
           apply(home(self.tree, viewIds))

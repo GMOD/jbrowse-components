@@ -2,9 +2,13 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
+import DynamicFeedIcon from '@mui/icons-material/DynamicFeed'
 import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit'
 import TabIcon from '@mui/icons-material/Tab'
+import TableRowsIcon from '@mui/icons-material/TableRows'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'
+import ViewModuleIcon from '@mui/icons-material/ViewModule'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -12,6 +16,7 @@ import { dv } from './dockviewTheme.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
+import type { TileMode } from './spec.ts'
 import type { PanelNode } from './tree.ts'
 
 const useStyles = makeStyles()({
@@ -45,6 +50,12 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
 }) {
   const { classes } = useStyles()
   const canClose = session.panels.length > 1
+  const tile = (mode: TileMode) => {
+    session.tileViews(
+      mode,
+      session.views.map(v => v.id),
+    )
+  }
 
   return (
     <div className={classes.actions}>
@@ -71,6 +82,42 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
               session.splitPanel(panel.id, 'column')
             },
           },
+          // The whole-workspace commands, kept behind the same "Global:" prefix
+          // and the same >1-view gate they had on the dockview header, so a
+          // returning user finds them where they were and the label still says
+          // that the button in THIS cell rearranges every cell.
+          ...(session.views.length > 1
+            ? ([
+                {
+                  label: 'Global: change layout into set of tabs',
+                  icon: DynamicFeedIcon,
+                  onClick: () => {
+                    tile('tabs')
+                  },
+                },
+                {
+                  label: 'Global: tile horizontally',
+                  icon: ViewColumnIcon,
+                  onClick: () => {
+                    tile('horizontal')
+                  },
+                },
+                {
+                  label: 'Global: tile vertically',
+                  icon: TableRowsIcon,
+                  onClick: () => {
+                    tile('vertical')
+                  },
+                },
+                {
+                  label: 'Global: tile grid',
+                  icon: ViewModuleIcon,
+                  onClick: () => {
+                    tile('grid')
+                  },
+                },
+              ] as const)
+            : []),
         ]}
         size="small"
         className={classes.button}

@@ -1,4 +1,9 @@
-import { specForPendingMove, treeFromSpec, viewIdsInSpec } from './spec.ts'
+import {
+  specForPendingMove,
+  tileLayoutSpec,
+  treeFromSpec,
+  viewIdsInSpec,
+} from './spec.ts'
 import { isBranch } from './tree.ts'
 
 import type { BranchNode, LayoutTree, PanelNode } from './tree.ts'
@@ -208,6 +213,46 @@ test('viewIdsInSpec reports every view depth-first, in the order stated', () => 
     }),
   ).toEqual(['a', 'b', 'c'])
 })
+
+test.each(['tabs', 'horizontal', 'vertical'] as const)(
+  'tiling %s gives every view its own cell, in session order',
+  mode => {
+    expect(tileLayoutSpec(['a', 'b', 'c'], mode)).toEqual({
+      direction: mode,
+      children: [{ viewIds: ['a'] }, { viewIds: ['b'] }, { viewIds: ['c'] }],
+    })
+  },
+)
+
+test('a grid is rows of ceil(sqrt(n)) columns, filled row-major', () => {
+  // 5 views -> 3 columns -> a full row and a short one. The short row is not
+  // padded: its two cells share that row, which is what "tile grid" looked like
+  // in the dockview version too.
+  expect(tileLayoutSpec(['a', 'b', 'c', 'd', 'e'], 'grid')).toEqual({
+    direction: 'vertical',
+    children: [
+      {
+        direction: 'horizontal',
+        children: [{ viewIds: ['a'] }, { viewIds: ['b'] }, { viewIds: ['c'] }],
+      },
+      {
+        direction: 'horizontal',
+        children: [{ viewIds: ['d'] }, { viewIds: ['e'] }],
+      },
+    ],
+  })
+})
+
+test.each(['tabs', 'horizontal', 'vertical', 'grid'] as const)(
+  'tiling %s with one view is the whole workspace, not a one-child split',
+  mode => {
+    // `normalize` would collapse a single-child branch anyway; stating the leaf
+    // means the tree never has to, and an empty session states an empty leaf
+    // rather than a branch with no children.
+    expect(tileLayoutSpec(['only'], mode)).toEqual({ viewIds: ['only'] })
+    expect(tileLayoutSpec([], mode)).toEqual({ viewIds: [] })
+  },
+)
 
 test('a pending splitRight puts the named view opposite everything else', () => {
   const spec = specForPendingMove({ type: 'splitRight', viewId: 'v2' }, [

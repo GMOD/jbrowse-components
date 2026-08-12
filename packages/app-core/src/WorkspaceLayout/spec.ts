@@ -127,6 +127,48 @@ export function viewIdsInSpec(spec: LayoutSpecNode): string[] {
   ]
 }
 
+/** How "arrange everything" lays the whole session out. */
+export type TileMode = 'tabs' | 'horizontal' | 'vertical' | 'grid'
+
+/**
+ * Re-arrange every view at once, one view per cell.
+ *
+ * The four whole-workspace commands, as a spec. dockview had these as imperative
+ * re-tiling — walk every panel and re-add it relative to the first, in an order
+ * chosen so the grid came out right — and the grid case had to compute its own
+ * row/column arithmetic against `api.panels` because there was no way to state
+ * the shape. Here the shape IS the statement, so a tiling is a spec and goes
+ * through the same `applyLayoutSpec` a session spec does.
+ *
+ * `grid` fills row-major at ceil(sqrt(n)) columns, which is what the dockview
+ * version computed; a trailing row shorter than the rest keeps its cells at full
+ * width, since `resolveSizes` reads bare siblings as an even share of their own
+ * branch rather than of the grid.
+ */
+export function tileLayoutSpec(
+  viewIds: string[],
+  mode: TileMode,
+): LayoutSpecNode {
+  // Nothing to arrange: one view is the whole workspace whatever the mode, and
+  // no views leaves the empty panel the tree already guarantees.
+  if (viewIds.length <= 1) {
+    return { viewIds: [...viewIds] }
+  }
+  const cell = (id: string): LayoutSpecNode => ({ viewIds: [id] })
+  if (mode !== 'grid') {
+    return { direction: mode, children: viewIds.map(cell) }
+  }
+  const cols = Math.ceil(Math.sqrt(viewIds.length))
+  const rows: LayoutSpecNode[] = []
+  for (let i = 0; i < viewIds.length; i += cols) {
+    rows.push({
+      direction: 'horizontal',
+      children: viewIds.slice(i, i + cols).map(cell),
+    })
+  }
+  return { direction: 'vertical', children: rows }
+}
+
 /**
  * `setPendingMove` as a spec: everything else keeps its side, the named view
  * takes the other. With nothing else on screen there is nothing to split from,
