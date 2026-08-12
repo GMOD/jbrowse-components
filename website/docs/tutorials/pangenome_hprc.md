@@ -902,11 +902,13 @@ one click away rather than an inference.
 Frequency is in the file rather than in the picture. `AC`, `AF`, `AN` and `NS`
 are on every record, so `jexl:feature.INFO.AF[0]>0.05` selects the common
 alleles without clustering anything. `AC`/`AF` are per-ALT arrays, so on a
-multi-allelic site index the allele you mean. Two fields guard the reading. A
-no-call is not a reference call, and `missingness(feature)` is available as a
-filter for exactly that, which matters where assembly coverage is thin (KIR,
-LPA) more than it does here. `CONFLICT` names samples the graph gives two
-disagreeing paths, and it fires on no record in this window.
+multi-allelic site index the allele you mean. Two fields guard the reading:
+
+- A no-call is not a reference call, and `missingness(feature)` is available as
+  a filter for exactly that, which matters where assembly coverage is thin (KIR,
+  LPA) more than it does here.
+- `CONFLICT` names samples the graph gives two disagreeing paths, and it fires
+  on no record in this window.
 
 The display widens each insertion cell to a marker sized by the inserted bp, in
 that haplotype's own genotype color

@@ -54,15 +54,14 @@ without leaving the session.
 
 Clustering and cell-type labeling stay upstream, in Cell Ranger ATAC, ArchR,
 Signac, or SnapATAC2. Two settings decide whether the rows this page draws can
-be compared to each other, whichever tool writes them.
+be compared to each other, whichever tool writes them:
 
-Normalization matters because groups differ in cell count and in total
-fragments, so each track needs normalizing (CPM / RPKM, or per-cell-count).
-Without it a tall peak can just mean "more cells in this group".
-
-Bin size trades resolution against file size. Peak shape is the readable part of
-an ATAC track, so the bin has to stay well inside one peak; `export_coverage`
-below uses 25 bp.
+- **Normalization.** Groups differ in cell count and in total fragments, so each
+  track needs normalizing (CPM / RPKM, or per-cell-count). Without it a tall
+  peak can just mean "more cells in this group".
+- **Bin size**, which trades resolution against file size. Peak shape is the
+  readable part of an ATAC track, so the bin has to stay well inside one peak;
+  `export_coverage` below uses 25 bp.
 
 SnapATAC2's `export_coverage` splits cells by a metadata column and writes one
 normalized BigWig per group in a single call, which covers the pseudobulk step

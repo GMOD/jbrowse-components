@@ -110,17 +110,20 @@ with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
 }
 ```
 
-Two settings there are doing real work.
-[`groupBy`](/docs/config/linearmultisamplevariantdisplay/#slot-groupby) is what
-keeps the karyotype classes contiguous; without it the rows keep the VCF's
-column order and the split only reads as blocks by luck. And
-[`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
-is left on its default, `skip`, which colors the whole lane with the reference
-color and paints only alt cells on top. The lane is then a solid grey field with
-the carriers' blocks on it, and a standard-arrangement mosquito is grey rather
-than blank. The alternative, `draw`, paints a grey cell per row at the call's
-span instead. That is the same information, but as a rectangle striped by the
-gaps between rows, which reads as a texture rather than as background.
+Two settings there are doing real work:
+
+- [`groupBy`](/docs/config/linearmultisamplevariantdisplay/#slot-groupby) keeps
+  the karyotype classes contiguous. Without it the rows keep the VCF's column
+  order and the split only reads as blocks by luck.
+- [`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
+  is left on its default, `skip`, which colors the whole lane with the reference
+  color and paints only alt cells on top. The lane is then a solid grey field
+  with the carriers' blocks on it, and a standard-arrangement mosquito is grey
+  rather than blank.
+
+The alternative, `draw`, paints a grey cell per row at the call's span instead.
+That is the same information, but as a rectangle striped by the gaps between
+rows, which reads as a texture rather than as background.
 
 There is no `rowHeight` here, because it is a display model property rather than
 a config slot: rows divide the lane's height between them, so the lane height is

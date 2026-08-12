@@ -56,12 +56,15 @@ name              histology  er        pr        her2      subtype    stage
 TCGA-3C-AAAU-01A  lobular    positive  positive  negative  HR+/HER2-  X
 ```
 
-`histology` and `stage` come from the GDC's harmonized case fields.
-`er`/`pr`/`her2` are read from each case's open-access clinical XML, with the
-in-situ hybridization result taking precedence over immunohistochemistry for
-HER2 wherever a case has both, since that is the test an equivocal IHC gets sent
-for. `subtype` is derived from those three, and a tumor whose receptor calls do
-not resolve it stays `unknown` rather than being guessed into a group.
+Its columns come from three different places:
+
+- `histology` and `stage` come from the GDC's harmonized case fields.
+- `er`/`pr`/`her2` are read from each case's open-access clinical XML, with the
+  in-situ hybridization result taking precedence over immunohistochemistry for
+  HER2 wherever a case has both, since that is the test an equivocal IHC gets
+  sent for.
+- `subtype` is derived from those three, and a tumor whose receptor calls do not
+  resolve it stays `unknown` rather than being guessed into a group.
 
 The table is built per project rather than per track, so it names more tumors
 than either track carries: a case with no mutation calls still has receptor

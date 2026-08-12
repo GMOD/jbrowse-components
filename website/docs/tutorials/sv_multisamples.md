@@ -114,12 +114,14 @@ accepted.
 
 Open three samples' alignments from **1000 Genomes → Alignments**, one per
 genotype: HG00113 called homozygous alt, HG00096 heterozygous, HG00097
-homozygous reference. Two settings make them comparable. Turn the pileup off
-from the track menu's **Show...** submenu, since at this width the individual
-reads are a solid mass and it is the coverage curve that carries the comparison.
-Then set an explicit **min/max score** on each rather than leaving the default
-autoscale, which fits each row to its own maximum and draws three different
-depths at the same height.
+homozygous reference. Two settings make them comparable:
+
+- Turn the pileup off from the track menu's **Show...** submenu, since at this
+  width the individual reads are a solid mass and it is the coverage curve that
+  carries the comparison.
+- Set an explicit **min/max score** on each rather than leaving the default
+  autoscale, which fits each row to its own maximum and draws three different
+  depths at the same height.
 
 <Figure caption="The RHD deletion across three genotypes, coverage pinned to one shared axis, the banded span RHD itself. Top, HG00113 with no copy: coverage at the flanking depth either side, collapsing across the gene. Middle, HG00096 with one: about half that depth. Bottom, HG00097 with two: flat throughout." src="/img/multisv_rhd_dosage.png" />
 

@@ -84,13 +84,17 @@ shepherd breeds in particular: leave the targets' own dog background
 unrepresented and ordinary dog haplotypes have nowhere to go but the wolf panel.
 
 An animal cannot be in a panel and painted against it, so both directions of
-that get handled explicitly. The eight gray wolves are **removed from the wolf
-panel** before the run, since a target matched against itself paints solid by
-construction and says nothing. The sweep is the same problem in reverse: each
-swept animal comes out of the dog panel, but its **breed** does not, because the
-targets are drawn from breeds with several sequenced animals and the panel takes
-one of the others. That is what makes a flat-dog painting of a Chow Chow or an
-Alaskan Malamute a result rather than an artifact of a missing panel entry.
+that get handled explicitly:
+
+- The eight gray wolves are **removed from the wolf panel** before the run,
+  since a target matched against itself paints solid by construction and says
+  nothing.
+- Each swept animal comes out of the dog panel, but its **breed** does not,
+  because the targets are drawn from breeds with several sequenced animals and
+  the panel takes one of the others.
+
+That second one is what makes a flat-dog painting of a Chow Chow or an Alaskan
+Malamute a result rather than an artifact of a missing panel entry.
 
 FLARE reads the two lists as one `ref-panel` file:
 

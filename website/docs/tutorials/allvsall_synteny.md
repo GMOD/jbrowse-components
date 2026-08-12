@@ -260,14 +260,18 @@ means four bands, so `tracks` has four entries, all served by the same track:
 }
 ```
 
-`tracks` is one entry per band: `tracks[0]` connects rows 0-1, `tracks[1]` rows
-1-2, and so on to `tracks[3]` for rows 3-4, all served by `ecoli_ava`.
-`minAlignmentLength` hides minimap2's many short alignments, which would
-otherwise bury the shared backbone under a dense noise band. Tune it to taste.
-`collapseEmptyRows` matters because none of these five rows carries a track of
-its own, so without it each opens with a "No tracks active" block where a
-ribbon-only row wants a bare scalebar. Every one of these is a one-time load
-setting and goes under `init`. See the
+Three keys there are worth reading, and each is a one-time load setting that
+goes under `init`:
+
+- `tracks` is one entry per band: `tracks[0]` connects rows 0-1, `tracks[1]`
+  rows 1-2, and so on to `tracks[3]` for rows 3-4, all served by `ecoli_ava`.
+- `minAlignmentLength` hides minimap2's many short alignments, which would
+  otherwise bury the shared backbone under a dense noise band. Tune it to taste.
+- `collapseEmptyRows` matters because none of these five rows carries a track of
+  its own, so without it each opens with a "No tracks active" block where a
+  ribbon-only row wants a bare scalebar.
+
+See the
 [ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 for a fuller walk-through of the `defaultSession` structure.
 

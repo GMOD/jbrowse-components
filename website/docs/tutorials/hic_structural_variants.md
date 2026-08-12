@@ -193,12 +193,16 @@ neighbours match is a difference in the data; one that appears everywhere is a
 difference in how the two files were made.
 
 Two things make this comparison harder than it looks, and both are set up in the
-figure rather than left to the reader. The eigenvector tracks are pinned to one
-shared scale, because autoscaling lets each fill its own lane from its own
-extremes and the two stop being comparable at all. And an eigenvector names the
-A compartment only up to a sign, so which sign means active is a property of the
-file rather than a convention: it is read off the gene track, since A is the
-gene-rich compartment by definition. The
+figure rather than left to the reader:
+
+- The eigenvector tracks are pinned to one shared scale, because autoscaling
+  lets each fill its own lane from its own extremes and the two stop being
+  comparable at all.
+- An eigenvector names the A compartment only up to a sign, so which sign means
+  active is a property of the file rather than a convention. It is read off the
+  gene track, since A is the gene-rich compartment by definition.
+
+The
 [user guide section](/docs/user_guides/hic_track#compartments-and-subcompartments)
 covers both, along with why the subcompartment class numbers cannot be compared
 between files on their own.

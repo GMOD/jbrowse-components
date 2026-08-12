@@ -50,18 +50,17 @@ Clustering and labeling stay upstream, in Seurat, scanpy, or whatever produced
 the annotation. This page starts from a barcode-to-label table and the BAM.
 
 Two decisions determine whether the rows can be compared to each other, and both
-are about what goes into a row rather than how it is drawn.
+are about what goes into a row rather than how it is drawn:
 
-The first is duplicates. Cell Ranger flags PCR duplicates of the same UMI with
-the standard `0x400` flag. Keeping them makes a row's height track amplification
-rather than expression, so filter them out. Restricting to uniquely mapped reads
-(`MAPQ` 255, which is what STAR emits inside Cell Ranger) drops the multimappers
-that would otherwise pile onto paralogs.
-
-The second is normalization. Cell types differ in cell count and in sequencing
-depth, so each pooled track needs scaling (CPM is the usual choice) before one
-row's height means anything next to another's. Without it a tall row can just
-mean more cells went into it.
+- **Duplicates.** Cell Ranger flags PCR duplicates of the same UMI with the
+  standard `0x400` flag. Keeping them makes a row's height track amplification
+  rather than expression, so filter them out. Restricting to uniquely mapped
+  reads (`MAPQ` 255, which is what STAR emits inside Cell Ranger) drops the
+  multimappers that would otherwise pile onto paralogs.
+- **Normalization.** Cell types differ in cell count and in sequencing depth, so
+  each pooled track needs scaling (CPM is the usual choice) before one row's
+  height means anything next to another's. Without it a tall row can just mean
+  more cells went into it.
 
 Coverage must also be splice-aware: an RNA read spanning an intron carries an
 `N` in its CIGAR, and counting that as covered fills in introns that no read
