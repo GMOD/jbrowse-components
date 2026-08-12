@@ -39,6 +39,13 @@ test('loads the list and marks the attempt, then clears it on success', async ()
   expect(localStorage.getItem(LOADING_MARKER)).toBe('')
 })
 
+test('an empty list arms nothing, so an unrelated crash is not blamed on it', async () => {
+  const g = await importFresh('/', '')
+  mockInvoke.mockResolvedValue([])
+  expect(await g.getGlobalPlugins()).toEqual([])
+  expect(localStorage.getItem(LOADING_MARKER)).toBe('')
+})
+
 test('?safeMode skips the list without touching it', async () => {
   const g = await importFresh('/?safeMode=1', '')
   expect(g.globalPluginSafeMode()).toBe('requested')
@@ -46,11 +53,33 @@ test('?safeMode skips the list without touching it', async () => {
   expect(mockInvoke).not.toHaveBeenCalled()
 })
 
+test('a valueless ?safeMode counts', async () => {
+  const g = await importFresh('/?safeMode', '')
+  expect(g.globalPluginSafeMode()).toBe('requested')
+})
+
 test('a launch that never finished loading them disables them next time', async () => {
   const g = await importFresh('/', '1')
   expect(g.globalPluginSafeMode()).toBe('previousLaunchFailed')
   expect(await g.getGlobalPlugins()).toEqual([])
   expect(mockInvoke).not.toHaveBeenCalled()
+})
+
+test('safe mode survives the launch it protected, rather than re-arming', async () => {
+  const g = await importFresh('/', '1')
+  await g.getGlobalPlugins()
+  // nothing ran, so there is nothing to vouch for: clearing here would load the
+  // plugins again next launch and crash on every other start
+  g.markGlobalPluginLoadSucceeded()
+  expect(localStorage.getItem(LOADING_MARKER)).toBe('1')
+})
+
+test('re-enabling is what turns it back off', async () => {
+  const g = await importFresh('/', '1')
+  // jsdom has no navigation, and says so on the virtual console
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  g.reloadWithGlobalPlugins()
+  expect(localStorage.getItem(LOADING_MARKER)).toBe('')
 })
 
 test('a failed read degrades to no global plugins rather than throwing', async () => {

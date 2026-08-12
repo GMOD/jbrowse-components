@@ -21,9 +21,21 @@ export async function writeGlobalPlugins(
 // here is a real error and is surfaced rather than silently treated as empty.
 export function registerGlobalPluginHandlers(paths: AppPaths) {
   ipcHandle('getGlobalPlugins', async () => {
-    return JSON.parse(
+    const parsed: unknown = JSON.parse(
       await fs.promises.readFile(paths.globalPluginsPath, ENCODING),
-    ) as unknown[]
+    )
+    // A file that parses but isn't a list is as unusable as one that doesn't
+    // parse, and worse to pass on: the renderer spreads this straight into a
+    // plugin list, so a bare object reaches PluginLoader as a TypeError that
+    // names neither the file nor what is wrong with it — and takes the session
+    // open (or the start screen's manager) down with it. Fail here, naming the
+    // file, so the global plugins dialog can offer to reset it.
+    if (!Array.isArray(parsed)) {
+      throw new Error(
+        `${paths.globalPluginsPath} does not contain a list of plugins`,
+      )
+    }
+    return parsed as unknown[]
   })
 
   ipcHandle('setGlobalPlugins', async (_event, plugins) => {

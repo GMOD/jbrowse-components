@@ -7,19 +7,21 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 const SAFE_MODE_PARAM = 'safeMode'
 
-// Written before global plugins are loaded and cleared once a plugin manager
-// has been built with them. Finding it already set at startup means the last
-// attempt never got that far — a plugin that threw while its module was
-// evaluated, hung, or took the renderer down with it — and none of those leave
-// an error anyone can act on, so the next launch skips global plugins instead
-// of reproducing the same crash. Cleared, rather than removed, because the
-// core localStorage helpers only get and set.
+// Written once the global plugin list is known to be non-empty, and cleared
+// once a plugin manager has been built with it. Finding it already set at
+// startup means the last attempt never got that far — a plugin that threw while
+// its module was evaluated, hung, or took the renderer down with it — and none
+// of those leave an error anyone can act on, so the next launch skips global
+// plugins instead of reproducing the same crash. Cleared, rather than removed,
+// because the core localStorage helpers only get and set.
 const LOADING_MARKER = 'jbrowse-desktop-global-plugins-loading'
 
 export type SafeModeReason = 'requested' | 'previousLaunchFailed'
 
 function readSafeModeReason(): SafeModeReason | undefined {
-  return new URLSearchParams(window.location.search).get(SAFE_MODE_PARAM)
+  // has(), not get(): a bare `?safeMode` is a perfectly ordinary way to write
+  // this by hand and reads back as the empty string, which is falsy
+  return new URLSearchParams(window.location.search).has(SAFE_MODE_PARAM)
     ? 'requested'
     : localStorageGetItem(LOADING_MARKER)
       ? 'previousLaunchFailed'
@@ -55,18 +57,39 @@ export async function readGlobalPlugins() {
 export async function getGlobalPlugins() {
   let plugins: PluginDefinition[] = []
   if (!safeModeReason) {
-    localStorageSetItem(LOADING_MARKER, '1')
     try {
       plugins = await readGlobalPlugins()
     } catch (e) {
       console.error(e)
     }
+    // Armed after the read, and only when there is in fact something to
+    // suspect. Arming it unconditionally meant a user who has never installed a
+    // global plugin was still told, after any hard crash during session load,
+    // that "global plugins were disabled because the last launch did not finish
+    // loading them" — and put into a safe mode that skips an empty list and so
+    // changes nothing about the crash they are about to hit again.
+    if (plugins.length > 0) {
+      localStorageSetItem(LOADING_MARKER, '1')
+    }
   }
   return plugins
 }
 
+/**
+ * Bumped whenever the list is written. Anything that built something from the
+ * list can compare this against the value it built at to tell whether an edit
+ * has landed since — see createStartScreenPluginManager, which is built once per
+ * launch rather than once per mount.
+ */
+let generation = 0
+
+export function globalPluginsGeneration() {
+  return generation
+}
+
 export async function setGlobalPlugins(plugins: PluginDefinition[]) {
   await invokeIpc('setGlobalPlugins', plugins)
+  generation++
 }
 
 /**
@@ -74,7 +97,15 @@ export async function setGlobalPlugins(plugins: PluginDefinition[]) {
  * going to do to this launch, they have done it.
  */
 export function markGlobalPluginLoadSucceeded() {
-  localStorageSetItem(LOADING_MARKER, '')
+  // Not in safe mode, where no global plugin ran and so nothing has been
+  // vouched for. Clearing it here re-armed them for the next launch, which
+  // reproduced the crash that set the marker in the first place: the app worked
+  // every *other* time it was started, and the "Re-enable" the banner offers was
+  // the only thing standing between the user and that loop. Safe mode now stays
+  // on until they take it off.
+  if (!safeModeReason) {
+    localStorageSetItem(LOADING_MARKER, '')
+  }
 }
 
 /**

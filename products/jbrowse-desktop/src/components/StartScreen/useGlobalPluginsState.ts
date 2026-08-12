@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { useFetch } from '@jbrowse/core/util/useFetch'
 
@@ -14,25 +14,46 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
  * would write a truncated one back and silently drop every plugin the user had.
  */
 export function useGlobalPluginsState() {
-  const { data, error: loadError } = useFetch('globalPlugins', () =>
-    readGlobalPlugins(),
-  )
-  // the saved list, once an edit has been written; before that the fetched one
-  const [saved, setSaved] = useState<PluginDefinition[]>()
+  const {
+    data,
+    error: loadError,
+    mutate,
+  } = useFetch('globalPlugins', () => readGlobalPlugins())
+  // The list this dialog has edited, once it has; before that, the fetched one.
+  // Set when an edit is *issued* rather than when it lands, so what is on screen
+  // is always what the next edit composes onto. Waiting for the write meant two
+  // clicks in a row both composed onto the list from before the first — the
+  // second install overwrote the first, and a `remove` resolved a position
+  // against a list one edit stale and deleted the wrong plugin.
+  const [edited, setEdited] = useState<PluginDefinition[]>()
   const [saveError, setSaveError] = useState<unknown>()
-  const plugins = saved ?? data
+  const plugins = edited ?? data
+  // Writes are chained for the same reason they are optimistic: two writeFile
+  // calls in flight over one path have no defined winner, so the newer list
+  // could land first and be overwritten by the older one.
+  const writeRef = useRef<Promise<void>>(undefined)
 
   // never rejects: a write that failed is reported through saveError, and the
-  // list on screen stays the one on disk
+  // list goes back to whatever is actually on disk
   function save(next: PluginDefinition[]) {
-    setGlobalPlugins(next)
-      .then(() => {
-        setSaved(next)
-        setSaveError(undefined)
-      })
+    setEdited(next)
+    setSaveError(undefined)
+    writeRef.current = (writeRef.current ?? Promise.resolve())
+      .then(() => setGlobalPlugins(next))
       .catch((e: unknown) => {
         setSaveError(e)
+        // what is on screen was never written, and nothing here knows what did
+        // land (an earlier edit in the chain may have), so re-read rather than
+        // guess
+        setEdited(undefined)
+        mutate()
       })
+  }
+
+  function edit(update: (prev: PluginDefinition[]) => PluginDefinition[]) {
+    if (plugins) {
+      save(update(plugins))
+    }
   }
 
   return {
@@ -40,15 +61,14 @@ export function useGlobalPluginsState() {
     loadError,
     saveError,
     add: (definition: PluginDefinition) => {
-      if (plugins) {
-        save([...plugins, definition])
-      }
+      edit(prev => [...prev, definition])
     },
     remove: (index: number) => {
-      if (plugins) {
-        save(plugins.filter((_, i) => i !== index))
-      }
+      edit(prev => prev.filter((_, i) => i !== index))
     },
+    // Unguarded, unlike the two above: this is also the way out of a
+    // globalPlugins.json that cannot be read at all, where there is no list to
+    // compose onto and overwriting it is the point.
     removeAll: () => {
       save([])
     },

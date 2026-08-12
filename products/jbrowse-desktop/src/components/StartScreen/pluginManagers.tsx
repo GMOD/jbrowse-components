@@ -21,6 +21,7 @@ import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
 import { fetchConfig } from './fetchConfig.ts'
 import {
   getGlobalPlugins,
+  globalPluginsGeneration,
   markGlobalPluginLoadSucceeded,
 } from './globalPlugins.ts'
 import { launchFromLink } from './launchFromLink.ts'
@@ -93,26 +94,68 @@ export interface StartScreenPluginManager {
   failures: PluginLoadFailure[]
 }
 
-// A manager built from the global plugins alone, so the start screen — which
-// has no session, and therefore no session plugin manager — can still fire the
-// extension points a global plugin contributes to.
-export async function createStartScreenPluginManager(): Promise<StartScreenPluginManager> {
-  const pluginLoader = makePluginLoader(await getGlobalPlugins())
-  // settled for the same reason the session loader is: one unloadable global
-  // plugin must not cost the user their start screen
-  const { records, failures } = await pluginLoader.loadSettled(
+/**
+ * Load a set of definitions and build the manager that holds them.
+ *
+ * Settled, not all-or-nothing, on both paths: Desktop opens remote hub configs
+ * whose plugin urls it has no control over, and one that 404s or needs a newer
+ * host than this install used to leave the user with a dead app instead of a
+ * session missing one feature — while one unloadable *global* plugin must not
+ * cost them the start screen that is the only place to uninstall it. Each caller
+ * reports the failures where it has somewhere to report them.
+ */
+async function buildPluginManager(
+  definitions: PluginDefinition[],
+  isGlobal: (definition: PluginDefinition) => boolean,
+) {
+  const { records, failures } = await makePluginLoader(definitions).loadSettled(
     window.location.href,
   )
-  const pluginManager = new PluginManager(pluginRecords(records, () => true))
+  const pluginManager = new PluginManager(pluginRecords(records, isGlobal))
   pluginManager.createPluggableElements()
-  // no root model to configure against, which every plugin's configure()
-  // already guards for (isAbstractMenuManager), but extension points a plugin
-  // registers there have to be in place before the start screen renders
-  pluginManager.configure()
   // whatever the global plugins were going to do to this launch, they have now
   // done it, so the next one need not suspect them
   markGlobalPluginLoadSucceeded()
   return { pluginManager, failures }
+}
+
+// A manager built from the global plugins alone, so the start screen — which
+// has no session, and therefore no session plugin manager — can still fire the
+// extension points a global plugin contributes to.
+async function buildStartScreenPluginManager(): Promise<StartScreenPluginManager> {
+  const built = await buildPluginManager(await getGlobalPlugins(), () => true)
+  // no root model to configure against, which every plugin's configure()
+  // already guards for (isAbstractMenuManager), but extension points a plugin
+  // registers there have to be in place before the start screen renders
+  built.pluginManager.configure()
+  return built
+}
+
+// Built once per list, not once per mount. "Return to start screen" unmounts and
+// remounts the start screen, and rebuilding re-fetched and re-evaluated every
+// global plugin bundle to arrive at the same manager — appending another
+// <script> to <head>, and re-running the bundle's module-level side effects,
+// once per round trip. Keyed on the write generation rather than cached
+// outright so that removing the plugin that broke a panel still takes effect on
+// the way back, which is the recovery this whole surface exists for.
+let cached:
+  | { generation: number; built: Promise<StartScreenPluginManager> }
+  | undefined
+
+export function createStartScreenPluginManager() {
+  const generation = globalPluginsGeneration()
+  if (cached?.generation !== generation) {
+    cached = {
+      generation,
+      // a rejected promise held forever would make one bad launch permanent, so
+      // drop it and let the next mount try again
+      built: buildStartScreenPluginManager().catch((e: unknown) => {
+        cached = undefined
+        throw e
+      }),
+    }
+  }
+  return cached.built
 }
 
 /**
@@ -187,18 +230,11 @@ export async function createPluginManager(
   // declares isn't in here — dedupe kept the config's own entry, which the
   // session can remove for itself.
   const globalOnly = merged.filter(d => globalPlugins.includes(d))
-  const pluginLoader = makePluginLoader(merged)
-  // Settled, not all-or-nothing: Desktop opens remote hub configs whose plugin
-  // urls it has no control over, and one that 404s or needs a newer host than
-  // this install used to leave the user with a dead app instead of a session
-  // missing one feature. Reported below, once there is a session to report on.
-  const { records: runtimePlugins, failures: pluginLoadFailures } =
-    await pluginLoader.loadSettled(window.location.href)
-  const pluginManager = new PluginManager(
-    pluginRecords(runtimePlugins, d => globalOnly.some(g => samePlugin(g, d))),
-  )
-  pluginManager.createPluggableElements()
-  markGlobalPluginLoadSucceeded()
+  // failures are reported below, once there is a session to report them on
+  const { pluginManager, failures: pluginLoadFailures } =
+    await buildPluginManager(merged, d =>
+      globalOnly.some(g => samePlugin(g, d)),
+    )
 
   const JBrowseRootModel = JBrowseRootModelFactory({
     pluginManager,

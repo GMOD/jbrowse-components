@@ -119,7 +119,15 @@ function AvailablePlugins({
             plugin={plugin}
             resolved={resolved}
             installed={isPluginInstalled(plugin, resolved, installed)}
-            onInstall={onInstall}
+            onInstall={definition => {
+              // the store's name (the UMD global, e.g. "GWAS") is what the
+              // definition must be installed under, the same way the in-session
+              // plugin store does it. It is already on a UMD definition, but an
+              // ESM/CJS one carries none — and a nameless entry in the global
+              // list is one samePlugin() can only match by url, so the same
+              // plugin pinned to a different version in a config loads twice.
+              onInstall({ ...definition, name: plugin.name })
+            }}
           />
         )
       })
@@ -158,6 +166,23 @@ export default function GlobalPluginsDialog({
           </Typography>
           {loadError ? <ErrorMessage error={loadError} /> : null}
           {saveError ? <ErrorMessage error={saveError} /> : null}
+          {loadError && !plugins ? (
+            // The list cannot be read, so there is nothing to edit and every
+            // control below is hidden — which used to leave this dialog with no
+            // way out of a corrupt globalPlugins.json at all, short of a factory
+            // reset that also costs the user every session they have.
+            <div className={classes.toolbar}>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => {
+                  removeAll()
+                }}
+              >
+                Reset the global plugin list
+              </Button>
+            </div>
+          ) : null}
           {plugins ? (
             <>
               <div className={classes.toolbar}>

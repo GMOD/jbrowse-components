@@ -22,6 +22,7 @@ async function importHook() {
 
 const existing = [{ name: 'Existing', umdUrl: 'https://example.com/e.js' }]
 const added = { name: 'Added', umdUrl: 'https://example.com/a.js' }
+const alsoAdded = { name: 'AlsoAdded', umdUrl: 'https://example.com/b.js' }
 
 beforeEach(() => {
   jest.resetAllMocks()
@@ -67,8 +68,10 @@ test('a failed read leaves the list unknown and writes nothing', async () => {
   )
 })
 
-test('a failed write reports the error and keeps showing what is on disk', async () => {
-  mockInvoke.mockResolvedValueOnce(existing)
+test('a failed write reports the error and goes back to what is on disk', async () => {
+  // the default covers both the initial read and the re-read a failed write
+  // triggers; only the write itself rejects
+  mockInvoke.mockResolvedValue(existing)
   const useGlobalPluginsState = await importHook()
   const { result } = renderHook(() => useGlobalPluginsState())
   await waitFor(() => {
@@ -81,6 +84,47 @@ test('a failed write reports the error and keeps showing what is on disk', async
   })
   await waitFor(() => {
     expect(result.current.saveError).toBeDefined()
+  })
+  await waitFor(() => {
+    expect(result.current.plugins).toEqual(existing)
+  })
+})
+
+test('two edits in a row compose, rather than the second dropping the first', async () => {
+  mockInvoke.mockResolvedValue(existing)
+  const useGlobalPluginsState = await importHook()
+  const { result } = renderHook(() => useGlobalPluginsState())
+  await waitFor(() => {
+    expect(result.current.plugins).toEqual(existing)
+  })
+
+  // a write that never resolves: the second click lands while the first is
+  // still in flight, which is what clicking Install on two store cards does
+  mockInvoke.mockReturnValue(new Promise(() => {}))
+  act(() => {
+    result.current.add(added)
+  })
+  act(() => {
+    result.current.add(alsoAdded)
+  })
+  expect(result.current.plugins).toEqual([...existing, added, alsoAdded])
+})
+
+test('a remove addresses the list on screen, not the one before the last edit', async () => {
+  mockInvoke.mockResolvedValue(existing)
+  const useGlobalPluginsState = await importHook()
+  const { result } = renderHook(() => useGlobalPluginsState())
+  await waitFor(() => {
+    expect(result.current.plugins).toEqual(existing)
+  })
+
+  mockInvoke.mockReturnValue(new Promise(() => {}))
+  act(() => {
+    result.current.add(added)
+  })
+  act(() => {
+    // index 1 is `added`, and only on the list the previous edit produced
+    result.current.remove(1)
   })
   expect(result.current.plugins).toEqual(existing)
 })
