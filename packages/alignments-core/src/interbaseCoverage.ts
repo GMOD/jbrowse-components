@@ -24,6 +24,10 @@ interface InterbaseBucket {
   insertion: number
   softclip: number
   hardclip: number
+  // Filled by the count pass below, read by the fill pass: 0 = not significant,
+  // else the dominant type code. Kept on the bucket because classifying costs a
+  // coverage-depth lookup per position and both passes need the answer.
+  indicatorType: number
 }
 
 type InterbaseField = 'insertion' | 'softclip' | 'hardclip'
@@ -41,7 +45,13 @@ function bumpInterbase(
     if (position >= regionStart) {
       let bucket = map.get(position)
       if (!bucket) {
-        bucket = { position, insertion: 0, softclip: 0, hardclip: 0 }
+        bucket = {
+          position,
+          insertion: 0,
+          softclip: 0,
+          hardclip: 0,
+          indicatorType: 0,
+        }
         map.set(position, bucket)
       }
       bucket[field]++
@@ -117,6 +127,9 @@ export function computeInterbaseCoverage(
   // Count pass: one stacked segment per non-empty type per position, plus the
   // significant-indicator count, so the typed arrays are sized exactly and
   // filled by index — no per-segment object allocation in this hot worker path.
+  // The indicator classification is banked on the bucket rather than recomputed
+  // in the fill pass: it is a coverage-depth lookup per interbase position, and
+  // running it twice made this the only quantity in the function derived twice.
   let segmentCount = 0
   let indicatorCount = 0
   for (const entry of interbaseByPosition.values()) {
@@ -129,7 +142,12 @@ export function computeInterbaseCoverage(
     if (entry.hardclip > 0) {
       segmentCount++
     }
-    if (indicatorTypeFor(entry, coverageDepths, coverageStartPos) !== 0) {
+    entry.indicatorType = indicatorTypeFor(
+      entry,
+      coverageDepths,
+      coverageStartPos,
+    )
+    if (entry.indicatorType !== 0) {
       indicatorCount++
     }
   }
@@ -173,14 +191,9 @@ export function computeInterbaseCoverage(
       colorTypes[s] = 3
       s++
     }
-    const dominantType = indicatorTypeFor(
-      entry,
-      coverageDepths,
-      coverageStartPos,
-    )
-    if (dominantType !== 0) {
+    if (entry.indicatorType !== 0) {
       indicatorPositions[ind] = entry.position
-      indicatorColorTypes[ind] = dominantType
+      indicatorColorTypes[ind] = entry.indicatorType
       ind++
     }
   }
