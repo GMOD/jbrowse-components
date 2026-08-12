@@ -131,12 +131,16 @@ export function morphAllowed(mode: AnimationMode) {
   )
 }
 
-// The clock a morph is timed against, guarded for environments without
+// The clock a morph is timed against — the stamp `beginYMorph` takes and the
+// reading the frame loop measures against it, so that both come from here and
+// cannot be two different clocks. Guarded for environments without
 // `performance` (jsdom sub-environments, node RPC workers importing this file
-// transitively). Paired with `morphAllowed` above so both of the model's
+// transitively), which fall back to the epoch clock rather than to a constant:
+// a clock that never advances leaves the frame loop rescheduling itself at
+// progress 0 forever. Paired with `morphAllowed` above so both of the model's
 // environment probes sit in one place.
 export function morphClockMs() {
-  return typeof performance === 'undefined' ? 0 : performance.now()
+  return typeof performance === 'undefined' ? Date.now() : performance.now()
 }
 
 // Whether anything is worth animating: at least one feature shared with
