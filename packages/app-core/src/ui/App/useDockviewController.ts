@@ -22,6 +22,7 @@ import type {
   DockviewApi,
   DockviewGroupPanel,
   DockviewReadyEvent,
+  SerializedDockview,
 } from 'dockview-react'
 
 type DockviewSession = DockviewSessionType & SessionWithDockviewLayout
@@ -242,6 +243,11 @@ export function useDockviewController(session: DockviewSession) {
     [createInitialPanels, withSuppressedPanelRemoval],
   )
 
+  // The layout this autorun last saw on the session, so step 2 below can ask
+  // whether the session's layout moved rather than whether dockview disagrees
+  // with it. Not state: nothing renders from it.
+  const lastSeenLayoutRef = useRef<SerializedDockview | undefined>(undefined)
+
   // Keep dockview in step with the session, in this order:
   //   1. build the panels a pending `init` asks for (a spec layout, or "move
   //      this view to a tab/split" arriving from the classic stack)
@@ -258,10 +264,27 @@ export function useDockviewController(session: DockviewSession) {
     }
     return autorun(() => {
       const { init: initLayout, dockviewLayout } = session
+      const lastSeenLayout = lastSeenLayoutRef.current
+      lastSeenLayoutRef.current = dockviewLayout
       if (initLayout) {
         applyInit(api, initLayout)
       } else if (
+        // Step 2 has exactly one caller — undo rewinding `dockviewLayout`
+        // through applySnapshot — so it asks whether the SESSION's layout
+        // moved. "does dockview disagree with the session?" is a different
+        // question and answering that one is what broke: dockview legitimately
+        // disagrees for the whole window between an imperative mutation and the
+        // AsapEvent microtask that persists it, and any other dependency of
+        // this autorun re-entering during that window then reverts the change
+        // the user just made. addPanel is such a window and fires
+        // onDidActivePanelChange synchronously; that writes activePanelId,
+        // which reconcile subscribes to the moment it homes a view. So opening
+        // a tab or a split ran fromJSON from inside dockview's own emitter,
+        // disposing every group while it was still walking its listener list —
+        // "invalid operation: resource is already disposed" from the next
+        // listener's header-actions React part.
         dockviewLayout &&
+        !layoutsEqual(dockviewLayout, lastSeenLayout) &&
         !layoutsEqual(api.toJSON(), dockviewLayout)
       ) {
         withSuppressedPanelRemoval(() => {

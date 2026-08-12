@@ -71,6 +71,27 @@ their relative order is an accident of registration, and for undo it is the
 wrong one: reconcile fires first, judges the restored assignments against the
 panels undo is about to replace, and prunes every one of them as dead.
 
+## Step 2 fires on the session's layout moving, never on dockview disagreeing
+
+Those read as the same test and are not. Dockview disagrees with the persisted
+blob for the whole window between an imperative mutation and the microtask that
+records it, so `!layoutsEqual(api.toJSON(), dockviewLayout)` is _true by
+construction_ during any of our own `addPanel`/`addGroup` calls. Whatever else
+re-enters the autorun in that window then "restores" the layout the user just
+left — undoing the tab they opened. Step 2's one caller is undo, so it compares
+`dockviewLayout` against the value the previous run saw and only then against
+dockview.
+
+The re-entry is not hypothetical, it is the common case: `addPanel` fires
+`onDidActivePanelChange` **synchronously**, that writes `activePanelId`, and
+reconcile subscribes to `activePanelId` the moment it homes a view. So the
+autorun ran from inside dockview's own emitter, and `fromJSON` disposed every
+group while that emitter was still walking its listener list — the next listener
+touched its disposed React part and threw
+`invalid operation: resource is already disposed`. Any session write made from a
+dockview callback can land you back here; keep the reactions that dockview
+events trigger from calling back into dockview.
+
 ## An assignment is what marks a view as "homed"
 
 So a stale one is worse than none. `getPanelContainingView` returns truthy, the
