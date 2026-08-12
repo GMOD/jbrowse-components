@@ -15,6 +15,7 @@
     "check-wiki-titles": "node scripts/check-wiki-titles.ts",
     "check-captions": "node scripts/check-captions.ts",
     "check-tldr": "node scripts/check-tldr.ts",
+    "check-gallery-links": "node scripts/check-gallery-links.ts",
     "check-remote-hosts": "node scripts/check-remote-hosts.ts",
     "check-links": "node scripts/check-links.ts",
     "check-external-links": "node scripts/check-external-links.ts",

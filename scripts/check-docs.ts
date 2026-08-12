@@ -127,6 +127,14 @@ const VALIDATORS: Validator[] = [
     argv: web('check-remote-hosts.ts', '--check'),
   },
   {
+    // Not a ratchet and never should be: the allowed set is what `sessionSpec`
+    // puts in a url, and the whole point is that a capture-only parameter added
+    // there reaches every website visitor. `autogen --check` cannot see this —
+    // a pinned link is correctly generated from a builder with wrong content.
+    name: 'gallery links carry no capture-only parameters',
+    argv: web('check-gallery-links.ts'),
+  },
+  {
     // The one doc `pnpm release` renders, commits, tags and pushes in a single
     // run — so unlike every other page here, a mistake in it is published
     // before anyone can read it back. Checked from the day the draft lands.
