@@ -70,8 +70,26 @@ a unit; chain shifts each region's bounds **before** merging by name, because a
 chain can span refNames. Chain had this bug after pileup's was fixed — keep
 both.
 
-`sortedBy` applies **only when every displayed region shares one refName**, so a
-localized sort can't false-match a position on another chromosome.
+## `sortedBy` names a column, not an offset — `sortForRegions` is the gate
+
+It applies **only when every region being laid out is on `sortedBy.refName`**,
+so a localized sort can't false-match the same number on another chromosome.
+
+Both layout paths call `sortForRegions`, and that is the point: the gate lived
+in the multi-region path alone, while the single-region path — one region on
+screen, i.e. most browsing — passed `sortedBy` straight through. The slot is
+**config**, so it outlives the contig it was set on: sort at chr1:1000, navigate
+to chr2, and chr2's reads were reordered by whatever sat at chr2:1000, silently
+and with the menu correctly still showing a sort as active.
+
+It is also what the display's `sortedBy` getter promises. That getter
+canonicalizes the refName because a session spec can carry an alias, and says an
+unresolvable one leaves the reads _unsorted_ — which needs a gate on every path,
+not just the multi-region one.
+
+The multi-region path keeps its own `regions &&` check on top. That one is
+structural, not policy: it needs the bounds to find the region holding the sort
+position at all.
 
 `showSoftClipping` belongs in `rpcProps` — the worker gates per-base extraction
 on it.
