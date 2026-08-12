@@ -1,6 +1,19 @@
 Show rather than tell — use informative screenshot specs and keep prose minimal.
 No em-dashes anywhere, including code comments.
 
+**A gene symbol is `_italic_` in prose and bare everywhere else.** The corpus
+already does this; it was just never written down, so nine pages had drifted
+into spelling the same gene both ways in the same section. `mappability_qc` is
+the page to copy: `_SMN1_` in every paragraph, `SMN1` in every caption. Bare is
+right in a caption, a heading, a paper title under `## References`, and a link
+label. Backticks are right for a string the reader types into the location box
+(``type `TNNT3` into the location box``), which is an input rather than a gene.
+Two more cases that look like drift and are not: a protein product is roman
+where its gene is italic ("carry no CYP1A2 protein"), and a fusion or hybrid
+name is one token rather than two genes (`BCR-ABL1`, `RHD-CE`). Italics are
+underscores, never `*asterisks*` — one line in the corpus used those and nothing
+else does.
+
 **Few numbers in prose, and none that assert a result.** The test is what the
 number is doing. A number that _names_ something is fine and often necessary: a
 variant's size (`a 7.8 kb deletion in an intron of NHEJ1`), a coordinate, a bin

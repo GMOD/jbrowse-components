@@ -423,7 +423,7 @@ read that stays on one chromosome, so the pileup is the fusion's own support.
 The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
 roughly seven copies, while the chr22 partners sit at one, so what is amplified
 is the piece of chr9 that the two junctions cut out. DepMap's segmentation
-covers no interval over BCR itself, which is why that window has an arc but no
+covers no interval over _BCR_ itself, which is why that window has an arc but no
 copy-number step under it.
 
 A fusion caller only reports junctions that are transcribed, so those arcs land
