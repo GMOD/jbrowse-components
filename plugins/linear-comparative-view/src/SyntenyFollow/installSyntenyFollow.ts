@@ -302,8 +302,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // and hiding that synteny track destroys the node — reading
           // `featureData` off it then throws, from inside an autorun, in the
           // window between the destroy and the next resolve landing.
-          const state = levelStates.get(level.level)
-          const feat = state?.toMate === toMate ? state.feat : undefined
+          const cached = levelStates.get(level.level)
+          const state = cached?.toMate === toMate ? cached : undefined
+          const feat = state?.feat
           const display = state?.display
           const data =
             display && isAlive(display) ? display.featureData : undefined
