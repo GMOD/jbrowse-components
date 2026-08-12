@@ -484,6 +484,12 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // not to reintroduce one. The name is the thing a reader would otherwise
   // grep for.
   'withSuppressedPanelRemoval',
+  // packages/app-core/CLAUDE.md, "If you are reading an old comment or commit
+  // that talks about ... all of it is gone": the layout-echo comparison that
+  // went with dockview. Its sentence-mate above is here for the same reason,
+  // and a doc whose whole purpose is to list departed names is the one place
+  // naming an absent symbol is the point rather than a mistake.
+  'layoutsEqual',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on
