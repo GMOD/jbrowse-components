@@ -663,47 +663,6 @@ Two ways to close it, and the choice is visual rather than structural:
 Everything else these two classifiers once disagreed about now derives from one
 table, so this is the whole of what is left.
 
-### What colour is a connector whose two ends are on different chromosomes
-
-The same split as the entry above, one vocabulary over: the linked-read
-connection overlay has no `interchrom` slot, while the two classifiers beside it
-do. A read fill takes `interchrom` — its own colour, ahead of every orientation
-bucket, because "orientation/insert size are meaningless" across chromosomes
-(`readColorCategory`) — and the arc band never draws an arc at all, dropping a
-connector tick in `ARC_COLOR_INTERCHROM` at each end. The bezier overlay reads
-`readPairOrientations` and paints LR/RL/RR/LL, labelled "RL - Mates point
-outward" and friends.
-
-It is a real claim about the data rather than a near-miss on a swatch, and
-`@gmod/bam` is why: `pair_orientation` IS defined for a cross-reference pair,
-resolving `selfIsLeft` from `refId < mateRefId`, so the code arrives populated
-and plausible off an ordering of chromosome ids. One translocation fragment can
-therefore carry three colours on screen — its reads' interchrom fill, its ticks'
-interchrom colour, and a connector asserting an orientation nothing measured.
-
-Only the MATE-LINK half is wrong. A split junction across two chromosomes is
-classified from the two segments' strands (`splitColorType`), which stays true
-whatever refName each end is on — so the K562 fusion figures, which are
-single-end Iso-Seq and all split junctions, are unaffected. This wants a
-paired-end interchromosomal view in chain mode with curved connectors.
-
-The mechanism is in hand and cheap: `readInterchrom` is a per-read
-`PileupDataResult` array (`buildReadInterchrom`), and `LINKED_READ_SLOT_CATEGORY`
-has **eight** slots of which index 7 is dead — a duplicate of the LR fallback
-that `pairedColorType`/`splitColorType` never emit and `connectionLabel`
-deliberately words as neutral. So the Slang uniform does not have to grow;
-`LINKED_READ_COLOR_SLOTS` is already 8.
-
-The visual call is what makes it not-a-patch:
-
-- **Which mark.** `connectionMark` decides line vs curve from the same rule the
-  path shape follows, and `computePileupBezierArcs` draws `isNormal` as a
-  straight `M..L..`. A translocation is aberrant, so a curve — but every
-  cross-region connector in a fusion view already draws flat, and that flatness
-  is the thing two rounds of screenshot review asked for.
-- **Whether it outranks the split colours** when a read is both split and
-  inter-chromosomal, which in a fusion is most of them.
-
 ### The synteny clicked outline strokes every match tile in transparent-indel mode
 
 In transparent-indel mode (`drawCIGARMatchesOnly`), `cigarSegmentKind` tags each

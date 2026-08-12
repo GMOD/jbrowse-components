@@ -47,9 +47,13 @@ export const ARC_SLOT_CATEGORY = [
 ] as const satisfies readonly SwatchCategory[]
 
 // Slot → meaning for the linked-read connectors, matching LINKED_READ_COLOR_* in
-// features/linkedReads/compute.ts. Slots 0 and 7 are the unknown/fallback
-// baseline: they take the same swatch as LR but are not labelled as LR (see
-// `connectionLabel`).
+// features/linkedReads/compute.ts. Slot 0 is the unknown baseline: it takes the
+// same swatch as LR but is not labelled as LR (see `connectionLabel`).
+//
+// Slot 7 was a second copy of that fallback and unreachable — neither
+// `pairedColorType` nor `splitColorType` could emit it — so giving it to
+// `interchrom` costs no uniform space: the array is still eight entries and
+// `LINKED_READ_COLOR_SLOTS` in alignmentsUniforms.slang does not move.
 export const LINKED_READ_SLOT_CATEGORY = [
   'pairLR',
   'pairLR',
@@ -58,7 +62,7 @@ export const LINKED_READ_SLOT_CATEGORY = [
   'pairLL',
   'splitDeletion',
   'splitInversion',
-  'pairLR',
+  'interchrom',
 ] as const satisfies readonly SwatchCategory[]
 
 function resolve(

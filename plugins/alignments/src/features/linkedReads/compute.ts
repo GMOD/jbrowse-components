@@ -8,6 +8,7 @@ import {
 } from '../../shared/legendUtils.ts'
 import {
   connectionEndpoints,
+  interchromOf,
   pairFieldEntry,
   readGroupConnections,
 } from '../../shared/readGroupConnections.ts'
@@ -33,6 +34,21 @@ export const LINKED_READ_COLOR_PAIR_LL = PAIR_DIRECTION_NUM.LL
 // code of their own, so they number off its end.
 export const LINKED_READ_COLOR_SPLIT_NORMAL = LINKED_READ_COLOR_PAIR_LL + 1
 export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
+// A MATE LINK whose two ends are on different chromosomes. Last, in the slot
+// that was a dead duplicate of the LR fallback — `pairedColorType` and
+// `splitColorType` between them never emitted it — so the palette keeps its
+// eight entries and `LINKED_READ_COLOR_SLOTS` does not move.
+//
+// Its own slot because orientation is meaningless across a translocation, which
+// the other two vocabularies already say: a read fill takes `interchrom` ahead
+// of every orientation bucket, and the arc band refuses to draw an arc at all
+// and drops a tick at each breakpoint. Only this overlay still asserted an
+// LR/RL/RR/LL — and it arrives populated and plausible, because `@gmod/bam`
+// resolves `selfIsLeft` from `refId < mateRefId` and hands back a real code off
+// an ordering of chromosome ids. So one translocation fragment could carry three
+// colours at once, two of them meaning "inter-chromosomal" and one naming an
+// orientation nothing measured.
+export const LINKED_READ_COLOR_INTERCHROM = LINKED_READ_COLOR_PAIR_LL + 3
 
 // Human-readable connection classification for the bezier-arc hover tooltip and
 // its legend row. DERIVED, not restated: the slot's meaning comes from
@@ -56,12 +72,15 @@ export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
 // a same-strand junction is evidence for.
 export function connectionLabel(colorType: number) {
   const category = LINKED_READ_SLOT_CATEGORY[colorType]
-  // Slots 0 and 7 are the unknown/fallback baseline. They take LR's swatch, but
-  // calling them LR would assert an orientation nothing measured, so they keep
-  // the neutral wording.
-  return category === undefined ||
-    colorType === LINKED_READ_COLOR_PAIR_UNKNOWN ||
-    colorType >= LINKED_READ_SLOT_CATEGORY.length - 1
+  // Slot 0 is the unknown baseline. It takes LR's swatch, but calling it LR
+  // would assert an orientation nothing measured, so it keeps the neutral
+  // wording — as does anything off the end of the table, which `linkedReadColorSlot`
+  // clamps into the last slot.
+  //
+  // The bound used to be `>= length - 1`, holding slot 7 out as a second
+  // fallback. It is `interchrom` now and carries a meaning of its own, so the
+  // table's last entry is a row like any other.
+  return category === undefined || colorType === LINKED_READ_COLOR_PAIR_UNKNOWN
     ? 'Read pair'
     : (SPLIT_JUNCTION_LABELS[category] ?? readColorCategoryLabel(category)!)
 }
@@ -77,6 +96,11 @@ export function connectionLabel(colorType: number) {
 // The one pair the two rules disagree on is a split with an unknown strand on
 // exactly one side, which lands in the unknown slot while drawing as a curve;
 // mapped reads always carry ±1, so nothing reaches it.
+// `interchrom` is absent, so it draws as a curve — `isNormalOrientation` returns
+// false for it below, which is the other half of the same statement. A
+// translocated mate link is the definition of discordant, and the display's own
+// convention (shared with BreakpointSplitView) is that a line means normal and a
+// curve below the reads does not.
 const STRAIGHT_CONNECTION_COLORS = new Set([
   LINKED_READ_COLOR_PAIR_UNKNOWN,
   LINKED_READ_COLOR_PAIR_LR,
@@ -208,10 +232,21 @@ export function classifyPair(
   const { bp1, s1, bp2, s2 } = connectionEndpoints({ e1, e2, isSplit })
   const src = pairFieldEntry(e1, e2)
   const orientNum = src.data.readPairOrientations[src.readIdx]!
-  const isNormal = isNormalOrientation(hasPaired, orientNum, s1, s2)
-  const colorType = hasPaired
-    ? pairedColorType(orientNum)
-    : splitColorType(s1, s2)
+  // A MATE LINK only. A split junction is classified from its two segments'
+  // strands, which stays true whichever chromosomes they are on — the read
+  // crossed that junction, and `splitJunctionKind` never consults a refName. It
+  // is the pair rules that break: orientation and insert size describe a
+  // fragment on one chromosome, so across a translocation both are answers to a
+  // question nobody asked. Read off the same primary the orientation is,
+  // interchrom-ness being a fact about the fragment rather than about a segment.
+  const interchrom = hasPaired && interchromOf(src)
+  const isNormal =
+    !interchrom && isNormalOrientation(hasPaired, orientNum, s1, s2)
+  const colorType = interchrom
+    ? LINKED_READ_COLOR_INTERCHROM
+    : hasPaired
+      ? pairedColorType(orientNum)
+      : splitColorType(s1, s2)
   return { bp1, bp2, s1, s2, isNormal, colorType, isSplit }
 }
 

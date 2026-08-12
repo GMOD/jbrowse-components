@@ -12,6 +12,7 @@ import {
   readGroupConnections,
 } from '../../shared/readGroupConnections.ts'
 import {
+  LINKED_READ_COLOR_INTERCHROM,
   LINKED_READ_COLOR_PAIR_LL,
   LINKED_READ_COLOR_PAIR_LR,
   LINKED_READ_COLOR_PAIR_RL,
@@ -37,6 +38,11 @@ function makeData(opts: {
   ys: number[]
   // clip-at-start-of-read (read-order sort key); defaults to 0 (genomic order)
   clips?: number[]
+  // 1 where the read's mate is on another chromosome. Defaults to all-zero
+  // rather than being left off: `readInterchrom` is a REQUIRED field of
+  // `PileupDataResult` that the worker always emits, and omitting it here only
+  // ever compiled because of the `as unknown as` cast below.
+  interchrom?: number[]
 }): PileupDataResult {
   const n = opts.names.length
   const readPositions = new Uint32Array(n * 2)
@@ -53,6 +59,7 @@ function makeData(opts: {
     readPairOrientations: new Uint8Array(opts.orientations),
     readYs: new Uint16Array(opts.ys),
     readClipAtStart: Uint32Array.from(opts.clips ?? opts.names.map(() => 0)),
+    readInterchrom: Uint8Array.from(opts.interchrom ?? opts.names.map(() => 0)),
   } as unknown as PileupDataResult
 }
 
@@ -187,6 +194,54 @@ describe('classifyPair — paired reads', () => {
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
     expect(c.colorType).toBe(LINKED_READ_COLOR_PAIR_LL)
     expect(c.isNormal).toBe(false)
+  })
+
+  // Across a translocation the orientation describes nothing — but it is not
+  // absent, which is the trap. @gmod/bam resolves `selfIsLeft` from
+  // `refId < mateRefId` for a cross-reference pair, so the code arrives
+  // populated and plausible, and an LR one drew the connector as a normal
+  // straight line labelled "LR - Normal pair orientation".
+  it('an inter-chromosomal mate link takes its own colour, not an orientation', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [SAM_FLAG_PAIRED, SAM_FLAG_PAIRED],
+      strands: [1, -1],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      // the LR that would otherwise have been asserted
+      orientations: [1, 1],
+      ys: [0, 0],
+      interchrom: [1, 1],
+    })
+    const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_INTERCHROM)
+    // and it draws as a curve, the display's mark for discordant
+    expect(c.isNormal).toBe(false)
+  })
+
+  // The other half of the scope: a SPLIT junction is classified from its two
+  // segments' strands, which stays true whichever chromosomes they sit on. The
+  // read really did cross that junction, and `splitJunctionKind` never consults
+  // a refName — so the fusion figures, which are single-end Iso-Seq and split
+  // junctions throughout, keep their colours.
+  it('leaves an inter-chromosomal SPLIT junction on its strand rule', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, 1],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      orientations: [0, 0],
+      ys: [0, 0],
+      interchrom: [1, 1],
+    })
+    const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
+    expect(c.colorType).toBe(LINKED_READ_COLOR_SPLIT_NORMAL)
+    expect(c.isNormal).toBe(true)
   })
 })
 

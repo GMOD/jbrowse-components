@@ -67,6 +67,19 @@ export function strandOf(e: MinEntry) {
   return e.data.readStrands[e.readIdx]!
 }
 
+// Whether this read's MATE is on another chromosome — the worker's own
+// `buildReadInterchrom`, which compares RNEXT against the region's refName. A
+// boolean here rather than the raw 0/1, matching the flag predicates below.
+//
+// The entry types on this path deliberately carry no refName (the bezier
+// overlay's comment says why), so this array is how a connection asks the
+// question at all — and it is the same array the read fill's `interchrom`
+// bucket reads, which is what keeps a translocation one colour across the two
+// vocabularies instead of two.
+export function interchromOf(e: MinEntry) {
+  return e.data.readInterchrom[e.readIdx] === 1
+}
+
 // `{start, end}` rather than a tuple: it is destructured by name at every call
 // site but one, and a positional pair of same-typed genomic coordinates is the
 // shape that silently survives being swapped.

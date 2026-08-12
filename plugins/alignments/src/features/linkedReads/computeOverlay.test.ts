@@ -21,6 +21,7 @@ const PALETTE = makeTestPalette({
 })
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import {
+  LINKED_READ_COLOR_INTERCHROM,
   LINKED_READ_COLOR_PAIR_LR,
   LINKED_READ_COLOR_PAIR_RR,
   LINKED_READ_COLOR_SPLIT_INV,
@@ -46,6 +47,11 @@ function makeData(opts: {
   // per displayedRegion): `dedupeByReadId` collapses same-id entries, so the two
   // halves have to carry the distinct ids a real fetch would give them.
   ids?: string[]
+  // 1 where the read's mate is on another chromosome. Defaults to all-zero
+  // rather than being left off: `readInterchrom` is a REQUIRED field of
+  // `PileupDataResult` that the worker always emits, and omitting it here only
+  // ever compiled because of the `as unknown as` cast below.
+  interchrom?: number[]
 }): PileupDataResult {
   const n = opts.names.length
   const readPositions = new Uint32Array(n * 2)
@@ -63,6 +69,7 @@ function makeData(opts: {
       opts.orientations ?? new Array(n).fill(0),
     ),
     readYs: new Uint16Array(opts.ys),
+    readInterchrom: Uint8Array.from(opts.interchrom ?? opts.names.map(() => 0)),
   } as unknown as PileupDataResult
 }
 
@@ -644,6 +651,20 @@ describe('bezierConnectionLegendItems', () => {
     // draws as straight `M..L..` paths
     expect(mark(LINKED_READ_COLOR_PAIR_LR)).toBe('line')
     expect(mark(LINKED_READ_COLOR_SPLIT_NORMAL)).toBe('line')
+    // a translocated mate link is discordant by definition, so it curves —
+    // `classifyPair` gives it `isNormal: false`, and these two have to agree or
+    // the key shows a glyph the overlay never drew
+    expect(mark(LINKED_READ_COLOR_INTERCHROM)).toBe('curve')
+  })
+
+  // Slot 7 was the fallback and worded 'Read pair'. It carries a meaning now, and
+  // the wording comes from the read key's own table, so a reader meets one word
+  // for the colour whether on a swatch, a read fill or a curve.
+  it('names the inter-chromosomal slot rather than calling it a read pair', () => {
+    expect(
+      bezierConnectionLegendItems([LINKED_READ_COLOR_INTERCHROM], PALETTE)[0]!
+        .label,
+    ).toBe('Inter-chromosomal')
   })
 
   it('keys the connection colors in view, sorted, in the arcs own words', () => {
