@@ -70,9 +70,25 @@ interface PendingMenu {
 // menu re-resolves on each open and, while open, on each observer re-render
 const reported = new WeakSet<AddItemAction>()
 
-// recursively copy the array spine so the item helpers never mutate a root
-// model's own literal or a thunk's internals; leaf items (with their
-// onClick/icon) are shared by ref
+/**
+ * The action log is permanent; the menu it builds is thrown away when the menu
+ * closes. Everything a resolution walks therefore has to belong to the
+ * throwaway, because resolving a path is a **write**:
+ * `appendToSubMenu(['Add', 'My plugin'], two)` means "find the array labelled
+ * My plugin and push into it".
+ *
+ * So when an earlier action is what supplied that array —
+ * `appendToMenu('Add', { label: 'My plugin', subMenu: [one] })` — and it goes
+ * into the menu by reference, the push lands in the stored action instead. The
+ * next open replays a log that now reads `subMenu: [one, two]` and pushes
+ * again, so the sub-menu gains an item on every open, and on every observer
+ * re-render while open.
+ *
+ * Cloning is what keeps the two apart: the copy is what the path resolves to
+ * and what gets written, and it dies with the open. Leaf items are shared by
+ * reference — nothing writes into them — so this costs an allocation only for
+ * the rows that nest.
+ */
 function cloneMenuItem(item: MenuItem): MenuItem {
   return 'subMenu' in item
     ? { ...item, subMenu: cloneMenuItems(item.subMenu) }
@@ -87,8 +103,10 @@ function materialize(menuItems: MenuItemsGetter) {
   return typeof menuItems === 'function' ? menuItems() : menuItems
 }
 
+// splice is already the "counts from the end when negative" rule, and clamps
+// rather than wrapping past the start; the default is what makes it an append
 function insertAt<T>(items: T[], item: T, position = items.length) {
-  items.splice(position < 0 ? items.length + position : position, 0, item)
+  items.splice(position, 0, item)
 }
 
 /**
@@ -100,20 +118,18 @@ function insertAt<T>(items: T[], item: T, position = items.length) {
 function resolveSubMenu(items: MenuItem[], menuPath: string[]) {
   let level = items
   for (const [idx, menuName] of menuPath.slice(1).entries()) {
-    const found = level.find(
+    let sub = level.find(
       (mi): mi is SubMenuItem => 'subMenu' in mi && mi.label === menuName,
     )
-    if (found) {
-      level = found.subMenu
-    } else {
+    if (!sub) {
       if (level.some(mi => 'label' in mi && mi.label === menuName)) {
         const pathSoFar = menuPath.slice(0, idx + 2).join(' > ')
         throw new Error(`"${menuName}" in path "${pathSoFar}" is not a subMenu`)
       }
-      const created = { label: menuName, subMenu: [] as MenuItem[] }
-      level.push(created)
-      level = created.subMenu
+      sub = { label: menuName, subMenu: [] }
+      level.push(sub)
     }
+    level = sub.subMenu
   }
   return level
 }
@@ -126,12 +142,7 @@ function applyItemActions(items: MenuItem[], actions: AddItemAction[]) {
   for (const action of actions) {
     try {
       const target = resolveSubMenu(items, action.menuPath)
-      // the contributed item is cloned for the same reason the definitions are:
-      // a contributed sub-menu is a path a LATER contribution can resolve into,
-      // and `resolveSubMenu` hands back the array it found. Inserted by
-      // reference, that array is the action's own payload — which outlives the
-      // resolution, so each open pushes another copy into it and the sub-menu
-      // grows by one item every time the menu is opened or re-rendered
+      // cloned rather than inserted by reference — see cloneMenuItem
       insertAt(target, cloneMenuItem(action.menuItem), action.position)
     } catch (error) {
       if (!reported.has(action)) {
