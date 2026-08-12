@@ -196,6 +196,10 @@ jbrowse text-index --out myproject
 
 ## See also
 
+- [](/docs/tutorials/display_settings), setting a track's display options in the
+  config this page builds
+- [](/docs/tutorials/embed_linear_genome_view), the same config behind an
+  embedded component rather than the whole app
 - [CLI command reference](/docs/cli)
 - [Desktop quickstart](/docs/quickstart_desktop)
 - [Web quickstart](/docs/quickstart_web)

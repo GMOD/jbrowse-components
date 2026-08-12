@@ -482,6 +482,8 @@ serves both tracks.
   display's own menus and options
 - [Quantitative tracks](/docs/user_guides/quantitative_track), for the
   recurrence track's scale and color controls
+- [](/docs/tutorials/tcga_cohort_mutations), the same tumors' point mutations as
+  a genotype matrix, from the same GDC project
 - [](/docs/tutorials/bxd_qtl), the same multi-row display for strain genotypes
 - [](/docs/tutorials/chromhmm), the same display across cell types
 - [](/docs/tutorials/population_cnv), the germline counterpart: one row per

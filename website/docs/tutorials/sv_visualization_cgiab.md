@@ -803,6 +803,10 @@ steps take hours.
 ## See also
 
 - [](/docs/tutorials/synteny_visualization)
+- [](/docs/tutorials/sv_callset_review), the same triage run headlessly over a
+  whole callset instead of one locus at a time
+- [](/docs/tutorials/cancer_sv), a somatic callset followed to a reconstructed
+  derivative allele
 - [](/docs/user_guides/sv_visualization)
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/multiquantitative_track)
