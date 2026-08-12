@@ -1,0 +1,83 @@
+import { visibleSpanOnRefName } from './moveMatchingPanel.ts'
+
+import type { SpanOfInterest } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
+import type { FeatPos } from './model.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+/** One offered "move a panel" item, with everything the move itself needs. */
+export interface BandMoveTarget {
+  label: string
+  toMate: boolean
+  movingView: LinearGenomeViewModel
+  // The staying panel's visible window on this alignment's axis — read HERE, at
+  // the moment of the right-click, rather than again inside the move. It is
+  // both what decides the item is offerable and what the move maps across, so
+  // there is one reading of it and the item cannot promise a window the action
+  // then fails to find.
+  window: SpanOfInterest
+}
+
+/**
+ * The move items a right-clicked band offers.
+ *
+ * TWO ITEMS RATHER THAN ONE, because a band is drawn BETWEEN two panels and
+ * "the other panel" has no answer from a click on the band itself — unlike the
+ * same item on the LGV track menu, where the panel that was right-clicked is
+ * the one that stays. Naming the rows top/bottom is the only phrasing that
+ * stays true wherever in a taller stack this band sits.
+ *
+ * ONLY WHERE THERE IS A CIGAR TO WALK. Without one the mate position can only
+ * be interpolated across the block, and a menu item that navigates a panel to a
+ * straight-line guess and shows it flush against its neighbour is presenting a
+ * guess as a correspondence. A PIF's coarse tier — what serves whole-genome
+ * zoom — is CIGAR-less by construction, and the skew inside one coarse row is
+ * not bounded by its 10kb split threshold, since smaller indels accumulate
+ * without triggering a split. So the items are absent at that zoom rather than
+ * approximate: `hasCigar` is per-fetch and flips to true when the fine tier
+ * loads.
+ *
+ * AND ONLY WHERE THE STAYING PANEL IS ACTUALLY SHOWING THIS ALIGNMENT'S CONTIG.
+ * That is not implied by the band being on screen: a ribbon is drawn out to the
+ * overdraw band, which at whole-genome zoom is many contigs wide, so a panel can
+ * be scrolled to a different contig with the ribbon still painted. There is then
+ * no window to map across, and the move used to return silently — a menu item
+ * that did nothing, in the one situation the item exists for, which is panels
+ * that have drifted apart. Offered or absent, never inert.
+ */
+export function bandMoveTargets({
+  topView,
+  bottomView,
+  feat,
+  hasCigar,
+}: {
+  topView: LinearGenomeViewModel | undefined
+  bottomView: LinearGenomeViewModel | undefined
+  feat: FeatPos
+  hasCigar: boolean
+}): BandMoveTarget[] {
+  if (!topView || !bottomView || !hasCigar) {
+    return []
+  }
+  // Top first, matching the rows on screen and the order the user guide names
+  // them in. `toMate` says which axis the STAYING panel is read off: the query
+  // axis when the mate panel is the one moving, the mate axis when it is not.
+  return [
+    {
+      label: 'Move top panel to the matching region',
+      toMate: false,
+      stayingView: bottomView,
+      movingView: topView,
+      refName: feat.mate.refName,
+    },
+    {
+      label: 'Move bottom panel to the matching region',
+      toMate: true,
+      stayingView: topView,
+      movingView: bottomView,
+      refName: feat.refName,
+    },
+  ].flatMap(({ stayingView, refName, ...rest }) => {
+    const window = visibleSpanOnRefName(stayingView, refName)
+    return window ? [{ ...rest, window }] : []
+  })
+}

@@ -91,39 +91,44 @@ export async function resolveMatchingSpan({
  * span rather than a point, so the moved panel matches the staying panel's
  * SCALE too and the band between them comes back near-vertical.
  *
- * NO CIGAR, NO MOVE. `resolveMatchingSpan` answers `undefined` for a block that
- * carries none, which the menu already gates against; navigating on an
- * interpolated guess is what this deliberately does not do.
+ * The staying panel's window is passed IN, read once by `bandMoveTargets` when
+ * the menu was built — the same reading that decided the item was offerable at
+ * all, so the item and the action cannot disagree about whether there is a
+ * window here.
+ *
+ * NO CIGAR, NO MOVE, and it SAYS SO. The menu gates on `hasCigar`, but that
+ * flag is per-FETCH — true when any block in the response carried one — so a
+ * file that mixes them (a chain set with a few CIGAR-less rows, a PAF
+ * concatenated from two runs) puts the item on a block that has none and the
+ * walk comes back empty. Navigating on an interpolated guess is what this
+ * deliberately does not do; going quiet is not the alternative, since a menu
+ * item that does nothing reads as a broken one.
  */
 export async function moveMatchingPanel({
   model,
   feat,
-  stayingView,
+  window,
   movingView,
   toMate,
 }: {
   model: LinearSyntenyDisplayModel
   feat: FeatPos
-  stayingView: LinearGenomeViewModel
+  // the staying panel's visible span on this alignment's axis
+  window: SpanOfInterest
   movingView: LinearGenomeViewModel
   toMate: boolean
 }) {
-  // not named `window`: this runs on the main thread, where that shadows the
-  // global and reads as a mistake even where it is not one
-  const stayingWindow = visibleSpanOnRefName(
-    stayingView,
-    toMate ? feat.refName : feat.mate.refName,
-  )
-  if (!stayingWindow) {
-    return
-  }
   const span = await resolveMatchingSpan({
     model,
     feat,
-    window: stayingWindow,
+    window,
     toMate,
   })
   if (!span) {
+    getSession(model).notify(
+      'This alignment carries no CIGAR, so there is no matching region to resolve',
+      'info',
+    )
     return
   }
   await movingView.navToLocString(
