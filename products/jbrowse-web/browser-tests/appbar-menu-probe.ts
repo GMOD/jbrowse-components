@@ -30,7 +30,7 @@ const countViews = (page: Page) =>
 try {
   const page = await browser.newPage()
   page.on('pageerror', e => {
-    console.log(`PAGE ERROR: ${e.message}`)
+    console.log(`PAGE ERROR: ${e instanceof Error ? e.message : String(e)}`)
   })
   await navigateToApp(page)
 
