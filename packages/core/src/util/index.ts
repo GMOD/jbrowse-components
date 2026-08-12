@@ -359,8 +359,16 @@ export function isSupportedIndexingAdapter(type = '') {
   ].includes(type)
 }
 
+// Null prototype, not `{}`: keys are data (a BAM QNAME, a track category), and
+// on a plain object `result['constructor'] ??= []` finds Object and never
+// assigns, so the next line throws.
+//
+// Still an object rather than a Map because this is on the plugin ABI — a Map
+// would leave `Object.entries` on a published plugin returning [] and silently
+// doing nothing. So integer-like keys still hoist ahead of the rest; anything
+// needing insertion order builds its own Map (see tree-sidebar's CLAUDE.md).
 export function groupBy<T>(array: Iterable<T>, predicate: (v: T) => string) {
-  const result: Record<string, T[]> = {}
+  const result: Record<string, T[]> = Object.create(null)
   for (const value of array) {
     const t = predicate(value)
     result[t] ??= []
