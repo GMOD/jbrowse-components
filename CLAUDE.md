@@ -128,6 +128,41 @@ checkout, so ordinary git is yours to use without asking.
 `observer(()=>…)` — always write observers that way. The
 `function F(){}; observer(F)` form does get compiled and can stale a MobX read.
 
+## Reference names: one normalization layer, and everything goes through it
+
+**Any reading of user-supplied refName text resolves through
+`getCanonicalRefName`, or it silently disagrees with the readings that do.**
+That method is the normalization layer, and it does two jobs at once —
+`refNameAliases[n] || lowerCaseRefNameAliases[n.toLowerCase()]` — so it resolves
+aliases _and_ casing. Code that tests `region.refName` directly gets neither.
+
+The failure is always the same and is always silent: an exact name works, a
+pattern over the same names returns nothing, and **nothing distinguishes that
+from "this assembly has no such contigs"** — so it reads as the feature being
+broken or the data being absent, and no error is raised for anyone to act on.
+Three instances of it landed in one session, all in glob matching of
+`displayedRegionNames`: the glob tested canonical names while the exact entry
+resolved aliases; then the glob was case-sensitive while the exact entry was
+not; then the search box's picker matched `regions` while `searchRefNames`, in
+the same dropdown, had always matched `allRefNames`.
+
+So, concretely, for anything matching refName text:
+
+- **Match over `allRefNames`, not `regions`.** `buildRefNameMaps` identity-maps
+  every region into `refNameAliases`, so `allRefNames` is a strict superset of
+  the canonical names and matching over it loses nothing.
+- **Resolve hits to canonical, then emit by walking `regions`.** That two-pass
+  shape is what keeps assembly order instead of alias-file order, and dedupes
+  the ordinary case of several names for one contig.
+- **Case-insensitivity is the regex's `i` flag, not a wider list.**
+  `allRefNames` deliberately excludes `lowerCaseRefNameAliases` so it stays
+  normal-cased; its getter says so.
+
+`selectNamedRegions.ts` holds the only two readings of `*` — the resolver a
+session spec goes through and `matchRefNames`, which the search box's dropdown
+and its enter key share — and `globToRegExp` is module-private to keep it that
+way. A third reading growing elsewhere is how the above starts over.
+
 ## Tooling
 
 - Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
