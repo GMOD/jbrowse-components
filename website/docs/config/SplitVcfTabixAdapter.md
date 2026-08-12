@@ -39,13 +39,13 @@ combined VCF (useful for large call sets split by chromosome)
 ## Related links
 
 - **Track:** [VariantTrack](../varianttrack)
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LDDisplay](../lddisplay)
 - **Display:**
   [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:**
   [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots

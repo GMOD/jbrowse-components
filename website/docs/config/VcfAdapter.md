@@ -32,13 +32,13 @@ memory, so prefer the VcfTabixAdapter for large files.
 ## Related links
 
 - **Track:** [VariantTrack](../varianttrack)
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LDDisplay](../lddisplay)
 - **Display:**
   [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:**
   [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots

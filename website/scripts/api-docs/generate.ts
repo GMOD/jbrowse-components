@@ -120,6 +120,13 @@ async function main() {
     }
     displayToTrackType.set(displayName, trackType)
   }
+  // Push order is extractor traversal order, which moves with the composition
+  // of the TS program — and `getAllFiles` includes untracked files, so one
+  // scratch `.ts` reorders these bullets across 19 pages. Sort, so the artifact
+  // is a function of the sources.
+  for (const displayNames of displayTypesByTrack.values()) {
+    displayNames.sort()
+  }
   const modelNames = new Set(
     Object.values(models)
       .map(m => m.header?.name)
