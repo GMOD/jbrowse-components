@@ -194,7 +194,7 @@ query.
 
 <!-- include: plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts -->
 
-```ts
+````ts
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
@@ -202,6 +202,19 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #trackType TextSearchAdapter
  * #fileFormat textsearch | JBrowse 1 names index | From JBrowse 1 `generate-names.pl`
  * note: metadata about tracks and assemblies covered by text search adapter
+ *
+ * #example
+ * An entry in `aggregateTextSearchAdapters`, pointing at the `names/`
+ * directory JBrowse 1's `generate-names.pl` wrote — so an existing instance's
+ * search index is reused rather than rebuilt with `jbrowse text-index`:
+ * ```js
+ * {
+ *   type: 'JBrowse1TextSearchAdapter',
+ *   textSearchAdapterId: 'jbrowse1-names',
+ *   namesIndexLocation: { uri: 'https://example.com/jbrowse1/data/names/' },
+ *   assemblyNames: ['hg19'],
+ * }
+ * ```
  */
 export default ConfigurationSchema(
   'JBrowse1TextSearchAdapter',
@@ -239,7 +252,7 @@ export default ConfigurationSchema(
     explicitIdentifier: 'textSearchAdapterId',
   },
 )
-```
+````
 
 `assemblyNames` is required; `TextSearchManager` uses it to pick which adapters
 to query for a given assembly. The `explicitIdentifier` is what a config's
