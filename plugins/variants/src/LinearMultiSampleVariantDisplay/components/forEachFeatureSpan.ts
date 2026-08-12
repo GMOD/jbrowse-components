@@ -1,4 +1,4 @@
-import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import { makeBpMapper, pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
 
 import { variantCellSpanPx } from './variantCellSpan.ts'
 
@@ -72,8 +72,7 @@ export function forEachFeatureSpan(
   cb: (featureIndex: number, span: FeatureSpan) => void,
 ) {
   const toX = makeBpMapper(block)
-  const pxPerBp =
-    (block.screenEndPx - block.screenStartPx) / (block.end - block.start)
+  const pxPerBp = pxPerBpOf(block)
   const numFeatures = region.featureInsertedBp.length
   // One object, rewritten per record rather than allocated per record: this is
   // a per-frame loop over thousands of features and the callback never retains

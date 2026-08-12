@@ -1,7 +1,7 @@
 import { useId, useState } from 'react'
 
 import { hoverBoxStyle } from '@jbrowse/core/ui'
-import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import { makeBpMapper, pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import {
@@ -97,8 +97,9 @@ function getFeatureUnderMouse(
     rowLowest,
     rowUnmap,
     toX,
-    pxPerBp:
-      (region.screenEndPx - region.screenStartPx) / (region.end - region.start),
+    // sizes the insertion marker's click target, so it is the same
+    // `pxPerBpOf` the draw pass sized the drawn marker with
+    pxPerBp: pxPerBpOf(region),
     canvasWidth: model.canvasWidthPx,
     drawnRowHeight: drawnCellHeightPx(model.effectiveRowHeight),
     insertionsWiden: model.showInsertionGlyphs,
@@ -180,8 +181,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     // the box covers what was PAINTED, so it follows the setting that decides
     // whether an insertion paints as a marker or as a 2px cell
     insertionsWiden: model.showInsertionGlyphs,
-    pxPerBp:
-      (region.screenEndPx - region.screenStartPx) / (region.end - region.start),
+    pxPerBp: pxPerBpOf(region),
     drawnRowHeight,
   })
   // Screen Y from model.scrollTop — the same value the GPU cells draw at, so

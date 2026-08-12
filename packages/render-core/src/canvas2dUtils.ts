@@ -428,10 +428,26 @@ export function makeBpMapper(bounds: BpRegionBounds) {
  * bp-scale; the pileup floors at 1px and adds a seam fudge). Only the pivot is
  * shared.
  */
+/**
+ * Screen px one base occupies in this region — the scale factor, unsigned, with
+ * the block's direction deliberately left out (that lives in `makeBpMapper` and
+ * `spanLeft`, and folding it in here would make a *scale* carry an orientation).
+ *
+ * Shared because it is usually an input to something a second painter has to
+ * reproduce exactly: a mark sized against it in a draw pass and hit-tested
+ * against it in a component is two spellings of one number, and the hit target
+ * silently stops covering the mark if they ever drift. Trivial arithmetic, but
+ * the drift is not.
+ */
+export function pxPerBpOf(bounds: BpRegionBounds) {
+  return (
+    (bounds.screenEndPx - bounds.screenStartPx) / (bounds.end - bounds.start)
+  )
+}
+
 export function makeCellLeftMapper(bounds: BpRegionBounds) {
   const toX = makeBpMapper(bounds)
-  const pxPerBp =
-    (bounds.screenEndPx - bounds.screenStartPx) / (bounds.end - bounds.start)
+  const pxPerBp = pxPerBpOf(bounds)
   // One base's signed span: exact for fractional zooms, and one add per cell —
   // these run per base per row, so a second mapper call per cell would show.
   const shift = bounds.reversed ? -pxPerBp : 0
