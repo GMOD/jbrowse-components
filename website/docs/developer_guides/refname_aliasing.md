@@ -88,10 +88,13 @@ or a different alias adapter entirely:
 - [`refNameColumn`](/docs/config/refnamealiasadapter/#slot-refnamecolumn) -
   zero-based index of the column matching your FASTA. Above, that's the first
   column (`chr1`/`chr2`).
-- `refNameColumnHeaderName` (string) - alternative to `refNameColumn`. If your
-  file has a `#`-prefixed header line, select the primary column by its header
-  name instead of by index. The adapter throws if the named column is not found,
-  rather than silently producing no aliases.
+- `refNameColumnHeaderName` (string) - alternative to `refNameColumn`. Selects
+  the primary column by its header name instead of by index, read from the
+  **last** `#`-prefixed line in the file (the one immediately above the data, so
+  a file with a comment block still resolves against the real header). The
+  adapter throws if the named column is not in that header, rather than silently
+  producing no aliases — but note it only looks when a `#` line exists at all: a
+  file with no header row falls back to `refNameColumn` without complaint.
 
 ```
 #name	alias1	alias2
@@ -132,10 +135,12 @@ assembly, or the `datasets` CLI.
 }
 ```
 
-The file must include these column headers (matched by name, not position):
-`GenBank seq accession`, `RefSeq seq accession`, `UCSC style name`, and
-`Sequence name`. The primary refName is taken from `UCSC style name`, falling
-back to `Sequence name`; all four columns become aliases for it.
+Three column headers are required, matched by name rather than position:
+`GenBank seq accession`, `RefSeq seq accession` and `UCSC style name`. A fourth,
+`Sequence name`, is optional. The primary refName is taken from
+`UCSC style name`, falling back to `Sequence name` where that column exists and
+the UCSC one is blank — so a row with neither is skipped rather than mapping an
+empty name. Whichever of the four columns a row does fill become aliases for it.
 
 **Options:**
 
@@ -157,9 +162,10 @@ back to `Sequence name`; all four columns become aliases for it.
   characters outside the
   [SAM-spec refName](https://samtools.github.io/hts-specs/SAMv1.pdf) set (e.g.
   stray whitespace or quoting). Clean the offending row.
-- **NCBI adapter throws about the header line.** The first line must contain the
-  required column headers spelled exactly as above; a file missing them (or with
-  renamed columns) will not parse.
+- **NCBI adapter throws about the header line.** The error names the missing
+  column. The first line must carry the three required headers spelled exactly
+  as above; a renamed column reads as an absent one. `Sequence name` is not
+  required, so a file without it parses.
 
 ## See also
 
