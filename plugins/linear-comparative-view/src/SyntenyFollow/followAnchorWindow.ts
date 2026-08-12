@@ -27,10 +27,7 @@ export interface FollowWindow {
 export function followAnchorWindow(
   blocks: ContentBlock[],
 ): FollowWindow | undefined {
-  const byRefName = new Map<
-    string,
-    { block: ContentBlock; widthPx: number; start: number; end: number }
-  >()
+  const byRefName = new Map<string, FollowWindow & { widthPx: number }>()
   for (const b of blocks) {
     const prev = byRefName.get(b.refName)
     if (prev) {
@@ -39,25 +36,27 @@ export function followAnchorWindow(
       prev.end = Math.max(prev.end, b.end)
     } else {
       byRefName.set(b.refName, {
-        block: b,
+        refName: b.refName,
+        assemblyName: b.assemblyName,
         widthPx: b.widthPx,
         start: b.start,
         end: b.end,
       })
     }
   }
-  let best:
-    | { block: ContentBlock; widthPx: number; start: number; end: number }
-    | undefined
+  let best: (FollowWindow & { widthPx: number }) | undefined
   for (const entry of byRefName.values()) {
     if (!best || entry.widthPx > best.widthPx) {
       best = entry
     }
   }
+  // rebuilt rather than returned as-is: `widthPx` is the accumulator that picked
+  // the winner, not part of the window, and letting it ride along puts a field
+  // in the result that the type does not declare
   return best
     ? {
-        refName: best.block.refName,
-        assemblyName: best.block.assemblyName,
+        refName: best.refName,
+        assemblyName: best.assemblyName,
         start: best.start,
         end: best.end,
       }

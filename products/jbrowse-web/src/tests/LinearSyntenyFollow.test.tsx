@@ -107,6 +107,31 @@ test('the followed row tracks the anchor as it pans, rather than jumping once', 
   }, timeout)
 })
 
+test('a followed row dragged away by hand is put back', async () => {
+  // The guard against redundant navigation compares against where the row
+  // ACTUALLY is, not against what the follow last asked for. Remembering only
+  // its own request left a hand-nudged row sitting there, with following still
+  // reported as on — the mode silently not doing the one thing it is named for.
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+
+  // far enough to cross the snapped fetch window, which is what wakes the
+  // follow again without the anchor having moved
+  await target!.navToLocString('ctgA:10000..11000', TARGET_ASM)
+
+  await waitFor(() => {
+    const win = windowOf(target!)
+    expect(win.start).toBeGreaterThan(29500)
+    expect(win.end).toBeLessThan(32000)
+  }, timeout)
+})
+
 test('anchoring the bottom row reverses which row moves', async () => {
   const view = await openSyntenyView()
   const [query, target] = view.views
@@ -123,6 +148,58 @@ test('anchoring the bottom row reverses which row moves', async () => {
     expect(win.end).toBeLessThan(31000)
   }, timeout)
 })
+
+// A PanSN file whose loaded set spans three assemblies, where the pair a level
+// is about is decided by the level's own two rows rather than by the track.
+// Worth an end-to-end case: the follow scans whatever the fetch returned, so
+// "the mates are all the ones this level is about" is an assumption about the
+// adapter, not something the scan itself can see.
+//
+// It doubles as the proof that the CIGAR is WALKED rather than interpolated
+// across, because this alignment makes the two answers far apart. volvox_ins
+// ctgA is 54801bp against volvox's 50001, but the difference is not spread out —
+// the CIGAR is 31198M 4800I 18803M, one insertion at 31198. So the first third
+// of the contig maps 1:1 and everything after it is offset by 4800, while
+// interpolation would stretch the whole thing by 54801/50001 and be ~2.6kb wrong
+// at the first locus below and ~1.3kb wrong at the second, in opposite
+// directions.
+test('following an all-vs-all track walks the CIGAR rather than scaling the block', async () => {
+  const { session } = getTestSession()
+  const view = session.addView('LinearSyntenyView', {
+    init: {
+      views: [{ assembly: 'volvox_ins' }, { assembly: 'volvox' }],
+      tracks: ['volvox_all_vs_all'],
+    },
+  }) as unknown as SyntenyView
+  view.setWidth(800)
+  await waitFor(() => {
+    expect(view.initialized).toBe(true)
+  }, timeout)
+  const display = view.levels[0]!.linearSyntenyDisplays[0]!
+  await waitFor(() => {
+    expect(display.featureData).toBeDefined()
+  }, timeout)
+
+  const [ins, volvox] = view.views
+  view.setRowSyncMode('follow')
+
+  // before the insertion: 1:1, where scaling the block would say ~27.4kb
+  await ins!.navToLocString('ctgA:30000..31000', 'volvox_ins')
+  await waitFor(() => {
+    const win = windowOf(volvox!)
+    expect(win.refName).toBe('ctgA')
+    expect(win.start).toBeGreaterThan(29900)
+    expect(win.end).toBeLessThan(31100)
+  }, timeout)
+
+  // after it: offset by the 4800bp insert, where scaling would say ~36.5kb
+  await ins!.navToLocString('ctgA:40000..41000', 'volvox_ins')
+  await waitFor(() => {
+    const win = windowOf(volvox!)
+    expect(win.start).toBeGreaterThan(35100)
+    expect(win.end).toBeLessThan(36300)
+  }, timeout)
+}, 60000)
 
 test('the two row-sync modes are mutually exclusive', async () => {
   const view = await openSyntenyView()

@@ -13,6 +13,7 @@ import type {
   FeatPos,
   LinearSyntenyDisplayModel,
 } from '../LinearSyntenyDisplay/model.ts'
+import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -36,6 +37,9 @@ interface FollowStep {
   movingView: LinearGenomeViewModel
   feat: FeatPos
   window: FollowWindow
+  // where the moving row is sitting right now, so the "is it already there"
+  // test needs nothing observable once this pass is over. See alreadyShowing.
+  movingWindow: FollowWindow | undefined
   toMate: boolean
   // whether the alignment carries a CIGAR to walk, decided from the same fetch
   // the feature came out of
@@ -49,21 +53,54 @@ interface FollowStep {
  * this on every pass; an observable would make it a dependency of the very run
  * that writes it, and the follow would re-enter itself forever. It is also not
  * state a session should persist — `featureId` is only comparable within one
- * fetch of one LOD tier, and `lastLoc` describes where a panel already is.
+ * fetch of one LOD tier.
  */
 interface LevelState {
   // the alignment this level followed last, for pickFollowFeature's hysteresis
   featureId?: string
-  // what we last navigated the moving panel to. A follow that resolves to the
-  // same place must not call navToLocString again: the call moves the panel,
-  // which republishes its coarse blocks, which wakes any level anchored on it —
-  // harmless once, but a rounding-level disagreement between two adjacent levels
-  // would otherwise ping-pong indefinitely.
-  lastLoc?: string
   // latest-wins guard. A pan issues one resolve per settled position and the RPC
   // is not ordered, so a slow earlier one can land after a fast later one and
   // park the panel at a window the user has already left.
   seq: number
+}
+
+// How far the moving panel may already be from the span a follow resolved to
+// before it is worth navigating, as a fraction of that span. Two things need
+// this to be a tolerance rather than an equality test. A refetch lands on every
+// pass and rewakes the autorun, so the ordinary case is re-resolving a panel
+// that is ALREADY where it belongs; and navToLocString fits the span to the pane
+// rather than landing on it exactly, so the panel never reports back the numbers
+// it was given. Without the slack the two of those together renavigate the panel
+// indefinitely, each time by a few bp.
+const ALREADY_THERE_FRACTION = 0.02
+
+/**
+ * Whether the moving row is close enough to `span` that navigating would be
+ * churn.
+ *
+ * WHERE THE ROW ACTUALLY IS, not what the follow last asked for. The two come
+ * apart when the user nudges a followed row by hand, and a follow that
+ * remembered only its own request would leave the row where the user put it
+ * while still reporting itself as following.
+ *
+ * Pure, over a window the caller read while it was tracking. That is what lets
+ * the moving row's settled position be an ordinary DEPENDENCY of the follow —
+ * nudge a followed row and, once it settles, the follow wakes and puts it back —
+ * rather than something read behind the scheduler's back from an async
+ * continuation.
+ */
+export function alreadyShowing(
+  shown: FollowWindow | undefined,
+  span: ResolvedSpan,
+) {
+  if (!shown || shown.refName !== span.refName) {
+    return false
+  }
+  const slack = Math.max((span.end - span.start) * ALREADY_THERE_FRACTION, 1)
+  return (
+    Math.abs(shown.start - span.start) <= slack &&
+    Math.abs(shown.end - span.end) <= slack
+  )
 }
 
 /**
@@ -96,6 +133,7 @@ interface LevelState {
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = new Map<number, LevelState>()
+  let lastErrorMessage: string | undefined
 
   function stateFor(level: number) {
     let state = levelStates.get(level)
@@ -107,29 +145,45 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   }
 
   async function execute(step: FollowStep) {
-    const { level, display, movingView, feat, window, toMate, hasCigar } = step
+    const {
+      level,
+      display,
+      movingView,
+      movingWindow,
+      feat,
+      window,
+      toMate,
+      hasCigar,
+    } = step
     const state = stateFor(level)
     const seq = ++state.seq
-    const span = hasCigar
-      ? await resolveMatchingSpan({ model: display, feat, window, toMate })
-      : interpolateFollowSpan({ feat, window, toMate })
+    // The CIGAR walk first where there is one to walk, interpolation where there
+    // is not. `hasCigar` is per-FETCH, not per-feature — true when any block in
+    // the response carried one — so a file that mixes them (a chain set with a
+    // few CIGAR-less rows, a PAF concatenated from two runs) reaches the walk
+    // and gets nothing back. Falling through rather than giving up keeps those
+    // blocks followable, on the same terms as a wholly CIGAR-less tier.
+    const span =
+      (hasCigar
+        ? await resolveMatchingSpan({ model: display, feat, window, toMate })
+        : undefined) ?? interpolateFollowSpan({ feat, window, toMate })
     // superseded while the resolve was in flight, or the view went away
-    if (!span || seq !== state.seq || !isAlive(self) || !isAlive(movingView)) {
+    if (seq !== state.seq || !isAlive(self) || !isAlive(movingView)) {
       return
     }
-    const loc = assembleLocStringRaw({
-      refName: span.refName,
-      start: span.start,
-      // at least one base, since a zero-width span assembles into an inverted
-      // locstring
-      end: Math.max(span.start + 1, span.end),
-    })
-    if (loc === state.lastLoc) {
-      return
-    }
-    state.lastLoc = loc
     state.featureId = feat.id
-    await movingView.navToLocString(loc)
+    if (alreadyShowing(movingWindow, span)) {
+      return
+    }
+    await movingView.navToLocString(
+      assembleLocStringRaw({
+        refName: span.refName,
+        start: span.start,
+        // at least one base, since a zero-width span assembles into an inverted
+        // locstring
+        end: Math.max(span.start + 1, span.end),
+      }),
+    )
   }
 
   addDisposer(
@@ -157,6 +211,22 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           if (!window) {
             continue
           }
+          // The moving row's own settled window, read here so this pass owns
+          // every observable the follow depends on. It makes that row a
+          // DEPENDENCY, which is deliberate and is what re-asserts the follow
+          // over a row the user nudged by hand. The debounced blocks, not the
+          // live ones, for the same reason the anchor uses them: tracking the
+          // live position would wake the follow on every frame of a drag and
+          // fight the user for the row. It converges — the nav below settles,
+          // wakes this once more, and `alreadyShowing` then says there is
+          // nothing to do.
+          const movingWindow = followAnchorWindow(
+            movingView.coarseDynamicBlocks,
+          )
+          // The level's LOWER row, which is the one on the alignments' mate
+          // axis whichever direction this level runs in — so it names the lane
+          // of an all-vs-all track that this level is about.
+          const mateAssembly = self.views[level + 1]?.assemblyNames[0]
           // A level can carry more than one synteny track. Each is asked for its
           // best alignment over the window and the widest wins, so a sparse
           // track does not outvote the one that actually covers the locus.
@@ -171,6 +241,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
               data,
               window,
               toMate,
+              mateAssembly,
               incumbentId: stateFor(level).featureId,
             })
             if (candidate && (!best || candidate.overlap > bestOverlap)) {
@@ -179,6 +250,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
                 level,
                 display,
                 movingView,
+                movingWindow,
                 feat: getFeatureAtIndex(data, candidate.index),
                 window,
                 toMate,
@@ -195,9 +267,22 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             steps.push(best)
           }
         }
+        // `execute` reads no observables — everything it needs is in the step —
+        // so it does not matter that an async function runs synchronously up to
+        // its first await, and the CIGAR-less path (which awaits nothing before
+        // navigating) needs no special handling.
         for (const step of steps) {
           execute(step).catch((e: unknown) => {
-            getSession(self).notifyError(`${e}`, e)
+            // ONCE PER DISTINCT MESSAGE. A follow that cannot resolve usually
+            // cannot resolve repeatedly — an assembly whose refName the moving
+            // row does not have keeps failing the same way on every pan — and a
+            // snackbar per settle would bury the app in identical notifications
+            // for a background action nobody asked to run.
+            const message = `${e}`
+            if (message !== lastErrorMessage) {
+              lastErrorMessage = message
+              getSession(self).notifyError(message, e)
+            }
           })
         }
       },
