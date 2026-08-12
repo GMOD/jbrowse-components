@@ -98,7 +98,17 @@ describe('selectNamedRegions', () => {
   >
   // as an assembly builds it: aliases AND the canonical names, identity-mapped
   const allRefNames = [...Object.keys(ucscAliases), ...['1', '2', 'MT']]
-  const canonical = (n: string) => ucscAliases[n] ?? n
+  // mirrors the real getCanonicalRefName, which is
+  // `refNameAliases[n] || lowerCaseRefNameAliases[n.toLowerCase()]` — the
+  // lowercase fallback is the reason an exact entry has always been
+  // case-insensitive, and a fixture without it cannot show the glob failing to
+  // match that
+  const canonical = (n: string) =>
+    ucscAliases[n] ??
+    Object.entries(ucscAliases).find(
+      ([alias]) => alias.toLowerCase() === n.toLowerCase(),
+    )?.[1] ??
+    allRefNames.find(r => r.toLowerCase() === n.toLowerCase())
 
   it('matches a glob against aliases, not only canonical names', () => {
     // the bug this replaced: `chr1` resolved and `chr*` did not, on the same
@@ -128,6 +138,22 @@ describe('selectNamedRegions', () => {
         ['chr1', 'NC_1', '1'],
       ),
     ).toHaveLength(1)
+  })
+
+  it('matches a glob case-insensitively, as the literal beside it already did', () => {
+    // getCanonicalRefName falls back to lowerCaseRefNameAliases, so the exact
+    // entry has always resolved regardless of casing; a case-sensitive glob was
+    // the same literal-works/pattern-silently-fails split as the alias one
+    expect(
+      selectNamedRegions(ensembl, ['CHR1'], canonical, allRefNames).map(
+        r => r.refName,
+      ),
+    ).toEqual(['1'])
+    expect(
+      selectNamedRegions(ensembl, ['CHR*'], canonical, allRefNames).map(
+        r => r.refName,
+      ),
+    ).toEqual(['1', '2', 'MT'])
   })
 
   it('matches canonical names only for a legacy three-argument call', () => {

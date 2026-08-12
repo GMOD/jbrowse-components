@@ -1,23 +1,20 @@
 import type { Region } from './types/index.ts'
 
-/**
- * `*` is the only metacharacter; everything else in a name is matched literally,
- * so a refName containing regex punctuation (`chr1.1`, `scaffold[2]`) can't turn
- * into an accidental pattern. Anchored, so a pattern names whole refNames.
- *
- * Exported because the search box's refName matching reads the same syntax, and
- * one reading of `*` is the whole point: a pattern that selects a set in a
- * session spec has to select the same set when typed into the box.
- */
-export function globToRegExp(pattern: string) {
+// `*` is the only metacharacter; everything else in a name is matched literally,
+// so a refName containing regex punctuation (`chr1.1`, `scaffold[2]`) can't turn
+// into an accidental pattern.
+//
+// Case-INSENSITIVE, and not optionally: the literal reading beside it resolves
+// through getCanonicalRefName, which falls back to `lowerCaseRefNameAliases`, so
+// `CHR1` has always found `chr1`. A case-sensitive glob meant `CHR1*` found
+// nothing on the same assembly — literal working where pattern silently fails,
+// which is the same split the alias fix removed and is no more tellable apart
+// from "this assembly has no such contigs" here than it was there. No caller
+// wants the other behaviour, so it is baked in rather than passed.
+function globToRegExp(pattern: string) {
   const escaped = pattern.replaceAll(/[.*+?^${}()|[\]\\]/g, m =>
     m === '*' ? '.*' : `\\${m}`,
   )
-  // Case-INSENSITIVE, and not optionally. The literal reading beside it resolves
-  // through getCanonicalRefName, which falls back to `lowerCaseRefNameAliases`,
-  // so `CHR1` has always found `chr1`; a case-sensitive glob meant `CHR1*` found
-  // nothing on the same assembly. No caller wants the other behaviour, so it is
-  // baked in rather than passed.
   return new RegExp(`^${escaped}$`, 'i')
 }
 
@@ -46,6 +43,15 @@ export function globToRegExp(pattern: string) {
  *
  * Selecting from the assembly's own region objects (rather than synthesizing
  * them) keeps coordinates and lengths correct.
+ *
+ * THERE IS DELIBERATELY NO CEILING on how many regions a glob may resolve to.
+ * `["*"]` on a scaffold-level assembly really does mean every contig, which is
+ * no more than `showAllRegionsInAssembly` already hands to `setDisplayedRegions`.
+ * A cap here could only truncate — silently returning some of what was asked
+ * for, which is the failure mode this file keeps being fixed for. The search
+ * box's picker does bound its bulk-select row, and that is a different thing: it
+ * withholds an OFFER, leaving every match still pickable one at a time, rather
+ * than quietly resolving a list to a prefix of itself.
  *
  * BOTH READINGS GO THROUGH THE ASSEMBLY'S ALIASES, and they have to, because
  * only one of them used to. An exact name has always resolved via
