@@ -270,10 +270,12 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   // /dpr) so the AA always spans >1px. On HiDPI a 1px CSS line is already 2
   // device px, so the floor is below it and the look is unchanged.
   //
-  // The arc and arcFlat passes take their width per instance now (support-scaled
-  // at pack time) and read this as the FLOOR to raise it to — the floor is about
-  // the display, not about how many reads an arc stands for. The connector-tick
-  // pass (arcLine) still strokes with it directly.
+  // All THREE stroked arc-band passes — arc, arcFlat and arcLine — take their
+  // width per instance (support-scaled at pack time by `arcLineWidth`) and read
+  // this only as the FLOOR to raise it to: `max(inst.lineWidthPx,
+  // u.lineWidthPx)`. The floor is about the display, not about how many reads a
+  // mark stands for. (The tick pass was the last to stroke with this uniform
+  // directly, and the note saying so outlived the change.)
   f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth, 1.5 / dpr)
   // Sizes the antialiasing ramp in device pixels (see STROKE_AA_PX).
   f[U.dpr] = dpr
