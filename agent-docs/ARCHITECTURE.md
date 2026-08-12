@@ -179,18 +179,10 @@ mirroring step to forget. Don't hand-edit between a `<!-- NAME START -->` /
 | `HELPER_PACKAGES` | the standalone npm helper packages | `packages/*/package.json` |
 | `REEXPORT_MODULES` | the `@jbrowse/core` subpaths a plugin gets the host's copy of | the `#reexport` comments in `ReExports/list.ts` |
 
-Each of those replaced a hand-written table that had already drifted: the
-foundation list claimed a `RegionTooLargeMixin` foundation used by displays
-composing no such thing, the autorun table still cleared on a `regionTooLarge`
-that had become derived, the palette table was missing a third of its keys, the
-package table told plugin authors to bundle four packages that depend on
-`@jbrowse/core`, and the re-export table was five paths short while the sentence
-above it called the source file the source of truth. A row joins any of them by
-existing in the source, never by being written down.
-
-**The pattern worth copying: if a doc sentence tells the reader to go look at a
-file, the table under it should be generated from that file.** Every one of
-these was a list some author transcribed once and no one re-derived.
+A row joins any of them by existing in the source, never by being written down.
+Every one replaced a hand-written table that had already drifted; what each of
+them got wrong, and the rule to draw from it, is in
+[CLAUDE.md](CLAUDE.md#generated-tables).
 
 ## Display stacks
 
@@ -347,71 +339,6 @@ fail. `features !== undefined || !!error` is its `canvasDrawn`
 analogue — the first-paint signal that gates the `-done` testid and the loading
 anti-flash. The stricter, staleness-aware `svgReady` is the export gate.
 
-### The global-fetch trigger list must be read unconditionally
-
-`installGlobalFetchAutorun` reads the viewport, `isMinimized`, the
-`rpcProps()` cache key (a `computed`, for the reason in "the cache key is the
-return value, not the reads") and `reloadCounter` at the top of its body,
-*before* the display's `shouldFetch()`
-gate, and that ordering is load-bearing. MobX rebuilds the dependency set on
-every run, so a read placed inside the gate drops out of it on any run that
-decides not to fetch — and can then never wake the autorun again. Arc is the
-shape that exposes this: its `shouldFetch` is `!dataCurrent`, so it goes false on
-every successful fetch, and with `reloadCounter` read under the gate `reload()`
-was silently dead. The display's own `shouldFetch` is the
-only gate in the skeleton; each display's `fetch` re-checks `isMinimized` /
-`view.initialized` / an empty viewport for its direct callers.
-
-The general rule, which the other fetch autoruns already satisfy: **a gated
-trigger read is safe only if the gate is itself an observable that flips on the
-transition you want to wake up on.** `if (self.isMinimized) return` above the
-tracked deps (synteny, tree-sidebar, the variant sources autorun) is fine —
-un-minimizing re-runs the body and re-reads everything. A pure signal like
-`reloadCounter`, whose only job is to say "go again" and which no gate consults,
-is the dangerous case: nothing else will ever re-run the body on its behalf.
-`installGlobalFetchAutorun.test.ts` pins this.
-
-A global display whose `shouldFetch` gates on its own `dataCurrent` must also
-invalidate that freshness signal in `reload()` — bumping `reloadCounter` alone
-re-runs the autorun but leaves `shouldFetch` false. `ArcFetchModel.reload()`
-clears `loadedRegionSignature` for exactly this reason (keeping `features`, so
-the stale arcs stay under the loading overlay instead of blanking).
-
-**The per-region twin: a `fetchNeeded` that declines to fetch must be woken by
-something `FetchVisibleRegions` already tracks.** That autorun tests
-`isBlockCovered(...) && isCacheValid(...)`, and `&&` short-circuits, so on a run
-where the block is uncovered `isCacheValid`'s observables register no
-dependency. It's safe only because an uncovered block always reaches
-`fetchNeeded`, and a fetch bumps `fetchGeneration` — which the autorun tracks. An
-override returning early **without** fetching breaks that chain and must supply
-its own wake path from the existing dependency set. Both in-tree cases do:
-sequence's `zoomedOut` moves with `bpPerPx`, so `visibleRegions` re-fires it;
-multi-sample variant's `!sourcesBase` clears through `SettingsInvalidate`,
-because `rpcProps().sampleFilter` is derived from `sourcesBase` and goes from
-`undefined` to a list the moment it arrives. That is also why `sampleFilter`
-spells the unfiltered case out in full rather than reusing `undefined` for it:
-collapsing the two would leave the key unchanged when sources landed, and the
-display would wedge with nothing drawn. Same failure mode as the global rule
-above — the autorun settles into a state nothing will wake it from.
-
-**The comparative twin, and why this is a law rather than one installer's
-quirk.** `installComparativeFetchAutorun` reads `reloadCounter` above its
-`prepare()` bail-outs for exactly the reason arc does, and it was added the same
-way — by finding both non-LGV views unable to recover from a fetch error,
-because after a failure every fetch input is unchanged and clearing the error
-alone refires nothing. So all three fetch families now carry the same pure
-signal, read unconditionally, each pinned by its installer's test:
-
-| family | installer | the pure signal | pinned by |
-| --- | --- | --- | --- |
-| per-region | `MultiRegionDisplayMixin`'s `FetchVisibleRegions` | `fetchGeneration` | the mixin's own fetch tests |
-| global | `installGlobalFetchAutorun` | `reloadCounter` | `installGlobalFetchAutorun.test.ts` |
-| comparative | `installComparativeFetchAutorun` | `SyntenyFetchStateMixin.reloadCounter` | `installComparativeFetchAutorun.test.ts` |
-
-Read the table as the checklist for a fourth: if you add a fetch skeleton with a
-gate, it needs a signal the gate never consults, read above the gate, and a test
-that fails when the read is deleted.
-
 **Render path is a separate axis.** GPU-canvas vs Canvas2D is chosen per frame at
 the backend factory
 ([GPU_RENDERING.md § RenderingBackend interfaces per plugin](reference/GPU_RENDERING.md#renderingbackend-interfaces-per-plugin)),
@@ -478,6 +405,71 @@ callback returns. Which set depends on the mode: regular mode takes
 `visibleRegions` only — its columns lay out by feature *index* across the visible
 width, so a buffered feature would be crammed into the viewport and draw a
 connector to an off-screen position.
+
+### The global-fetch trigger list must be read unconditionally
+
+`installGlobalFetchAutorun` reads the viewport, `isMinimized`, the
+`rpcProps()` cache key (a `computed`, for the reason in "the cache key is the
+return value, not the reads") and `reloadCounter` at the top of its body,
+*before* the display's `shouldFetch()`
+gate, and that ordering is load-bearing. MobX rebuilds the dependency set on
+every run, so a read placed inside the gate drops out of it on any run that
+decides not to fetch — and can then never wake the autorun again. Arc is the
+shape that exposes this: its `shouldFetch` is `!dataCurrent`, so it goes false on
+every successful fetch, and with `reloadCounter` read under the gate `reload()`
+was silently dead. The display's own `shouldFetch` is the
+only gate in the skeleton; each display's `fetch` re-checks `isMinimized` /
+`view.initialized` / an empty viewport for its direct callers.
+
+The general rule, which the other fetch autoruns already satisfy: **a gated
+trigger read is safe only if the gate is itself an observable that flips on the
+transition you want to wake up on.** `if (self.isMinimized) return` above the
+tracked deps (synteny, tree-sidebar, the variant sources autorun) is fine —
+un-minimizing re-runs the body and re-reads everything. A pure signal like
+`reloadCounter`, whose only job is to say "go again" and which no gate consults,
+is the dangerous case: nothing else will ever re-run the body on its behalf.
+`installGlobalFetchAutorun.test.ts` pins this.
+
+A global display whose `shouldFetch` gates on its own `dataCurrent` must also
+invalidate that freshness signal in `reload()` — bumping `reloadCounter` alone
+re-runs the autorun but leaves `shouldFetch` false. `ArcFetchModel.reload()`
+clears `loadedRegionSignature` for exactly this reason (keeping `features`, so
+the stale arcs stay under the loading overlay instead of blanking).
+
+**The per-region twin: a `fetchNeeded` that declines to fetch must be woken by
+something `FetchVisibleRegions` already tracks.** That autorun tests
+`isBlockCovered(...) && isCacheValid(...)`, and `&&` short-circuits, so on a run
+where the block is uncovered `isCacheValid`'s observables register no
+dependency. It's safe only because an uncovered block always reaches
+`fetchNeeded`, and a fetch bumps `fetchGeneration` — which the autorun tracks. An
+override returning early **without** fetching breaks that chain and must supply
+its own wake path from the existing dependency set. Both in-tree cases do:
+sequence's `zoomedOut` moves with `bpPerPx`, so `visibleRegions` re-fires it;
+multi-sample variant's `!sourcesBase` clears through `SettingsInvalidate`,
+because `rpcProps().sampleFilter` is derived from `sourcesBase` and goes from
+`undefined` to a list the moment it arrives. That is also why `sampleFilter`
+spells the unfiltered case out in full rather than reusing `undefined` for it:
+collapsing the two would leave the key unchanged when sources landed, and the
+display would wedge with nothing drawn. Same failure mode as the global rule
+above — the autorun settles into a state nothing will wake it from.
+
+**The comparative twin, and why this is a law rather than one installer's
+quirk.** `installComparativeFetchAutorun` reads `reloadCounter` above its
+`prepare()` bail-outs for exactly the reason arc does, and it was added the same
+way — by finding both non-LGV views unable to recover from a fetch error,
+because after a failure every fetch input is unchanged and clearing the error
+alone refires nothing. So all three fetch families now carry the same pure
+signal, read unconditionally, each pinned by its installer's test:
+
+| family | installer | the pure signal | pinned by |
+| --- | --- | --- | --- |
+| per-region | `MultiRegionDisplayMixin`'s `FetchVisibleRegions` | `fetchGeneration` | the mixin's own fetch tests |
+| global | `installGlobalFetchAutorun` | `reloadCounter` | `installGlobalFetchAutorun.test.ts` |
+| comparative | `installComparativeFetchAutorun` | `SyntenyFetchStateMixin.reloadCounter` | `installComparativeFetchAutorun.test.ts` |
+
+Read the table as the checklist for a fourth: if you add a fetch skeleton with a
+gate, it needs a signal the gate never consults, read above the gate, and a test
+that fails when the read is deleted.
 
 ### The region-too-large gate (summary)
 
@@ -891,18 +883,11 @@ value that was identical on every instance. **A per-instance array is the wrong
 home for a scalar**: if a setting multiplies every element by the same number,
 it belongs in the uniform/draw params.
 
-**A split that still reaches the packer: the color-lane patch.** A genuine
-recolor (`colorBy`, `opacityByIdentity`, a track palette shift) does produce a
-fresh `colors` array, and the `geometry` getter then hands the backend a fresh
-object over the *same* coordinate arrays — which is exactly what
-`createKeyedUploadSync`'s reference diff is meant to catch, but a naive backend
-re-packs every lane to change one. So `GpuSyntenyRenderer.getInterleaved` /
-`GpuDotplotRenderer.getInterleaved` both memoize the packed bytes on
-`(one geometry array's identity, colors' identity)` and call
-`patchInstanceColors` when only the latter moved. The GPU re-upload still
-happens — the HAL has no partial-buffer update — but the CPU interleave, which
-dominates at 10⁵–10⁶ instances, does not. Any new keyed-upload backend whose
-palette is a separate main-thread pass wants the same two-line memo.
+A genuine recolor does still produce a fresh `colors` array over the same
+coordinate arrays, and a naive keyed-upload backend re-packs every lane to change
+one. The two-line memo that avoids it is a backend concern:
+[GPU_RENDERING.md § Three upload patterns](reference/GPU_RENDERING.md#three-upload-patterns),
+under "the color-lane patch".
 
 Derived region maps apply when upload needs whole fresh per-region payloads, not
 just encoder parameters. Alignments' `laidOutByGroup` returns, per group, shallow

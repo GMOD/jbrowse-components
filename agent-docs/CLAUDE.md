@@ -41,10 +41,28 @@ that is the signal: split it into the homes above instead. In `handoffs/` that
 sentence is the point of the file — but it is the only thing there that should
 survive a read of the links.
 
+## Generated tables
+
 `pnpm autogen` sweeps this tree for `<!-- NAME START -->` / `<!-- NAME END -->`
 pairs the same way it sweeps `website/docs`, and overwrites whatever is between
 them. If a table here restates something a reader could check against the code,
 write the generator instead of the table.
+
+That rule is not a preference; it is what six drifted tables cost.
+ARCHITECTURE.md's foundation list claimed a `RegionTooLargeMixin` foundation used
+by displays composing no such thing, its autorun table still cleared on a
+`regionTooLarge` that had become derived, the palette table was missing a third
+of its keys, the package table told plugin authors to bundle four packages that
+depend on `@jbrowse/core`, and the re-export table was five paths short *while
+the sentence above it called the source file the source of truth*. Each is now
+generated, and a row joins one by existing in the source rather than by being
+written down.
+
+**The pattern worth copying: if a doc sentence tells the reader to go look at a
+file, the table under it should be generated from that file.** Every one of those
+was a list some author transcribed once and no one re-derived — which is the
+failure the sentence-plus-stale-table shape produces every time, because the
+sentence goes on being true as the table rots.
 
 **Every doc outside `architecture-decision-records/` carries `name:` /
 `description:` frontmatter, and that is load-bearing.** It is how you find the

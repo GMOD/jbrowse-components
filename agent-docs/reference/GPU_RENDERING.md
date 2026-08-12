@@ -782,6 +782,23 @@ and only changed regions re-upload. Alignments/synteny keep the plain whole-map
 form (N is only 4–8 buffered regions at their gene-level zoom). Full derivation of
 the incremental-layout memo and its chain-mode wrinkle: [ADR-017](../architecture-decision-records/adr-017-wiggle-per-key-autoruns.md), [ADR-011](../architecture-decision-records/adr-011-canvas-flatbush-immutable-offsets.md).
 
+**A keyed-upload backend wants the same kind of memo one level down: the
+color-lane patch.** A genuine recolor (`colorBy`, `opacityByIdentity`, a track
+palette shift) does produce a fresh `colors` array, and the `geometry` getter
+then hands the backend a fresh object over the *same* coordinate arrays — which
+is exactly what `createKeyedUploadSync`'s reference diff is meant to catch, but a
+naive backend re-packs every lane to change one. So
+`GpuSyntenyRenderer.getInterleaved` / `GpuDotplotRenderer.getInterleaved` both
+memoize the packed bytes on `(one geometry array's identity, colors' identity)`
+and call `patchInstanceColors` when only the latter moved. The GPU re-upload
+still happens — the HAL has no partial-buffer update — but the CPU interleave,
+which dominates at 10⁵–10⁶ instances, does not. Any new keyed-upload backend
+whose palette is a separate main-thread pass wants the same two-line memo. The
+model-side half of this split — why the colors array is fresh in the first place,
+and why opacity is *not* in it — is
+[ARCHITECTURE.md § gpuProps and derived region
+maps](../ARCHITECTURE.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
+
 ## HAL (Hardware Abstraction Layer)
 
 Hides the WebGPU/WebGL2 difference. Lives in `packages/render-core/src/hal/`.
