@@ -9,7 +9,7 @@
 // exactly the case the split was about. The hit test had the same divergence
 // against the paint one commit earlier, over the far/near width. Two instances
 // of one shape is a missing function, not two bugs.
-import { arcAvailH, arcDomeDestY, arcYOffsetPx } from './arcYScale.ts'
+import { arcAvailH, arcYOffsetPx } from './arcYScale.ts'
 import { isFlatArcShape } from './compute.ts'
 
 import type { ArcsUploadData } from './types.ts'
@@ -59,14 +59,12 @@ export function arcPlacement(
   const anchorY = pairedArcsDown ? arcsTop : arcsTop + arcsH
   const availH = arcAvailH(arcsH)
   const yBp = data.arcYBp[i]!
-  // The split that diverged, now stated once. A flat mark's Y is CLAMPED into
-  // the band; a dome's is not, so a wide pair leaves the band rather than
-  // flattening onto its ceiling and elbowing. Mirrors arc.slang, off the two
-  // generated helpers it is generated from.
+  // One rule for both mark kinds, CLAMPED into the band. A dome briefly took an
+  // unclamped Y (98dd82120b, reverted): that let a wide pair's apex fall below
+  // the band, so it drew as two clipped flanks with no arc between its
+  // endpoints. Mirrors arc.slang, off the generated helper it is generated from.
   const isFlat = isFlatArcShape(data.arcShapeTypes[i]!)
-  const destY = isFlat
-    ? arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, availH)
-    : arcDomeDestY(yBp, arcsYDomainBp, arcsYLog, availH)
+  const destY = arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, availH)
   return {
     sx1: bpToScreenX(data.arcX1[i]!),
     sx2: bpToScreenX(data.arcX2[i]!),

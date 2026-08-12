@@ -21,27 +21,29 @@
 // band clips the apex away and only near-vertical legs rising from each
 // endpoint remain.
 //
-// NEITHER BRANCH CLAMPS ITS APEX — the band clips both. That is one rule now,
-// and it used not to be: the dome's destY was clamped to availH, so in arc mode
-// (where arcsYDomainBp is availH/pxPerBp, making destY reduce to rx) every pair
-// wider than availH drew the SAME 0.75·availH depth on its own rx. Measured on
-// HG02768 1:39,658,650-39,659,550 in a 200px band: 699 arcs stacked on the
-// 142px row, against the 0.75·192 = 144 that predicts.
+// THE DOME'S APEX IS CLAMPED TO THE BAND, and that is deliberate: it is what
+// makes a pair with both endpoints on screen draw a complete arc BETWEEN those
+// two endpoints. Unclamping it was tried (98dd82120b) and reverted, and the
+// reason is worth keeping, because the mistake is easy to repeat.
 //
-// Two things were wrong with that, and they are the same thing. rx >> ry is a
-// plateau with a tightening bend at each foot — the elbow — and a far pair,
-// having no apex to clamp, ran the full arcBandH instead, so crossing
-// ARC_FAR_SCREEN_WIDTHS while zooming stepped an arc from 144px to 200px. The
-// step was invisible until the hull was fixed: the old chord truncated far legs
-// at ~100-144px (see legSweepAngle), landing on the near ceiling by accident.
+// A wide pair's clamped dome is flat-topped — destY reduces to the pair's
+// on-screen half-width in arc mode, so once that passes availH every such pair
+// draws the same 0.75*availH depth on its own rx, and rx >> ry is a plateau.
+// That LOOKS like the elbow this pass really did have, and it was mistaken for
+// it. The real elbow was the triangle strip's seam quad between a far circle's
+// two legs (see VsOut.legSide) — a horizontal bar joined to a leg at a right
+// angle, which is the shape that was actually being reported.
 //
-// Unclamped, arc mode is self-similar — destY IS rx, so every dome is
-// ARC_APEX_FRACTION of its own half-width — and the far circle is the same
-// shape at aspect 1.0 rather than a different rule, so the two now differ only
-// in how fast the flanks rise. See arcDomeDestY (alignmentsUniforms) for why a
-// smoother curve was not the alternative: anything leaving its endpoint
-// vertically and flattening into a fixed height elbows, the bezier this dome
-// replaced included.
+// Unclamping cured nothing and cost the arc: ry became 0.75*rx, so any pair
+// wider than about 1.3*availH put its apex below the band and drew as two
+// clipped flanks, indistinguishable from the far case, with no arc between the
+// endpoints at all. A flat-topped dome is still an arc between two endpoints; a
+// clipped one is not.
+//
+// The tension is geometric and has no third shape: a dome spanning 2*rx whose
+// apex is held to availH has aspect >= rx/availH, so a wide pair in a short band
+// is either flat-topped (clamped) or has no top at all (unclamped). Only a
+// taller band buys a rounder curve. Don't re-derive this by removing the clamp.
 //
 // There is no `shapeType` attribute. It used to select between this curve and
 // the read cloud's flat connector (values 1 and 2), which meant a 130-vertex
@@ -240,12 +242,11 @@ Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
   // Y the insert size maps to: availH px spans arcsYDomainBp bp, the CPU-chosen
   // domain (zoom-proportional for arcs, autoscaled |tlen| for read cloud).
-  // arcDomeBandDestY (alignmentsUniforms) is the UNCLAMPED half of that
-  // formula. arcFlat.slang and arcMarker.slang take the clamped `arcBandDestY`,
-  // because a flat mark off the band is invisible while a dome off the band is
-  // just a dome the band is clipping — see arcDomeDestY for why holding one at
-  // the ceiling is what drew elbows.
-  float destY = arcDomeBandDestY(inst.yBp, availH, u);
+  // arcBandDestY (alignmentsUniforms) is the shared formula — the same one
+  // arcFlat.slang and arcMarker.slang use. CLAMPED to the band, which is what
+  // keeps a pair with both endpoints on screen drawing a complete arc BETWEEN
+  // those endpoints instead of a curve that leaves through the band edge.
+  float destY = arcBandDestY(inst.yBp, availH, u);
   float x1Px = u.blockStartPx + bpToLinear(inst.x1, u) * u.blockWidth;
   float x2Px = u.blockStartPx + bpToLinear(inst.x2, u) * u.blockWidth;
   float halfWidthPx = abs(x2Px - x1Px) * 0.5;

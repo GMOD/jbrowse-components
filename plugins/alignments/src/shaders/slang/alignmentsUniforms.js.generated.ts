@@ -64,10 +64,6 @@ export function arcYOffsetPx(yBp: number, arcsYDomainBp: number, useLog: boolean
   return _min(availH, (arcYFraction(yBp, arcsYDomainBp, useLog) * availH))
 }
 
-export function arcDomeDestY(yBp: number, arcsYDomainBp: number, useLog: boolean, availH: number): number {
-  return (arcYFraction(yBp, arcsYDomainBp, useLog) * availH)
-}
-
 export function arcColorSlot(idx: number): number {
   return _min(idx, 8)
 }

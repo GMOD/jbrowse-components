@@ -4,7 +4,7 @@ import { arcLineWidth } from '../../features/arcs/arcLineWidth.ts'
 import { arcScreenPath } from '../../features/arcs/arcPath.ts'
 import {
   arcAvailH,
-  arcDomeDestY,
+  arcYOffsetPx,
   arcYScale,
 } from '../../features/arcs/arcYScale.ts'
 import { hitTestArcs } from '../../features/arcs/hitTest.ts'
@@ -186,7 +186,7 @@ export function resolveArcBandDebug(
   for (let i = 0; i < arcs.numArcs; i++) {
     const sx1 = scale.bpToScreenX(arcs.arcX1[i]!)
     const sx2 = scale.bpToScreenX(arcs.arcX2[i]!)
-    const arcH = arcDomeDestY(
+    const arcH = arcYOffsetPx(
       arcs.arcYBp[i]!,
       scale.arcsYDomainBp,
       scale.arcsYLog,

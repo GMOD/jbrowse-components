@@ -17,9 +17,9 @@ const FRAME = {
   pairedArcsDown: false,
   lineWidth: 1,
   screenWidthPx: 1000,
-  // Read-cloud style: an autoscaled |tlen| domain read on a log axis. This is
-  // the mode where the clamped/unclamped Y split bites, because a yBp past the
-  // domain is what `arcYOffsetPx` clamps and `arcDomeDestY` does not.
+  // Read-cloud style: an autoscaled |tlen| domain read on a log axis. A yBp far
+  // past the domain is the interesting case, because that is where the clamp
+  // decides the apex.
   arcsYDomainBp: 500,
   arcsYLog: true,
   bpToScreenX: (bp: number) => bp,
@@ -84,9 +84,8 @@ function inBandPointsOnDrawnCurve(data: ArcsUploadData, opts: ArcHitOptions) {
   return pts
 }
 
-// A dome whose yBp is far past the band's domain — the case `arcDomeDestY`
-// exists for, and the one where reading the clamped `arcYOffsetPx` instead puts
-// the apex on the band's ceiling rather than above it.
+// A dome whose yBp is far past the band's domain, so the clamp is what places
+// its apex. Every consumer must agree on where that landed.
 const TALL_DOME = arcsData([{ x1: 200, x2: 600, yBp: 100_000 }])
 
 test('the dome the draw places is the one the hit test answers on', () => {
@@ -102,16 +101,20 @@ test('and the one the highlight traces', () => {
   )
 })
 
-test('a clamped flat mark stays inside the band the dome leaves', () => {
-  // Same yBp, flat shape. The clamp is the whole difference between the two
-  // rules, so a placement that used one for both would put these at one Y.
+test('a dome past the domain still closes inside the band', () => {
+  // The property the clamp exists for: however far past the domain yBp runs,
+  // the apex stays within the band, so a pair with both endpoints on screen
+  // draws a complete arc BETWEEN them instead of leaving through the band edge.
+  // Unclamping this (98dd82120b) is what turned wide domes into two clipped
+  // flanks; the flat mark shares the rule, so both land at the same ceiling.
   const flat = arcsData([
     { x1: 200, x2: 600, yBp: 100_000, shape: ARC_SHAPE_FLAT },
   ])
   const bar = arcPlacement(flat, 0, FRAME)
   const dome = arcPlacement(TALL_DOME, 0, FRAME)
-  expect(bar.apexY).toBeGreaterThanOrEqual(FRAME.arcsTop)
-  expect(dome.apexY).toBeLessThan(bar.apexY)
+  expect(dome.apexY).toBeGreaterThanOrEqual(FRAME.arcsTop)
+  expect(dome.destY).toBeLessThanOrEqual(FRAME.arcsH)
+  expect(dome.apexY).toBe(bar.apexY)
 })
 
 test('a down-pointing band mirrors every consumer at once', () => {
