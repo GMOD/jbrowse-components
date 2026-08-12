@@ -161,6 +161,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   canShowScrollZoomHint: boolean
   scrollZoomHintCount: number
   setScrollZoomHintCount: (n: number) => void
+  endScrollZoomHints: () => void
   // whether region highlight bands (URL/view highlights and bookmark overlays)
   // are drawn; one session-wide toggle shared by all views
   highlightsVisible: boolean

@@ -82,6 +82,11 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     onShow: () => {
       session.setScrollZoomHintCount(session.scrollZoomHintCount + 1)
     },
+    // they replied, so the budget's remaining raises would be asking a question
+    // that has been answered
+    onAnswered: () => {
+      session.endScrollZoomHints()
+    },
   })
   useEffect(() => {
     const curr = ref.current

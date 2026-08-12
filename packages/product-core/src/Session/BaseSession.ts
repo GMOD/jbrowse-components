@@ -472,6 +472,12 @@ export function BaseSessionModel<
        */
       setScrollZoom(flag: boolean) {
         this.setPreferenceOverride('scrollZoom', flag)
+        // Whoever just set this has found the preference, which is the one
+        // thing the prompt exists to tell them — including the user turning it
+        // back *off*, who is the last person who should be offered it again.
+        // Here rather than in the prompt's own button so it covers the view
+        // menu and the Preferences dialog too.
+        this.endScrollZoomHints()
       },
       /**
        * #action
@@ -481,6 +487,19 @@ export function BaseSessionModel<
        */
       setScrollZoomHintCount(n: number) {
         self.scrollZoomHintCount = n
+      },
+      /**
+       * #action
+       * stop offering the scroll-to-zoom prompt for the rest of the session.
+       *
+       * For an answer, as opposed to a raise going unanswered: the user found
+       * the setting, or waved the prompt away rather than letting it time out.
+       * The budget is for a user who might not have noticed, and none of those
+       * is that user — spending it a raise at a time would go on interrupting
+       * someone who has already replied.
+       */
+      endScrollZoomHints() {
+        self.scrollZoomHintCount = MAX_SCROLL_ZOOM_HINTS
       },
       /**
        * #action

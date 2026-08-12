@@ -11,6 +11,24 @@ import { MUI_TOOLTIP_Z_INDEX } from './zIndexes.ts'
 // need to be measured
 const HALF_WIDTH = 150
 const HEIGHT = 48
+/**
+ * The modifier the prompt names. The wheel handler takes either one on either
+ * platform, so this is about which one to *say*.
+ *
+ * ⌘ on a Mac, and not only because it is the key a Mac user reaches for:
+ * macOS's "zoom using scroll wheel" accessibility setting takes ctrl+wheel
+ * before the page ever sees it, and zooms the whole screen. For anyone with
+ * that on — which is the same population reaching for a zoom they can't find —
+ * advice naming ctrl is advice that visibly does the wrong thing.
+ *
+ * Read once at module scope: a machine does not change platform. The
+ * `navigator.platform` deprecation is irrelevant here — it is still populated
+ * everywhere, and `userAgent` covers a host that ever empties it.
+ */
+const ZOOM_MODIFIER = /mac/i.test(navigator.platform || navigator.userAgent)
+  ? '⌘'
+  : 'ctrl'
+
 // far enough below the pointer not to sit under it, close enough to read as
 // belonging to the gesture
 const CURSOR_GAP = 20
@@ -44,9 +62,8 @@ const useStyles = makeStyles()(theme => ({
  * It says what would have worked *and* offers the setting, because the point is
  * to spend the user's attention once: they came here wanting to zoom, so the
  * useful reply is a way to zoom, not the name of a preference they now have to
- * go and find. `ctrl + scroll` is named rather than the platform's other
- * modifier — meta works too, but ctrl works everywhere, so it is never the
- * wrong thing to have read.
+ * go and find. The modifier it names is the one that platform's users reach for
+ * — see ZOOM_MODIFIER.
  *
  * Portalled to the body and positioned in viewport coordinates, which is not
  * fussiness: this fires most often when the user has scrolled to the bottom of
@@ -98,7 +115,9 @@ function ScrollZoomHint({
         }}
       >
         <MouseIcon fontSize="small" className={classes.icon} />
-        <Typography variant="body2">ctrl + scroll to zoom</Typography>
+        <Typography variant="body2">
+          {ZOOM_MODIFIER} + scroll to zoom
+        </Typography>
         <Button size="small" onClick={onEnable}>
           Always zoom on scroll
         </Button>

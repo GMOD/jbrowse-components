@@ -58,7 +58,7 @@ export function scrollZoomMenuItem(self: LinearGenomeViewModel): MenuItem {
       self.setScrollZoom(!self.scrollZoom)
     },
     helpText:
-      'When enabled, the mouse wheel zooms in and out over a view instead of scrolling the page, and shift+scroll scrolls the page. When disabled, ctrl+scroll still zooms. Applies to every view in the app.',
+      'When enabled, the mouse wheel zooms in and out over a view instead of scrolling the page, and shift+scroll scrolls the page. When disabled, ctrl+scroll (⌘+scroll on a Mac) still zooms. Applies to every view in the app.',
   }
 }
 

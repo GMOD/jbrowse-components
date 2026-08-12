@@ -474,6 +474,34 @@ describe('JBrowseWebSessionModel', () => {
     })
   })
 
+  describe('scroll-to-zoom hint budget', () => {
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    it('starts with a budget and spends it a raise at a time', () => {
+      const session = createTestSession()
+      expect(session.canShowScrollZoomHint).toBe(true)
+      session.setScrollZoomHintCount(session.scrollZoomHintCount + 1)
+      expect(session.canShowScrollZoomHint).toBe(true)
+    })
+
+    it('setting the preference ends it, from wherever it was set', () => {
+      // the view menu, the Preferences dialog and the prompt's own button all
+      // land here, and all of them mean the same thing: they found the setting
+      const session = createTestSession()
+      session.setScrollZoom(true)
+      expect(session.canShowScrollZoomHint).toBe(false)
+    })
+
+    it('turning it back off ends it too', () => {
+      // the one user who most obviously does not need to be told again
+      const session = createTestSession()
+      session.setScrollZoom(false)
+      expect(session.canShowScrollZoomHint).toBe(false)
+    })
+  })
+
   describe('getPreferenceChanges (reset-to-defaults diff)', () => {
     // PreferencesSessionMixin persists preferencesOverrides to localStorage and
     // reloads them on attach, so a prior test's overrides would otherwise leak

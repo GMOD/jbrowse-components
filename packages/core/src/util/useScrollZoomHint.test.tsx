@@ -61,16 +61,18 @@ function Harness({
   view,
   enabled = true,
   onShow,
+  onAnswered,
 }: {
   view: ReturnType<typeof makeView>
   enabled?: boolean
   onShow?: () => void
+  onAnswered?: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { showZoomHint, dismissZoomHint, setZoomHintHeld } = useScrollZoomHint(
     ref,
     view,
-    { lingerMs: LINGER_MS, enabled, onShow },
+    { lingerMs: LINGER_MS, enabled, onShow, onAnswered },
   )
   held = setZoomHintHeld
   dismiss = dismissZoomHint
@@ -379,6 +381,67 @@ test('one raise is charged once, however long the user keeps pushing', () => {
   wheel(el)
   settle()
   expect(onShow).toHaveBeenCalledTimes(2)
+})
+
+// The budget exists for a user who might not have noticed the prompt. An answer
+// says they did, and is worth more than one raise — but only escape and the
+// card's own button are answers, and the caller is the one that decides what an
+// answer costs.
+test('escape is an answer; timing out and a tab switch are not', () => {
+  const onAnswered = jest.fn()
+  const { getByTestId } = render(
+    <Harness view={makeView()} onAnswered={onAnswered} />,
+  )
+  const el = getByTestId('c')
+
+  wheel(el)
+  settle()
+  advance(LINGER_MS)
+  expect(el.textContent).toBe('')
+  expect(onAnswered).not.toHaveBeenCalled()
+
+  wheel(el)
+  settle()
+  act(() => {
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  expect(onAnswered).not.toHaveBeenCalled()
+
+  wheel(el)
+  settle()
+  act(() => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+  })
+  expect(onAnswered).toHaveBeenCalledTimes(1)
+})
+
+test('a press on the app is not an answer — it is "not now"', () => {
+  const onAnswered = jest.fn()
+  const { getByTestId } = render(
+    <Harness view={makeView()} onAnswered={onAnswered} />,
+  )
+  const el = getByTestId('c')
+  wheel(el)
+  settle()
+  act(() => {
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+  })
+  expect(el.textContent).toBe('')
+  expect(onAnswered).not.toHaveBeenCalled()
+})
+
+test('the host acting on the prompt is an answer', () => {
+  const onAnswered = jest.fn()
+  const { getByTestId } = render(
+    <Harness view={makeView()} onAnswered={onAnswered} />,
+  )
+  wheel(getByTestId('c'))
+  settle()
+  act(() => {
+    // what the card's "Always zoom on scroll" button does
+    dismiss()
+  })
+  expect(onAnswered).toHaveBeenCalledTimes(1)
 })
 
 test('a wheel the page scrolled is not charged', () => {

@@ -164,6 +164,11 @@ const SCROLL_LAG_MS = 100
  * counts, and none of them can be the only one — the pointer hold in particular
  * is released by a `mouseleave` that a backgrounded tab never dispatches.
  *
+ * Of those, escape is the one that also says something about the *next* raise,
+ * and is reported as `onAnswered` for the caller's budget to act on. The rest
+ * are silence: a timer ran out, a tab went away, a press landed on whatever the
+ * user was reaching for. Only silence should be answered by asking again.
+ *
  * How often it may fire is the caller's to decide, through `enabled`/`onShow`.
  * That policy is deliberately not here: the budget worth enforcing is
  * session-wide (JBrowse spends one across every view — see the session's
@@ -181,12 +186,20 @@ export function useScrollZoomHintState({
   lingerMs = HINT_LINGER_MS,
   enabled = true,
   onShow,
+  onAnswered,
 }: {
   lingerMs?: number
   /** false to stop raising it at all — a spent budget, usually */
   enabled?: boolean
   /** one raise, for the caller to charge against whatever budget it keeps */
   onShow?: () => void
+  /**
+   * The user replied to the prompt rather than letting it time out: escape, or
+   * a press somewhere else. A budget is for someone who might not have noticed
+   * it, and this is the caller's signal that they did — see `dismissZoomHint`,
+   * which reports the host's own reply (its button) the same way.
+   */
+  onAnswered?: () => void
 } = {}) {
   const [show, setShow] = useState(false)
   // Where the prompt is drawn: the viewport point of the gesture that earned
@@ -242,6 +255,11 @@ export function useScrollZoomHintState({
   // Every way the prompt goes down runs through here — the linger expiring, the
   // backstop, escape, the host's own button. One exit path, so none of them can
   // leave a timer or the hold behind for the next raise to trip over.
+  //
+  // Whether the user *answered* is the caller's business rather than this
+  // hook's, and is a second function rather than a flag on this one — every
+  // caller here is an event listener or a timer, both of which hand their own
+  // first argument to whatever they were given.
   function dismiss() {
     clearTimeout(lingerTimer.current)
     clearTimeout(maxTimer.current)
@@ -254,6 +272,12 @@ export function useScrollZoomHintState({
     // and the next prompt can't be kept up by wheeling on
     held.current = false
     setShow(false)
+  }
+
+  // ...and the same, for a user who replied to it rather than let it lapse
+  function dismissAnswered() {
+    dismiss()
+    onAnswered?.()
   }
 
   function restartLinger() {
@@ -300,6 +324,7 @@ export function useScrollZoomHintState({
 
   // stable, so the listeners below bind once per raise rather than every render
   const dismissNow = useEventCallback(dismiss)
+  const answerNow = useEventCallback(dismissAnswered)
 
   // While it is up, take it down at the first sign the user is done with it.
   // Bound only while `show`, so a view that has never hinted binds nothing.
@@ -315,7 +340,8 @@ export function useScrollZoomHintState({
     }
     const onKeyDown = (event: Event) => {
       if (event instanceof KeyboardEvent && event.key === 'Escape') {
-        dismissNow()
+        // waved away: an answer, and the plainest one there is
+        answerNow()
       }
     }
     const onPointerDown = (event: Event) => {
@@ -332,6 +358,9 @@ export function useScrollZoomHintState({
           event.target.closest(`[${SCROLL_ZOOM_HINT_ATTR}]`)
         )
       ) {
+        // Not an answer, deliberately. Escape is aimed at the prompt; a press
+        // is aimed at whatever is under it — a feature, a menu, the next thing
+        // the user was doing — and reads as "not now" rather than "never".
         dismissNow()
       }
     }
@@ -365,7 +394,7 @@ export function useScrollZoomHintState({
         target.removeEventListener(type, handler, opts)
       }
     }
-  }, [show, dismissNow])
+  }, [show, dismissNow, answerNow])
 
   useEffect(() => {
     return () => {
@@ -386,7 +415,11 @@ export function useScrollZoomHintState({
     zoomHintAt: at,
     /** whether the prompt has ever been raised — see `mounted` */
     zoomHintMounted: mounted,
-    dismissZoomHint: dismiss,
+    /**
+     * Take it down because the user acted on it — the host's own button. Counts
+     * as an answer (`onAnswered`); the timers and the tab-switch path do not.
+     */
+    dismissZoomHint: dismissAnswered,
     /**
      * Hold the prompt open while the pointer is on it, and start it expiring
      * again on the way out.
