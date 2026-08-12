@@ -2,6 +2,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { ConfigurationReference, getConf } from '../../configuration/index.ts'
 import { RemoteFileWithRangeCache } from '../../util/io/index.ts'
+import { isWebWorker } from '../../util/isWebWorker.ts'
+import {
+  sessionStorageGetItem,
+  sessionStorageRemoveItem,
+  sessionStorageSetItem,
+} from '../../util/sessionStorage.ts'
 import { ElementId } from '../../util/types/mst.ts'
 import { BaseInternetAccountConfig } from './baseInternetAccountConfig.ts'
 
@@ -11,8 +17,6 @@ import type {
 } from '../../util/types/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
-
-const inWebWorker = typeof sessionStorage === 'undefined'
 
 /**
  * #stateModel BaseInternetAccountModel
@@ -130,14 +134,19 @@ export const InternetAccount = types
     /**
      * #action
      */
+    // Through the guarded helpers rather than `sessionStorage` directly: in the
+    // embedded products this runs on someone else's page, where reading the
+    // global at all throws if third-party storage is blocked. A token that
+    // cannot be cached costs one more auth prompt per tab; a throw here takes
+    // the auth flow down with it.
     storeToken(token: string) {
-      sessionStorage.setItem(self.tokenKey, token)
+      sessionStorageSetItem(self.tokenKey, token)
     },
     /**
      * #action
      */
     retrieveToken() {
-      return sessionStorage.getItem(self.tokenKey)
+      return sessionStorageGetItem(self.tokenKey)
     },
     /**
      * #action
@@ -160,7 +169,7 @@ export const InternetAccount = types
   .actions(self => {
     let tokenPromise: Promise<string> | undefined = undefined
     function clearToken() {
-      sessionStorage.removeItem(self.tokenKey)
+      sessionStorageRemoveItem(self.tokenKey)
       tokenPromise = undefined
     }
     return {
@@ -191,7 +200,11 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        if (inWebWorker) {
+        // `isWebWorker()`, not a `typeof sessionStorage` probe: that asks a
+        // different question (it is also false on a page where storage is
+        // blocked, which is a main thread that CAN prompt) and it throws
+        // outright in exactly that case, at module load.
+        if (isWebWorker()) {
           throw new Error(
             'Did not get internet account pre-authorization info in worker',
           )

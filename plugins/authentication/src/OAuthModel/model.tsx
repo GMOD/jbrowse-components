@@ -5,6 +5,7 @@ import {
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   isElectron,
+  isWebWorker,
   localStorageGetItem,
   localStorageRemoveItem,
   localStorageSetItem,
@@ -32,9 +33,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 function randomBytes(length: number) {
   return globalThis.crypto.getRandomValues(new Uint8Array(length))
 }
-
-// same probe core's InternetAccount uses: neither storage exists in a worker
-const inWebWorker = typeof sessionStorage === 'undefined'
 
 /**
  * #stateModel OAuthInternetAccount
@@ -444,7 +442,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         // shipping the next pre-authorization. Going on into validateToken here
         // died on `ReferenceError: sessionStorage is not defined` partway
         // through a refresh; hand back the 401 so the caller reports it.
-        if (inWebWorker) {
+        if (isWebWorker()) {
           return response
         }
         // validateToken refreshes the expired token, or throws if it can't

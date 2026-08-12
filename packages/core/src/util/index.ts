@@ -230,6 +230,13 @@ export { matchTrackId } from './matchTrackId.ts'
 
 export { drawImageOntoCanvasContext } from './offscreenCanvasPonyfill.ts'
 export { isElectron, isNode, rIC } from './environment.ts'
+export { isWebWorker } from './isWebWorker.ts'
+export {
+  sessionStorageAvailable,
+  sessionStorageGetItem,
+  sessionStorageRemoveItem,
+  sessionStorageSetItem,
+} from './sessionStorage.ts'
 export { isObject } from './objectUtils.ts'
 export { openPromotableDisplays } from './openDisplays.ts'
 export {

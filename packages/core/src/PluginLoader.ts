@@ -6,6 +6,7 @@ import {
   pluginDescriptionString,
 } from './pluginDefinitions.ts'
 import { isElectron } from './util/index.ts'
+import { isWebWorker } from './util/isWebWorker.ts'
 
 import type { PluginConstructor } from './Plugin.ts'
 import type {
@@ -88,7 +89,7 @@ function hasImportScripts(
 
 async function loadScript(scriptUrl: string, integrity?: string) {
   const scope = globalThis
-  if (!isInWebWorker()) {
+  if (!isWebWorker()) {
     return promisifiedLoadScript(scriptUrl, integrity)
   } else if (hasImportScripts(scope)) {
     try {
@@ -110,10 +111,6 @@ async function loadScript(scriptUrl: string, integrity?: string) {
       'cannot figure out how to load external JS scripts in this environment',
     )
   }
-}
-
-function isInWebWorker() {
-  return 'WorkerGlobalScope' in globalThis
 }
 
 /**
