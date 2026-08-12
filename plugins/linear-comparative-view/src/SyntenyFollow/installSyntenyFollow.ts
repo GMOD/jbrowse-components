@@ -34,6 +34,7 @@ export interface SyntenyFollowHost extends IStateTreeNode {
   followSynteny: boolean
   followPairs: FollowPair[]
   setFollowUnaligned: (arg: boolean) => void
+  setFollowApproximate: (arg: boolean) => void
 }
 
 /**
@@ -176,6 +177,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // switches it back on. One write, since `followSynteny` is the only
           // thing this pass reads while off.
           self.setFollowUnaligned(false)
+          self.setFollowApproximate(false)
           // AND NEITHER DOES THE CACHE. Everything in it describes a window the
           // anchor was on when the mode was last running, and the frame pass
           // wakes the moment the flag flips back — so without this, switching
@@ -199,6 +201,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // landed has no answer yet rather than no answer, and flagging it would
         // blink a warning on every pan.
         let unaligned = false
+        // Levels whose placement will be a PROPORTIONAL mapping rather than a
+        // CIGAR walk, which is what `interpolateFollowSpan` asks its callers to
+        // say out loud. Two ways in: a window wider than one alignment resolves
+        // to the envelope, and a CIGAR-less tier (a PIF's coarse rows, a plain
+        // PAF) has none to walk at any width. Both are the ordinary state of a
+        // zoomed-out view rather than a fault, so this is tooltip wording and
+        // not a second warning icon.
+        let approximate = false
         for (const pair of self.followPairs) {
           const { level, stayingView, movingView, toMate, mateAssembly } = pair
           const window = followAnchorWindow(stayingView.coarseDynamicBlocks)
@@ -225,6 +235,18 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           })
           if (step) {
             work.push([pair, step, movingWindow])
+            // READ OFF THE PLAN, NOT THE ANSWER, so it is written in the same
+            // synchronous pass as `unaligned` rather than from an async
+            // continuation that could land a frame stale. The one case that
+            // misses: `hasCigar` is per-FETCH, so a file that MIXES them (a
+            // chain set with a few CIGAR-less rows, a PAF concatenated from two
+            // runs) reports exact for a block that had none and was interpolated
+            // anyway. That is the rare shape `resolveFollowSpan` already
+            // documents, and under-reporting it leaves the tooltip no worse off
+            // than saying nothing, which is what it did before.
+            if (!step.windowInsideFeat || !step.hasCigar) {
+              approximate = true
+            }
           } else if (level.linearSyntenyDisplays.some(d => d.featureData)) {
             // No alignment over the anchor window. The moving row HOLDS
             // POSITION rather than being sent somewhere invented, and picks the
@@ -234,9 +256,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             unaligned = true
           }
         }
-        // Written, never read here — reading it would make the autorun a
+        // Written, never read here — reading either would make the autorun a
         // dependency of its own write. The header is the only consumer.
         self.setFollowUnaligned(unaligned)
+        self.setFollowApproximate(approximate)
         for (const [pair, step, movingWindow] of work) {
           execute(pair, step, movingWindow).catch(reportError)
         }

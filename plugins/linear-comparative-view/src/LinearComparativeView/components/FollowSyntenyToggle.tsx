@@ -23,23 +23,36 @@ const useStyles = makeStyles()({
  * haplotype-specific insertion or a centromere there is nothing to follow, so
  * the other rows hold position — and a row that stops tracking with nothing
  * said looks exactly like a broken follow.
+ *
+ * The approximate case is the one the mode is quietest about. Zoomed out past a
+ * single alignment, or on a tier that carries no CIGAR, the row is placed by
+ * mapping the window proportionally — close, but not the base-level
+ * correspondence the ribbons imply. It takes priority over "click to stop"
+ * because it says something the user cannot otherwise find out, and yields to
+ * the unaligned wording because a row that is holding was not placed at all.
  */
 export function followToggleTitle({
   followSynteny,
   unaligned,
+  approximate,
   anchorAssembly,
 }: {
   followSynteny: boolean
   unaligned?: boolean
+  approximate?: boolean
   anchorAssembly?: string
 }) {
   if (!followSynteny) {
     return 'Follow the matching region'
   }
   const anchor = anchorAssembly ?? 'the anchor row'
-  return unaligned
-    ? `Following ${anchor} — nothing aligns here, so the other rows are holding`
-    : `Following ${anchor} — click to stop`
+  if (unaligned) {
+    return `Following ${anchor} — nothing aligns here, so the other rows are holding`
+  }
+  if (approximate) {
+    return `Following ${anchor} — no per-base alignment at this zoom, so positions are approximate`
+  }
+  return `Following ${anchor} — click to stop`
 }
 
 /**
@@ -65,13 +78,23 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { followSynteny, followUnaligned, views, followAnchorIndex } = model
+  const {
+    followSynteny,
+    followUnaligned,
+    followApproximate,
+    views,
+    followAnchorIndex,
+  } = model
   const stalled = followSynteny && followUnaligned
   return (
     <Tooltip
       title={followToggleTitle({
         followSynteny,
         unaligned: followUnaligned,
+        // NOT a second icon state. Being approximate is the normal condition of
+        // a zoomed-out view rather than something to fix, and an icon that is
+        // lit most of the time reports nothing.
+        approximate: followApproximate,
         anchorAssembly: views[followAnchorIndex]?.assemblyNames[0],
       })}
     >

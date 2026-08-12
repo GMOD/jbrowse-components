@@ -24,6 +24,7 @@ interface SyntenyView {
   initialized: boolean
   views: LinearGenomeViewModel[]
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
+  followApproximate: boolean
   setWidth: (n: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
   setFollowAnchorIndex: (idx: number) => void
@@ -136,6 +137,51 @@ test('a window wider than any one alignment does not zoom the followed row in', 
     const followed = windowOf(target!)
     expect(followed.end - followed.start).toBeGreaterThan(35000)
   }, timeout)
+})
+
+// interpolateFollowSpan asks whoever calls it to tell the user the answer is an
+// approximation, and for a long time nobody did: the envelope and the CIGAR
+// walk place a row identically as far as the screen is concerned, so a view
+// zoomed out past one alignment reports itself as following exactly.
+test('the view says when a placement was proportional rather than walked', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+
+  // inside one alignment, and this file's rows all carry CIGARs, so the walk is
+  // available and taken
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+  expect(view.followApproximate).toBe(false)
+
+  // wider than any one alignment: the answer is now the envelope, which
+  // interpolates each window edge through the block it lands in
+  await query!.navToLocString('ctgA:1..49186', QUERY_ASM)
+  await waitFor(() => {
+    expect(view.followApproximate).toBe(true)
+  }, timeout)
+
+  // and it is not a latch — zooming back inside one alignment reports exact again
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(view.followApproximate).toBe(false)
+  }, timeout)
+})
+
+test('switching the mode off clears what the follow was reporting', async () => {
+  const view = await openSyntenyView()
+  const [query] = view.views
+  view.setRowSyncMode('follow')
+
+  await query!.navToLocString('ctgA:1..49186', QUERY_ASM)
+  await waitFor(() => {
+    expect(view.followApproximate).toBe(true)
+  }, timeout)
+
+  view.setRowSyncMode('independent')
+  expect(view.followApproximate).toBe(false)
 })
 
 // The complaint this answers is about MOTION, not accuracy. The exact resolve
