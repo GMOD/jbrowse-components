@@ -1,6 +1,7 @@
 import {
   addTab,
   addViewToTab,
+  homeViews,
   isBranch,
   moveTabToPanel,
   normalize,
@@ -8,6 +9,7 @@ import {
   removePanel,
   removeTab,
   removeView,
+  setActiveTab,
   setSizes,
   splitPanel,
   tabs,
@@ -378,16 +380,25 @@ describe('views and tabs', () => {
 // The operations are total: any sequence of them, from any starting tree, ends
 // canonical. This is the property the imperative bridge could not have, because
 // there "canonical" depended on what dockview did in response.
+//
+// Every operation the tree has is in the mix, `homeViews` included — it runs on
+// every change to `session.views` and used to sit in the model, which is to say
+// outside the one test that drives operations against each other. The
+// interesting sequences are the ones where it follows a removal.
 test('any sequence of operations leaves a canonical tree', () => {
   let tree: LayoutTree = panel('p0', ['v0'])
   let n = 0
   const rng = mulberry32(20260812)
+  function pick<T>(items: T[]): T | undefined {
+    return items[Math.floor(rng() * items.length)]
+  }
 
   for (let step = 0; step < 2000; step++) {
     const ids = panels(tree).map(p => p.id)
-    const target = ids[Math.floor(rng() * ids.length)]!
+    const target = pick(ids)!
+    const someTab = pick(tabs(tree))
     const roll = rng()
-    if (roll < 0.4) {
+    if (roll < 0.3) {
       n++
       tree = splitPanel(
         tree,
@@ -396,14 +407,24 @@ test('any sequence of operations leaves a canonical tree', () => {
         panel(`p${n}`, [`v${n}`]),
         rng() < 0.5,
       )
-    } else if (roll < 0.7 && ids.length > 1) {
+    } else if (roll < 0.5 && ids.length > 1) {
       tree = removePanel(tree, target)
-    } else if (roll < 0.85) {
-      const all = tabs(tree)
-      const tab = all[Math.floor(rng() * all.length)]
-      if (tab) {
-        tree = moveTabToPanel(tree, tab.id, target)
-      }
+    } else if (roll < 0.65 && someTab) {
+      tree = moveTabToPanel(tree, someTab.id, target)
+    } else if (roll < 0.72) {
+      n++
+      tree = addTab(tree, target, { id: `t${n}`, viewIds: [`v${n}`] })
+    } else if (roll < 0.79 && someTab) {
+      tree = removeTab(tree, someTab.id)
+    } else if (roll < 0.86 && someTab) {
+      tree = setActiveTab(tree, target, someTab.id)
+    } else if (roll < 0.93) {
+      // homing against a list that has drifted from the tree in both
+      // directions: some views it does not know about, some it has lost
+      const held = tabs(tree).flatMap(t => t.viewIds)
+      n++
+      const session = [...held.filter(() => rng() < 0.8), `v${n}`]
+      tree = homeViews(tree, session, pick(ids), () => `t-home${step}`)
     } else if (isBranch(tree)) {
       tree = setSizes(
         tree,
@@ -417,6 +438,14 @@ test('any sequence of operations leaves a canonical tree', () => {
     expect(new Set(allViews).size).toBe(allViews.length)
     const allTabs = tabs(tree).map(t => t.id)
     expect(new Set(allTabs).size).toBe(allTabs.length)
+    // and a panel never shows a tab it does not have. `activeTabId` is a
+    // `maybe` naming a sibling, so nothing structural enforces this — every
+    // operation that can retire a tab has to hand it on.
+    for (const p of panels(tree)) {
+      if (p.activeTabId !== undefined) {
+        expect(p.tabs.map(t => t.id)).toContain(p.activeTabId)
+      }
+    }
   }
 })
 

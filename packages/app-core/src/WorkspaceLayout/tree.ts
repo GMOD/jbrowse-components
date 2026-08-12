@@ -146,21 +146,27 @@ export function normalize(node: LayoutTree): LayoutTree {
   if (children.length === 1) {
     return { ...children[0]!, size: node.size }
   }
-  return { ...node, children: renormalizeSizes(children) }
+  return { ...node, children: scaleSizes(children) }
 }
 
-// Children of a flattened branch keep their share OF THE WHOLE: a child at half
-// of a branch that was a third of its parent ends up at a sixth.
-function scaleSizes(children: LayoutTree[], factor: number): LayoutTree[] {
-  const total = children.reduce((sum, c) => sum + c.size, 0) || 1
-  return children.map(c => ({ ...c, size: (c.size / total) * factor }))
-}
-
-function renormalizeSizes(children: LayoutTree[]): LayoutTree[] {
-  const total = children.reduce((sum, c) => sum + c.size, 0)
-  return total > 0
-    ? children.map(c => ({ ...c, size: c.size / total }))
-    : children.map(c => ({ ...c, size: 1 / children.length }))
+/**
+ * Rescale a set of siblings so their sizes sum to `total`.
+ *
+ * One rule, both places it is needed: rule 4 renormalises to 1, and rule 3
+ * rescales a flattened branch's children to the share that branch itself held —
+ * so a child at half of a branch that was a third of its parent ends up at a
+ * sixth, keeping its share OF THE WHOLE.
+ *
+ * Siblings summing to nothing take equal shares. That is a repair rather than a
+ * guard: canonical form says every size is above zero, so the alternative is
+ * dividing by zero and putting the whole branch at `NaN`.
+ */
+function scaleSizes(children: LayoutTree[], total = 1): LayoutTree[] {
+  const sum = children.reduce((acc, c) => acc + c.size, 0)
+  return children.map(c => ({
+    ...c,
+    size: sum > 0 ? (c.size / sum) * total : total / children.length,
+  }))
 }
 
 /** Rebuild `node` with `replacer` applied to the subtree with id `targetId`. */
@@ -238,7 +244,7 @@ export function setSizes(
       isBranch(found) && sizes.length === found.children.length
         ? {
             ...found,
-            children: renormalizeSizes(
+            children: scaleSizes(
               found.children.map((child, i) => ({ ...child, size: sizes[i]! })),
             ),
           }
@@ -415,6 +421,61 @@ export function removeView(root: LayoutTree, viewId: string): LayoutTree {
         })),
       }))
     : root
+}
+
+/**
+ * Make the tree's membership agree with the session's list of views.
+ *
+ * The only reconciliation left in the design, and it is one-directional:
+ * `session.views` owns which views exist, so a newly launched one has to land
+ * somewhere and one the session has dropped has to stop being named. Nothing
+ * reads back — the layout never tells the session about a view.
+ *
+ * Both halves matter and the second is the sharp one. Passing a list that does
+ * not name every view the session has does not "leave the rest alone": it
+ * unhomes them, and the caller's next homing pass then sweeps them all into one
+ * tab. `viewIds` is the session's whole set, always.
+ *
+ * Pure, and here rather than in the model, so the randomised operation sequence
+ * in `tree.test.ts` can drive it alongside every other operation. It was the
+ * one piece of tree surgery outside that test, and it is the piece that runs on
+ * every change to `session.views`.
+ */
+export function homeViews(
+  root: LayoutTree,
+  viewIds: string[],
+  activePanelId: string | undefined,
+  nextTabId: () => string,
+): LayoutTree {
+  const all = panels(root)
+  const target = all.find(p => p.id === activePanelId) ?? all[0]
+  if (!target) {
+    return root
+  }
+  let next = root
+  let homeTabId = activeTabIn(target)?.id
+  if (!homeTabId) {
+    // a panel with no tabs is legal (a drag leaves them behind), but it cannot
+    // be where a view lands, so the arrival brings one with it
+    homeTabId = nextTabId()
+    next = addTab(next, target.id, { id: homeTabId, viewIds: [] })
+  }
+  for (const viewId of viewIds) {
+    if (!tabContainingView(next, viewId)) {
+      next = addViewToTab(next, homeTabId, viewId)
+    }
+  }
+  // read the memberships once, then drop. `removeView` returns a new tree each
+  // call, so walking a list taken from a tree it has already replaced is a trap
+  // rather than a shortcut.
+  const owned = new Set(viewIds)
+  const departed = tabs(next)
+    .flatMap(t => t.viewIds)
+    .filter(id => !owned.has(id))
+  for (const viewId of departed) {
+    next = removeView(next, viewId)
+  }
+  return next
 }
 
 /**

@@ -102,36 +102,55 @@ export function stripDropAt(rects: Rect[], x: number): StripDrop {
 }
 
 /**
+ * What each zone means, in one table.
+ *
+ * `split` is the split a drop there asks for — which way the panel divides and
+ * whether the new half goes first; `center` is not a split. `rect` is where the
+ * indicator is drawn, as CSS percentages of the panel.
+ *
+ * One table rather than two switches because the pair has to agree: the shaded
+ * half IS the half the drop lands in, and that is the whole content of the
+ * indicator. Written apart, `right` could shade the left half and nothing would
+ * be wrong with either function on its own.
+ */
+const ZONES = {
+  left: {
+    split: { direction: 'row', before: true },
+    rect: { left: '0%', top: '0%', width: '50%', height: '100%' },
+  },
+  right: {
+    split: { direction: 'row', before: false },
+    rect: { left: '50%', top: '0%', width: '50%', height: '100%' },
+  },
+  top: {
+    split: { direction: 'column', before: true },
+    rect: { left: '0%', top: '0%', width: '100%', height: '50%' },
+  },
+  bottom: {
+    split: { direction: 'column', before: false },
+    rect: { left: '0%', top: '50%', width: '100%', height: '50%' },
+  },
+  center: {
+    split: undefined,
+    rect: { left: '0%', top: '0%', width: '100%', height: '100%' },
+  },
+} as const satisfies Record<
+  DropZone,
+  {
+    split: { direction: 'row' | 'column'; before: boolean } | undefined
+    rect: Record<'left' | 'top' | 'width' | 'height', string>
+  }
+>
+
+/**
  * The split a drop on `zone` asks for: which way the panel divides, and whether
  * the new half goes first. `center` is not a split.
  */
 export function splitForZone(zone: DropZone) {
-  switch (zone) {
-    case 'left':
-      return { direction: 'row' as const, before: true }
-    case 'right':
-      return { direction: 'row' as const, before: false }
-    case 'top':
-      return { direction: 'column' as const, before: true }
-    case 'bottom':
-      return { direction: 'column' as const, before: false }
-    default:
-      return undefined
-  }
+  return ZONES[zone].split
 }
 
 /** Where the drop indicator goes, as CSS percentages of the panel. */
 export function indicatorRect(zone: DropZone) {
-  switch (zone) {
-    case 'left':
-      return { left: '0%', top: '0%', width: '50%', height: '100%' }
-    case 'right':
-      return { left: '50%', top: '0%', width: '50%', height: '100%' }
-    case 'top':
-      return { left: '0%', top: '0%', width: '100%', height: '50%' }
-    case 'bottom':
-      return { left: '0%', top: '50%', width: '100%', height: '50%' }
-    default:
-      return { left: '0%', top: '0%', width: '100%', height: '100%' }
-  }
+  return ZONES[zone].rect
 }

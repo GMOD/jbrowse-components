@@ -12,6 +12,7 @@ import {
   addTab,
   addViewToTab,
   findTab,
+  homeViews,
   moveTabToPanel,
   normalize,
   panelContainingView,
@@ -138,9 +139,15 @@ export function WorkspaceLayoutMixin() {
        * Safe because nothing mutates it. Every function in `tree.ts` is
        * `tree in -> tree out` over spreads, which is the same property that
        * lets them be tested exhaustively.
+       *
+       * **Deliberately uncast.** The models below and the interfaces in
+       * `tree.ts` are two spellings of one shape and nothing else makes them
+       * agree, so this assignment is where they are checked — add a field to
+       * `PanelNode` without adding it to `LayoutPanel` and it stops compiling
+       * here. A cast would take that check away and give nothing back.
        */
       get tree(): LayoutTree {
-        return getSnapshot(self.layout) as LayoutTree
+        return getSnapshot(self.layout)
       },
     }))
     .views(self => ({
@@ -174,38 +181,11 @@ export function WorkspaceLayoutMixin() {
       }
 
       // Put any view no tab holds into the active cell's active tab, and drop
-      // members the session no longer has. The only reconciliation left, and it
-      // is one-directional: views are owned by `session.views`, so a newly
-      // launched one has to land somewhere. Nothing reads back.
-      function home(tree: LayoutTree, viewIds: string[]): LayoutTree {
-        let next = tree
-        const all = panels(next)
-        const activePanel = all.find(p => p.id === self.activePanelId) ?? all[0]
-        if (!activePanel) {
-          return next
-        }
-        let homeTabId = activeTabIn(activePanel)?.id
-        if (!homeTabId) {
-          const tab: TabNode = { id: nextId('tab'), viewIds: [] }
-          next = addTab(next, activePanel.id, tab)
-          homeTabId = tab.id
-        }
-        const owned = new Set(viewIds)
-        for (const viewId of viewIds) {
-          if (!tabContainingView(next, viewId)) {
-            next = addViewToTab(next, homeTabId, viewId)
-          }
-        }
-        // read the memberships once, then drop: `removeView` rebuilds the tree
-        // each call, so walking a list taken from a tree it has already
-        // replaced is what the old nested loop did by accident
-        const departed = tabs(next)
-          .flatMap(t => t.viewIds)
-          .filter(id => !owned.has(id))
-        for (const viewId of departed) {
-          next = removeView(next, viewId)
-        }
-        return next
+      // members the session no longer has. The rule itself is `homeViews` in
+      // `tree.ts`, with the rest of the tree surgery and under the same
+      // randomised test; this only supplies what the pure function cannot know.
+      function home(tree: LayoutTree, viewIds: string[]) {
+        return homeViews(tree, viewIds, self.activePanelId, () => nextId('tab'))
       }
 
       /**
