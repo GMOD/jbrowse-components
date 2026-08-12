@@ -2,6 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { isSyntenyTrack } from './getSyntenyTracks.ts'
 
+import type { SessionAssemblies } from './getSyntenyTracks.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
@@ -45,14 +46,31 @@ export function dotplotAxesFromRows(rows: string[], swapped = false) {
 }
 
 /**
- * Session synteny tracks that Quick start can launch on their own: every track
- * naming at least two assemblies. A track naming fewer is misconfigured and
- * would imply a single-row view, which a synteny/dotplot view cannot open — it
- * is filtered here so Quick start's list only holds one-click-launchable
- * entries, rather than surfacing an option that errors on Launch.
+ * Session synteny tracks that Quick start can launch on their own, so its list
+ * only holds one-click-launchable entries rather than surfacing an option that
+ * errors on Launch. Two ways a track fails that:
+ *
+ * - it names fewer than two assemblies, so it implies a single-row view, which
+ *   a synteny/dotplot view cannot open;
+ * - it names an assembly the session has no configuration for — a hub whose
+ *   assemblies were never loaded, a config one was removed from. Quick start is
+ *   the opening mode whenever any track qualifies, so such a track seeded the
+ *   form with a row whose name is not among the assembly Select's options (it
+ *   renders empty), and Launch built a row whose init fails with "Assembly X
+ *   not found", which errors the whole view.
+ *
+ * getAddRowOptions and getConnectedAssemblies screen their own lists on the
+ * same test; see SessionAssemblies for why it is `has`.
  */
-export function quickStartSyntenyTracks(tracks: AnyConfigurationModel[]) {
-  return tracks.filter(
-    track => isSyntenyTrack(track) && syntenyTrackRows(track).length >= 2,
-  )
+export function quickStartSyntenyTracks(
+  tracks: AnyConfigurationModel[],
+  assemblyManager: SessionAssemblies,
+) {
+  return tracks.filter(track => {
+    if (!isSyntenyTrack(track)) {
+      return false
+    }
+    const rows = syntenyTrackRows(track)
+    return rows.length >= 2 && rows.every(name => assemblyManager.has(name))
+  })
 }

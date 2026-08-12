@@ -14,8 +14,8 @@ const track = (trackId: string, assemblyNames: string[]) =>
 const session = (
   tracks: AnyConfigurationModel[],
   connectionTracks?: AnyConfigurationModel[],
-  // names the session holds no assembly for, which is what the real manager
-  // answers undefined for
+  // names the session has no assembly for at all — not merely one whose model
+  // is still being built, which `has` deliberately answers true for
   unloaded: string[] = [],
 ) =>
   ({
@@ -26,6 +26,7 @@ const session = (
     assemblyManager: {
       getCanonicalAssemblyName: (name: string) =>
         unloaded.includes(name) ? undefined : name === 'hg19' ? 'hg38' : name,
+      has: (name: string) => !unloaded.includes(name),
     },
     connectionInstances: connectionTracks
       ? [{ tracks: connectionTracks }]

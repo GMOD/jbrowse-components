@@ -59,7 +59,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const { assemblyNames } = session
   const tracks = allSessionTracks(session)
   const firstAssembly = assemblyNames[0] ?? ''
-  const quick = useQuickStartState(tracks)
+  const quick = useQuickStartState(tracks, session.assemblyManager)
   const [assemblyX, setAssemblyX] = useState(firstAssembly)
   // Two different assemblies, so Manual doesn't open on a same-assembly pair
   // whose track picker is empty. There is no point consulting connectivity here:

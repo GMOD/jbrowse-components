@@ -36,16 +36,48 @@ test('a self-alignment track keeps its repeated assembly', () => {
   expect(syntenyTrackRows(selfA)).toEqual(['a', 'a'])
 })
 
+// 'ghost' is named by a track and configured by nothing, which is what the real
+// manager answers undefined for; every other name is its own
+const assemblyManager = {
+  getCanonicalAssemblyName: (name: string) =>
+    name === 'ghost' ? undefined : name,
+  has: (name: string) => name !== 'ghost',
+}
+const quickStart = (tracks: AnyConfigurationModel[]) =>
+  quickStartSyntenyTracks(tracks, assemblyManager)
+
 test('quick start offers every launchable synteny track', () => {
-  expect(quickStartSyntenyTracks([cross, ava, selfA, feature])).toEqual([
-    cross,
-    ava,
-    selfA,
-  ])
+  expect(quickStart([cross, ava, selfA, feature])).toEqual([cross, ava, selfA])
 })
 
 test('quick start omits a track naming fewer than two assemblies', () => {
-  expect(quickStartSyntenyTracks([cross, lone])).toEqual([cross])
+  expect(quickStart([cross, lone])).toEqual([cross])
+})
+
+// Quick start is the opening mode whenever anything qualifies, so offering one
+// of these seeded the form with a row the assembly Select renders empty, and
+// Launch built a row whose init fails with "Assembly ghost not found".
+test('quick start omits a track naming an assembly the session lacks', () => {
+  const ghost = track('ghost', 'SyntenyTrack', ['a', 'ghost'])
+  expect(quickStart([cross, ghost])).toEqual([cross])
+})
+
+test('one unopenable endpoint disqualifies the whole all-vs-all track', () => {
+  // every row it implies becomes a row, so one bad name is one bad row
+  const avaGhost = track('avaGhost', 'SyntenyTrack', ['a', 'b', 'ghost'])
+  expect(quickStart([avaGhost])).toEqual([])
+})
+
+// The screen is `has`, which answers off the configs too. Screening on
+// getCanonicalAssemblyName instead would reject every track for the whole
+// startup window, so a session with a launchable dataset would open on Manual —
+// which is the regression the first version of this had.
+test('a track whose assemblies are configured but not built still qualifies', () => {
+  const loading = {
+    getCanonicalAssemblyName: () => undefined,
+    has: () => true,
+  }
+  expect(quickStartSyntenyTracks([cross], loading)).toEqual([cross])
 })
 
 // This mapping has been written backwards more than once. assemblyNames is

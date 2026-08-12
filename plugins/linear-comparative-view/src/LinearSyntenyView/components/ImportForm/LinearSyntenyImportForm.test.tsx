@@ -163,6 +163,24 @@ test('a session with a synteny track opens on Quick start', () => {
   expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('2. mm39')
 })
 
+// Quick start seeds its rows straight from the track's assemblyNames, so a
+// track naming an assembly the session has no configuration for put that name
+// in a Select that has no such option — it rendered empty — and Launch would
+// have built a row whose init fails with "Assembly ghost not found", erroring
+// the view. Not launchable, so not a Quick start option, so the session opens
+// on the form that can actually do something.
+test('a track naming an unloadable assembly does not open Quick start', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39'],
+    tracks: [syntenyTrack('hg38_ghost', ['hg38', 'ghost'])],
+  })
+  expect(screen.getByRole('button', { name: 'Manual' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39'])
+})
+
 test('Swap reverses the rows the track implies', () => {
   setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   // the Tooltip title becomes the button's accessible name

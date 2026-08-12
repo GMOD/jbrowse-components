@@ -59,13 +59,13 @@ export function getAddRowOptions(
       // view's error, and `showImportForm` reads that error — so choosing an
       // offered option replaced the user's working stack with the import form.
       //
-      // `getCanonicalAssemblyName` is the exact test, since it is undefined for
-      // a name the manager cannot resolve and is what the row's init resolves
-      // through. A self-alignment's endpoint is the terminal row's own
-      // assembly, which is live by construction, so it survives this.
-      .filter(
-        o =>
-          assemblyManager.getCanonicalAssemblyName(o.newAssembly) !== undefined,
-      )
+      // `has`, not `getCanonicalAssemblyName(...) !== undefined`: the latter
+      // reads a map built from assembly *models*, so it answers no in the
+      // window where a config exists and the manager hasn't built its model —
+      // which would empty this list, and the dialog would report a session with
+      // datasets as having none. See synteny-core's SessionAssemblies. A
+      // self-alignment's endpoint is the terminal row's own assembly, which is
+      // live by construction, so it survives either way.
+      .filter(o => assemblyManager.has(o.newAssembly))
   )
 }

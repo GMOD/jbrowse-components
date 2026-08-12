@@ -7,6 +7,7 @@ import {
 } from './syntenyTrackRows.ts'
 
 import type { ImportFormMode } from './ImportFormModeToggle.tsx'
+import type { SessionAssemblies } from './getSyntenyTracks.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
@@ -31,8 +32,11 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  * that isn't in it, showing a blank Select over a Launch that silently opens
  * nothing.
  */
-export function useQuickStartState(tracks: AnyConfigurationModel[]) {
-  const quickTracks = quickStartSyntenyTracks(tracks)
+export function useQuickStartState(
+  tracks: AnyConfigurationModel[],
+  assemblyManager: SessionAssemblies,
+) {
+  const quickTracks = quickStartSyntenyTracks(tracks, assemblyManager)
   const [mode, setMode] = useState<ImportFormMode>(
     quickTracks.length ? 'quick' : 'manual',
   )

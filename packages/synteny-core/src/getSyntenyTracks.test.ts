@@ -24,6 +24,7 @@ const feature = track('feature', 'FeatureTrack', ['a', 'b'])
 const assemblyManager = {
   getCanonicalAssemblyName: (name: string) =>
     name === 'aliasOfA' ? 'a' : name === 'ghost' ? undefined : name,
+  has: (name: string) => name !== 'ghost',
 }
 const matching = (tracks: AnyConfigurationModel[], assemblies: string[]) =>
   getSyntenyTracks(tracks, assemblies, assemblyManager)
@@ -88,5 +89,17 @@ describe('getConnectedAssemblies', () => {
     const aliased = track('aliased', 'SyntenyTrack', ['aliasOfA', 'b'])
     expect(connected([aliased], 'a')).toEqual(['b'])
     expect(connected([cross], 'aliasOfA')).toEqual(['b'])
+  })
+
+  // The screen is `has`, which answers off the configs too, so an assembly the
+  // manager has not built a model for yet is still a connection. Screening on
+  // getCanonicalAssemblyName instead would empty this list for the whole
+  // startup window and report a connected session as unconnected.
+  test('an assembly configured but not yet built is still a connection', () => {
+    const loading = {
+      getCanonicalAssemblyName: () => undefined,
+      has: () => true,
+    }
+    expect(getConnectedAssemblies([cross], 'a', loading)).toEqual(['b'])
   })
 })

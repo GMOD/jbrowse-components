@@ -4,6 +4,20 @@ import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 
+/**
+ * The assembly-manager slice the "can the session open this?" screens need.
+ *
+ * `has`, deliberately, and not `getCanonicalAssemblyName(name) !== undefined`:
+ * that reads `assemblyNameMap`, which is built from assembly *models*, so it
+ * answers no during the window where a config exists and the manager's
+ * afterAttach autorun hasn't built its model yet — which is exactly when an
+ * import form first renders. `has` also consults `assemblyNamesList`, read off
+ * the configs, so it covers both. See assemblyManager's own note on the pair.
+ */
+export interface SessionAssemblies extends AssemblyNameResolver {
+  has: (assemblyName: string) => boolean
+}
+
 function countByName(names: string[]) {
   const counts = new Map<string, number>()
   for (const name of names) {
@@ -83,7 +97,7 @@ export function getSyntenyTracks(
 export function getConnectedAssemblies(
   tracks: AnyConfigurationModel[],
   assembly: string,
-  assemblyManager: AssemblyNameResolver,
+  assemblyManager: SessionAssemblies,
 ) {
   // canonical throughout: the caller feeds these back into an assembly dropdown
   // whose options are the session's own names, so an alias read off a track
@@ -104,13 +118,8 @@ export function getConnectedAssemblies(
       // caller feeds this into a row that becomes an AssemblySelector value.
       // A value that is not one of the Select's options renders as an empty
       // field, so "Add row" produced an unnamed row rather than the connected
-      // default it exists to give. `getCanonicalAssemblyName` is undefined for
-      // a name the manager cannot resolve; getAddRowOptions filters its own
-      // list on the same test, for the same reason.
-      if (
-        name !== canonicalAssembly &&
-        assemblyManager.getCanonicalAssemblyName(name) !== undefined
-      ) {
+      // default it exists to give. See SessionAssemblies for why this is `has`.
+      if (name !== canonicalAssembly && assemblyManager.has(name)) {
         names.add(name)
       }
     }
