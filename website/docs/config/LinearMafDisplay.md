@@ -8,6 +8,36 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/LinearMafDisplay/configSchema.ts).
 
+## Example usage
+
+Set through the track's `displayDefaults`, which is what makes a track open in
+this state rather than requiring every viewer to set it from the menu. A
+whole-genome alignment with many species is the case worth tuning: a shorter
+`rowHeight` fits more rows on screen, and the conservation band is what most
+readers scan first.
+
+```js
+{
+  type: 'MafTrack',
+  trackId: 'multiz_example',
+  name: 'Multiz alignment',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigMafAdapter',
+    bigBedLocation: { uri: 'https://example.com/multiz.bb' },
+    samples: ['hg38', 'panTro6', 'rheMac10', 'mm39'],
+  },
+  displayDefaults: {
+    rowHeight: 12,
+    showConservation: true,
+    conservationHeight: 40,
+    showRowLabels: true,
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 the display for a `MafTrack`: one row per aligned species, with a conservation
 summary above them. The conservation band, per-row identity,
 color-by-source-chromosome, and inversion overlays are all derived from the

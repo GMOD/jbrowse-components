@@ -7,6 +7,23 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category adapter
  * fetches features from a SPARQL endpoint, substituting the queried region into
  * a query template
+ *
+ * #example
+ * `{refName}`, `{start}` and `{end}` are substituted per request, so the
+ * endpoint is queried for the visible window rather than the whole genome. The
+ * result columns become feature fields, so the query has to select at least
+ * `?start`, `?end` and a `?uniqueID`:
+ * ```js
+ * {
+ *   type: 'SPARQLAdapter',
+ *   endpoint: { uri: 'https://example.com/sparql' },
+ *   queryTemplate: `SELECT ?uniqueID ?start ?end ?strand ?name WHERE {
+ *     ?f a :Feature ; :ref "{refName}" ; :start ?start ; :end ?end .
+ *     FILTER(?start < {end} && ?end > {start})
+ *   }`,
+ *   refNamesQueryTemplate: 'SELECT DISTINCT ?refName WHERE { ?f :ref ?refName }',
+ * }
+ * ```
  */
 const SPARQLAdapterConfigSchema = ConfigurationSchema(
   'SPARQLAdapter',

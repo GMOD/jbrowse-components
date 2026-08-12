@@ -5,23 +5,15 @@
 # Adding a name here is a coverage regression; removing one is the win. Each
 # section names the tag that clears it.
 
-# configs with no #example (15)
+# configs with no #example (7)
 # fix: add an #example to the type’s #config JSDoc
-BigMafAdapter
-BlastTabularAdapter
-CrisprGuideAdapter
 HierarchicalConfigSchema
-JBrowse1TextSearchAdapter
 JBrowseConfiguration
 JBrowseRootConfig
 LinearGenomeViewConfigSchema
-LinearMafDisplay
 LinearScoreDisplay
-NCListAdapter
 PreferencesConfigSchema
 RpcOptions
-SPARQLAdapter
-SequenceSearchAdapter
 
 # display/view models with no #example (12)
 # fix: add an #example to the type’s #stateModel JSDoc
@@ -55,11 +47,15 @@ packages/app-core/src/WorkspaceLayout/model.ts apply
 # baseConfiguration references that resolved to no documented #config (0)
 # fix: document the base with #config, or accept that the page shows raw code
 
-# adapters whose #example defaulted to FeatureTrack (3)
+# adapters whose #example defaulted to FeatureTrack (7)
 # fix: add #trackType to the adapter’s #config JSDoc
+CrisprGuideAdapter
 CytobandAdapter
+NCListAdapter
 NcbiSequenceReportAliasAdapter
 RefNameAliasAdapter
+SPARQLAdapter
+SequenceSearchAdapter
 
 # #stateModel tags attached to a declaration that builds no model (0)
 # fix: move the #stateModel JSDoc back onto its factory — a declaration in between takes the tag, and every inherited member row silently disappears

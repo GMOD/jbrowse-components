@@ -9,6 +9,29 @@ Auto-generated config schema for the current JBrowse release — see the
 `legacy-jbrowse` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts).
 
+## Example usage
+
+Reads a JBrowse 1 NCList store in place, so an existing JBrowse 1 instance's
+data serves JBrowse 2 without re-processing. `{refseq}` in the URL template is
+substituted per sequence, which is how the store is laid out on disk:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'NCListAdapter',
+    rootUrlTemplate: {
+      uri: 'https://example.com/jbrowse1/data/tracks/genes/{refseq}/trackData.json',
+    },
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 ## Config slots
 
 These slots go inside the track's `adapter`:

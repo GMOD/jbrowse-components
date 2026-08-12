@@ -9,6 +9,47 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/SequenceSearchAdapter/configSchema.ts).
 
+## Example usage
+
+`search` is a regular expression matched against the assembly's own sequence, so
+a track needs no file of its own. This one finds canonical polyadenylation
+signals on both strands:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'SequenceSearchAdapter',
+    search: 'AATAAA',
+  },
+}
+```
+
+### Example: one strand only
+
+Both strands are scanned by default. Turn one off where the motif is
+strand-specific, so the track does not report the reverse-complement hit as a
+second site:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'SequenceSearchAdapter',
+    search: 'GGTAAG',
+    searchReverse: false,
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
 track is displayed against. Setting it by hand pins the scan to one sequence
 source and silently desyncs the track if the assembly's sequence changes.

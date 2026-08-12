@@ -8,6 +8,29 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
  * track is displayed against. Setting it by hand pins the scan to one sequence
  * source and silently desyncs the track if the assembly's sequence changes.
+ *
+ * #example
+ * `search` is a regular expression matched against the assembly's own sequence,
+ * so a track needs no file of its own. This one finds canonical polyadenylation
+ * signals on both strands:
+ * ```js
+ * {
+ *   type: 'SequenceSearchAdapter',
+ *   search: 'AATAAA',
+ * }
+ * ```
+ *
+ * #example one strand only
+ * Both strands are scanned by default. Turn one off where the motif is
+ * strand-specific, so the track does not report the reverse-complement hit as a
+ * second site:
+ * ```js
+ * {
+ *   type: 'SequenceSearchAdapter',
+ *   search: 'GGTAAG',
+ *   searchReverse: false,
+ * }
+ * ```
  */
 
 const configSchema = ConfigurationSchema(

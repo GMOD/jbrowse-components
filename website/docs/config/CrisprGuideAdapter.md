@@ -9,6 +9,49 @@ Auto-generated config schema for the current JBrowse release — see the
 plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/CrisprGuideAdapter/configSchema.ts).
 
+## Example usage
+
+The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — so a track needs no
+slots at all. It scans the assembly's own sequence, which is why there is no
+file location:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'CrisprGuideAdapter',
+  },
+}
+```
+
+### Example: a different nuclease
+
+Cas12a/Cpf1 reads a `TTTV` PAM at the 5' end with a longer guide, and cuts far
+from the PAM — so `pamLocation` and both cut offsets move too, or the guides are
+found in the right places and drawn cutting in the wrong ones:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'CrisprGuideAdapter',
+    pam: 'TTTV',
+    pamLocation: '5prime',
+    guideLength: 23,
+    cutOffset: 18,
+    cutOffsetBottom: 23,
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
 track is displayed against. Setting it by hand pins the scan to one sequence
 source and silently desyncs the track if the assembly's sequence changes.

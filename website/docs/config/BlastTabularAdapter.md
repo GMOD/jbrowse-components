@@ -9,6 +9,50 @@ Auto-generated config schema for the current JBrowse release — see the
 `comparative-adapters` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/BlastTabularAdapter/configSchema.ts).
 
+## Example usage
+
+The default `columns` are BLAST's own `-outfmt 6` order, so a file produced
+without custom columns needs only the two assemblies naming which side is which:
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['grape', 'peach'],
+  adapter: {
+    type: 'BlastTabularAdapter',
+    blastTableLocation: { uri: 'https://example.com/hits.tsv' },
+    assemblyNames: ['grape', 'peach'],
+    queryAssembly: 'grape',
+    targetAssembly: 'peach',
+  },
+}
+```
+
+### Example: custom outfmt
+
+If you passed your own column list to `-outfmt`, repeat it here exactly.
+`qseqid sseqid qstart qend sstart send` must be among them; the rest are read
+where present:
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['grape', 'peach'],
+  adapter: {
+    type: 'BlastTabularAdapter',
+    blastTableLocation: { uri: 'https://example.com/hits.tsv' },
+    assemblyNames: ['grape', 'peach'],
+    columns: 'qseqid sseqid qstart qend sstart send evalue',
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)

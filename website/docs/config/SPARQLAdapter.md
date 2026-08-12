@@ -8,6 +8,33 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Provided by the `rdf` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/rdf/src/SPARQLAdapter/configSchema.ts).
 
+## Example usage
+
+`{refName}`, `{start}` and `{end}` are substituted per request, so the endpoint
+is queried for the visible window rather than the whole genome. The result
+columns become feature fields, so the query has to select at least `?start`,
+`?end` and a `?uniqueID`:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'SPARQLAdapter',
+    endpoint: { uri: 'https://example.com/sparql' },
+    queryTemplate: `SELECT ?uniqueID ?start ?end ?strand ?name WHERE {
+      ?f a :Feature ; :ref "{refName}" ; :start ?start ; :end ?end .
+      FILTER(?start < {end} && ?end > {start})
+    }`,
+    refNamesQueryTemplate: 'SELECT DISTINCT ?refName WHERE { ?f :ref ?refName }',
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 fetches features from a SPARQL endpoint, substituting the queried region into a
 query template
 

@@ -6,6 +6,33 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #config BlastTabularAdapter
  * #trackType SyntenyTrack
  * #fileFormat synteny | BLAST tabular
+ *
+ * #example
+ * The default `columns` are BLAST's own `-outfmt 6` order, so a file produced
+ * without custom columns needs only the two assemblies naming which side is
+ * which:
+ * ```js
+ * {
+ *   type: 'BlastTabularAdapter',
+ *   blastTableLocation: { uri: 'https://example.com/hits.tsv' },
+ *   assemblyNames: ['grape', 'peach'],
+ *   queryAssembly: 'grape',
+ *   targetAssembly: 'peach',
+ * }
+ * ```
+ *
+ * #example custom outfmt
+ * If you passed your own column list to `-outfmt`, repeat it here exactly.
+ * `qseqid sseqid qstart qend sstart send` must be among them; the rest are read
+ * where present:
+ * ```js
+ * {
+ *   type: 'BlastTabularAdapter',
+ *   blastTableLocation: { uri: 'https://example.com/hits.tsv' },
+ *   assemblyNames: ['grape', 'peach'],
+ *   columns: 'qseqid sseqid qstart qend sstart send evalue',
+ * }
+ * ```
  */
 
 const BlastTabularAdapter = ConfigurationSchema(

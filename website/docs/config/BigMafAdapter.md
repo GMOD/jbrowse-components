@@ -8,6 +8,29 @@ Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/BigMafAdapter/configSchema.ts).
 
+## Example usage
+
+`samples` names the rows in the order they are drawn, and has to match the
+species keys in the file — a bigMaf carries the alignment but not a display
+order, so an omitted or misspelled name shows as a missing row rather than an
+error:
+
+```js
+{
+  type: 'MafTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigMafAdapter',
+    bigBedLocation: { uri: 'https://example.com/multiz.bb' },
+    samples: ['hg38', 'panTro6', 'rheMac10', 'mm39'],
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 used to configure BigMaf adapter
 
 ## Related links

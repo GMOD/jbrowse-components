@@ -17,6 +17,32 @@ import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
  * color-by-source-chromosome, and inversion overlays are all derived from the
  * alignment itself and toggled from the track menu, so the slots here are
  * show/hide defaults and band sizes.
+ *
+ * #example
+ * Set through the track's `displayDefaults`, which is what makes a track open
+ * in this state rather than requiring every viewer to set it from the menu. A
+ * whole-genome alignment with many species is the case worth tuning: a shorter
+ * `rowHeight` fits more rows on screen, and the conservation band is what most
+ * readers scan first.
+ * ```js
+ * {
+ *   type: 'MafTrack',
+ *   trackId: 'multiz_example',
+ *   name: 'Multiz alignment',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'BigMafAdapter',
+ *     bigBedLocation: { uri: 'https://example.com/multiz.bb' },
+ *     samples: ['hg38', 'panTro6', 'rheMac10', 'mm39'],
+ *   },
+ *   displayDefaults: {
+ *     rowHeight: 12,
+ *     showConservation: true,
+ *     conservationHeight: 40,
+ *     showRowLabels: true,
+ *   },
+ * }
+ * ```
  */
 export default function configSchemaF(pluginManager: PluginManager) {
   const LinearGenomePlugin = pluginManager.getPlugin(

@@ -2,6 +2,19 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config NCListAdapter
+ *
+ * #example
+ * Reads a JBrowse 1 NCList store in place, so an existing JBrowse 1 instance's
+ * data serves JBrowse 2 without re-processing. `{refseq}` in the URL template
+ * is substituted per sequence, which is how the store is laid out on disk:
+ * ```js
+ * {
+ *   type: 'NCListAdapter',
+ *   rootUrlTemplate: {
+ *     uri: 'https://example.com/jbrowse1/data/tracks/genes/{refseq}/trackData.json',
+ *   },
+ * }
+ * ```
  */
 
 const NCListAdapter = ConfigurationSchema(

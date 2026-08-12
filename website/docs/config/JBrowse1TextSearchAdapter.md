@@ -9,6 +9,29 @@ Auto-generated config schema for the current JBrowse release — see the
 `legacy-jbrowse` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts).
 
+## Example usage
+
+An entry in `aggregateTextSearchAdapters`, pointing at the `names/` directory
+JBrowse 1's `generate-names.pl` wrote — so an existing instance's search index
+is reused rather than rebuilt with `jbrowse text-index`:
+
+```js
+{
+  type: 'TextSearchAdapter',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'JBrowse1TextSearchAdapter',
+    textSearchAdapterId: 'jbrowse1-names',
+    namesIndexLocation: { uri: 'https://example.com/jbrowse1/data/names/' },
+    assemblyNames: ['hg19'],
+  },
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
 ## Overview
 
 note: metadata about tracks and assemblies covered by text search adapter
