@@ -404,7 +404,8 @@ the ID in the session's config registry, or by hydrating the inline snapshot.
 
 The resolution dispatch is based on `explicitIdentifier` in the schema options:
 
-- `'trackId'` → `TrackConfigurationReference` (looks in `session.tracksById`)
+- `'trackId'` → `TrackConfigurationReference` (resolves through
+  `session.getTrackById(id)`)
 - `'displayId'` → `DisplayConfigurationReference`
 - anything else → plain reference
 
@@ -418,11 +419,15 @@ same move as `BaseAdapter<CONF>`.
 `jbrowse.tracks` is stored as `types.frozen` (plain JS objects) for performance
 with thousands of tracks. Track configs become MST nodes lazily, only when a
 track is opened and `TrackConfigurationReference.get()` is called. The hydrated
-node is cached by identity so the same frozen object always produces the same
-MST node.
+node is cached, on the `PluginManager`, and that cache is load-bearing rather
+than an optimization: MST's custom-reference `get()` memoizes nothing, so
+without it every read of `track.configuration` would fabricate a fresh
+non-identical node.
 
-This is why `session.tracksById` returns plain objects: access them with
-`readConfObject`, not `getConf`.
+This is why `session.getTrackById(id)` hands back a plain object for a track
+nobody has opened: access it with `readConfObject`, not `getConf`. (There is a
+`getTracksById()` returning the whole map, but it is deprecated — reading it
+subscribes the caller to every track, so an edit to any one of them wakes it.)
 
 ## Config callbacks (jexl)
 
@@ -470,6 +475,30 @@ once per feature when the features or config change, not per frame: panning only
 moves pixels, and re-running a jexl expression per feature per frame is the
 usual cause of a display that scrolls badly.
 
+:::warning An arg-less read of a callback slot resolves it against nothing
+
+That third argument is **optional**, so "what is this setting" and "what is this
+setting for this feature" are the same call with and without it. On a slot
+holding a `jexl:` value the arg-less form still evaluates, against a context
+where every name the expression mentions is `undefined`, and hands back the
+fallout as the setting. Nothing throws at the reader, and the two ways it goes
+wrong look nothing alike:
+
+- the expression touches a member of the missing value (`get(feature,…)`) and
+  throws out of whatever getter did the read, which surfaces as the display
+  erroring;
+- every function in it is total (`split(feature.name,…)`), and a plausible wrong
+  value comes back — `''`, `NaN` — and travels on as a real setting.
+
+So a value that something downstream will still bind a feature to — anything
+going into `rpcProps()`, a renderer, or a worker — must be read **raw**
+(`self.conf.someSlot`), not through a reader. A value being used on the main
+thread here and now — a swatch, a menu label, arithmetic — is a resolving read,
+and needs either a feature in the third argument or an `isJexl` guard and a
+fallback, since no single swatch can show a per-feature expression.
+
+:::
+
 Callbacks are written in [jexl](https://github.com/TomFrost/Jexl). For example,
 a `VariantTrack` can color SNVs green and everything else purple:
 
@@ -489,11 +518,19 @@ a `VariantTrack` can color SNVs green and everything else purple:
 }
 ```
 
-Any slot with a `contextVariable` can take a jexl callback as its default value,
-including custom jexl functions your plugin registers with
+A callback may call custom jexl functions your plugin registers with
 `pluginManager.jexl.addFunction` (see [](/docs/developer_guides/no_build_plugin)
 for a worked example). The [jexl config guide](/docs/config_guides/jexl) covers
 the expression language itself.
+
+`contextVariable` is editor metadata and nothing more: it is what raises the
+config editor's value/callback toggle, and no part of the read path consults it.
+A slot that declares none is still reachable by hand-writing `jexl:` into the
+JSON, so declare one to make the editor work — but never read it as a signal
+that a slot does or doesn't hold a callback. A promotable slot is the one place
+the pair is refused outright, and that throws at construction: the cascade
+discards a `jexl:` value at both tiers, so the toggle would offer a control
+whose every write silently degraded back to `promotedBase`.
 
 ## Configuration internals
 
