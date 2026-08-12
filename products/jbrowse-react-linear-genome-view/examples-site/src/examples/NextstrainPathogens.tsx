@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   JBrowseLinearGenomeView,
+  destroyViewState,
   useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
@@ -35,6 +36,16 @@ function PathogenView({
     defaultSession,
     location,
   })
+  // The engine is not owned by React. The `key` below unmounts this component
+  // on every pathogen change, and unmounting alone leaves its RPC worker
+  // threads and its autoruns running — one orphaned set per switch. A component
+  // that builds one engine and keeps it for the page never needs this; anything
+  // that builds and discards them does.
+  useEffect(() => {
+    return () => {
+      destroyViewState(state)
+    }
+  }, [state])
   return <JBrowseLinearGenomeView viewState={state} />
 }
 

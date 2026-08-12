@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import {
+  JBrowseLinearGenomeView,
+  destroyViewState,
+  useCreateViewState,
+} from '@jbrowse/react-linear-genome-view2'
 
 // Pan-UKBB per-phenotype flat files (tabix-indexed TSV, GRCh37/hg38-aliased)
 const BASE = 'https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files'
@@ -102,6 +106,11 @@ function makeTrack(p: Phenotype, scoreColumn: string, label: string) {
   }
 }
 
+// Rebuilt on every phenotype/population change via the `key` below, so this is
+// the case the managed <LinearGenomeView> is explicitly not for: that component
+// owns its engine for the lifetime of the page and never tears it down, which
+// is a whole orphaned RPC worker pool and autorun set per switch. Building the
+// engine here means we can hand it to destroyViewState on the way out.
 function GenomeView({
   phenotype,
   scoreColumn,
@@ -111,16 +120,27 @@ function GenomeView({
   scoreColumn: string
   label: string
 }) {
-  return (
-    <LinearGenomeView
-      assembly={assembly}
-      tracks={[makeTrack(phenotype, scoreColumn, label), NCBI_REFSEQ_TRACK]}
-      init={{
-        loc: FEATURED[phenotype.id] ?? 'chr1',
-        tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
-      }}
-    />
-  )
+  const state = useCreateViewState({
+    assembly,
+    tracks: [makeTrack(phenotype, scoreColumn, label), NCBI_REFSEQ_TRACK],
+    defaultSession: {
+      name: 'Pan-UKB GWAS',
+      view: {
+        type: 'LinearGenomeView',
+        init: {
+          assembly: assembly.name,
+          loc: FEATURED[phenotype.id] ?? 'chr1',
+          tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
+        },
+      },
+    },
+  })
+  useEffect(() => {
+    return () => {
+      destroyViewState(state)
+    }
+  }, [state])
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 
 export default function PanUKBGWAS() {
