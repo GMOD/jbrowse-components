@@ -1,3 +1,4 @@
+import { getConfigurationSchemaMetadata } from '../configuration/schemaRegistry.ts'
 import PluggableElementBase from './PluggableElementBase.ts'
 
 import type { AnyConfigurationSchemaType } from '../configuration/index.ts'
@@ -40,13 +41,36 @@ export default class AdapterType extends PluggableElementBase {
 
   adapterMetadata?: AdapterMetadata
 
+  private declaredNormalizeSnapshot?: NormalizeSnapshot
+
   /**
    * Normalize a raw adapter config snapshot (plain JSON, before MST
    * instantiation). Adapters that support shorthand notation (e.g. just
-   * `{type, uri}`) should expand it here to the canonical form so that
-   * downstream code can read location keys without knowing each shorthand.
+   * `{type, uri}`) expand it to the canonical form so downstream code can read
+   * location keys without knowing each shorthand.
+   *
+   * **Defaults to the config schema's own `preProcessSnapshot`**, which is the
+   * function that already runs when MST builds the config, so an adapter
+   * declaring the shorthand once gets both. It used to be a second, separate
+   * registration, and five in-tree adapters had only the schema half
+   * (`MafTabixAdapter`, `BgzipMafAdapter`, `BgzipTaffyAdapter`,
+   * `AllVsAllPAFAdapter`, `MCScanBlocksAdapter`) — which reads as working,
+   * because loading such a config from a URL goes through the schema. Only
+   * `normalizeAdapterSnapshots` consults *this*, so what broke was `localFiles`
+   * in the embedded products: the shorthand stayed unexpanded, `uri` never
+   * became a location node, and the blob substitution silently found nothing to
+   * substitute.
+   *
+   * Pass one explicitly only to normalize *differently* here than at MST
+   * create, which nothing in tree needs.
    */
-  normalizeSnapshot?: NormalizeSnapshot
+  get normalizeSnapshot(): NormalizeSnapshot | undefined {
+    return (
+      this.declaredNormalizeSnapshot ??
+      getConfigurationSchemaMetadata(this.configSchema)?.options
+        .preProcessSnapshot
+    )
+  }
 
   /**
    * The config key holding the adapter's primary file location (e.g.
@@ -80,7 +104,7 @@ export default class AdapterType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     this.adapterCapabilities = stuff.adapterCapabilities ?? []
     this.adapterMetadata = stuff.adapterMetadata
-    this.normalizeSnapshot = stuff.normalizeSnapshot
+    this.declaredNormalizeSnapshot = stuff.normalizeSnapshot
     this.locationKey = stuff.locationKey
   }
 }

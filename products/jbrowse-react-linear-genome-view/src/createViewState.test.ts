@@ -196,6 +196,55 @@ test('an assembly can come from local files too', () => {
   expect(adapter.gziLocation.locationType).toBe('BlobLocation')
 })
 
+// An adapter declares its shorthand once, on its config schema. That is enough
+// for a config loaded from a URL, because MST runs `preProcessSnapshot` on the
+// way in — but `localFiles` substitutes *before* MST, off the AdapterType, so an
+// adapter whose shorthand the AdapterType could not see left `uri` unexpanded
+// and the blob substitution found no location node to replace. Five in-tree
+// adapters were in exactly that state, MafTabixAdapter among them, and the
+// symptom was a track pointing at a relative URL that 404s against the host
+// page — nothing logged. AdapterType now falls back to the schema's hook, so
+// the two cannot come apart again.
+test('localFiles reach an adapter whose shorthand is only on its config schema', () => {
+  const state = createViewState({
+    assembly,
+    localFiles: {
+      'aln.bed.gz': new Uint8Array([1]),
+      'aln.bed.gz.tbi': new Uint8Array([2]),
+    },
+    tracks: [
+      {
+        type: 'MafTrack',
+        trackId: 'local_maf',
+        name: 'my local maf',
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'MafTabixAdapter',
+          uri: 'aln.bed.gz',
+          samples: ['sample1'],
+        },
+      },
+    ],
+  })
+
+  const { adapter } = getSnapshot(state.config.tracks[0]) as {
+    adapter: {
+      uri?: string
+      bedGzLocation: { locationType: string; name: string }
+      index: { location: { locationType: string; name: string } }
+    }
+  }
+  expect(adapter.uri).toBeUndefined()
+  expect(adapter.bedGzLocation).toMatchObject({
+    locationType: 'BlobLocation',
+    name: 'aln.bed.gz',
+  })
+  expect(adapter.index.location).toMatchObject({
+    locationType: 'BlobLocation',
+    name: 'aln.bed.gz.tbi',
+  })
+})
+
 test('a remote track alongside a local one is untouched', () => {
   const state = createViewState({
     assembly,

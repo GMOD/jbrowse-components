@@ -51,10 +51,6 @@ const INDEX = path.join(
 // needs to say has to come back as JSON.
 const ENTRY = `
 import PluginManager from '@jbrowse/core/PluginManager'
-// by path, not via the package's exports map, which does not publish the
-// registry — this is a build script reaching into the source tree it bundles,
-// the same way it reaches ./src/corePlugins.ts below
-import { getConfigurationSchemaMetadata } from '../../packages/core/src/configuration/schemaRegistry.ts'
 import { MIGRATED_DISPLAY_INSTANCE_KEYS } from '@jbrowse/product-core'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import corePlugins from './src/corePlugins.ts'
@@ -111,33 +107,27 @@ function stateModelPropsOf(stateModel) {
 // supplies (derived from source by the outer script; see collectShorthandProbes).
 const SHORTHAND_PROBES = __SHORTHAND_PROBES__
 
-// An adapter can put its normalizer in either of two places, and only one of
-// them is \`normalizeSnapshot\` on the AdapterType. The other is the
-// ConfigurationSchema's own \`preProcessSnapshot\`, which is what actually runs
-// when a config loads — an adapter wiring only that one (AllVsAllPAFAdapter,
-// MCScanBlocksAdapter) used to report NO shorthands, so \`jbrowse validate\`
-// called \`uri\` an unknown slot on the very config their #example shows.
+// An adapter's normalizer used to live in either of two places — \`normalizeSnapshot\`
+// on the AdapterType, or the ConfigurationSchema's own \`preProcessSnapshot\` — and
+// this had to try both, because an adapter wiring only the schema half
+// (AllVsAllPAFAdapter, MCScanBlocksAdapter) otherwise reported NO shorthands and
+// \`jbrowse validate\` called \`uri\` an unknown slot on the very config their
+// #example shows. \`AdapterType.normalizeSnapshot\` now falls back to the schema's
+// hook itself, so reading the one property covers both — and the localFiles path,
+// which reads the same property, cannot disagree with what this manifest claims.
 //
-// Read the schema's own declared \`preProcessSnapshot\` out of the metadata
-// ConfigurationSchema registers for it, rather than reaching for a
-// \`preProcessSnapshot()\` method on the type. Every schema is returned wrapped
-// in \`types.stripDefault\`, whose own preprocessor merges the model defaults in,
-// so walking the type chain and applying what it finds reports EVERY probe key
-// as a shorthand on EVERY adapter — measured: 21 adapters claiming all seven,
-// including ones with no preprocessor at all. The metadata holds the single
-// function the adapter actually declared.
-function schemaPreProcessor(configSchema) {
-  return configSchema
-    ? getConfigurationSchemaMetadata(configSchema)?.options?.preProcessSnapshot
-    : undefined
-}
+// Note it is the *metadata* the fallback reads, not a \`preProcessSnapshot()\`
+// method on the type. Every schema is returned wrapped in \`types.stripDefault\`,
+// whose own preprocessor merges the model defaults in, so walking the type chain
+// and applying what it finds reports EVERY probe key as a shorthand on EVERY
+// adapter — measured: 21 adapters claiming all seven, including ones with no
+// preprocessor at all.
 
 // Some shorthands only act as modifiers on another one — \`csi: true\` does
 // nothing by itself and rewrites the index location when \`uri\` is also present.
 // So each key is probed twice: alone, and alongside \`uri\`.
 function shorthandKeysOf(adapterType) {
-  const normalize =
-    adapterType.normalizeSnapshot ?? schemaPreProcessor(adapterType.configSchema)
+  const normalize = adapterType.normalizeSnapshot
   if (!normalize) {
     return []
   }
