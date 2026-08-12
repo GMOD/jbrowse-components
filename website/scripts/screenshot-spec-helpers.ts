@@ -291,17 +291,24 @@ export const dismissMenus = (): ScreenshotAction[] => [
 ]
 
 // Open the hierarchical track selector and leave it open, by whichever of the
-// two routes the figure wants. Seven specs across three modules took one of
+// three routes the figure wants. Eleven specs across three modules took one of
 // them, written out identically each time.
 //
 // `via` is a real choice rather than a default worth hiding, which is why it is
-// required. The 'menu' route is the one a tutorial walks a reader through. The
-// 'button' route exists for the frames where the view menu must NOT be left
-// standing over the capture, and for a view with no tracks active — the body
-// then renders an "Open track selector" button of its own, so a text click is
-// ambiguous where the header button's `title` is unique.
+// required:
+//
+//   'menu'    the view hamburger -> "Open track selector". The route a tutorial
+//             walks a reader through, and the only one that shows the item.
+//   'button'  the header button by its `title`. For the frames where the view
+//             menu must NOT be left standing over the capture, and for a view
+//             with no tracks active — the body then renders an "Open track
+//             selector" button of its own, so a text click is ambiguous where
+//             the title is unique.
+//   'text'    the same button by its visible text, for the frames where only
+//             one of them is on screen. Shorter, and it fails loudly if a
+//             second ever appears rather than picking one.
 export const openTrackSelector = (
-  via: 'menu' | 'button',
+  via: 'menu' | 'button' | 'text',
 ): ScreenshotAction[] => [
   ...(via === 'menu'
     ? ([
@@ -309,9 +316,11 @@ export const openTrackSelector = (
         { type: 'waitForText', text: 'Open track selector' },
         { type: 'click', text: 'Open track selector' },
       ] as const)
-    : ([
-        { type: 'click', selector: 'button[title="Open track selector"]' },
-      ] as const)),
+    : via === 'button'
+      ? ([
+          { type: 'click', selector: 'button[title="Open track selector"]' },
+        ] as const)
+      : ([{ type: 'click', text: 'Open track selector' }] as const)),
   {
     type: 'waitForSelector',
     selector: '[data-testid="hierarchical_track_selector"]',

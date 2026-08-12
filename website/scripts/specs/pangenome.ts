@@ -5,7 +5,11 @@ import {
   displayReady,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
-import { ECOLI_DEMO_BASE } from './demoBase.ts'
+import {
+  ECOLI_AVA_STACK_HEIGHT,
+  ECOLI_DEMO_BASE,
+  ecoliAvaStack,
+} from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -61,37 +65,9 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/pggb_synteny',
     url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          // same row order as the minimap2 stack, so the two figures are
-          // comparable line for line
-          views: [
-            { assembly: 'K12' },
-            { assembly: 'Sakai' },
-            { assembly: 'CFT073' },
-            { assembly: 'NCTC86' },
-            { assembly: 'IAI39' },
-          ],
-          tracks: [
-            ['ecoli_pggb_ava'],
-            ['ecoli_pggb_ava'],
-            ['ecoli_pggb_ava'],
-            ['ecoli_pggb_ava'],
-          ],
-          drawCurves: false,
-          colorBy: 'default',
-          minAlignmentLength: 10000,
-          levelHeights: [110, 110, 110, 110],
-          // same as the minimap2 stack: no row carries a track, so each one
-          // collapses to a bare scalebar instead of a "No tracks active" block
-          collapseEmptyRows: true,
-        },
-      ],
+      views: [ecoliAvaStack('ecoli_pggb_ava')],
     }),
-    // five collapsed scalebar rows and four 110px bands, matching the minimap2
-    // figure's framing so the two are comparable line for line
-    viewportHeight: 715,
+    viewportHeight: ECOLI_AVA_STACK_HEIGHT,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,

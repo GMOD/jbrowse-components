@@ -8,7 +8,11 @@ import {
   hpyloriUrl,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
-import { ECOLI_DEMO_BASE } from './demoBase.ts'
+import {
+  ECOLI_AVA_STACK_HEIGHT,
+  ECOLI_DEMO_BASE,
+  ecoliAvaStack,
+} from './demoBase.ts'
 import { GRAPH_DRAWN } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -1873,56 +1877,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
         'https://jbrowse.org/demos/ecoli_pangenome/config.json',
       ),
       {
-        views: [
-          {
-            type: 'LinearSyntenyView',
-            // IAI39 goes last on purpose. The other four are near-colinear
-            // with each other (every pair >92% forward), so bands 1-3 are the
-            // shared-backbone picture and the bottom band is the only one with
-            // real structure: IAI39 carries five inversions over 50 kb against
-            // K12, the largest 281 kb and 350 kb, which draw as two clean X
-            // crossings rather than as noise.
-            views: [
-              { assembly: 'K12' },
-              { assembly: 'Sakai' },
-              { assembly: 'CFT073' },
-              { assembly: 'NCTC86' },
-              { assembly: 'IAI39' },
-            ],
-            // one all-vs-all track backs every band (lists all five assemblies)
-            tracks: [
-              ['ecoli_ava'],
-              ['ecoli_ava'],
-              ['ecoli_ava'],
-              ['ecoli_ava'],
-            ],
-            drawCurves: false,
-            colorBy: 'default',
-            // drop short minimap2 alignments so the shared backbone reads as
-            // clean ribbons instead of a dense noise band
-            minAlignmentLength: 10000,
-            levelHeights: [110, 110, 110, 110],
-            // None of the five rows carries a track, so every row collapses to
-            // a bare scalebar instead of a ~90px "No tracks active / Open
-            // track selector" block — five of those cost more of the viewport
-            // than the ribbons they're stacked around.
-            collapseEmptyRows: true,
-            // No autoDiagonalize. It reorders and flips a level's lower axis,
-            // and neither lever applies: each assembly is a single contig, so
-            // there is nothing to reorder, and the flip is per-axis rather than
-            // per-block, so it cannot help a row whose inversions are internal
-            // (IAI39) — tested, the render is unchanged. The slant is not a
-            // rearrangement to correct either: each row spans its own whole
-            // genome across the same pixel width, and the genomes differ in
-            // length (K-12 4.64 Mb vs Sakai 5.50 Mb), so a colinear alignment
-            // has to draw as a diagonal.
-          },
-        ],
+        // the minimap2 aligner's version of the stack the pggb and cactus
+        // figures draw; see ecoliAvaStack for the row order and every prop
+        views: [ecoliAvaStack('ecoli_ava')],
       },
     ),
-    // five collapsed scalebar rows and four 110px bands, sized to them
-    // (collapseEmptyRows shrinks each row from ~175px to a bare scalebar)
-    viewportHeight: 715,
+    viewportHeight: ECOLI_AVA_STACK_HEIGHT,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,

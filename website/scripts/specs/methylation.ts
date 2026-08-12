@@ -12,6 +12,18 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+// The hg38 gene lane the three COLO829 figures carry, collapsed to one longest
+// coding transcript and compact so it costs ~90px beside the methylation lanes.
+// Three copies of the same five keys, which is what a lane shared between
+// figures on one page should be.
+const HG38_GENE_LANE = {
+  trackId: 'ncbi_refseq_109_hg38_latest',
+  type: 'LinearBasicDisplay',
+  geneGlyphMode: 'longestCoding',
+  displayMode: 'compact',
+  height: 90,
+}
+
 const ARABIDOPSIS_WGBS_CONFIG =
   'test_data/arabidopsis_methylation/config_emseq_bisulfite.json'
 
@@ -435,13 +447,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 40,
         },
-        {
-          trackId: 'ncbi_refseq_109_hg38_latest',
-          type: 'LinearBasicDisplay',
-          geneGlyphMode: 'longestCoding',
-          displayMode: 'compact',
-          height: 90,
-        },
+        HG38_GENE_LANE,
         {
           trackId: 'HG002_snrpn_5mC_reads',
           type: 'LinearAlignmentsDisplay',
@@ -490,13 +496,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 40,
         },
-        {
-          trackId: 'ncbi_refseq_109_hg38_latest',
-          type: 'LinearBasicDisplay',
-          geneGlyphMode: 'longestCoding',
-          displayMode: 'compact',
-          height: 90,
-        },
+        HG38_GENE_LANE,
         {
           trackId: 'HG002_snrpn_5mC_reads',
           type: 'LinearAlignmentsDisplay',
@@ -576,13 +576,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 40,
             },
-            {
-              trackId: 'ncbi_refseq_109_hg38_latest',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 90,
-            },
+            HG38_GENE_LANE,
             {
               trackId: 'HG002_snrpn_modkit_multi',
               type: 'MultiLinearWiggleDisplay',

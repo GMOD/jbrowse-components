@@ -5,7 +5,11 @@ import {
   displayReady,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
-import { ECOLI_DEMO_BASE } from './demoBase.ts'
+import {
+  ECOLI_AVA_STACK_HEIGHT,
+  ECOLI_DEMO_BASE,
+  ecoliAvaStack,
+} from './demoBase.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -42,40 +46,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome_cactus/synteny',
     url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          // IAI39 last, matching the pggb figure: the first four rows are the
-          // near-colinear backbone and the bottom band is the only one showing
-          // rearrangement, so the crossings are attributable to one strain.
-          views: [
-            { assembly: 'K12' },
-            { assembly: 'Sakai' },
-            { assembly: 'CFT073' },
-            { assembly: 'NCTC86' },
-            { assembly: 'IAI39' },
-          ],
-          tracks: [
-            ['ecoli_cactus_ava'],
-            ['ecoli_cactus_ava'],
-            ['ecoli_cactus_ava'],
-            ['ecoli_cactus_ava'],
-          ],
-          drawCurves: false,
-          colorBy: 'default',
-          minAlignmentLength: 10000,
-          levelHeights: [110, 110, 110, 110],
-          // same as the pggb stack: no row carries a track, so each one
-          // collapses to a bare scalebar instead of a "No tracks active /
-          // OPEN TRACK SELECTOR" block. Without it this figure shipped five of
-          // them down its middle, which reads as an empty browser.
-          collapseEmptyRows: true,
-        },
-      ],
+      views: [ecoliAvaStack('ecoli_cactus_ava')],
     }),
-    // five collapsed scalebar rows and four 110px bands, matching the pggb
-    // figure's framing so the two builders are comparable line for line
-    viewportHeight: 715,
+    viewportHeight: ECOLI_AVA_STACK_HEIGHT,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,

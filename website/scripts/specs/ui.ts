@@ -1917,14 +1917,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 600,
     readyText: 'ctgA',
     settleMs: 3000,
-    actions: [
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
-      { type: 'delay', ms: 1000 },
-    ],
+    actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
   },
 
   // Track selector with all top-level categories collapsed (track_selector.md) —
@@ -1941,11 +1934,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 3000,
     actions: [
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
+      ...openTrackSelector('text'),
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
       ...menuCascade(['Collapse...', 'Collapse top-level categories']),
       { type: 'click', text: 'Collapse top-level categories' },
@@ -2058,14 +2047,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 3000,
     // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
-    actions: [
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
-      { type: 'delay', ms: 1000 },
-    ],
+    actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
   },
 
   // Customized UI theme (theme.md) — same config carrying the documented custom
@@ -2082,14 +2064,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 3000,
     // shorter browser: the palette + track selector fit comfortably
     viewportHeight: 520,
-    actions: [
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
-      { type: 'delay', ms: 1000 },
-    ],
+    actions: [...openTrackSelector('text'), { type: 'delay', ms: 1000 }],
   },
   // ────────────────────────────────────────────────────────────────────────
   // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled
