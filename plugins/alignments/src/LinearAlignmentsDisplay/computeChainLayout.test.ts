@@ -335,6 +335,56 @@ describe('computeMultiRegionChainLayout — cross-region consistency', () => {
     expect(rowMap.get('local')!).toBeLessThan(rowMap.get('wide')!)
   })
 
+  // ...and the same two windows on two CHROMOSOMES must not, which the test
+  // above cannot say: it passes no `regions`, so every region's refName is
+  // `undefined`, `refNameAxisShift` is identity, and the merged bounds stay
+  // genuine genomic coordinates. Give it a real `regions` map and the shift lays
+  // the two refNames end to end, so `maxEnd - minStart` measures across a
+  // synthetic axis — a number with no genomic meaning that is nonetheless larger
+  // than any local chain's span by construction. Sorted on that, every
+  // cross-chromosome chain lands behind every local one, and a fusion view's own
+  // read support goes below the fold of a row-capped pileup.
+  test('a chain crossing CHROMOSOMES packs by its reach, not the axis gap', () => {
+    const onChr9 = makeChainData({
+      regionStart: 1000,
+      chains: [
+        { name: 'fusion', minStart: 1000, maxEnd: 1100, distance: 100 },
+        // What gives chr9's axis segment its length — a real window is thousands
+        // of bp wide because reads span it, and that length is precisely what
+        // the discarded rule was charging `fusion` for.
+        { name: 'chr9wide', minStart: 1000, maxEnd: 3000, distance: 2000 },
+      ],
+    })
+    // The same coordinates as chr9's window: refNames share the number line,
+    // which is why the placement axis has to shift them apart in the first place.
+    const onChr22 = makeChainData({
+      regionStart: 1000,
+      chains: [
+        { name: 'fusion', minStart: 1000, maxEnd: 1100, distance: 100 },
+        // Overlaps `fusion`'s chr22 end, so the two collide and the packing
+        // ORDER is what decides their rows. It reaches 400bp on its own
+        // chromosome against `fusion`'s 100 on each of two, so `fusion` is the
+        // tighter chain and belongs above it.
+        { name: 'local', minStart: 1000, maxEnd: 1400, distance: 400 },
+      ],
+    })
+    const regions = new Map([
+      [0, { refName: 'chr9', start: 1000, end: 3000 }],
+      [1, { refName: 'chr22', start: 1000, end: 3000 }],
+    ])
+
+    const { rowMap } = computeMultiRegionChainLayout(
+      [
+        [0, onChr9],
+        [1, onChr22],
+      ],
+      regions,
+    )
+    // Charged the axis gap, `fusion` scored 2104 against `local`'s 400 and went
+    // below it; by its reach it scores 100 and takes the row above.
+    expect(rowMap.get('fusion')!).toBeLessThan(rowMap.get('local')!)
+  })
+
   // The merged span of a single-region chain IS the span its distance came from,
   // so nothing about the ordinary case may move.
   test('a single-region chain keeps the distance its region reported', () => {

@@ -16,7 +16,10 @@ import type {
   RefNameSpans,
   RegionBounds,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
+import type {
+  ChainPileupData,
+  PileupDataResult,
+} from '../RenderAlignmentDataRPC/types'
 
 // Total order over chains: packing distance first, then span, then chain name.
 // The tiebreaks matter for the same reason `compareReadsCanonically`
@@ -59,6 +62,39 @@ function buildChainRowMap(
   return { rowMap, maxY: rows.length, truncated }
 }
 
+// One chain's merged state while `mergeChains` folds the regions into it.
+// `minStart`/`maxEnd` are on the shifted placement axis and drive placement;
+// `reach`/`refSeen`/`refMin`/`refMax` are unshifted genomic coordinates and
+// drive the packing key alone — see the note where `distance` is resolved.
+interface MergedChain {
+  minStart: number
+  maxEnd: number
+  distance: number
+  reach: number
+  refSeen: string | undefined
+  refMin: number
+  refMax: number
+}
+
+// The chain-mode entries of one refName, so the reach fold below sees all of a
+// chain's occurrences on a given chromosome consecutively. Grouping is what makes
+// that fold exact rather than approximate: a view can revisit a refName
+// (`chr22 … chr9 … chr22` is a real locstring — see the K562 amplicon figure), and
+// ungrouped iteration would fold that refName twice, each time with a partial
+// span. Few groups (one per refName in view), so this is cheap.
+function chainEntriesByRefName(
+  entries: [number, PileupDataResult][],
+  refNameOf: (idx: number) => string | undefined,
+) {
+  const byRef = new Map<string | undefined, ChainPileupData[]>()
+  for (const [idx, data] of entries) {
+    if (isChainData(data)) {
+      getOrCreate(byRef, refNameOf(idx), () => []).push(data)
+    }
+  }
+  return byRef
+}
+
 // Chains spanning multiple regions are merged by name. min/max give the true
 // span; `distance` is a packing-order key only (`compareChainsCanonically` sorts
 // it ASCENDING, so the tightest chains take the lowest rows) — placement itself
@@ -66,8 +102,8 @@ function buildChainRowMap(
 // ordering. It used to take the max of what each region reported, which for the
 // case this layout exists to serve is every region understating it: a fusion's
 // read is a singleton in each of the two regions, so a chain crossing the whole
-// view carried one alignment's distance and packed among the tight ones. See the
-// max at the end.
+// view carried one alignment's distance and packed among the tight ones. See
+// `reach` at the end.
 //
 // Bounds are shifted onto their region's refName segment of the placement axis
 // (`refNameAxisShift`) before merging — refNames share the genomic coordinate
@@ -98,26 +134,32 @@ function mergeChains(
   }
   const shiftFor = refNameAxisShift(spans)
 
-  const merged = new Map<
-    string,
-    { minStart: number; maxEnd: number; distance: number }
-  >()
-  for (const [idx, data] of entries) {
-    if (!isChainData(data)) {
-      continue
-    }
-    const offset = shiftFor(refNameOf(idx))
-    const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } =
-      data
-    for (let i = 0; i < chainNames.length; i++) {
-      const name = chainNames[i]!
-      const minStart = chainAbsMinStarts[i]! + offset
-      const maxEnd = chainAbsMaxEnds[i]! + offset
-      const distance = chainDistances[i]!
-      const existing = merged.get(name)
-      if (!existing) {
-        merged.set(name, { minStart, maxEnd, distance })
-      } else {
+  const merged = new Map<string, MergedChain>()
+  for (const [refName, group] of chainEntriesByRefName(entries, refNameOf)) {
+    const offset = shiftFor(refName)
+    for (const data of group) {
+      const { chainNames, chainAbsMinStarts, chainAbsMaxEnds, chainDistances } =
+        data
+      for (let i = 0; i < chainNames.length; i++) {
+        const name = chainNames[i]!
+        const lo = chainAbsMinStarts[i]!
+        const hi = chainAbsMaxEnds[i]!
+        const distance = chainDistances[i]!
+        const existing = merged.get(name)
+        if (!existing) {
+          merged.set(name, {
+            minStart: lo + offset,
+            maxEnd: hi + offset,
+            distance,
+            reach: 0,
+            refSeen: refName,
+            refMin: lo,
+            refMax: hi,
+          })
+          continue
+        }
+        const minStart = lo + offset
+        const maxEnd = hi + offset
         if (minStart < existing.minStart) {
           existing.minStart = minStart
         }
@@ -127,20 +169,52 @@ function mergeChains(
         if (distance > existing.distance) {
           existing.distance = distance
         }
+        if (existing.refSeen === refName) {
+          if (lo < existing.refMin) {
+            existing.refMin = lo
+          }
+          if (hi > existing.refMax) {
+            existing.refMax = hi
+          }
+        } else {
+          // Moved onto another chromosome: bank the one just finished and start
+          // the next. Exact because `chainEntriesByRefName` groups the entries.
+          existing.reach = Math.max(
+            existing.reach,
+            existing.refMax - existing.refMin,
+          )
+          existing.refSeen = refName
+          existing.refMin = lo
+          existing.refMax = hi
+        }
       }
     }
   }
-  // A merged chain reaches at least as far as its merged bounds, whatever any
-  // single region saw. Taking the max here is what generalizes `chainDistance`'s
-  // own rule (a region reports |TLEN| when its local span understates the
-  // fragment) to the cross-region case, where every region's span understates it
-  // by construction. Identity for a single-region chain, whose merged span IS
-  // the span its distance was computed from — so the common case keeps its
-  // existing order exactly.
-  return [...merged.entries()].map(([name, bounds]) => ({
+  // `reach` — how far the chain covers within any ONE refName, in unshifted
+  // genomic coordinates — is the floor under the packing key, and the last
+  // refName's span is banked here.
+  //
+  // A DISTANCE, NOT A COORDINATE DIFFERENCE, and that distinction is the whole
+  // of this. The rule used to be `maxEnd - minStart` over the merged bounds,
+  // which for two windows on one refName (collapse-introns) is exactly this
+  // number and is right — but those bounds are on the PLACEMENT axis, which
+  // `refNameAxisShift` builds by laying each refName end to end. So across
+  // chromosomes it measured the gap between two segments of a synthetic axis, a
+  // quantity with no genomic meaning that is nonetheless larger than any local
+  // chain's span by construction. Every cross-region chain therefore sorted
+  // behind every local one, and in a row-capped pileup an interchromosomal
+  // fusion's own read support — the entire subject of the view chain mode exists
+  // to serve — went below the fold.
+  //
+  // Two ends on two chromosomes are not a distance apart at all, so the honest
+  // reading of "how far does this chain reach" is the furthest it reaches on any
+  // one of them. Identity for the single-refName case, which is what the rule
+  // was verified against.
+  return [...merged.entries()].map(([name, b]) => ({
     name,
-    ...bounds,
-    distance: Math.max(bounds.distance, bounds.maxEnd - bounds.minStart),
+    minStart: b.minStart,
+    maxEnd: b.maxEnd,
+    distance: Math.max(b.distance, b.reach, b.refMax - b.refMin),
   }))
 }
 
