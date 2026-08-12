@@ -961,7 +961,7 @@ export default function stateModelFactory(
               region,
             )
             if (feature && isAlive(self)) {
-              openFeatureWidget(self, feature.toJSON())
+              openFeatureWidget(self, feature.toJSON(), { feature })
             }
           })()
         }
