@@ -14,6 +14,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+/** #slotEditor monospace textarea holding arbitrary JSON */
 const JsonEditor = observer(function JsonEditor({
   slot,
 }: {

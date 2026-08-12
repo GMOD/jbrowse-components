@@ -12,9 +12,18 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 `FETCH_AUTORUNS`, `PALETTE_KEYS`, `HELPER_PACKAGES`, `REEXPORT_MODULES`,
 `MENU_ITEM_TYPES`, `MENU_ITEM_FIELDS`, `MENU_ITEM_BUILDERS`, `MENU_ACTIONS`,
 `SPEC_KEYS`, `EXAMPLE_PLUGIN_TREE`, `SHADER_EXPORTS`, `ADAPTER_BASES`,
-`SEARCH_RESULT_FIELDS`). Each renders from a JSDoc tag, a registration, or a
-manifest at the definition site — document a new one by tagging the source.
-Everything else under `docs/` is hand-written.
+`SEARCH_RESULT_FIELDS`, `SLOT_TYPES`). Each renders from a JSDoc tag, a
+registration, or a manifest at the definition site — document a new one by
+tagging the source. Everything else under `docs/` is hand-written.
+
+`SLOT_TYPES` is the one whose gate is not about the doc. Three tables define the
+closed set of config slot types — the MST models in `configurationSlot.ts`, the
+read types in `configuration/types.ts`, and the config editor's
+type-string-to-control dispatch in `SlotEditor.tsx` — and only the first two are
+checked against each other, by tsc. The dispatch has to be typed
+`Record<string, …>`, so a slot type missing from it falls back to a plain text
+box behind a `console.warn`: a number editing as free text, said nowhere a user
+or a schema author looks. That is now a failed `pnpm autogen` instead.
 
 `SPEC_KEYS` is the grouped one on `urlparams.md`:
 `<!-- SPEC_KEYS <ViewType> -->` renders what a session spec may set on that

@@ -12,6 +12,7 @@ import { observer } from 'mobx-react'
 
 import AddNewField from './AddNewField.tsx'
 
+/** #slotEditor "todolist" of text fields, one per entry, with add and delete */
 const StringArrayEditor = observer(function StringArrayEditor({
   slot,
 }: {

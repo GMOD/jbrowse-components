@@ -34,6 +34,7 @@ interface StringSlot {
   set: (arg: string) => void
 }
 
+/** #slotEditor single-line text field */
 const StringEditor = observer(function StringEditor({
   slot,
 }: {
@@ -51,6 +52,7 @@ const StringEditor = observer(function StringEditor({
   )
 })
 
+/** #slotEditor multi-line textarea */
 const TextEditor = observer(function TextEditor({
   slot,
 }: {
@@ -74,6 +76,7 @@ const TextEditor = observer(function TextEditor({
 // enumeration member would be unnameable in a menu anyway).
 const UNSET_CHOICE = ''
 
+/** #slotEditor dropdown of the `model`'s members */
 const StringEnumEditor = observer(function StringEnumEditor({
   slot,
 }: {
@@ -114,6 +117,7 @@ const StringEnumEditor = observer(function StringEnumEditor({
   )
 })
 
+/** #slotEditor URL, local file path (desktop) or file blob (browser) */
 const FileSelectorWrapper = observer(function FileSelectorWrapper({
   slot,
 }: {

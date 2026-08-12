@@ -113,33 +113,51 @@ The `#config`, `#slot`, and `#preProcessSnapshot` JSDoc tags generate the
 
 ## Slot types
 
-The canonical list of slot types. Because the system is typed, each slot can be
-edited graphically; [Graphical editing](#graphical-editing) below shows how each
-type renders.
+A slot's `type` is one of a closed set. The name is what everything downstream
+keys off: the MST type the value is built from, what a `getConf` read of it is
+typed as, and — because the system is typed — which control the configuration
+editor renders for it, so a slot can be edited graphically without an author
+writing any UI.
 
-| Type             | JS type                    | Notes                                               |
-| ---------------- | -------------------------- | --------------------------------------------------- |
-| `string`         | `string`                   |                                                     |
-| `text`           | `string`                   | Alias for string; textarea in the GUI               |
-| `number`         | `number`                   | Float                                               |
-| `integer`        | `number`                   | Integer                                             |
-| `boolean`        | `boolean`                  |                                                     |
-| `stringEnum`     | `string`                   | One of a fixed set; needs a `model` (see below)     |
-| `color`          | `string`                   | Validated CSS color string; color picker in the GUI |
-| `fileLocation`   | `FileLocation`             | `{ uri, locationType }` or `{ localPath }`          |
-| `stringArray`    | `string[]`                 |                                                     |
-| `stringArrayMap` | `Record<string, string[]>` |                                                     |
-| `numberMap`      | `Record<string, number>`   |                                                     |
-| `frozen`         | `unknown`                  | Arbitrary JSON; not deeply reactive                 |
+<!-- SLOT_TYPES START -->
 
-Five types also have a `maybe` form — `maybeNumber`, `maybeBoolean`,
-`maybeColor`, `maybeFrozen`, `maybeStringEnum` — whose default is `undefined`
-rather than a concrete value. That is what a **promotable** slot needs:
-`undefined` means "not set on this track, follow the session-wide default", and
-it is the one value no config can spell, so it stays distinguishable from every
-real value the user might write. Pair it with `promotedBase` for what inheriting
-resolves to, and read it with `resolveConf`. `lineWidth` in the example below is
-one.
+<!-- prettier-ignore -->
+| `type` | MST model | Reads as | Config editor renders |
+| --- | --- | --- | --- |
+| <code>boolean</code> | <code>types.boolean</code> | <code>boolean</code> | checkbox |
+| <code>maybeBoolean</code> | <code>types.maybe(types.boolean)</code> | <code>boolean &#124; undefined</code> | checkbox |
+| <code>color</code> | <code>types.string</code> | <code>string</code> | text field beside a swatch that opens a color picker |
+| <code>maybeColor</code> | <code>types.maybe(types.string)</code> | <code>string &#124; undefined</code> | text field beside a swatch that opens a color picker |
+| <code>fileLocation</code> | <code>FileLocation</code> | <code>FileLocation</code> | URL, local file path (desktop) or file blob (browser) |
+| <code>frozen</code> | <code>types.frozen()</code> | <code>any</code> | monospace textarea holding arbitrary JSON |
+| <code>maybeFrozen</code> | <code>types.maybe(types.frozen())</code> | <code>any</code> | monospace textarea holding arbitrary JSON |
+| <code>integer</code> | <code>types.integer</code> | <code>number</code> | numeric text field that rounds to an integer |
+| <code>number</code> | <code>types.number</code> | <code>number</code> | numeric text field |
+| <code>maybeNumber</code> | <code>types.maybe(types.number)</code> | <code>number &#124; undefined</code> | numeric text field |
+| <code>numberMap</code> | <code>types.map(types.number)</code> | <code>Record&lt;string, number&gt;</code> | one card per key, each holding that key's numeric field |
+| <code>string</code> | <code>types.string</code> | <code>string</code> | single-line text field |
+| <code>stringArray</code> | <code>types.array(types.string)</code> | <code>string[]</code> | "todolist" of text fields, one per entry, with add and delete |
+| <code>stringArrayMap</code> | <code>types.map(types.array(types.string))</code> | <code>Record&lt;string, string[]&gt;</code> | one card per key, each holding that key's "todolist" of strings |
+| <code>stringEnum</code> | the `model` the slot declares | the `model` enumeration's members | dropdown of the `model`'s members |
+| <code>maybeStringEnum</code> | the `model` the slot declares | the `model` enumeration's members | dropdown of the `model`'s members |
+| <code>text</code> | <code>types.string</code> | <code>string</code> | multi-line textarea |
+
+<!-- SLOT_TYPES END -->
+
+A name outside this set is rejected at schema construction. That check exists
+because such a slot otherwise still _works_ — the value round-trips as long as
+you supply a `model` — and the only symptom is that everything keyed off the
+type name stops recognising it.
+
+The `maybe*` forms are `undefined` while unset. That is what a **promotable**
+slot needs: `undefined` means "not set on this track, follow the session-wide
+default", and it is the one value no config can spell, so it stays
+distinguishable from every real value the user might write. Pair it with
+`promotedBase` for what inheriting resolves to, and read it with `resolveConf`.
+`lineWidth` in the example below is one.
+
+`frozen` and `maybeFrozen` hold arbitrary JSON. The value is not deeply
+reactive, and reads are typed `any` — the shape is the caller's to assert.
 
 For enums, use `type: 'stringEnum'` and add a `model` field. The wiggle
 display's `summaryScoreMode` slot:
@@ -158,23 +176,9 @@ summaryScoreMode: {
 
 `stringEnum` (and `maybeStringEnum`) are the only types the config editor reads
 the `model`'s choices from, so a slot typed anything else renders as a free text
-input however valid its `model` is.
-
-## Graphical editing
-
-Because slots are typed, the configuration editor renders an appropriate control
-for each one:
-
-- `stringEnum` - dropdown box
-- `color` - color picker
-- `boolean` - checkbox
-- `number` / `integer` - numeric input
-- `string` - text input
-- `text` - textarea
-- `frozen` - textarea holding arbitrary JSON
-- `fileLocation` - URL, local file path (desktop), or file blob (browser)
-- `stringArray` - "todolist" editor to add/remove entries
-- `stringArrayMap` / `numberMap` - key-value editors
+input however valid its `model` is. A `maybeStringEnum` dropdown carries a
+leading "default" entry above the members, which is how the unset state is both
+shown and set.
 
 ## Schema inheritance with baseConfiguration
 

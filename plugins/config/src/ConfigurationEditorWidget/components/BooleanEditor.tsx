@@ -2,6 +2,7 @@ import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { FormControl, FormHelperText } from '@mui/material'
 import { observer } from 'mobx-react'
 
+/** #slotEditor checkbox */
 const BooleanEditor = observer(function BooleanEditor({
   slot,
 }: {

@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import MapSlotEditor from './MapSlotEditor.tsx'
 import StringArrayEditor from './StringArrayEditor.tsx'
 
+/** #slotEditor one card per key, each holding that key's "todolist" of strings */
 const StringArrayMapEditor = observer(function StringArrayMapEditor({
   slot,
 }: {

@@ -13,6 +13,7 @@ import { writePaletteDocs } from './generatePaletteDocs.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
 import { writeSearchResultDocs } from './generateSearchResultDocs.ts'
 import { writeShaderExportDocs } from './generateShaderExportDocs.ts'
+import { writeSlotTypeDocs } from './generateSlotTypeDocs.ts'
 
 import type { SourceCorpus } from './util.ts'
 
@@ -100,5 +101,9 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Re-export module table',
     write: (_corpus, opts) => writeReExportDocs(opts),
+  },
+  {
+    label: 'Slot type table',
+    write: (_corpus, opts) => writeSlotTypeDocs(opts),
   },
 ]

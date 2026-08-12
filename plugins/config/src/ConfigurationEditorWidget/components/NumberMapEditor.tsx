@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import MapSlotEditor from './MapSlotEditor.tsx'
 import NumberEditor from './NumberEditor.tsx'
 
+/** #slotEditor one card per key, each holding that key's numeric field */
 const NumberMapEditor = observer(function NumberMapEditor({
   slot,
 }: {

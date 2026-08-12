@@ -24,6 +24,7 @@ const useStyles = makeStyles()({
 // NumberEditor renders an unset `maybeNumber` as an empty field. Clearing the
 // field writes `''` rather than restoring `undefined` — "unset" is reachable
 // through the slot's reset button, which is where every other slot type puts it.
+/** #slotEditor text field beside a swatch that opens a color picker */
 const ColorEditor = observer(function ColorEditor(props: {
   slot: {
     name: string

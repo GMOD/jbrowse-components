@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 
 import ConfigurationTextField from './ConfigurationTextField.tsx'
 
+/** #slotEditor numeric text field */
 const NumberEditor = observer(function NumberEditor({
   slot,
   integer = false,
