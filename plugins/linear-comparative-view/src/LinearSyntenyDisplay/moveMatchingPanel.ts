@@ -103,6 +103,11 @@ export async function resolveMatchingSpan({
  * walk comes back empty. Navigating on an interpolated guess is what this
  * deliberately does not do; going quiet is not the alternative, since a menu
  * item that does nothing reads as a broken one.
+ *
+ * The message can name the CIGAR because that is the only way the resolve
+ * answers `undefined` from a menu this session opened: the other way is an id
+ * the worker cannot find, and `setRpcData` closes the menu on every refetch
+ * precisely so a click cannot outlive the fetch its feature came from.
  */
 export async function moveMatchingPanel({
   model,

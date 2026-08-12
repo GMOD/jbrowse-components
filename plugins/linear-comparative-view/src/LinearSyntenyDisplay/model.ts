@@ -210,6 +210,16 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * or writes NaN into the clickedFeatureId uniform (out of range). A
        * refetch is a zoom/pan/mode change, after which the pointer is no longer
        * over whatever it was hovering anyway.
+       *
+       * An open context menu goes with them, for the same reason one step
+       * further along. It does not hold an index — it holds a resolved feature
+       * and the window a panel was showing — but both describe the fetch that
+       * has just been replaced, and its items act on them ASYNCHRONOUSLY, after
+       * a click. Feature ids are not comparable across a tiered PIF's two
+       * tiers, so a menu that outlived a tier flip would ask the worker to
+       * resolve an id the new tier does not have, and get back the same
+       * `undefined` a CIGAR-less block gives — which is what
+       * `moveMatchingPanel` then reports it as.
        */
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
@@ -221,6 +231,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         self.loadedFetchKey = fetchKey
         self.hoveredFeatureIdx = -1
         self.clickedFeatureIdx = -1
+        self.contextMenuAnchor = undefined
       },
       setHoveredFeatureIdx(idx: number) {
         self.hoveredFeatureIdx = idx
