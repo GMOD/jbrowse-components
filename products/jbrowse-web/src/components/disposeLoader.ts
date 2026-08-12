@@ -16,6 +16,18 @@ import type { SessionLoaderModel } from '../SessionLoader.ts'
 export function disposeLoader(loader: SessionLoaderModel) {
   loader.deactivate()
   if (loader.superseded) {
-    destroy(loader)
+    // Deferred a tick: this cleanup runs inside React's passive-effect
+    // flush, synchronously followed — same flush, same call stack — by its
+    // dev-mode component-render logging, which reads `loader` again as
+    // Renderer's/SessionTriaged's "previous props". Destroying synchronously
+    // here made every property on it (configPath, sessionQuery, ...) log a
+    // "you are trying to read or write to an object that is no longer part
+    // of a state tree" MST warning. A microtask runs only once that
+    // synchronous flush has fully unwound, so this still frees the node
+    // well before the next paint, just after the dev-mode read that would
+    // otherwise hit a dead one.
+    queueMicrotask(() => {
+      destroy(loader)
+    })
   }
 }

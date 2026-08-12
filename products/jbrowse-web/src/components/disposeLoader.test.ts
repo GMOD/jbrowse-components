@@ -32,5 +32,7 @@ test('a superseded loader is destroyed on detach', async () => {
   const loader = await makeActivatedLoader()
   loader.setSuperseded()
   disposeLoader(loader)
+  // destroy() is deferred a microtask past this call (see disposeLoader.ts)
+  await Promise.resolve()
   expect(isAlive(loader)).toBe(false)
 })
