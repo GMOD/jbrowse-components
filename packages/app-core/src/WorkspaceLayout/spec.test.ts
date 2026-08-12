@@ -6,7 +6,7 @@ import {
 } from './spec.ts'
 import { isBranch } from './tree.ts'
 
-import type { BranchNode, LayoutTree, PanelNode } from './tree.ts'
+import type { BranchNode, LayoutTree, NodeKind, PanelNode } from './tree.ts'
 
 /**
  * `treeFromSpec` converts the **public** `layout` URL parameter, so what it does
@@ -15,7 +15,7 @@ import type { BranchNode, LayoutTree, PanelNode } from './tree.ts'
  */
 
 let counter = 0
-const nextId = (kind: 'panel' | 'tab') => `${kind}-${counter++}`
+const nextId = (kind: NodeKind) => `${kind}-${counter++}`
 beforeEach(() => {
   counter = 0
 })

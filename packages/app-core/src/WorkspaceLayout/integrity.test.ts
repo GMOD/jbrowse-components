@@ -152,6 +152,66 @@ test('activePanelId never dangles', () => {
   check()
 })
 
+// 3b. Including the one path that empties a panel without removing it: closing
+// the LAST panel has nowhere to collapse to, so `removePanel` hands back that
+// same panel with no tabs — and `activeTabId` named one of the tabs it just
+// dropped. A panel showing a tab it does not have renders no content and no
+// launcher, so the cell goes blank.
+test('closing the only panel takes activeTabId with the tabs', () => {
+  const session = TestSession.create({ name: 't' })
+  const only = session.panels[0]!.id
+  expect(session.activeTabOf(only)).toBeDefined()
+
+  session.closePanel(only)
+
+  expect(session.panels).toHaveLength(1)
+  expect(session.panels[0]!.tabs).toEqual([])
+  expect(session.panels[0]!.activeTabId).toBeUndefined()
+})
+
+// 4b. The mirror of 4, on the TARGET rather than the dragged tab. An edge drop
+// onto a panel that is not there splits nothing, so claiming the new cell's id
+// would leave activePanelId naming one nobody draws — the same reason
+// `splitPanel` checks its own result before claiming it.
+test('an edge drop onto a panel that is not there claims no cell', () => {
+  const session = TestSession.create({ name: 't' })
+  const tabId = session.tabs[0]!.id
+  const before = session.activePanelId
+
+  const landed = session.dropTabInNewSplit(
+    tabId,
+    'panel-does-not-exist',
+    'row',
+    false,
+  )
+
+  expect(landed).toBeUndefined()
+  expect(session.panels).toHaveLength(1)
+  expect(session.activePanelId).toBe(before)
+})
+
+// 8. Moving one view out must disturb nothing else.
+//
+// `moveViewToNewTab`/`moveViewToSplitRight` home the session's views on the way
+// through, and homing is two-directional about membership: it DROPS any view
+// its list does not name. So `allViewIds` has to be every view in the session,
+// and it used to default to `[viewId]` — which unhomed every other view in the
+// workspace and let the homing autorun sweep them all into one tab. It is a
+// required parameter now, so the signature is what stops that; this pins the
+// behaviour the signature is protecting.
+test('moving one view out leaves the others where they were', () => {
+  const session = TestSession.create({ name: 't' })
+  const first = session.panels[0]!.id
+  const second = session.splitPanel(first, 'row')!
+  session.addViewToTab(session.activeTabOf(first)!.id, 'view-1')
+  session.addViewToTab(session.activeTabOf(second.id)!.id, 'view-2')
+
+  session.moveViewToNewTab('view-1', ['view-1', 'view-2'])
+
+  expect(session.panelContainingView('view-2')?.id).toBe(second.id)
+  expect(session.tabContainingView('view-1')).toBeDefined()
+})
+
 // 7. The homing autorun must not drive itself. It writes to the layout, so if it
 // also read the layout it would loop — and a loop here is a hung tab, not a
 // wrong pixel.

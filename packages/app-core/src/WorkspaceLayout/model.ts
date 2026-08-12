@@ -1,5 +1,5 @@
 import { createElementId } from '@jbrowse/core/util/types/mst'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import {
   specForPendingMove,
@@ -8,6 +8,7 @@ import {
   viewIdsInSpec,
 } from './spec.ts'
 import {
+  activeTabIn,
   addTab,
   addViewToTab,
   findTab,
@@ -29,7 +30,13 @@ import {
 } from './tree.ts'
 
 import type { LayoutSpecNode, PendingMove, TileMode } from './spec.ts'
-import type { LayoutTree, PanelNode, TabNode } from './tree.ts'
+import type {
+  LayoutTree,
+  NodeKind,
+  PanelNode,
+  TabHome,
+  TabNode,
+} from './tree.ts'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -96,7 +103,7 @@ const LayoutNode = types.union(
  * snapshot still holds `panel-1`, `tab-1`, .... The first tab a returning user
  * opened would mint an id the tree already had.
  */
-function nextId(kind: 'panel' | 'tab') {
+function nextId(kind: NodeKind) {
   return `${kind}-${createElementId()}`
 }
 
@@ -117,10 +124,23 @@ export function WorkspaceLayoutMixin() {
       activePanelId: types.maybe(types.string),
     })
     .views(self => ({
+      /**
+       * The plain tree the pure functions take.
+       *
+       * `getSnapshot` rather than a JSON round trip: MST keeps the snapshot on
+       * a `keepAlive` computed, so this is cached and referentially stable
+       * instead of re-serialising the whole layout on every read — and an
+       * action here reads it several times. The stability also matters on the
+       * way back in: `apply` assigns a tree built by spreading this one, so an
+       * untouched subtree is the very object MST already holds and its
+       * reconcile short-circuits on identity rather than walking it.
+       *
+       * Safe because nothing mutates it. Every function in `tree.ts` is
+       * `tree in -> tree out` over spreads, which is the same property that
+       * lets them be tested exhaustively.
+       */
       get tree(): LayoutTree {
-        // the snapshot is the plain tree the pure functions take, and MST keeps
-        // it up to date, so there is no conversion step to forget
-        return JSON.parse(JSON.stringify(self.layout)) as LayoutTree
+        return getSnapshot(self.layout) as LayoutTree
       },
     }))
     .views(self => ({
@@ -129,6 +149,9 @@ export function WorkspaceLayoutMixin() {
       },
       get tabs(): TabNode[] {
         return tabs(self.tree)
+      },
+      hasPanel(panelId: string) {
+        return panels(self.tree).some(p => p.id === panelId)
       },
       findTab(tabId: string) {
         return findTab(self.tree, tabId)
@@ -139,17 +162,10 @@ export function WorkspaceLayoutMixin() {
       panelContainingView(viewId: string) {
         return panelContainingView(self.tree, viewId)
       },
-      /** The views a tab renders, in `session.views` order. */
-      viewIdsForTab(tabId: string, order: string[]) {
-        const members = new Set(findTab(self.tree, tabId)?.tab.viewIds ?? [])
-        return order.filter(id => members.has(id))
-      },
       /** The tab a panel is showing, or its first. */
       activeTabOf(panelId: string) {
         const panel = panels(self.tree).find(p => p.id === panelId)
-        return (
-          panel?.tabs.find(t => t.id === panel.activeTabId) ?? panel?.tabs[0]
-        )
+        return panel ? activeTabIn(panel) : undefined
       },
     }))
     .actions(self => {
@@ -168,27 +184,56 @@ export function WorkspaceLayoutMixin() {
         if (!activePanel) {
           return next
         }
-        let homeTabId =
-          activePanel.tabs.find(t => t.id === activePanel.activeTabId)?.id ??
-          activePanel.tabs[0]?.id
+        let homeTabId = activeTabIn(activePanel)?.id
         if (!homeTabId) {
           const tab: TabNode = { id: nextId('tab'), viewIds: [] }
           next = addTab(next, activePanel.id, tab)
           homeTabId = tab.id
         }
+        const owned = new Set(viewIds)
         for (const viewId of viewIds) {
           if (!tabContainingView(next, viewId)) {
             next = addViewToTab(next, homeTabId, viewId)
           }
         }
-        for (const tab of tabs(next)) {
-          for (const viewId of tab.viewIds) {
-            if (!viewIds.includes(viewId)) {
-              next = removeView(next, viewId)
-            }
-          }
+        // read the memberships once, then drop: `removeView` rebuilds the tree
+        // each call, so walking a list taken from a tree it has already
+        // replaced is what the old nested loop did by accident
+        const departed = tabs(next)
+          .flatMap(t => t.viewIds)
+          .filter(id => !owned.has(id))
+        for (const viewId of departed) {
+          next = removeView(next, viewId)
         }
         return next
+      }
+
+      /**
+       * The shape ViewMenu's two "give this view a home of its own" moves share.
+       *
+       * Home first: from the classic stack nothing has been assigned to a tab
+       * yet, and the old code forked here instead — the live dockview api when
+       * the workspace was up, an `init` when it was not. Then take the view out
+       * of wherever homing put it, let `place` put it back somewhere new, and
+       * prune the tab it left if that emptied it.
+       *
+       * Returns where the view came from, or `undefined` when it is not in the
+       * session at all — in which case nothing is applied, since `place` is
+       * what would have made the new home and it never runs.
+       */
+      function rehomeView(
+        viewId: string,
+        allViewIds: string[],
+        place: (tree: LayoutTree, from: TabHome) => LayoutTree,
+      ) {
+        const tree = home(self.tree, allViewIds)
+        const from = tabContainingView(tree, viewId)
+        if (!from) {
+          return undefined
+        }
+        const placed = place(removeView(tree, viewId), from)
+        apply(pruneEmptyTabIn(placed, from.panel.id, from.tab.id))
+        return from
       }
 
       return {
@@ -214,7 +259,7 @@ export function WorkspaceLayoutMixin() {
           // A split of a cell that is not there inserts nothing, so claiming
           // the id anyway would leave activePanelId naming a cell nobody draws
           // — and homing falls back on activePanelId.
-          if (!panels(self.tree).some(p => p.id === panel.id)) {
+          if (!self.hasPanel(panel.id)) {
             return undefined
           }
           self.activePanelId = panel.id
@@ -228,7 +273,7 @@ export function WorkspaceLayoutMixin() {
         },
         /** "New empty tab": a tab in an existing cell, showing the launcher. */
         addTab(panelId: string, viewIds: string[] = []) {
-          if (!panels(self.tree).some(p => p.id === panelId)) {
+          if (!self.hasPanel(panelId)) {
             return undefined
           }
           const tab: TabNode = { id: nextId('tab'), viewIds }
@@ -266,7 +311,7 @@ export function WorkspaceLayoutMixin() {
          */
         dropTabInPanel(tabId: string, targetPanelId: string, index?: number) {
           const source = findTab(self.tree, tabId)?.panel
-          if (!source || !panels(self.tree).some(p => p.id === targetPanelId)) {
+          if (!source || !self.hasPanel(targetPanelId)) {
             return
           }
           let next = moveTabToPanel(self.tree, tabId, targetPanelId, index)
@@ -287,7 +332,12 @@ export function WorkspaceLayoutMixin() {
           // Split first, move second — so a tab that is not there must be
           // rejected before the split, or the cell it would have filled is
           // left behind empty.
-          if (!source) {
+          //
+          // The target is checked for the reason `splitPanel` checks its own
+          // result: splitting a cell that is not there inserts nothing, and
+          // this would then set activePanelId to a cell nobody draws and
+          // report the id back as if the drop had landed.
+          if (!source || !self.hasPanel(targetPanelId)) {
             return undefined
           }
           const panel: PanelNode = {
@@ -341,43 +391,44 @@ export function WorkspaceLayoutMixin() {
             this.applyLayoutSpec(specForPendingMove(move, allViewIds))
           }
         },
-        /** ViewMenu's "move to new tab": the view leaves its tab for a new one. */
-        moveViewToNewTab(viewId: string, allViewIds: string[] = [viewId]) {
-          // From the classic stack nothing has been homed yet, so home first —
-          // the old code forked here instead, taking an api path when the
-          // workspace was already up and writing an `init` when it was not.
-          const tree = home(self.tree, allViewIds)
-          const homed = tabContainingView(tree, viewId)
-          if (!homed) {
-            return
-          }
-          const home_ = homed
-          let next = removeView(tree, viewId)
+        /**
+         * ViewMenu's "move to new tab": the view leaves its tab for a new one.
+         *
+         * `allViewIds` is EVERY view in the session, not just this one, and is
+         * required for that reason. Homing is two-directional about membership
+         * — it drops any view the list does not name — so defaulting it to
+         * `[viewId]` (which it did) unhomed every other view in the workspace,
+         * and the homing autorun then swept them all into one tab.
+         */
+        moveViewToNewTab(viewId: string, allViewIds: string[]) {
           const tab: TabNode = { id: nextId('tab'), viewIds: [viewId] }
-          next = addTab(next, home_.panel.id, tab)
-          next = pruneEmptyTabIn(next, home_.panel.id, home_.tab.id)
-          apply(next)
-          self.activePanelId = home_.panel.id
+          const from = rehomeView(viewId, allViewIds, (tree, at) =>
+            addTab(tree, at.panel.id, tab),
+          )
+          if (!from) {
+            return undefined
+          }
+          self.activePanelId = from.panel.id
           return tab.id
         },
-        /** ViewMenu's "move to split view": the view leaves for a new cell. */
-        moveViewToSplitRight(viewId: string, allViewIds: string[] = [viewId]) {
-          const tree = home(self.tree, allViewIds)
-          const homed = tabContainingView(tree, viewId)
-          if (!homed) {
-            return
-          }
-          const home_ = homed
-          let next = removeView(tree, viewId)
+        /**
+         * ViewMenu's "move to split view": the view leaves for a new cell.
+         * `allViewIds` is every view in the session — see `moveViewToNewTab`.
+         */
+        moveViewToSplitRight(viewId: string, allViewIds: string[]) {
+          const tabId = nextId('tab')
           const panel: PanelNode = {
             id: nextId('panel'),
             size: 1,
-            tabs: [{ id: nextId('tab'), viewIds: [viewId] }],
+            tabs: [{ id: tabId, viewIds: [viewId] }],
+            activeTabId: tabId,
           }
-          panel.activeTabId = panel.tabs[0]!.id
-          next = splitPanel(next, home_.panel.id, 'row', panel)
-          next = pruneEmptyTabIn(next, home_.panel.id, home_.tab.id)
-          apply(next)
+          const from = rehomeView(viewId, allViewIds, (tree, at) =>
+            splitPanel(tree, at.panel.id, 'row', panel),
+          )
+          if (!from) {
+            return undefined
+          }
           self.activePanelId = panel.id
           return panel.id
         },

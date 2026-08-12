@@ -1,6 +1,6 @@
 import { normalize } from './tree.ts'
 
-import type { LayoutTree, PanelNode, TabNode } from './tree.ts'
+import type { LayoutTree, NodeKind, PanelNode, TabNode } from './tree.ts'
 
 /**
  * The `layout` a session spec / URL param states, in the vocabulary users
@@ -71,7 +71,7 @@ function resolveSizes(children: LayoutSpecNode[]): number[] {
 
 export function treeFromSpec(
   spec: LayoutSpecNode,
-  nextId: (kind: 'panel' | 'tab') => string,
+  nextId: (kind: NodeKind) => string,
 ): LayoutTree {
   function build(node: LayoutSpecNode, size: number): LayoutTree | undefined {
     if (node.viewIds) {
@@ -108,7 +108,7 @@ export function treeFromSpec(
     return built.length === 0
       ? undefined
       : {
-          id: nextId('panel') /* replaced below when it stays a branch */,
+          id: nextId('branch'),
           size,
           direction: node.direction === 'vertical' ? 'column' : 'row',
           children: built,

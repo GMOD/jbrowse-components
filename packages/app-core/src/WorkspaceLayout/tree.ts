@@ -46,6 +46,9 @@ export interface BranchNode {
 
 export type LayoutTree = PanelNode | BranchNode
 
+/** What an id is being minted for. Ids are prefixed with it, so they read. */
+export type NodeKind = 'panel' | 'tab' | 'branch'
+
 export function isBranch(node: LayoutTree): node is BranchNode {
   return 'children' in node
 }
@@ -62,20 +65,46 @@ export function tabs(node: LayoutTree): TabNode[] {
   return panels(node).flatMap(p => p.tabs)
 }
 
+/**
+ * A tab together with the panel holding it. Both finders below answer this,
+ * because every caller needs the panel too — the tab alone cannot say where it
+ * is, and the tree carries no parent pointers to walk back up.
+ */
+export interface TabHome {
+  panel: PanelNode
+  tab: TabNode
+}
+
+function homeOf(
+  node: LayoutTree,
+  match: (tab: TabNode) => boolean,
+): TabHome | undefined {
+  for (const panel of panels(node)) {
+    const tab = panel.tabs.find(match)
+    if (tab) {
+      return { panel, tab }
+    }
+  }
+  return undefined
+}
+
 export function findTab(node: LayoutTree, tabId: string) {
-  const panel = panels(node).find(p => p.tabs.some(t => t.id === tabId))
-  return panel
-    ? { panel, tab: panel.tabs.find(t => t.id === tabId)! }
-    : undefined
+  return homeOf(node, t => t.id === tabId)
+}
+
+/**
+ * The tab a panel is showing: the one it names, or its first.
+ *
+ * `activeTabId` is a `maybe` and a panel with no tabs has nothing to show, so
+ * the fallback is the rule rather than a defensive check — and it is one rule,
+ * read by the model's `activeTabOf`, by homing, and by the strip that draws it.
+ */
+export function activeTabIn(panel: PanelNode): TabNode | undefined {
+  return panel.tabs.find(t => t.id === panel.activeTabId) ?? panel.tabs[0]
 }
 
 export function tabContainingView(node: LayoutTree, viewId: string) {
-  const panel = panels(node).find(p =>
-    p.tabs.some(t => t.viewIds.includes(viewId)),
-  )
-  return panel
-    ? { panel, tab: panel.tabs.find(t => t.viewIds.includes(viewId))! }
-    : undefined
+  return homeOf(node, t => t.viewIds.includes(viewId))
 }
 
 export function panelContainingView(node: LayoutTree, viewId: string) {
@@ -170,6 +199,8 @@ export function splitPanel(
   newPanel: PanelNode,
   before = false,
 ): LayoutTree {
+  // derived rather than minted: this function is pure, and the new panel's id
+  // is already unique in the tree, so a branch named after it is too
   const branchId = `branch-${newPanel.id}`
   const split = mapNode(root, panelId, found => {
     const pair = before ? [newPanel, found] : [found, newPanel]
@@ -188,7 +219,12 @@ export function removePanel(root: LayoutTree, panelId: string): LayoutTree {
   const removed = mapNode(root, panelId, () => undefined)
   // Removing the only panel leaves nothing to render, which is not a state the
   // workspace has: the caller gets an empty panel to put the next tab in.
-  return removed ? normalize(removed) : { ...(root as PanelNode), tabs: [] }
+  // `activeTabId` has to go with the tabs — it named one of them, and a panel
+  // pointing at a tab it no longer has is the dangling state every other
+  // operation here is careful not to leave (see integrity.test.ts).
+  return removed
+    ? normalize(removed)
+    : { ...(root as PanelNode), tabs: [], activeTabId: undefined }
 }
 
 /** Set the sizes of one branch's children, e.g. from a splitter drag. */
@@ -252,16 +288,16 @@ export function removeTab(root: LayoutTree, tabId: string): LayoutTree {
     return root
   }
   return mapPanel(root, home.panel.id, panel => {
+    const at = panel.tabs.findIndex(t => t.id === tabId)
     const remaining = panel.tabs.filter(t => t.id !== tabId)
     return {
       ...panel,
       tabs: remaining,
       activeTabId:
         panel.activeTabId === tabId
-          ? // fall to the neighbour on the left, as every tabbed UI does
-            (remaining[
-              Math.max(panel.tabs.findIndex(t => t.id === tabId) - 1, 0)
-            ]?.id ?? undefined)
+          ? // fall to the neighbour on the left, as every tabbed UI does —
+            // which for the leftmost tab is the one that slid into its place
+            remaining[Math.max(at - 1, 0)]?.id
           : panel.activeTabId,
     }
   })
@@ -301,7 +337,7 @@ export function moveTabToPanel(
     home.panel.id === targetPanelId
       ? home.panel.tabs.findIndex(t => t.id === tabId)
       : -1
-  const detached = mapPanel(removeTab(root, tabId), targetPanelId, panel => {
+  return mapPanel(removeTab(root, tabId), targetPanelId, panel => {
     // No index means append, and it has to keep meaning that within one panel.
     // The shift below is about reading a STATED index against the strip on
     // screen; a caller that states nothing is not describing a gap, so shifting
@@ -319,7 +355,6 @@ export function moveTabToPanel(
       activeTabId: tab.id,
     }
   })
-  return detached
 }
 
 export function setActiveTab(
@@ -411,8 +446,9 @@ export function pruneEmptyTabIn(
   tabId: string,
 ): LayoutTree {
   const found = findPanel(root, panelId)
-  const tab = found?.tabs.find(t => t.id === tabId)
-  return tab && tab.viewIds.length === 0 && found!.tabs.length > 1
-    ? removeTab(root, tabId)
-    : root
+  if (!found || found.tabs.length <= 1) {
+    return root
+  }
+  const tab = found.tabs.find(t => t.id === tabId)
+  return tab?.viewIds.length === 0 ? removeTab(root, tabId) : root
 }
