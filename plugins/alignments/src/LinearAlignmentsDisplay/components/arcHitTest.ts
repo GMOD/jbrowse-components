@@ -179,6 +179,11 @@ export function resolveArcBandDebug(
   arcs: ArcsUploadData | undefined,
   opts: ArcHitBandOptions,
 ): ArcDebugGeometry | undefined {
+  // `numArcs`, NOT `hasArcBandInk` — and the difference from `resolveArcBandHover`
+  // below is deliberate. This overlay answers "why is this arc THIS SHAPE", and a
+  // connector tick has no shape question: it is a vertical at a bp. A feed of
+  // ticks alone has nothing here to draw, so widening the gate would paint a band
+  // rect and an apex ceiling over a band with no shapes under either.
   if (!arcs || arcs.numArcs === 0 || opts.band.arcBandHeight === 0) {
     return undefined
   }

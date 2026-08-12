@@ -1,3 +1,4 @@
+import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './compute.ts'
 import { strokeArc } from './drawCanvas.ts'
@@ -266,6 +267,22 @@ describe('read-cloud flat lines', () => {
       { x1: 400, x2: 401, yBp: 40, shape: ARC_SHAPE_FLAT },
     ])
     expect(hitTestArcBand(401.6, flatY, tiny, BAND)?.index).toBe(0)
+  })
+
+  // The endpoint squares (arcMarker.slang) are the one mark in the band with no
+  // hit test of its OWN. That is fine, and only because of an arithmetic
+  // relationship no code states: a square reaches ARC_MARKER_PX/2 above and
+  // below the bar's centre line, and the bar answers out to its own half-width
+  // plus ARC_HIT_SLOP_PX — so the slop alone covers the square whatever the
+  // configured width. Pin it, because the failure is silent: growing the square
+  // past the slop leaves a rim of drawn, opaque, unhoverable pixels, which is
+  // the "layer with no hit test" trap in a form no layer list would catch.
+  test('the endpoint squares are covered by the bar that carries them', () => {
+    expect(ARC_MARKER_PX / 2).toBeLessThanOrEqual(ARC_HIT_SLOP_PX)
+    // And behaviourally, at the top corner of the square on the left endpoint.
+    expect(
+      hitTestArcBand(300, flatY - ARC_MARKER_PX / 2, data, BAND)?.index,
+    ).toBe(0)
   })
 })
 
