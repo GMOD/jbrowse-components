@@ -53,6 +53,11 @@ interface LevelState {
   // pass can place the row without re-picking one — see windowInsideFeat
   feat?: FeatPos
   display?: LinearSyntenyDisplayModel
+  // WHICH WAY THE LEVEL RAN when the three above were measured, so the frame
+  // pass can tell they no longer describe it. Moving the anchor row across a
+  // level flips `toMate`, and every one of them is direction-bound: `feat` was
+  // picked by overlap on the other axis, and `transform` maps the other way.
+  toMate?: boolean
   // latest-wins guard. A pan issues one resolve per settled position and the RPC
   // is not ordered, so a slow earlier one can land after a fast later one and
   // park the panel at a window the user has already left.
@@ -119,6 +124,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     state.featureId = step.feat.id
     state.feat = step.feat
     state.display = step.display
+    state.toMate = step.toMate
     // Cached even when the row is already in place: this is what the per-frame
     // pass steers by, so it has to be refreshed on every resolve rather than
     // only on the ones that move something.
@@ -170,6 +176,17 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // switches it back on. One write, since `followSynteny` is the only
           // thing this pass reads while off.
           self.setFollowUnaligned(false)
+          // AND NEITHER DOES THE CACHE. Everything in it describes a window the
+          // anchor was on when the mode was last running, and the frame pass
+          // wakes the moment the flag flips back — so without this, switching
+          // the mode off, panning somewhere else and switching it back on threw
+          // the followed row at wherever the old transform said, for the ~500ms
+          // until the first resolve landed and corrected it.
+          levelStates.clear()
+          // same argument for the error memo: a failure the user has now been
+          // shown, fixed and re-triggered deliberately should be reported again
+          // rather than swallowed for the life of the view.
+          lastErrorMessage = undefined
           return
         }
         // Every observable read happens in this synchronous pass, so the
@@ -276,9 +293,20 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // a measurable slice of a frame. Nothing is placed until the first
           // settle populates this, which is a few hundred ms after the mode is
           // switched on.
+          //
+          // TWO THINGS THE CACHE HAS TO BE CHECKED AGAINST, both of them cases
+          // where it survives something that invalidated it. Its direction,
+          // because moving the anchor across this level flips `toMate` and the
+          // cached block was picked on the other axis. And the display's
+          // liveness, because `display` is a raw reference the exact pass wrote
+          // and hiding that synteny track destroys the node — reading
+          // `featureData` off it then throws, from inside an autorun, in the
+          // window between the destroy and the next resolve landing.
           const state = levelStates.get(level.level)
-          const feat = state?.feat
-          const data = state?.display?.featureData
+          const feat = state?.toMate === toMate ? state.feat : undefined
+          const display = state?.display
+          const data =
+            display && isAlive(display) ? display.featureData : undefined
           if (!state || !feat || !data) {
             continue
           }
