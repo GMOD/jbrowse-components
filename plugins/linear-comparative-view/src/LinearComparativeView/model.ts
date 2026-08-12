@@ -10,6 +10,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
 import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
+import { followDirection } from '../SyntenyFollow/followDirection.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 
@@ -196,6 +197,44 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get allSyntenyDisplays() {
         return self.levels.flatMap(l => l.linearSyntenyDisplays)
+      },
+
+      /**
+       * #getter
+       * Each synteny level resolved into the pair of rows a follow would move
+       * it between: which row stays, which row moves, which axis the anchor
+       * window is read off, and the assembly naming the level's lane of an
+       * all-vs-all track. Levels whose rows are not both initialized are
+       * dropped, since there is nothing to place yet.
+       *
+       * A getter rather than a loop in each caller because the follow reads it
+       * from TWO autoruns — the exact one and the per-frame one — which had
+       * each resolved the direction, looked the two rows up and repeated the
+       * initialized guard. Those are the same question, and the answer changes
+       * only when the rows or the anchor do.
+       */
+      get followPairs() {
+        return self.levels.flatMap(level => {
+          const { stayingIndex, movingIndex, toMate } = followDirection(
+            level.level,
+            self.followAnchorIndex,
+          )
+          const stayingView = self.views[stayingIndex]
+          const movingView = self.views[movingIndex]
+          return stayingView?.initialized && movingView?.initialized
+            ? [
+                {
+                  level,
+                  stayingView,
+                  movingView,
+                  toMate,
+                  // the level's LOWER row is the one on the alignments' mate
+                  // axis whichever direction the level runs in
+                  mateAssembly: self.views[level.level + 1]?.assemblyNames[0],
+                },
+              ]
+            : []
+        })
       },
 
       /**

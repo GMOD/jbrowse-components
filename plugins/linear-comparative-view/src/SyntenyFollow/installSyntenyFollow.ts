@@ -2,56 +2,33 @@ import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { getFeatureAtIndex } from '../LinearSyntenyDisplay/model.ts'
-import { resolveMatchingSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { followAnchorWindow } from './followAnchorWindow.ts'
-import { followDirection } from './followDirection.ts'
-import { followEnvelope } from './followEnvelope.ts'
-import { interpolateFollowSpan } from './interpolateFollowSpan.ts'
-import { pickFollowFeature } from './pickFollowFeature.ts'
+import { applyFollowTransform, followTransform } from './followTransform.ts'
+import { planFollowStep } from './planFollowStep.ts'
+import { positionViewOnSpan } from './positionViewOnSpan.ts'
+import { resolveFollowSpan } from './resolveFollowSpan.ts'
 
-import type {
-  FeatPos,
-  LinearSyntenyDisplayModel,
-} from '../LinearSyntenyDisplay/model.ts'
+import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
+import type { FollowTransform } from './followTransform.ts'
+import type { FollowStep } from './planFollowStep.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface FollowLevel {
-  level: number
-  linearSyntenyDisplays: LinearSyntenyDisplayModel[]
+/** One synteny level resolved into the rows a follow moves it between. */
+export interface FollowPair {
+  level: { linearSyntenyDisplays: LinearSyntenyDisplayModel[]; level: number }
+  stayingView: LinearGenomeViewModel
+  movingView: LinearGenomeViewModel
+  toMate: boolean
+  mateAssembly?: string
 }
 
 export interface SyntenyFollowHost extends IStateTreeNode {
   followSynteny: boolean
-  followAnchorIndex: number
-  views: LinearGenomeViewModel[]
-  levels: FollowLevel[]
+  followPairs: FollowPair[]
   setFollowUnaligned: (arg: boolean) => void
-}
-
-// One level's resolved intent for this pass, everything observable already read.
-interface FollowStep {
-  level: number
-  display: LinearSyntenyDisplayModel
-  movingView: LinearGenomeViewModel
-  feat: FeatPos
-  window: FollowWindow
-  // where the moving row is sitting right now, so the "is it already there"
-  // test needs nothing observable once this pass is over. See alreadyShowing.
-  movingWindow: FollowWindow | undefined
-  toMate: boolean
-  // whether the alignment carries a CIGAR to walk, decided from the same fetch
-  // the feature came out of
-  hasCigar: boolean
-  // The union of everything under the window, used when the window is NOT
-  // inside `feat` — see the choice in `execute`. Computed in the tracked pass
-  // beside the rest, since it reads the same fetched data.
-  envelope: ResolvedSpan | undefined
-  // whether the anchor window lies wholly inside `feat`
-  windowInsideFeat: boolean
 }
 
 /**
@@ -61,7 +38,8 @@ interface FollowStep {
  * this on every pass; an observable would make it a dependency of the very run
  * that writes it, and the follow would re-enter itself forever. It is also not
  * state a session should persist — `featureId` is only comparable within one
- * fetch of one LOD tier.
+ * fetch of one LOD tier, and `transform` describes the window it was measured
+ * over.
  */
 interface LevelState {
   // the alignment this level followed last, for pickFollowFeature's hysteresis
@@ -70,6 +48,9 @@ interface LevelState {
   // is not ordered, so a slow earlier one can land after a fast later one and
   // park the panel at a window the user has already left.
   seq: number
+  // the last exact answer as a local mapping, which is what the per-frame pass
+  // steers by between resolves. See followTransform.
+  transform?: FollowTransform
 }
 
 // How far the moving panel may already be from the span a follow resolved to
@@ -112,32 +93,32 @@ export function alreadyShowing(
 }
 
 /**
- * Keep the non-anchor genome rows on the region that aligns to the anchor row,
- * re-resolved whenever the anchor settles.
+ * Keep the non-anchor genome rows on the region that aligns to the anchor row.
  *
  * This is the continuous form of the band context menu's "Move bottom panel to
  * the matching region", and it resolves the same way: the anchor's visible
- * WINDOW mapped through one alignment, as a span rather than a midpoint, so the
- * moved panel matches the anchor's scale and the ribbons between them stay
+ * WINDOW mapped through the alignments, as a span rather than a midpoint, so the
+ * moved row matches the anchor's scale and the ribbons between them stay
  * near-vertical. What differs is that nobody clicks a band — the alignment is
- * picked by overlap with the anchor window (`pickFollowFeature`), and a
- * CIGAR-less block is interpolated across rather than refused
- * (`interpolateFollowSpan` says why those two answer it differently).
+ * picked by overlap with the anchor window (`planFollowStep`), and a CIGAR-less
+ * block is interpolated across rather than refused (`interpolateFollowSpan` says
+ * why those two answer it differently).
  *
- * FOLLOWS THE DEBOUNCED WINDOW (`coarseDynamicBlocks`, ~500ms behind the
- * pointer) rather than the live one. The click path reads `dynamicBlocks`
- * because it answers a click that already happened; this one answers a drag in
- * progress, and resolving per pointer-move would issue an RPC per frame to park
- * a panel the user is still moving away from. Settling first is also what makes
- * the moved panel read as a consequence of the pan rather than a competitor to
- * it.
+ * TWO PASSES, and the split is the whole design.
  *
- * READS WHAT IS DRAWN, NOT WHAT IS CURRENT. The features scanned are the ones
- * the display holds, which after a large jump can briefly be the previous
- * window's — the same ones still painted on screen. Following those is honest
- * (the answer matches the picture), the fetch window carries a pan buffer so the
- * common case is not stale at all, and the autorun re-runs when the fetch lands
- * and corrects itself.
+ * The EXACT pass runs on the debounced window (`coarseDynamicBlocks`, ~500ms
+ * behind the pointer), because it costs an RPC and resolving per pointer-move
+ * would issue one per frame to park a row the user is still moving away from.
+ * It also reads what is DRAWN rather than what is current: the features scanned
+ * are the ones the display holds, which after a large jump can briefly be the
+ * previous window's — the same ones still painted on screen. Following those is
+ * honest, the fetch window carries a pan buffer so the common case is not stale,
+ * and the pass re-runs when the fetch lands and corrects itself.
+ *
+ * The PER-FRAME pass then fills in the motion between those, steering by the
+ * cached transform alone. Without it the followed row does not lag — it sits
+ * perfectly still through a drag and jumps once, half a second late, which is
+ * what "jumpy" means here. See followTransform.
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = new Map<number, LevelState>()
@@ -152,48 +133,30 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     return state
   }
 
-  async function execute(step: FollowStep) {
-    const {
-      level,
-      display,
-      movingView,
-      movingWindow,
-      feat,
-      window,
-      toMate,
-      hasCigar,
-    } = step
-    const state = stateFor(level)
+  async function execute(
+    pair: FollowPair,
+    step: FollowStep,
+    movingWindow: FollowWindow | undefined,
+  ) {
+    const { movingView } = pair
+    const state = stateFor(pair.level.level)
     const seq = ++state.seq
-    // ONE ALIGNMENT ONLY WHEN THE WINDOW IS INSIDE ONE. Both single-block
-    // resolvers clamp the window to the block before mapping it, which is right
-    // — a block says nothing about sequence outside itself — and which makes
-    // the single-block answer useless once the window is wider than the block:
-    // the followed row lands on the block's own width however far the anchor is
-    // zoomed out. So the exact walk serves the case it is exact for, and the
-    // envelope (the union of everything under the window) serves the rest.
-    //
-    // The test is the containment itself rather than a coverage threshold, so
-    // there is no number to tune and the two agree at the boundary: a window
-    // that just fits inside a block resolves the same either way, and one that
-    // just escapes it picks up the neighbouring blocks it now overlaps.
-    const span = step.windowInsideFeat
-      ? // The CIGAR walk where there is one to walk, interpolation where there
-        // is not. `hasCigar` is per-FETCH, not per-feature — true when any block
-        // in the response carried one — so a file that mixes them (a chain set
-        // with a few CIGAR-less rows, a PAF concatenated from two runs) reaches
-        // the walk and gets nothing back. Falling through rather than giving up
-        // keeps those blocks followable, on the same terms as a wholly
-        // CIGAR-less tier.
-        ((hasCigar
-          ? await resolveMatchingSpan({ model: display, feat, window, toMate })
-          : undefined) ?? interpolateFollowSpan({ feat, window, toMate }))
-      : (step.envelope ?? interpolateFollowSpan({ feat, window, toMate }))
+    const span = await resolveFollowSpan(step)
     // superseded while the resolve was in flight, or the view went away
     if (seq !== state.seq || !isAlive(self) || !isAlive(movingView)) {
       return
     }
-    state.featureId = feat.id
+    state.featureId = step.feat.id
+    // Cached even when the row is already in place: this is what the per-frame
+    // pass steers by, so it has to be refreshed on every resolve rather than
+    // only on the ones that move something.
+    state.transform = followTransform(
+      step.window,
+      span,
+      // an inverted correspondence runs the other way, and the resolved span is
+      // always min..max, so the direction cannot be read back off it
+      step.windowInsideFeat && step.feat.strand === -1,
+    )
     if (alreadyShowing(movingWindow, span)) {
       return
     }
@@ -208,6 +171,19 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     )
   }
 
+  function reportError(e: unknown) {
+    // ONCE PER DISTINCT MESSAGE. A follow that cannot resolve usually cannot
+    // resolve repeatedly — an assembly whose refName the moving row does not
+    // have keeps failing the same way on every pan — and a snackbar per settle
+    // would bury the app in identical notifications for a background action
+    // nobody asked to run.
+    const message = `${e}`
+    if (message !== lastErrorMessage) {
+      lastErrorMessage = message
+      getSession(self).notifyError(message, e)
+    }
+  }
+
   addDisposer(
     self,
     autorun(
@@ -216,25 +192,17 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           return
         }
         // Every observable read happens in this synchronous pass, so the
-        // dependency set is complete before anything awaits. `execute` below is
-        // async and its reads would not be tracked.
-        const steps: FollowStep[] = []
+        // dependency set is complete before anything awaits. `execute` is async
+        // and its reads would not be tracked.
+        const work: [FollowPair, FollowStep, FollowWindow | undefined][] = []
         // Levels that HAVE alignments loaded and still found none over the
         // anchor window — the state the header reports, see setFollowUnaligned.
         // Loading is deliberately not counted: a level whose fetch has not
         // landed has no answer yet rather than no answer, and flagging it would
         // blink a warning on every pan.
         let unaligned = false
-        for (const { level, linearSyntenyDisplays } of self.levels) {
-          const { stayingIndex, movingIndex, toMate } = followDirection(
-            level,
-            self.followAnchorIndex,
-          )
-          const stayingView = self.views[stayingIndex]
-          const movingView = self.views[movingIndex]
-          if (!stayingView?.initialized || !movingView?.initialized) {
-            continue
-          }
+        for (const pair of self.followPairs) {
+          const { level, stayingView, movingView, toMate, mateAssembly } = pair
           const window = followAnchorWindow(stayingView.coarseDynamicBlocks)
           if (!window) {
             continue
@@ -244,95 +212,81 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // DEPENDENCY, which is deliberate and is what re-asserts the follow
           // over a row the user nudged by hand. The debounced blocks, not the
           // live ones, for the same reason the anchor uses them: tracking the
-          // live position would wake the follow on every frame of a drag and
-          // fight the user for the row. It converges — the nav below settles,
-          // wakes this once more, and `alreadyShowing` then says there is
-          // nothing to do.
+          // live position would wake this pass on every frame of a drag. It
+          // converges — the nav settles, wakes this once more, and
+          // `alreadyShowing` then says there is nothing to do.
           const movingWindow = followAnchorWindow(
             movingView.coarseDynamicBlocks,
           )
-          // The level's LOWER row, which is the one on the alignments' mate
-          // axis whichever direction this level runs in — so it names the lane
-          // of an all-vs-all track that this level is about.
-          const mateAssembly = self.views[level + 1]?.assemblyNames[0]
-          // A level can carry more than one synteny track. Each is asked for its
-          // best alignment over the window and the widest wins, so a sparse
-          // track does not outvote the one that actually covers the locus.
-          let best: FollowStep | undefined
-          let bestOverlap = 0
-          for (const display of linearSyntenyDisplays) {
-            const data = display.featureData
-            if (!data) {
-              continue
-            }
-            const candidate = pickFollowFeature({
-              data,
-              window,
-              toMate,
-              mateAssembly,
-              incumbentId: stateFor(level).featureId,
-            })
-            if (candidate && (!best || candidate.overlap > bestOverlap)) {
-              bestOverlap = candidate.overlap
-              const feat = getFeatureAtIndex(data, candidate.index)
-              const [aStart, aEnd] = toMate
-                ? [feat.start, feat.end]
-                : [feat.mate.start, feat.mate.end]
-              best = {
-                level,
-                display,
-                movingView,
-                movingWindow,
-                feat,
-                window,
-                toMate,
-                hasCigar: data.hasCigar,
-                windowInsideFeat: aStart <= window.start && aEnd >= window.end,
-                envelope: followEnvelope({
-                  data,
-                  window,
-                  toMate,
-                  mateAssembly,
-                }),
-              }
-            }
-          }
-          // No alignment over the anchor window — a haplotype-specific
-          // insertion, a centromere, a panel parked off the end of the file.
-          // The moving panel HOLDS POSITION rather than being sent somewhere
-          // invented, and picks the follow back up when the anchor pans into
-          // aligned sequence again. Reported rather than only silent: a row
-          // that stops tracking with nothing said is the same picture as a
-          // broken follow.
-          if (best) {
-            steps.push(best)
-          } else if (linearSyntenyDisplays.some(d => d.featureData)) {
+          const step = planFollowStep({
+            displays: level.linearSyntenyDisplays,
+            window,
+            toMate,
+            mateAssembly,
+            incumbentId: stateFor(level.level).featureId,
+          })
+          if (step) {
+            work.push([pair, step, movingWindow])
+          } else if (level.linearSyntenyDisplays.some(d => d.featureData)) {
+            // No alignment over the anchor window. The moving row HOLDS
+            // POSITION rather than being sent somewhere invented, and picks the
+            // follow back up when the anchor pans into aligned sequence again —
+            // reported rather than only silent, since a row that stops tracking
+            // with nothing said is the same picture as a broken follow.
             unaligned = true
           }
         }
         // Written, never read here — reading it would make the autorun a
         // dependency of its own write. The header is the only consumer.
         self.setFollowUnaligned(unaligned)
-        // `execute` reads no observables — everything it needs is in the step —
-        // so it does not matter that an async function runs synchronously up to
-        // its first await, and the CIGAR-less path (which awaits nothing before
-        // navigating) needs no special handling.
-        for (const step of steps) {
-          execute(step).catch((e: unknown) => {
-            // ONCE PER DISTINCT MESSAGE. A follow that cannot resolve usually
-            // cannot resolve repeatedly — an assembly whose refName the moving
-            // row does not have keeps failing the same way on every pan — and a
-            // snackbar per settle would bury the app in identical notifications
-            // for a background action nobody asked to run.
-            const message = `${e}`
-            if (message !== lastErrorMessage) {
-              lastErrorMessage = message
-              getSession(self).notifyError(message, e)
-            }
-          })
+        for (const [pair, step, movingWindow] of work) {
+          execute(pair, step, movingWindow).catch(reportError)
         }
       },
       { name: 'SyntenyFollow' },
+    ),
+  )
+
+  // The per-frame half, and the reason the follow moves rather than teleports.
+  //
+  // It steers by the cached transform alone — no fetch, no RPC, no scan of the
+  // loaded blocks, just the anchor's LIVE window through an affine map and one
+  // synchronous placement. That is what makes it affordable at pointer rate,
+  // and what makes it safe to track the undebounced blocks the exact pass
+  // deliberately does not.
+  //
+  // READS THE ANCHOR ROW AND NOTHING ELSE. `positionViewOnSpan` writes the
+  // followed row's zoom and offset, so tracking anything on that row here would
+  // be a dependency on this pass's own write.
+  addDisposer(
+    self,
+    autorun(
+      function syntenyFollowFrameAutorun() {
+        if (!self.followSynteny) {
+          return
+        }
+        for (const { level, stayingView, movingView } of self.followPairs) {
+          // READ THE ANCHOR WINDOW BEFORE TESTING THE TRANSFORM, even though the
+          // transform is what decides whether it gets used. The transform lives
+          // in plain JS, so it notifies nothing: bailing out above this line on
+          // the first pass — when no resolve has happened yet and there is
+          // none — left the autorun with no dependency on the anchor at all,
+          // and it then never ran again. It read as the per-frame pass simply
+          // not working, which is what it was.
+          const window = followAnchorWindow(
+            stayingView.dynamicBlocks.contentBlocks,
+          )
+          const transform = levelStates.get(level.level)?.transform
+          const span =
+            window && transform
+              ? applyFollowTransform(transform, window)
+              : undefined
+          if (span) {
+            positionViewOnSpan(movingView, span)
+          }
+        }
+      },
+      { name: 'SyntenyFollowFrame' },
     ),
   )
 }

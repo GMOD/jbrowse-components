@@ -138,6 +138,37 @@ test('a window wider than any one alignment does not zoom the followed row in', 
   }, timeout)
 })
 
+// The complaint this answers is about MOTION, not accuracy. The exact resolve
+// costs an RPC and reads the debounced window, so on its own the followed row
+// sits perfectly still through a drag and then jumps ~500ms after it ends — it
+// never moves WITH the anchor, only after it, which reads as jumpy however
+// correct each jump is. A cached local transform lets the per-frame pass place
+// the row between resolves.
+test('the followed row moves during a pan, not only after it settles', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+
+  // one settled resolve, which is what caches the transform
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+
+  // now pan in small steps with NO waiting between them. Nothing debounced can
+  // have run, so any movement here is the per-frame pass.
+  const positions: number[] = [target!.offsetPx]
+  for (let i = 0; i < 5; i++) {
+    query!.horizontalScroll(40)
+    positions.push(target!.offsetPx)
+  }
+
+  // strictly increasing: it tracked every step rather than moving once
+  for (let i = 1; i < positions.length; i++) {
+    expect(positions[i]!).toBeGreaterThan(positions[i - 1]!)
+  }
+})
+
 test('a followed row dragged away by hand is put back', async () => {
   // The guard against redundant navigation compares against where the row
   // ACTUALLY is, not against what the follow last asked for. Remembering only
