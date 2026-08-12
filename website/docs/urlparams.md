@@ -46,8 +46,6 @@ Two more are documented with the feature they belong to: `&password=` with
 
 ### ?config=
 
-Example
-
 `?config=test_data/volvox/config.json`
 
 A path to a JBrowse 2 config file, relative to the current folder on disk. This
@@ -66,16 +64,12 @@ explicit `?config=` still wins over it.
 
 ### &assembly=
 
-Example
-
 `&assembly=hg19`
 
 `&assembly=` refers to the `name` field of an entry in the `assemblies` array of
 config.json.
 
 ### &loc=
-
-Example
 
 `&loc=chr1:6000-7000`
 
@@ -114,13 +108,11 @@ whole-genome view restricted to particular chromosomes instead, use
 [`&regions=`](#regions).
 
 By default `&loc=` (and `&assembly=`) start a fresh session, ignoring the
-config's `defaultSession`. Add `&extendSession=true` to navigate _within_ the
-`defaultSession` instead (keeping its tracks and settings), see
-[Navigating within the default session](#navigating-within-the-default-session).
+config's `defaultSession`;
+[`&extendSession=true`](#navigating-within-the-default-session) navigates that
+session instead of replacing it.
 
 ### &regions=
-
-Example
 
 `&assembly=hg38&regions=chr1,chr2,chr3`
 
@@ -134,8 +126,6 @@ requires `&assembly=`. This is the simple-URL form of the session-spec
 
 ### &highlight=
 
-Example
-
 `&highlight=chr1:6000-7000`
 
 Creates a highlight over the specified region when combined with
@@ -146,7 +136,7 @@ space (URL-encoded as `%20`):
 
 `&highlight=chr1:6000-7000%20chr1:7100-7200`
 
-Note: always pass `&assembly=` alongside `&highlight=`. Highlights are stored by
+Always pass `&assembly=` alongside `&highlight=`. Highlights are stored by
 assembly name so downstream features (e.g. bookmarking from the chip menu) can
 resolve them. Without one, a highlight still renders when its refName matches a
 displayed region, but it is not portable across assemblies and may break actions
@@ -181,15 +171,11 @@ objects can be mixed in one `&highlight=` value.
 
 ### &tracklist=
 
-Example
-
 `&tracklist=true`
 
 Opens the track selector on load. Default: false.
 
 ### &nav=
-
-Example
 
 `&nav=false`
 
@@ -197,20 +183,16 @@ Turns off the navigation bar of the linear genome view. Default true.
 
 ### &tracks=
 
-Example
-
 `&tracks=gene_track,vcf_track`
 
-This is a comma-separated list of trackIds. You can find your trackIds in the
-config.json. You can also refer to a trackId added by `&sessionTracks=` here.
+A comma-separated list of trackIds, which the config.json defines. A trackId
+added by `&sessionTracks=` can be named here too.
 
 ### &sessionTracks=
 
 `&sessionTracks=` dynamically adds a track to the session. It can also add a
-`FromConfigAdapter` track, specifying features inline as JSON, so you can e.g.
-add BLAST hits from the URL bar.
-
-Example
+`FromConfigAdapter` track, specifying features inline as JSON — BLAST hits from
+the URL bar, say.
 
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]
@@ -247,8 +229,6 @@ The value is an array of track configs. Pretty-printed, the one above is:
 
 ### &sessionName=
 
-Example
-
 `&sessionName=My%20Custom%20Session`
 
 Sets the session name displayed in the header bar. It works with all session
@@ -263,8 +243,6 @@ auto-generated one with a timestamp. URL-encode the value if it contains spaces
 or special characters.
 
 ### &hubURL=
-
-Example
 
 `&hubURL=https://example.com/hub.txt&config=none`
 
@@ -291,8 +269,6 @@ hub with a config and loading several at once.
 
 ### &renderer=
 
-Example
-
 `&renderer=webgl`
 
 Pins the backend tracks are drawn with, rather than detecting one. `webgpu`,
@@ -313,21 +289,18 @@ JBrowse Desktop takes the same choice as a `--renderer` command-line flag, see
 
 ### Navigating within the default session
 
-The simple params above build a fresh session and ignore the config's
-`defaultSession`. To instead navigate a curated `defaultSession` while keeping
-its tracks and settings, add `&extendSession=true` alongside `&loc=`:
+`&extendSession=true` alongside `&loc=` navigates a curated `defaultSession`
+while keeping its tracks and settings, rather than replacing it:
 
 ```
 ?loc=chr1:100000-200000&extendSession=true
 ```
 
-With `&extendSession=true`, `&loc=` (and `&tracks=`, `&highlight=`, `&nav=`,
-`&tracklist=`) are applied to the **first linear genome view** of the config's
-`defaultSession` instead of replacing it. The assembly comes from that view, so
-`&assembly=` isn't needed.
-
-`&sessionTracks=` (dynamically-added track configs) is not layered onto the
-default session. Use a full [session spec](#session-spec) for that.
+`&loc=`, `&tracks=`, `&highlight=`, `&nav=` and `&tracklist=` are then applied
+to the **first linear genome view** of that `defaultSession`. The assembly comes
+from that view, so `&assembly=` isn't needed. `&sessionTracks=` is not layered
+on; a full [session spec](#session-spec) is the way to add a track config to a
+curated session.
 
 ## Which parameter decides the launch
 
@@ -404,11 +377,10 @@ view header (and on its workspace tab, see
 another view in the same spec can point at it (e.g. an MsaView's
 `connectedViewId`).
 
-When `loc` is omitted, `displayedRegionNames` restricts the whole-genome
-overview to a subset of the assembly's chromosomes, in the order given (handy
-for dropping unplaced/alt contigs, or reordering). Names resolve through the
-assembly's aliases, and it is ignored when `loc` is set. This opens volvox
-showing only its two contigs, order reversed:
+`displayedRegionNames` is the spec form of [`&regions=`](#regions), with the
+same meaning: when `loc` is omitted it restricts the whole-genome overview to
+these chromosomes, in this order. Volvox showing only its two contigs, order
+reversed:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -532,8 +504,8 @@ it starts (a single-file hub's `defaultPos`), which is what `&hubURL=` on its
 own does. As soon as the spec has views of its own, that is taken as the launch
 instruction and the connection doesn't open a competing one.
 
-You can also use `&sessionName=` with session specs to set a custom session
-name:
+[`&sessionName=`](#sessionname) sets a spec's session name, the same as for any
+other launch type:
 
 ```
 &session=spec-{...}&sessionName=My%20Analysis
@@ -660,8 +632,9 @@ visually separated.
 #### Live example: alignments display settings
 
 `displaySnapshot` is not limited to overriding the display `type`. It can set
-any of the display's own settings. This opens an alignments track colored by
-pair orientation, with soft-clipped bases shown and an enlarged height:
+any of the display's own settings — anything the display's own menu offers. An
+alignments track colored by pair orientation, with soft-clipped bases shown and
+an enlarged height:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -685,13 +658,10 @@ pair orientation, with soft-clipped bases shown and an enlarged height:
 }
 ```
 
-#### Live example: linked-read bezier connections
-
-`showBezierConnections` draws a curved connector between the mates of each
-aberrant pair and across split-read junctions, so structural-variant signal
-stands out over the pileup. Each curve is the same horizontal-tangent shape a
-breakpoint split view draws. Coloring by pair orientation makes the abnormal
-orientations easy to pick out:
+Swapping `showSoftClipping` for `showBezierConnections` draws a curved connector
+between the mates of each aberrant pair and across split-read junctions, so
+structural-variant signal stands out over the pileup. Each curve is the same
+horizontal-tangent shape a breakpoint split view draws:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -717,10 +687,9 @@ orientations easy to pick out:
 
 #### Live example: feature track color
 
-Setting a track's color is one of the most common things people want to do. For
-a feature track (genes, BED, GFF), put `color` in the `displaySnapshot`. It
-accepts a plain CSS color, or a `jexl:` expression to color per-feature. This
-opens the genes track colored green:
+For a feature track (genes, BED, GFF), `color` in the `displaySnapshot` takes a
+plain CSS color, or a `jexl:` expression to color per-feature. The genes track
+in green:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -1140,13 +1109,17 @@ spec fields are documented by each plugin, not here:
 
 ### Tiled views / Workspaces
 
-You can use the `layout` parameter in a session spec to arrange multiple views
-into a tiled workspace layout. The `layout` parameter uses a nested structure
-where each node is either:
+A spec's `layout` arranges its views into a tiled workspace, and turns
+workspaces mode on by doing so. It is a tree whose every node is one of two
+things:
 
-- A panel (has `views` array) displays views stacked vertically
-- A container (has `children` array) arranges children horizontally, vertically,
-  or as tabs
+- a **panel**, carrying a `views` array of indices into the spec's own `views`,
+  displayed stacked vertically
+- a **container**, carrying a `children` array, whose `direction` arranges them
+  `"horizontal"` (left-right), `"vertical"` (top-bottom) or `"tabs"` (one tab
+  group, one child visible at a time)
+
+Containers nest arbitrarily deep.
 
 #### Horizontal split example
 
@@ -1179,15 +1152,11 @@ where each node is either:
 }
 ```
 
-This creates a left-right split:
-
-- Left panel contains views 0 and 1 stacked vertically
-- Right panel contains view 2
+Views 0 and 1 stack in the left panel, view 2 sits alone on the right.
 
 #### Custom panel sizes
 
-You can specify the `size` property to control the proportional width/height of
-panels:
+A panel's `size` gives its proportion of the split:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -1221,7 +1190,7 @@ panels:
 }
 ```
 
-This creates a 70/30 split with the left panel taking 70% of the width.
+A 70/30 split, the left panel taking 70% of the width.
 
 `size` applies to the **top-level split only**, and only when every one of its
 panels carries one. Sizes on a nested container, or a top-level split where one
@@ -1302,7 +1271,7 @@ and a set of tabs to page through on the right:
 
 #### Complex nested layout example
 
-You can create more complex layouts by nesting containers:
+Containers nested inside containers:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -1354,22 +1323,8 @@ You can create more complex layouts by nesting containers:
 }
 ```
 
-This creates:
-
-- Left panel with views 0 and 1 stacked
-- Right side split vertically into two panels (view 2 on top, view 3 on bottom)
-
-The `layout` parameter:
-
-- Automatically enables workspaces mode
-- `direction` can be `"horizontal"` (left-right), `"vertical"` (top-bottom), or
-  `"tabs"` (one tab group, one panel visible at a time)
-- `views` is an array of view indices (referencing the `views` array)
-- `size` is an optional number giving a panel's proportion of the top-level
-  split; it is honoured only there, and only when every panel of that split
-  carries one (see [Custom panel sizes](#custom-panel-sizes))
-- Views within the same panel are stacked vertically
-- Layouts can be nested arbitrarily deep
+Views 0 and 1 stack in the left panel; the right side splits vertically, view 2
+above view 3.
 
 ## Other session options
 
@@ -1383,8 +1338,6 @@ the session), a JSON session is a literal snapshot, the same shape produced by
 The Share button's gear icon offers this as "Plaintext JSON": the longest of the
 three formats, and the one to pick when you want to read what the session
 actually contains.
-
-Example
 
 ```
 &session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"name":"MsaView","url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
@@ -1402,7 +1355,7 @@ session format that carries a snapshot — `json-`, `encoded-`, `share-` and
 `local-`. A plugin loaded this way belongs to that session rather than being
 installed for the user, and travels with it through the Share button.
 
-Four things to know before writing one by hand:
+Four things govern one written by hand:
 
 - **`name` is required for a UMD bundle** — the `.umd.production.min.js` builds
   the plugin store publishes. The loader resolves the bundle as the global
