@@ -48,6 +48,20 @@ LGVSyntenyDisplay pushes PAF blocks through it — hence `strand` over
 Chain numbering is **per worker call**, so anything unioning chains across calls
 keys by chain **name**, not chainIdx.
 
+## A fixture builds on `testPileupData`, never `as unknown as`
+
+`PileupDataResult` has 103 required fields, so no test sets them all and the
+cast looked free. It is not: it turns off excess-property checking, so a
+misspelled field name is accepted in silence, and it lets a fixture omit a field
+production code later starts reading — which is how `readInterchrom` broke two
+suites at once. `basePileupDataResult(n)` supplies the required set and nothing
+else; `makePileupDataResult(overrides)` sizes it from whichever per-read array
+you pass.
+
+The optional fields are left out **on purpose** — they are what `isChainData`
+narrows on and what the `?. ?? default` readers fall back from, so a base that
+filled them would move tests to the other branch without saying so.
+
 ## The placement axis is segmented per refName — in BOTH layouts
 
 RefNames share a coordinate space but occupy disjoint screen space, so one axis
