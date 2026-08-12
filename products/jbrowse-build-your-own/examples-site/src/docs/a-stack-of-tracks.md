@@ -10,9 +10,10 @@ paints over the track below.
 
 ## The palette
 
-Feature and alignments displays colour their own content from a palette: plain
-colour strings through `PaletteProvider`, no UI toolkit. A wiggle track needs
-none.
+Displays colour their own content from a palette: plain colour strings through
+`PaletteProvider`, no UI toolkit. **Every display needs it, including a wiggle
+track** — its y-axis is React, not canvas, and with no provider `usePalette()`
+falls back to JBrowse's light default whatever your page is.
 
 **Mounting `PaletteProvider` alone is the trap it exists to close.** The palette
 is what _React_ draws with. The config `theme` slot also ships to the worker,

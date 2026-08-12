@@ -1,5 +1,9 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useSyncExternalStore } from 'react'
 
+import {
+  PaletteProvider,
+  useSessionPalette,
+} from '@jbrowse/core/ui/PaletteContext'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
@@ -19,6 +23,12 @@ import { observer } from 'mobx-react'
 // until the press has travelled far enough to be a drag -- capture it on the
 // press and every click lands on your container, so a display's
 // click-to-select-a-feature stops selecting.
+//
+// The palette at the bottom is the one part of this that looks optional on a
+// page with no feature labels on it, and is not. This track draws its own
+// y-axis in React, from `usePalette()` -- and with no provider that hook falls
+// back to JBrowse's *light* default whatever the page around it is, so the axis
+// comes out light-themed on a dark host while the canvas beside it is right.
 //
 // Self-contained, like every page here: nothing is imported from elsewhere in
 // this site, so this file runs on its own. The One track example repeats the
@@ -72,10 +82,10 @@ function makeView(scrollZoom: boolean) {
   // already spoken for. A private copy that disagrees gets you both at once,
   // the pileup scrolling its reads while the view zooms under the cursor.
   view.setScrollZoom(scrollZoom)
-  return view
+  return { view, session: state.session }
 }
 
-type BrowserView = ReturnType<typeof makeView>
+type BrowserView = ReturnType<typeof makeView>['view']
 
 // `view.ready` is false in TWO states, not one: while the assembly loads, and
 // when it failed to load. Returning `null` for both -- the gate that looks
@@ -176,6 +186,60 @@ function ZoomHint({ show }: { show: boolean }) {
   )
 }
 
+// A display paints no background of its own -- its labels are drawn straight
+// onto whatever is behind them, so light-theme text on a dark page is near-black
+// on near-black. This is the page's own answer to "which mode am I in".
+function readSiteMode(): 'light' | 'dark' {
+  const chosen = document.documentElement.dataset.theme
+  if (chosen === 'light' || chosen === 'dark') {
+    return chosen
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
+}
+
+// The two places that answer can change from. The site's toggle writes an
+// attribute on <html> and the OS preference arrives as a media query, and
+// either can move without the other, so both are watched.
+function watchSiteMode(onChange: () => void) {
+  const observer = new MutationObserver(onChange)
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  })
+  const media = window.matchMedia('(prefers-color-scheme: dark)')
+  media.addEventListener('change', onChange)
+  return () => {
+    observer.disconnect()
+    media.removeEventListener('change', onChange)
+  }
+}
+
+/**
+ * Follow whatever the page around this demo is themed as. All of this is the
+ * *host's* half, and yours will look nothing like it -- swap it for however
+ * your app already knows it is in dark mode.
+ *
+ * `useSyncExternalStore`, not `useState` + `useEffect`: the mode lives outside
+ * React, so this reads it *during* render rather than publishing one value and
+ * correcting it a paint later. The third argument is the server snapshot, for
+ * a reader pasting this into a framework that prerenders.
+ *
+ * JBrowse's half is one call, `useSessionPalette` below. It writes the config
+ * slot that *both* halves of the rendering derive from -- the palette React
+ * draws with, and the theme shipped to the worker that bakes feature labels
+ * into the image -- and hands back the palette. Mounting `PaletteProvider`
+ * alone would leave those baked labels in the old mode.
+ */
+function useSiteMode() {
+  return useSyncExternalStore(
+    watchSiteMode,
+    readSiteMode,
+    () => 'light' as const,
+  )
+}
+
 /**
  * The box `usePanZoom`'s handlers go on, and every page here spreads the same
  * four properties onto it.
@@ -204,49 +268,53 @@ const PanAndZoom = observer(function PanAndZoom({
   // See `makeView`.
   scrollZoom?: boolean
 }) {
-  const [view] = useState(() => makeView(scrollZoom))
+  const [{ view, session }] = useState(() => makeView(scrollZoom))
   const ref = useWidthSetter(view)
   const { containerProps, showZoomHint } = usePanZoom(ref, view)
+  const palette = useSessionPalette(session, useSiteMode())
 
   return (
-    <div>
-      <label
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          fontSize: '0.85rem',
-          paddingBottom: 8,
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={view.scrollZoom}
-          onChange={event => {
-            view.setScrollZoom(event.target.checked)
+    <PaletteProvider palette={palette}>
+      <div>
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: '0.85rem',
+            paddingBottom: 8,
           }}
-        />
-        Wheel zooms directly — off, the page scrolls and ctrl + wheel zooms
-      </label>
-      <div
-        ref={ref}
-        {...containerProps}
-        style={{
-          ...viewport,
-          // hold the track's configured height from the first paint, so nothing
-          // below it moves when the assembly finishes loading and it appears
-          minHeight: wiggleTrack.displayDefaults.height,
-        }}
-      >
-        <ZoomHint show={showZoomHint} />
-        {view.ready ? (
-          <TrackRow view={view} trackId="volvox_microarray" />
-        ) : (
-          <ViewStatus view={view} />
-        )}
+        >
+          <input
+            type="checkbox"
+            checked={view.scrollZoom}
+            onChange={event => {
+              view.setScrollZoom(event.target.checked)
+            }}
+          />
+          Wheel zooms directly — off, the page scrolls and ctrl + wheel zooms
+        </label>
+        <div
+          ref={ref}
+          {...containerProps}
+          style={{
+            ...viewport,
+            // hold the track's configured height from the first paint, so
+            // nothing below it moves when the assembly finishes loading and it
+            // appears
+            minHeight: wiggleTrack.displayDefaults.height,
+          }}
+        >
+          <ZoomHint show={showZoomHint} />
+          {view.ready ? (
+            <TrackRow view={view} trackId="volvox_microarray" />
+          ) : (
+            <ViewStatus view={view} />
+          )}
+        </div>
+        <Position view={view} />
       </div>
-      <Position view={view} />
-    </div>
+    </PaletteProvider>
   )
 })
 

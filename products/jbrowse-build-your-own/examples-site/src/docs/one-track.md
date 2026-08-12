@@ -1,6 +1,6 @@
 `createViewState` gives you the engine: it resolves the assembly, picks an
 adapter per file, fetches and parses in the background, and holds `bpPerPx`,
-`offsetPx` and `displayedRegions`. It draws nothing. Two things turn it into a
+`offsetPx` and `displayedRegions`. It draws nothing. Three things turn it into a
 picture:
 
 1. Tell it how wide it is. Everything downstream derives from pixel width.
@@ -9,6 +9,9 @@ picture:
 2. Mount a display once `view.ready`. Every track carries an `activeDisplay`
    exposing a `RenderingComponent`. Give it a box with a height and a
    positioning context.
+3. Tell it which colours to draw with. `useSessionPalette(session, mode)` +
+   `PaletteProvider` is the pair; skip it and the parts a display draws in React
+   — here, the y-axis — stay on JBrowse's light default on a dark page.
 
 **`view.ready`, not `view.initialized`.** `initialized` covers only the first of
 two async steps, loading the assembly's regions. Navigating then populates
