@@ -80,3 +80,31 @@ test('an appended level matches a hand-resized stack', async () => {
   view.appendRow({ assembly: 'volvox0' })
   expect(heights(view)).toEqual([210, 210])
 })
+
+// The dialog's custom-upload path adds the track conf and appends the row in
+// one tick, so the level has to resolve a trackId the session gained a moment
+// earlier — and the new level is materialized by the same action that shows the
+// track on it.
+test('a track added in the same tick shows on the level it was added for', async () => {
+  const { session, view } = await openStack(2)
+  session.addTrackConf({
+    type: 'SyntenyTrack',
+    trackId: 'uploaded',
+    name: 'uploaded',
+    assemblyNames: ['volvox1', 'volvox0'],
+    adapter: {
+      type: 'PAFAdapter',
+      pafLocation: { uri: 'volvox.paf', locationType: 'UriLocation' },
+      queryAssembly: 'volvox1',
+      targetAssembly: 'volvox0',
+    },
+  })
+
+  view.appendRow({ assembly: 'volvox0', syntenyTrackId: 'uploaded' })
+
+  expect(view.levels.length).toBe(2)
+  // on the new level, not the one that was already there (openStack configures
+  // its datasets but shows none, so level 0 starts and stays empty)
+  expect(view.levels[1]!.tracks.length).toBe(1)
+  expect(view.levels[0]!.tracks.length).toBe(0)
+})
