@@ -905,8 +905,22 @@ export default function stateModelFactory(
        * Reorder the rows by the value each carries at (refName, pos) — the
        * feature covering that position on each row. Reads the already-loaded
        * region data (no refetch/RPC) and writes the new order via `layout`.
+       *
+       * Declines with fewer than two rows to order, because the empty result is
+       * not a harmless no-op: `setLayout` clears the cluster tree whenever the
+       * row set changes, so writing it discards both the saved arrangement and
+       * the dendrogram a clustering run produced. The rows are DISCOVERED from
+       * `rpcDataMap` (see `sourcesWithoutLayout`), which empties whenever the
+       * display is panned off its data or blanked by the density gate — so
+       * "sorting" a track that is merely not loaded right now used to wipe it.
+       * `sortRowsBy`, the declarative twin, meets the same condition by waiting
+       * for the region instead (see setupRowSortAutorun); a click has nothing to
+       * wait for, so it declines.
        */
       sortRowsByValueAt(refName: string, pos: number) {
+        if (self.editableSources.length < 2) {
+          return
+        }
         const regions = [...self.rpcDataMap.entries()].map(([index, data]) => ({
           ...data,
           refName: self.loadedRegions.get(index)?.refName ?? '',
@@ -1167,6 +1181,12 @@ export default function stateModelFactory(
           {
             label: 'Sort rows by color here',
             icon: SwapVertIcon,
+            // Says so rather than declining silently, and matches the threshold
+            // "Cluster rows by similarity" states in the track menu. The rows
+            // are discovered from loaded data, so this is the ordinary state of
+            // a track panned off its features — not a defensive branch.
+            disabled: self.editableSources.length < 2,
+            disabledHelpText: 'Needs at least two rows to sort',
             onClick: () => {
               self.sortRowsByValueAt(info.refName, info.pos)
             },
