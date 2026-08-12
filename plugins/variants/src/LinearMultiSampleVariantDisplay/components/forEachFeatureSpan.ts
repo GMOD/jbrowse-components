@@ -20,7 +20,10 @@ export interface FeatureSpan {
   width: number
   /** True when the insertion marker is wider than the reference span under it. */
   drawsMarker: boolean
-  /** Center of the *reference* span — where a marker is centered. */
+  /**
+   * Center of the *reference* span — where a marker is centered. Straight from
+   * `variantCellSpanPx`, which is what centers the marker's own `left` on it.
+   */
   center: number
 }
 
@@ -80,7 +83,7 @@ export function forEachFeatureSpan(
   for (let f = 0; f < numFeatures; f++) {
     const x1 = toX(region.featurePositions[f * 2]!)
     const x2 = toX(region.featurePositions[f * 2 + 1]!)
-    const { left, width, drawsMarker } = variantCellSpanPx({
+    const { left, width, drawsMarker, center } = variantCellSpanPx({
       x1,
       x2,
       canvasWidth,
@@ -92,7 +95,7 @@ export function forEachFeatureSpan(
     span.left = left
     span.width = width
     span.drawsMarker = drawsMarker
-    span.center = (x1 + x2) / 2
+    span.center = center
     cb(f, span)
   }
   return pxPerBp

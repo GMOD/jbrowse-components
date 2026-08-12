@@ -58,17 +58,25 @@ export function variantCellSpanPx({
   // measured at 0.48px on a genome-wide window, where the snap fires on every
   // record and every mark is at the 2px floor — a quarter of the mark's width.
   const { x: left, width } = snapVariantCellX(x1, x2, canvasWidth)
+  // The *reference* span's centre, unsnapped, and returned either way — see the
+  // note above on why a marker is not snapped, and `FeatureSpan.center` for why
+  // it is the caller's business. It has to come out of here rather than be
+  // re-derived beside a call: `markersForBlock` centres the drawn marker on it
+  // while the hover box and the click target take their `left` from the branch
+  // below, so two spellings of `(x1 + x2) / 2` are two chances for the glyph and
+  // its hit target to be centred on different points.
+  const center = (x1 + x2) / 2
   const markerWidth =
     insertionsWiden && insertedBp > 0
       ? insertionBarWidth(insertedBp, pxPerBp, drawnRowHeight)
       : 0
   if (markerWidth > width) {
-    const center = (x1 + x2) / 2
     return {
       left: center - markerWidth / 2,
       width: markerWidth,
       drawsMarker: true,
+      center,
     }
   }
-  return { left, width, drawsMarker: false }
+  return { left, width, drawsMarker: false, center }
 }

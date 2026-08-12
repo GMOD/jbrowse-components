@@ -28,7 +28,7 @@ describe('variantCellSpanPx without an insertion', () => {
         pxPerBp: 1,
         drawnRowHeight: TALL_ROW,
       }),
-    ).toEqual({ left: 100, width: 40, drawsMarker: false })
+    ).toEqual({ left: 100, width: 40, drawsMarker: false, center: 120 })
   })
 
   test('a sub-pixel span takes the 2px floor the shader and Canvas2D use', () => {
@@ -42,7 +42,7 @@ describe('variantCellSpanPx without an insertion', () => {
         pxPerBp: 0.2,
         drawnRowHeight: TALL_ROW,
       }),
-    ).toEqual({ left: 100, width: 2, drawsMarker: false })
+    ).toEqual({ left: 100, width: 2, drawsMarker: false, center: 100.1 })
   })
 
   // The 2px floor grows away from the record's START, which on a reversed block
@@ -79,7 +79,7 @@ describe('variantCellSpanPx without an insertion', () => {
         pxPerBp: 1,
         drawnRowHeight: TALL_ROW,
       }),
-    ).toEqual({ left: 100, width: 40, drawsMarker: false })
+    ).toEqual({ left: 100, width: 40, drawsMarker: false, center: 120 })
   })
 })
 
@@ -103,6 +103,7 @@ describe('variantCellSpanPx with an insertion', () => {
       left: 100.1 - markerWidth / 2,
       width: markerWidth,
       drawsMarker: true,
+      center: 100.1,
     })
   })
 
@@ -142,7 +143,30 @@ describe('variantCellSpanPx with an insertion', () => {
         pxPerBp: 10,
         drawnRowHeight: TALL_ROW,
       }),
-    ).toEqual({ left: 100, width: 200, drawsMarker: false })
+    ).toEqual({ left: 100, width: 200, drawsMarker: false, center: 200 })
+  })
+
+  // `markersForBlock` hands `center` to `drawInsertionMarker`, which centers the
+  // bar on it, while the hover box and the click target take `left`/`width`. The
+  // two numbers therefore have to describe one rect — which they do by
+  // construction only because both now come out of this function.
+  test('the marker the overlay draws is the rect the hit test uses', () => {
+    // 50bp is the narrow bar form, the rest the count-label box — both are
+    // centered marks, and the box is the one wide enough for a mis-centred hit
+    // target to be clickable off the glyph.
+    for (const insertedBp of [50, 100, 500, 5000, 65481]) {
+      const { left, width, drawsMarker, center } = variantCellSpanPx({
+        canvasWidth: CANVAS,
+        x1: 100,
+        x2: 100.2,
+        insertedBp,
+        insertionsWiden: true,
+        pxPerBp: 0.2,
+        drawnRowHeight: TALL_ROW,
+      })
+      expect(drawsMarker).toBe(true)
+      expect(left + width / 2).toBeCloseTo(center, 10)
+    }
   })
 
   test('a short row falls back to the unlabelled bar, not the wide box', () => {
@@ -178,7 +202,7 @@ describe('variantCellSpanPx with insertion widening switched off', () => {
         pxPerBp: 0.2,
         drawnRowHeight: TALL_ROW,
       }),
-    ).toEqual({ left: 100, width: 2, drawsMarker: false })
+    ).toEqual({ left: 100, width: 2, drawsMarker: false, center: 100.1 })
   })
 
   test('a record that inserts nothing is unaffected either way', () => {
