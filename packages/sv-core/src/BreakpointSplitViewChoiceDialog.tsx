@@ -91,8 +91,15 @@ const BreakpointSplitViewChoiceDialog = observer(
     const canFollowChain = findJunctionsNear !== undefined && isSplitLevel
 
     const handleLaunch = () => {
-      const tracks =
-        copyTracks && view ? (getSnapshot(view.tracks) as Track[]) : []
+      // `undefined`, not `[]`, when there is no view to copy from: the two are
+      // different answers to "what tracks should this view have", and only the
+      // second one is the reader's. A relaunch rebuilds for the reader's answer
+      // and re-navigates for the absent one — see `openOrReuseSplitView`.
+      const tracks = view
+        ? copyTracks
+          ? (getSnapshot(view.tracks) as Track[])
+          : []
+        : undefined
       const windowSizeNum = Number(windowSize) || 0
       const suffixedId = (suffix: string) =>
         stableViewId === undefined ? undefined : `${stableViewId}_${suffix}`

@@ -14,4 +14,8 @@ export interface Track {
 export interface BreakpointSplitView {
   views: LinearGenomeViewModel[]
   setDisplayName(name: string): void
+  /** folds in every panel's assemblies — see `whenViewSettled` */
+  initialized: boolean
+  /** resolved through the panels, so a failed assembly reports here */
+  error: unknown
 }

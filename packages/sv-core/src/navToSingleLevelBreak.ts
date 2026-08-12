@@ -1,14 +1,15 @@
 import { gatherOverlaps, getSession, stripTrackIds } from '@jbrowse/core/util'
 import { bpToOffset, compareBpOffsets } from '@jbrowse/core/util/Base1DUtils'
-import { when } from 'mobx'
+import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
+import { openOrReuseSplitView } from './openSplitView.ts'
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
   makeTitle,
 } from './util.ts'
 
-import type { BreakpointSplitView, Track } from './types.ts'
+import type { Track } from './types.ts'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -181,6 +182,11 @@ export async function navToSingleLevelBreak({
   assemblyName: string
   windowSize?: number
   session: AbstractSessionModel
+  /**
+   * The panel's tracks. `undefined` — a launcher with no source view to copy
+   * from — lets a relaunch re-navigate the view it already opened rather than
+   * rebuild it; see `openOrReuseSplitView`.
+   */
   tracks?: Track[]
   focusOnBreakends?: boolean
 }) {
@@ -197,26 +203,25 @@ export async function navToSingleLevelBreak({
         session,
       }))
   const { refName, pos: startPos, mateRefName, matePos: endPos } = coverage
-  let view = session.views.find(f => f.id === stableViewId) as
-    | BreakpointSplitView
-    | undefined
-  if (!view) {
-    view = session.addView('BreakpointSplitView', {
+  const { view, reused } = openOrReuseSplitView({
+    session,
+    stableViewId,
+    tracks,
+    snapshot: {
       ...snap,
-      id: stableViewId,
-      views: [
-        {
-          ...snap.views[0],
-          tracks: tracks ? stripTrackIds(tracks) : [],
-        },
-      ],
-    }) as unknown as BreakpointSplitView
-  } else {
+      views: [{ ...snap.views[0], tracks: stripTrackIds(tracks ?? []) }],
+    },
+  })
+  if (reused) {
     view.views[0]?.setDisplayedRegions(snap.views[0]!.displayedRegions)
     view.setDisplayName(snap.displayName)
   }
+  if (!(await whenViewSettled(view))) {
+    throw new Error(`Cannot open breakpoint split view: ${view.error}`, {
+      cause: view.error,
+    })
+  }
   const lgv = view.views[0]!
-  await when(() => lgv.initialized)
 
   if (focusOnBreakends === true) {
     // zoom to show the breakpoints with windowSize padding, centered between

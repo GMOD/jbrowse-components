@@ -1,6 +1,7 @@
 import { stripTrackIds } from '@jbrowse/core/util'
-import { when } from 'mobx'
+import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
+import { openOrReuseSplitView } from './openSplitView.ts'
 import {
   breakpointBpPerPx,
   getBreakendAssemblyRegions,
@@ -8,7 +9,7 @@ import {
   splitRegionAtPosition,
 } from './util.ts'
 
-import type { BreakpointSplitView, Track } from './types.ts'
+import type { Track } from './types.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
 export async function navToMultiLevelBreak({
@@ -17,7 +18,7 @@ export async function navToMultiLevelBreak({
   assemblyName,
   session,
   mirror,
-  tracks: viewTracks = [],
+  tracks: viewTracks,
   windowSize = 0,
   stops,
 }: {
@@ -27,6 +28,11 @@ export async function navToMultiLevelBreak({
   windowSize?: number
   session: AbstractSessionModel
   mirror?: boolean
+  /**
+   * The tracks every panel is built from. `undefined` — a launcher with no
+   * source view to copy from — lets a relaunch re-navigate the view it already
+   * opened rather than rebuild it; see `openOrReuseSplitView`.
+   */
   tracks?: Track[]
   /**
    * The loci to open, one panel each, in the order the chain crosses them. Omit
@@ -67,18 +73,16 @@ export async function navToMultiLevelBreak({
     return { ...stop, region }
   })
 
-  const found = session.views.find(f => f.id === stableViewId)
-  let view = found as BreakpointSplitView | undefined
-  // A view reused across launches was built for the panel count of whichever
-  // record opened it first, so a chain of a different length has to rebuild it
-  // rather than nav a panel that isn't there (or leave a stale one behind).
-  if (found && view && view.views.length !== panels.length) {
-    session.removeView(found)
-    view = undefined
-  }
-  if (!view) {
-    view = session.addView('BreakpointSplitView', {
-      id: stableViewId,
+  const tracks = viewTracks ?? []
+  const { view, reused } = openOrReuseSplitView({
+    session,
+    stableViewId,
+    tracks: viewTracks,
+    // A view reused across launches was built for the panel count of whichever
+    // record opened it first, so a chain of a different length has to rebuild
+    // it rather than nav a panel that isn't there (or leave a stale one behind).
+    stillFits: v => v.views.length === panels.length,
+    snapshot: {
       type: 'BreakpointSplitView',
       displayName: makeTitle(feature),
       views: panels.map((_panel, idx) => ({
@@ -90,13 +94,12 @@ export async function navToMultiLevelBreak({
         // read against both of its neighbours, and reversing it once is what
         // puts its reads next to the panel they connect to on each side.
         tracks: stripTrackIds(
-          mirror === true && idx % 2 === 1
-            ? [...viewTracks].reverse()
-            : viewTracks,
+          mirror === true && idx % 2 === 1 ? [...tracks].reverse() : tracks,
         ),
       })),
-    }) as unknown as BreakpointSplitView
-  } else {
+    },
+  })
+  if (reused) {
     view.setDisplayName(makeTitle(feature))
   }
   await Promise.all(
@@ -106,7 +109,11 @@ export async function navToMultiLevelBreak({
       ),
     ),
   )
-  await when(() => view.views.every(v => v.initialized))
+  if (!(await whenViewSettled(view))) {
+    throw new Error(`Cannot open breakpoint split view: ${view.error}`, {
+      cause: view.error,
+    })
+  }
 
   const bpPerPx = breakpointBpPerPx(windowSize, view.views[0]!.width)
   for (const [idx, panel] of panels.entries()) {

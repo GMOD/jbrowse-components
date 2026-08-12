@@ -22,13 +22,19 @@ width. Falls back to a zoomed-in default when no window is requested.
 
 ### breakpointSplitViewId
 
-Stable id for the breakpoint split view spawned from a row of a spreadsheet,
-shared by every entry point (the sheet's row menu, and the SV inspector's chord
-clicks) so they reuse one view instead of stacking a new one each.
+Stable id for the breakpoint split view a given launcher spawns, so repeated
+launches from the same place reuse one view instead of stacking a new one each
+time. `ownerId` is whatever the launcher is: a spreadsheet view (shared by the
+sheet's row menu and the SV inspector's chord clicks, which then land in the
+same view), or a variant feature widget.
+
+Spelling it out inline is the same string until it isn't — the dialog appends
+its own shape suffix to whatever it is handed, so a launcher that respells the
+prefix quietly gets a second view rather than a broken one.
 
 ```js
 // type signature
-(spreadsheetViewId: string, assemblyName: string) => string
+(ownerId: string, assemblyName: string) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
