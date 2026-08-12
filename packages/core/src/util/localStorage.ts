@@ -102,6 +102,77 @@ export function localStorageRemoveItem(key: string) {
   }
 }
 
+// Watchers of a key, and the one `storage` listener they share.
+//
+// Two different events reach them, which is why this is not simply a `storage`
+// listener at each call site. Another TAB writing the key raises `storage` —
+// but never in the tab that wrote it, so a write from THIS tab reaches nobody
+// and has to be announced by hand. Missing that half is what let two components
+// on one key show different values until one of them remounted.
+//
+// Announcing is deliberately not folded into localStorageSetItem. The
+// grid-bookmark widget persists its list from an autorun over the list, so a
+// write that called its own subscriber back would re-enter that autorun and
+// write again, forever. A writer says when its write is news.
+const listeners = new Map<string, Set<() => void>>()
+
+// Installed on the first subscription rather than at module scope, so importing
+// this file from a worker or a test never touches `window`.
+let storageListenerInstalled = false
+
+function installStorageListener() {
+  if (storageListenerInstalled || typeof window === 'undefined') {
+    return
+  }
+  storageListenerInstalled = true
+  window.addEventListener('storage', e => {
+    // sessionStorage raises the same event on the same window, and jbrowse-web
+    // mirrors whole sessions into it
+    if (e.storageArea !== window.localStorage) {
+      return
+    }
+    if (e.key === null) {
+      // a clear(): a factory reset, a test's teardown. Every key at once
+      for (const k of [...listeners.keys()]) {
+        notifyLocalStorageKey(k)
+      }
+    } else if (listeners.has(e.key)) {
+      notifyLocalStorageKey(e.key)
+    }
+  })
+}
+
+/**
+ * Call `fn` whenever `key` changes — in another tab, or here via
+ * {@link notifyLocalStorageKey}. Returns the unsubscribe.
+ *
+ * `fn` takes no argument on purpose: it is told that the key changed, and reads
+ * the store itself. A payload would be a second copy of the value, and a
+ * `clear()` has none to hand over.
+ */
+export function subscribeToLocalStorageKey(key: string, fn: () => void) {
+  installStorageListener()
+  let set = listeners.get(key)
+  if (!set) {
+    set = new Set()
+    listeners.set(key, set)
+  }
+  set.add(fn)
+  return () => {
+    set.delete(fn)
+    if (!set.size) {
+      listeners.delete(key)
+    }
+  }
+}
+
+/** Announce a write made in this tab, which `storage` never reports back. */
+export function notifyLocalStorageKey(key: string) {
+  for (const fn of listeners.get(key) ?? []) {
+    fn()
+  }
+}
+
 export function localStorageGetNumber(key: string, defaultVal: number) {
   const stored = localStorageGetItem(key)
   // rejected before the coercion rather than after it: `+''` is 0, so an entry

@@ -40,26 +40,31 @@ function readSafeModeReason(): SafeModeReason | undefined {
 }
 
 function readSuspects(): string[] {
-  let suspects: string[] = []
+  const raw = localStorageGetItem(LOADING_MARKER)
+  if (!raw) {
+    return []
+  }
   try {
-    const parsed: unknown = JSON.parse(
-      localStorageGetItem(LOADING_MARKER) || '',
-    )
-    if (Array.isArray(parsed)) {
-      suspects = parsed.filter(s => typeof s === 'string')
-    }
+    const parsed: unknown = JSON.parse(raw)
+    return Array.isArray(parsed)
+      ? parsed.filter(s => typeof s === 'string')
+      : []
   } catch {
     // "1" from a build before the marker carried names, or anything else that
     // is not the list we wrote. It still means "a launch did not finish", which
     // readSafeModeReason has already taken from it; there is just nobody to name.
+    return []
   }
-  return suspects
 }
 
 // Read once, at module load: the marker is cleared during a successful boot, so
 // asking later would answer a different question than the one callers mean.
+// Nothing is accused under `?safeMode`, where the user asked for this and no
+// launch failed — so the marker is only parsed when it is what turned safe mode
+// on.
 const safeModeReason = readSafeModeReason()
-const safeModeSuspects = readSuspects()
+const safeModeSuspects =
+  safeModeReason === 'previousLaunchFailed' ? readSuspects() : []
 
 /**
  * Why global plugins are being skipped this launch, or undefined when they are
@@ -76,7 +81,7 @@ export function globalPluginSafeMode() {
  * nothing to accuse.
  */
 export function globalPluginSafeModeSuspects() {
-  return safeModeReason === 'previousLaunchFailed' ? safeModeSuspects : []
+  return safeModeSuspects
 }
 
 /**

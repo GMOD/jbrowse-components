@@ -5,6 +5,8 @@ import {
   localStorageGetNumber,
   localStorageRemoveItem,
   localStorageSetItem,
+  notifyLocalStorageKey,
+  subscribeToLocalStorageKey,
 } from './localStorage.ts'
 
 beforeEach(() => {
@@ -103,6 +105,43 @@ describe('localStorageGetBoolean', () => {
     expect(localStorageGetBoolean('b', true)).toBe(true)
     localStorageSetItem('b', '0')
     expect(localStorageGetBoolean('b', true)).toBe(true)
+  })
+})
+
+describe('subscribeToLocalStorageKey', () => {
+  function raise(init: StorageEventInit) {
+    window.dispatchEvent(new StorageEvent('storage', init))
+  }
+
+  test('hears this tab (announced) and other tabs (storage)', () => {
+    const fn = jest.fn()
+    const off = subscribeToLocalStorageKey('s', fn)
+    notifyLocalStorageKey('s')
+    raise({ key: 's', storageArea: localStorage })
+    expect(fn).toHaveBeenCalledTimes(2)
+    off()
+    notifyLocalStorageKey('s')
+    raise({ key: 's', storageArea: localStorage })
+    expect(fn).toHaveBeenCalledTimes(2)
+  })
+
+  test('a clear() elsewhere is every key at once', () => {
+    const fn = jest.fn()
+    const off = subscribeToLocalStorageKey('s', fn)
+    raise({ key: null, storageArea: localStorage })
+    expect(fn).toHaveBeenCalledTimes(1)
+    off()
+  })
+
+  // sessionStorage raises `storage` on the same window, and jbrowse-web mirrors
+  // whole sessions into it — so a same-named key there must not be mistaken for
+  // ours
+  test('a sessionStorage event on the same key is not ours', () => {
+    const fn = jest.fn()
+    const off = subscribeToLocalStorageKey('s', fn)
+    raise({ key: 's', storageArea: sessionStorage })
+    expect(fn).not.toHaveBeenCalled()
+    off()
   })
 })
 

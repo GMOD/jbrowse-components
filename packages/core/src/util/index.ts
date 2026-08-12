@@ -219,6 +219,8 @@ export {
   localStorageSetItem,
   localStorageSetJSON,
   localStorageSetNumber,
+  notifyLocalStorageKey,
+  subscribeToLocalStorageKey,
 } from './localStorage.ts'
 export { renameRegionIfNeeded, renameRegionsIfNeeded } from './renameRegions.ts'
 export { addAndShowTrack } from './addAndShowTrack.ts'

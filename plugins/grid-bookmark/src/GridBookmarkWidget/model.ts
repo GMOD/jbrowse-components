@@ -2,6 +2,7 @@ import {
   getSession,
   localStorageGetJSON,
   localStorageSetItem,
+  subscribeToLocalStorageKey,
 } from '@jbrowse/core/util'
 import { revealHighlightsOnGrowth } from '@jbrowse/core/util/highlights'
 import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
@@ -232,20 +233,27 @@ export default function f(_pluginManager: PluginManager) {
     .actions(self => ({
       afterAttach() {
         const key = localStorageKeyF()
-        function handler(e: StorageEvent) {
-          if (e.key === key) {
+        // Another tab edited the bookmarks. Through the shared subscription
+        // rather than a `storage` listener of our own, which had drifted from
+        // the rules that live with it: it answered sessionStorage events on a
+        // same-named key (jbrowse-web mirrors whole sessions there), and it
+        // ignored a clear(), which arrives as `key === null` and so left the
+        // list showing bookmarks that no longer exist.
+        //
+        // The autorun below writes the same key and deliberately does NOT
+        // announce it — this handler would answer its own write, replace the
+        // list with an equal one, and re-enter the autorun forever.
+        addDisposer(
+          self,
+          subscribeToLocalStorageKey(key, () => {
             self.setBookmarkedRegions(
               localStorageGetJSON<SnapshotIn<typeof LabeledRegionModel>[]>(
                 key,
                 [],
               ),
             )
-          }
-        }
-        window.addEventListener('storage', handler)
-        addDisposer(self, () => {
-          window.removeEventListener('storage', handler)
-        })
+          }),
+        )
         addDisposer(
           self,
           autorun(

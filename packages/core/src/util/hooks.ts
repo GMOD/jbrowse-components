@@ -10,6 +10,8 @@ import {
   localStorageGetJSON,
   localStorageRemoveItem,
   localStorageSetItem,
+  notifyLocalStorageKey,
+  subscribeToLocalStorageKey,
 } from './localStorage.ts'
 
 import type { RefObject } from 'react'
@@ -93,60 +95,6 @@ export function useWidthSetter(view: {
   return ref
 }
 
-// The mounted hooks watching each key. Deliberately NOT a value cache beside
-// it: localStorage is itself the shared value, and a second copy of it only
-// creates a way for the two to disagree — a `localStorage.clear()` (a factory
-// reset, a test's teardown) would leave every mounted hook showing what it had
-// before, and the cache has no way to hear about it.
-const listeners = new Map<string, Set<() => void>>()
-
-function notify(key: string) {
-  for (const fn of listeners.get(key) ?? []) {
-    fn()
-  }
-}
-
-// Installed once, on the first subscription rather than at module scope, so
-// importing this file from a worker or a test never touches `window`.
-let storageListenerInstalled = false
-
-function installStorageListener() {
-  if (storageListenerInstalled || typeof window === 'undefined') {
-    return
-  }
-  storageListenerInstalled = true
-  // Another tab wrote one of our keys. `key === null` is a clear(), which is
-  // every key at once.
-  window.addEventListener('storage', e => {
-    if (e.storageArea !== window.localStorage) {
-      return
-    }
-    if (e.key === null) {
-      for (const k of [...listeners.keys()]) {
-        notify(k)
-      }
-    } else if (listeners.has(e.key)) {
-      notify(e.key)
-    }
-  })
-}
-
-function subscribe(key: string, fn: () => void) {
-  installStorageListener()
-  let set = listeners.get(key)
-  if (!set) {
-    set = new Set()
-    listeners.set(key, set)
-  }
-  set.add(fn)
-  return () => {
-    set.delete(fn)
-    if (!set.size) {
-      listeners.delete(key)
-    }
-  }
-}
-
 function resolveUpdate<T>(value: T | ((val: T) => T), prev: T) {
   return typeof value === 'function' ? (value as (val: T) => T)(prev) : value
 }
@@ -158,8 +106,8 @@ function resolveUpdate<T>(value: T | ((val: T) => T), prev: T) {
  * components on the same key each kept their own copy of it, so toggling a
  * setting in one BreakpointSplitView header left a second one open beside it
  * showing the old value until it remounted. Instances on a key now subscribe to
- * each other's writes, and to other tabs' — the thing the grid-bookmark widget
- * had to hand-roll a `storage` listener for.
+ * each other's writes, and to other tabs' — `subscribeToLocalStorageKey`, which
+ * the grid-bookmark widget shares from its state model.
  *
  * The store is read on every notify rather than cached, so nothing here can go
  * stale against a `localStorage.clear()`. Which also means a functional update
@@ -213,7 +161,7 @@ export function useLocalStorage<T>(
     if (!persists) {
       return
     }
-    return subscribe(key, () => {
+    return subscribeToLocalStorageKey(key, () => {
       setStoredValue(localStorageGetJSON(key, initialRef.current))
     })
   }, [key, persists])
@@ -236,7 +184,7 @@ export function useLocalStorage<T>(
           localStorageRemoveItem(key)
         : localStorageSetItem(key, JSON.stringify(next))
     if (wrote) {
-      notify(key)
+      notifyLocalStorageKey(key)
     } else {
       // The store read fine and then refused the write: quota exhausted, or
       // Safari private browsing. Notifying would hand every instance what the
