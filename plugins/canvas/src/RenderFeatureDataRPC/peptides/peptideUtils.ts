@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/core/util/geneticCodes'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { hasCDSSubfeature, hasContainerChildren } from '../glyphs/glyphUtils.ts'
+import { hasCDSSubfeature } from '../glyphs/glyphUtils.ts'
 import {
   collectPolyproteinCDS,
   hasMatureProteinChildren,
@@ -142,10 +142,15 @@ async function fetchSequence(
 // Coding-transcript detection is structural, mirroring findGlyph: a feature with
 // a direct CDS child is a coding transcript, so any type — mRNA, V_gene_segment,
 // a prokaryotic gene → CDS, an org-specific type — is picked up without
-// configuration. A feature whose children are themselves containers (gene →
-// mRNA → exon) is descended into to reach its per-row transcripts; that check
-// alone suffices, since a child only matches when it carries a CDS grandchild,
-// which already makes the parent a container.
+// configuration. A feature whose children are coding transcripts (gene → mRNA →
+// CDS) is descended into to reach them instead.
+//
+// The descent needs no container test of its own. It used to be guarded by
+// hasContainerChildren, which cannot ever change the answer: a child that
+// carries a CDS grandchild has subfeatures, which is what makes its parent a
+// container. Asking directly for the coding children is the same question with
+// one branch, and it leaves ONE place that decides a feature is itself the
+// transcript instead of two identical ones.
 export function findTranscriptsWithCDS(
   features: Map<string, Feature>,
 ): Feature[] {
@@ -172,14 +177,11 @@ export function findTranscriptsWithCDS(
     const polyproteins = collectPolyproteinCDS(feature)
     if (polyproteins.length > 0) {
       transcripts.push(...polyproteins)
-    } else if (hasContainerChildren(feature)) {
-      const matchingTranscripts =
-        getSubfeatures(feature).filter(hasCDSSubfeature)
-      if (matchingTranscripts.length > 0) {
-        transcripts.push(...matchingTranscripts)
-      } else if (hasCDSSubfeature(feature)) {
-        transcripts.push(feature)
-      }
+      continue
+    }
+    const codingChildren = getSubfeatures(feature).filter(hasCDSSubfeature)
+    if (codingChildren.length > 0) {
+      transcripts.push(...codingChildren)
     } else if (hasCDSSubfeature(feature)) {
       transcripts.push(feature)
     }
