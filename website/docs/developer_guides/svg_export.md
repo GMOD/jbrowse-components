@@ -13,18 +13,15 @@ The Linear Genome View's `exportSvg()` action calls each visible display's
 `renderSvg()`, collecting the returned React nodes and rendering them into a
 server-side SVG via `renderToSvg`.
 
-**Skipping is the intended fallback.** A display that implements no `renderSvg`
-is dropped from the export the same way a minimized track is — before the legend
-is measured and before the height is reserved, so it leaves no labelled gap
-where the track would have been. The export then notifies the session once,
-naming the tracks it left out and why, since a figure quietly short a track is
-worse than one whose author was told.
+A display that implements no `renderSvg` is dropped from the export the same way
+a minimized track is, and dropped at the same point — before the legend is
+measured and before the height is reserved, so it leaves no labelled gap where
+the track would have been. The export notifies the session once, naming the
+tracks it left out and why.
 
-That is a deliberate trade. SVG export is a substantial second implementation of
-a display's drawing, and calling `renderSvg` unconditionally meant one plugin
-that had never written one broke exporting for every other track in the session
-— a cost that should fall on the display that skipped the work and nobody else.
-Write one if you want your display in people's figures.
+So a display type that never implements one costs itself a place in people's
+figures, and costs the rest of the session nothing. Write one if you want your
+display in the picture.
 
 ## PaintLayer
 
