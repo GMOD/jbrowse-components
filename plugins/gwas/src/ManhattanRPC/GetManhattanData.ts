@@ -52,9 +52,38 @@ export default class GetManhattanData extends RpcMethodType {
       ? `${regions[1]!.refName}:${regions[1]!.end}`
       : args.indexSnp
     return super.serializeArguments(
-      { ...args, region: regions[0]!, indexSnp },
+      {
+        ...args,
+        region: regions[0]!,
+        indexSnp,
+        ldRefName: await this.ldRefName(args),
+      },
       rpcDriver,
     )
+  }
+
+  // The LD sub-adapter's name for the query contig.
+  //
+  // `renameRegions` maps against `args.adapterConfig` — the GWAS file — and the
+  // PLINK `.ld` named in `ldAdapterConfig` is a separate file that may spell the
+  // same contig differently, so the region renamed above is not a valid query
+  // for it. A second pass, against that config, is what makes it one.
+  //
+  // Gated on the same three conditions `makeEvaluators` gates the LD read on,
+  // and deliberately so: resolving a refName map calls the adapter's
+  // `getRefNames`, which for the in-memory PLINK adapter parses the whole `.ld`
+  // file. Doing that for a track drawn in normal coloring mode would be a
+  // download nobody asked for.
+  private async ldRefName(args: GetManhattanDataArgs) {
+    if (args.colorBy !== 'ld' || !args.indexSnp || !args.ldAdapterConfig) {
+      return undefined
+    }
+    const { regions } = await this.renameRegions({
+      ...args,
+      adapterConfig: args.ldAdapterConfig,
+      regions: [args.region],
+    })
+    return regions[0]!.refName
   }
 
   async execute(args: GetManhattanDataArgs, rpcDriverClassName: string) {

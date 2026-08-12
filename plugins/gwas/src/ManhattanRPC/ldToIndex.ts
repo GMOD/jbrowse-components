@@ -46,45 +46,82 @@ export function lookupR2(
 // pair touching the region, keeps those where one side is the index SNP, and
 // maps the *other* side's r². Captures both orientations (index as SNP_A or
 // SNP_B) since PLINK emits each pair once.
+//
+// Two reference-name schemes meet here, which is the whole reason `ldRefName`
+// exists. The LD file is a SECOND adapter: `renameRegionsIfNeeded` puts
+// `region` into the *GWAS* adapter's scheme (it renames against
+// `args.adapterConfig`), and the PLINK file may name the same contig
+// differently. So the query goes out in the LD file's scheme and everything
+// that comes back is translated to the caller's before it is keyed —
+// `makeLdEvaluator` looks these keys up with `posKey(region.refName, …)` built
+// from GWAS features, and a `chr16` key never matches a `16` lookup.
 export async function buildLdToIndex({
   adapter,
   region,
+  ldRefName,
   indexSnp,
 }: {
   // Only the A-side scan is needed here, so accept the narrower capability.
   adapter: Pick<LDRecordSource, 'getLDRecords'>
   region: Region
+  // `region.refName` in the LD adapter's naming scheme. Undefined when the
+  // caller could not resolve one (no LD adapter config, or an assembly whose
+  // aliases have not loaded), which falls back to the region's own name — the
+  // behaviour before this was threaded, and correct whenever the two files
+  // agree.
+  ldRefName?: string
   indexSnp: string
 }): Promise<LdToIndex> {
+  const queryRefName = ldRefName ?? region.refName
   const records = await adapter.getLDRecords({
-    refName: region.refName,
+    refName: queryRefName,
     start: region.start,
     end: region.end,
   })
 
+  // A record's contig, in the caller's scheme. Every record the scan sees was
+  // matched on `chrA === queryRefName` by the adapter, so that name IS this
+  // region's contig under another spelling. A `chrB` on some other contig
+  // (trans-LD, which PLINK's windowed output does not normally emit) keeps its
+  // own name and simply matches no feature here, which is the right answer.
+  const toCallerRefName = (chr: string) =>
+    chr === queryRefName ? region.refName : chr
+
   const r2ByKey = new Map<string, number>()
   let indexFound = false
   for (const r of records) {
-    const aIsIndex = sideMatchesIndex(r.snpA, r.chrA, r.bpA, indexSnp)
-    const bIsIndex = sideMatchesIndex(r.snpB, r.chrB, r.bpB, indexSnp)
+    // indexSnp is in the caller's scheme too (GetManhattanData rewrites it
+    // through the same rename as the region), so translate before comparing.
+    const aIsIndex = sideMatchesIndex(
+      r.snpA,
+      toCallerRefName(r.chrA),
+      r.bpA,
+      indexSnp,
+    )
+    const bIsIndex = sideMatchesIndex(
+      r.snpB,
+      toCallerRefName(r.chrB),
+      r.bpB,
+      indexSnp,
+    )
     if (aIsIndex && !bIsIndex) {
       indexFound = true
       r2ByKey.set(r.snpB, r.r2)
-      r2ByKey.set(`${r.chrB}:${r.bpB}`, r.r2)
+      r2ByKey.set(`${toCallerRefName(r.chrB)}:${r.bpB}`, r.r2)
     } else if (bIsIndex && !aIsIndex) {
       indexFound = true
       r2ByKey.set(r.snpA, r.r2)
-      r2ByKey.set(`${r.chrA}:${r.bpA}`, r.r2)
+      r2ByKey.set(`${toCallerRefName(r.chrA)}:${r.bpA}`, r.r2)
     }
   }
   if (!indexFound && records.length > 0) {
     const r = records[0]!
     console.warn(
       `LD coloring: index SNP "${indexSnp}" matched none of ${records.length} ` +
-        `LD records in ${region.refName}:${region.start}-${region.end} ` +
+        `LD records in ${queryRefName}:${region.start}-${region.end} ` +
         `(e.g. SNP_A "${r.snpA}" at ${r.chrA}:${r.bpA}) — every point will be ` +
-        `grey. Check that the index id's reference name matches the LD file ` +
-        `(reference-name aliasing).`,
+        `grey. The index is probably absent from the LD file, or named ` +
+        `differently there than in the GWAS file.`,
     )
   }
   return { r2ByKey, indexFound }

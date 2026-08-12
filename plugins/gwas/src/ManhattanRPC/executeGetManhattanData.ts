@@ -127,11 +127,18 @@ async function makeEvaluators({
   colorBy,
   indexSnp,
   ldAdapterConfig,
+  ldRefName,
   statusCallback,
   stopTokenCheck,
 }: Pick<
   GetManhattanDataArgs,
-  'sessionId' | 'region' | 'color' | 'colorBy' | 'indexSnp' | 'ldAdapterConfig'
+  | 'sessionId'
+  | 'region'
+  | 'color'
+  | 'colorBy'
+  | 'indexSnp'
+  | 'ldAdapterConfig'
+  | 'ldRefName'
 > & {
   pluginManager: PluginManager
   statusCallback: StatusCallback
@@ -149,7 +156,7 @@ async function makeEvaluators({
       )
     }
     const ld = await updateStatus('Downloading LD data', statusCallback, () =>
-      buildLdToIndex({ adapter: ldAdapter, region, indexSnp }),
+      buildLdToIndex({ adapter: ldAdapter, region, ldRefName, indexSnp }),
     )
     checkStopTokenThrottled(stopTokenCheck)
     return {
@@ -179,6 +186,7 @@ export async function executeGetManhattanData({
     colorBy,
     indexSnp,
     ldAdapterConfig,
+    ldRefName,
     stopToken,
     statusCallback = () => {},
   } = args
@@ -207,6 +215,7 @@ export async function executeGetManhattanData({
     colorBy,
     indexSnp,
     ldAdapterConfig,
+    ldRefName,
     statusCallback,
     stopTokenCheck,
   })

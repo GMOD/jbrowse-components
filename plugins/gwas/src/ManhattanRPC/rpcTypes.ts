@@ -41,6 +41,12 @@ export interface GetManhattanDataArgs {
   indexSnp?: string
   // PLINK .ld adapter config snapshot resolved on the worker for LD coloring.
   ldAdapterConfig?: Record<string, unknown>
+  // `region.refName` in the LD adapter's own naming scheme, resolved in
+  // `serializeArguments`. The renaming pass every RPC gets only covers
+  // `adapterConfig` — the GWAS file — and the PLINK file is a second adapter
+  // free to spell the same contig differently, so it needs its own name.
+  // Present only in LD coloring mode, where it is the only thing that reads it.
+  ldRefName?: string
   stopToken?: StopToken
   statusCallback?: StatusCallback
 }

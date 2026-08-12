@@ -21,6 +21,19 @@ function source(
   return { getLDRecords: () => Promise.resolve(records) }
 }
 
+// An LD file that answers only to its own spelling of the contig, the way a
+// real adapter does (`r.chrA === refName`), so a query in the GWAS file's
+// scheme comes back empty rather than quietly working.
+function ldSource(
+  ownRefName: string,
+  records: PlinkLDRecord[],
+): Pick<LDRecordSource, 'getLDRecords'> {
+  return {
+    getLDRecords: ({ refName }) =>
+      Promise.resolve(refName === ownRefName ? records : []),
+  }
+}
+
 const region = { refName: 'chr1', start: 0, end: 1000, assemblyName: 'hg38' }
 
 test('posKey is 1-based to line up with chr:bp ids', () => {
@@ -86,6 +99,74 @@ test('indexFound is false when no pair references the index SNP', async () => {
   })
   expect(ld.indexFound).toBe(false)
   expect(ld.r2ByKey.size).toBe(0)
+})
+
+// The LD file is a second adapter, so the region — renamed for the GWAS file —
+// is not a valid query for it, and its records come back spelling the contig
+// its own way. `ldRefName` carries the LD file's name for the query; everything
+// returned is translated back, because makeLdEvaluator looks these keys up with
+// `posKey(region.refName, …)` built from GWAS features.
+describe('a GWAS file and an LD file that name the contig differently', () => {
+  // region.refName is the GWAS file's `1`; the LD file says `chr1`
+  const ld = ldSource('chr1', [
+    rec({
+      snpA: 'rsIndex',
+      chrA: 'chr1',
+      bpA: 100,
+      snpB: 'rsB',
+      chrB: 'chr1',
+      bpB: 200,
+      r2: 0.8,
+    }),
+  ])
+  const gwasRegion = { refName: '1', start: 0, end: 1000, assemblyName: 'hg38' }
+
+  it('queries the LD file by its own name', async () => {
+    const built = await buildLdToIndex({
+      adapter: ld,
+      region: gwasRegion,
+      ldRefName: 'chr1',
+      indexSnp: 'rsIndex',
+    })
+    expect(built.indexFound).toBe(true)
+  })
+
+  it('keys positions in the GWAS scheme, which is what a feature looks up', async () => {
+    const built = await buildLdToIndex({
+      adapter: ld,
+      region: gwasRegion,
+      ldRefName: 'chr1',
+      indexSnp: 'rsIndex',
+    })
+    // posKey('1', 199) — the key makeLdEvaluator builds for that feature
+    expect(built.r2ByKey.get('1:200')).toBe(0.8)
+    expect(built.r2ByKey.get('chr1:200')).toBeUndefined()
+    // by-id lookup names no contig and is unaffected
+    expect(built.r2ByKey.get('rsB')).toBe(0.8)
+  })
+
+  it('matches a chr:bp index written in the GWAS scheme', async () => {
+    const built = await buildLdToIndex({
+      adapter: ld,
+      region: gwasRegion,
+      ldRefName: 'chr1',
+      // GetManhattanData renames the index through the GWAS pass, so it arrives
+      // spelled `1:100` while the LD record says `chr1`
+      indexSnp: '1:100',
+    })
+    expect(built.indexFound).toBe(true)
+    expect(built.r2ByKey.get('1:200')).toBe(0.8)
+  })
+
+  it('without ldRefName the query misses entirely — the bug this fixes', async () => {
+    const built = await buildLdToIndex({
+      adapter: ld,
+      region: gwasRegion,
+      indexSnp: 'rsIndex',
+    })
+    expect(built.indexFound).toBe(false)
+    expect(built.r2ByKey.size).toBe(0)
+  })
 })
 
 test('a pair where both sides are the index SNP is ignored', async () => {

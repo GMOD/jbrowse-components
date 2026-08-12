@@ -30,7 +30,6 @@ Exploratory concepts that are *not* committed work live in
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
-| [Rename the region for the GWAS `ldAdapter`](#rename-the-query-region-for-the-gwas-tracks-ldadapter-too) | gwas, adapters | latent; pick one of two namespace strategies first |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
@@ -206,41 +205,6 @@ an `evaluateOnNewDocument` override of `getContext` verified against a plain
 canvas first. **This is one deliberate diagnostic run, not another A/B, and it
 must not be left on** — it was measured and refuted as a *fix*
 ([reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md)).
-
-### Rename the query region for the GWAS track's `ldAdapter` too
-
-`renameRegionsIfNeeded` maps `regions[]` into the naming scheme of
-**`args.adapterConfig`** — the primary adapter. The Manhattan RPC then hands
-that same region to a *second* adapter, the `GWASAdapter`'s `ldAdapter`
-sub-adapter, in `makeEvaluators` → `buildLdToIndex` → `getLDRecords`. A PLINK
-`.ld` naming its chromosomes differently from the summary-stats file is queried
-with the wrong name and matches nothing, so every point colours grey.
-
-Two crossings, not one: the query above, and `r2ByKey`, whose position keys are
-`posKey(chrA/chrB, bp)` from the LD file while `makeLdEvaluator` looks them up
-with keys built from the GWAS feature's refName. rsID lookups are unaffected —
-a SNP id names no contig.
-
-**Latent, and it is worth knowing why the shipped demo does not show it.** Both
-hosted files (`demos/gwas/gwas_giant-bmi_meta_women-only.gz`,
-`demos/gwas/plink.ld.tab.gz`) use bare `1`/`16`, so the single rename produces a
-name that happens to be right for both. A pair that disagreed would not be.
-
-It is also **already reported to the user**, which is why this is an
-improvement rather than a bug: `indexSnpMissing` drives a legend note, and
-`indexSnpOffscreen` exists to separate the benign pannable cause from the rest —
-its own comment names "reference-name aliasing" as one of the others. So the
-work is to stop asking the user to make the two files agree, not to stop a
-silent failure.
-
-The shape to copy is in the same file. `GetManhattanData.serializeArguments`
-already bundles `indexSnp` into `regions` as a 1-bp region so it rides the
-rename pass; `getRefNameMapForAdapter(adapterConfig, args)` takes an arbitrary
-adapter config, so a second pass against `ldAdapterConfig` is available. Decide
-first whether to carry both namespaces (region and `indexSnp` each need an LD
-form and a GWAS form — four values) or to drop the contig from the LD scan
-entirely, which is defensible because a single-region query returns records on
-one contig and the chr component there carries no information.
 
 ### Report a callout that draws off-frame
 
