@@ -246,7 +246,7 @@ export interface AminoAcidOverlayItem {
 
 // A transcript's geometry in the form the hover needs to name a genomic position
 // the way a clinical report would — "exon 5/12", "c.1234+5". Raw spans only; the
-// c./n. arithmetic is main-thread (hgvsPosition.ts).
+// c./n. arithmetic is main-thread (transcriptPosition.ts).
 export interface TranscriptCoords {
   // exons in TRANSCRIPTION order, flattened [start,end,…] — on the - strand the
   // highest-coordinate exon comes first, so it is exon 1

@@ -1,9 +1,5 @@
 import { isBaseResolved } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
-import {
-  hgvsFromLocated,
-  hgvsPosition,
-  locateOnTranscript,
-} from '../hgvsPosition.ts'
+import { transcriptPosition } from '../transcriptPosition.ts'
 import { residueLabel } from './peptidePositioning.ts'
 
 import type { HitFeatureResult } from './hitTesting.ts'
@@ -39,8 +35,8 @@ function hitTranscriptAndName(result: HitFeatureResult) {
     : { coords: feature.transcript, name: feature.name }
 }
 
-// What the hover says about a position on a transcript: the exon it is in, and
-// its HGVS coordinate.
+// What the hover says about a position on a transcript: the exon it is in, its
+// HGVS coordinate, and the name of the transcript both were measured on.
 //
 // The exon is named only for an EXONIC position — naming the flanking exon of an
 // intron would read as "you are in exon 5" when you are not, and the c. offset
@@ -49,21 +45,19 @@ function hitTranscriptAndName(result: HitFeatureResult) {
 //
 // The c./n. coordinate needs the cursor to resolve to one base, so it appears
 // only at base zoom (see isBaseResolved) — off by a base, it would be worse than
-// absent. It is formatted from the SAME located position the exon is named from
-// (hgvsFromLocated, not hgvsPosition), so the walk happens once per hover rather
-// than once per readout — this runs on every mousemove.
+// absent. Every readout below comes through here, so the tooltip and the menu
+// label cannot disagree about which base was hit or whether the zoom was fine
+// enough to name it; they used to reach the coordinate by two different routes.
 function transcriptReadouts(result: HitFeatureResult) {
-  const { coords } = hitTranscriptAndName(result)
-  const located = coords && locateOnTranscript(coords, result.bpPos)
+  const { coords, name } = hitTranscriptAndName(result)
+  const located = coords && transcriptPosition(coords, result.bpPos)
   return {
+    name,
     exon:
       located?.offset === 0 && located.exonCount > 1
         ? `exon ${located.exonNumber}/${located.exonCount}`
         : undefined,
-    hgvs:
-      coords && located && isBaseResolved(result.bpPerPx)
-        ? hgvsFromLocated(coords, located)
-        : undefined,
+    hgvs: located && isBaseResolved(result.bpPerPx) ? located.hgvs : undefined,
   }
 }
 
@@ -76,12 +70,8 @@ function transcriptReadouts(result: HitFeatureResult) {
 // This is the position half of an HGVS variant name; the change itself
 // (`…c.93+1G>T`) needs an allele, which a gene annotation doesn't carry.
 export function hgvsHitLabel(result: HitFeatureResult) {
-  const { coords, name } = hitTranscriptAndName(result)
-  const position =
-    coords && isBaseResolved(result.bpPerPx)
-      ? hgvsPosition(coords, result.bpPos)
-      : undefined
-  return position && name ? `${name}:${position}` : position
+  const { hgvs, name } = transcriptReadouts(result)
+  return hgvs && name ? `${name}:${hgvs}` : hgvs
 }
 
 // One tooltip row: its parts share a line, space-separated, dropping any that

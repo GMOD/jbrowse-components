@@ -113,7 +113,7 @@ function codingBounds(feature: Feature): Span | undefined {
 
 // Everything the hover needs to name a genomic position in transcript
 // coordinates. Raw geometry only — the c./n. arithmetic lives in one place on
-// the main thread (hgvsPosition.ts), which needs the same exon walk anyway to
+// the main thread (transcriptPosition.ts), which needs the same exon walk anyway to
 // place the cursor.
 export function transcriptCoords(
   layout: FeatureLayout,
