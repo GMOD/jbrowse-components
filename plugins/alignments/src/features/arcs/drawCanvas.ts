@@ -135,24 +135,47 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     if (isFlat) {
       // Neutral connector line clamped to a minimum drawn width (centered on
       // the midpoint) so short-insert pairs stay visible; mirrors
-      // arcFlat.slang's clamp. The endpoint squares carry the category color.
+      // arcFlat.slang's clamp. The endpoint squares carry the category color
+      // and are a SECOND pass below, not this one's last two statements.
       ctx.strokeStyle = flatLineCss
       const { mid, halfPx } = flatBarExtent(sx1, sx2)
       ctx.beginPath()
       ctx.moveTo(mid - halfPx, markY)
       ctx.lineTo(mid + halfPx, markY)
       ctx.stroke()
-      // Colored square at each read endpoint (mirrors the arcMarker GPU pass).
-      ctx.fillStyle = cssPalette[arcColorSlot(colorIdx)]!
-      const m = ARC_MARKER_PX
-      ctx.fillRect(sx1 - m / 2, markY - m / 2, m, m)
-      ctx.fillRect(sx2 - m / 2, markY - m / 2, m, m)
     } else {
       ctx.strokeStyle = cssPalette[arcColorSlot(colorIdx)]!
       strokeArc(ctx, sx1, sx2, anchorY, destY, pairedArcsDown, screenWidthPx)
     }
   }
   ctx.setLineDash([])
+
+  // EVERY connector line, THEN every endpoint square — the GPU's pass order
+  // (`drawPass(PASS_ARC_FLAT)` then `drawPass(PASS_ARC_MARKER)`, under a comment
+  // saying the squares paint on top of the lines), rather than each arc's line
+  // followed by its own two squares.
+  //
+  // Interleaved, a connector is translucent (ARC_FLAT_ALPHA 0.7) and opaque
+  // squares are not, so every arc later in the feed veiled the squares of every
+  // arc before it that its bar crossed. On the GPU no square is ever veiled. The
+  // divergence is worst in the mode that emits thousands of these and is the
+  // whole reason the squares carry the colour — and since the SVG export paints
+  // through this path, an exported read cloud disagreed with the one on screen.
+  //
+  // A second `arcPlacement` per flat arc rather than state carried between the
+  // loops: it is the same call, so there is nothing here that can drift from the
+  // pass above, and next to a `ctx.stroke()` per arc the arithmetic is free.
+  if (data.numFlatArcs > 0) {
+    const m = ARC_MARKER_PX
+    for (let i = 0; i < data.numArcs; i++) {
+      const { sx1, sx2, markY, isFlat } = arcPlacement(data, i, opts)
+      if (isFlat) {
+        ctx.fillStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
+        ctx.fillRect(sx1 - m / 2, markY - m / 2, m, m)
+        ctx.fillRect(sx2 - m / 2, markY - m / 2, m, m)
+      }
+    }
+  }
 }
 
 // Canvas2D / SVG entry point used by drawAlignmentBlocks. Paints the arcs band
