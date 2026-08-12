@@ -23,7 +23,7 @@ interface Visibility {
  * context per display canvas").
  *
  * `root: null` (viewport) is container-agnostic: it reports on-screen-ness the
- * same way whether the views scroll inside the classic container or a dockview
+ * same way whether the views scroll inside the classic container or a workspace
  * panel, so neither container needs to know about windowing. It also means
  * **`rootMargin` has no effect** — an observer clips the target against each
  * scrolling ancestor before intersecting with the root box that the margin

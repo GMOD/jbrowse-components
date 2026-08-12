@@ -140,8 +140,8 @@ export function installInitAutorun<T>(
   // while a drain is in flight is a no-op — drainInit already consumes
   // whatever init is current. The flag is load-bearing, not incidental:
   // `ready` flips true→false→true when the measured width resets (StrictMode
-  // remount, dockview re-mount), which re-fires this whether it is an autorun
-  // or a reaction.
+  // remount, a workspace tab being shown again), which re-fires this whether it
+  // is an autorun or a reaction.
   let draining = false
   addDisposer(
     self,

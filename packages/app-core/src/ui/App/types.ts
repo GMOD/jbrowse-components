@@ -15,7 +15,7 @@ export type WorkspaceSessionType = SessionWithFocusedViewAndDrawerWidgets & {
   popSnackbarMessage: () => unknown
   // `session.views` is the order views render in, so a layout that states an
   // order (a session spec's `layout`, which lists views per panel) applies it
-  // there rather than in the panel assignments, which carry membership only
+  // there rather than in a tab's `viewIds`, which carry membership only
   orderViews: (ids: string[]) => void
 }
 

@@ -38,8 +38,8 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * enables the dockview-based tabbed/tiled workspace layout for this
-         * session. Undefined means unspecified — read `effectiveUseWorkspaces`.
+         * enables the tabbed/tiled workspace layout for this session. Undefined
+         * means unspecified — read `effectiveUseWorkspaces`.
          */
         useWorkspaces: types.stripDefault(
           types.maybe(types.boolean),
@@ -168,12 +168,12 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * the reader was looking instead of at the bottom of the session.
          *
          * The slot is `session.views`, which is the order views render in under
-         * both layout modes (a panel assignment says which panel a view is in,
-         * not where in it), so the swap lands in place either way.
+         * both layout modes (a tab's `viewIds` says which tab a view is in, not
+         * where in it), so the swap lands in place either way.
          *
          * WHICH panel is a separate question and this does not answer it: the
-         * new view arrives unassigned and dockview's reconcile homes it to the
-         * active panel, the same panel only when the replaced view was in the
+         * new view arrives in no tab, and `homeUnassignedViews` puts it in the
+         * active panel — the same panel only when the replaced view was in the
          * active one. In practice it is, since clicking into a view activates
          * its panel, and the launch that offers a replace is a click on that
          * view's own menu.
@@ -276,7 +276,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       // view state: destructure it out so it never lands in the snapshot. It
       // stays localStorage-backed, so each browser keeps its own value.
       // useWorkspaces stays: it changes layout intent (and pairs with the
-      // dockviewLayout the snapshot carries), which is meaningful to share.
+      // `layout` tree the snapshot carries), which is meaningful to share.
       const { stickyViewHeaders, ...rest } = snap
       return rest as typeof snap
     })

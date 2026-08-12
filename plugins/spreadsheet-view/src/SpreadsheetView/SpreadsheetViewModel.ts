@@ -229,8 +229,8 @@ export default function stateModelFactory() {
               self,
               // Trigger on `init` ONLY. A reaction tracks just its data fn, so
               // the async apply can read width/etc without making them
-              // dependencies — width churn (sv-inspector resizes, dockview /
-              // StrictMode settling) can no longer retrigger the load. `init`
+              // dependencies — width churn (sv-inspector resizes, a workspace
+              // tab settling, StrictMode) can no longer retrigger the load. `init`
               // is cleared synchronously up front so the same request can't be
               // applied twice; a later setInit supersedes. Re-entrancy is
               // excluded by the dependency graph rather than a guard flag.

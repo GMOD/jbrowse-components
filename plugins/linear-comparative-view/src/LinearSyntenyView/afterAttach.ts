@@ -242,8 +242,8 @@ async function applyInit(
 }
 
 export function doAfterAttach(self: LinearSyntenyViewModel) {
-  // Serializing the firings is what makes this safe under dockview mount +
-  // React Strict Mode double-invoke, which settle width in multiple steps:
+  // Serializing the firings is what makes this safe under a workspace tab being
+  // shown + React Strict Mode double-invoke, which settle width in steps:
   // without it a second run's setViews() detaches the first run's view models,
   // and the first's `when(() => view.initialized)` then throws on the dead node
   // and gets reported as a view error.
