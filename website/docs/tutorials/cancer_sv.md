@@ -332,10 +332,9 @@ and chr12 inserts with chr3 returning inverted.
 ## Checking the reconstruction
 
 Zoomed to the kilobase holding the junctions, the two inserts are the same width
-as the arms either side of them. Realigned against the derivative, reads that
-the reference split into four pieces run straight through: none of the 29
-spanning reads clips at any of the four junction positions, and depth does not
-dip at them.
+as the arms either side of them. Realigned against the derivative, reads the
+reference tore into pieces run straight through: none clips at a junction, and
+depth holds flat across them.
 
 <Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the same molecules against hg38, each row stopping at a junction with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
 
