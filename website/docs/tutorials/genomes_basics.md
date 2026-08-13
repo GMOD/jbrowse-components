@@ -2,7 +2,8 @@
 title: Basic usage of genomes.jbrowse.org
 description:
   Open a hosted genome, search a gene, and work through the UCSC track catalog
-  on hg38 at TP53, from phyloP conservation to pangenome genotypes
+  on hg38: conservation, regulation and variation at TP53, then p53's own
+  binding sites at CDKN1A
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 data: hosted
@@ -53,8 +54,7 @@ RefSeq All draws each transcript on its own row, and TP53 has more of them than
 the track's height shows, so the rest are behind the track's own scrollbar. The
 isoform control at the bottom right of the track collapses them, and is worth
 knowing about early because a gene with this many transcripts is otherwise most
-of the window. [Track sizing](#more-content-than-the-track-shows) is the other
-way to handle it, and applies to any track.
+of the window.
 
 ## Finding a track
 
@@ -206,37 +206,49 @@ A column that runs the full height is a variant most haplotypes carry, which is
 to say a place the reference is the unusual sequence. The scattered single cells
 are the opposite.
 
-## More content than the track shows
+## Where the protein binds
 
-Several of the tracks above hold more than their height draws: RefSeq All's
-transcripts, and both variant catalogs, run past the bottom edge and are reached
-by scrolling inside the track. Two settings change that, and both live in the
-track menu under **Set feature height**.
+Everything above reads _TP53_ as a stretch of sequence. It codes for a
+transcription factor, so the rest of its story is at other genes, and the
+catalog can follow it there. _CDKN1A_ encodes p21, which p53 switches on to halt
+the cell cycle after DNA damage. Type `CDKN1A` into the location box; the name
+index answers it the same way it answered TP53.
 
-<Figure src="/img/genomes_basics/feature_height_menu.png" caption="Set feature height on the gnomAD track, holding both of its radio groups: the feature-size presets, then the track-sizing modes under their own subheader." />
+**JASPAR Transcription Factors - JASPAR 2026 TFBS** under Regulation holds motif
+matches for every factor in the collection, so the question is asked with a
+filter. The track menu's **Filter by...** takes a jexl expression over any
+column the file carries, and JASPAR carries the factor name:
+`feature.TFName == 'TP53'` leaves the p53 sites alone.
 
-The presets at the top set how tall each feature is drawn, from Normal down to
-Collapsed, which packs everything onto a single row. The three under **Track
-sizing** say what the track does when the content is taller than the track:
-scroll it at a fixed height, grow the track until the content fits, or squeeze
-the content into the height the track already has. The two are independent, so a
-deep pile can be handled by shrinking the features, by growing the track, or by
-both.
+Underneath it go the three Regulation tracks from the promoter section, which
+are what the motif matches get read against: **ENCODE cCREs - ENCODE4 cCREs**,
+**DNase (Layered)** and **H3K27ac (Layered)**.
 
-Height is one axis; how many features are drawn is the other. **JASPAR
-Transcription Factors - JASPAR 2026 TFBS** under Regulation draws every motif
-match its file carries, and over a promoter that is a solid field at any height.
-UCSC's browser draws the matches scoring at least 400 out of 1000 and hides the
-rest. JBrowse draws the file as published, and the track menu's **Filter by...**
-is where the same cutoff goes, as `get(feature,'score') >= 400`.
+<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region, five tracks deep: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, and the layered DNase and H3K27ac signal. The shaded pair are the two motif matches inside the gene's active region; the matches at the left edge are over flat signal." />
 
-<Figure src="/img/genomes_basics/dense_filter.png" caption="JASPAR over the TP53 transcription start site. Top: every motif match in the file. Bottom: the same window filtered to the score cutoff UCSC applies by default, which leaves the clusters over the start site legible as separate boxes." />
+Six positions in this window match the p53 motif well enough to be called,
+spread across the whole upstream stretch, and the tracks under them are not flat
+across that stretch. Signal begins around the shaded pair and rises from there
+into the gene, and each of those two sits in a cCRE of its own, one called a
+promoter and one a proximal enhancer. They are about 2.3 kb and 1.4 kb upstream
+of the canonical transcription start site, which is where the response elements
+for p21 were described. The matches further left are over the quiet part of the
+window, which is the ordinary fate of a match to a ten-base pattern in a genome
+this size.
 
-Nothing intervenes on a reader's behalf at this zoom: the too-much-data prompt
-the multiz track ran into applies to wider windows, so a dense file over a few
-kb draws everything it has. A filtered track says so in its own menu, where
-**Filter by...** carries the number of filters in force, and clearing them puts
-the field back.
+The two lanes disagree about which end of the region is busiest, and that is the
+usual split between the two marks: accessibility peaks hard on the transcription
+start site and downstream, while H3K27ac carries out over the elements upstream
+of it.
+
+The region holds more than the coding gene. **PANDAR** and **DINOL**, both
+transcribed away from the p21 promoter, are p53-induced lncRNAs, and they arrive
+with the same RefSeq track that drew the gene.
+
+Zooming to the higher-scoring of the two puts the motif on the sequence it was
+called from.
+
+<Figure src="/img/genomes_basics/p53_element_sequence.png" caption="The distal element at base zoom: the JASPAR match, the promoter-class cCRE it sits inside, and the reference sequence. The match is called on both strands because the site is two copies of the p53 half-site end to end, which is what the boxes span." />
 
 ## Other tracks, same two clicks
 
@@ -248,8 +260,8 @@ worth opening, with the category each one filters out of:
 - **RepeatMasker** (Repeats) says which parts of a window are repeat elements,
   which is worth knowing before reading much into a signal over one.
 - **JASPAR Transcription Factors - JASPAR 2026 TFBS** (Regulation) puts motif
-  matches under the peaks above, at the score cutoff of the
-  [section before this one](#more-content-than-the-track-shows).
+  matches under the peaks above, for every factor rather than the one filtered
+  for at _CDKN1A_.
 - **GTEx cis-eQTLs - GTEx DAP-G eQTLs** (Regulation) names the variants
   associated with expression of nearby genes.
 - **Long-read SVs - CoLoRSdb 1427 SVs** (Variation and Repeats) covers the size
@@ -313,4 +325,8 @@ introns is where that shows.
   the mutation distribution across TP53 codons
 - [Liao WW et al. A draft human pangenome reference. _Nature_ 2023](https://pubmed.ncbi.nlm.nih.gov/37165242/),
   the HPRC assemblies the pangenome callset is built from
+- [el-Deiry WS et al. WAF1, a potential mediator of p53 tumor suppression. _Cell_ 1993](https://pubmed.ncbi.nlm.nih.gov/8242752/),
+  the p53 response elements upstream of CDKN1A
+- [Ovek Baydar D et al. JASPAR 2026: expansion of transcription factor binding profiles and integration of deep learning models. _Nucleic Acids Res_ 2026](https://pubmed.ncbi.nlm.nih.gov/41325984/),
+  the motif collection the TFBS track is scanned from
 - [UCSC hg38 conservation downloads](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/)

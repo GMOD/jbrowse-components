@@ -1,4 +1,3 @@
-import { heightModeLabel } from '../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
 import {
   PARK_CURSOR,
   UCSC_HG38_CONFIG,
@@ -45,10 +44,22 @@ const TP53_EXON_WINDOW = 'chr17:7,674,180-7,674,290'
 // neighbouring distal cCREs in shot for contrast with the promoter one.
 const TP53_PROMOTER_WINDOW = 'chr17:7,685,000-7,691,000'
 
-// The TSS itself, bracketed: the window the motif-density pair is read at. A
-// third of the promoter window above, which is what puts the filtered motifs far
-// enough apart to be separate boxes.
-const TP53_TSS_WINDOW = 'chr17:7,686,500-7,688,500'
+// CDKN1A (p21), the p53 target the last figures move to. On the PLUS strand,
+// canonical TSS chr6:36,678,713 (NM_000389.5, from api.genome.ucsc.edu's
+// ncbiRefSeqCurated rather than eyeballed) -- so upstream is leftwards here,
+// the mirror of the TP53 promoter window above.
+//
+// 8 kb reaches from the far end of the upstream p53 matches to just past the
+// TSS. It also brings PANDAR (36,673,620-36,675,126, minus) and DINOL
+// (36,677,608-36,678,559, minus) into frame, which are p53-induced lncRNAs and
+// come free with the same RefSeq track.
+const CDKN1A_PROMOTER_WINDOW = 'chr6:36,673,000-36,681,000'
+
+// The distal element, bracketed for the sequence figure. The JASPAR match is
+// chr6:36,676,449-36,676,467, centred here. 110 bp, the same width as the TP53
+// exon window above and for the same reason: at 200 the sequence track draws
+// coloured blocks rather than letters, and the letters are the whole point.
+const CDKN1A_DISTAL_ELEMENT_WINDOW = 'chr6:36,676,403-36,676,513'
 
 // The axolotl RefSeq assembly's GenArk hub config, resolved from the accession
 // the way the site does it (see jb2hubs' genarkConfigPath: the digits shard the
@@ -76,22 +87,16 @@ const PHYLOP_TRACK = { trackId: 'hg38-phyloP100way' }
 const PHYLOP_NAME =
   'Basewise Conservation (phyloP) - 100-way vertebrate alignment'
 
-// The two tracks the density section is about, by id rather than by name: both
-// are named in the page's prose, and a trackId that stops resolving fails the
-// capture where a stale name would quietly render an empty track.
-const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
+// By trackId rather than by name: the page's prose names these, and a trackId
+// that stops resolving fails the capture where a stale name would quietly render
+// an empty track.
 const JASPAR_TRACK_ID = 'hg38-jaspar2026'
 
-// UCSC's own default for the JASPAR track, transcribed from the `filter.score`
-// setting jb2hubs copies into `metadata.ucsc` on the converted track. `score` is
-// the BED column the file's autoSql names, so it reaches jexl under that name.
-const JASPAR_SCORE_FILTER = "jexl:get(feature,'score') >= 400"
-
-// The canvas display's feature-size menu, and the last row of the "Track sizing"
-// group inside it. Read from `heightModeLabel` rather than transcribed, the way
-// the alignments specs do it, so the wait text cannot drift from the menu.
-const FEATURE_HEIGHT_MENU = 'Set feature height'
-const FIT_FEATURE_LABEL = heightModeLabel('fit', 'feature')
+// One factor out of the whole JASPAR collection. `TFName` is a column of the
+// file's own autoSql, so this is the expression a reader types into the track
+// menu's "Filter by..." -- `jexlFiltersSetting` is the model prop that dialog
+// writes, rather than the `jexlFilters` config slot a config would ship.
+const JASPAR_TP53_FILTER = "jexl:get(feature,'TFName') == 'TP53'"
 
 // Collapsed to the longest coding transcript, which the page reaches through the
 // isoform control at the bottom right of the gene track. Used by the base-zoom
@@ -550,7 +555,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 60 },
             { trackId: 'hg38-clinvarMain', height: 150 },
-            { trackId: GNOMAD_TRACK_ID, height: 150 },
+            { trackId: 'hg38-gnomadExomesVariantsV4_1', height: 150 },
           ],
         },
       ],
@@ -650,124 +655,165 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // ── More content than the track height shows ─────────────────────────────
+  // ── What the protein the gene codes for does ───────────────────────
 
-  // The "Set feature height" menu, on the gnomAD track the figure above draws as
-  // a clipped pile. Both radio groups are in one submenu and the figure's job is
-  // "where do I click", the same job alignments/height_mode_fit does for reads --
-  // and for the same reason a before/after was not built here: two 150px piles of
-  // the same variants differing only in whether the overflow is behind a
-  // scrollbar is nearly invisible at figure scale.
+  // The one locus that is not TP53, and the reason to leave it: TP53 codes for a
+  // transcription factor, so its binding sites are at the genes it regulates.
+  // CDKN1A (p21) is the canonical one, and the picture there is made of three
+  // tracks that have each already appeared on this page.
   //
-  // The submenu opens by CLICK on its own testid rather than by hover: the row
-  // is one of four in the track menu and a hover is timing-sensitive, which is
-  // what `openFeatureHeightSubmenu` already does for the alignments menu.
-  // `Super-compact` and the fit label are the last rows of each group, so
-  // waiting on both is waiting for the whole submenu to have painted.
+  // JASPAR filtered to one factor, which is what makes the track a question
+  // rather than a wall: the file holds 42,790 motif matches across this 8 kb and
+  // 11 of them are TP53 (6 distinct positions, matched on both strands).
+  // `TFName` is a column of the file's own autoSql, so the expression is the one
+  // a reader types into "Filter by...".
+  //
+  // Measured 2026-08-13 against JASPAR2026.bb, encodeCcreRegistry.bb and the
+  // ENCODE4 organ-average bigWigs (max over the first 12 organs), offsets from
+  // NM_000389.5's TSS at chr6:36,678,713:
+  //
+  //   position         offset   cCRE class          DNase   H3K27ac   phyloP
+  //   36,673,389-407   -5,324   TF                   0.08      0.91     0.08
+  //   36,673,445-463   -5,268   TF                   0.08      0.91    -0.14
+  //   36,674,740-758   -3,973   none                 0.12      1.12     3.18
+  //   36,675,879-897   -2,834   none                 0.06      2.29    -0.23
+  //   36,676,449-467   -2,264   Promoter             1.05     11.26     0.76
+  //   36,677,331-349   -1,382   Proximal enhancer    0.78     12.66     2.01
+  //
+  // (DNase and H3K27ac are the max over the first 12 organs; over all 64 and 55
+  // the ordering is the same and the gap is wider -- H3K27ac reaches 24.1 at the
+  // distal element and 35.6 at the proximal one, against 1.5-6.8 at the other
+  // four, and 33.8 over the TSS.)
+  //
+  // The last two are the response elements described for p21 (el-Deiry 1993,
+  // ~-2.3 kb and ~-1.4 kb), and the four above them are the page's control:
+  // same motif, same track, an order of magnitude less signal.
+  //
+  // Two things this figure deliberately does NOT claim, both checked first:
+  //
+  // - phyloP is in the table and not in the frame. It does not separate these
+  //   sites: the most conserved of the six is the motif-only one at -3,973, and
+  //   the distal element is at 0.76. A conservation lane here would contradict
+  //   the caption.
+  // - DNase does not peak ON the two elements. Its maxima in this window are the
+  //   TSS and downstream (19.6 against 1.5 at the distal element), which is the
+  //   ordinary promoter-vs-distal-element split and is what the caption says.
+  //   H3K27ac is the lane that separates them, and it is drawn beside DNase
+  //   rather than instead of it because the disagreement is the honest picture.
   {
     mode: 'url',
-    name: 'genomes_basics/feature_height_menu',
+    name: 'genomes_basics/p53_target_cdkn1a',
     url: sessionSpec(UCSC_HG38_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: TP53_TRANSCRIPT_WINDOW,
-          tracks: [
-            { ...GENE_TRACK_COLLAPSED, height: 60 },
-            { trackId: GNOMAD_TRACK_ID, height: 150 },
-          ],
-        },
-      ],
-    }),
-    readyText: 'TP53',
-    readyTimeout: 180000,
-    settleMs: 10000,
-    viewportWidth: 1200,
-    viewportHeight: 620,
-    diffThreshold: 0.02,
-    actions: [
-      trackMenuIcon(GNOMAD_TRACK_ID),
-      { type: 'waitForText', text: FEATURE_HEIGHT_MENU },
-      {
-        type: 'click',
-        selector: '[data-testid^="cascading-submenu-set_feature_height"]',
-      },
-      { type: 'waitForText', text: 'Super-compact' },
-      { type: 'waitForText', text: FIT_FEATURE_LABEL },
-      { type: 'delay', ms: 800 },
-    ],
-  },
-
-  // The other half of the same problem, on the track that has it worst: JASPAR
-  // draws every motif match the file carries, and the file carries ~9,900 of them
-  // across this 2 kb (measured 2026-08-13 off JASPAR2026.bb). UCSC's browser
-  // draws 500 of those -- its trackDb ships `filter.score 400`, and jb2hubs
-  // carries that setting through into `metadata.ucsc` on the converted track --
-  // so the two frames are the same window with and without UCSC's own default.
-  //
-  // Both frames render without a force-load prompt, and that is the density gate
-  // being OFF rather than satisfied: `AUTO_FORCE_LOAD_BP` leaves it undefined
-  // below 20 kb of visible bp, on the reasoning that a small window is cheap.
-  // So nothing intervenes here -- the track simply draws what it has, and the
-  // saturated frame is the honest answer to "what does a reader get".
-  //
-  // `jexlFiltersSetting` (the model prop the "Filter by..." dialog writes), not
-  // the `jexlFilters` config slot, because the frame is a reader having applied
-  // the filter rather than a config having shipped one.
-  //
-  // 2 kb rather than the 6 kb promoter window above: at 6 kb even the filtered
-  // population is ~1 feature/px and the second frame saturates too, which would
-  // make the pair read as "the filter did nothing".
-  {
-    mode: 'url',
-    name: 'genomes_basics/dense_filter',
-    url: sessionSpec(UCSC_HG38_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: TP53_TSS_WINDOW,
-          tracks: [
-            { ...GENE_TRACK_COLLAPSED, height: 60 },
-            { trackId: JASPAR_TRACK_ID, height: 240 },
-          ],
-        },
-      ],
-    }),
-    readyText: 'TP53',
-    readyTimeout: 180000,
-    settleMs: 10000,
-    // 550: the 240px track plus the collapsed gene track plus the app chrome.
-    // At 420 the run reported 125px of the JASPAR track below the fold, which
-    // would have cut the frame the pair is read on.
-    viewportHeight: 550,
-    diffThreshold: 0.02,
-    stages: [
-      { actions: [PARK_CURSOR] },
-      {
-        url: sessionSpec(UCSC_HG38_CONFIG, {
-          views: [
+          loc: CDKN1A_PROMOTER_WINDOW,
+          // The two elements the tracks below agree on, shaded because an 18 bp
+          // site in an 8 kb view is three pixels wide: a highlight says WHERE,
+          // which is the one thing this frame cannot show on its own. The four
+          // that carry no regulatory signal are deliberately not shaded, so the
+          // figure separates them the way the data does rather than by label.
+          highlight: [
             {
-              type: 'LinearGenomeView',
-              assembly: 'hg38',
-              loc: TP53_TSS_WINDOW,
-              tracks: [
-                { ...GENE_TRACK_COLLAPSED, height: 60 },
-                {
-                  trackId: JASPAR_TRACK_ID,
-                  height: 240,
-                  jexlFiltersSetting: [JASPAR_SCORE_FILTER],
-                },
-              ],
+              refName: 'chr6',
+              start: 36676449,
+              end: 36676467,
+              assemblyName: 'hg38',
+              label: 'distal p53 element',
+            },
+            {
+              refName: 'chr6',
+              start: 36677331,
+              end: 36677349,
+              assemblyName: 'hg38',
+              label: 'proximal p53 element',
             },
           ],
-        }),
-        actions: [PARK_CURSOR],
-      },
-    ],
+          showHighlightChips: true,
+          tracks: [
+            // 100px: CDKN1A collapses to one row, and PANDAR and DINOL take one
+            // each, so the lncRNAs the prose names are actually in the frame.
+            { ...GENE_TRACK_COLLAPSED, height: 100 },
+            {
+              trackId: JASPAR_TRACK_ID,
+              height: 70,
+              jexlFiltersSetting: [JASPAR_TP53_FILTER],
+            },
+            { trackId: 'hg38-cCREregistry', height: 70 },
+            // Both layered tracks, as the promoter figure runs them: one says
+            // the chromatin is open, the other that it is active, and the point
+            // of the frame is that they agree with the cCRE calls about WHICH
+            // motif matches matter. showLegend off for the same reason as there
+            // (64 and 55 organs cannot fit a floating key).
+            {
+              trackId: 'hg38-wgEncodeReg4Dnase',
+              height: 110,
+              showLegend: false,
+            },
+            {
+              trackId: 'hg38-wgEncodeReg4MarkH3k27ac',
+              height: 110,
+              showLegend: false,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'CDKN1A',
+    readyTimeout: 180000,
+    settleMs: 10000,
+    diffThreshold: 0.02,
+    // 840: at 700 the run reported 123px of the H3K27ac track below the fold,
+    // which is one of the two lanes the frame is read on.
+    viewportHeight: 840,
+    actions: [PARK_CURSOR],
   },
 
+  // The stronger element on the sequence. GAACATGTCCCAACATGTTG, which is the
+  // p53 consensus RRRCWWGYYY twice over, and the JASPAR box spans exactly it.
+  // 200 bp is inside the zoom where the sequence track draws letters.
+  //
+  // The cCRE stays in frame as the reason this match is the one that matters;
+  // the gene track does not, since the nearest transcript starts 2 kb away and
+  // the row would be empty.
+  {
+    mode: 'url',
+    name: 'genomes_basics/p53_element_sequence',
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: CDKN1A_DISTAL_ELEMENT_WINDOW,
+          tracks: [
+            {
+              trackId: JASPAR_TRACK_ID,
+              height: 70,
+              jexlFiltersSetting: [JASPAR_TP53_FILTER],
+            },
+            { trackId: 'hg38-cCREregistry', height: 60 },
+            // Both strands, no translation: this is 2 kb upstream of any coding
+            // exon, so the three protein frames the sequence track draws by
+            // default are three rows of noise here -- where on the TP53 exon
+            // above they are the point. The reverse strand stays because the
+            // motif is a palindrome and the match is called on both.
+            {
+              trackId: 'hg38-refseq',
+              height: 80,
+              showTranslation: false,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr6',
+    readyTimeout: 180000,
+    settleMs: 10000,
+    diffThreshold: 0.02,
+    viewportHeight: 480,
+    actions: [PARK_CURSOR],
+  },
   // "About track" on the phyloP track, for the section about what a checkbox
   // actually downloads: the dialog prints the adapter, so the hgdownload URL the
   // config points at is on screen rather than asserted in a paragraph.
