@@ -55,8 +55,17 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   typed payload like the other ten, and all fifteen non-arc wrappers are the
   same three-argument shape. That uniformity is what makes the table look
   free, and it isn't: the shape is uniform because the count moved *into* each
-  pass, not because the counts became the same. See the draw-dispatch entry
-  above — same conclusion one tier down.
+  pass, not because the counts became the same.
+  **The table that WAS right, and landed instead** (`GPU_PILEUP_UPLOAD`): keyed
+  on `PileupLayerId`, holding the wrappers rather than replacing them. The
+  original argument against a table was "a transposed argument at one wide call
+  site", and that was the weak half of it — a table of NAMED fields has no
+  positional transposition to make. The half that survives is co-location: a
+  count belongs beside the packer it has to agree with, in the same directory.
+  A table over layer *ids* takes nothing out of the feature directories, and it
+  closes a real gap — `syncRegion`'s flat list was the one of three wiring
+  points that wasn't exhaustive, so a layer could draw with no buffer. Decline
+  the table that moves per-pass knowledge; build the one that only names it.
 - **Mirrored-band strand-split coverage** — rejected across three passes.
   Group-by-strand already splits SNPs: `buildGroupResult` runs the coverage
   pipeline per group, verified in-app 2026-08-05 (volvox_bam,
