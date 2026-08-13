@@ -24,7 +24,7 @@ import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.
 import { ARC_HEIGHT_MARGIN } from '../../shaders/slang/arc.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../shaders/slang/read.iface.generated.ts'
-import { arcAvailH, arcYFraction } from './arcYScale.ts'
+import { arcAvailH, arcYFraction, arcYScale } from './arcYScale.ts'
 
 // The stock colors, as a ColorPalette. These tests pin SLOT POSITIONS (which
 // index holds interchrom, that the marker and stroke palettes agree), so they
@@ -181,5 +181,15 @@ describe('arcAvailH', () => {
     for (let h = 0; h <= ARC_HEIGHT_MARGIN; h++) {
       expect(arcAvailH(h)).toBe(0)
     }
+  })
+
+  // The floor made `availH` 0 newly reachable, and arc mode's fallback domain is
+  // `availH / pxPerBp` — so 0 flows into `arcYFraction` as a zero DOMAIN, where a
+  // second guard (`arcsYDomainBp > 0`) is what stops it being a division by zero.
+  // The two are only correct together; this pins the pair.
+  it('feeds arc mode a zero domain that yields fraction 0, not Infinity', () => {
+    const { domainBp, log } = arcYScale(undefined, arcAvailH(4), 0.5)
+    expect(domainBp).toBe(0)
+    expect(arcYFraction(1000, domainBp, log)).toBe(0)
   })
 })

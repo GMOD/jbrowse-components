@@ -32,7 +32,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
   // Y of the flat line at this insert size — shared arcBandDestY formula, so it
   // stays byte-identical to arc.slang's flat path and the square lands on the line.
-  float availH = u.arcBandH - ARC_HEIGHT_MARGIN;
+  float availH = arcAvailH(u.arcBandH);
   float destY = arcBandDestY(inst.yBp, availH, u);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
   float cy = destY * yDir;

@@ -10,7 +10,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot, normalizeDepthScalar, distToWideCirclePx
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, normalizeDepthScalar, distToWideCirclePx
 // consts-out takes the WHOLE export-consts list, so this path names what that
 // list currently is rather than a category it will keep meaning. Anything added
 // above lands in a file called indicatorTriangle.generated.ts; put a constant
@@ -515,6 +515,33 @@ public float arcYOffsetPx(uint yBp, float arcsYDomainBp, bool useLog,
 // either pass's generated module. One declaration is what the test was
 // approximating.
 public static const float ARC_HEIGHT_MARGIN = 8.0;
+
+// Plottable height of the arcs band: the drawn height less that margin, and
+// NEVER negative.
+//
+// A band shorter than the margin is reachable from config alone —
+// `readConnectionsHeight` is a plain number slot, and the 20px floor
+// (`clampBandHeight`) is a constraint on DRAGGING, not on what a config or a
+// session snapshot may declare. Anything in 1..7 yields a negative plottable
+// height, and every consumer takes it at face value: `arcYOffsetPx` returns a
+// negative `destY`, so a dome's `ry` comes out negative and `ctx.ellipse` throws
+// IndexSizeError on a negative radius — one small number in a track config, and
+// the Canvas2D backend threw on every frame it drew arcs in, taking the rest of
+// that block's paint with it. The GPU threw nothing and drew the band inside out
+// instead, which is the same statement made quietly.
+//
+// It is HERE, and `//! js-export`ed, because the subtraction had four sites:
+// arc.slang, arcFlat.slang, arcMarker.slang and a hand-written `Math.max` in
+// arcYScale.ts. Flooring the JS one alone left the three passes inverting a band
+// the Canvas2D path collapsed — the two backends disagreeing about the same
+// config, which is worse than the throw it replaced. One definition, asked by
+// both renderers' Y scales, `arcMark`, the hit test and the insert-size ruler,
+// keeps them agreeing at 0. At 0 every arc plots at `destY` 0 — the band
+// collapses to its anchor line, which is what a band with no room to plot in
+// should look like.
+public float arcAvailH(float bandH) {
+  return max(0.0, bandH - ARC_HEIGHT_MARGIN);
+}
 
 // Read cloud/arc flat-line Y offset (unsigned px) within an `availH`-tall band.
 // Shared by arcFlat.slang and arcMarker.slang so a read cloud endpoint square

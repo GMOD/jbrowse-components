@@ -78,7 +78,7 @@ struct VsOut {
 [shader("vertex")]
 VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   VsOut o;
-  float availH = u.arcBandH - ARC_HEIGHT_MARGIN;
+  float availH = arcAvailH(u.arcBandH);
   // arcBandDestY (alignmentsUniforms) is the shared |tlen| -> Y formula, the
   // same one arcMarker.slang uses, so the endpoint squares land on this line.
   float destY = arcBandDestY(inst.yBp, availH, u);

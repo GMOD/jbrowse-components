@@ -238,7 +238,7 @@ struct Curve { float2 c; float2 ends; float2 radii; float kind; float yDir; floa
 // below, which is the PAIR's on-screen half-width — the radius question, not the
 // ink question.
 Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
-  float availH = u.arcBandH - ARC_HEIGHT_MARGIN;
+  float availH = arcAvailH(u.arcBandH);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
   // Y the insert size maps to: availH px spans arcsYDomainBp bp, the CPU-chosen
   // domain (zoom-proportional for arcs, autoscaled |tlen| for read cloud).
