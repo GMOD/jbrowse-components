@@ -584,11 +584,38 @@ anything much larger is worse.
 What survives from the remote measurement is narrower and still real: on a
 **single cold query to a high-latency endpoint**, 28 requests cannot saturate
 the link and 6 can, so that one query can be 4x faster. That is a different
-workload from panning, and the fix for it — if there is one — is a transport
-that issues fewer, larger requests without changing what bam-js merges and
-therefore without changing what it caches. Widening the merge is not that fix.
-It is worth noting the remote pan would be *worse* than the table above, not
-better: 2.5x the bytes over a link running at 5 MB/s.
+workload from panning, and the remote pan would be *worse* than the table above,
+not better: 2.5x the bytes over a link running at 5 MB/s.
+
+### Coalescing in the transport instead — tried, and it cannot work there
+
+The obvious place to separate request shape from cache shape is
+`RemoteFileWithRangeCache`, which already joins contiguous missing 256KB blocks
+*within* one `read()`. Making it hold runs for a microtask and merge **adjacent**
+ones *across* concurrent `read()` calls is free by construction — the bytes are
+identical, and @gmod/bam's merged span stays the cache key it was, so none of the
+pan cost above applies.
+
+It was implemented and measured, and it does not pay: **28 requests become 23**,
+wall clock inside the noise. Instrumenting the batch says why, and the answer is
+structural rather than a tuning problem:
+
+    runs per microtask flush:  1, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+    runs merged per request:   1, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+
+@gmod/bam issues about six reads concurrently and then the rest **sequentially**,
+as earlier ones complete. So the transport never sees more than six of the 28 at
+once, and of those only one group was adjacent. No batching window helps: the
+later reads are issued a network round trip apart, and any delay long enough to
+catch them is longer than the request it would save.
+
+**The information needed is upstream.** Only @gmod/bam knows the whole chunk list
+before the first byte is fetched. So if this is worth fixing, the fix is there
+and it is still not widening the merge: keep merging at 5MB so the parsed cache
+keys stay fine-grained, and separately issue ONE transport read spanning a run of
+adjacent merged chunks, slicing it back out to them. Request shape and cache
+shape decoupled inside the layer that can see both. Not attempted; the reverted
+transport experiment is the evidence that it has to happen there.
 
 ### Why samtools makes one request where we make 28
 
