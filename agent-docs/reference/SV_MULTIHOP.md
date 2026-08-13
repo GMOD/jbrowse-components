@@ -11,7 +11,7 @@ derivative allele and checked against the reads. `scripts/sv_multihop.py` is the
 tool behind it and is meant to be reusable against any somatic SV callset.
 Shipped 2026-08-02 in `6c8a7b4708`..`8f15a3be06`; the forward-looking dataset
 ideas that used to sit at the bottom of this file are in
-[OTHER_IDEAS.md](../OTHER_IDEAS.md), "Cancer SV datasets not yet shot".
+[ideas/cancer-sv-datasets-unshot.md](../ideas/cancer-sv-datasets-unshot.md).
 
 ## What exists
 
@@ -31,8 +31,8 @@ Behavior checks for both python helpers live in `scripts/check-build-scripts.py`
 ## Verified facts, do not re-derive
 
 Which cell lines are usable at all — and which are dead ends nobody should
-re-check — is in [OTHER_IDEAS.md](../OTHER_IDEAS.md), "Cancer SV datasets not yet
-shot". This section is about the two the tutorial uses.
+re-check — is in
+[ideas/cancer-sv-datasets-unshot.md](../ideas/cancer-sv-datasets-unshot.md). This section is about the two the tutorial uses.
 
 **COLO829 chain 1** is a closed 3-junction cycle across three chromosomes,
 joining RARB (chr3), BICC1 (chr10) and TRHDE (chr12) inside under a kilobase of
@@ -279,7 +279,7 @@ built on it.
 **The demo slice bounds what the reads can reach**: chr3:139,936,789-139,986,329
 and chr13:114,317,474-114,353,942, which is one of the two junctions. Widening
 it means re-slicing the 118 GB NCBI BAM and re-uploading, i.e. the data-prep
-work `OTHER_IDEAS.md` files under "C-GIAB tutorial follow-ups".
+work `agent-docs/ideas/cgiab-tutorial-followups.md` files.
 
 **Why this dataset earns its place beside COLO829**: the window ends at the
 chr13 q-terminus, so under the real junction sit half a dozen routes built from

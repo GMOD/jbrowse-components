@@ -14,7 +14,7 @@ building first would be guessing. One is blocked on a decision that is not the
 implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
-[OTHER_IDEAS.md](OTHER_IDEAS.md).
+[ideas/](ideas/README.md), one file per proposal.
 
 | Item | Area | First move |
 | --- | --- | --- |

@@ -733,7 +733,9 @@ function isPointInTimeDoc(file: string) {
   return (
     file.includes('/architecture-decision-records/') ||
     name.startsWith('RFC-') ||
-    name === 'OTHER_IDEAS.md' ||
+    // was `name === 'OTHER_IDEAS.md'` until that file was exploded into one doc
+    // per proposal; the exemption follows the directory
+    file.includes('/agent-docs/ideas/') ||
     name.endsWith('_PLAN.md')
   )
 }

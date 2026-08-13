@@ -1,12 +1,14 @@
 # Agent documentation
 
-The top level is exactly four files — `ARCHITECTURE.md` (canonical), `TODO.md`
-(the backlog), `OTHER_IDEAS.md` (not-committed concepts), and this file.
-Everything else is filed:
+The top level is exactly three files — `ARCHITECTURE.md` (canonical), `TODO.md`
+(the backlog), and this file. Everything else is filed:
 
 - `reference/` — everything settled: how a subsystem works, how to operate it,
   and the datasets behind the figures. A subsystem writeup belongs here, not at
   the top level.
+- `ideas/` — not-committed concepts, one proposal per file. Its README index is
+  **generated** by `website/scripts/generate-doc-indexes.ts` from each doc's
+  `description:`, same as `reference/`.
 - `architecture-decision-records/` — *why*, one decision per file. Its README
   index is **generated** by `website/scripts/generate-adr-index.ts`; don't hand-
   edit the block between the marker comments.
@@ -31,7 +33,7 @@ belongs in one of the homes below. Delete the file when the thread lands.
 - **Something tried and declined** → `reference/REJECTED_IDEAS.md`, with the
   number that declined it.
 - **Work someone intends to do** → `TODO.md`, in the order to take it.
-- **A proposal parked** → `OTHER_IDEAS.md`.
+- **A proposal parked** → `ideas/`, as its own file.
 - **What a session did, which commits, what is now green** → the commit messages
   and `git log`, which already hold it. A handoff may cite commits; it should not
   narrate them.
@@ -70,29 +72,38 @@ right doc without opening all of them, so a new doc without one is invisible.
 ADRs are the exception because the generated README index serves the same
 purpose.
 
-For `reference/`, don't `ls` and guess — read
-[reference/README.md](reference/README.md), whose table is generated from those
-same `description:` lines and gives you all of them in one read. `pnpm autogen
---check` fails on a reference doc that carries no frontmatter, so the rule above
-is now enforced rather than merely stated. Writing a good `description:` is
-therefore the whole job of making a new doc findable.
+For `reference/` and `ideas/`, don't `ls` and guess — read
+[reference/README.md](reference/README.md) or [ideas/README.md](ideas/README.md),
+whose tables are generated from those same `description:` lines and give you all
+of them in one read. `pnpm autogen --check` fails on a doc in either that carries
+no frontmatter, so the rule above is now enforced rather than merely stated.
+Writing a good `description:` is therefore the whole job of making a new doc
+findable.
 
-`TODO.md` and `OTHER_IDEAS.md` are both long enough to need their own index, and
-each opens with one. **Other docs and a few source comments cite their sections
-by title**, so a section heading in either is a reference someone may hold —
-rename one only after grepping for it.
+`TODO.md` is long enough to need its own index and opens with one. **Other docs
+and a few source comments cite its sections by title**, so a heading there is a
+reference someone may hold — rename one only after grepping for it. For `ideas/`
+the same is true of *filenames*, which is what those citations now name.
 
 The split between them is commitment, not size: `TODO.md` is work someone
-intends to do, `OTHER_IDEAS.md` is a proposal thought through and parked. A
+intends to do, an `ideas/` doc is a proposal thought through and parked. A
 parked proposal often already contains the reasoning that kills the obvious
 version of the idea, which is why re-proposing without reading it wastes a
 session.
 
-There was a `guides/` (how-tos) split alongside `reference/` (how it works) and
-it was collapsed: nothing landed cleanly on the line, and since you `ls` both
-anyway it cost a filing decision and bought nothing at read time. Don't
-reintroduce it — if `reference/` gets hard to scan, the fix is better
-`description:` lines, not more folders.
+`ideas/` was one 3300-line `OTHER_IDEAS.md` until 2026-08-13. Two things drove
+the split, and both are reasons to keep it split: its hand-maintained 104-line
+index was exactly the sentence-plus-stale-table shape warned about above, and a
+proposal carrying real accumulated reasoning cannot be taken off the shelf while
+it is buried at line 520 of a file you have to read to find it.
+
+That is not licence for more folders. There was a `guides/` (how-tos) split
+alongside `reference/` (how it works) and it was collapsed: nothing landed
+cleanly on the line, and since you `ls` both anyway it cost a filing decision and
+bought nothing at read time. Don't reintroduce it — if `reference/` gets hard to
+scan, the fix is better `description:` lines, not more folders. The difference is
+that `guides/` asked which of two directories a doc belonged in, where `ideas/`
+asks nothing: one proposal, one file.
 
 ## Invariants — violations cause silent bugs, not crashes
 

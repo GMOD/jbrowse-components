@@ -10,7 +10,7 @@ behind the figures. Start from [ARCHITECTURE.md](../ARCHITECTURE.md) for how a
 track renders; come here for the depth on one piece of it.
 
 The table is generated from each doc's `description:` frontmatter by
-`website/scripts/generate-reference-index.ts`, so a new doc joins it by carrying
+`website/scripts/generate-doc-indexes.ts`, so a new doc joins it by carrying
 the frontmatter every doc here already needs — and `pnpm autogen --check` fails
 on one that doesn't. Don't edit between the markers; write the doc's
 `description:` instead, since that line is also what a reader sees when they

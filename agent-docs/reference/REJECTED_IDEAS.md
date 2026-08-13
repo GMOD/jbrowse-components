@@ -10,7 +10,7 @@ was proposed more than once.
 
 Load-bearing decisions get an [ADR](../architecture-decision-records/README.md)
 and a link from here. Deferred-but-alive proposals go in
-[OTHER_IDEAS.md](../OTHER_IDEAS.md).
+[ideas/](../ideas/README.md).
 
 New entry: one bullet, idea first, then the verdict. Keep the measurement.
 

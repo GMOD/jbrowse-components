@@ -138,5 +138,6 @@ answer if you assume them:
 - `agent-docs/reference/SV_MULTIHOP.md` — the COLO829/K562 reconstruction behind
   `cancer_sv`, and four bugs in it that each returned a plausible wrong answer.
 - `agent-docs/reference/PANGENOME_GRAPHS.md` — the HPRC/E. coli graphs.
-- `agent-docs/OTHER_IDEAS.md` — proposed tutorials, and the dead-end datasets
-  worth not re-checking.
+- `agent-docs/ideas/tutorial-ideas-audit.md` — proposed tutorials; the dead-end
+  datasets worth not re-checking are in
+  `agent-docs/ideas/cancer-sv-datasets-unshot.md`.

@@ -790,8 +790,9 @@ didn't both mis-reported an unset slot as a concrete value:
 
 The reset button is still what separates *inherited* from *customized* (it keys
 off `SlotFacade.modified`, i.e. presence in the stripped snapshot). Adding the
-pin itself to this panel is the parked "Promotable-slot UI" proposal in
-`OTHER_IDEAS.md`; read the three frictions it names before starting.
+pin itself to this panel is the parked proposal in
+`agent-docs/ideas/promotable-slot-ui.md`; read the three frictions it names
+before starting.
 
 ## Adding a promotable slot
 
@@ -869,7 +870,7 @@ pin itself to this panel is the parked "Promotable-slot UI" proposal in
 An earlier design layered admin/user type-default configs via extra
 `mergeTrackConfig` passes in the `SessionTracks.ts` `tracks` getter, with a
 4-part memo key to keep the hydration cache warm (also the stale block in
-`OTHER_IDEAS.md`). **Superseded**: a promotable slot resolves on read — no
+`agent-docs/ideas/promotable-slot-ui.md`). **Superseded**: a promotable slot resolves on read — no
 tracks-getter merge, no admin config slot, no cache-key surgery. Kept the "user
 choice wins / display-type granularity" decisions; dropped the machinery.
 

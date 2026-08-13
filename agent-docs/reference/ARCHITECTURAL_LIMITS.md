@@ -505,7 +505,7 @@ new global display that forgets it hangs its export rather than failing to
 compile. Deliberate (fail-hung over fail-stale). Making it a *required* member
 would need a composition trick that
 [ADR-041](../architecture-decision-records/adr-041-no-mixin-composed-into-basedisplay.md)
-rules out; tracked in OTHER_IDEAS.md §"Deferred architecture-review items".
+rules out; tracked in `agent-docs/ideas/deferred-architecture-review.md`.
 
 ---
 

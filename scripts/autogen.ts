@@ -89,11 +89,12 @@ const GENERATORS: Generator[] = [
   { name: 'ADR index', argv: web('generate-adr-index.ts') },
   {
     // agent-docs/CLAUDE.md makes reading a directory's `description:` lines the
-    // way to find the right reference doc, which meant opening all 36 of them.
-    // This renders them into one page and, more to the point, fails when a doc
-    // carries no frontmatter — the convention was previously enforced by nothing.
-    name: 'reference index',
-    argv: web('generate-reference-index.ts'),
+    // way to find the right doc, which meant opening all of them. This renders
+    // them into one page per directory (reference/ and ideas/) and, more to the
+    // point, fails when a doc carries no frontmatter — the convention was
+    // previously enforced by nothing.
+    name: 'doc indexes',
+    argv: web('generate-doc-indexes.ts'),
   },
   {
     // DISPLAYCHROME.md's adoption map, read off the DisplayType registrations.
