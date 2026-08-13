@@ -9,6 +9,16 @@ import type { UriLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
+ * The ephemeral account ids RpcManager mints are `<TypeName>-<rest>` — the
+ * leading segment names the account type and the remainder is its display name.
+ * Read in one place so the two callers cannot disagree about which is which.
+ */
+function parseEphemeralId(internetAccountId: string) {
+  const [type = '', ...rest] = internetAccountId.split('-')
+  return { type, name: rest.join('-') }
+}
+
+/**
  * #stateModel InternetAccountsMixin
  * #category root
  */
@@ -58,11 +68,11 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         } catch {
           // ignore
         }
-        const internetAccountSplit = internetAccountId.split('-')
+        const { type, name } = parseEphemeralId(internetAccountId)
         const configuration = {
-          type: internetAccountSplit[0]!,
+          type,
           internetAccountId,
-          name: internetAccountSplit.slice(1).join('-'),
+          name,
           description: '',
           domains: hostUri ? [hostUri] : [],
         }
@@ -98,10 +108,28 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           }
         }
 
-        // if still no existing account, create ephemeral config to use
-        return selectedId
-          ? self.createEphemeralInternetAccount(selectedId, {}, location.uri)
-          : null
+        // if still no existing account, create ephemeral config to use — but
+        // only for an id whose leading segment names an account type this
+        // session actually has. Anything else is a location pointing at an
+        // account that is simply gone (a track from a shared session whose
+        // config defined one, a config it was removed from, a host that never
+        // loaded the authentication plugin), and pushing an unknown type into
+        // the array threw a bare MST union error out of whatever was opening
+        // the file. No account instead lets the read go out unauthenticated and
+        // report the 401 it gets, which is the failure the user can act on.
+        if (
+          selectedId &&
+          pluginManager
+            .getElementTypesInGroup('internet account')
+            .some(t => t.name === parseEphemeralId(selectedId).type)
+        ) {
+          return self.createEphemeralInternetAccount(
+            selectedId,
+            {},
+            location.uri,
+          )
+        }
+        return null
       },
     }))
     .actions(self => ({
