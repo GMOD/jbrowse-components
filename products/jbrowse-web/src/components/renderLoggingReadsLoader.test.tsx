@@ -1,3 +1,8 @@
+// MUST be first, and MUST stay a side-effect import: it supplies React's
+// render-logging gate, which react-dom reads once at module scope, and the
+// import sorter is free to move a named import below the react-dom ones (it
+// did, and the test went green having exercised nothing — which is what the
+// renderLoggedComponents() assertion at the bottom now catches).
 import './enableReactRenderLogging.ts'
 
 // the /pure entry point: no auto-cleanup on afterEach. The failure under test
@@ -9,6 +14,7 @@ import { when } from 'mobx'
 
 import SessionLoader from '../SessionLoader.ts'
 import Renderer from './Renderer.tsx'
+import { renderLoggedComponents } from './renderLogRecord.ts'
 import { useLoaderLifecycle } from './useLoaderLifecycle.ts'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'
@@ -23,8 +29,14 @@ function makeLoader() {
     // hubURL is the model's only array property, and a preset sessionSource
     // means loadSessionByType never consults isHubSession — so nothing reads it
     // and its child node stays UNINITIALIZED, which is what turns the read
-    // below from a warning into a throw
-    hubURL: ['http://example.com/hub.txt'],
+    // below from a warning into a throw.
+    //
+    // Empty, because that is what the app itself always produces and so this
+    // is not a hub-only bug: readHubUrlParam returns [] for an absent &hubURL=,
+    // createSessionLoaderFromUrl passes that unconditionally, and
+    // reloadSessionLoader spreads it into every replacement. An empty array
+    // node is an uninitialized child like any other.
+    hubURL: [],
     sessionSource: { type: 'snapshot', snapshot: { id: 'a', name: 'a' } },
   })
 }
@@ -97,4 +109,13 @@ test('React dev render-logging does not read a destroyed loader', async () => {
 
   expect(thrown).toBeUndefined()
   expect(warnings).toEqual([])
+  // and the mechanism under test actually ran, so the two assertions above
+  // cannot pass for the wrong reason (see renderLogRecord).
+  //
+  // What it logs is renderHook's own wrapper rather than Renderer: its props
+  // are the `{l: loader}` this test passes, so it is the component whose diff
+  // recurses into the loader. In the browser it was Renderer's own props. The
+  // mechanism is the same either way, so this asserts that a props walk
+  // happened rather than naming a component RTL owns.
+  expect(renderLoggedComponents().length).toBeGreaterThan(0)
 })
