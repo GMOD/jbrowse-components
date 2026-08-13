@@ -306,6 +306,6 @@ describe('panning', () => {
     expect(both).not.toEqual(anchorOnly)
     // every chain back on its own primary's answer, which is what `region`
     // seeds — not some third state
-    expect(anchorOnly).toEqual(Array(anchorSegs.length).fill(FWD))
+    expect(anchorOnly).toEqual(new Array(anchorSegs.length).fill(FWD))
   })
 })

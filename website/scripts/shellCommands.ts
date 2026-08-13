@@ -88,7 +88,7 @@ export function invocations(body: string) {
       continue
     }
     if (current.trimEnd().endsWith('\\')) {
-      current = current.trimEnd().slice(0, -1) + ' '
+      current = `${current.trimEnd().slice(0, -1)} `
       continue
     }
     out.push(current)
