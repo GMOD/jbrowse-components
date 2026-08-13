@@ -67,9 +67,9 @@ and records what the others have for it, and **all against all** when a row is
 an orthogroup inferred across the genomes at once. The difference is in the
 pairs that leave the reference out.
 
-**Neither the format nor the adapter is anchored.** To draw a pair the adapter
-takes those two columns and keeps the rows where both cells resolve. It never
-consults column 0, so a table with no reference column at all is fine.
+**The format and the adapter take any two columns.** To draw a pair the adapter
+keeps the rows where both of those cells resolve, and it never consults column
+0, so a table with no reference column at all is fine.
 
 **jcvi MCScan tables are anchored.** `mcscan` writes one row per gene of the
 genome you anchor on, so a peach-cacao ortholog with no grape counterpart has no
@@ -77,14 +77,16 @@ row to live in. Grape against either mate is a direct alignment, while peach
 against cacao is what their shared grape genes imply, which is the approximation
 [Direct vs transitive pairs](#direct-vs-transitive-pairs) measures.
 
-**OrthoFinder orthogroups are not**, so every pair of columns is as good as any
-other. [](/docs/tutorials/orthofinder_synteny) builds a six-genome view that
-way.
+**OrthoFinder infers each orthogroup across all the genomes at once.** A
+peach-cacao ortholog gets its row whether or not grape kept one, so every pair
+of columns rests on the same inference. [](/docs/tutorials/orthofinder_synteny)
+builds a six-genome view that way.
 
-**[MCScanX](https://github.com/wyp1125/MCScanX) compares every pair** and writes
-them to one `.collinearity` file, so its result is all against all before
-anything anchors it. [Converting one](#from-mcscanx) below picks a reference,
-and a pair that leaves it out stays loadable as a track of its own.
+**[MCScanX](https://github.com/wyp1125/MCScanX) compares every pair of genomes
+in the run.** It writes them all to one `.collinearity` file, so the result is
+all against all before anything anchors it. [Converting one](#from-mcscanx)
+below picks a reference, and a pair that leaves it out stays loadable as a track
+of its own.
 
 ### A duplicated gene
 
