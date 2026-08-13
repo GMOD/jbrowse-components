@@ -39,7 +39,7 @@ export const FALLBACK_SESSION_NAME = 'New Default Session'
  * lines removed and the rest dedented one level.
  *
  * The two tabs sit next to each other, so re-serializing here would show one
- * session in two formattings — prettier's `{ "assembly": "K12" }` on the config
+ * session formatted two ways — prettier's `{ "assembly": "K12" }` on the config
  * side against a re-stringified object three lines tall on the CLI side, for a
  * difference that means nothing. Slicing text out of JSON is only safe if it is
  * checked, so it is: the slice has to parse back to the same session or this
