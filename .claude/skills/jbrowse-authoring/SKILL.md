@@ -144,7 +144,11 @@ Don't guess slot names — the whole point of the validator is that guesses fail
 silently, and this is cheaper than a round trip through it.
 
 1. `references/config-types.md` — every track, display, and adapter type the
-   core plugins register, one line each. Start here to pick a type.
+   core plugins register, one line each. Start here to pick a type. Starting
+   from a **file** rather than a type instead?
+   `https://jbrowse.org/jb2/docs/config_guides/file_types.md` is format →
+   adapter → track type per row, including the notes that decide between two
+   adapters for one format.
 2. Then fetch that type's page for its slots:
    `https://jbrowse.org/jb2/docs/config/<lowercased type name>.md` (a few
    hundred tokens each). The index links them.

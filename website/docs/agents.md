@@ -102,6 +102,12 @@ warnings are things it will complain about itself. Full description in
 A validator beats a manual here. An agent that has read every page can still
 invent a slot name; one that can check its work recovers from having done so.
 
+One warning is worth recognizing rather than acting on: a type a **plugin**
+registers is not in the manifest the validator checks against, so it is reported
+as an unknown type. That is the expected reading of a correct config, and an
+agent that treats every line of output as something to fix will rewrite a
+working track into a core type that cannot show its data.
+
 ## Where the browser comes from
 
 Step 5 assumes an application, and which one to reach for is decided by where
@@ -198,6 +204,35 @@ with the app in front of them:
 [an empty track](/docs/faq#my-track-loads-but-shows-no-features) and
 [a CORS error](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
 
+## Handing the result back
+
+The picture is the check, not usually the deliverable. Three things are:
+
+- **A link**, which is what someone asking to "see it" wants.
+  `npx @jbrowse/capture url --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated`
+  prints one, encoded, without launching anything, and [](/docs/urlparams) is
+  every form it can take. Do not read a link out of a browser's address bar
+  instead: a session too large for a URL is kept in the browser's own storage
+  with only an id in the bar, so that link opens the view on the machine that
+  made it and nothing anywhere else.
+- **The config or session file**, for someone who will keep working on it.
+  `jbrowse-desktop config.json` opens one directly.
+- **The figure**, when the answer is the picture rather than the browser.
+
+## When the browser goes inside an app
+
+A request to put a genome browser in a web application is the same JSON in a
+different position: `@jbrowse/react-linear-genome-view2` and its siblings take
+the `assembly`, `tracks` and `init` an agent already knows how to write, as
+props rather than as a file. [](/docs/embedded_components) covers which package
+fits which goal.
+
+The thing that surprises an agent there is that **the props are initial
+values**. The view engine is built on first render and later prop changes are
+ignored, so code that swaps `assembly` on a mounted component compiles, runs,
+and changes nothing. A React `key` that changes with the assembly is what
+remounts it.
+
 ## What to give an agent to read
 
 The docs are large, so don't paste them. Every page is served as raw Markdown at
@@ -206,7 +241,10 @@ them — small enough to read whole, with a link per page to fetch on demand.
 
 For config authoring specifically, the useful path is:
 
-1. `llms.txt` to find the type.
+1. [](/docs/config_guides/file_types) to go from the file in hand to the pair of
+   names that describes it. Every format is a row of format, adapter and track
+   type, with the notes that decide between two adapters for one format, and the
+   tables are generated from the adapters themselves.
 2. `https://jbrowse.org/jb2/docs/config/<lowercased type name>.md` for the slots
    that type accepts — one page per adapter, track, and display type, generated
    from the schemas, a few hundred words each.
@@ -215,6 +253,7 @@ For config authoring specifically, the useful path is:
 4. [](/docs/cookbook) when the request is about how something should look rather
    than which type it is — color callbacks, filters, arcs, several signals on
    one track — each recipe a whole track config rather than the slot on its own.
+5. `llms.txt` for anything else: concepts, guides, the pages above in raw form.
 
 ## Ready-made skills
 
