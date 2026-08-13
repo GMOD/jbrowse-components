@@ -74,10 +74,30 @@ about to build. One sentence of orientation first, saying what this step
 produces and why it is short, then the mechanics. The TL;DR primes the page, not
 each section.
 
-These are about _using JBrowse_, not bioinformatics scripting. Commands that
-produce an input file belong in the tutorial's `scripts/build_*.sh` under
-`## Reproduce it end to end`. Link to `quickstart_web.md` for bgzip/tabix/
-`text-index` prep rather than re-pasting it.
+These are about _using JBrowse_, not bioinformatics scripting, with one
+exception: **the command that produces the page's subject file goes in the
+prose**, in a form a reader runs on their own equivalent data. Everything around
+it stays in the tutorial's `scripts/build_*.sh` under
+`## Reproduce it end to end` — fetching the specific accession, deriving the
+specific cohort, the QC arithmetic, the config patching. Link to
+`quickstart_web.md` for bgzip/tabix/`text-index` prep rather than re-pasting it.
+
+The test is whether a reader with their own data would run the line as written.
+`bwameth.py --reference ref.fa -t 8 R1.fq.gz R2.fq.gz` passes; anything naming
+an accession, a sample list or a locus is script. Filenames are not the axis, so
+use the page's own and let the reader substitute. It is normally three to six
+lines, and it is the tool the page already spends paragraphs explaining, so this
+does not turn a tutorial into a bioinformatics one.
+
+**A display setting the figure depends on goes in the track config on the page**
+too, not only in the script's config patch. Both halves of this came from
+`bisulfite`, which named bwameth in its TL;DR, its prerequisites and two
+paragraphs of prose while its only bash blocks were two generic `jbrowse` calls
+and a `curl` of the build script, and whose `colorBy` lived in a python heredoc
+— so the page showed everything about the pileup except the line that colored
+it. `bedGraphToBigWig` was a listed prerequisite of that page with no command
+behind it anywhere on the site, which is the shape to watch for: a tool in
+`## Prerequisites` that no fence on the page ever invokes.
 
 A tutorial with real requirements opens with a `## Prerequisites` section under
 the TL;DR: a bulleted list, optionally followed by one short paragraph saying
