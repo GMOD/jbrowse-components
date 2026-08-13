@@ -55,6 +55,22 @@
 // a few percent behind, which is inside what the control itself swings, and a
 // fourth put it ahead.
 //
+// CAVEAT ADDED LATER, and not yet resolved for this bench. It loops three
+// datasets through the same three driver objects in one process, which is the
+// shape that was afterwards found to contaminate every dataset after the first
+// — a 1.7x swing on a sibling probe, following POSITION rather than data (see
+// agent-docs/reference/BENCHMARKING.md, "Looping several DATASETS through the
+// same arm function objects"). The percentages above are 2-9%, which is the
+// range that shape is most able to invent, and `eqx pacbio CCS` — the one row
+// whose direction was called consistent — runs THIRD.
+//
+// It is left as it is rather than silently re-run, because the conclusion it
+// supports is "the swap cost nothing", and contamination here would have to be
+// helping the library to be hiding a regression. But if this bench is ever used
+// to justify a change rather than to retire a worry, give it an `--only=` flag
+// first and quote separate runs, as `readBaseCounts.bench.ts` and
+// `tagAndSeq.probe.ts` now do.
+//
 // And the output is IDENTICAL on all three datasets, once the two deliberate
 // representation changes are normalized (see below). The walk that replaced ours
 // computes the same mismatches, at worst the same speed, faster on long reads.

@@ -255,8 +255,10 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   nearly free anyway (12.5% → 5.9% of busy worker time).
 - **Reading a read's bases out of `NUMERIC_SEQ` instead of decoding `seq`** —
   measured 2026-08-13 in `computeReadBaseCounts` and declined at **parity**
-  (6.44x vs 6.36x, 6.95x vs 7.22x against the shipped baseline, across two
-  samples). It looks like a clear win and the reasoning is worth keeping,
+  (6.73x vs 6.74x on `200x.longread.mod`, 3.77x vs 3.68x on `20x.longread.mod`,
+  each run one fixture per process against the shipped baseline; three earlier
+  all-in-one-process runs agreed). It looks like a clear win and the reasoning
+  is worth keeping,
   because it applies to any consumer of BAM's packed SEQ. Once that function
   walks only the modified columns it reads ~28% of a long read's bases, so
   decoding the other 72% into a string reads as pure waste. It is not: the

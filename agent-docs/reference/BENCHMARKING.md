@@ -73,6 +73,37 @@ in the same way.
 one case from **1.375x to 0.954x** on its own. This is the interleaving rule
 again, from the other direction.
 
+**Looping several DATASETS through the same arm function objects.** The rules
+above are all about sharing code between arms; this is about sharing an arm
+between fixtures, and it is the same failure one level up. A bench that loads
+fixture A, times every arm on it, then loads fixture B and times the same arm
+objects on it, contaminates B — and every fixture after it. Reported a
+**0.73x** where one-fixture-per-process gives **1.22x**, a 1.7x swing, on the
+tag-walk probe.
+
+The tell is that **the reversal follows position, not data**: put the same two
+fixtures in the other order and the loser swaps. Confirm it that way before
+believing any multi-fixture row, because the natural reading — "this
+optimization does not help small inputs" — is a plausible, publishable, wrong
+conclusion, and it is the one that was nearly written down here.
+
+Three things that do *not* fix it, each measured: pre-warming every arm on every
+fixture before timing (recovers 0.73x to 0.92x, not to 1.22x), releasing the
+other fixtures' records so the live heap matches (no change, so it is not GC or
+cache pressure), and raising the rounds tenfold (no change, so it is not
+tiering). **One process per fixture** does fix it. Give the bench an
+`--only=<fixture>` flag and quote numbers from separate runs;
+`plugins/alignments/benches/readBaseCounts.bench.ts` and `tagAndSeq.probe.ts`
+both carry one, with the reasoning at the flag.
+
+Not every bench is equally exposed. The arm that degrades is the one doing raw
+property and typed-array access on the records; an arm that calls into the
+library's own methods is unaffected, because those call sites are polymorphic
+from everything else in the process anyway. So a bench comparing two *library*
+paths may be fine where one comparing a hand-rolled walk against a library path
+is not — which is exactly the asymmetry that makes the hand-rolled candidate
+look worse than it is.
+
 ### Measuring the wrong thing
 
 **Setup inside the timed region.** Packing a 50kb reference *inside* the timed

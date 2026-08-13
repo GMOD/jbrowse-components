@@ -1,15 +1,33 @@
 // Two per-read costs the alignments worker pays that @gmod/bam could answer more
 // cheaply, sized against the walk the pileup actually renders from.
 //
-//   node --expose-gc plugins/alignments/benches/tagAndSeq.probe.ts
+//   node --expose-gc plugins/alignments/benches/tagAndSeq.probe.ts --only=1000x
 //
-// Flags: --rounds=<n> (default 30), --data=<dir>
+// Flags: --rounds=<n> (default 30), --data=<dir>, --only=<fixture substring>
+//
+// **RUN IT ONE FIXTURE AT A TIME.** Looping several fixtures through the same
+// arm function objects contaminates every fixture after the first: it reported
+// `fused` at 0.73x where one-process-per-fixture gives 1.22x, and the reversal
+// followed POSITION rather than data — the two short-read fixtures here are
+// byte-identical in tag layout and in memory layout. Pre-warming every arm on
+// every fixture, releasing the other fixtures' records, and raising the rounds
+// tenfold each fail to fix it; a separate process fixes it. That is now its own
+// entry in agent-docs/reference/BENCHMARKING.md, and it is the reason this file
+// grew an `--only` flag.
 //
 // A PROBE, not an A/B of two implementations — it sizes work the consumer does
 // today against a candidate that does not exist yet, so read it for magnitudes
 // and not for a speedup claim. The harness rules still apply and are in
 // agent-docs/reference/BENCHMARKING.md: interleaved, min-of-rounds, and a
 // control arm that is a second copy of one of the real ones.
+//
+// WHAT IT SAID, one fixture per process, min of 25 rotated rounds, controls
+// 0.99-1.02x. The verdict and the five eliminated explanations for the
+// size-dependence are in BAM_STACK_INTEGRATION.md's seam 4 — short version, the
+// cost is real and the fused walk is NOT a justified fix:
+//
+//   1000x.shortread  both 35.3ms, fused 23.2ms (1.52x), mismatch walk 35.2ms
+//   200x.shortread   both  8.0ms, fused  8.2ms (0.98x), mismatch walk  7.6ms
 //
 // PART 1 — TAG WALKS PER READ. `extractFeatureArrays` reads two tags on every
 // read of every render, unconditionally:
@@ -49,6 +67,11 @@ const DATA = arg('data', join(process.env.HOME!, 'src/jb2bench/data'))
 const REFNAME = arg('refName', 'chr22_mask')
 const START = Number(arg('start', '124000'))
 const END = Number(arg('end', '143000'))
+// Run a single fixture, by substring of its filename. **Required to get a real
+// number** — see the header. Without it every fixture after the first is
+// contaminated.
+const ONLY = arg('only', '')
+const pick = (files: string[]) => files.filter(f => f.includes(ONLY))
 
 const time = (fn: () => unknown) => {
   globalThis.gc?.()
@@ -271,12 +294,12 @@ async function main() {
   )
 
   console.log('PART 1 — tag walks (ms per query, all reads)\n')
-  for (const file of [
+  for (const file of pick([
     '1000x.shortread.bam',
     '200x.shortread.bam',
     '200x.longread.bam',
     '200x.longread.mod.bam',
-  ]) {
+  ])) {
     const records = await load(file)
     if (!records) {
       console.log(`  ${file}: absent or empty, skipped`)
@@ -319,7 +342,7 @@ async function main() {
   }
 
   console.log('\nPART 2 — sequence decode (ms per query, all reads)\n')
-  for (const file of ['200x.longread.mod.bam', '1000x.shortread.bam']) {
+  for (const file of pick(['200x.longread.mod.bam', '1000x.shortread.bam'])) {
     const records = await load(file)
     if (!records) {
       console.log(`  ${file}: absent or empty, skipped`)

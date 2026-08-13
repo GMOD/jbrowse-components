@@ -291,37 +291,58 @@ const mmTag = getTagAlt(feature, 'MM', 'Mm')           // extractModifications
 
 `_findTag` proves absence by walking every tag on the record, so on an ordinary
 short-read BAM that is still two full walks per read — the fix went to one of
-them and the other is the same shape. `benches/tagAndSeq.probe.ts` sizes it
-against the mismatch walk, which is the work that actually renders the pileup;
-min of 25 rotated rounds, control 0.94-1.03x:
+them and the other is the same shape. **The cost is real. The fix is not
+justified yet, and the numbers that made it look justified were wrong.**
+
+`benches/tagAndSeq.probe.ts` sizes the two lookups against the mismatch walk,
+which is the work that actually renders the pileup. Run **one fixture per
+process** (`--only=`) — the first version of this table was taken from a single
+process looping four fixtures, and every fixture after the first was
+contaminated; see BENCHMARKING.md, where that is now its own trap:
 
 | fixture | reads | SA | MM/Mm | both | fused | mismatch walk |
 | --- | --: | --: | --: | --: | --: | --: |
-| 1000x.shortread | 153,677 | 18.5ms | 21.0ms | 36.1ms | 23.1ms | 41.3ms |
-| 200x.shortread | 31,133 | 3.6ms | 4.2ms | 7.5ms | 10.1ms | 8.5ms |
-| 200x.longread | 335 | 2.5ms | 2.6ms | 4.7ms | 3.0ms | 55.7ms |
-| 200x.longread.mod | 335 | 3.3ms | 3.5ms | 6.9ms | 3.6ms | 56.1ms |
+| 1000x.shortread | 153,677 | 18.6ms | 20.8ms | 35.3ms | 23.2ms | 35.2ms |
+| 200x.shortread | 31,133 | 4.5ms | 4.6ms | 8.0ms | 8.2ms | 7.6ms |
 
-**Read the short-read row.** Proving two absences costs 36.1ms against 41.3ms of
-mismatch walking — 87% of the render work, to answer nothing. A single pass
-matching three names is 1.57x better there, and 1.55-1.91x on long reads where
-the absolute numbers are small. `fused` is a hand-rolled three-name walk in the
-probe, not an API: what it would take is an N-name lookup in `@gmod/bam`
-alongside `getTagAlt`, and the probe exists to decide whether that is worth
-adding.
+**What survives.** Proving two absences costs about as much as the whole
+mismatch walk — 35.3ms against 35.2ms at 1000x, 8.0ms against 7.6ms at 200x. On
+a file with neither tag that is the render's largest single avoidable cost, and
+it is avoidable in principle by one pass over the tag block instead of two.
 
-Two cautions before building it. The 200x short-read row went the **wrong way**
-(0.75x) and reproduced, while the 1000x row of the same data shape went 1.57x —
-so the win is not uniform in read count and wants explaining before it is
-claimed. And the fused walk in the probe reaches private fields; a real
-implementation lives inside `BamRecord`, where `tagValueEnd` is already the
-shared cursor `_findTag`, `getTagAlt` and `_computeTags` walk with, so it should
-be an argument-count change rather than a fourth copy of the walk.
+**What does not survive: that a fused pass is the fix.** It measures 1.52x at
+1000x and **0.98x at 200x** — the same fixture shape, a fifth the reads. That
+size-dependence has no explanation, and five have been eliminated:
 
-The consumer-side alternative is to stop reading `SA` unconditionally — it feeds
-`readSuppAlignments`, which only the arc overlay reads. That means a new
-`rpcProps` entry, which invalidates the fetch when it toggles, so it is a worse
-trade than it looks; noted so the next reader does not have to rediscover why.
+- not the data — the two fixtures are byte-identical in tag layout (13.0 tags,
+  75.4 tag bytes/read, same names and types) and in memory layout (383-byte
+  records, 384-byte stride, 58% buffer occupancy);
+- not JIT tiering — 300 rounds gives the same answer as 25;
+- not live-heap pressure — releasing the other fixture's records changes nothing;
+- not harness contamination alone — isolating the fixture moves 200x from 0.73x
+  to ~0.98x, but not to a win;
+- not arm warmup asymmetry — it survives a three-arm process.
+
+So the honest state is: an unexplained per-read cost difference in a raw byte
+walk, between two fixtures that differ only in how many reads they contain.
+
+**Do not add the API on these numbers.** Even taking 1.52x at face value it
+saves ~12ms on the deepest short-read fixture in the corpus and nothing on the
+ordinary one, against a library API that every consumer then carries. What would
+change the verdict is an explanation for the size-dependence, or an end-to-end
+render measurement rather than a micro-probe — which is the same standard the
+CRAM mismatch-walk delegation was held to (`CramSlightlyLazyFeature`, "revisit
+if an end-to-end render measurement, not this micro-benchmark, shows the
+short-read row mattering").
+
+Two notes for whoever does pick it up. The fused walk in the probe reaches
+private fields; a real implementation belongs inside `BamRecord`, where
+`tagValueEnd` is already the shared cursor `_findTag`, `getTagAlt` and
+`_computeTags` walk with, so it should be an argument-count change rather than a
+fourth copy of the walk. And the consumer-side alternative — stop reading `SA`
+unconditionally, since it feeds `readSuppAlignments` and only the arc overlay
+reads that — needs a new `rpcProps` entry, which invalidates the fetch when it
+toggles, so it is a worse trade than it looks.
 
 ## Things checked and found already integrated
 

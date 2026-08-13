@@ -35,13 +35,18 @@
 //   control    — a second, separately-declared copy of `string`
 //
 // WHAT IT SAYS, on `200x.longread.mod.bam` (335 reads, mean 50 kb, 41,854
-// modified columns), three samples, control 0.98-1.02x throughout:
+// modified columns) run with `--only=200x`, control 1.00x. The bracketed range
+// is what three earlier all-fixtures-in-one-process runs gave, kept so the
+// spread is visible:
 //
-//   packed      1.10-1.19x    the CIGAR round trip
-//   packed+cc   1.25-1.51x
-//   +typed      3.87-4.35x    <- the Map was the big one
-//   +cursor     6.36-7.36x    <- and the per-base walk was the next
-//   +packedSEQ  6.44-6.95x    parity with +cursor: NO WIN
+//   packed      1.18x  [1.10-1.19]   the CIGAR round trip
+//   packed+cc   1.40x  [1.25-1.51]
+//   +typed      4.34x  [3.87-4.35]   <- the Map was the big one
+//   +cursor     6.74x  [6.36-7.36]   <- and the per-base walk was the next
+//   +packedSEQ  6.73x  [6.44-6.95]   parity with +cursor: NO WIN
+//
+// On `--only=20x` (36 reads, 10,472 columns): 1.37x / 1.68x / 2.55x / 3.68x,
+// and +packedSEQ again at parity (3.77x).
 //
 // `+packedSEQ` is the interesting negative. Once the walk only visits the
 // wanted columns it reads ~28% of a read's bases, so decoding the other 72%
@@ -82,6 +87,20 @@ const BAM = arg('bam', join(process.env.HOME!, 'src/jb2bench/data'))
 const REFNAME = arg('refName', 'chr22_mask')
 const START = Number(arg('start', '124000'))
 const END = Number(arg('end', '143000'))
+// Run a single dataset, by substring of its name.
+//
+// **This is not a convenience flag.** Looping several datasets through the same
+// arm function objects contaminates every dataset after the first: the arms'
+// call sites have then seen more than one record population and never recover,
+// while the baseline — which goes through the feature's own methods, already
+// polymorphic — is unaffected. It reversed the sibling `tagAndSeq.probe.ts` by
+// 1.7x, and the reversal followed POSITION rather than data (the two fixtures
+// there are byte-identical in tag layout). Neither pre-warming every arm on
+// every dataset nor releasing the other dataset's records recovers it; one
+// process per dataset does. So the numbers in the header above were taken one
+// `--only=` run at a time, and a fresh measurement should be too. See
+// agent-docs/reference/BENCHMARKING.md.
+const ONLY = arg('only', '')
 
 // ---------------------------------------------------------------------------
 // A minimal Feature over a BamRecord — just the accessors the function under
@@ -866,7 +885,14 @@ async function main() {
   const datasets = [
     { name: '20x.longread.mod.bam', file: '20x.longread.mod.bam' },
     { name: '200x.longread.mod.bam', file: '200x.longread.mod.bam' },
-  ]
+  ].filter(d => d.name.includes(ONLY))
+  if (!ONLY && datasets.length > 1) {
+    console.log(
+      'NOTE: running every dataset in one process. Only the FIRST row is\n' +
+        'trustworthy — see the --only= note in this file. Re-run per dataset\n' +
+        'before quoting a number.\n',
+    )
+  }
   console.log(
     `computeReadBaseCounts: CIGAR string vs packed ops\n` +
       `${REFNAME}:${START}-${END}, min of ${ROUNDS} rotated rounds\n`,
