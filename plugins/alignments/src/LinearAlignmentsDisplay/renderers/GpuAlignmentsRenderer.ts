@@ -618,6 +618,41 @@ export const GPU_PILEUP_PASS: Record<PileupLayerId, string> = {
   perBaseLetter: PASS_PER_BASE_LETTER,
 }
 
+// Each pileup layer's upload. The third `Record<PileupLayerId, …>` beside
+// GPU_PILEUP_PASS and Canvas2D's CANVAS_PILEUP_DRAW, and it exists for the same
+// reason: a layer added to PILEUP_LAYERS with a pass wired and no upload
+// compiles, registers, draws — and paints nothing, because the pass has no
+// buffer. That is the one wiring gap the other two maps left open, and it fails
+// on the GPU backend only, so the Canvas2D side of a parity check still looks
+// right.
+//
+// Every entry is `(hal, regionIndex, data)` because each upload owns its own
+// instance count (`features/*/uploadGpu.ts`) — the shape is uniform here
+// because the per-pass knowledge moved into the passes, not because the passes
+// agree. The coverage band and the arc band are NOT in this map: they aren't
+// PILEUP_LAYERS entries, and `uploadArcs` additionally takes the configured
+// line width. Both are uploaded explicitly in syncRegion.
+type PileupUploadFn = (
+  hal: GpuHal,
+  displayedRegionIndex: number,
+  data: PileupDataResult,
+) => void
+
+const GPU_PILEUP_UPLOAD: Record<PileupLayerId, PileupUploadFn> = {
+  connLine: uploadConnectingLines,
+  linkedReadLine: uploadLinkedReadLines,
+  read: uploadReadSegments,
+  overlap: uploadOverlaps,
+  mod: uploadModifications,
+  perBaseQual: uploadPerBaseQuality,
+  gap: uploadGaps,
+  mismatch: uploadMismatches,
+  insertion: uploadInsertions,
+  clip: uploadClips,
+  softclipBases: uploadSoftclipBases,
+  perBaseLetter: uploadPerBaseLetter,
+}
+
 // Coverage-band passes in z-order; the band itself is gated by `showCoverage`
 // at the call site. The depth-scaled passes need the autoscaled domain max, so
 // they are skipped until coverage stats settle (coarseDynamicBlocks is
@@ -838,23 +873,21 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     }
 
     if (data) {
-      uploadReadSegments(this.hal, idx, data)
-      uploadGaps(this.hal, idx, data)
-      uploadMismatches(this.hal, idx, data)
-      uploadInsertions(this.hal, idx, data)
-      uploadClips(this.hal, idx, data)
-      uploadSoftclipBases(this.hal, idx, data)
-      uploadModifications(this.hal, idx, data)
-      uploadPerBaseQuality(this.hal, idx, data)
-      uploadPerBaseLetter(this.hal, idx, data)
+      // Pileup layers: every PILEUP_LAYERS id, by construction. Uploads are
+      // unconditional — the layer's `enabled` gate belongs to the DRAW, not to
+      // this. Gating the upload too would make a mid-session toggle paint
+      // nothing until the next fetch replaced the buffer it never wrote.
+      for (const upload of Object.values(GPU_PILEUP_UPLOAD)) {
+        upload(this.hal, idx, data)
+      }
+      // Coverage band — not PILEUP_LAYERS entries, so no map to iterate. The
+      // set is `coveragePassPlan`'s, and `uploadedPassCoverage.test.ts` is what
+      // holds the two together.
       uploadCoverageBins(this.hal, idx, data)
       uploadSnpCoverage(this.hal, idx, data)
       uploadInterbase(this.hal, idx, data)
       uploadIndicators(this.hal, idx, data)
       uploadModCoverage(this.hal, idx, data)
-      uploadConnectingLines(this.hal, idx, data)
-      uploadLinkedReadLines(this.hal, idx, data)
-      uploadOverlaps(this.hal, idx, data)
     }
     if (arcs) {
       uploadArcs(this.hal, idx, arcs, arcLineWidth)
