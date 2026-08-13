@@ -19,6 +19,7 @@ const noDrag = {
   onTabPointerDown: () => {},
   onTabPointerMove: () => {},
   onTabPointerUp: () => {},
+  onTabPointerCancel: () => {},
 }
 
 /**

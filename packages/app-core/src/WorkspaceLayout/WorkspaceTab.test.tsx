@@ -132,6 +132,7 @@ describe('renaming inside the tab strip', () => {
             onTabPointerDown: () => {},
             onTabPointerMove: () => {},
             onTabPointerUp: () => {},
+            onTabPointerCancel: () => {},
           },
           renderTabLabel: t => (
             <WorkspaceTab

@@ -210,6 +210,118 @@ describe('middle-click closes a tab', () => {
   })
 })
 
+/**
+ * A drag starts on the primary button of the primary pointer, and nothing else.
+ *
+ * dockview never had to say this: its tab drags over HTML5 dnd, where the
+ * browser owns the rule, and its pointer source is touch/pen only by default.
+ * Pointer events here are for capture, which means owning the rule as well.
+ */
+describe('which press starts a drag', () => {
+  test('the right button does not drag a tab', () => {
+    const { session, left, tabA } = setup()
+    const tab = screen.getByTestId(`tab-${tabA}`)
+
+    act(() => {
+      fireEvent.pointerDown(tab, { button: 2, clientX: 10, clientY: 10 })
+      fireEvent.pointerMove(tab, { button: 2, clientX: 600, clientY: 200 })
+    })
+    expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+    act(() => {
+      fireEvent.pointerUp(tab, { button: 2, clientX: 600, clientY: 200 })
+    })
+    expect(session.findTab(tabA)?.panel.id).toBe(left)
+    expect(session.panels).toHaveLength(2)
+  })
+
+  // The shape that made it more than a curiosity: a native context menu eats
+  // the `pointerup` that would have cleared `pending`, so a right-press armed a
+  // drag that the next move of a BUTTON-LESS pointer started, and the click
+  // dismissing the menu dropped the tab wherever it had got to.
+  test('a right press left hanging arms nothing', () => {
+    const { tabA } = setup()
+    const tab = screen.getByTestId(`tab-${tabA}`)
+
+    act(() => {
+      fireEvent.pointerDown(tab, { button: 2, clientX: 10, clientY: 10 })
+    })
+    act(() => {
+      fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+    })
+
+    expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+  })
+
+  // Showing a tab mounts its views, at a WebGL2 context per display against a
+  // ceiling of 16, so it is the left button that asks for it — dockview gates
+  // `_activateOnPointerDown` the same way.
+  test('the right button does not show the tab either', () => {
+    const { session, left } = setup()
+    const other = session.addTab(left, ['view-2'])!.id
+    const first = session.panels.find(p => p.id === left)!.tabs[0]!.id
+
+    act(() => {
+      fireEvent.pointerDown(screen.getByTestId(`tab-${first}`), {
+        button: 2,
+        clientX: 10,
+        clientY: 10,
+      })
+    })
+
+    expect(session.activeTabOf(left)?.id).toBe(other)
+  })
+
+  // A second finger elsewhere in the strip must not steer the first one's drag,
+  // and its release must not end it. dockview tracks the same pointerId.
+  test('a second pointer does not steer the first one’s drag', () => {
+    const { session, left, tabA } = setup()
+    const tab = screen.getByTestId(`tab-${tabA}`)
+
+    act(() => {
+      fireEvent.pointerDown(tab, { pointerId: 1, clientX: 10, clientY: 10 })
+      fireEvent.pointerMove(tab, { pointerId: 1, clientX: 600, clientY: 200 })
+      // a second pointer wanders off and lifts somewhere else entirely
+      fireEvent.pointerMove(tab, { pointerId: 2, clientX: 5000, clientY: 5000 })
+      fireEvent.pointerUp(tab, { pointerId: 2, clientX: 5000, clientY: 5000 })
+    })
+
+    // the first pointer's drag is still where it was, and still in flight
+    expect(
+      document.querySelector('[data-drop-indicator="center"]'),
+    ).toBeTruthy()
+    expect(session.findTab(tabA)?.panel.id).toBe(left)
+  })
+})
+
+// The browser can end a gesture without a `pointerup`: a long-press on a touch
+// device opens the platform's own context menu and cancels the pointer. The
+// same clearing as Escape, and for the same reason — clearing only what is on
+// screen leaves `pending` behind to rebuild it from the next move.
+test('a cancelled pointer takes the drag with it, and it does not resume', () => {
+  const { session, left, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeTruthy()
+
+  act(() => {
+    fireEvent.pointerCancel(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+  act(() => {
+    fireEvent.pointerMove(tab, { clientX: 650, clientY: 220 })
+    fireEvent.pointerUp(tab, { clientX: 650, clientY: 220 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+  expect(session.findTab(tabA)?.panel.id).toBe(left)
+  expect(session.panels).toHaveLength(2)
+})
+
 test('dragging a tab into the middle of another cell moves it there', () => {
   const { session, right, tabA } = setup()
   const tab = screen.getByTestId(`tab-${tabA}`)
@@ -456,8 +568,14 @@ describe('reordering within a strip', () => {
  * from a ref. The other half is the caller memoising the chrome object, which
  * `WorkspaceContainer` does and which the harness below copies — the assertion
  * is meaningless without it, so it is spelled out rather than shared.
+ *
+ * **Including the cell it is over.** That one has an indicator to draw, but the
+ * indicator is a function of the cell and the zone — or, on a strip, the gap —
+ * and a pointer emits events far faster than it crosses between any of those.
+ * So the cost the memoised handlers removed for every other cell was still
+ * being paid, at full rate, by the cell being dragged over.
  */
-test('a drag in flight does not re-render the cells it crosses', () => {
+describe('a drag in flight', () => {
   const drawn: string[] = []
   const Harness = observer(function Harness({
     session,
@@ -488,37 +606,61 @@ test('a drag in flight does not re-render the cells it crosses', () => {
     )
   })
 
-  const session = TestSession.create({ name: 't' })
-  const left = session.panels[0]!.id
-  const tabA = session.tabs[0]!.id
-  session.addViewToTab(tabA, 'view-1')
-  const rightPanel = session.splitPanel(left, 'row')!
-  const tabB = rightPanel.tabs[0]!.id
-  session.addViewToTab(tabB, 'view-3')
-  stubGeometry({
-    [left]: { left: 0, top: 0, width: 400, height: 400 } as DOMRect,
-    [rightPanel.id]: { left: 400, top: 0, width: 400, height: 400 } as DOMRect,
-  })
-  render(<Harness session={session} />)
+  function dragInto() {
+    drawn.length = 0
+    const session = TestSession.create({ name: 't' })
+    const left = session.panels[0]!.id
+    const tabA = session.tabs[0]!.id
+    session.addViewToTab(tabA, 'view-1')
+    const rightPanel = session.splitPanel(left, 'row')!
+    const tabB = rightPanel.tabs[0]!.id
+    session.addViewToTab(tabB, 'view-3')
+    stubGeometry({
+      [left]: { left: 0, top: 0, width: 400, height: 400 } as DOMRect,
+      [rightPanel.id]: {
+        left: 400,
+        top: 0,
+        width: 400,
+        height: 400,
+      } as DOMRect,
+    })
+    render(<Harness session={session} />)
 
-  const tab = screen.getByTestId(`tab-${tabA}`)
-  act(() => {
-    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
-    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
-  })
-  drawn.length = 0
+    const tab = screen.getByTestId(`tab-${tabA}`)
+    act(() => {
+      fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+      fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+    })
+    drawn.length = 0
+    return { tab, tabA, tabB }
+  }
 
-  // four more moves, all inside the right-hand cell
-  act(() => {
-    for (const x of [610, 620, 630, 640]) {
-      fireEvent.pointerMove(tab, { clientX: x, clientY: 200 })
-    }
+  test('redraws nothing while it stays in one zone', () => {
+    const { tab } = dragInto()
+
+    // four more moves, all in the centre band of the right-hand cell
+    act(() => {
+      for (const x of [610, 620, 630, 640]) {
+        fireEvent.pointerMove(tab, { clientX: x, clientY: 200 })
+      }
+    })
+
+    expect(drawn).toEqual([])
   })
 
-  // the cell under the pointer redraws — it is the one showing the indicator
-  expect(drawn).toContain(tabB)
-  // the cell the drag started in has nothing new to say and must hold still
-  expect(drawn).not.toContain(tabA)
+  test('redraws the cell whose indicator changes, and only that one', () => {
+    const { tab, tabA, tabB } = dragInto()
+
+    // out of the centre band and into the right edge one: a different
+    // indicator, so this cell genuinely has something new to draw
+    act(() => {
+      fireEvent.pointerMove(tab, { clientX: 790, clientY: 200 })
+    })
+
+    expect(drawn).toContain(tabB)
+    // the cell the drag started in has nothing new to say and must hold still
+    expect(drawn).not.toContain(tabA)
+  })
 })
 
 test('clicking a tab makes it active without moving anything', () => {

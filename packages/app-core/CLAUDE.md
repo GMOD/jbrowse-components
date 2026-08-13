@@ -216,6 +216,33 @@ the keyboard. It clears `pendingRef` as well as the drag state, because the drag
 is rebuilt from `pending` on every move and clearing only what is on screen lets
 the next pixel of movement resume it.
 
+**Choosing pointer events means owning the rules HTML5 dnd was giving us**, and
+all three were missing. dockview states none of them either, because it doesn't
+have to: its tab drags over HTML5 dnd, where the browser applies them, and its
+`PointerDragSource` is touch/pen only unless `dndStrategy: 'pointer'`.
+
+- **The primary button of the primary pointer, and nothing else.** A right-drag
+  moved a tab; worse, a right-press left `pending` armed, because the native
+  context menu eats the `pointerup` that would have cleared it — after which the
+  next move of a button-less pointer dragged the tab, and the click dismissing
+  the menu dropped it. `Tab` gates _activation_ on the same button separately
+  (dockview's `_activateOnPointerDown` does too): showing a tab mounts a stack
+  of views, which is not what a right-press is asking for.
+- **One `pointerId` per gesture**, checked in every handler. A second finger
+  elsewhere in the strip otherwise steered the first one's drag and its release
+  ended it. dockview tracks the same id in `PointerDragSource`.
+- **`pointercancel` ends the gesture.** A long-press on a touch device opens the
+  platform's context menu and cancels the pointer, with no `pointerup` to
+  follow. Same clearing as Escape, for the same reason.
+
+**And the memoised handlers are only half the re-render story.** The cell being
+dragged _over_ has an indicator to draw — but the indicator is a function of the
+cell and the zone, or of the gap on a strip, and a pointer emits events far
+faster than it crosses between any of those. `showDrag` therefore publishes
+nothing when the new target would paint the same thing, because a cell's render
+rebuilds its `ViewStack` and `renderTabContent` hands back a fresh `views` array
+that nothing downstream can memoise away.
+
 **The in-flight drag is React state, never MST.** It is transient UI; putting it
 in the session would put every intermediate hover into the undo history.
 

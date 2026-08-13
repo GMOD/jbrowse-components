@@ -26,8 +26,12 @@ describe('dropZoneAt', () => {
   })
 
   test('a corner goes to whichever edge the pointer is deeper into', () => {
-    // 2px into a 100px left band, 1px into a 50px top band: proportionally the
-    // top is deeper (98% vs 98%... so make it unambiguous)
+    // the bands over this 400x200 rect are 100px wide and 50px tall. 1px from
+    // the left edge is nearly all the way into the left band while 40px from
+    // the top is barely inside the top one, so left takes it — and nearly
+    // touching the other axis instead swaps the answer, which is the whole
+    // content of the rule. dockview would answer `left` to both: it tests left,
+    // right, top, bottom in that order and returns the first hit.
     expect(dropZoneAt(rect, 1, 40)).toBe('left')
     expect(dropZoneAt(rect, 60, 1)).toBe('top')
   })

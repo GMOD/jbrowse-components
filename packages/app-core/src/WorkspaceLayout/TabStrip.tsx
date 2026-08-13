@@ -293,6 +293,14 @@ const Tab = observer(function Tab({
           event.preventDefault()
           return
         }
+        // Showing a tab is expensive — it mounts a stack of views, each display
+        // costing a WebGL2 context — so it is the LEFT button that asks for it,
+        // the same gate dockview puts on `_activateOnPointerDown`. A right-press
+        // is on its way to a context menu and is not a request to look at
+        // anything.
+        if (event.button !== 0) {
+          return
+        }
         layout.setActiveTab(panel.id, tab.id)
         dragHandlers.onTabPointerDown(tab.id, event)
       }}
@@ -304,6 +312,7 @@ const Tab = observer(function Tab({
       }}
       onPointerMove={dragHandlers.onTabPointerMove}
       onPointerUp={dragHandlers.onTabPointerUp}
+      onPointerCancel={dragHandlers.onTabPointerCancel}
       className={className}
       style={tabColors(groupActive, selected)}
     >
