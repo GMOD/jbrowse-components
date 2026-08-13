@@ -207,6 +207,19 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   re-derived from
   an ENCODE portal search, whose facets move. The eight RSEM quantifications are
   the statistic, the four bigWigs are one donor per tissue.
+- **The `*.demo_slices.bam` files** — three region-sliced GIAB alignments (HG002
+  ONT haplotagged, HG002 Illumina 2x250, HG008-T PacBio Revio), rebuilt by
+  `scripts/build_demo_slices.sh`. **A sliced BAM records its own provenance**:
+  `samtools view` writes its command line into an `@PG` line, so the source URL
+  and the exact regions survive in the slice even when nothing else wrote them
+  down. That is how these were recovered, and it is the first thing to try for
+  any hosted BAM whose origin is unclear:
+
+      samtools view -H <slice>.bam | grep -oE 'CL:samtools view -b -o .*'
+
+  The two HG002 slices share one region set because the figures compare
+  platforms at one locus; HG008 is GRCh38 and the others hs37d5, so the `chr`
+  prefix differs by assembly rather than by mistake.
 - **Hi-C translocation** — GM12878 vs K562 BCR-ABL1, two windows (chr9 ABL1,
   chr22 BCR) in one LGV so JBrowse fetches the chr9×chr22 block: empty in a
   normal karyotype, solid in K562. Replaced an orphaned loops-arc config.
