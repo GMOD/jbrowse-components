@@ -16,7 +16,7 @@ synteny, variants, alignment, or depth.
 **Prerequisites:** the plugin (below), a graph in rGFA or GFA, and the
 contributing assemblies if you want to launch out into them.
 
-<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and run the same reference-position ramp, red at the start of the window to magenta at its end, so a block above and its node below share a hue. The alternate alleles are the charcoal ones, off the ramp: they have no K12 coordinates, which is why the linear track has nothing to show for them either." src="/img/pangenome/rgfa_subgraph_launch.png" />
+<Figure caption="50 kb of K12 launched as a graph. Both panels read the same two tabix indexes and run the same reference-position ramp, so a block above and its node below share a hue. The charcoal nodes are the alternate alleles, which have no K12 coordinates and so nothing in the linear track either." src="/img/pangenome/rgfa_subgraph_launch.png" />
 
 :::info Requires the graph genome view plugin
 
@@ -314,7 +314,7 @@ with a loose end of its own, and the node and edge counts in the header rise to
 match what it reached. It expands only over off-reference segments, so it does
 not drag in the backbone either side of the window.
 
-<Figure caption="The paa island cut from the same segments track twice, each under the linear view it was made from. Left, at Graph context None, the two boxed nodes end in mid-air: the sequence between them sits on that strain's own contig, which no K12 coordinate reaches. Right, at 1 hop, the red arrow marks the interior the extra queries found, closing them into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+<Figure caption="The paa island cut from the same segments track twice, each under the linear view it was made from. Left, at Graph context None, the two boxed nodes end in mid-air. Right, at 1 hop, the red arrow marks the interior the extra queries found, closing them into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
 A **2 hops** setting handles a graph whose alleles have alleles of their own. On
 this window 1 hop already closes the cut; HPRC's amylase window keeps growing
@@ -387,7 +387,7 @@ The alignment lane below says the same event from the other side: CFT073 has no
 aligned bases across the band, and neither do IAI39 or Sakai, while NCTC86
 aligns straight through it.
 
-<Figure caption="Hovering CFT073's allele in the graph (circled) highlights the reference interval it occupies in the linear view above, across every track there. That interval is the 2 kb of K12 between the backbone segments the allele leaves and rejoins, so the node is a non-reference insertion: 65.4 kb of sequence where the reference has 2.1 kb." src="/img/pangenome/rgfa_hover_sync.png" />
+<Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies in the linear view above, across every track there. The node is a non-reference insertion: that interval is the 2 kb of K12 between the segments the allele leaves and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
 
 The same event drawn as an alignment rather than as a graph is a synteny gap,
 and it is worth drawing because it is separate evidence: the graph's claim comes
@@ -396,7 +396,7 @@ whole-genome alignment the graph had no part in. Two panels at two scales, each
 window running from one flanking chain to the other, so the flanks align ribbon
 to ribbon at both edges and nothing at all sits between them.
 
-<Figure caption="The same insertion as an alignment. K12 above, CFT073 below, each panel at its own scale: the two chains that flank the event align ribbon to ribbon at both frame edges, and everything CFT073 carries between them lands on nothing. The CFT073 lane names what is in it, a siderophore and fimbrial gene cluster the reference has no copy of." src="/img/pangenome/rgfa_insertion_synteny.png" />
+<Figure caption="The same insertion as an alignment, K12 above and CFT073 below, each panel at its own scale. The flanking chains align ribbon to ribbon at both frame edges, and everything CFT073 carries between them lands on nothing." src="/img/pangenome/rgfa_insertion_synteny.png" />
 
 The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) puts the same kind
 of panel beside its own graph.
@@ -425,7 +425,7 @@ open, and a location goes into the linear view already beside the graph rather
 than stacking a pane. A launched view carries the session's annotation for the
 assembly it opens on, so a strain arrives with its own genes rather than empty.
 
-<Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window, opened from the view menu boxed in red. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus, against the graph's own all-vs-all track." src="/img/pangenome/rgfa_launch_out_menu.png" />
+<Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
 Taking the other entry answers a different question. K12's `asnW`/`asnU`/`asnV`
 tRNA genes are the sites E. coli pathogenicity islands integrate at, and in that
@@ -449,7 +449,7 @@ an arm is, while the reference-position ramp on the right says _where_ each
 segment sits, which is also what the lane above it is painted with, so a segment
 is the same hue in the lane and in the graph it launches.
 
-<Figure caption="The round trip between the two views. Left: the graph at K12's asnW/asnU/asnV tRNA cluster with the CFT073 entry boxed, above the view that entry launches, on CFT073's own coordinates and holding the clb operon. Right: a right-click on segment s1277 in a linear view, above the subgraph it cuts." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
+<Figure caption="The round trip between the two views. Left: the graph at K12's tRNA cluster with the CFT073 entry boxed, above the view that entry launches. Right: a right-click on segment s1277 in a linear view, above the subgraph it cuts." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
 
 ## Which strain takes which path
 

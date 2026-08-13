@@ -22,7 +22,7 @@ Open the track menu, find the setting, and click the pin on the row for the
 value you want. The pin fills in, and a "Set as the default" snackbar confirms
 it.
 
-<Figure caption="Making Compact the default read height. Top: the pin on the Compact preset (circled). Bottom: clicking it compacts the track that was following the default, and the snackbar offers to apply it to the one open track with a height of its own." src="/img/feature_height_default.png" />
+<Figure caption="Making Compact the default read height. Top: the pin on the Compact preset. Bottom: the track that was following the default compacts, and the snackbar offers to apply it to the one open track with a height of its own." src="/img/feature_height_default.png" />
 
 Three things follow from the pin only writing the default:
 
@@ -58,7 +58,7 @@ the track selector. It opens a dialog naming the setting, the built-in value,
 and what the track is showing now, with **Clear session default** to remove it.
 Closed tracks carry no marker, because nothing is being shown differently yet.
 
-<Figure caption="After pinning Compact, the alignments track carries a pencil in the track selector (circled). The dialog it opens lists featureHeight under 'Session-wide default', so the default reads as the source rather than an edit to the track, and offers to clear it." src="/img/display_type_default_badge.png" />
+<Figure caption="After pinning Compact, the alignments track carries a pencil in the track selector. The dialog it opens lists featureHeight under 'Session-wide default', and offers to clear it." src="/img/display_type_default_badge.png" />
 
 The same pencil marks a track you have edited directly. The tooltip and the
 dialog say which of the two it is, and a track affected by both lists them

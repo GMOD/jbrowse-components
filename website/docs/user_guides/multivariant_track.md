@@ -21,7 +21,7 @@ overlapping calls use slight transparency so you can still tell them apart.
 If overlaps overwhelm the view, use "Edit filters" in the track menu to hide
 variants by size, name, or any Jexl expression.
 
-<Figure caption="1000 Genomes SV ensemble callset (3202 samples) across 5 Mb of chr19, one row per sample, sorted by genotype at a 1.1 Mb inversion. Because each call is drawn at its real span, a megabase-scale variant is a band a fifth of the window wide, and the sort collects its carriers into a block against the rest of the cohort." src="/img/multisv.png" />
+<Figure caption="1000 Genomes SV ensemble callset (3202 samples) across 5 Mb of chr19, one row per sample, sorted by genotype at a 1.1 Mb inversion. Each call is drawn at its real span, so the sort collects the inversion's carriers into a block against the rest of the cohort." src="/img/multisv.png" />
 
 ## Matrix: best for SNP/indel patterns
 
@@ -33,7 +33,7 @@ Sparse small variants that would be only 1–2px wide at their true positions ea
 get a full readable column instead. Patterns like shared haplotypes, runs of
 homozygosity, and population structure become visible at a glance.
 
-<Figure caption="A phased trio as a matrix display: one column per variant, one row per haplotype (two per sample), each cell shaded reference vs alt allele. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows. The connector zone under the gene track ties each column back to its genomic position." src="/img/trio-matrix-phased-clean.png" />
+<Figure caption="A phased trio as a matrix display: one column per variant, one row per haplotype, each cell shaded reference against alt. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
 
 ## Filtering by allele frequency and missingness
 
@@ -56,7 +56,7 @@ potato callset below is dominated by no-call (yellow) columns until the ceiling
 is lowered to 0.1, which drops every variant with more than 10% missing
 genotypes and leaves the well-genotyped sites.
 
-<Figure src="/img/variants/potato_missingness.png" caption="One tetraploid potato multi-sample VCF opened twice in the same view as a genotype matrix, on one ruler. Top: the default missingness ceiling keeps every variant, and no-call (yellow) columns dominate. Bottom: a 0.1 ceiling drops variants with more than 10% no-call genotypes, so the remaining columns are the well-genotyped homozygous-reference, heterozygous, and homozygous-alt sites." />
+<Figure src="/img/variants/potato_missingness.png" caption="One tetraploid potato multi-sample VCF opened twice in the same view as a genotype matrix, on one ruler. Top: the default missingness ceiling keeps every variant, and no-call columns dominate. Bottom: a 0.1 ceiling leaves the well-genotyped sites." />
 
 Either filter can be preset so the track loads already filtered, with the
 [`minorAlleleFrequencyFilter`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-minorallelefrequencyfilter)
@@ -117,7 +117,7 @@ consequence terms (`exon_loss_variant`, `transcript_ablation`, `gene_fusion`,
 ...) map onto the same four tiers, so a deletion that removes an exon reads as
 HIGH the same way a stop-gained SNV does.
 
-<Figure caption="1000 Genomes phase 3 chr1 genotypes (2,504 samples) colored by consequence impact from SnpEff annotations. Red columns are stop-gained/splice-site variants, orange missense, yellow synonymous/splice-region, and grey (the majority) intronic or intergenic." src="/img/variants/consequence_impact_1000g.png" />
+<Figure caption="1000 Genomes phase 3 chr1 genotypes colored by consequence impact from SnpEff annotations: red is stop-gained or splice-site, orange missense, yellow synonymous, and grey the intronic and intergenic majority." src="/img/variants/consequence_impact_1000g.png" />
 
 To have the track load already colored this way, preset the display's
 `featureColor` slot: see
@@ -146,7 +146,7 @@ spectrum, not centered on any assumed baseline copy number.
 The class is read from the ALT allele (`<DEL>`, `<CN3>`, breakend notation),
 falling back to `INFO/SVTYPE` when the ALT is a plain sequence.
 
-<Figure caption="1000 Genomes SV ensemble callset (3202 samples) on chr19 colored by SV type. Each alt-carrying cell takes its variant's structural-variant class color; the large inversion is the orange band. The legend names every class present, including the callset's complex (CPX) events." src="/img/multisv_svtype.png" />
+<Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-carrying cell taking its variant's class color. The legend names every class present, including the callset's complex (CPX) events." src="/img/multisv_svtype.png" />
 
 This preset also has a
 [`featureColor` value](/docs/config_guides/variant_track#coloring-cells-by-the-variant-instead-of-the-genotype)
@@ -166,7 +166,7 @@ across 26 population codes) this way. For the TSV layout and the adapter and
 display slots, see
 [auto-coloring samples by metadata](/docs/config_guides/variant_track#auto-coloring-samples-by-metadata).
 
-<Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code (the colored strip down the left edge resolves into contiguous population blocks), while each genotype cell is shaded by allele dosage (which for diploid humans is just heterozygous: light blue, homozygous: dark blue)." src="/img/variants/population_1000genomes.png" />
+<Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code, and each genotype cell is shaded by allele dosage." src="/img/variants/population_1000genomes.png" />
 
 You can also change the grouping attribute and colors interactively after the
 track is open.

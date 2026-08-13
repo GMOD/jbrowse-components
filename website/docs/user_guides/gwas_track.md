@@ -51,7 +51,7 @@ which nearby variants are in linkage with the lead signal (see
 [Add GWAS track workflow](#add-gwas-track-workflow) for how the index is
 chosen).
 
-<Figure caption="LD coloring at the STAT4 locus: the lead SNP (purple) tops the plot, and surrounding points shade from red (high r²) through green to blue (low r²) by their linkage to it, so the association signal and its linked variants stand out from the background." src="/img/gwas/locuszoom_ld.png" />
+<Figure caption="LD coloring at the STAT4 locus: the lead SNP is purple, and surrounding points shade by their r² to it, so the association signal and its linked variants stand out from the background." src="/img/gwas/locuszoom_ld.png" />
 
 The embedded
 [LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld)

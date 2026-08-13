@@ -27,7 +27,7 @@ readable view, or pin the min and max from the track menu.
 The shared axis is what makes many rows readable at once: a signal restricted to
 one row reads as such only because every other row is drawn to the same scale.
 
-<Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows and MS4A1 by the two B rows, on one shared scale — which is what makes a signal restricted to a few rows readable as such." src="/img/scatac/pbmc5k_marker_swap.png" />
+<Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows and MS4A1 by the two B rows, on one shared scale." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ## Adding a multi-quantitative track
 

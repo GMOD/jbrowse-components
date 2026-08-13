@@ -16,7 +16,7 @@ rather than one track per sample.
 Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 **Display types → Multi-row feature display (painting)**.
 
-<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM across 127 epigenomes as one multi-row track, with NCBI RefSeq genes above. Each row is one epigenome and each block takes the state color the file already carries; the state key on the right is the display's legend slot, spelling out the mnemonics the file names its states with. Boxed: the anterior and posterior halves of the HOXA cluster. Clustered, the rows split in two: one block opens the cluster, the rest hold it repressed. The stripe left of the painting is each row's Roadmap tissue group, from the rowGroups slot, keyed under Row groups." />
+<Figure src="/img/chromhmm.png" caption="Roadmap Epigenomics 15-state ChromHMM across 127 epigenomes as one multi-row track, with NCBI RefSeq genes above. Each row is one epigenome taking the state color the file carries, and the stripe on the left is its Roadmap tissue group. Boxed: the two halves of the HOXA cluster, where one block of rows opens the cluster and the rest hold it repressed." />
 
 ## Turning a feature track into rows
 
@@ -147,7 +147,7 @@ segment mean copy number:
 }
 ```
 
-<Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by a jexl expression binning the caller's log2 ratio: blue loss, red gain. Recurrent events read as vertical stripes through the stack, under a wiggle track of the same cohort's gain/loss frequency." />
+<Figure src="/img/tcga/cohort_cnv_genome.png" caption="TCGA-BRCA copy number across 1104 primary tumors, one row per tumor, colored by a jexl expression binning the caller's log2 ratio. Recurrent events read as vertical stripes through the stack, under the same cohort's gain/loss frequency." />
 
 **Show... → Show legend** keys the colors actually present, and the
 **Categories** submenu beside it hides individual categories, so you can drop

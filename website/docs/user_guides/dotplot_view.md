@@ -23,7 +23,7 @@ rather than reordering panels.
 
 <Figure caption="Launching a dotplot view from the Add menu (top), then the import form's Manual mode, where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
 
-<Figure caption="Two yeast assemblies, S288C/R64 on the X-axis against the YJM1447 strain on the Y. One diagonal runs corner to corner where the two agree, and steps off itself once, on chromosome XII: that jog is a rearrangement between the strains. The scattered dots off the diagonal are short repeat hits." src="/img/gallery/yeast_dotplot.png" />
+<Figure caption="Two yeast assemblies, S288C/R64 on the X-axis against the YJM1447 strain on the Y. The diagonal runs corner to corner and steps off itself once, on chromosome XII, which is a rearrangement between the strains." src="/img/gallery/yeast_dotplot.png" />
 
 ### Cutting clutter on a busy plot
 
@@ -42,7 +42,7 @@ below uses the second:
   slider value. Divergent genomes align in many short fragments, and hiding them
   is usually what makes the syntenic blocks visible at all.
 
-<Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that the minimap2 PAF is almost all sub-kilobase hits, so every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
+<Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
 
 When a plot still reads as specks after Min length, the pair is too divergent
 for a whole-genome view to say anything; the next move is a smaller window
@@ -56,7 +56,7 @@ repeats draw as crossings off it. Everything else on the plot is real too: the
 male-specific Y is dense in dispersed repeats, and at any minimum length that
 keeps the palindromes those blocks are drawn as well.
 
-<Figure caption="T2T-CHM13v2 chrY aligned to itself over the euchromatic male-specific region, at a 25 kb minimum length. Boxed on the diagonal near 9.3 Mb, the TSPY tandem array as a filled wedge; boxed at 21.2 to 26.0 Mb, the P1 to P5 Yq palindrome family, each arm meeting its own inverted copy off the diagonal. The scatter between them is the dispersed repeat content of the MSY, not noise." src="/img/dotplot_self_chry.png" />
+<Figure caption="T2T-CHM13v2 chrY aligned to itself over the euchromatic male-specific region, at a 25 kb minimum length. Boxed on the diagonal, the TSPY tandem array; boxed off it, the P1 to P5 Yq palindrome family, each arm meeting its own inverted copy." src="/img/dotplot_self_chry.png" />
 
 Both structures are described in the T2T-CHM13 Y chromosome paper
 ([Rhie et al. 2023](https://www.nature.com/articles/s41586-023-06457-y)), which
@@ -79,7 +79,7 @@ the other, CDY10P and CDY11P either side of the centre — so the duplication is
 annotated as well as aligned. Near-exact rather than exact: the unpainted gaps
 inside the arms are where the two copies differ.
 
-<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length: four crossings, every inverted alignment that long in the window, and the P1 to P5 family. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The magenta ribbon pinched at its centre is the 402 kb inverted alignment; the salmon it sits on is the plus-strand self match." src="/img/synteny_self_chry_palindromes.png" />
+<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length, where four crossings survive. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The pinched magenta ribbon is the inverted alignment." src="/img/synteny_self_chry_palindromes.png" />
 
 Which view to reach for is a question of how many alignments are in frame. Every
 ribbon spans the full height of the strip, so ribbons stack rather than
@@ -127,7 +127,7 @@ Click and drag to select a region, then choose **Linear synteny view** from the
 context menu to zoom into it in a new linear synteny view with both genomes as
 tracks.
 
-<Figure caption="Top: click-and-drag selection (pink highlight) on the grape vs peach dotplot, with the context menu showing 'Zoom in' and 'Linear synteny view'. Bottom: the resulting linear synteny view for the selected region (Pp02 vs chr15), with red connection lines linking each syntenic alignment block across the two genome panels." src="/img/synteny_from_dotplot_view.png" />
+<Figure caption="Top: a click-and-drag selection on the grape vs peach dotplot, with the context menu offering 'Zoom in' and 'Linear synteny view'. Bottom: the linear synteny view it opens for the selected region." src="/img/synteny_from_dotplot_view.png" />
 
 ## See also
 

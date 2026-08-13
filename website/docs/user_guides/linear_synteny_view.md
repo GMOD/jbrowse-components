@@ -41,7 +41,7 @@ two genomes, from an [all-vs-all PAF](/docs/tutorials/allvsall_synteny), an
 [MCScan ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao), or
 a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
-<Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). Its Manual mode, shown here, is where you select two different assemblies and can supply an additional file." src="/img/dotplot_add.png" />
+<Figure caption="The import form synteny and dotplot views share, reached from the Add menu. Its Manual mode, shown here, is where you select two assemblies and can supply an additional file." src="/img/dotplot_add.png" />
 
 <Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
 
@@ -201,7 +201,7 @@ The view's hamburger menu controls how the ribbons are drawn:
 - Square view - equalize the horizontal scale of the two panels
 - Add assembly row - compare three or more assemblies stacked vertically
 
-<Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length ~6 kb L1HS present in human is absent at the orthologous chimp intron. The 'Colored indels' CIGAR display mode paints the insertion as a wedge in the ribbon, with RepeatMasker naming the element at the indel." src="/img/synteny_human_chimp_cigar_modes.png" />
+<Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length L1HS present in human is absent at the orthologous chimp intron, which the 'Colored indels' mode paints as a wedge in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
 
 ### How small an insertion still reads
 

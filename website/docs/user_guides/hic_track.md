@@ -54,7 +54,7 @@ Off, the diagonal owns the scale and everything below it washes out; on (the
 default) the scale saturates at the 95th percentile of counts and TAD structure
 separates from background.
 
-<Figure caption="4.2 Mb of hg19 chr8 with Show faint contacts off and on, each frame labeled with its setting. Only the saturation point of the color scale differs; the contact data is identical. Off, the diagonal takes the whole ramp and the TADs under it are barely above white; on, each TAD is a block with an edge and the corner dots between them are visible." src="/img/hic/faint_contacts.png" links="Show faint contacts off=hic/percentile_off,Show faint contacts on=hic/percentile_on" />
+<Figure caption="4.2 Mb of hg19 chr8 with Show faint contacts off and on, each frame labeled with its setting. Only the saturation point of the color scale differs; the contact data is identical." src="/img/hic/faint_contacts.png" links="Show faint contacts off=hic/percentile_off,Show faint contacts on=hic/percentile_on" />
 
 **Show → Log scale** maps counts to color on a log2 scale, compressing the
 diagonal further still.
@@ -95,7 +95,7 @@ chromosome is a triangle along the bottom edge, each pair of chromosomes is the
 block between their two triangles, and the whole pyramid is the genome against
 itself.
 
-<Figure caption="GM12878 in situ Hi-C (ENCODE ENCSR730CER, rebuilt at its coarsest 2.5 Mb binsize and rehosted), hg38 chr1 to chrY in one view. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
+<Figure caption="GM12878 in situ Hi-C at its coarsest 2.5 Mb binsize, hg38 chr1 to chrY in one view. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
 
 How much figure this is depends on the file. A file storing only
 intra-chromosomal contacts draws its per-chromosome triangles and leaves every
@@ -158,7 +158,7 @@ experiment, both derived from the matrix in the same track:
   further, and the file carries a color per class in its `itemRgb` column, so
   the track paints itself with no color configuration.
 
-<Figure src="/img/hic/compartment_switch.png" caption="Whether a stretch of the genome is open or closed is a property of the cell, not of the sequence. A normal lymphoblastoid line and a leukemia line put the same TCF4 band in opposite compartments, and the frame edges, where the two agree, are what makes that a switch rather than a scaling difference. No contact matrix here: a compartment appears only once a matrix is divided by its distance expectation, and the eigenvector is that computation, published." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree. No contact matrix here, since the eigenvector is that computation over one, published." links="Open this view=hic/compartment_switch" />
 
 Two things about that figure are worth copying whenever you compare compartments
 between samples, because getting either wrong produces a difference that is not

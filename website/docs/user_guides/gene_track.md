@@ -42,7 +42,7 @@ This pairs especially well with an [RNA-seq track](/docs/tutorials/rnaseq): the
 spliced reads draw **sashimi arcs** connecting splice donors and acceptors, and
 with the introns collapsed those arcs span directly between the adjacent exons.
 
-<Figure caption="Collapsing introns on PTEN (hg38). Top: right-click the gene and choose Collapse introns. Bottom: the reshaped view with the exons side by side, where the NA12878 direct-RNA nanopore track's sashimi arcs (auto-placed above and below to minimize crossings) now span directly between adjacent exons." src="/img/gene_track_collapse_introns.png" />
+<Figure caption="Collapsing introns on PTEN (hg38). Top: the right-click menu. Bottom: the reshaped view with the exons side by side, where the direct-RNA nanopore track's sashimi arcs now span between adjacent exons." src="/img/gene_track_collapse_introns.png" />
 
 ## Display density and labels
 
@@ -66,7 +66,7 @@ Enable it from the linear genome view's hamburger menu → **Color CDS by readin
 frame**. The setting applies to every gene track in that view and is remembered
 across sessions.
 
-<Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's hamburger menu with the 'Color CDS by reading frame' toggle. Bottom: the result at base-pair resolution, each CDS codon tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Turning on Color by CDS for BRCA1 (hg19). Top: the hamburger menu with the 'Color CDS by reading frame' toggle. Bottom: the result at base-pair resolution, each codon tinted by its reading frame with its amino acid drawn over it." src="/img/gene_track_color_by_cds.png" />
 
 ## Color transcripts by a value in the file
 
@@ -95,7 +95,7 @@ behind a transcript's color back on hover.
 See the [jexl configuration guide](/docs/config_guides/jexl) for the expression
 syntax.
 
-<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38). ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the change in isoform fraction that satuRn measured between the two tissues. ATP5F1C-201 (muscle-preferred) and ATP5F1C-202 (liver-preferred) carry the color and the other eight are gray. The marked column is the cassette exon: no muscle reads, a clear liver peak, and of the two colored transcripts only the liver-preferred one draws an exon there." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
+<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38): ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon that tells the two colored transcripts apart." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 
 The [differential transcript usage tutorial](/docs/tutorials/dtu) has the track
 configuration behind that figure, and the pipeline that writes the attributes
@@ -126,7 +126,7 @@ valid start codon for that table (including alternative initiators such as `GTG`
 or `TTG`), and `transl_except` overrides (e.g. selenocysteine `U`) are applied
 and highlighted.
 
-<Figure caption="The selenoprotein GPX1 (glutathione peroxidase 1) on hg19. Its in-frame UGA codon is recoded to selenocysteine via the GFF transl_except attribute, so codon 49 is drawn as a highlighted U on the CDS instead of a stop. The reference sequence track's plain six-frame translation above, which has no CDS context, still shows that codon as a stop (*)." src="/img/gene_track_selenocysteine.png" />
+<Figure caption="The selenoprotein GPX1 on hg19. Its in-frame UGA codon is recoded to selenocysteine via the GFF transl_except attribute, so codon 49 draws as a highlighted U rather than a stop. The reference sequence track's plain six-frame translation above still shows a stop there." src="/img/gene_track_selenocysteine.png" />
 
 ## Mature peptides (polyproteins)
 

@@ -98,7 +98,7 @@ locus where some reads invert and the rest run through unbroken is one inverted
 copy and one that is not — a heterozygous inversion, read off the pileup rather
 than taken from the caller's `GT`.
 
-<Figure caption="The reads grouped by Group by... → Split read (SA tag): HGSV_10047 (chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, with the 1KGP ensemble VCF call above. Split reads are the upper section, each breaking into three pieces with the middle one aligned in reverse (blue); the reads below cross the same span in one piece — a heterozygous inversion." src="/img/inversion_long_read.png" />
+<Figure caption="Reads grouped by Group by... → Split read (SA tag) over HGSV_10047 in HG00151 nanopore reads, with the 1KGP ensemble VCF call above. The split reads in the upper section break into three pieces with the middle one reversed; the reads below cross the same span in one piece." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 
@@ -158,7 +158,7 @@ is a useful companion reference.
   suggest a deletion spanning the pair
 - With read arcs enabled, unusually long arcs point to a deletion
 
-<Figure caption="A 27 bp heterozygous deletion (orange variant bar labeled '27bp DEL' in the top track) in HG002 ONT reads. The SNP coverage panel above the pileup shows the local depth; the pileup is grouped by HP tag into stacked sections, separating haplotype 1 (pink) and haplotype 2 (blue). Supporting reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
+<Figure caption="A 27 bp heterozygous deletion in HG002 ONT reads, with the SNP coverage panel above the pileup. The pileup is grouped by HP tag into stacked sections, and the reads carrying the deletion are concentrated in one haplotype group." src="/img/smalldel.png" />
 
 ### Insertion
 
@@ -215,7 +215,7 @@ connections (drawn as vertical lines at the view edge) flag translocations. Set
 the color scheme to insert size, orientation, or combined coloring from the
 track menu.
 
-<Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio (child, mother, father; Illumina reads), with the 1KGP ensemble SV call on top. The red arcs are pairs spanning the deleted region (drawn red for a larger-than-expected insert size), lining up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
+<Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio, with the 1KGP ensemble SV call on top. The red arcs are pairs with a larger-than-expected insert size, lining up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
 
 With View as pairs on, each mate pair collapses onto a single row joined by its
 own bezier curve, colored here by pair orientation. The abnormal
@@ -346,7 +346,7 @@ centered on one breakpoint locus. Splines connect supporting reads across both
 panels, and the variant call is drawn as a colored line with feet indicating
 directionality.
 
-<Figure caption="Breakpoint split view for an interchromosomal translocation. The two panels are each centered on one breakpoint locus. Black splines connect supporting reads that span the junction (each spline represents a single read seen in both panels). The green line with arrowheads ('feet') is the variant call drawn across both panels to indicate directionality." src="/img/breakpoint_split_view.png" />
+<Figure caption="Breakpoint split view for an interchromosomal translocation, each panel centered on one breakpoint locus. Black splines connect supporting reads that span the junction, and the green line with feet is the variant call drawn across both panels to show directionality." src="/img/breakpoint_split_view.png" />
 
 The header bar accepts location searches directly in either panel.
 
@@ -364,7 +364,7 @@ The header bar accepts location searches directly in either panel.
 - From the circular genome view - click a chord's feature details and use the
   "Open breakpoints in split view" link in its Breakends section.
 
-<Figure caption="Feature details panel for a TRA variant. The Breakends section lists each endpoint (e.g. '17:74,803,924') with its own 'Open in linear view' link, and below them a single 'Open breakpoints in split view' link; clicking that opens both breakpoint loci simultaneously in the breakpoint split view, with any open alignment tracks pre-loaded." src="/img/link_to_split_view.png" />
+<Figure caption="Feature details panel for a TRA variant. The Breakends section lists each endpoint with its own 'Open in linear view' link, and below them a single 'Open breakpoints in split view' link that opens both loci at once." src="/img/link_to_split_view.png" />
 
 The view also supports multi-hop events where a single read has multiple
 supplementary alignments, connecting more than two breakpoints simultaneously.

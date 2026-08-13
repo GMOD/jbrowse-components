@@ -46,7 +46,7 @@ scroll normally instead.
 Click and drag up or down on the drag handle on the track labels (indicated by
 six vertical dots) to reorder tracks.
 
-<Figure caption="The main linear genome view controls, labeled in place: the track selector button opens the track list, the scroll-zoom toggle lets the mouse wheel zoom the view, the pan buttons scroll left/right, the zoom buttons and slider zoom the view, the search box accepts regions or feature names, and each track can be reordered by its drag handle or configured from its track menu." src="/img/lgv_usage_guide.png" />
+<Figure caption="The main linear genome view controls, labeled in place: the track selector, the scroll-zoom toggle, the pan and zoom buttons, the search box, and each track's drag handle and track menu." src="/img/lgv_usage_guide.png" />
 
 ### Reordering views
 
@@ -95,7 +95,7 @@ once, use `File` → `Open connection...`. See the
 A circular plus (+) icon button in the "Available tracks" widget also opens the
 "Add a track" form.
 
-<Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The circular plus (+) icon button in the bottom right of the 'Available tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
+<Figure caption="(1) The 'Available tracks' widget, opened from the button on the far left of the linear genome view. (2) The plus (+) button at its bottom right launches the 'Add a track' form." src="/img/add_track_tracklist.png" />
 
 In the "Add a track" form, you can provide a URL or open a file from your local
 machine. Some formats require an index: BAM (BAI or CSI), CRAM (CRAI), and

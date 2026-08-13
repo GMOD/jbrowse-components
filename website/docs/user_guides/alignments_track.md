@@ -108,7 +108,7 @@ because the assay adds 6mA to accessible DNA the density of those calls doubles
 as a chromatin-accessibility readout. Use **Modification types** to restrict the
 track to one code when the basecaller emitted several.
 
-<Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode: purple marks are 6mA (A+a) calls, which the Hia5 methyltransferase leaves on accessible DNA. The treated sample (top, PAY22766) piles them over the promoter; the native no-enzyme control (bottom, PBA15131) carries only scattered background." src="/img/methylation/chromatin_accessibility_6ma.png" />
+<Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode, where purple marks are 6mA calls left on accessible DNA. The treated sample (top) piles them over the promoter; the no-enzyme control (bottom) carries only scattered background." src="/img/methylation/chromatin_accessibility_6ma.png" />
 
 ### Bisulfite and EM-seq
 
@@ -180,7 +180,7 @@ genome makes it clearest of all, because the genes are packed on both strands
 and unspliced — one screen holds two whole transcription units, and every base
 of both carries reads.
 
-<Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the 152 kb viral genome, grouped by strand and colored by it. UL21 is transcribed left to right and UL22 right to left, so the forward band carries the coverage over the first and the reverse band over the second, each section's reads under its own band in the same color, and the switch falls between the two genes." src="/img/alignments/strand_split_depth.png" />
+<Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band carries the coverage over its own gene and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
 
 The same split read the other way is a check on the reads rather than on the
 transcripts. Each band's mismatch coloring is computed from only its own
@@ -188,7 +188,7 @@ strand's reads, so a position colored in one band and not the other is carried
 by one strand alone, which is the signature of a systematic basecalling error
 rather than a variant.
 
-<Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. The two boxed columns are five bases apart: at the left one only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
+<Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
 
 ## Read height and track sizing
 
@@ -220,7 +220,7 @@ what happens to the track height.
   deepens and growing back as it thins. Because the size is computed, no size
   preset reads as selected while fitting; picking one drops back to fixed.
 
-<Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to track height selected on a 260px HG002 Illumina track. Because the size is computed while fitting, none of the Normal / Compact / Super-compact presets above it read as selected." />
+<Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to track height selected. Because the size is computed while fitting, none of the presets above it read as selected." />
 
 Fit mode is the one to reach for when you care about the shape of a pileup
 rather than individual bases: drag the track taller or shorter and the reads
@@ -381,7 +381,7 @@ An insertion shows as a gap in the diagonal, since those bases are in the read
 and not in the reference. Dragging over a region in the read lane extracts that
 sequence.
 
-<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions. The top panel is the ordinary pileup; below it the read (top lane) is drawn against the reference (bottom lane), and each gap in the diagonal is inserted sequence absent from the reference." src="/img/read_vs_ref_insertion.png" />
+<Figure caption="'Linear read vs ref' for a SKBR3 PacBio read spanning several insertions. The ordinary pileup on top, and below it the read drawn against the reference, where each gap in the diagonal is inserted sequence absent from the reference." src="/img/read_vs_ref_insertion.png" />
 
 The companion item `Dotplot of read vs ref` plots the same alignment as a
 dotplot, which reads more clearly when a read visits one locus repeatedly.

@@ -40,7 +40,7 @@ BLAT returns every placement of a query. The best-scoring one is primary and the
 rest are marked secondary, so competing mappings of one sequence stay off the
 best hit's row instead of stacking under it.
 
-<Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a query pasted (1), and the hit it produces, opened from the Search results list. The best hit is a single ungapped block with two mismatch ticks, matching the 98.7% identity the panel reports for it. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
+<Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a query pasted (1), and the hit it produces, opened from the Search results list. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
 
 Pasting FASTA searches each record separately, up to 25 records and 25 kb of
 sequence in total. Records keep their own names, so hits from different queries
@@ -111,7 +111,7 @@ resolve.
 
 <Figure src="/img/desktop-ispcr.png" caption="The In-silico PCR dialog on hg19. Forward and reverse primer fields with a max product size, sharing the same assembly picker and advanced apiKey/proxy options as BLAT search."/>
 
-<Figure src="/img/desktop-ispcr-results.png" caption="A primer pair for TP53 exon 8, the codon 273 hotspot, drawn as a read pair: the two footprints face inward across the 217 bp they bracket. One product, so one band. The tick near the left primer's outer end is a base that does not match the template, which still amplifies there but would not at the 3' end."/>
+<Figure src="/img/desktop-ispcr-results.png" caption="A primer pair for TP53 exon 8 drawn as a read pair, the two footprints facing inward across the product they bracket. The tick near the left primer's outer end is a base that does not match the template, which still amplifies there but would not at the 3' end."/>
 
 ## Notes
 

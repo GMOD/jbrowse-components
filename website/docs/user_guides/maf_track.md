@@ -17,7 +17,7 @@ details (adapters, the species list or Newick guide tree) live in the
 [MAF track configuration guide](/docs/config_guides/maf_track). This page covers
 what you can do once the track is on screen.
 
-<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes), with the ce11 NCBI RefSeq gene lane on top for context: the coverage band, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks. The conserved alignment blocks line up with the coding exons above."/>
+<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment, with the ce11 NCBI RefSeq gene lane on top: the coverage band, then one row per species ordered by the guide tree, each species' differences from the reference drawn as colored marks. The conserved blocks line up with the coding exons above."/>
 
 Zoomed out, each pixel summarizes the alignment beneath it. Zoom in and the
 per-species rows resolve into individual bases, with positions where a species
@@ -42,7 +42,7 @@ per-base alignment that the tier exists to avoid reading, and both come back
 untouched on zoom-in. Pointing a track at a summary file is covered in the
 [MAF track configuration guide](/docs/config_guides/maf_track#the-zoom-out-tier).
 
-<Figure src="/img/maf_summary_tier.png" caption="The UCSC hg38 470-way narrowed to ~30 representative mammals, over GAPDH at two zooms. At 180 kb (top) the track reads its summary file: one grey bar per species per aligned region, and no coverage band. At 200 bp (bottom) the same track draws the alignment itself, one colored cell per base, with the coverage band above it. The guide tree in the left sidebar is the same in both."/>
+<Figure src="/img/maf_summary_tier.png" caption="The UCSC hg38 470-way narrowed to ~30 representative mammals, over GAPDH at two zooms. At 180 kb (top) the track reads its summary file, one grey bar per species per aligned region. At 200 bp (bottom) it draws the alignment itself, one colored cell per base, with the coverage band above."/>
 
 ## Conservation and per-row identity
 
@@ -89,7 +89,7 @@ Ranking per row keeps this readable, with no per-scaffold rainbow, and a compact
 legend in the top-right names the scheme (main / 2nd / 3rd source). Like
 conservation, it is derived from the alignment with no extra data to fetch.
 
-<Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its per-row source-chromosome rank, so a row stays one color when collinear and switches color (2nd/3rd source) where blocks come from a different source chromosome, marking rearrangements."/>
+<Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its source-chromosome rank, so a row stays one color when collinear and switches where blocks come from a different source chromosome."/>
 
 ## Inversions (strand flips)
 
