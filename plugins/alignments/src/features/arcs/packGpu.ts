@@ -9,11 +9,6 @@ import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
 import type { ArcsUploadData } from './types.ts'
 
-export const PASS_ARC = 'arc'
-export const PASS_ARC_FLAT = 'arcFlat'
-export const PASS_ARC_LINE = 'arcLine'
-export const PASS_ARC_MARKER = 'arcMarker'
-
 // What the arc-band passes pack from. The band is the one upload whose input
 // isn't the pileup payload: `arcs` is a separate RPC result (absent whenever the
 // band is off) and `baseWidth` is the configured `readConnectionsLineWidth`,
@@ -30,7 +25,7 @@ export interface ArcsPackData {
 // a hull that must contain the analytic dome the fragment measures.
 export const ARC_PASS = {
   ...slangPass({
-    id: PASS_ARC,
+    id: 'arc',
     mod: arcShader,
     topology: 'triangle-strip',
   }),
@@ -42,7 +37,7 @@ export const ARC_PASS = {
 // straight line, in the one mode that draws thousands of them.
 export const ARC_FLAT_PASS = {
   ...slangPass({
-    id: PASS_ARC_FLAT,
+    id: 'arcFlat',
     mod: arcFlatShader,
   }),
   pack: (d: ArcsPackData) => packArcFlats(d.arcs, d.baseWidth),
@@ -52,7 +47,7 @@ export const ARC_FLAT_PASS = {
 // not a native line (see arcLine.slang).
 export const ARC_LINE_PASS = {
   ...slangPass({
-    id: PASS_ARC_LINE,
+    id: 'arcLine',
     mod: arcLineShader,
   }),
   pack: (d: ArcsPackData) => packArcLines(d.arcs, d.baseWidth),
@@ -61,7 +56,7 @@ export const ARC_LINE_PASS = {
 // Default triangle-list topology — each marker is a 6-vertex quad.
 export const ARC_MARKER_PASS = {
   ...slangPass({
-    id: PASS_ARC_MARKER,
+    id: 'arcMarker',
     mod: arcMarkerShader,
   }),
   pack: (d: ArcsPackData) => packArcMarkers(d.arcs),

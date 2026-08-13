@@ -4,11 +4,9 @@ import * as overlapShader from '../../shaders/slang/overlap.generated.ts'
 
 import type { OverlapsUploadData } from './types.ts'
 
-export const PASS_OVERLAP = 'overlap'
-
 export const OVERLAP_PASS = {
   ...slangPass({
-    id: PASS_OVERLAP,
+    id: 'overlap',
     mod: overlapShader,
   }),
   pack: packOverlaps,

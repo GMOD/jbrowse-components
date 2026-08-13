@@ -4,11 +4,9 @@ import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 
 import type { MismatchUploadData } from './types.ts'
 
-export const PASS_MISMATCH = 'mismatch'
-
 export const MISMATCH_PASS = {
   ...slangPass({
-    id: PASS_MISMATCH,
+    id: 'mismatch',
     mod: mismatchShader,
   }),
   pack: packMismatches,

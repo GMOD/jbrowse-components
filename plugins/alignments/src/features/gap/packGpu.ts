@@ -4,11 +4,9 @@ import * as gapShader from '../../shaders/slang/gap.generated.ts'
 
 import type { GapUploadData } from './types.ts'
 
-export const PASS_GAP = 'gap'
-
 export const GAP_PASS = {
   ...slangPass({
-    id: PASS_GAP,
+    id: 'gap',
     mod: gapShader,
   }),
   pack: packGaps,

@@ -69,9 +69,9 @@ function paint(arcs: ComputedArc[]) {
   return ops
 }
 
-// The GPU draws EVERY flat connector (`PASS_ARC_FLAT`) and only then every
-// endpoint square (`PASS_ARC_MARKER`), under a comment in the renderer saying
-// the squares paint on top of the lines. Canvas2D — which is also what the SVG
+// The GPU draws EVERY flat connector (`ARC_FLAT_PASS`) and only then every
+// endpoint square (`ARC_MARKER_PASS`) — their order in `ARC_PASSES`, which is
+// the paint order and says the squares land on top of the lines. Canvas2D — which is also what the SVG
 // export paints through — drew each arc's line followed by that arc's own two
 // squares.
 //

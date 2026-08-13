@@ -169,7 +169,7 @@ export interface PileupDataResult {
   coverageStatsMaxs: Float32Array
   coverageStatsSums: Float64Array
   coverageStatsSumSqs: Float64Array
-  // Pre-packed GPU buffer for PASS_COVERAGE (worker-built). Its depth bars are
+  // Pre-packed GPU buffer for COVERAGE_PASS (worker-built). Its depth bars are
   // downsampled to a fixed bin cap so its record count (coverageGpuBinCount)
   // tracks screen pixels, not region width — otherwise it overflows the GPU
   // device limit at whole-chromosome scale. coverageBinSize is each bar's width
@@ -187,7 +187,7 @@ export interface PileupDataResult {
   snpColorTypes: Uint8Array // 1=A, 2=C, 3=G, 4=T
   // relDepth = totalDepthAtPos / regionMaxDepth, scales the bar at draw time.
   snpRelDepths: Float32Array
-  // Pre-packed GPU buffer for PASS_SNP_COV (worker-built).
+  // Pre-packed GPU buffer for SNP_COVERAGE_PASS (worker-built).
   snpPackedBuffer: ArrayBuffer
 
   // Interbase histogram (coverage-area bars) - insertion/softclip/hardclip counts by position
@@ -203,13 +203,13 @@ export interface PileupDataResult {
   // display's autoscaled depth axis, which is what makes the interbase bars
   // readable against the coverage bars beside them.
   interbaseMaxCount: number
-  // Pre-packed GPU buffer for PASS_INTERBASE (worker-built).
+  // Pre-packed GPU buffer for INTERBASE_PASS (worker-built).
   interbasePackedBuffer: ArrayBuffer
 
   // Interbase indicator data - triangles at significant positions
   indicatorPositions: Uint32Array // absolute genomic coordinates
   indicatorColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip (dominant type)
-  // Pre-packed GPU buffer for PASS_INDICATOR (worker-built).
+  // Pre-packed GPU buffer for INDICATOR_PASS (worker-built).
   indicatorPackedBuffer: ArrayBuffer
 
   // Modification tooltip data - only populated when colorBy is modifications/methylation
@@ -265,7 +265,7 @@ export interface PileupDataResult {
   modCovColors: Uint32Array // ABGR u32 per segment
   // relDepth = totalDepthAtPos / regionMaxDepth (see snpRelDepths above).
   modCovRelDepths: Float32Array
-  // Pre-packed GPU buffer for PASS_MOD_COV (worker-built).
+  // Pre-packed GPU buffer for MOD_COVERAGE_PASS (worker-built).
   modCovPackedBuffer: ArrayBuffer
 
   // Sashimi arc data (splice junctions from skip gaps). One entry per junction,

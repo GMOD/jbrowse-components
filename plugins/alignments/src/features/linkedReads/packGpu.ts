@@ -4,15 +4,13 @@ import * as linkedReadLineShader from '../../shaders/slang/linkedReadLine.genera
 
 import type { LinkedReadLinesUploadData } from './types.ts'
 
-export const PASS_LINKED_READ_LINE = 'linkedReadLine'
-
 // Default triangle-list topology — the connector is an antialiased 6-vertex
 // quad, not a native line. A line list is 1 px on both GPU backends whatever
 // width you ask for, which is not the 1.5 px the Canvas2D twin strokes; see the
 // header of linkedReadLine.slang. Same move arcFlat and arcLine already made.
 export const LINKED_READ_LINE_PASS = {
   ...slangPass({
-    id: PASS_LINKED_READ_LINE,
+    id: 'linkedReadLine',
     mod: linkedReadLineShader,
   }),
   pack: packLinkedReadLines,

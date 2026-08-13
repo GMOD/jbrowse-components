@@ -12,8 +12,6 @@ import type {
 } from './hitTestTypes.ts'
 import type { CigarUploadData } from './uploadTypes.ts'
 
-export const PASS_CLIP = 'clip'
-
 // Per-instance kind discriminator written into the clip pass — same shader
 // renders both soft and hard clips, branching on `kind` for color.
 export const CLIP_KIND_SOFT = 0
@@ -21,7 +19,7 @@ export const CLIP_KIND_HARD = 1
 
 export const CLIP_PASS = {
   ...slangPass({
-    id: PASS_CLIP,
+    id: 'clip',
     mod: clipShader,
   }),
   pack: packClips,

@@ -4,14 +4,12 @@ import * as modificationShader from '../../shaders/slang/packedColorQuad.generat
 
 import type { ModificationUploadData } from './types.ts'
 
-export const PASS_MOD = 'modification'
-
 // Pass descriptor exported so GpuAlignmentsRenderer's pileup-layer registry can
 // name it without re-importing the shader module — keeps the modification
 // shader, its pass shape and its packer in one place.
 export const MODIFICATION_PASS = {
   ...slangPass({
-    id: PASS_MOD,
+    id: 'modification',
     mod: modificationShader,
   }),
   pack: packModifications,

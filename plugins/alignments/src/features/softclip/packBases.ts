@@ -6,11 +6,9 @@ import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 
-export const PASS_SOFTCLIP_BASES = 'softclipBases'
-
 export const SOFTCLIP_BASES_PASS = {
   ...slangPass({
-    id: PASS_SOFTCLIP_BASES,
+    id: 'softclipBases',
     mod: mismatchShader,
   }),
   pack: packSoftclipBases,

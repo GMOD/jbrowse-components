@@ -4,11 +4,9 @@ import * as connectingLineShader from '../../shaders/slang/connectingLine.genera
 
 import type { ConnectingLinesUploadData } from './types.ts'
 
-export const PASS_CONN_LINE = 'connLine'
-
 export const CONN_LINE_PASS = {
   ...slangPass({
-    id: PASS_CONN_LINE,
+    id: 'connLine',
     mod: connectingLineShader,
   }),
   pack: packConnectingLines,

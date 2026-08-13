@@ -2,7 +2,7 @@
 // indicators, mod-coverage) for transfer to the GPU renderer.
 //
 // Why this runs in the RPC worker: none of these passes reference
-// main-thread-computed read Y values (unlike PASS_READ and friends), so they
+// main-thread-computed read Y values (unlike READ_PASS and friends), so they
 // can be pre-packed in the worker and uploaded directly via writeBuffer. This
 // removes the equivalent pack loops from the main thread during refetches.
 // See ADR-004.

@@ -4,11 +4,9 @@ import * as modCoverageShader from '../../shaders/slang/modCoverage.generated.ts
 
 import type { ModCoverageUploadData } from '../../shared/uploadTypes.ts'
 
-export const PASS_MOD_COV = 'modCov'
-
 export const MOD_COVERAGE_PASS = {
   ...slangPass({
-    id: PASS_MOD_COV,
+    id: 'modCov',
     mod: modCoverageShader,
   }),
   pack: (data: Pick<ModCoverageUploadData, 'modCovPackedBuffer'>) =>

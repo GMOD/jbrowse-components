@@ -4,11 +4,9 @@ import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 
-export const PASS_INSERTION = 'insertion'
-
 export const INSERTION_PASS = {
   ...slangPass({
-    id: PASS_INSERTION,
+    id: 'insertion',
     mod: insertionShader,
   }),
   pack: packInsertions,

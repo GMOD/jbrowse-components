@@ -4,11 +4,9 @@ import * as readShader from '../../shaders/slang/read.generated.ts'
 
 import type { ReadUploadData } from '../../shared/uploadTypes.ts'
 
-export const PASS_READ = 'read'
-
 export const READ_PASS = {
   ...slangPass({
-    id: PASS_READ,
+    id: 'read',
     mod: readShader,
   }),
   pack: packReadSegments,

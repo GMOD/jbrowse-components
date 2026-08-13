@@ -5,11 +5,9 @@ import { qualityAbgr } from './colors.ts'
 
 import type { PerBaseQualityUploadData } from './types.ts'
 
-export const PASS_PER_BASE_QUAL = 'perBaseQuality'
-
 export const PER_BASE_QUALITY_PASS = {
   ...slangPass({
-    id: PASS_PER_BASE_QUAL,
+    id: 'perBaseQuality',
     mod: perBaseQualityShader,
   }),
   pack: packPerBaseQuality,

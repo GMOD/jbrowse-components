@@ -4,14 +4,12 @@ import * as interbaseShader from '../../shaders/slang/interbaseHistogram.generat
 
 import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 
-export const PASS_INTERBASE = 'interbase'
-
 // `interbaseCov*` / `interbasePackedBuffer` are the coverage-area arrays; the
 // plain `interbase*` ones on CigarUploadData are the row-instanced marks, a
 // different pass.
 export const INTERBASE_PASS = {
   ...slangPass({
-    id: PASS_INTERBASE,
+    id: 'interbase',
     mod: interbaseShader,
   }),
   pack: (data: Pick<CoverageUploadData, 'interbasePackedBuffer'>) =>

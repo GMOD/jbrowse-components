@@ -10,7 +10,7 @@ import type { GpuHal, PassDescriptor } from './hal'
  *
  * ```ts
  * export const GAP_PASS = {
- *   ...slangPass({ id: PASS_GAP, mod: gapShader }),
+ *   ...slangPass({ id: 'gap', mod: gapShader }),
  *   pack: packGaps,
  * }
  * ```

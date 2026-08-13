@@ -1,11 +1,11 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { PASS_COVERAGE } from '../../features/coverage/packGpu.ts'
-import { PASS_INDICATOR } from '../../features/indicator/packGpu.ts'
-import { PASS_INTERBASE } from '../../features/interbase/packGpu.ts'
-import { PASS_MOD_COV } from '../../features/modCoverage/packGpu.ts'
-import { PASS_SNP_COV } from '../../features/snpCoverage/packGpu.ts'
+import { COVERAGE_PASS } from '../../features/coverage/packGpu.ts'
+import { INDICATOR_PASS } from '../../features/indicator/packGpu.ts'
+import { INTERBASE_PASS } from '../../features/interbase/packGpu.ts'
+import { MOD_COVERAGE_PASS } from '../../features/modCoverage/packGpu.ts'
+import { SNP_COVERAGE_PASS } from '../../features/snpCoverage/packGpu.ts'
 import {
   ALIGNMENTS_PASSES,
   COVERAGE_LAYERS,
@@ -14,6 +14,7 @@ import {
 } from './GpuAlignmentsRenderer.ts'
 
 import type { AlignmentsSources } from './rendererTypes.ts'
+import type { PassDescriptor } from '@jbrowse/render-core/hal'
 
 /**
  * A pass has to be wired in three places to paint: registered in
@@ -36,14 +37,12 @@ import type { AlignmentsSources } from './rendererTypes.ts'
 
 const START = 10_000
 
-const STRIDE = new Map(ALIGNMENTS_PASSES.map(p => [p.id, p.instanceStride]))
-
 // One instance's worth of bytes for a pass, at that pass's generated stride.
 // The five coverage passes take a worker-packed buffer verbatim, so sizing
 // their fixtures by hand is sizing them the way no packer would: at the real
 // stride, "one instance" is one instance on both sides.
-function oneInstance(passId: string) {
-  return new ArrayBuffer(STRIDE.get(passId)!)
+function oneInstance(pass: PassDescriptor) {
+  return new ArrayBuffer(pass.instanceStride)
 }
 
 // One instance in every feature array, so every pass has something to upload.
@@ -106,15 +105,15 @@ function fullyPopulated() {
     numLinkedReadLines: 1,
 
     coverageGpuBinCount: 1,
-    coveragePackedBuffer: oneInstance(PASS_COVERAGE),
+    coveragePackedBuffer: oneInstance(COVERAGE_PASS),
     snpPositions: new Uint32Array([START + 1]),
-    snpPackedBuffer: oneInstance(PASS_SNP_COV),
+    snpPackedBuffer: oneInstance(SNP_COVERAGE_PASS),
     interbaseCovPositions: new Uint32Array([START + 2]),
-    interbasePackedBuffer: oneInstance(PASS_INTERBASE),
+    interbasePackedBuffer: oneInstance(INTERBASE_PASS),
     indicatorPositions: new Uint32Array([START + 3]),
-    indicatorPackedBuffer: oneInstance(PASS_INDICATOR),
+    indicatorPackedBuffer: oneInstance(INDICATOR_PASS),
     modCovPositions: new Uint32Array([START + 4]),
-    modCovPackedBuffer: oneInstance(PASS_MOD_COV),
+    modCovPackedBuffer: oneInstance(MOD_COVERAGE_PASS),
   })
 }
 

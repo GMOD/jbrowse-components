@@ -114,8 +114,8 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   ctx.setLineDash([])
 
   // EVERY connector line, THEN every endpoint square — the GPU's pass order
-  // (`drawPass(PASS_ARC_FLAT)` then `drawPass(PASS_ARC_MARKER)`, under a comment
-  // saying the squares paint on top of the lines), rather than each arc's line
+  // (`ARC_FLAT_PASS` before `ARC_MARKER_PASS` in `ARC_PASSES`, whose order is
+  // the paint order and says so), rather than each arc's line
   // followed by its own two squares.
   //
   // Interleaved, a connector is translucent (ARC_FLAT_ALPHA 0.7) and opaque
