@@ -40,6 +40,33 @@ const TP53_TRANSCRIPT_WINDOW = 'chr17:7,668,400-7,677,600'
 // per-base scores against.
 const TP53_EXON_WINDOW = 'chr17:7,674,180-7,674,290'
 
+// Three of the recurrent TP53 codons, which is why this exon rather than
+// another one: 245, 248 and 249 are DNA-contact or structural residues of the
+// binding domain, and the exon the window covers carries all three.
+//
+// Coordinates READ OFF ClinVar's own records rather than converted by hand:
+// each single-base substitution in the track carries both its HGVS `c.` and its
+// genomic interval, so codon 248 is the three bases the c.742/c.743/c.744
+// records sit on (api.genome.ucsc.edu, track=clinvarMain, 2026-08-13). TP53 is
+// on the minus strand, so a codon's first base is its HIGHEST coordinate and
+// the codons run right to left across the frame.
+//
+// Do NOT derive these from the `g.` side of a `_jsonHgvsTable` instead: HGVS
+// 3'-shifts an indel into its repeat, so the deletion records in this window
+// name genomic coordinates 3 bp off their own BED interval. The substitutions
+// have no such ambiguity.
+const TP53_HOTSPOT_CODONS = [
+  { label: 'R249', start: 7674215, end: 7674218 },
+  { label: 'R248', start: 7674218, end: 7674221 },
+  { label: 'G245', start: 7674227, end: 7674230 },
+].map(({ label, start, end }) => ({
+  refName: 'chr17',
+  assemblyName: 'hg38',
+  label,
+  start,
+  end,
+}))
+
 // The promoter end of the gene. TP53 is on the minus strand, so its TSS is the
 // HIGH coordinate (chr17:7,687,490) and the regulatory figure's subject sits at
 // the right-hand edge of the frame rather than the left. 6 kb keeps the
@@ -183,11 +210,17 @@ const H3K27AC_ROWS = {
 // and an import would make it vacuous.
 const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 
-// ClinVar's own classification column. The three pathogenic classes spelled
-// out rather than matched by prefix: jexl has no startsWith, and "Conflicting
-// classifications of pathogenicity" contains the word without being a call.
-const CLINVAR_PATHOGENIC_FILTER =
-  "jexl:feature.clinSign == 'Pathogenic' || feature.clinSign == 'Likely pathogenic' || feature.clinSign == 'Pathogenic/Likely pathogenic'"
+// ClinVar's own classification column, at its single strictest value. This used
+// to be a three-clause OR over Pathogenic / Likely pathogenic / Pathogenic-
+// Likely pathogenic -- correct, and the longest expression on a page whose
+// subject is a checkbox. The frame it produces is the same wall of red either
+// way, so the extra two clauses bought nothing a reader could see and cost the
+// one place this page asks somebody to type jexl its worst example.
+//
+// Not a prefix match, which is the tempting shortening: jexl has no startsWith,
+// and "Conflicting classifications of pathogenicity" contains the word without
+// being a call.
+const CLINVAR_PATHOGENIC_FILTER = "jexl:feature.clinSign == 'Pathogenic'"
 
 // gnomAD's own consequence class for the variant: pLoF, missense, synonymous
 // or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
@@ -217,7 +250,13 @@ function gnomadFrame(gnomad: object = {}) {
 // file's own autoSql, so this is the expression a reader types into the track
 // menu's "Filter by..." -- `jexlFiltersSetting` is the model prop that dialog
 // writes, rather than the `jexlFilters` config slot a config would ship.
-const JASPAR_TP53_FILTER = "jexl:get(feature,'TFName') == 'TP53'"
+//
+// `feature.TFName`, the form website/docs/CLAUDE.md asks for and the form the
+// prose beside the figure prints. It was `get(feature,'TFName')` here while the
+// page said the short one, so a reader typing what they were shown produced a
+// different string from the one the picture was made with -- on the page's
+// longest jexl, in the section that asks them to type it.
+const JASPAR_TP53_FILTER = "jexl:feature.TFName == 'TP53'"
 
 // Collapsed to the longest coding transcript, which the page reaches through the
 // isoform control at the bottom right of the gene track. Used by the base-zoom
@@ -691,6 +730,13 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // clinvarMain.bb). It is a wall at any height, and that IS the reading -- the
   // track is here for its colour and its density, not for its rows, so 150px
   // showing the top of the pile is the frame rather than a clipped one.
+  //
+  // The three hotspot codons are shaded, which is the thing the four tracks are
+  // agreeing ABOUT and the one thing none of them draws: every column in this
+  // exon is intolerant, so "the tall ones matter" is not a reading a reader can
+  // take off the picture, and the residues that make this exon the one worth
+  // showing are named nowhere in it. A `highlight` says where they are without
+  // a word, which is what the shading exception in website/CLAUDE.md is for.
   {
     mode: 'url',
     name: 'genomes_basics/exon_four_ways',
@@ -700,6 +746,13 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: TP53_EXON_WINDOW,
+          // No `showHighlightChips`: a chip is as wide as what it labels, and
+          // what it labels is three bases -- so the labels render "R2", "R24"
+          // and "G2", two of which are the same two characters. The gene
+          // track's own translation row is directly under the shading and
+          // already prints the residue, so the chips were relabelling it
+          // worse.
+          highlight: TP53_HOTSPOT_CODONS,
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 70 },
             { trackId: 'hg38-alphaMissense', height: 200 },
@@ -878,6 +931,18 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // canvas, so there is no element per variant, and `locusAnchor` resolves the
   // point from the live model instead of from a measurement that was true for
   // one window width.
+  //
+  // It lands in the Arg248 column, which is what makes the panel worth opening
+  // rather than a demonstration that panels open. WHICH of the records stacked
+  // there the row under `fracY` holds is the layout's business and will move,
+  // and it does not need pinning: filtered to Pathogenic, every record covering
+  // that base alters Arg248 -- the three substitutions of the codon, a
+  // duplication frameshifting in it, and four deletions ending on it (nine in
+  // all, api.genome.ucsc.edu 2026-08-13). So the prose names the residue and
+  // not the record, and any row satisfies it.
+  //
+  // The codon is shaded in the figure above, so the two frames are about the
+  // same three bases.
   {
     mode: 'url',
     name: 'genomes_basics/variant_details',
@@ -887,6 +952,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: TP53_EXON_WINDOW,
+          highlight: TP53_HOTSPOT_CODONS.filter(h => h.label === 'R248'),
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 70 },
             {
@@ -910,7 +976,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
       {
         type: 'click',
         anchor: {
-          locus: 'chr17:7,674,245',
+          locus: 'chr17:7,674,220',
           track: CLINVAR_TRACK_ID,
           fracY: 0.1,
         },

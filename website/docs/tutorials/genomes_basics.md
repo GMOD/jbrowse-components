@@ -82,7 +82,9 @@ carrying none of them.
 
 At gene zoom a per-base score and a smoothed band are the same picture, so zoom
 in until the sequence appears. The exon below is in the DNA binding domain and
-covers R248 and R249, two of the codons most often mutated in human cancer.
+covers G245, R248 and R249, three of the codons most often mutated in human
+cancer: Arg248 reaches into the DNA itself, and the other two hold the loop that
+carries it.
 
 Two more clicks make it readable: tick **Reference sequence**, which is off by
 default, and set the gene track's isoform control to **Longest coding
@@ -146,13 +148,14 @@ both is transcribing here. All seven carry both.
 
 ## Four readings of one exon
 
-Two more tracks from Phenotypes, Variants, and Literature go on the same exon.
-**ClinVar Variants - ClinVar SNVs** carries variants submitted with a clinical
-interpretation. **AlphaMissense** scores every possible single-base substitution
-for the amino acid change it would cause, as four subtracks, one per substituted
-base: a column is a position, a row is what it would become.
+Two more tracks from Phenotypes, Variants, and Literature go on the same exon,
+with its three hotspot codons shaded this time. **ClinVar Variants - ClinVar
+SNVs** carries variants submitted with a clinical interpretation.
+**AlphaMissense** scores every possible single-base substitution for the amino
+acid change it would cause, as four subtracks, one per substituted base: a
+column is a position, a row is what it would become.
 
-<Figure src="/img/genomes_basics/exon_four_ways.png" caption="One DNA binding domain exon of TP53: AlphaMissense in four substitution rows, phyloP, ClinVar coloured by clinical significance, and the reference sequence with its translation." />
+<Figure src="/img/genomes_basics/exon_four_ways.png" caption="One DNA binding domain exon of TP53, with codons 245, 248 and 249 shaded: AlphaMissense in four substitution rows, phyloP, ClinVar coloured by clinical significance, and the reference sequence with its translation." />
 
 AlphaMissense cells are empty where the substitution leaves the residue alone; a
 column tall in all four rows is a position where no substitution is predicted to
@@ -185,10 +188,11 @@ captures. Filtered to the common variants, few remain in coding sequence and the
 rest are intronic or in the 3' UTR. Filtered to predicted loss of function, the
 track fills the coding exons again.
 
-ClinVar takes the same treatment on its own classification column, `clinSign`,
-which leaves the records called pathogenic. Clicking one reads it back.
+ClinVar takes the same treatment on its own classification column:
+`jexl:feature.clinSign == 'Pathogenic'`. Back at the exon, that leaves a stack
+of records over Arg248, and clicking one reads it back.
 
-<Figure src="/img/genomes_basics/variant_details.png" caption="ClinVar filtered to the pathogenic classes, with one variant clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
+<Figure src="/img/genomes_basics/variant_details.png" caption="ClinVar filtered to its pathogenic records, with one of those over the shaded Arg248 codon clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
 
 A BigBed's extra fields arrive as fields: whatever columns the published file
 carries are what a click gives back, and are what there is to filter and colour
@@ -305,6 +309,8 @@ largest sequenced, and this locus covers a few hundred kb of it.
   the AlphaMissense scores
 - [Bouaoun L et al. TP53 variations in human cancers. _Hum Mutat_ 2016](https://pubmed.ncbi.nlm.nih.gov/27328919/),
   the mutation distribution across TP53 codons
+- [Cho Y et al. Crystal structure of a p53 tumor suppressor-DNA complex. _Science_ 1994](https://pubmed.ncbi.nlm.nih.gov/8023157/),
+  which hotspot residues contact the DNA and which hold the structure
 - [Liao WW et al. A draft human pangenome reference. _Nature_ 2023](https://pubmed.ncbi.nlm.nih.gov/37165242/),
   the HPRC assemblies the pangenome callset is built from
 - [el-Deiry WS et al. WAF1, a potential mediator of p53 tumor suppression. _Cell_ 1993](https://pubmed.ncbi.nlm.nih.gov/8242752/),
