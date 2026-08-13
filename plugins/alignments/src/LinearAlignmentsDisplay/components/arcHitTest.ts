@@ -7,16 +7,16 @@ import {
 } from '../../features/arcs/arcPath.ts'
 import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
 import { hitTestArcBand } from '../../features/arcs/hitTest.ts'
-import { arcPlacement } from '../../features/arcs/placement.ts'
+import { arcMark } from '../../features/arcs/mark.ts'
 import { hasArcBandInk } from '../../features/arcs/types.ts'
 import { ARC_APEX_FRACTION } from '../../shaders/slang/arc.iface.generated.ts'
-import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 import { bandScreenTop, makeBpToPx } from './sectionScreen.ts'
 
 import type {
   ArcBandHitResult,
   ArcHitOptions,
 } from '../../features/arcs/hitTest.ts'
+import type { ArcMark } from '../../features/arcs/mark.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ScrollModel } from './sectionScreen.ts'
 
@@ -181,16 +181,12 @@ function arcBandScreenScale(opts: ArcHitBandOptions): ArcBandScale | undefined {
 // One arc's geometry, spelled out for the debug overlay.
 export interface ArcDebugShape {
   d: string
-  // A read-cloud bar rather than a dome. The radii below then describe the
-  // ellipse this arc WOULD have drawn in arc mode, which is worth saying out
-  // loud next to them rather than letting them read as the mark on screen.
-  isFlat: boolean
-  rx: number
-  ry: number
-  // `arcRadiiPx` returns an equal pair only on the far branch, so this reads the
-  // branch off the radii rather than re-asking `arcIsFar` — the same rule
-  // `curveDistance` follows, and the reason the predicate is js-skipped.
-  far: boolean
+  // THE resolved mark — a bar or a dome, carrying exactly the numbers that kind
+  // is described by. It used to carry an `isFlat` flag beside an rx/ry pair that,
+  // for a bar, described the ellipse the arc WOULD have drawn in arc mode: two
+  // numbers about a mark not on screen, in an overlay whose entire contract is
+  // that what it draws is what the renderer thinks.
+  mark: ArcMark
   x1: number
   x2: number
   yBp: number
@@ -237,23 +233,18 @@ export function resolveArcBandDebug(
   if (!scale) {
     return undefined
   }
-  const { arcsTop, arcsH, pairedArcsDown, screenWidthPx } = scale
+  const { arcsTop, arcsH, pairedArcsDown } = scale
   const shapes: ArcDebugShape[] = []
   for (let i = 0; i < arcs.numArcs; i++) {
-    // `arcPlacement`, not a second reading of the Y scale beside it. The
-    // overlay's whole job is to say what the RENDERER thinks an arc is, and it
-    // was answering from its own projection — which is how it came to spell the
-    // Y rule twice and had to be edited again when `arcDomeDestY` was reverted
-    // away. `arcScreenPath` below already goes through the placement, so the
-    // numbers and the ink now come from one call rather than two agreeing ones.
-    const { sx1, sx2, destY, isFlat } = arcPlacement(arcs, i, scale)
-    const [rx, ry] = arcRadiiPx(Math.abs(sx2 - sx1) / 2, destY, screenWidthPx)
+    // `arcMark`, not a second reading of the Y scale and the near/far branch
+    // beside it. The overlay's whole job is to say what the RENDERER thinks an
+    // arc is, and it was answering from its own projection — which is how it
+    // came to spell the Y rule twice and had to be edited again when
+    // `arcDomeDestY` was reverted away. `arcScreenPath` below resolves the same
+    // mark, so the numbers and the ink come from one derivation.
     shapes.push({
       d: arcScreenPath(arcs, i, scale),
-      isFlat,
-      rx,
-      ry,
-      far: rx === ry,
+      mark: arcMark(arcs, i, scale),
       x1: arcs.arcX1[i]!,
       x2: arcs.arcX2[i]!,
       yBp: arcs.arcYBp[i]!,

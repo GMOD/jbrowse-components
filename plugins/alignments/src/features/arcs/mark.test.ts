@@ -1,8 +1,8 @@
 import { arcScreenPath } from './arcPath.ts'
 import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './compute.ts'
-import { strokeArc } from './drawCanvas.ts'
+import { strokeArcMark } from './drawCanvas.ts'
 import { hitTestArcBand } from './hitTest.ts'
-import { arcPlacement } from './placement.ts'
+import { arcMark } from './mark.ts'
 import { emptyArcsUploadData } from './types.ts'
 
 import type { ArcHitOptions } from './hitTest.ts'
@@ -41,12 +41,15 @@ function arcsData(
   }
 }
 
-// The ellipse `strokeArc` hands Canvas2D when the DRAW places this arc — with
-// the height `arcPlacement` resolved, not one the test picked. An earlier
-// version of this check passed its own in, which is why it kept passing while
-// the highlight was reading a different Y for a dome.
+// The ellipse `strokeArcMark` hands Canvas2D when the DRAW resolves this arc —
+// off the mark itself, not a height the test picked. An earlier version of this
+// check passed its own in, which is why it kept passing while the highlight was
+// reading a different Y for a dome.
 function drawnEllipse(data: ArcsUploadData, i: number, opts: ArcHitOptions) {
-  const { sx1, sx2, anchorY, destY } = arcPlacement(data, i, opts)
+  const mark = arcMark(data, i, opts)
+  if (mark.kind !== 'dome') {
+    throw new Error('expected a dome')
+  }
   let call: { cx: number; cy: number; rx: number; ry: number } | undefined
   const ctx = {
     beginPath: () => {},
@@ -55,15 +58,7 @@ function drawnEllipse(data: ArcsUploadData, i: number, opts: ArcHitOptions) {
       call = { cx, cy, rx, ry }
     },
   } as unknown as Ctx2D
-  strokeArc(
-    ctx,
-    sx1,
-    sx2,
-    anchorY,
-    destY,
-    opts.pairedArcsDown,
-    opts.screenWidthPx,
-  )
+  strokeArcMark(ctx, mark)
   return call!
 }
 
@@ -111,11 +106,13 @@ test('a dome past the domain still closes inside the band', () => {
   const flat = arcsData([
     { x1: 200, x2: 600, yBp: 100_000, shape: ARC_SHAPE_FLAT },
   ])
-  const bar = arcPlacement(flat, 0, FRAME)
-  const dome = arcPlacement(TALL_DOME, 0, FRAME)
-  expect(dome.markY).toBeGreaterThanOrEqual(FRAME.arcsTop)
+  const bar = arcMark(flat, 0, FRAME)
+  const dome = arcMark(TALL_DOME, 0, FRAME)
   expect(dome.destY).toBeLessThanOrEqual(FRAME.arcsH)
-  expect(dome.markY).toBe(bar.markY)
+  // The two kinds differ in SHAPE, not in height: one clamped `destY` places
+  // both. (A dome has no `markY` to compare — the field is the bar's, because
+  // for a curve it named a point on no drawn arc.)
+  expect(dome.destY).toBe(bar.destY)
 })
 
 test('a down-pointing band mirrors every consumer at once', () => {

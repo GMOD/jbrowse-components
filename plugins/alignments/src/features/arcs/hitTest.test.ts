@@ -1,8 +1,9 @@
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './compute.ts'
-import { strokeArc } from './drawCanvas.ts'
+import { strokeArcMark } from './drawCanvas.ts'
 import { ARC_HIT_SLOP_PX, hitTestArcBand } from './hitTest.ts'
+import { arcMark } from './mark.ts'
 import { emptyArcsUploadData } from './types.ts'
 
 import type { ArcHitOptions } from './hitTest.ts'
@@ -56,11 +57,18 @@ function arcsData(
 function drawnEllipse(
   sx1: number,
   sx2: number,
-  anchorY: number,
-  destY: number,
+  yBp: number,
   down: boolean,
   screenWidthPx: number,
 ) {
+  const mark = arcMark(arcsData([{ x1: sx1, x2: sx2, yBp }]), 0, {
+    ...BAND,
+    pairedArcsDown: down,
+    screenWidthPx,
+  })
+  if (mark.kind !== 'dome') {
+    throw new Error('expected a dome')
+  }
   let call: { cx: number; cy: number; rx: number; ry: number } | undefined
   const ctx = {
     beginPath: () => {},
@@ -69,11 +77,13 @@ function drawnEllipse(
       call = { cx, cy, rx, ry }
     },
   } as unknown as Ctx2D
-  strokeArc(ctx, sx1, sx2, anchorY, destY, down, screenWidthPx)
+  strokeArcMark(ctx, mark)
   return call!
 }
 
-// Points on the drawn half-ellipse, at the canvas angles strokeArc sweeps.
+// Points on the drawn half-ellipse, at the canvas angles strokeArcMark sweeps.
+// The centre comes off the recorded call, so the anchor rule is not spelled a
+// second time here either.
 function pointsOnDrawnCurve(
   sx1: number,
   sx2: number,
@@ -81,8 +91,7 @@ function pointsOnDrawnCurve(
   down = false,
   screenWidthPx = BAND.screenWidthPx,
 ) {
-  const anchorY = down ? BAND.arcsTop : BAND.arcsTop + BAND.arcsH
-  const e = drawnEllipse(sx1, sx2, anchorY, yBp, down, screenWidthPx)
+  const e = drawnEllipse(sx1, sx2, yBp, down, screenWidthPx)
   const [start, end] = down ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
   return [0.05, 0.25, 0.5, 0.75, 0.95].map(f => {
     const t = start + f * (end - start)

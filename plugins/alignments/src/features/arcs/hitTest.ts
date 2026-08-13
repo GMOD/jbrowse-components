@@ -1,7 +1,7 @@
 // What the cursor is on in the arc band. The counterpart to `drawArcs`: it takes
-// its geometry from `arcPlacement`, the same call the draw makes, because a hit
-// test that re-derives it is a second placement of the arcs — free to disagree
-// with the drawn one, and it has, twice.
+// its geometry from `arcMark`, the same call the draw makes, because a hit test
+// that re-derives it is a second placement of the arcs — free to disagree with
+// the drawn one, and it has, twice.
 //
 // The band paints TWO families of mark and this answers for both. It used to
 // answer only for the arcs, which is the "layer with no hit test at all" gap
@@ -9,13 +9,13 @@
 // same rect, and hovering it reported nothing at all — so the one mark whose
 // meaning is least guessable from its shape was the one you could not ask.
 import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAnchorY } from './arcYScale.ts'
 import { ellipseDistance } from './ellipseDistance.ts'
-import { arcPlacement, flatBarExtent } from './placement.ts'
+import { arcMark } from './mark.ts'
 
+import type { ArcBandFrame, ArcMark } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
 
 // How far outside its own stroke an arc still answers a hover, in CSS px.
@@ -104,7 +104,7 @@ interface Candidate<T> {
  * Shared because the arcs and the ticks were two spellings of it, each with the
  * same five locals and the same tie-breaks, under comments on the tick side
  * saying it was the "same two-bucket ranking as the arcs". Two instances of one
- * rule is a missing function — the argument `placement.ts` makes for the
+ * rule is a missing function — the argument `mark.ts` makes for the
  * geometry, applied to the ranking. One object per scan (two per mousemove);
  * the per-mark loops it serves still only write numbers.
  */
@@ -159,15 +159,13 @@ function arcHitAt(data: ArcsUploadData, i: number): ArcHitResult {
   }
 }
 
-export interface ArcHitOptions {
-  bpToScreenX: (bp: number) => number
-  arcsYDomainBp: number
-  arcsYLog: boolean
-  arcsTop: number
-  arcsH: number
-  pairedArcsDown: boolean
+// The band frame every mark is resolved into, plus the one thing only the hit
+// test spends: the configured stroke width, which is how wide the target is. It
+// was a second declaration of the same seven fields, which is what let the frame
+// grow `screenWidthPx` on one side and not the other — the bug the field's own
+// comment in `mark.ts` describes.
+export interface ArcHitOptions extends ArcBandFrame {
   lineWidth: number
-  screenWidthPx: number
 }
 
 /**
@@ -273,9 +271,9 @@ function arcCandidate(
   data: ArcsUploadData,
   opts: ArcHitOptions,
 ): Candidate<ArcHitResult> | undefined {
-  // The projection and the Y scale are read by `arcPlacement`, not here — this
-  // needs only the band rect, the direction, and the two widths.
-  const { arcsTop, arcsH, pairedArcsDown, lineWidth, screenWidthPx } = opts
+  // The projection, the Y scale and the near/far branch are read by `arcMark`,
+  // not here — this needs only the band rect, the direction and the stroke width.
+  const { arcsTop, arcsH, pairedArcsDown, lineWidth } = opts
   const anchorY = arcAnchorY(arcsTop, arcsH, pairedArcsDown)
   // Drawn-side-positive local Y: an up-pointing band measures upward from the
   // anchor, a down-pointing one downward, and every test below is written once
@@ -284,7 +282,7 @@ function arcCandidate(
 
   // `bestMark` is the two-bucket ranking — see it for why on-ink is settled by
   // support and near-ink by distance. What is local to the arcs is the DISTANCE
-  // fed to it, which needs a placement per arc where a tick needs one subtract.
+  // fed to it, which needs a mark per arc where a tick needs one subtract.
   const picker = bestMark()
   for (let i = 0; i < data.numArcs; i++) {
     const support = data.arcSupport[i]!
@@ -292,17 +290,13 @@ function arcCandidate(
     if (!nearArcColumns(canvasX, data, i, opts, halfWidth)) {
       continue
     }
-    // `destY` is the apex height above the anchor on the drawn side, which is
-    // the frame `localY` is in — so an up band and a down band are one case
-    // here, and the flat/dome Y split is `arcPlacement`'s to make rather than
-    // this file's to remember.
-    const { sx1, sx2, destY, isFlat } = arcPlacement(data, i, opts)
-    const dist = isFlat
-      ? flatDistance(canvasX, localY, sx1, sx2, destY)
-      : curveDistance(canvasX, localY, sx1, sx2, destY, screenWidthPx)
     // How far past this arc's own ink the cursor is: the quantity that both
     // gates the hit and sorts the two buckets.
-    picker.consider(i, support, dist - halfWidth)
+    picker.consider(
+      i,
+      support,
+      markDistance(canvasX, localY, arcMark(data, i, opts)) - halfWidth,
+    )
   }
   const found = picker.best()
   return found === undefined
@@ -313,7 +307,7 @@ function arcCandidate(
 // Whether arc `i` can possibly have ink in the cursor's COLUMN — the cheap
 // rejection that keeps the scan from solving a quartic per arc. The read cloud
 // emits thousands of arcs into one band and this runs on every hover frame, so
-// what it skips is the whole of `arcPlacement` + `ellipseDistance` for every arc
+// what it skips is the whole of `arcMark` + `ellipseDistance` for every arc
 // the cursor is nowhere near.
 //
 // Horizontal because that is the only bound available without placing the arc,
@@ -345,59 +339,33 @@ function nearArcColumns(
   )
 }
 
-// The read cloud's flat connector: a horizontal segment at the arc's Y, widened
-// about its midpoint to a minimum drawn length so short-insert pairs stay
-// visible. Mirrors the flat branch of `drawArcsToCtx` — including that the
-// minimum is applied to the DRAWN extent, so a sub-minimum pair is hoverable
-// across the whole bar it paints rather than only over its two real endpoints.
-function flatDistance(
-  canvasX: number,
-  localY: number,
-  sx1: number,
-  sx2: number,
-  arcH: number,
-) {
-  const { mid, halfPx } = flatBarExtent(sx1, sx2)
-  return Math.hypot(
-    Math.max(Math.abs(canvasX - mid) - halfPx, 0),
-    localY - arcH,
-  )
-}
-
-// The paired-read dome. `arcRadiiPx` is generated from arc.slang and is the one
-// thing here that MUST match the shader: it decides which conic this is, and an
-// ellipse and a circle are different marks.
-function curveDistance(
-  canvasX: number,
-  localY: number,
-  sx1: number,
-  sx2: number,
-  arcH: number,
-  screenWidthPx: number,
-) {
-  // The pair's half SPAN, not the stroke's half width the caller measures
-  // against — `arcRadiiPx`'s first argument, and the dome's `rx`.
-  const halfSpanPx = Math.abs(sx2 - sx1) / 2
-  const [rx, ry] = arcRadiiPx(halfSpanPx, arcH, screenWidthPx)
-  // `rx === ry` IS the far-pair branch — that is the only thing arcRadiiPx
-  // returns an equal pair for, short of a near arc whose apex coincidentally
-  // lands there, and a near arc that happens to be a circle is measured the same
-  // way by both routines anyway. Reading the pair rather than re-asking
-  // `arcIsFar` is deliberate: the predicate is `//! js-skip`ped precisely so a
-  // consumer cannot ask it separately from the radii it decides.
-  //
-  // The split is numerical, not cosmetic. A far pair's radius reaches millions
-  // of px, where `length(p - c) - r` — which is what the ellipse solver's own
-  // circle short-circuit computes — cancels away every significant digit.
-  // `distToWideCirclePx` assembles the same quantity from small terms, measured
-  // from the leg's own endpoint.
-  if (rx === ry) {
-    const mid = (sx1 + sx2) / 2
-    const near = canvasX >= mid ? Math.max(sx1, sx2) : Math.min(sx1, sx2)
+// Distance from the cursor to one arc's own ink, in the drawn-side-positive
+// frame `localY` is measured in — so an up band and a down band are one case
+// here, and which conic (or bar) this arc is has already been decided by
+// `arcMark` rather than being this file's to remember.
+function markDistance(canvasX: number, localY: number, mark: ArcMark) {
+  // The read cloud's flat connector: a horizontal segment at the arc's Y, at the
+  // extent `arcMark` widened it to — so a sub-minimum pair is hoverable across
+  // the whole bar it paints rather than only over its two real endpoints.
+  if (mark.kind === 'bar') {
+    return Math.hypot(
+      Math.max(Math.abs(canvasX - mark.mid) - mark.halfPx, 0),
+      localY - mark.destY,
+    )
+  }
+  const { mid, rx, ry, far } = mark
+  // The far branch is numerical, not cosmetic. A far pair's radius reaches
+  // millions of px, where `length(p - c) - r` — which is what the ellipse
+  // solver's own circle short-circuit computes — cancels away every significant
+  // digit. `distToWideCirclePx` assembles the same quantity from small terms,
+  // measured from the leg's own endpoint, which on this branch is `mid ± rx`
+  // (the radius IS the pair's half-span there).
+  if (far) {
+    const right = canvasX >= mid
     // x positive pointing AWAY from the circle, which is outward from whichever
     // leg the cursor is on.
-    const legX = canvasX >= mid ? canvasX - near : near - canvasX
+    const legX = right ? canvasX - (mid + rx) : mid - rx - canvasX
     return distToWideCirclePx(legX, localY, rx)
   }
-  return ellipseDistance(canvasX - (sx1 + sx2) / 2, localY, rx, ry)
+  return ellipseDistance(canvasX - mid, localY, rx, ry)
 }

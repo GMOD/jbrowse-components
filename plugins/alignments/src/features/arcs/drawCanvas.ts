@@ -4,9 +4,6 @@ import { buildArcColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
 // imported from the generated module directly, with no re-export hop.
 import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-// The dome's two radii and the near/far branch behind them, likewise generated
-// (adr-051) — see strokeArc.
-import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 // The flat-line constants moved with the flat line: they are arcFlat.slang's
 // now, declared on the pass that consumes them.
 import { ARC_FLAT_ALPHA } from '../../shaders/slang/arcFlat.iface.generated.ts'
@@ -15,30 +12,22 @@ import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAvailH, arcYScale } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
-import { arcPlacement, flatBarExtent } from './placement.ts'
+import { arcMark } from './mark.ts'
 
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { RGBColor } from '../../shaders/colors.ts'
+import type { ArcBandFrame, ArcDome } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-interface DrawArcsOpts {
-  bpToScreenX: (bp: number) => number
-  // Genomic bp that map to the full arcs band height (availH). Arc/bezier
-  // mode passes availH/pxPerBp (zoom-proportional); read-cloud mode passes the
-  // autoscaled max |tlen| so Y is zoom-stable. Mirrors arc.slang's
-  // `arcsYDomainBp` uniform — one code path, caller-chosen value.
-  arcsYDomainBp: number
-  // Read cloud maps yBp=|tlen| with a base-2 log scale (small inserts spread near
-  // the baseline, matching origin/main's d3.scaleLog().base(2)); arc mode stays
-  // linear. Mirrors arc.slang's `arcsYLog` uniform.
-  arcsYLog: boolean
-  arcsTop: number
-  arcsH: number
-  pairedArcsDown: boolean
+// The band frame `arcMark` resolves into, plus what only the paint spends. A
+// third declaration of those seven fields used to live here, beside
+// `ArcHitOptions`' and the frame's own — which is how the frame could grow a
+// field on one side and not the others.
+interface DrawArcsOpts extends ArcBandFrame {
   lineWidth: number
   // The arc slot colors, indexed by the curves and by the read-cloud endpoint
   // squares alike — one meaning, one color. The squares took a `markerPalette`
@@ -48,59 +37,38 @@ interface DrawArcsOpts {
   // palette slot, because the line carries no category (its endpoint squares
   // do). Mirrors arcFlat.slang's `u.colorFlatConnector`.
   flatConnectorColor: RGBColor
-  // Visible width in px (mirrors arc.slang's `canvasW`); sets the far-pair
-  // threshold below.
-  screenWidthPx: number
 }
 
-// Strokes one non-flat paired-read arc between screen-x sx1 and sx2 as a half
-// ellipse rising from the two endpoints. Caller sets strokeStyle and clips to
-// the band.
+// Strokes one paired-read dome. Caller sets strokeStyle and clips to the band.
 //
-// `destY` is `arcPlacement`'s — the drawn-side-positive distance the insert size
-// earns, NOT where the ink peaks. The apex is `ARC_APEX_FRACTION` of the way
-// there (`arcRadiiPx`, which owns that scaling), so this used to take
-// `placement.apexY` and immediately undo it with `abs(apexY - anchorY)`. The
-// round trip cost nothing but it made the parameter read as a claim about the
-// curve's top that neither renderer honours.
+// Takes the resolved mark and nothing else: the two radii, the centre and the
+// direction are all `arcMark`'s, generated-from-arc.slang `arcRadiiPx` included
+// (adr-051). Those were hand-written here until `arcRadiiParity.test.ts` retired
+// them, and the threshold in particular was stated in different terms on the two
+// sides (`2*halfWidth > k*canvasW` there, `|sx2-sx1| > k*screenWidth` here) —
+// the shape a comment-synced twin drifts in unnoticed, deciding an ellipse
+// versus a circle rather than a pixel.
 //
-// Both radii come from `arcRadiiPx`, generated from arc.slang (adr-051) — the
-// near/far branch, the ARC_APEX_FRACTION scaling and the span threshold behind
-// them are the shader's, and were hand-written here until
-// `arcRadiiParity.test.ts` retired them. The threshold in particular was stated
-// in different terms on the two sides (`2*halfWidth > k*canvasW` there,
-// `|sx2-sx1| > k*screenWidth` here), which is the shape a comment-synced twin
-// drifts in unnoticed; what it decides is an ellipse versus a circle, not a
-// pixel. Still exported for arcShape.test.ts, which pins the sweep and the
-// centre this wraps them in.
-export function strokeArc(
-  ctx: Ctx2D,
-  sx1: number,
-  sx2: number,
-  anchorY: number,
-  destY: number,
-  pairedArcsDown: boolean,
-  screenWidthPx: number,
-) {
-  const [rx, ry] = arcRadiiPx(Math.abs(sx2 - sx1) / 2, destY, screenWidthPx)
-  const [start, end] = pairedArcsDown ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
+// It used to take the resolved geometry's `apexY` and immediately undo it with
+// `abs(apexY - anchorY)`; the round trip cost nothing but it made the parameter
+// read as a claim about the curve's top that neither renderer honours. A dome
+// has no `markY` at all now — that field is the bar's.
+//
+// Still exported for arcShape.test.ts, which pins the sweep and the centre this
+// wraps the radii in.
+export function strokeArcMark(ctx: Ctx2D, mark: ArcDome) {
+  const [start, end] = mark.down ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
   ctx.beginPath()
-  ctx.ellipse((sx1 + sx2) / 2, anchorY, rx, ry, 0, start, end)
+  ctx.ellipse(mark.mid, mark.anchorY, mark.rx, mark.ry, 0, start, end)
   ctx.stroke()
 }
 
 // Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
 // constant line Y, otherwise the curve apex. See ARC_SHAPE_* in compute.ts.
 function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
-  // The band rect is not read here at all: `arcPlacement` takes `opts` whole
-  // and resolves the anchor and both mark Ys from it.
-  const {
-    pairedArcsDown,
-    lineWidth,
-    palette,
-    flatConnectorColor,
-    screenWidthPx,
-  } = opts
+  // The band rect, the Y scale and the near/far width are not read here at all:
+  // `arcMark` takes `opts` whole and resolves every mark from them.
+  const { lineWidth, palette, flatConnectorColor } = opts
   // Pre-stringify the palette once per draw — saves N Math.round + string
   // allocations per frame (N = numArcs, often thousands).
   const cssPalette = palette.map(c => rgb255(c))
@@ -119,33 +87,28 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     // paints what it painted before coalescing existed.
     ctx.lineWidth = arcLineWidth(data.arcSupport[i]!, lineWidth)
 
-    // The one placement — shared with `hitTestArcs` and the hover highlight, so
-    // none of the three can drift from the other two. `anchorY` comes off it
-    // too: the anchor rule is `arcAnchorY`'s, and hoisting a second copy of it
-    // out of this loop is how a draw gets to disagree with the placement it is
-    // otherwise reading. The band clip is the caller's; a dome deliberately
-    // leaves the band rather than flattening onto its ceiling.
-    const { sx1, sx2, anchorY, markY, destY, isFlat } = arcPlacement(
-      data,
-      i,
-      opts,
-    )
+    // The one mark — shared with `hitTestArcBand` and the hover highlight, so
+    // none of the three can drift from the other two. Its anchor, its widened
+    // bar extent and its two radii all come off this call; hoisting a second
+    // copy of any of them out of this loop is how a draw gets to disagree with
+    // the geometry it is otherwise reading. The band clip is the caller's; a
+    // dome deliberately leaves the band rather than flattening onto its ceiling.
+    const mark = arcMark(data, i, opts)
 
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
-    if (isFlat) {
-      // Neutral connector line clamped to a minimum drawn width (centered on
-      // the midpoint) so short-insert pairs stay visible; mirrors
-      // arcFlat.slang's clamp. The endpoint squares carry the category color
-      // and are a SECOND pass below, not this one's last two statements.
+    if (mark.kind === 'bar') {
+      // Neutral connector line at the mark's own widened extent, so short-insert
+      // pairs stay visible; mirrors arcFlat.slang's clamp. The endpoint squares
+      // carry the category color and are a SECOND pass below, not this one's
+      // last two statements.
       ctx.strokeStyle = flatLineCss
-      const { mid, halfPx } = flatBarExtent(sx1, sx2)
       ctx.beginPath()
-      ctx.moveTo(mid - halfPx, markY)
-      ctx.lineTo(mid + halfPx, markY)
+      ctx.moveTo(mark.mid - mark.halfPx, mark.markY)
+      ctx.lineTo(mark.mid + mark.halfPx, mark.markY)
       ctx.stroke()
     } else {
       ctx.strokeStyle = cssPalette[arcColorSlot(colorIdx)]!
-      strokeArc(ctx, sx1, sx2, anchorY, destY, pairedArcsDown, screenWidthPx)
+      strokeArcMark(ctx, mark)
     }
   }
   ctx.setLineDash([])
@@ -162,14 +125,19 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   // whole reason the squares carry the colour — and since the SVG export paints
   // through this path, an exported read cloud disagreed with the one on screen.
   //
-  // A second `arcPlacement` per flat arc rather than state carried between the
-  // loops: it is the same call, so there is nothing here that can drift from the
-  // pass above, and next to a `ctx.stroke()` per arc the arithmetic is free.
+  // A second `arcMark` per flat arc rather than state carried between the loops:
+  // it is the same call, so there is nothing here that can drift from the pass
+  // above, and next to a `ctx.stroke()` per arc the arithmetic is free.
+  //
+  // The squares sit on the REAL mates (`sx1`/`sx2`), not on the ends of the bar,
+  // which is why a bar carries both: a sub-minimum pair draws a 2.5px bar with
+  // its two squares overlapping in the middle of it.
   if (data.numFlatArcs > 0) {
     const m = ARC_MARKER_PX
     for (let i = 0; i < data.numArcs; i++) {
-      const { sx1, sx2, markY, isFlat } = arcPlacement(data, i, opts)
-      if (isFlat) {
+      const mark = arcMark(data, i, opts)
+      if (mark.kind === 'bar') {
+        const { sx1, sx2, markY } = mark
         ctx.fillStyle = cssPalette[arcColorSlot(data.arcColorTypes[i]!)]!
         ctx.fillRect(sx1 - m / 2, markY - m / 2, m, m)
         ctx.fillRect(sx2 - m / 2, markY - m / 2, m, m)

@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 
 import { resolveArcBandDebug } from './arcHitTest.ts'
 
+import type { ArcMark } from '../../features/arcs/mark.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -49,6 +50,25 @@ const useStyles = makeStyles()(() => ({
     opacity: 0.75,
   },
 }))
+
+// How wide the mark actually draws, which is what the label list ranks on. A
+// dome's is its `rx`; a bar's is the half-length it was widened to, and reading
+// the dome's field for both is how a read cloud used to be ranked by radii no
+// bar on screen had.
+function drawnHalfWidth(mark: ArcMark) {
+  return mark.kind === 'bar' ? mark.halfPx : mark.rx
+}
+
+// One mark in the vocabulary `arcMark` resolves, with the numbers that describe
+// THAT kind — a bar has no radii and a dome has no bar extent, so neither line
+// can print a number about a shape the renderer did not paint.
+function describeMark(mark: ArcMark) {
+  return mark.kind === 'bar'
+    ? `FLAT(bar) half=${mark.halfPx.toFixed(0)} destY=${mark.destY.toFixed(0)}`
+    : `${mark.far ? 'FAR(circle)' : 'near(ellipse)'} ` +
+        `rx=${mark.rx.toFixed(0)} ry=${mark.ry.toFixed(0)} ` +
+        `aspect=${(mark.rx / Math.max(mark.ry, 1e-6)).toFixed(2)}`
+}
 
 // Draws the arc band's own geometry over the canvas, for answering "why is this
 // arc this shape" without guessing from a screenshot.
@@ -102,7 +122,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
         // Widest first, so the labels describe the arcs most likely to be the
         // ones being asked about rather than whichever came first in the feed.
         const labelled = [...band.shapes]
-          .sort((a, b) => b.rx - a.rx)
+          .sort((a, b) => drawnHalfWidth(b.mark) - drawnHalfWidth(a.mark))
           .slice(0, 6)
         // The block's own scissor rect. Drawing the band full-width said the
         // pass was scissored to the track, which is the one thing this overlay
@@ -149,9 +169,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
                   height={12}
                 />
                 <text className={classes.label}>
-                  {`rx=${s.rx.toFixed(0)} ry=${s.ry.toFixed(0)} ` +
-                    `aspect=${(s.rx / Math.max(s.ry, 1e-6)).toFixed(2)} ` +
-                    `${s.isFlat ? 'FLAT(bar)' : s.far ? 'FAR(circle)' : 'near(ellipse)'} ` +
+                  {`${describeMark(s.mark)} ` +
                     `yBp=${s.yBp} span=${Math.abs(s.x2 - s.x1)}bp n=${s.support}`}
                 </text>
               </g>
