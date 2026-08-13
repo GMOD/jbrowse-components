@@ -74,26 +74,60 @@ function truncateRecords(records: ContactRecords, n: number): ContactRecords {
       }
 }
 
+// Every cache here is sized against the same thing, and it is worth stating
+// once: a fetch's working set is a function of the DISPLAYED REGION COUNT, and
+// two of the three grow with its square.
+//
+// `getMultiRegionContactRecords` queries every `(i, j)` pair with `i <= j`, so N
+// displayed regions is N(N+1)/2 pairs — a whole-genome human view is 24 regions
+// and 300 pairs. Each pair needs one matrix and its blocks; each region needs
+// one normalization vector per chromosome. Sized for one region, these caches
+// don't merely underperform, they invert: the entries a fetch will need again
+// are evicted by the same fetch, so the cache costs eviction bookkeeping and
+// returns nothing.
+//
+// Measured on `extra_test_data/test.hic` (hg19, 2.5 Mb, 24 regions / 300 pairs),
+// range reads for a fetch and then an identical repeat fetch — which is what
+// every pan issues:
+//
+//   N   pairs |  before      |  after
+//    4     10 |    29 /   0  |    29 /   0
+//    5     15 |    40 /  15  |    40 /   0
+//   10     55 |   130 / 110  |   130 /   0
+//   24    300 |  1106 /1106  |   648 /   0
+//
+// The cliffs are exactly these three capacities. Note the first column: 41% of a
+// cold whole-genome fetch's reads were re-reads of normalization vectors the
+// same fetch had already fetched.
+const BLOCK_CACHE_MAX_ENTRIES = 1024
+// The bound the entry cap was standing in for. Blocks became struct-of-arrays
+// (see contactRecords.ts), so a cached contact is 12 bytes of untraced
+// ArrayBuffer rather than ~55 on the GC-traced heap — but a block still holds
+// every contact in its bin square, which is the one thing here that can hold
+// real memory, and block sizes vary by more than an order of magnitude with
+// binsize. Measured on the file above: 0.05 MB at 2.5 Mb, 0.23 MB at 100 kb. So
+// the entry cap now tracks the working set and this tracks the memory, instead
+// of one number answering both badly. See LRU's WeightOpts.
+const BLOCK_CACHE_MAX_BYTES = 128 * 1024 * 1024
+// One entry per (chrIdx1, chrIdx2), so the working set is the pair count.
+// 512 covers a 31-region view; human whole-genome is 300. A matrix holds the
+// block index for each of its BP zoom levels, which is small beside a block.
+const MATRIX_CACHE_SIZE = 512
+// One entry per (type, chrIdx, unit, binsize), so the working set is the
+// displayed CHROMOSOME count, not the pair count — 64 covers a whole-genome
+// human view twice over, which is the headroom a zoom step needs (binsize is in
+// the key, so every entry misses at a new resolution). Entries are cheap:
+// `NormalizationVector` retains only the queried slice ±1000 values.
+const NORM_VECTOR_CACHE_SIZE = 64
+
 // Keyed by `${zd.getKey()}_${blockNumber}`, which already carries the binsize,
 // so no separate resolution generation is needed to keep entries apart —
 // hic-straw's extra `resolution` field only made the cache single-resolution
 // (every zoom step threw the previous level away).
-//
-// Sized for a multi-region fetch's working set rather than a single region's.
-// At the auto binsize a view is a few hundred bins wide, so one region pair is
-// 1-4 blocks; three displayed regions is six pairs, which at the top of that
-// range is 24 blocks — so the previous cap of 16 could still evict a fetch's
-// own earlier reads before it finished, the exact thrash that raising it from 6
-// was meant to stop.
-//
-// Room to fix that came from blocks becoming struct-of-arrays (see
-// contactRecords.ts): a cached contact went from ~55 bytes on the GC-traced
-// heap to 12 bytes of untraced ArrayBuffer, so 48 entries now costs less memory
-// than 16 did before — and costs the garbage collector nothing at all, which is
-// what actually capped this. Still deliberately bounded: a block holds every
-// contact in its bin square, so this remains the one thing here that can hold
-// real memory.
-const BLOCK_CACHE_SIZE = 48
+function blockCacheWeight(block: Block) {
+  const { bin1, bin2, counts } = block.records
+  return bin1.byteLength + bin2.byteLength + counts.byteLength
+}
 
 function getNormalizationVectorKey(
   type: string,
@@ -116,10 +150,15 @@ export default class HicFile {
   private normVectorCache = new LRU<
     string,
     Promise<NormalizationVector | undefined>
-  >(10)
+  >(NORM_VECTOR_CACHE_SIZE)
   private normalizationTypes = ['NONE']
-  private matrixCache = new LRU<string, Promise<Matrix | undefined>>(10)
-  private blockCache = new LRU<string, Block>(BLOCK_CACHE_SIZE)
+  private matrixCache = new LRU<string, Promise<Matrix | undefined>>(
+    MATRIX_CACHE_SIZE,
+  )
+  private blockCache = new LRU<string, Block>(BLOCK_CACHE_MAX_ENTRIES, {
+    maxBytes: BLOCK_CACHE_MAX_BYTES,
+    weigh: blockCacheWeight,
+  })
   private normVectorIndexPosition = -1
   private normVectorIndexSize = -1
 
@@ -316,10 +355,22 @@ export default class HicFile {
     const idx1 = this.chromosomeIndexMap[this.getFileChrName(region1.chr)]
     const idx2 = this.chromosomeIndexMap[this.getFileChrName(region2.chr)]
 
+    // A `.hic` stores only `bin1 <= bin2`, so a query whose x window sits to the
+    // right of its y window has to be swapped or it asks for the half of the
+    // matrix that does not exist. The same-chromosome test compares **starts**,
+    // not this region's start against the other's end: upstream hic-straw used
+    // `region1.start >= region2.end`, which catches a reversed pair only while
+    // the two are disjoint, and a multi-region view is free to display two
+    // *overlapping* regions of one chromosome right-to-left. Measured on
+    // chr1 at 2.5 Mb, `(100-200Mb, 50-150Mb)` returned 78 contacts against 901
+    // for the same pair in genomic order — everything but the overlap sliver
+    // silently missing, which renders as a sparse off-diagonal block rather
+    // than as an error. Comparing starts fires on both the disjoint and the
+    // overlapping case and leaves forward order (and an identical pair) alone.
     const transpose =
       idx1 !== undefined &&
       idx2 !== undefined &&
-      (idx1 > idx2 || (idx1 === idx2 && region1.start >= region2.end))
+      (idx1 > idx2 || (idx1 === idx2 && region1.start > region2.start))
     const r1 = transpose ? region2 : region1
     const r2 = transpose ? region1 : region2
 

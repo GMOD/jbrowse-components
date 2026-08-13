@@ -1,33 +1,8 @@
-import { fstatSync, openSync, readSync } from 'node:fs'
-import path from 'node:path'
-
 import HicFile from './index.ts'
-
-import type { Filehandle } from './types.ts'
-
-function openLocal(p: string): Filehandle {
-  const fd = openSync(p, 'r')
-  const size = fstatSync(fd).size
-  return {
-    read(position: number, length: number) {
-      const len = Math.min(length, size - position)
-      if (len <= 0) {
-        return Promise.resolve(new ArrayBuffer(0))
-      }
-      const buf = new Uint8Array(len)
-      readSync(fd, buf, 0, len, position)
-      return Promise.resolve(
-        buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
-      )
-    },
-  }
-}
+import { openLocalTestHic } from './testFile.ts'
 
 test('parses real .hic file', async () => {
-  const file = openLocal(
-    path.join(__dirname, '../../../../../extra_test_data/test.hic'),
-  )
-  const straw = new HicFile({ file })
+  const straw = new HicFile({ file: openLocalTestHic() })
   const meta = await straw.getMetaData()
   expect(meta.version).toBe(8)
   expect(meta.resolutions).toEqual([2500000, 100000])
