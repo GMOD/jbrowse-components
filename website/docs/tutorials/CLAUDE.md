@@ -40,14 +40,12 @@ publication. A number that states an _aspect of the data_ the page could have
 shown but instead asserts is the one to cut, because the reader cannot check it
 against anything on screen.
 
-That second kind is what this rule used to permit. It ended "unless
-programmatically derived", which read as a licence: run it through a script and
-the percentage may go in the paragraph. So `mappability_qc` argued its result in
-"83.2% of the reads are at MAPQ 0 against 0.8%", "4.5x against 30.6x", "18.3% of
-DGV's call midpoints" — all real, all printed by `scan_mappability_qc.sh`, and
-all telling the story the four lanes beside them were there to tell. Say which
-way it went and let the figure carry how far: "most of them at _SMN1_ and almost
-none at the control".
+**"Programmatically derived" is not an exemption**, and used to read as one: a
+page argued its whole result in "83.2% of the reads are at MAPQ 0 against 0.8%",
+"4.5x against 30.6x", "18.3% of DGV's call midpoints" — all real, all printed by
+its own script, and all telling the story the four lanes beside them were there
+to tell. Say which way it went and let the figure carry how far: "most of them
+at _SMN1_ and almost none at the control".
 
 A measurement worth keeping goes in a table, which is data presentation rather
 than prose, or stays in the script that prints it. Density matters on its own
@@ -108,10 +106,10 @@ up, which on most pages is just before those two.
 trailing qualifier, no parenthetical, no several links sharing one bullet and
 one description. The link text is the page title, which is what a reader picks
 from; a comparison worth making is prose, on the page, where it can be read
-rather than stumbled on at the bottom. This rule has been round-tripped once
-already: it said bare links, was relaxed to allow "a short qualifier naming the
-relationship" on the grounds that the corpus had drifted that way, and the
-qualifiers then grew into the sentences the relaxation was meant to exclude.
+rather than stumbled on at the bottom. Relaxing this to allow "a short qualifier
+naming the relationship" has been tried, and the qualifiers grew into the
+sentences the relaxation was meant to exclude.
+
 Don't restate the prerequisite tool list inside Reproduce, point at
 `[Prerequisites](#prerequisites)`. Don't write a generic troubleshooting table:
 a failure worth documenting is one this dataset actually produces, and it goes

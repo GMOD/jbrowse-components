@@ -49,14 +49,10 @@ filters" clears are then all **derived from that one list** by `activeCount` /
 three computed separately.
 
 It exists because those three drifted apart repeatedly, and every failure was
-silent rather than loud: a set with no undo row at all (the canvas display's
-pinned features, reachable only from the pinned feature's own right-click menu,
-so a pin left on another chromosome could not be undone); an undo derived from
-the state's _absence_, so it vanished with what it undid (the canvas colour
-key's "×" was a one-way door for the session); a count derived from a different
-predicate than the state's effect ("Filter by... (1)" for opening the dialog and
-pressing Submit). LD and multi-sample variants each listed their filters twice,
-once to count and once to clear.
+silent rather than loud — a set with no undo row at all, an undo derived from
+the state's _absence_ so it vanished with what it undid, a count derived from a
+different predicate than the state's effect. Two displays each listed their
+filters twice, once to count and once to clear.
 
 Two rules that cost real bugs to learn:
 

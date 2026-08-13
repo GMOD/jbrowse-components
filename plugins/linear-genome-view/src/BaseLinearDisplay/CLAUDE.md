@@ -70,23 +70,18 @@ axes content can move on (`bpPerPx`, `offsetPx`, `scrollTop`), not just zoom.
 `viewportWithinLoadedData` is spatial staleness, `layoutReady` is
 does-a-layout-exist. Neither is derivable from the other. `dataCurrent` is not a
 third — it is this family's answer to the one freshness name cross-cutting
-consumers read.
-
-There used to be a third, `isReady` (`canvasDrawn && !isLoading`), and it is
-worth knowing why it went: the scrim stopped reading it in 2026-08, nothing else
-ever did, and it sat for months as a documented "axis" with no consumer — its
-own test re-declared the getter on a local model, so deleting it broke nothing.
-Paint readiness is `painted` (`RenderLifecycleMixin`), which is the one every
-consumer outside the display wants anyway.
+consumers read. Paint readiness is a fourth thing and is `painted`
+(`RenderLifecycleMixin`), which is what every consumer outside the display
+wants; don't reintroduce a display-local `canvasDrawn && !isLoading`.
 
 The loading scrim reads **neither axis directly except the first**: the phase
 goes through `foundationDisplayPhase`, shared with the global family, and the
 only thing this family supplies is `viewportWithinLoadedData` — every other term
 (`loadingSuppressed`, `isLoadingOrCanceled`, `rendersCanvas`, `canvasDrawn`) is
 read straight off the model by `computeLoadingTerm`, from `FetchMixin` /
-`RenderLifecycleMixin`. It used to go through `!isReady`, which meant
-re-remembering the cancel term alongside it — the right answer reached the wrong
-way, one edit from the dead-Retry bug DISPLAYCHROME.md describes.
+`RenderLifecycleMixin`. Routing it through a display-local readiness getter
+means re-remembering the cancel term alongside it — the right answer reached the
+wrong way, one edit from the dead-Retry bug DISPLAYCHROME.md describes.
 
 `layoutReady` exists because "laid out but off-display" and "no layout exists"
 are different answers only the display can tell apart. Default `false` so a

@@ -66,9 +66,8 @@ its own note saying MAF's floor is unresolved. Not a precedent.
   sharing an exact edge on a multisampled target don't. The shader must not grow
   a matching fudge.
 - **Anchor is shared**: both grow a floored bar away from the bin's _start_
-  (`spanLeft` / `extendToMinWidthX`). Anchoring the leftmost edge is identical
-  forward and wrong by a whole floor reversed — see the reversed-block family in
-  `packages/render-core/CLAUDE.md`.
+  (`spanLeft` / `extendToMinWidthX`) — the reversed-block family in
+  `packages/render-core/CLAUDE.md`, which owns the rule.
 
 ## `makeScoreNormalizer` is the one `js-export` twin that doesn't retire
 

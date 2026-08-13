@@ -96,18 +96,16 @@ The exact pass, confusingly, reads the moving row on purpose (for
 makes the moving row a dependency, and that dependency is what re-asserts the
 follow over a row the user has nudged by hand.
 
-So the exact pass **does** re-enter on its own navigation, and it is worth
-knowing that it is designed to rather than getting away with it. One settle
-wakes it three times: once for the anchor, once because the navigation flushed
-the moved row's coarse blocks, once because the moved row then refetched. Two
-things make that converge instead of spinning. `alreadyShowing` compares against
-where the row _actually_ is — with a tolerance, since `navToLocString` fits a
-span to the pane rather than landing on it exactly — so the second and third
-wakes navigate nowhere. And the per-level answer promise is shared by key, so
-all three wakes ride one `SyntenyResolveMatchingRegion` rather than issuing
-three. The integration suite asserts exactly that count; a change that makes the
-follow issue two RPCs per settle has broken something even if it looks right on
-screen.
+So the exact pass **does** re-enter on its own navigation, by design. One settle
+wakes it three times: for the anchor, because the navigation flushed the moved
+row's coarse blocks, and because the moved row then refetched. Two things make
+that converge instead of spinning. `alreadyShowing` compares against where the
+row _actually_ is — with a tolerance, since `navToLocString` fits a span to the
+pane rather than landing on it exactly — so the second and third wakes navigate
+nowhere. And the per-level answer promise is shared by key, so all three ride
+one `SyntenyResolveMatchingRegion`. The integration suite asserts exactly that
+count; a follow issuing two RPCs per settle has broken something even if it
+looks right on screen.
 
 A frame-pass span that is off the row's displayed regions is not an error and
 not something to fix by widening `positionViewOnSpan`: it means the row is
@@ -153,12 +151,9 @@ follow, since a held row and a dead follow look identical.
 
 The packing writes `start`/`end` straight off the feature, so a block is never
 negative-width and the strand is the only thing that says which way it points.
-Every reader here relies on that — `windowInsideFeat` and
-`interpolateFollowSpan` always did, and `pickFollowFeature` and
-`followWindowMapping` were made to, because they are the hot loops (per frame,
-hundreds of thousands of blocks on a whole-genome PAF) and because three readers
-of one array disagreeing about the contract is how a reader stops being able to
-tell what the contract is.
+Every reader here relies on that, including the hot loops `pickFollowFeature`
+and `followWindowMapping` (per frame, hundreds of thousands of blocks on a
+whole-genome PAF).
 
 Clamping follows from the same distinction. `followWindowMapping` interpolates,
 so every coordinate it returns is a block coordinate or a point between two, and

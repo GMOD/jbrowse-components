@@ -6,16 +6,14 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 ## Generated — never hand-edit
 
 `pnpm autogen` rebuilds `config/`, `models/`, `api/`, the guide indexes
-(`user_guide.md` etc.), `cli.md`, `jbrowse-img.md`, and every marker-pair block
-(`<!-- COLOR_TABLE … -->`, `FILE_TYPES`, `DISPLAY_TYPES`, `DISPLAY_VIEW_TYPES`,
-`GOTCHA`, `PROMOTABLE_SLOTS`, `DISPLAY_FOUNDATIONS`, `CROSS_CUTTING_MIXINS`,
-`FETCH_AUTORUNS`, `PALETTE_KEYS`, `HELPER_PACKAGES`, `REEXPORT_MODULES`,
-`MENU_ITEM_TYPES`, `MENU_ITEM_FIELDS`, `MENU_ITEM_BUILDERS`, `MENU_ACTIONS`,
-`SPEC_KEYS`, `EXAMPLE_PLUGIN_TREE`, `SHADER_EXPORTS`, `ADAPTER_BASES`,
-`SEARCH_RESULT_FIELDS`, `SLOT_TYPES`, `LAUNCH_VIEW_POINTS`, `ELEMENT_PHASES`).
-Each renders from a JSDoc tag, a registration, or a manifest at the definition
-site — document a new one by tagging the source. Everything else under `docs/`
-is hand-written.
+(`user_guide.md` etc.), `cli.md`, `jbrowse-img.md`, and every
+`<!-- NAME START -->` / `<!-- NAME END -->` marker-pair block. Each renders from
+a JSDoc tag, a registration, or a manifest at the definition site — document a
+new one by tagging the source. Everything else under `docs/` is hand-written.
+
+`scripts/autogen.ts` is the list of which markers exist; don't keep a copy of it
+here, which is the same mistake as a hand-written table. Four of them are worth
+knowing about because their failure mode is not "the table is missing a row".
 
 `ELEMENT_PHASES` is the one where the failure would be a table that stays
 _complete_. It renders `PluginManager`'s `elementCreationSchedule` arguments,
@@ -61,12 +59,9 @@ launch bucket where only some keys carry a comment. The last three all render a
 table that looks complete and is short, which is the one failure a generated
 table is supposed to make impossible.
 
-The sweep also covers `agent-docs/`, which hosts the `DISPLAY_FOUNDATION_STACKS`
-and `FETCH_AUTORUNS` counterparts. A guide table and its architecture-spec twin
-come from one scan, so neither is a hand-mirror of the other.
-`CROSS_CUTTING_MIXINS` goes further and renders the _same_ block in both, since
-what a plugin author needs there ("which mixins can I compose, and what already
-does") is what the spec needs too.
+The sweep also covers `agent-docs/`, so a guide table and its architecture-spec
+twin come from one scan rather than one being a hand-mirror of the other.
+`CROSS_CUTTING_MIXINS` goes further and renders the _same_ block in both.
 
 **A table a reader could check against the code is a generator waiting to be
 written**, and the strongest tell is a sentence pointing at a file: the

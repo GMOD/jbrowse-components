@@ -6,11 +6,10 @@ Full model: `agent-docs/reference/CONFIG_PATTERN.md` and
 - `getConf` (model with `.configuration`) is exactly
   `readConfObject(model.configuration, path)` — the two readers are equally
   strict about slot names, so **switching readers cannot make a slot-name error
-  go away.** It used to: `readConfObject`'s map overload also admitted
-  `AnyConfigurationModel`, so a typo failed the `ConfigurationSlotName`
-  constraint, fell through to it, and compiled as `any`. That overload takes
-  only `IMSTMap` now. Don't re-widen it — the map case is a top-level
-  `types.map` of sub-schemas, which no production schema declares.
+  go away.** `readConfObject`'s map overload takes only `IMSTMap`; don't
+  re-widen it to admit `AnyConfigurationModel`, which let a typo fall through
+  and compile as `any`. The map case is a top-level `types.map` of sub-schemas,
+  which no production schema declares.
 - **`setSlot` throws on a name the schema doesn't declare**, which is what makes
   a misspelled _write_ diagnosable at all — the compile-time guard on `setConf`
   only covers writes whose schema is concrete, and a mixin or a widened factory
@@ -40,11 +39,9 @@ spread: they **compose** with the base's rather than replacing them. The first
 three chain through separate MST calls, so the base's members are on `self`
 inside the subclass's function and a subclass overrides one by redeclaring its
 name. `preProcessSnapshot` folds to `child(base(snapshot))`, base normalizes
-first. This used to throw instead, which made `createBaseTrackConfig`'s two
-hooks a hard ceiling: no track config schema could declare either.
-`ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy of the base's slots
-for a _different_ reason (it wants a subset, and `baseConfiguration` only ever
-adds), so composition does not retire it.
+first. `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy of the base's
+slots for a _different_ reason (it wants a subset, and `baseConfiguration` only
+ever adds), so composition does not retire it.
 
 The base has to be **the type `ConfigurationSchema()` returned**, since that is
 the only handle registered against a slot table. A `types.late` wrapper or a

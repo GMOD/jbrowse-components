@@ -119,11 +119,7 @@ Which rule replaces it depends on what the boxes are. `hitTestModification`
 boxes points and picks by **distance**. `hitTestChain` boxes each chain's whole
 extent, so every candidate contains the cursor and is at distance 0 — it picks
 the **highest chain index**, which is `hitTestFeature`'s "last drawn wins" rule,
-the two arrays being built in one ascending pass. Ambiguity there is only
-reachable on the `placeRectCapped` overflow row, where every truncated chain is
-piled onto the `maxRows` sentinel; that row is one row below the last drawn one,
-and an ungrouped display puts no bottom bound on `findSectionAtY`, so a track
-taller than its capped pileup reaches it.
+the two arrays being built in one ascending pass.
 
 ## Context menu: build items from the id, not the feature
 

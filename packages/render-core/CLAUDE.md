@@ -12,15 +12,10 @@ version and expect to rebuild on upgrades.
 Conceptual reference is `agent-docs/reference/GPU_RENDERING.md`; this is only
 what bites when editing _this package_.
 
-**There is no barrel — the `exports` map is the API, one subpath per module.**
-`src/index.ts` used to re-export a curated surface alongside the subpaths, which
-meant every symbol had two import paths that nothing kept in agreement. It was
-also 88/90 redundant with the subpath map, and the two names it did not share
-(`RecoveryBudget`, `RecoveryVerdict`) are `useRenderingBackend` internals the
-barrel's own docblock said it did not re-export. Every in-repo consumer already
-imported subpaths — 336 subpath imports against 15 barrel ones — so the barrel
-went and those 15 moved. Adding a module means adding its `exports` entry and
-running `pnpm autogen`; it does not mean adding a re-export anywhere.
+**There is no barrel — the `exports` map is the API, one subpath per module.** A
+barrel alongside the subpaths gives every symbol two import paths that nothing
+keeps in agreement. Adding a module means adding its `exports` entry and running
+`pnpm autogen`; it does not mean adding a re-export anywhere.
 
 **It must not depend on `@jbrowse/core`** — the dependency runs the other way,
 and keeping this a leaf is what lets a third-party display use it without
