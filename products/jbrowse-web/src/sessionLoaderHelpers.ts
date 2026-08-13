@@ -8,6 +8,7 @@ import { indexedDBAvailable } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { openSessionDB } from './openSessionDB.ts'
+import { configBaseUri } from './resolveConfigPath.ts'
 import { addRelativeUris } from './util.ts'
 
 import type { Snap } from './types.ts'
@@ -74,7 +75,7 @@ export async function fetchRemoteConfig(configPath: string) {
     locationType: 'UriLocation',
   }).readFile('utf8')
   const config = JSON.parse(text)
-  const configUri = new URL(configPath, window.location.href)
+  const configUri = configBaseUri(configPath)
   addRelativeUris(config, configUri)
   return { config, configUri }
 }
