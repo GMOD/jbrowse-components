@@ -32,6 +32,23 @@ export function useLoaderLifecycle(
   useEffect(() => {
     stripConsumedSessionParams()
     loader.activate((configSnapshot, sessionSnapshot) => {
+      // A plugin can issue this more than once off the rootModel this loader
+      // built, and legitimately: Apollo's per-internet-account loop calls it
+      // and then disposes its reaction without breaking, so a second account
+      // whose config grants a role calls it again; the loop body is async, so
+      // the autorun's synchronous prefix can also re-fire and leave several
+      // continuations in flight.
+      //
+      // First call wins. A later one must not build a second replacement from
+      // a loader that has already been swapped out and detached — that was the
+      // use-after-free. Note this is first-wins, not a no-op: a repeat caller
+      // can carry a *different* config (Apollo's second server), and that
+      // config is dropped. Deliberately, because the alternative is a rebuild
+      // that discards the session the first replacement is already showing.
+      // A caller that needs both merged has to merge them itself.
+      if (loader.superseded) {
+        return
+      }
       const next = reloadSessionLoader(loader, configSnapshot, sessionSnapshot)
       loader.setSuperseded()
       setLoader(next)
