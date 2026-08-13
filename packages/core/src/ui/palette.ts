@@ -373,38 +373,52 @@ export const colorInterchrom = '#6e4b3a'
 /** #color alignments-insert-size | Insert larger than expected | Suggests a deletion spanning the pair */
 export const colorLongInsert = '#ff0000'
 /** #color alignments-insert-size | Insert smaller than expected | Suggests an insertion between the pair */
-// LIGHT, and separated from long-insert red by LIGHTNESS rather than by hue
-// (review, twice: "the pink short insert way too similar to long insert still.
-// needs to be like...very light pink if anything").
+// This slot has TWO neighbours it must stay clear of, and every past value has
+// solved one by walking into the other. They sit at opposite ends of the
+// lightness axis, which is what makes it a balance rather than a direction:
 //
-// The history is worth keeping, because this value has now failed in both
-// directions and the axis it failed on is the same one. It began pale #ffc0cb,
-// which is #ff0000's own hue desaturated, and read as "washed-out red" beside
-// it. The fix then was to SATURATE it to #ff3a8c, which separated the two in
-// chroma but left them both fully saturated warm reds -- still the least
-// separable pair on a track that carries its most important distinction in
-// exactly this pair. Neither of those moved the one channel that reads at a
-// glance and survives a downscaled figure: how light it is.
+//   colorLongInsert  #ff0000   L* 53.2   C* 104.6   h  40   <- must not read as
+//   colorPairLR      #d3d3d3   L* 84.6   C*   0.0          <- must not vanish on
 //
-// Measured, in CIELCh, because "pale pink" is exactly what was tried and
-// rejected and the difference has to be more than a hunch:
+// 31 L* apart, so no pink can be more than about 16 from each. The history is
+// four attempts at spending that budget:
 //
-//   colorLongInsert  #ff0000   L* 53.2   C* 104.6   h  40
-//   was              #ff3a8c   L* 58.2   C*  76.9   h   1   <- 5 L* from red
-//   rejected pale    #ffc0cb   L* 83.6   C*  24.4   h   8
-//   this             #ffbcd8   L* 83.0   C*  28.6   h 351
-//   colorNostrand    #c8c8c8   L* 80.6   C*   0
+//   #ffc0cb   L* 83.6  C* 24.4  h   8   pale: red's own hue washed out, read as
+//                                       "washed-out red" beside it
+//   #ff3a8c   L* 58.2  C* 76.9  h   1   saturated: 5 L* from red, same warm end
+//                                       of the wheel, so chroma could not part
+//                                       them (review, twice)
+//   #ffbcd8   L* 83.0  C* 28.6  h 351   light: 30 L* from red -- and 1.5 L* from
+//                                       the grey baseline, separated from it by
+//                                       chroma alone
+//   #f582c0   L* 68.9  C* 52.7  h 346   this
 //
-// The saturated value sat FIVE L* from red: same lightness, same warm end of
-// the wheel, which is why no amount of chroma made them read apart. 30 L* does,
-// at any size and through any downscale.
+// The third is the one to understand, because it looks like the fix and is the
+// reason this comment is long. It maximised the distance from red by spending
+// the entire budget, so it arrived at the grey. Measured against that grey it
+// is dE 28.6, the closest any categorized slot comes -- and the margin is pure
+// chroma, which is the weakest channel there is on a 1px arc stroke. It is also
+// contrast 1.56 against paper, against grey's own 1.50: a short-insert arc was
+// very nearly as faint as the concordant ones it had to be picked out from.
+// Reported as "i cant see pink short insert on grey very well", which is
+// exactly what those two numbers say.
 //
-// It is not a return to #ffc0cb either. That one is hue 8, which is red's own
-// hue washed out; this is hue 351, round the other side of the red point and
-// heading for magenta, at slightly more chroma. Against the neutral grey fill
-// the margin is chroma alone (the two are within 3 L*), which is the pair to
-// re-check if this is ever touched again.
-export const colorShortInsert = '#ffbcd8'
+//                        dE vs red   dE vs grey   contrast on paper
+//   #ffbcd8 (was)             93.4         28.6   1.56
+//   #f582c0 (this)            86.2         54.9   2.38
+//
+// So: 15.7 L* from red -- three times the gap the rejected saturated value had,
+// on the axis that review was about -- while nearly doubling the separation
+// from grey and half again the contrast against the page. Hue 346 keeps it on
+// the magenta side of red rather than #ffc0cb's hue 8, so what lightness cannot
+// finish, hue does.
+//
+// Both neighbours have to be re-checked together if this is touched again. It
+// is also a READ FILL, not only an arc stroke, so a value has to survive being
+// a large flat area as well as a hairline; C* 52.7 puts it in the same band as
+// colorPairLL (52.0) and colorSupplementary (42.1) rather than shouting past
+// them.
+export const colorShortInsert = '#f582c0'
 export const colorUnmappedMate = '#b05a20'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'
