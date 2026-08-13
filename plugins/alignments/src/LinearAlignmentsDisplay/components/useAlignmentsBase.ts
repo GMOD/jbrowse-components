@@ -380,7 +380,14 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       : undefined
     if (arc) {
       model.setHoverState({
-        overCigarItem: true,
+        // FALSE, unlike every other tooltip branch here: `overCigarItem` is the
+        // pointer cursor, and the pointer is a promise that clicking does
+        // something. An arc carries no read id — the feed is junctions, not
+        // features — so there is nothing to select or open, and `handleClick`
+        // deliberately swallows the click rather than acting on whatever is
+        // under the arc. A tooltip and a highlight with a default cursor is the
+        // honest picture of a mark that is informational only.
+        overCigarItem: false,
         featureIdUnderMouse: undefined,
         mouseoverExtraInformation: arc.tooltip,
         hoveredArcHighlight: arc.highlight,
@@ -474,7 +481,21 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       dragMovedRef.current = false
       return
     }
-    const { result } = hitTestEvent(e)
+    const { offsetX, offsetY } = e.nativeEvent
+    const { result, picked } = hitTestEvent(e)
+
+    // The click has to agree with the hover, and the hover resolves an arc
+    // AHEAD of the band it is painted over (see `resolveHoverAt`). An arc has
+    // nothing to open, so this is a no-op — but it has to be an explicit one:
+    // falling through named whatever the arc happens to overlay. In down mode
+    // that is nothing, and `case 'none'` CLEARED THE SELECTION, so clicking the
+    // arc you were hovering threw away the read you had selected. In up mode the
+    // arc band IS the coverage band (`computeArcBand` gives it top 0), so the
+    // click opened the coverage bin widget for the column while the tooltip
+    // said "Read connection".
+    if (picked && resolveArcHover(offsetX, offsetY, picked.section)) {
+      return
+    }
 
     switch (result.type) {
       case 'indicator':
