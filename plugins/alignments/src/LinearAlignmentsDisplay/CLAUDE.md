@@ -179,25 +179,12 @@ disagree in the under-reserving direction paint arcs over the pileup. Junction
 identity is `junctionKey` — refName included, because two chromosomes in view
 share nothing but a bp number line.
 
-**A band's height MINUS its reserved margin is floored at 0.** `clampBandHeight`
-is a constraint on the drag handle, not on what a config slot or a session
-snapshot may declare, so every "height less the padding it reserves" is
-reachable at a negative value — and negative is never merely small. It has
-landed three times, each failing differently: the arc band's `arcAvailH` gave a
-negative `destY`, so a dome's `ry` went negative and `ctx.ellipse` **threw**
-(IndexSizeError) on every Canvas2D frame; sashimi's `effectiveHeight` flipped
-`dir * arcHeight` and curved every up-arc down through the pileup; the tooltip's
-coverage bar computed a negative CSS height, which the browser drops, so the bar
-silently vanished.
-
-Floor it where the EXPRESSION lives, which is not the same place its CPU
-consumers meet. `arcAvailH` is declared in alignmentsUniforms.slang beside the
-margin it subtracts and `//! js-export`ed, because arc.slang, arcFlat.slang and
-arcMarker.slang subtract that margin too: a floor applied only on the JS side
-leaves the three passes inverting a band the Canvas2D path collapses, and two
-backends disagreeing about one config is worse than the throw. Where a shader
-also computes the quantity, the CPU side takes the generated twin (adr-051)
-rather than spelling the floor again.
+**A band's height MINUS its reserved margin is floored at 0** —
+`clampBandHeight` holds the drag handle, not a config slot or a session
+snapshot, so the subtraction goes negative (`arcAvailH`, sashimi's
+`effectiveHeight`, the tooltip's coverage bar). Floor it where the expression is
+declared, not per consumer; if a shader computes it too, that declaration is the
+`.slang` one and the CPU side imports the generated twin (adr-051).
 
 `computeArcBand` is the single source of truth for the arc band and is decoupled
 from `showCoverage` — don't reintroduce a `covH > 0` gate. Arc and sashimi
