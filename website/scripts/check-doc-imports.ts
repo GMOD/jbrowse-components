@@ -519,6 +519,13 @@ const DOC_THIRD_PARTY = new Set([
   // pulled (104 KB a page worse) so nobody pulls it again. Naming the option is
   // the whole point of the note, and it is not ours to define.
   'advancedChunks',
+  // packages/app-core/CLAUDE.md, "Choosing pointer events means owning the
+  // rules HTML5 dnd was giving us": dockview's own pointer drag source
+  // (dockview-core/dist/cjs/dnd/pointer/pointerDragSource.d.ts), named twice
+  // because our tab drag is defined against it — it is touch/pen only unless
+  // `dndStrategy: 'pointer'`, and it tracks the same single `pointerId` we do.
+  // A reader checking either claim has to read it in node_modules.
+  'PointerDragSource',
 ])
 
 // Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per
