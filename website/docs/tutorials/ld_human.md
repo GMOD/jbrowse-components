@@ -175,11 +175,10 @@ The clustering is not told which variant is causal. `rs4988235` falls below the
 figure's own MAF floor and is not among the columns drawn, so the ClinVar lane
 marks it independently of the rows it lands on.
 
-Grouping by population would put labelled bands down the sidebar and leave each
-band in file order, so the slab would not form. Nothing is lost by clustering
-instead: [`colorBy`](/docs/config/sharedvariantdisplay/#slot-colorby) keeps the
-populations in the sidebar stripe, and which of them carry the block is then a
-result rather than the axis the rows were sorted on.
+Grouping by population would leave each band in file order, so the slab would
+not form. [`colorBy`](/docs/config/sharedvariantdisplay/#slot-colorby) keeps the
+populations in the sidebar stripe, so which of them carry the block is a result
+rather than the axis the rows were sorted on.
 
 ### Rows have to be worth a pixel
 

@@ -162,15 +162,14 @@ fermenters.
 Click the orange link and the detail panel gives the count and the p behind it:
 a handful of synonymous differences, and a Fisher p nowhere near significant.
 One pairwise comparison carries very little power, and the published result
-rests on codon models across many primate lineages rather than on a ratio
-between two of them. So what the figure gives you is a gene whose ratio stands
-apart from every neighbour's, which is where a codon model would start.
+rests on codon models across many primate lineages. What the figure gives you is
+a gene whose ratio stands apart from every neighbour's, which is where a codon
+model would start.
 
-The blue is the colour that tests strongly here. A conserved gene accumulates
+The blue is the colour that tests strongly here: a conserved gene accumulates
 enough synonymous change to measure while holding non-synonymous change near
-zero, and that asymmetry comes out overwhelmingly significant. Across the whole
-table the great majority of pairs sit significantly _below_ 1 and almost none
-significantly above, which is why the ramp is mostly blue.
+zero. Across the whole table the great majority of pairs sit significantly
+_below_ 1 and almost none significantly above.
 
 ## Checking it against the raw data
 

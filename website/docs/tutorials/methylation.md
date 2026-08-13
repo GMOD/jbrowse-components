@@ -121,11 +121,10 @@ and its source in the same view, on one x scale.
 
 <Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. Grouping reads by HP keeps the summary profile on top and the individual reads below it as the same data." src="/img/methylation/hg002_snrpn_combined.png" />
 
-Reading the figure top to bottom is the check worth making: the aggregate says
-one allele is methylated over the island and the other is not, and the reads
-below it show the same split molecule by molecule, with the same haplotype on
-the same side. An aggregate profile that disagreed with the reads under it would
-mean the phasing, not the methylation, was what changed.
+The aggregate says one allele is methylated over the island and the other is
+not, and the reads below it show the same split molecule by molecule, with the
+same haplotype on the same side. An aggregate profile that disagreed with the
+reads under it would mean the phasing changed, not the methylation.
 
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
@@ -134,12 +133,10 @@ for producing `HP`-tagged reads.
 
 ## Choosing between the two approaches
 
-The two are complements rather than alternatives. Keep the bedMethyl track for
-fast, whole-genome navigation to regions of interest, since it stays quick at
-any zoom and is what a tumor-versus-normal comparison reads off. Then drop the
-per-read BAM or CRAM below it once you are there, for single-molecule and
-[allele-specific](#splitting-the-alleles-apart) detail, which only the reads
-carry.
+Keep the bedMethyl track for whole-genome navigation, since it stays quick at
+any zoom and is what a tumor-versus-normal comparison reads off, then drop the
+per-read BAM or CRAM below it once you are there, for the single-molecule and
+[allele-specific](#splitting-the-alleles-apart) detail only the reads carry.
 
 To compare two samples rather than two alleles, run `modkit dmr` on their
 per-sample pileups and load its BED output as a `FeatureTrack` beside the
