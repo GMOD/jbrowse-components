@@ -36,22 +36,16 @@ instead we merge them into a single file with an extra `cellType` column and let
 the multi-row feature display split that one track back into a labeled sub-row
 per cell type. Every row shares one config, one adapter, and one fetch.
 
-HOXA is the window the build script opens on because the painting there has a
-structure to find rather than just a lot of color. The genes are transcribed in
-the order they sit in, so a cell type opens the stretch matching its own
-position along the body axis and holds the rest under Polycomb. Most of the rows
-that open the cluster at all stop between HOXA7 and HOXA9, which is what makes
-the change read as a column across the rows rather than as nine unrelated
-patterns.
+HOXA is the window the build script opens on. The genes are transcribed in the
+order they sit in, so a cell type opens the stretch matching its own position
+along the body axis and holds the rest under Polycomb, and most of the rows that
+open the cluster at all stop between HOXA7 and HOXA9.
 
-Which rows those are is why nine cell types are loaded rather than one. The
-posterior genes carry a trunk-and-limb address, and the two cell types that open
-them are the endothelial and skeletal-muscle lines, HUVEC and HSMM, the
-mesodermal pair. The keratinocyte, lung-fibroblast and mammary lines stop at
-HOXA7. GM12878 and K562 are blood, and hold the whole cluster shut. H1-hESC is
-pluripotent and has no address yet, so it is neither: its magenta is
-`3_Poised_Promoter`, an active promoter mark sitting on a repressed cluster,
-which is the bivalent state HOX clusters are held in before a lineage commits.
+The two cell types that open the posterior genes are the mesodermal pair, HUVEC
+and HSMM. The keratinocyte, lung-fibroblast and mammary lines stop at HOXA7, and
+GM12878 and K562 are blood and hold the whole cluster shut. H1-hESC is
+pluripotent and is neither: its magenta is `3_Poised_Promoter`, the bivalent
+state HOX clusters are held in before a lineage commits.
 
 ## What the merged file holds
 
@@ -151,13 +145,12 @@ server; point `uri` at the local path.
 
 ## Read it
 
-The state colors are the data, so the display derives the key from them: one
-legend entry per distinct color, labeled with the first state name seen in that
-color. Nothing declares it, and it can't disagree with what's painted. States
-that share a color collapse into one entry, which in the Broad 15-state model
-pairs `4_Strong_Enhancer` with `5_`, `6_Weak_Enhancer` with `7_`, and the two
-transcription states with each other. Turn the key off with **Show... → Show
-legend** in the track menu, or spell it out yourself with the
+The display derives the key from the state colors: one entry per distinct color,
+labeled with the first state name seen in it, so it cannot disagree with what is
+painted. States that share a color collapse into one entry, which in the Broad
+15-state model pairs `4_Strong_Enhancer` with `5_`, `6_Weak_Enhancer` with `7_`,
+and the two transcription states with each other. Turn the key off with
+**Show... → Show legend** in the track menu, or spell it out with the
 [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) slot.
 
 Most of any segmentation is quiescent or heterochromatic, which is what the pale
@@ -236,22 +229,17 @@ speckled olive where the same bases are bivalent.
 
 <Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA, one row each, ordered by Cluster rows by similarity. One block of epigenomes opens the cluster; the rest hold it repressed. The stripe left of the painting is each row's Roadmap tissue group."/>
 
-That config has no `rowOrder`, which is the other thing that changes at this
-scale. It would be 127 lines whose only job is to keep related tissues adjacent,
-and **Cluster rows by similarity** derives that from the data at whatever locus
-is in view. Leave it out and cluster instead when the grouping you want depends
-on the locus rather than on a fixed publication order.
+That config has no `rowOrder`: it would be 127 lines whose only job is to keep
+related tissues adjacent, and **Cluster rows by similarity** derives that from
+the data at whatever locus is in view.
 
-Clustering costs the tissue names, though, and that is what the stripe in the
-figure above buys back. At this scale a row is a few pixels tall and carries no
-text, so the only thing that can say which epigenome it is, is a color. The
+Clustering costs the tissue names, which is what the stripe in the figure above
+buys back: at this scale a row is a few pixels tall and carries no text. The
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) slot
-takes one `{ match, group, color }` per Roadmap tissue group, tints each
-matching row's sidebar swatch and keys it beside the state colors. The build
-script writes those entries from the `GROUP` and `COLOR` columns of the same
-`EID_metadata.tab` the labels come from, so nothing about the assignment is
-hand-made. The tissue is an axis the clustering never saw, so where the stripe
-and the blocks agree it is the data saying so and not the ordering.
+takes one `{ match, group, color }` per Roadmap tissue group and tints each
+matching row's sidebar swatch. The build script writes those entries from the
+`GROUP` and `COLOR` columns of `EID_metadata.tab`, and the tissue is an axis the
+clustering never saw.
 
 ## Reproduce it end to end
 
@@ -286,15 +274,12 @@ order from that file's `GROUP` and `EID` columns, and the state colors from
 `colormap_15_coreMarks.tab`, since the segmentations themselves are BED4 and
 carry no color at all.
 
-127 epigenomes is 5.25 GB of merged text and still does not need a bigBed. The
+127 epigenomes is 5.25 GB of merged text and still does not need a bigBed: the
 tabix index covers genomic bins rather than records, so stacking 127 rows into
-the same coordinates barely grows it, and the compressed file lands smaller than
-a bigBed of the same records while building in a fraction of the time. What a
-bigBed buys is bytes per view, and mostly when zoomed in: about a tenth as many
-at 20 kb, about half at the megabase scale this track is read at, against a
-somewhat larger file and a second binary to install. The hosted copy above is a
-bigBed holding those same records, so either format loads the track with nothing
-else in it changing.
+the same coordinates barely grows it. What a bigBed buys is bytes per view, and
+mostly when zoomed in, against a somewhat larger file and a second binary to
+install. The hosted copy above is a bigBed holding those same records, so either
+format loads the track with nothing else changing.
 
 ## See also
 
