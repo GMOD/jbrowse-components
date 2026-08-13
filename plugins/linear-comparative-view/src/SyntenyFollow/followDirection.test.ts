@@ -1,10 +1,11 @@
-import { followDirection, followDistance } from './followDirection.ts'
+import { followDirection } from './followDirection.ts'
 
 test('the ordinary pairwise view: the top row drives the bottom', () => {
   expect(followDirection(0, 0)).toEqual({
     stayingIndex: 0,
     movingIndex: 1,
     toMate: true,
+    distance: 0,
   })
 })
 
@@ -15,6 +16,7 @@ test('anchoring the bottom row of a pair reverses the direction', () => {
     stayingIndex: 1,
     movingIndex: 0,
     toMate: false,
+    distance: 0,
   })
 })
 
@@ -51,10 +53,12 @@ test('a top anchor cascades down the stack one level at a time', () => {
 // The ordering the cascade above depends on. Only with a top anchor is it the
 // same as level order, which is why sorting by it is not redundant.
 test('distance counts levels out from the anchor, in both directions', () => {
+  const distances = (anchor: number) =>
+    [0, 1, 2].map(l => followDirection(l, anchor).distance)
   // four rows, middle anchor: levels 1 and 2 both touch row 2, then outward
-  expect([0, 1, 2].map(l => followDistance(l, 2))).toEqual([1, 0, 0])
+  expect(distances(2)).toEqual([1, 0, 0])
   // bottom anchor: the visiting order is the reverse of the level order
-  expect([0, 1, 2].map(l => followDistance(l, 3))).toEqual([2, 1, 0])
+  expect(distances(3)).toEqual([2, 1, 0])
   // top anchor: the one case where level order is already outward order
-  expect([0, 1, 2].map(l => followDistance(l, 0))).toEqual([0, 1, 2])
+  expect(distances(0)).toEqual([0, 1, 2])
 })

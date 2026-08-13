@@ -10,10 +10,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
 import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
-import {
-  followDirection,
-  followDistance,
-} from '../SyntenyFollow/followDirection.ts'
+import { followDirection } from '../SyntenyFollow/followDirection.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 
@@ -235,11 +232,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       get followPairs() {
         const { followAnchorIndex } = self
         return self.levels
-          .flatMap(level => {
-            const { stayingIndex, movingIndex, toMate } = followDirection(
-              level.level,
-              followAnchorIndex,
-            )
+          .map(level => ({
+            level,
+            ...followDirection(level.level, followAnchorIndex),
+          }))
+          .sort((a, b) => a.distance - b.distance)
+          .flatMap(({ level, stayingIndex, movingIndex, toMate }) => {
             const stayingView = self.views[stayingIndex]
             const movingView = self.views[movingIndex]
             return stayingView?.initialized && movingView?.initialized
@@ -256,11 +254,6 @@ function stateModelFactory(pluginManager: PluginManager) {
                 ]
               : []
           })
-          .sort(
-            (a, b) =>
-              followDistance(a.level.level, followAnchorIndex) -
-              followDistance(b.level.level, followAnchorIndex),
-          )
       },
 
       /**
