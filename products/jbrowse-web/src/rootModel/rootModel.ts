@@ -320,33 +320,17 @@ export default function RootModel({
       /**
        * #action
        * The React host has let go of this root: stop everything of ours that
-       * reaches outside the tree, and leave the tree itself alone.
+       * reaches outside the tree — the worker pool, the `beforeunload`
+       * listener, the sessionStorage and IndexedDB autoruns — and leave the
+       * tree itself alone.
        *
-       * This is the whole teardown — there is no `destroy` after it, for the
-       * same reason disposeLoader stopped destroying superseded loaders.
-       * Destroying from a React effect cleanup is unsound: React reads the
-       * outgoing props later in that same passive-effect flush, and in flushes
-       * after it, so every property it walks on a destroyed node is a
-       * liveliness warning and any it finds on an unmaterialized array child
-       * is a hard throw. Deferring the destroy a microtask was tried and is
-       * not enough — it takes the count from 16 to 4 rather than to 0, because
-       * a later flush still diffs a widget it is holding.
-       *
-       * In-flight async work (an assembly still loading) then lands on live
-       * nodes and is discarded with them, instead of writing to a corpse —
-       * which is the "races with pending async work" that tests/loaderUtil.tsx
-       * used to mock this path out to avoid.
-       *
-       * What this does NOT claim is that the tree is promptly collected. Its
-       * own autoruns keep observing it, and any of them subscribed to a
-       * module-level observable is reachable from outside. Measured with a
-       * WeakRef after a forced gc, a superseded root is still reachable — and
-       * so is one that has been `destroy`ed, which is what says the retention
-       * is not something this change introduced, and that jsdom is not where
-       * the question gets settled. A browser heap snapshot across two plugin
-       * installs is.
+       * This is the whole teardown; there is no `destroy` after it, and the
+       * tree is left for the GC rather than freed here. ADR-069.
        */
       detach() {
+        // rpcManager is a plain object on a volatile, so MST teardown never
+        // reached it and the pool outlived every plugin install
+        self.rpcManager.destroy()
         const disposers = self.detachDisposers
         self.detachDisposers = []
         for (const disposer of disposers) {

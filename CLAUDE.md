@@ -112,6 +112,13 @@ checkout, so ordinary git is yours to use without asking.
   resolve only through `resolveConf`, never `getConf`.
 - In React, `autorun` inside `useEffect` to track observables (prefer over
   `reaction`).
+- **Never `destroy` a node React may still be rendering — `detach` it.** React
+  reads the outgoing props after your effect cleanup runs, and MobX runs an
+  action's reactions at the `endBatch` closing it, so a destroy in either place
+  gets read. On an already-read property that is a liveliness warning; on a
+  child node never materialized it is a hard throw that takes the page down.
+  Register whatever reaches outside the tree as a detach-time disposer instead.
+  Deferring the destroy does not work. ADR-069.
 - **An `autorun` must do its own reads. MST actions run untracked**, so
   factoring the body of one into an action — the obvious way to share it with a
   menu item or a flush-on-teardown path — leaves the autorun with no
