@@ -12,7 +12,7 @@ import {
   READ_OUTLINE_MIN_WIDTH_PX,
   READ_OUTLINE_PX,
   READ_OUTLINE_SHADE,
-} from '../../shaders/slang/read.iface.generated.ts'
+} from '../../shaders/slang/read.consts.generated.ts'
 import { showChevron as shaderShowChevron } from '../../shaders/slang/read.js.generated.ts'
 
 import type {

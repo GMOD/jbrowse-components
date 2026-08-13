@@ -9,14 +9,6 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 9
 
-export const STEM_LENGTH_PX = 7
-
-export const STEM_HALF_H_PX = 0.5
-
-export const HEAD_HALF_H_PX = 2.5
-
-export const ARROW_MIN_FEATURE_WIDTH_PX = 14
-
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.

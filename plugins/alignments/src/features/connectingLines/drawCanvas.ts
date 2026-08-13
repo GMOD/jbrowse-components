@@ -3,7 +3,7 @@ import {
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { CONNECTING_LINE_ALPHA } from '../../shaders/slang/connectingLine.iface.generated.ts'
+import { CONNECTING_LINE_ALPHA } from '../../shaders/slang/connectingLine.consts.generated.ts'
 
 import type {
   DrawBlock,

@@ -9,7 +9,7 @@
 // same rect, and hovering it reported nothing at all — so the one mark whose
 // meaning is least guessable from its shape was the one you could not ask.
 import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.iface.generated.ts'
+import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAnchorY } from './arcYScale.ts'
 import { ellipseDistance } from './ellipseDistance.ts'

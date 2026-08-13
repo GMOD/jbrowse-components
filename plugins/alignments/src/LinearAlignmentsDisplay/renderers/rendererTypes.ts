@@ -5,7 +5,7 @@ import {
   sizeAlpha,
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { intronAlpha } from '../../shaders/slang/gap.js.generated.ts'
-import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.iface.generated.ts'
+import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.consts.generated.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'

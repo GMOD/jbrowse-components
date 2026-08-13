@@ -97,25 +97,10 @@ export const packContinuations = continuationShader.packInstances
 // All passes bind the same UBO, so any pass's size is the uniform-buffer size.
 export const FEATURE_GLYPH_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES
 
-// The draw dimensions and clamps authored in the `.slang` sources (so the GPU
-// shader owns them) and shared with the Canvas2D path so both backends draw
-// matching geometry. Re-exported from `./constants.ts` rather than destructured
-// off the shader namespaces above: display-side importers must reach these
-// WITHOUT pulling in the WGSL/GLSL source strings, and that file is the
-// shader-string-free door. See its header.
-export {
-  CHEVRON_H_PX,
-  CHEVRON_SPACING_PX,
-  CHEVRON_THICKNESS_PX,
-  CHEVRON_W_PX,
-  CONT_EDGE_MARGIN_PX,
-  CONT_MIN_OVERHANG_PX,
-  CONT_TRI_GAP_PX,
-  CONT_TRI_HALF_H_PX,
-  CONT_TRI_W_PX,
-  HEAD_HALF_H_PX,
-  MIN_DENSITY_ALPHA,
-  MIN_RECT_WIDTH_PX,
-  STEM_HALF_H_PX,
-  STEM_LENGTH_PX,
-} from './constants.ts'
+// The draw dimensions and clamps authored in the `.slang` sources are NOT
+// re-exported here, deliberately. This barrel namespace-imports the shader
+// string modules above, so anything reachable through it carries the WGSL/GLSL
+// with it; the display side reads those numbers from each shader's own
+// `.consts.generated.ts` instead (via `components/sharedRendererConstants.ts`).
+// A hand-written `constants.ts` used to stand in for that and is gone — the
+// codegen emits the shader-string-free door now.

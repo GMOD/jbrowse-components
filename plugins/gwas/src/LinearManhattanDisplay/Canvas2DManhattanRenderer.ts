@@ -11,7 +11,7 @@ import {
   GLYPH_INDEX,
   GLYPH_INSERTION,
   INDEX_GLYPH_SCALE,
-} from './shaders/manhattan.iface.generated.ts'
+} from './shaders/manhattan.consts.generated.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'

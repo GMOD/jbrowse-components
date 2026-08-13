@@ -1,4 +1,4 @@
-import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
+import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './compute.ts'
 import { strokeArcMark } from './drawCanvas.ts'

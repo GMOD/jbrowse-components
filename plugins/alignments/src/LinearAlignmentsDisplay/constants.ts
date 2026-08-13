@@ -8,7 +8,7 @@ import {
   CS_PAIR_ORIENT,
   CS_STRAND,
   CS_TAG,
-} from '../shaders/slang/read.iface.generated.ts'
+} from '../shaders/slang/read.consts.generated.ts'
 
 import type { ShaderScheme } from '../shared/types.ts'
 

@@ -6,9 +6,9 @@ import { buildArcColorPalette } from '../../shaders/palettes.ts'
 import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 // The flat-line constants moved with the flat line: they are arcFlat.slang's
 // now, declared on the pass that consumes them.
-import { ARC_FLAT_ALPHA } from '../../shaders/slang/arcFlat.iface.generated.ts'
-import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
-import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
+import { ARC_FLAT_ALPHA } from '../../shaders/slang/arcFlat.consts.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
+import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAvailH, arcYScale } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT_SPLIT } from './compute.ts'

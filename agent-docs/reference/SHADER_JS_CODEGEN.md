@@ -80,6 +80,7 @@ see them.
 | `build-shaders.ts` `writeJsExports` | lifts from the shader's own WGSL, or from a synthesized compute wrapper for `module` files |
 | `liftReport.ts` | the generated inventory + the `js-skip` staleness check |
 | `check-oracle.ts`, `oracleProbe.ts` | the differential check against slangc's C++ (`pnpm check-shader-oracle`) |
+| `*.generated.ts` / `*.iface.generated.ts` / `*.consts.generated.ts` | strings / layout + packers / `export-consts` integers — three modules, one shader, see below |
 | `*.js.generated.ts` | the generated twins — never hand-edit |
 | `*Parity.test.ts` | the retirement gates |
 | `reference/SHADER_LIFT_INVENTORY.md` | generated; candidates, declines, and the refusal surface |
@@ -88,11 +89,20 @@ Counts belong in a grep, not in prose — a hand-incremented tally lived in the 
 handoff for several rounds and ended up off by a factor of four on the constants.
 ADR-051 §Consequences carries the one-liners.
 
-**Generated constants have no re-export hops.** A consumer imports from the
-generated module, or from the package that owns the concept where a
+**Generated constants have no re-export hops.** A consumer imports from
+`<base>.consts.generated.ts`, or from the package that owns the concept where a
 `consts-out`/`js-export-out` put it — never through a third module that merely
-passes it along. Two such chains existed and were removed; don't add one back for
-convenience.
+passes it along. Four such chains existed and were removed; don't add one back
+for convenience.
+
+The rule is now load-bearing for the bundle rather than merely tidy. A shader
+with entry points emits **three** modules — strings, `iface` (layout + packers),
+`consts` — because a namespace import marks every export used, so a module is
+included in a chunk whole. Importing `CS_NORMAL` from `read.generated.ts` or
+`read.iface.generated.ts` compiles and passes everything, and puts 16-40 KB in
+the always-loaded chunk. `reference/EAGER_BUNDLE.md` §"A namespace import is the
+unit" has the measurement. A **module** file's `<base>.generated.ts` is already
+consts-only, so it keeps that name.
 
 ## What actually has to agree
 

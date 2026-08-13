@@ -1,6 +1,6 @@
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 
-import { MIN_VISIBLE_ALPHA } from './shaders/hic.generated.ts'
+import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
 
 export type RGBA = readonly [number, number, number, number]
 

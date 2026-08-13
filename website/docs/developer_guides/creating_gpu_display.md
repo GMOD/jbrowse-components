@@ -206,6 +206,21 @@ use, and writes each `*.generated.ts` next to its source (`hpmath` / `colorPack`
 resolve from your installed `@jbrowse/render-core`). Inside this repo the same
 tool is `pnpm gen:shaders`.
 
+One `.slang` file with entry points produces up to three modules, and **which
+one you import from decides what your users download**. A bundler treats a
+namespace import (`import * as shader from './score.generated.ts'`) as using
+every export, so a module is included or excluded whole — whatever the smallest
+eager consumer of a module wants, the always-loaded chunk pays for all of it.
+
+| Module                      | Holds                                                             | Import it from                                                            |
+| --------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `score.generated.ts`        | the compiled WGSL/GLSL strings, and a re-export of the other two  | the render path, which needs the shader source anyway                     |
+| `score.iface.generated.ts`  | uniform + instance layout, the typed packers, `VERTEX_ATTRIBUTES` | code that packs or reads a buffer                                         |
+| `score.consts.generated.ts` | the `//! export-consts` values, and nothing else                  | a state model, a hit test, a Canvas2D twin — anything that wants a number |
+
+So a display model reading one threshold reaches for the `.consts.` module, not
+the shader module that re-exports it. The table below is the union of the three.
+
 What lands in `score.generated.ts`, and what a plugin imports from it:
 
 <!-- SHADER_EXPORTS START -->
@@ -229,7 +244,6 @@ What lands in `score.generated.ts`, and what a plugin imports from it:
 | `VERTS_PER_INSTANCE` | vertices per instance, from the shader's const of that name; the draw call reads it |
 | `TOPOLOGY` | the primitive topology `vs_main` emits for, when the shader declares one |
 | `BLEND_STATE` | the blend the fragment stage's output wants, when the shader declares one |
-| `(your shader's consts)` | every other `public static const` in the shader, lifted by name |
 | `COMPUTE_ENTRY_POINT` | the compute entry point name, for a compute shader |
 | `WORKGROUP_SIZE_X` | the compute workgroup width |
 | `UNIFORMS_SIZE_BYTES` | size of the uniform block, the `uniformByteSize` a backend passes |
@@ -241,6 +255,7 @@ What lands in `score.generated.ts`, and what a plugin imports from it:
 | `InstanceArrays` | one input array per instance field, the argument `packInstances` takes |
 | `packInstances` | interleaves parallel arrays into one instance buffer |
 | `TEXTURES` | texture bindings the shader declares |
+| `(your shader's consts)` | every other `public static const` in the shader, lifted by name |
 
 <!-- SHADER_EXPORTS END -->
 

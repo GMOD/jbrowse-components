@@ -1,4 +1,4 @@
-import { ARC_HEIGHT_MARGIN } from '../shaders/slang/arc.iface.generated.ts'
+import { ARC_HEIGHT_MARGIN } from '../shaders/slang/arc.consts.generated.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 
 describe('computeInsertSizeTicks', () => {

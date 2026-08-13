@@ -1,7 +1,7 @@
 import {
   ARC_APEX_FRACTION,
   ARC_FAR_SCREEN_WIDTHS,
-} from '../../shaders/slang/arc.iface.generated.ts'
+} from '../../shaders/slang/arc.consts.generated.ts'
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 
 // Retirement gate for the hand-written twin of arc.slang's radius pair

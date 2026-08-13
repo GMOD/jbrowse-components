@@ -14,7 +14,7 @@ import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.g
 import {
   LINKED_READ_LINE_ALPHA,
   LINKED_READ_LINE_WIDTH_PX,
-} from '../../shaders/slang/linkedReadLine.iface.generated.ts'
+} from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 
 import type {
   DrawBlock,

@@ -3,7 +3,7 @@ import {
   getLegendStops,
   makeHicFillStyleLut,
 } from './colorRamp.ts'
-import { MIN_VISIBLE_ALPHA } from './shaders/hic.generated.ts'
+import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
 
 import type { HicColorScheme } from './colorRamp.ts'
 

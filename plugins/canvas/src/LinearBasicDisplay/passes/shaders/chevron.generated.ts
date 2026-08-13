@@ -8,3 +8,5 @@ export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision h
 export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 993\nin float v_dist;\n\n\n#line 165 1\nvoid main()\n{\n\n#line 165\n    entryPointParam_fs_main_0 = vec4(v_color.xyz, v_color.w * clamp((0.25 - abs(v_dist)) / (fwidth((v_dist))) + 0.5, 0.0, 1.0));\n\n#line 165\n    return;\n}\n\n"
 
 export * from './chevron.iface.generated.ts'
+
+export * from './chevron.consts.generated.ts'

@@ -9,7 +9,7 @@ import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
 import { hitTestArcBand } from '../../features/arcs/hitTest.ts'
 import { arcMark } from '../../features/arcs/mark.ts'
 import { hasArcBandInk } from '../../features/arcs/types.ts'
-import { ARC_APEX_FRACTION } from '../../shaders/slang/arc.iface.generated.ts'
+import { ARC_APEX_FRACTION } from '../../shaders/slang/arc.consts.generated.ts'
 import { bandScreenTop, makeBpToPx } from './sectionScreen.ts'
 
 import type {

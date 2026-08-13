@@ -11,14 +11,6 @@ export const VERTS_PER_INSTANCE = 130
 
 export const TOPOLOGY = 'triangle-strip' as const
 
-export const ARC_HEIGHT_MARGIN = 8
-
-export const ARC_FAR_SCREEN_WIDTHS = 1
-
-export const ARC_APEX_FRACTION = 0.75
-
-export const ARC_COLOR_SHORT_INSERT = 2
-
 export const UNIFORMS_SIZE_BYTES = 912
 
 // Word indices into a Float32Array view over the uniform buffer.

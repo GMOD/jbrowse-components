@@ -23,8 +23,8 @@ import {
 import {
   ARC_COLOR_SHORT_INSERT,
   ARC_HEIGHT_MARGIN,
-} from '../../shaders/slang/arc.iface.generated.ts'
-import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
+} from '../../shaders/slang/arc.consts.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../shaders/slang/read.iface.generated.ts'
 import { arcAvailH, arcYFraction, arcYScale } from './arcYScale.ts'
 

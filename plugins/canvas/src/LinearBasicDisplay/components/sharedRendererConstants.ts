@@ -27,23 +27,33 @@ export function canvasEdgeFlags(
 
 // Drawing dimensions (in pixels) — authored in the shared pass-library shaders,
 // re-exported here so display-side modules import them from one place. Sourced
-// from `passes/constants.ts`, NOT `passes/index.ts`: this module is eager (layout
-// ← baseModel ← the plugin entry), and the pass barrel namespace-imports the
-// generated shader source, which would then ride into the always-loaded chunk.
+// from each shader's `.consts.generated.ts`, NOT from `passes/index.ts`: this
+// module is eager (layout ← baseModel ← the plugin entry), the pass barrel
+// namespace-imports the generated shader source, and a namespace import marks
+// every export used — so reading one integer through the barrel would put the
+// whole feature-glyph shader source in the always-loaded chunk, Canvas2D-only
+// users included. The consts module carries the numbers and nothing else, which
+// is what makes importing from it safe rather than merely conventional.
 export {
-  ARROW_MIN_FEATURE_WIDTH_PX,
+  MIN_DENSITY_ALPHA,
+  MIN_RECT_WIDTH_PX,
+} from '../passes/shaders/rect.consts.generated.ts'
+export {
   CHEVRON_H_PX,
   CHEVRON_SPACING_PX,
   CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
+} from '../passes/shaders/chevron.consts.generated.ts'
+export {
+  ARROW_MIN_FEATURE_WIDTH_PX,
+  HEAD_HALF_H_PX,
+  STEM_HALF_H_PX,
+  STEM_LENGTH_PX,
+} from '../passes/shaders/arrow.consts.generated.ts'
+export {
   CONT_EDGE_MARGIN_PX,
   CONT_MIN_OVERHANG_PX,
   CONT_TRI_GAP_PX,
   CONT_TRI_HALF_H_PX,
   CONT_TRI_W_PX,
-  HEAD_HALF_H_PX,
-  MIN_DENSITY_ALPHA,
-  MIN_RECT_WIDTH_PX,
-  STEM_HALF_H_PX,
-  STEM_LENGTH_PX,
-} from '../passes/constants.ts'
+} from '../passes/shaders/continuation.consts.generated.ts'

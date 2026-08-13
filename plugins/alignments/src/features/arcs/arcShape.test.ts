@@ -1,7 +1,7 @@
 import {
   ARC_APEX_FRACTION,
   ARC_HEIGHT_MARGIN,
-} from '../../shaders/slang/arc.iface.generated.ts'
+} from '../../shaders/slang/arc.consts.generated.ts'
 import { ARC_SHAPE_ARC } from './compute.ts'
 import { strokeArcMark } from './drawCanvas.ts'
 import { arcMark } from './mark.ts'

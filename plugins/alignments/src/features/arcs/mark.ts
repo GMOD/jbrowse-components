@@ -19,7 +19,7 @@
 // different, and deciding which — once — is what stops a consumer measuring an
 // ellipse against a circle the renderer painted.
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
-import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.iface.generated.ts'
+import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.consts.generated.ts'
 import { arcAnchorY, arcAvailH, arcMarkY, arcYOffsetPx } from './arcYScale.ts'
 import { isFlatArcShape } from './compute.ts'
 

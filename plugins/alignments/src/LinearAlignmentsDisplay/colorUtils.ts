@@ -25,7 +25,7 @@ import {
   RC_SUPPLEMENTARY,
   RC_TAG,
   RC_UNMAPPED_MATE,
-} from '../shaders/slang/read.iface.generated.ts'
+} from '../shaders/slang/read.consts.generated.ts'
 import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
 import {

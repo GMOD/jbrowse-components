@@ -1,5 +1,5 @@
 import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
-import { GLYPH_INDEX } from '../LinearManhattanDisplay/shaders/manhattan.iface.generated.ts'
+import { GLYPH_INDEX } from '../LinearManhattanDisplay/shaders/manhattan.consts.generated.ts'
 import { lookupR2, matchesIndexSnp, posKey } from './ldToIndex.ts'
 import { defaultGlyph } from './rpcTypes.ts'
 

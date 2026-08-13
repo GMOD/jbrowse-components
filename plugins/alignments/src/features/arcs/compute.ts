@@ -11,7 +11,7 @@ import {
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 // Generated constants, imported from the generated modules with no re-export
 // hop through palettes.ts (SHADER_JS_CODEGEN.md).
-import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
+import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.consts.generated.ts'
 import { isConcordantPairRead } from '../../shared/buildBaseFeatureData.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import {

@@ -1,7 +1,7 @@
 import {
   GLYPH_INSERTION,
   GLYPH_POINT,
-} from '../LinearManhattanDisplay/shaders/manhattan.iface.generated.ts'
+} from '../LinearManhattanDisplay/shaders/manhattan.consts.generated.ts'
 
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'

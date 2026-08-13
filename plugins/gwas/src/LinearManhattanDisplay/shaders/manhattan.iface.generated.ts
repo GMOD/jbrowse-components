@@ -9,14 +9,6 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
-export const INDEX_GLYPH_SCALE = 1.6
-
-export const GLYPH_POINT = 0
-
-export const GLYPH_INSERTION = 1
-
-export const GLYPH_INDEX = 2
-
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.

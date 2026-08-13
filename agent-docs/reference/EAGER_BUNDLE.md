@@ -403,6 +403,41 @@ Two things follow, and the second is the general one:
   genuinely needs sharing, move it to a *third* module neither side's eager
   entry imports; do not point the lazy side at the eager one.
 
+## A namespace import is the unit, so a module is as eager as its cheapest consumer
+
+`import * as x from './m.ts'` marks every export of `m` used. Rolldown then
+includes or excludes `m` **whole**, so if any eager module imports one name from
+it, the always-loaded chunk pays for all of it — and nothing in tsc, lint or the
+test suite says so.
+
+That is a *module-splitting* problem, not an import-fixing one, and the generated
+shader modules are the worked example. `pnpm gen:shaders` emits three files per
+shader with entry points — the WGSL/GLSL strings (`x.generated.ts`), the layout
+and packers (`x.iface.generated.ts`), and the `//! export-consts` integers
+(`x.consts.generated.ts`) — with the re-export chain running one way, strings →
+iface → consts, so a render path's namespace import still sees everything.
+
+The consts module exists because of what a survey found: **all 33 sites in the
+tree that imported a shader constant wanted nothing else from the module they
+were importing from.** Three eager modules in plugins/alignments held all 16 KB
+of `read.iface.generated.ts` — `writeUniforms` and the packers included — for
+`CS_*`, `RC_*` and one pixel threshold. Splitting the constants out and pointing
+those sites at the new module took **5-6 KB gzip off every page** of the byo
+examples site, chunk counts unchanged; `read.iface.generated.ts` is no longer in
+the eager set at all.
+
+Two things generalize from it:
+
+- **Read a hand-written re-export barrel next to generated code as a report of
+  this bug.** `plugins/canvas` had two hops (`passes/constants.ts` →
+  `components/sharedRendererConstants.ts`) doing by hand what the consts module
+  now does, with a header quantifying the ~67 KB it was dodging. Both are gone.
+  If you find a third, check whether the generator can own it before adding to it.
+- **A shader constant now comes from `x.consts.generated.ts`, and there is no
+  reason to reach past it.** Importing the same name from `x.generated.ts`
+  compiles, passes every test, and drags the shader source — which is exactly
+  what `plugins/hic`'s `colorRamp.ts` was doing.
+
 ## A multi-page site's budgets are coupled: adding a page moves all of them
 
 On the examples sites, each page's eager figure is measured independently and

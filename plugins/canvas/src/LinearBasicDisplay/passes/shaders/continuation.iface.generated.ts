@@ -9,16 +9,6 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 12
 
-export const CONT_TRI_W_PX = 5
-
-export const CONT_TRI_HALF_H_PX = 4
-
-export const CONT_EDGE_MARGIN_PX = 1
-
-export const CONT_TRI_GAP_PX = 4
-
-export const CONT_MIN_OVERHANG_PX = 20
-
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.

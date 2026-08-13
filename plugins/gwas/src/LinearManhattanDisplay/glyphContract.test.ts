@@ -3,7 +3,7 @@ import {
   GLYPH_INDEX,
   GLYPH_INSERTION,
   GLYPH_POINT,
-} from './shaders/manhattan.iface.generated.ts'
+} from './shaders/manhattan.consts.generated.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

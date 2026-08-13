@@ -12,9 +12,17 @@
 //   //! targets: wgsl           (compute shaders, WebGPU-only)
 // Default: wgsl + glsl.
 //
+// A shader with entry points emits three modules, and which one a consumer
+// imports from decides what the bundler makes it pay for (see
+// emitShaderStrings): `<base>.generated.ts` (the WGSL/GLSL strings, re-exporting
+// the other two), `<base>.iface.generated.ts` (layout, packers, uniforms) and —
+// when it declares `//! export-consts: A, B` — `<base>.consts.generated.ts`,
+// which is the numbers alone.
+//
 // Module files (those whose Slang source begins with `module <name>;`) are
-// treated as imports only. If a module declares `//! export-consts: A, B`
-// it emits a `<base>.generated.ts` with just those constant values.
+// treated as imports only. A module declaring `//! export-consts` emits just the
+// consts module, which is its whole output and so keeps the plain
+// `<base>.generated.ts` name.
 //
 // Three directives redirect an artifact to a repo-relative path, for a package
 // that can't import the plugin owning the shader (see OUT_DIRECTIVES):
@@ -725,6 +733,13 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       emitShaderStrings(codegenInputs),
     )
     emit(log, path.join(dir, `${base}.iface.generated.ts`), iface)
+    if (codegenInputs.exportedConsts) {
+      emit(
+        log,
+        path.join(dir, `${base}.consts.generated.ts`),
+        emitConsts(base, codegenInputs.exportedConsts),
+      )
+    }
 
     const layoutOut = parseOutPath(source, 'layout')
     if (layoutOut) {

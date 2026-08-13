@@ -28,7 +28,7 @@ before anyone noticed.
 | [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
 | [Validate the react-app site's volvox config](#run-jbrowse-validate-over-the-react-app-sites-volvox-configjson) | embedded, config | 8 errors already reported; fix the file, then ask why it is a copy |
 | [Pool the coordinate ruler's tick divs](#pool-the-coordinate-rulers-tick-divs-so-a-zoom-stops-rebuilding-them) | LGV, perf | measured; a fixed pool is the low-risk version |
-| [Emit the shader constants as their own module](#emit-the-shader-constants-as-their-own-module) | shaders, bundle | the fix is in the codegen, so it answers to the Shaders CI job |
+| [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
@@ -110,21 +110,24 @@ relabelled rather than added and removed — kills the structural churn and keep
 accessible DOM text. Alternatives if that is not enough: a canvas ruler (bigger
 win, loses selectable text), or coarsening ticks off `coarseBpPerPx` during the
 zoom spring and snapping exact on settle.
-### Emit the shader constants as their own module
+### Get the synteny shader source out of the eager set
 
-`plugins/alignments/src/shaders/slang/read.iface.generated.ts` is the next eager
--bundle item, already attributed and banked into the examples sites' committed
-figures (~11 KB on `synteny`). Its eager consumers
-(`LinearAlignmentsDisplay/constants.ts`, `colorUtils.ts`) want ten `CS_*`
-integers; the module also carries `writeUniforms`, 10.7 KB of its 20.6, for the
-lazy renderer — so the eager import pays for the whole thing. Same shape as the
-breakpoint-split-view case in
-[EAGER_BUNDLE.md](reference/EAGER_BUNDLE.md) §"A duplicate is how a bundling
-split looks from the inside", one plugin over.
+`GpuSyntenyRenderer.ts` is statically imported by `SyntenyRendererFactory`
+(`LinearSyntenyDisplay/SyntenyRenderer.ts`), which `LevelSyntenyCanvas.tsx`
+imports at module scope — so the four synteny shaders' WGSL/GLSL strings are
+eager on any page with a comparative view. Measured with
+`pnpm probe-eager-graph --page synteny --holds`: 121 KB raw across
+`syntenyFillCurve` / `syntenyFillStraight` / `syntenyEdgeCurve` /
+`syntenyEdgeStraight`, four of the six costliest first-party eager modules on
+that page.
 
-The fix is in the shader codegen rather than in either consumer, which means it
-regenerates every shader in the repo and answers to the Shaders CI job — its own
-change, not a lint-sized one.
+**Not a codegen item — the codegen already put the strings in their own
+module** ([EAGER_BUNDLE.md](reference/EAGER_BUNDLE.md) §"A namespace import is
+the unit"). The renderer itself is what is eager, and the factory is the seam: it
+picks a GPU or Canvas2D backend, and only the GPU arm needs the shader source.
+First move is to check whether the Canvas2D arm is eager for a reason before
+making the GPU arm a dynamic import — a `lazy()` here has to answer to the render
+autorun, not to React.
 
 ### Extra large text SVG mode for pub-ready figures
 

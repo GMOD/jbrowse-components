@@ -3,7 +3,7 @@ import {
   GLYPH_INDEX,
   GLYPH_INSERTION,
   GLYPH_POINT,
-} from '../LinearManhattanDisplay/shaders/manhattan.iface.generated.ts'
+} from '../LinearManhattanDisplay/shaders/manhattan.consts.generated.ts'
 import { feat, testLd as ld } from './ldTestHelpers.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 

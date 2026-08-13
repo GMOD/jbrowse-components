@@ -12,7 +12,7 @@ import { rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { LINKED_READ_LINE_ALPHA } from '../../shaders/slang/linkedReadLine.iface.generated.ts'
+import { LINKED_READ_LINE_ALPHA } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import { drawLinkedReadLines } from './drawCanvas.ts'
 
 import type {

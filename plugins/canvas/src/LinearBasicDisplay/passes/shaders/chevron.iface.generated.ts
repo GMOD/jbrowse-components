@@ -7,16 +7,6 @@ export const BINDINGS: readonly ShaderBinding[] = [
   { index: 1, kind: 'uniform', name: 'u' },
 ]
 
-export const CHEVRON_SPACING_PX = 40
-
-export const CHEVRON_W_PX = 4
-
-export const CHEVRON_H_PX = 4
-
-export const CHEVRON_THICKNESS_PX = 0.5
-
-export const CHEVRON_VERTS = 12
-
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Word indices into a Float32Array view over the uniform buffer.

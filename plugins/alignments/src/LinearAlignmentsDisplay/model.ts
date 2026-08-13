@@ -56,7 +56,7 @@ import {
   enumerateBezierPairs,
 } from '../features/linkedReads/computeOverlay.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
-import { ARC_COLOR_INTERCHROM } from '../shaders/slang/arcLine.iface.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../shaders/slang/arcLine.consts.generated.ts'
 import {
   COLOR_SCHEMES,
   isModificationScheme,

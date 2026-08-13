@@ -8,3 +8,5 @@ export const GLSL_VERTEX = "#version 300 es\nprecision highp float;\nprecision h
 export const GLSL_FRAGMENT = "#version 300 es\nprecision highp float;\nprecision highp int;\n#line 993 0\nlayout(location = 0)\nout vec4 entryPointParam_fs_main_0;\n\n\n#line 993\nin vec4 v_color;\n\n\n#line 10 1\nin vec3 v_bary;\n\n\n#line 170 2\nvoid main()\n{\n\n#line 176\n    float _S1 = min(v_bary.y, v_bary.z);\n\n#line 176\n    entryPointParam_fs_main_0 = vec4(v_color.xyz, v_color.w * (1.0 - smoothstep(0.5, 1.5, _S1 / (fwidth((_S1))))));\n\n#line 176\n    return;\n}\n\n"
 
 export * from './continuation.iface.generated.ts'
+
+export * from './continuation.consts.generated.ts'

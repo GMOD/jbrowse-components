@@ -638,14 +638,34 @@ export const header = (baseName: string) => [
   '',
 ]
 
-// The heavy WGSL / GLSL shader strings, kept in their own module. Eager
-// model-side code only ever needs the layout constants / packers from the
-// interface module, so isolating the strings here lets the bundler keep them
-// out of the always-loaded plugin chunk and in the lazy render path. The
-// strings module re-exports the interface so existing `import * as xShader`
-// render-path imports get the full ShaderModule surface unchanged.
+/**
+ * The heavy WGSL / GLSL shader strings, and the top of the re-export chain.
+ *
+ * One shader emits up to three modules — strings here, shape in
+ * `${base}.iface.generated.ts`, `//! export-consts` values in
+ * `${base}.consts.generated.ts` — and the split is about the BUNDLER, not about
+ * tidiness. A render path imports the whole surface as a namespace
+ * (`import * as readShader`), which marks every export used, so a module is
+ * included or excluded whole: whatever the smallest eager consumer of a module
+ * wants, the eager chunk pays for all of it.
+ *
+ * That is measured, not reasoned. Three eager modules in plugins/alignments
+ * (`constants.ts`, `colorUtils.ts`, `renderers/rendererTypes.ts`) import only
+ * `CS_*` / `RC_*` / one pixel threshold, and were holding all 16 KB of
+ * `read.iface.generated.ts` — `writeUniforms` and the packers included — in the
+ * always-loaded chunk. `pnpm probe-eager-graph --holds` in the byo examples site
+ * is the tool that says so, and the eager-bundle backlog entry in
+ * agent-docs/TODO.md is where the number came from.
+ *
+ * So: a consumer imports from the SMALLEST module carrying what it wants. Every
+ * one of the 33 sites that imports an export-const wanted nothing else from the
+ * module it was importing from, which is what made the constants the right seam.
+ * The re-export chain runs one way only — strings re-export shape and consts, so
+ * an existing `import * as xShader` from `${base}.generated.ts` still sees the
+ * full `ShaderModule` surface — and never back up it.
+ */
 export function emitShaderStrings(inputs: CodegenInputs) {
-  const { baseName, wgsl, glslVertex, glslFragment } = inputs
+  const { baseName, wgsl, glslVertex, glslFragment, exportedConsts } = inputs
   const lines = header(baseName)
   if (wgsl !== undefined) {
     // #shaderExport WGSL_SOURCE | the compiled WGSL, when the shader targets wgsl
@@ -663,19 +683,24 @@ export function emitShaderStrings(inputs: CodegenInputs) {
     )
   }
   lines.push(`export * from './${baseName}.iface.generated.ts'`, '')
+  if (exportedConsts) {
+    lines.push(`export * from './${baseName}.consts.generated.ts'`, '')
+  }
   return lines.join('\n')
 }
 
-// Everything except the shader strings: exported consts, uniform/instance
-// layout, typed packers, VERTEX_ATTRIBUTES, textures. This is the module eager
-// code imports (it never pulls in WGSL_SOURCE/GLSL_*).
+// The uniform/instance layout, the typed packers, VERTEX_ATTRIBUTES, textures —
+// everything derived from the shader's *shape*. Neither the shader strings
+// (`emitShaderStrings`) nor the `//! export-consts` values (`emitConsts`) are
+// here; each of the three is its own module because each has its own set of
+// consumers, and a namespace import of any one of them defeats tree-shaking for
+// everything that module carries. See emitShaderStrings for the measured case.
 export function emitInterface(inputs: CodegenInputs) {
   const {
     baseName,
     reflection,
     textures,
     vertsPerInstance,
-    exportedConsts,
     topology,
     blend,
     instanceWriter,
@@ -766,13 +791,6 @@ export function emitInterface(inputs: CodegenInputs) {
       `export const BLEND_STATE: BlendState = ${BLEND_STATE_LITERAL[blend]}`,
       '',
     )
-  }
-
-  if (exportedConsts) {
-    for (const [name, value] of Object.entries(exportedConsts)) {
-      // #shaderExport (your shader's consts) | every other `public static const` in the shader, lifted by name
-      lines.push(`export const ${name} = ${value}`, '')
-    }
   }
 
   // Compute entry point + its [numthreads] X dimension. Both come from the
@@ -1037,9 +1055,13 @@ export function emitInterface(inputs: CodegenInputs) {
   return lines.join('\n')
 }
 
-// Emits only the `//! export-consts` values. Used for a module file (which has
-// no entry points, so there is nothing else to emit) and for the `//!
-// consts-out` copy written into a package that can't import the owning plugin.
+// Emits only the `//! export-consts` values, and nothing that would make the
+// module cost more than the numbers in it — no imports, no types, no packers.
+// That is the point: this is the module a Canvas2D twin, a hit test or a state
+// model imports, and those are the eager consumers. Written for every shader
+// that declares the directive (as `${base}.consts.generated.ts`), as a module
+// file's whole output, and for the `//! consts-out` copy in a package that can't
+// import the owning plugin.
 export function emitConsts(baseName: string, consts: Record<string, number>) {
   return [
     ...header(baseName),
