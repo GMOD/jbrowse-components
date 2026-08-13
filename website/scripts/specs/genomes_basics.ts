@@ -932,7 +932,10 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: TP53_TRANSCRIPT_WINDOW,
-          tracks: [PHYLOP_TRACK],
+          // taller than the track needs to be read, because the two frames are
+          // one grid: the dialog fills its own panel and a default-height track
+          // leaves the menu panel two thirds empty page beside it
+          tracks: [{ ...PHYLOP_TRACK, height: 400 }],
         },
       ],
     }),

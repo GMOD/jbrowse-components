@@ -233,10 +233,9 @@ Zooming to the higher-scoring element shows the motif against the sequence.
 
 <Figure src="/img/genomes_basics/p53_element_sequence.png" caption="The distal element at base zoom: the JASPAR match, the promoter-class cCRE it sits inside, and the reference sequence. The match is called on both strands because the site is two copies of the p53 half-site end to end, which is what the boxes span." />
 
-## Categories this page did not open
+## Tracks in the other categories
 
-Everything above came from four of UCSC's categories. Tracks commonly wanted
-next sit in the others:
+The same two clicks reach the rest of the catalog. A few that come up often:
 
 - **Conserved Elements - 100 Vert. El** (Comparative Genomics) is the interval
   companion to phyloP: phyloP scores each base, phastCons calls the runs.
@@ -260,11 +259,26 @@ hgdownload and JBrowse reads those files by byte range. The track menu's **About
 track** prints the adapter, which is where to look when a track is slow or
 missing: the file it names is the one being read.
 
-<Figure src="/img/genomes_basics/about_track.png" caption="About track on the phyloP track. The adapter names the BigWig on hgdownload, and the metadata below it is UCSC's own trackDb entry, carried through the conversion." />
+<Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu, with About track at the top of it. Right: the dialog that opens. The adapter names the BigWig on hgdownload, and the metadata below it is UCSC's own trackDb entry, carried through the conversion." />
 
 The phyloP file covers the whole genome and only the blocks under the current
 view are fetched, which is why a genome-wide signal track opens at gene zoom
 without downloading it.
+
+The URL is the file itself, so anything else that reads a BigWig by range takes
+it as it stands. In R that is `rtracklayer`, which reads the same bytes over the
+same range into a `GRanges` for a figure of your own:
+
+```r
+library(rtracklayer)
+scores <- import(
+  "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw",
+  which = GRanges("chr17", IRanges(7668400, 7687550))
+)
+```
+
+The BigBeds behind the variant and annotation tracks come back the same way, so
+a track read here is a track a script can go on to use.
 
 ## Trying another genome
 
@@ -279,11 +293,20 @@ An assembly released both ways appears under both accessions, same sequence, and
 only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 `GCA_040938575.1`.
 
-<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The gene track is the one the name index answered from, with GC percent and RepeatMasker under it." />
+<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The gene track is the one the name index answered from, with GC percent and RepeatMasker under it, the repeats drawn as one lane per class." />
 
 The gene is the same gene and the track set is the familiar one. The span is
 not: the axolotl genome is large and repeat-rich, and RepeatMasker under the
 introns is where that shows.
+
+Both tracks under the gene carry a setting from their own track menus.
+RepeatMasker is one lane per repeat class, through **Display types → Multi-row
+feature display (painting)**, which is the subject of
+[](/docs/tutorials/repeatmasker_classes); in the single packed lane it opens
+with, the classes are interleaved and a window this repeat-rich reads as one
+field of blocks. GC percent is on **Score → Summary score mode → Average**, and
+on the 30 to 70 percent bounds UCSC's own trackDb asks for, through **Score →
+Set min/max score...**.
 
 ## See also
 
