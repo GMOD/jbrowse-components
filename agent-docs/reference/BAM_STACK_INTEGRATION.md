@@ -687,16 +687,39 @@ stop cannot fire, and all twenty-one tail chunks are then read. The batch size
 doubles as the early-stop window, and that coupling breaks exactly when a
 query's data is deeper than six chunks.
 
-The fix that stays deterministic is a **prefix check rather than a barrier**:
-re-test the stop whenever a chunk completes AND every chunk before it has
-completed. Same index-ordered decision ADR 0010 requires, no extra barrier, and
-it fires at chunk 6 here. Requests would fall from 28 to roughly 12 — the
-in-flight pool keeps a few tail chunks already started.
+**Implemented in @gmod/bam**, branch `prefix-early-stop`, ADR 0010 amended with
+the trade-off. Six paired runs against the stock reader, records identical every
+time:
 
-For the size of it: the cap-raised experiment above skipped the tail as a side
-effect and that query went **4.08s -> 1.13s**. The bytes are only 2.0MB of 26.8,
-so this is not about bytes; it is twenty-one round trips against a link where
-one request gets 24 MB/s and many get 5.
+| | requests | bytes | wall (mean of 6) |
+| --- | --: | --: | --: |
+| stock | 28 | 26.8 MB | 6.68s |
+| stop re-tested | **12** | **25.3 MB** | **5.40s** |
+
+The link's own spread is ±3s and the prefix arm won four of six pairs, so the
+request and byte counts are the result here and the time is only
+consistent-in-direction. Not pushed — that is a release decision.
+
+Two things worth carrying out of building it:
+
+- **A completed-PREFIX check does not work**, which was the obvious design and
+  the one this doc previously proposed. Chunk 6 is 3.5MB and slow, so while it
+  is in flight the other five workers consume all 21 tiny tail chunks, and the
+  prefix blocks at exactly the boundary that would have stopped it. Measured: 28
+  requests, unchanged. What works is a monotone `stopIndex`: past-ness is
+  monotone in chunk index, so the smallest past index is a function of the chunk
+  list alone however the reads finish.
+- **It costs a guarantee, and the ADR says so.** The stop index stays
+  deterministic; the OVERSHOOT — how many chunks a worker had already taken when
+  the stop landed — does not, bounded by the pool width. Those chunks contribute
+  nothing, so unlike ADR 0010's failed first attempt this cannot change which
+  records come back. But `cache.test.ts`'s "a repeated query reads no more
+  chunks" is now a property of the corpus rather than of the algorithm.
+
+And a correction to this document: the earlier **4.08s -> 1.13s** was attributed
+to skipping the tail, and that was wrong. That run also merged the seven head
+chunks into one request, which is where its speed came from. Skipping the tail
+alone is the ~1.3s above.
 
 ### Why samtools makes one request where we make 28
 
