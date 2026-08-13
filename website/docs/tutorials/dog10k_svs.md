@@ -103,7 +103,7 @@ sidebar writes when you rearrange rows by hand, so it goes on the track entry of
 a session, not in the track's `displays`. Put in a `displays` array it is
 silently ignored, since a display config accepts only its declared slots:
 
-```json
+```json session
 {
   "defaultSession": {
     "name": "NHEJ1 deletion",

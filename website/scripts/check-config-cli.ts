@@ -38,7 +38,16 @@ import { visit } from 'unist-util-visit'
 
 import { deriveAddAssemblyArgs } from '../src/lib/derive-add-assembly.ts'
 import { asRecord, deriveAddTrackArgs } from '../src/lib/derive-add-track.ts'
-import { isAddassembly, isAddtrack } from '../src/lib/remark-config-cli-tabs.ts'
+import {
+  FALLBACK_SESSION_NAME,
+  defaultSessionObject,
+  sessionStdin,
+} from '../src/lib/derive-set-default-session.ts'
+import {
+  isAddassembly,
+  isAddtrack,
+  isSession,
+} from '../src/lib/remark-config-cli-tabs.ts'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
@@ -48,7 +57,7 @@ interface Block {
   file: string
   line: number
   json: string
-  kind: 'track' | 'assembly'
+  kind: 'track' | 'assembly' | 'session'
 }
 
 const parser = unified().use(remarkParse).use(remarkGfm)
@@ -60,13 +69,19 @@ const parser = unified().use(remarkParse).use(remarkGfm)
 function taggedBlocks(md: string, file: string): Block[] {
   const blocks: Block[] = []
   visit(parser.parse(md), 'code', node => {
-    const assembly = isAddassembly(node)
-    if (isAddtrack(node) || assembly) {
+    const kind = isAddtrack(node)
+      ? 'track'
+      : isAddassembly(node)
+        ? 'assembly'
+        : isSession(node)
+          ? 'session'
+          : undefined
+    if (kind) {
       blocks.push({
         file,
         line: node.position?.start.line ?? 0,
         json: node.value,
-        kind: assembly ? 'assembly' : 'track',
+        kind,
       })
     }
   })
@@ -113,17 +128,26 @@ function targetConfig(assemblyNames: unknown) {
 }
 
 // Run the CLI against a throwaway config and return the config it wrote.
-function runCliConfig(target: object, argv: (dir: string) => string[]) {
+// `input` feeds stdin, which is how the emitted set-default-session command
+// carries its session — running it any other way would check a command the
+// docs don't show.
+function runCliConfig(
+  target: object,
+  argv: (dir: string) => string[],
+  input?: string,
+) {
   const dir = mkdtempSync(join(tmpdir(), 'cfgcli-'))
   try {
     const cfgPath = join(dir, 'config.json')
     writeFileSync(cfgPath, JSON.stringify(target))
     execFileSync('node', [cli, ...argv(dir), '--target', cfgPath], {
       stdio: 'pipe',
+      input,
     })
     return JSON.parse(readFileSync(cfgPath, 'utf8')) as {
       tracks?: Record<string, unknown>[]
       assemblies?: Record<string, unknown>[]
+      defaultSession?: Record<string, unknown>
     }
   } finally {
     rmSync(dir, { recursive: true, force: true })
@@ -193,6 +217,36 @@ function roundTripJson(config: Record<string, unknown>): string {
         : 'add-track-json did not reproduce the config verbatim'
   } catch (e) {
     return `add-track-json failed: ${firstLine(e)}`
+  }
+}
+
+// The session path has no flags to check, so what this proves is the pair of
+// things the tab exists to say: that the emitted heredoc reaches the CLI intact
+// through `--session -`, and that what lands in `defaultSession` is the block's
+// own session — the unwrapping is the step a reader would otherwise get wrong.
+function roundTripSession(
+  config: Record<string, unknown>,
+  json: string,
+): string {
+  const session = defaultSessionObject(config)
+  const stdin = sessionStdin(config, json)
+  if (session === null || stdin === null) {
+    return 'not a lone "defaultSession": leave this block untagged'
+  }
+  try {
+    const result = runCliConfig(
+      { assemblies: [], tracks: [] },
+      () => ['set-default-session', '--session', '-'],
+      stdin,
+    )
+    // the command supplies a name when the session carries none, so that is
+    // what a faithful round trip produces rather than the block verbatim
+    const expected = { name: FALLBACK_SESSION_NAME, ...session }
+    return JSON.stringify(result.defaultSession) === JSON.stringify(expected)
+      ? ''
+      : 'set-default-session did not reproduce the session'
+  } catch (e) {
+    return `set-default-session failed: ${firstLine(e)}`
   }
 }
 
@@ -285,12 +339,15 @@ function aliasFileUri(refNameAliases: unknown) {
 }
 
 // Parse and round-trip one block; '' when it checks out.
-function checkBlock(json: string, kind: 'track' | 'assembly'): string {
+function checkBlock(json: string, kind: Block['kind']): string {
   let config: Record<string, unknown>
   try {
     config = asRecord(JSON.parse(json))
   } catch (e) {
     return `not valid JSON: ${firstLine(e)}`
+  }
+  if (kind === 'session') {
+    return roundTripSession(config, json)
   }
   if (kind === 'assembly') {
     const args = deriveAddAssemblyArgs(config)
@@ -380,12 +437,40 @@ if (deriveAddAssemblyArgs(UNDERIVABLE_ASSEMBLY) !== null) {
   )
 }
 
+// The refusals that keep a session tab from claiming more than the command
+// writes. Both shapes appear in the docs untagged, so nothing else here would
+// notice if the derivation started accepting them: a whole config.json carries
+// assemblies and tracks set-default-session does not write, and a block pairing
+// the default session with preConfiguredSessions carries sessions it drops.
+const UNDERIVABLE_SESSIONS: [string, unknown][] = [
+  [
+    'whole config.json',
+    { assemblies: [], tracks: [], defaultSession: { name: 'S', views: [] } },
+  ],
+  [
+    'with preConfiguredSessions',
+    {
+      defaultSession: { name: 'S', views: [] },
+      preConfiguredSessions: [{ name: 'Other', views: [] }],
+    },
+  ],
+]
+for (const [label, config] of UNDERIVABLE_SESSIONS) {
+  if (defaultSessionObject(config) !== null) {
+    errorLines.push(
+      `  underivable session fixture (${label})`,
+      `    → expected this fixture to have no set-default-session equivalent\n`,
+    )
+  }
+}
+
 if (errorLines.length) {
   errorLines.unshift(
-    `Found addtrack/addassembly blocks whose derived command doesn't round-trip:\n`,
+    `Found addtrack/addassembly/session blocks whose derived command doesn't round-trip:\n`,
   )
 }
+const fixtures = FALLBACK_FIXTURES.length + 1 + UNDERIVABLE_SESSIONS.length
 reportProblems(
   errorLines,
-  `All ${checked} addtrack/addassembly block(s) + ${FALLBACK_FIXTURES.length + 1} fixture(s) round-trip through jbrowse add-track / add-track-json / add-assembly.`,
+  `All ${checked} addtrack/addassembly/session block(s) + ${fixtures} fixture(s) round-trip through jbrowse add-track / add-track-json / add-assembly / set-default-session.`,
 )

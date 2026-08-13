@@ -62,7 +62,7 @@ View settings that are not about launching — `colorByCDS`, `showAminoAcids`,
 `showCenterLine`, `trackLabels` — are properties of the view itself, so they sit
 _beside_ `init` rather than inside it:
 
-```json
+```json session
 {
   "defaultSession": {
     "name": "Session",

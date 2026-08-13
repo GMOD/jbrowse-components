@@ -380,7 +380,7 @@ dialog step by step.
 The declarative equivalent is a top-level `defaultSession`, here stacking them
 peach-cacao-grape:
 
-```json
+```json session
 {
   "defaultSession": {
     "name": "Grape / Peach / Cacao multi-way synteny",

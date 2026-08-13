@@ -1,9 +1,10 @@
 // Enforce how the hand-written docs present a JSON config block, the convention
 // in website/docs/CLAUDE.md:
 //
-//   * a complete track config is tagged ```json addtrack, and a complete
-//     assembly config ```json addassembly, so each renders the Config/CLI tab
-//     pair (scripts/check-config-cli.ts then proves the derived command runs).
+//   * a complete track config is tagged ```json addtrack, a complete assembly
+//     config ```json addassembly, and a lone `defaultSession` ```json session,
+//     so each renders the Config/CLI tab pair (scripts/check-config-cli.ts then
+//     proves the derived command runs).
 //     Only configs the CLI can actually express are flagged: the tag exists to
 //     render that tab, so a config `deriveAddTrack`/`deriveAddAssembly` returns
 //     null for (a synteny adapter's query/target slots, MultiWiggleAdapter
@@ -40,7 +41,12 @@ import { visit } from 'unist-util-visit'
 import { validateConfig } from '../../products/jbrowse-cli/src/commands/validate/validateConfig.ts'
 import { deriveAddAssembly } from '../src/lib/derive-add-assembly.ts'
 import { deriveAddTrack } from '../src/lib/derive-add-track.ts'
-import { isAddassembly, isAddtrack } from '../src/lib/remark-config-cli-tabs.ts'
+import { defaultSessionObject } from '../src/lib/derive-set-default-session.ts'
+import {
+  isAddassembly,
+  isAddtrack,
+  isSession,
+} from '../src/lib/remark-config-cli-tabs.ts'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir } from './paths.ts'
 
@@ -211,6 +217,18 @@ for (const file of docFiles(docsDir)) {
           `      ALLOWED in scripts/check-config-blocks.ts with the reason.\n`,
         )
       }
+    }
+    // `shape` reads a lone `defaultSession` as 'other', so this is its own
+    // branch rather than a case there. The derivation is the gate for the same
+    // reason it is above: a block carrying more than the session (a whole
+    // config.json, or one paired with preConfiguredSessions) has no command
+    // that writes all of it, so there is nothing to tag it for.
+    if (!isSession(node) && defaultSessionObject(parsed) !== null) {
+      problems.push(
+        `  ${where}`,
+        `    → lone \`defaultSession\` with no \`session\` tag, so it renders`,
+        `      without its set-default-session tab. Tag the fence.\n`,
+      )
     }
   })
 }

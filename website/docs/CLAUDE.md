@@ -111,6 +111,16 @@ removing the skip.
   is the tempting shape when a paragraph is about one slot, and it is the one
   shape a reader cannot use. Two slots that belong to the same recipe go in one
   config, not one fence each. `pnpm check-config-blocks` enforces it.
+- **A `defaultSession` gets its own fence, tagged ```json session.** The three
+  tags (`addtrack`, `addassembly`, `session`) each render a Config/CLI tab pair
+  whose command is derived from the block, and `check-config-cli` runs every one
+  of them through the real CLI. The session tag is the one with a **shape
+  requirement**: `defaultSession` must be the block's only top-level key, since
+  `set-default-session` writes that key and nothing else — pair it with
+  `preConfiguredSessions`, or show it inside a whole `config.json`, and the tab
+  would claim to reproduce the block while reproducing part of it. So a page
+  showing a whole config keeps its session in a second fence rather than tagging
+  the first. Both checks say which case a block fell into.
 - **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`.
 - **`user_guides/` drives the UI, `config_guides/` shows the JSON.** When a
   config guide starts explaining a concept, that section belongs in the user

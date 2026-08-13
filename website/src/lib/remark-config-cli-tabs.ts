@@ -2,16 +2,18 @@ import { visit } from 'unist-util-visit'
 
 import { deriveAddAssembly } from './derive-add-assembly.ts'
 import { deriveAddTrack, deriveAddTrackJson } from './derive-add-track.ts'
+import { deriveSetDefaultSession } from './derive-set-default-session.ts'
 
 import type { Code, Root, RootContent } from 'mdast'
 import type { Plugin } from 'unified'
 
-// A ```json block tagged `addtrack` (a track config) or `addassembly` (an
-// assembly config) renders as a two-tab widget: "Config file" (the JSON,
-// unchanged) and a CLI tab with the equivalent command, derived from that same
-// JSON so the two can't drift. Invalid JSON degrades to a plain block with a
-// build-time warning, as does an `addassembly` config no command can express
-// (unlike tracks, assemblies have no verbatim-JSON fallback command).
+// A ```json block tagged `addtrack` (a track config), `addassembly` (an
+// assembly config) or `session` (a `defaultSession`) renders as a two-tab
+// widget: "Config file" (the JSON, unchanged) and a CLI tab with the equivalent
+// command, derived from that same JSON so the two can't drift. Invalid JSON
+// degrades to a plain block with a build-time warning, as does an `addassembly`
+// or `session` config no command can express (unlike tracks, neither has a
+// verbatim-JSON fallback command).
 
 function raw(value: string): RootContent {
   return { type: 'html', value }
@@ -26,6 +28,10 @@ export function isAddtrack(node: Code) {
 
 export function isAddassembly(node: Code) {
   return node.lang === 'json' && /(^|\s)addassembly(\s|$)/.test(node.meta ?? '')
+}
+
+export function isSession(node: Code) {
+  return node.lang === 'json' && /(^|\s)session(\s|$)/.test(node.meta ?? '')
 }
 
 function parseConfig(json: string) {
@@ -54,6 +60,15 @@ function assemblyCliTab(config: Record<string, unknown>) {
   return command === null
     ? undefined
     : { label: 'CLI (add-assembly)', node: bash(command) }
+}
+
+// Same shape as the assembly tab, and refused for the same reason: a block
+// carrying more than the default session has no command that writes all of it.
+function sessionCliTab(config: Record<string, unknown>, json: string) {
+  const command = deriveSetDefaultSession(config, json)
+  return command === null
+    ? undefined
+    : { label: 'CLI (set-default-session)', node: bash(command) }
 }
 
 function bash(value: string) {
@@ -86,30 +101,55 @@ function tabWidget(gid: string, cliLabel: string, cfg: Code, cli: Code) {
   ]
 }
 
+interface TagEntry {
+  tag: string
+  matches: (node: Code) => boolean
+  build: (
+    config: Record<string, unknown>,
+    json: string,
+  ) => { label: string; node: Code } | undefined
+  // what to say when `build` returns undefined; the track tag has no such case,
+  // since add-track-json takes any track config verbatim
+  refusal: string
+}
+
+// Which tag a block carries, and the derivation that tag selects.
+const TAGS: TagEntry[] = [
+  { tag: 'addtrack', matches: isAddtrack, build: cliTab, refusal: '' },
+  {
+    tag: 'addassembly',
+    matches: isAddassembly,
+    build: assemblyCliTab,
+    refusal:
+      'has no add-assembly equivalent (see derive-add-assembly.ts); leave it untagged',
+  },
+  {
+    tag: 'session',
+    matches: isSession,
+    build: sessionCliTab,
+    refusal:
+      'is not a lone "defaultSession" (see derive-set-default-session.ts); leave it untagged',
+  },
+]
+
 const remarkConfigCliTabs: Plugin<[], Root> = () => {
   return (tree, file) => {
     let widgets = 0
     visit(tree, 'code', (node: Code, index, parent) => {
       let next: number | undefined
-      const assembly = isAddassembly(node)
-      if ((isAddtrack(node) || assembly) && index !== undefined && parent) {
-        const tag = assembly ? 'addassembly' : 'addtrack'
+      const entry = TAGS.find(t => t.matches(node))
+      if (entry && index !== undefined && parent) {
         const config = parseConfig(node.value)
         node.meta = null
         if (config instanceof Error) {
           file.message(
-            `${tag} block is not valid JSON: ${config.message}`,
+            `${entry.tag} block is not valid JSON: ${config.message}`,
             node,
           )
         } else {
-          const cli = assembly
-            ? assemblyCliTab(config)
-            : cliTab(config, node.value)
+          const cli = entry.build(config, node.value)
           if (cli === undefined) {
-            file.message(
-              'addassembly block has no add-assembly equivalent (see derive-add-assembly.ts); leave it untagged',
-              node,
-            )
+            file.message(`${entry.tag} block ${entry.refusal}`, node)
           } else {
             const nodes = tabWidget(
               `cfgtab-${(widgets += 1)}`,

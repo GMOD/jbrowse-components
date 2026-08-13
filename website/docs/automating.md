@@ -166,7 +166,7 @@ an `init` object. See [](/docs/tutorials/embed_linear_genome_view).
 A `defaultSession` in config.json (or any session snapshot) can give a view an
 `init` block:
 
-```json
+```json session
 {
   "defaultSession": {
     "name": "My session",
