@@ -158,3 +158,23 @@ on `validateToken` returning a *different* token. Accounts are matched against
 the **resolved** location. An `internetAccountId` naming an unregistered type no
 longer throws raw MST. The token-entry accounts drop a credential the server
 rejected. `SelectorComponent` is gone. See PR #5619 and the commits around it.
+
+`SelectorComponent`'s removal is the one that had to be *verified* rather than
+argued, since it is an MST member and `ReExports/abi.test.ts` is name-level over
+module exports. What was read, 2026-08-15:
+
+- every published bundle behind `website/plugins.json`, all 16 at `latest`, from
+  the deploy mirror in `jbrowse-plugin-list/dist` (6962 files) — **no `.js` hit
+  at all**. Plugins take `@jbrowse/core` as an external UMD global, so core's own
+  copy is not inlined and an override or read would have to appear in the
+  plugin's own code.
+- the only hits anywhere are `.d.ts`, in Apollo and GDC, and they are the
+  *inherited* `readonly SelectorComponent: AnyReactComponentType | undefined`
+  sitting in the same emitted intersection as `toggleContents` and
+  `selectorLabel` — tsc echoing core's `.views()` block, not an override.
+- `jbrowse-plugin-apollo` source (`~/src/Apollo3`): none. Its custom auth UI
+  (`AuthTypeSelector`) goes through `session.queueDialog` inside
+  `getTokenFromUser`, which is the extension point that does get used.
+- `~/src/apollino` registers no internet account; the `~/src/jb2plugins/*` and
+  `react-msaview` hits are dev bundles that inline core, i.e. core's own
+  `LocationInput`.

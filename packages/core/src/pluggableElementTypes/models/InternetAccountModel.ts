@@ -12,10 +12,7 @@ import { ElementId } from '../../util/types/mst.ts'
 import { BaseInternetAccountConfig } from './baseInternetAccountConfig.ts'
 import { uriMatchesDomains } from './uriMatchesDomains.ts'
 
-import type {
-  AnyReactComponentType,
-  UriLocation,
-} from '../../util/types/index.ts'
+import type { UriLocation } from '../../util/types/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
@@ -85,16 +82,7 @@ export const InternetAccount = types
     },
     /**
      * #getter
-     * Can use this to customize what the fileSelector. It takes a prop called
-     * `setLocation` that should be used to set a UriLocation
-     */
-    get SelectorComponent(): AnyReactComponentType | undefined {
-      return undefined
-    },
-    /**
-     * #getter
-     * Can use this to add a label to the UrlChooser. Has no effect if a custom
-     * SelectorComponent is supplied
+     * Can use this to add a label to the UrlChooser
      */
     get selectorLabel(): string | undefined {
       return undefined
