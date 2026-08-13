@@ -220,11 +220,9 @@ describe('below label rows on the polyprotein glyph', () => {
   })
 })
 
-// The gene's OWN name label hangs off `topY + featureHeight` of its
-// floatingLabelsData entry (labelPositioning), which is the same extent its hit
-// box reports — so the label rows its transcripts reserve have to be in both. In
-// the DTU figure, where ten transcripts each own a `below` row, a featureHeight
-// missing them drew the gene name four rows up, across a transcript.
+// The gene's own name label hangs off `topY + featureHeight` of its
+// floatingLabelsData entry, the same extent its hit box reports. Missing the
+// rows its transcripts reserve, it drew the DTU gene name across a transcript.
 describe("a container's floating label clears the rows it contains", () => {
   const modes: DisplayMode[] = ['normal', 'compact', 'superCompact']
   // the gene needs a name label of its own for there to be an entry at all

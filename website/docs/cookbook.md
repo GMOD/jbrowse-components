@@ -242,9 +242,13 @@ property on it: `feature.type`, `feature.strand` (`1`/`-1`/`0`),
 `feature.score`, `feature.name`, `feature.start`/`end`, `feature.refName`, and
 `feature.parent`. VCF `INFO` fields parse as arrays, so index them
 (`feature.INFO.SVTYPE[0]`), and BAM/CRAM tags come from `getTag(feature, 'HP')`.
-The full list is in [using jexl callbacks](/docs/config_guides/jexl). Wrap a
-callback in `log(...)` to print what it returns for each feature to the browser
-console.
+
+On a gene track the expression resolves once per exon, CDS and UTR, so a
+transcript's own attribute is read with `feature.parent.myattr`. That reads
+`undefined` at the top of the chain rather than raising, and a `color` that
+comes out undefined paints magenta, so end the ternary on a real color. The full
+list is in [using jexl callbacks](/docs/config_guides/jexl). Wrap a callback in
+`log(...)` to print what it returns for each feature to the browser console.
 
 ### More ways to set `color`
 

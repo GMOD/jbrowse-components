@@ -68,9 +68,8 @@ Three properties of that line, each of which fails without an error:
   `feature.dIF` is undefined, and an undefined branch returns the default color
 - **values are strings**, so numeric comparison requires `parseFloat`
 - **the numbers are on the transcript row and nothing below it**: the glyph
-  draws one box per exon, CDS and UTR and evaluates the color against the box it
-  is painting, so the callback reaches the transcript with `feature.parent.dif`.
-  `feature.dif` reads the exon, finds nothing, and paints the default
+  evaluates the color against the box it paints, so the callback reaches up with
+  `feature.parent.dif`. `feature.dif` reads the exon and paints the default
 
 `dtu` is a flag with the values `muscle`, `liver` and `ns`, set by the same
 threshold the script reports on. The color branches on it before reading `dif`,
@@ -91,10 +90,9 @@ the minimum empirical FDR beside its count.
 ## Configuring the track
 
 One expression covers the whole transcript: a UTR follows `color` unless
-`utrColor` claims it. `labels.name` reads GENCODE's own `transcript_name`, which
-is what puts isoform names under the glyphs, and `legend` declares what the ramp
-means. `mouseover` is evaluated against the gene, so it summarizes the gene;
-hovering an isoform names that isoform and its exon.
+`utrColor` claims it. `labels.name` reads GENCODE's `transcript_name`, `legend`
+declares what the ramp means, and `mouseover` resolves against the gene, so it
+summarizes the gene rather than one isoform.
 
 ```json addtrack
 {

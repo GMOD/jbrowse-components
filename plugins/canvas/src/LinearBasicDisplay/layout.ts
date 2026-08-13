@@ -430,9 +430,8 @@ function applyHeightScale(
     labelData.topY =
       labelData.topY * multiplier +
       (labelData.labelRowsAbove ?? 0) * labelFontPx
-    // same term the flatbush loop above applies: the name label hangs off this
-    // height, so a container has to cover the label rows it contains or the
-    // name lands inside its own stack
+    // same term the flatbush loop above applies, and for the same reason: the
+    // name label hangs off this height
     labelData.featureHeight =
       labelData.featureHeight * multiplier +
       (labelData.labelRows ?? 0) * labelFontPx

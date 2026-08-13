@@ -43,12 +43,10 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   const parentStrand = parent.get('strand') ?? 0
   const parentRefName = parent.get('refName')
 
-  // The `parent` handle is the reason this is a helper rather than four inline
-  // constructions. A synthesized UTR is a subfeature like any other, so a
-  // per-feature callback that reaches up from the box it paints — `color:
-  // 'jexl:feature.parent.dif'`, or the itemRgb walk in getBoxColor — has to find
-  // the transcript from here too. Built without it, a transcript's implied UTRs
-  // took the default color while its exons and CDS took the callback's.
+  // The `parent` handle is what this helper is for. Anything reaching up from
+  // the box it paints — `jexl:feature.parent.dif`, the itemRgb walk in
+  // getBoxColor — has to find the transcript from a synthesized UTR too, or
+  // those come out the default color between exons that took the callback's.
   const impliedUTR = (
     id: string,
     start: number,

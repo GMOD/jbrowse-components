@@ -165,10 +165,9 @@ describe('getSubparts implied UTRs', () => {
   })
 
   it('gives synthesized UTRs the transcript as their parent', () => {
-    // A per-feature callback reads the box it paints, so a per-transcript
-    // attribute is reached with `feature.parent.x` — and an implied UTR built
-    // without a parent handle answers undefined, coming out the default color
-    // beside exons and CDS that took the callback's.
+    // `feature.parent.x` is how a callback reaches a per-transcript attribute
+    // from the box it paints; without the handle a UTR answers undefined and
+    // comes out the default color beside exons that took the callback's
     const tx = transcript('mRNA')
     const utrs = getSubparts(tx, config).filter(f =>
       String(f.get('type')).endsWith('UTR'),

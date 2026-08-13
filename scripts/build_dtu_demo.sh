@@ -233,15 +233,12 @@ Rscript dtu.R
 
 # ------------------------------------------------------------ GFF3 for JBrowse
 # Subset GENCODE to the called genes and write the statistics into the attribute
-# column. Each transcript's numbers go on its own transcript row and nowhere
-# else; the exon/CDS/UTR rows below it are passed through exactly as GENCODE
-# wrote them, and the track's color callback reaches up from the box it paints
+# column. Each transcript's numbers go on its own row and nowhere else; the
+# exon/CDS/UTR rows pass through untouched, and the color callback reaches up
 # with `feature.parent`.
 #
-# The one thing here forced by how the glyph reads a feature, and it fails
-# silently when got wrong: attribute names are written lowercase, because
-# gff-nostream lowercases keys on the way in -- writing `dIF=` and reading
-# feature.dIF in a jexl callback yields undefined, and an undefined branch just
+# Keys are written lowercase because gff-nostream lowercases them on the way in:
+# `dIF=` read back as feature.dIF is undefined, and an undefined branch just
 # takes the default color.
 python3 - <<'PY'
 import csv
@@ -318,10 +315,8 @@ with gzip.open('gencode.v29.annotation.gff3.gz', 'rt') as fh:
         if gene_id not in genes:
             continue
         kind = cols[2]
-        # Only the two rows that gain something are rewritten. GENCODE carries no
-        # Name=, but the track's labels.name callback reads gene_name and
-        # transcript_name directly, so nothing has to be injected for the labels
-        # to read the way they do in the figure.
+        # No Name= is injected: labels.name reads GENCODE's own gene_name and
+        # transcript_name.
         if kind == 'gene':
             cols[8] = f'{attrs};{gene_attr[gene_id]}'
         elif kind == 'transcript':

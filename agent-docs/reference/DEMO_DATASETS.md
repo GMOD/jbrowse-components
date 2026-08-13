@@ -207,15 +207,12 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   move. The eight RSEM quantifications are the statistic, the four bigWigs are
   one donor per tissue.
 
-  **The script's GFF3 and the deployed one differ, deliberately and not yet
-  reconciled.** The script writes the statistics onto gene and transcript rows
-  only, which is what `feature.parent.dif` in the track config reads. The
-  deployed file predates that and also repeats them onto every exon/CDS/UTR
-  child, and carries a `Name=` the script no longer adds. Same 103,222 rows
-  either way, and the config works against both, since a parent lookup succeeds
-  whether or not the child also carries the value. Redeploy via
-  `scripts/deploy-demo.sh` to converge them; until then do not describe the
-  script as reproducing the hosted bytes.
+  **The hosted GFF3 carries the statistics on gene and transcript rows only**
+  (`feature.parent.dif` reads them from the box) and no `Name=` (`labels.name`
+  reads `gene_name`/`transcript_name`). The child copies came off the deployed
+  bytes in place rather than by rerunning satuRn, checked by reading the
+  before/after pair through `Gff3TabixAdapter` and comparing the color every box
+  resolves. Only a rebuild would prove byte equality.
 - **The `*.demo_slices.bam` files** — three region-sliced GIAB alignments (HG002
   ONT haplotagged, HG002 Illumina 2x250, HG008-T PacBio Revio), rebuilt by
   `scripts/build_demo_slices.sh`. **A sliced BAM records its own provenance**:

@@ -340,9 +340,8 @@ describe('getBoxColor (a per-transcript attribute read from the box)', () => {
   const palette = { framesCDS: [] } as unknown as JBrowsePalette
   const jexl = createJexlInstance()
 
-  // A GFF3 carries a per-transcript statistic on the transcript row only, and
-  // the glyph paints one box per child — so the callback reaches up. Nothing
-  // has to be copied onto the children first.
+  // a per-transcript statistic lives on the transcript row only; the glyph
+  // paints one box per child, so the callback reaches up
   const COLOR = "jexl:feature.parent.dtu=='liver'?'#124f95':'#b2b1ac'"
 
   const gene = new SimpleFeature({
@@ -378,10 +377,8 @@ describe('getBoxColor (a per-transcript attribute read from the box)', () => {
     }
   })
 
-  // The reach-up needs no guard: member access on a nullish subject is
-  // undefined in the jexl fork, not a throw, so the top of the chain just takes
-  // the expression's own default branch. Only an expression that can evaluate to
-  // undefined outright falls back to the slot's magenta.
+  // No guard needed: member access on a nullish subject is undefined in the
+  // jexl fork, not a throw. Only an undefined RESULT falls back to magenta.
   it('a rootless feature takes the default branch, not the invalid-color fallback', () => {
     const orphan = new SimpleFeature({
       uniqueId: 'o1',
