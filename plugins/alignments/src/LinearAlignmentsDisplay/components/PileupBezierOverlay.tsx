@@ -65,11 +65,14 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
 
   // Paint an emphasized (hovered/selected) curve last so a thin crossing curve
   // can't sit on top of it. The base order is otherwise preserved.
-  const emphasis = (arc: PileupArc) => {
+  //
+  // The key is built once per arc rather than inside the comparator, which ran
+  // it O(n log n) times over a list the map below then re-keys anyway.
+  const keyed = arcs.map(arc => {
     const id = bezierArcKey(arc)
-    return id === hoveredArcId || id === selectedArcId ? 1 : 0
-  }
-  const ordered = [...arcs].sort((a, b) => emphasis(a) - emphasis(b))
+    return { arc, id, emphasis: id === hoveredArcId || id === selectedArcId }
+  })
+  const ordered = keyed.sort((a, b) => Number(a.emphasis) - Number(b.emphasis))
 
   return (
     <svg
@@ -84,8 +87,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
         overflow: 'visible',
       }}
     >
-      {ordered.map(arc => {
-        const arcId = bezierArcKey(arc)
+      {ordered.map(({ arc, id: arcId }) => {
         const isSelected = arcId === selectedArcId
         const isHovered = arcId === hoveredArcId
         return (

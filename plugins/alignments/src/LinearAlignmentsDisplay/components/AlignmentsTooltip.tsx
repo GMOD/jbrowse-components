@@ -392,13 +392,19 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             <div>Location: {formatLocation(refName, position)}</div>
             {/* The one thing the mark itself cannot show. A tick is a bare
                 vertical at a locus: without this the reader can see THAT the
-                reads here have mates elsewhere and not where elsewhere is. */}
-            <div>
-              {partnerRefNames.length === 1
-                ? 'Mate chromosome: '
-                : 'Mate chromosomes: '}
-              {partnerRefNames.join(', ')}
-            </div>
+                reads here have mates elsewhere and not where elsewhere is.
+                Dropped entirely when the list is empty rather than printing a
+                label with nothing after it — `resolveArcs` always fills it, but
+                the hit test defaults it, so the empty case is reachable by a
+                type rather than by a feed. */}
+            {partnerRefNames.length === 0 ? null : (
+              <div>
+                {partnerRefNames.length === 1
+                  ? 'Mate chromosome: '
+                  : 'Mate chromosomes: '}
+                {partnerRefNames.join(', ')}
+              </div>
+            )}
             <div>{supportLabel(support)}</div>
           </div>
         </BaseTooltip>
