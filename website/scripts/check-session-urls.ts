@@ -10,11 +10,19 @@
 // worst place for it, since a reader clicking it concludes the feature is
 // broken rather than the doc.
 //
-// Offline on purpose. The configs these links point at are deployed from
-// demos/<name>/config.json in this repo (scripts/deploy-demo.sh), so the
-// deployed bytes have a checked-in source and the check reads that instead of
-// fetching. `pnpm check-live-configs --network` is the counterpart that asks
-// whether the deploy actually happened.
+// Offline on purpose, because both ways this repo publishes a config have a
+// checked-in source:
+//
+//   * `https://jbrowse.org/demos/<name>/config.json` ← demos/<name>/config.json,
+//     pushed by scripts/deploy-demo.sh. A manual deploy to a bucket with no
+//     versioning, so the hosted bytes can lag the repo.
+//   * a relative `test_data/<name>/config.json`, resolved against CODE_BASE ←
+//     products/jbrowse-web/test_data/<name>/, which push.yml `aws s3 sync
+//     --delete`s to code/jb2/main/ on every commit to main. Always this repo's.
+//     This is what the figure specs' own live links use.
+//
+// `pnpm check-live-configs --network` is the counterpart that asks whether the
+// deploy actually happened.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -33,13 +41,20 @@ import { docFiles, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir, repoRoot } from './paths.ts'
 
 const DEMO_PREFIX = 'https://jbrowse.org/demos/'
+const TEST_DATA_PREFIX = 'test_data/'
 
-// The checked-in source of a deployed demo config, or undefined for a URL this
-// repo does not publish — a link to someone else's config is not ours to
-// verify, and saying so beats guessing.
+// The checked-in source of a published config, or undefined for one this repo
+// does not publish — a link to someone else's config is not ours to verify, and
+// saying so beats guessing.
 function repoConfigPath(url: string) {
-  return url.startsWith(DEMO_PREFIX) && url.endsWith('/config.json')
-    ? join(repoRoot, 'demos', url.slice(DEMO_PREFIX.length))
+  if (!url.endsWith('/config.json')) {
+    return undefined
+  }
+  if (url.startsWith(DEMO_PREFIX)) {
+    return join(repoRoot, 'demos', url.slice(DEMO_PREFIX.length))
+  }
+  return url.startsWith(TEST_DATA_PREFIX)
+    ? join(repoRoot, 'products', 'jbrowse-web', url)
     : undefined
 }
 
@@ -64,9 +79,11 @@ for (const file of docFiles(docsDir)) {
     if (path === undefined) {
       problems.push(
         `  ${where}`,
-        `    → config=${configUrl} is not a demos/ config this repo publishes,`,
-        `      so nothing here can say the link opens. Point at one, or drop`,
-        `      \`config=\` and keep the Config/CLI tabs.\n`,
+        `    → config=${configUrl} is not a config this repo publishes, so`,
+        `      nothing here can say the link opens. Use a`,
+        `      https://jbrowse.org/demos/<name>/config.json or a relative`,
+        `      test_data/<name>/config.json, or drop \`config=\` and keep the`,
+        `      Config/CLI tabs.\n`,
       )
       return
     }

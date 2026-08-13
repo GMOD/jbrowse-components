@@ -121,16 +121,25 @@ removing the skip.
   would claim to reproduce the block while reproducing part of it. So a page
   showing a whole config keeps its session in a second fence rather than tagging
   the first. Both checks say which case a block fell into.
-- **Add `config=<url>` to a session fence when a hosted config serves it** —
-  ` ```json session config=https://jbrowse.org/demos/x/config.json ` — and the
+- **Add `config=` to a session fence when a published config serves it** and the
   block grows a third tab, a live link that opens the session in the app
   (`&session=json-`, the snapshot form, which is what a `defaultSession` is).
-  Opt-in rather than automatic because most doc sessions illustrate a config
-  nobody hosts, and a dead live link is worse than none. `check-session-urls`
-  resolves the URL back to its `demos/<name>/config.json` **in this repo** and
+  Opt-in rather than automatic because plenty of doc sessions illustrate a
+  config nobody hosts, and a dead live link is worse than none. **There are two
+  published forms and the one to reach for is usually the second**, since the
+  tutorials' own data mostly lives there rather than in `demos/`:
+  - ` ```json session config=https://jbrowse.org/demos/x/config.json ` ←
+    `demos/x/config.json`, a manual `deploy-demo.sh` push.
+  - ` ```json session config=test_data/x/config.json ` ←
+    `products/jbrowse-web/test_data/x/`, which `push.yml` syncs to
+    `code/jb2/ main/` on every commit to main. Relative, resolved against
+    `CODE_BASE`, and what the figure specs' own live links already use.
+
+  `check-session-urls` resolves either back to its source **in this repo** and
   fails if the session names a track or assembly the config lacks — the failure
   worth gating, since JBrowse opens such a session without the track and says
   nothing.
+
 - **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`.
 - **`user_guides/` drives the UI, `config_guides/` shows the JSON.** When a
   config guide starts explaining a concept, that section belongs in the user
