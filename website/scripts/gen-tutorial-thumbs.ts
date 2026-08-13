@@ -1,4 +1,4 @@
-import { readFile, readdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -21,10 +21,16 @@ import { TUTORIAL_NO_THUMB } from '../src/lib/guide-categories.ts'
 // docs/tutorials/index.astro), not a stand-in image.
 //
 // The script regenerates exactly the keys listed here and leaves any other
-// on-disk thumb alone (reported as unmanaged). `--check` fails if a managed thumb
-// is stale and runs in push.yml beside gen-gallery-links --check: figures churn
-// hard, and nothing else notices when a regenerated figure leaves its card
-// behind — four cards had silently drifted before that gate existed.
+// on-disk thumb alone (reported as unmanaged). `dev`, `build` and `index` run
+// it, and the output is gitignored and excluded from the figure store, so a
+// card is recomputed from whatever its source figure currently is and there is
+// no second copy to drift. It used to be stored with a `--check` gate instead,
+// and figures churn hard enough that the gate reddened main on three separate
+// pushes in one day — see isDerivedFigure in figure-store.ts.
+//
+// What this script still fails on is structural and cannot be recomputed: a
+// spec whose page was renamed, a tutorial with no card, a spec naming a source
+// figure that does not exist.
 
 interface ThumbSpec {
   // Source figure under static/img (the PNG the tutorial embeds).
@@ -433,7 +439,11 @@ const DEFAULT_QUALITY = 82
 
 const here = dirname(fileURLToPath(import.meta.url))
 const imgDir = join(here, '..', 'static', 'img')
+// Created here rather than assumed: nothing installs this directory any more.
+// `figures:pull` used to, as a side effect of writing thumbs into it, and that
+// is the one thing a fresh clone would otherwise have to have done first.
 const thumbDir = join(imgDir, 'tutorial-thumbs')
+await mkdir(thumbDir, { recursive: true })
 
 async function render(spec: ThumbSpec) {
   const input = sharp(join(imgDir, spec.src))
@@ -459,9 +469,7 @@ async function render(spec: ThumbSpec) {
     .toBuffer()
 }
 
-const check = process.argv.includes('--check')
 const managed = new Set<string>()
-let stale = 0
 
 // A key here is a card key, and nothing downstream says so: index.astro looks a
 // thumb up BY key, so a spec whose page moved or was renamed keeps rendering a
@@ -525,11 +533,6 @@ for (const [key, spec] of Object.entries(THUMB_SPECS)) {
     console.log(`≈ ${key} (unchanged)`)
     continue
   }
-  if (check) {
-    console.error(`✗ ${key} is stale — run \`pnpm gen:tutorial-thumbs\``)
-    stale++
-    continue
-  }
   await writeFile(out, next)
   console.log(`✓ ${key} (${prev ? 'updated' : 'created'})`)
 }
@@ -538,8 +541,4 @@ for (const file of await readdir(thumbDir)) {
   if (file.endsWith('.webp') && !managed.has(file)) {
     console.log(`· ${file} (unmanaged — hand-made, add a spec to manage it)`)
   }
-}
-
-if (stale > 0) {
-  process.exit(1)
 }

@@ -14,6 +14,14 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 - `pnpm figures:push` after a regen, then commit `figures.lock`. Pass `--filter`
   in a shared worktree — a bare push rewrites the lock from every figure on
   disk, including another agent's.
+- **A figure cropped from another figure is never stored.** The tutorial cards,
+  the homepage images and the gallery thumbs are computed by
+  `pnpm gen:derived-figures`, which `dev`, `build` and `index` run — so
+  republishing a figure cannot leave a stale crop behind, because there is no
+  copy of the crop anywhere. Add one and it must be named in `isDerivedFigure`
+  (`scripts/figure-store.ts`); gen-home-images throws if it is not, since an
+  unnamed output would silently become a stored figure again. Storing them is
+  what this replaced, and it reddened main three times in one day.
 - **Retiring a figure: drop its lock line in the same commit, and delete the PNG
   LAST.** `push --filter --allow-deletions` does express a removal (a selected
   name with no file on disk diffs as `removed`), but every worktree's

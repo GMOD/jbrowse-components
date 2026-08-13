@@ -110,20 +110,20 @@ const GENERATORS: Generator[] = [
   { name: 'jbrowse-img doc', argv: web('generate-img-doc.ts') },
   { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
   { name: 'gallery links', argv: web('gen-gallery-links.ts') },
+  // The tutorial cards and homepage images used to be gated here. They are
+  // cropped from other figures, so a figure republished without them left this
+  // check failing on bytes nobody had written — the fix was always the same
+  // mechanical regenerate-and-push. They are computed by `website`'s dev, build
+  // and index now, and the store skips them (isDerivedFigure in
+  // figure-store.ts). Nothing derived from a figure belongs in this list.
   {
-    // Cards are cropped from the figures the tutorials embed, and nothing
-    // regenerates them on a figure change. Four had drifted from figures
-    // recommitted days later before this gate existed.
-    name: 'tutorial card thumbnails',
-    argv: web('gen-tutorial-thumbs.ts'),
-  },
-  { name: 'homepage images', argv: web('gen-home-images.ts') },
-  {
-    // Same reason as the tutorial cards above, one figure smaller: the social
-    // card is rendered from the wordmark outlines, the inline logo paths and a
-    // handful of layout constants, and nothing re-rendered it when those
-    // changed. It had no script entry, no autogen entry and no CI step — a
-    // by-hand `node website/scripts/generate-og-image.ts` and the honour system.
+    // The social card is NOT that: it is rendered from the wordmark outlines,
+    // the inline logo paths and a handful of layout constants — all tracked in
+    // git, none of them figures — so it can only go stale against a source this
+    // same commit changed, and generating it at build would mean a headless
+    // renderer in every website build. It had no script entry, no autogen entry
+    // and no CI step before this — a by-hand `node
+    // website/scripts/generate-og-image.ts` and the honour system.
     name: 'social card image',
     argv: web('generate-og-image.ts'),
   },

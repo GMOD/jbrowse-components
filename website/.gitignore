@@ -17,12 +17,18 @@ static/img/**/*.tmp
 # `pnpm build` straight into dist/ for production. Never commit it.
 static/pagefind/
 
-# gallery card thumbnails, derived from the committed figures by
-# `pnpm gen:gallery-thumbs` (which `dev` and `build` run for you). Not committed:
-# they are ~3.4MB regenerated from files already in the repo, and the figures
-# they derive from churn hard enough (517 revisions in three months) that
-# tracking them would add ~160MB/yr of undeltifiable binary history.
+# card thumbnails and homepage images, cropped from the figures by
+# `pnpm gen:derived-figures` (which `dev`, `build` and `index` run for you).
+# Neither committed nor pushed to the figure store: they are regenerated from
+# files the repo already has, the figures they derive from churn hard (517
+# revisions in three months), and a stored copy of a crop is a copy that goes
+# stale the next time its source moves. figure-store.ts's isDerivedFigure is the
+# half of this rule the store reads; these lines are the half git reads.
 static/img/gallery-thumbs/
+static/img/tutorial-thumbs/
+static/img/home-gallery/
+static/img/screenshot.webp
+static/img/desktop-available-genomes.webp
 
 # what the last `pnpm screenshots` run noticed, written by screenshot-report.ts
 # and read by review-screenshots-web to mark specs that failed to render or

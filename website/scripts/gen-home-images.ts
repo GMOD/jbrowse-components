@@ -1,8 +1,10 @@
-import { readFile, readdir, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import sharp from 'sharp'
+
+import { isDerivedFigure } from './figure-store.ts'
 
 // Regenerates the homepage hero (static/img/screenshot.webp) and the gallery
 // preview thumbs (static/img/home-gallery/<key>.webp) from committed figure
@@ -16,7 +18,9 @@ import sharp from 'sharp'
 // stays framed. The hero keeps its chrome — the whole point of that image is
 // that it looks like an application.
 //
-// `--check` fails if an output is stale, mirroring gen:tutorial-thumbs.
+// Output is gitignored and excluded from the figure store, and `dev`, `build`
+// and `index` regenerate it — the same arrangement, for the same reason, as
+// gen-tutorial-thumbs.ts and gen-gallery-thumbs.ts.
 
 interface ImageSpec {
   // Source figure under static/img.
@@ -147,7 +151,9 @@ const DEFAULT_QUALITY = 82
 
 const here = dirname(fileURLToPath(import.meta.url))
 const imgDir = join(here, '..', 'static', 'img')
+// Created here rather than assumed — see the same line in gen-tutorial-thumbs.
 const thumbDir = join(imgDir, 'home-gallery')
+await mkdir(thumbDir, { recursive: true })
 
 async function render(spec: ImageSpec) {
   const input = sharp(join(imgDir, spec.src))
@@ -175,19 +181,22 @@ async function render(spec: ImageSpec) {
     .toBuffer()
 }
 
-const check = process.argv.includes('--check')
-let stale = 0
-
+// Every output has to be one the store knows to skip, or it becomes a figure
+// with a lock line — and a lock line for something computed is the staleness
+// this arrangement exists to remove. A new DERIVED key is the case that reaches
+// here: it writes a loose name beside its own source, where the exclusion is a
+// list rather than a directory.
 async function emit(label: string, out: string, spec: ImageSpec) {
+  const rel = relative(imgDir, out)
+  if (!isDerivedFigure(rel, 'website/static/img')) {
+    throw new Error(
+      `${rel} is not named as derived — add it to derivedFigureFiles in figure-store.ts, or write it under one of the derived directories`,
+    )
+  }
   const next = await render(spec)
   const prev = await readFile(out).catch(() => undefined)
   if (prev?.equals(next)) {
     console.log(`≈ ${label} (unchanged)`)
-    return
-  }
-  if (check) {
-    console.error(`✗ ${label} is stale — run \`pnpm gen:home-images\``)
-    stale++
     return
   }
   await writeFile(out, next)
@@ -209,8 +218,4 @@ for (const file of await readdir(thumbDir)) {
   if (file.endsWith('.webp') && !managed.has(file)) {
     console.log(`· ${file} (unmanaged — add a spec to manage it)`)
   }
-}
-
-if (stale > 0) {
-  process.exit(1)
 }

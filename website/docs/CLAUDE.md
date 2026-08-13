@@ -128,10 +128,10 @@ removing the skip.
   config nobody hosts, and a dead live link is worse than none. **There are two
   published forms and the one to reach for is usually the second**, since the
   tutorials' own data mostly lives there rather than in `demos/`:
-  - ` ```json session config=https://jbrowse.org/demos/x/config.json ` ←
-    `demos/x/config.json`, a manual `deploy-demo.sh` push.
-  - ` ```json session config=test_data/x/config.json ` ←
-    `products/jbrowse-web/test_data/x/`, which `push.yml` syncs to
+  - ` ```json session config=https://jbrowse.org/demos/<name>/config.json ` ←
+    `demos/<name>/config.json`, a manual `deploy-demo.sh` push.
+  - ` ```json session config=test_data/<name>/config.json ` ←
+    `products/jbrowse-web/test_data/<name>/`, which `push.yml` syncs to
     `code/jb2/ main/` on every commit to main. Relative, resolved against
     `CODE_BASE`, and what the figure specs' own live links already use.
 

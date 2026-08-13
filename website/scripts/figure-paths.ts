@@ -58,7 +58,7 @@ export function listFigureFiles(): string[] {
         const rel = prefix ? `${prefix}/${entry.name}` : entry.name
         if (entry.isDirectory()) {
           walk(`${dir}/${entry.name}`, rel)
-        } else if (figureExtRe.test(entry.name) && !isExcluded(rel)) {
+        } else if (figureExtRe.test(entry.name) && !isExcluded(rel, root)) {
           out.push(`${root}/${rel}`)
         }
       }

@@ -73,14 +73,55 @@ export const figureContentTypes: Record<string, string> = {
   '.ico': 'image/x-icon',
 }
 
-// Derived-and-gitignored output that happens to live under a figure root.
-// gallery-thumbs is regenerated from figures already in the store by
-// gen-gallery-thumbs.ts; the other two are transient by construction (see
-// website/.gitignore, which is where these rules were already written down).
-export function isExcluded(relFromRoot: string): boolean {
+// A figure COMPUTED from other figures — a card crop, a homepage thumb, a webp
+// twin — and therefore not something the store holds. Each is a pure function of
+// a figure the store does have plus a spec in git, so the bytes carry no
+// information the repo lacks, and the generators below run from `dev`, `build`
+// and `index`.
+//
+// Storing them instead is what this replaced, and it failed the same way every
+// time: a figure republished WITHOUT its derivatives — a review pass, a weekly
+// sweep, anything calling `figures push` — left the stored crop describing the
+// old picture, `autogen --check` reddened main a push later, and the fix was
+// always the mechanical regenerate-and-push. Three separate pushes on
+// 2026-08-13 alone. Nothing derived can go stale against its source if no copy
+// of it is kept, which is the argument gen-gallery-thumbs.ts had already made
+// for its own output and is now the rule for all of them.
+//
+// The prefixes are directories the generators own outright. The two loose names
+// are gen-home-images.ts's, whose output sits beside its sources because the
+// homepage and the blog have linked `/img/screenshot.webp` for years; that
+// generator asserts every path it writes is named here, so a new one cannot
+// quietly become a stored figure.
+const derivedFigureDirs = [
+  'gallery-thumbs/',
+  'tutorial-thumbs/',
+  'home-gallery/',
+]
+const derivedFigureFiles = new Set([
+  'screenshot.webp',
+  'desktop-available-genomes.webp',
+])
+
+// Scoped to the website root rather than matched anywhere: products/jbrowse-img
+// is a second corpus of hand-captured figures that happens to share this
+// namespace, and a `screenshot.webp` appearing there is a figure to store, not
+// a crop to recompute.
+export function isDerivedFigure(relFromRoot: string, root: string): boolean {
+  return (
+    root === 'website/static/img' &&
+    (derivedFigureDirs.some(d => relFromRoot.startsWith(d)) ||
+      derivedFigureFiles.has(relFromRoot))
+  )
+}
+
+// What lives under a figure root without being a figure: the derived output
+// above, and files transient by construction (see website/.gitignore, which is
+// where the latter rules were already written down).
+export function isExcluded(relFromRoot: string, root: string): boolean {
   const base = relFromRoot.slice(relFromRoot.lastIndexOf('/') + 1)
   return (
-    relFromRoot.startsWith('gallery-thumbs/') ||
+    isDerivedFigure(relFromRoot, root) ||
     base.startsWith('debug_') ||
     base.endsWith('.tmp')
   )
