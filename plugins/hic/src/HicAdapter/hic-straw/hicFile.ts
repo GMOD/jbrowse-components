@@ -167,7 +167,10 @@ export default class HicFile {
   private version = 0
   private genomeId = ''
   private footerPosition = 0
-  private normExpectedValueVectorsPosition: number | undefined
+  // Where the file's normalization data begins, and so also where a file
+  // carrying none of it ends. Public for `noNormalization.test.ts`, which cuts
+  // the real test file there to make that second shape.
+  normExpectedValueVectorsPosition: number | undefined
   private normVectorIndex: Record<string, BlockIndexEntry> | undefined
 
   private chromosomes: Chromosome[] = []
@@ -743,6 +746,11 @@ export default class HicFile {
   }
 
   async getNormVectorIndex() {
+    // Before the version gate, not after it: `version` is 0 until the header is
+    // parsed, so calling this first — which `getNormalizationOptions` on its own
+    // does — answered "no index" for every file rather than for a v5 one. The
+    // adapter's `getHeader` awaits `setup` first and so never saw it.
+    await this.init()
     if (this.version >= 6) {
       // Memoize the *attempt*, not just a populated result. A legal (if
       // uncommon) v8 file with no norm vectors leaves `normVectorIndex`
@@ -781,12 +789,14 @@ export default class HicFile {
       try {
         await this.readNormExpectedValuesAndNormVectorIndex()
       } catch (e) {
-        if (isCode416(e)) {
-          // Expected if file does not contain norm vectors
-          this.normExpectedValueVectorsPosition = undefined
-        } else {
-          console.error(e)
-        }
+        // Not "expected if the file has no norm vectors" — that case never
+        // arrives here. hic-straw's own IO threw a 416 for a read past EOF and
+        // this caught it; `generic-filehandle2` deliberately turns a 416 into an
+        // empty read so callers detect EOF from a short buffer instead of
+        // needing a stat, and LocalFile/BlobFile clamp for the same reason. So
+        // the read side owns that case now, and anything reaching here is a real
+        // failure worth printing.
+        console.error(e)
       }
     }
   }
@@ -858,6 +868,16 @@ export default class HicFile {
     const version = this.version
     const file = new BufferedFile({ file: this.file, size: 256000 })
     const data = await file.read(start, INT)
+    // A file with no normalization at all ends where this section would start,
+    // so the count this is about to read is past EOF. That is the same "no norm
+    // vectors" case `readNormExpectedValuesAndNormVectorIndex` guards its own
+    // read for, and it has to be caught HERE too, because this runs first:
+    // a v9 file that records no norm-vector-index position takes the v8
+    // discovery path, and that path starts by skipping a section that isn't
+    // there. Answering `start` leaves the caller's guard to do the rest.
+    if (data.byteLength < INT) {
+      return start
+    }
     const binaryParser = new BinaryParser(new DataView(data))
     const nEntries = binaryParser.getInt() // Total # of expected value chunks
 
@@ -909,13 +929,4 @@ export default class HicFile {
   getFileChrName(chrAlias: string) {
     return this.chrAliasTable[chrAlias] ?? chrAlias
   }
-}
-
-function isCode416(e: unknown) {
-  return (
-    typeof e === 'object' &&
-    e !== null &&
-    'code' in e &&
-    (e.code === '416' || e.code === 416)
-  )
 }
