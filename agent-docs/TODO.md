@@ -49,6 +49,7 @@ before anyone noticed.
 | [Reads on the derivative allele](#reads-on-the-reconstructed-derivative-allele) | cancer SV | two open halves; the middle one is already built |
 | [PanSN prefixes in the add-track form](#offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form) | comparative | the error half shipped; this is the discovery half |
 | [Synteny clicked outline in tiled mode](#the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode) | synteny | get the visual call — hull silhouette or per-tile |
+| [Worker pool termination is untested](#nothing-verifies-the-rpc-worker-pool-is-terminated-on-a-plugin-reload) | jbrowse-web, browser tests | find out why no worker is constructed in the browser suite at all |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | one streaming pass over the TAF, then an S3 write |
@@ -758,6 +759,32 @@ implementer's call, hence here rather than in the small-items section.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
+
+### Nothing verifies the RPC worker pool is terminated on a plugin reload
+
+`disposePluginManager` calls `rpcManager.destroy()` so a superseded root's
+worker threads do not outlive it, and nothing tests the *effect* — the wiring is
+pinned by a spy (`components/workerPoolTeardown.test.ts`), because the bug was
+that nothing invoked it, but no test observes a thread actually dying. jsdom has
+no workers at all, and the
+browser suite cannot see these ones: `page.workers()` and `browser.targets()`
+both report none of jbrowse's (targets are `["browser","page","page"]` with a
+BAM track open and painting), and wrapping `window.Worker` through
+`evaluateOnNewDocument` counts **zero constructed** — so the volvox tracks the
+suite opens are not reaching a worker in that harness at all. All three were
+tried while writing `browser-tests/suites/plugin-reload.ts`; the assertion was
+dropped rather than shipped passing-but-blind.
+
+Two things to establish, in this order. First, why no worker is constructed —
+`config.json`'s tracks take the root default (`WebWorkerRpcDriver`), so either
+the production bundle is falling back to main-thread RPC in headless Chrome or
+the worker is constructed somewhere the page-level wrapper does not see. That
+answer decides the second: whether the browser suite has been exercising the
+worker RPC path at all, which is a much larger coverage question than this
+entry. `volvox_cram_webworker` names the driver explicitly and is the track to
+reach for, but it sits under the "RPC Driver Test" category, and `openTrack`
+only builds `htsTrackLabel-Tracks,<id>` testids, so it needs the category
+expanded first.
 
 ### Cut WebGL2 contexts per display
 
