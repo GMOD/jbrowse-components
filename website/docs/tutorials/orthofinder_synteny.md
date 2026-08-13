@@ -58,11 +58,9 @@ to one or two chicken chromosomes, and to more zebrafish ones.
 <Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish, all four bands off one vertebrates_orthogroups track. Gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
 Every band draws one line per ortholog, so it resolves into wedges only where a
-chromosome's orthologs mostly land on one chromosome of the row below, and the
-build script prints that share for each adjacent pair. Where it is near a third
-the typical chromosome answers to three or more partners, and no ordering of
-either row can make that band diagonal. The gar to zebrafish band is the low
-one, on the far side of the teleost genome duplication.
+chromosome's orthologs mostly land on one chromosome of the row below; the build
+script prints that share for each adjacent pair. The gar to zebrafish band, past
+the teleost duplication, is the one that never resolves.
 
 ## Stacking the wheat lineage
 
@@ -84,9 +82,7 @@ which chromosomes are homoeologs.
 The rows also share one bp/px rather than each being fitted to the pane width,
 which is **Show all regions at same scale** in the view menu and `sameScale` in
 a session spec. A row's drawn length is then its genome size: the diploid donors
-are drawn short and the hexaploid fills the frame. Fitted individually every row
-is the same length, which draws a false one-to-one correspondence between the
-donor and the hexaploid.
+are drawn short and the hexaploid fills the frame.
 
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 
