@@ -569,3 +569,102 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `startOff`.
+export function getInstanceStartOff(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceStartOff(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `endOff`.
+export function getInstanceEndOff(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceEndOff(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `y`.
+export function getInstanceY(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceY(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `flags`.
+export function getInstanceFlags(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceFlags(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}
+
+// Instance `i`'s `mapq`.
+export function getInstanceMapq(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 4]!
+}
+
+export function setInstanceMapq(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}
+
+// Instance `i`'s `insertSize`.
+export function getInstanceInsertSize(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 5]!
+}
+
+export function setInstanceInsertSize(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 5] = v
+}
+
+// Instance `i`'s `strand`.
+export function getInstanceStrand(i32: Int32Array, i: number) {
+  return i32[i * INSTANCE_STRIDE_WORDS + 6]!
+}
+
+export function setInstanceStrand(i32: Int32Array, i: number, v: number) {
+  i32[i * INSTANCE_STRIDE_WORDS + 6] = v
+}
+
+// Instance `i`'s `tagColor`.
+export function getInstanceTagColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 7]!
+}
+
+export function setInstanceTagColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 7] = v
+}
+
+// Instance `i`'s `edgeFlags`.
+export function getInstanceEdgeFlags(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 8]!
+}
+
+export function setInstanceEdgeFlags(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 8] = v
+}
+
+// Instance `i`'s `interchrom`.
+export function getInstanceInterchrom(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 9]!
+}
+
+export function setInstanceInterchrom(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 9] = v
+}
+
+// Instance `i`'s `colorCategory`.
+export function getInstanceColorCategory(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 10]!
+}
+
+export function setInstanceColorCategory(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 10] = v
+}

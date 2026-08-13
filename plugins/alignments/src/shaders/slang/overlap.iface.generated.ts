@@ -458,3 +458,30 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `startOff`.
+export function getInstanceStartOff(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceStartOff(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `endOff`.
+export function getInstanceEndOff(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceEndOff(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `y`.
+export function getInstanceY(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceY(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}

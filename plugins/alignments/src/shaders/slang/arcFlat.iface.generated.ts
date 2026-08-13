@@ -464,3 +464,48 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `x1`.
+export function getInstanceX1(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceX1(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `x2`.
+export function getInstanceX2(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceX2(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `yBp`.
+export function getInstanceYBp(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceYBp(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `dashed`.
+export function getInstanceDashed(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceDashed(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}
+
+// Instance `i`'s `lineWidthPx`.
+export function getInstanceLineWidthPx(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 4]!
+}
+
+export function setInstanceLineWidthPx(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}

@@ -2,6 +2,11 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
+import {
+  INSTANCE_STRIDE_WORDS,
+  setInstanceCount,
+  setInstancePosition,
+} from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 import { buildResultRegions } from '../regionOffsets.ts'
 import { computeCountStats } from './countStats.ts'
 
@@ -60,10 +65,16 @@ export async function executeRenderHicData({
   // on. Everything downstream, on both sides of the worker boundary, reads this.
   const resultRegions = buildResultRegions(regions, viewBlocks, bpPerPx, res)
 
-  // `contactBin1`/`contactBin2`/`counts` and the `pairs` run table all arrive
-  // from the adapter in their final layout and are forwarded untouched — only
-  // the projected positions are built here.
-  const positions = new Float32Array(numContacts * 2)
+  // The adapter's `contactBin1`/`contactBin2`/`counts` are worker-local scratch
+  // now: this loop is the only reader, and what leaves the worker is the packed
+  // instance buffer it writes. Only the `pairs` run table is forwarded
+  // untouched.
+  //
+  // Written through the shader's own generated setters rather than a literal
+  // stride, so a field added to or retyped in `HicInstance` is a compile error
+  // here instead of a silently mis-strided buffer. See
+  // `HicDataResult.instances`.
+  const instances = new Float32Array(numContacts * INSTANCE_STRIDE_WORDS)
 
   for (const { region1Idx, region2Idx, start, end } of pairs) {
     // Every layout term below is pair-invariant, so it resolves once per run
@@ -93,16 +104,15 @@ export async function executeRenderHicData({
       // symmetric, `contact(a,b) === contact(b,a)`. Cross-region pairs can't
       // invert (each stays in its own region), so this only fires when both
       // endpoints share one reversed region.
-      positions[i * 2] = Math.min(m1, m2)
-      positions[i * 2 + 1] = Math.max(m1, m2)
+      setInstancePosition(instances, i, Math.min(m1, m2), Math.max(m1, m2))
+      setInstanceCount(instances, i, counts[i]!)
     }
   }
 
-  const { maxScore, percentile95 } = computeCountStats(counts, numContacts)
+  const { maxScore, percentile95 } = computeCountStats(instances, numContacts)
 
   const result: HicDataResult = {
-    positions,
-    counts,
+    instances,
     numContacts,
     maxScore,
     percentile95,
@@ -110,15 +120,8 @@ export async function executeRenderHicData({
     resolution: res,
     appliedNormalization,
     regions: resultRegions,
-    contactBin1,
-    contactBin2,
     pairRuns: pairs,
   }
-  // Move the per-contact buffers zero-copy instead of structured-cloning them.
-  return rpcResult(result, [
-    positions.buffer,
-    counts.buffer,
-    contactBin1.buffer,
-    contactBin2.buffer,
-  ]) as unknown as HicDataResult
+  // Move the one per-contact buffer zero-copy instead of structured-cloning it.
+  return rpcResult(result, [instances.buffer]) as unknown as HicDataResult
 }

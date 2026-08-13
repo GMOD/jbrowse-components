@@ -1,5 +1,6 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
+import { packTestInstances } from '../../testInstances.ts'
 import { GpuHicRenderer, HIC_PASSES } from './GpuHicRenderer.ts'
 // the packed layout is the generated shader's, so assert against it directly
 import { INSTANCE_STRIDE_BYTES } from './shaders/hic.iface.generated.ts'
@@ -11,8 +12,7 @@ import type {
 
 function makeData(overrides?: Partial<HicUploadData>): HicUploadData {
   return {
-    positions: new Float32Array([10, 20]),
-    counts: new Float32Array([5]),
+    instances: packTestInstances([10, 20], [5]),
     numContacts: 1,
     binWidth: 10,
     ...overrides,
@@ -37,23 +37,26 @@ describe('GpuHicRenderer', () => {
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
 
-    renderer.uploadData({
-      positions: new Float32Array([10, 20, 30, 40]),
-      counts: new Float32Array([5, 15]),
-      numContacts: 2,
-      binWidth: 10,
-    })
+    const uploads = jest.spyOn(hal, 'uploadBuffer')
+    const instances = packTestInstances([10, 20, 30, 40], [5, 15])
+    renderer.uploadData({ instances, numContacts: 2, binWidth: 10 })
 
     const buf = hal.getBuffer(0, 'main')
     expect(buf).toBeDefined()
     expect(buf!.count).toBe(2)
     expect(buf!.data.byteLength).toBe(2 * INSTANCE_STRIDE_BYTES)
 
-    const f32 = new Float32Array(buf!.data)
+    // Zero-copy: the worker's payload IS the vertex buffer, so the renderer has
+    // to hand the HAL that exact object rather than re-interleaving it first —
+    // the O(numContacts) main-thread pack this replaced. Asserted on the
+    // argument, not on `buf.data`, because MockHal copies on upload exactly as
+    // both real HALs do.
+    expect(uploads.mock.calls[0]![2]).toBe(instances)
+
     // first contact: px=10, py=20, count=5.0
-    expect(f32[0]).toBe(10)
-    expect(f32[1]).toBe(20)
-    expect(f32[2]).toBe(5)
+    expect(instances[0]).toBe(10)
+    expect(instances[1]).toBe(20)
+    expect(instances[2]).toBe(5)
   })
 
   it('deletes region on empty upload', () => {
@@ -61,16 +64,14 @@ describe('GpuHicRenderer', () => {
     const renderer = new GpuHicRenderer(hal)
 
     renderer.uploadData({
-      positions: new Float32Array([10, 20]),
-      counts: new Float32Array([5]),
+      instances: packTestInstances([10, 20], [5]),
       numContacts: 1,
       binWidth: 10,
     })
     expect(hal.getBufferCount(0, 'main')).toBe(1)
 
     renderer.uploadData({
-      positions: new Float32Array([]),
-      counts: new Float32Array([]),
+      instances: packTestInstances([], []),
       numContacts: 0,
       binWidth: 10,
     })

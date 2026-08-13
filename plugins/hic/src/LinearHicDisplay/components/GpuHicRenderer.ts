@@ -44,14 +44,18 @@ export class GpuHicRenderer
       this.hal.deleteRegion(REGION_KEY)
       return
     }
-    // `positions` is already the shader's `float2 position` field and `counts`
-    // its `float count`, so the generated SoA packer applies directly — no
-    // hand-rolled interleave to keep in step with the .slang layout.
-    const buf = hicShader.packInstances(
-      { position: data.positions, count: data.counts },
+    // Zero-copy: the worker already packed this in the shader's own instance
+    // layout (`HicDataResult.instances`), so there is nothing to interleave —
+    // the buffer that arrived over the RPC boundary is the vertex buffer. This
+    // used to call the generated `packInstances` over parallel
+    // positions/counts arrays, which cost a full O(numContacts) rebuild and a
+    // 12-byte-per-contact allocation on the main thread on every fetch.
+    this.hal.uploadBuffer(
+      REGION_KEY,
+      PASS_MAIN,
+      data.instances,
       data.numContacts,
     )
-    this.hal.uploadBuffer(REGION_KEY, PASS_MAIN, buf, data.numContacts)
   }
 
   uploadColorRamp(colors: Uint8Array) {

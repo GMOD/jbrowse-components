@@ -1,3 +1,5 @@
+import { getInstanceCount } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
+
 /**
  * Swap two slots. Pulled out so the partition below reads as the algorithm
  * rather than as six index expressions.
@@ -78,8 +80,13 @@ function selectNth(a: Float32Array, n: number, k: number) {
 }
 
 /**
- * Color-scale saturation candidates: the maximum and the 95th percentile of
- * `counts`, both scored off its **finite** subset.
+ * Color-scale saturation candidates: the maximum and the 95th percentile of the
+ * contact counts, both scored off their **finite** subset.
+ *
+ * Reads the counts out of the packed instance buffer at stride rather than
+ * taking a contiguous array, because after packing there is no contiguous copy
+ * to take — and this needs its own copy regardless (selection permutes its
+ * input), so the compaction pass below doubles as the gather.
  *
  * Filtering non-finites is not tidiness. NaN is the `.hic` dense-block "no
  * value" marker and a tiny normalization divisor yields Infinity, and both
@@ -100,12 +107,15 @@ function selectNth(a: Float32Array, n: number, k: number) {
  * does not get inlined and reads ~14x slower than it does in a plain V8 run,
  * which is enough to point at the wrong bottleneck entirely.
  */
-export function computeCountStats(counts: Float32Array, numContacts: number) {
+export function computeCountStats(
+  instances: Float32Array,
+  numContacts: number,
+) {
   const finite = new Float32Array(numContacts)
   let n = 0
   let maxScore = 0
   for (let i = 0; i < numContacts; i++) {
-    const c = counts[i]!
+    const c = getInstanceCount(instances, i)
     if (Number.isFinite(c)) {
       if (n === 0 || c > maxScore) {
         maxScore = c

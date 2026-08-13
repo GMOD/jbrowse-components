@@ -309,18 +309,104 @@ function instanceLayoutLines(attrs: InstanceAttr[]) {
   return lines
 }
 
-// Names `packInstances` binds in its own scope, either as a parameter/local or
-// (for the two stride constants it references) at module scope. An instance
-// field sharing one of them is shadowed by the binding: `count` was caught and
-// renamed around, but a field named `o` or `i` would silently pack NaN, since
-// the loop bindings win over the destructured array and `o[i]` is a number.
-// Fail at emit time instead, where the message can name the field.
-const PACK_INSTANCES_RESERVED = new Set([
+/**
+ * Per-field get/set over a packed instance buffer.
+ *
+ * `packInstances` covers the bulk case — parallel arrays in, one interleaved
+ * buffer out — but not the two that read or write the buffer an instance at a
+ * time: a worker projecting a result straight into the vertex layout, and the
+ * Canvas2D/SVG fallback iterating the same buffer the GPU draws from. Those
+ * sites otherwise spell `f32[i * INSTANCE_STRIDE_WORDS + INSTANCE_OFFSET_F32.x]`
+ * inline, which is the hand-rolled interleave `packInstances` exists to delete,
+ * written per access instead of per buffer.
+ *
+ * The view is bound to the field here, same as in the packer, so a `.slang`
+ * field that changes type moves its accessor's parameter type and fails to
+ * compile at the call site — rather than reinterpreting the bits, which is
+ * exactly what the flat `FIELD_OFFSET_F32` map described above did.
+ *
+ * Deliberately one function per field rather than a whole-instance struct
+ * reader: a struct reader allocates, and these run in loops over 10^5-10^6
+ * instances. A one-line typed-array index is what V8 inlines.
+ */
+function instanceAccessorLines(attrs: InstanceAttr[]) {
+  const lines: string[] = []
+  for (const a of attrs) {
+    const view = viewOf(a.type)
+    const array = VIEW_ARRAY[view]
+    const word = a.offsetBytes / 4
+    const comps = a.type.kind === 'scalar' ? 1 : a.type.elementCount
+    const Name = a.name.charAt(0).toUpperCase() + a.name.slice(1)
+    const at =
+      word === 0
+        ? 'i * INSTANCE_STRIDE_WORDS'
+        : `i * INSTANCE_STRIDE_WORDS + ${word}`
+    if (comps === 1) {
+      lines.push(
+        `// Instance \`i\`'s \`${a.name}\`.`,
+        // #shaderExport getInstance<Field> | reads one instance field out of a packed buffer, through that field's own typed view
+        `export function getInstance${Name}(${view}: ${array}, i: number) {`,
+        `  return ${view}[${at}]!`,
+        '}',
+        '',
+        // #shaderExport setInstance<Field> | writes one instance field into a packed buffer, through that field's own typed view
+        `export function setInstance${Name}(${view}: ${array}, i: number, v: number) {`,
+        `  ${view}[${at}] = v`,
+        '}',
+        '',
+      )
+    } else {
+      lines.push(
+        `// Component \`c\` of instance \`i\`'s \`${a.name}\` (${comps} components).`,
+        // #shaderExport getInstance<Field> (vector field) | reads one component of a vector instance field; takes a component index
+        `export function getInstance${Name}(${view}: ${array}, i: number, c: number) {`,
+        `  return ${view}[${at} + c]!`,
+        '}',
+        '',
+        // #shaderExport setInstance<Field> (vector field) | writes a whole vector instance field; takes one value per component
+        `export function setInstance${Name}(`,
+        `  ${view}: ${array},`,
+        '  i: number,',
+        ...Array.from({ length: comps }, (_, c) => `  v${c}: number,`),
+        ') {',
+        `  const o = ${at}`,
+        ...Array.from(
+          { length: comps },
+          (_, c) => `  ${view}[o${c === 0 ? '' : ` + ${c}`}] = v${c}`,
+        ),
+        '}',
+        '',
+      )
+    }
+  }
+  return lines
+}
+
+// Names the instance emitters bind in their own scope, either as a
+// parameter/local or (for the two stride constants they reference) at module
+// scope. An instance field sharing one of them is shadowed by the binding:
+// `count` was caught and renamed around, but a field named `o` or `i` would
+// silently pack NaN, since the loop bindings win over the destructured array and
+// `o[i]` is a number. Fail at emit time instead, where the message can name the
+// field.
+//
+// One set for both `packInstances` and the per-field accessors, because the
+// consequence is the same shape and a second list would drift: the accessors
+// bind `c` (component index) and `v`/`v0…` (the values written), and a field
+// named `v0` would compile to `f32[o] = v0` reading its own parameter.
+const INSTANCE_EMIT_RESERVED = new Set([
   'arrays',
   'numInstances',
   'buf',
   'i',
   'o',
+  'c',
+  'v',
+  // one per component of the widest vector a Slang instance field can be
+  'v0',
+  'v1',
+  'v2',
+  'v3',
   ...VIEWS,
   'INSTANCE_STRIDE_BYTES',
   'INSTANCE_STRIDE_WORDS',
@@ -570,14 +656,15 @@ export function emitInterface(inputs: CodegenInputs) {
 
   if (vs) {
     const attrs = instanceAttrs(vs.struct, vs.source)
-    const collision = attrs.find(a => PACK_INSTANCES_RESERVED.has(a.name))
+    const collision = attrs.find(a => INSTANCE_EMIT_RESERVED.has(a.name))
     if (collision) {
       throw new Error(
         `${baseName}.slang: instance field '${collision.name}' collides with a ` +
-          `name packInstances() binds in its own scope ` +
-          `(${[...PACK_INSTANCES_RESERVED].join(', ')}). The generated packer ` +
-          `destructures every field as a local, so this one would be shadowed ` +
-          `and pack garbage. Rename the field in the .slang struct.`,
+          `name the generated instance code binds in its own scope ` +
+          `(${[...INSTANCE_EMIT_RESERVED].join(', ')}). packInstances() ` +
+          `destructures every field as a local and the per-field accessors bind ` +
+          `their index and value parameters, so this one would be shadowed and ` +
+          `read or write garbage. Rename the field in the .slang struct.`,
       )
     }
 
@@ -638,7 +725,7 @@ export function emitInterface(inputs: CodegenInputs) {
         }
       }
     }
-    lines.push('  }', '  return buf', '}', '')
+    lines.push('  }', '  return buf', '}', '', ...instanceAccessorLines(attrs))
   }
 
   if (textures && textures.length > 1) {

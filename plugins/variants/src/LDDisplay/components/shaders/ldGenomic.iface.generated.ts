@@ -89,6 +89,47 @@ export function packInstances(
   return buf
 }
 
+// Component `c` of instance `i`'s `position` (2 components).
+export function getInstancePosition(f32: Float32Array, i: number, c: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + c]!
+}
+
+export function setInstancePosition(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+) {
+  const o = i * INSTANCE_STRIDE_WORDS
+  f32[o] = v0
+  f32[o + 1] = v1
+}
+
+// Component `c` of instance `i`'s `cellSize` (2 components).
+export function getInstanceCellSize(f32: Float32Array, i: number, c: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2 + c]!
+}
+
+export function setInstanceCellSize(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+) {
+  const o = i * INSTANCE_STRIDE_WORDS + 2
+  f32[o] = v0
+  f32[o + 1] = v1
+}
+
+// Instance `i`'s `ldValue`.
+export function getInstanceLdValue(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 4]!
+}
+
+export function setInstanceLdValue(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}
+
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [
   { textureBinding: 2, samplerBinding: 3, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },

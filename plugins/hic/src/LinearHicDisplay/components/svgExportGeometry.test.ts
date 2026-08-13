@@ -1,5 +1,6 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
+import { packTestInstances } from '../../testInstances.ts'
 import { hicDataToScreen } from '../hicTransform.ts'
 import { drawHicBlocks } from './Canvas2DHicRenderer.ts'
 
@@ -22,8 +23,7 @@ function exportBin(yScalar: number) {
   drawHicBlocks(
     ctx,
     {
-      positions: new Float32Array([100, 100]),
-      counts: new Float32Array([1]),
+      instances: packTestInstances([100, 100], [1]),
       numContacts: 1,
       binWidth: 10,
     },

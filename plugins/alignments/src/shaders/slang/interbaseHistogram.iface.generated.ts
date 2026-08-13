@@ -456,3 +456,39 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `position`.
+export function getInstancePosition(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstancePosition(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `yOffset`.
+export function getInstanceYOffset(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceYOffset(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `segHeight`.
+export function getInstanceSegHeight(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceSegHeight(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `colorType`.
+export function getInstanceColorType(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceColorType(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}

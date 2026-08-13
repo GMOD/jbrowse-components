@@ -1,3 +1,9 @@
+import {
+  INSTANCE_STRIDE_WORDS,
+  getInstancePosition,
+  setInstanceCount,
+  setInstancePosition,
+} from './components/shaders/hic.iface.generated.ts'
 import { findContactAt } from './contactLookup.ts'
 
 import type { RegionPairRun } from '../HicAdapter/HicAdapter.ts'
@@ -23,19 +29,21 @@ function makeData(
 ) {
   const n = contacts.length
   const offsets = binBase.map((base, r) => r * span - base)
-  const positions = new Float32Array(n * 2)
-  const counts = new Float32Array(n)
-  const contactBin1 = new Uint32Array(n)
-  const contactBin2 = new Uint32Array(n)
+  const instances = new Float32Array(n * INSTANCE_STRIDE_WORDS)
   // region membership as runs, cut wherever the pair changes — the shape the
-  // adapter emits and the worker forwards
+  // adapter emits and the worker forwards. There are no per-contact bin columns
+  // to fill: the lookup recovers each bin from the position below, which is the
+  // round trip this suite is now also covering.
   const pairRuns: RegionPairRun[] = []
   contacts.forEach(({ r1, r2, bin1, bin2 }, i) => {
-    positions[i * 2] = (bin1 + offsets[r1]!) * W
-    positions[i * 2 + 1] = (bin2 + offsets[r2]!) * W
-    counts[i] = i + 1 // unique, so a hover identifies exactly one contact
-    contactBin1[i] = bin1
-    contactBin2[i] = bin2
+    setInstancePosition(
+      instances,
+      i,
+      (bin1 + offsets[r1]!) * W,
+      (bin2 + offsets[r2]!) * W,
+    )
+    // unique, so a hover identifies exactly one contact
+    setInstanceCount(instances, i, i + 1)
     const open = pairRuns.at(-1)
     if (open && open.region1Idx === r1 && open.region2Idx === r2) {
       open.end = i + 1
@@ -44,8 +52,7 @@ function makeData(
     }
   })
   return {
-    positions,
-    counts,
+    instances,
     numContacts: n,
     maxScore: n,
     percentile95: n,
@@ -59,19 +66,17 @@ function makeData(
       combinedOffset: offsets[r]!,
       reversed: false,
     })),
-    contactBin1,
-    contactBin2,
     pairRuns,
   } satisfies HicDataResult
 }
 
-// Hover the center of contact i's cell, in the pre-rotation space positions live
-// in — the same coordinates model.hitTest hands findContactAt.
+// Hover the center of contact i's cell, in the pre-rotation space the packed
+// positions live in — the same coordinates model.hitTest hands findContactAt.
 function hoverCenter(d: HicDataResult, i: number) {
   return findContactAt(
     d,
-    d.positions[i * 2]! + W / 2,
-    d.positions[i * 2 + 1]! + W / 2,
+    getInstancePosition(d.instances, i, 0) + W / 2,
+    getInstancePosition(d.instances, i, 1) + W / 2,
   )
 }
 

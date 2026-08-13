@@ -83,3 +83,30 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `featureIndex`.
+export function getInstanceFeatureIndex(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceFeatureIndex(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `rowIndex`.
+export function getInstanceRowIndex(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceRowIndex(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `color`.
+export function getInstanceColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}

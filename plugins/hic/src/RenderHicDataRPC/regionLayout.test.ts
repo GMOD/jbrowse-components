@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
+import { getInstancePosition } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 import { calcViewBlocks } from '../regionOffsets.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
 import { toContacts } from './testContacts.ts'
@@ -50,7 +51,11 @@ async function run(
 // back onto the genomic axis. `renderTransform` puts that axis's origin at the
 // apex, so this is where the ruler expects the cell.
 function cellLeftGenomicPx(d: HicDataResult, i: number) {
-  return (d.positions[i * 2]! + d.positions[i * 2 + 1]!) * ROT_45
+  return (
+    (getInstancePosition(d.instances, i, 0) +
+      getInstancePosition(d.instances, i, 1)) *
+    ROT_45
+  )
 }
 
 function diagonal(regionIdx: number, bin: number): TestContact {

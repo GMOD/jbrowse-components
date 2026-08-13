@@ -87,3 +87,30 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `startBp`.
+export function getInstanceStartBp(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceStartBp(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `endBp`.
+export function getInstanceEndBp(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceEndBp(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `score`.
+export function getInstanceScore(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceScore(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}

@@ -17,12 +17,15 @@ export interface HicRenderState extends HicDrawState {
 }
 
 // `binWidth` rides with the data, not the frame state: it's the px size the
-// worker packed `positions` at, so a frame can't scale bins from one payload
+// worker packed `instances` at, so a frame can't scale bins from one payload
 // against another's geometry — and it's what keeps `renderState` resolvable
 // (a bare getter must never hand back undefined) with no data loaded.
+//
+// `instances` is already the shader's vertex-buffer layout — see
+// `HicDataResult.instances` — so the GPU backend hands it to the HAL untouched
+// and the Canvas2D/SVG paths read it at stride.
 export interface HicUploadData {
-  positions: Float32Array
-  counts: Float32Array
+  instances: Float32Array
   numContacts: number
   binWidth: number
 }

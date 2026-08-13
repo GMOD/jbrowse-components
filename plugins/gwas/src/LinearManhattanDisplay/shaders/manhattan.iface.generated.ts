@@ -104,3 +104,48 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `absPosition`.
+export function getInstanceAbsPosition(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceAbsPosition(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `absEnd`.
+export function getInstanceAbsEnd(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceAbsEnd(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `score`.
+export function getInstanceScore(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceScore(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `color`.
+export function getInstanceColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}
+
+// Instance `i`'s `glyph`.
+export function getInstanceGlyph(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 4]!
+}
+
+export function setInstanceGlyph(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}

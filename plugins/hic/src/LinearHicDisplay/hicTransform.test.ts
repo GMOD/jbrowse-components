@@ -1,3 +1,8 @@
+import {
+  INSTANCE_STRIDE_WORDS,
+  setInstanceCount,
+  setInstancePosition,
+} from './components/shaders/hic.iface.generated.ts'
 import { findContactAt } from './contactLookup.ts'
 import { hicDataToScreen, hicScreenToData } from './hicTransform.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -37,20 +42,14 @@ describe('the forward and inverse view transforms agree', () => {
  */
 function makeData(contacts: { bin1: number; bin2: number }[], span: number) {
   const n = contacts.length
-  const positions = new Float32Array(n * 2)
-  const counts = new Float32Array(n)
-  const contactBin1 = new Uint32Array(n)
-  const contactBin2 = new Uint32Array(n)
+  const instances = new Float32Array(n * INSTANCE_STRIDE_WORDS)
   contacts.forEach(({ bin1, bin2 }, i) => {
-    positions[i * 2] = bin1 * W
-    positions[i * 2 + 1] = bin2 * W
-    counts[i] = i + 1 // unique, so a hover identifies exactly one contact
-    contactBin1[i] = bin1
-    contactBin2[i] = bin2
+    setInstancePosition(instances, i, bin1 * W, bin2 * W)
+    // unique, so a hover identifies exactly one contact
+    setInstanceCount(instances, i, i + 1)
   })
   return {
-    positions,
-    counts,
+    instances,
     numContacts: n,
     maxScore: n,
     percentile95: n,
@@ -66,8 +65,6 @@ function makeData(contacts: { bin1: number; bin2: number }[], span: number) {
         reversed: false,
       },
     ],
-    contactBin1,
-    contactBin2,
     pairRuns: [{ region1Idx: 0, region2Idx: 0, start: 0, end: n }],
   } satisfies HicDataResult
 }
@@ -90,22 +87,21 @@ describe('hitTest inverts what the renderer drew', () => {
   ])('%s', (_label, squash) => {
     const { display } = createDisplay()
     display.setSquashToHeight(squash)
-    const data = makeData(
-      [
-        { bin1: 2, bin2: 5 },
-        { bin1: 7, bin2: 7 },
-        { bin1: 0, bin2: 30 },
-      ],
-      64,
-    )
-    display.setRpcData(data)
+    // held here rather than read back off the payload: the packed buffer no
+    // longer carries bin columns, and the point of this suite is that the bins
+    // that went in come back out the far end of the transform
+    const contacts = [
+      { bin1: 2, bin2: 5 },
+      { bin1: 7, bin2: 7 },
+      { bin1: 0, bin2: 30 },
+    ]
+    display.setRpcData(makeData(contacts, 64))
 
     const { viewScale, viewOffsetX, yScalar } = display.renderState
     // squash actually engaged, or the second case is a copy of the first
     expect(squash ? yScalar !== 1 : yScalar === 1).toBe(true)
 
-    data.contactBin1.forEach((bin1, i) => {
-      const bin2 = data.contactBin2[i]!
+    contacts.forEach(({ bin1, bin2 }, i) => {
       // the cell's center in pre-rotation data space, forward-mapped to the
       // pixel the shader/Canvas2D path puts it on
       const { x, y } = hicDataToScreen(bin1 * W + W / 2, bin2 * W + W / 2, {

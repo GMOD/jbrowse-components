@@ -93,16 +93,38 @@ export interface HicResultRegion {
 }
 
 export interface HicDataResult {
-  positions: Float32Array
-  counts: Float32Array
+  /**
+   * Every contact as one interleaved record in the **shader's own instance
+   * layout** — `hic.slang`'s `HicInstance`, whose generated
+   * `INSTANCE_STRIDE_WORDS` / `INSTANCE_OFFSET_F32` every reader indexes with.
+   * Word 0/1 are the cell's apex-ward corner in pre-rotation data space, word 2
+   * its raw count.
+   *
+   * Packed here rather than main-thread-side because this is the buffer the GPU
+   * takes: `hal.uploadBuffer` accepts it as-is, so the payload transfers
+   * zero-copy and is uploaded zero-copy. It used to arrive as parallel
+   * `positions`/`counts` arrays that `GpuHicRenderer` re-interleaved with the
+   * generated `packInstances` on every fetch — measured 2.5 ms and 3.6 MB at
+   * 300k contacts, 39 ms and 54 MB at 4.5M, all of it on the main thread inside
+   * the upload autorun.
+   *
+   * The Canvas2D and SVG paths read the same buffer at stride, which is also
+   * one cache line per contact instead of two streams.
+   *
+   * The coupling to the shader is deliberate and is why the generated constants
+   * are imported rather than `3` being written down: a field added to
+   * `HicInstance` must move this packer, and the layout is the one thing both
+   * ends already agree on.
+   */
+  instances: Float32Array
   numContacts: number
   /**
    * Color-scale saturation candidates, both always **finite** — they are scored
-   * off the finite subset of `counts`, so a NaN (the .hic dense-block "no value"
-   * marker) or an Infinity (a tiny normalization divisor) in one bin can't reach
-   * them. `colorMaxScore` divides by these, and NaN there propagates to every
-   * bin's color. `counts` itself may still hold a non-finite value; only that
-   * bin is affected. Both are 0 for an empty result.
+   * off the finite subset of the counts, so a NaN (the .hic dense-block "no
+   * value" marker) or an Infinity (a tiny normalization divisor) in one bin
+   * can't reach them. `colorMaxScore` divides by these, and NaN there propagates
+   * to every bin's color. `instances` itself may still hold a non-finite count;
+   * only that bin is affected. Both are 0 for an empty result.
    */
   maxScore: number
   percentile95: number
@@ -125,19 +147,6 @@ export interface HicDataResult {
   /** one per region index; see {@link HicResultRegion} */
   regions: HicResultRegion[]
   /**
-   * Per-contact grid coordinates, parallel to `counts`/`positions`, used to
-   * build the hover hit-test index (`contactLookup.ts`) lazily on the main
-   * thread. Kept as transferable typed arrays rather than a string-keyed
-   * Record so the index costs nothing to serialize across the worker boundary.
-   *
-   * These two genuinely have to be per-contact. They are not recoverable from
-   * `positions`: a bin index is chromosome-absolute (~10^6 at a fine binsize)
-   * and `positions` is Float32Array, whose ~7 significant digits cannot
-   * round-trip that back to an exact integer.
-   */
-  contactBin1: Uint32Array
-  contactBin2: Uint32Array
-  /**
    * Which region pair each stretch of contacts came from, forwarded from the
    * adapter — see {@link RegionPairRun}, whose note explains why membership is a
    * property of the query rather than of a contact.
@@ -146,8 +155,19 @@ export interface HicDataResult {
    * columns for the hover index, which is what this used to do. Two `Uint16Array`
    * columns are 4 bytes per contact held for the lifetime of the viewport, and a
    * matrix is routinely millions of contacts (~18 MB at 4.5M) — against a handful
-   * of objects here, since the pair count is O(regions²). Hover resolves a
-   * candidate's pair by binary-searching these, which only runs on a bin match.
+   * of objects here, since the pair count is O(regions²).
+   *
+   * They are also what makes the two per-contact bin columns unnecessary. This
+   * used to ship `contactBin1`/`contactBin2` (another 8 bytes per contact,
+   * 36 MB at 4.5M, retained for the lifetime of the viewport) on the reasoning
+   * that a bin index is chromosome-absolute (~10^6 at a fine binsize) and
+   * Float32's ~7 digits cannot round-trip that. True of the bin — but
+   * `instances` never stores it: it stores `(bin + combinedOffset) * binWidth`,
+   * and `combinedOffset ≈ -start/res` cancels the large term *before* the cast,
+   * so what survives the float32 is the small on-screen coordinate.
+   * `contactLookup.ts` inverts it against this run table, and the error is
+   * ≤1.4e-3 bins across the whole reachable range (fine binsizes, sub-pixel
+   * bins, mirrored regions, 4k-wide viewports) — see `binRecovery.test.ts`.
    */
   pairRuns: RegionPairRun[]
 }

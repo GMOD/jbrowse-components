@@ -1,5 +1,10 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
+import {
+  INSTANCE_STRIDE_WORDS,
+  setInstanceCount,
+  setInstancePosition,
+} from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 import { computeCountStats } from './countStats.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
 import { toContacts } from './testContacts.ts'
@@ -99,6 +104,18 @@ describe('hic count statistics', () => {
   })
 })
 
+// `computeCountStats` reads counts out of the packed instance buffer at stride,
+// so a fixture that is only about the counts still has to put them where the
+// count field lives. Written through the shader's own setter; positions are
+// irrelevant to these cases and stay zero.
+function asInstances(counts: ArrayLike<number>) {
+  const out = new Float32Array(counts.length * INSTANCE_STRIDE_WORDS)
+  for (let i = 0; i < counts.length; i++) {
+    setInstanceCount(out, i, counts[i]!)
+  }
+  return out
+}
+
 // The two statistics used to come off a full sort of the finite subset. That is
 // still the clearest definition of the right answer, so it stays here as a
 // differential oracle for the selection that replaced it.
@@ -149,7 +166,7 @@ describe('computeCountStats matches a full sort', () => {
       for (let i = 0; i < n; i++) {
         counts[i] = gen(i, rnd)
       }
-      expect({ n, ...computeCountStats(counts, n) }).toEqual({
+      expect({ n, ...computeCountStats(asInstances(counts), n) }).toEqual({
         n,
         ...reference(counts),
       })
@@ -158,12 +175,14 @@ describe('computeCountStats matches a full sort', () => {
 })
 
 test('computeCountStats leaves its input untouched', () => {
-  // it permutes a copy; permuting `counts` itself would scramble the array that
-  // transfers to the renderer and drives every bin's color
-  const counts = Float32Array.from([5, 1, 9, 3, 7, 2])
-  const before = [...counts]
-  computeCountStats(counts, counts.length)
-  expect([...counts]).toEqual(before)
+  // it permutes a copy; permuting the instance buffer itself would scramble the
+  // array that transfers to the renderer AS THE VERTEX BUFFER — so it would
+  // move bins on screen, not just recolor them
+  const instances = asInstances([5, 1, 9, 3, 7, 2])
+  setInstancePosition(instances, 0, 11, 22)
+  const before = [...instances]
+  computeCountStats(instances, 6)
+  expect([...instances]).toEqual(before)
 })
 
 test('a pre-sorted million counts selects without quadratic blowup', () => {
@@ -175,7 +194,7 @@ test('a pre-sorted million counts selects without quadratic blowup', () => {
     counts[i] = i
   }
   const t0 = Date.now()
-  const { maxScore, percentile95 } = computeCountStats(counts, n)
+  const { maxScore, percentile95 } = computeCountStats(asInstances(counts), n)
   expect(maxScore).toBe(n - 1)
   expect(percentile95).toBe(Math.floor(0.95 * (n - 1)))
   expect(Date.now() - t0).toBeLessThan(2000)

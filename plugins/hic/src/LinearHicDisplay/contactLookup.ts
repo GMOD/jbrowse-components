@@ -1,4 +1,8 @@
 import { mirrorU } from '../regionOffsets.ts'
+import {
+  getInstanceCount,
+  getInstancePosition,
+} from './components/shaders/hic.iface.generated.ts'
 
 import type {
   HicContactItem,
@@ -8,7 +12,7 @@ import type {
 
 /**
  * Scatter a grid cell across the table. Deliberately NOT injective: `probe`
- * re-compares the full cell identity, so a collision only costs a step. That
+ * re-checks the candidate geometrically, so a collision only costs a step. That
  * is what makes this safe where packing the tuple into one number is not — bins
  * are absolute chromosome indices (~10^6 at fine binsizes), so a `bin1 * K +
  * bin2` key needs ~2^52 and stops being an exact integer.
@@ -19,6 +23,35 @@ function hashCell(r1: number, r2: number, bin1: number, bin2: number) {
     Math.imul(bin2, 0x85ebca6b) ^
     Math.imul(r1 * 256 + r2, 0xc2b2ae35)
   )
+}
+
+/**
+ * Recover a contact's bin index on one axis from the position the worker packed.
+ *
+ * The worker wrote `(bin + combinedOffset) * binWidth`, mirrored within the
+ * region if that region is reversed. Both steps invert exactly, which is why
+ * the payload no longer carries per-contact bin columns
+ * (see {@link HicDataResult.pairRuns}): `combinedOffset` cancels the
+ * chromosome-absolute part *before* the float32 cast, so the stored value is a
+ * small on-screen coordinate and `binRecovery.test.ts` measures the worst
+ * round-trip error at 1.4e-3 bins.
+ *
+ * The `- binWidth` in the reversed branch is not a fudge: `mirrorU` reflects a
+ * point, and reflecting a cell's apex-ward corner lands on its far corner, one
+ * cell width along. The forward mirror folded that into `mirrorBase`
+ * (`executeRenderHicData`); this unfolds it.
+ */
+function binAt(
+  data: HicDataResult,
+  i: number,
+  regionIdx: number,
+  axis: number,
+) {
+  const { instances, regions, binWidth } = data
+  const region = regions[regionIdx]!
+  const m = getInstancePosition(instances, i, axis)
+  const u = region.reversed ? mirrorU(region, m) - binWidth : m
+  return Math.round(u / binWidth - region.combinedOffset)
 }
 
 /**
@@ -46,22 +79,28 @@ interface ContactTable {
 // below: at least one slot is always empty, so a full-table walk can't spin. It
 // holds for an empty result too (capacity floors at 1).
 function buildContactTable(data: HicDataResult): ContactTable {
-  const { numContacts, contactBin1, contactBin2, pairRuns } = data
+  const { numContacts, pairRuns } = data
   let capacity = 1
   while (capacity < numContacts * 1.5) {
     capacity *= 2
   }
   const slots = new Uint32Array(capacity)
   const mask = capacity - 1
-  // Iterating the runs rather than `[0, numContacts)` is what lets the region
-  // pair be read once per run instead of once per contact — the same hoist the
-  // worker does over the same table, and the reason neither side needs a
-  // per-contact region column.
+  // Iterating the runs rather than `[0, numContacts)` is what gives each
+  // contact its region pair — read once per run, and needed here because the
+  // bins are recovered against the region's own offset and orientation.
   for (const { region1Idx, region2Idx, start, end } of pairRuns) {
+    const sameRegion = region1Idx === region2Idx
     for (let i = start; i < end; i++) {
-      let h =
-        hashCell(region1Idx, region2Idx, contactBin1[i]!, contactBin2[i]!) &
-        mask
+      const a = binAt(data, i, region1Idx, 0)
+      const b = binAt(data, i, region2Idx, 1)
+      // Canonicalize exactly as `findContactAt` does before probing: mirroring
+      // a region reverses which endpoint the worker put on the x axis, so a
+      // same-region pair can arrive with the larger bin first. Cross-region
+      // pairs can't invert (each endpoint stays in its own region).
+      const bin1 = sameRegion && a > b ? b : a
+      const bin2 = sameRegion && a > b ? a : b
+      let h = hashCell(region1Idx, region2Idx, bin1, bin2) & mask
       while (slots[h] !== 0) {
         h = (h + 1) & mask
       }
@@ -71,33 +110,8 @@ function buildContactTable(data: HicDataResult): ContactTable {
   return { slots, mask }
 }
 
-/**
- * The run holding contact `i`. The runs tile `[0, numContacts)` in ascending
- * order, so this is a binary search over a list whose length is O(regions²) —
- * a handful of steps, and only paid on a bin-coordinate match.
- *
- * A run per pair is not guaranteed unique (only contiguous), so this resolves
- * the run rather than assuming one entry per pair.
- */
-function runOf(runs: HicDataResult['pairRuns'], i: number) {
-  let lo = 0
-  let hi = runs.length - 1
-  while (lo <= hi) {
-    const mid = (lo + hi) >>> 1
-    const run = runs[mid]!
-    if (i < run.start) {
-      hi = mid - 1
-    } else if (i >= run.end) {
-      lo = mid + 1
-    } else {
-      return run
-    }
-  }
-  return undefined
-}
-
-// Built lazily from the worker's per-contact arrays and memoized against the
-// result object. A WeakMap releases the table as soon as a new fetch replaces
+// Built lazily from the worker's packed buffer and memoized against the result
+// object. A WeakMap releases the table as soon as a new fetch replaces
 // `rpcData`, and skips the build entirely when the user never hovers — which is
 // also why the table stays on the main thread rather than riding along with
 // every RPC payload.
@@ -112,27 +126,35 @@ function getContactTable(data: HicDataResult) {
   return table
 }
 
+/**
+ * The contact whose cell contains `(ux, uy)`, or undefined.
+ *
+ * A candidate is confirmed against its own packed cell rectangle rather than
+ * against a recovered bin pair, which is both cheaper and more direct: cells
+ * tile data space, so at most one contact's cell can hold a given point, and
+ * the test needs neither the candidate's region nor a second bin recovery. The
+ * hash still keys on bins because that is the only thing a *cursor* and a
+ * *stored cell* can both be reduced to — the cursor has no index of its own.
+ */
 function probe(
   data: HicDataResult,
   r1: number,
   r2: number,
   bin1: number,
   bin2: number,
+  ux: number,
+  uy: number,
 ) {
   const { slots, mask } = getContactTable(data)
-  const { contactBin1, contactBin2, pairRuns } = data
+  const { instances, binWidth } = data
   let h = hashCell(r1, r2, bin1, bin2) & mask
   let slot = slots[h]!
   while (slot !== 0) {
     const i = slot - 1
-    // Bins first, then the pair: the bin pair discriminates on all but a
-    // genuine collision, so `runOf`'s search is only reached by a candidate
-    // that already matched both coordinates.
-    if (contactBin1[i] === bin1 && contactBin2[i] === bin2) {
-      const run = runOf(pairRuns, i)
-      if (run?.region1Idx === r1 && run.region2Idx === r2) {
-        return i
-      }
+    const px = getInstancePosition(instances, i, 0)
+    const py = getInstancePosition(instances, i, 1)
+    if (ux >= px && ux < px + binWidth && uy >= py && uy < py + binWidth) {
+      return i
     }
     h = (h + 1) & mask
     slot = slots[h]!
@@ -157,9 +179,9 @@ function findRegion(regions: HicResultRegion[], u: number) {
 }
 
 /**
- * Given pre-rotation data-space coords (`ux`, `uy` — the same space
- * `positions[]` live in), return the contact bin under the cursor or undefined.
- * Inverts `positions[i] = (bin + combinedOffset) * binWidth` exactly the way the
+ * Given pre-rotation data-space coords (`ux`, `uy` — the same space the packed
+ * positions live in), return the contact bin under the cursor or undefined.
+ * Inverts `position = (bin + combinedOffset) * binWidth` exactly the way the
  * worker built it, so a hover always matches what was drawn.
  */
 export function findContactAt(
@@ -167,7 +189,7 @@ export function findContactAt(
   ux: number,
   uy: number,
 ): HicContactItem | undefined {
-  const { binWidth, regions, counts } = data
+  const { binWidth, regions, instances } = data
   if (regions.length === 0) {
     return undefined
   }
@@ -177,8 +199,8 @@ export function findContactAt(
   const regionY = findRegion(regions, uy)
   const rx = regions[regionX]!
   const ry = regions[regionY]!
-  // Undo the reflection the worker baked into positions[] (it is its own
-  // inverse) to land back in the forward space the bin math assumes.
+  // Undo the reflection the worker baked into the packed positions (it is its
+  // own inverse) to land back in the forward space the bin math assumes.
   const fx = rx.reversed ? mirrorU(rx, ux) : ux
   const fy = ry.reversed ? mirrorU(ry, uy) : uy
   const binX = Math.floor(fx / binWidth - rx.combinedOffset)
@@ -190,7 +212,7 @@ export function findContactAt(
   // ux ≤ uy below the apex), so only a same-region pair can need the swap.
   const swap = regionX === regionY && binX > binY
   const [bin1, bin2] = swap ? [binY, binX] : [binX, binY]
-  const idx = probe(data, regionX, regionY, bin1, bin2)
+  const idx = probe(data, regionX, regionY, bin1, bin2, ux, uy)
   return idx === undefined
     ? undefined
     : {
@@ -198,6 +220,6 @@ export function findContactAt(
         bin2,
         region1Idx: regionX,
         region2Idx: regionY,
-        counts: counts[idx]!,
+        counts: getInstanceCount(instances, idx),
       }
 }

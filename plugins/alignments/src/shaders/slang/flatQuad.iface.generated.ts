@@ -458,3 +458,59 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `sx1`.
+export function getInstanceSx1(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceSx1(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `syTop`.
+export function getInstanceSyTop(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceSyTop(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `sx2`.
+export function getInstanceSx2(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceSx2(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `syBot`.
+export function getInstanceSyBot(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceSyBot(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}
+
+// Component `c` of instance `i`'s `rgba` (4 components).
+export function getInstanceRgba(f32: Float32Array, i: number, c: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 4 + c]!
+}
+
+export function setInstanceRgba(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = i * INSTANCE_STRIDE_WORDS + 4
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}

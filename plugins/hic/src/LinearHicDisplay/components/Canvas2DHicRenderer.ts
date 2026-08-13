@@ -2,6 +2,10 @@ import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 import { makeHicFillStyleLut } from './colorRamp.ts'
+import {
+  getInstanceCount,
+  getInstancePosition,
+} from './shaders/hic.iface.generated.ts'
 import { mapHicCount } from './shaders/hic.js.generated.ts'
 
 import type {
@@ -37,7 +41,7 @@ export function drawHicBlocks(
   width: number,
 ) {
   const { yScalar, colorMaxScore, useLogScale, viewScale, viewOffsetX } = state
-  const { positions, counts, numContacts, binWidth } = data
+  const { instances, numContacts, binWidth } = data
   if (numContacts === 0) {
     return
   }
@@ -68,14 +72,21 @@ export function drawHicBlocks(
   ctx.scale(viewScale, viewScale * yScalar)
   ctx.rotate(-Math.PI / 4)
 
+  // Strided over the packed instance buffer — one cache line per contact rather
+  // than the two streams the parallel positions/counts arrays were. The
+  // accessors are the shader's own generated ones (see
+  // `HicDataResult.instances`); they are single typed-array indexes, so V8
+  // inlines them, which is what lets this loop use them at all — it runs over
+  // 300k-4.5M contacts a frame, the same budget that keeps hicTransform.ts's
+  // helpers spelled out inline above.
   for (let i = 0; i < numContacts; i++) {
-    const px = positions[i * 2]!
-    const py = positions[i * 2 + 1]!
+    const px = getInstancePosition(instances, i, 0)
+    const py = getInstancePosition(instances, i, 1)
     const sum = px + py
     if (sum < minSum || sum > maxSum) {
       continue
     }
-    const count = counts[i]!
+    const count = getInstanceCount(instances, i)
 
     const t = mapHicCount(count, colorMaxScore, useLogScale)
     const fill = fillStyleLut(t)

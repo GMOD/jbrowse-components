@@ -1,3 +1,4 @@
+import { packTestInstances } from '../../testInstances.ts'
 import { Canvas2DHicRenderer } from './Canvas2DHicRenderer.ts'
 
 import type {
@@ -38,11 +39,21 @@ function makeColorRamp() {
   return ramp
 }
 
-function makeData(overrides?: Partial<HicUploadData>): HicUploadData {
+// Fixtures name positions and counts separately because that is how they read;
+// the payload is the packed instance layout, so `packTestInstances` is the one
+// place that knows the interleave. `numContacts` follows `counts` rather than
+// being restated at each call.
+function makeData({
+  positions = [10, 20],
+  counts = [50],
+  ...overrides
+}: {
+  positions?: number[]
+  counts?: number[]
+} & Partial<Omit<HicUploadData, 'instances'>> = {}): HicUploadData {
   return {
-    positions: new Float32Array([10, 20]),
-    counts: new Float32Array([50]),
-    numContacts: 1,
+    instances: packTestInstances(positions, counts),
+    numContacts: counts.length,
     binWidth: 10,
     ...overrides,
   }
@@ -79,7 +90,7 @@ describe('Canvas2DHicRenderer', () => {
     renderer.uploadColorRamp(makeColorRamp())
 
     renderer.render(
-      makeData({ positions: new Float32Array([0, 0]) }),
+      makeData({ positions: [0, 0] }),
       makeRenderState({ viewScale: 2, viewOffsetX: 100, yScalar: 0.5 }),
     )
 
@@ -119,8 +130,8 @@ describe('Canvas2DHicRenderer', () => {
 
     renderer.render(
       makeData({
-        positions: new Float32Array([0, 0]),
-        counts: new Float32Array([0]),
+        positions: [0, 0],
+        counts: [0],
       }),
       makeRenderState(),
     )
@@ -135,9 +146,8 @@ describe('Canvas2DHicRenderer', () => {
 
     renderer.render(
       makeData({
-        positions: new Float32Array([0, 0, 10, 10, 20, 20]),
-        counts: new Float32Array([50, 75, 90]),
-        numContacts: 3,
+        positions: [0, 0, 10, 10, 20, 20],
+        counts: [50, 75, 90],
       }),
       makeRenderState(),
     )
@@ -159,7 +169,7 @@ describe('Canvas2DHicRenderer', () => {
       const renderer = new Canvas2DHicRenderer(canvas)
       renderer.uploadColorRamp(makeColorRamp())
       renderer.render(
-        makeData({ positions: new Float32Array([px, py]), binWidth: W }),
+        makeData({ positions: [px, py], binWidth: W }),
         makeRenderState({ canvasWidth }),
       )
       return ctx.fillRect.mock.calls.length === 1
@@ -198,9 +208,8 @@ describe('Canvas2DHicRenderer', () => {
       renderer.uploadColorRamp(makeColorRamp())
       renderer.render(
         makeData({
-          positions: new Float32Array([0, 0, 10, 10, 20, 20]),
-          counts: new Float32Array([50, 75, 90]),
-          numContacts: 3,
+          positions: [0, 0, 10, 10, 20, 20],
+          counts: [50, 75, 90],
         }),
         makeRenderState({ canvasWidth: 800 }),
       )
@@ -214,7 +223,7 @@ describe('Canvas2DHicRenderer', () => {
     const linearRenderer = new Canvas2DHicRenderer(canvas)
     linearRenderer.uploadColorRamp(makeColorRamp())
     linearRenderer.render(
-      makeData({ positions: new Float32Array([0, 0]) }),
+      makeData({ positions: [0, 0] }),
       makeRenderState({ useLogScale: false }),
     )
     const linearColor = ctx.fillStyle
@@ -222,7 +231,7 @@ describe('Canvas2DHicRenderer', () => {
     const logRenderer = new Canvas2DHicRenderer(canvas)
     logRenderer.uploadColorRamp(makeColorRamp())
     logRenderer.render(
-      makeData({ positions: new Float32Array([0, 0]) }),
+      makeData({ positions: [0, 0] }),
       makeRenderState({ useLogScale: true }),
     )
     const logColor = ctx.fillStyle

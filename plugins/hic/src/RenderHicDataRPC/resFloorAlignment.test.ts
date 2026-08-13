@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
+import { getInstancePosition } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
 import { toContacts } from './testContacts.ts'
 
@@ -46,7 +47,11 @@ async function run(
 // actual start, so this is where the ruler expects the cell — no dependence on
 // the internal offset math, so it can't bake in what the code currently does.
 function cellLeftGenomicPx(d: HicDataResult, i: number) {
-  return (d.positions[i * 2]! + d.positions[i * 2 + 1]!) * ROT_45
+  return (
+    (getInstancePosition(d.instances, i, 0) +
+      getInstancePosition(d.instances, i, 1)) *
+    ROT_45
+  )
 }
 
 // A diagonal contact (bin1 === bin2 === b) draws a diamond whose left corner

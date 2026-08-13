@@ -216,6 +216,10 @@ What lands in `score.generated.ts`, and what a plugin imports from it:
 | `INSTANCE_STRIDE_BYTES` | bytes per instance in the packed buffer |
 | `INSTANCE_STRIDE_WORDS` | the same stride in 4-byte words |
 | `INSTANCE_OFFSET_F32 / _U32 / _I32` | per-field word indices, one map per typed-array view; only the views the instance fields actually use are emitted |
+| `getInstance<Field>` | reads one instance field out of a packed buffer, through that field's own typed view |
+| `setInstance<Field>` | writes one instance field into a packed buffer, through that field's own typed view |
+| `getInstance<Field> (vector field)` | reads one component of a vector instance field; takes a component index |
+| `setInstance<Field> (vector field)` | writes a whole vector instance field; takes one value per component |
 | `WGSL_SOURCE` | the compiled WGSL, when the shader targets wgsl |
 | `GLSL_VERTEX` | the compiled WebGL2 vertex stage |
 | `GLSL_FRAGMENT` | the compiled WebGL2 fragment stage |

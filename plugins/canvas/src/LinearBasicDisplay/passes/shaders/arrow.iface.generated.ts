@@ -122,3 +122,57 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `x`.
+export function getInstanceX(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceX(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `y`.
+export function getInstanceY(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceY(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `direction`.
+export function getInstanceDirection(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceDirection(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `color`.
+export function getInstanceColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}
+
+// Instance `i`'s `height`.
+export function getInstanceHeight(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 4]!
+}
+
+export function setInstanceHeight(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}
+
+// Instance `i`'s `widthBp`.
+export function getInstanceWidthBp(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 5]!
+}
+
+export function setInstanceWidthBp(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 5] = v
+}

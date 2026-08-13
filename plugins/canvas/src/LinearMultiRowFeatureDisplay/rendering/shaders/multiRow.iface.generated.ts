@@ -87,3 +87,39 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `startBp`.
+export function getInstanceStartBp(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceStartBp(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `endBp`.
+export function getInstanceEndBp(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceEndBp(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `rowIndex`.
+export function getInstanceRowIndex(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceRowIndex(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `color`.
+export function getInstanceColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}

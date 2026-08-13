@@ -464,3 +464,48 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `bp1`.
+export function getInstanceBp1(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceBp1(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `bp2`.
+export function getInstanceBp2(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceBp2(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `y1`.
+export function getInstanceY1(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceY1(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `y2`.
+export function getInstanceY2(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceY2(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}
+
+// Instance `i`'s `colorType`.
+export function getInstanceColorType(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 4]!
+}
+
+export function setInstanceColorType(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}

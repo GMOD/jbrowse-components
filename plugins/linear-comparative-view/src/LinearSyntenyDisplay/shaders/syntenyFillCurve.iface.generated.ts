@@ -128,3 +128,75 @@ export function packInstances(
   }
   return buf
 }
+
+// Instance `i`'s `bp1`.
+export function getInstanceBp1(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceBp1(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `bp2`.
+export function getInstanceBp2(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceBp2(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `bp3`.
+export function getInstanceBp3(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceBp3(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `bp4`.
+export function getInstanceBp4(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceBp4(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}
+
+// Instance `i`'s `color`.
+export function getInstanceColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 4]!
+}
+
+export function setInstanceColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}
+
+// Instance `i`'s `featureId`.
+export function getInstanceFeatureId(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 5]!
+}
+
+export function setInstanceFeatureId(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 5] = v
+}
+
+// Instance `i`'s `alignmentLength`.
+export function getInstanceAlignmentLength(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 6]!
+}
+
+export function setInstanceAlignmentLength(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 6] = v
+}
+
+// Instance `i`'s `kind`.
+export function getInstanceKind(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 7]!
+}
+
+export function setInstanceKind(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 7] = v
+}

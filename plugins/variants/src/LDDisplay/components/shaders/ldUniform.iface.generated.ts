@@ -79,6 +79,15 @@ export function packInstances(
   return buf
 }
 
+// Instance `i`'s `ldValue`.
+export function getInstanceLdValue(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstanceLdValue(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
 // Combined `Sampler2D` bindings. Texture unit indices start at 0.
 export const TEXTURES: readonly [TextureBinding, ...TextureBinding[]] = [
   { textureBinding: 2, samplerBinding: 3, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },

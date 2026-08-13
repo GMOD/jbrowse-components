@@ -111,3 +111,55 @@ export function packInstances(
   }
   return buf
 }
+
+// Component `c` of instance `i`'s `startEnd` (2 components).
+export function getInstanceStartEnd(u32: Uint32Array, i: number, c: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + c]!
+}
+
+export function setInstanceStartEnd(
+  u32: Uint32Array,
+  i: number,
+  v0: number,
+  v1: number,
+) {
+  const o = i * INSTANCE_STRIDE_WORDS
+  u32[o] = v0
+  u32[o + 1] = v1
+}
+
+// Instance `i`'s `y`.
+export function getInstanceY(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceY(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `direction`.
+export function getInstanceDirection(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceDirection(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}
+
+// Instance `i`'s `color`.
+export function getInstanceColor(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS + 4]!
+}
+
+export function setInstanceColor(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS + 4] = v
+}
+
+// Instance `i`'s `height`.
+export function getInstanceHeight(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 5]!
+}
+
+export function setInstanceHeight(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 5] = v
+}

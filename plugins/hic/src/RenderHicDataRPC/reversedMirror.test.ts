@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
+import { getInstancePosition } from '../LinearHicDisplay/components/shaders/hic.iface.generated.ts'
 import { findContactAt } from '../LinearHicDisplay/contactLookup.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
 import { toContacts } from './testContacts.ts'
@@ -53,8 +54,8 @@ async function run(regions: Region[], records: TestContact[]) {
 // Center of contact i's drawn cell, rotated into screen-ish space. `rx` is the
 // genomic-px axis, `ry` the contact-distance axis.
 function cellCenter(d: HicDataResult, i: number) {
-  const px = d.positions[i * 2]!
-  const py = d.positions[i * 2 + 1]!
+  const px = getInstancePosition(d.instances, i, 0)
+  const py = getInstancePosition(d.instances, i, 1)
   const w = d.binWidth
   return {
     rx: (px + py + w) * ROT_45,
