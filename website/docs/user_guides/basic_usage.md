@@ -167,7 +167,7 @@ access to track-specific functions. Some options are only available when the
 track is open (from the track label); basic options like "About track" are
 always available from the track selector.
 
-<Figure caption="Screenshot showing how to open the track menu (both in the track selector area and in the track label area of the linear genome view), and an example of a VCF track with its track menu open" src="/img/track_menu.png" />
+<Figure caption="Opening the track menu, from the track selector and from the track label, with a VCF track menu open." src="/img/track_menu.png" />
 
 ## Favorite and recently used tracks
 
@@ -206,7 +206,7 @@ Gene and transcript features also have a sequence panel, covered in
 
 The track menu provides access to the "About track" dialog.
 
-<Figure caption="Screenshot of the 'About track' dialog for a CRAM file, showing the full CRAM file header and config info. Having the full header of a BAM/CRAM file available is helpful to easily check what genome it was aligned to, for example." src="/img/about_track.png"/>
+<Figure caption="The 'About track' dialog for a CRAM file, showing the full CRAM header and the config info." src="/img/about_track.png"/>
 
 ## Editing track configs
 
@@ -245,7 +245,7 @@ and as overrides carried in a URL or an embedded session.
 Click and drag on either the main (lower) or overview (upper) scale bar to
 rubberband-select a region.
 
-<Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
+<Figure caption="Rubberbanding the main and overview scalebars. The main one produces extra options on selection." src="/img/rubberband.png" />
 
 The main scale bar's menu holds **Zoom to region**, **Get sequence**, **Copy
 range**, **Highlight region** and **Bookmark region**, plus a **Launch** submenu
@@ -297,7 +297,7 @@ half triangle.
 Track labels can be positioned on their own row, overlapping the data to save
 vertical space, or hidden entirely, via the view's hamburger menu.
 
-<Figure caption="Example of using the overlap and offset track label positioning options." src="/img/tracklabels.png" />
+<Figure caption="The overlap and offset track label positioning options." src="/img/tracklabels.png" />
 
 ### Horizontally flip
 

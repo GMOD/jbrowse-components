@@ -51,10 +51,7 @@ worth looking at, with no Jexl expression to write. Both live under **Track menu
   mostly missing data.
 
 Missingness is especially useful on a matrix display, where each variant takes a
-full column no matter how many of its genotypes are no-calls. The tetraploid
-potato callset below is dominated by no-call (yellow) columns until the ceiling
-is lowered to 0.1, which drops every variant with more than 10% missing
-genotypes and leaves the well-genotyped sites.
+full column no matter how many of its genotypes are no-calls.
 
 <Figure src="/img/variants/potato_missingness.png" caption="One tetraploid potato multi-sample VCF opened twice in the same view as a genotype matrix, on one ruler. Top: the default missingness ceiling keeps every variant, and no-call columns dominate. Bottom: a 0.1 ceiling leaves the well-genotyped sites." />
 
@@ -177,7 +174,7 @@ Samples can be reordered by genotype similarity, via **Clustering → Cluster ro
 by genotype...** in the track menu. See [](/docs/user_guides/clustering) for the
 modes, the dendrogram, and how to share a result in a session URL.
 
-<Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster rows by genotype' dialog with its auto/manual mode options. Bottom: after clustering, samples are reordered by genotype similarity with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
+<Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster rows by genotype' dialog. Bottom: the rows reordered by genotype similarity, with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
 
 In phased mode, clustering treats each haplotype as a separate row, so the
 dendrogram shows haplotype-level relationships rather than sample-level ones.

@@ -43,7 +43,7 @@ a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
 <Figure caption="The import form synteny and dotplot views share, reached from the Add menu. Its Manual mode, shown here, is where you select two assemblies and can supply an additional file." src="/img/dotplot_add.png" />
 
-<Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
+<Figure caption="The linear synteny view for the grape vs peach genomes." src="/img/linear_synteny.png" />
 
 ### From a locus you are already looking at
 

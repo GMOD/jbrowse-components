@@ -34,12 +34,11 @@ deep alignment. JBrowse blocks that with a "requested too much data" prompt.
 A track configured with a summary file shows presence bars there instead: one
 bar per species per aligned region, shaded by the summary's score, with no
 sequence read at all. Hover one to name the species, the aligned block and its
-score — the row labels are the first thing to go as the rows shrink, so on a
-deep alignment that is the way to tell one row from another. Zooming back in
-swaps the bars for the alignment itself. Neither the coverage band nor the
-conservation band is drawn on the summary tier: both are computed from the
-per-base alignment that the tier exists to avoid reading, and both come back
-untouched on zoom-in. Pointing a track at a summary file is covered in the
+score, which on a deep alignment is how to tell one row from another once the
+labels shrink away. Zooming back in swaps the bars for the alignment itself.
+Neither the coverage band nor the conservation band is drawn on the summary
+tier, since both are computed from the per-base alignment the tier exists to
+avoid reading. Pointing a track at a summary file is covered in the
 [MAF track configuration guide](/docs/config_guides/maf_track#the-zoom-out-tier).
 
 <Figure src="/img/maf_summary_tier.png" caption="The UCSC hg38 470-way narrowed to ~30 representative mammals, over GAPDH at two zooms. At 180 kb (top) the track reads its summary file, one grey bar per species per aligned region. At 200 bp (bottom) it draws the alignment itself, one colored cell per base, with the coverage band above."/>
@@ -66,13 +65,9 @@ on at every zoom level instead.
 
 This works on large alignments: with all ~470 species of the UCSC hg38 470-way
 shown at once, the heatmap gives a per-base conservation view across the full
-set of species.
-
-Fit-to-display-height mode takes every species into one display, so each row
-goes near-1px and the alignment reads as a texture, with the guide tree
-(dendrogram) down the left. The per-row identity heatmap colors each base by
-whether it matches the reference row: blue where conserved, red where divergent,
-per the top-right legend.
+set of species. Fit-to-display-height mode takes every species into one display,
+so each row goes near-1px and the alignment reads as a texture, with the guide
+tree (dendrogram) down the left.
 
 <Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus, every species at once. Conserved coding columns run blue top-to-bottom across the whole phylogeny; gaps and less-conserved regions break up as red and white streaks."/>
 
@@ -131,12 +126,7 @@ far enough to read it.
 
 On a large alignment, narrowing to a focused set of species first (see
 [Selecting a subtree](#selecting-a-subtree)) keeps the per-codon columns
-legible.
-
-In codon view each species' coding sequence is translated in the human reading
-frame, so conserved residues line up and the amino-acid changes in the more
-distant lineages stand out. The left sidebar is the pruned guide tree rather
-than the full one.
+legible, and the left sidebar redraws as the pruned guide tree.
 
 <Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to representative mammals, one per major clade plus opossum and platypus outgroups, in codon view at a conserved GAPDH exon."/>
 
