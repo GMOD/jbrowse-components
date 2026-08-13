@@ -164,7 +164,7 @@ base: a column is a position, a row is what it would become.
 AlphaMissense cells are empty where the substitution leaves the residue alone; a
 column tall in all four rows is a position where no substitution is predicted to
 be tolerated. Most columns in this exon are, phyloP is high over the same bases,
-and most ClinVar records here are classified pathogenic. The three are
+and pathogenic is the commonest ClinVar classification here. The three are
 independent: a prediction from the protein, a measurement across species, and
 submitted clinical classifications.
 
