@@ -197,20 +197,15 @@ make.
 
 ## Reading the plot
 
-A self-alignment is what a hexaploid needs, and no second species substitutes
-for it. Each of these genomes already contains three copies of nearly every
-gene, so the comparison that says where the subgenomes went is the genome
-against itself: every point off the diagonal is one chromosome's gene paired
-with its own copy on another chromosome, and the pattern those points make is
-the karyotype. Aligning either one to a diploid relative answers a different
-question and cannot see the copies at all.
+Every point off the diagonal is one chromosome's gene paired with its own copy
+on another chromosome, and the pattern those points make is the karyotype.
+Aligning either genome to a diploid relative answers a different question and
+cannot see the copies at all.
 
-Oat's plot is on the right below, and bread wheat's on the left is what makes it
-readable. Both are hexaploids drawn against themselves the same way and over the
-same three homoeologous groups, so the difference between them is the karyotype
-and not the method: on the left each group is three near-collinear segments in
-its own block, which is what a plot like this looks like when the subgenomes
-stayed put.
+Oat's plot is on the right below and bread wheat's on the left. Both are
+hexaploids drawn against themselves the same way over the same three
+homoeologous groups, so the difference between them is the karyotype rather than
+the method.
 
 <Figure caption="Left, bread wheat aligned against itself; right, oat aligned against itself. Both hexaploids over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1. Wheat's groups stay in their own blocks; oat pairs across groups throughout." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
 
@@ -231,24 +226,19 @@ to come out at a lower synonymous divergence than A-C or C-D. If all three land
 together, the rates are measuring the pipeline rather than the polyploidy.
 
 The colour needs reading with more care than the structure does. Almost every
-pair here is blue, and that direction is solid: a conserved gene accumulates
-synonymous change while holding non-synonymous change down, and the Fisher test
-in the `fisher_p` column returns overwhelming support for the great majority of
-them. The warm pairs are the opposite case. A ratio over 1 between two copies
-this recently separated rests on few substitutions, hardly any of them clear the
-test, and the count that do is close to what that many tests would throw up by
-chance. Treat a warm link as a gene worth a codon model, not as a result. The
-[primate walkthrough](/docs/tutorials/selection_pressure) goes through that
-arithmetic on a locus small enough to check by eye.
+pair here is blue, and the Fisher test in the `fisher_p` column returns
+overwhelming support for the great majority of them. A ratio over 1 between two
+copies this recently separated rests on few substitutions, hardly any of them
+clear the test, and the count that do is close to what that many tests would
+throw up by chance. Treat a warm link as a gene worth a codon model rather than
+as a result; the [primate walkthrough](/docs/tutorials/selection_pressure) goes
+through that arithmetic on a locus small enough to check by eye.
 
 The claim about the karyotype is a count: how many anchors join two chromosomes
 from _different_ homoeologous groups, and how many chromosome pairs carry enough
-of them to be a segment rather than noise.
-
-That count is what separates oat from the other hexaploid cereal, and it is the
-arithmetic behind what the two panels above already show: wheat's translocations
-are the ones involving 4A and nothing else, where oat's segments leave their
-group repeatedly.
+of them to be a segment rather than noise. Wheat's translocations are the ones
+involving 4A and nothing else, where oat's segments leave their group
+repeatedly.
 
 ## Reproduce it end to end
 

@@ -68,14 +68,12 @@ display lays the autosomes out side by side rather than one at a time.
 
 <Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled. Bottom: two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the single 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
-Each point is a window, so a peak names a region rather than a variant, and the
-run of high windows on chr10 is one region's worth. A genome-wide scan has to
-bin wide enough to hold down twelve thousand windows' worth of noise, which is
-what makes the _IGF1_ peak a single bar up there. Two megabases does not, so the
-lower half is the same panel and the same estimator rebinned to 20 kb, and the
-peak turns out to have a shape: a block of high windows sitting on the gene,
-falling away either side into sequence the 200 kb bin had averaged it together
-with. Rerunning the build script over one region is all that takes:
+Each point is a window, so a peak names a region rather than a variant. A
+genome-wide scan has to bin wide enough to hold down twelve thousand windows'
+worth of noise, which is what makes the _IGF1_ peak a single bar up there. The
+lower half is the same panel and the same estimator rebinned to 20 kb over two
+megabases, where the peak turns out to have a shape. Rerunning the build script
+over one region is all that takes:
 
 ```bash
 WINDOW=20000 REGIONS=chr15:40600000-42600000 \
@@ -173,15 +171,13 @@ sample table, so the two are independent.
 
 ## Framing it
 
-The slice is wider than the window the figure frames, and in a matrix that is
-not a detail. Every record is one column of equal width, so a window's width in
-the frame is a count of records rather than a span of chromosome: widen it and
-the extra columns are as wide as the informative ones. The build script prints
-which sites actually separate the two size classes, a minority of those in the
-slice, and this window is that span with a margin of undifferentiated sequence
-on each side. That margin is what the Fst lane needs in order to show a run
-rather than a level: framed on the differentiated sites alone, every point in
-view is high and nothing says where the signal starts or stops.
+In a matrix every record is one column of equal width, so a window's width in
+the frame is a count of records rather than a span of chromosome. The build
+script prints which sites actually separate the two size classes, a minority of
+those in the slice, and this window is that span with a margin of
+undifferentiated sequence on each side. Framed on the differentiated sites
+alone, every point in the Fst lane is high and nothing says where the signal
+starts or stops.
 
 Clustering reads the region on screen, so where you run it matters as much as
 what you frame afterwards: over the whole window the separating columns are
@@ -195,14 +191,12 @@ instead of performing it, since the display takes `clusterRegion` beside
 
 <Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
 
-Clustering on genotypes alone recovers the size split without being told it: the
-two largest blocks down the size swatch are the toy and small breeds and the
-giants, and the block's boundaries fall within the window, so its extent reads
-against the gene track above it rather than being inferred. The recovery is
-partial rather than two clean bands, and that is a property of the contrast
-rather than of the clustering. The two panels differ here by a shift in allele
-frequency rather than by carrying different alleles, so the block is a run of
-columns where one class is enriched rather than a solid slab.
+Clustering on genotypes alone recovers the size split without being told it, and
+the block's boundaries fall within the window, so its extent reads against the
+gene track above it rather than being inferred. The recovery is partial rather
+than two clean bands: the two panels differ here by a shift in allele frequency
+rather than by carrying different alleles, so the block is a run of columns
+where one class is enriched rather than a solid slab.
 
 The lane between them says which columns are doing the work. It is the same
 Hudson Fst as the genome scan, between the same two panels, but computed one
