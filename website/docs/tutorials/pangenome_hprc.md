@@ -98,12 +98,10 @@ GB with a `.tai` index, which [the last section](#the-alignment-underneath-both)
 opens.
 
 Every file above is published twice, once per reference. This page uses the
-GRCh38 build because that is the assembly most readers already have loaded,
-though every locus it features (MHC, KIR, LPA, AMY1, CFHR) is one where GRCh38
-is the weaker backbone and the T2T-CHM13 build sits beside it. Nothing here is
-specific to GRCh38: both build scripts run on the CHM13 files unchanged, and the
-only config change is the PanSN prefix, `{ "chm13": "CHM13" }` in place of
-`{ "hg38": "GRCh38" }`.
+GRCh38 build because that is the assembly most readers already have loaded.
+Nothing here is specific to it: both build scripts run on the CHM13 files
+unchanged, and the only config change is the PanSN prefix,
+`{ "chm13": "CHM13" }` in place of `{ "hg38": "GRCh38" }`.
 
 ## Regular GFA vs rGFA
 
@@ -126,10 +124,9 @@ with `odgi extract` as in the
 [E. coli tutorial](/docs/tutorials/pangenome_ecoli#a-window-as-a-file).
 
 Release 2 ships no `minigraph/` directory and never labels a file "rGFA", but
-that is a naming matter rather than a missing format: `sv.gfa` is the minigraph
-stage of the Minigraph-Cactus build, so every one of its segments already
-carries these tags. The base-level `gfa.gz` beside it does not, and neither do
-pggb graphs, which keep the `odgi extract` route.
+`sv.gfa` is the minigraph stage of the Minigraph-Cactus build, so every one of
+its segments already carries these tags. The base-level `gfa.gz` beside it does
+not, and neither do pggb graphs, which keep the `odgi extract` route.
 
 A PanSN name has two halves, and only the first needs configuring:
 
@@ -178,19 +175,24 @@ and put the output on `jbrowse.org`.
 
 ## Open a locus as a graph
 
-The graph draws a window at a time rather than a whole viewport. To pick one,
-**drag across the ruler** to rubberband a region and choose **Graph genome view
-(this selection)**. This needs no graph track in the view: the item appears
-whenever the session holds a track whose adapter can cut a subgraph. Selecting
-more than the view will draw greys the item out and displays its limit. The
-track menu's **Launch view → Graph genome view (this region)** takes whatever is
-on screen instead, and right-clicking one segment cuts the graph around that
-segment. The subgraph is cut from the same two files the track reads.
+The graph draws a window at a time rather than a whole viewport, and there are
+three ways to pick one:
+
+- **Drag across the ruler** and choose **Graph genome view (this selection)**.
+  Selecting more than the view will draw greys the item out and displays its
+  limit.
+- **Launch view → Graph genome view (this region)** in the track menu takes
+  whatever is on screen.
+- **Right-click one segment** to cut the graph around that segment.
+
+None of them needs a graph track in the view: the item appears whenever the
+session holds a track whose adapter can cut a subgraph, and the subgraph comes
+from the same two files the track reads.
 
 The third lane in the figure below is the [bubble track](#the-bubble-track),
 which the figures from here on read alongside the graph.
 
-<Figure caption="The C4 locus as a graph, in force-directed layout, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus, and the graph below is what that bubble contains: a colored reference thread with charcoal allele loops over it." src="/img/pangenome/hprc_c4_subgraph.png" />
+<Figure caption="The C4 locus as a force-directed graph, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus, and the graph below is what it contains." src="/img/pangenome/hprc_c4_subgraph.png" />
 
 A force layout has no x axis to share with the linear view, so color is the only
 thing that can carry the correspondence. **Reference position**, which the graph
@@ -260,21 +262,18 @@ Extra sequence is a node in the graph, so it draws as a tube. Missing sequence
 is an **edge**: a link from one backbone segment to another that is not its
 neighbour, taken by the haplotypes that do not carry what lies between them.
 Those edges are drawn thick, dashed and near-black rather than on the color
-ramp, where hue means reference position and an arc covers a range of it rather
-than sitting at one point. The dashes are what separates a deletion from the
-solid charcoal stalks of the off-reference alleles around it.
+ramp, which separates a deletion from the solid charcoal stalks of the
+off-reference alleles around it.
 
-Read a deletion on the [anchored layout](#the-layout-dropdown), which is what
-the figure below uses: x there is GRCh38 bp, so the arc spans exactly the
-sequence it removes, over the reference that carries it and under the same
-coordinates in the linear panel. The alternate-allele stalks stack below the
-backbone, one row per stable rank, and a stalk carries a deletion label of its
-own where it stands in for far more reference than it holds sequence. The force
-layout bows the same edge out by the length of the backbone it bypasses, which
-states a size but not a position, because FMMM leaves the arc's two ends
-wherever the simulation puts them.
+Read a deletion on the [anchored layout](#the-layout-dropdown), where x is
+GRCh38 bp, so the arc spans exactly the sequence it removes and sits under the
+same coordinates in the linear panel. The alternate-allele stalks stack below
+the backbone, one row per stable rank. The force layout bows the same edge out
+by the length of the backbone it bypasses, which states a size but not a
+position, since FMMM leaves the arc's two ends wherever the simulation puts
+them.
 
-<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT gene annotation, so CFHR3 and CFHR1 sit on the reference and on HG00099 and are absent from HG01109. The dashed arc under the graph's reference row is that same gap, labelled 84.7 kb." src="/img/pangenome/hprc_cfhr_deletion.png" />
+<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT annotation, and the dashed arc under the graph's reference row is the gap that removes CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
 Hovering one of these edges gives the interval and the bp it removes. A deletion
 has nothing to draw at the position it occurs, which is what a linear view is
@@ -287,16 +286,14 @@ reference's. The index
 gives one GFF3 per haplotype; load a slice of one as an ordinary `FeatureTrack`
 on that haplotype's assembly.
 
-Chromosome size does not enter into any of this: only the window is cut, so an
-allele whose interior falls outside it draws as a short arm off the backbone
-rather than as a closed loop. The figure below is cut from
-`chr1:103,500,000-103,850,000`, wider than the amylase entry in the table
-further down, because at the table's window the bubble fills the pane with no
-backbone beside it and the drawing cannot say where in the locus the complexity
-sits. Widening until the backbone chain is in frame is the usual remedy when a
-cut comes back as a single tangle.
+Only the window is cut, so an allele whose interior falls outside it draws as a
+short arm off the backbone rather than as a closed loop. The figure below is cut
+from `chr1:103,500,000-103,850,000`, wider than the amylase entry in the table
+further down, because at that width the bubble fills the pane with no backbone
+beside it. Widening until the backbone chain is in frame is the usual remedy
+when a cut comes back as a single tangle.
 
-<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The sequence either side draws as one chain of backbone segments, and every crossing in the 126-node drawing is inside the amylase bubble at the end of that chain, so the window says where the complexity is as well as what it is." src="/img/pangenome/hprc_amylase_graph.png" />
+<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. Every crossing is inside the amylase bubble at the end of the backbone chain." src="/img/pangenome/hprc_amylase_graph.png" />
 
 The graph's own bubble index says what that window holds, and tabix reads it
 over HTTP without the browser. The bubble spanning AMY1A and AMY1B is the first
@@ -325,14 +322,12 @@ of the file:
 
 Copy number is not among those numbers, and that is a property of these two
 projections rather than of the release. `gfatools bubble` and the rGFA tags
-state the distinct sequence a bubble can hold, not how many times a given
-haplotype repeats it, so length is the proxy here and the shape of the
-alternatives is what the graph adds. The `.gbz` beside them does carry a walk
-per haplotype, which at KIV-2 or AMY1 _is_ a copy count. Reading it is a vg job
-rather than a browser one, and out of scope for this page. The callset offers no
-shortcut either: release 2 strips the `AT` (allele traversal) field from the
-wave VCF, which its own header records as `bcftools annotate -x INFO/AT`, so no
-traversal is recoverable from the VCF.
+state the distinct sequence a bubble can hold, not how many times a haplotype
+repeats it, so length is the proxy here. The `.gbz` beside them does carry a
+walk per haplotype, which at KIV-2 or AMY1 _is_ a copy count, but reading it is
+a vg job rather than a browser one. The callset offers no shortcut either:
+release 2 strips the `AT` (allele traversal) field from the wave VCF, which its
+own header records as `bcftools annotate -x INFO/AT`.
 
 ### The Layout dropdown
 
@@ -341,14 +336,12 @@ three modes put on each axis. What that costs at this scale is the same MHC
 class II window drawn both ways:
 
 Both halves ring the same node, the 12 kb reference stretch the graph draws in
-green: near the top of the force drawing, out on the backbone row of the
-anchored one. On the left a right-click menu is open on the black allele beside
-it, and **Highlight in hg38** is what wrote the orange band above, over that
-ringed backbone segment rather than over the clicked node, because an
-off-reference allele is drawn across the reference it replaces and never over
-its own length.
+green. On the left a right-click menu is open on the black allele beside it, and
+**Highlight in hg38** wrote the orange band above over that ringed backbone
+segment rather than over the clicked node, because an off-reference allele is
+drawn across the reference it replaces and never over its own length.
 
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: nothing in the drawing lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so each allele hangs below where it attaches." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Each locus below is a window small enough to draw:
 
@@ -391,7 +384,7 @@ an inherited cardiovascular risk factor, and the number of copies a person
 carries differs from one person to the next, a difference that is not callable
 from short reads:
 
-<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments for the same window. The bubble the lane reports across the repeat is the chain of loops below it, and each node carries the sequence it holds; the dashed arc, labelled with the size of the deletion it draws, is the route that bypasses the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments. The bubble the lane reports across the repeat is the chain of loops below it, with one dashed arc bypassing the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 Either way a donor row names the haplotype the sequence was taken from rather
 than the set carrying it, which is
@@ -513,18 +506,14 @@ the same way `hg38` asks for `GRCh38#0#chr17`. This replaces the track
 }
 ```
 
-The bubble lane up top is cut to bubbles holding an allele over 100 kb, and the
-banded one is a short reference span. In the middle the boxed node is the CHM13
-sequence that hangs off it, attached at a small anchor.
+A 180 kb window has only its own surroundings to be dense against, so the panel
+beside it is the same measurement at a scale that can answer whether the L1
+density means anything. Open the LINE row alone over the last 3 Mb of the
+chromosome and set the track's **Resolution** low, so each drawn value averages
+about 100 kb rather than 3 kb: at 5 kb the allele is invisible inside the
+spikes, and at its own scale it is a block.
 
-The part beside them is the same measurement at a scale that can answer whether
-the L1 density means anything, since a 180 kb window has only its own
-surroundings to be dense against. Open the LINE row alone over the last 3 Mb of
-the chromosome and set the track's **Resolution** low, so each drawn value
-averages about 100 kb rather than 3 kb: at 5 kb the allele is invisible inside
-the spikes, and at its own scale it is a block.
-
-<Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean, where the shaded allele is the tallest sustained level in the frame." src="/img/pangenome/hprc_chm13_allele.png" />
+<Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
 carries was already in the graph and little is credited to it:
@@ -597,20 +586,16 @@ Open the track on each assembly's last 650 kb of chr17, which is what each one
 ends the chromosome with rather than a lifted-over interval: there is no
 lift-over for sequence one of them does not have. `build_repeat_density.sh`
 reports the two windows at almost the same total repeat content, so a single
-density lane would have shown no difference between them at all. What moved is
-the composition, and in opposite directions: more L1, less Alu. The insertion
-allele on its own is the sharper version of the same contrast, running higher in
-LINE than the CHM13 sequence either side of it, which is the L1 tiling the
-figure above already shows per element.
+density lane would have shown no difference at all. What moved is the
+composition, and in opposite directions: more L1, less Alu.
 
 Whether that is a lot depends on the scale it is asked at, which is what the
 last part of [the donor-node figure](#the-one-donor-worth-loading) draws. The
-same script ranks the allele against every window of its own size in CHM13. It
-comes out near the top of its own neighbourhood and unremarkable against the
-genome, so the enrichment is a local statement rather than a genome-wide one:
-not that this sequence is L1-dense for human sequence, but that it is L1-dense
-for this end of chr17, which is what makes it the piece a BAC-and-Sanger
-reference could not place.
+same script ranks the allele against every window of its own size in CHM13, and
+it comes out near the top of its own neighbourhood and unremarkable against the
+genome. The enrichment is local: this sequence is L1-dense for this end of
+chr17, which is what makes it the piece a BAC-and-Sanger reference could not
+place.
 
 ## The bubble track
 
@@ -704,7 +689,7 @@ segment count as its `score`, so the only change is the track type, since a
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three lanes off two files: the bubble file as a curve of segments per bubble, the same bubbles as the tier's segments lane, and the tier as a graph. The blank column is 1q12, the heterochromatic band beside the centromere, where nothing aligns so no bubbles are called." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three lanes off two files: the bubble file as a curve of segments per bubble, the same bubbles as the tier's segments lane, and the tier as a graph. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 The graph is 474 nodes against about 751,000 segments in the graph itself, laid
 out in 18 ms. The chain alternates strictly, 237 backbone nodes and 237 bubbles,
@@ -786,7 +771,7 @@ row is the same two genes, PPIAL4F and PPIAL4E: on the carrier PPIAL4F comes
 first, on the non-carrier PPIAL4E does, and the hg38 row between them agrees
 with the non-carrier.
 
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. HG01891 hap 1 on top, its ribbon crossing inside the boxed span; HG02698 hap 2 below, one forward ribbon. The boxed pair on each row is PPIAL4F and PPIAL4E." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E." src="/img/pangenome/hprc_inversion.png" />
 
 The [allele inventory](#the-allele-inventory) has nothing for them by
 construction, since a mixed-orientation pair of backbone segments is a
@@ -820,15 +805,13 @@ draws at its real magnitude instead of as a 1 bp box.
 The magnitude is measured, the position inside the span is not. A bubble states
 what sequence replaces a reference interval, never where inside that interval it
 sits, so the CIGAR puts the indel at the end of the span by convention. Over a 2
-kb anchor nothing turns on it, but the CFHR-scale spans in the same figure carry
-a marker that is placed rather than located.
+kb anchor nothing turns on it; over a CFHR-scale span the marker is placed
+rather than located.
 
-The lane is not pictured here, deliberately. Its rows are the display packing
-overlapping alleles rather than a set of haplotypes, which is a reading it
-cannot help. The one event worth looking at over this window, the 84,683 bp
-deletion between CFHR3 and CFHR1, is drawn on the same coordinates by the graph
-figure earlier in this page, where it is an arc with the two genes it removes
-boxed beside it.
+The lane's rows are the display packing overlapping alleles rather than a set of
+haplotypes, which is why it is not pictured here. The one event worth looking at
+over this window, the 84,683 bp deletion between CFHR3 and CFHR1, is
+[drawn on the same coordinates by the graph](#what-the-graph-shows-that-a-linear-view-cannot).
 
 The whole graph holds a few hundred thousand alleles, about half of them
 insertions, so a wide window is dense. The
@@ -900,16 +883,13 @@ twice at two positions, because this file writes a nested child as its own
 record beside its parent, with `PS` naming that parent, and a reader counting
 columns counts those events twice.
 
-One thing the filter cannot promise is what a given cell holds. It admits a
-record on its longest allele, and most records it admits here are multi-allelic,
-so a site can enter the panel on one haplotype's 60 bp insertion while another
-haplotype's cell in the same column is colored for a SNP at the same position.
-Read a column as a site that holds a structural allele, which is what the block
-structure below is about, rather than as a guarantee about every cell in it. The
-file states the rest per allele: `TYPE` gives each ALT's class (`snp`, `ins`,
-`del`, `complex`) and `LEN` its length, both in the feature details panel a
-click on the column opens, so which of a site's alleles a haplotype carries is
-one click away rather than an inference.
+Read a column as a site that holds a structural allele rather than as a
+guarantee about every cell in it. The filter admits a record on its longest
+allele and most records it admits here are multi-allelic, so a site can enter
+the panel on one haplotype's 60 bp insertion while another haplotype's cell in
+the same column is colored for a SNP. The file states the rest per allele:
+`TYPE` gives each ALT's class (`snp`, `ins`, `del`, `complex`) and `LEN` its
+length, both in the feature details panel a click on the column opens.
 
 Frequency is in the file rather than in the picture. `AC`, `AF`, `AN` and `NS`
 are on every record, so `jexl:feature.INFO.AF[0]>0.05` selects the common
@@ -1011,7 +991,7 @@ graph and the callset above come from; being nine times smaller to store and
 four times cheaper to read a locus out of is the second reason rather than the
 first.
 
-<Figure caption="The C4 locus in HPRC release 2's multiple alignment. Thirty-two of the 464 haplotypes, one row each and named in the sidebar, under the NCBI RefSeq genes, with GRCh38 on top and mismatches ticked against it. Grey is aligned sequence and white is none, so the white spans through the copy-number-variable C4A and C4B are haplotypes that carry nothing there." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus in HPRC release 2's multiple alignment. Thirty-two of the 464 haplotypes, one row each, under the NCBI RefSeq genes with GRCh38 on top. White is unaligned, so the white spans through C4A and C4B are haplotypes carrying nothing there." src="/img/maf_hprc_pangenome.png" />
 
 The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
 itself opens with. Every row is a human haplotype, so the rows say something
@@ -1062,7 +1042,7 @@ crosses the genes, the segments lane and the genotype matrix in one column, and
 the reference-position ramp gives the graph's backbone at that position the same
 hue as the segments above it.
 
-<Figure caption="One window, both products. The band is one 14.6 kb deletion site from the callset, and the matrix below it, all 464 haplotypes clustered by genotype, colors the clade carrying it. The force graph has no coordinate axis to draw the band on, so an arrow runs from the band to a ring on the reference node the deletion removes: the 12.3 kb one, not the 1.5 kb edge labelled beside it." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products. The band is one 14.6 kb deletion site from the callset, and the matrix below it, all 464 haplotypes clustered by genotype, colors the clade carrying it. The force graph has no coordinate axis, so an arrow runs from the band to the reference node the deletion removes." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Reproduce it end to end
 
