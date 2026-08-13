@@ -974,7 +974,10 @@ const DEFAULT_INTERCHROM_WINDOW_BP = 1000
 
 // How many reads agree on each interchromosomal connection, counted over a
 // WINDOW rather than at a coordinate — returns the per-connection support, index
-// for index with `arcs`.
+// for index with `arcs`. Intra-chromosomal entries keep a support of 0 and are
+// never read: the caller asks only from inside its own interchromosomal branch,
+// so walking the whole array is what lets the two agree BY INDEX rather than by
+// a counter kept in step with a filter.
 //
 // A mate-pair breakpoint is not localized to a base. The two mates straddle it,
 // so a read supporting a translocation can start anywhere within about one
@@ -1010,15 +1013,40 @@ function clusteredInterchromSupport(
   windowBp: number,
 ): number[] {
   const support = new Array<number>(arcs.length).fill(0)
-  // Keyed on the ORDERED pair of contigs: a connection chr1->chr7 and one
-  // chr7->chr1 are the two ends of one event and are emitted as two separate
-  // pending arcs, each of which gets its own cluster at its own end.
+  // ENDPOINT ORDER IS NORMALIZED before anything is keyed or compared, on
+  // refName, which is `arcKey`'s rule and is here for the same reason: the
+  // event is symmetric in endpoint order, so the count over it has to be.
+  //
+  // Which direction a connection arrives in is chance. `mateLinkArc` puts the
+  // FIRST-IN-PAIR mate at p1, and which mate of a pair landed on which contig
+  // is nothing but which end of the fragment was sequenced first, so one
+  // translocation reaches here as chr1->chr7 from some of its pairs and as
+  // chr7->chr1 from the others. Keyed raw, those are two clusters carrying half
+  // the support each — and at the default floor of 2 an event supported by one
+  // pair in each direction vanishes outright, both clusters counting 1. That is
+  // the ordinary two-region SV view, where both contigs are on screen and every
+  // pair therefore resolves as a mate link rather than as an off-screen one.
+  //
+  // Only the COUNTING is folded. Each tick still draws at the coordinate its own
+  // read put it at — see the caller.
+  const bpA = new Float64Array(arcs.length)
+  const bpB = new Float64Array(arcs.length)
   const byContigPair = new Map<string, number[]>()
-  for (const [i, arc] of arcs.entries()) {
-    getOrCreate(byContigPair, `${arc.p1Ref}\0${arc.p2Ref}`, () => []).push(i)
+  for (let i = 0; i < arcs.length; i++) {
+    const arc = arcs[i]!
+    if (arc.p1Ref === arc.p2Ref) {
+      continue
+    }
+    const swap = arc.p2Ref < arc.p1Ref
+    bpA[i] = swap ? arc.p2Bp : arc.p1Bp
+    bpB[i] = swap ? arc.p1Bp : arc.p2Bp
+    const key = swap
+      ? `${arc.p2Ref}\0${arc.p1Ref}`
+      : `${arc.p1Ref}\0${arc.p2Ref}`
+    getOrCreate(byContigPair, key, () => []).push(i)
   }
   for (const indices of byContigPair.values()) {
-    indices.sort((a, b) => arcs[a]!.p1Bp - arcs[b]!.p1Bp)
+    indices.sort((a, b) => bpA[a]! - bpA[b]!)
     let members: number[] = []
     let mates: number[] = []
     let lastBp = 0
@@ -1028,20 +1056,19 @@ function clusteredInterchromSupport(
       }
     }
     for (const i of indices) {
-      const arc = arcs[i]!
       if (
         members.length > 0 &&
-        arc.p1Bp - lastBp <= windowBp &&
-        mates.some(m => Math.abs(m - arc.p2Bp) <= windowBp)
+        bpA[i]! - lastBp <= windowBp &&
+        mates.some(m => Math.abs(m - bpB[i]!) <= windowBp)
       ) {
         members.push(i)
-        mates.push(arc.p2Bp)
+        mates.push(bpB[i]!)
       } else {
         flush()
         members = [i]
-        mates = [arc.p2Bp]
+        mates = [bpB[i]!]
       }
-      lastBp = arc.p1Bp
+      lastBp = bpA[i]!
     }
     flush()
   }
@@ -1090,18 +1117,15 @@ function resolveArcs(
   // too narrow to hold one cluster together on a 3 kb mate-pair library, where
   // it would split a real translocation into the singletons the floor then eats.
   //
-  // Skipped outright at support 1, which is the default: the pass is pure
-  // overhead when nothing can be filtered out.
+  // Skipped outright at support 1 — the menu's `all` position — where the pass
+  // is pure overhead because nothing can be filtered out.
   const interchromSupport =
     minInterchromSupport > 1
       ? clusteredInterchromSupport(
-          pendingArcs.filter(a => a.p1Ref !== a.p2Ref),
+          pendingArcs,
           stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
         )
       : undefined
-  // Walked in step with the filtered array above rather than indexed by the
-  // outer loop's position, which counts intra-chromosomal arcs too.
-  let interchromIdx = 0
 
   // One tick per breakpoint, COUNTING the reads that agree on it — the same
   // move `arcKey` makes for arcs, and for the same two reasons.
@@ -1136,7 +1160,8 @@ function resolveArcs(
     lines.push(line)
   }
 
-  for (const arc of pendingArcs) {
+  for (let i = 0; i < pendingArcs.length; i++) {
+    const arc = pendingArcs[i]!
     const { p1Ref, p1Bp, p2Ref, p2Bp } = arc
     // Interchromosomal: never an arc — drop a tick on each endpoint, always
     // painted the single dedicated interchromosomal color. Insert size,
@@ -1153,10 +1178,10 @@ function resolveArcs(
       // them is what a translocation looks like. Merging a cluster into one tick
       // would have to invent a position for it, which is the thing `arcKey`'s
       // exact-coordinate rule exists to refuse.
-      const support = interchromSupport?.[interchromIdx++]
       if (
         drawInter &&
-        (support === undefined || support >= minInterchromSupport)
+        (interchromSupport === undefined ||
+          interchromSupport[i]! >= minInterchromSupport)
       ) {
         // Each endpoint's tick names the OTHER endpoint's chromosome — that is
         // the whole content of a translocation marker, and the direction is

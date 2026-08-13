@@ -309,6 +309,74 @@ describe('computeArcsFromPileupData', () => {
       const data = scattered([2000], [5000], { upper: 600, lower: 100 })
       expect(run(data, 1).lines).toHaveLength(2)
     })
+
+    // The two-region SV view, which is what read connections are FOR, and where
+    // the count is not free to key on the direction a connection arrived in.
+    // With both contigs on screen every supporting pair resolves as a mate link,
+    // and `mateLinkArc` puts the FIRST-IN-PAIR mate at p1 — so a translocation
+    // reaches `clusteredInterchromSupport` as chr1->chr2 from the pairs whose
+    // read1 landed on chr1 and as chr2->chr1 from the rest, which is chance and
+    // nothing else.
+    //
+    // Counted per raw direction, this event scored 1 and 1 rather than 2, and
+    // the default floor of 2 took all four of its ticks off the screen.
+    test('a translocation counts both mate orders as one cluster', () => {
+      const chr1 = makePileupData({
+        readPositions: new Uint32Array([2000, 2100, 2100, 2200]),
+        readFlags: new Uint16Array([
+          SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+          SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+        ]),
+        readStrands: new Int8Array([1, 1]),
+        readInsertSizes: new Float32Array([0, 0]),
+        readPairOrientations: new Uint8Array([1, 1]),
+        readKeys: ['c1a', 'c1b'],
+        ...namesToBlock(['a', 'b']),
+        ...nextRefsToTable(['chr2', 'chr2']),
+        readNextPositions: new Uint32Array([5000, 5100]),
+        insertSizeStats: { upper: 600, lower: 100 },
+      })
+      // Pair `b` is the same event seen the other way round: its read1 is the
+      // chr2 mate, so its connection is emitted chr2->chr1.
+      const chr2 = makePileupData({
+        readPositions: new Uint32Array([5000, 5100, 5100, 5200]),
+        readFlags: new Uint16Array([
+          SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+          SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        ]),
+        readStrands: new Int8Array([1, 1]),
+        readInsertSizes: new Float32Array([0, 0]),
+        readPairOrientations: new Uint8Array([1, 1]),
+        readKeys: ['c2a', 'c2b'],
+        ...namesToBlock(['a', 'b']),
+        ...nextRefsToTable(['chr1', 'chr1']),
+        readNextPositions: new Uint32Array([2000, 2100]),
+        insertSizeStats: { upper: 600, lower: 100 },
+      })
+      const twoRegions = [
+        { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
+        { refName: 'chr2', start: 4000, end: 9000, displayedRegionIndex: 1 },
+      ]
+      const { lines } = computeArcsFromPileupData(
+        new Map([
+          [0, chr1],
+          [1, chr2],
+        ]),
+        twoRegions,
+        {
+          colorByType: 'insertSize',
+          drawInter: true,
+          drawLongRange: true,
+          minInterchromSupport: 2,
+        },
+      )
+      expect(lines.map(l => `${l.x.refName}:${l.x.bp}`).sort()).toEqual([
+        'chr1:2000',
+        'chr1:2100',
+        'chr2:5000',
+        'chr2:5100',
+      ])
+    })
   })
 
   // At depth the concordant domes stop being context and become the picture —
