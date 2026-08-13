@@ -1,5 +1,5 @@
 import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
-import { acquireCanvas2D } from '@jbrowse/render-core/canvasContext'
+import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import { drawDotplotInstances } from './drawDotplot.ts'
 
@@ -9,16 +9,19 @@ import type {
   DotplotRenderingBackend,
 } from './dotplotRenderingBackendTypes.ts'
 
-export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
+export class Canvas2DDotplotRenderer
+  extends Canvas2DRenderingBackendBase
+  implements DotplotRenderingBackend
+{
   private geometries = new Map<number, DotplotGeometryData>()
   private width = 0
   private height = 0
 
   constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    this.ctx = acquireCanvas2D(canvas)
+    // The base owns `canvas`, the acquired 2D context, the no-op `dispose` and
+    // the no-op `setErrorHandler` (Canvas2D allocates no GPU resources, so it
+    // has no OOM channel — but the hook wires every backend the same way).
+    super(canvas)
   }
 
   // Just records the CSS size; the backing store is sized in `render` by
@@ -69,7 +72,7 @@ export class Canvas2DDotplotRenderer implements DotplotRenderingBackend {
     }
   }
 
-  dispose() {
+  override dispose() {
     this.geometries.clear()
   }
 }

@@ -132,11 +132,14 @@ export interface RenderLifecycleModel<RenderingBackendType> {
 export function useRenderingBackend<
   RenderingBackendType extends {
     dispose(): void
-    // Optional: the shared GPU/Canvas2D backend bases provide it (forwarding to
-    // the HAL's OOM reporter), but standalone backends (dotplot, synteny) that
-    // implement their interface directly need not — they simply forgo OOM->
-    // renderError routing until they opt in.
-    setErrorHandler?: (handler: (error: Error) => void) => void
+    // Required, and the requirement is the point: the GPU base forwards to the
+    // HAL's OOM reporter and the Canvas2D base no-ops, so a backend gets this
+    // by extending one of them. It was optional while dotplot and synteny
+    // implemented their interfaces standalone — and those two, the ones that
+    // allocate the largest buffers in the app, were exactly the ones whose
+    // over-limit allocations reached no one. `?.` here reads as tolerance and
+    // spends as silence.
+    setErrorHandler: (handler: (error: Error) => void) => void
   },
 >(
   factory: (canvas: HTMLCanvasElement) => Promise<RenderingBackendType>,
@@ -334,7 +337,7 @@ export function useRenderingBackend<
             // renderError so an over-large view shows an error overlay (with a
             // manual Retry) instead of a silently-blank canvas. Not gated on
             // contextLostRef, so it never auto-retries — an OOM recurs on retry.
-            r.setErrorHandler?.(e => {
+            r.setErrorHandler(e => {
               if (nodeAlive(model)) {
                 model.setRenderError(e)
               }

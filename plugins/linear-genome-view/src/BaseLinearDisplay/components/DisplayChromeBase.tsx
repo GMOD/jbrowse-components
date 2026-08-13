@@ -15,6 +15,7 @@ import type {
   MouseTracker,
 } from '@jbrowse/core/ui/useMouseTracking'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
+import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 import type { ComponentPropsWithRef, ReactNode } from 'react'
 
@@ -133,7 +134,7 @@ export type DisplayChromeBaseProps<B> = {
   onPointerPosition?: (state?: MouseState) => void
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>
 
-function DisplayChromeBaseInner<B extends { dispose(): void }>({
+function DisplayChromeBaseInner<B extends RenderingBackend>({
   model,
   factory,
   children,

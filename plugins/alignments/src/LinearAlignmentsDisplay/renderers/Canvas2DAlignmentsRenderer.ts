@@ -2,7 +2,7 @@ import {
   clipBlockForCanvas,
   prepareCanvas,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { acquireCanvas2D } from '@jbrowse/render-core/canvasContext'
+import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
@@ -267,14 +267,14 @@ export function drawAlignmentsToCtx(
  * and export can't drift. `renderBlocks` paints via the pure
  * `drawAlignmentBlocks` entry point.
  */
-export class Canvas2DAlignmentsRenderer implements AlignmentsRenderingBackend {
-  private ctx: CanvasRenderingContext2D
-  private canvas: HTMLCanvasElement
+export class Canvas2DAlignmentsRenderer
+  extends Canvas2DRenderingBackendBase
+  implements AlignmentsRenderingBackend
+{
   private regions: ReadonlyMap<number, Canvas2DRegionData> = new Map()
 
   constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    this.ctx = acquireCanvas2D(canvas)
+    super(canvas)
   }
 
   sync(sources: AlignmentsSources) {

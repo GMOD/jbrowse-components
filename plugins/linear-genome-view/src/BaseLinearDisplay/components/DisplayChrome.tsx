@@ -11,6 +11,7 @@ import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 import type { DisplayChromeBaseProps } from './DisplayChromeBase.tsx'
 import type { DisplayStatusChromeBaseProps } from './DisplayStatusChromeBase.tsx'
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
+import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 
 export type { ChromeModel } from './DisplayChromeBase.tsx'
 export type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
@@ -72,7 +73,7 @@ function useChromeOverlays() {
  * forwards. The generic `<B>` threads through to `DisplayChromeBase`, which is
  * the observer.
  */
-export default function DisplayChrome<B extends { dispose(): void }>(
+export default function DisplayChrome<B extends RenderingBackend>(
   // The base's own props minus the one thing this file supplies. Restating the
   // list here is how the render-prop handle grew a `containerRef` no display
   // ever read: declared on `CanvasHandle`, copied into a second inline shape

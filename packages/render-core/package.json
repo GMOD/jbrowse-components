@@ -40,6 +40,7 @@
     "./installPerRegionLifecycle": "./src/installPerRegionLifecycle.ts",
     "./instanceCache": "./src/instanceCache.ts",
     "./instancePass": "./src/instancePass.ts",
+    "./keyedRenderingBackend": "./src/keyedRenderingBackend.ts",
     "./OverlayCanvas": "./src/OverlayCanvas.tsx",
     "./keyedUploadSync": "./src/keyedUploadSync.ts",
     "./perRegionRenderingBackend": "./src/perRegionRenderingBackend.ts",
@@ -135,6 +136,10 @@
       "./instancePass": {
         "types": "./esm/instancePass.d.ts",
         "import": "./esm/instancePass.js"
+      },
+      "./keyedRenderingBackend": {
+        "types": "./esm/keyedRenderingBackend.d.ts",
+        "import": "./esm/keyedRenderingBackend.js"
       },
       "./OverlayCanvas": {
         "types": "./esm/OverlayCanvas.d.ts",
@@ -247,6 +252,9 @@
         ],
         "instancePass": [
           "esm/instancePass.d.ts"
+        ],
+        "keyedRenderingBackend": [
+          "esm/keyedRenderingBackend.d.ts"
         ],
         "OverlayCanvas": [
           "esm/OverlayCanvas.d.ts"

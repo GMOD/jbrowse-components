@@ -1,3 +1,4 @@
+import type { KeyedRenderingBackend } from '@jbrowse/render-core/keyedRenderingBackend'
 // Per-segment line geometry, in SoA form, with no color in it. Coordinates are
 // absolute genomic cumBp (Float64Array); the CPU/SVG renderers consume them
 // directly. The GPU renderer stores each coord window-relative (cumBp - base) as
@@ -44,10 +45,8 @@ export interface DotplotRenderState {
   displayKeys: readonly number[]
 }
 
-export interface DotplotRenderingBackend {
-  resize(width: number, height: number): void
-  uploadGeometry(displayKey: number, data: DotplotGeometryData): void
-  deleteGeometry(displayKey: number): void
-  render(state: DotplotRenderState): void
-  dispose(): void
-}
+// A keyed shared-canvas backend: one canvas, a key per display in the view.
+export type DotplotRenderingBackend = KeyedRenderingBackend<
+  DotplotGeometryData,
+  DotplotRenderState
+>

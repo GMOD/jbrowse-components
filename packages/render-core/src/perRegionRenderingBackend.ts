@@ -9,6 +9,7 @@ import {
 import type { BlockClipResult } from './blockClipUtils.ts'
 import type { InstancePass } from './instancePass.ts'
 import type { RenderBlock } from './renderBlock.ts'
+import type { RenderingBackend } from './renderingBackendBase.ts'
 
 /**
  * Minimum render-state shape the GPU frame scaffold needs: the CSS-pixel
@@ -42,7 +43,7 @@ export interface PerRegionRenderingBackend<
   RenderState,
   Block = RenderBlock,
   RenderData = UploadData,
-> {
+> extends RenderingBackend {
   uploadRegion(displayedRegionIndex: number, data: UploadData): void
   pruneRegions(activeRegions: Iterable<number>): void
   /**
@@ -64,7 +65,6 @@ export interface PerRegionRenderingBackend<
     regions: ReadonlyMap<number, RenderData>,
     state: RenderState,
   ): boolean
-  dispose(): void
 }
 
 /**

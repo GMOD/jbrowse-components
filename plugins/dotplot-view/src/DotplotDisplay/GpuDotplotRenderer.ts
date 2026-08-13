@@ -1,5 +1,6 @@
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
+import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { DOTPLOT_INSTANCE_CACHE } from './instanceInterleave.ts'
@@ -31,10 +32,11 @@ interface AxisBase {
   baseV: number
 }
 
-export class GpuDotplotRenderer implements DotplotRenderingBackend {
-  private hal: GpuHal
-  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
+export class GpuDotplotRenderer
+  extends GpuRenderingBackendBase
+  implements DotplotRenderingBackend
+{
+  private uniformF32: Float32Array
   private baseByKey = new Map<number, AxisBase>()
   // Packed instance bytes per display, re-packed only when the geometry moves.
   private interleaveCache = createInstanceCache(DOTPLOT_INSTANCE_CACHE)
@@ -42,7 +44,12 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
   private height = 0
 
   constructor(hal: GpuHal) {
-    this.hal = hal
+    // The base owns `hal`, the reusable uniform scratch, `dispose`, and the
+    // `setErrorHandler` that routes a HAL over-limit allocation to renderError
+    // — which is what puts the "too much data, zoom in" banner on a dotplot too
+    // big for the device, instead of a blank canvas.
+    super(hal, UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
   }
 
   resize(width: number, height: number) {
@@ -112,10 +119,10 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
     this.hal.endFrame()
   }
 
-  dispose() {
+  override dispose() {
     this.baseByKey.clear()
     this.interleaveCache.clear()
-    this.hal.dispose()
+    super.dispose()
   }
 }
 

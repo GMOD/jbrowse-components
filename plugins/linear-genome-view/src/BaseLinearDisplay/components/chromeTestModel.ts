@@ -2,6 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
+import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 
 // Shared fixture for the two chrome suites: `DisplayChrome.test.tsx` drives the
 // MUI overlay set, `plainChromeOverlays.test.tsx` drives the toolkit-free one.
@@ -9,12 +10,13 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 // test against identical state rather than two hand-built approximations that
 // can quietly diverge.
 
-export interface StubBackend {
-  dispose(): void
-}
+export interface StubBackend extends RenderingBackend {}
 
 export function stubFactory() {
-  return Promise.resolve<StubBackend>({ dispose() {} })
+  return Promise.resolve<StubBackend>({
+    dispose() {},
+    setErrorHandler() {},
+  })
 }
 
 // Minimal real MST model satisfying `ChromeModel & RenderLifecycleModel`.

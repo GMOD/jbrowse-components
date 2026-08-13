@@ -3,6 +3,8 @@ import {
   GpuRenderingBackendBase,
 } from './renderingBackendBase.ts'
 
+import type { RenderingBackend } from './renderingBackendBase.ts'
+
 /**
  * Shared contract for monolithic GPU backends (HiC, LD, multi-variant
  * matrix) — displays with no region partitioning. One bulk upload, one
@@ -14,10 +16,12 @@ import {
  * extend this interface with their own upload methods (e.g.
  * `uploadColorRamp`); the base contract stays minimal.
  */
-export interface GlobalRenderingBackend<UploadData, RenderState> {
+export interface GlobalRenderingBackend<
+  UploadData,
+  RenderState,
+> extends RenderingBackend {
   uploadData(data: UploadData): void
   render(data: UploadData | null, state: RenderState): void
-  dispose(): void
 }
 
 /**

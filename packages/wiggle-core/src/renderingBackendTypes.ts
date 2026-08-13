@@ -9,7 +9,7 @@ import {
 } from './wiggleRenderModes.generated.ts'
 
 import type { WiggleScaleType } from './normalize.ts'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 export type WiggleRenderingType = 0 | 1 | 2 | 3 | 4
 
@@ -91,14 +91,12 @@ export interface SourceRenderData {
   gapLimitBp?: number
 }
 
-export interface WiggleRenderingBackend {
-  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]): void
-  pruneRegions(activeRegions: number[]): void
-  /** See `PerRegionRenderingBackend.renderBlocks` — true iff content painted. */
-  renderBlocks(
-    blocks: RenderBlock[],
-    regions: ReadonlyMap<number, SourceRenderData[]>,
-    renderState: WiggleGPURenderState,
-  ): boolean
-  dispose(): void
-}
+// Per-region streamed, like canvas/MAF/manhattan. Spelled as the shared
+// contract rather than re-declared member-for-member: the hand-written copy had
+// drifted to referring the reader to `PerRegionRenderingBackend.renderBlocks`
+// for its own method's meaning, and it silently lacked `setErrorHandler`, so
+// nothing routed a HAL over-limit allocation to the display's renderError.
+export type WiggleRenderingBackend = PerRegionRenderingBackend<
+  SourceRenderData[],
+  WiggleGPURenderState
+>

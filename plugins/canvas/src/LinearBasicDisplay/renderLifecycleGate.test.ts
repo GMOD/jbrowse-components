@@ -23,6 +23,7 @@ function makeBackend() {
     pruneRegions() {
       calls.prunes++
     },
+    setErrorHandler() {},
     renderBlocks() {
       calls.renders++
       return true

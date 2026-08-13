@@ -12,6 +12,7 @@ import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
 
 export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
@@ -187,10 +188,11 @@ export interface AlignmentsSources {
   readConnectionsLineWidth: number
 }
 
-export interface AlignmentsRenderingBackend {
+// Whole-map synced, and the only one: `sync(sources)` rebuilds every region
+// together because pileup Y-rows must be assigned consistently across regions.
+export interface AlignmentsRenderingBackend extends RenderingBackend {
   sync(sources: AlignmentsSources): void
   renderBlocks(blocks: RenderBlock[], state: RenderState): boolean
-  dispose(): void
 }
 
 export type { RenderBlock } from '@jbrowse/render-core/renderBlock'

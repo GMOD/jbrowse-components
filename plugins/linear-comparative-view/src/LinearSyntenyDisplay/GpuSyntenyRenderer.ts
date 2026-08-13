@@ -1,5 +1,6 @@
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
+import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import {
@@ -64,11 +65,14 @@ function makePickCtx(): CanvasRenderingContext2D | undefined {
   return undefined
 }
 
-export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
-  private hal: GpuHal
+export class GpuSyntenyRenderer
+  extends GpuRenderingBackendBase
+  implements SyntenyRenderingBackend
+{
+  // Held for the pick path, which measures against the element's own size. The
+  // GPU base owns everything else.
   private canvas: HTMLCanvasElement
-  private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uniformF32 = new Float32Array(this.uniformData)
+  private uniformF32: Float32Array
 
   private cache = new SyntenyGeometryCache()
   // Which fill pass each region's GPU buffer is currently uploaded against.
@@ -99,7 +103,12 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   private pickCtx: CanvasRenderingContext2D | undefined
 
   constructor(hal: GpuHal, canvas: HTMLCanvasElement) {
-    this.hal = hal
+    // The base owns `hal`, the reusable uniform scratch, `dispose`, and the
+    // `setErrorHandler` that routes a HAL over-limit allocation to renderError
+    // — which is what puts the "too much data, zoom in" banner on an
+    // all-vs-all band too big for the device, instead of a blank canvas.
+    super(hal, UNIFORMS_SIZE_BYTES)
+    this.uniformF32 = new Float32Array(this.uniformData)
     this.canvas = canvas
   }
 
@@ -265,11 +274,11 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     })
   }
 
-  dispose() {
+  override dispose() {
     this.cache.clear()
     this.interleaveCache.clear()
     this.outlineBuffers.clear()
-    this.hal.dispose()
+    super.dispose()
   }
 
   private writeUniforms(

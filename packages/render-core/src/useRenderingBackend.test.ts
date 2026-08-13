@@ -31,7 +31,7 @@ function createMockFactory(shouldReject = false) {
     if (shouldReject) {
       return Promise.reject(new Error('GPU crash'))
     }
-    return Promise.resolve({ dispose: jest.fn() })
+    return Promise.resolve({ dispose: jest.fn(), setErrorHandler: jest.fn() })
   }
 }
 
@@ -128,7 +128,9 @@ describe('useRenderingBackend', () => {
   test('disposes old backend and re-initializes on WebGL context restore', async () => {
     const canvas = document.createElement('canvas')
     const dispose = jest.fn()
-    const factory = jest.fn().mockResolvedValue({ dispose })
+    const factory = jest
+      .fn()
+      .mockResolvedValue({ dispose, setErrorHandler: jest.fn() })
     const model = createMockModel()
 
     const { result } = renderHook(() => useRenderingBackend(factory, model))
@@ -172,7 +174,9 @@ describe('useRenderingBackend', () => {
   test('disposes old backend and re-initializes on WebGPU device loss', async () => {
     const canvas = document.createElement('canvas')
     const dispose = jest.fn()
-    const factory = jest.fn().mockResolvedValue({ dispose })
+    const factory = jest
+      .fn()
+      .mockResolvedValue({ dispose, setErrorHandler: jest.fn() })
     const model = createMockModel()
 
     const { result } = renderHook(() => useRenderingBackend(factory, model))
@@ -193,7 +197,9 @@ describe('useRenderingBackend', () => {
   })
 
   test('stops re-initializing after a bounded number of device losses', async () => {
-    const factory = jest.fn().mockResolvedValue({ dispose: jest.fn() })
+    const factory = jest
+      .fn()
+      .mockResolvedValue({ dispose: jest.fn(), setErrorHandler: jest.fn() })
     const model = createReactiveModel()
     const canvas = document.createElement('canvas')
 
@@ -221,7 +227,9 @@ describe('useRenderingBackend', () => {
   })
 
   test('a device loss recovers silently while it is within budget', async () => {
-    const factory = jest.fn().mockResolvedValue({ dispose: jest.fn() })
+    const factory = jest
+      .fn()
+      .mockResolvedValue({ dispose: jest.fn(), setErrorHandler: jest.fn() })
     const model = createReactiveModel()
     const canvas = document.createElement('canvas')
 
@@ -246,7 +254,9 @@ describe('useRenderingBackend', () => {
     const canvas1 = document.createElement('canvas')
     const canvas2 = document.createElement('canvas')
     const dispose = jest.fn()
-    const factory = jest.fn().mockResolvedValue({ dispose })
+    const factory = jest
+      .fn()
+      .mockResolvedValue({ dispose, setErrorHandler: jest.fn() })
     const model = createMockModel()
 
     const { result } = renderHook(() => useRenderingBackend(factory, model))

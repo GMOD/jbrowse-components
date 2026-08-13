@@ -1,4 +1,5 @@
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { KeyedRenderingBackend } from '@jbrowse/render-core/keyedRenderingBackend'
 
 export interface SyntenyTrackRenderParams {
   /** y offset (CSS px) from the top of the canvas to the top of this track */
@@ -38,17 +39,18 @@ export interface SyntenyPickResult {
   featureIndex: number
 }
 
-export interface SyntenyRenderingBackend {
-  resize(width: number, height: number): void
-  uploadGeometry(key: number, data: SyntenyInstanceData): void
-  deleteGeometry(key: number): void
-  /**
-   * Repaint the whole band: clear, then draw every key in `perTrack` that has
-   * geometry. Unconditional — an empty `perTrack` (no synteny track on this row
-   * pair, or the one it had was hidden) paints the background alone, which is
-   * what erases the departed track. Nothing else repaints this canvas.
-   */
-  render(state: SyntenyRenderState): void
+/**
+ * A keyed shared-canvas backend: one canvas, a key per track level.
+ *
+ * `render` repaints the whole band — clear, then draw every key in `perTrack`
+ * that has geometry. Unconditional: an empty `perTrack` (no synteny track on
+ * this row pair, or the one it had was hidden) paints the background alone,
+ * which is what erases the departed track. Nothing else repaints this canvas.
+ */
+export interface SyntenyRenderingBackend extends KeyedRenderingBackend<
+  SyntenyInstanceData,
+  SyntenyRenderState
+> {
   // Pick takes the current render state explicitly — no stale-snapshot
   // coupling with the last render() call. Callers read state from the model
   // (the same getter that feeds render) and pass it in.
@@ -57,5 +59,4 @@ export interface SyntenyRenderingBackend {
     y: number,
     state: SyntenyRenderState,
   ): SyntenyPickResult | undefined
-  dispose(): void
 }

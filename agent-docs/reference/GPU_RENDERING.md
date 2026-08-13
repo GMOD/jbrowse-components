@@ -674,16 +674,32 @@ correct caching. (The first fetch still fires: `FetchVisibleRegions` gates it on
 consults `isCacheValid` for covered blocks, so an always-`true` `isCacheValid`
 suppresses only *re*-fetches.)
 
-### Three upload patterns
+### Four upload patterns
 
-Per-LGV displays use one of three upload shapes. Pick the one that matches the
-data shape, not the one your neighbour copied:
+Displays use one of four upload shapes. Pick the one that matches the data
+shape, not the one your neighbour copied. **Every one of these contracts extends
+`RenderingBackend`** (`dispose` + `setErrorHandler`), and a backend gets that by
+extending `GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` — see
+"Every backend extends a base" below for what happened to the three that didn't.
 
-| Pattern | Upload methods | Render | Use when | Examples |
-|---|---|---|---|---|
-| **Per-region streamed** | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, regions, state)` | each region's data is independent, reactive per-region updates | canvas, wiggle, multi-wiggle, MAF, manhattan, multi-variant |
-| **Whole-map synced** | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently (main-thread cross-region Y layout), or encoder settings drive packing | alignments, multi-LGV synteny |
-| **Monolithic** (base `GlobalRenderingBackend` / `GpuGlobalRenderingBackend`) | `uploadX(data)` | `render(state)` (no blocks) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalDataDisplayMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch); dotplot (view-level `RenderLifecycleMixin`) |
+| Pattern | Contract | Upload methods | Render | Use when | Examples |
+|---|---|---|---|---|---|
+| **Per-region streamed** | `PerRegionRenderingBackend` | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, regions, state)` | each region's data is independent, reactive per-region updates | canvas, wiggle, multi-wiggle, MAF, manhattan, multi-variant |
+| **Whole-map synced** | (its own; one consumer) | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently — main-thread cross-region Y layout | alignments, and only alignments |
+| **Monolithic** | `GlobalRenderingBackend` | `uploadX(data)` | `render(data, state)` (no blocks, no keys) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalDataDisplayMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch) |
+| **Keyed shared-canvas** | `KeyedRenderingBackend` | `uploadGeometry(key, data)` + `deleteGeometry(key)` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | dotplot (key per display), multi-LGV synteny (key per level) |
+
+The last row is the one that keeps getting misfiled, and this table had it wrong
+in both directions until 2026-08-13: dotplot was listed as Monolithic — whose
+base class it did not extend and whose `uploadData(data)` signature it did not
+have — and synteny as whole-map synced, which would need a `sync` it has never
+had. Both are keyed, and keyed is neither of its neighbours: monolithic has no
+key at all, and per-region hands the model's data map back at render time
+instead of the backend owning it.
+
+`KeyedRenderingBackend` is an interface with no abstract class under it, unlike
+the other two. The shared state is the base classes; there is no shared behavior
+on top, because the two render loops genuinely differ.
 
 MAF is **per-region streamed** (like canvas/wiggle), not whole-map synced. MAF
 blocks are independent — no main-thread Y-layout couples adjacent regions — so
@@ -695,8 +711,30 @@ whenever any region's input changes. If a future MAF feature added cross-region
 coupling it would move to whole-map synced — until then, per-region streamed is
 the right shape.
 
-All three patterns expose the same lifecycle (`attachRenderingBackend({ upload,
+All four patterns expose the same lifecycle (`attachRenderingBackend({ upload,
 render })`); the difference is how the upload callback shovels bytes.
+
+#### Every backend extends a base, and the reason is the error channel
+
+`GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` hold what every
+backend has: the `hal` + uniform scratch (or `canvas` + 2D context), `dispose`,
+and `setErrorHandler` — the last of which routes a HAL over-limit allocation to
+the display's `renderError`, which is what raises the "too much data to render
+on this GPU — zoom in" banner instead of leaving a blank canvas.
+
+Three backends used to implement their interfaces standalone and hand-roll the
+rest: **alignments, dotplot and multi-LGV synteny**. Since none of them declared
+`setErrorHandler` and `useRenderingBackend` called it as `r.setErrorHandler?.()`,
+those three — the largest vertex-buffer allocators in the app, an all-vs-all
+band and a whole-genome dotplot among them — were exactly the three whose OOMs
+reached nobody. The HAL reported, `OomReporter`'s handler was null, the console
+got a line and the view painted blank. Both displays had the banner built and
+wired the whole time.
+
+`setErrorHandler` is **required** on `RenderingBackend` now and the `?.` is gone,
+so a backend that doesn't extend a base is a compile error rather than a display
+that silently forgoes its error channel. `?.` on a capability every implementer
+should have reads as tolerance and spends as silence.
 
 #### Per-region streamed: per-key autoruns (`installPerRegionLifecycle`)
 

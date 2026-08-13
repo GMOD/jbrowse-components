@@ -5,7 +5,7 @@ import {
   abgrRed,
 } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
-import { acquireCanvas2D } from '@jbrowse/render-core/canvasContext'
+import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import {
   fillShade,
@@ -252,9 +252,10 @@ export function drawSyntenyTrack(
   }
 }
 
-export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
-  private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
+export class Canvas2DSyntenyRenderer
+  extends Canvas2DRenderingBackendBase
+  implements SyntenyRenderingBackend
+{
   private cache = new SyntenyGeometryCache()
 
   private get dpr() {
@@ -262,8 +263,9 @@ export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
   }
 
   constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
-    this.ctx = acquireCanvas2D(canvas)
+    // The base owns `canvas`, the acquired 2D context, and the no-op
+    // `setErrorHandler` (no GPU resources, so no OOM channel to forward).
+    super(canvas)
   }
 
   resize(width: number, height: number) {

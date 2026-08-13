@@ -7,6 +7,7 @@ import {
   getDpr,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
+import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import {
@@ -666,12 +667,14 @@ function pushSelectionFrame(
   )
 }
 
-export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
-  private hal: GpuHal
-  private uData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
-  private uF32 = new Float32Array(this.uData)
-  private uU32 = new Uint32Array(this.uData)
-  private uI32 = new Int32Array(this.uData)
+export class GpuAlignmentsRenderer
+  extends GpuRenderingBackendBase
+  implements AlignmentsRenderingBackend
+{
+  private uData: ArrayBuffer
+  private uF32: Float32Array
+  private uU32: Uint32Array
+  private uI32: Int32Array
   // Reusable scratch for save/restore around overlay & arc passes that mutate
   // the UBO. Pre-allocated to avoid per-overlay-block allocations during hover.
   private uScratch = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
@@ -684,7 +687,13 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
   private uploaded = new Map<number, UploadedRegion>()
 
   constructor(hal: GpuHal) {
-    this.hal = hal
+    // The base owns `hal`, the reusable uniform scratch, `dispose`, and the
+    // `setErrorHandler` that routes a HAL over-limit allocation to renderError.
+    super(hal, UNIFORMS_SIZE_BYTES)
+    this.uData = this.uniformData
+    this.uF32 = new Float32Array(this.uData)
+    this.uU32 = new Uint32Array(this.uData)
+    this.uI32 = new Int32Array(this.uData)
   }
 
   // Save/restore the entire UBO via byte-level memcpy. Float32Array.set on a
@@ -1067,12 +1076,12 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     this.hal.drawPass(PASS_FLAT_QUAD, OVERLAY_REGION)
   }
 
-  dispose() {
+  override dispose() {
     for (const key of this.regions.keys()) {
       this.hal.deleteRegion(key)
     }
     this.regions.clear()
     this.uploaded.clear()
-    this.hal.dispose()
+    super.dispose()
   }
 }
