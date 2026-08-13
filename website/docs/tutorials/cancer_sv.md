@@ -318,7 +318,7 @@ the reference split into four pieces run straight through: none of the 29
 spanning reads clips at any of the four junction positions, and depth does not
 dip at them.
 
-<Figure caption="The stitching at base scale over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards." src="/img/cancer_sv/derivative_inserts.png" />
+<Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the same molecules against hg38, each row stopping at a junction with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
 
 Following one read across the two alignments is what a breakpoint split view
 does: soft clipping is shown on both sides, and a curve joins each molecule's

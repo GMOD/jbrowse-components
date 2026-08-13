@@ -1208,8 +1208,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // the super-compact one (the run's own blank-below-content figure), then
     // +153 for the hg38 lane coming back off a 1px pitch so its connectors
     // have somewhere to be drawn (140 of rows, and the 13 the run then
-    // reported clipped below the fold)
-    viewportHeight: 1054,
+    // reported clipped below the fold), then -40 for that lane's coverage band
+    // going and +180 for the der3 lane matching its pitch and taking a band of
+    // its own
+    viewportHeight: 1194,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1286,9 +1288,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // takes effect once the lane stops deriving it.
                   heightMode: 'grow',
                   height: 170,
-                  coverageHeight: 40,
                   featureHeight: 5,
                   colorBy: { type: 'strand' },
+                  // A KEY FOR THE CURVES, which nothing else in the frame
+                  // supplies: `showLegend` is opt-in for every color scheme, so
+                  // a reader met two families of connector -- an orange
+                  // straight line and a purple curve -- with no statement that
+                  // they are same-strand and inverted junctions. FloatingLegend
+                  // pins to the display's top RIGHT and offers only a `top`
+                  // offset, so it lands over the first few rows of the chr12
+                  // window and there is no placing it elsewhere. Worth the
+                  // trade here: those rows are the same 28 molecules the other
+                  // twenty draw, and nothing else in the frame says what a
+                  // curve means.
+                  showLegend: true,
+                  // NO COVERAGE BAND, and not for the reason the der3 lane's
+                  // was dropped -- this one was WRONG. `showOnlySplitAlignments`
+                  // filters in the worker (`filterChainFeatures`), before
+                  // partitioning and therefore before `runCoveragePipeline`, so
+                  // the band drew depth over the chimeric subset while reading
+                  // exactly like tumour coverage. The figure makes no claim
+                  // about how deep the split reads are, and the depth claim it
+                  // DOES make now sits on the lane that can support it, below.
+                  showCoverage: false,
                 },
               ],
             },
@@ -1356,19 +1378,31 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // sized for, counted every record including the secondaries.)
                 {
                   trackId: 'reads_vs_der3',
-                  // SUPER-COMPACT, 28 chain rows at a pitch of 1 (reviewer:
-                  // "please show reads as supercompact"). This lane had argued
-                  // its way UP to 6 twice, on the ground that the capture is
-                  // 3200px wide and the page draws it about a third of that, so
-                  // a 1px row publishes at a third of a pixel and the lane is
-                  // hash rather than 28 readable bars. That reasoning is on the
-                  // record and was overridden knowing it; the lane is now 28px
-                  // where it was 175, and what it shows is the shape of the
-                  // stack rather than any individual read.
+                  // THE SAME PITCH AS THE hg38 LANE, because this figure is a
+                  // comparison and a comparison is drawn at one scale. The
+                  // super-compact 1px pitch this lane took (reviewer: "please
+                  // show reads as supercompact") published as a ~9px strip of
+                  // hash, so once the lane above came off 1px to make its
+                  // connectors legible, the readable half of the figure was
+                  // the tearing and the unreadable half was the evidence that
+                  // the contig fixes it. That is backwards: "these molecules
+                  // run unbroken" is the claim, and a reader has to be able to
+                  // follow a row across the junctions to check it.
+                  //
+                  // The height case for 1px is on the record twice over and is
+                  // what this reverses; the lane costs ~140px again.
                   heightMode: 'grow',
                   height: 175,
-                  showCoverage: false,
-                  featureHeight: 1,
+                  featureHeight: 5,
+                  // THE DEPTH CLAIM, which the tutorial makes in prose ("depth
+                  // does not dip at them") and no lane had drawn since this
+                  // one's band was dropped. It belongs here rather than on the
+                  // hg38 lane: nothing filters this fetch to a subset (the
+                  // flagExclude below drops secondaries and unmapped, keeping
+                  // primary + supplementary), so the band is the realigned
+                  // depth the sentence is about, flat across all four
+                  // junctions.
+                  coverageHeight: 40,
                   linkedReads: 'normal',
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
