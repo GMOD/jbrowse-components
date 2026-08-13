@@ -9,13 +9,20 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 // across the bottom of the laid-out rows, captioned, scrolling with the reads.
 //
 // This used to be a `warning`-toned chip pinned in the bottom-right corner whose
-// press set `maxHeight` to 1,000,000. Both halves were wrong on deep data. The
-// alert tone says something has gone wrong, but at 300x the 6000px default cap
-// is reached at essentially every locus, so the chip was simply always lit —
-// and a permanently-lit warning is not a disclosure, it is furniture. The press
-// was worse: it wrote a config slot, so one click on an always-present control
-// silently committed the track to laying out every read at every locus, with
-// the notice then gone and the only way back a dialog in the track menu.
+// press set `maxHeight` to 1,000,000. Both halves were wrong, and the press was
+// the worse one: it writes a CONFIG SLOT, so a single click committed the track
+// to laying out every read at every locus, the notice then vanished, and the
+// only way back was a dialog in the track menu. Reported as having been
+// dismissed by someone who did not expect a click to do anything irreversible.
+//
+// The alert tone was the other half. Reads collapsing onto the bottom row is
+// the cap doing its job at a depth the cap was written for, not a fault, and an
+// alert-toned mark says a fault. (An earlier draft of this comment claimed the
+// 6000px default is reached at essentially every locus at 300x, which is simply
+// false — measured on HG002 300x at 1:2,000,000, the pileup lays out 431 rows
+// against a cap that allows 750. It takes roughly 1.7x that depth, or a larger
+// `featureHeight`, to reach it. The tone is wrong on its own terms; it did not
+// need a frequency argument and the one it had was invented.)
 //
 // So the notice is drawn where the fact is, at the boundary it is about, and
 // does nothing when clicked. You meet it by scrolling to the end of the reads,

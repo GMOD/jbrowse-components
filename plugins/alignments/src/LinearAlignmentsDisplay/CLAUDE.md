@@ -68,13 +68,18 @@ override OF `maxHeight`, so a lane already clipped there gets the identical cap
 back while the override silences the flag.
 
 **The ceiling notice is deliberately inert, and deliberately not a chip.** It
-was a `warning`-toned corner chip whose press set `maxHeight` to 1,000,000. On
-deep data (300x short reads) the 6000px default is reached at essentially every
-locus, so the alert tone was permanently lit — furniture, not a disclosure — and
-one press on an always-present control silently committed the track, via a
-config slot, to laying out every read everywhere. A notice drawn at the boundary
-it describes is met by scrolling to the end of the reads, which is exactly when
-"there were more" is worth knowing.
+was a `warning`-toned corner chip whose press set `maxHeight` to 1,000,000. The
+press is the half that mattered: it writes a config slot, so one click committed
+the track to laying out every read everywhere, the notice then vanished, and the
+only way back was a track-menu dialog. The alert tone was the other half — reads
+collapsing onto the bottom row is the cap working, not a fault. A notice drawn
+at the boundary it describes is met by scrolling to the end of the reads, which
+is exactly when "there were more" is worth knowing.
+
+Note what this is NOT justified by, since the claim was made and is false: the
+6000px default is not reached at every locus on deep data. Measured on HG002
+300x at 1:2,000,000, the pileup lays out **431 rows against a cap allowing
+750**. Reaching it takes ~1.7x that depth or a larger `featureHeight`.
 
 ## Read height vs track height
 

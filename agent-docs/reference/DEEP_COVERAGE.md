@@ -100,15 +100,48 @@ count the same noise twice. See REJECTED_IDEAS.
 
 ## Layout and paint order
 
-- The `maxHeight` default of 6000px is ~850 rows, reached at essentially every
-  locus at 300x. That is why the truncation notice is a quiet in-place line
-  rather than a warning chip — see `LinearAlignmentsDisplay/CLAUDE.md`.
-- Concordant pairs outnumber categorized ones by roughly 50:1 even after the
+- Concordant pairs outnumber categorized ones by a wide margin even after the
   band floor, and arc strokes are opaque, so paint order had to become an
-  interest ranking (`arcPaintRank`, and ticks under arcs in `ARC_PASSES`).
+  interest ranking (`arcPaintRank`, and ticks under arcs in `ARC_PASSES`). The
+  live ratio is under "What the running app says" below.
 - `colorShortInsert` sat 1.5 L\* from the concordant grey, separated by chroma
   alone, which is the weakest channel on a 1px stroke. `palette.ts` carries the
   full CIELCh working.
+- **The `maxHeight` default is NOT reached at 300x**, contrary to what the
+  truncation-notice change first claimed. See the measurement below. The notice
+  is still a quiet in-place line rather than a warning chip, on the grounds that
+  its press wrote a config slot irreversibly and that a working cap is not a
+  fault — neither of which needs a frequency argument.
+
+## What the running app says
+
+The numbers above come from `samtools` over the same file. These come from the
+display model in a real jbrowse-web session at `1:2,000,000-2,005,000`, read out
+of `window.JBrowseSession`, and are the check that the pipeline agrees with the
+offline analysis:
+
+```
+arcs drawn                 9204
+  slot 0 normalInsert      9138      <- 138:1 against everything that means something
+  slot 1 longInsert          17
+  slot 2 shortInsert         48
+  slot 5 pairRR               1
+interchromosomal ticks        0      <- all filtered, minInterchromSupport 2
+rows laid out               431
+rows the cap allows         750      <- so pileupTruncated is FALSE at this depth
+```
+
+Two things to take from it. The 138:1 ratio is why the category-first paint
+order is load-bearing rather than a nicety: 66 arcs carrying a meaning against
+9138 that do not, all in one band, all opaque. And long-insert is 17 of 9204
+(0.18%) where the un-floored band would have painted ~1%, so the floor is doing
+on live data what the offline sweep predicted.
+
+The 431-vs-750 row count is the one that corrected a mistake. Reproduce any of
+it by pointing a local jbrowse-web at a `ChromSizesAdapter` assembly named with
+plain `1`/`2`/... contigs (the BAM is hs37d5, so no alias file is needed) and
+raising `fetchSizeLimit` or pressing Force Load — 5 kb at this depth is 6.65 Mb
+buffered and the byte gate stops it first.
 
 ## Reproducing
 
