@@ -93,6 +93,35 @@ upstream half are `agent-docs/reference/BAM_STACK_INTEGRATION.md` seam 6.
 The regime is read COUNT: the block loses on a few hundred long reads and wins
 from tens of thousands up.
 
+## The other two per-read string arrays, and the rule they share
+
+`readNextRefs` and `readSuppAlignments` are gone too, each for its own reason,
+and between them they were ~42ms a fetch on the deep short-read window
+(`benches/readNextRefs.bench.ts`).
+
+- **Mate reference is `readNextRefIds` + `nextRefNames`; `nextRefAt` reads
+  one.** The array held ONE distinct value across 153,677 entries. `refIdToName`
+  was manufacturing a string per read from a number the record already holds, so
+  the worker reads `nextRefId` and resolves a name once per contig. 24.5 ->
+  8.8ms. `buildReadInterchrom` lives beside it and compares per SLOT, not per
+  read.
+- **`readSuppAlignments` is only built when connections are on.**
+  `getTag(f, 'SA')` walks the read's whole tag block, for a tag present on
+  **zero** of those 153,677 reads, feeding an array whose only consumer is the
+  arc computation. `readConnections` is therefore in `rpcProps` — toggling
+  connections **refetches**, the same trade `showCoverage` makes, and
+  `fetchAutorun.test.ts` pins it in that direction on purpose.
+
+The shared rule, and the one to apply to the next array: **ask what the consumer
+actually is before making the shape cheaper.** Both of these had no bulk
+consumer at all — one bit per read derived inside the worker, then one lookup on
+hover and one per drawn arc. A cheaper encoding of an array nothing reads is
+still an array nothing reads.
+
+`readTagValues` and `sortTagValues` are the two that remain, and they are
+deliberately left: `extractFeatureArrays` fills them only under a tag color
+scheme or a tag sort, so neither is on the default path.
+
 ## Adapter hot path (BAM/CRAM)
 
 `extractFeatureArrays` calls `feature.get(...)` per read, so keep work out of

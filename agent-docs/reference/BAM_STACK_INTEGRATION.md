@@ -452,6 +452,14 @@ an allocation per read, and the block built that way measured 35.9ms against
 21.1ms — no better than decoding every name, which is what it was meant to
 avoid. Whatever shape this takes upstream, it must not allocate per record.
 
+`nextRefId` is the same seam in its simplest form and is already used the same
+way: `next_ref` runs the mate's reference id through `refIdToName` on every
+access, so a per-read array of mate references was manufacturing 153,677 strings
+from a number, holding one distinct value. The plugin reads the id and resolves
+a name once per contig. Nothing is needed upstream for that one — `next_refid`
+is already public — but it belongs in this entry because it is the same
+question: *what does the record hold, before it is turned into something?*
+
 The generalisation is the mirror of seam 5's: **a bulk consumer should be able to
 ask the record to write into its buffer, rather than asking for a value the
 record has to allocate to hand over.** `seq` and `qual` have the same shape and
