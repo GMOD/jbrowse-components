@@ -51,14 +51,11 @@ wolf-like dogs:
 Painting all of them at once asks whether a genome-wide sharing statistic and a
 wolfish appearance point at the same thing local ancestry does.
 
-Then the rest of the dog world, because two wolfdog breeds on their own can only
-show that a documented cross leaves blocks. One dog from each of the 219 breeds
-the collection sequenced four or more of goes in as well, chosen on how well the
-breed was sequenced and on nothing about the breed, so the same run also says
-what a dog with no such cross looks like, and any breed that turns out to carry
-something is found rather than nominated. Eight European gray wolves go in as
-targets too, each removed from the wolf panel first, since an animal matched
-against itself paints solid by construction and says nothing.
+One dog from each of the 219 breeds the collection sequenced four or more of
+goes in as well, chosen on how well the breed was sequenced and on nothing about
+the breed, so the same run says what a dog with no such cross looks like and any
+breed that carries something is found rather than nominated. Eight European gray
+wolves go in as targets too, each removed from the wolf panel first.
 
 The [Dog10K consortium](https://www.dog10kgenomes.org/) publishes a phased
 reference panel of 1929 canids on the `UU_Cfam_GSD_1.0` assembly, which includes
@@ -81,23 +78,18 @@ the build script to derive every list: European gray wolves for the wolf panel,
 matching both breeds' founder populations, and one dog from every breed the
 collection has for the dog panel, minus the targets and both wolfdog breeds.
 
-The panels decide what the colors mean, so this is the step that matters most,
-and breadth is the part worth getting right. The dog panel has to include the
-shepherd breeds in particular: leave the targets' own dog background
-unrepresented and ordinary dog haplotypes have nowhere to go but the wolf panel.
+The panels decide what the colors mean, and breadth is the part worth getting
+right: leave the targets' own dog background unrepresented and ordinary dog
+haplotypes have nowhere to go but the wolf panel.
 
-An animal cannot be in a panel and painted against it, so both directions of
-that get handled explicitly:
+An animal cannot be in a panel and painted against it:
 
 - The eight gray wolves are **removed from the wolf panel** before the run,
-  since a target matched against itself paints solid by construction and says
-  nothing.
+  since a target matched against itself paints solid by construction.
 - Each swept animal comes out of the dog panel, but its **breed** does not,
-  because the targets are drawn from breeds with several sequenced animals and
-  the panel takes one of the others.
-
-That second one is what makes a flat-dog painting of a Chow Chow or an Alaskan
-Malamute a result rather than an artifact of a missing panel entry.
+  since the targets are drawn from breeds with several sequenced animals. That
+  is what makes a flat-dog painting of a Chow Chow or an Alaskan Malamute a
+  result rather than a missing panel entry.
 
 FLARE reads the two lists as one `ref-panel` file:
 
@@ -118,14 +110,12 @@ German Shepherd lineage, eight held-out gray wolves, and the 219-breed sweep).
 
 ### The genetic map
 
-FLARE requires one, and it is worth using a real one: the map is what converts
-"these markers disagree" into "a recombination happened here", so a uniform
-cM/Mb stand-in asserts a constant rate the genome does not have and puts every
-boundary at the wrong place by a little. The older published dog maps are all on
-canFam3.1 while this panel is phased on `UU_Cfam_GSD_1.0`, but the Campbell
-pedigree map has since been transitioned onto this assembly, which skips any
-liftover. The build script downloads it and reshapes its `POS`/`rate`/`Map(cM)`
-columns into the four PLINK columns FLARE reads.
+FLARE requires one, and a uniform cM/Mb stand-in asserts a constant rate the
+genome does not have. The older published dog maps are all on canFam3.1 while
+this panel is phased on `UU_Cfam_GSD_1.0`, but the Campbell pedigree map has
+since been transitioned onto this assembly, which skips any liftover. The build
+script downloads it and reshapes its `POS`/`rate`/`Map(cM)` columns into the
+four PLINK columns FLARE reads.
 
 ### Running FLARE
 
@@ -231,40 +221,32 @@ Both reference panels are modern, so whatever domestication carried into dogs
 sits in both of them and separates nothing, which is why the German Shepherd at
 the foot paints solid dog.
 
-One feature of the painting is not about the dogs at all. Blocks break up
-towards the end of chr1, and that is the genetic map rather than the animals.
-The build script tiles the chromosome and prints both the block-edge count and
-the map's recombination per window, and the busiest window on one is the busiest
-on the other. Where the map puts more recombination a block has more places to
-end, so block density in a window is worth reading against the map before it is
-read against the breed.
+Blocks break up towards the end of chr1, and that is the genetic map rather than
+the animals: the build script tiles the chromosome and prints both the
+block-edge count and the map's recombination per window, and the busiest window
+on one is the busiest on the other. Read block density against the map before
+reading it against the breed.
 
 ### Where the painting and the alleles disagree
 
-Most of the held-out wolves paint essentially all wolf. Two do not: the two
-Swedish museum specimens come out about half dog, which is a result about the
-method rather than about the animals. The build script prints a second, cruder
-measurement beside FLARE's: the fraction of chr1 sites where the two panels are
-nearly fixed for different alleles at which the animal carries the wolf one. The
-two Swedish wolves score highest of all eight on that one, far above the German
-Shepherd. So the alleles say plainly that they are wolves while the painting
-says half dog, and this tutorial does not resolve which part of the inference
-gives way: the two measurements ask different questions, one about alleles one
-at a time and one about whole haplotypes matched against a panel of
-twenty-eight.
+Most of the held-out wolves paint essentially all wolf. The two Swedish museum
+specimens come out about half dog. The build script prints a cruder measurement
+beside FLARE's, the fraction of near-fixed differing sites at which the animal
+carries the wolf allele, and those two score highest of all eight on it. The
+alleles say wolf where the painting says half dog, and the two measurements ask
+different questions: one about alleles one at a time, one about whole haplotypes
+matched against a panel.
 
 ### What the two wolf-like breeds do
 
 The build script prints a count of wolf blocks with their median and longest,
 one line per animal, which is the same reading the figure asks for in numbers.
 
-The Tamaskan behaves like a dog that merely looks like a wolf. Its wolf
-assignments are many and short, and its longest is 1.5 Mb, inside the range an
-ordinary breed reaches anyway, since the Kars, the Eurasier and the Spanish
-Mastiff all land between 1.7 and 2.0 Mb with no wolf story attached to any of
-them. That is what having 219 breeds in the run buys: "short flecks" is a
-comparison, and the sweep is what it gets compared against. Appearance carries
-no ancestry.
+The Tamaskan behaves like a dog that merely looks like a wolf: its wolf
+assignments are many and short, and its longest is 1.5 Mb, inside the range the
+Kars, the Eurasier and the Spanish Mastiff reach with no wolf story attached to
+any of them. That is what having 219 breeds in the run buys, since "short
+flecks" is a comparison.
 
 The Shiloh Shepherd does not. Its longest wolf block on chr1 is 17.5 Mb, against
 a sweep in which every breed but one stops at 2.4 Mb. The Dog10K paper's own
@@ -274,15 +256,12 @@ painted here on a single chromosome. A later genome-wide run over the same
 collection puts it among the three dogs with the longest, most recent wolf
 tracts ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
-Those readings are all row-order arguments, and the order above came out of
-FLARE's per-sample summary, so it can only rank what the summary already ranked.
-The track menu's **Clustering** → **Cluster rows by similarity** derives the
-order from the blocks instead, and on the full 243-animal painting it puts the
-held-out wolves and the wolfdogs on their own branch with no access to the breed
-names. The chip in the tree's corner names the locus the tree came from, which
-is load-bearing rather than decorative: the clustering runs over the region in
-view, so panning to a 5 Mb window and re-clustering gives a different order for
-the same rows.
+The order above came out of FLARE's per-sample summary, so it can only rank what
+the summary already ranked. The track menu's **Clustering** → **Cluster rows by
+similarity** derives the order from the blocks instead, and on the full
+243-animal painting it puts the held-out wolves and the wolfdogs on their own
+branch with no access to the breed names. Clustering runs over the region in
+view, so the chip in the tree's corner names the locus it came from.
 
 ## Repartitioning the same display
 
