@@ -1,9 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import { isSyntenyTrack } from './getSyntenyTracks.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
+import type {
+  AssemblyNameResolver,
+  SessionAssemblies,
+} from '@jbrowse/core/util/tracks'
 
 /**
  * The assembly rows a synteny track implies, for the import forms' "Quick
@@ -12,9 +16,23 @@ import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
  * track backing every adjacent band. A self-alignment track names the same
  * assembly twice; that repeat is meaningful (it is what makes the pair
  * launchable) so it is kept rather than deduplicated.
+ *
+ * **Canonical**, like every other name the import forms put in a row. A track
+ * config is free to name an alias, and these rows are handed straight to an
+ * AssemblySelector, whose options are the session's own `assemblyNames` and
+ * which blanks a value that is not one of them — so a Quick start on an
+ * alias-named track handed Manual a row that rendered empty. They are also what
+ * `doSubmit` opens the views on, so canonicalizing here is what makes the two
+ * modes launch the same thing for the same track.
  */
-export function syntenyTrackRows(track: AnyConfigurationModel) {
-  return [...(readConfObject(track, 'assemblyNames') as string[])]
+export function syntenyTrackRows(
+  track: AnyConfigurationModel,
+  assemblyManager: AssemblyNameResolver,
+) {
+  return canonicalAssemblyNames(
+    readConfObject(track, 'assemblyNames') as string[],
+    assemblyManager,
+  )
 }
 
 /**
@@ -50,14 +68,20 @@ export function dotplotAxesFromRows(rows: string[], swapped = false) {
  * only holds one-click-launchable entries rather than surfacing an option that
  * errors on Launch. Two ways a track fails that:
  *
- * - it names fewer than two assemblies, so it implies a single-row view, which
- *   a synteny/dotplot view cannot open;
- * - it names an assembly the session has no configuration for. Quick start is
- *   the opening mode whenever any track qualifies, so such a track seeded the
- *   form with a row whose name is not among the assembly Select's options (it
- *   renders empty), and Launch built a row whose init fails with "Assembly X
- *   not found", which errors the whole view. `connectedEndpoints` screens the
- *   other way into a row on the same test, and says why it is `has`.
+ * - it implies fewer than two rows, so it is a single-row view, which a
+ *   synteny/dotplot view cannot open;
+ * - one of its rows is an assembly the session has no configuration for. Quick
+ *   start is the opening mode whenever any track qualifies, so such a track
+ *   seeded the form with a row whose name is not among the assembly Select's
+ *   options (it renders empty), and Launch built a row whose init fails with
+ *   "Assembly X not found", which errors the whole view. `connectedEndpoints`
+ *   screens the other way into a row on the same test, and says why it is
+ *   `has`.
+ *
+ * Both tests are on `syntenyTrackRows`, not on raw `assemblyNames`, so what is
+ * screened is what Quick start would actually open: an alias resolves to the
+ * assembly it names, and the padding empty string a half-written config leaves
+ * behind is not a row and so cannot be the second one that qualifies a track.
  */
 export function quickStartSyntenyTracks(
   tracks: AnyConfigurationModel[],
@@ -67,7 +91,7 @@ export function quickStartSyntenyTracks(
     if (!isSyntenyTrack(track)) {
       return false
     }
-    const rows = syntenyTrackRows(track)
+    const rows = syntenyTrackRows(track, assemblyManager)
     return rows.length >= 2 && rows.every(name => assemblyManager.has(name))
   })
 }

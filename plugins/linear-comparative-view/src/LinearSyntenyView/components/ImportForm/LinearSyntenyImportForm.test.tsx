@@ -15,8 +15,9 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-const assembly = (name: string) => ({
+const assembly = (name: string, aliases: string[] = []) => ({
   name,
+  aliases,
   sequence: {
     type: 'ReferenceSequenceTrack',
     trackId: `${name}_refseq`,
@@ -45,17 +46,20 @@ const syntenyTrack = (trackId: string, assemblyNames: string[]) => ({
 
 function setup({
   assemblyNames = ['hg38', 'mm39'],
+  aliases = {},
   tracks = [],
   connectionTracks,
 }: {
   assemblyNames?: string[]
+  // other names for an assembly, which a track config is free to use
+  aliases?: Record<string, string[]>
   tracks?: ReturnType<typeof syntenyTrack>[]
   // tracks a connection supplies, which live outside session.tracks
   connectionTracks?: ReturnType<typeof syntenyTrack>[]
 } = {}) {
   const session = createTestSession({
     jbrowseConfig: {
-      assemblies: assemblyNames.map(assembly),
+      assemblies: assemblyNames.map(name => assembly(name, aliases[name])),
       tracks,
       connections: connectionTracks
         ? [{ type: 'JBrowse1Connection', connectionId: 'conn', name: 'conn' }]
@@ -161,6 +165,22 @@ test('a session with a synteny track opens on Quick start', () => {
   )
   expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('1. hg38')
   expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('2. mm39')
+})
+
+// A track config is free to name an assembly by an alias, and the rows Quick
+// start hands to Manual go into an assembly Select whose options are the
+// session's own names — so an alias was a value matching no option and the row
+// came over blank. The rows are the assembly, not the name the track uses.
+test('Quick start on an alias-named track hands Manual the assembly itself', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39'],
+    aliases: { hg38: ['GRCh38'] },
+    tracks: [syntenyTrack('aliased', ['GRCh38', 'mm39'])],
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Quick start' }))
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('1. hg38')
+  goManual()
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39'])
 })
 
 // Quick start seeds its rows straight from the track's assemblyNames, so a

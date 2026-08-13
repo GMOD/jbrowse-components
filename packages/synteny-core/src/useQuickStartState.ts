@@ -52,7 +52,9 @@ export function useQuickStartState(
 
   const trackId = pickSyntenyTrackId(preferredTrackId, quickTracks) ?? ''
   const track = quickTracks.find(t => t.trackId === trackId)
-  const trackRows = track ? syntenyTrackRows(track) : []
+  const trackRows = track
+    ? syntenyTrackRows(track, session.assemblyManager)
+    : []
 
   return {
     quickTracks,
