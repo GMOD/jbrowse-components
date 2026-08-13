@@ -1,3 +1,4 @@
+import { heightModeLabel } from '../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
 import {
   PARK_CURSOR,
   UCSC_HG38_CONFIG,
@@ -44,6 +45,11 @@ const TP53_EXON_WINDOW = 'chr17:7,674,180-7,674,290'
 // neighbouring distal cCREs in shot for contrast with the promoter one.
 const TP53_PROMOTER_WINDOW = 'chr17:7,685,000-7,691,000'
 
+// The TSS itself, bracketed: the window the motif-density pair is read at. A
+// third of the promoter window above, which is what puts the filtered motifs far
+// enough apart to be separate boxes.
+const TP53_TSS_WINDOW = 'chr17:7,686,500-7,688,500'
+
 // The axolotl RefSeq assembly's GenArk hub config, resolved from the accession
 // the way the site does it (see jb2hubs' genarkConfigPath: the digits shard the
 // path). GCF_040938575.1 rather than the GCA_ of the same assembly, because the
@@ -70,6 +76,23 @@ const PHYLOP_TRACK = { trackId: 'hg38-phyloP100way' }
 const PHYLOP_NAME =
   'Basewise Conservation (phyloP) - 100-way vertebrate alignment'
 
+// The two tracks the density section is about, by id rather than by name: both
+// are named in the page's prose, and a trackId that stops resolving fails the
+// capture where a stale name would quietly render an empty track.
+const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
+const JASPAR_TRACK_ID = 'hg38-jaspar2026'
+
+// UCSC's own default for the JASPAR track, transcribed from the `filter.score`
+// setting jb2hubs copies into `metadata.ucsc` on the converted track. `score` is
+// the BED column the file's autoSql names, so it reaches jexl under that name.
+const JASPAR_SCORE_FILTER = "jexl:get(feature,'score') >= 400"
+
+// The canvas display's feature-size menu, and the last row of the "Track sizing"
+// group inside it. Read from `heightModeLabel` rather than transcribed, the way
+// the alignments specs do it, so the wait text cannot drift from the menu.
+const FEATURE_HEIGHT_MENU = 'Set feature height'
+const FIT_FEATURE_LABEL = heightModeLabel('fit', 'feature')
+
 // Collapsed to the longest coding transcript, which the page reaches through the
 // isoform control at the bottom right of the gene track. Used by the base-zoom
 // figure alone, because at that zoom the default is one codon row printed 28
@@ -85,7 +108,14 @@ const GENE_TRACK_COLLAPSED = {
 // selector already open. The two figures that walk the click path start there
 // rather than at a locus of their own, so the first frame is the frame a reader
 // is looking at when they read the paragraph.
-const LANDING = `?config=${UCSC_HG38_CONFIG}`
+//
+// `sessionName` is what every other figure gets for free from `sessionSpec`, and
+// a bare `?config=` needs it spelled out: BaseRootModel names a session built
+// from a defaultSession `<name> <new Date().toLocaleString()>`, so without it the
+// app bar carries the wall-clock time of the capture. That is a figure whose
+// pixels change on every regen and which tells a reader the docs were shot on a
+// particular evening.
+const LANDING = `?config=${UCSC_HG38_CONFIG}&sessionName=Screenshot`
 
 // genomes.jbrowse.org itself, which is the first thing the page walks through
 // and the only figure here that is not a JBrowse app capture. Its pages are
@@ -520,7 +550,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 60 },
             { trackId: 'hg38-clinvarMain', height: 150 },
-            { trackId: 'hg38-gnomadExomesVariantsV4_1', height: 150 },
+            { trackId: GNOMAD_TRACK_ID, height: 150 },
           ],
         },
       ],
@@ -618,6 +648,124 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     settleMs: 10000,
     viewportHeight: 730,
     diffThreshold: 0.02,
+  },
+
+  // ── More content than the track height shows ─────────────────────────────
+
+  // The "Set feature height" menu, on the gnomAD track the figure above draws as
+  // a clipped pile. Both radio groups are in one submenu and the figure's job is
+  // "where do I click", the same job alignments/height_mode_fit does for reads --
+  // and for the same reason a before/after was not built here: two 150px piles of
+  // the same variants differing only in whether the overflow is behind a
+  // scrollbar is nearly invisible at figure scale.
+  //
+  // The submenu opens by CLICK on its own testid rather than by hover: the row
+  // is one of four in the track menu and a hover is timing-sensitive, which is
+  // what `openFeatureHeightSubmenu` already does for the alignments menu.
+  // `Super-compact` and the fit label are the last rows of each group, so
+  // waiting on both is waiting for the whole submenu to have painted.
+  {
+    mode: 'url',
+    name: 'genomes_basics/feature_height_menu',
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: TP53_TRANSCRIPT_WINDOW,
+          tracks: [
+            { ...GENE_TRACK_COLLAPSED, height: 60 },
+            { trackId: GNOMAD_TRACK_ID, height: 150 },
+          ],
+        },
+      ],
+    }),
+    readyText: 'TP53',
+    readyTimeout: 180000,
+    settleMs: 10000,
+    viewportWidth: 1200,
+    viewportHeight: 620,
+    diffThreshold: 0.02,
+    actions: [
+      trackMenuIcon(GNOMAD_TRACK_ID),
+      { type: 'waitForText', text: FEATURE_HEIGHT_MENU },
+      {
+        type: 'click',
+        selector: '[data-testid^="cascading-submenu-set_feature_height"]',
+      },
+      { type: 'waitForText', text: 'Super-compact' },
+      { type: 'waitForText', text: FIT_FEATURE_LABEL },
+      { type: 'delay', ms: 800 },
+    ],
+  },
+
+  // The other half of the same problem, on the track that has it worst: JASPAR
+  // draws every motif match the file carries, and the file carries ~9,900 of them
+  // across this 2 kb (measured 2026-08-13 off JASPAR2026.bb). UCSC's browser
+  // draws 500 of those -- its trackDb ships `filter.score 400`, and jb2hubs
+  // carries that setting through into `metadata.ucsc` on the converted track --
+  // so the two frames are the same window with and without UCSC's own default.
+  //
+  // Both frames render without a force-load prompt, and that is the density gate
+  // being OFF rather than satisfied: `AUTO_FORCE_LOAD_BP` leaves it undefined
+  // below 20 kb of visible bp, on the reasoning that a small window is cheap.
+  // So nothing intervenes here -- the track simply draws what it has, and the
+  // saturated frame is the honest answer to "what does a reader get".
+  //
+  // `jexlFiltersSetting` (the model prop the "Filter by..." dialog writes), not
+  // the `jexlFilters` config slot, because the frame is a reader having applied
+  // the filter rather than a config having shipped one.
+  //
+  // 2 kb rather than the 6 kb promoter window above: at 6 kb even the filtered
+  // population is ~1 feature/px and the second frame saturates too, which would
+  // make the pair read as "the filter did nothing".
+  {
+    mode: 'url',
+    name: 'genomes_basics/dense_filter',
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: TP53_TSS_WINDOW,
+          tracks: [
+            { ...GENE_TRACK_COLLAPSED, height: 60 },
+            { trackId: JASPAR_TRACK_ID, height: 240 },
+          ],
+        },
+      ],
+    }),
+    readyText: 'TP53',
+    readyTimeout: 180000,
+    settleMs: 10000,
+    // 550: the 240px track plus the collapsed gene track plus the app chrome.
+    // At 420 the run reported 125px of the JASPAR track below the fold, which
+    // would have cut the frame the pair is read on.
+    viewportHeight: 550,
+    diffThreshold: 0.02,
+    stages: [
+      { actions: [PARK_CURSOR] },
+      {
+        url: sessionSpec(UCSC_HG38_CONFIG, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              loc: TP53_TSS_WINDOW,
+              tracks: [
+                { ...GENE_TRACK_COLLAPSED, height: 60 },
+                {
+                  trackId: JASPAR_TRACK_ID,
+                  height: 240,
+                  jexlFiltersSetting: [JASPAR_SCORE_FILTER],
+                },
+              ],
+            },
+          ],
+        }),
+        actions: [PARK_CURSOR],
+      },
+    ],
   },
 
   // "About track" on the phyloP track, for the section about what a checkbox

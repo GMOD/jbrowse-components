@@ -47,11 +47,14 @@ starts. Type `TP53` into the location box and press Enter. The hosted config
 ships a name index, so gene symbols resolve with no setup, and coordinates like
 `chr17:7,668,400-7,687,550` work anywhere a symbol does.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view after TP53 goes into the location box, with RefSeq All stacking every transcript of the gene." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view after TP53 goes into the location box, with RefSeq All drawing one transcript per row, past the bottom of the track." />
 
-RefSeq All draws each transcript on its own row. The isoform control at the
-bottom right of the track collapses them, and is worth knowing about early
-because a gene with this many transcripts is otherwise most of the window.
+RefSeq All draws each transcript on its own row, and TP53 has more of them than
+the track's height shows, so the rest are behind the track's own scrollbar. The
+isoform control at the bottom right of the track collapses them, and is worth
+knowing about early because a gene with this many transcripts is otherwise most
+of the window. [Track sizing](#more-content-than-the-track-shows) is the other
+way to handle it, and applies to any track.
 
 ## Finding a track
 
@@ -190,17 +193,50 @@ click gives back.
 
 ## A pangenome panel
 
-Under Variation and Repeats, **Human Pangenome (HPRC)** holds the pangenome
-callset for the same coordinates: variants called from assembled haplotypes
-rather than from reads mapped to the reference. Its default display is one
-allele-frequency band; the track menu's display types include a per-sample one,
-which draws a row per haplotype.
+Variation and Repeats has a **Human Pangenome (HPRC)** group inside it, and
+**HPRC pangenome variants (minigraph-cactus v2.0, GRCh38)** holds the callset
+for the same coordinates: variants called from assembled haplotypes rather than
+from reads mapped to the reference. Its default display is one allele-frequency
+band; the track menu's display types include a per-sample one, which draws a row
+per haplotype.
 
 <Figure src="/img/genomes_basics/hprc_pangenome.png" caption="The HPRC pangenome callset over TP53 as a genotype matrix, one row per haplotype and one column per variant, drawn at each variant's real position. The legend names the genotype colours." />
 
 A column that runs the full height is a variant most haplotypes carry, which is
 to say a place the reference is the unusual sequence. The scattered single cells
 are the opposite.
+
+## More content than the track shows
+
+Several of the tracks above hold more than their height draws: RefSeq All's
+transcripts, and both variant catalogs, run past the bottom edge and are reached
+by scrolling inside the track. Two settings change that, and both live in the
+track menu under **Set feature height**.
+
+<Figure src="/img/genomes_basics/feature_height_menu.png" caption="Set feature height on the gnomAD track, holding both of its radio groups: the feature-size presets, then the track-sizing modes under their own subheader." />
+
+The presets at the top set how tall each feature is drawn, from Normal down to
+Collapsed, which packs everything onto a single row. The three under **Track
+sizing** say what the track does when the content is taller than the track:
+scroll it at a fixed height, grow the track until the content fits, or squeeze
+the content into the height the track already has. The two are independent, so a
+deep pile can be handled by shrinking the features, by growing the track, or by
+both.
+
+Height is one axis; how many features are drawn is the other. **JASPAR
+Transcription Factors - JASPAR 2026 TFBS** under Regulation draws every motif
+match its file carries, and over a promoter that is a solid field at any height.
+UCSC's browser draws the matches scoring at least 400 out of 1000 and hides the
+rest. JBrowse draws the file as published, and the track menu's **Filter by...**
+is where the same cutoff goes, as `get(feature,'score') >= 400`.
+
+<Figure src="/img/genomes_basics/dense_filter.png" caption="JASPAR over the TP53 transcription start site. Top: every motif match in the file. Bottom: the same window filtered to the score cutoff UCSC applies by default, which leaves the clusters over the start site legible as separate boxes." />
+
+Nothing intervenes on a reader's behalf at this zoom: the too-much-data prompt
+the multiz track ran into applies to wider windows, so a dense file over a few
+kb draws everything it has. A filtered track says so in its own menu, where
+**Filter by...** carries the number of filters in force, and clearing them puts
+the field back.
 
 ## Other tracks, same two clicks
 
@@ -212,7 +248,8 @@ worth opening, with the category each one filters out of:
 - **RepeatMasker** (Repeats) says which parts of a window are repeat elements,
   which is worth knowing before reading much into a signal over one.
 - **JASPAR Transcription Factors - JASPAR 2026 TFBS** (Regulation) puts motif
-  matches under the peaks above, and is dense enough to want a narrow window.
+  matches under the peaks above, at the score cutoff of the
+  [section before this one](#more-content-than-the-track-shows).
 - **GTEx cis-eQTLs - GTEx DAP-G eQTLs** (Regulation) names the variants
   associated with expression of nearby genes.
 - **Long-read SVs - CoLoRSdb 1427 SVs** (Variation and Repeats) covers the size
@@ -258,6 +295,7 @@ introns is where that shows.
 
 ## See also
 
+- [](/docs/user_guides/gene_track)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/genomes_msa)
 - [](/docs/tutorials/repeatmasker_classes)
