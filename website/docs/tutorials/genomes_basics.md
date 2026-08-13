@@ -72,7 +72,7 @@ phyloP scores each base against the neutral rate the alignment implies. The
 score is signed, so the track has a pivot rather than a floor: blue above the
 line changes more slowly than neutral, red below it faster.
 
-<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The RefSeq transcripts over the TP53 body with phyloP under them, both as they open. The tall peaks sit under the columns where the coding exons (yellow) stack up, including the lone exon out in the middle of the intron. The wide 3' UTR block at the left is an exon too, and carries nothing like them." />
+<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The RefSeq transcripts over the TP53 body with phyloP under them, both as they open." />
 
 The peaks are the width of the coding exons rather than of the gene: the introns
 between them drop to the pivot, and the 3' UTR block at the left end is an exon
@@ -92,7 +92,7 @@ transcript**, so the codon row is drawn once.
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, open. It carries the same Auto, All transcripts and Longest coding transcript options as the track menu's Gene glyph radio." />
 
-<Figure src="/img/genomes_basics/phylop_bases.png" caption="One coding exon of TP53 at base zoom: the gene collapsed to one transcript with its residue labels, phyloP under it, and the reference sequence with its translation below that. The signal is one bar per base, and within each codon the third base is the short one. The few bars that go red are third positions." />
+<Figure src="/img/genomes_basics/phylop_bases.png" caption="One coding exon of TP53 at base zoom: the gene collapsed to one transcript with its residue labels, phyloP under it, and the reference sequence with its translation below that." />
 
 Within a codon the third base is the short one: most third-position changes
 leave the amino acid alone, so the constraint is on the protein rather than on
@@ -106,16 +106,14 @@ this config that alignment is a checkbox too. UCSC publishes no bigMaf for the
 Genomics: **Multiz Alignments - 470-way Mammal Alignment (Hiller lab)** and
 **Basewise Conservation (phyloP) - 470 phyloP**. Leave the window where it is.
 
-<Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: the gene collapsed to one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from, one row per species down the tree. A base is drawn only where it differs from human. The column under S240 keeps a positive score; T256 and G244 are where it goes red." />
+<Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from. A base is drawn only where it differs from human." />
 
-Most columns are blank, which is what a positive score is made of. The ones that
-are not do not score the way their density suggests. Under S240 nearly every
-species differs from human, but they all carry the **same** base, and the score
-stays above the line: that is one substitution on the human branch, however many
-rows show it. Under T256 and G244 fewer rows differ and the ones that do
-disagree with each other too, and those are the columns where the score goes
-red. phyloP counts substitution events on the tree, not rows that differ from
-the reference.
+Most columns are blank, which is what a positive score is made of. Under S240
+nearly every species differs from human, but all carry the **same** base and the
+score stays above the line: one substitution on the human branch, however many
+rows show it. Under T256 and G244 fewer rows differ and those that do disagree
+with each other, and there the score goes red. phyloP counts substitution events
+on the tree rather than rows that differ from the reference.
 
 This track only opens at this zoom. A MAF block carries a row per species, so
 the byte estimate crosses the too-much-data limit within a few kb and a
@@ -164,16 +162,15 @@ and pathogenic is the commonest ClinVar classification here.
 
 The fourth reading needs the whole transcript. **gnomAD v4.1 - gnomAD v4.1
 Exomes** under Variation and Repeats opens as several thousand records over the
-gene, which is one block of colour. Two of its columns cut that down to
-something with a shape, and **Track menu → Filter by...** takes either:
-`feature.AF` is the allele frequency, and `feature.annot` is gnomAD's own
-consequence class, one of pLoF, missense, synonymous or other.
+gene, which is one block of colour. Two of its columns cut that into a shape,
+and **Track menu → Filter by...** takes either: `feature.AF` is the allele
+frequency, `feature.annot` gnomAD's own consequence class (pLoF, missense,
+synonymous or other).
 
-The dialog takes one jexl expression per line, and the track redraws with the
-records that pass all of them. A new expression goes on a line of its own under
-the default already in the box: `jexl:feature.AF >= 0.001` keeps the variants
-standing in the population, and `jexl:feature.annot == 'pLoF'` the ones gnomAD
-calls predicted loss of function.
+The dialog takes one jexl expression per line, each on its own line under the
+default already in the box, and the track redraws with the records that pass all
+of them: `jexl:feature.AF >= 0.001` keeps the variants standing in the
+population, `jexl:feature.annot == 'pLoF'` the predicted loss-of-function set.
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class expression typed in." />
 
@@ -192,7 +189,7 @@ ClinVar takes the same treatment on its own classification column:
 `jexl:feature.clinSign == 'Pathogenic'`. Back at the exon, that leaves a stack
 of records over Arg248, and clicking one reads it back.
 
-<Figure src="/img/genomes_basics/variant_details.png" caption="ClinVar filtered to its pathogenic records, with one of those over the shaded Arg248 codon clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
+<Figure src="/img/genomes_basics/variant_details.png" caption="ClinVar filtered to its pathogenic records, with one of those over the shaded Arg248 codon clicked open. The panel carries the file's own columns, each linking out." />
 
 A BigBed's extra fields arrive as fields: whatever columns the published file
 carries are what a click gives back, and are what there is to filter and colour
@@ -210,21 +207,20 @@ matches for every factor in the collection, so **Filter by...** asks for one:
 promoter section, which are what the matches get read against: **ENCODE cCREs -
 ENCODE4 cCREs**, **Layered H3K4Me3 (hg19)** and **Layered H3K27Ac (hg19)**.
 
-<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, then H3K4me3 and H3K27ac as one row per cell line. The shaded pair are the two matches that fall in a cCRE with signal over them; the four to their left have neither." />
+<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, then H3K4me3 and H3K27ac as one row per cell line. The shaded pair fall in a cCRE with signal over it." />
 
-Six positions match the motif well enough to be called, spread across the
-upstream region. The signal tracks are low over the upstream half and rise from
-the shaded pair toward the gene. Each of those two falls inside a cCRE, one
-classified a promoter and one a proximal enhancer, and they are where the
-response elements for p21 were described. The other four have the motif and no
-signal under it.
+Six positions match the motif well enough to be called. The signal tracks are
+low over the upstream half and rise from the shaded pair toward the gene. Each
+of those two falls inside a cCRE, one classified a promoter and one a proximal
+enhancer, and they are where the response elements for p21 were described; the
+other four have the motif and no signal under it.
 
 **PANDAR** and **DINOL**, drawn by the same RefSeq track, are p53-induced
 lncRNAs transcribed from the same region.
 
 Zooming to the higher-scoring element shows the motif against the sequence.
 
-<Figure src="/img/genomes_basics/p53_element_sequence.png" caption="The distal element at base zoom: the JASPAR match, the promoter-class cCRE it sits inside, and the reference sequence. The match is called on both strands because the site is two copies of the p53 half-site end to end, which is what the boxes span." />
+<Figure src="/img/genomes_basics/p53_element_sequence.png" caption="The distal element at base zoom: the JASPAR match, the promoter-class cCRE it sits inside, and the reference sequence. The match is called on both strands, which is what the two boxes span." />
 
 ## Tracks in the other categories
 
@@ -252,7 +248,7 @@ hgdownload and JBrowse reads those files by byte range. The track menu's **About
 track** prints the adapter, which is where to look when a track is slow or
 missing: the file it names is the one being read.
 
-<Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu, with About track at the top of it. Right: the dialog that opens. The adapter names the BigWig on hgdownload, and the metadata below it is UCSC's own trackDb entry, carried through the conversion." />
+<Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu. Right: the About track dialog, naming the BigWig on hgdownload with UCSC's own trackDb entry below it." />
 
 The phyloP file covers the whole genome and only the blocks under the current
 view are fetched, which is why a genome-wide signal track opens at gene zoom
@@ -285,7 +281,7 @@ An assembly released both ways appears under both accessions, same sequence, and
 only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 `GCA_040938575.1`.
 
-<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The search opened the gene track its own name index answered from, and highlighted the hit." />
+<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession." />
 
 The gene is the same gene. The span is not: the axolotl genome is one of the
 largest sequenced, and this locus covers a few hundred kb of it.
