@@ -507,7 +507,7 @@ which segments those are; the pggb page gives
 [that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane)
 and it takes only a new `trackId` and this graph's prefix.
 
-<Figure caption="1.6 kb of K12 past flhD, as a linear view above and as a graph below, both reading the same two tabix indexes. The gene lane names insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
+<Figure caption="1.6 kb of K12 past flhD, as a linear view above and as a graph below, both reading the same two tabix indexes. The gene lane names the IS1 transposase pair insA5 and insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
 
 The node and the block are the same segment: both halves run the reference
 position ramp over the cut's own region, so a color in the lane is that color in

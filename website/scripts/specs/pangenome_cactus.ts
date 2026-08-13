@@ -32,15 +32,21 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // Same default, so it changes no committed image.
 const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 
-// The odgi viz raster's own path rows, in its order and its colors, sampled out
-// of the committed graph.png. K12 is absent on purpose — in a K12-anchored view
-// it is the coordinate line, not a row.
 // The graph-as-a-graph figure loads the K12-only graphgenomeview fixture rather
 // than the demo config the projections above use, for the reason every other
 // graph figure does: that fixture pins the plugin bundle by content hash, so the
 // view cannot change this image without a diff in this repo. The two lanes and
 // the graph all read the hosted ecoli_cactus index, which the demo config
 // carries as `ecoli_cactus_segments` and build_ecoli_pangenome_cactus.sh writes.
+//
+// WHAT THAT PIN DOES NOT COVER is the path a reader takes: the demo config, its
+// own unpinned plugin url, and the track declared there rather than in a session
+// spec. Checked by rendering this spec once with GRAPH_CONFIG swapped for CONFIG
+// and the session tracks dropped, which drew the same 161 nodes and 214 edges
+// off the config's own `ecoli_cactus_segments` (2026-08-13). Re-run it that way
+// after a demo redeploy; it is not committed as a figure of its own, because a
+// second near-identical image would churn on every plugin publish and the sweep
+// is not a gate anyway.
 const GRAPH_CONFIG = local('test_data/graphgenomeview/config.json')
 
 const MC_SEGMENTS_TRACK = 'ecoli_cactus_segments'
@@ -109,6 +115,9 @@ const IS1_HIGHLIGHT = {
   color: 'rgba(214,137,16,0.13)',
 }
 
+// The odgi viz raster's own path rows, in its order and its colors, sampled out
+// of the committed graph.png. K12 is absent on purpose — in a K12-anchored view
+// it is the coordinate line, not a row.
 const ODGI_PATH_COLORS = [
   { name: 'CFT073', color: 'rgb(163,68,151)' },
   { name: 'IAI39', color: 'rgb(114,190,79)' },
@@ -155,6 +164,13 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 60,
               color: 'rgb(130,130,130)',
+              // Genes only, which is what the lane is called. The GFF also
+              // carries the IS1's own `mobile_genetic_element` record over
+              // nearly the same span, and it has no Name, so it drew as the
+              // widest box in the lane labelled `id-NC_000913.3:1978503
+              // ..1979270`. insB5 is that element's transposase and is named,
+              // so nothing in the frame is lost with it gone.
+              jexlFiltersSetting: ["jexl:feature.type=='gene'"],
             },
             {
               trackId: MC_SEGMENTS_TRACK,

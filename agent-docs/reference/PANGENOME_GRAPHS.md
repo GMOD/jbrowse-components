@@ -450,6 +450,13 @@ missing feature and is usually a claim the graph cannot support.
   `K12#0#chr` range queries, which is the adapter's own access pattern and the
   whole check that an upload of one of these worked.
 
+  That check is about the bytes, and it is worth knowing what it leaves out: the
+  reader's path is the demo config plus its own **unpinned** plugin url, where
+  every committed graph figure pins the bundle and declares its tracks in a
+  session spec instead. So a track that resolves by `tabix` can still be a track
+  the app never draws. Rendering it the reader's way is the other half, and
+  `specs/pangenome_cactus.ts` says how above `GRAPH_CONFIG`.
+
 ## Measured on the hosted HPRC link index
 
 `tabix` on `hprc-v2.0-mc-grch38.links.bed.gz`, two windows from the tutorial's
