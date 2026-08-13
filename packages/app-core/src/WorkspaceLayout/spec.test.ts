@@ -182,6 +182,47 @@ test('direction tabs puts every child in one cell', () => {
   expect(panel.activeTabId).toBe(panel.tabs[0]!.id)
 })
 
+// A tab holds a flat stack of views, so a container child of a `tabs` node has
+// no split to become — and containers nest arbitrarily deep everywhere else, so
+// one can be written. Flattened into a single tab, NOT dropped: dropping it
+// left those views in no tab at all, and homing then swept them into whichever
+// tab happened to be showing. The layout came out wrong with nothing said.
+test('a container inside a tabs node becomes one tab, keeping its views', () => {
+  const tree = treeFromSpec(
+    {
+      direction: 'tabs',
+      children: [
+        { viewIds: ['a'] },
+        {
+          direction: 'horizontal',
+          children: [{ viewIds: ['b'] }, { viewIds: ['c'] }],
+        },
+      ],
+    },
+    nextId,
+  )
+
+  expect(isBranch(tree)).toBe(false)
+  expect((tree as PanelNode).tabs.map(t => t.viewIds)).toEqual([
+    ['a'],
+    ['b', 'c'],
+  ])
+})
+
+// but a child that names nothing at all is not a tab, the same way an empty
+// container is not a panel
+test('a tabs node skips a child with no views anywhere under it', () => {
+  const tree = treeFromSpec(
+    {
+      direction: 'tabs',
+      children: [{ viewIds: ['a'] }, { direction: 'horizontal', children: [] }],
+    },
+    nextId,
+  )
+
+  expect((tree as PanelNode).tabs.map(t => t.viewIds)).toEqual([['a']])
+})
+
 test('a spec with no children at all still yields a usable empty panel', () => {
   const tree = treeFromSpec({ direction: 'horizontal', children: [] }, nextId)
 

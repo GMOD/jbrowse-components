@@ -219,6 +219,22 @@ function unsizeableLayoutNodes(layout: LayoutNode): boolean {
   )
 }
 
+// The other statement a `tabs` node cannot take literally, and the one that
+// used to fail silently rather than partially: a tab holds a FLAT stack of
+// views, so a container child has no split to become. Containers nest
+// arbitrarily deep everywhere else — the docs say so — which is what makes one
+// here easy to write. Its views are flattened into a single tab now; they used
+// to be dropped from the layout, after which homing swept them into whichever
+// tab happened to be showing, so the arrangement was wrong with nothing said.
+function flattenedTabsContainers(layout: LayoutNode): boolean {
+  const nestedTabsChild =
+    layout.direction === 'tabs' &&
+    (layout.children?.some(c => c.children !== undefined) ?? false)
+  return (
+    nestedTabsChild || (layout.children?.some(flattenedTabsContainers) ?? false)
+  )
+}
+
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
 // LGV session
 export async function loadSessionSpec(
@@ -433,6 +449,12 @@ export async function loadSessionSpec(
       if (unsizeableLayoutNodes(layout)) {
         session.notify(
           'Session spec layout: a "tabs" node shares one cell between its children rather than dividing the space, so the "size" on them was ignored. The rest of the layout is unaffected.',
+          'info',
+        )
+      }
+      if (flattenedTabsContainers(layout)) {
+        session.notify(
+          'Session spec layout: a "tabs" node gives each child one tab, and a tab holds a flat stack of views — so a container inside one was flattened into a single tab rather than splitting it. The rest of the layout is unaffected.',
           'info',
         )
       }

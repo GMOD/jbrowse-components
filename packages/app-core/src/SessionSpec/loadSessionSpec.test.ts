@@ -735,4 +735,31 @@ describe('layout size that cannot be applied', () => {
       'info',
     )
   })
+
+  // The other thing a `tabs` node cannot take literally, and the one that was
+  // failing silently rather than partially: a tab holds a flat stack of views,
+  // so a container child has no split to become. Its views are flattened into
+  // one tab; they used to be dropped from the layout entirely, after which
+  // homing swept them into whichever tab happened to be showing.
+  it('warns when a container is nested inside a tabs node', async () => {
+    const session = await loadWithLayout({
+      direction: 'tabs',
+      children: [
+        { views: [0] },
+        { direction: 'horizontal', children: [{ views: [1] }, { views: [2] }] },
+      ],
+    })
+    expect(session.notify).toHaveBeenCalledWith(
+      expect.stringContaining('flattened'),
+      'info',
+    )
+  })
+
+  it('says nothing when a tabs node has only panels under it', async () => {
+    const session = await loadWithLayout({
+      direction: 'tabs',
+      children: [{ views: [0] }, { views: [1, 2] }],
+    })
+    expect(session.notify).not.toHaveBeenCalled()
+  })
 })

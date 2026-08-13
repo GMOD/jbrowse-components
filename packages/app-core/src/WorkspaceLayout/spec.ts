@@ -86,13 +86,21 @@ export function treeFromSpec(
     if (children.length === 0) {
       return undefined
     }
-    // `tabs` is not a split: every child's views become a tab in one cell
+    // `tabs` is not a split: every child's views become a tab in one cell.
+    //
+    // A tab holds a FLAT stack of views, so a container child has no split to
+    // become — and the docs say containers nest arbitrarily deep, so one can be
+    // written. Its views are flattened into a single tab; they used to be
+    // dropped from the layout outright, which is invisible rather than wrong,
+    // since homing then swept them into whichever tab happened to be showing.
+    // `loadSessionSpec` reports the flattening, as it does the sizes below.
     if (node.direction === 'tabs') {
-      const tabs: TabNode[] = children.flatMap(child =>
-        child.viewIds
-          ? [{ id: nextId('tab'), viewIds: [...child.viewIds] }]
-          : [],
-      )
+      const tabs: TabNode[] = children.flatMap(child => {
+        const viewIds = viewIdsInSpec(child)
+        return child.viewIds === undefined && viewIds.length === 0
+          ? []
+          : [{ id: nextId('tab'), viewIds }]
+      })
       return {
         id: nextId('panel'),
         size,
@@ -102,8 +110,8 @@ export function treeFromSpec(
     }
     const sizes = resolveSizes(children)
     const built = children.flatMap((child, i) => {
-      const node = build(child, sizes[i]!)
-      return node ? [node] : []
+      const subtree = build(child, sizes[i]!)
+      return subtree ? [subtree] : []
     })
     return built.length === 0
       ? undefined
