@@ -15,6 +15,7 @@ import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getCigarTypeLabel, interbaseTypeName } from '../../shared/types.ts'
 import { getOrCreate } from '../../shared/util.ts'
+import { READ_COLOR_CATEGORY_BY_INDEX } from '../colorUtils.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
@@ -25,6 +26,7 @@ import type {
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
+import type { ReadColorCategory } from '../colorUtils.ts'
 import type { LengthAccumulator } from './lengthStats.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
@@ -238,10 +240,27 @@ function chainSpan(rpcData: PileupDataResult, idx: number) {
       }
 }
 
+/**
+ * The chain-mode hover, and the one place that names a read's COLOR.
+ *
+ * Chain mode is the only mode where the fill cannot be derived from the read's
+ * own record: `consensusChainStrandFrames` settles which way "same strand"
+ * points from the OTHER chains on screen, so a reverse-mapped segment can
+ * legitimately be painted "same strand" and a reader looking at the record has
+ * no way to get there. `(-)` and "Split segment (same strand)" both being true
+ * is the confusing case, and naming the bucket is what connects the color to the
+ * legend row that explains it.
+ *
+ * `categoryLabel` arrives already carrying the scheme's rewording (the model's
+ * `readCategoryLabel`), so this line and the swatch cannot disagree. Undefined
+ * for the buckets with no single name — the mapq/tag/modification ramps, and an
+ * ordinary unbucketed read — which append nothing rather than a blank row.
+ */
 export function formatChainTooltip(
   rpcData: PileupDataResult,
   idx: number,
   refName: string,
+  categoryLabel?: (c: ReadColorCategory) => string | undefined,
 ) {
   const name = readNameAt(rpcData, idx)
   const { start, end } = chainSpan(rpcData, idx)
@@ -274,6 +293,17 @@ export function formatChainTooltip(
 
   if (flags & SAM_FLAG_SUPPLEMENTARY) {
     lines.push('Supplementary alignment')
+  }
+
+  // `readColorCategories` is EMPTY until the main thread bakes it — the worker
+  // ships it that way — so this is a real absence on a hover that beats the
+  // bake, not a defensive `?.`. Both halves resolve to "say nothing" rather than
+  // to a `Color: undefined` row.
+  const bucket =
+    READ_COLOR_CATEGORY_BY_INDEX[rpcData.readColorCategories[idx] ?? -1]
+  const category = bucket && categoryLabel?.(bucket)
+  if (category) {
+    lines.push(`Color: ${category}`)
   }
 
   return lines.join('<br>')

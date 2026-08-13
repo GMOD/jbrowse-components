@@ -1,5 +1,10 @@
+import {
+  readCategoryLabelOverrides,
+  readColorCategoryLabel,
+} from '../../shared/legendUtils.ts'
 import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
+import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { formatChainTooltip, formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -19,6 +24,11 @@ function makeRpcData(
     readPairOrientations: new Uint8Array([1]), // LR
     ...nextRefsToTable(['chr1']),
     readInterchrom: new Uint8Array([0]),
+    // An ordinary unbucketed read, which is what the color row must stay silent
+    // about. Present rather than omitted because the field is REQUIRED on
+    // `PileupDataResult` and the `as` cast below is what let it be missing — the
+    // hazard `makePileupDataResult` exists to close.
+    readColorCategories: Uint8Array.from([READ_COLOR_CATEGORY.plain]),
     insertSizeStats: { upper: 1000, lower: 200 },
     ...overrides,
   } as PileupDataResult
@@ -178,5 +188,60 @@ describe('read tooltip location', () => {
         refName: 'chr1',
       }),
     ).toBe('f1 chr1:1-100')
+  })
+})
+
+// Chain mode is the only mode where the fill cannot be derived from the read's
+// own record — `consensusChainStrandFrames` settles it from the other chains on
+// screen — so this row is what connects the color to the legend entry that
+// explains it.
+describe('formatChainTooltip names the color bucket', () => {
+  const framed = makeRpcData({
+    readStrands: Int8Array.from([-1]),
+    readColorCategories: Uint8Array.from([READ_COLOR_CATEGORY.fwdStrand]),
+  })
+
+  it('reports the wording the legend uses, not the raw table', () => {
+    const tip = formatChainTooltip(framed, 0, 'chr1', c =>
+      readColorCategoryLabel(c, readCategoryLabelOverrides(undefined, true)),
+    )
+    // the confusing pair, and the reason the row exists: a reverse-MAPPED
+    // segment painted "same strand", because "same" is against the chain's
+    // frame. Without the overrides this would read "Forward strand" over a
+    // read whose own strand is minus.
+    expect(tip).toContain('Split segment (same strand)')
+    expect(tip).not.toContain('Forward strand')
+  })
+
+  it('says nothing when no label resolver is supplied', () => {
+    expect(formatChainTooltip(framed, 0, 'chr1')).not.toContain('Color:')
+  })
+
+  // `readColorCategories` ships EMPTY from the worker and is baked on the main
+  // thread, so a hover can beat the bake. Every other row of this tooltip is
+  // readable then, and this one has to be absent rather than "Color: undefined".
+  it('says nothing before the categories are baked', () => {
+    const tip = formatChainTooltip(
+      makeRpcData({ readColorCategories: new Uint8Array(0) }),
+      0,
+      'chr1',
+      readColorCategoryLabel,
+    )
+    expect(tip).not.toContain('Color:')
+    expect(tip).toContain('chr1:1,001-1,100')
+  })
+
+  it('omits the row for a bucket with no single name', () => {
+    // the mapq/tag/modification ramps have no one swatch, so `undefined` must
+    // append nothing rather than an empty row
+    const tip = formatChainTooltip(
+      makeRpcData({
+        readColorCategories: Uint8Array.from([READ_COLOR_CATEGORY.mapq]),
+      }),
+      0,
+      'chr1',
+      readColorCategoryLabel,
+    )
+    expect(tip).not.toContain('Color:')
   })
 })

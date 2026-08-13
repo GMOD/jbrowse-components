@@ -67,6 +67,8 @@ import { groupByForMode, normalizeGroupBy } from '../shared/groupFeatures.ts'
 import {
   getArcLegendItems,
   getReadDisplayLegendItems,
+  readCategoryLabelOverrides,
+  readColorCategoryLabel,
 } from '../shared/legendUtils.ts'
 import { readNameAt } from '../shared/readNameBlock.ts'
 import {
@@ -2575,6 +2577,24 @@ export default function stateModelFactory(
             refName: region.refName,
             assemblyName: region.assemblyName,
           }
+        },
+
+        /**
+         * #getter
+         * Names one read color bucket for the hover, with the active scheme's
+         * rewording already applied — the same `readCategoryLabelOverrides` the
+         * legend box uses, so the tooltip and the swatch it sends the reader to
+         * cannot say different things about one color.
+         */
+        get readCategoryLabel() {
+          const overrides = readCategoryLabelOverrides(
+            self.colorBy,
+            framesUnpairedChainStrand(
+              colorSchemeIndexFor(self.colorBy.type),
+              self.readColorOpts,
+            ),
+          )
+          return (c: ReadColorCategory) => readColorCategoryLabel(c, overrides)
         },
       }))
       .views(self => ({

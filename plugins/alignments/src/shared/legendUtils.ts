@@ -297,10 +297,20 @@ const CATEGORY_ORDER = Object.keys(CATEGORY_LEGEND) as SwatchCategory[]
 // color. `undefined` for the categories the table deliberately omits (the
 // dynamic ramps and palettes: mapq, tag, modifications), which have no single
 // swatch and therefore no single name.
+//
+// `overrides` is `readCategoryLabelOverrides` — the SAME per-scheme rewording
+// the legend box applies. Passing it is what keeps this honest under the chain
+// framing: the raw table says "Forward strand", and a framed swatch is not about
+// the read's own strand, so a consumer that skips the overrides tells the user
+// the one thing the legend was just fixed for saying. The read hover is the
+// caller that made this matter; the arc hover has no framing to apply and passes
+// nothing.
 export function readColorCategoryLabel(
   category: ReadColorCategory,
+  overrides: Partial<Record<SwatchCategory, string>> = {},
 ): string | undefined {
-  return CATEGORY_LEGEND[category as SwatchCategory]
+  const key = category as SwatchCategory
+  return overrides[key] ?? CATEGORY_LEGEND[key]
 }
 
 // Under any scheme that colors ordinary reads by something OTHER than their own
@@ -381,7 +391,7 @@ function strandLabelOverrides(
 // rewording, the CPU-baked schemes name what the leftover neutral bucket means
 // in their own terms — a read the tag is absent from, or a block with no mate —
 // rather than the bare "No value" the table can't specialize.
-function categoryLabelOverrides(
+export function readCategoryLabelOverrides(
   colorBy: ColorBy | undefined,
   chainFramed: boolean,
 ): Partial<Record<SwatchCategory, string>> {
@@ -701,7 +711,7 @@ export function getReadDisplayLegendItems({
     ...bucketItems(
       categories,
       palette,
-      categoryLabelOverrides(colorBy, chainFramed),
+      readCategoryLabelOverrides(colorBy, chainFramed),
     ),
   ]
 }

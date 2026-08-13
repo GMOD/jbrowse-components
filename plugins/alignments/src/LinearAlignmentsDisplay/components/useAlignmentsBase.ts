@@ -428,7 +428,12 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           // A chain reports the whole template (both mates, insert size, pair
           // anomalies); a plain read reports just its own name and span.
           mouseoverExtraInformation: model.isChainMode
-            ? formatChainTooltip(resolved.rpcData, hit.index, resolved.refName)
+            ? formatChainTooltip(
+                resolved.rpcData,
+                hit.index,
+                resolved.refName,
+                model.readCategoryLabel,
+              )
             : formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
           highlightedChainReadIds: hoveredChainReadIds(hit, resolved),
         }
