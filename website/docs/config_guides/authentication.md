@@ -8,10 +8,11 @@ guide_category: Core configuration
 
 **TL;DR:** JBrowse fetches data files directly, so a file behind authentication
 needs JBrowse to present the credentials. Add an entry to the top-level
-`internetAccounts` array with the `domains` its token applies to. The first
-account whose `domains` substring-matches a URL wins, so order specific ones
-first. If you control the server holding the data, read the next section before
-configuring any of this.
+`internetAccounts` array with the `domains` its token applies to — a hostname,
+or a URL prefix if you want to scope it to part of a server. The first account
+whose `domains` matches a URL wins, so order specific ones first. If you control
+the server holding the data, read the next section before configuring any of
+this.
 
 ## If you control the data server, you probably do not need this
 
@@ -100,9 +101,9 @@ and which URLs to attach it to.
 }
 ```
 
-With that in place, opening a track whose URL contains `data.mylab.org` prompts
-the user for credentials once, then reuses them for the rest of the session.
-Nothing on the track config changes.
+With that in place, opening a track served from `data.mylab.org` prompts the
+user for credentials once, then reuses them for the rest of the session. Nothing
+on the track config changes.
 
 ## Account types
 
@@ -151,18 +152,28 @@ used whatever its `domains` say:
 }
 ```
 
-Use this for a host whose URLs no substring cleanly identifies. It is also what
-the Add Track form's account picker writes, so a file whose URL matches no
-`domains` entry still authenticates. An id naming an account the config does not
-declare gets an ephemeral one built for that URL.
+Use this for a host that no single `domains` entry cleanly identifies. It is
+also what the Add Track form's account picker writes, so a file whose URL
+matches no `domains` entry still authenticates.
+
+An id naming an account the config does not declare is only honoured when its
+leading segment is an account **type** — `HTTPBasicInternetAccount-myserver`,
+the form JBrowse mints for itself when a server answers 401. Any other unknown
+id is ignored and the file is read unauthenticated, which surfaces as the 401
+the server sends rather than as an error about the account.
 
 **Otherwise, the `domains` walk.** JBrowse goes through `internetAccounts` in
-order and picks the **first** whose `domains` matches. The match is a plain
-substring test against the whole URL rather than a hostname comparison, which
-has two consequences:
+order and picks the **first** whose `domains` matches. An entry is read as one
+of two shapes, told apart by whether it contains a `/`:
 
-- You can scope an account to a **path**, not just a host, by including the path
-  in the domain entry. This is how one server can use different credentials for
+- **A hostname** — `data.mylab.org`, or `localhost:8080` to pin a port. It
+  matches that host and its subdomains, on a dot boundary: `dropbox.com` covers
+  `www.dropbox.com` but not `evil-dropbox.com`. A leading dot (`.mylab.org`) is
+  accepted and means the same thing.
+- **A URL prefix**, if it contains a `/` — `data.mylab.org/reads`, or with a
+  scheme, `https://data.mylab.org/reads/`. It matches to a path-segment
+  boundary, so `/reads` does not match `/readsets`. This is how you scope an
+  account to a **path**, so one server can use different credentials for
   different directories:
 
   ```json
@@ -184,9 +195,23 @@ has two consequences:
   }
   ```
 
-- Because it is a substring test, a short entry matches more than you might
-  expect. Order matters: put the most specific accounts first, since the first
-  match wins.
+Order still matters: put the most specific accounts first, since the first match
+wins.
+
+The query string and the fragment are never consulted under either shape, so a
+URL that merely mentions one of your domains in a parameter does not match it.
+
+:::note Changed in v5
+
+`domains` used to be a plain substring test against the whole URL. Entries that
+name a host or a path — which is nearly all of them — behave the same way now.
+Two kinds of entry no longer match: a **fragment of a hostname**
+(`domains: ["dropbox"]` no longer matches `dropbox.com`; write the whole host),
+and anything relying on the match landing in a **query string**. Both were also
+how a crafted link could aim a user's token at a server of its choosing, which
+is why this changed.
+
+:::
 
 An account with an empty `domains` list never matches automatically. It is still
 usable, because the user can select it explicitly when opening a file through
