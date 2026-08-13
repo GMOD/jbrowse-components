@@ -108,6 +108,43 @@ test('sizes stay normalised through a drag', () => {
   }
 })
 
+// The mirror of "dragging the last tab out of a cell collapses it", by the
+// gesture that empties the same cell without moving anything: closing its last
+// tab. It left a blank half of the split that rendered NOTHING — not even the
+// view launcher an empty tab shows — with only the `+` to get out of it.
+test('closing the last tab of one half of a split collapses it too', () => {
+  const { session, left, tabC } = twoPanels()
+
+  session.closeTab(tabC)
+
+  expect(session.panels).toHaveLength(1)
+  expect(session.panels[0]!.id).toBe(left)
+  expect(session.panels[0]!.size).toBe(1)
+  expect(session.activePanelId).toBe(left)
+})
+
+// but a cell with tabs left over is not a cell anyone emptied
+test('closing one of several tabs leaves the cell standing', () => {
+  const { session, left, tabA } = twoPanels()
+
+  session.closeTab(tabA)
+
+  expect(session.panels).toHaveLength(2)
+  expect(session.panels.map(p => p.id)).toContain(left)
+})
+
+// and the last cell in the workspace has nowhere to collapse to, so it stays —
+// `pruneEmptyPanel` already refuses, and this is the state `removePanel` hands
+// back for the same reason
+test('closing the last tab of the only cell keeps the cell', () => {
+  const session = TestSession.create({ name: 't' })
+
+  session.closeTab(session.tabs[0]!.id)
+
+  expect(session.panels).toHaveLength(1)
+  expect(session.panels[0]!.tabs).toEqual([])
+})
+
 test('a moved tab keeps its views and its title', () => {
   const { session, right, tabB } = twoPanels()
   session.renameTab(tabB, 'Renamed')

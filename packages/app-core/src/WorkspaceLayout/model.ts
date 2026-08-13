@@ -180,6 +180,24 @@ export function WorkspaceLayoutMixin() {
       }
 
       /**
+       * `activePanelId` must name a cell that exists, whatever just stopped
+       * existing. Homing falls back on it, so a dangling one puts views in a
+       * cell nobody draws.
+       *
+       * Stated as the invariant rather than as "the panel I just closed",
+       * because a removal collapses branches on the way out and the cell that
+       * disappears is not always the one that was named.
+       */
+      function keepActivePanel() {
+        if (
+          self.activePanelId !== undefined &&
+          !self.hasPanel(self.activePanelId)
+        ) {
+          self.activePanelId = panels(self.tree)[0]?.id
+        }
+      }
+
+      /**
        * The shape ViewMenu's two "give this view a home of its own" moves share.
        *
        * Homing first is what removed the old fork here — the live dockview api
@@ -253,9 +271,7 @@ export function WorkspaceLayoutMixin() {
         },
         closePanel(panelId: string) {
           apply(removePanel(self.tree, panelId))
-          if (self.activePanelId === panelId) {
-            self.activePanelId = panels(self.tree)[0]?.id
-          }
+          keepActivePanel()
         },
         /** "New empty tab": a tab in an existing cell, showing the launcher. */
         addTab(panelId: string, viewIds: string[] = []) {
@@ -267,8 +283,27 @@ export function WorkspaceLayoutMixin() {
           self.activePanelId = panelId
           return tab
         },
+        /**
+         * Close a tab, and the cell with it if that was its last.
+         *
+         * A cell whose tabs are all gone is the state `pruneEmptyPanel` was
+         * written for — "dragging the last tab out of a split and leaving a
+         * blank half is the one place an empty panel is clearly not what was
+         * meant" — and closing that tab arrives at the identical half by a
+         * different gesture. It rendered nothing at all, not even the launcher
+         * an empty TAB shows, so the only way back out of it was the `+`.
+         *
+         * `pruneEmptyPanel` carries both guards already: a cell with tabs left
+         * stays, and the last cell in the workspace stays whatever happens to
+         * it, since there is nowhere for the tree to collapse to.
+         */
         closeTab(tabId: string) {
-          apply(removeTab(self.tree, tabId))
+          const panelId = findTab(self.tree, tabId)?.panel.id
+          if (panelId === undefined) {
+            return
+          }
+          apply(pruneEmptyPanel(removeTab(self.tree, tabId), panelId))
+          keepActivePanel()
         },
         addViewToTab(tabId: string, viewId: string) {
           apply(addViewToTab(self.tree, tabId, viewId))
@@ -298,6 +333,18 @@ export function WorkspaceLayoutMixin() {
         dropTabInPanel(tabId: string, targetPanelId: string, index?: number) {
           const source = dropSource(tabId, targetPanelId)
           if (!source) {
+            return
+          }
+          // A drop on the BODY of the cell the tab is already in asks for
+          // nothing. There is no gap under the pointer to state a position, and
+          // the indicator washes the whole cell — which says "be a tab of this
+          // cell", which it already is. Appending reordered the strip to say
+          // something the gesture never said, and sent the tab to the end.
+          // dockview declines a centre drop on the group a tab came from too.
+          //
+          // The rule is the gesture's, not `moveTabToPanel`'s: no index there
+          // still means append, which is the only reading a total function has.
+          if (source.id === targetPanelId && index === undefined) {
             return
           }
           let next = moveTabToPanel(self.tree, tabId, targetPanelId, index)

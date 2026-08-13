@@ -542,16 +542,28 @@ describe('reordering within a strip', () => {
     expect(session.panels).toHaveLength(2)
   })
 
-  // The centre of a cell means "be a tab of this cell", which for a tab already
-  // in it means the end — there is no gap being pointed at. This is the path
-  // that goes through `dropTabInPanel` with NO index, and the index adjustment
-  // the strip needs must not reach it.
-  test('a drop on its own body sends the tab to the end', () => {
+  // The centre of a cell means "be a tab of this cell", and a tab already in it
+  // already is — so the gesture asks for nothing and nothing happens. There is
+  // no gap under the pointer to state a position with, and the indicator washes
+  // the whole cell rather than drawing a caret, so a reorder is the one thing
+  // the drop did not say. It used to send the tab to the end.
+  test('a drop on its own body leaves the order alone', () => {
     const { a, b, c, session, order } = setupStrip()
     dragTabTo(a, 200, 200).drop()
 
-    expect(order()).toEqual([b, c, a])
+    expect(order()).toEqual([a, b, c])
     expect(session.panels).toHaveLength(1)
+  })
+
+  // ...but the same drop into a DIFFERENT cell states a cell and not a
+  // position, which is `dropTabInPanel` with no index and still means append.
+  test('a drop on another cell’s body appends to that strip', () => {
+    const { a, b, c, session, left, order } = setupStrip()
+    const right = session.splitPanel(left, 'row')!
+    session.dropTabInPanel(a, right.id)
+
+    expect(order()).toEqual([b, c])
+    expect(session.findTab(a)?.panel.id).toBe(right.id)
   })
 })
 

@@ -169,7 +169,10 @@ test('activePanelId never dangles', () => {
   check()
   session.addTab('panel-does-not-exist')
   check()
-  session.closePanel(p2.id)
+  // closing a tab can now take its cell with it, so it is a way of retiring the
+  // panel `activePanelId` names as well
+  session.setActivePanelId(p2.id)
+  session.closeTab(session.activeTabOf(p2.id)!.id)
   check()
   session.closePanel(session.panels[0]!.id)
   check()

@@ -34,7 +34,18 @@ silently deleted tabs as a feature. Both middle levels are real:
   shows the view launcher
 
 So nothing prunes empties as a rule. `pruneEmptyPanel` and `pruneEmptyTabIn`
-exist, and each is called only by the gesture that just emptied the thing.
+exist, and each is called only by the gesture that just emptied the thing —
+which is every gesture that can empty one: a drag out of a cell, and closing a
+cell's last tab.
+
+**A panel with no tabs renders nothing at all** — not even the launcher an empty
+_tab_ shows, since `PanelView` draws the active tab's content and there is no
+active tab. That is only survivable because the state cannot be reached and
+held: with views left in the session the prunes above collapse the cell, and
+with none `ViewsContainer` renders `ViewLauncher` in place of the whole
+workspace rather than mounting `WorkspaceContainer` at all. So the blank cell
+needs no launcher of its own, and giving `renderTabContent` an `undefined`-tab
+case to serve one would be answering a state nothing can show.
 
 ## Ids are random, not a counter
 
@@ -205,6 +216,15 @@ edge band, so `dropZoneAt` alone reads a drop between two tabs as "split this
 cell upwards". A strip drop draws a caret at the gap rather than washing half
 the cell, which would say the wrong thing.
 
+**What the indicator says is what the drop does, and a drop that says nothing
+does nothing.** The centre wash means "be a tab of this cell", so on the cell a
+tab is already in it promises no change — and the gesture states no position,
+because there is no gap under the pointer and no caret drawn. `dropTabInPanel`
+therefore declines it, where it used to append and send the tab to the end of
+its own strip. dockview declines the same drop. The rule belongs to the gesture
+and not to `moveTabToPanel`, where no index still means append: that is the only
+reading a total function has.
+
 `useLayoutDrag` is the DOM half and is deliberately dumb. The React test stubs
 geometry and therefore covers **wiring only**, and says so. A test that stubs
 the thing it is checking proves nothing, and drag-and-drop is mostly geometry.
@@ -374,6 +394,10 @@ site: `WorkspaceContainer`'s `closeTab` and `WorkspacePanelActions`' close both
 `session.removeView` the views first, then drop the tab or the cell. Homing runs
 in the other direction only — `homeUnassignedViews` puts a newly launched view
 somewhere and drops members the session no longer has, and nothing reads back.
+
+Closing a cell's LAST tab closes the cell too, which is `pruneEmptyPanel` doing
+the job it was written for by way of a second gesture — see the empty-states
+section above for why a cell left standing there had no way out of itself.
 
 `closeTab` is **one function with two callers** — the tab's own ⋮ menu and
 middle-clicking the tab — rather than the pair spelled out at each. Spelled
