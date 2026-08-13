@@ -50,6 +50,29 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 - The sweep is weekly (`.github/workflows/figures.yml`), not a PR gate — nearly
   every spec fetches remotely, so it would fail on someone else's outage.
 
+## Reviewing them: `pnpm review-screenshots-web`
+
+Rebuilt on every page load, so an edit to `scripts/review-app/` needs a reload
+rather than a restart. It shares its write protocol, note drafts and repaint
+properties with jbrowse-web's snapshot review through
+`@jbrowse/browser-test-utils/reviewApp` — a bug in that half is `reviewAppProbe`
+in `packages/browser-test-utils`, and this page's own half has two probes of its
+own. Both drive the running server and file no verdict; run them after touching
+the card:
+
+- `node scripts/probe-review-layout.ts` — the page holds still while the figures
+  load, and reserving their boxes does not distort them.
+- `node scripts/probe-review-compare.ts` — the compare view is the page's,
+  wherever it is set from, **including on a card that was off screen when it
+  changed**. That one is the whole point: the fade is written to the elements
+  rather than rendered, and only to what is on screen, so a broken catch-up is a
+  figure drawn at the wrong fade with nothing anywhere saying so.
+
+Both take `--port` and `--q`. Neither can pass over a list with nothing on it,
+which is the one result a probe like this must not be able to give: the compare
+one says so and what to do about it, the layout one times out waiting for a
+card.
+
 ## Prose, captions, cards
 
 - **Few numbers in prose, and none that assert a result.** A number that names
