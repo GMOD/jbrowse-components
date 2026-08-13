@@ -72,6 +72,37 @@ const AXOLOTL_CONFIG = encodeURIComponent(
 )
 const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 
+// GC Percent, drawn the way UCSC's own trackDb entry for gc5Base asks for it:
+// `windowingFunction Mean` and `viewLimits 30:70`, both carried into the hub
+// config's metadata. JBrowse's wiggle defaults are whiskers over an autoscaled
+// axis, and on this file that is a solid block -- the track is 5-base bins, so
+// every summary bin in a several-hundred-kb window spans a min near 0 and a max
+// near 100 and the band fills the whole track with the average buried in it.
+const AXOLOTL_GC_TRACK = {
+  trackId: `${AXOLOTL_ASSEMBLY}-gc5Base`,
+  summaryScoreMode: 'avg',
+  minScore: 30,
+  maxScore: 70,
+  height: 80,
+}
+
+// RepeatMasker as one lane per repeat class. Packed into a single lane, a
+// repeat-rich genome at this zoom is a wall of identical blocks: the classes are
+// interleaved, so nothing in the picture says which part of the window is LINE
+// and which is simple repeat.
+//
+// The class is not a column in this file. GenArk ships bigRmskBed, whose autoSql
+// has no class field -- it rides on the name as a suffix (`L1HS#LINE/L1`) -- so
+// `partitionField` takes the jexl that cuts it out rather than an attribute
+// name, the expression /docs/user_guides/multirow_feature_track documents for
+// exactly this file type.
+const AXOLOTL_RMSK_ROWS = {
+  trackId: `${AXOLOTL_ASSEMBLY}-repeatMasker`,
+  type: 'LinearMultiRowFeatureDisplay',
+  partitionField: "jexl:split(split(feature.name,'#')[1],'/')[0]",
+  height: 220,
+}
+
 // The gene track the site itself opens with (its defaultSession shows
 // `hg38-ncbiRefSeq`, RefSeq All), and nothing else: no height, no glyph mode, no
 // display settings at all. A figure on a page called "basic usage" has to be the
@@ -886,6 +917,12 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // "About track" on the phyloP track, for the section about what a checkbox
   // actually downloads: the dialog prints the adapter, so the hgdownload URL the
   // config points at is on screen rather than asserted in a paragraph.
+  //
+  // Two frames side by side rather than the dialog alone, because the dialog is
+  // the answer and the menu item is the question: a reader who has never opened
+  // that menu cannot get to the second frame from the first. Same shape as the
+  // turn_on_phylop pair, and for the same reason -- the difference between the
+  // frames is one click, and a reader compares them across rather than down.
   {
     mode: 'url',
     name: 'genomes_basics/about_track',
@@ -904,13 +941,23 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportWidth: 1000,
     viewportHeight: 700,
+    stageColumns: 2,
     diffThreshold: 0.02,
-    actions: [
-      trackMenuIcon('hg38-phyloP100way'),
-      { type: 'waitForText', text: 'About track' },
-      { type: 'click', text: 'About track' },
-      { type: 'waitForText', text: 'bigWigLocation' },
-      { type: 'delay', ms: 1200 },
+    stages: [
+      {
+        actions: [
+          trackMenuIcon('hg38-phyloP100way'),
+          { type: 'waitForText', text: 'About track' },
+          { type: 'delay', ms: 800 },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'About track' },
+          { type: 'waitForText', text: 'bigWigLocation' },
+          { type: 'delay', ms: 1200 },
+        ],
+      },
     ],
   },
 
@@ -930,17 +977,14 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           // No gene track listed. The search opens the one whose index answered
           // -- RefSeq All (GFF) -- and highlights the hit in it, so naming a
           // second gene track here would draw the same gene twice.
-          tracks: [
-            { trackId: `${AXOLOTL_ASSEMBLY}-gc5Base`, height: 90 },
-            { trackId: `${AXOLOTL_ASSEMBLY}-repeatMasker`, height: 90 },
-          ],
+          tracks: [AXOLOTL_GC_TRACK, AXOLOTL_RMSK_ROWS],
         },
       ],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 180000,
     settleMs: 10000,
-    viewportHeight: 640,
+    viewportHeight: 740,
     diffThreshold: 0.02,
   },
 ]
