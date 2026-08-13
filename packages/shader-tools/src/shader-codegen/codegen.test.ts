@@ -176,7 +176,7 @@ describe('emitInterface instances', () => {
     expect(out).toContain('kind: 3,')
   })
 
-  test('emits GL_ATTRIBUTES with component counts, types and integer flags', () => {
+  test('emits VERTEX_ATTRIBUTES with component counts, types and integer flags', () => {
     expect(out).toContain(
       "{ name: 'a_pos', components: 2, type: 'float', offsetBytes: 0, integer: false },",
     )
@@ -268,7 +268,7 @@ describe('emitInterface compute', () => {
     expect(out).toContain('export const UNIFORMS_SIZE_BYTES = 96')
     expect(out).toContain('u32[0] = uniforms.flag')
     expect(out).not.toContain('INSTANCE_STRIDE_BYTES')
-    expect(out).not.toContain('GL_ATTRIBUTES')
+    expect(out).not.toContain('VERTEX_ATTRIBUTES')
   })
 
   // Only the types the emitted module actually references: a compute kernel has
@@ -278,7 +278,7 @@ describe('emitInterface compute', () => {
     expect(out).toContain(
       "import type { ShaderBinding } from '@jbrowse/render-core/hal'",
     )
-    expect(out).not.toContain('GlAttributeLayout')
+    expect(out).not.toContain('VertexAttributeLayout')
     expect(out).not.toContain('TextureBinding')
   })
 
@@ -343,8 +343,8 @@ describe('emitLayoutOnly', () => {
     expect(out).toContain('export const INSTANCE_OFFSET_I32 = {')
   })
 
-  test('omits GL_ATTRIBUTES and packers', () => {
-    expect(out).not.toContain('GL_ATTRIBUTES')
+  test('omits VERTEX_ATTRIBUTES and packers', () => {
+    expect(out).not.toContain('VERTEX_ATTRIBUTES')
     expect(out).not.toContain('packInstances')
     expect(out).not.toContain('UNIFORMS_SIZE_BYTES')
   })
@@ -379,7 +379,7 @@ describe('emitInterface textures', () => {
       "{ textureBinding: 0, samplerBinding: 1, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
     )
     expect(out).toContain(
-      "import type { GlAttributeLayout, ShaderBinding, TextureBinding } from '@jbrowse/render-core/hal'",
+      "import type { VertexAttributeLayout, ShaderBinding, TextureBinding } from '@jbrowse/render-core/hal'",
     )
   })
 

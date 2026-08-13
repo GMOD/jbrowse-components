@@ -59,7 +59,7 @@ strand case.
   compositor-driven scroll space, so on a fast scroll the labels tear away from
   their glyphs. Wrap overlays in `ScrollLockedOverlay`.
 - **HAL parity**: a behavior change to one HAL lands in the other and in
-  `MockHal`. `glAttributeSync.test.ts` is the gate.
+  `MockHal`. `vertexAttributeSync.test.ts` is the gate.
 - **Every drawing path gets its ratio from `getDpr()`**, never a bare
   `devicePixelRatio` — it caps at 2, so the two disagree above that and a canvas
   sized by one with geometry from the other is scaled wrong. Analytics is not a

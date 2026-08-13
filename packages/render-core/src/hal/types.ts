@@ -1,4 +1,10 @@
-export interface GlAttributeLayout {
+/**
+ * One field of a pass's **vertex input layout** — the map from bytes in the
+ * packed instance buffer to an input the shader declares. Both HALs build from
+ * it: WebGPU as a `GPUVertexBufferLayout` attribute, WebGL2 as a VAO pointer.
+ * Emitted from the shader by codegen as `VERTEX_ATTRIBUTES`; never hand-written.
+ */
+export interface VertexAttributeLayout {
   name: string
   components: number
   type: 'float' | 'uint' | 'int'
@@ -57,7 +63,7 @@ export interface PassDescriptor {
   blend: boolean
   // custom blend factors (defaults to src-alpha / one-minus-src-alpha if omitted)
   blendState?: BlendState
-  glAttributes: readonly GlAttributeLayout[]
+  vertexAttributes: readonly VertexAttributeLayout[]
   // WGSL fragment entry point override (default: 'fs_main')
   wgslFragmentEntry?: string
   // GLSL fragment shader override (e.g. alternate fragment program)

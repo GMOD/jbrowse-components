@@ -27,7 +27,7 @@ function renameUniformBlock(
  * reads a constant on WebGL2 only; and `assertVertexInputs` searches for
  * `a_(\w+)`, so the declaration it should have flagged simply drops out of the
  * comparison, which iterates over what it FOUND. The layout cross-check passes
- * while the shader and GL_ATTRIBUTES disagree about a name.
+ * while the shader and VERTEX_ATTRIBUTES disagree about a name.
  *
  * Field names are unique within the struct, so widening to `_\d+` cannot alias
  * two fields onto one target: `inst_color_0` and `inst_color2_0` differ before

@@ -1,6 +1,6 @@
 import type {
   BlendState,
-  GlAttributeLayout,
+  VertexAttributeLayout,
   PassDescriptor,
   ShaderBinding,
   TextureBinding,
@@ -15,7 +15,7 @@ export interface ShaderModule {
   GLSL_VERTEX: string
   GLSL_FRAGMENT: string
   INSTANCE_STRIDE_BYTES: number
-  GL_ATTRIBUTES: readonly GlAttributeLayout[]
+  VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[]
   // Emitted when the .slang source declares
   // `public static const uint VERTS_PER_INSTANCE = <expr>;` at module scope.
   // Lets slangPass() avoid taking the count as a separate argument.
@@ -46,7 +46,7 @@ export interface SlangPassOpts {
   // Override if the data buffer comes from another pass (e.g. canvas's
   // chevron pass reads line's instance buffer).
   bufferStride?: number
-  bufferAttributes?: readonly GlAttributeLayout[]
+  bufferAttributes?: readonly VertexAttributeLayout[]
 }
 
 export function slangPass(opts: SlangPassOpts): PassDescriptor {
@@ -68,7 +68,7 @@ export function slangPass(opts: SlangPassOpts): PassDescriptor {
     verticesPerInstance,
     blend: opts.blend ?? true,
     blendState: opts.blendState,
-    glAttributes: opts.bufferAttributes ?? opts.mod.GL_ATTRIBUTES,
+    vertexAttributes: opts.bufferAttributes ?? opts.mod.VERTEX_ATTRIBUTES,
     topology: opts.topology,
     textures: opts.textures ?? opts.mod.TEXTURES,
     bindings: opts.mod.BINDINGS,

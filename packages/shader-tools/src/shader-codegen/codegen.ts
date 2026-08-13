@@ -4,7 +4,7 @@
 //   - WGSL / GLSL shader strings
 //   - Uniform std140 layout (field offsets, total size)
 //   - Per-instance vertex buffer layout (field offsets, stride)
-//   - GL_ATTRIBUTES descriptors (for PassDescriptor)
+//   - VERTEX_ATTRIBUTES descriptors (for PassDescriptor)
 //   - Uniforms TS interface + writeUniforms() packer
 //   - InstanceArrays TS interface + packInstances() struct-of-arrays packer
 //
@@ -116,7 +116,7 @@ function arrayElementWords(field: Field, type: ArrayType) {
 
 // Which typed-array view addresses a field of this type. ONE mapping from the
 // Slang scalar type to the JS view: the emitted uniform offset maps, the
-// `writeUniforms` writes, the `packInstances` writes and the GL_ATTRIBUTES
+// `writeUniforms` writes, the `packInstances` writes and the VERTEX_ATTRIBUTES
 // component type all read it, and they were four separate spellings of the
 // same three-way branch.
 type View = 'f32' | 'u32' | 'i32'
@@ -451,7 +451,7 @@ export function emitShaderStrings(inputs: CodegenInputs) {
 }
 
 // Everything except the shader strings: exported consts, uniform/instance
-// layout, typed packers, GL_ATTRIBUTES, textures. This is the module eager
+// layout, typed packers, VERTEX_ATTRIBUTES, textures. This is the module eager
 // code imports (it never pulls in WGSL_SOURCE/GLSL_*).
 export function emitInterface(inputs: CodegenInputs) {
   const { baseName, reflection, textures, vertsPerInstance, exportedConsts } =
@@ -467,7 +467,7 @@ export function emitInterface(inputs: CodegenInputs) {
   // Import only the HAL types the emitted module actually references. A compute
   // shader has no instance attributes and no textures, so it imports neither.
   const vs = findInstanceStruct(reflection)
-  const halImports = vs ? ['GlAttributeLayout'] : []
+  const halImports = vs ? ['VertexAttributeLayout'] : []
   if (bindings.length > 0) {
     halImports.push('ShaderBinding')
   }
@@ -670,8 +670,8 @@ export function emitInterface(inputs: CodegenInputs) {
 
     lines.push(
       ...instanceLayoutLines(attrs),
-      // #shaderExport GL_ATTRIBUTES | vertex attribute layout for the WebGL2 path
-      `export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [`,
+      // #shaderExport VERTEX_ATTRIBUTES | the vertex input layout, used by both HALs — WebGPU builds its GPUVertexBufferLayout from it, WebGL2 its VAO pointers
+      `export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [`,
     )
     for (const a of attrs) {
       const view = viewOf(a.type)

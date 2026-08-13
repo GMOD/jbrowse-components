@@ -4,7 +4,7 @@ export { WebGL2Hal } from './webgl2Hal.ts'
 export { WebGPUHal } from './webgpuHal.ts'
 export type {
   BlendState,
-  GlAttributeLayout,
+  VertexAttributeLayout,
   GpuHal,
   PassDescriptor,
   ShaderBinding,

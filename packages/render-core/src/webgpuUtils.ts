@@ -94,12 +94,12 @@ export function createVertexBuffer(
 }
 
 /**
- * Converts GL attribute descriptor to WebGPU vertex format string.
- * Example: { components: 2, type: 'float' } -> 'float32x2'
+ * Converts one entry of a pass's vertex input layout to a WebGPU vertex format
+ * string. Example: { components: 2, type: 'float' } -> 'float32x2'
  * @param attr - Vertex attribute descriptor.
  * @returns GPUVertexFormat string.
  */
-export function glToGpuVertexFormat(attr: {
+export function toGpuVertexFormat(attr: {
   components: number
   type: 'float' | 'uint' | 'int'
 }): GPUVertexFormat {

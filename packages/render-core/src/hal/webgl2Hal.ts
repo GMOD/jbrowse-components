@@ -144,7 +144,7 @@ let totalDisposed = 0
 
 // Behavioral parity with WebGPUHal is enforced by tests, not by this file:
 // products/jbrowse-web/browser-tests/compare-backends.ts pixel-diffs webgl vs
-// webgpu vs canvas2d output; glAttributeSync.test.ts checks attribute layout
+// webgpu vs canvas2d output; vertexAttributeSync.test.ts checks attribute layout
 // against the shader; shared buffer bookkeeping is covered by
 // hal/regionRegistry.test.ts. Mirror any behavior change in webgpuHal.ts.
 export class WebGL2Hal implements GpuHal {
@@ -277,15 +277,17 @@ export class WebGL2Hal implements GpuHal {
     bindUniformBlock(gl, program, 'Uniforms', 0)
     this.checkGlError(`link pass "${desc.id}"`)
 
-    const attrLocs = desc.glAttributes.map(attr =>
+    const attrLocs = desc.vertexAttributes.map(attr =>
       gl.getAttribLocation(program, attr.name),
     )
     if (this.debug) {
-      const pairs = desc.glAttributes.map((a, i) => `${a.name}@${attrLocs[i]}`)
+      const pairs = desc.vertexAttributes.map(
+        (a, i) => `${a.name}@${attrLocs[i]}`,
+      )
       console.warn(
         `[WebGL2Hal] pass "${desc.id}" stride=${desc.instanceStride} attrs: ${pairs.join(', ')}`,
       )
-      const missing = desc.glAttributes.filter((_, i) => attrLocs[i]! < 0)
+      const missing = desc.vertexAttributes.filter((_, i) => attrLocs[i]! < 0)
       if (missing.length > 0) {
         console.warn(
           `[WebGL2Hal] pass "${desc.id}" missing attribute locations: ${missing.map(a => a.name).join(', ')}`,
@@ -633,12 +635,12 @@ export class WebGL2Hal implements GpuHal {
     const desc = pass.descriptor
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
 
-    for (let i = 0; i < desc.glAttributes.length; i++) {
+    for (let i = 0; i < desc.vertexAttributes.length; i++) {
       const loc = pass.attrLocs[i]!
       if (loc < 0) {
         continue
       }
-      const attr = desc.glAttributes[i]!
+      const attr = desc.vertexAttributes[i]!
       if (attr.integer) {
         const glType = attr.type === 'uint' ? gl.UNSIGNED_INT : gl.INT
         gl.vertexAttribIPointer(

@@ -3,7 +3,7 @@
 // Compiles every `*.slang` source file in the workspace into its matching
 // `*.generated.ts` artifact. Emits WGSL + GLSL-ES-300 shader strings and a
 // reflection-derived TS layout (stride, field offsets, typed packer,
-// GL_ATTRIBUTES). The generated file is the single source of truth for all
+// VERTEX_ATTRIBUTES). The generated file is the single source of truth for all
 // per-shader buffer layouts; TS callers import its constants instead of
 // hand-maintaining parallel stride/offset declarations.
 //

@@ -40,7 +40,7 @@ import type { Parameter, Reflection } from './reflection.ts'
  * straight to `createBindGroupLayout`. `@jbrowse/render-core/hal` declares the
  * matching `ShaderBinding` interface that generated modules are typed against —
  * shader-tools must not depend on render-core, the same arrangement already in
- * place for `GlAttributeLayout` and `TextureBinding`.
+ * place for `VertexAttributeLayout` and `TextureBinding`.
  */
 export type BindingKind =
   | 'uniform'

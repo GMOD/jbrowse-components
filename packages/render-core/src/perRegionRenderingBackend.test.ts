@@ -196,7 +196,7 @@ describe('GpuPerRegionRenderingBackend.uploadRegion', () => {
       instanceStride: STRIDE,
       verticesPerInstance: 6,
       blend: true,
-      glAttributes: [],
+      vertexAttributes: [],
       pack: d => new ArrayBuffer(instances(d) * STRIDE),
     }
   }

@@ -42,7 +42,7 @@ describe('synteny pass geometry', () => {
       // The vertex-attribute layout each HAL builds its pipeline from. Now that
       // the edge pass declares its own (SYNTENY_PASSES no longer overrides it
       // with the fill module's), this is what says the two agree.
-      expect(edge.GL_ATTRIBUTES).toEqual(fill.GL_ATTRIBUTES)
+      expect(edge.VERTEX_ATTRIBUTES).toEqual(fill.VERTEX_ATTRIBUTES)
       expect(edge.UNIFORM_OFFSET_F32).toEqual(fill.UNIFORM_OFFSET_F32)
       expect(edge.UNIFORMS_SIZE_BYTES).toBe(fill.UNIFORMS_SIZE_BYTES)
     }

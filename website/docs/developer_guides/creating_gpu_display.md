@@ -232,7 +232,7 @@ What lands in `score.generated.ts`, and what a plugin imports from it:
 | `UNIFORM_OFFSET_F32 / _U32 / _I32` | per-field indices into the uniform scratch buffer, one map per view |
 | `UNIFORM_SLOT_ARRAYS` | element counts for array-valued uniform slots |
 | `writeUniforms` | typed whole-block writer; the alternative to poking offsets |
-| `GL_ATTRIBUTES` | vertex attribute layout for the WebGL2 path |
+| `VERTEX_ATTRIBUTES` | the vertex input layout, used by both HALs — WebGPU builds its GPUVertexBufferLayout from it, WebGL2 its VAO pointers |
 | `packInstances` | interleaves parallel arrays into one instance buffer |
 | `TEXTURES` | texture bindings the shader declares |
 

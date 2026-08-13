@@ -8,7 +8,7 @@ import { VARIANT_MATRIX_PASSES } from '../../../../plugins/variants/src/LinearMu
 import { WIGGLE_PASSES } from '../../../../plugins/wiggle/src/shared/GpuWiggleRenderer.ts'
 
 import type {
-  GlAttributeLayout,
+  VertexAttributeLayout,
   PassDescriptor,
 } from '@jbrowse/render-core/hal'
 
@@ -65,12 +65,12 @@ function parseGlslAttributes(glsl: string): GlslAttribute[] {
 
 function validateSync(
   passId: string,
-  glAttributes: readonly GlAttributeLayout[],
+  vertexAttributes: readonly VertexAttributeLayout[],
   glslVertex: string,
 ) {
   const glslAttrs = parseGlslAttributes(glslVertex)
 
-  // glAttributes describes the VERTEX BUFFER layout — every byte the GPU
+  // vertexAttributes describes the VERTEX BUFFER layout — every byte the GPU
   // reads. The GLSL shader may omit an attribute if its body doesn't
   // reference it (Slang's compiler dead-code-eliminates unused inputs, and
   // buffer-sharing passes like line/chevron declare all fields even if only
@@ -78,7 +78,7 @@ function validateSync(
   // attribute that's NOT in the buffer layout — the reverse direction is
   // fine. When the GLSL does have the attribute, its type/components must
   // match the TS descriptor.
-  for (const attr of glAttributes) {
+  for (const attr of vertexAttributes) {
     const glslAttr = glslAttrs.find(a => a.name === attr.name)
     if (glslAttr) {
       it(`${passId}: "${attr.name}" type=${attr.type} components=${attr.components} integer=${attr.integer}`, () => {
@@ -91,7 +91,7 @@ function validateSync(
 
   for (const glslAttr of glslAttrs) {
     it(`${passId}: GLSL "${glslAttr.name}" has matching glAttribute`, () => {
-      expect(glAttributes.find(a => a.name === glslAttr.name)).toBeDefined()
+      expect(vertexAttributes.find(a => a.name === glslAttr.name)).toBeDefined()
     })
   }
 }
@@ -99,7 +99,7 @@ function validateSync(
 function validatePassDescriptors(label: string, passes: PassDescriptor[]) {
   describe(`glAttribute ↔ GLSL sync — ${label}`, () => {
     for (const pass of passes) {
-      validateSync(pass.id, pass.glAttributes, pass.glslVertex)
+      validateSync(pass.id, pass.vertexAttributes, pass.glslVertex)
     }
   })
 }

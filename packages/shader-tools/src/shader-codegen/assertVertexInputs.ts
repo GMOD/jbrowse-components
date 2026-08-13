@@ -1,7 +1,7 @@
 // Build-time cross-check that the codegen's model of the per-instance vertex
 // layout matches the shader code slangc actually emitted.
 //
-// The codegen derives `GL_ATTRIBUTES` / `INSTANCE_OFFSET_*` / the stride from the
+// The codegen derives `VERTEX_ATTRIBUTES` / `INSTANCE_OFFSET_*` / the stride from the
 // reflected struct's field order, packing tight — reflection does NOT give byte
 // offsets for a vertex-input struct, so that packing is the codegen's own
 // assumption about how slangc assigns `@location`s. If slangc ever reordered,
@@ -16,7 +16,7 @@
 // is what the packed offsets encode. Buffer-sharing passes lean on this: the
 // canvas chevron pass reads line's buffer, and each side reads only some fields.
 //
-// `glAttributeSync.test.ts` (products/jbrowse-web) checks name+type on the GLSL
+// `vertexAttributeSync.test.ts` (products/jbrowse-web) checks name+type on the GLSL
 // side, but it lives three packages away, skips the alignments and
 // multi-synteny plugins over jest resolution problems, and never looks at WGSL
 // or at locations. Checking here fails `pnpm gen:shaders` at the moment the bad
@@ -100,7 +100,7 @@ function compare(
       throw new Error(
         `${what}: field '${attr.name}' is index ${index} of the instance ` +
           `struct but slangc gave it @location(${got.location}); ` +
-          `GL_ATTRIBUTES / INSTANCE_OFFSET_* assume declaration order`,
+          `VERTEX_ATTRIBUTES / INSTANCE_OFFSET_* assume declaration order`,
       )
     }
     if (got.type !== expectedType(attr)) {

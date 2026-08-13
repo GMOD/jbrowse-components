@@ -66,7 +66,7 @@ export function makeChevronPass(maxChevronsPerLine: number): PassDescriptor {
     mod: chevronShader,
     verticesPerInstance: maxChevronsPerLine * 12,
     bufferStride: lineShader.INSTANCE_STRIDE_BYTES,
-    bufferAttributes: lineShader.GL_ATTRIBUTES,
+    bufferAttributes: lineShader.VERTEX_ATTRIBUTES,
   })
 }
 

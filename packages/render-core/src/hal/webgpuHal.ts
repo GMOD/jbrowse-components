@@ -8,7 +8,7 @@ import {
   createUniformOnlyBindGroup,
   createUniformOnlyBindGroupLayout,
   createVertexBuffer,
-  glToGpuVertexFormat,
+  toGpuVertexFormat,
 } from '../webgpuUtils.ts'
 import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
@@ -156,10 +156,10 @@ async function compilePipelines(
         {
           arrayStride: desc.instanceStride,
           stepMode: 'instance',
-          attributes: desc.glAttributes.map((attr, i) => ({
+          attributes: desc.vertexAttributes.map((attr, i) => ({
             shaderLocation: i,
             offset: attr.offsetBytes,
-            format: glToGpuVertexFormat(attr),
+            format: toGpuVertexFormat(attr),
           })),
         },
       ]
@@ -201,7 +201,7 @@ interface Rect {
 
 // Behavioral parity with WebGL2Hal is enforced by tests, not by this file:
 // products/jbrowse-web/browser-tests/compare-backends.ts pixel-diffs webgl vs
-// webgpu vs canvas2d output; glAttributeSync.test.ts checks attribute layout
+// webgpu vs canvas2d output; vertexAttributeSync.test.ts checks attribute layout
 // against the shader; shared buffer bookkeeping is covered by
 // hal/regionRegistry.test.ts. Mirror any behavior change in webgl2Hal.ts.
 export class WebGPUHal implements GpuHal {

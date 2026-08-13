@@ -2,8 +2,8 @@
 
 - Shaders are authored in Slang (`shaders/*.slang`). Each source file has a
   sibling `*.generated.ts` emitted by `pnpm gen:shaders` containing WGSL,
-  GLSL-ES-300, uniform/instance byte offsets, and `GL_ATTRIBUTES`. Never edit
-  the `.generated.ts` files by hand.
+  GLSL-ES-300, uniform/instance byte offsets, and `VERTEX_ATTRIBUTES`. Never
+  edit the `.generated.ts` files by hand.
 - Shared types (the per-instance vertex layout, the `Uniforms` cbuffer,
   `computeCorners` and `isCulled`) live in `shaders/syntenyTypes.slang`. Every
   shader imports from this module so layouts stay in sync.
