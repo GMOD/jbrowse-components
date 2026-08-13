@@ -538,15 +538,28 @@ function writerParams(attrs: readonly InstanceAttr[]) {
  * chose each field's typed-array view themselves.
  *
  * **Reach for it where an append is already happening, not for a plain indexed
- * loop.** Measured over 100k/500k/2M instances against byte-identical output:
- * against multi-row's previous form — an append inside a callback, incrementing
- * a counter captured in a closure — the writer is ~10% FASTER, because V8 heap-
- * allocates a mutated closure variable and a field on a monomorphic object beats
- * it. Against synteny's previous form — a plain `for` over a known count with
- * both views hoisted out of the loop — it is **1.15x to 1.92x SLOWER**, and
- * synteny keeps its raw loop for that reason. The writer costs a call, a growth
- * branch and a `this.count` round trip per instance; an append pays that anyway
- * and an indexed loop does not.
+ * loop.** Two benches, both to the shape `agent-docs/reference/BENCHMARKING.md`
+ * asks for — separate drivers per arm, a control arm, min of interleaved
+ * rounds, identity checked before timing — over 100k/500k/2M:
+ *
+ * - `plugins/canvas/benches/instanceWriter.bench.ts`, against multi-row's
+ *   previous form (an append inside a callback bumping a counter captured in a
+ *   closure): the writer is **0.86-0.96x, i.e. faster**, because V8 heap-
+ *   allocates a mutated closure variable and a field on a monomorphic object
+ *   beats it.
+ * - `plugins/linear-comparative-view/benches/instanceWriter.bench.ts`, against
+ *   synteny's previous form (a plain `for` over a known count with both views
+ *   hoisted): the writer is **1.5x to 2.3x SLOWER**, and synteny keeps its raw
+ *   loop for that reason.
+ *
+ * The writer costs a call, a growth branch and a `this.count` round trip per
+ * instance; an append pays that anyway and an indexed loop does not.
+ *
+ * Don't quote either number without the other, and don't quote the first
+ * version of them: it used one shared `time(fn, …)` driver for both arms, which
+ * is the catalogue's first trap verbatim, and reported 1.15x/1.92x/1.50x — a
+ * non-monotonic set that was understating a real ~2.3x. The control arm is what
+ * caught it.
  *
  * Two things the hand-written copies did not generalize. The views come from the
  * shader, so a struct mixing `float` and `uint` fields gets both arrays over one
@@ -863,6 +876,7 @@ export function emitInterface(inputs: CodegenInputs) {
       lines.push(...uniformArraySetterLines(arrayFields))
     }
 
+    // #shaderExport Uniforms | the uniform block as a TS interface, one field per shader uniform; `writeUniforms` takes it
     lines.push('', 'export interface Uniforms {')
     for (const f of u.fields) {
       lines.push(`  ${f.name}: ${tsFieldType(f.type)}`)
@@ -945,6 +959,7 @@ export function emitInterface(inputs: CodegenInputs) {
     // the .slang source updates the packing automatically — the hand-written
     // interleave functions this replaces chose the view by hand and could
     // silently drift from the shader.
+    // #shaderExport InstanceArrays | one input array per instance field, the argument `packInstances` takes
     lines.push('export interface InstanceArrays {')
     for (const a of attrs) {
       lines.push(`  ${a.name}: ArrayLike<number>`)

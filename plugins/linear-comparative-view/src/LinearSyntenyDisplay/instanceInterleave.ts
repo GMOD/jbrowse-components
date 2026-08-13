@@ -17,8 +17,9 @@ import type { InstanceCacheOpts } from '@jbrowse/render-core/instanceCache'
 // `packInstances` is out because this layout's `featureId` is
 // `instanceFeatureIdx[i] + 1`, so feeding it would mean materializing a whole
 // extra n-length array. The generated `InstanceWriter` fits the signature and
-// was tried here — it is **1.15x to 1.92x slower on this loop**, measured over
-// 100k/500k/2M instances against byte-identical output. The writer costs a
+// was tried here — it is **1.5x to 2.3x slower on this loop**
+// (`benches/instanceWriter.bench.ts`, which carries the control arm that says
+// so). The writer costs a
 // method call, a growth branch that never fires and a `this.count` round trip
 // per instance, and this loop has nothing to set against that: it knows `n` up
 // front, writes every instance, and hoists both views out of the loop, so it
