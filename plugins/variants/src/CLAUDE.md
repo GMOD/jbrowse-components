@@ -150,12 +150,11 @@ Render input → the subclass `renderState` getter.
   focused clade is genuinely fewer cells to compute. Same split maf makes
   (`subtreeFilter` + `placeMafRegionData`); multi-wiggle makes it by passing
   sources as a structural arg and re-encoding from `gpuProps()`. **Nothing may
-  wait on the refetch this removed.** The cluster tree did: it was stashed as
-  `pendingClusterTree` and promoted in `setCellData`, so once a reorder stopped
-  refetching it was never promoted and a `runClustering: true` display drew no
-  dendrogram — silently, because the rows were still clustered. It applies
-  immediately now, which is safe for the same reason: `rowRemap` is derived from
-  `sources`, so the cells re-place in the tick the layout changes.
+  wait on the refetch this removed** — the cluster tree did, stashed as
+  `pendingClusterTree` and promoted in `setCellData`, so a `runClustering: true`
+  display silently drew no dendrogram once reorders stopped refetching. It
+  applies immediately now, which is safe because `rowRemap` is derived from
+  `sources`: the cells re-place in the tick the layout changes.
 - The cell arrays stay in the **worker's** row numbering, because they are
   sorted by `(featureIndex, rowIndex)` and `findCellIndex` binary-searches that.
   Placement writes a second array; the hit test converts its one query row
@@ -201,13 +200,11 @@ columns back to the genome.
 
 **It is the wrong display for structural variants**, and the failure is not
 subtle: an SV's SPAN is the thing being shown, and equal-width columns destroy
-it. The DENR figure was the proof — two SINE deletions of 222 bp and 219 bp,
-drawn as two half-width blocks across an 18 kb window, reading as multi-kb
-deletions over the whole gene. It cost a caption saying "one column per variant,
-not per span", a raised `lineZoneHeight` to make the connector band carry a real
-diagonal, and a second 90px track of the same records at their real coordinates.
-All three were corrections for the layout rather than anything about the data,
-and all three went away when the figure moved to
+it. Two SINE deletions of ~220 bp drew as half-width blocks across an 18 kb
+window, reading as multi-kb deletions over the whole gene, and the figure needed
+three separate corrections — a caption, a raised `lineZoneHeight`, and a second
+track of the same records at their real coordinates — all of them for the layout
+rather than for anything about the data. All three went away when it moved to
 `LinearMultiSampleVariantDisplay` with `showVariantLane`.
 
 So: **SVs go in the regular display.** It draws each record at its own
@@ -252,11 +249,9 @@ renders one display (`track.activeDisplay`), the two base models don't nest, and
 the worker already ships the records the lane draws — so a combo would buy a
 second parse of the same VCF. What it shares instead is the variant-specific
 code: `forEachFeatureSpan` (one per-record walk, so a lane mark cannot sit a
-pixel off the column it names or the insertion marker it widens),
-`drawVariantShape`, `featureColor`, core's `featureDefaultColor`,
-plugin-canvas's `createFeatureFloatingLabels` (the whole label-text half —
-truncation, measurement, colors — so a lettered mark reads like the same record
-in that display), and `breakendSplitViewMenuItem`.
+pixel off the column it names), `drawVariantShape`, `featureColor`, core's
+`featureDefaultColor`, plugin-canvas's `createFeatureFloatingLabels`, and
+`breakendSplitViewMenuItem`.
 
 ## How wide a record draws: `variantCellSpanPx` decides, and it asks
 
@@ -275,25 +270,20 @@ four consumers are its callers.
 
 **Edges go in in RECORD order — `toX(start)`, `toX(end)` — never sorted, and
 never pre-snapped.** `snappedCellLeftPx` reads the orientation to hang the 2px
-floor off the record's _start_, which on a reversed block is its **right** edge;
-that is `spanLeft`/`extendToMinWidthPx`'s pivot, and the cells were the fourth
-painter in the tree to get it wrong (after the canvas rect painter, multi-row
-and wiggle). Anchoring the leftmost edge is identical forward and anchors the
-record's _end_ when flipped, so every sub-pixel record — which at genome-wide
-zoom is every record — drew a full 2px toward the block's end.
+floor off the record's _start_, which on a reversed block is its **right** edge.
+This is the reversed-block family in `packages/render-core/CLAUDE.md`, which the
+cells were the fourth painter to get wrong; read it there.
 
 The snap has to happen **inside** those two functions, and that is the part
-worth remembering: snapping first puts both edges of a sub-pixel record on one
+local to here: snapping first puts both edges of a sub-pixel record on one
 pixel, so a pivot that compares the snapped pair is a no-op in exactly the case
 it exists for. Raw px in, decision inside.
 
 The insertion-marker branch keeps the **unsnapped** reference-span centre, and
-that is not an oversight: no shader draws a marker, so there is nothing to match
-— and all four consumers take the marker from here, so they agree with each
-other, which is the property that matters for a mark the GPU never draws. That
-centre comes back from the same call (`center`) rather than being re-derived
-beside it, because `markersForBlock` centres the _drawn_ bar on it while the
-hover box and click target take `left`/`width`: one rect, so one number.
+that is not an oversight: no shader draws a marker, so there is nothing to
+match, and all four consumers take it from here so they agree with each other.
+That centre comes back from the same call (`center`) rather than being
+re-derived beside it — one rect, so one number.
 
 **`insertionsWiden` (the display's `showInsertionGlyphs`) has no default there
 on purpose.** It had one implicitly, by nobody asking: with glyphs switched off

@@ -53,9 +53,9 @@ write:
 - multi-sample variants' phased expansion switching on when ploidy arrives
 
 So the backstop is `computeClusterHierarchy`, which every display already routes
-through and which now takes the **drawn rows** and declines to position a tree
-whose leaves aren't them. Pass `sources` — after every reorder, filter and
-decoration — never the pre-layout list.
+through and which takes the **drawn rows** and declines to position a tree whose
+leaves aren't them. Pass `sources` — after every reorder, filter and decoration
+— never the pre-layout list.
 
 `StaleTreeHint` (rendered by `TreeSidebar`, so no display wires it up) says so
 on screen, since the alternative is a dendrogram that vanishes with no
@@ -69,24 +69,22 @@ positioned" (multi-wiggle overlay) by testing `root` against the rows itself —
 change when you pan — so the tree stays drawn over a different locus, or a
 different chromosome, looking exactly as authoritative as where it was computed.
 `clusterProvenance` records the regions and the settings a run used.
-`SvgTreeSidebar` captions the export, which is the copy that ends up under a
-figure; `clusterProvenanceMenuItems` puts the locus in the Clustering submenu;
-and `ClusterProvenanceHint` draws on screen **only when the view has drifted off
-the clustered span**. It used to draw in the quiet state too, and that is text
-over the first row of every captured figure stating what a reader already
-assumes ("i dont want the tree 'context' text to be displayed", review). Drift
-is an overlap fraction (`clusterProvenanceOverlap`), never an equality test —
-`contentBlocks` shift a sub-bp amount on any pan, so equality would flag a stale
-tree constantly and train the reader to ignore it. That is what makes the quiet
-state safe to drop: the chip appearing now always means something.
+`SvgTreeSidebar` captions the export, `clusterProvenanceMenuItems` puts the
+locus in the Clustering submenu, and `ClusterProvenanceHint` draws on screen
+**only when the view has drifted off the clustered span** — text over the first
+row of every captured figure, stating what a reader already assumes, is worse
+than nothing. Drift is an overlap fraction (`clusterProvenanceOverlap`), never
+an equality test: `contentBlocks` shift a sub-bp amount on any pan, so equality
+would flag a stale tree constantly and train the reader to ignore it. That is
+what makes the quiet state safe to drop — the chip appearing now always means
+something.
 
 The invariant is not that it is present but that it is never **wrong**: it may
 only describe the tree currently loaded. So `clusterTree` has exactly one
-writer, the mixin's private `writeTree(tree, provenance)`, which takes both — a
-tree cannot be set without saying what provenance goes with it, and the four
-public actions differ only in what they pass. `setLayoutAndClusterTree` passes
-the run's; `setLayout`/`clearLayout` pass nothing, dropping it with the tree;
-`setClusterTree` (maf's supplied `.nh` phylogeny) passes nothing because a
+writer, the mixin's private `writeTree(tree, provenance)`, which takes both, and
+the four public actions differ only in what they pass. `setLayoutAndClusterTree`
+passes the run's; `setLayout`/`clearLayout` pass nothing, dropping it with the
+tree; `setClusterTree` (maf's supplied `.nh` phylogeny) passes nothing because a
 phylogeny has no locus, and captioning one with the previous run's region is
 worse than no caption. A tree with no provenance is therefore also the signal
 that it was supplied rather than computed.
@@ -117,21 +115,19 @@ raw string, because a quoted label may hold a colon of its own.
 
 ## Escaping row names is hclust's job, and `parseNewick` is the other half
 
-A row name is an arbitrary string from somebody's data file. Three of the
-Roadmap 127-epigenome names carry parentheses
-(`... peripheral blood (BLD.CD4.NPC)`), and written into a newick string bare
-that is grammar rather than a label: the leaf parsed back as an internal node
-wrapping a leaf named `BLD.CD4.NPC`, `treeDescribesRows` saw leaves that weren't
-the rows, and the dendrogram silently vanished behind `StaleTreeHint`. A comma
-is worse — it splits one leaf into two, so the tree is the wrong _shape_ and
-`clusterLayout` labels every row below it with its neighbour's name.
+A row name is an arbitrary string from somebody's data file, and written into a
+newick string bare it becomes grammar rather than a label. A parenthesis makes
+the leaf parse back as an internal node, so `treeDescribesRows` sees leaves that
+aren't the rows and the dendrogram silently vanishes behind `StaleTreeHint`
+(three of the Roadmap 127-epigenome names carry them). A comma is worse — it
+splits one leaf into two, so the tree is the wrong _shape_ and `clusterLayout`
+labels every row below it with its neighbour's name.
 
-`@gmod/hclust`'s `toNewick` quotes from 4.0.3 (we quoted in `clusterMatrix`
-until it did). **Don't escape here as well** — quoting on both sides is worse
-than on neither, since `''BLD.CD4.NPC''` matches no row either.
-`clusterMatrix.test.ts` asserts the dependency's half rather than trusting it,
-so an hclust that stopped quoting would fail there instead of losing the
-dendrogram quietly.
+`@gmod/hclust`'s `toNewick` quotes from 4.0.3. **Don't escape here as well** —
+quoting on both sides is worse than on neither, since `''BLD.CD4.NPC''` matches
+no row either. `clusterMatrix.test.ts` asserts the dependency's half rather than
+trusting it, so an hclust that stopped quoting would fail there instead of
+losing the dendrogram quietly.
 
 `parseNewick` is the reading half and has to agree exactly. It stays ours
 regardless: maf's supplied `.nh` guide trees are hand-written files that may
@@ -143,39 +139,34 @@ post-paren token is a name whatever it looks like, the only way to call a node
 generalize: `generateClusterRScript` writes the same names into R single-quoted
 literals, which nobody else quotes for, so `o'brien` closed the string and the
 whole `rownames(...)` line became a syntax error the user only met in R. That
-one escapes here (`quoteRName`), for the same reason the newick half doesn't —
-exactly one side of each grammar owns it.
+one escapes here (`quoteRName`) — exactly one side of each grammar owns it.
 
 Whitespace is deliberately outside the quoted set on both sides. The tokenizer
 reads a bare space as part of the label (variants' phased `NA18536 HP0` rows
 depend on it), so quoting it would rewrite the serialized form of nearly every
 clustered track to fix nothing.
 
-## `TreeDrawingModel` takes `effectiveRowHeight`, never a raw `rowHeight`
+## The two row-height arguments, and neither is the display height
 
-Variants and MAF keep `rowHeight` as a raw getter over the config slot, where
-`0` means fit-to-height and is their default — reading it painted zero-height
+`TreeDrawingModel` takes **`effectiveRowHeight`**, never a raw `rowHeight` —
+variants and MAF keep `rowHeight` as a raw getter over the config slot, where
+`0` means fit-to-height and is their default, so reading it painted zero-height
 rects and the hover highlight silently did nothing. Structural typing let that
 through, so keep the contract field named for the resolved value.
 
-## …and `computeClusterHierarchy` takes the rows' _content_ height
-
-Same axis, one argument over. `rowsContentHeight` must be
-`rows.length × effectiveRowHeight` — the rows' full stacked extent, never the
-viewport they scroll inside. `clusterLayout` puts leaf _i_ at
+`computeClusterHierarchy` takes the rows' _content_ height. `rowsContentHeight`
+must be `rows.length × effectiveRowHeight` — the rows' full stacked extent,
+never the viewport they scroll inside. `clusterLayout` puts leaf _i_ at
 `(i + 0.5) × rowsContentHeight / n`, and everything drawn beside the tree puts
 row _i_ at `i × effectiveRowHeight`: the hover highlight, `SvgRowLabels`, the
 display's own painting. Pass the viewport and the dendrogram still draws, still
-looks plausible, and silently names the wrong rows — `treeDescribesRows`'
-failure mode on the pixel axis instead of the name axis, with no guard.
+looks plausible, and silently names the wrong rows.
 
-It looks like an alias for `height`, and on two of the four consumers it is one:
-the multi-row feature display redefines `height` as exactly
-`nrow × effectiveRowHeight` (it grows to its content), and multi-wiggle is
-always fit-to-height. It is **not** one on a display that scrolls — maf passes
-`rowsContentHeight` and not `rowsHeight`, the variant displays spell the product
-out. "Simplify this to the display height" is the edit the parameter is named to
-refuse.
+It looks like an alias for `height`, and on two of the four consumers it is one
+(multi-row features redefines `height` as exactly `nrow × effectiveRowHeight`;
+multi-wiggle is always fit-to-height). It is **not** one on a display that
+scrolls — maf passes `rowsContentHeight` and not `rowsHeight`. "Simplify this to
+the display height" is the edit the parameter is named to refuse.
 
 ## `SvgRowLabels`: a sub-pixel row still draws
 
@@ -198,7 +189,7 @@ same two reasons:
   height, and is deliberately never floored (`resolveRowHeight`), so a rect per
   row abuts its neighbour mid-pixel. A **translucent** fill then blends over
   that shared pixel twice and draws a seam at every row boundary — the highlight
-  grows a grid the data does not have. (That was live in the hover highlight.)
+  grows a grid the data does not have.
 - 2000 rows is otherwise 2000 fill calls per hover frame, or 2000 DOM nodes in a
   scroll-time SVG overlay, for what is visually one block.
 
@@ -219,25 +210,20 @@ division as the SVG side below.
 ## Both halves paint through `TrackOverlayPortal`, above the LGV's masks
 
 A display renders inside `TrackRenderingContainer`'s `contain: strict` sandbox,
-and the LGV's inter-region masks (`PaddingBlocks` — region separators, elided
-and boundary blocks) are a later sibling that paints over the whole of it.
-Nothing inside can `z-index` its way out. So in any multi-region or whole-genome
-view a grey separator bar landed on the sidebar at every region boundary:
-through the opaque dendrogram panel, and through the row-label text, which
-floats over the plot and so gets crossed wherever a boundary falls. Both halves
-portal out.
+and the LGV's inter-region masks (`PaddingBlocks`) are a later sibling that
+paints over the whole of it. Nothing inside can `z-index` its way out, so in any
+multi-region or whole-genome view a grey separator bar landed on the sidebar at
+every region boundary. Both halves portal out.
 
 **`TreeSidebar` therefore has two layers, and the line between them is
 paint-vs-hit-test.** The panel, the tree canvas, the hover canvas and the hints
 portal above the masks. The transparent node-picking box and the resize handle
-stay inline, because they draw nothing — being under the masks costs them
-nothing, and leaving them in the display keeps every pointer path they already
-had. That matters concretely: the portal node is `pointer-events: none` (or it
-would eat canvas events), and maf binds its wheel-to-scroll listener to the
-**DOM** element these sit in, so a portaled hit box would have sent a wheel over
-the species names to the view instead of scrolling the rows. The two layers
-share an origin and their z-indexes are still read against each other, so
-ordering within the gutter is unchanged.
+stay inline, because they draw nothing: the portal node is
+`pointer-events: none` (or it would eat canvas events), and maf binds its
+wheel-to-scroll listener to the **DOM** element these sit in, so a portaled hit
+box would have sent a wheel over the species names to the view instead of
+scrolling the rows. The two layers share an origin and their z-indexes are still
+read against each other, so ordering within the gutter is unchanged.
 
 The portal lands on the **display's own box**. A display that draws its sidebar
 somewhere other than its own top-left passes that down as `top` — maf does, for
@@ -246,29 +232,12 @@ portal can measure an offset the sidebar used to inherit from its container.
 Outside a `TrackContainer` the portal renders in place, so a standalone display
 and the component tests are unchanged.
 
-### maf's `top`, and why it is not the model's `rowsTopOffset`
-
-The model contract's `rowsTopOffset` is the same idea — px reserved above the
-rows — and maf's own `rowsTopOffset` is exactly that number, so declaring it
-looks like the obvious tidy-up. **It would be applied twice**: maf's sidebar
-sits inside its rows container, which is _already_ translated by that offset.
-Only the portaled half escapes that container and needs to be told, which is
-what `top` is.
-
-(The contract field was called `lineZoneHeight` until the multi-sample variant
-displays grew a second band above their rows — a variant lane over the
-connector-line zone — at which point it was plainly a total rather than any one
-zone's height. `lineZoneHeight` still exists in `plugins/variants` and still
-means the connector zone alone.)
-
-Nor can the sidebar simply move to the display root the way every other
-display's does: maf binds its wheel-to-scroll listener to that rows element by
-DOM node, deliberately, so a wheel over the species names scrolls the rows it
-labels rather than falling through to the view. Moving the inline layer out
-takes the hit box with it. The cost of leaving it — the panel, canvas and hit
-box running `rowsTopOffset` px past the last row — is clipped away by
-`TrackRenderingContainer`'s `contain: strict`, and buying it back means growing
-this component an API for maf to re-bind its wheel through.
+**maf's `top` is not the model's `rowsTopOffset`, and declaring it would apply
+the offset twice**: maf's sidebar sits inside its rows container, which is
+_already_ translated by that offset. Only the portaled half escapes that
+container and needs to be told. Nor can the sidebar move to the display root the
+way every other display's does — the wheel listener above is bound to that rows
+element by DOM node, so moving the inline layer out takes the hit box with it.
 
 ## Install the autoruns statically; don't `import()` this barrel
 
@@ -280,21 +249,15 @@ mobx-only glue.
 
 All three displays reached `setupTreeDrawingAutorun` through
 `await import('@jbrowse/tree-sidebar')` instead, on the grounds that it split
-heavy drawing code. It split nothing, and it cost:
-
-- **It deferred one module.** `treeDrawingAutorun.ts`'s whole dependency closure
-  — `hierarchy.ts` (already pulled by `computeClusterHierarchy` /
-  `buildSpatialIndex`), `treeSidebarGeometry.ts`, mobx, `canvas2dUtils` — is in
-  the eager graph already, via static imports in the same file. Only its own
-  ~4KB was deferrable.
-- **Dynamically importing a barrel you also statically import is a net loss.**
-  The static named imports tree-shake to the leaf modules they name; the
-  namespace request pulls the _rest_ of the barrel — the cluster dialogs, the
-  MUI grid — into an async chunk the static-only graph drops entirely. Measured
-  with esbuild against one display's import list: **608KB vs 539KB**, +69KB for
-  the dynamic form.
-- It bought an `async afterAttach`, a `try`/`catch` and an `isAlive` guard for a
-  call that cannot fail.
+heavy drawing code. It split nothing: `treeDrawingAutorun.ts`'s whole dependency
+closure is in the eager graph already via static imports in the same file, so
+only its own ~4KB was deferrable. And **dynamically importing a barrel you also
+statically import is a net loss** — the static named imports tree-shake to the
+leaf modules they name, while the namespace request pulls the _rest_ of the
+barrel into an async chunk the static-only graph drops entirely. Measured with
+esbuild against one display's import list: **608KB vs 539KB**. It also bought an
+`async afterAttach`, a `try`/`catch` and an `isAlive` guard for a call that
+cannot fail.
 
 So: a dynamic import of `@jbrowse/tree-sidebar` is always wrong from a file that
 already imports it statically, which is every consumer. Split inside a function,
@@ -308,15 +271,12 @@ sidebar that draws more than a label box passes its own renderer as the `labels`
 prop rather than teaching `SvgRowLabels` a second drawing — that would change
 the MAF, multirow-feature, and wiggle sidebars too.
 
-## …and that gate is `treeIsShowing`, not `showTree && hierarchy`
-
-The gutter is reserved for the **positioned** tree, never `clusterTree` — a tree
-that no longer describes the rows on screen is deliberately not positioned
+**And that gate is `treeIsShowing`, not `showTree && hierarchy`.** The gutter is
+reserved for the **positioned** tree, never `clusterTree` — a tree that no
+longer describes the rows on screen is deliberately not positioned
 (`computeClusterHierarchy`), and reserving off the newick string puts the labels
 `treeAreaWidth` right of an empty gutter. Three places decide it:
-`TreeSidebar`'s early return, `SvgTreeSidebar`, and `treeSidebarOffset` (which
-is the same predicate times `treeAreaWidth`), and all three spelled it out
-separately — including one directly under a comment claiming to be their single
-source of truth. Call `treeIsShowing`; `SvgTreeSidebar` goes further and binds
-`drawnTree`, the tree-if-showing, so nothing carries a boolean beside the
-hierarchy it is about.
+`TreeSidebar`'s early return, `SvgTreeSidebar`, and `treeSidebarOffset` (the
+same predicate times `treeAreaWidth`). Call `treeIsShowing`; `SvgTreeSidebar`
+goes further and binds `drawnTree`, the tree-if-showing, so nothing carries a
+boolean beside the hierarchy it is about.
