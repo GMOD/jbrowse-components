@@ -24,7 +24,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface FollowLevel {
   linearSyntenyDisplays: LinearSyntenyDisplayModel[]
-  level: number
 }
 
 export interface FollowPair {
@@ -42,17 +41,29 @@ export interface SyntenyFollowHost extends IStateTreeNode {
   setFollowApproximate: (arg: boolean) => void
 }
 
+// What one settle decided: which block places this level, which axis it was
+// picked on, and the affine shortcut the frame pass may take until the next
+// settle. One object because these are only correct TOGETHER — a transform left
+// behind by a previous `feat` maps the window through the wrong block — and as
+// loose fields on the state that invariant rested on their being assigned next
+// to each other.
+interface LevelPick {
+  feat: FeatPos
+  display: LinearSyntenyDisplayModel
+  toMate: boolean
+  // Absent for an envelope answer. That is a union several blocks contributed
+  // to, so it carries no one strand, and a forward transform built from one
+  // placed the row mirrored inside an inverted alignment until the next settle.
+  transform?: FollowTransform
+}
+
 // Not observable: the autorun writes this every pass, so an observable would
 // make it a dependency of the run that writes it and re-enter forever.
 interface LevelState {
-  featureId?: string
-  feat?: FeatPos
-  display?: LinearSyntenyDisplayModel
-  toMate?: boolean
+  pick?: LevelPick
   // latest-wins: the RPC is not ordered, so a slow earlier resolve can land
   // after a fast later one and park the row at a window already left
   seq: number
-  transform?: FollowTransform
   answerKey?: string
   answer?: Promise<ResolvedSpan>
 }
@@ -143,17 +154,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       return
     }
     lastErrorMessage = undefined
-    state.featureId = step.feat.id
-    state.feat = step.feat
-    state.display = step.display
-    state.toMate = step.toMate
-    // Only from the single-block answer. An envelope is a union several blocks
-    // contributed to, so it carries no one strand, and a forward transform
-    // cached from one placed the row mirrored inside an inverted alignment
-    // until the next settle.
-    state.transform = step.windowInsideFeat
-      ? followTransform(step.window, span, step.feat.strand === -1)
-      : undefined
+    state.pick = {
+      feat: step.feat,
+      display: step.display,
+      toMate: step.toMate,
+      transform: step.windowInsideFeat
+        ? followTransform(step.window, span, step.feat.strand === -1)
+        : undefined,
+    }
     if (alreadyShowing(movingWindow, span)) {
       return
     }
@@ -207,7 +215,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             window,
             toMate,
             mateAssembly,
-            incumbentId: stateFor(level).featureId,
+            incumbentId: stateFor(level).pick?.feat.id,
           })
           if (step) {
             work.push([pair, step, movingWindow])
@@ -258,22 +266,21 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // frame. Its direction has to match, since it was picked on whichever
           // axis `toMate` was then, and its display has to be alive, since
           // hiding a synteny track destroys it and reading featureData throws.
-          const cached = levelStates.get(level)
-          const state = cached?.toMate === toMate ? cached : undefined
-          const feat = state?.feat
-          const display = state?.display
-          const data =
-            display && isAlive(display) ? display.featureData : undefined
-          if (!state || !feat || !data) {
+          const pick = levelStates.get(level)?.pick
+          if (!pick || pick.toMate !== toMate || !isAlive(pick.display)) {
+            continue
+          }
+          const data = pick.display.featureData
+          if (!data) {
             continue
           }
           const span = followFrameSpan({
-            feat,
+            feat: pick.feat,
             data,
             window,
             toMate,
             mateAssembly,
-            transform: state.transform,
+            transform: pick.transform,
           })
           if (span) {
             positionViewOnSpan(movingView, span)
