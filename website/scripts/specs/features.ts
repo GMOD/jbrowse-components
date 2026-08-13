@@ -234,6 +234,15 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // tinted by its reading frame, joining the amino acids that are drawn at this
   // zoom either way, lined up to the reference codons above.
   //
+  // ONE FRAME COLOUR, which is correct and is why the guide's prose does not ask
+  // this figure to show a phase change. The window is inside BRCA1's exon 11
+  // (chr17:41,243,451-41,246,877, 3426 bp), frame is constant within a CDS
+  // segment, and the nearest junction is 550 bp away. There is no window that
+  // fixes it either: two coding exons need ~130 bp at the tightest human intron,
+  // and residue numbers stop at ~105 (below), so a frame-change frame and a
+  // lettered frame are mutually exclusive here. The lettered one is what the
+  // section is about.
+  //
   // 91 bp, where this was 121: the residue NUMBER beside each letter (`Q1182`)
   // is what lines the frame up against the reference codons, and it is drawn
   // only once a codon is wide enough for the widest label the format can

@@ -204,6 +204,43 @@ async function clickElement(
   }
 }
 
+// A point outside the capture viewport is a click that lands on nothing.
+// Puppeteer dispatches it, Chrome routes it nowhere, and the action reports
+// success — so a menu meant to be dismissed stays open, a feature meant to be
+// selected is not, and the run's own size and paint reports all pass, because
+// nothing about the page is unrendered. The frame is simply of the wrong state.
+//
+// This is the failure the anchored forms cannot have (an anchor that resolves to
+// nothing already throws by name) and the raw-coordinate form was left able to
+// have. It is reached by editing a VIEWPORT rather than by editing the
+// coordinate, which is why nobody looks at the number: `gene_track_color_by_cds`
+// dismissed its view menu at a bare `y: 550`, and lowering the spec to 500px
+// turned that into a no-op with the menu standing over the result it had just
+// produced.
+//
+// Raw coordinates only. An anchored point can also land below the fold (a
+// display that grew past the frame resolves a real y under it), but that is a
+// different mistake with a different fix, and every one of the corpus's anchored
+// actions would have to be re-run to know whether any is silently making it.
+// The bare-coordinate set is 35 and was measured clean when this went in.
+const viewportBound = (page: Page) => page.viewport()
+
+function assertInViewport(
+  action: ScreenshotAction,
+  point: { x: number; y: number },
+  bound: { width: number; height: number } | null,
+) {
+  if (!bound) {
+    return
+  }
+  const { width, height } = bound
+  if (point.x < 0 || point.y < 0 || point.x > width || point.y > height) {
+    throw new Error(
+      `${action.type} at (${point.x},${point.y}) is outside the ${width}x${height} viewport, so it would land on nothing. Anchor it, or move it inside the frame.`,
+    )
+  }
+}
+
 // The viewport point a click/hover acts on when it isn't targeting an element:
 // a model-resolved position where the spec gives an anchor — a graph node, or a
 // genomic locus in a linear view — else the literal `from`. An anchor that
@@ -221,6 +258,9 @@ async function actionPoint(page: Page, action: ScreenshotAction) {
       )
     }
     return point
+  }
+  if (action.from) {
+    assertInViewport(action, action.from, viewportBound(page))
   }
   return action.from
 }
@@ -270,6 +310,11 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     if (!action.from || !action.to) {
       throw new Error('drag action needs both from and to')
     }
+    // both ends, since a rubberband whose release is off the frame selects a
+    // different span than the spec wrote
+    const bound = viewportBound(page)
+    assertInViewport(action, action.from, bound)
+    assertInViewport(action, action.to, bound)
     await page.mouse.move(action.from.x, action.from.y)
     await page.mouse.down()
     await page.mouse.move(action.to.x, action.to.y, { steps: 20 })

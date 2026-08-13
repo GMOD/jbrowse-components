@@ -59,8 +59,14 @@ Several track-menu toggles tune how gene glyphs are drawn:
 ## Color by CDS
 
 By default CDS segments use the track's feature color. Turning on **Color CDS by
-reading frame** instead tints each CDS segment by its frame, so frameshifts and
-the phase relationship between exons are visible at a glance.
+reading frame** instead tints each CDS segment by the frame it is read in, so
+one colour is one frame across the whole view.
+
+Frame is constant within a CDS segment, so the colour changes at a junction
+rather than inside an exon: two consecutive coding exons in the same colour are
+in phase, and a change of colour across a junction is a shift. Both need enough
+of the gene in frame to see two exons at once, which is a wider window than the
+one below.
 
 Enable it from the linear genome view's hamburger menu → **Color CDS by reading
 frame**. The setting applies to every gene track in that view and is remembered
