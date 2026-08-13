@@ -139,17 +139,23 @@ Conservation is one category of about a dozen, and the rest of this page is the
 same two clicks on the others, at the same gene. Start at the promoter, which
 for _TP53_ is at the high-coordinate end because the gene is on the minus
 strand. Four Regulation tracks put a picture there: **CpG Islands**, **ENCODE
-cCREs - ENCODE4 cCREs**, **DNase (Layered)** and **H3K27ac (Layered)**, plus
-**EPDnew Promoters - EPDnew v6** from Expression.
+cCREs - ENCODE4 cCREs**, **Layered H3K4Me3 (hg19)** and **Layered H3K27Ac
+(hg19)**, plus **EPDnew Promoters - EPDnew v6** from Expression.
 
-<Figure src="/img/genomes_basics/promoter_regulation.png" caption="The promoter end of TP53, with WRAP53 running the other way out of the same interval: CpG islands, ENCODE cCREs coloured by class, and the layered DNase and H3K27ac signal, one colour per tissue, over EPDnew's promoter calls." />
+The two histone tracks each hold seven cell lines. They open drawn over one
+another, which is what UCSC calls layered and what their names say; the track
+menu's **Plot type → Multi-row → XY plot** gives each cell line a row of its own
+instead, which is how they are drawn below. Their names carry hg19 because that
+is the assembly ENCODE3 released them on, and the files the hg38 config points
+at are the hg38 ones.
 
-The two layered tracks are each one track holding dozens of tissue subtracks
-drawn over one another, which is how UCSC publishes them. The DNase peaks are
-narrow and land on the cCREs called promoters rather than enhancers; H3K27ac is
-broader and covers the interval around them. EPDnew names a promoter for _TP53_
-and several for _WRAP53_, which starts transcribing the other way out of the
-same place.
+<Figure src="/img/genomes_basics/promoter_regulation.png" caption="The promoter end of TP53, with WRAP53 running the other way out of the same interval: CpG islands, ENCODE cCREs coloured by class, then H3K4me3 and H3K27ac as one row per cell line, over EPDnew's promoter calls." />
+
+H3K4me3 marks a promoter and H3K27ac marks an active one, so a cell line with
+both is transcribing here. Every one of the seven carries both, which is what a
+housekeeping-level promoter looks like. EPDnew names a promoter for _TP53_ and
+several for _WRAP53_, which starts transcribing the other way out of the same
+place.
 
 ## Four readings of one exon
 
@@ -169,28 +175,34 @@ independent: a prediction from the protein, a measurement across species, and
 submitted clinical classifications.
 
 The fourth reading needs the whole transcript. **gnomAD v4.1 - gnomAD v4.1
-Exomes** under Variation and Repeats has many records over the exon; they differ
-in frequency. **Filter by...** takes that as readily as it took a factor name:
-`feature.AF >= 0.001`.
+Exomes** under Variation and Repeats opens as several thousand records over the
+gene, which is one block of colour. Two of its columns cut that down to
+something with a shape, and **Filter by...** takes either: `feature.AF` is the
+allele frequency, and `feature.annot` is gnomAD's own consequence class, one of
+pLoF, missense, synonymous or other.
 
-The file also records which genetic ancestry group carries each variant at its
-highest frequency, in a `grpmax` column. **Color by... → Attribute...** takes
-any column name and assigns each value a colour; the figure below uses a named
-palette instead, so the legend can say which group is which.
+`grpmax` is a third column, naming the genetic ancestry group that carries the
+variant at its highest frequency. **Color by... → Attribute...** takes any
+column name and assigns each value a colour; the figure uses a named palette
+instead, so the legend can say which group is which.
 
-<Figure src="/img/genomes_basics/gnomad_common_rare.png" caption="The TP53 transcript with phyloP, ClinVar and gnomAD exomes. Top: gnomAD as the checkbox gives it, densest over the coding exons. Bottom: the same track filtered to variants above 0.1 percent and coloured by the ancestry group carrying each one at its highest frequency." />
+<Figure src="/img/genomes_basics/gnomad_filters.png" caption="The TP53 transcript with phyloP and gnomAD exomes, filtered three ways. Top: every record. Middle: variants above 0.1 percent, coloured by the ancestry group carrying each at its highest frequency. Bottom: the variants gnomAD calls predicted loss of function." />
 
 Unfiltered, gnomAD is densest where phyloP peaks, since that is what an exome
 captures. Filtered to the common variants, few remain in coding sequence; the
-rest are intronic or in the 3' UTR. ClinVar's pathogenic records are in the
-exons. All six groups gnomAD reports a maximum for occur across this one gene,
-and which group it is changes from variant to variant.
+rest are intronic or in the 3' UTR, and all six groups gnomAD reports a maximum
+for occur across this one gene. Filtered to predicted loss of function, the
+track fills the coding exons again, and those variants are near enough all
+singletons: the two filters select opposite populations out of one file.
 
-<Figure src="/img/genomes_basics/variant_details.png" caption="A ClinVar variant clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
+ClinVar takes the same treatment on its own classification column, `clinSign`,
+which leaves the records called pathogenic. Clicking one reads it back.
+
+<Figure src="/img/genomes_basics/variant_details.png" caption="ClinVar filtered to the pathogenic classes, with one variant clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
 
 A BigBed's extra fields arrive as fields, so nothing about this panel is
 particular to ClinVar: whatever columns the published file carries are what a
-click gives back.
+click gives back, and are what there is to filter and colour on.
 
 ## Where the protein binds
 
@@ -202,9 +214,9 @@ DNA damage. Type `CDKN1A` into the location box.
 matches for every factor in the collection, so **Filter by...** asks for one:
 `feature.TFName == 'TP53'`. Under it go three Regulation tracks from the
 promoter section, which are what the matches get read against: **ENCODE cCREs -
-ENCODE4 cCREs**, **DNase (Layered)** and **H3K27ac (Layered)**.
+ENCODE4 cCREs**, **Layered H3K4Me3 (hg19)** and **Layered H3K27Ac (hg19)**.
 
-<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, and the layered DNase and H3K27ac signal. The shaded pair are the two matches that fall in a cCRE with signal over them; the four to their left have neither." />
+<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, then H3K4me3 and H3K27ac as one row per cell line. The shaded pair are the two matches that fall in a cCRE with signal over them; the four to their left have neither." />
 
 Six positions match the motif well enough to be called, spread across the
 upstream region. The signal tracks are low over the upstream half and rise from
@@ -214,11 +226,8 @@ upstream of the canonical transcription start site, which is where the response
 elements for p21 were described. The other four have the motif and no signal
 under it, as expected for matches to a ten-base pattern.
 
-The two signal tracks peak in different places, which is the usual difference
-between the marks: accessibility is highest at the transcription start site,
-H3K27ac extends over the elements upstream of it. **PANDAR** and **DINOL**,
-drawn by the same RefSeq track, are p53-induced lncRNAs transcribed from the
-same region.
+**PANDAR** and **DINOL**, drawn by the same RefSeq track, are p53-induced
+lncRNAs transcribed from the same region.
 
 Zooming to the higher-scoring element shows the motif against the sequence.
 

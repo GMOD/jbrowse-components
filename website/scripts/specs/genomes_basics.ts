@@ -127,6 +127,61 @@ const GNOMAD_ANCESTRY_LEGEND = [
   { label: 'No group above zero', color: '#999999' },
 ]
 
+// Histone marks over the ENCODE3 seven-cell-line panel (GM12878, H1-hESC,
+// HSMM, HUVEC, K562, NHEK, NHLF), one row per cell line.
+//
+// NOT the ENCODE4 organ averages the hub also carries, which are the tracks
+// UCSC calls "Layered": at 55 and 64 sources their `multixyplot` default is one
+// muddy silhouette where no source is separable, and `multirowdensity` is no
+// better, because each source carries its own colour and 60 hues at two pixels
+// a row is a pastel blur. Seven rows is the count at which a per-row plot is
+// legible and the legend can name every row.
+//
+// The pair is chosen rather than doubled: H3K4me3 marks promoters, H3K27ac
+// marks the active ones, so a promoter with both is doing something in that
+// cell type and one with only H3K4me3 is poised.
+//
+// `defaultRendering` is a config slot, so an inline key on the spec's tracks
+// entry reaches it; it is also the track menu's "Plot type" radio.
+const H3K4ME3_ROWS = {
+  trackId: 'hg38-wgEncodeRegMarkH3k4me3',
+  defaultRendering: 'multirowxy',
+}
+const H3K27AC_ROWS = {
+  trackId: 'hg38-wgEncodeRegMarkH3k27ac',
+  defaultRendering: 'multirowxy',
+}
+
+// ClinVar's own classification column. The three pathogenic classes spelled
+// out rather than matched by prefix: jexl has no startsWith, and "Conflicting
+// classifications of pathogenicity" contains the word without being a call.
+const CLINVAR_PATHOGENIC_FILTER =
+  "jexl:feature.clinSign == 'Pathogenic' || feature.clinSign == 'Likely pathogenic' || feature.clinSign == 'Pathogenic/Likely pathogenic'"
+
+// gnomAD's own consequence class for the variant: pLoF, missense, synonymous
+// or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
+const GNOMAD_PLOF_FILTER = "jexl:feature.annot == 'pLoF'"
+
+// One frame of the gnomAD figure: the same three tracks every time, with only
+// the gnomAD entry's extra keys changing. Written as a builder so the three
+// frames cannot drift in the two tracks the comparison is read against.
+function gnomadFrame(gnomad: object = {}) {
+  return sessionSpec(UCSC_HG38_CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: TP53_TRANSCRIPT_WINDOW,
+        tracks: [
+          { ...GENE_TRACK_COLLAPSED, height: 60 },
+          { ...PHYLOP_TRACK, height: 90 },
+          { trackId: GNOMAD_TRACK_ID, height: 130, ...gnomad },
+        ],
+      },
+    ],
+  })
+}
+
 // One factor out of the whole JASPAR collection. `TFName` is a column of the
 // file's own autoSql, so this is the expression a reader types into the track
 // menu's "Filter by..." -- `jexlFiltersSetting` is the model prop that dialog
@@ -501,21 +556,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
             { ...GENE_TRACK_COLLAPSED, height: 60 },
             { trackId: 'hg38-cpgIslandExt', height: 50 },
             { trackId: 'hg38-cCREregistry', height: 60 },
-            // showLegend off on both layered tracks. Their subtracks are 64 and
-            // 55 tissues, so the floating colour key can never fit the display
-            // it floats over -- on screen it is a scrolled list, and in a still
-            // it is a clipped one. The caption says the colours are tissues,
-            // which is what the key would have said in the space available.
-            {
-              trackId: 'hg38-wgEncodeReg4Dnase',
-              height: 110,
-              showLegend: false,
-            },
-            {
-              trackId: 'hg38-wgEncodeReg4MarkH3k27ac',
-              height: 110,
-              showLegend: false,
-            },
+            { ...H3K4ME3_ROWS, height: 170 },
+            { ...H3K27AC_ROWS, height: 170 },
             // EPDnew's promoter calls, not the JASPAR TFBS track that was here
             // first: JASPAR draws every motif match above its score cutoff, and
             // over 6 kb that is a solid orange field with no shape to read. A
@@ -529,7 +571,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyText: 'TP53',
     readyTimeout: 180000,
     settleMs: 10000,
-    viewportHeight: 880,
+    viewportHeight: 990,
     diffThreshold: 0.02,
   },
 
@@ -576,99 +618,81 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // The population reading, which needs the transcript rather than the exon:
-  // gnomAD as the checkbox gives it, then filtered to the variants that are
-  // actually common. Two frames of the same window, so the redistribution is
-  // read across rather than inferred.
+  // The population reading, at the transcript rather than the exon. Three
+  // frames of one window, each a filter the reader types into "Filter by...",
+  // and the track gets sparser and more specific down the stack.
   //
   // Measured 2026-08-13 over this window against exomes.bb, with NM_000546.6's
   // coding exons from api.genome.ucsc.edu:
   //
-  //   coding bases                  1,182 of 9,200 in the window   (12.8%)
-  //   gnomAD, any AF                3,045 records, 685 coding      (22.5%)
-  //   gnomAD, AF >= 0.001              71 records,   3 coding       (4.2%)
-  //   ClinVar pathogenic-ish        1,132 records, 1006 coding     (88.9%)
+  //   coding bases                1,182 of 9,200 in the window   (12.8%)
+  //   gnomAD, any AF              3,045 records, 685 coding      (22.5%)
+  //   gnomAD, AF >= 0.001            71 records,   3 coding       (4.2%)
+  //   gnomAD, annot == pLoF          93 records
   //
-  // So the raw callset is enriched on coding sequence (exome capture) and the
-  // common half of it is depleted there by about three-fold against the base
-  // composition of the window, while the pathogenic calls are almost entirely
-  // inside. That is the whole figure, and none of those numbers is in the prose
-  // -- the two frames show it.
+  // So the raw callset is enriched on coding sequence because that is what an
+  // exome captures, and the common half of it is depleted there about
+  // three-fold against the base composition of the window. None of those
+  // numbers is in the prose; the frames carry it.
   //
-  // The second frame is also coloured by `grpmax`, the group carrying the
-  // variant at its highest frequency, which is what makes it more than the same
-  // track with fewer features in it. All six groups occur over this window
-  // (measured 2026-08-13: 19 African/African American, 15 East Asian, 14
-  // European non-Finnish, 9 Admixed American, 7 South Asian, 7 Middle Eastern
-  // among the 71 common variants), and the most skewed is chr17:7,674,638 at
-  // 0.6% overall against 17% in African/African American.
+  // Frame 2 is coloured by `grpmax`, the ancestry group carrying the variant at
+  // its highest frequency, so it is more than the same track with fewer rows.
+  // All six groups occur here (19 African/African American, 15 East Asian, 14
+  // European non-Finnish, 9 Admixed American, 7 South Asian, 7 Middle Eastern),
+  // and the most skewed is chr17:7,674,638, 0.6% overall against 17% in
+  // African/African American.
   //
-  // `jexlFiltersSetting`, the model prop the "Filter by..." dialog writes: the
-  // frame is a reader having applied the filter.
+  // Frame 3 is the other axis a reader would filter on: `annot` is gnomAD's own
+  // consequence class, and pLoF is the high-impact end of it. 93 records, all
+  // in coding sequence by construction, and nearly all of them singletons --
+  // the opposite population to frame 2, from the same file.
+  //
+  // ClinVar is deliberately NOT in this figure. It was, and three dense variant
+  // tracks over one gene read as noise; the exon figure above is where ClinVar
+  // is legible.
+  //
+  // `jexlFiltersSetting` is the model prop the "Filter by..." dialog writes.
   {
     mode: 'url',
-    name: 'genomes_basics/gnomad_common_rare',
-    url: sessionSpec(UCSC_HG38_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: TP53_TRANSCRIPT_WINDOW,
-          tracks: [
-            { ...GENE_TRACK_COLLAPSED, height: 60 },
-            { ...PHYLOP_TRACK, height: 90 },
-            { trackId: CLINVAR_TRACK_ID, height: 110 },
-            { trackId: GNOMAD_TRACK_ID, height: 130 },
-          ],
-        },
-      ],
-    }),
+    name: 'genomes_basics/gnomad_filters',
+    url: gnomadFrame(),
     readyText: 'TP53',
     readyTimeout: 180000,
     settleMs: 10000,
-    // 720: at 640 the run cut 74px, which on the unfiltered frame is the bottom
-    // of the gnomAD pile the comparison is about.
-    viewportHeight: 720,
+    viewportHeight: 560,
     diffThreshold: 0.02,
     stages: [
       { actions: [PARK_CURSOR] },
       {
-        url: sessionSpec(UCSC_HG38_CONFIG, {
-          views: [
-            {
-              type: 'LinearGenomeView',
-              assembly: 'hg38',
-              loc: TP53_TRANSCRIPT_WINDOW,
-              tracks: [
-                { ...GENE_TRACK_COLLAPSED, height: 60 },
-                { ...PHYLOP_TRACK, height: 90 },
-                { trackId: CLINVAR_TRACK_ID, height: 110 },
-                {
-                  trackId: GNOMAD_TRACK_ID,
-                  height: 130,
-                  jexlFiltersSetting: [GNOMAD_COMMON_FILTER],
-                  color: GNOMAD_ANCESTRY_COLOR,
-                  legend: GNOMAD_ANCESTRY_LEGEND,
-                },
-              ],
-            },
-          ],
+        url: gnomadFrame({
+          jexlFiltersSetting: [GNOMAD_COMMON_FILTER],
+          color: GNOMAD_ANCESTRY_COLOR,
+          legend: GNOMAD_ANCESTRY_LEGEND,
         }),
+        actions: [PARK_CURSOR],
+      },
+      {
+        url: gnomadFrame({ jexlFiltersSetting: [GNOMAD_PLOF_FILTER] }),
         actions: [PARK_CURSOR],
       },
     ],
   },
 
-  // What a click on one of those variants gives back: the feature details
-  // widget, with ClinVar's own columns in it. The point of the figure is that
-  // the columns are the file's, not JBrowse's -- a BigBed's extra fields arrive
-  // as fields, so the significance and the review status are readable without
-  // leaving the browser.
+  // What a click gives back: the feature details widget, with ClinVar's own
+  // columns in it. A BigBed's extra fields arrive as fields, so the
+  // significance and the review status are readable without leaving the
+  // browser.
   //
-  // The click is a locus anchor rather than a coordinate: the display is canvas,
-  // so there is no element per variant, and `locusAnchor` resolves the point
-  // from the live model instead of from a measurement that was true for one
-  // window width.
+  // The ClinVar track behind it is filtered to the pathogenic classes, which
+  // makes the backdrop one colour and one meaning rather than the eight-colour
+  // significance mixture the unfiltered track draws. It is also the second
+  // filter axis the page uses on a variant catalog: frequency for gnomAD,
+  // clinical class here.
+  //
+  // The click is a locus anchor rather than a coordinate: the display is
+  // canvas, so there is no element per variant, and `locusAnchor` resolves the
+  // point from the live model instead of from a measurement that was true for
+  // one window width.
   {
     mode: 'url',
     name: 'genomes_basics/variant_details',
@@ -680,7 +704,11 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           loc: TP53_EXON_WINDOW,
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 70 },
-            { trackId: 'hg38-clinvarMain', height: 140 },
+            {
+              trackId: CLINVAR_TRACK_ID,
+              height: 140,
+              jexlFiltersSetting: [CLINVAR_PATHOGENIC_FILTER],
+            },
           ],
         },
       ],
@@ -698,7 +726,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         type: 'click',
         anchor: {
           locus: 'chr17:7,674,245',
-          track: 'hg38-clinvarMain',
+          track: CLINVAR_TRACK_ID,
           fracY: 0.1,
         },
       },
@@ -793,21 +821,11 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
               jexlFiltersSetting: [JASPAR_TP53_FILTER],
             },
             { trackId: 'hg38-cCREregistry', height: 70 },
-            // Both layered tracks, as the promoter figure runs them: one says
-            // the chromatin is open, the other that it is active, and the point
-            // of the frame is that they agree with the cCRE calls about WHICH
-            // motif matches matter. showLegend off for the same reason as there
-            // (64 and 55 organs cannot fit a floating key).
-            {
-              trackId: 'hg38-wgEncodeReg4Dnase',
-              height: 110,
-              showLegend: false,
-            },
-            {
-              trackId: 'hg38-wgEncodeReg4MarkH3k27ac',
-              height: 110,
-              showLegend: false,
-            },
+            // Both marks, as the promoter figure runs them, and the frame is
+            // about whether they agree with the cCRE calls on which motif
+            // matches matter.
+            { ...H3K4ME3_ROWS, height: 170 },
+            { ...H3K27AC_ROWS, height: 170 },
           ],
         },
       ],
@@ -816,9 +834,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     settleMs: 10000,
     diffThreshold: 0.02,
-    // 840: at 700 the run reported 123px of the H3K27ac track below the fold,
-    // which is one of the two lanes the frame is read on.
-    viewportHeight: 840,
+    // 960: the seven-row marks are 170px each and the run cut 103px at 840.
+    viewportHeight: 960,
     actions: [PARK_CURSOR],
   },
 
