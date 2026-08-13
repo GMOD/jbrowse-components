@@ -48,17 +48,18 @@ export interface CoverageScale {
 export function makeCoverageScale(
   state: CoverageScaleState,
 ): CoverageScale | undefined {
+  if (!hasCoverageScale(state)) {
+    return undefined
+  }
   const { coverageMinDepth, coverageMaxDepth, coverageIsLog } = state
-  return hasCoverageScale(state) && coverageMaxDepth !== undefined
-    ? {
-        normalize: makeScoreNormalizer(
-          coverageMinDepth ?? 0,
-          coverageMaxDepth,
-          coverageIsLog,
-        ),
-        domainMax: coverageMaxDepth,
-      }
-    : undefined
+  return {
+    normalize: makeScoreNormalizer(
+      coverageMinDepth ?? 0,
+      coverageMaxDepth,
+      coverageIsLog,
+    ),
+    domainMax: coverageMaxDepth,
+  }
 }
 
 /**
@@ -67,9 +68,13 @@ export function makeCoverageScale(
  * itself, but it must gate on the same question: this is the one predicate both
  * backends skip the depth-scaled layers under, rather than a
  * `coverageMaxDepth !== undefined` written once per backend.
+ *
+ * It narrows, so `makeCoverageScale` doesn't have to write that literal a third
+ * time to convince TypeScript the max is resolved — which is what it did, two
+ * lines above the sentence forbidding it.
  */
-export function hasCoverageScale(
-  state: Pick<CoverageScaleState, 'coverageMaxDepth'>,
-) {
+export function hasCoverageScale<
+  T extends Pick<CoverageScaleState, 'coverageMaxDepth'>,
+>(state: T): state is T & { coverageMaxDepth: number } {
   return state.coverageMaxDepth !== undefined
 }
