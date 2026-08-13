@@ -75,6 +75,19 @@ strand case.
   what keeps a throwing painter from leaving every later frame clipped.
 - **Don't redefine lifecycle state** (`canvasDrawn`, `renderTick`,
   `renderError`, …) — plugins compose `RenderLifecycleMixin`, never re-declare.
+- **Every backend extends `GpuRenderingBackendBase` /
+  `Canvas2DRenderingBackendBase`, and its contract extends `RenderingBackend`.**
+  Not tidiness: the base is where `setErrorHandler` lives, which routes a HAL
+  over-limit allocation to `renderError` and so raises the "too much data, zoom
+  in" banner instead of a blank canvas. It was optional at `useRenderingBackend`
+  once, and the three backends that implemented their interfaces standalone —
+  alignments, dotplot, synteny, the largest allocators in the app — were exactly
+  the three whose OOMs reached nobody. Required now, so forgetting is a compile
+  error. A plugin's `XRenderingBackend` should be the shared contract
+  (`PerRegionRenderingBackend` / `GlobalRenderingBackend` /
+  `KeyedRenderingBackend`), not a member-for-member re-declaration of one: the
+  copy that existed had drifted into citing the real contract for its own
+  method's meaning.
 - **Renderers stay stateless.** The one sanctioned exception is a cache written
   exclusively by the upload callback and never patched in place.
 - **Upload memos are helpers, not hand-rolled `let`s** —

@@ -9,12 +9,12 @@ import type { GpuHal } from './hal/types.ts'
  * bounded by it.
  *
  * `setErrorHandler` is here rather than optional at the hook because it was
- * optional at the hook, and the two backends that then went without it —
- * dotplot and multi-LGV synteny, which allocate the largest vertex buffers in
- * the app — were the two whose over-limit allocations reached nobody: the HAL
- * reported "too much data to render on this GPU, zoom in", the reporter's
- * handler was null, and the view painted blank with a console line. Both
- * displays had the error banner built and wired the whole time.
+ * optional at the hook, and the three backends that then went without it —
+ * alignments, dotplot and multi-LGV synteny, which allocate the largest vertex
+ * buffers in the app — were the three whose over-limit allocations reached
+ * nobody: the HAL reported "too much data to render on this GPU, zoom in", the
+ * reporter's handler was null, and the view painted blank with a console line.
+ * The displays had their error banners built and wired the whole time.
  *
  * Extending `GpuRenderingBackendBase` or `Canvas2DRenderingBackendBase` below
  * satisfies it, which is the intended way to get it.
