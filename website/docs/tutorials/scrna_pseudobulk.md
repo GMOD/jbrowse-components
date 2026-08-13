@@ -34,15 +34,14 @@ which end, which exons, which annotated transcript the pile agrees with.
 
 <Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal walks down the diagonal." src="/img/scrna/marker_panel.png" />
 
-The signal piling up at one end of each gene is the chemistry showing through.
+The signal piling up at one end of each gene is the chemistry showing through:
 10x 3' kits sequence the 3' end of each transcript, so a coverage track of that
 library is a spike near the polyadenylation site and very little else. Reading a
-marker gene means comparing the heights of those spikes across rows, which is
-the same comparison a dot plot makes, drawn on the coordinate where the reads
-actually are. The figure is on a log scale because the rows share one axis and
-the brightest marker sits well above the dimmest. Full-length chemistries
-(Smart-seq, and 5' kits to a lesser degree) spread coverage over the gene body
-instead, and the rest of this page applies unchanged.
+marker gene means comparing the heights of those spikes across rows. The figure
+is on a log scale because the rows share one axis and the brightest marker sits
+well above the dimmest. Full-length chemistries (Smart-seq, and 5' kits to a
+lesser degree) spread coverage over the gene body instead, and the rest of this
+page applies unchanged.
 
 ## Generating per-cell-type BigWigs
 
@@ -145,23 +144,21 @@ cells-by-bins Zarr matrix instead of one file per cell.
 <Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
 The speckle is what the pseudobulk row above cannot show. Summed, the lymphocyte
-rows are a low flat line next to the monocyte peak, which reads as silence. Per
-cell, many of those cells carry a single UMI of a monocyte gene, which is
-ambient RNA in the droplet rather than transcription in the cell.
+rows are a low flat line next to the monocyte peak; per cell, many of those
+cells carry a single UMI of a monocyte gene, which is ambient RNA in the droplet
+rather than transcription in the cell.
 
-Two settings decide whether that is visible at all.
+Two settings decide whether that is visible at all:
 
-Order the rows by cell type. Thousands of rows in a few hundred pixels is well
-under a pixel each, so the picture is a raster rather than readable rows, and a
-block only means anything if the cells in it are adjacent. The `group` on each
-row seeds that, and it also drives the sidebar tree.
-
-Then pin the score axis. With autoscale the maximum is whatever the home cell
-type reached, which at LYZ is a single monocyte far above everything else, and
-every single-UMI cell renders white against it. A pinned `minScore: 0` and a low
-`maxScore` puts one UMI a visible fraction up the ramp and lets the home block
-saturate, which is the same reasoning as the copy-number heatmap in
-[](/docs/tutorials/population_cnv).
+- **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
+  well under a pixel each, so a block only means anything if the cells in it are
+  adjacent. The `group` on each row seeds that, and it also drives the sidebar
+  tree.
+- **Pin the score axis.** With autoscale the maximum is whatever the home cell
+  type reached, which at LYZ is a single monocyte far above everything else, and
+  every single-UMI cell renders white against it. A pinned `minScore: 0` and a
+  low `maxScore` puts one UMI a visible fraction up the ramp, the same reasoning
+  as the copy-number heatmap in [](/docs/tutorials/population_cnv).
 
 The store is read by the `MultiWiggleZarrAdapter` that
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds,

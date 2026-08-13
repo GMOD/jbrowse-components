@@ -122,8 +122,7 @@ legible by color alone.
 
 Features with no value for that attribute are painted a neutral grey rather than
 given a color of their own, which matters here: two thirds of the genes in this
-window carry only a locus tag, and a color for them would be the loudest thing
-on screen and would read as one large named group.
+window carry only a locus tag.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 

@@ -136,13 +136,12 @@ the chain folds. It needs a session it can add tracks to, which is why it does
 not appear in the single-view embedded components.
 
 **Launch MSA view (AlphaFold a3m)** and **Launch 3D structure + MSA view**
-appear only when msaview is loaded in the same session, which protein3d checks
-for at menu-build time. They build the view from the alignment AlphaFold's own
-pipeline folded from, when AlphaFold publishes one for that accession. That
-alignment is deep and its rows are not species-labelled, the opposite trade from
-the ortholog panel in [](/docs/tutorials/genomes_msa), and a much larger
-download. That is why the label names its source: msaview contributes a gene
-right-click item called plain **Launch MSA view** that builds the other thing.
+appear only when msaview is loaded in the same session. They build the view from
+the alignment AlphaFold's own pipeline folded from, which is deep, not
+species-labelled, and a much larger download than the ortholog panel in
+[](/docs/tutorials/genomes_msa). The label names its source because msaview
+contributes a gene right-click item called plain **Launch MSA view** that builds
+the other thing.
 
 ### Sharing a connected view as a URL
 

@@ -57,17 +57,14 @@ the whole block's endpoints. A reverse-strand block adds another checkbox,
 **Horizontally flip inverted targets**, ticked by default so the target panel
 still reads left to right.
 
-The dialog then offers two ways out, and both build the same view. **Open in new
-view** appends it below the linear view you launched from. **Replace current
-view** puts it in that view's place instead, which is usually what you want
-here: the synteny view opens on the locus the linear view is already showing, so
-keeping both leaves two views of one place stacked, with the taller of the two
-below the fold.
+The dialog then offers two ways out, both building the same view. **Open in new
+view** appends it below the linear view you launched from; **Replace current
+view** puts it in that view's place, which is usually what you want here, since
+the synteny view opens on the locus the linear view is already showing.
 
 The figure below walks those steps on a second pair, **hg38 to Chimp (panTro6)
-liftOver** across an intron of _FTO_, because a cross-species target is where
-the tracks each panel ends up with are worth following. Every click is the same
-on the hs1 track this page opened with.
+liftOver** across an intron of _FTO_. Every click is the same on the hs1 track
+this page opened with.
 
 The last frame also switches the ribbon to curves and to **Transparent indels**,
 both covered [below](#ribbon-display-settings), which turns the one gap in it
@@ -78,18 +75,14 @@ keeps every other repeat in the window but not that one.
 <Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats." src="/img/genomes_synteny/launch_sequence.png" />
 
 The panel for the assembly you launched from opens with the tracks that view had
-on, which is why the human side arrives with its genes and repeats already;
-**Copy this view's tracks into its panel** in the dialog turns that off. Nothing
-in the launching view says what the chimp panel should show, so that one opens
-empty, and its tracks come from its own track selector, whose button in the view
-header lists one per panel. On genomes.jbrowse.org the chimp panel offers **NCBI
-RefSeq - RefSeq All** and **RepeatMasker**, because naming panTro6 also brought
-in the panTro6 hub's gene, repeat and gap tracks. (RefSeq Curated exists there
-too but is a human-first product, and chimp's copy of it leaves this window
-empty.) The rest of that hub is not loaded with them; open it from **File → Open
-connection** as a JBrowse 2 hub at
-`https://jbrowse.org/ucsc/panTro6/config.json` when you want its conservation or
-expression tracks too.
+on, and **Copy this view's tracks into its panel** in the dialog turns that off.
+The chimp panel opens empty, and its tracks come from its own track selector,
+whose button in the view header lists one per panel. On genomes.jbrowse.org it
+offers **NCBI RefSeq - RefSeq All** and **RepeatMasker**, because naming panTro6
+also brought in the panTro6 hub's gene, repeat and gap tracks. The rest of that
+hub is not loaded with them; open it from **File → Open connection** as a
+JBrowse 2 hub at `https://jbrowse.org/ucsc/panTro6/config.json` when you want
+its conservation or expression tracks too.
 
 A locus that no single chain block covers (a gene that several blocks tile, or
 one you have only navigated to) takes a second route: drag-select it on the
