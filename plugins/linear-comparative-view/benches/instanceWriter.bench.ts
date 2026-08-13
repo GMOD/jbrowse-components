@@ -289,8 +289,7 @@ for (const n of [100_000, 500_000, 2_000_000]) {
   }
   console.log(
     `${n.toLocaleString().padStart(10)}  ${a.toFixed(2).padStart(8)}  ` +
-      `${w.toFixed(2).padStart(8)}  ${(w / a).toFixed(3).padStart(6)}  ` +
-      (b / a).toFixed(3).padStart(7),
+      `${w.toFixed(2).padStart(8)}  ${(w / a).toFixed(3).padStart(6)}  ${(b / a).toFixed(3).padStart(7)}`,
   )
 }
 console.log(
