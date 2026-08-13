@@ -59,14 +59,16 @@ export const ArrowPass: PipelineDescriptor = slangPass({
 
 // Chevron reuses line's vertex buffer (bufferStride/bufferAttributes from
 // `line`), and its per-instance vertex count scales with a consumer-chosen cap
-// on how many chevrons one line can host — so it's built per consumer.
+// on how many chevrons one line can host — so it's built per consumer. The
+// per-chevron half of that product is the shader's (`CHEVRON_VERTS`, which its
+// own `vid` split reads), not a 12 re-typed here.
 export function makeChevronPass(
   maxChevronsPerLine: number,
 ): PipelineDescriptor {
   return slangPass({
     id: CHEVRON_PASS,
     mod: chevronShader,
-    verticesPerInstance: maxChevronsPerLine * 12,
+    verticesPerInstance: maxChevronsPerLine * chevronShader.CHEVRON_VERTS,
     bufferStride: lineShader.INSTANCE_STRIDE_BYTES,
     bufferAttributes: lineShader.VERTEX_ATTRIBUTES,
   })

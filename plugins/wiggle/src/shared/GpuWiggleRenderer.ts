@@ -28,14 +28,17 @@ const UI = wiggleShader.UNIFORM_OFFSET_I32
 
 // Two shaders, three triangle-list passes. PASS_FILL draws xyplot / density /
 // scatter as 6-vert quads off wiggle.slang's 20-byte record; PASS_LINE draws the
-// thick step-line as 18 verts per feature (3 square-capped quad segments) so
-// stroke thickness honors the lineWidth uniform (line-list topology can't — its
-// width is hard-locked to 1px on WebGPU/WebGL); PASS_LINE_CENTER draws the
-// connect-points line as a 6-vert capsule per feature under max blend. The two
-// line passes share wiggleLine.slang and so share one buffer; the fill pass
-// cannot join them, because the record it reads is the one without the
+// thick step-line as `STEP_LINE_VERTS` per feature (3 square-capped quad
+// segments) so stroke thickness honors the lineWidth uniform (line-list topology
+// can't — its width is hard-locked to 1px on WebGPU/WebGL); PASS_LINE_CENTER
+// draws the connect-points line as a 6-vert capsule per feature under max blend.
+// The two line passes share wiggleLine.slang and so share one buffer; the fill
+// pass cannot join them, because the record it reads is the one without the
 // neighbour fields.
-const LINE_VERTS_PER_INSTANCE = 18
+//
+// The step-line's count is the shader's — its `vs_main` splits `SV_VertexID` by
+// the same numbers — rather than the 18 that used to be re-typed here with
+// nothing checking it against the split.
 
 // One buffer per instance layout, so two of the three passes carry a packer.
 // Each returns empty for the renderings that aren't its own, which releases that
@@ -55,7 +58,7 @@ const LINE_PASS = {
     id: PASS_LINE,
     mod: wiggleLineShader,
     topology: 'triangle-list',
-    verticesPerInstance: LINE_VERTS_PER_INSTANCE,
+    verticesPerInstance: wiggleLineShader.STEP_LINE_VERTS,
   }),
   pack: packLineInstances,
 }

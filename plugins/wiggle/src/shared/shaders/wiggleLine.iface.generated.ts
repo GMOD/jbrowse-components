@@ -9,6 +9,8 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
+export const STEP_LINE_VERTS = 18
+
 export const UNIFORMS_SIZE_BYTES = 64
 
 // Word indices into a Float32Array view over the uniform buffer.

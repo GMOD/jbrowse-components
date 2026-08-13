@@ -4,10 +4,10 @@
 // attribute layout here must stay identical to line's.
 //
 // One line produces up to MAX_VISIBLE_CHEVRONS_PER_LINE chevrons; each
-// chevron is 2 triangles = 12 vertices dispatched via vertex ID. Per-
-// chevron positioning is computed in the shader from viewport + line span.
+// chevron is two arms of CHEVRON_ARM_VERTS each, dispatched via vertex ID.
+// Per-chevron positioning is computed in the shader from viewport + line span.
 //! targets: wgsl, glsl
-//! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX
+//! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX, CHEVRON_VERTS
 //! js-export: showChevrons, chevronCount, chevronOffset
 
 import hpmath;
@@ -19,6 +19,15 @@ static const float CHEVRON_SPACING_PX  = 40.0;
 static const float CHEVRON_W_PX        = 4.0;
 static const float CHEVRON_H_PX        = 4.0;
 static const float CHEVRON_THICKNESS_PX = 0.5;
+
+// One chevron is two arms, each an ordinary 6-vertex quad (2 triangles), so
+// `vs_main` splits `SV_VertexID` by both numbers below. The pass's per-instance
+// vertex count is CHEVRON_VERTS times the renderer's own cap on chevrons per
+// line, which is why this is `export-consts`ed rather than left a literal:
+// `makeChevronPass` was spelling the 12 a second time, and neither copy could
+// see the other.
+static const uint CHEVRON_ARM_VERTS = 6u;
+static const uint CHEVRON_VERTS = CHEVRON_ARM_VERTS * 2u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
 
@@ -67,8 +76,8 @@ public float chevronOffset(float span, float count, float index) {
 
 [shader("vertex")]
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
-  int localChevronIndex = int(vid / 12u);
-  uint v = vid % 12u;
+  int localChevronIndex = int(vid / CHEVRON_VERTS);
+  uint v = vid % CHEVRON_VERTS;
 
   float lineLengthBp = float(inst.startEnd.y - inst.startEnd.x);
   float lineWidthPx = lineLengthBp / u.bpPerPx;
@@ -124,8 +133,8 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   float armHalfPx = CHEVRON_THICKNESS_PX * 0.5 + 1.0;
   float dir = flipX(inst.direction, u);
 
-  bool isTopArm = v < 6u;
-  uint qv = v % 6u;
+  bool isTopArm = v < CHEVRON_ARM_VERTS;
+  uint qv = v % CHEVRON_ARM_VERTS;
 
   float tipX = cx + halfW * dir;
   float outerX = cx - halfW * dir;

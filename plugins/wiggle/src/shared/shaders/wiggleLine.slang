@@ -15,6 +15,7 @@
 // The instance record below is deliberately in the same field order the single
 // shared struct had, so the bytes the line passes receive are unchanged.
 //! targets: wgsl, glsl
+//! export-consts: STEP_LINE_VERTS
 
 import hpmath;
 import colorPack;
@@ -22,10 +23,20 @@ import colorPack;
 import pointGlyph;
 import wiggleCommon;
 
-// The center-line's capsule. PASS_LINE overrides this with 18 (three
-// square-capped quad segments per feature) at the pass descriptor, since a
-// module carries one count and these two renderings disagree.
+// The center-line's capsule. A module carries one VERTS_PER_INSTANCE and these
+// two renderings disagree, so PASS_LINE overrides it at the pass descriptor —
+// with STEP_LINE_VERTS below, not with the product spelled out a second time in
+// TypeScript, which is what it was.
 public static const uint VERTS_PER_INSTANCE = 6u;
+
+// The step-line's three square-capped quad segments per feature (see vs_main,
+// which splits `SV_VertexID` by the same quad size `quadLocal` takes it apart
+// with). 6 rather than VERTS_PER_INSTANCE: both are quads, but tying the
+// step-line's segment size to the center-line's capsule would make an unrelated
+// change to one silently resize the other.
+static const uint STEP_LINE_SEGMENTS = 3u;
+static const uint STEP_LINE_QUAD_VERTS = 6u;
+static const uint STEP_LINE_VERTS = STEP_LINE_SEGMENTS * STEP_LINE_QUAD_VERTS;
 
 struct WiggleLineInstance {
   uint2 startEnd  : ATTR0;
@@ -80,8 +91,9 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
   float segHalfLen = 0.0;
 
   if (u.renderingType == RENDERING_TYPE_LINE) {
-    // Thick step-line: each feature draws 3 triangle-quad segments (18 verts,
-    // triangle-list) so the stroke honors u.lineWidth. Half-widths are in clip
+    // Thick step-line: each feature draws STEP_LINE_SEGMENTS triangle-quad
+    // segments (STEP_LINE_VERTS verts, triangle-list) so the stroke honors
+    // u.lineWidth. Half-widths are in clip
     // space, computed separately for x and y because the two axes have
     // different px→clip scales. Each quad is square-capped (extended by the
     // half-width along its own length) so segments overlap at the joints and
@@ -92,7 +104,7 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
     // prevScore=0 encodes gapBefore (rise from zero); nextScore=0 encodes
     // gapAfter (drop to zero). When adjacent, nextScore==score collapses seg 2
     // to a square joint that fills the corner with the next feature's seg 0.
-    uint seg = vid / 6u;
+    uint seg = vid / STEP_LINE_QUAD_VERTS;
     float2 q = quadLocal(vid);
     float clipScoreY = rowScoreToClipY(inst.score,     rowTop, rowHeight, pxToClip);
     float clipPrevY  = rowScoreToClipY(inst.prevScore, rowTop, rowHeight, pxToClip);
