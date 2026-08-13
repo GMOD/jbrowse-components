@@ -82,12 +82,27 @@ export function dirFromPath(filePath: string) {
     : dir
 }
 
+/**
+ * Stamps the selected account onto a URL location — and, given no account,
+ * *unstamps* whichever one was there. The second half is the one that matters:
+ * picking Dropbox and then going back to plain URL used to leave the stamp
+ * behind, so the file kept being fetched through Dropbox with nothing in the
+ * form saying so.
+ *
+ * Returns the location itself when there is nothing to change, so a caller can
+ * tell a real edit from a no-op by identity.
+ */
 export function addAccountToLocation(
   location: FileLocation,
   account?: BaseInternetAccountModel,
 ): FileLocation {
-  if (account && isUriLocation(location)) {
-    return { ...location, internetAccountId: account.internetAccountId }
+  if (!isUriLocation(location)) {
+    return location
   }
-  return location
+  const internetAccountId = account?.internetAccountId
+  if (location.internetAccountId === internetAccountId) {
+    return location
+  }
+  const { internetAccountId: _previous, ...rest } = location
+  return internetAccountId ? { ...rest, internetAccountId } : rest
 }

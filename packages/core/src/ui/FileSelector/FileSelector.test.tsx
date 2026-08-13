@@ -57,3 +57,25 @@ test('stamps internetAccountId when an account is selected after typing a URL', 
     internetAccountId: 'dropbox',
   })
 })
+
+// The mirror of the above, and the half that was missing: leaving an account
+// has to take its stamp with it, or the file keeps being fetched through an
+// account the form no longer shows as selected
+test('unstamps internetAccountId when the source type goes back to URL', () => {
+  const onChange = jest.fn()
+  const { getByTestId, getByRole } = render(<Harness onChange={onChange} />)
+
+  fireEvent.change(getByTestId('urlInput'), {
+    target: { value: 'https://example.com/f.bam' },
+  })
+  fireEvent.click(getByRole('button', { name: 'DBX' }))
+  expect(onChange).toHaveBeenLastCalledWith(
+    expect.objectContaining({ internetAccountId: 'dropbox' }),
+  )
+
+  fireEvent.click(getByRole('button', { name: 'url' }))
+  expect(onChange).toHaveBeenLastCalledWith({
+    uri: 'https://example.com/f.bam',
+    locationType: 'UriLocation',
+  })
+})

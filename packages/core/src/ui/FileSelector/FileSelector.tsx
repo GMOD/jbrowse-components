@@ -50,17 +50,21 @@ const FileSelector = observer(function FileSelector({
 
   const handleSourceTypeChange = useCallback(
     (newValue: string | null) => {
-      if (newValue) {
-        setRecentlyUsed([
-          ...new Set([newValue, ...recentlyUsed].filter(notEmpty)),
-        ])
-        setSourceType(newValue)
-        // stamp the newly-selected account onto an existing URL; read it from
-        // accountMap[newValue] rather than the closed-over selectedAccount,
-        // which still reflects the pre-change source type
-        const account = accountMap[newValue]
-        if (account && isUriLocation(location)) {
-          setLocation(addAccountToLocation(location, account))
+      if (!newValue) {
+        return
+      }
+      setRecentlyUsed([
+        ...new Set([newValue, ...recentlyUsed].filter(notEmpty)),
+      ])
+      setSourceType(newValue)
+      // re-stamp an existing URL for the source type just chosen — the account
+      // it names, or none at all if it names none. Read from accountMap rather
+      // than the closed-over selectedAccount, which still reflects the source
+      // type being left.
+      if (location && isUriLocation(location)) {
+        const next = addAccountToLocation(location, accountMap[newValue])
+        if (next !== location) {
+          setLocation(next)
         }
       }
     },
