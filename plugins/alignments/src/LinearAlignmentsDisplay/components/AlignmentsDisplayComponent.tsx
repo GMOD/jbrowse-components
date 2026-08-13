@@ -14,7 +14,6 @@ import { observer } from 'mobx-react'
 
 import { AlignmentsRenderer } from '../renderers/AlignmentsRenderer.ts'
 import PileupBody from './PileupComponent.tsx'
-import PileupTruncatedIndicator from './PileupTruncatedIndicator.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
@@ -46,10 +45,6 @@ const useStyles = makeStyles()({
   },
 })
 
-// maxHeight is in pixels; this is far above the Uint16 row ceiling so the
-// `maxRows` getter clamps to the real limit and every stacked read shows.
-const SHOW_ALL_MAX_HEIGHT = 1_000_000
-
 const AlignmentsTooltipLayer = observer(function AlignmentsTooltipLayer({
   model,
   mouseTracker,
@@ -69,12 +64,12 @@ const AlignmentsTooltipLayer = observer(function AlignmentsTooltipLayer({
 // The corner controls, in their own observer for the reason every other layer
 // here is: the render-prop child below is invoked during `DisplayChromeBase`'s
 // render, so an observable read written *inline* in it is tracked by the CHROME,
-// not by this file's component. These four (`scrollableHeight` twice,
-// `pileupTruncated`, `heightMode`, `view.scrollZoom`) sat there, so raising the
-// max height or flipping the height mode re-rendered `DisplayChrome` itself —
-// `useRenderingBackend` re-run, the status container rebuilt, the overlay portal
-// re-created — to redraw two chips. None of them moves per frame, so this was
-// never hot; it is the same shape wiggle and the variant matrix WERE hot in.
+// not by this file's component. These reads (`scrollableHeight` twice,
+// `heightMode`, `view.scrollZoom`) sat there, so flipping the height mode
+// re-rendered `DisplayChrome` itself — `useRenderingBackend` re-run, the status
+// container rebuilt, the overlay portal re-created — to redraw a chip. None of
+// them moves per frame, so this was never hot; it is the same shape wiggle and
+// the variant matrix WERE hot in.
 const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
   model,
 }: {
@@ -82,10 +77,9 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
 }) {
   // The guard travels with the read it was written for. Hiding a track detaches
   // the display, firing MobX reactions synchronously inside the click handler —
-  // and this observer now tracks the config-backed `pileupTruncated` the outer
-  // component's comment names, plus `getContainingView`, which throws outright
-  // on a detached node. Relying on the parent re-rendering first would be
-  // relying on reaction order.
+  // and this observer reads `getContainingView`, which throws outright on a
+  // detached node. Relying on the parent re-rendering first would be relying on
+  // reaction order.
   if (!isAlive(model)) {
     return null
   }
@@ -99,13 +93,6 @@ const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
     <BottomRightIndicators
       scrollbarWidth={hasOverflow ? VERTICAL_SCROLLBAR_WIDTH + 2 : 0}
     >
-      {model.pileupTruncated ? (
-        <PileupTruncatedIndicator
-          onShowAll={() => {
-            model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
-          }}
-        />
-      ) : null}
       <TrackHeightIndicator
         heightMode={model.heightMode}
         hasOverflow={hasOverflow}

@@ -50,16 +50,31 @@ visible ones share — for arcs, before `poolArcScale`.
 `collapseGroupRows` puts depth in the overlap tint, so the collapsed path must
 **not** run `mergeSpans`.
 
-## Two row caps, two affordances
+## Two row caps, and only one of them is an affordance
 
 A pileup can be clipped by its group's slice of the viewport or by the
-display-wide `maxHeight`, and a different control raises each: the label chip's
-expand (per-group override) versus the corner banner (`setMaxHeight`).
-`groupClippedBy` is the single classifier, because offering the wrong one is a
-button that does nothing — an expand banks an override OF `maxHeight`, so a lane
-already clipped there gets the identical cap back while the override silences
-the flag. Both surfaces that write `groupMaxHeightOverrides` (chip and drag
-handle) gate on `canSizeGroupHeights`.
+display-wide `maxHeight`. `groupClippedBy` is the single classifier, and the two
+answers get very different treatment:
+
+- **`'budget'`** offers the label chip's expand, which banks a per-group
+  override. Both surfaces that write `groupMaxHeightOverrides` (chip and drag
+  handle) gate on `canSizeGroupHeights`.
+- **`'ceiling'`** offers nothing. It draws `PileupTruncationRule` — a hairline
+  and caption across the bottom of the clipped rows, scrolling with them — and
+  the cap is raised from the track menu.
+
+Offering the wrong one is a button that does nothing: an expand banks an
+override OF `maxHeight`, so a lane already clipped there gets the identical cap
+back while the override silences the flag.
+
+**The ceiling notice is deliberately inert, and deliberately not a chip.** It
+was a `warning`-toned corner chip whose press set `maxHeight` to 1,000,000. On
+deep data (300x short reads) the 6000px default is reached at essentially every
+locus, so the alert tone was permanently lit — furniture, not a disclosure — and
+one press on an always-present control silently committed the track, via a
+config slot, to laying out every read everywhere. A notice drawn at the boundary
+it describes is met by scrolling to the end of the reads, which is exactly when
+"there were more" is worth knowing.
 
 ## Read height vs track height
 

@@ -1136,8 +1136,8 @@ export default function stateModelFactory(
          *
          * Nothing to size with the pileup hidden, and in fit mode an override is
          * a lane opting out of the fit the mode just computed: the extra rows
-         * overflow the display it was sized to fill. The truncation banner
-         * (`pileupTruncated`) steps aside in fit mode for the same reason.
+         * overflow the display it was sized to fill. The truncation notice
+         * (`isGroupCeilingClipped`) steps aside in fit mode for the same reason.
          */
         get canSizeGroupHeights() {
           return self.showPileup && !self.fitHeightToDisplay
@@ -1692,26 +1692,39 @@ export default function stateModelFactory(
         },
 
         /**
-         * #getter
-         * True when a pileup hit the display-wide `maxHeight` and overflow reads
-         * were collapsed — drives the "max height reached" / "show all" banner,
-         * whose action raises that ceiling. Reads every group, not just an
-         * ungrouped one: the ceiling is display-wide, so a stacked lane clipped
-         * by it is exactly as unreachable as an ungrouped pileup would be, and
-         * the per-label affordance deliberately steps aside for it.
+         * #method
+         * True when THIS group's pileup was clipped by the display-wide
+         * `maxHeight` and its overflow reads were collapsed. Drives the rule
+         * drawn across the bottom of the clipped rows — see
+         * `PileupTruncationRule`, which is per section because the notice marks
+         * the place where the reads stop rather than a state of the whole track.
          *
-         * Suppressed in fit-to-display mode: reads there are already clamped to a
-         * 1px floor, so "Show all" can't deliver a fit — it only deepens the 1px
-         * scroll. The overflow indicator still flags the scroll in that case. And
-         * with the pileup hidden nothing is drawn for the ceiling to clip, so
-         * offering to raise it is noise on a coverage-only stack.
+         * The two suppressions are `pileupTruncated`'s, which is now this over
+         * every group. In fit-to-display mode reads are already clamped to a 1px
+         * floor and the overflow indicator flags the scroll instead; with the
+         * pileup hidden nothing is drawn for the ceiling to clip.
          */
-        get pileupTruncated() {
+        isGroupCeilingClipped(key: string) {
           return (
             self.showPileup &&
             !self.fitHeightToDisplay &&
-            this.groupOrder.some(g => this.groupClippedBy(g.key) === 'ceiling')
+            this.groupClippedBy(key) === 'ceiling'
           )
+        },
+
+        /**
+         * #getter
+         * True when any pileup hit the display-wide `maxHeight` and overflow
+         * reads were collapsed. Reads every group, not just an ungrouped one:
+         * the ceiling is display-wide, so a stacked lane clipped by it is
+         * exactly as unreachable as an ungrouped pileup would be, and the
+         * per-label affordance deliberately steps aside for it.
+         *
+         * The display-wide answer; what is DRAWN is the per-section
+         * `isGroupCeilingClipped`, which carries the suppressions this composes.
+         */
+        get pileupTruncated() {
+          return this.groupOrder.some(g => this.isGroupCeilingClipped(g.key))
         },
 
         /**

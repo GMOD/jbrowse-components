@@ -26,6 +26,7 @@ import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import HighlightOverlay from './HighlightOverlay.tsx'
 import { InsertSizeAxisStack } from './InsertSizeAxis.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
+import PileupTruncationRule from './PileupTruncationRule.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import {
@@ -136,6 +137,7 @@ const PileupBody = observer(function PileupBody({
       <HighlightOverlay model={model} />
 
       <GroupLabelsOverlay model={model} />
+      <PileupTruncationRule model={model} />
 
       <SashimiArcsOverlay model={model} />
       <PileupBezierOverlay model={model} />
