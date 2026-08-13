@@ -324,7 +324,7 @@ All those alignments land in one pileup, so nothing says which strain each block
 came from. The track menu's **Group by... → Mate assembly** splits them into one
 labelled lane per sample. Each lane is a single row, shading darker where
 several alignments cover the same base rather than growing a row per hit. Untick
-**Show... > Collapse groups to one row** to stack every lane instead, or expand
+**Show... → Collapse groups to one row** to stack every lane instead, or expand
 one from its label.
 
 One lane is the assembly you are viewing, and it is this run's built-in control:
