@@ -47,6 +47,30 @@ Steps 1 to 3 are also the ones you can often skip entirely. If the assembly is
 one of the hosted ones, and the annotation you want is already published against
 it, the whole job is a URL.
 
+## Let the CLI write the track
+
+`@jbrowse/cli` knows the slot names, which is the thing an agent authoring JSON
+from memory does not:
+
+```bash
+jbrowse add-assembly hg38.fa.gz --load copy
+jbrowse add-track sample.bam --load copy --name Sample --color darkred
+jbrowse add-track https://example.org/genes.gff3.gz --height 200
+jbrowse text-index --tracks genes    ## makes a gene name work as a location
+```
+
+The track type, the adapter and the index path all come from the file itself: a
+`.bw` becomes a `QuantitativeTrack` over a `BigWigAdapter`, a `.vcf.gz` a
+`VariantTrack` over a `VcfTabixAdapter`. `--color`, `--height` and
+`--displayDefaults` are written into the track's `displayDefaults`, which is
+where per-track appearance belongs. `--load` says how a local file is placed
+next to the config and is omitted for a URL; `--config` takes inline JSON for
+anything the flags do not cover. Full reference in [](/docs/cli).
+
+What the CLI does not write is what the view opens onto — `defaultSession` and
+the `init` fields under it, which are [](/docs/automating), and which
+`jbrowse set-default-session` will take once composed.
+
 ## Check the result
 
 The one thing to insist on is step 4, because of how JBrowse fails:
@@ -96,6 +120,39 @@ Both are covered in [](/docs/agents_capture), including which one to reach for.
 An agent that can read images should read the one it just produced; an empty
 track is obvious in a picture and invisible in an exit code.
 
+### When the track is empty
+
+The picture says a track has nothing in it. What it does not say is which of
+three things is true, and each has a shell answer:
+
+```bash
+## 1. what the file calls its contigs, against what the assembly calls them
+samtools idxstats sample.bam | cut -f1
+tabix -l variants.vcf.gz
+cut -f1 hg38.fa.fai
+
+## 2. whether the region holds anything
+samtools view -c sample.bam chr17:43044000-43126000
+tabix variants.vcf.gz chr17:43044000-43126000 | head
+
+## 3. whether the server serves the file the way the browser reads it
+curl -sI -H 'Range: bytes=0-99' https://example.org/sample.bam
+```
+
+The first is the usual one. JBrowse matches reference names exactly, so a file
+naming its first chromosome `1` shows nothing on an assembly that calls it
+`chr1`, with no error anywhere. The fix is an alias table on the assembly —
+`jbrowse add-assembly --refNameAliases`, or a hosted hub, which ships one — and
+not a rewrite of the file.
+
+The third has to come back `206 Partial Content` with an
+`Access-Control-Allow-Origin` the browser will accept. A `200` carrying the
+whole file is a server ignoring the range, which turns every read into a full
+download rather than showing an error. The FAQ covers the same two for someone
+with the app in front of them:
+[an empty track](/docs/faq#my-track-loads-but-shows-no-features) and
+[a CORS error](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
+
 ## What to give an agent to read
 
 The docs are large, so don't paste them. Every page is served as raw Markdown at
@@ -110,6 +167,9 @@ For config authoring specifically, the useful path is:
    from the schemas, a few hundred words each.
 3. [](/docs/automating) for the `init` fields that decide what a view opens
    onto.
+4. [](/docs/cookbook) when the request is about how something should look rather
+   than which type it is — color callbacks, filters, arcs, several signals on
+   one track — each recipe a whole track config rather than the slot on its own.
 
 ## Ready-made skills
 
@@ -166,3 +226,7 @@ In rough order of frequency:
 - **Setting display options on the track instead of the display.** Per-track
   height and color live on the display; `displayDefaults` is the shorthand that
   routes them there without naming a display type.
+- **Handing the browser a path instead of a URL.** A track is fetched by the
+  page, in range requests, so a local file needs a server in front of it — any
+  static one that honors `Range` — or Desktop, which opens a path directly. A
+  `file://` uri and a bare path both reach jbrowse-web as a failed fetch.
