@@ -33,15 +33,15 @@ a single-binary download, and `node` comes from
 
 ## Three genomes from one ortholog table
 
-Like [All-vs-all synteny](/docs/tutorials/allvsall_synteny), a linear synteny
-view here stacks more than two genomes: N genome rows with a synteny "ribbon"
-band between each adjacent pair. This tutorial builds a three-way grape / peach
-/ cacao view from a single [jcvi](https://github.com/tanghaibao/jcvi) MCScan
-`.blocks` file, a standard cross-species ortholog table.
+A linear synteny view stacks more than two genomes: N genome rows with a synteny
+"ribbon" band between each adjacent pair. This tutorial builds a three-way grape
+/ peach / cacao view from a single [jcvi](https://github.com/tanghaibao/jcvi)
+MCScan `.blocks` file, a standard cross-species ortholog table.
 
-For closely related genomes (strains or accessions of one species), a
-whole-genome all-vs-all PAF is usually a better source. See
-[All-vs-all synteny](/docs/tutorials/allvsall_synteny).
+An ortholog table compares annotated genes rather than sequence, which is what
+lets it span species too divergent to line up base by base. Where they are close
+enough to align, a whole-genome all-vs-all PAF does carry more:
+[All-vs-all synteny](/docs/tutorials/allvsall_synteny) stacks genomes that way.
 
 ## What a `.blocks` file is
 
@@ -57,10 +57,33 @@ grape03   .         .
 ```
 
 A real cell holds whatever that genome's annotation calls the gene, which for
-the NCBI annotations below looks like `rna-XM_007225519.2`.
+the NCBI annotations below looks like `rna-XM_007225519.2`. The table carries no
+coordinates: one `.bed` per genome, produced alongside, places each gene id.
 
-This is a coordinate-free gene-id table. The accompanying `.bed` files (one per
-genome, produced alongside) map each gene id to a genomic position.
+### One reference, or all against all
+
+A table is **reference-anchored** when every row starts from one genome's gene
+and records what the others have for it, and **all against all** when a row is
+an orthogroup inferred across the genomes at once. The difference is in the
+pairs that leave the reference out.
+
+**Neither the format nor the adapter is anchored.** To draw a pair the adapter
+takes those two columns and keeps the rows where both cells resolve. It never
+consults column 0, so a table with no reference column at all is fine.
+
+**jcvi MCScan tables are anchored.** `mcscan` writes one row per gene of the
+genome you anchor on, so a peach-cacao ortholog with no grape counterpart has no
+row to live in. Grape against either mate is a direct alignment, while peach
+against cacao is what their shared grape genes imply, which is the approximation
+[Direct vs transitive pairs](#direct-vs-transitive-pairs) measures.
+
+**OrthoFinder orthogroups are not**, being inferred across all the genomes at
+once. [](/docs/tutorials/orthofinder_synteny) builds a six-genome view that way.
+
+**[MCScanX](https://github.com/wyp1125/MCScanX) compares every pair** and writes
+them to one `.collinearity` file, so its result is all against all before
+anything anchors it. [Converting one](#from-mcscanx) below picks a reference,
+and a pair that leaves it out stays loadable as a track of its own.
 
 ### A duplicated gene
 
@@ -97,22 +120,6 @@ Both rows resolve, so the grape-peach band draws a ribbon from `grape02` to each
 copy, and the repeated `cacao02` draws its grape-cacao ribbon twice over.
 `orthogroups_to_blocks.py` writes that shape by default; the MCScanX converter
 keeps the best-scoring copy and drops the rest.
-
-### One reference, or all against all
-
-Two things that are easy to conflate, only one of them a real limit.
-
-**The format and the adapter are not reference-anchored.** To draw a pair the
-adapter takes those two columns and keeps the rows where both cells resolve. It
-never consults column 0, so a table with no reference column at all is fine.
-
-**jcvi MCScan tables are.** `mcscan` writes one row per gene of the genome you
-anchor on, so a peach-cacao ortholog with no grape counterpart has no row to
-live in. Grape against each of the others costs nothing, since those columns are
-direct alignments. The peach-cacao band is a real approximation.
-
-**OrthoFinder orthogroups are not**, being inferred across all the genomes at
-once. [](/docs/tutorials/orthofinder_synteny) builds a six-genome view that way.
 
 ## Producing the data
 
@@ -201,10 +208,10 @@ python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
 ```
 
 That writes `grape.blocks` and a BED per genome. The first `--species` is column
-0, so only pairs that include it fill a cell: an MCScanX block between two
-non-reference genomes is dropped, since the adapter derives that pair through
-the reference anyway, and where one reference gene has blocks against several
-genes of another genome the best-scoring takes the cell.
+0 and only a pair including it can fill a cell, so a block MCScanX found between
+two non-reference genomes has nowhere to go in the table, and the adapter
+reaches that pair transitively instead. Where one reference gene has blocks
+against several genes of another genome, the best-scoring takes the cell.
 
 `--blocks-score` appends the row's weakest pairing as a trailing column, which
 the adapter's `attributeColumns` names. It is the one measurement MCScanX made
@@ -236,7 +243,9 @@ and gets its own entry in **Color by...**, scaled to the values in view.
 
 The script's refName and strand handling is described in the
 [pairwise MCScan tutorial](/docs/tutorials/mcscan_synteny_grape_peach#coming-from-mcscanx).
-Given two `--species` it writes that tutorial's `.anchors` files instead.
+Given two `--species` it writes that tutorial's `.anchors` files instead, which
+is how a pair the table left out is drawn as MCScanX measured it: a second track
+on that band.
 
 ### From OrthoFinder
 
@@ -429,10 +438,10 @@ lost is absent. Row order therefore matters: put the reference in the middle
 bottom to show the transitive layout instead.
 
 The [script](#reproduce-it-end-to-end) measures that rather than asserting it,
-counting per column pair the rows where both resolve, which is every link the
-band can draw. Grape's own pairs are the control: being direct, they fill their
-smaller column completely, and a pair of mates falls short by whatever grape
-lost.
+counting per column pair the rows where both cells resolve, which is every link
+the band can draw. Grape's own pairs are the control: every row has a grape
+gene, so a grape pair draws every row its mate fills, and the peach-cacao pair
+falls short of that by whatever grape lost.
 
 ## Zooming to a conserved block
 
