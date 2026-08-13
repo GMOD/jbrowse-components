@@ -133,3 +133,11 @@ summary variation, and an all-positive window's `pos*` arrays onto the full
 arrays. Structured clone preserves the sharing; `collectWiggleTransferables`
 dedupes. A pass that normalizes a band in place rewrites the average scores
 under every other reader.
+
+It takes **every region's result at once**, not one, so the dedupe spans regions
+too. Nothing shares a buffer across regions while `processFeaturesFromArrays`
+copies its inputs — but that copy is the obvious thing to remove next, and
+`@gmod/bbi` hands a one-region `getFeaturesAsArraysMulti` back as views into a
+single buffer, so aliasing instead of copying would make cross-region sharing
+normal. The throw it produces lands at the `postMessage`, nowhere near the
+cause.

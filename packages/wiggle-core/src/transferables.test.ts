@@ -23,7 +23,7 @@ function makeSource(name: string, numFeatures = 4): WiggleSourceData {
 describe('collectWiggleTransferables', () => {
   it('returns 8 buffers for a single source with distinct arrays', () => {
     const source = makeSource('a')
-    const result = collectWiggleTransferables({ sources: [source] })
+    const result = collectWiggleTransferables([{ sources: [source] }])
     expect(result).toHaveLength(8)
     expect(result).toContain(source.featurePositions.buffer)
     expect(result).toContain(source.featureScores.buffer)
@@ -35,24 +35,53 @@ describe('collectWiggleTransferables', () => {
     expect(result).toContain(source.negFeatureScores.buffer)
   })
 
-  it('returns empty list for zero sources', () => {
-    expect(collectWiggleTransferables({ sources: [] })).toEqual([])
+  it('returns empty list for zero sources and for zero results', () => {
+    expect(collectWiggleTransferables([{ sources: [] }])).toEqual([])
+    expect(collectWiggleTransferables([])).toEqual([])
   })
 
   it('accumulates across multiple sources', () => {
     const a = makeSource('a')
     const b = makeSource('b')
-    expect(collectWiggleTransferables({ sources: [a, b] })).toHaveLength(16)
+    expect(collectWiggleTransferables([{ sources: [a, b] }])).toHaveLength(16)
   })
 
   it('dedupes buffers shared between fields via subarray', () => {
     const a = makeSource('a')
     a.posFeaturePositions = a.featurePositions.subarray(0, 4)
     a.posFeatureScores = a.featureScores.subarray(0, 2)
-    const result = collectWiggleTransferables({ sources: [a] })
+    const result = collectWiggleTransferables([{ sources: [a] }])
     // 8 fields - 2 dedup'd shared buffers = 6 unique
     expect(result).toHaveLength(6)
     expect(result).toContain(a.featurePositions.buffer)
     expect(result).toContain(a.featureScores.buffer)
+  })
+
+  it('accumulates across results', () => {
+    const a = makeSource('a')
+    const b = makeSource('b')
+    expect(
+      collectWiggleTransferables([{ sources: [a] }, { sources: [b] }]),
+    ).toHaveLength(16)
+  })
+
+  // The reason this takes every result at once. Two regions slicing one backing
+  // buffer is what aliasing an adapter's arrays instead of copying them would
+  // produce — and postMessage throws on a repeated transferable, at the send
+  // rather than anywhere near the aliasing.
+  it('dedupes a buffer shared BETWEEN two results', () => {
+    const shared = new Uint32Array(16)
+    const a = makeSource('a')
+    const b = makeSource('b')
+    a.featurePositions = shared.subarray(0, 8)
+    b.featurePositions = shared.subarray(8, 16)
+
+    const result = collectWiggleTransferables([
+      { sources: [a] },
+      { sources: [b] },
+    ])
+    expect(result.filter(x => x === shared.buffer)).toHaveLength(1)
+    // 16 fields across the two sources, minus the one now shared
+    expect(result).toHaveLength(15)
   })
 })

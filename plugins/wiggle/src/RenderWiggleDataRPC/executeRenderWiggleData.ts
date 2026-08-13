@@ -76,5 +76,5 @@ export async function executeRenderWiggleData({
       },
     ],
   }))
-  return rpcResult(results, results.flatMap(collectWiggleTransferables))
+  return rpcResult(results, collectWiggleTransferables(results))
 }
