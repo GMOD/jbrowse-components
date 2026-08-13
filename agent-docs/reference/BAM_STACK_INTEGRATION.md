@@ -356,19 +356,43 @@ find its answer before MD pays a ~9 kB scan, and one that does two lookups pays
 it twice. That is the entire reason the targeted-lookup form inverts against the
 full decode in this regime.
 
-`benches/gapStrand.bench.ts` sizes the three candidate shapes, one fixture per
-process, controls 0.999x / 1.004x:
+`benches/gapStrand.bench.ts` sizes the candidate shapes against a synthesised
+sweep — `jb2bench/make-mdsweep.py`, 50,000 spliced reads per fixture, identical
+but for MD length, in two families. The real corpus gives two far-apart points
+(~75 tag bytes on short reads, ~9,000 on long) and no idea where between them
+the trade flips. One fixture per process, controls 0.96-1.03x:
 
-| arm | spliced.bam (44 tag B/read) | 200x.longread (9,135 tag B/read) |
-| --- | --: | --: |
-| `get('tags')`, the full decode | 1.00x | 1.00x |
-| two targeted walks (what ships) | 8.91x | 0.66x |
-| one fused walk, three names | 6.15x | 1.11x |
-| one walk **jumping MD** | 5.53x | **34.25x** |
+| tag B/read | `get('tags')` | targeted | one walk | walk + MD skip |
+| --: | --: | --: | --: | --: |
+| *XS present, ahead of MD — the walk short-circuits* | | | | |
+| 60 | 58.7ms | 7.3ms (8.0x) | — | 10.4ms |
+| 1,550 | 167.1ms | 12.2ms (13.7x) | — | 12.9ms |
+| 9,050 | 698.7ms | 13.1ms (**53.3x**) | 509.6ms | 14.7ms |
+| *no XS/TS/ts — the walk must cross MD* | | | | |
+| 446 | 86.6ms | 45.2ms (1.9x) | 30.5ms | 7.3ms (11.9x) |
+| 1,546 | 137.3ms | 129.2ms (1.06x) | 80.6ms | 13.4ms (10.3x) |
+| 9,046 | 647.6ms | 770.4ms (**0.84x**) | 432.6ms | 14.0ms (**46.2x**) |
 
-**Folding the walks into one is not the fix** — 1.11x. The cost is not how many
-walks there are, it is that any walk past a kilobyte-scale MD scans it. Jumping
-that one value collapses the walk from 9,135 bytes to ~11 tag headers.
+**Tag ORDER is the second variable, and the one that is easy to miss.** A walk
+looking for XS stops when it finds it, so a read carrying XS ahead of MD never
+scans MD. The first version of the generator put XS immediately before MD and
+measured 13.7x at 1,550 tag bytes — the best case dressed up as the general one.
+
+**The shape matters more than any row.** `get('tags')` is the only form whose
+cost scales with MD, 59ms to 699ms across the sweep. The other two are roughly
+flat in MD for different reasons: `targeted` is flat when the tag it wants
+appears early and degrades to worse-than-decode when nothing answers and it
+crosses MD twice; the MD skip is flat *unconditionally*, ~7-15ms everywhere,
+because it stops touching MD at all.
+
+So the shipped targeted form wins in seven of eight cells, and its one loss
+needs **both** a kilobyte-scale MD and no strand tag — long-read RNA aligned
+with `--MD` from a library whose orientation could not be inferred.
+
+**Folding the walks into one is not the fix** — 1.50x at best on the sweep, and
+1.11x on the real long-read fixture. The cost is not how many walks there are,
+it is that any walk past a kilobyte-scale MD scans it. Jumping that one value
+collapses the walk to ~11 tag headers regardless of how long MD is.
 
 **And the metadata to jump it already exists.** `NUMERIC_MD` memoizes
 `getTagRaw('MD')`, which for a `Z` tag is `byteArray.subarray(p, end - 1)` — a
@@ -387,12 +411,13 @@ Three things for whoever implements it, all of which the bench had to respect:
   getter.** `NUMERIC_MD` resolves itself with `getTagRaw('MD')`, which is exactly
   the walk being avoided, so triggering it to speed up a walk pays for the walk
   twice.
-- **The skip is not free where it does not help.** It cost ~11% of the walk on
-  short tag blocks (9.40ms vs 8.46ms for the same walk without it), and short
-  tag blocks are the dominant case — on those, two plain targeted walks already
-  beat both fused shapes. Whether that 11% survives inside `_findTag`, which is
-  a tighter loop than the bench's hand-rolled one, is the thing to measure there
-  rather than assume.
+- **The skip is not free where it does not help.** At 60 tag bytes it is 5.7x
+  against the targeted form's 8.0x — the extra comparison per tag costs
+  something, and short tag blocks are the dominant case. Whether that margin
+  survives inside `_findTag`, which is a tighter loop than the bench's
+  hand-rolled walk, is the thing to measure there rather than assume. The
+  cleanest shape is probably to keep the targeted lookups and teach the shared
+  cursor the skip, so the short-circuit and the jump compose.
 
 The generalisation, which is what makes this worth an entry rather than a patch:
 **a walk should never rescan a value the record has already located.** MD is the

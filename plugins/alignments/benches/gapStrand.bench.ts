@@ -40,43 +40,59 @@
 // Written out longhand, five times, deliberately — a shared driver makes the
 // call site polymorphic and hands every arm one set of inline caches.
 //
-// WHAT IT SAYS. One fixture per process, controls 0.999x / 1.004x:
+// WHAT IT SAYS. The real corpus gives two far-apart points and no idea where
+// between them the trade flips, so `jb2bench/make-mdsweep.py` synthesises the
+// curve: 50,000 spliced reads per fixture, identical but for MD length, in two
+// families. All one fixture per process, controls 0.96-1.03x.
 //
-//                      spliced.bam       200x.longread
-//                      (44 tag B/read)   (9,135 tag B/read)
-//   tags (shipped[1])    1.00x             1.00x
-//   targeted (ships)     8.91x             0.66x
-//   fused3               6.15x             1.11x
-//   fused3+MD skip       5.53x            34.25x
+// MD size is not the only variable — TAG ORDER is, and it is the one that is
+// easy to miss. A walk looking for XS stops when it finds it, so a read carrying
+// XS ahead of MD never scans MD at all.
 //
-// THE REGIME SPLIT IS FIXABLE, AND NOT BY THE OBVIOUS ROUTE. Folding the two
-// targeted walks into one barely helps (1.11x) — the cost is not the number of
-// walks, it is that ANY walk past a kilobyte-scale MD byte-scans to its
-// terminator. Jumping that one value is what collapses it, 34x, because the
-// walk then touches ~11 tag headers instead of 9,135 bytes.
+//   tag B/read   tags    targeted    fused3   fused3+MD
+//   -- XS present, ahead of MD: the walk short-circuits --
+//         60     58.7      7.3 (8.0x)     -      10.4
+//      1,550    167.1     12.2 (13.7x)    -      12.9
+//      9,050    698.7     13.1 (53.3x)  509.6    14.7
+//   -- no XS/TS/ts at all: the walk must cross MD --
+//        446     86.6     45.2 (1.9x)   30.5      7.3 (11.9x)
+//      1,546    137.3    129.2 (1.06x)  80.6     13.4 (10.3x)
+//      9,046    647.6    770.4 (0.84x) 432.6     14.0 (46.2x)
 //
-// And the metadata to jump it ALREADY EXISTS: `NUMERIC_MD` memoizes a
+// THE SHAPE, WHICH MATTERS MORE THAN ANY ROW: `get('tags')` is the only form
+// whose cost scales with MD — 59ms to 699ms across the sweep. Both other forms
+// are roughly FLAT in MD, for different reasons. `targeted` is flat when the tag
+// it wants appears before MD, and degrades to worse-than-decode when nothing
+// answers and it crosses MD twice. The MD skip is flat unconditionally, ~7-15ms
+// everywhere, because it stops touching MD at all.
+//
+// So the shipped targeted form wins in seven of the eight cells, and the one
+// loss (0.84x) needs BOTH a kilobyte-scale MD AND no strand tag on the read —
+// long-read RNA aligned with --MD, from a library where orientation could not be
+// inferred. Folding the two walks into one does not rescue it (1.50x at best);
+// only not scanning MD does.
+//
+// And the metadata to skip it ALREADY EXISTS: `NUMERIC_MD` memoizes a
 // `Uint8Array` **subarray view** of MD's bytes, so a record that has resolved it
 // carries MD's start and length in O(1) (`md.byteOffset - byteArray.byteOffset`,
 // `+ md.length + 1` for the terminator). On the alignments render path that memo
 // is always populated before `getEffectiveStrand` runs, because
 // `forEachMismatch` reads NUMERIC_MD to walk the read.
 //
-// TWO REASONS IT IS NOT DONE HERE. The cursor belongs to `@gmod/bam` —
-// `_findTag`, `getTagAlt` and `_computeTags` share `tagValueEnd`, and a consumer
-// cannot reach it. And the skip is not free in the regime that dominates: it
-// costs ~11% of the walk on short tag blocks (fused3+MD 9.40ms vs fused3
-// 8.46ms), where two plain targeted walks already win. A real implementation
-// must also read `_cachedNUMERIC_MD` ONLY when it is already populated, never
-// call the getter — triggering it costs exactly the walk being avoided.
+// WHY IT IS NOT DONE HERE. The cursor belongs to `@gmod/bam` — `_findTag`,
+// `getTagAlt` and `_computeTags` share `tagValueEnd`, and a consumer cannot
+// reach it. An implementation must also read `_cachedNUMERIC_MD` ONLY when it is
+// already populated, never call the getter: triggering it costs exactly the walk
+// being avoided. Filed as seam 5 in
+// agent-docs/reference/BAM_STACK_INTEGRATION.md.
 //
 // [1] `get('tags')` was replaced by the targeted form in the commit that added
 // this bench; it stays as the baseline every ratio is against.
 //
-// One caveat on the identity check: `200x.longread` carries no XS/TS/ts at all,
-// so every arm returns 0 there and agreement proves nothing. The spliced
-// fixtures do carry XS with both '+' and '-' (1740/527/779 reads), which is
-// where the arms are actually cross-checked.
+// One caveat on the identity check: the `noxs` fixtures and `200x.longread`
+// carry no XS/TS/ts, so every arm returns 0 there and agreement proves nothing.
+// The `mdsweep.<n>.bam` family and the volvox spliced fixtures carry XS with
+// both signs, and are where the arms are actually cross-checked.
 //
 // Note the arms must run against FRESH records each round: `_computeTags`
 // memoizes, so a second round over the same records measures a property read
@@ -333,6 +349,22 @@ async function main() {
   // this function runs on at all. They are small, so they repeat to a working
   // set big enough to time.
   const files = [
+    // The MD sweep: 50,000 spliced reads apiece, identical in every way except
+    // how many bytes their MD tag holds. Built by jb2bench's `make-mdsweep.py`,
+    // because the real corpus gives two far-apart points (~75 tag bytes on short
+    // reads, ~9,000 on long) and no idea where between them the trade flips.
+    { path: join(DATA, 'mdsweep.10.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.100.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.400.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.1500.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.4000.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.9000.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.10.noxs.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.100.noxs.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.400.noxs.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.1500.noxs.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.4000.noxs.bam'), repeat: 1 },
+    { path: join(DATA, 'mdsweep.9000.noxs.bam'), repeat: 1 },
     { path: join(DATA, '1000x.shortread.bam'), repeat: 1 },
     { path: join(DATA, '200x.longread.bam'), repeat: 1 },
     { path: 'test_data/volvox/spliced.bam', repeat: 40 },
@@ -353,13 +385,17 @@ async function main() {
     }
     const bam = new BamFile({ bamPath: path, baiPath: `${path}.bai` })
     await bam.getHeader()
-    const refs = path.includes('test_data') ? ['ctgA'] : [REFNAME]
+    const refs =
+      path.includes('test_data') || path.includes('mdsweep')
+        ? ['ctgA']
+        : [REFNAME]
     let one: BamRecord[] = []
     for (const ref of refs) {
+      const whole = path.includes('test_data') || path.includes('mdsweep')
       one = await bam.getRecordsForRange(
         ref,
-        path.includes('test_data') ? 0 : START,
-        path.includes('test_data') ? 300_000_000 : END,
+        whole ? 0 : START,
+        whole ? 300_000_000 : END,
       )
       if (one.length) {
         break
