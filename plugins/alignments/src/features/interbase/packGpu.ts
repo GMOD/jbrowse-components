@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as interbaseShader from '../../shaders/slang/interbaseHistogram.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 

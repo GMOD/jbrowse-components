@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { PerBaseLetterUploadData } from './types.ts'
 

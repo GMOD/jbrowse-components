@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as modCoverageShader from '../../shaders/slang/modCoverage.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { ModCoverageUploadData } from '../../shared/uploadTypes.ts'
 

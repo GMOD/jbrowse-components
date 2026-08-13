@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as modificationShader from '../../shaders/slang/packedColorQuad.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { ModificationUploadData } from './types.ts'
 

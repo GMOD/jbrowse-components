@@ -38,6 +38,7 @@
     "./graphicsCapabilities": "./src/graphicsCapabilities.ts",
     "./hal": "./src/hal/index.ts",
     "./installPerRegionLifecycle": "./src/installPerRegionLifecycle.ts",
+    "./instancePass": "./src/instancePass.ts",
     "./OverlayCanvas": "./src/OverlayCanvas.tsx",
     "./keyedUploadSync": "./src/keyedUploadSync.ts",
     "./perRegionRenderingBackend": "./src/perRegionRenderingBackend.ts",
@@ -125,6 +126,10 @@
       "./installPerRegionLifecycle": {
         "types": "./esm/installPerRegionLifecycle.d.ts",
         "import": "./esm/installPerRegionLifecycle.js"
+      },
+      "./instancePass": {
+        "types": "./esm/instancePass.d.ts",
+        "import": "./esm/instancePass.js"
       },
       "./OverlayCanvas": {
         "types": "./esm/OverlayCanvas.d.ts",
@@ -231,6 +236,9 @@
         ],
         "installPerRegionLifecycle": [
           "esm/installPerRegionLifecycle.d.ts"
+        ],
+        "instancePass": [
+          "esm/instancePass.d.ts"
         ],
         "OverlayCanvas": [
           "esm/OverlayCanvas.d.ts"

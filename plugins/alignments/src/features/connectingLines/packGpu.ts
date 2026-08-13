@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as connectingLineShader from '../../shaders/slang/connectingLine.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { ConnectingLinesUploadData } from './types.ts'
 

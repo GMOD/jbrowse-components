@@ -1,7 +1,8 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import { passesFrequencyGate } from '../LinearAlignmentsDisplay/constants.ts'
 import * as clipShader from '../shaders/slang/clip.generated.ts'
 import { findTopmostOnRow } from './hitTestTypes.ts'
-import { instancePass } from './instancePass.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
 
 import type {

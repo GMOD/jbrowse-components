@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 

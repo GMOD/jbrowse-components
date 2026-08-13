@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as gapShader from '../../shaders/slang/gap.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { GapUploadData } from './types.ts'
 

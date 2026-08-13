@@ -1,7 +1,8 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 // Softclip-base bases reuse the mismatch pass's shader/geometry — same
 // instanced quad with a base-letter slot.
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 

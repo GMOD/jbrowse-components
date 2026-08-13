@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as perBaseQualityShader from '../../shaders/slang/packedColorQuad.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 import { qualityAbgr } from './colors.ts'
 
 import type { PerBaseQualityUploadData } from './types.ts'

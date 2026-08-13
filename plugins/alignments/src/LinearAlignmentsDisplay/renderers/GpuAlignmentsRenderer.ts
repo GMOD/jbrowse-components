@@ -6,6 +6,7 @@ import {
   devicePxSpan,
   getDpr,
 } from '@jbrowse/render-core/canvas2dUtils'
+import { uploadPass } from '@jbrowse/render-core/instancePass'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import {
@@ -43,7 +44,6 @@ import {
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
 import { CLIP_PASS } from '../../shared/clipPass.ts'
-import { uploadPass } from '../../shared/instancePass.ts'
 import { READ_COLOR_CATEGORY, readCategoryPaletteKeys } from '../colorUtils.ts'
 import {
   getSelectionBounds,
@@ -61,7 +61,6 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type { InstancePass } from '../../shared/instancePass.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
@@ -77,6 +76,7 @@ import type {
   RenderState,
 } from './rendererTypes.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { InstancePass } from '@jbrowse/render-core/instancePass'
 
 // Shader strides — every pass shares the same Uniforms struct (see
 // shaders/slang/alignmentsUniforms.slang) so we use any module's

@@ -1,5 +1,6 @@
+import { instancePass } from '@jbrowse/render-core/instancePass'
+
 import * as snpCoverageShader from '../../shaders/slang/snpCoverage.generated.ts'
-import { instancePass } from '../../shared/instancePass.ts'
 
 import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 
