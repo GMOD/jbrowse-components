@@ -161,6 +161,42 @@ export const local = rewriteFixture
 // the linear lane's jexl and the prose below name one color.
 export const ALT_ALLELE_COLOR = 'rgb(60,65,72)'
 
+// A segments lane colored by how many of the five strains walk each segment,
+// rather than by reference position. The adapter puts the walk's `SM:Z:` tag on
+// the feature as `samples` and `carriers`, so this is the graph's own statement
+// of membership drawn along the reference instead of read off one clicked node.
+//
+// Five discrete steps rather than a continuous ramp, because five strains is
+// five answers and the legend then names each one. Grey for all five: the core
+// backbone is the background these figures are not about, and the private boxes
+// have to be what the eye lands on. The last color is a fallback, not a sixth
+// step — an rGFA has no tag column, so `carriers` is absent there rather than 0.
+//
+// Shared because both builders' graphs carry the same five strains and the same
+// tag: the pggb figures read it off `ecoli_pggb` and the Minigraph-Cactus one
+// off `ecoli_cactus`, and a second copy of the ramp would let the two pages
+// answer the same question in different colors.
+const CARRIAGE_COLORS = {
+  1: '#e31a1c',
+  2: '#fd8d3c',
+  3: '#feb24c',
+  4: '#fed976',
+  5: '#bdbdbd',
+} as const
+
+export const CARRIAGE_DISPLAY = {
+  color: `jexl:${[5, 4, 3, 2]
+    .map(n => `feature.carriers==${n}?'${CARRIAGE_COLORS[n as 5]}':`)
+    .join('')}feature.carriers==1?'${CARRIAGE_COLORS[1]}':'#eeeeee'`,
+  legend: [
+    { label: 'All 5 strains (core)', color: CARRIAGE_COLORS[5] },
+    { label: '4 strains', color: CARRIAGE_COLORS[4] },
+    { label: '3 strains', color: CARRIAGE_COLORS[3] },
+    { label: '2 strains', color: CARRIAGE_COLORS[2] },
+    { label: '1 strain (private)', color: CARRIAGE_COLORS[1] },
+  ],
+}
+
 // The linear half of the graph view's 'Reference position' color scheme, which
 // is the answer to "if the nodes were rainbow colored in exact same way in
 // lineargenomeview and bandage graph it might help show correspondence".

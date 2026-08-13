@@ -499,6 +499,21 @@ The segments then draw as an ordinary track on K12, and **Track menu → Launch
 view → Graph genome view (this region)** cuts a subgraph at whatever is on
 screen.
 
+A kilobase or two is the width to open one at, and the downstream edge of the
+flagellar operon is a place where the five strains have something to disagree
+about: K12 carries an IS1 element there that the other four skip. A second copy
+of the segments track, colored by the `SM:Z:` carriage the walk recorded, says
+which segments those are; the pggb page gives
+[that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane)
+and it takes only a new `trackId` and this graph's prefix.
+
+<Figure caption="1.6 kb of K12 past flhD, as a linear view above and as a graph below, both reading the same two tabix indexes. The gene lane names insB5 in the shaded span, the carriage lane paints that span as carried by one strain where the rest of the window is all five, and in the graph it is the single long node the other four route around." src="/img/pangenome_cactus/graph_bubble.png" />
+
+The node and the block are the same segment: both halves run the reference
+position ramp over the cut's own region, so a color in the lane is that color in
+the graph. The dashed edge is the other four strains' route, drawn as the
+deletion it is against K12.
+
 The
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)
 covers the decisions in the walk that decide what it can be trusted for, and the

@@ -10,6 +10,7 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
 import {
   ALT_ALLELE_COLOR,
+  CARRIAGE_DISPLAY,
   GRAPH_DRAWN,
   TOOLBAR_READY,
   local,
@@ -122,24 +123,10 @@ const PGGB_SEGMENTS_SESSION_TRACK = {
 }
 
 // The same segments as PGGB_SEGMENTS_SESSION_TRACK, colored by how many
-// haplotypes walk each one rather than by reference position. The adapter puts
-// the walk's `SM:Z:` tag on the feature as `samples` and `carriers`, so this is
-// the graph's own statement of membership drawn along the reference instead of
-// read off one clicked node.
-//
-// Five discrete steps rather than a continuous ramp, because five strains is
-// five answers and the legend then names each one. Grey for all five: the core
-// backbone is the background this figure is not about, and the private boxes
-// have to be what the eye lands on. The last color is a fallback, not a sixth
-// step — an rGFA has no tag column, so `carriers` is absent there rather than 0.
+// haplotypes walk each one rather than by reference position. The ramp and its
+// legend are CARRIAGE_DISPLAY in graph-fixtures.ts, shared with the
+// Minigraph-Cactus figure that draws the same five strains.
 const PGGB_CARRIAGE_TRACK = 'ecoli_pggb_carriage'
-const CARRIAGE_COLORS = {
-  1: '#e31a1c',
-  2: '#fd8d3c',
-  3: '#feb24c',
-  4: '#fed976',
-  5: '#bdbdbd',
-} as const
 const PGGB_CARRIAGE_SESSION_TRACK = {
   type: 'FeatureTrack',
   trackId: PGGB_CARRIAGE_TRACK,
@@ -150,19 +137,6 @@ const PGGB_CARRIAGE_SESSION_TRACK = {
     uri: `${DATA}/ecoli_pggb`,
   },
 }
-const CARRIAGE_DISPLAY = {
-  color: `jexl:${[5, 4, 3, 2]
-    .map(n => `feature.carriers==${n}?'${CARRIAGE_COLORS[n as 5]}':`)
-    .join('')}feature.carriers==1?'${CARRIAGE_COLORS[1]}':'#eeeeee'`,
-  legend: [
-    { label: 'All 5 strains (core)', color: CARRIAGE_COLORS[5] },
-    { label: '4 strains', color: CARRIAGE_COLORS[4] },
-    { label: '3 strains', color: CARRIAGE_COLORS[3] },
-    { label: '2 strains', color: CARRIAGE_COLORS[2] },
-    { label: '1 strain (private)', color: CARRIAGE_COLORS[1] },
-  ],
-}
-
 // The aggregate the lane is read against: `odgi depth` over fixed windows,
 // hosted beside the graph indexes. Same question, different unit.
 const PGGB_DEPTH_TRACK = 'ecoli_pggb_depth'

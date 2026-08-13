@@ -10,6 +10,12 @@ import {
   ECOLI_DEMO_BASE,
   ecoliAvaStack,
 } from './demoBase.ts'
+import {
+  CARRIAGE_DISPLAY,
+  TOOLBAR_READY,
+  local,
+  referencePositionColor,
+} from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -29,6 +35,80 @@ const CONFIG = encodeURIComponent(`${ECOLI_DEMO_BASE}/config.json`)
 // The odgi viz raster's own path rows, in its order and its colors, sampled out
 // of the committed graph.png. K12 is absent on purpose — in a K12-anchored view
 // it is the coordinate line, not a row.
+// The graph-as-a-graph figure loads the K12-only graphgenomeview fixture rather
+// than the demo config the projections above use, for the reason every other
+// graph figure does: that fixture pins the plugin bundle by content hash, so the
+// view cannot change this image without a diff in this repo. The two lanes and
+// the graph all read the hosted ecoli_cactus index, which the demo config
+// carries as `ecoli_cactus_segments` and build_ecoli_pangenome_cactus.sh writes.
+const GRAPH_CONFIG = local('test_data/graphgenomeview/config.json')
+
+const MC_SEGMENTS_TRACK = 'ecoli_cactus_segments'
+const MC_SEGMENTS_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: MC_SEGMENTS_TRACK,
+  name: 'MC graph: segments (whole graph, by locus)',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'RgfaTabixAdapter',
+    uri: `${ECOLI_DEMO_BASE}/ecoli_cactus`,
+  },
+}
+
+// The same index a second time, for the carriage lane: one track per coloring,
+// because a display's color is a track-level setting and the figure wants both
+// readings of the same segments in one frame.
+const MC_CARRIAGE_TRACK = 'ecoli_cactus_carriage'
+const MC_CARRIAGE_SESSION_TRACK = {
+  ...MC_SEGMENTS_SESSION_TRACK,
+  trackId: MC_CARRIAGE_TRACK,
+  name: 'MC graph: segment carriage',
+}
+
+const K12_GENES_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'K12_genes',
+  name: 'K12 genes',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    gffGzLocation: { uri: `${ECOLI_DEMO_BASE}/K12.gff.gz` },
+    index: { location: { uri: `${ECOLI_DEMO_BASE}/K12.gff.gz.tbi` } },
+  },
+}
+
+// THE LOCUS IS READ OFF THE INDEX, not chosen by eye. Scanning
+// ecoli_cactus.segs.bed.gz for contiguous runs carried by K12 alone
+// (`SM:Z:K12.0`) and keeping the short ones gives a handful of candidates; this
+// is the one whose anchors both sit inside a 2 kb window, so the bubble closes
+// in frame instead of running off it.
+//
+// Segment 258914 is `K12#0#chr:1,978,494-1,979,270`, 776 bp, K12 only. The
+// segments either side of it carry all five strains, and ecoli_cactus.links
+// .bed.gz holds one link straight from the left anchor to the right one: the
+// other four walk that edge and skip the 776 bp. The window is the flhDC
+// flagellar operon's downstream edge and the insertion is annotated insB5/insA5,
+// an IS1 transposase pair, which is what the gene lane names.
+//
+// Nodes in the cut: 115 backbone plus ~60 off-backbone, which is the legible end
+// of the range measured on the pggb graph (1 kb / ~150 nodes legible, 3 kb / 519
+// a braid). A Minigraph-Cactus graph caps segments at 1024 bp, so the private
+// stretch is one node rather than a chain, which is why it draws as a single
+// long tube.
+const IS1_WINDOW = 'chr:1,978,100-1,979,700'
+const IS1_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 1978100,
+  end: 1979700,
+}
+const IS1_HIGHLIGHT = {
+  refName: 'chr',
+  start: 1978494,
+  end: 1979270,
+  color: 'rgba(214,137,16,0.13)',
+}
+
 const ODGI_PATH_COLORS = [
   { name: 'CFT073', color: 'rgb(163,68,151)' },
   { name: 'IAI39', color: 'rgb(114,190,79)' },
@@ -37,6 +117,90 @@ const ODGI_PATH_COLORS = [
 ]
 
 export const pangenomeCactusSpecs: ScreenshotSpec[] = [
+  // The graph itself, which every projection above is a flattening of: the
+  // segments lane over a 2 kb K12 window, and under it the subgraph the track
+  // menu's Launch view cuts from that same window. Both read the two tabix
+  // indexes build_pggb_tabix.sh writes over mc/ecoli.gfa.gz, so a block in the
+  // lane and a node below it are the same segment.
+  //
+  // Same reference-position ramp in both halves, over the cut's own region, so
+  // the correspondence is by hue rather than by counting along. Genes grey for
+  // the reason local_subgraph gives: at the default goldenrod the gene boxes
+  // read as more graph nodes.
+  //
+  // Force-directed, because the subject is the SHAPE — one long tube with the
+  // rest of the graph passing it — and an anchored layout draws that arm flat
+  // against the backbone it parallels.
+  {
+    mode: 'url',
+    name: 'pangenome_cactus/graph_bubble',
+    url: sessionSpec(GRAPH_CONFIG, {
+      sessionTracks: [
+        K12_GENES_SESSION_TRACK,
+        MC_SEGMENTS_SESSION_TRACK,
+        MC_CARRIAGE_SESSION_TRACK,
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: IS1_WINDOW,
+          // where the private stretch starts and stops, which is the one thing
+          // the lane cannot say on its own: at this width its blocks are a row
+          // of ticks and the long one reads as any other block
+          highlight: [IS1_HIGHLIGHT],
+          tracks: [
+            {
+              trackId: 'K12_genes',
+              type: 'LinearBasicDisplay',
+              height: 60,
+              color: 'rgb(130,130,130)',
+            },
+            {
+              trackId: MC_SEGMENTS_TRACK,
+              type: 'LinearBasicDisplay',
+              displayMode: 'collapsed',
+              height: 40,
+              color: referencePositionColor(IS1_REGION),
+            },
+            // The same segments again, colored by how many strains walk each.
+            // Without it the frame shows a route past the long node and says
+            // nothing about who takes it, and "the other four skip it" would be
+            // a claim living only in the caption. Here the private stretch is
+            // the one red block, against the grey the rest of the window is,
+            // and the legend names the scale.
+            {
+              trackId: MC_CARRIAGE_TRACK,
+              type: 'LinearBasicDisplay',
+              displayMode: 'collapsed',
+              // the lane itself is one row; the height is what the five-entry
+              // legend needs, and at 40 it drew two of them
+              height: 90,
+              ...CARRIAGE_DISPLAY,
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: MC_SEGMENTS_TRACK,
+          loadedRegion: IS1_REGION,
+          layoutMode: 'force',
+          colorScheme: 'reference-position',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 90000,
+    settleMs: 4000,
+    viewportWidth: 1000,
+    // GraphGenomeView takes no `height` through the launch snapshot; the pane
+    // sizes itself to its drawing, and this force drawing is a long diagonal
+    // thread with the bubble at one end, so it is taller than it is wide. Sized
+    // off the run's own CONTENT CLIPPED BELOW THE FOLD rather than off the PNG.
+    viewportHeight: 1160,
+    hideTooltip: true,
+  },
+
   // Projection 1: all-vs-all synteny (halSynteny from the HAL). The four strains
   // stacked K12 -> NCTC86, one halSynteny ribbon per adjacent pair. K12/Sakai/
   // CFT073 read as clean colinear diagonals; CFT073<->NCTC86 crosses in an X
