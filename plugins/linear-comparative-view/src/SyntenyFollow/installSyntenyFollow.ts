@@ -22,8 +22,13 @@ import type { FollowStep } from './planFollowStep.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+export interface FollowLevel {
+  linearSyntenyDisplays: LinearSyntenyDisplayModel[]
+  level: number
+}
+
 export interface FollowPair {
-  level: { linearSyntenyDisplays: LinearSyntenyDisplayModel[]; level: number }
+  level: FollowLevel
   stayingView: LinearGenomeViewModel
   movingView: LinearGenomeViewModel
   toMate: boolean
@@ -102,10 +107,15 @@ function answerFor(
  * a second later.
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
-  const levelStates = new Map<number, LevelState>()
+  // Keyed by the LEVEL NODE, not its index. `reconcileLevels` pops a level when
+  // a genome row is removed, and by index the entry outlived it: re-add the row
+  // and the fresh level inherited the dead one's incumbent feature and cached
+  // transform. A WeakMap is also the whole of the pruning — the destroyed node
+  // is the only key that reached the entry.
+  let levelStates = new WeakMap<FollowLevel, LevelState>()
   let lastErrorMessage: string | undefined
 
-  function stateFor(level: number) {
+  function stateFor(level: FollowLevel) {
     let state = levelStates.get(level)
     if (!state) {
       state = { seq: 0 }
@@ -120,7 +130,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     movingWindow: FollowWindow | undefined,
   ) {
     const { movingView } = pair
-    const state = stateFor(pair.level.level)
+    const state = stateFor(pair.level)
     const seq = ++state.seq
     const span = await answerFor(state, stepKey(step), step)
     // switching the mode off bumps no seq, so it needs its own check
@@ -172,7 +182,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         if (!self.followSynteny) {
           self.setFollowUnaligned(false)
           self.setFollowApproximate(false)
-          levelStates.clear()
+          levelStates = new WeakMap()
           lastErrorMessage = undefined
           return
         }
@@ -197,7 +207,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             window,
             toMate,
             mateAssembly,
-            incumbentId: stateFor(level.level).featureId,
+            incumbentId: stateFor(level).featureId,
           })
           if (step) {
             work.push([pair, step, movingWindow])
@@ -248,7 +258,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           // frame. Its direction has to match, since it was picked on whichever
           // axis `toMate` was then, and its display has to be alive, since
           // hiding a synteny track destroys it and reading featureData throws.
-          const cached = levelStates.get(level.level)
+          const cached = levelStates.get(level)
           const state = cached?.toMate === toMate ? cached : undefined
           const feat = state?.feat
           const display = state?.display
