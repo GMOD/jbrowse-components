@@ -207,7 +207,29 @@ describe('addAccountToLocation', () => {
       uri: 'https://example.com/file.bam',
     }
     const result = addAccountToLocation(location, undefined)
-    expect(result).toEqual(location)
+    expect(result).toBe(location)
+  })
+
+  test('drops a previously stamped account when none is provided', () => {
+    const location = {
+      locationType: 'UriLocation' as const,
+      uri: 'https://example.com/file.bam',
+      internetAccountId: 'test-account-id',
+    }
+    expect(addAccountToLocation(location, undefined)).toEqual({
+      locationType: 'UriLocation',
+      uri: 'https://example.com/file.bam',
+    })
+  })
+
+  // by identity, so the caller can skip a setLocation that changes nothing
+  test('returns the same location when the account is already stamped', () => {
+    const location = {
+      locationType: 'UriLocation' as const,
+      uri: 'https://example.com/file.bam',
+      internetAccountId: 'test-account-id',
+    }
+    expect(addAccountToLocation(location, mockAccount)).toBe(location)
   })
 
   test('returns non-UriLocation unchanged even with account', () => {
