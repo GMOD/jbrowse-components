@@ -142,8 +142,23 @@ to sum to 1. That is genuine work and it is where this design's bugs would live.
 What it is not is _timing_. There is no event, no re-entrancy, no window during
 which the tree is half-updated, and no second owner to disagree with. Which is
 why it can be checked by a 2000-step randomised operation sequence asserting,
-after every step: canonical form, no duplicated or stranded tab or view, and no
-panel naming a tab it does not have.
+after every step: canonical form, no duplicated or stranded tab or view, no
+panel naming a tab it does not have, and — the fifth, below — that normalising
+again would change nothing.
+
+**Normalisation has to have a FIXED POINT, and floating point is why that is not
+free.** It runs on every action, so an operation that renormalises sizes which
+are already right must return them untouched. Dividing by a sum of 1 and
+multiplying by 1 is not the identity: seven equal panes go to
+`0.14285714285714285`, summing to `0.9999999999999998`, which renormalises to
+`0.14285714285714288`, summing to `1.0000000000000002`, which renormalises back
+— forever, for 6, 7, 9, 10, 11, 13, 14, 15 and every count from 18 up. So every
+action on a settled workspace rewrote every size and pushed a snapshot in which
+nothing observable had changed, which is the dockview echo bug reached from the
+other side. `scaleSizes` leaves siblings alone within `SIZE_EPSILON` for that
+reason; the drift it admits cannot accumulate, because the sizes stop moving
+inside it. `expectCanonical` cannot catch this on its own — it checks the sum to
+six places, which both halves of an oscillation pass.
 
 **Every operation is in that sequence, and keeping it that way is the point.**
 `homeViews` — the one-directional reconcile with `session.views`, which runs on
@@ -252,6 +267,16 @@ per press: the same "within the pair either side of it" rule the drag follows.
 Both roles were being claimed before any of this existed, which is worse than
 plain divs — an affordance announced and then not there.
 
+**A control rendered INSIDE a tab has to stop its keys, the way it already stops
+its pointer.** The strip's handler is a roving tabindex over tabs and it
+`preventDefault()`s everything it takes — the arrows, Home, End, Enter and Space
+— all of which reach it by bubbling out of whatever the tab label renders. The
+rename box did not stop them, so arrows jumped tabs instead of moving the caret
+and a space never reached the input: a tab could not be named "Comparison view".
+It stops the whole event rather than the keys it happens to use, because none of
+that handler is meant for a control inside a tab. Isolated component tests
+cannot see this; it only exists in a real strip.
+
 ## Undo is `applySnapshot`, and nothing has to be told
 
 There is one owner, so there is no echo. A settled layout emits no further
@@ -266,6 +291,22 @@ history 300ms later and truncated the redo stack.
 A session spec's `layout` (a documented URL parameter, so `spec.ts` keeps its
 `horizontal`/`vertical`/`tabs` vocabulary and percentage sizes) is converted and
 _becomes_ the layout, immediately.
+
+**A `tabs` node is where the vocabulary outruns the tree, and there are exactly
+two places.** It shares one cell rather than dividing space, so a `size` on a
+child describes nothing; and a tab holds a flat stack of views, so a container
+child has no split to become and its views are gathered into one tab. Both are
+honoured as closely as they can be and **reported** by `loadSessionSpec` — the
+second used to drop those views from the layout in silence, after which homing
+swept them into whichever tab was showing, so the spec's arrangement simply was
+not the one that came up. Nothing else in the vocabulary is approximated: `size`
+and nesting mean what they say at any depth.
+
+**A spec states an arrangement, not a selection.** `treeFromSpec` shows each
+cell's first tab, so any action that builds a layout from a spec _and_ has a
+view it means to reveal has to say which one afterwards. `setPendingMove` is the
+one that does — `newTab` puts the moved view in a tab beside the others, which
+without that is the one tab nobody can see.
 
 There is no `init` property. `init` existed because dockview had to be told,
 could not be told before it mounted, and had to be told again afterwards. All

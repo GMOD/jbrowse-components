@@ -1432,6 +1432,13 @@ compare side by side:
 Both panels land in the same tab group; the first is the one shown. Tabs can be
 renamed by double-clicking them, and dragged out into a split at any time.
 
+A `tabs` node is the one container that does not divide space, so it is also the
+one place a statement can go unhonoured: a `size` on its children describes
+nothing, and a container nested inside it has no split to become — its views are
+gathered into a single tab instead. A spec that does either says so in a
+notification when it loads. Everywhere else, `size` and nesting mean what they
+say.
+
 Mixing the two is where it gets useful — a fixed reference panel on the left,
 and a set of tabs to page through on the right:
 
