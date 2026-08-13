@@ -458,6 +458,57 @@ describe('RemoteFileWithRangeCache', () => {
     await expect(file.stat()).rejects.toThrow(/Could not determine size/)
   })
 
+  // RFC 9110 has a 416 carry the real length as `bytes * /N`. It is the only
+  // thing that response is good for, and for an empty file it is the only place
+  // a length is ever reported — every range of one is unsatisfiable, so the
+  // one-byte probe stat() makes can come back no other way.
+  describe('size from a 416', () => {
+    function unsatisfiableFetch(size: number) {
+      const calls: { start: number; end: number }[] = []
+      const mockFetch = async (_url: unknown, init?: RequestInit) => {
+        const m = /bytes=(\d+)-(\d+)/.exec(
+          new Headers(init?.headers).get('range') ?? '',
+        )!
+        const start = Number(m[1])
+        calls.push({ start, end: Number(m[2]) })
+        return start >= size
+          ? new Response('', {
+              status: 416,
+              headers: { 'content-range': `bytes */${size}` },
+            })
+          : // deliberately no Content-Range on the 206, so the 416 is the only
+            // place the size can be learned
+            new Response(slice(start, Math.min(Number(m[2]), size - 1)), {
+              status: 206,
+            })
+      }
+      return { calls, mockFetch }
+    }
+
+    test('stat() of an empty file', async () => {
+      const { mockFetch } = unsatisfiableFetch(0)
+      expect(await makeFile(mockFetch).stat()).toEqual({ size: 0 })
+    })
+
+    test('clamps the next over-read instead of being refused again', async () => {
+      const { calls, mockFetch } = unsatisfiableFetch(FILE_SIZE)
+      const file = makeFile(mockFetch)
+
+      expect(await fetchRange(file, FILE_SIZE, FILE_SIZE + 99)).toEqual(
+        new Uint8Array(0),
+      )
+      expect(calls).toHaveLength(1)
+
+      // A read starting a whole chunk further past EOF shares nothing with the
+      // empty chunk the first one cached, so before the size was learned here
+      // it had to go and be refused on its own account too.
+      expect(
+        await fetchRange(file, FILE_SIZE + CHUNK, FILE_SIZE + CHUNK + 99),
+      ).toEqual(new Uint8Array(0))
+      expect(calls).toHaveLength(1)
+    })
+  })
+
   // Regression: a fresh filehandle whose chunk cache is already populated (e.g.
   // from a previous filehandle instance's leaked fetch in the same process)
   // must still return the correct file size from stat(). Previously stat()
@@ -899,6 +950,33 @@ describe('RemoteFileWithRangeCache aborted-chunk sharing', () => {
     owner.abort()
     await expect(ownerRead).rejects.toThrow(/abort/i)
     await expect(joinerRead).rejects.toThrow(/abort/i)
+  })
+
+  test('a new reader does not inherit a run that was already cancelled', async () => {
+    const { calls, mockFetch, release } = createGatedFetch()
+    const file = makeFile(mockFetch)
+    const controller = new AbortController()
+
+    const doomed = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=0-99' },
+      signal: controller.signal,
+    })
+    expect(calls).toHaveLength(1)
+
+    // The run is cancelled here, but its request does not reject until a later
+    // tick and its inFlight entry is not removed until after that. A read
+    // arriving in that window used to join it and be handed somebody else's
+    // AbortError — the exact thing the reference count exists to prevent. On a
+    // pan this is the ordinary sequence, not a corner: the old blocks are
+    // aborted and the new ones requested in the same tick, and adjacent blocks
+    // routinely land in one 256 KiB chunk.
+    controller.abort()
+    const fresh = fetchRange(file, 100, 199)
+
+    await expect(doomed).rejects.toThrow(/abort/i)
+    release()
+    expect(await fresh).toEqual(slice(100, 199))
+    expect(calls).toHaveLength(2)
   })
 
   test('a non-abort failure still rejects every sharer', async () => {

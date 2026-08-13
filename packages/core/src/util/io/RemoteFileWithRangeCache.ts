@@ -128,6 +128,12 @@ function getCached(key: string) {
 }
 
 function putCached(key: string, chunk: Uint8Array) {
+  // Delete before the size check, so that re-caching a key already present
+  // neither evicts an innocent entry to make room for one already counted nor
+  // leaves it at the rank it held before — `Map.set` on an existing key keeps
+  // its position, so without this a chunk that was evicted and re-fetched goes
+  // straight back to being first in line to be evicted again.
+  cache.delete(key)
   if (cache.size >= MAX_CACHE_ENTRIES) {
     const oldestKey = cache.keys().next().value
     if (oldestKey !== undefined) {
@@ -274,6 +280,34 @@ function parseByteRange(range: string | null) {
 }
 
 /**
+ * `RemoteFile.read`'s NaN guard, which neither reader in this module reaches any
+ * more: both enter the chunk cache below that method. A NaN length arrives from
+ * a corrupt index and would otherwise become a `bytes=NaN-NaN` request.
+ */
+function assertReadArgs(length: number, position: number) {
+  if (Number.isNaN(length) || Number.isNaN(position)) {
+    throw new TypeError(
+      `read() called with NaN length or position (length=${length}, position=${position}). The index file may be corrupt.`,
+    )
+  }
+}
+
+/**
+ * Record a file's total size from a `Content-Range` header — `bytes 0-255/12345`
+ * on a 206, `bytes * /12345` on a 416. An already-known size is left alone (the
+ * file is not expected to change under us mid-session).
+ */
+function recordSizeFromContentRange(url: string, res: Response) {
+  if (!sizeCache.has(url)) {
+    const contentRange = res.headers.get('content-range')
+    const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
+    if (match) {
+      sizeCache.set(url, Number.parseInt(match[1]!, 10))
+    }
+  }
+}
+
+/**
  * Copy the part of `chunk` — the CHUNK_SIZE-aligned block at `chunkIndex` —
  * that overlaps the absolute byte range [start, end) into `result`, whose byte
  * 0 is absolute position `start`. Every offset is computed from absolute
@@ -338,7 +372,14 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     headers.set('range', `bytes=${start}-${end}`)
     const res = await super.fetch(url, { ...init, headers })
     if (res.status === 416) {
-      // Range Not Satisfiable: requested range starts past end of file
+      // Range Not Satisfiable: requested range starts past end of file. RFC 9110
+      // has the server report the real length here, as `bytes * /12345`, and
+      // that is the one thing this response carries worth keeping: learning the
+      // size lets getCachedRange clamp every later over-read instead of asking
+      // for past-EOF chunks and being refused again. It is also the only way
+      // stat() can answer for an empty file, every range of which is
+      // unsatisfiable.
+      recordSizeFromContentRange(url, res)
       return new Uint8Array(0)
     }
     // A 200 means the server ignored the Range header and sent the whole file
@@ -359,26 +400,22 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       throw Object.assign(new Error(msg), { status: res.status })
     }
     const buffer = new Uint8Array(await res.arrayBuffer())
-    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345"). The
-    // first successful range fetch populates the module-level sizeCache, so a
-    // later stat() needs no HEAD of its own; an already-known size is left
-    // alone (the file is not expected to change under us mid-session).
-    if (!sizeCache.has(url)) {
-      if (res.status === 200) {
-        // no Content-Range on a 200, but the body is the entire file
+    // The first successful range fetch populates the module-level sizeCache, so
+    // a later stat() needs no HEAD of its own.
+    if (res.status === 200) {
+      // no Content-Range on a 200, but the body is the entire file
+      if (!sizeCache.has(url)) {
         sizeCache.set(url, buffer.byteLength)
-      } else {
-        const contentRange = res.headers.get('content-range')
-        const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
-        if (match) {
-          sizeCache.set(url, parseInt(match[1]!, 10))
-        }
       }
+    } else {
+      recordSizeFromContentRange(url, res)
     }
     return buffer
   }
 
-  private getCachedRange(
+  // named apart from the module-level getCachedRange it calls, which is the one
+  // doing the work; this only binds it to this instance's fetch
+  private cachedRange(
     url: string,
     start: number,
     length: number,
@@ -412,17 +449,12 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     if (length === 0) {
       return new Uint8Array(0)
     }
-    if (Number.isNaN(length) || Number.isNaN(position)) {
-      throw new TypeError(
-        `read() called with NaN length or position (length=${length}, position=${position}). The index file may be corrupt.`,
-      )
-    }
-    const bytes = await this.getCachedRange(this.url, position, length, {
+    assertReadArgs(length, position)
+    return this.cachedRange(this.url, position, length, {
       ...(opts.signal ? { signal: opts.signal } : {}),
       headers: opts.headers,
       ...opts.overrides,
     })
-    return bytes
   }
 
   // NOTE: range reads return a fully-assembled in-memory Response, so
@@ -444,7 +476,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     if (typeof url === 'string') {
       const range = parseByteRange(new Headers(init?.headers).get('range'))
       if (range) {
-        const buffer = await this.getCachedRange(
+        const buffer = await this.cachedRange(
           url,
           range.start,
           range.end - range.start + 1,
@@ -486,12 +518,8 @@ export class CachedFilehandle implements GenericFilehandle {
     if (length === 0) {
       return new Uint8Array(0)
     }
-    if (Number.isNaN(length) || Number.isNaN(position)) {
-      throw new TypeError(
-        `read() called with NaN length or position (length=${length}, position=${position}). The index file may be corrupt.`,
-      )
-    }
-    const bytes = await getCachedRange(
+    assertReadArgs(length, position)
+    return getCachedRange(
       this.key,
       position,
       length,
@@ -501,7 +529,6 @@ export class CachedFilehandle implements GenericFilehandle {
           ...(init?.signal ? { signal: init.signal } : {}),
         }),
     )
-    return bytes
   }
 
   // Whole-file reads bypass the chunk cache: they are one pass over bytes the
@@ -665,10 +692,28 @@ function joinRun(state: RunState, signal: RequestInit['signal']) {
  * the request is simply not cancelled while anyone is still waiting on it, so
  * there is nothing to re-issue. `@gmod/bam` and `@gmod/cram` do the same at
  * their own cache layers.
+ *
+ * Returns undefined when the run is not joinable, and the caller fetches the
+ * chunk itself instead.
  */
 function joinChunk(flight: InFlightChunk, init?: RequestInit) {
+  if (flight.run.controller.signal.aborted) {
+    // Every reader of this run gave up, so its request was cancelled — but the
+    // rejection takes a tick to arrive and the entry is not removed until after
+    // that, so in between it sits here looking joinable. Joining it hands this
+    // reader somebody else's AbortError, which is the exact thing the reference
+    // count exists to prevent. On a pan that window is the ordinary sequence
+    // rather than a corner: the old blocks are aborted and the new ones
+    // requested in the same tick, and adjacent blocks routinely want the same
+    // 256 KiB chunk. Refusing is safe because fetchRun's cleanup removes only
+    // its own entry, so the fresh run replacing this one survives the doomed
+    // one settling.
+    return undefined
+  }
   // a settled run has dropped its abort listeners, so joining it would add a
-  // signal nothing will ever take back out
+  // signal nothing will ever take back out. Its chunk is still the one to await:
+  // putCached runs after settle, so there is a window in which the bytes have
+  // arrived and are in neither the cache nor this map.
   if (!flight.run.settled) {
     joinRun(flight.run, init?.signal)
   }
@@ -724,7 +769,8 @@ async function getCachedRange(
     const cached = getCached(chunkKey)
     if (cached === undefined) {
       const flight = inFlight.get(chunkKey)
-      if (flight === undefined) {
+      const joined = flight ? joinChunk(flight, init) : undefined
+      if (joined === undefined) {
         const lastRun = runs.at(-1)
         if (lastRun?.end === index - 1) {
           lastRun.end = index
@@ -732,7 +778,7 @@ async function getCachedRange(
           runs.push({ start: index, end: index })
         }
       } else {
-        pending.push({ index, chunk: joinChunk(flight, init) })
+        pending.push({ index, chunk: joined })
       }
     } else {
       chunks.set(index, cached)
