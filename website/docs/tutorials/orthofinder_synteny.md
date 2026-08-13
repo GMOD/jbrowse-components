@@ -103,8 +103,10 @@ what the blocks have to be read against.
 
 The blocks themselves are the 4AL/5AL and 4AL/7BS translocation pair,
 RFLP-mapped by Devos et al. and revisited against the reference assemblies by
-Dvorak et al. Nothing was aligned to draw any of it: the input is orthogroup
-membership and each gene's position.
+Dvorak et al. Those names are A and B genome chromosomes, and a group number is
+shared across the three subgenomes, so the 5D and 7D bundles in the frame are
+the D-genome counterparts of the 5A and 7B they refer to. Nothing was aligned to
+draw any of it: the input is orthogroup membership and each gene's position.
 
 ## The same locus against the other donor
 
