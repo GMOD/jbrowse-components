@@ -502,12 +502,39 @@ should optimise worker CPU for remote heavy files until this is understood.
 - **Local files are unaffected.** There is no seam here for a file on disk, and
   that is exactly where the per-read array work does pay.
 
-The lever, if it survives those checks, is coalescing adjacent chunks into
-fewer, larger range requests rather than fetching per chunk — an
-`optimizeChunks` that merges on *byte adjacency with a gap tolerance* rather
-than only on containment. The gap tolerance is the whole design question: it
-trades bytes fetched-and-discarded against requests saved, and the crossover
-depends on the throughput/latency ratio measured above.
+### Two obvious culprits, both measured and both innocent
+
+The shape of the stack invites a guess — `optimizeChunks` merging chunks in
+`@gmod/bam`, then `RemoteFileWithRangeCache` re-splitting them into 256KB
+chunks and fetching up to 20 at once. Two coalescing layers at different
+granularities looks like exactly the sort of thing that would produce this.
+Both were tested and neither is the cause.
+
+**The range cache is not it.** Same query, cold: 4.77s through a bare
+`RemoteFile`, 5.28s through `RemoteFileWithRangeCache`. It adds a layer and
+costs about what a layer costs.
+
+**`optimizeChunks` is not it either.** Disabling its merge entirely (a patched
+copy of the library, so the pnpm store is never touched) takes the query from 28
+range requests to 36 and from 26.8MB to 27.1MB — and the wall clock does not
+move: 5.40 vs 5.10s on one cold pair, 5.09 vs 6.06s on another. Merging is
+neither helping nor hurting on this query, because bam-js's chunks here are
+already large and nearly contiguous. Whatever costs the 5x, it is not the number
+of requests in the 28-36 range.
+
+That leaves **concurrency against single-stream throughput** as the live
+hypothesis: one request gets ~24 MB/s, and six to twenty concurrent ones share
+something much smaller. Four parallel `curl` streams also underperformed one, on
+the same host, which points the same way. If that is what it is, the lever is a
+concurrency cap tuned per host rather than any change to chunking — and it is
+the sort of thing that is entirely different against S3.
+
+**The range cache earns its place elsewhere, and the same run shows it.** Its
+chunk map is module-global, so a repeat of the identical query costs 0.40s
+against 5.4s cold — the layer is doing its job on re-reads, which is what it is
+for. (That global is also a trap for anyone benchmarking this: the second
+filehandle in a process inherits the first one's chunks, and a run that looks
+like a 13x win from some other change is usually just this.)
 
 ## Checked against a real 300x file, not just the fixtures
 
