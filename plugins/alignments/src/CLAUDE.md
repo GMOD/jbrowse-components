@@ -76,6 +76,35 @@ rebuilt string against `feature.id()` **in the worker**, finds nothing, and the
 click lands on "Could not load details" rather than an error.
 `browser-tests/suites/alignments-read-identity.ts` is the crossing test.
 
+## Read names are one block; `readNameAt` slices one out
+
+The result carries `readNameBlock` (every QNAME concatenated) plus
+`readNameOffsets`, not `readNames: string[]`. Same object-count reason as
+`readKeys`, plus a bigger one: a name is **decoded**, not copied — `@gmod/bam`
+builds it from the record's bytes on every read of `.name` — so a deep pileup
+was paying 34.7ms of `String.fromCharCode` and 7.5ms of clone for an array it
+reads on hover. 42.2ms -> 24.7ms (`benches/readNames.bench.ts`).
+
+- **`readNameAt(data, i)`, never `readNameBlock.slice` by hand.** V8 slices a
+  long string in O(1), so this is free on a hover and 4.7ms for all 153,677.
+- **`FeatureData` has no `name`.** The QNAME is on `ChainFeatureData` only,
+  because chain mode is the one path that needs one per read
+  (`chainGroupingKey`). Adding it back to the base shape puts the per-read
+  decode back with it.
+- **Anything feeding the block must be allocation-free.**
+  `BamSlightlyLazyFeature` exposes `nameLength` + `copyNameInto`, and the
+  obvious `nameBytes` view was tried and reverted: a `subarray` per read gave
+  the entire win back (35.9ms against 21.1ms), which is no better than just
+  decoding every name.
+- **Grouping pays for it, and that is priced in.** Hashing a SlicedString
+  flattens it, so `groupReadsByName` is 31.9ms out of the block against 16.1ms
+  out of a `string[]` — a small net win in arcs/chain mode, 1.7x in plain
+  pileup. Don't "fix" it by materialising the array again.
+
+The regime is read COUNT: 31k reads is 8.2ms all in, and 335 long reads is
+0.08ms, where the block loses. `agent-docs/reference/BAM_STACK_INTEGRATION.md`
+seam 6 is the upstream half.
+
 ## Adapter hot path (BAM/CRAM)
 
 `extractFeatureArrays` calls `feature.get(...)` per read, so keep work out of

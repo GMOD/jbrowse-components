@@ -1,6 +1,6 @@
 ---
 name: bam-stack-integration
-description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the five seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
+description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the six seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
 ---
 
 # The BAM stack, layer by layer
@@ -423,6 +423,41 @@ The generalisation, which is what makes this worth an entry rather than a patch:
 **a walk should never rescan a value the record has already located.** MD is the
 only tag that is both routinely kilobytes and routinely already resolved, which
 is why it is the one worth special-casing — but the rule is the reusable part.
+
+## Seam 6 — the QNAME is decoded per read, and the record could write it instead
+
+`BamRecord.name` builds a string with `String.fromCharCode` on every access,
+deliberately unmemoized — its own comment says why, and that reasoning is right:
+one consumer reading a name once should not pin a string on a cached record.
+
+What it did not anticipate is a consumer that wants **every** name at once and
+then almost never reads one. That was `readNames: string[]`, and on the
+153,677-read window it measured 34.7ms to decode plus 7.5ms to clone, for an
+array a pileup render touches only on hover. The plugin now builds one block
+instead (`shared/readNameBlock.ts`): 42.2ms -> 24.7ms, 1.7x.
+
+The seam is that **the copy is the record's own layout knowledge and lives
+here**. `BamSlightlyLazyFeature` reads it back off three public getters
+(`byteArray`, `b0`, `read_name_length`) to implement `nameLength` /
+`copyNameInto`, which belong on `BamRecord` beside `name`:
+
+```ts
+get nameLength() { return this.read_name_length - 1 }
+copyNameInto(dest: Uint8Array, at: number) { … }
+```
+
+**Allocation-free is the whole point, and it is the part that is easy to lose.**
+The obvious API is a `nameBytes` view, and it was tried: a `subarray` per read is
+an allocation per read, and the block built that way measured 35.9ms against
+21.1ms — no better than decoding every name, which is what it was meant to
+avoid. Whatever shape this takes upstream, it must not allocate per record.
+
+The generalisation is the mirror of seam 5's: **a bulk consumer should be able to
+ask the record to write into its buffer, rather than asking for a value the
+record has to allocate to hand over.** `seq` and `qual` have the same shape and
+are already handled by returning views the caller consumes immediately; the
+difference here is that a name's consumer is a concatenation, so a view is a
+temporary that exists only to be copied out of.
 
 ## Things checked and found already integrated
 
