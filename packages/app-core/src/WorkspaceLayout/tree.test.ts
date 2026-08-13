@@ -6,9 +6,12 @@ import {
   moveTabToPanel,
   normalize,
   panels,
+  pruneEmptyPanel,
+  pruneEmptyTabIn,
   removePanel,
   removeTab,
   removeView,
+  renameTab,
   setActiveTab,
   setSizes,
   splitPanel,
@@ -435,13 +438,27 @@ test('any sequence of operations leaves a canonical tree', () => {
       tree = removeTab(tree, someTab.id)
     } else if (roll < 0.86 && someTab) {
       tree = setActiveTab(tree, target, someTab.id)
-    } else if (roll < 0.93) {
+    } else if (roll < 0.86) {
       // homing against a list that has drifted from the tree in both
       // directions: some views it does not know about, some it has lost
       const held = tabs(tree).flatMap(t => t.viewIds)
       n++
       const session = [...held.filter(() => rng() < 0.8), `v${n}`]
       tree = homeViews(tree, session, pick(ids), () => `t-home${step}`)
+    } else if (roll < 0.89) {
+      tree = renameTab(
+        tree,
+        someTab?.id ?? 'nope',
+        rng() < 0.5 ? 'Named' : undefined,
+      )
+    } else if (roll < 0.93) {
+      // the two prunes are the gesture-level operations, and the ones with a
+      // "unless it is the last" guard to get wrong. Driven standalone rather
+      // than only after the move that empties something, because they are
+      // exported and total like the rest
+      tree = pruneEmptyPanel(tree, target)
+    } else if (roll < 0.96 && someTab) {
+      tree = pruneEmptyTabIn(tree, target, someTab.id)
     } else if (isBranch(tree)) {
       tree = setSizes(
         tree,
