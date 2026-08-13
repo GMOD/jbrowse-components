@@ -1,4 +1,7 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  tabixIndexSnapshot,
+} from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -135,32 +138,19 @@ const configSchema = ConfigurationSchema(
      * }
      * ```
      */
-    preProcessSnapshot: snap => {
-      return snap.uri
+    // The one tabix shorthand with a second file in it, so it composes
+    // `tabixIndexSnapshot` rather than taking `expandTabixShorthand` whole.
+    preProcessSnapshot: snap =>
+      snap.uri
         ? {
             ...snap,
             ...(snap.nhUri
-              ? {
-                  nhLocation: {
-                    uri: snap.nhUri,
-                    baseUri: snap.baseUri,
-                  },
-                }
+              ? { nhLocation: { uri: snap.nhUri, baseUri: snap.baseUri } }
               : {}),
-            bedGzLocation: {
-              uri: snap.uri,
-              baseUri: snap.baseUri,
-            },
-            index: {
-              indexType: snap.csi ? 'CSI' : 'TBI',
-              location: {
-                uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
-                baseUri: snap.baseUri,
-              },
-            },
+            bedGzLocation: { uri: snap.uri, baseUri: snap.baseUri },
+            index: tabixIndexSnapshot(snap),
           }
-        : snap
-    },
+        : snap,
   },
 )
 

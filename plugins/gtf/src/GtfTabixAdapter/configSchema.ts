@@ -1,4 +1,7 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  expandTabixShorthand,
+} from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -22,22 +25,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        gtfGzLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-        index: {
-          indexType: snap.csi ? 'CSI' : 'TBI',
-          location: {
-            uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
-            baseUri: snap.baseUri,
-          },
-        },
-      }
-    : snap
+  return expandTabixShorthand(snap, 'gtfGzLocation')
 }
 
 const GtfTabixAdapter = ConfigurationSchema(

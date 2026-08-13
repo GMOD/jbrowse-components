@@ -36,6 +36,7 @@ export {
   readConfigValue,
 } from './readConfObject.ts'
 export { getConf, resolveConf, setConf } from './getConf.ts'
+export { expandTabixShorthand, tabixIndexSnapshot } from './tabixShorthand.ts'
 export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 export { toCallbackValue, toFixedValue } from './configurationSlot.ts'
 export {
