@@ -1,10 +1,8 @@
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import {
-  interleaveInstances,
-  patchInstanceColors,
-} from './instanceInterleave.ts'
+import { DOTPLOT_INSTANCE_CACHE } from './instanceInterleave.ts'
 import * as dotplotShader from './shaders/dotplot.generated.ts'
 
 import type {
@@ -38,16 +36,8 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
   private uniformData = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uniformF32 = new Float32Array(this.uniformData)
   private baseByKey = new Map<number, AxisBase>()
-  // Packed instance buffer per display, reused across re-uploads that don't
-  // change geometry. `geomToken` is one of the coordinate arrays (all replaced
-  // atomically by buildLineSegments); while it holds, a colorBy change only
-  // patches the color lane instead of re-packing all five. The opacity slider
-  // doesn't reach here at all — it's the `alpha` uniform. Mirrors
-  // GpuSyntenyRenderer.getInterleaved.
-  private interleaveCache = new Map<
-    number,
-    { geomToken: Float64Array; colors: Uint32Array; buf: ArrayBuffer }
-  >()
+  // Packed instance bytes per display, re-packed only when the geometry moves.
+  private interleaveCache = createInstanceCache(DOTPLOT_INSTANCE_CACHE)
   private width = 0
   private height = 0
 
@@ -71,30 +61,9 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
     this.hal.uploadBuffer(
       displayKey,
       PASS_LINE,
-      this.getInterleaved(displayKey, data),
+      this.interleaveCache.get(displayKey, data),
       instanceCount,
     )
-  }
-
-  // Packed instance bytes for a display, reusing the cached buffer when the
-  // geometry is unchanged. A recolor (new `colors`, same coordinate arrays)
-  // patches only the color lane.
-  private getInterleaved(displayKey: number, data: DotplotGeometryData) {
-    const cached = this.interleaveCache.get(displayKey)
-    if (cached?.geomToken === data.x1) {
-      if (cached.colors !== data.colors) {
-        patchInstanceColors(cached.buf, data.colors)
-        cached.colors = data.colors
-      }
-      return cached.buf
-    }
-    const buf = interleaveInstances(data)
-    this.interleaveCache.set(displayKey, {
-      geomToken: data.x1,
-      colors: data.colors,
-      buf,
-    })
-    return buf
   }
 
   deleteGeometry(displayKey: number) {

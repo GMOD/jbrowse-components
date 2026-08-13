@@ -1,6 +1,8 @@
+import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
+
 import {
+  DOTPLOT_INSTANCE_CACHE,
   interleaveInstances,
-  patchInstanceColors,
 } from './instanceInterleave.ts'
 import { INSTANCE_OFFSET_F32 as F_F32 } from './shaders/dotplot.iface.generated.ts'
 
@@ -25,23 +27,36 @@ function makeData(colors: Uint32Array): DotplotGeometryData {
   }
 }
 
-describe('patchInstanceColors', () => {
-  // The recolor fast path in GpuDotplotRenderer.getInterleaved reuses a packed
-  // buffer and rewrites only the color lane. That is correct iff it lands
-  // byte-identical to a full re-interleave carrying the new colors over the
-  // same geometry — this asserts exactly that. Same gate as the synteny twin in
-  // linear-comparative-view.
-  test('equals a full re-interleave with the new colors', () => {
+describe('DOTPLOT_INSTANCE_CACHE', () => {
+  // The recolor fast path reuses a packed buffer and rewrites only the color
+  // lane. That is correct iff it lands byte-identical to a full re-interleave
+  // carrying the new colors over the same geometry — this asserts exactly that,
+  // through the cache the renderer builds from these options, so a wrong lane
+  // offset in them fails here rather than painting wrong colors. Same gate as
+  // the synteny twin in linear-comparative-view.
+  test('a recolor equals a full re-interleave with the new colors', () => {
+    const cache = createInstanceCache(DOTPLOT_INSTANCE_CACHE)
     const data = makeData(
       Uint32Array.from([0x11111111, 0x22222222, 0x33333333]),
     )
     const newColors = Uint32Array.from([0xaabbccdd, 0x01020304, 0xfffefdfc])
 
-    const patched = interleaveInstances(data)
-    patchInstanceColors(patched, newColors)
+    const packed = cache.get(0, data)
+    // Same geometry arrays, new colors: this must patch in place, and the
+    // identity check is what says the fast path ran rather than a re-pack
+    // trivially satisfying the byte comparison below.
+    const patched = cache.get(0, { ...data, colors: newColors })
+    expect(patched).toBe(packed)
 
-    const fullReinterleave = interleaveInstances(makeData(newColors))
+    const fullReinterleave = interleaveInstances({ ...data, colors: newColors })
     expect(new Uint8Array(patched)).toEqual(new Uint8Array(fullReinterleave))
+  })
+
+  test('new geometry re-packs rather than reusing the buffer', () => {
+    const cache = createInstanceCache(DOTPLOT_INSTANCE_CACHE)
+    const colors = Uint32Array.from([0x11111111, 0x22222222, 0x33333333])
+    const first = cache.get(0, makeData(colors))
+    expect(cache.get(0, makeData(colors))).not.toBe(first)
   })
 })
 

@@ -83,6 +83,15 @@ strand case.
   version forgets, since context-loss recovery hands back empty GPU buffers.
   Create them _outside_ the `attachRenderingBackend` call and keep every input
   read unconditional.
+- **A packed buffer reused across recolors is `createInstanceCache`**, same
+  reasoning one layer down: synteny and dotplot had each written the
+  geometry/color split by hand, identically, down to a `SYNC:` comment on the
+  patch loop. Declare the options next to the `interleave` whose lanes they
+  name, not in the renderer — the one way this breaks is a patch landing in a
+  different lane than the pack, and reading both off the same generated
+  constants is what stops it. The geometry token must be a **coordinate** array
+  (they are replaced atomically on refetch); a color array would never
+  invalidate.
 - **An `installPerRegionLifecycle` `encode` reads a narrow inputs getter, never
   the display's `renderState`.** The encode runs inside the per-key autorun, so
   every observable it touches is a re-encode trigger for _every_ region — and a

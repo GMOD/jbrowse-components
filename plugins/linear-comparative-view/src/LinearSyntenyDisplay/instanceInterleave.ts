@@ -10,6 +10,7 @@ import {
 } from './shaders/syntenyTypes.js.generated.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { InstanceCacheOpts } from '@jbrowse/render-core/instanceCache'
 
 // Hand-written rather than the generated `packInstances` the repo's other GPU
 // renderers call: `packInstances` takes one flat ArrayLike per field, and this
@@ -55,17 +56,23 @@ export function interleaveInstances(data: SyntenyInstanceData) {
   return buf
 }
 
-// Overwrite only the per-instance color lane of an already-interleaved buffer.
-// A colorBy / opacityByIdentity toggle produces new `colors` over unchanged
-// geometry, so patching the single 4-byte color field per instance skips
-// re-packing the other 11 lanes. The GPU re-upload still happens (the HAL has
-// no partial-buffer update), but the dominant CPU interleave is avoided.
-// SYNC: the color write mirrors interleaveInstances exactly.
-export function patchInstanceColors(buf: ArrayBuffer, colors: Uint32Array) {
-  const u32 = new Uint32Array(buf)
-  for (let i = 0, n = colors.length; i < n; i++) {
-    u32[i * INSTANCE_STRIDE_WORDS + INSTANCE_OFFSET_U32.color] = colors[i]!
-  }
+// How the renderer caches the buffer above and recolors it: a colorBy /
+// opacityByIdentity toggle produces new `colors` over unchanged geometry, so
+// patching the single 4-byte color field per instance skips re-packing the
+// other 11 lanes. The GPU re-upload still happens (the HAL has no
+// partial-buffer update), but the dominant CPU interleave is avoided.
+//
+// Declared beside `interleaveInstances` because the offsets are the ones it
+// writes; a patch landing in a different lane than the pack is the one way this
+// goes wrong, and reading both off the same generated constants is what stops
+// it. `bp1` is the geometry token because a refetch replaces every coordinate
+// array atomically — a color array would never invalidate.
+export const SYNTENY_INSTANCE_CACHE: InstanceCacheOpts<SyntenyInstanceData> = {
+  geomToken: d => d.bp1,
+  colors: d => d.colors,
+  interleave: interleaveInstances,
+  strideWords: INSTANCE_STRIDE_WORDS,
+  colorOffsetWords: INSTANCE_OFFSET_U32.color,
 }
 
 // The instances the clicked-outline (edge) pass would actually paint, copied out

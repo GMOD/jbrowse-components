@@ -1,10 +1,10 @@
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { createInstanceCache } from '@jbrowse/render-core/instanceCache'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import {
-  interleaveInstances,
+  SYNTENY_INSTANCE_CACHE,
   packClickedOutlineInstances,
-  patchInstanceColors,
 } from './instanceInterleave.ts'
 import * as syntenyEdgeCurveShader from './shaders/syntenyEdgeCurve.generated.ts'
 import * as syntenyEdgeStraightShader from './shaders/syntenyEdgeStraight.generated.ts'
@@ -77,15 +77,10 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   // buffer — see interleaveCache). Trades a one-frame upload stall on toggle
   // for ~½ steady-state GPU memory.
   private uploadedPass = new Map<number, string>()
-  // Packed interleaved buffer per region, reused across re-uploads that don't
-  // change geometry. `geomToken` is one of the geometry arrays (all replaced
-  // atomically on RPC refetch); while it holds, a colorBy/opacity toggle only
-  // patches the color lane and a drawCurves toggle reuses the bytes verbatim,
-  // instead of re-interleaving all 12 lanes.
-  private interleaveCache = new Map<
-    number,
-    { geomToken: Float32Array; colors: Uint32Array; buf: ArrayBuffer }
-  >()
+  // Packed interleaved bytes per region, re-packed only when the geometry
+  // moves: a colorBy/opacity toggle patches the color lane and a drawCurves
+  // toggle reuses the bytes verbatim, instead of re-interleaving all 12 lanes.
+  private interleaveCache = createInstanceCache(SYNTENY_INSTANCE_CACHE)
   // What each region's clicked-outline buffer currently holds. Uploaded under
   // the EDGE pass id (the fill buffer keeps the fill pass id), so a region can
   // carry both at once. Every field is part of the invalidation key: the two
@@ -181,7 +176,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     this.hal.uploadBuffer(
       key,
       passId,
-      this.getInterleaved(key, data),
+      this.interleaveCache.get(key, data),
       data.instanceCount,
     )
     this.uploadedPass.set(key, passId)
@@ -197,7 +192,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   // id is a RENDER parameter — nothing knows which feature to pack until the
   // frame that draws it. Two consequences worth knowing:
   //   - it reads the same packed bytes `ensureUploaded` just put on the GPU,
-  //     through the same `getInterleaved` memo, so the outline and the fill are
+  //     through the same `interleaveCache` memo, so the outline and the fill are
   //     copies of one record and cannot describe different geometry;
   //   - if this renderer ever brackets its uploads in `beginUpload`/
   //     `endUpload`, this buffer is written outside that transaction and the
@@ -228,7 +223,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     const { buf, count } = packClickedOutlineInstances(
       data,
       featureId,
-      this.getInterleaved(key, data),
+      this.interleaveCache.get(key, data),
     )
     this.hal.uploadBuffer(key, passId, buf, count)
     this.outlineBuffers.set(key, {
@@ -252,24 +247,6 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   // Packed instance bytes for a region, reusing the cached buffer when the
   // geometry is unchanged. A recolor (new `colors`, same geometry arrays)
   // patches only the color lane; a drawCurves toggle returns the bytes as-is.
-  private getInterleaved(key: number, data: SyntenyInstanceData): ArrayBuffer {
-    const cached = this.interleaveCache.get(key)
-    if (cached?.geomToken === data.bp1) {
-      if (cached.colors !== data.colors) {
-        patchInstanceColors(cached.buf, data.colors)
-        cached.colors = data.colors
-      }
-      return cached.buf
-    }
-    const buf = interleaveInstances(data)
-    this.interleaveCache.set(key, {
-      geomToken: data.bp1,
-      colors: data.colors,
-      buf,
-    })
-    return buf
-  }
-
   pick(x: number, y: number, state: SyntenyRenderState) {
     this.pickCtx ??= makePickCtx()
     const ctx = this.pickCtx
