@@ -15,21 +15,13 @@ The top level is exactly three files — `ARCHITECTURE.md` (canonical), `TODO.md
 - `handoffs/` — the live state of a thread that is not finished: what landed,
   what is verified, what the next person has to decide. **Pointers, not content.**
 
-`handoffs/` is back as of 2026-08-11, and the reason it was removed is the rule
-for using it. It existed until 2026-08-10 and held nine files, and what
-accumulated there was measured results, refuted hypotheses and whole subsystem
-profiles — because parking is easier than filing, and a doc nobody opens until
-they pick that exact thread back up is a doc nobody reads. Two of the nine had
-already been superseded by their own later sections.
+**File first, then write the handoff against what you filed.** A handoff that
+would still be useful with its links removed is holding something that belongs
+in one of the homes below — which is what killed the first `handoffs/`: it
+accumulated measured results, refuted hypotheses and whole subsystem profiles,
+because parking is easier than filing. Delete the file when the thread lands.
 
-So: **file first, then write the handoff against what you filed.** A handoff
-that would still be useful with its links removed is holding something that
-belongs in one of the homes below. Delete the file when the thread lands.
-
-- **A measurement, a profile, or how a subsystem behaves** → `reference/`. Three
-  of the old nine became reference docs outright (`CROSS_BACKEND_GATE.md`,
-  `MAF_WORKER_PIPELINE.md`, `HPRC_RELEASE2.md`), which is a good sign they should
-  have been there from the start.
+- **A measurement, a profile, or how a subsystem behaves** → `reference/`.
 - **Something tried and declined** → `reference/REJECTED_IDEAS.md`, with the
   number that declined it.
 - **Work someone intends to do** → `TODO.md`, in the order to take it.
@@ -38,10 +30,22 @@ belongs in one of the homes below. Delete the file when the thread lands.
   and `git log`, which already hold it. A handoff may cite commits; it should not
   narrate them.
 
+That last one applies to `CLAUDE.md` files too, and is the rule they break most
+often. A file that explains what a subsystem replaced, dated, is holding
+something git already has.
+
 If you are about to write "state as of \<date\>" into a new **top-level** file,
 that is the signal: split it into the homes above instead. In `handoffs/` that
 sentence is the point of the file — but it is the only thing there that should
 survive a read of the links.
+
+The split between `TODO.md` and `ideas/` is commitment, not size: `TODO.md` is
+work someone intends to do, an `ideas/` doc is a proposal thought through and
+parked. A parked proposal often already contains the reasoning that kills the
+obvious version of the idea, which is why re-proposing without reading it wastes
+a session. Don't add a fifth folder — a `guides/` split alongside `reference/`
+was tried and collapsed, because nothing landed cleanly on the line. If
+`reference/` gets hard to scan, the fix is better `description:` lines.
 
 ## Generated tables
 
@@ -50,60 +54,33 @@ pairs the same way it sweeps `website/docs`, and overwrites whatever is between
 them. If a table here restates something a reader could check against the code,
 write the generator instead of the table.
 
-That rule is not a preference; it is what six drifted tables cost.
-ARCHITECTURE.md's foundation list claimed a `RegionTooLargeMixin` foundation used
-by displays composing no such thing, its autorun table still cleared on a
-`regionTooLarge` that had become derived, the palette table was missing a third
-of its keys, the package table told plugin authors to bundle four packages that
-depend on `@jbrowse/core`, and the re-export table was five paths short *while
-the sentence above it called the source file the source of truth*. Each is now
-generated, and a row joins one by existing in the source rather than by being
-written down.
+That rule is not a preference; it is what six drifted tables cost — a foundation
+list naming a mixin its displays didn't compose, an autorun table clearing on a
+prop that had become derived, a palette table missing a third of its keys, and a
+re-export table five paths short *while the sentence above it called the source
+file the source of truth*.
 
 **The pattern worth copying: if a doc sentence tells the reader to go look at a
 file, the table under it should be generated from that file.** Every one of those
-was a list some author transcribed once and no one re-derived — which is the
-failure the sentence-plus-stale-table shape produces every time, because the
-sentence goes on being true as the table rots.
+was a list some author transcribed once and no one re-derived — the sentence goes
+on being true as the table rots.
 
 **Every doc outside `architecture-decision-records/` carries `name:` /
 `description:` frontmatter, and that is load-bearing.** It is how you find the
 right doc without opening all of them, so a new doc without one is invisible.
 ADRs are the exception because the generated README index serves the same
-purpose.
+purpose. `pnpm autogen --check` fails on a doc in `reference/` or `ideas/` that
+carries none, so writing a good `description:` is the whole job of making a new
+doc findable.
 
-For `reference/` and `ideas/`, don't `ls` and guess — read
+For those two directories, don't `ls` and guess — read
 [reference/README.md](reference/README.md) or [ideas/README.md](ideas/README.md),
-whose tables are generated from those same `description:` lines and give you all
-of them in one read. `pnpm autogen --check` fails on a doc in either that carries
-no frontmatter, so the rule above is now enforced rather than merely stated.
-Writing a good `description:` is therefore the whole job of making a new doc
-findable.
+whose tables are generated from those same `description:` lines.
 
 `TODO.md` is long enough to need its own index and opens with one. **Other docs
 and a few source comments cite its sections by title**, so a heading there is a
 reference someone may hold — rename one only after grepping for it. For `ideas/`
-the same is true of *filenames*, which is what those citations now name.
-
-The split between them is commitment, not size: `TODO.md` is work someone
-intends to do, an `ideas/` doc is a proposal thought through and parked. A
-parked proposal often already contains the reasoning that kills the obvious
-version of the idea, which is why re-proposing without reading it wastes a
-session.
-
-`ideas/` was one 3300-line `OTHER_IDEAS.md` until 2026-08-13. Two things drove
-the split, and both are reasons to keep it split: its hand-maintained 104-line
-index was exactly the sentence-plus-stale-table shape warned about above, and a
-proposal carrying real accumulated reasoning cannot be taken off the shelf while
-it is buried at line 520 of a file you have to read to find it.
-
-That is not licence for more folders. There was a `guides/` (how-tos) split
-alongside `reference/` (how it works) and it was collapsed: nothing landed
-cleanly on the line, and since you `ls` both anyway it cost a filing decision and
-bought nothing at read time. Don't reintroduce it — if `reference/` gets hard to
-scan, the fix is better `description:` lines, not more folders. The difference is
-that `guides/` asked which of two directories a doc belonged in, where `ideas/`
-asks nothing: one proposal, one file.
+the same is true of *filenames*.
 
 ## Invariants — violations cause silent bugs, not crashes
 
@@ -132,11 +109,10 @@ working tree. Don't push or open a PR unless asked.
 **Three CI jobs are gated by nothing in that list** — `pnpm check-format`,
 `pnpm check-docs`, and the spell check (crate-ci/typos, run bare as `typos`).
 None runs under `pnpm test` and none is a lint rule, so a change can be green by
-every measure above and still land red. On 2026-08-12 all three were red on
-`main` at once, and the format failures had arrived on three *different*
-commits, which is what says it was a gate nobody ran rather than one slip. The
-first two take seconds; `check-docs` takes a couple of minutes and earns it only
-when you touched a doc or moved a symbol a doc might name.
+every measure above and still land red; all three were red on `main` at once in
+August 2026, on three *different* commits. The first two take seconds;
+`check-docs` takes a couple of minutes and earns it only when you touched a doc
+or moved a symbol a doc might name.
 
 **Prefer the cheap decisive check over the browser probe** when the question is
 "does release X have symbol Y". `git ls-remote --tags origin` for the newest tag,
@@ -144,18 +120,15 @@ then `git cat-file -e <tag>:<path>` — `ls-remote`, not local tags, or a checko
 that has not fetched in a while answers "no release yet" forever.
 
 **Check what your worktree branched from before trusting a gate in it.** The
-root CLAUDE.md says the worktree tool creates it off local `main`; that tool's
-own default base ref is **origin**'s default branch. Those differ by however
-much local `main` is ahead — which, with agents landing locally and nothing
-pushed, is everything done that day. Observed 2026-08-12: a fresh worktree came
-up on an `origin/main` predating a `check-doc-imports` fix, so `pnpm check-docs`
-failed on a reference the fix already accepts, and the natural reading of that
-is "my edit broke it".
+worktree tool's default base ref is **origin**'s default branch, which differs
+from local `main` by however much has landed locally and not been pushed — which,
+with agents landing all day, can be everything done that day. A gate can then
+fail on a fix your branch predates, and the natural reading of that is "my edit
+broke it".
 
     git merge-base --is-ancestor main HEAD && echo ok || git reset --hard main
 
-The same worktree also arrived with an incomplete install — `remark-parse`
-absent at the root, so three of `check-docs`' validators died on
-ERR_MODULE_NOT_FOUND rather than reporting anything. A validator that cannot
-import is not a validator that passed, and the run's summary counts it as a
-failure with no detail. Read the body, not the tally.
+**A validator that cannot import is not a validator that passed.** A worktree
+that arrives with an incomplete install gives `check-docs` validators
+ERR_MODULE_NOT_FOUND rather than any finding, and the run's summary counts that
+as a failure with no detail. Read the body, not the tally.
