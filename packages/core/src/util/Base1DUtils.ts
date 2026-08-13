@@ -315,36 +315,6 @@ export function bpToOffset({
 }
 
 /**
- * A 0-based genomic coord's distance in **bp** from the left edge of the
- * displayed regions — the unit `offsetPx` is in before the division, since
- * inter-region padding contributes no pixels.
- *
- * `bpToPx` answers the same question already scaled by the view's CURRENT
- * bpPerPx, which is the wrong one for a caller about to change it: a
- * zoom-then-scroll pair has to measure against the bpPerPx it will land on, and
- * `zoomTo` clamps, so the requested value is not reliably it either.
- *
- * Undefined when no displayed region holds the coord, same as `bpToPx`.
- */
-export function bpToCumulativeBp({
-  refName,
-  coord,
-  displayedRegions,
-}: {
-  refName: string
-  coord: number
-  displayedRegions: {
-    refName: string
-    start: number
-    end: number
-    reversed?: boolean
-  }[]
-}) {
-  const hit = bpToOffset({ refName, coord, displayedRegions })
-  return hit ? cumulativeBp(displayedRegions, hit.index, hit.offset) : undefined
-}
-
-/**
  * Screen order of two {@link BpOffset}s: negative when `a` is to the left of
  * `b`. `moveTo` takes its arguments left-to-right and computes a negative
  * bpPerPx from a backwards pair, so a caller deriving the two from data that
