@@ -114,6 +114,21 @@ not something to fix by widening `positionViewOnSpan`: it means the row is
 showing another contig, and the exact pass is already on its way to navigate it
 there.
 
+## The follow can only reach contigs the moving row is already displaying
+
+Not a rule to keep so much as a limit to know, because it silently weakens any
+test written without it. The synteny fetch keeps a block only when **both** ends
+are in view (`v1RefNames.has(refName) && v2RefNames.has(mate.refName)` in
+`executeSyntenyFeaturesAndPositions`), so a row parked on one contig is only
+ever sent alignments that already point at it. The follow then places it inside
+that contig, correctly and uninterestingly.
+
+Which contig the envelope picks is therefore only observable when the moving row
+is showing enough of its assembly to have a choice — whole-assembly, or at least
+several contigs. `browser-tests/suites/synteny-follow.ts` says the same thing at
+the point where it matters; it passed against a row pinned to one contig while
+proving nothing.
+
 ## Approximate is a state the UI reports, not a failure
 
 Three things can put a placement on an interpolation rather than a CIGAR walk: a
