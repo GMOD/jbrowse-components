@@ -40,6 +40,8 @@ before anyone noticed.
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
+| [Whose bug is `protein/connected`](#find-out-whose-bug-proteinconnected-is) | figures, protein3d | get a stack; it may be the pinned plugin's, not ours |
+| [Liveliness warnings and `no containing view found`](#the-liveliness-warnings-and-no-containing-view-found-are-one-bug) | MST, comparative | name the destroys — one of these takes the page down |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
@@ -253,6 +255,48 @@ how a correct pill shipped invisible for a round (see
 [reference/SCREENSHOT_CALLOUT_ANCHORS.md](reference/SCREENSHOT_CALLOUT_ANCHORS.md)).
 An item whose drawn rect falls outside the capture is almost always a bug —
 report it the way the overlay already reports an unresolvable anchor.
+
+### Find out whose bug `protein/connected` is
+
+The spec fails hard and blocks its figure — `capture not settled … Failed to
+launch ProteinView view`, with `TypeError: Cannot read properties of undefined
+(reading 'filter')` in the console. Reported by the 2026-08-13 figure sweep and
+not reproduced since, so the stack is the first thing to get: `--filter
+protein/connected --headed`, or a `page.on('pageerror')` that prints
+`error.stack`.
+
+**Read the stack before assuming the fix is in this repo.** The spec pins the
+protein3d plugin to `jbrowse.org/plugins/…/0.8.0/` deliberately, so the throw is
+as likely to be inside that bundle as in anything here — and if it is, the
+choices are a pin bump or a spec change, not a code fix. The declarative launch
+it uses (`uniprotId` + `transcriptId` + `connectedView`) is the plugin's, and
+resolving the transcript out of the hg38-ncbiRefSeq track is where an undefined
+list would plausibly come from.
+
+### The liveliness warnings and `no containing view found` are one bug
+
+The same sweep reported MST liveliness warnings across `replaceView()`,
+`removeView()` and `addSessionAssembly()` on several synteny, dotplot and
+cancer_sv specs. **They are the quiet end of a crash, not a separate cosmetic
+thread** — `cancer_sv/multihop_split_view` shows both ends on one spec: the
+warnings, then `Error: no containing view found` into an ErrorBoundary, then
+`hover target not found: [aria-label="JBrowse"]`, which says the app header was
+gone, i.e. the throw took the page rather than one lane. Fix it once.
+
+The mechanism is legible end to end. `getContainingView`
+(`packages/core/src/util/mstUtils.ts`) finds a view by walking parents and throws
+when there is none, so a display React is still rendering after its view was
+destroyed fails that walk. That is exactly the escalation
+[ADR-069](architecture-decision-records/adr-069-detach-do-not-destroy-what-react-may-hold.md)
+describes, from a warning on an already-read property to a hard throw on a node
+whose parent is gone — so the rule is written, and these are call sites it has
+not been applied to.
+
+Distinct from
+[Destroying an MST tree that something still observes](#destroying-an-mst-tree-that-something-still-observes),
+which is `setSession`'s residue: that one is about what still *observes* a tree
+already being torn down correctly. First move here is to name the destroys, since
+a warning names the property read and not the call that killed the node.
 
 ### Render the twenty specs whose callouts were converted to anchors
 
