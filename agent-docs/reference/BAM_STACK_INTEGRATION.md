@@ -549,14 +549,46 @@ bare `curl` gets. The 5MB cap never came close to that in thirteen measurements.
 So when the server is willing, six requests can saturate the link and 28 cannot;
 when it is throttling, nothing helps. That is why the medians hide it.
 
-**Do not just raise it.** The cap almost certainly exists for memory: a merged
-span is held compressed and inflates to roughly 3x, so a whole-chromosome query
-with no cap merges something very large. Seam 2 is the other cost — the parsed
-cache keys on the merged span, so coarser spans reuse worse across a pan. Both
-are unmeasured. The finding here is only that the constant has never been swept
-against wall clock, that it costs 22 extra requests and 1.8MB on this query, and
-that the sweep should be against memory and cache reuse rather than against
-bytes fetched.
+### …and the sweep says leave it alone
+
+Both costs are now measured, on the local 1000x fixture so the numbers are the
+chunking's and not the network's, one process per cap. **A pan of ten
+overlapping 20kb windows stepping 10kb** — i.e. browsing, which is what this
+library is for:
+
+| cap | reads | bytes | wall | retained heap |
+| --- | --: | --: | --: | --: |
+| 1MB | 19 | 49.8 MB | 1.17s | +551 MB |
+| **5MB (current)** | **19** | **49.8 MB** | **1.04s** | **+552 MB** |
+| 20MB | 14 | 98.2 MB | 2.45s | +1204 MB |
+| 100MB | 14 | 125.9 MB | 2.94s | +1535 MB |
+| 2GB | 14 | 125.9 MB | 3.62s | +1535 MB |
+
+Raising the cap saves 5 reads across the pan and costs **2.5x the bytes, 2.8x
+the retained memory and 3.5x the wall clock**. That is seam 2 quantified: the
+parsed cache keys on the merged span and the merge is query-dependent, so with
+big merges every pan step produces a *different* span, nothing is reused, and
+each window re-reads and re-parses. Small merges produce spans that repeat, and
+the cache hits.
+
+The single-query memory cost is visible even where the request count is
+identical — 6 reads at every cap on that fixture, but +199 MB retained at 1-5MB
+against +262 MB at 20MB and above, because a larger span blunts the early stop
+in `_fetchChunkFeatures` and parses records the query never wanted.
+
+**So the 5MB cap stays, and it is not arbitrary after all** — it is just
+defended on an axis its own comment does not name. 1MB is indistinguishable from
+5MB here, so there is no evidence 5 is special; there is now good evidence that
+anything much larger is worse.
+
+What survives from the remote measurement is narrower and still real: on a
+**single cold query to a high-latency endpoint**, 28 requests cannot saturate
+the link and 6 can, so that one query can be 4x faster. That is a different
+workload from panning, and the fix for it — if there is one — is a transport
+that issues fewer, larger requests without changing what bam-js merges and
+therefore without changing what it caches. Widening the merge is not that fix.
+It is worth noting the remote pan would be *worse* than the table above, not
+better: 2.5x the bytes over a link running at 5 MB/s.
 
 ### Why samtools makes one request where we make 28
 
