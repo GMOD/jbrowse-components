@@ -251,13 +251,19 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       // (`get` also reports each name at most once per session; the dedupe is a
       // rate limit on top of this condition, not a second answer to it.)
       //
-      // Both lookups are load-bearing and they miss in opposite directions, so
-      // neither alone is a correct probe: assemblyNameMap is keyed by
-      // allAliases ([name, ...aliases]), so only it answers for an alias (`vvx`
-      // for `volvox`); assemblyNamesList reads canonical names off the configs,
-      // so only it answers in the window where a config exists but the
-      // afterAttach autorun hasn't built its model. A wrong "no" either way
-      // means the caller re-adds an assembly the session already has.
+      // Both lookups are load-bearing, and the config one has to cover aliases
+      // as well: assemblyNameMap is keyed by allAliases ([name, ...aliases]) but
+      // only exists once the afterAttach autorun has built the models, while
+      // configuredAssemblyNames answers off the configs from the first render.
+      // Screening on the canonical names alone left `vvx` unknown for the whole
+      // startup window even though the config for `volvox` names it — a wrong
+      // "no", which means the caller re-adds an assembly the session already
+      // has, or (the synteny import forms) decides the session has nothing it
+      // can open.
+      //
+      // The map is still asked first, and is not redundant: an assembly whose
+      // config has just left the list still has a model until the autorun
+      // disposes of it.
       //
       // Return type annotated because assemblyNameMap is a Record: its index
       // read is never undefined to the compiler, so `!!` on it infers the
@@ -265,7 +271,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       has(asmName: string): boolean {
         return (
           !!self.assemblyNameMap[asmName] ||
-          this.assemblyNamesList.includes(asmName)
+          this.configuredAssemblyNames.has(asmName)
         )
       },
 
@@ -291,6 +297,26 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        */
       get assemblyNamesList(): string[] {
         return this.assemblyList.map(asm => readConfObject(asm, 'name'))
+      },
+
+      /**
+       * #getter
+       * Every name the *configs* answer to — each assembly's `name` and its
+       * `aliases`. What {@link has} knows before the models exist.
+       *
+       * Separate from assemblyNamesList rather than widening it: `get` treats a
+       * name found in that list as "a config exists, its model is just not built
+       * yet", which has to stay the canonical name the autorun will create the
+       * assembly under. A Set because `has` is called per name by per-render
+       * scans over every track in the session.
+       */
+      get configuredAssemblyNames(): Set<string> {
+        return new Set(
+          this.assemblyList.flatMap(asm => [
+            readConfObject(asm, 'name') as string,
+            ...((readConfObject(asm, 'aliases') as string[] | undefined) ?? []),
+          ]),
+        )
       },
 
       /**
