@@ -16,9 +16,9 @@ The layout/color split is not cosmetic. A relayout re-places every row, remaps
 every per-feature Y array and rebuilds the modification Flatbush, then makes the
 renderer repack every GPU pass; a recolor touches two per-read arrays and one
 pass. So a color input in `groupLayoutContext` costs the full relayout to change
-a color — and, because layout allocates a fresh `readYs` that the renderer keys
-its upload memo on, it also loses the recolor fast path. Same trap for a value
-the layout only _sometimes_ spends: the band overhead is a thunk so an ungrouped
+a color, and also loses the recolor fast path, since layout allocates a fresh
+`readYs` that the renderer keys its upload memo on. Same trap for a value the
+layout only _sometimes_ spends: the band overhead is a thunk so an ungrouped
 display doesn't relayout on every frame of a coverage-band resize drag.
 
 - **Never put a fetch-result derivative in `rpcProps()`** — infinite loop.
@@ -138,15 +138,13 @@ itself out in chain mode (`canCollapseGroupRows`, `offeredGroupByTypes`, the
 a silent no-op, and a tag sort additionally refetches for `sortTagValues`
 nothing reads.
 
-Layout is main-thread because a read spanning a region boundary must share one
-row, and each worker sees one region — plus three other properties that depend
-on it, enumerated in
-[ADR-053](../../../../agent-docs/architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md).
-Read it before proposing the move; it is re-proposed roughly every time the
-main-thread pack shows up in a trace, and it names the separable half that is
-actually worth attacking. **Don't reintroduce a levels / right-edge-only array**
-in `placeRect` — features arrive out of start order in both layouts, so it would
-fragment layout.
+Layout is main-thread, and
+[ADR-053](../../../../agent-docs/architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md)
+has the four properties that depend on it and names the separable half actually
+worth attacking. Read it before proposing the move — it is re-proposed roughly
+every time the main-thread pack shows up in a trace. **Don't reintroduce a
+levels / right-edge-only array** in `placeRect`: features arrive out of start
+order in both layouts, so it would fragment layout.
 
 On-screen and SVG export share `drawAlignmentBlocks`; don't reintroduce SVG-only
 draw functions. Sashimi and linked-read bezier arcs are interactive SVG overlays
@@ -175,12 +173,12 @@ disagree in the under-reserving direction paint arcs over the pileup. Junction
 identity is `junctionKey` — refName included, because two chromosomes in view
 share nothing but a bp number line.
 
-**A band's height MINUS its reserved margin is floored at 0** —
-`clampBandHeight` holds the drag handle, not a config slot or a session
-snapshot, so the subtraction goes negative (`arcAvailH`, sashimi's
-`effectiveHeight`, the tooltip's coverage bar). Floor it where the expression is
-declared, not per consumer; if a shader computes it too, that declaration is the
-`.slang` one and the CPU side imports the generated twin (adr-051).
+**A band's height MINUS its reserved margin is floored at 0**, because
+`clampBandHeight` holds the drag handle and not the slot or the snapshot, so the
+subtraction goes negative (`arcAvailH`, sashimi's `effectiveHeight`, the
+tooltip's coverage bar). Floor it where the expression is declared, not per
+consumer; if a shader computes it too, that declaration is the `.slang` one and
+the CPU side imports the generated twin (adr-051).
 
 `computeArcBand` is the single source of truth for the arc band and is decoupled
 from `showCoverage` — don't reintroduce a `covH > 0` gate. Arc and sashimi
@@ -209,8 +207,8 @@ way, the tick wins among on-ink, and a near-ink tie goes the same way — becaus
 tick are each ONE junction that `resolveArcs` coalesced, and `arcLineWidth` is
 the one curve turning that count into ink for Canvas2D, the SVG export and both
 GPU passes (resolved CPU-side at pack time; no shader evaluates it). Coalescing
-without keeping the count is the trap to avoid — deduping ticks alone left a
-40-read translocation drawing exactly like one mismapped pair.
+without keeping the count left a 40-read translocation drawing exactly like one
+mismapped pair.
 
 **Ask `hasArcBandInk`, not `numArcs`.** A lane whose only interchromosomal
 partner is off-region carries ticks and no arcs, so an arc-count gate reserves
@@ -218,6 +216,6 @@ the band, paints it, and then treats it as empty. The one deliberate exception
 is `resolveArcBandDebug`, which answers "why is this arc this shape" and so has
 nothing to say about a tick.
 
-The endpoint squares are the one mark with no hit test of its own, covered by
-the bar's tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is
-arithmetic, not design, so `hitTest.test.ts` pins it.
+The endpoint squares have no hit test of their own, covered by the bar's
+tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is arithmetic,
+not design, so `hitTest.test.ts` pins it.
