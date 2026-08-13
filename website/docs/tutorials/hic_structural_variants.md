@@ -54,33 +54,28 @@ A contact domain and the loop at its corner are the same object seen two ways.
 The block in the matrix and the arc above it end at the same two coordinates,
 because the loop is what holds the domain together.
 
-The ATAC lane is the one thing in the frame not derived from the contact map,
-and it is there so the window has something to be checked against. GM12878 is a
-B-lymphoblastoid line, so B-cell accessibility is the nearest public annotation
-of which sequence here is regulatory, and it turns a gene desert into something
-the domain has a reason to contain. All twelve lineages are drawn rather than
-just the B rows: each of them is more accessible inside the domain than outside
-it, so the lane says the contacted DNA is regulatory rather than that it is
-B-specific.
+The ATAC lane is the one thing in the frame not derived from the contact map.
+GM12878 is a B-lymphoblastoid line, so B-cell accessibility is the nearest
+public annotation of which sequence here is regulatory. All twelve lineages are
+drawn rather than just the B rows, and each is more accessible inside the domain
+than outside it, so the lane says the contacted DNA is regulatory rather than
+that it is B-specific.
 
 The window itself is a domain-and-loop pair rather than a slice of chromosome
-picked for its genes. Over a whole cell line the two files hold thousands of
-calls each, and a megabase taken at random draws domains wider than the frame
-and a fan of arcs with nothing under them. Scoring the two files against each
-other instead, taking every Arrowhead domain whose two corners carry a HiCCUPS
-loop and ranking by that loop's contact count, puts this one near the top of the
-list, with _MYC_ at its left anchor. The
+picked for its genes: a megabase taken at random draws domains wider than the
+frame and a fan of arcs with nothing under them. Taking every Arrowhead domain
+whose two corners carry a HiCCUPS loop and ranking by that loop's contact count
+puts this one near the top, with _MYC_ at its left anchor. The
 [scoring script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hic_pick_loop.py)
-prints that ranking, and prints what a candidate window contains.
+prints that ranking and what a candidate window contains.
 
 Which bins the matrix is drawn in decides whether any of it is visible. JBrowse
-picks a binsize from the file's own resolution list, choosing the largest that
-is no coarser than twice the current bp-per-pixel. At this width that lands on
-bins so fine that each holds almost nothing, and the triangle renders as red
-speckle with no visible domain edges. The figure above sets
+picks the largest binsize no coarser than twice the current bp-per-pixel, which
+at this width is fine enough that the triangle renders as red speckle. The
+figure above sets
 [`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) to `2`,
-stepping two levels coarser, which is where the blocks appear. If a Hi-C track
-looks like noise, this is the first thing to change. See
+stepping two levels coarser. If a Hi-C track looks like noise, this is the first
+thing to change; see
 [adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
 
 ## Two chromosomes in one view
@@ -113,24 +108,20 @@ between them, empty in one cell line and solid in the other.
 ## Choosing a control the comparison can rest on
 
 The empty wedge in the top panel does as much work as the dense one below it, so
-it is worth a moment on how that control was picked. Two choices decide whether
-the pair says anything, and both go wrong quietly.
+two choices decide whether the pair says anything, and both go wrong quietly.
 
-**Depth comes first.** ENCODE has several GM12878 Hi-C experiments, and the
-"supernatant" fraction (`ENCSR730CER`, the alternative the script carries
-commented out) is far shallower over this chromosome pair than the deep in situ
-file. Put the shallow one under K562 and the wedge above is empty because little
-was sequenced there, which looks exactly like a wedge that is empty because
-there is no translocation. The figure uses `ENCSR410MDC`, the deeper of the two.
-Run the scan as it ships and GM12878 in fact carries more contact than K562
-across the whole chr9–chr22 block; the order inverts only at the junction bin,
-which is what makes that one bin worth looking at.
+**Depth comes first.** ENCODE's GM12878 "supernatant" fraction (`ENCSR730CER`,
+the alternative the script carries commented out) is far shallower over this
+chromosome pair than the deep in situ file, and a wedge empty because little was
+sequenced looks exactly like one empty because there is no translocation. The
+figure uses `ENCSR410MDC`. Run the scan as it ships and GM12878 in fact carries
+more contact than K562 across the whole chr9-chr22 block; the order inverts only
+at the junction bin.
 
 **Then normalization.** Matrix balancing exists to divide out per-bin coverage
 differences, and an amplified fusion _is_ a coverage difference. Re-run the scan
-below with `NORM=INTER_SCALE` and *ABL1*×*BCR* drops off the top of the table,
-displaced by bins elsewhere on the two chromosomes that the control scores at
-zero. Both Hi-C tracks in this demo therefore set
+below with `NORM=INTER_SCALE` and *ABL1*×*BCR* drops off the top of the table.
+Both Hi-C tracks in this demo therefore set
 [`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
 to `NONE`. Balanced matrices are what to read domains and loops with;
 rearrangements want the raw counts.
@@ -174,8 +165,6 @@ next to the matrix it was called from.
 
 ## The same control, one scale up
 
-The translocation is the sharpest thing these two cell lines differ by, but it
-is not the only one, and the largest-scale difference is read the same way.
 Above the domains and loops of the first figure, the matrix separates into two
 interleaved sets of regions that preferentially contact their own kind: the
 gene-rich, active A compartment and the inactive B compartment. ENCODE publishes
@@ -186,14 +175,12 @@ both derived from the matrix already loaded.
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree. No contact matrix here, since the eigenvector is that computation over one, published." links="Open this view=hic/compartment_switch" />
 
 The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
-K562, and the reason to believe it is the same reason the translocation was
-believable: the sequence either side of it, from the same two files and the same
-pipeline, agrees. A difference that appears in one block while its neighbours
-match is a difference in the data; one that appears everywhere is a difference
-in how the two files were made.
+K562, and the sequence either side of it, from the same two files and the same
+pipeline, agrees. A difference in one block while its neighbours match is a
+difference in the data; one that appears everywhere is a difference in how the
+two files were made.
 
-Two things make this comparison harder than it looks, and both are set up in the
-figure rather than left to the reader:
+Two things are set up in the figure rather than left to the reader:
 
 - The eigenvector tracks are pinned to one shared scale, because autoscaling
   lets each fill its own lane from its own extremes and the two stop being
@@ -260,13 +247,11 @@ two mates really are different places, are the paired-arc case. See the
 
 To color or filter either track by a column, set
 [`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly. The
-adapter otherwise takes column names from the file's own header line, and juicer
-writes its version banner _after_ the defline; the last header line therefore
-has no tab-separated fields, name resolution gives up, and every column past the
-tenth reads back as `undefined`, so a jexl expression on one silently evaluates
-against nothing. This is a property of both files, not just the loops: HiCCUPS
-writes 24 columns, Arrowhead 16, and only the first ten of either are positional
-and always parsed. Listing them in config skips the guesswork.
+adapter otherwise reads names off the file's own header, and juicer writes its
+version banner _after_ the defline, so every column past the tenth reads back as
+`undefined` and a jexl expression on one silently evaluates against nothing.
+HiCCUPS writes 24 columns and Arrowhead 16; only the first ten of either are
+positional.
 
 Both callers also leave the standard BEDPE `name` and `score` columns at `.` and
 put what they rank by further along, which is why the two are worth naming
