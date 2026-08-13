@@ -222,7 +222,7 @@ To open the stacked view automatically on load, add a top-level `defaultSession`
 key to your `config.json` holding a `LinearSyntenyView` snapshot. Five rows
 means four bands, so `tracks` has four entries, all served by the same track:
 
-```json session
+```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 {
   "defaultSession": {
     "name": "E. coli 5-strain pangenome",
@@ -255,7 +255,8 @@ means four bands, so `tracks` has four entries, all served by the same track:
 
 The CLI tab writes the same session into an existing `config.json`. It carries
 the value of `defaultSession` rather than the block as shown, since
-`set-default-session` takes the session itself.
+`set-default-session` takes the session itself. The URL tab opens it against the
+hosted copy of this dataset, so you can see the stack before building anything.
 
 Three keys there are worth reading, and each is a one-time load setting that
 goes under `init`:

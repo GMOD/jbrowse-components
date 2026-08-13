@@ -392,7 +392,7 @@ dialog step by step.
 The declarative equivalent is a top-level `defaultSession`, here stacking them
 peach-cacao-grape:
 
-```json session
+```json session config=https://jbrowse.org/demos/grape_peach_cacao/config.json
 {
   "defaultSession": {
     "name": "Grape / Peach / Cacao multi-way synteny",

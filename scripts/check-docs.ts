@@ -44,6 +44,13 @@ const VALIDATORS: Validator[] = [
     argv: web('check-config-blocks.ts'),
   },
   {
+    // Offline: the demos/ configs these links open are deployed from this repo,
+    // so the trackIds are checkable against their source. check-live-configs
+    // --network is the one that asks whether the deploy happened.
+    name: 'session live links open what they name',
+    argv: web('check-session-urls.ts'),
+  },
+  {
     // The bash counterpart to sync-doc-snippets, which covers TS only because
     // a shell fence used to have no source to point at. A tutorial's
     // subject-file command now comes out of its build_*.sh, so a flag renamed
