@@ -22,6 +22,7 @@ import {
   strandOf,
 } from '../../shared/readGroupConnections.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
+import { readNameAt } from '../../shared/readNameBlock.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -441,7 +442,7 @@ function groupReadsByName(
     const data = rpcDataMap.get(region.displayedRegionIndex)
     if (data) {
       for (let i = 0; i < data.readKeys.length; i++) {
-        const name = data.readNames[i]!
+        const name = readNameAt(data, i)
         if (name) {
           getOrCreate(readsByName, name, () => []).push({
             displayedRegionIndex: region.displayedRegionIndex,
@@ -557,7 +558,7 @@ function saSegments(
     data.readSuppAlignments?.[readIdx],
     readIdAt(data, readIdx)!,
     data.readStrands[readIdx],
-    data.readNames[readIdx],
+    readNameAt(data, readIdx),
   )
     .filter(sa => Number.isFinite(sa.start) && sa.end > sa.start)
     .map(sa => ({

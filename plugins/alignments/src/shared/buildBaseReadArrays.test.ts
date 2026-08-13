@@ -5,7 +5,6 @@ import type { FeatureData } from './webglRpcTypes.ts'
 function feat(overrides: Partial<FeatureData>): FeatureData {
   return {
     id: 'f1',
-    name: 'read1',
     start: 0,
     end: 100,
     flags: 0,
@@ -48,7 +47,6 @@ describe('buildBaseReadArrays', () => {
       [
         feat({
           id: 'x',
-          name: 'readX',
           flags: 99,
           mapq: 37,
           insertSize: -250,
@@ -59,7 +57,6 @@ describe('buildBaseReadArrays', () => {
       undefined,
     )
     expect(readArrays.readKeys).toEqual(['x'])
-    expect(readArrays.readNames).toEqual(['readX'])
     expect(readArrays.readFlags[0]).toBe(99)
     expect(readArrays.readMapqs[0]).toBe(37)
     expect(readArrays.readInsertSizes[0]).toBe(-250)

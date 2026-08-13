@@ -5,7 +5,6 @@ export interface FeatureData {
   // `${adapter.id}-${recordId}` template literal is never built per read. See
   // shared/readIdentity.ts.
   id: ReadKey
-  name: string
   start: number
   end: number
   flags: number
@@ -16,6 +15,12 @@ export interface FeatureData {
 }
 
 export interface ChainFeatureData extends FeatureData {
+  // The QNAME, and ONLY on the chain shape. Pileup mode never reads a name —
+  // the per-read names ship as one block built from the records' bytes
+  // (shared/readNameBlock.ts) — so decoding one per read here was the larger
+  // half of what `readNames` cost. Chain mode does need it: `chainGroupingKey`
+  // is what puts mates and split segments on one row.
+  name: string
   nextRef: string | undefined
 }
 

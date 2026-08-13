@@ -36,7 +36,6 @@ export function buildBaseFeatureData(
 ): FeatureData {
   return {
     id: readIdPrefix === undefined ? feature.id() : readKeyOf(feature),
-    name: feature.get('name') ?? '',
     start: feature.get('start'),
     end: feature.get('end'),
     flags: getFlags(feature),
@@ -60,6 +59,7 @@ export function buildChainFeatureData(
 ): ChainFeatureData {
   return {
     ...buildBaseFeatureData(feature, readIdPrefix),
+    name: feature.get('name') ?? '',
     nextRef: feature.get('next_ref') as string | undefined,
   }
 }

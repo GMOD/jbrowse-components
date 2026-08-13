@@ -15,6 +15,7 @@ import {
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { namesToBlock } from '../shared/readNameBlock.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 import { makeEmptyPileupData } from './testUtils.ts'
@@ -151,7 +152,7 @@ function createEnvWithPileup(depth: number) {
         data: {
           ...makeEmptyPileupData(),
           readKeys: Array.from({ length: depth }, (_, i) => `r${i}`),
-          readNames: Array.from({ length: depth }, (_, i) => `r${i}`),
+          ...namesToBlock(Array.from({ length: depth }, (_, i) => `r${i}`)),
           readPositions,
           readYs: new Uint16Array(depth),
           readFlags: new Uint16Array(depth),

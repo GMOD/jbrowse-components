@@ -9,6 +9,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
+import { namesToBlock } from '../shared/readNameBlock.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 import { makeEmptyPileupData } from './testUtils.ts'
@@ -139,7 +140,7 @@ function stackedReads(n: number): PileupDataResult {
   return {
     ...makeEmptyPileupData(),
     readKeys: Array.from({ length: n }, (_, i) => `r${i}`),
-    readNames: Array.from({ length: n }, (_, i) => `read${i}`),
+    ...namesToBlock(Array.from({ length: n }, (_, i) => `read${i}`)),
     readPositions,
     readYs: new Uint16Array(n),
     readFlags: new Uint16Array(n),

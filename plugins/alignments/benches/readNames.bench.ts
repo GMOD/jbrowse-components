@@ -44,6 +44,8 @@ import { join } from 'node:path'
 
 import { BamFile } from '@gmod/bam'
 
+import { buildReadNameBlock } from '../src/shared/readNameBlock.ts'
+
 import type { BamRecord } from '@gmod/bam'
 
 const arg = (name: string, dflt: string) =>
@@ -247,6 +249,42 @@ function joinOnly(names: string[]) {
   return { joined: names.join(''), offsets }
 }
 
+// The arm that matters once this lands: the REAL `buildReadNameBlock`, over a
+// feature shaped like `BamSlightlyLazyFeature` — the `nameLength` /
+// `copyNameInto` pair, allocation-free, read through a getter and a method on a
+// class instance exactly as production reads them.
+//
+// The wrappers are built ONCE, outside the clock. Building them inside made
+// this arm read 34.4ms against build-bytes-loop's 18.2ms — it was measuring
+// 153,677 object allocations production does not perform, since the features
+// already exist by the time the block is built.
+//
+// And the arm is CHECKED against the byte total below, because the failure it
+// had next was worse: when the accessor pair changed shape, this wrapper stopped
+// matching the interface, `buildReadNameBlock` silently took its
+// no-raw-bytes path over a `get()` returning undefined, and the arm reported
+// 4.88ms for building an EMPTY block — 7.1x, and pure fiction.
+class NameFeature {
+  r: BamRecord
+  constructor(r: BamRecord) {
+    this.r = r
+  }
+  get(): undefined {
+    return undefined
+  }
+  get nameLength() {
+    return this.r.read_name_length - 1
+  }
+  copyNameInto(dest: Uint8Array, at: number) {
+    const ba = this.r.byteArray
+    const start = this.r.b0
+    const len = this.r.read_name_length - 1
+    for (let j = 0; j < len; j++) {
+      dest[at + j] = ba[start + j]!
+    }
+  }
+}
+
 const time = (fn: () => unknown) => {
   globalThis.gc?.()
   const t0 = performance.now()
@@ -291,6 +329,14 @@ async function main() {
     const joined = buildJoin(records)
     const block = buildBlock(records)
     sliceAll(block, 100)
+    const nameFeatures = records.map(r => new NameFeature(r)) as never[]
+    buildReadNameBlock(nameFeatures)
+    const prod = buildReadNameBlock(nameFeatures)
+    if (prod.readNameBlock.length !== table.bytes.length) {
+      throw new Error(
+        `buildReadNameBlock produced ${prod.readNameBlock.length} chars, expected ${table.bytes.length} — the wrapper no longer matches its interface`,
+      )
+    }
     structuredClone(strs)
     decodeAll(table, 100)
 
@@ -308,6 +354,7 @@ async function main() {
       gstr: Infinity,
       gblk: Infinity,
       jonly: Infinity,
+      bprod: Infinity,
       pbytes: Infinity,
       bjoin: Infinity,
       pjoin: Infinity,
@@ -349,6 +396,7 @@ async function main() {
       { k: 'gstr' as const, run: () => groupByName(strs) },
       { k: 'gblk' as const, run: () => groupFromBlock(block, records.length) },
       { k: 'jonly' as const, run: () => joinOnly(strs) },
+      { k: 'bprod' as const, run: () => buildReadNameBlock(nameFeatures) },
       { k: 'bjoin' as const, run: () => buildJoin(records) },
       {
         k: 'pjoin' as const,
@@ -380,6 +428,7 @@ async function main() {
         `  build offsets    ${best.boff.toFixed(2).padStart(8)} ms   <- record walk alone, no bytes copied\n` +
         `  build block      ${best.bblock.toFixed(2).padStart(8)} ms   ${(best.bstr / best.bblock).toFixed(1)}x  (bytes + 1 TextDecoder: ${best.bdec.toFixed(2)} ms)\n` +
         `  post  block      ${best.pblock.toFixed(2).padStart(8)} ms   ${(best.pstr / best.pblock).toFixed(1)}x\n` +
+        `  build PROD       ${best.bprod.toFixed(2).padStart(8)} ms   ${(best.bstr / best.bprod).toFixed(1)}x  <- the real buildReadNameBlock\n` +
         `  build joined     ${best.bjoin.toFixed(2).padStart(8)} ms   ${(best.bstr / best.bjoin).toFixed(1)}x\n` +
         `  post  string[]   ${best.pstr.toFixed(2).padStart(8)} ms\n` +
         `  post  bytes      ${best.pbytes.toFixed(2).padStart(8)} ms   ${(best.pstr / best.pbytes).toFixed(1)}x\n` +
@@ -392,6 +441,8 @@ async function main() {
         `${((best.bstr + best.pstr) / (best.bloop + best.pbytes)).toFixed(1)}x\n` +
         `  total  block     ${(best.bblock + best.pblock).toFixed(2).padStart(8)} ms   ` +
         `${((best.bstr + best.pstr) / (best.bblock + best.pblock)).toFixed(1)}x\n` +
+        `  total  PROD      ${(best.bprod + best.pblock).toFixed(2).padStart(8)} ms   ` +
+        `${((best.bstr + best.pstr) / (best.bprod + best.pblock)).toFixed(1)}x\n` +
         `  total  joined    ${(best.bjoin + best.pjoin).toFixed(2).padStart(8)} ms   ` +
         `${((best.bstr + best.pstr) / (best.bjoin + best.pjoin)).toFixed(1)}x\n` +
         `  --------------------------------\n` +

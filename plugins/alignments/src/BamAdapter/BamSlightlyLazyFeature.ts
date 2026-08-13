@@ -97,6 +97,37 @@ export default class BamSlightlyLazyFeature
     return this.fileOffset
   }
 
+  /**
+   * The QNAME's length in bytes, and a copy of those bytes into a caller's
+   * buffer. A PAIR: `buildReadNameBlock` sizes one buffer from the lengths and
+   * then has each read write itself into it, so a deep pileup skips 153,677
+   * per-read `String.fromCharCode` builds for an array almost nothing reads —
+   * one `TextDecoder` call does the lot (benches/readNames.bench.ts).
+   *
+   * WHY NOT A `nameBytes` VIEW, which is the obvious shape. It was, and it gave
+   * back the entire win: a `subarray` per read is an allocation per read, and
+   * the block built that way measured 35.9ms against 21.1ms through this pair —
+   * i.e. no better than just decoding every name, which is what it was meant to
+   * avoid. Keep this allocation-free.
+   *
+   * The layout knowledge is `@gmod/bam`'s and this reads it back off three
+   * public getters, which is a seam that belongs on the record —
+   * `agent-docs/reference/BAM_STACK_INTEGRATION.md` files it. `read_name_length`
+   * counts the NUL terminator; the name does not.
+   */
+  get nameLength() {
+    return this.read_name_length - 1
+  }
+
+  copyNameInto(dest: Uint8Array, at: number) {
+    const ba = this.byteArray
+    const start = this.b0
+    const len = this.read_name_length - 1
+    for (let j = 0; j < len; j++) {
+      dest[at + j] = ba[start + j]!
+    }
+  }
+
   // performance profiling showed that using forEachMismatch rather than
   // computing mismatches array up front was faster, so this is no longer the
   // primary way mismatches are used
@@ -328,6 +359,14 @@ class RegionBoundBamFeature implements MismatchFeature {
 
   get recordId() {
     return this.base.recordId
+  }
+
+  get nameLength() {
+    return this.base.nameLength
+  }
+
+  copyNameInto(dest: Uint8Array, at: number) {
+    this.base.copyNameInto(dest, at)
   }
 
   get start() {

@@ -11,6 +11,7 @@ import { toLocale } from '@jbrowse/core/util'
 
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
+import { readNameAt } from '../../shared/readNameBlock.ts'
 import { getCigarTypeLabel, interbaseTypeName } from '../../shared/types.ts'
 import { getOrCreate } from '../../shared/util.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
@@ -241,7 +242,7 @@ export function formatChainTooltip(
   idx: number,
   refName: string,
 ) {
-  const name = rpcData.readNames[idx] ?? ''
+  const name = readNameAt(rpcData, idx)
   const { start, end } = chainSpan(rpcData, idx)
   const flags = rpcData.readFlags[idx] ?? 0
   const insertSize = rpcData.readInsertSizes[idx] ?? 0

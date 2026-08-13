@@ -21,6 +21,7 @@ const PALETTE = makeTestPalette({
 })
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
+import { namesToBlock } from '../../shared/readNameBlock.ts'
 import {
   LINKED_READ_COLOR_INTERCHROM,
   LINKED_READ_COLOR_PAIR_LR,
@@ -61,7 +62,7 @@ function makeData(opts: {
     readPositions[i * 2 + 1] = opts.positions[i]![1]!
   }
   return makePileupDataResult({
-    readNames: opts.names,
+    ...namesToBlock(opts.names),
     readKeys: opts.ids ?? opts.names.map((_, i) => `id${i}`),
     readFlags: new Uint16Array(opts.flags),
     readStrands: new Int8Array(opts.strands),

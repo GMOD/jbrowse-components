@@ -16,6 +16,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
+import { namesToBlock } from '../shared/readNameBlock.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 import { makeEmptyPileupData } from './testUtils.ts'
@@ -756,7 +757,7 @@ describe('the feature-details lookup', () => {
           data: {
             ...makeEmptyPileupData(),
             readKeys: ['read1'],
-            readNames: ['readA'],
+            ...namesToBlock(['readA']),
             readPositions: new Uint32Array([1000, 5000]),
             readYs: new Uint16Array([0]),
             readFlags: new Uint16Array([0]),
@@ -1055,7 +1056,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
           data: {
             ...makeEmptyPileupData(),
             readKeys: ['r1'],
-            readNames: ['r1'],
+            ...namesToBlock(['r1']),
             readPositions: new Uint32Array([100, 200]),
             readYs: new Uint16Array(1),
             readFlags: new Uint16Array(1),

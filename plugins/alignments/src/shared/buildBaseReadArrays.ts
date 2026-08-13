@@ -74,7 +74,6 @@ export function buildBaseReadArrays(
   const readInsertSizes = new Float32Array(n)
   const readPairOrientations = new Uint8Array(n)
   const readStrands = new Int8Array(n)
-  const readNames: string[] = []
 
   for (let i = 0; i < n; i++) {
     const f = features[i]!
@@ -85,7 +84,6 @@ export function buildBaseReadArrays(
     readInsertSizes[i] = f.insertSize
     readPairOrientations[i] = f.pairOrientation
     readStrands[i] = f.strand
-    readNames.push(f.name)
   }
 
   return {
@@ -99,7 +97,6 @@ export function buildBaseReadArrays(
       readStrands,
       readKeys: buildReadKeys(features, readIdPrefix),
       readIdPrefix,
-      readNames,
     },
   }
 }

@@ -2,6 +2,7 @@ import { abgrAlpha, packAbgr } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getModificationCallName } from '../../shared/modificationData.ts'
+import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { buildModificationArrays } from './buildArrays.ts'
 import { hitTestModification } from './hitTest.ts'
 
@@ -26,7 +27,7 @@ function makeRpcData(
     readFlags: new Uint16Array(),
     readMapqs: new Uint8Array(),
     readKeys: [],
-    readNames: [],
+    ...namesToBlock([]),
     readChainIndices: undefined,
     mismatchPositions: new Uint32Array(),
     mismatchYs: new Uint16Array(),

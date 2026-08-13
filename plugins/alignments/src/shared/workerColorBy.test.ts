@@ -39,7 +39,6 @@ function makeFeature() {
 
 const buildFeatureData = (f: Feature): FeatureData => ({
   id: f.id(),
-  name: '',
   start: f.get('start'),
   end: f.get('end'),
   flags: 0,

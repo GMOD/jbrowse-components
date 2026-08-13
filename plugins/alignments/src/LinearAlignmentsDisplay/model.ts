@@ -68,6 +68,7 @@ import {
   getArcLegendItems,
   getReadDisplayLegendItems,
 } from '../shared/legendUtils.ts'
+import { readNameAt } from '../shared/readNameBlock.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
   normalizeFilterBy,
@@ -2518,7 +2519,7 @@ export default function stateModelFactory(
           const { idx, rpcData, start, end } = hit
           return {
             id: featureId,
-            name: rpcData.readNames[idx] ?? '',
+            name: readNameAt(rpcData, idx),
             start,
             end,
             flags: rpcData.readFlags[idx],

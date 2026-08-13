@@ -12,6 +12,7 @@ import {
   pairFieldEntry,
   readGroupConnections,
 } from '../../shared/readGroupConnections.ts'
+import { readNameAt } from '../../shared/readNameBlock.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -179,9 +180,9 @@ export function groupReadsByName(
 ): Map<string, ReadEntry[]> {
   const readsByName = new Map<string, ReadEntry[]>()
   for (const [idx, data] of laidOutPileupMap) {
-    const { readKeys, readNames } = data
+    const { readKeys } = data
     for (let i = 0; i < readKeys.length; i++) {
-      const name = readNames[i]!
+      const name = readNameAt(data, i)
       if (name) {
         getOrCreate(readsByName, name, () => []).push({
           displayedRegionIndex: idx,

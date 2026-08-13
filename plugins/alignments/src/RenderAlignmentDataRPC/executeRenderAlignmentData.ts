@@ -46,6 +46,7 @@ import {
 } from '../shared/groupFeatures.ts'
 import { readIdPrefixOf, readKeyOf } from '../shared/readIdentity.ts'
 import { buildReadInterchrom } from '../shared/readInterchrom.ts'
+import { buildReadNameBlock } from '../shared/readNameBlock.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import {
   CHAIN_FILL_SPLIT_DELETION,
@@ -343,6 +344,12 @@ async function buildGroupResult(
   // emits zero-filled Y arrays.
   const { readArrays } = buildBaseReadArrays(features, readIdPrefix)
 
+  // From the RAW features, not the extracted ones: BAM hands over its QNAME
+  // bytes and the block is decoded in one call, so no name string is ever built
+  // per read. `extractFeatureArrays` is 1:1 with its input, so index i is the
+  // same read in both.
+  const readNames = buildReadNameBlock(rawFeatures)
+
   // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
   const chainFields: Partial<PileupDataResult> = isChain
     ? buildChainResultFields(
@@ -422,6 +429,7 @@ async function buildGroupResult(
 
   return {
     ...readArrays,
+    ...readNames,
     readInterchrom,
     ...segmentArrays,
     ...gapArrays,

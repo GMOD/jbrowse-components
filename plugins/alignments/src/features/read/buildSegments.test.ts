@@ -5,7 +5,6 @@ import type { FeatureData, GapData } from '../../shared/webglRpcTypes.ts'
 function feat(id: string, start: number, end: number): FeatureData {
   return {
     id,
-    name: id,
     start,
     end,
     flags: 0,

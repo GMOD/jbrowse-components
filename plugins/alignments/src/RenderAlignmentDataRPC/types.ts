@@ -107,7 +107,11 @@ export interface PileupDataResult {
   // the few places one escapes. shared/readIdentity.ts holds the invariant.
   readKeys: ReadKeys
   readIdPrefix: string | undefined
-  readNames: string[] // read names (QNAME) for tooltip display
+  // Every read's QNAME as one string plus offsets into it — `readNameAt` slices
+  // one back out. See shared/readNameBlock.ts for why it is a block and not an
+  // array, and what that costs the two consumers that want all of them.
+  readNameBlock: string
+  readNameOffsets: Uint32Array
   readNextRefs?: string[] // mate reference name for inter-chromosomal tooltip
   readChainIndices?: Uint32Array // chain index per read (only in chain mode)
 

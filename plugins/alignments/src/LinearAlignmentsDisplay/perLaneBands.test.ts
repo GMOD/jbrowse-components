@@ -10,6 +10,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
+import { namesToBlock } from '../shared/readNameBlock.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 import { makeEmptyPileupData } from './testUtils.ts'
@@ -142,7 +143,7 @@ function oneRead(mateBp?: number): PileupDataResult {
   return {
     ...makeEmptyPileupData(),
     readKeys: ['r0'],
-    readNames: ['readA'],
+    ...namesToBlock(['readA']),
     readPositions: new Uint32Array([1000, 1100]),
     readYs: new Uint16Array(1),
     readFlags: new Uint16Array([mateBp === undefined ? 0 : SAM_FLAG_PAIRED]),

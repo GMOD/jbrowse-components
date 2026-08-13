@@ -1,5 +1,7 @@
 import { getClip, getLengthOnRef } from '@jbrowse/cigar-utils'
 
+import { namesToBlock } from '../shared/readNameBlock.ts'
+
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { RenderState } from './renderers/rendererTypes.ts'
@@ -125,7 +127,7 @@ export function makeEmptyPileupData(): PileupDataResult {
     readInterchrom: new Uint8Array(0),
     readKeys: [],
     readIdPrefix: undefined,
-    readNames: [],
+    ...namesToBlock([]),
     segmentPositions: new Uint32Array(0),
     segmentReadIndices: new Uint32Array(0),
     segmentEdgeFlags: new Uint8Array(0),
@@ -276,7 +278,7 @@ export function pileupDataFromSamRecords(
     // segments of one read share and which is what groups them
     readKeys: records.map((_, i) => `id${i}`),
     readIdPrefix: undefined,
-    readNames: records.map(rec => rec.name),
+    ...namesToBlock(records.map(rec => rec.name)),
     readSuppAlignments: records.map(rec => rec.SA),
   }
 }

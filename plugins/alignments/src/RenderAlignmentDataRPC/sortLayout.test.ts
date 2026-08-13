@@ -1,3 +1,4 @@
+import { namesToBlock } from '../shared/readNameBlock.ts'
 import { INTERBASE_SOFTCLIP } from '../shared/types.ts'
 import {
   buildLaidOutPileupMap,
@@ -90,7 +91,7 @@ function makePileupData(opts: {
   return {
     readKeys,
     readIdPrefix: undefined,
-    readNames,
+    ...namesToBlock(readNames),
     readPositions,
     readYs: new Uint16Array(numReads),
     readFlags: new Uint16Array(numReads),

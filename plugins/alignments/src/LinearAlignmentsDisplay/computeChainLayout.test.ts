@@ -1,3 +1,4 @@
+import { namesToBlock } from '../shared/readNameBlock.ts'
 import {
   buildChainConnectingData,
   computeChainLayout,
@@ -58,7 +59,7 @@ function makeChainData(opts: {
     chainFirstReadIndices,
     maxY: 0,
     readKeys,
-    readNames: readKeys.slice(),
+    ...namesToBlock(readKeys.slice()),
     readPositions: new Uint32Array(numReads * 2),
     readYs: new Uint16Array(numReads),
     readFlags: new Uint16Array(numReads),

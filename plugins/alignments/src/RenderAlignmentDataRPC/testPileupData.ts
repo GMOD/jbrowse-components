@@ -1,3 +1,5 @@
+import { namesToBlock } from '../shared/readNameBlock.ts'
+
 import type { PileupDataResult } from './types.ts'
 
 /**
@@ -41,7 +43,7 @@ export function makePileupDataResult(
     : (overrides.readFlags?.length ??
       overrides.readStrands?.length ??
       overrides.readKeys?.length ??
-      overrides.readNames?.length ??
+      (overrides.readNameOffsets && overrides.readNameOffsets.length - 1) ??
       0)
   return { ...basePileupDataResult(n), ...overrides }
 }
@@ -64,7 +66,9 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     // lexicographic compare to a numeric one.
     readKeys: Array.from({ length: n }, (_, i) => `id${i}`),
     readIdPrefix: undefined,
-    readNames: Array.from({ length: n }, (_, i) => `read${i}`),
+    // `read0read1...` with the offsets that cut it back up, which is the shape
+    // the worker ships (shared/readNameBlock.ts).
+    ...namesToBlock(Array.from({ length: n }, (_, i) => `read${i}`)),
     readTagColors: new Uint32Array(0),
     readColorCategories: new Uint8Array(0),
     segmentPositions: new Uint32Array(n * 2),

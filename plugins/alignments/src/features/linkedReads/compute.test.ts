@@ -12,6 +12,7 @@ import {
   connectionEndpoints,
   readGroupConnections,
 } from '../../shared/readGroupConnections.ts'
+import { namesToBlock } from '../../shared/readNameBlock.ts'
 import {
   LINKED_READ_COLOR_INTERCHROM,
   LINKED_READ_COLOR_PAIR_LL,
@@ -52,7 +53,7 @@ function makeData(opts: {
     readPositions[i * 2 + 1] = opts.positions[i]![1]!
   }
   return makePileupDataResult({
-    readNames: opts.names,
+    ...namesToBlock(opts.names),
     readKeys: opts.names.map((_, i) => `id${i}`),
     readFlags: new Uint16Array(opts.flags),
     readStrands: new Int8Array(opts.strands),
@@ -839,7 +840,7 @@ describe('groupReadsByName', () => {
   const named = (names: string[]) =>
     makePileupDataResult({
       readKeys: names.map((n, i) => `${n}-${i}`),
-      readNames: names,
+      ...namesToBlock(names),
     })
 
   it('groups reads by name across regions', () => {

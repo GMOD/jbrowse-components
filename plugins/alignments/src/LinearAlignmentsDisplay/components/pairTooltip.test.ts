@@ -1,3 +1,4 @@
+import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { formatChainTooltip, formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -10,7 +11,7 @@ function makeRpcData(
   overrides: Partial<PileupDataResult> = {},
 ): PileupDataResult {
   return {
-    readNames: ['readA'],
+    ...namesToBlock(['readA']),
     readPositions: new Uint32Array([1000, 1100]),
     readFlags: new Uint16Array([1]), // paired
     readInsertSizes: new Float32Array([500]),

@@ -68,7 +68,6 @@ describe('buildBaseFeatureData', () => {
     })
     const data = buildBaseFeatureData(feature, undefined)
     expect(data.id).toBe('r9')
-    expect(data.name).toBe('myread')
     expect(data.start).toBe(500)
     expect(data.end).toBe(600)
     expect(data.flags).toBe(147)

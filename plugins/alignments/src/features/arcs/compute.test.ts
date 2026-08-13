@@ -9,6 +9,7 @@ import {
 
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
+import { namesToBlock } from '../../shared/readNameBlock.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
@@ -80,7 +81,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([2000]),
     })
@@ -111,7 +112,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([0]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr2'],
       readNextPositions: new Uint32Array([5000]),
     })
@@ -151,7 +152,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([2]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr2'],
       readNextPositions: new Uint32Array([5000]),
     })
@@ -182,7 +183,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1, 1]),
       readInsertSizes: new Float32Array([0, 0, 0]),
       readPairOrientations: new Uint8Array([1, 1, 1]),
-      readNames: ['readA', 'readB', 'readC'],
+      ...namesToBlock(['readA', 'readB', 'readC']),
       readNextRefs: ['chr2', 'chr2', 'chr2'],
       readNextPositions: new Uint32Array([5000, 5000, 5000]),
     })
@@ -225,7 +226,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1]),
       readInsertSizes: new Float32Array([0, 0]),
       readPairOrientations: new Uint8Array([1, 1]),
-      readNames: ['readA', 'readB'],
+      ...namesToBlock(['readA', 'readB']),
       readNextRefs: ['chr9', 'chr2'],
       readNextPositions: new Uint32Array([5000, 7000]),
     })
@@ -251,7 +252,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1, 1]),
       readInsertSizes: new Float32Array([0, 0, 0]),
       readPairOrientations: new Uint8Array([1, 1, 1]),
-      readNames: ['readA', 'readB', 'readC'],
+      ...namesToBlock(['readA', 'readB', 'readC']),
       readNextRefs: ['chr2', 'chr2', 'chr2'],
       readNextPositions: new Uint32Array([5000, 5000, 5000]),
     })
@@ -274,7 +275,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([0]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr2'],
       readNextPositions: new Uint32Array([5000]),
     })
@@ -312,7 +313,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1]),
       readInsertSizes: new Float32Array([0, 8000]),
       readPairOrientations: new Uint8Array([0, 1]),
-      readNames: ['translocated', 'farMate'],
+      ...namesToBlock(['translocated', 'farMate']),
       readNextRefs: ['chr2', 'chr1'],
       readNextPositions: new Uint32Array([5000, 10000]),
     })
@@ -361,7 +362,7 @@ describe('computeArcsFromPileupData', () => {
       readPositions: new Uint32Array([1000, 1500]),
       readFlags: new Uint16Array([0]),
       readStrands: new Int8Array([1]),
-      readNames: ['splitRead'],
+      ...namesToBlock(['splitRead']),
       readClipAtStart: new Uint32Array([0]),
       readSuppAlignments: ['chr2,9000,+,500S500M,60,0;'],
     })
@@ -386,7 +387,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([2000]),
     })
@@ -412,7 +413,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([0]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
     })
 
     const rpcDataMap = new Map([[0, data]])
@@ -441,7 +442,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([2000]),
     })
@@ -467,7 +468,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([0]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readSuppAlignments: ['chr1,3001,+,200M,60,0;'],
     })
 
@@ -496,7 +497,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([2000]),
       readSuppAlignments: ['chr1,3001,+,200M,60,0;'],
@@ -530,7 +531,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([0]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readSuppAlignments: [
         'chr1,3001,+;chr1,4001,+,*,60,0;chr1,abc,+,200M,60,0;chr1,5001,+,200M,60,0;',
       ],
@@ -561,7 +562,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
     })
     const data1 = makePileupData({
       readPositions: new Uint32Array([5000, 5100]),
@@ -569,7 +570,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
     })
 
     // Mates are distinct records: distinct fileOffsets => distinct f.id(). (The
@@ -605,7 +606,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500]),
       readPairOrientations: new Uint8Array([2]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([500]),
     })
@@ -631,7 +632,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([10000]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([500]),
       insertSizeStats: { upper: 500, lower: 100 },
@@ -659,7 +660,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([500000]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([500000]),
       // The color comes from TLEN against this band and from nothing else, so
@@ -700,7 +701,7 @@ describe('computeArcsFromPileupData', () => {
         readStrands: new Int8Array([1]),
         readInsertSizes: new Float32Array([500000]),
         readPairOrientations: new Uint8Array([2]),
-        readNames: ['readA'],
+        ...namesToBlock(['readA']),
         readNextRefs: ['chr1'],
         readNextPositions: new Uint32Array([500000]),
       })
@@ -734,7 +735,7 @@ describe('computeArcsFromPileupData', () => {
         readStrands: new Int8Array([1]),
         readInsertSizes: new Float32Array([500]),
         readPairOrientations: new Uint8Array([orient]),
-        readNames: ['readA'],
+        ...namesToBlock(['readA']),
         readNextRefs: ['chr1'],
         readNextPositions: new Uint32Array([500]),
       })
@@ -777,7 +778,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([10000]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([9900]),
     })
@@ -814,7 +815,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1]),
       readInsertSizes: new Float32Array([4000, 7000]),
       readPairOrientations: new Uint8Array([2, 2]),
-      readNames: ['readA', 'readB'],
+      ...namesToBlock(['readA', 'readB']),
       readNextRefs: ['chr1', 'chr1'],
       readNextPositions: new Uint32Array([5000, 5000]),
     })
@@ -847,7 +848,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1]),
       readInsertSizes: new Float32Array([4000, 4000]),
       readPairOrientations: new Uint8Array([2, 2]),
-      readNames: ['readA', 'readB'],
+      ...namesToBlock(['readA', 'readB']),
       readNextRefs: ['chr1', 'chr1'],
       readNextPositions: new Uint32Array([5000, 5000]),
     })
@@ -872,7 +873,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([10000]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([500]),
       insertSizeStats: { upper: 500, lower: 100 },
@@ -899,7 +900,7 @@ describe('computeArcsFromPileupData', () => {
         readStrands: new Int8Array([1]),
         readInsertSizes: new Float32Array([tlen]),
         readPairOrientations: new Uint8Array([1]),
-        readNames: ['readA'],
+        ...namesToBlock(['readA']),
         readNextRefs: ['chr1'],
         readNextPositions: new Uint32Array([500]),
         insertSizeStats: { upper: 500, lower: 100 },
@@ -937,7 +938,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([9000]),
     })
@@ -970,7 +971,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: ['chr1'],
       readNextPositions: new Uint32Array([9000]),
       insertSizeStats: { upper: 500, lower: 0 },
@@ -1000,7 +1001,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readNextRefs: [''],
       readNextPositions: new Uint32Array([0]),
     })
@@ -1024,7 +1025,7 @@ describe('computeArcsFromPileupData', () => {
         readStrands: new Int8Array([primaryStrand]),
         readInsertSizes: new Float32Array([0]),
         readPairOrientations: new Uint8Array([0]),
-        readNames: ['readA'],
+        ...namesToBlock(['readA']),
         readSuppAlignments: [`chr1,3001,${saStrand},200M,60,0;`],
       })
     const regions = [
@@ -1061,7 +1062,7 @@ describe('computeArcsFromPileupData', () => {
         readStrands: new Int8Array([s1, s2]),
         readInsertSizes: new Float32Array([0, 0]),
         readPairOrientations: new Uint8Array([0, 0]),
-        readNames: ['readA', 'readA'],
+        ...namesToBlock(['readA', 'readA']),
       })
     const regions = [
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
@@ -1109,7 +1110,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, -1]),
       readInsertSizes: new Float32Array([0, 0]),
       readPairOrientations: new Uint8Array([0, 0]),
-      readNames: ['readA', 'readA'],
+      ...namesToBlock(['readA', 'readA']),
     })
     const regions = [
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
@@ -1131,7 +1132,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([0]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readSuppAlignments: ['chr1,3001,-,200M,60,0;'],
     })
     const regions = [
@@ -1158,7 +1159,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([0]),
-      readNames: ['readA'],
+      ...namesToBlock(['readA']),
       readSuppAlignments: ['chr1,3001,-,200M,60,0;'],
     })
     const regions = [
@@ -1197,7 +1198,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1, 1]),
       readInsertSizes: new Float32Array([0, 0, 0]),
       readPairOrientations: new Uint8Array([0, 0, 0]),
-      readNames: ['readA', 'readA', 'readA'],
+      ...namesToBlock(['readA', 'readA', 'readA']),
       readClipAtStart: new Uint32Array([200, 0, 100]),
     })
     const regions = [
@@ -1243,7 +1244,7 @@ describe('computeArcsFromPileupData', () => {
         readStrands: new Int8Array([1, -1]),
         readInsertSizes: new Float32Array([0, 0]),
         readPairOrientations: new Uint8Array([0, 0]),
-        readNames: ['readT', 'readT'],
+        ...namesToBlock(['readT', 'readT']),
         readClipAtStart: new Uint32Array([clip, 1000]),
         readSuppAlignments: [
           // flank's SA names the reverse middle segment
@@ -1284,7 +1285,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, -1]),
       readInsertSizes: new Float32Array([0, 0]),
       readPairOrientations: new Uint8Array([0, 0]),
-      readNames: ['readY', 'readY'],
+      ...namesToBlock(['readY', 'readY']),
       readClipAtStart: new Uint32Array([1000, 0]),
       readSuppAlignments: [
         'chr1,2002,-,200M1000S,60,0;',
@@ -1315,7 +1316,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1]),
       readInsertSizes: new Float32Array([0, 0]),
       readPairOrientations: new Uint8Array([0, 0]),
-      readNames: ['readA', 'readA'],
+      ...namesToBlock(['readA', 'readA']),
       readClipAtStart: new Uint32Array([0, 200]),
       readSuppAlignments: [
         // A's SA names B (off-screen) and C
@@ -1375,7 +1376,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, -1, -1]),
       readInsertSizes: new Float32Array([600, 0, 600]),
       readPairOrientations: new Uint8Array([1, 0, 1]),
-      readNames: ['readA', 'readA', 'readA'],
+      ...namesToBlock(['readA', 'readA', 'readA']),
       readClipAtStart: new Uint32Array([0, 100, 0]),
     })
     const regions = [
@@ -1416,7 +1417,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, -1]),
       readInsertSizes: new Float32Array([0, 0]),
       readPairOrientations: new Uint8Array([0, 0]),
-      readNames: ['readA', 'readA'],
+      ...namesToBlock(['readA', 'readA']),
       readClipAtStart: new Uint32Array([0, 100]),
     })
     const regions = [
@@ -1451,7 +1452,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1]),
       readInsertSizes: new Float32Array([7000, 7000]),
       readPairOrientations: new Uint8Array([1, 1]),
-      readNames: ['readA', 'readA'],
+      ...namesToBlock(['readA', 'readA']),
       readClipAtStart: new Uint32Array([0, 500]),
       readNextRefs: ['chr1', 'chr1'],
       readNextPositions: new Uint32Array([8000, 8000]),
@@ -1484,7 +1485,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1]),
       readInsertSizes: new Float32Array([7000, 7000]),
       readPairOrientations: new Uint8Array([1, 1]),
-      readNames: ['readA', 'readA'],
+      ...namesToBlock(['readA', 'readA']),
       readClipAtStart: new Uint32Array([0, 500]),
       readNextRefs: ['chr1', 'chr1'],
       readNextPositions: new Uint32Array([8000, 8000]),
@@ -1520,7 +1521,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, 1, -1]),
       readInsertSizes: new Float32Array([600, 0, 600]),
       readPairOrientations: new Uint8Array([1, 0, 1]),
-      readNames: ['readA', 'readA', 'readA'],
+      ...namesToBlock(['readA', 'readA', 'readA']),
       readClipAtStart: new Uint32Array([0, 200, 0]),
       readSuppAlignments: [
         // A's SA names B (off-screen) and C
@@ -1588,7 +1589,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, -1, 1]),
       readInsertSizes: new Float32Array([1000, 1000, 0]),
       readPairOrientations: new Uint8Array([1, 1, 0]),
-      readNames: ['pair', 'pair', 'lone'],
+      ...namesToBlock(['pair', 'pair', 'lone']),
       readSuppAlignments: ['', '', 'chr1,7001,+,200M,60,0;'],
     })
     const regions = [
@@ -1623,7 +1624,7 @@ describe('computeArcsFromPileupData', () => {
       readStrands: new Int8Array([1, -1, 1]),
       readInsertSizes: new Float32Array([200, 200, 0]),
       readPairOrientations: new Uint8Array([1, 1, 0]),
-      readNames: ['pair', 'pair', 'lone'],
+      ...namesToBlock(['pair', 'pair', 'lone']),
       readSuppAlignments: ['', '', 'chr1,30001,-,200M,60,0;'],
     })
     const regions = [
@@ -1679,7 +1680,7 @@ describe('computeArcsByGroup', () => {
       readStrands: new Int8Array(strands),
       readPairOrientations: new Uint8Array(orientations),
       readInsertSizes: new Float32Array(inserts),
-      readNames: names,
+      ...namesToBlock(names),
     })
   }
 
@@ -1735,7 +1736,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       readStrands: new Int8Array([1, 1]),
       readInsertSizes: new Float32Array([500, 500]),
       readPairOrientations: new Uint8Array([1, 1]),
-      readNames: [name, name],
+      ...namesToBlock([name, name]),
     })
     data.readKeys[0] = ids[0]
     data.readKeys[1] = ids[1]
@@ -1770,7 +1771,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([899000]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readC'],
+      ...namesToBlock(['readC']),
     })
     near.readKeys[0] = 'c1'
     const far = makePileupData({
@@ -1779,7 +1780,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([899000]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readC'],
+      ...namesToBlock(['readC']),
     })
     far.readKeys[0] = 'c2'
 
@@ -1809,7 +1810,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       readStrands: new Int8Array([1]),
       readInsertSizes: new Float32Array([0]),
       readPairOrientations: new Uint8Array([1]),
-      readNames: ['readD'],
+      ...namesToBlock(['readD']),
       readNextRefs: ['chr2'],
       readNextPositions: new Uint32Array([5000]),
     })
@@ -1998,7 +1999,7 @@ describe('identical arcs coalesce and carry their support', () => {
       readStrands: new Int8Array(starts.map(() => 1)),
       readInsertSizes: new Float32Array(starts.map(() => 500)),
       readPairOrientations: new Uint8Array(starts.map(() => 1)),
-      readNames: starts.map((_, i) => `read${i}`),
+      ...namesToBlock(starts.map((_, i) => `read${i}`)),
       readNextRefs: starts.map(() => 'chr1'),
       readNextPositions: new Uint32Array(starts.map(() => mateBp)),
     })
@@ -2068,7 +2069,7 @@ describe('identical arcs coalesce and carry their support', () => {
             readStrands: new Int8Array([1, 1, 1, 1]),
             readInsertSizes: new Float32Array([500, 500, 500, 500]),
             readPairOrientations: new Uint8Array([1, 1, 1, 1]),
-            readNames: ['a', 'b', 'c', 'd'],
+            ...namesToBlock(['a', 'b', 'c', 'd']),
             readNextRefs: Array.from({ length: 4 }, () => 'chr1'),
             readNextPositions: new Uint32Array([2000, 2000, 1000, 1000]),
           }),
@@ -2141,7 +2142,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
     readStrands: new Int8Array([1, -1]),
     readInsertSizes: new Float32Array([0, 4100]),
     readPairOrientations: new Uint8Array([1, 2]),
-    readNames: ['readA', 'readA'],
+    ...namesToBlock(['readA', 'readA']),
   })
 
   test('orientation comes from the primary mate (RL), not the supplementary (LR)', () => {
@@ -2192,7 +2193,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
       readStrands: new Int8Array([1, -1]),
       readInsertSizes: new Float32Array([4100, 4100]),
       readPairOrientations: new Uint8Array([2, 2]),
-      readNames: ['readA', 'readA'],
+      ...namesToBlock(['readA', 'readA']),
     })
     const { arcs } = computeArcsFromPileupData(
       new Map([[0, bothPrimaries]]),

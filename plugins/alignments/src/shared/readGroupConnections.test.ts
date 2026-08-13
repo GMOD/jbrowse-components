@@ -12,6 +12,7 @@ import {
   readGroupConnections,
   resolveReadGroup,
 } from './readGroupConnections.ts'
+import { namesToBlock } from './readNameBlock.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 
@@ -45,7 +46,7 @@ function entries(specs: ReadSpec[], region = 0): Entry[] {
     // sorting, which is the one thing it decides
     readClipAtStart: new Uint32Array(specs.map(s => s.clipAtStart ?? 0)),
     readKeys: specs.map(s => s.id),
-    readNames: specs.map(() => 'readA'),
+    ...namesToBlock(specs.map(() => 'readA')),
   }
   return specs.map((s, readIdx) => ({
     data,
