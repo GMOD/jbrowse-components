@@ -161,24 +161,24 @@ base: a column is a position, a row is what it would become.
 
 <Figure src="/img/genomes_basics/exon_four_ways.png" caption="One DNA binding domain exon of TP53: AlphaMissense in four substitution rows, phyloP, ClinVar coloured by clinical significance, and the reference sequence with its translation." />
 
-AlphaMissense cells are empty where the substitution leaves the residue alone;
-where a column is tall in all four rows, nothing there is predicted to be
-tolerated. Across this exon almost every column is, phyloP stays high over the
-same bases, and ClinVar's red is most of what it draws. The three methods share
-nothing: a prediction from the protein, a measurement across species, and a file
-of laboratory submissions.
+AlphaMissense cells are empty where the substitution leaves the residue alone; a
+column tall in all four rows is a position where no substitution is predicted to
+be tolerated. Most columns in this exon are, phyloP is high over the same bases,
+and most ClinVar records here are classified pathogenic. The three are
+independent: a prediction from the protein, a measurement across species, and
+submitted clinical classifications.
 
 The fourth reading needs the whole transcript. **gnomAD v4.1 - gnomAD v4.1
-Exomes** under Variation and Repeats has plenty of records over the exon; what
-separates them is frequency. **Filter by...** takes that the way it took a
-factor name: `feature.AF >= 0.001`.
+Exomes** under Variation and Repeats has many records over the exon; they differ
+in frequency. **Filter by...** takes that as readily as it took a factor name:
+`feature.AF >= 0.001`.
 
 <Figure src="/img/genomes_basics/gnomad_common_rare.png" caption="The TP53 transcript with phyloP, ClinVar and gnomAD exomes. Top: gnomAD as the checkbox gives it, densest over the coding exons. Bottom: the same track filtered to variants above 0.1 percent." />
 
-Unfiltered, gnomAD is densest where phyloP peaks, because that is where the
-exome capture reads. Filtered to what is common, it nearly empties out of the
-exons into the introns and the 3' UTR. ClinVar's pathogenic calls are in the
-place the common variation left.
+Unfiltered, gnomAD is densest where phyloP peaks, since that is what an exome
+captures. Filtered to the common variants, few remain in coding sequence; the
+rest are intronic or in the 3' UTR. ClinVar's pathogenic records are in the
+exons.
 
 <Figure src="/img/genomes_basics/variant_details.png" caption="A ClinVar variant clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
 
@@ -188,8 +188,8 @@ click gives back.
 
 ## Where the protein binds
 
-_TP53_ codes for a transcription factor, so the rest of its story is at other
-genes. _CDKN1A_ encodes p21, which p53 switches on to halt the cell cycle after
+_TP53_ codes for a transcription factor, so its binding sites are at other
+genes. _CDKN1A_ encodes p21, which p53 induces to arrest the cell cycle after
 DNA damage. Type `CDKN1A` into the location box.
 
 **JASPAR Transcription Factors - JASPAR 2026 TFBS** under Regulation holds motif
@@ -198,30 +198,30 @@ matches for every factor in the collection, so **Filter by...** asks for one:
 promoter section, which are what the matches get read against: **ENCODE cCREs -
 ENCODE4 cCREs**, **DNase (Layered)** and **H3K27ac (Layered)**.
 
-<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region, five tracks deep: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, and the layered DNase and H3K27ac signal. The shaded pair are the two motif matches inside the gene's active region; the four to their left are over the quiet part of the window." />
+<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, and the layered DNase and H3K27ac signal. The shaded pair are the two matches that fall in a cCRE with signal over them; the four to their left have neither." />
 
 Six positions match the motif well enough to be called, spread across the
-upstream stretch, and the tracks under them are not flat across it. Signal
-begins at the shaded pair and rises into the gene, and each of those two sits in
-a cCRE of its own, one a promoter and one a proximal enhancer, about 2.3 kb and
-1.4 kb upstream of the canonical transcription start site. That is where the
-response elements for p21 were described. The four further left have the motif
-and nothing under it, which is the ordinary fate of a match to a ten-base
-pattern.
+upstream region. The signal tracks are low over the upstream half and rise from
+the shaded pair toward the gene. Each of those two falls inside a cCRE, one
+classified a promoter and one a proximal enhancer, about 2.3 kb and 1.4 kb
+upstream of the canonical transcription start site, which is where the response
+elements for p21 were described. The other four have the motif and no signal
+under it, as expected for matches to a ten-base pattern.
 
-The two signal lanes disagree about which end is busiest, the usual split
-between the marks: accessibility peaks on the start site, H3K27ac carries out
-over the elements upstream. **PANDAR** and **DINOL**, drawn by the same RefSeq
-track, are p53-induced lncRNAs transcribed off the same promoter.
+The two signal tracks peak in different places, which is the usual difference
+between the marks: accessibility is highest at the transcription start site,
+H3K27ac extends over the elements upstream of it. **PANDAR** and **DINOL**,
+drawn by the same RefSeq track, are p53-induced lncRNAs transcribed from the
+same region.
 
-Zooming to the higher-scoring element puts the motif on its sequence.
+Zooming to the higher-scoring element shows the motif against the sequence.
 
 <Figure src="/img/genomes_basics/p53_element_sequence.png" caption="The distal element at base zoom: the JASPAR match, the promoter-class cCRE it sits inside, and the reference sequence. The match is called on both strands because the site is two copies of the p53 half-site end to end, which is what the boxes span." />
 
 ## Categories this page did not open
 
-Four categories carried everything above. The next tracks a reader usually wants
-sit in the ones it skipped:
+Everything above came from four of UCSC's categories. Tracks commonly wanted
+next sit in the others:
 
 - **Conserved Elements - 100 Vert. El** (Comparative Genomics) is the interval
   companion to phyloP: phyloP scores each base, phastCons calls the runs.
