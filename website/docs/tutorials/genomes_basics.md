@@ -43,9 +43,9 @@ shareable as a link.
 
 Open hg38. It arrives at its own default locus with **NCBI RefSeq - RefSeq All**
 on and the track selector already showing, which is where the next section
-starts. The hosted config ships a name index, so gene symbols resolve with no
-setup, and coordinates like `chr17:7,668,400-7,687,550` work anywhere a symbol
-does.
+starts. Type `TP53` into the location box and press Enter. The hosted config
+ships a name index, so gene symbols resolve with no setup, and coordinates like
+`chr17:7,668,400-7,687,550` work anywhere a symbol does.
 
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view after TP53 goes into the location box, with RefSeq All stacking every transcript of the gene." />
 
@@ -142,10 +142,11 @@ cCREs - ENCODE4 cCREs**, **DNase (Layered)** and **H3K27ac (Layered)**, plus
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="The promoter end of TP53, with WRAP53 running the other way out of the same interval: CpG islands, ENCODE cCREs coloured by class, and the layered DNase and H3K27ac signal, one colour per tissue, over EPDnew's promoter calls." />
 
 The two layered tracks are each one track holding dozens of tissue subtracks
-drawn over one another, which is how UCSC publishes them. Open chromatin and the
-active-promoter mark both peak where the cCREs are called promoters rather than
-enhancers, and the neighbouring gene _WRAP53_ starts transcribing the other way
-out of the same interval.
+drawn over one another, which is how UCSC publishes them. The DNase peaks are
+narrow and land on the cCREs called promoters rather than enhancers; H3K27ac is
+broader and covers the interval around them. EPDnew names a promoter for _TP53_
+and several for _WRAP53_, which starts transcribing the other way out of the
+same place.
 
 ## What a substitution would do
 
@@ -155,13 +156,17 @@ possible single-base substitution for the effect of the amino acid change it
 causes. The track is four subtracks, one per substituted base, so a column is a
 position and a row is what that position would become.
 
-<Figure src="/img/genomes_basics/alphamissense_exon.png" caption="The same DNA binding domain exon: AlphaMissense in four rows, one per substituted base, over phyloP and the reference sequence with its translation. The empty cells in each row are the positions already carrying that base." />
+<Figure src="/img/genomes_basics/alphamissense_exon.png" caption="The same DNA binding domain exon: AlphaMissense in four rows, one per substituted base, over phyloP and the reference sequence with its translation." />
 
-The two tracks agree where they should and for a reason worth reading off the
-frame: the third base of each codon dips in both, since a third-position change
-usually leaves the amino acid alone and there is nothing for either method to
-score. The gap in each AlphaMissense row is the position that already carries
-that base.
+Cells are empty where there is no amino acid change to score, which is the base
+a position already carries and the substitutions that leave the residue alone.
+Where a column is tall in all four rows, no substitution there is predicted to
+be tolerated.
+
+The two tracks are independent readings of the same exon rather than two views
+of one number: phyloP is measured, from the alignment across species, and
+AlphaMissense is predicted, from the protein. Both are read the same way in
+JBrowse, and hovering either gives the score back.
 
 ## Clinical and population variation
 
@@ -247,9 +252,9 @@ only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 
 <Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The gene track is the one the name index answered from, with GC percent and RepeatMasker under it." />
 
-The gene is the same gene and the track set is the familiar one, at a scale the
-human locus does not prepare you for: the axolotl genome is large and
-repeat-rich, and the introns are where that lands.
+The gene is the same gene and the track set is the familiar one. The span is
+not: the axolotl genome is large and repeat-rich, and RepeatMasker under the
+introns is where that shows.
 
 ## See also
 
