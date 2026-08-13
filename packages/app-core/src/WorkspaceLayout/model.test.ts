@@ -217,6 +217,60 @@ test('tiling into tabs collapses the grid back to one cell', () => {
   ])
 })
 
+// `setPendingMove` is the plugin-facing spelling of the two View menu moves
+// (jbrowse-plugin-protein3d, putting a protein view beside its genome view), and
+// a plugin asking for one is asking for its view to be ON SCREEN.
+//
+// It goes through a spec, and a spec states an arrangement rather than a
+// selection — `treeFromSpec` shows each cell's first tab. `newTab` puts the
+// moved view in a tab beside all the others, so it was landing as the one tab
+// nobody could see: the plugin's view was in the workspace and invisible, and
+// the menu's `moveViewToNewTab` had always ended with it showing.
+describe('setPendingMove', () => {
+  const shownIn = (session: ReturnType<typeof createSession>, i: number) =>
+    session.activeTabOf(session.panels[i]!.id)?.viewIds
+
+  test('a new tab is the tab that shows', () => {
+    const session = createSession()
+    session.addViewToTab(session.tabs[0]!.id, 'view-2')
+
+    session.setPendingMove({ type: 'newTab', viewId: 'view-2' }, [
+      'view-1',
+      'view-2',
+    ])
+
+    expect(session.panels).toHaveLength(1)
+    expect(session.tabs.map(t => [...t.viewIds])).toEqual([
+      ['view-1'],
+      ['view-2'],
+    ])
+    expect(shownIn(session, 0)).toEqual(['view-2'])
+  })
+
+  test('a split right shows the view, and makes its cell the active one', () => {
+    const session = createSession()
+    session.addViewToTab(session.tabs[0]!.id, 'view-2')
+
+    session.setPendingMove({ type: 'splitRight', viewId: 'view-2' }, [
+      'view-1',
+      'view-2',
+    ])
+
+    expect(session.panels).toHaveLength(2)
+    expect(shownIn(session, 1)).toEqual(['view-2'])
+    expect(session.activePanelId).toBe(session.panels[1]!.id)
+  })
+
+  test('with nothing to move relative to, the view takes the space', () => {
+    const session = createSession()
+
+    session.setPendingMove({ type: 'splitRight', viewId: 'view-1' }, ['view-1'])
+
+    expect(session.panels).toHaveLength(1)
+    expect(shownIn(session, 0)).toEqual(['view-1'])
+  })
+})
+
 test('a tiling leaves every view somewhere, and homing after it is a no-op', () => {
   const session = createSession()
   const ids = ['view-1', 'view-2', 'view-3', 'view-4', 'view-5']

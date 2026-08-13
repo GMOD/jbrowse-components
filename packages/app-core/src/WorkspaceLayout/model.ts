@@ -351,8 +351,19 @@ export function WorkspaceLayoutMixin() {
          * cannot tell you it lost a capability.
          */
         setPendingMove(move: PendingMove | undefined, allViewIds: string[]) {
-          if (move) {
-            this.applyLayoutSpec(specForPendingMove(move, allViewIds))
+          if (!move) {
+            return
+          }
+          this.applyLayoutSpec(specForPendingMove(move, allViewIds))
+          // Show where the view went. A spec states an arrangement and not a
+          // selection, so `treeFromSpec` shows each cell's FIRST tab — and
+          // `newTab` puts the moved view in a tab beside the others, which
+          // makes it the one tab nobody can see. The plugin asking for this is
+          // asking for its view to be on screen; `moveViewToNewTab`, the same
+          // gesture from the View menu, has always ended with it there.
+          const home = tabContainingView(self.tree, move.viewId)
+          if (home) {
+            this.setActiveTab(home.panel.id, home.tab.id)
           }
         },
         /**
