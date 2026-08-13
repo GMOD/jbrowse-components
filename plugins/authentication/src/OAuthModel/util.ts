@@ -32,8 +32,19 @@ export async function finishOAuthRedirect(
   redirectUri: string,
   params: OAuthWindowParams,
 ): Promise<string | undefined> {
-  const redirectUrl = new URL(redirectUri.replace('#', '?'))
+  const redirectUrl = new URL(redirectUri)
+  // Both halves: the code flow answers in the query string, the implicit flow
+  // in the fragment. Read as a union rather than by rewriting the '#' into a
+  // '?', which produced a second '?' — and so one unsplittable parameter — for
+  // any redirect that carried both.
   const urlParams = new URLSearchParams(redirectUrl.search)
+  for (const [key, value] of new URLSearchParams(
+    redirectUrl.hash.replace('#', ''),
+  )) {
+    if (!urlParams.has(key)) {
+      urlParams.set(key, value)
+    }
+  }
   if (params.expectedState && urlParams.get('state') !== params.expectedState) {
     throw new Error('OAuth state mismatch — possible CSRF attack')
   }

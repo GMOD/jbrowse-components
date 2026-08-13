@@ -25,6 +25,12 @@ export class GoogleDriveFile extends RemoteFileWithRangeCache {
       // "12345" — passed on untouched it satisfies `Stats` in name only, and
       // the first caller to do arithmetic on it concatenates instead
       .then(({ size }) => ({ size: Number(size) }))
+      // a cached rejection is permanent, so one dropped request would take
+      // every later stat() of this file with it
+      .catch((error: unknown) => {
+        this.statsPromise = undefined
+        throw error
+      })
     return this.statsPromise
   }
 }

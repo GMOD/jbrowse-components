@@ -224,17 +224,21 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        tokenPromise = new Promise((resolve, reject) => {
-          self.getTokenFromUser(
-            token => {
-              self.storeToken(token)
-              resolve(token)
-            },
-            error => {
-              clearToken()
-              reject(error)
-            },
-          )
+        // The catch, rather than a clearToken() in the reject callback: a
+        // getTokenFromUser that throws on the way *in* — the token-entry
+        // accounts reach for `root.session` to queue their dialog, and an
+        // embedded root need not have one — never calls either callback, and
+        // the rejected promise it leaves behind would then be handed to every
+        // request for the rest of the session. Failing to get a token must
+        // never be a state the account stays in.
+        tokenPromise = new Promise<string>((resolve, reject) => {
+          self.getTokenFromUser(token => {
+            self.storeToken(token)
+            resolve(token)
+          }, reject)
+        }).catch((error: unknown) => {
+          clearToken()
+          throw error
         })
         return tokenPromise
       },

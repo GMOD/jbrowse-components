@@ -58,6 +58,16 @@ describe('finishOAuthRedirect', () => {
     expect(stored).toEqual(['code-exchanged-token'])
   })
 
+  // rewriting the '#' into a '?' gave the URL two of them, and the whole
+  // fragment then parsed as one value of the last query parameter
+  it('reads the fragment even when the redirect also carries a query', async () => {
+    const token = await finishOAuthRedirect(
+      'http://localhost/auth?session=abc#access_token=my-token&state=s',
+      makeParams({ expectedState: 's' }),
+    )
+    expect(token).toBe('my-token')
+  })
+
   it('throws on state mismatch', async () => {
     await expect(
       finishOAuthRedirect(
