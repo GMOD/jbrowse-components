@@ -179,6 +179,18 @@ disagree in the under-reserving direction paint arcs over the pileup. Junction
 identity is `junctionKey` — refName included, because two chromosomes in view
 share nothing but a bp number line.
 
+**A band's height MINUS its reserved margin is floored at 0.** `clampBandHeight`
+is a constraint on the drag handle, not on what a config slot or a session
+snapshot may declare, so every "height less the padding it reserves" is
+reachable at a negative value — and negative is never merely small. It has
+landed three times, each failing differently: the arc band's `arcAvailH` gave a
+negative `destY`, so a dome's `ry` went negative and `ctx.ellipse` **threw**
+(IndexSizeError) on every Canvas2D frame; sashimi's `effectiveHeight` flipped
+`dir * arcHeight` and curved every up-arc down through the pileup; the tooltip's
+coverage bar computed a negative CSS height, which the browser drops, so the bar
+silently vanished. Floor it at the one place the consumers share, not at each
+use.
+
 `computeArcBand` is the single source of truth for the arc band and is decoupled
 from `showCoverage` — don't reintroduce a `covH > 0` gate. Arc and sashimi
 strips are reserved **per section**, so resize handles gate on the section,
