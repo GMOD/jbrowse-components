@@ -6,9 +6,6 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * What one anchor coordinate has learned from the blocks seen so far: the
  * widest block containing it, and failing that the nearest block ending to its
  * left and the nearest starting to its right.
- *
- * A mutable bag, one per coordinate per call, because the loop that fills it
- * runs per frame over every loaded block — see the note at the loop.
  */
 interface Accumulator {
   x: number
@@ -57,22 +54,19 @@ function offer(
       a.leftAt = atHi
     }
   } else if (aLo < a.rightStart) {
-    // starts right of `x`, which is the only case left, and nearer than any
-    // other seen so far
     a.rightStart = aLo
     a.rightAt = atLo
   }
 }
 
 /**
- * The coordinate's mapped position.
+ * The coordinate's mapped position: through its block, or across the gap
+ * between the two it lies between, which is continuous because the gap
+ * interpolation starts from exactly the value each block gives at its own edge.
  *
- * Inside a block, through that block. Between two, linearly between the
- * neighbours' facing edges — which is continuous, because at a block boundary
- * the gap interpolation starts from exactly the value the block itself gives
- * there. Off either end, the outermost block's edge: past the last alignment
- * nothing is known, and extrapolating a scale measured elsewhere would invent a
- * correspondence rather than admit there is none.
+ * Off either end, the outermost block's edge rather than an extrapolation —
+ * past the last alignment nothing is known, and a scale measured elsewhere
+ * would invent a correspondence rather than admit there is none.
  */
 function resolve(a: Accumulator) {
   if (a.insideWidth >= 0) {
@@ -92,26 +86,13 @@ function resolve(a: Accumulator) {
 /**
  * Where the anchor window maps to, across every alignment under it.
  *
- * A CONTINUOUS function of the window, which is the whole reason this is not
- * just the union of the mapped blocks. The union is the right ANSWER — it is
- * what aligns to the window — but it is a step function: its edges are set by
- * whichever blocks are currently outermost, so they sit still through a pan and
- * then jump when a block enters or leaves. Following it literally measured as 1
- * movement in 30 drag steps on grape/peach at 5 Mb, which is a stair, and a
- * stair is what the user sees as jumpy. Mapping each window EDGE instead —
- * through the block it sits in, or across the gap between the two it sits
- * between — moves smoothly and agrees with the union wherever the union is
- * defined.
- *
- * ONE TARGET CONTIG, chosen by summed overlap. A genome-scale window overlaps
- * blocks landing on several contigs of the other assembly, and an answer
- * spanning all of them is not a place. Same rule `followAnchorWindow` uses to
- * pick the anchor's own contig, and a no-op when only one contig is involved.
- *
- * Interpolated per block rather than CIGAR-walked: this serves the case where
- * the window is wider than one alignment, so the answer is an extent rather
- * than a coordinate, and the exact walk still runs where a window sits inside a
- * single block.
+ * Each window EDGE mapped, rather than the union of the mapped blocks. The
+ * union is the right ANSWER — it is what aligns to the window — but it is a
+ * step function: its edges are set by whichever blocks are currently outermost,
+ * so they sit still through a pan and then jump when a block enters or leaves.
+ * Following it literally measured as 1 movement in 30 drag steps on grape/peach
+ * at 5 Mb. Mapping the edges is continuous and agrees with the union wherever
+ * the union is defined.
  */
 export function followWindowMapping({
   data,
@@ -139,15 +120,20 @@ export function followWindowMapping({
   } = window
   const n = refNames.length
 
-  // Which contig of the other assembly most of the window aligns to, totalled
-  // in two PARALLEL ARRAYS rather than a Map. A Map costs a hash, a get and a
-  // set per element, and this walks every loaded block: at 500k that alone
-  // measured most of the pass. The names are few — one contig in the ordinary
-  // case, a handful across a rearrangement — so a linear scan of the array is
-  // shorter than hashing, and `lastName` makes the common run of identical
-  // names a pointer compare and nothing else.
+  // ONE PASS, AND NOTHING ALLOCATED PER BLOCK. This runs per frame over every
+  // loaded block, and a whole-genome PAF's loaded set runs to hundreds of
+  // thousands. The readable version — a helper returning a small object per
+  // block, called once per edge — measured 51ms a frame at 500k, three times a
+  // 60fps budget, against 5ms for a bare pass over the same arrays. So the cost
+  // is traversals and allocation, which is why every candidate contig
+  // accumulates as it goes rather than the winner being chosen in a pass of its
+  // own, and why the book-keeping is parallel arrays rather than a Map. The
+  // names are few, so a linear scan of them beats hashing and `lastName` makes
+  // the common run of identical ones a pointer compare.
   const names: string[] = []
   const totals: number[] = []
+  const startAt: Accumulator[] = []
+  const endAt: Accumulator[] = []
   let lastName: string | undefined
   let lastIdx = -1
   for (let i = 0; i < n; i++) {
@@ -155,12 +141,6 @@ export function followWindowMapping({
       refNames[i] !== windowRefName ||
       (mateAssembly !== undefined && mateAssemblyNames[i] !== mateAssembly)
     ) {
-      continue
-    }
-    const overlap =
-      Math.min(Math.max(starts[i]!, ends[i]!), windowEndBp) -
-      Math.max(Math.min(starts[i]!, ends[i]!), windowStartBp)
-    if (overlap <= 0) {
       continue
     }
     const name = otherRefNames[i]!
@@ -171,41 +151,20 @@ export function followWindowMapping({
         lastIdx = names.length
         names.push(name)
         totals.push(0)
+        startAt.push(newAccumulator(windowStartBp))
+        endAt.push(newAccumulator(windowEndBp))
       }
-    }
-    totals[lastIdx]! += overlap
-  }
-  let target: string | undefined
-  let best = 0
-  for (let i = 0; i < names.length; i++) {
-    if (totals[i]! > best) {
-      best = totals[i]!
-      target = names[i]
-    }
-  }
-  if (target === undefined) {
-    return undefined
-  }
-
-  // BOTH EDGES IN ONE PASS, AND NOTHING ALLOCATED INSIDE IT. This runs per
-  // frame while a drag is in progress, over every loaded block, and a
-  // whole-genome PAF's loaded set runs to hundreds of thousands of them. The
-  // readable version — a helper returning a small object per block, called once
-  // per edge — measured 51ms a frame at 500k blocks, three times a 60fps
-  // budget, and the object churn rather than the arithmetic was almost all of
-  // it: a single bare pass over the same arrays costs 5ms.
-  const windowStart = newAccumulator(windowStartBp)
-  const windowEnd = newAccumulator(windowEndBp)
-  for (let i = 0; i < n; i++) {
-    if (
-      otherRefNames[i] !== target ||
-      refNames[i] !== windowRefName ||
-      (mateAssembly !== undefined && mateAssemblyNames[i] !== mateAssembly)
-    ) {
-      continue
     }
     const aLo = Math.min(starts[i]!, ends[i]!)
     const aHi = Math.max(starts[i]!, ends[i]!)
+    // ONE TARGET CONTIG, by summed overlap: a genome-scale window reaches
+    // several of the other assembly's, and an answer spanning them is not a
+    // place. One only reached by blocks off the window's ends totals zero and
+    // so never wins, which is what stops a neighbour from being picked.
+    const overlap = Math.min(aHi, windowEndBp) - Math.max(aLo, windowStartBp)
+    if (overlap > 0) {
+      totals[lastIdx]! += overlap
+    }
     const bLo = Math.min(otherStarts[i]!, otherEnds[i]!)
     const bHi = Math.max(otherStarts[i]!, otherEnds[i]!)
     // `atLo`/`atHi` are the mate coordinates this block's LEFT and RIGHT anchor
@@ -214,11 +173,22 @@ export function followWindowMapping({
     const flip = data.strands[i] === -1
     const atLo = flip ? bHi : bLo
     const atHi = flip ? bLo : bHi
-    offer(windowStart, aLo, aHi, atLo, atHi)
-    offer(windowEnd, aLo, aHi, atLo, atHi)
+    offer(startAt[lastIdx]!, aLo, aHi, atLo, atHi)
+    offer(endAt[lastIdx]!, aLo, aHi, atLo, atHi)
   }
-  const p = resolve(windowStart)
-  const q = resolve(windowEnd)
+  let target = -1
+  let best = 0
+  for (let i = 0; i < names.length; i++) {
+    if (totals[i]! > best) {
+      best = totals[i]!
+      target = i
+    }
+  }
+  if (target < 0) {
+    return undefined
+  }
+  const p = resolve(startAt[target]!)
+  const q = resolve(endAt[target]!)
   if (p === undefined || q === undefined) {
     return undefined
   }
@@ -226,7 +196,7 @@ export function followWindowMapping({
   const hi = Math.max(p, q)
   return hi > lo
     ? {
-        refName: target,
+        refName: names[target]!,
         start: Math.max(0, Math.floor(lo)),
         // at least one base, since a zero-width span assembles into an inverted
         // locstring
