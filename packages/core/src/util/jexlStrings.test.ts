@@ -138,6 +138,13 @@ describe('color functions', () => {
 // `cookbook.md`) and this is the reason they have to: every OTHER way of reading
 // an INFO value still coerces, which is what makes the one that doesn't so easy
 // to write.
+//
+// **The fork is fixed, so the second assertion is a release canary.** GMOD/jexl
+// restores the coercion after 4.0.0; when a bump lands here, `[feature.INFO.X]`
+// answers `'red'` rather than `undefined` and this fails. That is the test
+// working — update the expectation and say which version restored it. Nothing
+// else has to move: `[0]` reads the same either way, so the configs and the docs
+// teaching it stay correct across the bump.
 describe('a VCF INFO value indexes a lookup table only through [0]', () => {
   const COLORS = "{'Pathogenic':'red','Benign':'blue'}"
   const feature = { INFO: { CLNSIG: ['Pathogenic'], AF: [0.25] } }
