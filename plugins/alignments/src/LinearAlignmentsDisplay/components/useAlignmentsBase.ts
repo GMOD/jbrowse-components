@@ -357,46 +357,18 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     }
   }
 
-  function resolveHoverAt(canvasX: number, canvasY: number) {
-    const { result, picked } = runHitTest(canvasX, canvasY)
+  // What one hit hovers to, minus the coverage band every branch shares. A
+  // function returning the state rather than five `setHoverState` calls: the
+  // fields are the same five in every branch, so a branch could differ from its
+  // neighbours by forgetting one rather than by deciding anything — which is
+  // exactly what happened to `hoverCoverageBand`, left stale by the one branch
+  // that did not mention it (the note on `setHoverState` records it).
+  type HoverState = Omit<
+    Parameters<typeof model.setHoverState>[0],
+    'hoverCoverageBand'
+  >
 
-    // Screen-px coverage band of the hovered section, so the tooltip's vertical
-    // bar lands on the hovered group's coverage band rather than always the top.
-    const hoverCoverageBand = picked
-      ? {
-          topOffset: picked.coverageTopOffset,
-          coverageHeight: picked.section.coverageHeight,
-        }
-      : undefined
-
-    // Arcs are painted AFTER coverage by both backends (see the pass order in
-    // drawAlignmentBlocks), so in up mode an arc is the ink on top of the
-    // histogram it overlays — and the ink under the cursor is what a hover
-    // should name. Safe to put first because this is a stroke test, not a band
-    // test: it only answers within a few px of a curve, so the rest of the
-    // coverage band still reaches `hitTestCoverage` below untouched.
-    const arc = picked
-      ? resolveArcHover(canvasX, canvasY, picked.section)
-      : undefined
-    if (arc) {
-      model.setHoverState({
-        // FALSE, unlike every other tooltip branch here: `overCigarItem` is the
-        // pointer cursor, and the pointer is a promise that clicking does
-        // something. An arc carries no read id — the feed is junctions, not
-        // features — so there is nothing to select or open, and `handleClick`
-        // deliberately swallows the click rather than acting on whatever is
-        // under the arc. A tooltip and a highlight with a default cursor is the
-        // honest picture of a mark that is informational only.
-        overCigarItem: false,
-        featureIdUnderMouse: undefined,
-        mouseoverExtraInformation: arc.tooltip,
-        hoveredArcHighlight: arc.highlight,
-        hoverCoverageBand,
-        highlightedChainReadIds: [],
-      })
-      return
-    }
-
+  function hoverStateForResult(result: HitTestResult): HoverState {
     switch (result.type) {
       case 'indicator':
       case 'coverage': {
@@ -417,17 +389,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
                 result.resolved.rpcData,
                 result.resolved.refName,
               )
-        model.setHoverState({
+        return {
           overCigarItem: tooltip !== undefined,
           featureIdUnderMouse: undefined,
           mouseoverExtraInformation: tooltip,
-          hoverCoverageBand,
           highlightedChainReadIds: [],
-        })
-        return
+        }
       }
       case 'modification':
-        model.setHoverState({
+        return {
           overCigarItem: true,
           featureIdUnderMouse: result.featureHit?.id,
           mouseoverExtraInformation: formatModificationTooltip(
@@ -435,28 +405,24 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             result.resolved.refName,
             snpBaseFromCigar(result.cigarHit),
           ),
-          hoverCoverageBand,
           highlightedChainReadIds: hoveredChainReadIds(
             result.featureHit,
             result.resolved,
           ),
-        })
-        return
+        }
       case 'cigar':
-        model.setHoverState({
+        return {
           overCigarItem: true,
           featureIdUnderMouse: result.featureHit?.id,
           mouseoverExtraInformation: formatCigarTooltip(result.hit),
-          hoverCoverageBand,
           highlightedChainReadIds: hoveredChainReadIds(
             result.featureHit,
             result.resolved,
           ),
-        })
-        return
+        }
       case 'feature': {
         const { hit, resolved } = result
-        model.setHoverState({
+        return {
           overCigarItem: false,
           featureIdUnderMouse: hit.id,
           // A chain reports the whole template (both mates, insert size, pair
@@ -464,15 +430,61 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           mouseoverExtraInformation: model.isChainMode
             ? formatChainTooltip(resolved.rpcData, hit.index, resolved.refName)
             : formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
-          hoverCoverageBand,
           highlightedChainReadIds: hoveredChainReadIds(hit, resolved),
-        })
-        return
+        }
       }
       case 'none':
-        model.clearMouseoverState()
-        return
+        // The same five fields `clearMouseoverState` writes, which is what a
+        // miss has always meant here.
+        return {
+          overCigarItem: false,
+          featureIdUnderMouse: undefined,
+          mouseoverExtraInformation: undefined,
+          highlightedChainReadIds: [],
+        }
     }
+  }
+
+  function resolveHoverAt(canvasX: number, canvasY: number) {
+    const { result, picked } = runHitTest(canvasX, canvasY)
+
+    // Arcs are painted AFTER coverage by both backends (see the pass order in
+    // drawAlignmentBlocks), so in up mode an arc is the ink on top of the
+    // histogram it overlays — and the ink under the cursor is what a hover
+    // should name. Asked ahead of the pileup pipeline for that reason, and safe
+    // there because this is a stroke test, not a band test: it only answers
+    // within a few px of a curve, so the rest of the coverage band still reaches
+    // `hitTestCoverage` untouched.
+    const arc = picked
+      ? resolveArcHover(canvasX, canvasY, picked.section)
+      : undefined
+
+    model.setHoverState({
+      ...(arc
+        ? {
+            // FALSE, unlike every other tooltip branch: `overCigarItem` is the
+            // pointer cursor, and the pointer is a promise that clicking does
+            // something. An arc carries no read id — the feed is junctions, not
+            // features — so there is nothing to select or open, and
+            // `handleClick` deliberately swallows the click rather than acting
+            // on whatever is under the arc.
+            overCigarItem: false,
+            featureIdUnderMouse: undefined,
+            mouseoverExtraInformation: arc.tooltip,
+            hoveredArcHighlight: arc.highlight,
+            highlightedChainReadIds: [],
+          }
+        : hoverStateForResult(result)),
+      // Screen-px coverage band of the hovered section, so the tooltip's
+      // vertical bar lands on the hovered group's coverage band rather than
+      // always the top one. Written once, for every branch at once.
+      hoverCoverageBand: picked
+        ? {
+            topOffset: picked.coverageTopOffset,
+            coverageHeight: picked.section.coverageHeight,
+          }
+        : undefined,
+    })
   }
 
   function handleClick(e: React.MouseEvent) {
