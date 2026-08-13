@@ -1,6 +1,6 @@
 ---
 name: bam-stack-integration
-description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the three seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it.
+description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the four seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
 ---
 
 # The BAM stack, layer by layer
@@ -277,6 +277,52 @@ cannot help. `make-tiled-fixture.sh` is the way out, and it needs no read
 simulator: tile the contig and shift a copy of each read into each tile, so the
 reference tiles and every copy still aligns against identical sequence.
 
+## Seam 4 — the SA lookup never joined the MM/Mm one
+
+`getTagAlt` exists because `getTag('MM') ?? getTag('Mm')` walked the whole tag
+block twice on every read of a file that carries neither, and that pair was
+12.9% of a 1000x short-read query. `extractFeatureArrays` makes **two**
+unconditional per-read tag reads, not one:
+
+```
+suppAlignments.push(getTag(feature, 'SA') ?? '')       // arcs
+const mmTag = getTagAlt(feature, 'MM', 'Mm')           // extractModifications
+```
+
+`_findTag` proves absence by walking every tag on the record, so on an ordinary
+short-read BAM that is still two full walks per read — the fix went to one of
+them and the other is the same shape. `benches/tagAndSeq.probe.ts` sizes it
+against the mismatch walk, which is the work that actually renders the pileup;
+min of 25 rotated rounds, control 0.94-1.03x:
+
+| fixture | reads | SA | MM/Mm | both | fused | mismatch walk |
+| --- | --: | --: | --: | --: | --: | --: |
+| 1000x.shortread | 153,677 | 18.5ms | 21.0ms | 36.1ms | 23.1ms | 41.3ms |
+| 200x.shortread | 31,133 | 3.6ms | 4.2ms | 7.5ms | 10.1ms | 8.5ms |
+| 200x.longread | 335 | 2.5ms | 2.6ms | 4.7ms | 3.0ms | 55.7ms |
+| 200x.longread.mod | 335 | 3.3ms | 3.5ms | 6.9ms | 3.6ms | 56.1ms |
+
+**Read the short-read row.** Proving two absences costs 36.1ms against 41.3ms of
+mismatch walking — 87% of the render work, to answer nothing. A single pass
+matching three names is 1.57x better there, and 1.55-1.91x on long reads where
+the absolute numbers are small. `fused` is a hand-rolled three-name walk in the
+probe, not an API: what it would take is an N-name lookup in `@gmod/bam`
+alongside `getTagAlt`, and the probe exists to decide whether that is worth
+adding.
+
+Two cautions before building it. The 200x short-read row went the **wrong way**
+(0.75x) and reproduced, while the 1000x row of the same data shape went 1.57x —
+so the win is not uniform in read count and wants explaining before it is
+claimed. And the fused walk in the probe reaches private fields; a real
+implementation lives inside `BamRecord`, where `tagValueEnd` is already the
+shared cursor `_findTag`, `getTagAlt` and `_computeTags` walk with, so it should
+be an argument-count change rather than a fourth copy of the walk.
+
+The consumer-side alternative is to stop reading `SA` unconditionally — it feeds
+`readSuppAlignments`, which only the arc overlay reads. That means a new
+`rpcProps` entry, which invalidates the fetch when it toggles, so it is a worse
+trade than it looks; noted so the next reader does not have to rediscover why.
+
 ## Things checked and found already integrated
 
 Stated so the next audit does not re-derive them.
@@ -292,6 +338,18 @@ Stated so the next audit does not re-derive them.
 - **The pool is wired everywhere it can be.** `BamAdapter` plus all nine
   `TabixIndexedFile` sites. The remaining `@gmod/bgzf-filehandle` imports in
   core and `plugins/maf` are whole-file `unzip`, which has no blocks to spread.
+- **`seq` is decoded twice per read in the modification color modes, and the
+  obvious fix does not pay.** `extractModifications` reads it for
+  `getModPositions`, `computeReadBaseCounts` reads it for the base pileup, and
+  `BamRecord.seq` is deliberately not memoized — records live in a shared chunk
+  LRU and a 50 kb string per read is exactly what should not be pinned there.
+  `benches/tagAndSeq.probe.ts` prices the second ask at **+14.9ms** per query on
+  `200x.longread.mod.bam`, against 56ms of mismatch walking. Reading the base out
+  of `NUMERIC_SEQ`'s nibbles instead is the obvious answer and measures at
+  **parity** — see the `+packedSEQ` arm in `benches/readBaseCounts.bench.ts` and
+  the REJECTED_IDEAS entry. What is left is sharing the one decoded string
+  between the two consumers, which is a worker-pipeline change rather than a
+  library one: they are in different phases of `executeRenderAlignmentData`.
 - **Cancellation reaches the socket.** `withStopTokenSignal` on the chunk reads,
   refcounted aborts in `RemoteFileWithRangeCache` so one reader giving up does
   not cancel a fetch another still wants, and shared-read semantics on the

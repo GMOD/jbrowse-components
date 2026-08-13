@@ -253,6 +253,22 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `@gmod/bam` hit the same class in its own mate path and still guards it, and
   because keying it on the record's number instead of its id string made it
   nearly free anyway (12.5% → 5.9% of busy worker time).
+- **Reading a read's bases out of `NUMERIC_SEQ` instead of decoding `seq`** —
+  measured 2026-08-13 in `computeReadBaseCounts` and declined at **parity**
+  (6.44x vs 6.36x, 6.95x vs 7.22x against the shipped baseline, across two
+  samples). It looks like a clear win and the reasoning is worth keeping,
+  because it applies to any consumer of BAM's packed SEQ. Once that function
+  walks only the modified columns it reads ~28% of a long read's bases, so
+  decoding the other 72% into a string reads as pure waste. It is not: the
+  decode is a `TextDecoder` pass over a `Uint16Array` of precomputed base pairs
+  at ~GB/s, and `charCodeAt` on the flat result is a single load — while the
+  nibble path pays a shift, a mask and a second table indirection
+  (`CHAR_CODE_FROM_NIBBLE`) at every column. They trade evenly. It would also
+  fork the function, since CRAM has no packed SEQ at all — `getReadBases()` is a
+  string, and a cached one. Kept as a live arm in
+  `plugins/alignments/benches/readBaseCounts.bench.ts` so the negative stays
+  reproducible. Same shape as the VCF entry below: the decode is nearly free and
+  the byte scan is not faster.
 - **Consolidating jest test files** — not the lever. Cold babel transform is a
   ~39.4s serial prefix per worker; app boot is ~1.3s median per suite. Cache
   warmth is the lever.
