@@ -89,54 +89,17 @@ Two things to know before writing one:
 
 A `jexl:` color is a lookup table only its author can read, so declare what it
 means in the `legend` slot; the key is drawn over the track and can be
-dismissed.
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "dtu_muscle_vs_liver",
-  "name": "Transcript usage: skeletal muscle vs liver (satuRn)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz"
-  },
-  "displayDefaults": {
-    "subfeatureLabels": "below",
-    "color": "jexl:feature.dtu=='muscle'?(parseFloat(feature.dif)>0.6?'#901e21':parseFloat(feature.dif)>0.3?'#c63335':'#d5716a'):feature.dtu=='liver'?(parseFloat(feature.dif)<-0.6?'#124f95':parseFloat(feature.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
-    "utrColor": "jexl:feature.dtu=='muscle'?(parseFloat(feature.dif)>0.6?'#901e21':parseFloat(feature.dif)>0.3?'#c63335':'#d5716a'):feature.dtu=='liver'?(parseFloat(feature.dif)<-0.6?'#124f95':parseFloat(feature.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
-    "mouseover": "jexl:feature.transcript_name+(feature.dif?' — ΔIF '+feature.dif+' (usage '+feature.if_muscle+' muscle vs '+feature.if_liver+' liver, FDR '+feature.fdr+')':' — not tested')",
-    "legend": [
-      { "label": "muscle-preferred, ΔIF > 0.6", "color": "#901e21" },
-      { "label": "muscle-preferred, ΔIF 0.3–0.6", "color": "#c63335" },
-      { "label": "muscle-preferred, ΔIF 0.1–0.3", "color": "#d5716a" },
-      { "label": "no usage shift (FDR ≥ 0.05)", "color": "#b2b1ac" },
-      { "label": "liver-preferred, ΔIF 0.1–0.3", "color": "#6394d5" },
-      { "label": "liver-preferred, ΔIF 0.3–0.6", "color": "#2370cc" },
-      { "label": "liver-preferred, ΔIF > 0.6", "color": "#124f95" }
-    ]
-  }
-}
-```
-
-`mouseover` is the other half of the encoding: the ramp gives a reader the
-direction and roughly the size at a glance, and hovering a transcript reads back
-the numbers behind its color.
+dismissed. `mouseover` is the other half of the encoding, reading the numbers
+behind a transcript's color back on hover.
 
 See the [jexl configuration guide](/docs/config_guides/jexl) for the expression
 syntax.
 
-At the whole gene the encoding earns its keep: ten annotated isoforms, the two
-the test separated colored, and the eight it could not staying neutral rather
-than competing for attention. Zoomed to one cassette exon, the same color says
-which isoform the reads under it belong to.
+<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38). ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the change in isoform fraction that satuRn measured between the two tissues. ATP5F1C-201 (muscle-preferred) and ATP5F1C-202 (liver-preferred) carry the color and the other eight are gray. The marked column is the cassette exon: no muscle reads, a clear liver peak, and of the two colored transcripts only the liver-preferred one draws an exon there." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 
-<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38). ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the change in isoform fraction that satuRn measured between the two tissues. ATP5F1C-201 (muscle-preferred) and ATP5F1C-202 (liver-preferred) carry the color and the other eight are gray. The marked column is the 37 bp cassette exon: no muscle reads, a clear liver peak, and of the two colored transcripts only the liver-preferred one draws an exon there." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
-
-The [differential transcript usage tutorial](/docs/tutorials/dtu) works this
-dataset through end to end: where the statistic comes from, what the gray
-transcripts are controlling for, and the pipeline that writes the attributes
-this expression reads.
+The [differential transcript usage tutorial](/docs/tutorials/dtu) has the track
+configuration behind that figure, and the pipeline that writes the attributes
+the expression reads.
 
 ## Peptide lettering
 
