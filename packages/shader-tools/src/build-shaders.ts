@@ -58,11 +58,13 @@ import {
 } from './shader-codegen/liftReport.ts'
 import {
   assertOutPathsUnique,
+  parseBlend,
   parseExportedConsts,
   parseJsExports,
   parseJsSkips,
   parseOutPath,
   parseTargets,
+  parseTopology,
   parseVertsPerInstance,
   stripComments,
 } from './shader-codegen/parseDirectives.ts'
@@ -708,6 +710,8 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       textures: findCombinedSamplers(reflection),
       vertsPerInstance: parseVertsPerInstance(source, imported),
       exportedConsts: parseExportedConsts(source, imported),
+      topology: parseTopology(source),
+      blend: parseBlend(source),
     }
     // The interface is emitted FIRST, because it is the one that refuses an
     // unmodeled uniform/instance field or a second sampler. Writing the strings

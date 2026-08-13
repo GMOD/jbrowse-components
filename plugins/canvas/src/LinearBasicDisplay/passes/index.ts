@@ -57,11 +57,19 @@ export const ArrowPass: PipelineDescriptor = slangPass({
   mod: arrowShader,
 })
 
-// Chevron reuses line's vertex buffer (bufferStride/bufferAttributes from
-// `line`), and its per-instance vertex count scales with a consumer-chosen cap
-// on how many chevrons one line can host — so it's built per consumer. The
-// per-chevron half of that product is the shader's (`CHEVRON_VERTS`, which its
-// own `vid` split reads), not a 12 re-typed here.
+// Chevron is drawn over line's vertex buffer (`drawPass(chevron, region,
+// bufferPassId=line)`), and its per-instance vertex count scales with a
+// consumer-chosen cap on how many chevrons one line can host — so it's built per
+// consumer. Both halves of that product now come from somewhere that can't
+// drift: the cap from the renderer, `CHEVRON_VERTS` from the `vid` split in the
+// shader itself.
+//
+// Nothing here restates line's layout. `chevron.slang` declares the same
+// `LineInstance` struct that `line.slang` does (`lineInstance.slang` is why both
+// can), so its own generated stride and VERTEX_ATTRIBUTES already *are* line's —
+// the two `bufferStride`/`bufferAttributes` overrides this used to pass were
+// copying that rather than causing it, and would have masked the structs
+// drifting apart.
 export function makeChevronPass(
   maxChevronsPerLine: number,
 ): PipelineDescriptor {
@@ -69,8 +77,6 @@ export function makeChevronPass(
     id: CHEVRON_PASS,
     mod: chevronShader,
     verticesPerInstance: maxChevronsPerLine * chevronShader.CHEVRON_VERTS,
-    bufferStride: lineShader.INSTANCE_STRIDE_BYTES,
-    bufferAttributes: lineShader.VERTEX_ATTRIBUTES,
   })
 }
 

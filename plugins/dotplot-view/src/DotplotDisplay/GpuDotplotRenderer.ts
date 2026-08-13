@@ -21,7 +21,6 @@ export const DOTPLOT_PASSES: PipelineDescriptor[] = [
   slangPass({
     id: PASS_LINE,
     mod: dotplotShader,
-    blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
   }),
 ]
 

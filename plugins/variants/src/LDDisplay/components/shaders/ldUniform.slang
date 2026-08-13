@@ -2,6 +2,7 @@
 // coordinates within the triangular grid come from `instance_index` decoded
 // via decodeTriangular. Cell pitch is `uniformW` (shared across all cells).
 //! targets: wgsl, glsl
+//! blend: premultiplied
 
 import ldUniforms;
 import hpmath;

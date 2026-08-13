@@ -21,7 +21,7 @@ const PASS_RECT = 'rect'
 
 export const MAF_PASSES = [
   {
-    ...slangPass({ id: PASS_RECT, mod: mafShader, topology: 'triangle-list' }),
+    ...slangPass({ id: PASS_RECT, mod: mafShader }),
     // Pre-encoded on the main thread by the per-region encode autorun
     // (`InstanceWriter`, right-sized on finish), so the pack is the handoff.
     // The shader unpacks absolute genomic coords + rowIndex + color.

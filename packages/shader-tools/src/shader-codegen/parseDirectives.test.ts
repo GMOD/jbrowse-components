@@ -1,10 +1,12 @@
 import {
   assertOutPathsUnique,
+  parseBlend,
   parseExportedConsts,
   parseJsExports,
   parseOutPath,
   OUT_DIRECTIVES,
   parseTargets,
+  parseTopology,
   parseVertsPerInstance,
 } from './parseDirectives.ts'
 
@@ -280,6 +282,41 @@ describe('parseTargets', () => {
   test('throws on an unrecognized target', () => {
     expect(() => parseTargets('//! targets: wgsl, metal')).toThrow(/metal/)
     expect(() => parseTargets('//! targets: wsgl')).toThrow(/wsgl/)
+  })
+})
+
+describe('parseTopology / parseBlend', () => {
+  // Absent is not 'the default spelled out' — it means the shader declines to
+  // say, and the pass falls through to whatever the HAL defaults to. Emitting a
+  // TOPOLOGY for every shader would make every pass inherit one, which is wrong
+  // for the shaders drawn two ways.
+  test('undefined when the shader declares neither', () => {
+    expect(parseTopology('// no directive')).toBeUndefined()
+    expect(parseBlend('// no directive')).toBeUndefined()
+  })
+
+  test('reads a declared value', () => {
+    expect(parseTopology('//! topology: triangle-strip')).toBe('triangle-strip')
+    expect(parseTopology('//! topology: line-list')).toBe('line-list')
+    expect(parseBlend('//! blend: premultiplied')).toBe('premultiplied')
+    expect(parseBlend('//! blend: max')).toBe('max')
+  })
+
+  // The whole point of a closed set: a typo that fell through as `undefined`
+  // would draw with the default silently, which for `triangle-strip` is a
+  // completely different picture rather than an error.
+  test('throws on an unrecognized value, naming the alternatives', () => {
+    expect(() => parseTopology('//! topology: triangle_strip')).toThrow(
+      /triangle_strip.*triangle-list, triangle-strip, line-list/s,
+    )
+    expect(() => parseBlend('//! blend: one, one-minus-src-alpha')).toThrow(
+      /straight, premultiplied, max/,
+    )
+  })
+
+  // `none` is deliberately not a mode — see the comment on BLEND_MODES.
+  test('rejects blend: none rather than emitting an unconsumed disable', () => {
+    expect(() => parseBlend('//! blend: none')).toThrow(/none/)
   })
 })
 

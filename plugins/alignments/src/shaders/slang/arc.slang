@@ -55,6 +55,7 @@
 // yBp is the apex height in genomic bp; arc mode sets it to |x2-x1|/2 (the
 // genomic radius).
 //! targets: wgsl, glsl
+//! topology: triangle-strip
 //! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_APEX_FRACTION, ARC_COLOR_SHORT_INSERT
 //! js-export: arcRadiiPx
 //! js-skip: arcIsFar — reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides

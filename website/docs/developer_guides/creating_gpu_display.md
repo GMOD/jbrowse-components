@@ -225,6 +225,8 @@ What lands in `score.generated.ts`, and what a plugin imports from it:
 | `GLSL_FRAGMENT` | the compiled WebGL2 fragment stage |
 | `BINDINGS` | every binding the shader declares, for HAL bind-group setup |
 | `VERTS_PER_INSTANCE` | vertices per instance, from the shader's const of that name; the draw call reads it |
+| `TOPOLOGY` | the primitive topology `vs_main` emits for, when the shader declares one |
+| `BLEND_STATE` | the blend the fragment stage's output wants, when the shader declares one |
 | `(your shader's consts)` | every other `public static const` in the shader, lifted by name |
 | `COMPUTE_ENTRY_POINT` | the compute entry point name, for a compute shader |
 | `WORKGROUP_SIZE_X` | the compute workgroup width |

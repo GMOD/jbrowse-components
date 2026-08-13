@@ -48,7 +48,6 @@ const FILL_PASS = {
   ...slangPass({
     id: PASS_FILL,
     mod: wiggleShader,
-    topology: 'triangle-list',
   }),
   pack: packFillInstances,
 }
@@ -57,7 +56,6 @@ const LINE_PASS = {
   ...slangPass({
     id: PASS_LINE,
     mod: wiggleLineShader,
-    topology: 'triangle-list',
     verticesPerInstance: wiggleLineShader.STEP_LINE_VERTS,
   }),
   pack: packLineInstances,
@@ -72,10 +70,14 @@ export const WIGGLE_PASSES: PipelineDescriptor[] = [
   // coverage) instead of accumulating into dark seams under standard src-over.
   // Valid because the target clears to transparent black and only this pass
   // draws in center-line mode.
+  //
+  // Stated here rather than as a `//! blend:` on wiggleLine.slang, and this is
+  // the case that keeps the directive a default rather than a verdict: the two
+  // passes above and below share that shader and blend differently, so a blend
+  // on the module would be right for one of them and wrong for the other.
   slangPass({
     id: PASS_LINE_CENTER,
     mod: wiggleLineShader,
-    topology: 'triangle-list',
     blendState: { op: 'max' },
   }),
 ]

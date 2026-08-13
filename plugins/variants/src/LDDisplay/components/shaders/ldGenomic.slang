@@ -3,6 +3,7 @@
 // genome, not at uniform pitch). Rendered as a 45°-rotated square above the
 // x-axis; fragment shader samples the color ramp by `ldValue`.
 //! targets: wgsl, glsl
+//! blend: premultiplied
 
 import ldUniforms;
 import hpmath;

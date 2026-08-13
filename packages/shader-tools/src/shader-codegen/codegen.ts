@@ -26,6 +26,7 @@ import {
   findInstanceStruct,
 } from './reflection.ts'
 
+import type { BlendMode, Topology } from './parseDirectives.ts'
 import type {
   ArrayType,
   Field,
@@ -47,6 +48,22 @@ export interface CodegenInputs {
   textures?: ReflectionTexture[]
   vertsPerInstance?: number
   exportedConsts?: Record<string, number>
+  topology?: Topology
+  blend?: BlendMode
+}
+
+// The factor pair each blend mode means, in the `BlendState` shape
+// `@jbrowse/render-core/hal` declares. The mapping lives here rather than in the
+// directive parser for the same reason every other TS spelling does: the parser
+// says what a shader may declare, the emitter says what that becomes.
+//
+// `straight` is what a pass with no `blendState` already got by default, so
+// declaring it changes nothing at the HAL — it is there so a shader can say the
+// choice was made rather than defaulted.
+const BLEND_STATE_LITERAL: Record<BlendMode, string> = {
+  straight: `{ srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' }`,
+  premultiplied: `{ srcFactor: 'one', dstFactor: 'one-minus-src-alpha' }`,
+  max: `{ op: 'max' }`,
 }
 
 function sizeOf(t: SlangType) {
@@ -454,8 +471,15 @@ export function emitShaderStrings(inputs: CodegenInputs) {
 // layout, typed packers, VERTEX_ATTRIBUTES, textures. This is the module eager
 // code imports (it never pulls in WGSL_SOURCE/GLSL_*).
 export function emitInterface(inputs: CodegenInputs) {
-  const { baseName, reflection, textures, vertsPerInstance, exportedConsts } =
-    inputs
+  const {
+    baseName,
+    reflection,
+    textures,
+    vertsPerInstance,
+    exportedConsts,
+    topology,
+    blend,
+  } = inputs
   const lines = header(baseName)
 
   // Classify the whole parameter list before anything reads a piece of it: this
@@ -470,6 +494,9 @@ export function emitInterface(inputs: CodegenInputs) {
   const halImports = vs ? ['VertexAttributeLayout'] : []
   if (bindings.length > 0) {
     halImports.push('ShaderBinding')
+  }
+  if (blend !== undefined) {
+    halImports.push('BlendState')
   }
   if (textures && textures.length > 0) {
     halImports.push('TextureBinding')
@@ -505,6 +532,32 @@ export function emitInterface(inputs: CodegenInputs) {
   if (vertsPerInstance !== undefined) {
     // #shaderExport VERTS_PER_INSTANCE | vertices per instance, from the shader's const of that name; the draw call reads it
     lines.push(`export const VERTS_PER_INSTANCE = ${vertsPerInstance}`, '')
+  }
+
+  // Pipeline state that follows from the stages, from `//! topology:` and
+  // `//! blend:`. Both are defaults a pass may override — see parseDirectives.
+  //
+  // Refused on a shader with no vertex stage rather than emitted and ignored: a
+  // compute kernel is dispatched, not drawn, so neither has any meaning there
+  // and a directive on one is a misunderstanding worth naming.
+  if ((topology !== undefined || blend !== undefined) && !vs) {
+    throw new Error(
+      `${baseName}.slang declares //! ${topology !== undefined ? 'topology' : 'blend'} ` +
+        `but has no vertex stage. Both describe how a draw rasterizes, and a ` +
+        `compute kernel is dispatched rather than drawn — there is no pipeline ` +
+        `for either to configure.`,
+    )
+  }
+  if (topology !== undefined) {
+    // #shaderExport TOPOLOGY | the primitive topology `vs_main` emits for, when the shader declares one
+    lines.push(`export const TOPOLOGY = '${topology}' as const`, '')
+  }
+  if (blend !== undefined) {
+    // #shaderExport BLEND_STATE | the blend the fragment stage's output wants, when the shader declares one
+    lines.push(
+      `export const BLEND_STATE: BlendState = ${BLEND_STATE_LITERAL[blend]}`,
+      '',
+    )
   }
 
   if (exportedConsts) {

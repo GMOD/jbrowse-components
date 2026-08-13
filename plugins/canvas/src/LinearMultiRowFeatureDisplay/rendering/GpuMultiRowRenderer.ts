@@ -24,7 +24,6 @@ export const MULTI_ROW_PASSES = [
     ...slangPass({
       id: PASS_RECT,
       mod: multiRowShader,
-      topology: 'triangle-list',
     }),
     // Pre-encoded on the main thread by the per-region encode autorun
     // (`buildMultiRowInstanceBuffer`, right-sized on return).

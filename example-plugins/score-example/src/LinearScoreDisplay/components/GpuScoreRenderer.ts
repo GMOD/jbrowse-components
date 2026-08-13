@@ -25,7 +25,7 @@ const UU = shader.UNIFORM_OFFSET_U32
 // length. Nothing to keep in agreement, and an empty pack releases the buffer.
 export const SCORE_PASSES = [
   {
-    ...slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
+    ...slangPass({ id: PASS, mod: shader }),
     // the generated packInstances interleaves the parallel arrays into the
     // GL_ATTRIBUTES layout, no manual DataView offsets
     pack: (data: ScoreRegionData) =>

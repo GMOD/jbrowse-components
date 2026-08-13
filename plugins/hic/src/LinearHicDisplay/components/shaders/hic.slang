@@ -2,6 +2,7 @@
 // rendered at 45° into a triangle above the axis. Color comes from sampling
 // a 256×1 palette texture with `t = normalized count (optionally log)`.
 //! targets: wgsl, glsl
+//! blend: premultiplied
 //! js-export: mapHicCount
 //! export-consts: MIN_VISIBLE_ALPHA
 

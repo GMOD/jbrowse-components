@@ -10,6 +10,7 @@
 // canvas2d fillRects. Color is per-cell (not from a ramp) — the upstream worker
 // picks an RGBA value per cell based on genotype/quality.
 //! targets: wgsl, glsl
+//! blend: premultiplied
 
 import colorPack;
 import hpmath;

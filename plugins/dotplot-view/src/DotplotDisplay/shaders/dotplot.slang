@@ -28,6 +28,7 @@
 // array, re-packed every instance and re-uploaded the buffer once per frame;
 // as a uniform it is a single scalar write.
 //! targets: wgsl, glsl
+//! blend: premultiplied
 
 import colorPack;
 import hpmath;

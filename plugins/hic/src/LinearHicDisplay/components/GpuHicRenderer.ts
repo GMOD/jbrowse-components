@@ -20,7 +20,6 @@ export const HIC_PASSES: PipelineDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: hicShader,
-    blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
   }),
 ]
 

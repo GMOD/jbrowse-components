@@ -294,6 +294,75 @@ describe('emitInterface compute', () => {
       ].join('\n'),
     )
   })
+
+  // Neither describes anything a dispatch does. Emitting them for a kernel
+  // would put a TOPOLOGY on a module no pass can draw with, which reads as
+  // though one could.
+  test('refuses pipeline state on a shader with no vertex stage', () => {
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: computeReflection,
+        topology: 'triangle-strip',
+      }),
+    ).toThrow(/no vertex stage/)
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: computeReflection,
+        blend: 'premultiplied',
+      }),
+    ).toThrow(/no vertex stage/)
+  })
+})
+
+describe('emitInterface pipeline state', () => {
+  test('emits nothing when the shader declares neither', () => {
+    const out = emitInterface({ baseName: 'test', reflection })
+    expect(out).not.toContain('TOPOLOGY')
+    expect(out).not.toContain('BLEND_STATE')
+  })
+
+  // `as const` so the literal type survives: `PipelineDescriptor['topology']`
+  // is a union of string literals, and a widened `string` would not assign.
+  test('emits the topology as a literal type', () => {
+    const out = emitInterface({
+      baseName: 'test',
+      reflection,
+      topology: 'triangle-strip',
+    })
+    expect(out).toContain(`export const TOPOLOGY = 'triangle-strip' as const`)
+  })
+
+  // The mode names what the fragment stage produces; the factor pair is the
+  // consequence, and lives only here.
+  test('expands a blend mode into the factor pair it means', () => {
+    const premul = emitInterface({
+      baseName: 'test',
+      reflection,
+      blend: 'premultiplied',
+    })
+    expect(premul).toContain(
+      `export const BLEND_STATE: BlendState = { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' }`,
+    )
+    expect(
+      emitInterface({ baseName: 'test', reflection, blend: 'max' }),
+    ).toContain(`export const BLEND_STATE: BlendState = { op: 'max' }`)
+  })
+
+  test('imports BlendState only when it emits one', () => {
+    const withBlend = emitInterface({
+      baseName: 'test',
+      reflection,
+      blend: 'max',
+    })
+    expect(withBlend).toMatch(
+      /import type \{[^}]*BlendState[^}]*\} from '@jbrowse\/render-core\/hal'/,
+    )
+    expect(emitInterface({ baseName: 'test', reflection })).not.toContain(
+      'BlendState',
+    )
+  })
 })
 
 // packInstances destructures every field name into its own scope, so a field

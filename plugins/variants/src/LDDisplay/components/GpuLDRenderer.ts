@@ -25,11 +25,6 @@ const UNIFORMS_SIZE_BYTES = ldGenomicShader.UNIFORMS_SIZE_BYTES
 const U = ldGenomicShader.UNIFORM_OFFSET_F32
 const UU = ldGenomicShader.UNIFORM_OFFSET_U32
 
-const BLEND_PREMUL = {
-  srcFactor: 'one',
-  dstFactor: 'one-minus-src-alpha',
-} as const
-
 function interleaveLDInstances(data: {
   positions: Float32Array
   cellSizes: Float32Array
@@ -54,12 +49,10 @@ export const LD_PASSES: PipelineDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: ldUniformShader,
-    blendState: BLEND_PREMUL,
   }),
   slangPass({
     id: PASS_GENOMIC,
     mod: ldGenomicShader,
-    blendState: BLEND_PREMUL,
   }),
 ]
 

@@ -27,7 +27,6 @@ export const ARC_PASS = {
   ...slangPass({
     id: 'arc',
     mod: arcShader,
-    topology: 'triangle-strip',
   }),
   pack: (d: ArcsPackData) => packArcs(d.arcs, d.baseWidth),
 }

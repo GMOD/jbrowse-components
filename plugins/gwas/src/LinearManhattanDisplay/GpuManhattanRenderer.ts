@@ -18,7 +18,6 @@ export const MANHATTAN_PASSES = [
     ...slangPass({
       id: PASS,
       mod: shader,
-      topology: 'triangle-list',
     }),
     pack: buildInstanceBuffer,
   },

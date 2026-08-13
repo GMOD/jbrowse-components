@@ -483,6 +483,76 @@ export function parseTargets(source: string): ShaderTarget[] {
 }
 
 /**
+ * `//! topology: <t>` and `//! blend: <mode>` — the two pieces of pipeline state
+ * that follow from what the shader's stages actually do, emitted so a pass reads
+ * them off the shader instead of restating them.
+ *
+ * Topology is a property of `vs_main`: it decides what a `SV_VertexID` means,
+ * and `arc.slang`'s strip and everything else's list are not interchangeable.
+ * Blend is a property of `fs_main`: whether it returns premultiplied or straight
+ * alpha, or (the AA line case) wants coverage unioned rather than accumulated.
+ * Both lived at the `slangPass()` call three packages away, where nothing
+ * connected them to the stage that determines them.
+ *
+ * They are **defaults, not verdicts**, and that distinction is load-bearing
+ * rather than caution: `wiggleLine.slang` is drawn by two passes at two
+ * different blends (the step line src-over, the center line max), so a shader
+ * that carries one blend for all its passes would be wrong. A pass may always
+ * override, the same way `verticesPerInstance` overrides `VERTS_PER_INSTANCE`
+ * — and a shader whose passes disagree simply declares neither and says so at
+ * each pass.
+ */
+export const TOPOLOGIES = [
+  'triangle-list',
+  'triangle-strip',
+  'line-list',
+] as const
+export type Topology = (typeof TOPOLOGIES)[number]
+
+/**
+ * The blend modes, named for what the fragment stage produces rather than for
+ * the factor pair it implies.
+ *
+ * Named rather than spelled as raw factors (`//! blend: one,
+ * one-minus-src-alpha`) because the factors are the consequence and the reason
+ * is what a reader needs: five shaders in the tree carry that exact pair, and
+ * all five carry it for the one reason, which the raw spelling states nowhere.
+ * A closed set is also checkable — an unknown mode names the alternatives.
+ *
+ * `none` is deliberately absent. Nothing in the tree disables blending, and an
+ * emitted `BLEND_ENABLED = false` with no consumer is the untested path this
+ * codegen refuses elsewhere; a pass that wants it passes `blend: false`.
+ */
+export const BLEND_MODES = ['straight', 'premultiplied', 'max'] as const
+export type BlendMode = (typeof BLEND_MODES)[number]
+
+function parseChoice<T extends string>(
+  source: string,
+  kind: string,
+  allowed: readonly T[],
+): T | undefined {
+  const match = new RegExp(String.raw`^//!\s*${kind}:\s*(.+)`, 'm').exec(source)
+  if (!match) {
+    return undefined
+  }
+  const value = match[1]!.trim()
+  if (!(allowed as readonly string[]).includes(value)) {
+    throw new Error(
+      `//! ${kind}: unknown value '${value}' (supported: ${allowed.join(', ')})`,
+    )
+  }
+  return value as T
+}
+
+export function parseTopology(source: string) {
+  return parseChoice(source, 'topology', TOPOLOGIES)
+}
+
+export function parseBlend(source: string) {
+  return parseChoice(source, 'blend', BLEND_MODES)
+}
+
+/**
  * The `//! <kind>-out: <repo-relative path>` directives, which redirect one
  * generated artifact to a second location for a package that can't import the
  * plugin owning the shader.

@@ -20,7 +20,6 @@ export const VARIANT_MATRIX_PASSES: PipelineDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: variantMatrixShader,
-    blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
   }),
 ]
 

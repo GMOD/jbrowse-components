@@ -20,6 +20,13 @@ export interface ShaderModule {
   // `public static const uint VERTS_PER_INSTANCE = <expr>;` at module scope.
   // Lets slangPass() avoid taking the count as a separate argument.
   VERTS_PER_INSTANCE?: number
+  // Emitted from `//! topology:` / `//! blend:`. Both are properties of what the
+  // stages do — topology decides what a vertex id means, blend follows from
+  // whether the fragment returns premultiplied alpha — so the shader is where
+  // they are stated and a pass inherits them. Optional because a shader drawn by
+  // two passes at different settings declares neither; see SlangPassOpts.
+  TOPOLOGY?: PipelineDescriptor['topology']
+  BLEND_STATE?: BlendState
   // Present if the shader declares `Sampler2D<T>` bindings. The codegen
   // derives bindings from reflection so the renderer doesn't hand-maintain
   // them.
@@ -29,13 +36,35 @@ export interface ShaderModule {
   BINDINGS?: readonly ShaderBinding[]
 }
 
+/**
+ * What a pass is, over and above its shader: an identity, and the handful of
+ * choices that are genuinely the *consumer's* rather than the shader's.
+ *
+ * Every remaining field is an override of something the module already carries,
+ * and each one earns its place by a case in the tree where one shader is drawn
+ * by two passes that disagree:
+ *
+ * - `verticesPerInstance` — the canvas chevron pass, whose count is the
+ *   shader's `CHEVRON_VERTS` times a cap the *renderer* chooses.
+ * - `blendState` / `topology` — wiggle's step line and center line share
+ *   `wiggleLine.slang` and blend differently (src-over against max), so that
+ *   shader declares no `//! blend:` and each pass says which it wants.
+ * - `blend: false` — nothing disables blending today, which is why there is no
+ *   `//! blend: none` to inherit it from.
+ *
+ * There is deliberately no `bufferStride` / `bufferAttributes` pair. Two passes
+ * sharing one instance buffer (`drawPass(id, region, bufferPassId)`) must
+ * declare the same instance struct — canvas's chevron and line both take
+ * `LineInstance` from `lineInstance.slang` — so both modules reflect the same
+ * stride and the same `VERTEX_ATTRIBUTES`, and copying one pass's layout onto
+ * the other was restating that rather than establishing it. Worse, it *hid* the
+ * case it looked like it was handling: had the two structs drifted apart, the
+ * override would have made the borrowing pass read line's bytes through
+ * chevron's shader without complaint. Share the `.slang` struct instead.
+ */
 export interface SlangPassOpts {
   id: string
   mod: ShaderModule
-  // Optional override. Normally the count comes from the shader module's
-  // VERTS_PER_INSTANCE constant (declared as a `public static const uint`
-  // in the .slang source). Override only when the count is computed from a
-  // TS-side runtime constant.
   verticesPerInstance?: number
   topology?: PipelineDescriptor['topology']
   blend?: boolean
@@ -43,10 +72,6 @@ export interface SlangPassOpts {
   textures?: [TextureBinding, ...TextureBinding[]]
   wgslFragmentEntry?: string
   glslFragmentOverride?: string
-  // Override if the data buffer comes from another pass (e.g. canvas's
-  // chevron pass reads line's instance buffer).
-  bufferStride?: number
-  bufferAttributes?: readonly VertexAttributeLayout[]
 }
 
 export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
@@ -64,12 +89,12 @@ export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
     wgslSource: opts.mod.WGSL_SOURCE,
     glslVertex: opts.mod.GLSL_VERTEX,
     glslFragment: opts.mod.GLSL_FRAGMENT,
-    instanceStride: opts.bufferStride ?? opts.mod.INSTANCE_STRIDE_BYTES,
+    instanceStride: opts.mod.INSTANCE_STRIDE_BYTES,
     verticesPerInstance,
     blend: opts.blend ?? true,
-    blendState: opts.blendState,
-    vertexAttributes: opts.bufferAttributes ?? opts.mod.VERTEX_ATTRIBUTES,
-    topology: opts.topology,
+    blendState: opts.blendState ?? opts.mod.BLEND_STATE,
+    vertexAttributes: opts.mod.VERTEX_ATTRIBUTES,
+    topology: opts.topology ?? opts.mod.TOPOLOGY,
     textures: opts.textures ?? opts.mod.TEXTURES,
     bindings: opts.mod.BINDINGS,
     wgslFragmentEntry: opts.wgslFragmentEntry,

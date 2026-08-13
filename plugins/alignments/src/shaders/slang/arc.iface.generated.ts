@@ -9,6 +9,8 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 130
 
+export const TOPOLOGY = 'triangle-strip' as const
+
 export const ARC_HEIGHT_MARGIN = 8
 
 export const ARC_FAR_SCREEN_WIDTHS = 1

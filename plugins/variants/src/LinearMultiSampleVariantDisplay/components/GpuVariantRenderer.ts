@@ -22,7 +22,6 @@ export const VARIANT_PASSES = [
     ...slangPass({
       id: PASS_MAIN,
       mod: variantShader,
-      blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
     }),
     pack: interleaveVariantInstances,
   },

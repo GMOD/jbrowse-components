@@ -2,6 +2,7 @@
 // bounding-box quad; the fragment shader uses an SDF to carve the inversion
 // triangle glyph out of the quad when shapeType != RECT.
 //! targets: wgsl, glsl
+//! blend: premultiplied
 //! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
