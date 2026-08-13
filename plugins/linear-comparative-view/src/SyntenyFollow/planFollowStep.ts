@@ -36,51 +36,26 @@ export interface FollowStep {
 }
 
 /**
- * The alignment's extent on the axis the anchor window is measured on: the
- * query axis when the mate row is the one moving, the mate axis when it is not.
- */
-function featSpanOnWindowAxis(
-  feat: FeatPos,
-  toMate: boolean,
-): [number, number] {
-  return toMate ? [feat.start, feat.end] : [feat.mate.start, feat.mate.end]
-}
-
-/**
  * Whether the anchor window lies wholly inside one alignment — the test that
  * decides between the exact walk and the window mapping.
  *
+ * The axis the window is measured on is the query axis when the mate row is the
+ * one moving, and the mate axis when it is not.
+ *
  * Shared with the per-frame pass, which answers it against the block the last
  * settle chose rather than re-picking one: re-picking costs a full scan of
- * every loaded block, and being a frame or two stale here only routes the
- * placement to the mapping, which is correct either way.
+ * every loaded block, and being a frame or two stale only routes the placement
+ * to the mapping, which is correct either way.
  */
 export function windowInsideFeat(
   feat: FeatPos,
   window: FollowWindow,
   toMate: boolean,
 ) {
-  const [aStart, aEnd] = featSpanOnWindowAxis(feat, toMate)
-  return aStart <= window.start && aEnd >= window.end
-}
-
-/**
- * Whether the anchor window still touches the alignment at all, which is what
- * makes interpolating ACROSS it mean anything.
- *
- * Only the per-frame pass has to ask: it maps through the block the last settle
- * chose rather than re-picking one, so the anchor can pan clean off that block
- * between settles. `interpolateFollowSpan` clamps the window to the block
- * before mapping it, so a window entirely past the block has no interior to
- * cross and both edges collapse onto one corner.
- */
-export function windowOverlapsFeat(
-  feat: FeatPos,
-  window: FollowWindow,
-  toMate: boolean,
-) {
-  const [aStart, aEnd] = featSpanOnWindowAxis(feat, toMate)
-  return aStart < window.end && aEnd > window.start
+  const [start, end] = toMate
+    ? [feat.start, feat.end]
+    : [feat.mate.start, feat.mate.end]
+  return start <= window.start && end >= window.end
 }
 
 /** One display's answer, kept alongside where it came from. */
@@ -91,19 +66,16 @@ interface FollowPick extends FollowCandidate {
 
 /**
  * Which alignment this level should place its moving row from, across every
- * synteny track on it.
- *
- * A level can carry more than one track. Each is asked for its best alignment
- * over the window and the widest wins, so a sparse track does not outvote the
- * one that actually covers the locus.
+ * synteny track on it. Each track is asked for its best alignment over the
+ * window and the widest wins, so a sparse track does not outvote the one that
+ * actually covers the locus.
  *
  * The same hysteresis as within a track, applied again here: comparing the
  * displays' answers on raw overlap threw it away one level up, so two tracks
  * over the same locus traded the follow back and forth on rounding.
  *
- * `undefined` means no alignment covers the anchor window — a haplotype-specific
- * insertion, a centromere, a row parked off the end of the file. The caller
- * holds the row where it is rather than sending it somewhere invented.
+ * `undefined` means no alignment covers the window, and the caller holds the
+ * row where it is rather than sending it somewhere invented.
  */
 export function planFollowStep({
   displays,
@@ -163,12 +135,9 @@ export function planFollowStep({
     toMate,
     hasCigar: data.hasCigar,
     windowInsideFeat: inside,
-    // AFTER the winner is known, and only in the case that reads it. This is a
-    // full scan of every loaded block — hundreds of thousands on a whole-genome
-    // PAF — and it used to run once per improving candidate, so a level with
-    // several synteny tracks paid for it repeatedly and a window sitting inside
-    // one alignment paid for it to be thrown away (`resolveFollowSpan` walks
-    // the CIGAR there instead).
+    // AFTER the winner is known, and only in the case that reads it: a full
+    // scan of every loaded block, which a level with several synteny tracks
+    // used to pay for once per improving candidate
     envelope: inside
       ? undefined
       : followWindowMapping({ data, window, toMate, mateAssembly }),
