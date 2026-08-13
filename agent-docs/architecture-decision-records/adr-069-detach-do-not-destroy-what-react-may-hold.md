@@ -53,6 +53,21 @@ reset — goes through it.
   cannot throw, so it buys a quieter console rather than preventing a crash. It
   also repairs the restore-on-throw path, which had been re-attaching a
   destroyed node.
+- `removeView` and `replaceView` do the same for a view, and this is the
+  STRONGEST of the three rather than the weakest: what is mounted over a view is
+  a display, and a display's reads reach `getContainingView`, which walks parents
+  and **throws** where the session cases warn. `cancer_sv/multihop_split_view`
+  showed the whole escalation on one spec — the liveliness warnings, then
+  `Error: no containing view found` into an ErrorBoundary, then a missing
+  `[aria-label="JBrowse"]` saying the throw had taken the page rather than a lane.
+
+  **A view that reaches outside its own tree moves that work to `beforeDetach`.**
+  MST fires it while the node is still attached, which is the whole difference:
+  from `beforeDestroy` on the scheduled task the view is a root and `getSession`
+  throws out of MST's own teardown. Both comparative views were in that position
+  — they give back the read-vs-ref assembly they synthesized — and share
+  `releaseTemporaryAssemblies`, which keeps `beforeDestroy` too, for the paths
+  that destroy a view without taking it out of a session first.
 
 ## Rejected
 
@@ -114,6 +129,13 @@ Each fails without its fix and is scoped to what is deterministic:
   session switch, asserting zero dead reads across the action and the reaction
   flush closing it, and that the outgoing session is destroyed afterwards
   rather than left detached and leaking its `beforeDestroy` contracts.
+- `products/jbrowse-web/src/tests/viewTeardown.test.tsx` — a view with a track
+  open in it, removed and replaced, same scoping. Its third test is the one that
+  would otherwise have gone quiet: a comparative view's temporary assembly is
+  given back, which the `hasParent` guard would have turned into a leak with
+  nothing said if `beforeDetach` were ever dropped.
+  `MultipleViews.test.ts` pins the other half of that contract at its own layer —
+  the view is still in the session when `beforeDetach` runs.
 - `products/jbrowse-web/src/components/workerPoolTeardown.test.ts` — a spy on
   `rpcManager.destroy`, because the bug was that nothing called it. No harness
   here can watch a worker thread die; see [TODO.md](../TODO.md).

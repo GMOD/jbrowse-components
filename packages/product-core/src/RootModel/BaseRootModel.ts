@@ -9,9 +9,9 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 
+import { scheduleDetachedDestroy } from '../scheduleDetachedDestroy.ts'
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { filterSessionInPlace } from '../sessionUtils.ts'
-import { scheduleSessionDestroy } from './scheduleSessionDestroy.ts'
 
 import type { BaseSession } from '../Session/BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -162,7 +162,7 @@ export function BaseRootModelFactory({
         // unwound. `beforeDestroy` is a plugin-facing contract and leaving a
         // detached session alive forever would skip it. ADR-069.
         if (oldSession) {
-          scheduleSessionDestroy(oldSession)
+          scheduleDetachedDestroy(oldSession)
         }
       },
       /**

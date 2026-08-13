@@ -5,7 +5,10 @@ import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
-import { collectTrackWarnings } from '@jbrowse/synteny-core'
+import {
+  collectTrackWarnings,
+  releaseTemporaryAssemblies,
+} from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
@@ -387,12 +390,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       // automatically removes session assemblies associated with this view
-      // e.g. read vs ref
+      // e.g. read vs ref. Both hooks, and `releaseTemporaryAssemblies` says
+      // why: `removeView` detaches before it destroys, so the reach for the
+      // session has to happen at the detach.
+      beforeDetach() {
+        releaseTemporaryAssemblies(self)
+      },
       beforeDestroy() {
-        const session = getSession(self)
-        for (const name of self.assemblyNames) {
-          session.removeTemporaryAssembly?.(name)
-        }
+        releaseTemporaryAssemblies(self)
       },
 
       /**

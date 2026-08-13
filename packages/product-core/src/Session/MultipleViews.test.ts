@@ -3,6 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { onSnapshot, types } from '@jbrowse/mobx-state-tree'
 
@@ -19,10 +20,38 @@ function fakeView(name: string) {
   })
 }
 
+// A view that reaches OUTSIDE its own tree when it is taken out of a session,
+// which is the shape both comparative views have — they give back the
+// read-vs-ref assemblies they synthesized. The module-level sink is how the
+// test observes a hook running inside an action it does not otherwise see.
+let reachingViewSaw: string[] | undefined
+
+function fakeReachingView() {
+  return types
+    .model('FakeReachingView', {
+      id: ElementId,
+      type: types.literal('FakeReachingView'),
+      displayName: types.maybe(types.string),
+    })
+    .actions(self => ({
+      beforeDetach() {
+        reachingViewSaw?.push(getSession(self).name)
+      },
+    }))
+}
+
 class FakeViewsPlugin extends Plugin {
   name = 'FakeViewsPlugin'
 
   install(pluginManager: PluginManager) {
+    pluginManager.addViewType(
+      () =>
+        new ViewType({
+          name: 'FakeReachingView',
+          stateModel: fakeReachingView(),
+          ReactComponent: () => null,
+        }),
+    )
     for (const name of ['FakeLinearView', 'FakeSyntenyView']) {
       pluginManager.addViewType(
         () =>
@@ -259,4 +288,26 @@ test('replaceView leaves another view’s focus alone', () => {
   session.replaceView(session.views[1], 'FakeSyntenyView')
 
   expect(session.focusedViewId).toBe(focused)
+})
+
+// **`beforeDetach` runs while the view can still reach the session**, which is
+// the whole reason the hook exists. Removing a view detaches it rather than
+// destroying it in place (ADR-069), and a detached view is a root: `getSession`
+// walks parents, so from `beforeDestroy` on the scheduled task it throws
+// `no session model found!` — out of MST's own teardown.
+//
+// Both comparative views need that reach. `LinearComparativeView` and
+// `DotplotView` give back the read-vs-ref assemblies they synthesized, which
+// nothing else owns and nothing else would remove
+// (`buildDotplotReadVsRefSpec.ts` names the contract; `releaseTemporaryAssemblies`
+// is the shared body and guards the other direction).
+test('a view is still in the session when its beforeDetach runs', () => {
+  const seen: string[] = []
+  reachingViewSaw = seen
+  const session = createSession()
+  const view = session.addView('FakeReachingView', { displayName: 'reaches' })
+
+  session.removeView(view)
+
+  expect(seen).toEqual(['test'])
 })

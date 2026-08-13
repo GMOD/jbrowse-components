@@ -4,9 +4,10 @@ import {
   localStorageSetBoolean,
   reorderWithin,
 } from '@jbrowse/core/util'
-import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, detach, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { scheduleDetachedDestroy } from '../scheduleDetachedDestroy.ts'
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
@@ -95,13 +96,42 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       // The body of removeView, callable from replaceView below — an action
       // can't reach a sibling action through `self` from inside the same
       // .actions() block, since neither is attached yet.
-      const detach = (view: IBaseViewModel) => {
+      //
+      // **Detached, not removed.** `views.remove` destroys the view and
+      // everything under it right here, inside the action, and MobX runs the
+      // action's pending reactions at the `endBatch` closing it — so every
+      // component still mounted over that view gets a final run against nodes
+      // that just died. ADR-069.
+      //
+      // A view is the worse half of that rule rather than the `setSession`
+      // half, because what is mounted over it is a DISPLAY, and a display's
+      // reads reach `getContainingView`, which walks parents and THROWS when
+      // there is none. So this was not only a noisy console: on
+      // `cancer_sv/multihop_split_view` the throw went to an ErrorBoundary with
+      // no view left under it and took the page. Detaching leaves the walk
+      // something to find.
+      const takeOut = (view: IBaseViewModel) => {
+        // Membership first, and before anything reads through `view`. A view
+        // already out of the session reaches here — `replaceView` documents
+        // that case below — and by then it is detached, or destroyed by the
+        // task scheduled at the bottom. MST's `detach` throws on a node with no
+        // parent, and its widgets were hidden when it left.
+        if (!self.views.includes(view)) {
+          return
+        }
         for (const [, widget] of self.activeWidgets) {
           if (widget.view?.id === view.id) {
             self.hideWidget(widget)
           }
         }
-        self.views.remove(view)
+        // MST fires the view's `beforeDetach` here, while it is still attached
+        // and the walk to the session still resolves. That matters: anything of
+        // a view's that reaches OUTSIDE its own tree has to move to that hook,
+        // because after this line the view is a root and `getSession` from a
+        // root throws. ADR-069's detach-time disposer, at view scope — the
+        // comparative views' `releaseTemporaryAssemblies` is the one case.
+        detach(view)
+        scheduleDetachedDestroy(view)
       }
       return {
         /**
@@ -182,10 +212,10 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
           // read before the removal, which is what makes both stale
           const idx = self.views.indexOf(view)
           // `idx` first, so a view already gone from the session short-circuits
-          // before `view.id` is read: that node is destroyed, and MST warns on
-          // any read through it
+          // before `view.id` is read: that node is detached and, a task later,
+          // destroyed — and MST warns on any read through a destroyed one
           const wasFocused = idx !== -1 && self.focusedViewId === view.id
-          detach(view)
+          takeOut(view)
           // a view already gone from the session appends, rather than throwing
           // or silently dropping the launch
           const at = idx === -1 ? self.views.length : idx
@@ -206,7 +236,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * #action
          */
         removeView(view: IBaseViewModel) {
-          detach(view)
+          takeOut(view)
         },
 
         /**

@@ -28,6 +28,7 @@ import {
   displaysSettled,
   lodMenuItems,
   regionSignature,
+  releaseTemporaryAssemblies,
   trackHasLodTiers,
 } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -1261,12 +1262,15 @@ export default function stateModelFactory(pm: PluginManager) {
             await import('@jbrowse/core/svg/saveSvgAsImage')
           await saveSvgAsImage(html, opts)
         },
-        // if any of our assemblies are temporary assemblies
+        // if any of our assemblies are temporary assemblies. Both hooks, and
+        // `releaseTemporaryAssemblies` says why: `removeView` detaches before
+        // it destroys, so the reach for the session has to happen at the
+        // detach.
+        beforeDetach() {
+          releaseTemporaryAssemblies(self)
+        },
         beforeDestroy() {
-          const session = getSession(self)
-          for (const name of self.assemblyNames) {
-            session.removeTemporaryAssembly?.(name)
-          }
+          releaseTemporaryAssemblies(self)
         },
         afterAttach() {
           doAfterAttach(self as DotplotViewModel)

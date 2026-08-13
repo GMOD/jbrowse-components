@@ -52,6 +52,7 @@ export {
   renameRegionsForAdapter,
 } from './renameRegionsForAdapter.ts'
 export { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
+export { releaseTemporaryAssemblies } from './releaseTemporaryAssemblies.ts'
 export type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
 export { executeDiagonalize } from './executeDiagonalize.ts'
 export type {
