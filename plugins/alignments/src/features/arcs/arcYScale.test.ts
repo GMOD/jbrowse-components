@@ -21,9 +21,10 @@ import {
   linkedReadColorSlot,
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
+import { ARC_HEIGHT_MARGIN } from '../../shaders/slang/arc.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../shaders/slang/read.iface.generated.ts'
-import { arcYFraction } from './arcYScale.ts'
+import { arcAvailH, arcYFraction } from './arcYScale.ts'
 
 // The stock colors, as a ColorPalette. These tests pin SLOT POSITIONS (which
 // index holds interchrom, that the marker and stroke palettes agree), so they
@@ -161,5 +162,24 @@ describe('arcYFraction', () => {
     it('clamps the domain below 2 so the denominator never collapses', () => {
       expect(arcYFraction(2, 1, true)).toBeCloseTo(1) // log2(2)/log2(2)
     })
+  })
+})
+
+// A band shorter than the apex margin. Config-reachable: `readConnectionsHeight`
+// is a plain number slot and the 20px floor is on the drag handle, not on what a
+// config may declare.
+describe('arcAvailH', () => {
+  it('is the band less the apex margin', () => {
+    expect(arcAvailH(100)).toBe(100 - ARC_HEIGHT_MARGIN)
+  })
+
+  it('floors at zero rather than going negative', () => {
+    // Negative here reached `ctx.ellipse` as a negative radius, which THROWS
+    // (IndexSizeError) — one small number in a track config took out the
+    // Canvas2D backend's whole frame. Zero collapses the band onto its anchor
+    // line, which is what a band with no room to plot in should look like.
+    for (let h = 0; h <= ARC_HEIGHT_MARGIN; h++) {
+      expect(arcAvailH(h)).toBe(0)
+    }
   })
 })

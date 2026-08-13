@@ -125,3 +125,24 @@ test('a down-pointing band mirrors every consumer at once', () => {
     `M ${e.cx - e.rx} ${e.cy} A ${e.rx} ${e.ry} 0 0 0 ${e.cx + e.rx} ${e.cy}`,
   )
 })
+
+test('a band shorter than the apex margin collapses instead of inverting', () => {
+  // `readConnectionsHeight` is a plain config slot, so a band under
+  // ARC_HEIGHT_MARGIN is reachable without any drag. It used to make the
+  // plottable height negative, and every consumer took that at face value: this
+  // dome's `ry` came out negative, and `ctx.ellipse` throws on a negative
+  // radius. The floor is `arcAvailH`'s, so both kinds collapse onto the anchor
+  // rather than each guarding its own arithmetic.
+  const tiny = { ...FRAME, arcsTop: 0, arcsH: 5 }
+  const dome = arcMark(TALL_DOME, 0, tiny)
+  expect(dome.destY).toBe(0)
+  expect(dome.kind === 'dome' && dome.ry).toBe(0)
+  const bar = arcMark(
+    arcsData([{ x1: 200, x2: 600, yBp: 100_000, shape: ARC_SHAPE_FLAT }]),
+    0,
+    tiny,
+  )
+  // The anchor is the band's bottom edge here, and a collapsed band puts the
+  // mark on it.
+  expect(bar.kind === 'bar' && bar.markY).toBe(tiny.arcsH)
+})

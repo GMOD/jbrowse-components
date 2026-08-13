@@ -18,9 +18,27 @@ export {
   arcYOffsetPx,
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 
-// Plottable height of the band: the drawn height less the apex padding.
+// Plottable height of the band: the drawn height less the apex padding, and
+// NEVER negative.
+//
+// A band shorter than the margin is reachable from config alone —
+// `readConnectionsHeight` is a plain number slot, and the 20px floor
+// (`clampBandHeight`) is a constraint on DRAGGING, not on what a config or a
+// session snapshot may declare. Anything in 1..7 got a negative plottable
+// height, and every consumer of this took it at face value: `arcYOffsetPx`
+// returned a negative `destY`, so a dome's `ry` came out negative and
+// `ctx.ellipse` throws IndexSizeError on a negative radius — one small number in
+// a track config, and the Canvas2D backend threw on every frame it drew arcs in,
+// taking the rest of that block's paint with it. The GPU threw nothing and drew
+// the band inside out instead, which is the same statement made quietly.
+//
+// Clamped HERE because this is the single choke point: the two renderers' Y
+// scales, `arcMark`, the hit test and the insert-size ruler all ask it, so one
+// floor keeps them agreeing at 0 rather than each guarding its own use. At 0
+// every arc plots at `destY` 0 — the band collapses to its anchor line, which is
+// what a band with no room to plot in should look like.
 export function arcAvailH(bandH: number) {
-  return bandH - ARC_HEIGHT_MARGIN
+  return Math.max(0, bandH - ARC_HEIGHT_MARGIN)
 }
 
 // The band edge insert size 0 springs from: the bottom when arcs point up, the
