@@ -7,6 +7,3 @@
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
 config_guides/variant_track.md /img/ld/lct_haploblock.png
-user_guides/gene_track.md /img/dtu/dtu_colored_gene_glyph.png
-user_guides/hic_track.md /img/hic/compartment_switch.png
-user_guides/multirow_feature_track.md /img/chromhmm.png
