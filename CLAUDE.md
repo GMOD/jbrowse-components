@@ -63,13 +63,23 @@ to get both, and is what CI does. Every `website/scripts/*.ts` needs
   resolve only through `resolveConf`, never `getConf`.
 - In React, `autorun` inside `useEffect` to track observables (prefer over
   `reaction`).
-- **Never `destroy` a node React may still be rendering — `detach` it.** React
-  reads the outgoing props after your effect cleanup runs, and MobX runs an
-  action's reactions at the `endBatch` closing it, so a destroy in either place
-  gets read. On an already-read property that is a liveliness warning; on a
-  child node never materialized it is a hard throw that takes the page down.
-  Register whatever reaches outside the tree as a detach-time disposer instead.
-  Deferring the destroy does not work. ADR-069.
+- **Never `destroy` a node React may still be rendering — `detach` it, then
+  destroy it on a later task** (`scheduleDetachedDestroy`). React reads the
+  outgoing props after your effect cleanup runs, and MobX runs an action's
+  reactions at the `endBatch` closing it, so a destroy in either place gets
+  read. On an already-read property that is a liveliness warning; on a child
+  node never materialized it is a hard throw that takes the page down. Register
+  whatever reaches outside the tree as a detach-time disposer, so it stops at
+  the detach rather than at the destroy. Deferring _instead of_ detaching does
+  not work — no delay is long enough.
+
+  **The destroy half is not optional and is the half that gets dropped.**
+  `beforeDestroy` and `addDisposer` are a plugin-facing contract that fires on
+  destroy and on nothing else: jbrowse-plugin-apollo closes its websocket there.
+  A tree left detached and alive is silent, passes a dead-read count, and leaks
+  everything under it. That is exactly what #5618 did to the superseded
+  rootModel, and Apollo reported it. ADR-069.
+
 - **An `autorun` must do its own reads. MST actions run untracked**, so
   factoring the body of one into an action — the obvious way to share it with a
   menu item or a flush-on-teardown path — leaves the autorun with no

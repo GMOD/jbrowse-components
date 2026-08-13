@@ -3,8 +3,8 @@ import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * Free a subtree an action has already `detach`ed — a superseded session, a
- * view taken out of one.
+ * Free a tree an action has already let go of — a superseded session, a view
+ * taken out of one, a superseded rootModel the React host has detached.
  *
  * A task rather than a microtask: the wait is for React to unmount the
  * components rendering it, which happens on the re-render that the action's own

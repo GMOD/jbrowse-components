@@ -206,8 +206,10 @@ export default function RootModel({
        * Deliberately not `addDisposer`, which fires only on destroy, because
        * destroy is what this root cannot do at detach time: React is still
        * holding its views and widgets in the outgoing props of the same
-       * passive-effect flush. See `detach` and SessionLoader's
-       * disposePluginManager.
+       * passive-effect flush. The destroy follows on a later task, so an
+       * `addDisposer` here would run late rather than never — but "the moment
+       * the host lets go" is the contract these want. See `detach` and
+       * SessionLoader's disposePluginManager.
        */
       detachDisposers: [] as (() => void)[],
       /**
@@ -324,8 +326,12 @@ export default function RootModel({
        * listener, the sessionStorage and IndexedDB autoruns — and leave the
        * tree itself alone.
        *
-       * This is the whole teardown; there is no `destroy` after it, and the
-       * tree is left for the GC rather than freed here. ADR-069.
+       * Half the teardown. The caller destroys the tree on a later task
+       * (`scheduleDetachedDestroy`), which is what runs the `beforeDestroy`
+       * hooks in it — a plugin-facing contract, so skipping it is not an
+       * option. What this action does is take everything that reaches outside
+       * the tree off that deferral, so nothing keeps running in the window
+       * between the two. ADR-069.
        */
       detach() {
         // rpcManager is a plain object on a volatile, so MST teardown never

@@ -56,7 +56,16 @@ test('a plugin reload does not read the rootModel it just destroyed', async () =
   const capture = (...args: unknown[]) => {
     const msg = args.map(a => `${a}`).join(' ')
     if (msg.includes('no longer part of a state tree')) {
-      deadReads.push(msg.split('\n')[0]!)
+      // Bucketed by whether the superseded root is still alive, which is what
+      // separates the two windows this path has. While it is alive the only
+      // thing that can be reading a dead node is something rendering the
+      // outgoing tree — that is the crash window, and it has to be empty. Once
+      // the scheduled destroy has run, reads are the teardown's own, on a tree
+      // nothing renders; those are the documented residual, not this test's
+      // subject.
+      if (isAlive(oldRoot)) {
+        deadReads.push(msg.split('\n')[0]!)
+      }
     } else {
       origWarn(...(args as []))
     }
@@ -78,14 +87,34 @@ test('a plugin reload does not read the rootModel it just destroyed', async () =
     console.error = origError
   }
 
+  // Scoped to the swap itself, and deliberately not to the deferred teardown
+  // that follows — the same scoping sessionSwitchTeardown uses, for the same
+  // reason. This window is where React is still holding the outgoing props, so
+  // a read here is a read of a node something is rendering, and on an
+  // unmaterialized array child it is the throw that took the page down. It is
+  // empty, every run.
   expect(deadReads).toEqual([])
   // and React's render-logging really ran, so the assertion above means
   // something (see renderLogRecord)
   expect(renderLoggedComponents().length).toBeGreaterThan(0)
 
-  // The superseded root is deliberately left alive — that is the fix, not an
-  // oversight, so pin it. What was torn down is everything of its own that
-  // reached outside the tree; the tree itself is left for the GC.
-  expect(isAlive(oldRoot)).toBe(true)
+  // Everything reaching outside the tree stopped at detach, not at the destroy
+  // below, so nothing of this root's runs in the window between the two.
   expect(oldRoot.detachDisposers).toHaveLength(0)
+
+  // and the root really does die, rather than being detached and forgotten.
+  // This is the half that keeps the fix honest: the whole plugin-facing tree
+  // hangs off this root, so leaving it alive drops every `beforeDestroy` in it
+  // — jbrowse-plugin-apollo closes its websocket in one, and core's
+  // BaseTrackModel releases the rpcSessionId claim. #5618 left it alive and
+  // Apollo reported the leak.
+  //
+  // Destroying it is loud, and measurably so: in a real browser this logs ~48
+  // liveliness warnings, undiminished by waiting 5s instead of 0 rather than a
+  // race with React. Every one is a scalar or reference read on a detached
+  // tree nothing renders, no page error and no throw shape. See
+  // agent-docs/TODO.md for what still observes it, which is the fixable half.
+  await waitFor(() => {
+    expect(isAlive(oldRoot)).toBe(false)
+  }, delay)
 }, 60000)

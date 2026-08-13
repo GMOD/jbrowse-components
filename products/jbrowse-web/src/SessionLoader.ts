@@ -2,6 +2,7 @@ import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { scheduleDetachedDestroy } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 
 import { createPluginManager } from './createPluginManager.ts'
@@ -409,10 +410,17 @@ const SessionLoader = types
           // already-loaded records restore the snapshot as-is.
           self.sessionPlugins ??= []
         }
-        // Detached, not destroyed. This runs from a React effect cleanup, and
-        // React reads the outgoing props after that — destroying here is what
-        // crashed the page. ADR-069.
+        // Detach in this action, destroy on a later task. This runs from a
+        // React effect cleanup, and React reads the outgoing props after that —
+        // destroying here is what crashed the page. ADR-069.
+        //
+        // The destroy is not optional and its absence was a regression: the
+        // whole plugin-facing tree hangs off this root, so never destroying it
+        // silently drops every `beforeDestroy` in it. jbrowse-plugin-apollo's
+        // internet account closes its websocket there and its session aborts
+        // its in-flight fetches; reported by Apollo against #5618.
         ;(rootModel as unknown as DetachableRootModel).detach()
+        scheduleDetachedDestroy(rootModel)
       }
       self.pluginManager = undefined
     },

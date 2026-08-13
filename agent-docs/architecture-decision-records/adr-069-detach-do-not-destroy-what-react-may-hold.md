@@ -46,7 +46,19 @@ reset — goes through it.
 - `disposePluginManager` calls `rootModel.detach()`, a new action that runs the
   things reaching *outside* the tree — the `beforeunload` listener, the
   sessionStorage and IndexedDB autoruns, registered through `addDetachDisposer`
-  rather than `addDisposer` — and leaves the tree alone.
+  rather than `addDisposer` — and then destroys the tree on a later task, the
+  same shape as `setSession` below.
+
+  **The destroy is a correction.** As first written this path detached and never
+  destroyed, on the reasoning in "Never destroy anything" below — which was
+  right about the loader and wrong about the rootModel, because the whole
+  plugin-facing tree hangs off the rootModel. jbrowse-plugin-apollo reported it:
+  its internet account closes its websocket in `beforeDestroy` and its session
+  aborts its in-flight fetches there, and after #5618 neither ran, on the very
+  path its login flow drives. Core loses the same contract quietly —
+  `BaseTrackModel`'s `rpcSessionId` release, `TimeTraveller`, `HistoryManagement`
+  — and every `addDisposer` in the tree, which fires only on destroy, so the
+  superseded app's autoruns and reactions go on running.
 - `setSession` detaches the outgoing session inside the action and destroys it
   on a later task (#5621). It is the weaker of the two cases and worth saying so:
   measured, every read there is of a scalar or a reference, which warns and
@@ -83,12 +95,26 @@ this action's `endBatch`, a synchronous bounded flush, not for React to release
 fibers. Deferring it 250ms instead of 0 changed the residual from 14 to 16, i.e.
 nothing, which is the evidence that the wait is not doing hopeful work.
 
-**Never destroy anything.** Available for the loader, not for the rest.
-`beforeDestroy` is a plugin-facing contract: jbrowse-plugin-apollo aborts the
-`AbortController` for its in-flight fetches there, and core's `BaseTrackModel`
-releases the `rpcSessionId` claim that lets `CoreFreeResources` evict a parsed
-adapter from the worker. Detaching and never destroying zeroes the warning count
-while leaking both, the adapter one without bound across repeated switches.
+**Never destroy anything.** Available for the `SessionLoader` node itself, and
+for nothing else. `beforeDestroy` is a plugin-facing contract:
+jbrowse-plugin-apollo aborts the `AbortController` for its in-flight fetches
+there and closes its websocket, and core's `BaseTrackModel` releases the
+`rpcSessionId` claim that lets `CoreFreeResources` evict a parsed adapter from
+the worker. Detaching and never destroying zeroes the warning count while
+leaking both, the adapter one without bound across repeated switches.
+
+This is written as a rejected alternative because it was tried: #5618 applied it
+to the loader's **rootModel** as well as the loader, and Apollo reported the
+websockets. The loader is a boot record with no hooks under it; the rootModel is
+the root of everything a plugin builds. The distinction is the whole content of
+this entry, and it is not visible from the call site — both are "the outgoing
+tree" there.
+
+**A longer deferral, to get the destroy without the noise.** Measured on the
+reload, in a production browser: 48 dead reads destroying on a 0ms task, 49 on a
+5s one. It is not a race with React finishing its unmount, so no delay is the
+fix — the same finding as `setSession`'s 250ms-vs-0, and the same cause, the
+undisposed `observer()` reactions in [TODO.md](../TODO.md).
 
 **Guard the getters with `isAlive`.** Tried on
 `HierarchicalTrackSelectorWidget.trackContainer` and reverted. A model getter
@@ -100,17 +126,26 @@ along has the same exposure.
 ## Consequences
 
 The dangerous window is empty and deterministically so, on both paths: while
-components are mounted over a tree, nothing reads a dead node. In a browser the
-plugin-install path went from **46 dead-node reads to 0**.
+components are mounted over a tree, nothing reads a dead node. On the
+plugin-install path the 46 reads measured in a browser were the app's own
+teardown walk (`Action: '.deactivate()'`) destroying nodes it was still
+enumerating; detaching in the action takes that to 0, and it stays 0, because
+the destroy now happens after that walk has finished rather than inside it.
 
-It does **not** make the console silent. A session switch still logs ~14 reads
-while the detached tree is destroyed, down from 19. On that path the gain is
-volume and placement, not severity: every read measured there is of a scalar or
-a reference (`type`, `view`, `trackContainerId`), which warns and cannot throw,
-and the ones left now happen on a detached tree nothing renders, outside the
-action. The crash this rule exists for is the loader path's — an unmaterialized
-complex child, demonstrated in #5618 — and nothing of that shape was found
-under `setSession`.
+It does **not** make the console silent, and on the reload path it is louder
+than on the others. A session switch logs ~14 reads while the detached tree is
+destroyed, down from 19; a plugin reload logs ~48. Same cause both times —
+killing an MST tree invalidates computeds inside it that undisposed `observer()`
+reactions still watch — and the same severity: every read measured is of a
+scalar or a reference (`type`, `configuration`, `view`, `trackContainerId`),
+which warns and cannot throw, on a detached tree nothing renders, with no page
+error and none of the throw shape. The crash this rule exists for is the
+unmaterialized complex child of #5618, which is a read of the tree *while React
+still holds it*, and that window is what the detach empties.
+
+**So the count is not the measure of this rule, and reading it as one is the
+mistake #5618 made.** Zero reads is also what detaching and never destroying
+gives you, and that is strictly worse.
 
 It does not promise prompt collection either. Measured with a `WeakRef` after a
 forced gc, a superseded root is still reachable — and so is one that has been
@@ -124,7 +159,11 @@ discarded are never disposed, and go on observing the tree. See
 Each fails without its fix and is scoped to what is deterministic:
 
 - `products/jbrowse-web/src/tests/rootModelTeardown.test.tsx` — real teardown,
-  real component tree, React's real render-logging, zero dead reads.
+  real component tree, React's real render-logging, zero dead reads *while the
+  superseded root is still alive*, and the root dead afterwards. The two halves
+  are the whole decision, and the first without the second is what #5618
+  shipped; it buckets by `isAlive` rather than by a timer so neither half can
+  quietly become the other.
 - `products/jbrowse-web/src/tests/sessionSwitchTeardown.test.tsx` — a real
   session switch, asserting zero dead reads across the action and the reaction
   flush closing it, and that the outgoing session is destroyed afterwards
@@ -139,9 +178,11 @@ Each fails without its fix and is scoped to what is deterministic:
 - `products/jbrowse-web/src/components/workerPoolTeardown.test.ts` — a spy on
   `rpcManager.destroy`, because the bug was that nothing called it. No harness
   here can watch a worker thread die; see [TODO.md](../TODO.md).
-- `plugin-reload-browser-tests` carries a browser suite for the same reload,
-  where the production-build failure is visible and jsdom's is not. It lands
-  once its prerequisites are merged.
+- `products/jbrowse-web/browser-tests/suites/plugin-reload.ts` — the same reload
+  in a real browser, which is the only place the production build's behaviour is
+  visible and the only place "does the app still work afterwards" can be asked.
+  It asserts the throw shape, uncaught page errors and 404s, and deliberately
+  not the warning count; the counts quoted above were taken with it.
 
 `enableReactRenderLogging.ts` is what makes any of this observable under jest:
 React gates render-logging on `console.timeStamp` and `performance.measure`
