@@ -102,45 +102,37 @@ because the display config is the interesting part:
 
 The adapter's `uri` shorthand resolves the `.tbi` beside the file, and
 [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight) is left
-at its auto-fit default, which divides the display height across the rows with a
-1px floor: at this row count every tumor is a single pixel line, which is the
-point, since the pattern lives in the stack rather than in any one row. That
-leaves three settings to write:
+at its auto-fit default, which at this row count leaves every tumor a single
+pixel line. That leaves three settings to write:
 
 - [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
   splits the one file into one labeled row per `sample`. A thousand barcodes
   gives a thousand rows.
 - [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) is a
   [jexl](/docs/config_guides/jexl) expression binning `segmean` onto a diverging
-  blue-to-red scale. Other multi-row tutorials skip this because their BED
-  carries `itemRgb`; here the color is derived from a number, so the expression
-  is the color.
+  blue-to-red scale, since this BED carries no `itemRgb`.
 - [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) spells the
   scale out, since a reader cannot infer the log2 cutoffs from the picture.
 
 ## Read it
 
-Open the track at whole-genome zoom, then run "Clustering > Cluster rows by
-similarity" action in the track menu (see [](/docs/user_guides/clustering) for
-the mechanic). Here, clustering turns a noisy stack of 1104 tumors into blocks
-of shared copy-number profile.
+Open the track at whole-genome zoom, then run **Clustering → Cluster rows by
+similarity** from the track menu (see [](/docs/user_guides/clustering)), which
+turns a noisy stack of 1104 tumors into blocks of shared copy-number profile.
 
 A vertical stripe is one locus called the same way across many rows, blue for
 recurrent loss and red for recurrent gain. A whole row tending red or blue is
-one heavily aneuploid tumor, altered across most of its genome, and clustering
-pulls those rows together into a band.
-
-Zooming to a single locus turns the stripe back into per-tumor calls, and
-clustering on just that window sorts the cohort into its copy-number classes
+one heavily aneuploid tumor, and clustering pulls those rows together into a
+band. Zooming to a single locus turns the stripe back into per-tumor calls, and
+clustering on that window alone sorts the cohort into its copy-number classes
 there.
 
 <Figure caption="chr17:39.0-40.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure above." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 Do not read proportions off this display. At 1104 rows in a few hundred pixels
 each row is well under one pixel tall, so rows alias together and the saturated
-colors crowd out the neutral ones, which leaves the balanced band drawn thinner
-than its share of the file. The stack maps where events are rather than how many
-rows carry them.
+colors crowd out the neutral ones. The stack maps where events are rather than
+how many rows carry them.
 
 ## Add a recurrence track
 
@@ -157,11 +149,9 @@ chr8    127600000  127800000  49.73  -0.91
 chr16   89200000   89300000   3.26   -46.38
 ```
 
-Two value columns, and `BedGraphTabixAdapter` reads every column past `end` as
-its own signal, so one file carries both. Loss is written negative because a
-wiggle's `bicolorPivot` sits at 0: gains then draw up in `posColor`, losses down
-in `negColor`, and the track is the mirrored frequency plot without any of it
-being a special mode.
+`BedGraphTabixAdapter` reads every column past `end` as its own signal, so one
+file carries both. Loss is written negative so that a wiggle's `bicolorPivot` at
+0 draws gains up in `posColor` and losses down in `negColor`.
 
 ```json
 {
@@ -192,8 +182,7 @@ read like a peak. `posColor`/`negColor` reuse the stack's amplification and
 deep-loss colors, so the two tracks agree by eye.
 
 Placed above the stack, as in the figure at the top of this page, each peak sits
-over a stripe and puts a number on it, so 1q, 16q and the bin over _ERBB2_ can
-be read off the axis rather than judged by how solid the stripe below looks.
+over a stripe and puts a number on it.
 
 This is a frequency plot, not
 [GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41): there is no background
@@ -254,15 +243,14 @@ a subtype.
 
 The rows can only be read against each other because
 [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
-pin them to one axis. Left to autoscale, each row would fit its own maximum and
-the four subtypes would look alike. The pin is tighter here than on the pooled
-track above, at 70 rather than 100, because each row carries one signed
-direction and so only ever fills the half of its axis on that side.
+pin them to one axis; left to autoscale, each would fit its own maximum. The pin
+is tighter here than on the pooled track above, at 70 rather than 100, because
+each row only ever fills half its axis.
 
-Gain and loss stay separate columns rather than collapsing to one signed value
-per subtype. They are not redundant: at the edge of the 17q amplicon the HER2+
-group is gained and lost at nearly the same rate, and a single net value would
-draw that as roughly nothing right beside ERBB2.
+Gain and loss stay separate columns rather than collapsing to one signed value:
+at the edge of the 17q amplicon the HER2+ group is gained and lost at nearly the
+same rate, and a net value would draw that as roughly nothing right beside
+ERBB2.
 
 Small groups are dropped, at `--min-group` tumors (20 by default), since a
 percentage over a handful of tumors moves in visible steps and reads as signal.
@@ -291,13 +279,12 @@ Bytes over the wire for three views, counted through each reader:
 | chr17 end to end       | 411 KB      | 237 KB     | 12            |
 | whole genome           | 5843 KB     | 1176 KB    | 4             |
 
-The first row is the widest gap and most of it is not the binning. TCGA segments
+The first row is the widest gap and most of it is not the binning: TCGA segments
 average 2.6 Mb, so a query has to reach back to wherever an overlapping segment
 started, and tabix reads the same 411 KB for a 200 kb window as for the whole
-chromosome: 1218 lines returned in the first case against 18,867 in the second.
-Set against that, the store is 25 MB on disk to the BED's 5.9 MB. It earns its
-place on the zoomed-out views and on cohorts larger than this one, not as a
-replacement for the stack.
+chromosome. Set against that, the store is 25 MB on disk to the BED's 5.9 MB, so
+it earns its place on the zoomed-out views and on larger cohorts rather than as
+a replacement for the stack.
 
 The plugin is in **beta** and not in the
 [plugin store](/docs/user_guides/plugin_store) yet, but the built bundle is
@@ -343,22 +330,19 @@ the bin size and the resolution levels are attributes of the store. Each tumor's
 receptor subtype rides along as its `group`, from the same clinical table the
 recurrence split uses, so the clustering sidebar groups the rows the same way.
 
-Color works differently here than on the stack. There is no jexl expression
-binning `segmean` into five steps; a quantitative track ramps continuously
-between `negColor` and `posColor` about `bicolorPivot`, which sits at 0 because
-these are log2 ratios. `minScore` and `maxScore` clamp the ramp, one step
-outside the stack's own ±1 amplification and deep-loss cutoffs. Pick round
-numbers: the scale is `nice()`-rounded, so ±1.5 would quietly become the ±2 the
-color bar draws anyway.
+Color works differently here. A quantitative track ramps continuously between
+`negColor` and `posColor` about `bicolorPivot`, at 0 because these are log2
+ratios, with `minScore` and `maxScore` clamping the ramp one step outside the
+stack's own cutoffs. Pick round numbers: the scale is `nice()`-rounded, so ±1.5
+quietly becomes the ±2 the color bar draws anyway.
 
 Clustering is scoped to the blocks in view either way, so the row order above is
 genome-wide only because the figure's view is.
 
-Binning is also the one thing this representation loses. A focal amplification
-narrower than the base 10 kb bin is averaged with its neighbours rather than
-drawn at its own amplitude, where the stack keeps the caller's exact interval at
-every zoom. For SNP 6.0 segments, whose mean length is 2.6 Mb, that costs
-nothing; for exome or WGS callers emitting kilobase segments it would.
+Binning is what this representation loses: a focal amplification narrower than
+the base 10 kb bin is averaged with its neighbours, where the stack keeps the
+caller's exact interval at every zoom. For SNP 6.0 segments that costs nothing;
+for exome or WGS callers emitting kilobase segments it would.
 
 ## Use your own cohort
 
@@ -414,38 +398,31 @@ It writes `tcga_brca_cnv.bed.gz` (+ `.tbi`), the two recurrence bedGraphs (+
 both recurrence lanes over one row per tumor. The assembly is the hosted UCSC
 hg38 hub's own entry copied in, so the reference is never downloaded.
 
-The full run is almost entirely downloading and produces 379,318 segments across
-1104 tumors in 5.7 MB, plus 22,592 recurrence bins in 148 KB and 24,048 grouped
-bins in 246 KB, both derived from that BED rather than re-downloaded. Swap in
-any other project id (`TCGA-OV`, `TCGA-LUAD`, ...) for a different cohort, and
-pass a third argument to group the recurrence by a different clinical column,
-since `subtype` is breast specific.
+The full run is almost entirely downloading. Swap in any other project id
+(`TCGA-OV`, `TCGA-LUAD`, ...) for a different cohort, and pass a third argument
+to group the recurrence by a different clinical column, since `subtype` is
+breast specific.
 
-Three of its steps decide whether the resulting track loads correctly. The first
-is that it takes only open-access files: the GDC's **Masked Copy Number
-Segment** files (Affymetrix SNP 6.0, already harmonized to GRCh38, germline CNV
-probes removed) need no dbGaP application. The query also filters to
-`Primary Tumor`, since TCGA banks a matched blood normal per case that would
-double the row count and add no somatic signal.
+Three of its steps decide whether the resulting track loads correctly:
 
-The second is the reshape of `.seg` into BED. Two conversions matter, and
-getting either wrong misplaces every feature: `.seg` names contigs bare (`1`),
-so the script adds the `chr` prefix, and `.seg` starts are 1-based inclusive
-against BED's 0-based half-open, so it subtracts 1. It also keeps one file per
-barcode, since the replicate aliquots a few cases carry would otherwise land in
-the same row and paint over each other (2 of 1106 files here, leaving 1104
-tumors).
-
-The third is that `Segment_Mean` is carried through unchanged. JBrowse plots
-what the caller called; nothing here re-normalizes it.
+- **Open-access files only.** The GDC's **Masked Copy Number Segment** files
+  (Affymetrix SNP 6.0, already harmonized to GRCh38, germline CNV probes
+  removed) need no dbGaP application. The query also filters to `Primary Tumor`,
+  since the matched blood normal per case would double the row count and add no
+  somatic signal.
+- **The `.seg` to BED reshape.** `.seg` names contigs bare (`1`), so the script
+  adds the `chr` prefix, and `.seg` starts are 1-based inclusive against BED's
+  0-based half-open, so it subtracts 1. It keeps one file per barcode, since
+  replicate aliquots would otherwise land in the same row and paint over each
+  other.
+- **`Segment_Mean` is carried through unchanged.** Nothing here re-normalizes
+  it.
 
 The binned store is a separate script,
 [`build_tcga_cohort_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_tcga_cohort_cnv_zarr.sh),
-and not a step of the one above, because it needs none of what that one needed:
-its inputs are the BED and the clinical table, so it runs against the hosted
-copies in well under a minute rather than repeating the download. It needs
-`node` 22 or newer and nothing else, with no `npm install`, since the converter
-only reaches for a BigWig reader on the path this does not take.
+and not a step of the one above: its inputs are the BED and the clinical table,
+so it runs against the hosted copies in well under a minute rather than
+repeating the download. It needs `node` 22 or newer and no `npm install`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_tcga_cohort_cnv_zarr.sh
@@ -464,11 +441,10 @@ reading up to 10x more bins than it can draw.
 The recurrence step is separately runnable as
 [`cnv_recurrence.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/cnv_recurrence.py),
 if you have a cohort BED already and want only the frequency file. It skips bins
-where fewer than half the cohort has any call, rather than drawing them as zero,
-which here trims only the chromosome tips: SNP 6.0 segments span centromeres, so
-the track has no interior gaps. That coverage mask is taken over the whole
-cohort even when `--groups` is set, so the grouped file has the same gaps as the
-pooled one and a group cannot lose a bin the cohort has calls for.
+where fewer than half the cohort has any call rather than drawing them as zero,
+which here trims only the chromosome tips. That coverage mask is taken over the
+whole cohort even when `--groups` is set, so the grouped file has the same gaps
+as the pooled one.
 
 The clinical table comes from
 [`tcga_clinical_tsv.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tcga_clinical_tsv.py),
