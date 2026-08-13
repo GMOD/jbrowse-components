@@ -174,11 +174,28 @@ The allelic panel here is **B-allele frequency** rather than HiFiCNV's own
 `maf.bw`, which folds to `min(AF, 1-AF)` so a region that has lost one parental
 copy collapses onto a single band near 0. Unfolded BAF keeps the two apart: a
 balanced region is one band at 0.5, a loss-of-heterozygosity region two bands at
-0 and 1. Build it by piling up the tumor reads at germline heterozygous sites
-and taking the alt fraction (the [build script](#reproduce-it-end-to-end) uses
-`bcftools mpileup`, keeping sites at 10x or better). Plot it with **scatter**
-over a fixed 0 to 1 range, since the spread is the entire signal and a line
-rendering would average the two LOH bands back to 0.5.
+0 and 1. Build it by piling up the tumor reads at the sites the **normal** calls
+heterozygous and taking the alt fraction:
+
+```bash
+bcftools view -g het -Oz -o hets.vcf.gz normal.deepvariant.vcf.gz
+tabix -p vcf hets.vcf.gz
+cut -f1,2 GRCh38.fa.fai > GRCh38.chrom.sizes
+
+bcftools mpileup -f GRCh38.fa -T hets.vcf.gz -a AD -q 1 -Q 0 tumor.bam |
+  bcftools query -f '%CHROM\t%POS\t[%AD]\n' |
+  awk -F'[\t,]' '{d=$3+$4; if (d>=10) printf "%s\t%d\t%d\t%.4f\n",$1,$2-1,$2,$4/d}' |
+  LC_COLLATE=C sort -k1,1 -k2,2n > baf.bedgraph
+bedGraphToBigWig baf.bedgraph GRCh38.chrom.sizes tumor_baf.bw
+```
+
+The germline het list is what makes a site informative, and taking it from the
+normal rather than the tumor is the whole point: an LOH site is homozygous in
+the tumor, so a tumor-derived list drops exactly the sites the track exists to
+show. `-q 1` drops multi-mapped reads, `-Q 0` keeps HiFi base qualities as they
+are, and the 10x floor stops a thin-coverage site painting a spurious 0 or 1.
+Plot it with **scatter** over a fixed 0 to 1 range, since the spread is the
+entire signal and a line rendering would average the two LOH bands back to 0.5.
 
 <Figure caption="Chromosome 3 over the benchmark CNV calls: BIC-seq2's segmented log2 copy ratio, the HiFiCNV depth it summarizes, and B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity; the q-arm is balanced." src="/img/sv_cgiab/cnv_depth_baf.png" />
 

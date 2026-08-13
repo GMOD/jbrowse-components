@@ -83,9 +83,40 @@ per species: grape `GCF_030704535.1`, peach `GCF_000346465.2`, cacao
 `GCF_000002775.5`, tomato `GCF_036512215.1` and citrus `GCF_000493195.1`. One
 accession supplies the genome, the annotation and (through `gffread`) the CDS,
 so the assembly and the annotation drawn on it cannot be two different builds.
-From there: GFF3 to jcvi BED, catalog orthologs against grape, MCScan each pair,
-join the results. The [end-to-end script](#reproduce-it-end-to-end) runs every
-command.
+From there, `gffread` extracts the CDS and jcvi converts the annotation:
+
+```bash
+for sp in grape peach cacao; do
+  gffread "$sp.gff3" -g "$sp.fa" -x "$sp.cds.fa"
+  python -m jcvi.formats.gff bed --type=mRNA --key=ID --primary_only \
+    "$sp.gff3" -o "$sp.bed"
+  python -m jcvi.formats.fasta format "$sp.cds.fa" "$sp.cds"
+done
+```
+
+Both sides key on the mRNA's GFF3 `ID`, which is what makes the later join work:
+gffread names each extracted CDS after that ID, and jcvi's `--key=ID` writes the
+same string into BED column 4. `--key=transcript_id` and `--key=Name` look
+equally available on an NCBI annotation and are not interchangeable here, since
+jcvi falls back to a generated `mrna_494685` when it cannot resolve the key, and
+a BED full of those joins to nothing.
+
+Then catalog orthologs against the reference, MCScan each pair, and join:
+
+```bash
+for sp in peach cacao; do
+  python -m jcvi.compara.catalog ortholog --no_strip_names grape "$sp"
+  python -m jcvi.compara.synteny mcscan grape.bed "grape.$sp.lifted.anchors" \
+    --iter=1 -o "grape.$sp.i1.blocks"
+done
+python -m jcvi.formats.base join grape.peach.i1.blocks grape.cacao.i1.blocks \
+  --noheader | cut -f1,2,4 > grape.blocks
+```
+
+Each per-pair table is two columns, grape then the mate, so the join emits the
+grape column once per table. `cut -f1,2,4` keeps the grape anchor followed by
+one mate per lane, which is the order `blockAssemblies` and `bedLocations` have
+to list.
 
 Each assembly also gets a `refNameAliases` file built from the download's own
 sequence report, since NCBI names sequences by accession. That is a lookup, not
