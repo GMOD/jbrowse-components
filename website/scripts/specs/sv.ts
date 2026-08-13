@@ -314,6 +314,15 @@ const INVDUP_PILEUP = {
   fracY: 0,
 }
 
+// The duplicated copy inside HGSV_2721, read off the call's own
+// INFO.CPX_INTERVALS (`DUP_chr1:39660047-39660275`) rather than eyeballed off
+// the coverage step. The record's other interval is the inversion
+// (`INV_chr1:39658980-39660275`), which is half the view and is what the read
+// orientations are about; this one is 228 bp and is the only part of the call
+// that has a coverage answer, so it is the part the figure shades.
+const INVDUP_DUP_SEGMENT = { start: 39660047, end: 39660275 }
+const INVDUP_DUP_LOCUS = '1:39,660,048-39,660,275'
+
 // hg19 main chromosomes (1..22, X, Y) in karyotype order. A plain whole-genome
 // showAllRegionsInAssembly also appends the *_hap / *_random / Un contigs, whose
 // far-right elided-block column reads as clutter in a genome-wide overview.
@@ -687,6 +696,21 @@ export const svSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: '1:39,658,200-39,661,800',
           trackLabels: 'offset',
+          // The duplicated copy, shaded. It is the half of this call that the
+          // read orientations say nothing about -- LL, RR and an inverted split
+          // read are an INVERSION signature, and a reader who takes them for the
+          // whole story never finds the "dup" in INVdup. What answers for the
+          // duplication is depth, and depth is only legible against a boundary:
+          // the step is 228 bp in a 2.7 kb window, so unshaded the frame shows a
+          // coverage band that goes up somewhere.
+          highlight: [
+            {
+              refName: '1',
+              assemblyName: 'hg38',
+              label: 'duplicated copy',
+              ...INVDUP_DUP_SEGMENT,
+            },
+          ],
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
@@ -792,15 +816,35 @@ export const svSpecs: ScreenshotSpec[] = [
         // in off the track's left edge, so the pill's border clears the app
         // frame rather than being clipped by it
         anchor: { ...INVDUP_PILEUP, dx: 50, dy: 360 },
-        text: 'Green (LL), navy (RR), and magenta split reads flag the inverted segment.',
-        maxWidth: 470,
+        // Names what each colour IS, which is the half the old wording left to
+        // the legend: "magenta split reads" is a colour and a read class, and a
+        // reader who does not already know that a split read's two alignments
+        // can disagree about strand has been told nothing. The two mate classes
+        // get the same treatment, since LL and RR are the legend's words rather
+        // than an explanation.
+        text: 'Magenta: one read, split into two alignments that point in OPPOSITE directions.\nGreen (LL) and navy (RR): mate pairs whose two ends face the same way.\n\nBoth are reads that cross an inversion junction.',
+        maxWidth: 520,
       },
       {
-        // duplication evidence, stacked below with a gap
+        // duplication evidence, stacked below with a gap, pointing at the shaded
+        // segment rather than describing it: "elevated coverage" in a 2.7 kb
+        // frame is a claim about ~90 px of one band
         type: 'text',
-        anchor: { ...INVDUP_PILEUP, dx: 50, dy: 530 },
-        text: 'Elevated coverage and arcs mark the duplicated copy.',
-        maxWidth: 470,
+        anchor: { ...INVDUP_PILEUP, dx: 50, dy: 590 },
+        text: 'Coverage steps up over the shaded segment. That is the second copy, and the reads above say it went in backwards.',
+        maxWidth: 520,
+      },
+      {
+        type: 'arrow',
+        fromAnchor: { ...INVDUP_PILEUP, dx: 570, dy: 570 },
+        // 60px into the 120px coverage band, so the head lands in the step
+        // itself rather than on the ruler above it
+        anchor: {
+          track: 'HG02768.final',
+          locus: INVDUP_DUP_LOCUS,
+          fracY: 0,
+          dy: 60,
+        },
       },
     ],
   },

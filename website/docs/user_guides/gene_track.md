@@ -66,7 +66,7 @@ Enable it from the linear genome view's hamburger menu → **Color CDS by readin
 frame**. The setting applies to every gene track in that view and is remembered
 across sessions.
 
-<Figure caption="Turning on Color by CDS for BRCA1 (hg19). Top: the hamburger menu with the 'Color CDS by reading frame' toggle. Bottom: the result at base-pair resolution, each codon tinted by its reading frame with its amino acid drawn over it." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Turning on Color by CDS for BRCA1 (hg19). Top: the hamburger menu with the 'Color CDS by reading frame' toggle. Bottom: the result at base-pair resolution, each codon tinted by its reading frame with its amino acid and protein position drawn over it." src="/img/gene_track_color_by_cds.png" />
 
 ## Color transcripts by a value in the file
 

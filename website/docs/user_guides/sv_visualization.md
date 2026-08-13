@@ -66,12 +66,16 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
-Green LL, navy RR and magenta split reads flag the inverted segment, and the
-duplicated copy reads out as elevated coverage and arcs. Those
-orientation-colored reads are a minority of an otherwise concordant grey pileup,
-so they cluster at the breakpoints.
+The two halves of an INVdup call read out of two different things. Green LL,
+navy RR and magenta split reads are the inversion: the first two are mate pairs
+whose ends face the same way, the third is one read split into alignments that
+point in opposite directions, and all three are reads that cross a junction
+where the strand flips. They are a minority of an otherwise concordant grey
+pileup, so they cluster at the breakpoints. The duplication has no orientation
+signature at all and shows up as depth, over the segment the call names in
+`INFO.CPX_INTERVALS`.
 
-<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
+<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the duplicated copy shaded, the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
 
 ### Short reads vs long reads
 

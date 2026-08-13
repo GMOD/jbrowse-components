@@ -233,12 +233,21 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // "Color CDS by reading frame" boxed; stage 2 clicks it, so each CDS codon is
   // tinted by its reading frame, joining the amino acids that are drawn at this
   // zoom either way, lined up to the reference codons above.
+  //
+  // 91 bp, where this was 121: the residue NUMBER beside each letter (`Q1182`)
+  // is what lines the frame up against the reference codons, and it is drawn
+  // only once a codon is wide enough for the widest label the format can
+  // produce -- one letter and five digits, plus a separator (peptidePositioning,
+  // residueNumbersFit). That is a fixed budget rather than a measurement of the
+  // label in hand, deliberately, so that every residue on screen agrees and
+  // panning across residue 999 changes nothing; the cost is that a window this
+  // side of about 105 bp draws bare letters. 121 bp was just past it.
   {
     mode: 'url',
     name: 'gene_track_color_by_cds',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      loc: 'chr17:41,244,000-41,244,120',
+      loc: 'chr17:41,244,000-41,244,090',
       // offset labels so they overlay the tracks
       trackLabels: 'offset',
       tracks: [
@@ -252,7 +261,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'RefSeq',
     readyTimeout: 60000,
-    viewportHeight: 600,
+    viewportHeight: 500,
     stages: [
       {
         // top frame: the view (hamburger) menu open, the color-by-CDS toggle
@@ -282,8 +291,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
           // A bare coordinate on purpose, and not one that wants an anchor: the
           // menu's backdrop covers the viewport, so this hits nothing in
           // particular and any point off the menu would do. Same category as
-          // `dismissMenus`.
-          { type: 'click', from: { x: 700, y: 550 } },
+          // `dismissMenus`. It does have to be INSIDE the viewport, which is the
+          // one thing it can get wrong silently: at y 550 in a 500px capture the
+          // click lands nowhere, the backdrop stays, and the frame is of the menu
+          // over the result it just produced.
+          { type: 'click', from: { x: 700, y: 420 } },
           { type: 'delay', ms: 5000 },
         ],
       },
