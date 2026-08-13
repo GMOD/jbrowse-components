@@ -101,7 +101,8 @@ plant contexts. It writes a bedGraph per context, which becomes a bigWig once
 the header line is dropped and the percentage column kept:
 
 ```bash
-MethylDackel extract --CHG --CHH tair10.fa arabidopsis_wgbs.bam
+MethylDackel extract --CHG --CHH -o arabidopsis_wgbs \
+  tair10.fa arabidopsis_wgbs.bam
 samtools faidx tair10.fa
 cut -f1,2 tair10.fa.fai > tair10.chrom.sizes
 for ctx in CpG CHG CHH; do
