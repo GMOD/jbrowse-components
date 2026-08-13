@@ -63,17 +63,14 @@ that `sv_multihop.py chains` reports on this file in the
 [multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), and the two
 agree junction for junction, in the same order.
 
-They agree because neither parses the ALT bracket by hand. Four things go wrong
-there and all four go wrong **silently**:
+They agree because neither parses the ALT bracket by hand, which goes wrong four
+ways, all of them silent:
 
 - the replacement string may carry inserted sequence either side of the bracket
-  (`GTGATGGATTCA[CHR12:72273112[`), which a pattern matching one base of context
-  drops. On this file most of the breakend records are that shape
-- callers upper-case the mate contig. `CHR12` is not a region hg38 has, so the
-  panel renders empty rather than failing
-- `END=` matches inside `CIEND=`, and the first hit wins, so a caller that
-  writes its confidence interval first gets a junction at position 5
-- the two records of one breakend pair queue the same translocation twice
+  (`GTGATGGATTCA[CHR12:72273112[`)
+- callers upper-case the mate contig, and `CHR12` is not a region hg38 has
+- `END=` matches inside `CIEND=`, and the first hit wins
+- the two records of one breakend pair name the same translocation twice
 
 One image per row, written as `1_chr1_33053494-chr6_2919922_junction_0.png`:
 index first so the directory sorts in callset order, coordinates next so you can
@@ -85,20 +82,19 @@ flank is what actually frames it. Start with `--limit 20` to check the framing
 before committing to the whole callset.
 
 Nothing is downloaded and no browser is involved: the reads stream from the
-hosted CRAM and each image is rendered by React server-side rendering. Because
-the run is a single process, the module graph loads once for the whole callset
-rather than once per variant, which is most of the wall time on a shell loop.
+hosted CRAM and each image is rendered server-side. The run is a single process,
+so the module graph loads once for the whole callset rather than once per
+variant.
 
 A row that cannot be rendered is reported and the run continues, so a
 translocation into a contig the assembly does not have costs you that row and
 not the other 99.
 
-A junction is two loci, so that is what `batch` draws. This one is worth looking
-at on its own for two reasons. A connector drawn dashed means the read carrying
-it has a segment at a locus the frame does not show, and these reads also visit
-chr10, so the junction wants a third panel. And the control belongs beside it
-rather than in a second directory: one render per sample, the same `--loc` list
-and the same `--width`, so the two are comparable line for line.
+A junction is two loci, so that is what `batch` draws. A connector drawn dashed
+means the read carrying it has a segment at a locus the frame does not show, and
+these reads also visit chr10, so this junction wants a third panel. The control
+belongs beside it: one render per sample, the same `--loc` list and the same
+`--width`.
 
 <Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumour nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one 39.5 kb reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
@@ -106,12 +102,10 @@ Reads at 1 px apiece (`featureHeight:super-compact`) is what keeps six pileups
 on one screen; at the default height the picture is mostly pileup and the curves
 it is read for are drawn over it.
 
-The third panel is where triage stops and interpretation starts, and it is worth
-knowing it is available before you need it: a curve says two loci are joined in
-this sample, while a contig says in what order and in which orientation, which
-takes a reconstruction step this page does not do. The
-[multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from these
-same reads. Rendering it is another `jb2export` run with a different
+A curve says two loci are joined in this sample; a contig says in what order and
+in which orientation, which takes a reconstruction step this page does not do.
+The [multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from
+these same reads, and rendering it is another `jb2export` run with a different
 `--assembly`, since a derivative allele is an assembly like any other.
 
 ## The control
@@ -143,9 +137,8 @@ What the picture can tell you, and what it cannot:
   connectors are drawn from what the aligner said, so a read mismapped into a
   repeat contributes a confident-looking curve
 
-That last point marks what the contact sheet is for. The images rank nothing and
-vouch for nothing; they are a fast way to put your eyes on every call in the set
-rather than on the handful there was time for.
+The images rank nothing and vouch for nothing; they are a fast way to put your
+eyes on every call in the set rather than on the handful there was time for.
 
 ## Opening one in the browser
 
