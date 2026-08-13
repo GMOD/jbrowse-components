@@ -17,8 +17,8 @@ the shared behavior.
 The configuration slots for this model are documented on its
 [config schema page](../../config/httpbasicinternetaccount).
 
-HTTPBasicInternetAccount declares no members of its own — it composes the models
-below, and everything here is theirs.
+Members a composed model contributes are listed here too, so these tables are
+the whole surface.
 
 ## Properties
 
@@ -33,6 +33,7 @@ below, and everything here is theirs.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-showinfileselector">**showInFileSelector**</span><br><code>boolean</code> | There is nothing to pick: an HTTP Basic account matches by domain and prompts on its own. RpcManager also mints one of these per origin on a 401, so offering them would fill the picker with a toggle per server the session happened to touch. | HTTPBasicInternetAccount |
 | <span id="getter-validatewithhead">**validateWithHEAD**</span><br><code>boolean</code> | <span data-pagefind-ignore>validate the token with a HEAD request before it is used</span> | [TokenEntryInternetAccount](../tokenentryinternetaccount#getter-validatewithhead) |
 
 ## Actions

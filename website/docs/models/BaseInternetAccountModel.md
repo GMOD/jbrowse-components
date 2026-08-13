@@ -32,6 +32,7 @@ JBrowse core.
 | <span id="getter-togglecontents">**toggleContents**</span><br><code>ReactNode</code> | Can use this to customize what is displayed in fileSelector's toggle box |
 | <span id="getter-selectorcomponent">**SelectorComponent**</span><br><code>AnyReactComponentType &#124; undefined</code> | Can use this to customize what the fileSelector. It takes a prop called `setLocation` that should be used to set a UriLocation |
 | <span id="getter-selectorlabel">**selectorLabel**</span><br><code>string &#124; undefined</code> | Can use this to add a label to the UrlChooser. Has no effect if a custom SelectorComponent is supplied |
+| <span id="getter-showinfileselector">**showInFileSelector**</span><br><code>boolean</code> | Whether the fileSelector offers this account as a source to pick. Turn it off for an account that only ever matches by domain and has nothing of its own to enter — HTTP Basic, whose ephemeral per-origin accounts would otherwise pile up as toggles nobody asked for. |
 | <span id="getter-tokenkey">**tokenKey**</span><br><code>string</code> | The key used to store this internetAccount's token in sessionStorage |
 
 ## Methods
