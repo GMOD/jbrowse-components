@@ -31,6 +31,13 @@
 // So the cost has two halves and they need separating: a fix that removes the
 // build but still posts 153k strings, or vice versa, buys only half.
 //
+// BUILD vs POST, which every table below separates:
+//   build — CPU in the RPC worker to construct the array
+//   post  — `structuredClone` when it crosses to the main thread, which is what
+//           `postMessage` does. Separate because clone is priced by object
+//           COUNT, not bytes: 200k strings cost 200k objects however short they
+//           are, while a typed array is one transferable.
+// A fix that removes one half and not the other buys half.
 // FOUR ARMS + a control, all over the same records:
 //   build-str   — what shipped: a template literal per read into a string[]
 //   build-num   — a Float64Array of the raw fileOffset. Float64, not Uint32:

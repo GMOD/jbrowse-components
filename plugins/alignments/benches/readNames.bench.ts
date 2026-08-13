@@ -23,6 +23,13 @@
 // COUNT — 153,677 strings against one transferable, the same reason readIds'
 // post half was 8ms).
 //
+// BUILD vs POST, which every table below separates:
+//   build — CPU in the RPC worker to construct the array
+//   post  — `structuredClone` when it crosses to the main thread, which is what
+//           `postMessage` does. Separate because clone is priced by object
+//           COUNT, not bytes: 200k strings cost 200k objects however short they
+//           are, while a typed array is one transferable.
+// A fix that removes one half and not the other buys half.
 // ARMS + a control, all over the same records:
 //   build-str    — what ships: `r.name` per read into a string[]
 //   post-str     — structuredClone of that string[] (what postMessage does)

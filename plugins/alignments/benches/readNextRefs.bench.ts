@@ -21,6 +21,13 @@
 // are off — so the worker now skips it, gated on `readConnections` in rpcProps
 // (the same trade `showCoverage` makes: skip real work, accept a refetch).
 //
+// BUILD vs POST, which every table below separates:
+//   build — CPU in the RPC worker to construct the array
+//   post  — `structuredClone` when it crosses to the main thread, which is what
+//           `postMessage` does. Separate because clone is priced by object
+//           COUNT, not bytes: 200k strings cost 200k objects however short they
+//           are, while a typed array is one transferable.
+// A fix that removes one half and not the other buys half.
 // ARMS + a control:
 //   nr-build-str   — what shipped: a refName per read into a string[]
 //   nr-post-str    — structuredClone of it (what postMessage does)

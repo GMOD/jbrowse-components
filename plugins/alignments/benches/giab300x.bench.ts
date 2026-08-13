@@ -234,7 +234,10 @@ async function main() {
       `  prefix stripped       ${prefix === undefined ? 'undefined — STRING FALLBACK' : `"${prefix}"`}\n` +
       `  round-trip mismatches ${bad}   <- must be 0\n` +
       `\n` +
-      `                          build     post\n` +
+      `  build = CPU in the worker; post = structuredClone across to the main\n` +
+      `  thread, priced by object COUNT rather than bytes\n` +
+      `\n` +
+      `                          build     post     ->  after\n` +
       `  readIds             ${f('oldIdsB')}  ${f('oldIdsP')}   ->  keys   ${f('newKeys')}\n` +
       `  readNames           ${f('oldNamesB')}  ${f('oldNamesP')}   ->  block  ${f('newNames')}\n` +
       `  readNextRefs        ${f('oldRefsB')}  ${f('oldRefsP')}   ->  table  ${f('newRefs')} + ${f('newInter')}\n` +

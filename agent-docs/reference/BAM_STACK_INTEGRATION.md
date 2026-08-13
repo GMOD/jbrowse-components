@@ -1,6 +1,6 @@
 ---
 name: bam-stack-integration
-description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the six seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
+description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the seven seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
 ---
 
 # The BAM stack, layer by layer
@@ -466,6 +466,48 @@ record has to allocate to hand over.** `seq` and `qual` have the same shape and
 are already handled by returning views the caller consumes immediately; the
 difference here is that a name's consumer is a concatenation, so a view is a
 temporary that exists only to be copied out of.
+
+## Seam 7 — one contiguous span is fetched as 28 requests, and it costs 5x
+
+**The largest item in this document, by two orders of magnitude, and the least
+investigated.** Everything else here is milliseconds of worker CPU. This is
+seconds of wall clock.
+
+Fetching `1:10,000,000-10,100,000` from GIAB's HG002 300x BAM (600GB, remote)
+moves 26.8MB as **28 range requests, up to 6 in flight**. Four runs: 3.9, 5.5,
+6.1, 6.2s — about **4.6 MB/s** effective. One `curl` range request for the same
+26.8MB from the same host, interleaved with those runs: 1.18, 1.26, 0.95, 1.07s
+— about **24 MB/s**. Consistently **~5x**, well outside the spread.
+
+So the split into concurrent chunk requests is not paying for itself on this
+endpoint; it is costing about 4.7 of the ~5.8 seconds. Per-request latency is
+~140ms TTFB, which explains part of it, but not all — the requests do overlap,
+and the tail is what dominates: one 3.7MB request took 3.0s while a sibling took
+0.13s. That is the signature of an aggregate bandwidth cap being divided among
+streams rather than of latency alone.
+
+**For scale.** The four per-read arrays, before any of the work in this
+document, cost 134ms on that same window. They are **~2%** of one fetch. Nobody
+should optimise worker CPU for remote heavy files until this is understood.
+
+**What is NOT established, and must be before acting:**
+
+- **One server, one client, one afternoon.** `ftp-trace.ncbi.nlm.nih.gov` is not
+  S3 or CloudFront, and those often *reward* concurrency. The same measurement
+  against a bucket is the first thing to run.
+- **Node, not a browser.** JBrowse fetches from a browser, over HTTP/2, through
+  a connection pool this probe does not model. HTTP/2 multiplexing over one
+  connection could make the whole effect vanish — or not, if the cap is
+  server-side.
+- **Local files are unaffected.** There is no seam here for a file on disk, and
+  that is exactly where the per-read array work does pay.
+
+The lever, if it survives those checks, is coalescing adjacent chunks into
+fewer, larger range requests rather than fetching per chunk — an
+`optimizeChunks` that merges on *byte adjacency with a gap tolerance* rather
+than only on containment. The gap tolerance is the whole design question: it
+trades bytes fetched-and-discarded against requests saved, and the crossover
+depends on the throughput/latency ratio measured above.
 
 ## Checked against a real 300x file, not just the fixtures
 
