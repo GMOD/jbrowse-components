@@ -709,6 +709,10 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
             { ...PHYLOP_TRACK, height: 90 },
             {
               trackId: CLINVAR_TRACK_ID,
+              // names the display the hosted config already declares (its only
+              // one), so the figure recipe can turn `showLabels` into a click
+              // path — a build-time script cannot read that config
+              type: 'LinearBasicDisplay',
               height: 130,
               showLabels: 'none',
             },
@@ -929,6 +933,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
             { ...PHYLOP_TRACK, height: 80 },
             {
               trackId: CLINVAR_TRACK_ID,
+              type: 'LinearBasicDisplay',
               height: 140,
               showLabels: 'none',
               jexlFiltersSetting: [CLINVAR_PATHOGENIC_FILTER],
