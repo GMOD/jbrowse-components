@@ -52,12 +52,11 @@ test('a SNP read contributes its actual base, not the reference', () => {
   })
 })
 
-// Membership comes off a bitmap covering [min, max] of the requested positions,
-// so anything outside that span has to be rejected before the bitmap is indexed.
-// The tests above all sit a read inside the span; these put one across and
-// outside the edges, where an off-by-one would drop a real tally or read past
-// the end of the array.
-describe('positions outside the bitmap span', () => {
+// The walk advances a cursor through the sorted requested positions, so a read
+// that starts before the first one, ends after the last one, or sits entirely
+// outside them is where the cursor placement can drop a real tally or run off
+// the end. The tests above all sit a read among the requested positions.
+describe('reads at and outside the edges of the requested positions', () => {
   test('counts the boundary positions themselves', () => {
     // read covers 100-104; only the two ends are requested, so both are exactly
     // on the clamp boundary
@@ -98,9 +97,10 @@ describe('positions outside the bitmap span', () => {
     expect(computeReadBaseCounts(reads, new Set()).size).toBe(0)
   })
 
-  test('a span too wide for the bitmap still counts correctly', () => {
-    // over MAX_BITMAP_SPAN, so the fallback membership test runs; the clamp is
-    // still in force and the answer must not change
+  test('two requested positions a chromosome apart still count correctly', () => {
+    // this used to be over MAX_BITMAP_SPAN and take a fallback path. There is no
+    // span-indexed structure left for it to overflow — the cursor walks the two
+    // columns — but the answer still has to be the same one
     const reads = [read({ start: 100, seq: 'ACGT', CIGAR: '4M' })]
     const counts = computeReadBaseCounts(reads, new Set([101, 90_000_000]))
     expect(counts.get(101)).toEqual({ C: { fwd: 1, rev: 0 } })
@@ -119,4 +119,22 @@ test('CIGAR indels/clips keep read- and ref-position in sync', () => {
   expect(counts.get(101)).toEqual({ C: { fwd: 1, rev: 0 } })
   expect(counts.get(102)).toEqual({ T: { fwd: 1, rev: 0 } })
   expect(counts.get(103)).toEqual({ A: { fwd: 1, rev: 0 } })
+})
+
+// SAM allows `[A-Za-z=.]` in SEQ, which is wider than BAM's 16-code alphabet.
+// Anything outside that alphabet has no tally slot and takes a separate path;
+// it has to come out keyed exactly as `seq[i].toUpperCase()` had it.
+test('a base outside BAM’s alphabet is still tallied under its own letter', () => {
+  const reads = [
+    read({ start: 100, seq: 'c.Z', CIGAR: '3M' }),
+    read({ start: 100, seq: 'CGZ', CIGAR: '3M', flags: 16 }),
+  ]
+  const counts = computeReadBaseCounts(reads, new Set([100, 101, 102]))
+  // lowercase folds to the same slot as uppercase
+  expect(counts.get(100)).toEqual({ C: { fwd: 1, rev: 1 } })
+  expect(counts.get(101)).toEqual({
+    '.': { fwd: 1, rev: 0 },
+    G: { fwd: 0, rev: 1 },
+  })
+  expect(counts.get(102)).toEqual({ Z: { fwd: 1, rev: 1 } })
 })
