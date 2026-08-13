@@ -449,11 +449,31 @@ touching either path, preserve whichever of these the display uses:
   not one caller. The same trick covers shared *predicates*, not just geometry —
   canvas's `canvasEdgeFlags` derives the continuation-marker edge gates for both
   backends so the 0.5px epsilon can't drift from `continuation.slang`'s.
-- **One registry, exhaustively keyed.** Multi-layer displays list
-  layers/z-order/gating once and map each id to a per-backend mechanism through a
-  `Record<LayerId, …>` in *both* renderers (alignments' `PILEUP_LAYERS` →
-  `GPU_PILEUP_PASS` and a Canvas2D draw-fn map). The exhaustive Record makes a
-  half-added layer a compile error; `coverageParity.test.ts` cross-checks output.
+- **One registry, exhaustively keyed — and *every* wiring point keyed, not just
+  the draw.** Multi-layer displays list layers/z-order/gating once and map each
+  id to a per-backend mechanism through a `Record<LayerId, …>`. Alignments'
+  `PILEUP_LAYERS` feeds three: `GPU_PILEUP_PASS`, the Canvas2D draw-fn map, and
+  `GPU_PILEUP_UPLOAD`. The exhaustive Record makes a half-added layer a compile
+  error; `coverageParity.test.ts` cross-checks output.
+
+  The upload one was added last, and it is the instructive one: it was a flat
+  list of calls for as long as the other two were Records, and a layer wired
+  everywhere *but* there compiles, registers, draws — and paints nothing,
+  because the pass has no buffer. **A pass that is drawn but never uploaded
+  fails silently and on the GPU backend only**, so the Canvas2D half of a parity
+  comparison still paints it and the result reads as a GPU bug rather than a
+  missing entry. Count the wiring points before trusting that a union is
+  governing them. The coverage band has no layer list, so it keys its own map on
+  a pass-id union (`CoveragePassId` → `GPU_COVERAGE_UPLOAD`) — where no union
+  exists, write one rather than falling back to a flat list.
+
+  **Reach for this at the scale that needs it.** What made alignments break was
+  17 passes, three independent wiring points, and 250 lines between the upload
+  and the draw. `LinearBasicDisplay`'s 5-pass renderer gets the same guarantee
+  more cheaply: one `CANVAS_FEATURE_PASSES` list with the two non-obvious cases
+  commented on the entries themselves (chevron draws off line's buffer;
+  continuation is uploaded alongside rects), upload and draw ~60 lines apart and
+  readable together. Don't add registries to a renderer you can check by reading.
 - **`SYNC:` comments anchor formulas** — the fallback, not a mechanism. Where a
   value must match across files and none of the above applies, a
   `SYNC:`/`mirrors` comment names the counterpart; grep the tag before editing
