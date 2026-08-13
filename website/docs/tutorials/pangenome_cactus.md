@@ -495,6 +495,12 @@ position ramp over the cut's own region, so a color in the lane is that color in
 the graph. The dashed edge is the other four strains' route, drawn as the
 deletion it is against K12.
 
+An edge carries no sequence, so its drawn length is whatever the layout gives
+it. In a force layout a link between two anchors that are already close together
+bows out around everything between them, which is why the route past the IS1
+element is the largest thing in the frame and the bases it skips are the node
+inside it. The label on the edge is the length of that node.
+
 The
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)
 covers the decisions in the walk that decide what it can be trusted for, and the

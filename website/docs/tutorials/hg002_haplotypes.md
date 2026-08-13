@@ -153,7 +153,7 @@ options → Show... → Show location markers**. It draws lines through the ribb
 at regularly spaced positions, each joining a point on the top row to the point
 it maps to on the bottom.
 
-<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the Q100 chain blocks on its own haplotype's coordinates. Right-clicking a block moves the other panel onto the sequence it matches." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Four numbered frames, read left to right. Each holds a maternal panel over a paternal one, both carrying the Q100 chain blocks on their own haplotype's coordinates: the right-click that moves one panel onto the sequence the other matches, then the location markers drawn through the ribbon." src="/img/hg002_haplotypes_follow_panel.png" />
 
 ## See also
 

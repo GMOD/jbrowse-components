@@ -2542,11 +2542,20 @@ export const syntenySpecs: ScreenshotSpec[] = [
           tracks: [['grape_peach_synteny_mcscan']],
           drawCurves: false,
           levelHeights: [220],
-          // well over the 0.2 default, which is tuned for whole-genome bands
-          // where thousands of ribbons pile up. Twelve of them over a 220px
-          // band came out as pale wash, and which gene pairs with which is the
-          // entire figure.
-          alpha: 0.75,
+          // Over the 0.2 default, which is tuned for whole-genome bands where
+          // thousands of ribbons pile up; twelve of them over a 220px band came
+          // out as pale wash, and which gene pairs with which is the entire
+          // figure. Under the 0.75 it was, which read as flat saturated red.
+          //
+          // Nothing here is overplotted, which is worth writing down because the
+          // frame invites the opposite guess (an anchors file keyed on
+          // transcripts would draw one ribbon per isoform pair). MEASURED off
+          // the capture rather than argued: every ribbon pixel in the band was
+          // exactly srgb(255,64,64), which is one layer of pure red at 0.75 over
+          // white and nothing else -- two stacked layers would have been
+          // (255,16,16). The band's only other values were white and the
+          // antialiased edges between.
+          alpha: 0.5,
         },
       ],
     }),

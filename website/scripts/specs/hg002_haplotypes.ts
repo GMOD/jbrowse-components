@@ -544,6 +544,13 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     // panel, so it hangs over the band rather than off the frame. 640 until the
     // two gene lanes came out, then measured back to where the app frame ends.
     viewportHeight: 445,
+    // 2x2 rather than a column of four (review). Four 445px frames stacked is
+    // most of a page of the same app chrome four times, and the pairs that want
+    // comparing are adjacent either way: (1) beside (2) is before and after the
+    // menu item, (3) beside (4) the same for the markers. No stage sets its own
+    // viewportHeight, so both rows share one and the `+append` has nothing to
+    // reconcile.
+    stageColumns: 2,
     hideTooltip: true,
     stages: [
       {
