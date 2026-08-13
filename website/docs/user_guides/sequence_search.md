@@ -64,11 +64,10 @@ name simply names itself.
 
 The cut notation is what makes this more than a motif search. `(n/m)` pins both
 strands' cuts outright; a `^` pins the top-strand cut, and for a palindromic
-site (which most classic restriction sites are) the bottom-strand cut mirrors
-it. So each hit reports both cut positions and whether the enzyme leaves a 5'
-overhang, a 3' overhang, or a blunt end. Palindromic sites read the same on both
-strands, so they are reported once rather than twice, and the strand checkboxes
-only appear when the list contains a motif that is actually stranded.
+site the bottom-strand cut mirrors it. So each hit reports both cut positions
+and whether the enzyme leaves a 5' overhang, a 3' overhang, or a blunt end. The
+strand checkboxes only appear when the list contains a motif that is actually
+stranded.
 
 Because the list is just text, the same mode works for primers, adapters,
 polylinker sites, or any other named motif set, not only enzymes.

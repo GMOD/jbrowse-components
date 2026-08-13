@@ -132,8 +132,8 @@ once it settles. Turn following off to keep it where you put it.
   panels to the alignment's midpoint, these leave one panel alone and send the
   other to the sequence that panel's visible window aligns to, resolved through
   the alignment's CIGAR. That is what to reach for on a chain-scale alignment,
-  whose midpoint can be tens of megabases from what is on screen. Two items
-  because a ribbon sits between two panels, so which one stays is yours to say
+  whose midpoint can be tens of megabases from what is on screen; there are two
+  items because a ribbon sits between two panels
 - The same item is on the right-click menu of a synteny track opened as a track
   _inside_ a panel, as **Move other panel to the matching region** — there the
   panel you clicked in is the one that stays

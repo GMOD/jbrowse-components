@@ -65,19 +65,14 @@ is where the coordinates the boxes use come from.
 The plot says where the palindromes are and not what one is. Zooming it to the
 boxed 4.8 Mb separates the family into four crossings, and for what one of them
 is the same track opens in a
-[linear synteny view](/docs/user_guides/linear_synteny_view) instead. One
-palindrome, both panels framing it, colored by strand: the arms draw as a single
-minus-strand ribbon over the plus-strand match of the sequence to itself, which
-is a palindrome stated rather than inferred from a shape. The one below is the
-402 kb alignment at chrY:22,368,211 to 22,769,851, aligned to its own reverse
-complement.
+[linear synteny view](/docs/user_guides/linear_synteny_view) instead, both
+panels framing one palindrome and colored by strand: the arms draw as a single
+minus-strand ribbon over the plus-strand match of the sequence to itself.
 
-The gene lanes answer the obvious objection, that a sequence aligned to itself
-could be drawing an artifact. Each arm carries its own copies of the same
-Y-linked families — RBMY1B and RBMY1A1 on one side against RBMY1D and RBMY1E on
-the other, CDY10P and CDY11P either side of the centre — so the duplication is
-annotated as well as aligned. Near-exact rather than exact: the unpainted gaps
-inside the arms are where the two copies differ.
+The gene lanes say the same thing from the annotation. Each arm carries its own
+copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against
+RBMY1D and RBMY1E on the other, CDY10P and CDY11P either side of the centre. The
+unpainted gaps inside the arms are where the two copies differ.
 
 <Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length, where four crossings survive. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The pinched magenta ribbon is the inverted alignment." src="/img/synteny_self_chry_palindromes.png" />
 

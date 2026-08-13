@@ -89,20 +89,17 @@ listing every product with its size and primer pair. As with BLAT, clicking a
 product is what takes the view to it.
 
 A PCR product has the shape of a paired-end read: two short oriented footprints
-pointing at each other with an unsequenced insert between them. So each product
-is drawn as a read pair, with view-as-pairs on, which gives the arrows-facing-
-inward figure a primer pair is drawn as everywhere else. The two arrows converge
-whatever strand the product is reported on, because a primer's direction is its
-own and not the amplicon's, and the line between them is the interior you never
+pointing at each other with an unsequenced insert between them, so each product
+is drawn as a read pair with view-as-pairs on. The two arrows converge whatever
+strand the product is reported on, because a primer's direction is its own and
+not the amplicon's, and the line between them is the interior you never
 sequence.
 
 Because the primers themselves are carried as the reads' bases, a base where a
-primer disagrees with the template is drawn as a mismatch rather than assumed
-away. UCSC tolerates a mismatch toward a primer's 5' end and still reports the
-product, so that is the case worth seeing: the pair amplifies, but one base of
-it is not annealing, which is what a primer sitting over a SNP looks like. A
-mismatch in the last 15 bases at the 3' end is a different matter, since UCSC
-requires those to match exactly and reports no product at all.
+primer disagrees with the template is drawn as a mismatch. UCSC tolerates one
+toward a primer's 5' end and still reports the product, which is what a primer
+sitting over a SNP looks like; it requires the last 15 bases at the 3' end to
+match exactly, and reports no product at all otherwise.
 
 More than one product means more than one band. The results panel counts the
 products and lists each size, which is what you compare a gel against, and says

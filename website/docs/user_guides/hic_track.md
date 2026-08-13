@@ -98,10 +98,9 @@ itself.
 <Figure caption="GM12878 in situ Hi-C at its coarsest 2.5 Mb binsize, hg38 chr1 to chrY in one view. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
 
 How much figure this is depends on the file. A file storing only
-intra-chromosomal contacts draws its per-chromosome triangles and leaves every
-block between them empty, which is a picture of the geometry rather than of the
-data; check a candidate before reading anything into a blank off-diagonal. It
-also decides the sensible ramp: a sparse file needs
+intra-chromosomal contacts leaves every block between the triangles empty, so
+check a candidate before reading anything into a blank off-diagonal. It also
+decides the sensible ramp: a sparse file needs
 [`useLogScale`](/docs/config/linearhicdisplay/#slot-uselogscale) to lift its
 decayed long-range bins off the floor, and a dense one comes back solid under
 the same setting, since every bin then reaches the top of the scale.
