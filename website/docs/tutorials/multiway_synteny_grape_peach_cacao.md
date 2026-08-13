@@ -64,8 +64,24 @@ genome, produced alongside) map each gene id to a genomic position.
 
 ### A duplicated gene
 
-A cell holds one gene id, so a gene with two copies in another genome spreads
-across rows rather than widening a cell. Peach carrying two copies of `grape02`:
+A cell holds one gene id, so a second copy needs somewhere else to go, and the
+two conventions put it in different places.
+
+`mcscan` writes a column per chain of synteny blocks rather than per genome, so
+a grape gene syntenic to two peach regions fills a second peach column. `--iter`
+caps how many chains it writes, and an unpinned run takes every chain the
+anchors support, which is why the run below pins it to the highest-scoring one.
+At `--iter=2`:
+
+```
+grape01   peach01   peach01b
+grape02   peach02   .
+grape03   .         .
+```
+
+The adapter draws a pair from the first column naming each genome, so the second
+peach column is never read. The shape it does read is a copy per row, repeating
+the grape id:
 
 ```
 grape01   peach01    cacao01
@@ -76,13 +92,8 @@ grape03   .          .
 
 Both rows resolve, so the grape-peach band draws a ribbon from `grape02` to each
 copy, and the repeated `cacao02` draws its grape-cacao ribbon twice over.
-
-Whether the copies are in the table at all is up to the tool that wrote it:
-`orthogroups_to_blocks.py` writes one row per copy by default, while jcvi
-`mcscan --iter=1` and the MCScanX converter each keep one copy per reference
-gene. Raising `--iter` writes the extra copy as a second peach column instead of
-as rows, and the adapter draws a pair from the first column naming each genome,
-so keep the table one column per genome.
+`orthogroups_to_blocks.py` writes that shape by default; the MCScanX converter
+keeps the best-scoring copy and drops the rest.
 
 ### One reference, or all against all
 
