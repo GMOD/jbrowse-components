@@ -183,10 +183,11 @@ const SessionLoader = types
     initializeStarted: false,
     /**
      * #volatile
-     * set when a plugin reload has already built the replacement loader, so
-     * this one will never be re-activated and can be freed on detach. A plain
-     * unmount (StrictMode's double-invoked effect, a Fast Refresh remount)
-     * leaves it false, and that loader is reused as-is.
+     * set when a plugin reload has already built the replacement loader, so a
+     * second reload request arriving off the same rootModel is declined rather
+     * than building a third. A plain unmount (StrictMode's double-invoked
+     * effect, a Fast Refresh remount) leaves it false, and that loader is
+     * reused as-is.
      */
     superseded: false,
   }))

@@ -32,6 +32,16 @@ export function useLoaderLifecycle(
   useEffect(() => {
     stripConsumedSessionParams()
     loader.activate((configSnapshot, sessionSnapshot) => {
+      // A plugin can issue this more than once off the rootModel this loader
+      // built, and legitimately: Apollo's per-internet-account loop calls it
+      // without breaking, from an async autorun whose synchronous prefix can
+      // re-fire and leave several continuations in flight. The first call
+      // already built the replacement, so a later one has nothing to do — and
+      // must not build a second replacement from a loader that has already
+      // been swapped out and detached.
+      if (loader.superseded) {
+        return
+      }
       const next = reloadSessionLoader(loader, configSnapshot, sessionSnapshot)
       loader.setSuperseded()
       setLoader(next)

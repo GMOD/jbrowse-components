@@ -28,9 +28,12 @@ test('a plain detach keeps the loader alive for re-activation', async () => {
   expect(loader.buildAutorunDisposer).toBeUndefined()
 })
 
-test('a superseded loader is destroyed on detach', async () => {
+// left alive like any other detach: a late reloadPluginManagerCallback still
+// has to be able to read it to decline (see useLoaderLifecycle)
+test('a superseded loader is also left alive on detach', async () => {
   const loader = await makeActivatedLoader()
   loader.setSuperseded()
   disposeLoader(loader)
-  expect(isAlive(loader)).toBe(false)
+  expect(isAlive(loader)).toBe(true)
+  expect(loader.buildAutorunDisposer).toBeUndefined()
 })
