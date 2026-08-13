@@ -5,7 +5,6 @@ import {
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   isElectron,
-  isWebWorker,
   localStorageGetItem,
   localStorageRemoveItem,
   localStorageSetItem,
@@ -445,50 +444,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             ),
           (response, reason) => getResponseError({ response, reason }),
         )
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * Run a request with the current token and, only if it comes back 401,
-       * refresh the token through `validateToken` and run it exactly once more.
-       * This is how the fetchers reach a resource.
-       */
-      async fetchWithToken(
-        loc: UriLocation | undefined,
-        run: (token: string) => Promise<Response>,
-      ) {
-        // Deliberately not getValidatedToken, which pre-flights validateToken —
-        // a HEAD here, a metadata call for Dropbox and Google Drive — ahead of
-        // *every* request, to re-prove a token that had just worked. A
-        // range-read track issues hundreds of requests, so that doubled both
-        // the round trips and the provider quota each track spent.
-        const token = await self.getToken(loc)
-        const response = await run(token)
-        if (response.status !== 401 || !loc) {
-          return response
-        }
-        // A worker has neither storage nor a user to prompt, so it cannot mint
-        // a token — only the main thread can, and it re-validates before
-        // shipping the next pre-authorization. Going on into validateToken here
-        // died on `ReferenceError: sessionStorage is not defined` partway
-        // through a refresh; hand back the 401 so the caller reports it.
-        if (isWebWorker()) {
-          return response
-        }
-        // validateToken refreshes the expired token, or throws if it can't
-        return run(await self.validateToken(token, loc))
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      getFetcher(loc?: UriLocation) {
-        return (input: RequestInfo, init?: RequestInit) =>
-          self.fetchWithToken(loc, token =>
-            fetch(input, self.addAuthHeaderToInit(init, token)),
-          )
       },
     }))
 }

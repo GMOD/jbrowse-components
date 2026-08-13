@@ -264,15 +264,42 @@ export const InternetAccount = types
     },
     /**
      * #action
-     * Fetch a token and, when a location is supplied, run it through
-     * `validateToken` so subclasses can refresh an expired token before it is
-     * used. Shared by the auth-aware fetchers.
+     * Run a request with the current token and, only if it comes back 401, put
+     * the token through `validateToken` and run it exactly once more. This is
+     * how every account's fetcher reaches a resource.
      *
      * @param loc - UriLocation of the resource
+     * @param run - issues the request with a given token
      */
-    async getValidatedToken(loc?: UriLocation) {
+    async fetchWithToken(
+      loc: UriLocation | undefined,
+      run: (token: string) => Promise<Response>,
+    ) {
+      // Deliberately not a validateToken pre-flight on every request — a HEAD
+      // here, a metadata call for Dropbox and Google Drive — to re-prove a
+      // token that had just worked. A range-read track issues hundreds of
+      // requests, so that doubled both the round trips and the provider quota
+      // each track spent.
       const token = await self.getToken(loc)
-      return loc ? self.validateToken(token, loc) : token
+      const response = await run(token)
+      if (response.status !== 401 || !loc) {
+        return response
+      }
+      // A worker has neither storage nor a user to prompt, so it cannot mint a
+      // token — only the main thread can, and it re-validates before shipping
+      // the next pre-authorization. Going on into validateToken here died on
+      // `ReferenceError: sessionStorage is not defined` partway through a
+      // refresh; hand back the 401 so the caller reports it.
+      if (isWebWorker()) {
+        return response
+      }
+      // validateToken renews an expired token, or throws if it can't. An
+      // account with nothing to renew it with — no refresh token, or
+      // `validateWithHEAD` off — hands the same one straight back, and
+      // re-running the request with a token that just failed only buys a
+      // second identical 401.
+      const validated = await self.validateToken(token, loc)
+      return validated === token ? response : run(validated)
     },
     /**
      * #action
@@ -309,11 +336,10 @@ export const InternetAccount = types
      * @returns A function that can be used to fetch
      */
     getFetcher(loc?: UriLocation) {
-      return async (input: RequestInfo, init?: RequestInit) => {
-        const authToken = await self.getToken(loc)
-        const newInit = self.addAuthHeaderToInit(init, authToken)
-        return fetch(input, newInit)
-      }
+      return (input: RequestInfo, init?: RequestInit) =>
+        self.fetchWithToken(loc, token =>
+          fetch(input, self.addAuthHeaderToInit(init, token)),
+        )
     },
   }))
   .actions(self => ({

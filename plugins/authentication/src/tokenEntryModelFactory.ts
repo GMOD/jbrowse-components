@@ -96,6 +96,14 @@ export function tokenEntryModelFactory<Type extends string>(
           self.addAuthHeaderToInit({ method: 'HEAD' }, token),
         )
         if (!response.ok) {
+          // The HEAD just proved this credential unusable, and there is nothing
+          // to renew it with — the only source is the user. Dropping it is what
+          // lets the next read re-open the dialog; keeping it meant a mistyped
+          // password threw the same error on every request for the rest of the
+          // session and was never asked for again. `getPreAuthorizationInform-
+          // ation` already dropped it on this path, so only the direct
+          // main-thread reads were affected.
+          self.removeToken()
           throw new Error(
             await getResponseError({
               response,
