@@ -57,14 +57,12 @@ to one or two chicken chromosomes, and to more zebrafish ones.
 
 <Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish, all four bands off one vertebrates_orthogroups track. Gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
-Every band draws one line per ortholog, so a band resolves into wedges only
-where a chromosome's orthologs mostly land on one chromosome of the row below.
-The build script prints that share for each adjacent pair. Where it is high, row
-order alone produces a diagonal. Where it is near a third, the typical
-chromosome answers to three or more partners, and no ordering of either row can
-make that band diagonal. The gar to zebrafish band is the low one, on the far
-side of the teleost genome duplication: its density is the measurement, not a
-rendering problem.
+Every band draws one line per ortholog, so it resolves into wedges only where a
+chromosome's orthologs mostly land on one chromosome of the row below, and the
+build script prints that share for each adjacent pair. Where it is near a third
+the typical chromosome answers to three or more partners, and no ordering of
+either row can make that band diagonal. The gar to zebrafish band is the low
+one, on the far side of the teleost genome duplication.
 
 ## Stacking the wheat lineage
 
@@ -84,12 +82,11 @@ hexaploid row reads as groups rather than as subgenomes, without being told
 which chromosomes are homoeologs.
 
 The rows also share one bp/px rather than each being fitted to the pane width,
-which is "Show all regions at same scale" in the view menu and `sameScale` in a
-session spec. A row's drawn length is then its genome size, which for this stack
-is the subject: the diploid donors are drawn short and the hexaploid fills the
-frame. Fitted individually, every row is the same length instead, which
-stretches the diploid donor's chromosomes across the same span as the
-hexaploid's and draws a one-to-one correspondence between the two as a wedge.
+which is **Show all regions at same scale** in the view menu and `sameScale` in
+a session spec. A row's drawn length is then its genome size: the diploid donors
+are drawn short and the hexaploid fills the frame. Fitted individually every row
+is the same length, which draws a false one-to-one correspondence between the
+donor and the hexaploid.
 
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 
@@ -180,14 +177,11 @@ Three treatments:
 | `expand` (default) | two ribbons, one per maize copy                              | the duplication is part of what you are looking at        |
 | `single`           | no ribbon                                                    | you want a strictly one-to-one table                      |
 
-`first` is what a one-line `awk` reduction does, and it is the one to avoid: it
-draws a confident link chosen by file order, and it hides duplication precisely
-where a reader is looking for it. `expand` writes one row per copy, pairing
-copies by index across columns rather than multiplying them out, so an
-orthogroup costs rows equal to its largest cell and a gene family cannot blow
-the table up. Every copy of every gene appears; between two columns that are
-both duplicated, only the index-aligned pairs are written. A cell with more
-genes than `--max-copies` is a family rather than a set of copies, and
+`first` is what a one-line `awk` reduction does, and it draws a confident link
+chosen by file order. `expand` writes one row per copy, pairing copies by index
+across columns rather than multiplying them out, so an orthogroup costs rows
+equal to its largest cell and a gene family cannot blow the table up. A cell
+with more genes than `--max-copies` is a family rather than a set of copies, and
 contributes nothing.
 
 ### Making the ids resolve
@@ -200,14 +194,12 @@ The build script settles this by renaming each protein to its gene id when it
 prepares the proteomes, so both sides speak gene ids.
 
 Pass `--bed name=file` per column and the script reports what share of each
-column's ids that BED places, and drops the rest from the table rather than
-writing a row that cannot be drawn. That per-column share is the thing to read
-before loading anything: a column placing near none of its ids is an id
-mismatch, not a biological result. A column placing none of them stops the
-conversion, since the table it would write has one genome in it that draws
-nothing. A column given no `--bed` is reported as unchecked rather than as a
-number that looks the same. The same output reports how many orthogroups held a
-duplicated gene and became several rows.
+column's ids that BED places, dropping the rest from the table rather than
+writing a row that cannot be drawn. Read that share before loading anything: a
+column placing near none of its ids is an id mismatch rather than a biological
+result, and one placing none of them stops the conversion. A column given no
+`--bed` is reported as unchecked. The same output reports how many orthogroups
+held a duplicated gene and became several rows.
 
 ## Loading it
 
@@ -258,13 +250,12 @@ One track backs every band of the stack, the same as the
 }
 ```
 
-The two lists are not the same list, and this one shows it: `blockAssemblies`
-and `bedLocations` are positional against the table's own columns, which follow
-OrthoFinder's proteome scan (alphabetical here) rather than the order the
-proteomes were passed to it, while the track's `assemblyNames` is the set of
-genomes in the order the stack draws them. Take the column order from what the
-conversion printed: get it wrong and every gene lookup reads another genome's
-BED, which the adapter catches and reports as a track error naming both lists.
+`blockAssemblies` and `bedLocations` are positional against the table's own
+columns, which follow OrthoFinder's proteome scan (alphabetical here) rather
+than the order the proteomes were passed to it, while the track's
+`assemblyNames` is the order the stack draws them. Take the column order from
+what the conversion printed: get it wrong and every gene lookup reads another
+genome's BED, which the adapter reports as a track error naming both lists.
 
 Unlike a
 [jcvi `.blocks` table](/docs/tutorials/multiway_synteny_grape_peach_cacao#direct-vs-transitive-pairs),
