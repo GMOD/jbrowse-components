@@ -522,7 +522,56 @@ neither helping nor hurting on this query, because bam-js's chunks here are
 already large and nearly contiguous. Whatever costs the 5x, it is not the number
 of requests in the 28-36 range.
 
-That leaves **concurrency against single-stream throughput** as the live
+### The 5MB span cap is the unswept constant, and it is worth 4x at best
+
+`optimizeChunks` has two constants: merge chunks whose gap is under 65000 bytes,
+**as long as the combined span stays under 5MB**. bam-js ADR 0011 swept the gap
+and the merge-or-not question; its status line confirms the gap constant and says
+nothing about the span cap, and the cap does not appear in its table. So the
+26.8MB this query wants becomes 28 requests because of a constant nobody
+measured.
+
+Raising it to 2GB (patched copy, store untouched), five interleaved pairs:
+
+| | requests | bytes | wall |
+| --- | --: | --: | --- |
+| cap 5MB (current) | 28 | 26.8 MB | 4.95 / 4.13 / 3.98 / 5.73 / 5.48 |
+| cap raised | **6** | **25.0 MB** | 4.71 / 1.40 / **0.98** / 5.37 / 5.35 |
+
+Two things are deterministic and both favour raising it: **28 requests become 6,
+and the bytes go DOWN** (25.0 against 26.8MB), because a merged span amortises
+the per-chunk tail padding — the same effect ADR 0011 measured in the other
+direction.
+
+The wall clock is bimodal. Medians are a wash (4.95 vs 4.71s), but the best case
+is **3.98 -> 0.98s**, and 25MB in 0.98s is 25.5 MB/s — the single-stream rate a
+bare `curl` gets. The 5MB cap never came close to that in thirteen measurements.
+So when the server is willing, six requests can saturate the link and 28 cannot;
+when it is throttling, nothing helps. That is why the medians hide it.
+
+**Do not just raise it.** The cap almost certainly exists for memory: a merged
+span is held compressed and inflates to roughly 3x, so a whole-chromosome query
+with no cap merges something very large. Seam 2 is the other cost — the parsed
+cache keys on the merged span, so coarser spans reuse worse across a pan. Both
+are unmeasured. The finding here is only that the constant has never been swept
+against wall clock, that it costs 22 extra requests and 1.8MB on this query, and
+that the sweep should be against memory and cache reuse rather than against
+bytes fetched.
+
+### Why samtools makes one request where we make 28
+
+Worth stating plainly, because it is the whole difference in philosophy.
+htslib seeks to the first chunk's offset and streams **sequentially** to the
+last, over one keep-alive connection — reading straight through the gaps between
+chunks rather than skipping them. Its request count is ~1 and its byte count is
+*higher* than ours.
+
+We optimise for bytes: the 65000-byte gap tolerance is a rule about how much
+waste is worth avoiding a request. On a link where throughput is the constraint
+that is right, and on a high-latency or per-stream-throttled endpoint it is
+exactly backwards, which is what the table above shows.
+
+That leaves **concurrency against single-stream throughput** as the other live
 hypothesis: one request gets ~24 MB/s, and six to twenty concurrent ones share
 something much smaller. Four parallel `curl` streams also underperformed one, on
 the same host, which points the same way. If that is what it is, the lever is a
