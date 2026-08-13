@@ -42,7 +42,7 @@ function makeRpcData(
     modificationColors: new Uint32Array(),
     readPositions: new Uint32Array(),
     readYs: new Uint16Array(),
-    readIds: [],
+    readKeys: [],
     interbaseYs: new Uint16Array(),
     interbaseLengths: new Uint32Array(),
     interbaseTypes: new Uint8Array(),
@@ -205,7 +205,7 @@ describe('gap hit — zoomed-out pileup', () => {
       gapTypes: new Uint8Array([0]),
       readPositions: new Uint32Array([9000, 11000]),
       readYs: new Uint16Array([0]),
-      readIds: ['read1'],
+      readKeys: ['read1'],
     })
     const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
     expect(result.type).toBe('cigar')
@@ -523,7 +523,7 @@ describe('chain mode resolves the read under the cursor, not the chain first rea
     chainFlatbush.add(0, 0, 18000, 0)
     chainFlatbush.finish()
     return makeResolved({
-      readIds: ['mate1', 'mate2'],
+      readKeys: ['mate1', 'mate2'],
       readPositions: new Uint32Array([0, 2000, 16000, 18000]),
       readYs: new Uint16Array([0, 0]),
       chainFirstReadIndices: new Uint32Array([0]),
@@ -570,7 +570,7 @@ describe('chain mode resolves the read under the cursor, not the chain first rea
     chainFlatbush.add(8000, 2, 19000, 2)
     chainFlatbush.finish()
     const resolved = makeResolved({
-      readIds: ['c0mate1', 'c0mate2', 'c1mate1', 'c1mate2'],
+      readKeys: ['c0mate1', 'c0mate2', 'c1mate1', 'c1mate2'],
       readPositions: new Uint32Array([
         0, 2000, 16000, 18000, 8000, 9000, 18000, 19000,
       ]),
@@ -644,7 +644,7 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
       gapTypes: new Uint8Array([0]),
       readPositions: new Uint32Array([0, 200]),
       readYs: new Uint16Array([0]),
-      readIds: ['read1'],
+      readKeys: ['read1'],
     })
     expect(performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS).type).toBe(
       'cigar',
@@ -698,7 +698,7 @@ describe('soft-clipped bases resolve to their read', () => {
       ...makeResolved({
         readPositions: new Uint32Array([0, 100]),
         readYs: new Uint16Array([0]),
-        readIds: ['read1'],
+        readKeys: ['read1'],
         softclipBasePositions: new Uint32Array(
           Array.from({ length: 20 }, (_, k) => 100 + k),
         ),

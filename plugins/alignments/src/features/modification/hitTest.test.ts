@@ -25,7 +25,7 @@ function makeRpcData(
     readYs: new Uint16Array(),
     readFlags: new Uint16Array(),
     readMapqs: new Uint8Array(),
-    readIds: [],
+    readKeys: [],
     readNames: [],
     readChainIndices: undefined,
     mismatchPositions: new Uint32Array(),

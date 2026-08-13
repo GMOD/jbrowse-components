@@ -10,6 +10,7 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // shader's clamp on every slot in use and resolves an out-of-range one to a
 // different real color instead of the last slot.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { readIdAt } from '../../shared/readIdentity.ts'
 import { connectionLabel, connectionMark, iterLinkedPairs } from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -250,8 +251,10 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       d,
       stroke,
       label: connectionLabel(c.colorType),
-      id1: e1.data.readIds[e1.readIdx]!,
-      id2: e2.data.readIds[e2.readIdx]!,
+      // The id STRINGS, not the keys: these reach `selectFeatureById` and
+      // `getFeatureInfoById`. One pair per drawn arc, not per read.
+      id1: readIdAt(e1.data, e1.readIdx)!,
+      id2: readIdAt(e2.data, e2.readIdx)!,
     })
   }
 

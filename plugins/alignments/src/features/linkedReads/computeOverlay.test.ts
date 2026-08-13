@@ -62,7 +62,7 @@ function makeData(opts: {
   }
   return makePileupDataResult({
     readNames: opts.names,
-    readIds: opts.ids ?? opts.names.map((_, i) => `id${i}`),
+    readKeys: opts.ids ?? opts.names.map((_, i) => `id${i}`),
     readFlags: new Uint16Array(opts.flags),
     readStrands: new Int8Array(opts.strands),
     readPositions,

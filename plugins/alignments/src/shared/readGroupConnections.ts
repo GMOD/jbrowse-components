@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
+import type { ReadKey } from './readIdentity.ts'
 
 // Minimal entry shape both the arc and bezier paths satisfy: a per-read array
 // bundle plus the read's index into it. Structural, and deliberately not
@@ -54,9 +55,10 @@ export function clipAt(e: MinEntry) {
   return e.data.readClipAtStart?.[e.readIdx] ?? 0
 }
 
-// Not exported: only `dedupeByReadId` below wants it.
-function readIdOf(e: MinEntry) {
-  return e.data.readIds[e.readIdx]!
+// Not exported: only `dedupeByReadId` below wants it. The KEY, not the id
+// string — this is identity within one fetch, which is exactly what a key is.
+function readKeyOfEntry(e: MinEntry) {
+  return e.data.readKeys[e.readIdx]!
 }
 
 export function flagsOf(e: MinEntry) {
@@ -183,14 +185,14 @@ export function pairFieldEntry<E extends MinEntry>(e1: E, e2: E) {
 
 // The same physical read overlapping two displayedRegions (e.g. spanning
 // collapsed-intron exons) is returned by each region's fetch, arriving as
-// duplicate entries sharing a readId (f.id() = adapter.id + fileOffset, stable
-// across fetches). Collapse them, else the copies look like a 2-segment split
-// read and splitJunctions fabricates a self-junction. Genuine split segments and
-// mates are distinct records with distinct ids, so they survive.
+// duplicate entries sharing a read key (the record id, stable across fetches).
+// Collapse them, else the copies look like a 2-segment split read and
+// splitJunctions fabricates a self-junction. Genuine split segments and mates
+// are distinct records with distinct keys, so they survive.
 function dedupeByReadId<E extends MinEntry>(entries: E[]) {
-  const byId = new Map<string, E>()
+  const byId = new Map<ReadKey, E>()
   for (const e of entries) {
-    const id = readIdOf(e)
+    const id = readKeyOfEntry(e)
     if (!byId.has(id)) {
       byId.set(id, e)
     }

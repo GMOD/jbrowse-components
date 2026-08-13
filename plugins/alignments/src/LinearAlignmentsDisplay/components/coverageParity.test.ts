@@ -101,6 +101,7 @@ function makeCoverageData(): CoverageUploadData {
 function makeMinimalReadData() {
   return {
     regionStart: REGION_START,
+    readIdPrefix: undefined,
     readPositions: new Uint32Array([]),
     readYs: new Uint16Array([]),
     readFlags: new Uint16Array([]),
@@ -112,7 +113,7 @@ function makeMinimalReadData() {
     readTagColors: new Uint32Array(0),
     readColorCategories: new Uint8Array(0),
     readChainHasSupp: undefined,
-    readIds: [],
+    readKeys: [],
     insertSizeStats: undefined,
     maxY: 0,
     segmentPositions: new Uint32Array([]),
@@ -522,7 +523,7 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     // One read, so the read pass has an instance to rewrite.
     const laidOut = makePileupDataResult({
       ...makeMinimalPileupResult(cov),
-      readIds: ['r1'],
+      readKeys: ['r1'],
       readPositions: new Uint32Array([REGION_START, REGION_START + 10]),
       readYs: new Uint16Array([0]),
       readFlags: new Uint16Array([0]),

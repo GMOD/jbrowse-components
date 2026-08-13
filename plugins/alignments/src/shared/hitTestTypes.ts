@@ -86,7 +86,7 @@ export function isWithinReadBand(coords: CigarCoords, featureHeight: number) {
  * `cloneWithLayout` only remaps their rows, never reorders them. So scanning
  * back to front answers with the mark on top, and — this is the point — with the
  * mark belonging to the same read `hitTestFeature` answers with, since that walks
- * `readIds` backwards under the same rule.
+ * `readKeys` backwards under the same rule.
  *
  * It only decides anything where a layout puts several features on one row, and
  * there it decides a lot: `buildCollapsedPileupMap` puts an entire group on row 0

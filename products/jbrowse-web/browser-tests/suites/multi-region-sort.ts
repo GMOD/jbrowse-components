@@ -20,7 +20,7 @@ interface Display {
   sourceSections: {
     laidOutPileupMap: ReadonlyMap<
       number,
-      { readIds: string[]; readYs: ArrayLike<number> }
+      { readKeys: ArrayLike<number> | string[]; readYs: ArrayLike<number> }
     >
   }[]
 }
@@ -73,9 +73,15 @@ async function assertSpanningReadsShareRows(page: Page) {
     // The one (ungrouped) section's per-region layout, read the way the
     // renderers read it — the sole source of laid-out rows on the model.
     const byRegion = [...display.sourceSections[0]!.laidOutPileupMap.values()]
-    const rowsById = new Map<string, Set<number>>()
+    // `readKeys`, not id strings: the worker ships the record id and the string
+    // is built only where one escapes (shared/readIdentity.ts). Identity across
+    // regions is exactly what a key is, so this reads the same array the layout
+    // deduped on.
+    const keysOf = (d: { readKeys: ArrayLike<number> | string[] }) =>
+      Array.from(d.readKeys as ArrayLike<number | string>)
+    const rowsById = new Map<number | string, Set<number>>()
     for (const data of byRegion) {
-      data.readIds.forEach((id, i) => {
+      keysOf(data).forEach((id, i) => {
         const set = rowsById.get(id) ?? new Set<number>()
         set.add(data.readYs[i]!)
         rowsById.set(id, set)
@@ -85,7 +91,7 @@ async function assertSpanningReadsShareRows(page: Page) {
     for (const [id, rows] of rowsById) {
       // present in >1 region only if the same id was added from >1 entry; a
       // read on a single row across N entries has a 1-element set
-      const seenIn = byRegion.filter(d => d.readIds.includes(id)).length
+      const seenIn = byRegion.filter(d => keysOf(d).includes(id)).length
       if (seenIn > 1) {
         spanning++
         if (rows.size !== 1) {

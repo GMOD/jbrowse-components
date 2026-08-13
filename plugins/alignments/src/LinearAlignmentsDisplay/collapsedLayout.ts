@@ -26,15 +26,15 @@ export function collapsedLayoutMaxY(
   dataMap: ReadonlyMap<number, PileupDataResult>,
 ) {
   for (const data of dataMap.values()) {
-    if (data.readIds.length > 0) {
+    if (data.readKeys.length > 0) {
       return 1
     }
   }
   return 0
 }
 
-function readSpans({ readIds, readPositions }: PileupDataResult): Span[] {
-  return readIds.map((_, i) => ({
+function readSpans({ readKeys, readPositions }: PileupDataResult): Span[] {
+  return Array.from({ length: readKeys.length }, (_, i) => ({
     start: readPositions[i * 2]!,
     end: readPositions[i * 2 + 1]!,
   }))
@@ -59,7 +59,7 @@ export function buildCollapsedPileupMap(
   const maxY = collapsedLayoutMaxY(dataMap)
   const out = new Map<number, PileupDataResult>()
   for (const [idx, data] of dataMap) {
-    if (data.readIds.length === 0) {
+    if (data.readKeys.length === 0) {
       out.set(idx, data)
     } else {
       const overlaps = collapsedOverlaps(data)
@@ -73,7 +73,7 @@ export function buildCollapsedPileupMap(
         // collapse and needs no affordance.
         ...cloneWithLayout(
           data,
-          new Uint16Array(data.readIds.length),
+          new Uint16Array(data.readKeys.length),
           maxY,
           overlaps.overlapYs.length > 0,
         ),

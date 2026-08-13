@@ -1,5 +1,10 @@
+import type { ReadKey } from './readIdentity.ts'
+
 export interface FeatureData {
-  id: string
+  // The read's identity key, NOT its id string — `readKeyOf`, so the
+  // `${adapter.id}-${recordId}` template literal is never built per read. See
+  // shared/readIdentity.ts.
+  id: ReadKey
   name: string
   start: number
   end: number

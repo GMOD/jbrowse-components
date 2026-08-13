@@ -9,6 +9,7 @@
 // into `LinearAlignmentsDisplay/components/`.
 
 import type { InsertSizeBand } from './insertSizeStats.ts'
+import type { ReadKeys } from './readIdentity.ts'
 
 export interface ReadUploadData {
   readPositions: Uint32Array
@@ -21,7 +22,8 @@ export interface ReadUploadData {
   readTagColors: Uint32Array
   readColorCategories: Uint8Array
   readInterchrom: Uint8Array // 1 = mate on a different chromosome
-  readIds: string[]
+  readKeys: ReadKeys
+  readIdPrefix: string | undefined
   maxY: number
   insertSizeStats?: InsertSizeBand
   segmentPositions: Uint32Array

@@ -222,7 +222,7 @@ export function readYsFromRowMap(
   data: PileupDataResult,
   rowMap: Map<string, number>,
 ) {
-  const numReads = data.readIds.length
+  const numReads = data.readKeys.length
   const readYs = new Uint16Array(numReads)
   if (isChainData(data)) {
     const { readChainIndices, chainNames } = data
@@ -278,7 +278,7 @@ export function chainLayoutMaxY({
   regions?: ReadonlyMap<number, RegionBounds>
   maxRows?: number
 }) {
-  const withReads = [...dataMap].filter(([, v]) => v.readIds.length > 0)
+  const withReads = [...dataMap].filter(([, v]) => v.readKeys.length > 0)
   return withReads.length === 0
     ? 0
     : computeMultiRegionChainLayout(withReads, regions, maxRows).maxY
@@ -465,7 +465,7 @@ export function buildLaidOutChainMap({
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
   for (const [k, v] of dataMap) {
-    if (v.readIds.length === 0) {
+    if (v.readKeys.length === 0) {
       out.set(k, v)
     } else {
       withReads.push([k, v])

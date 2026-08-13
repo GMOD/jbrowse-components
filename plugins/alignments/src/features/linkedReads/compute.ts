@@ -179,8 +179,8 @@ export function groupReadsByName(
 ): Map<string, ReadEntry[]> {
   const readsByName = new Map<string, ReadEntry[]>()
   for (const [idx, data] of laidOutPileupMap) {
-    const { readIds, readNames } = data
-    for (let i = 0; i < readIds.length; i++) {
+    const { readKeys, readNames } = data
+    for (let i = 0; i < readKeys.length; i++) {
       const name = readNames[i]!
       if (name) {
         getOrCreate(readsByName, name, () => []).push({

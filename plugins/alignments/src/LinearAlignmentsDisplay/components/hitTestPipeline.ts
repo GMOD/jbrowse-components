@@ -13,6 +13,7 @@ import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { hitTestSoftclipBase } from '../../features/softclip/hitTest.ts'
 import { hitTestClip } from '../../shared/clipPass.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
+import { readIdAt } from '../../shared/readIdentity.ts'
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -138,7 +139,7 @@ function hitTestChain(
     }
   }
   const readIdx = rpcData.chainFirstReadIndices[best]!
-  return { id: rpcData.readIds[readIdx]!, index: readIdx }
+  return { id: readIdAt(rpcData, readIdx)!, index: readIdx }
 }
 
 export interface HitTestOptions {

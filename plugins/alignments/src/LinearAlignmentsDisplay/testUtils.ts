@@ -123,7 +123,8 @@ export function makeEmptyPileupData(): PileupDataResult {
     readPairOrientations: new Uint8Array(0),
     readStrands: new Int8Array(0),
     readInterchrom: new Uint8Array(0),
-    readIds: [],
+    readKeys: [],
+    readIdPrefix: undefined,
     readNames: [],
     segmentPositions: new Uint32Array(0),
     segmentReadIndices: new Uint32Array(0),
@@ -273,7 +274,8 @@ export function pileupDataFromSamRecords(
     readClipAtStart,
     // ids are per-record and distinct; names are the QNAME, which split
     // segments of one read share and which is what groups them
-    readIds: records.map((_, i) => `id${i}`),
+    readKeys: records.map((_, i) => `id${i}`),
+    readIdPrefix: undefined,
     readNames: records.map(rec => rec.name),
     readSuppAlignments: records.map(rec => rec.SA),
   }

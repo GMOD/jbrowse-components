@@ -141,7 +141,7 @@ function createEnv() {
 function oneRead(mateBp?: number): PileupDataResult {
   return {
     ...makeEmptyPileupData(),
-    readIds: ['r0'],
+    readKeys: ['r0'],
     readNames: ['readA'],
     readPositions: new Uint32Array([1000, 1100]),
     readYs: new Uint16Array(1),

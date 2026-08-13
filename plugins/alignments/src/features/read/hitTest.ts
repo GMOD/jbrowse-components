@@ -2,6 +2,7 @@ import {
   findTopmostOnRow,
   isWithinReadBand,
 } from '../../shared/hitTestTypes.ts'
+import { readIdAt } from '../../shared/readIdentity.ts'
 
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
@@ -14,10 +15,10 @@ export function hitTestFeature(
   if (!isWithinReadBand(coords, featureHeight)) {
     return undefined
   }
-  const { readPositions, readYs, readIds } = resolved.rpcData
+  const { readPositions, readYs, readKeys } = resolved.rpcData
   // Topmost, not first: see `findTopmostOnRow`. This is the read every mark
   // hit test is reconciled against, so it and they must use the one rule.
-  const i = findTopmostOnRow(readYs, 0, readIds.length, row, i => {
+  const i = findTopmostOnRow(readYs, 0, readKeys.length, row, i => {
     const readStart = readPositions[i * 2]
     const readEnd = readPositions[i * 2 + 1]
     return (
@@ -27,5 +28,7 @@ export function hitTestFeature(
       genomicPos <= readEnd
     )
   })
-  return i === undefined ? undefined : { id: readIds[i]!, index: i }
+  return i === undefined
+    ? undefined
+    : { id: readIdAt(resolved.rpcData, i)!, index: i }
 }

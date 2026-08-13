@@ -31,7 +31,7 @@ export interface ReadRegionFields {
 
 export function buildReadFields(data: PileupDataResult): ReadRegionFields {
   return {
-    readIdToIndex: lazyReadIdToIndex(data.readIds),
+    readIdToIndex: lazyReadIdToIndex(data),
     readPositions: data.readPositions,
     readYs: data.readYs,
     readFlags: data.readFlags,
@@ -54,7 +54,10 @@ export function buildReadFields(data: PileupDataResult): ReadRegionFields {
 // cause DataCloneError on the second RPC reply.
 export function emptyReadFields(): ReadRegionFields {
   return {
-    readIdToIndex: lazyReadIdToIndex([]),
+    readIdToIndex: lazyReadIdToIndex({
+      readKeys: [],
+      readIdPrefix: undefined,
+    }),
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
     readFlags: new Uint16Array(0),

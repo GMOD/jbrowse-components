@@ -44,6 +44,7 @@ import {
   partitionChains,
   partitionFeatures,
 } from '../shared/groupFeatures.ts'
+import { readIdPrefixOf, readKeyOf } from '../shared/readIdentity.ts'
 import { buildReadInterchrom } from '../shared/readInterchrom.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import {
@@ -54,6 +55,7 @@ import { getFlags } from '../shared/util.ts'
 
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
+import type { ReadKey } from '../shared/readIdentity.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type {
   AlignmentGroup,
@@ -92,26 +94,6 @@ function isProperPairChain(chain: Feature[]) {
   })
 }
 
-/**
- * The key `dedupeById` tells two records apart by.
- *
- * The alignments features build `id()` as `` `${adapter.id}-${n}` `` over a
- * number they already hold — the BamRecord's `fileOffset`, cram-js's record
- * `uniqueId` — and every feature in one call comes from one adapter, since
- * `fetchFeaturesFromAdapter` takes a single `adapterConfig`. So the prefix
- * distinguishes nothing here and the number is the whole key. Reading it skips
- * building a template literal per feature and hashing it, which at ultra-deep
- * coverage was 15% of the RPC worker's busy time for a guard that in the
- * common case rejects nothing.
- *
- * Falls back to `id()` for any feature without one, so this stays correct for
- * an adapter whose features are neither of those two.
- */
-function dedupeKey(f: Feature): number | string {
-  // `??`, not `||`: fileOffset 0 is the first record of a BAM
-  return (f as Feature & { recordId?: number }).recordId ?? f.id()
-}
-
 // Guard against the same physical record being emitted twice — a dup would
 // double-count coverage depth and double-draw.
 //
@@ -130,10 +112,10 @@ function dedupeKey(f: Feature): number | string {
 // this returns the input array untouched, so it costs one Set build rather than
 // a full-length copy.
 function dedupeById(features: Feature[]) {
-  const seen = new Set<number | string>()
+  const seen = new Set<ReadKey>()
   let dupIndex = -1
   for (let i = 0; i < features.length; i++) {
-    const id = dedupeKey(features[i]!)
+    const id = readKeyOf(features[i]!)
     if (seen.has(id)) {
       dupIndex = i
       break
@@ -147,7 +129,7 @@ function dedupeById(features: Feature[]) {
   const out = features.slice(0, dupIndex)
   for (let i = dupIndex; i < features.length; i++) {
     const f = features[i]!
-    const id = dedupeKey(f)
+    const id = readKeyOf(f)
     if (!seen.has(id)) {
       seen.add(id)
       out.push(f)
@@ -204,14 +186,14 @@ export function filterChainFeatures(
     rawChains = rawChains.filter(c => isSplitChain(c))
   }
   // same key as the dedupe above, for the same reason: this is identity within
-  // one fetch, which is the thing `dedupeKey` is cheap at
-  const keptIds = new Set<number | string>()
+  // one fetch, which is the thing `readKeyOf` is cheap at
+  const keptIds = new Set<ReadKey>()
   for (const chain of rawChains) {
     for (const f of chain) {
-      keptIds.add(dedupeKey(f))
+      keptIds.add(readKeyOf(f))
     }
   }
-  return deduped.filter(f => keptIds.has(dedupeKey(f)))
+  return deduped.filter(f => keptIds.has(readKeyOf(f)))
 }
 
 // Chain metadata + the per-read arrays linking each read back to its chain.
@@ -293,6 +275,11 @@ function buildChainResultFields(
 // identical in every section.
 interface GroupContext {
   isChain: boolean
+  // The fetch's verified `${adapter.id}-`, or undefined when its features carry
+  // no numeric record id. Resolved once for the whole fetch rather than per
+  // group so every section's `readKeys` are the same form. See
+  // shared/readIdentity.ts.
+  readIdPrefix: string | undefined
   region: Region
   effShowSoftClipping: boolean
   showCoverage: boolean
@@ -339,6 +326,7 @@ async function buildGroupResult(
   } = extraction
   const {
     isChain,
+    readIdPrefix,
     region,
     effShowSoftClipping,
     showCoverage,
@@ -353,7 +341,7 @@ async function buildGroupResult(
   // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread via
   // `laidOutPileupMap` (pileup) / `computeChainLayout` (chain) — the worker
   // emits zero-filled Y arrays.
-  const { readArrays } = buildBaseReadArrays(features)
+  const { readArrays } = buildBaseReadArrays(features, readIdPrefix)
 
   // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
   const chainFields: Partial<PileupDataResult> = isChain
@@ -569,9 +557,12 @@ export async function executeRenderAlignmentData({
   const featureGroups = isChain
     ? partitionChains(inputFeatures, effectiveGroupBy)
     : partitionFeatures(inputFeatures, effectiveGroupBy)
+  // One prefix for the whole fetch, off the unfiltered feature set so an empty
+  // group still gets the same form as its siblings.
+  const readIdPrefix = readIdPrefixOf(featuresArray)
   const buildFeatureData = isChain
-    ? buildChainFeatureData
-    : buildBaseFeatureData
+    ? (f: Feature) => buildChainFeatureData(f, readIdPrefix)
+    : (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
   const extractOpts = {
     colorBy,
     showSoftClipping: effShowSoftClipping,
@@ -631,6 +622,7 @@ export async function executeRenderAlignmentData({
 
   const ctx: GroupContext = {
     isChain,
+    readIdPrefix,
     region,
     effShowSoftClipping,
     showCoverage,

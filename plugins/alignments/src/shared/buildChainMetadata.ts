@@ -8,6 +8,7 @@ import { groupBy } from '@jbrowse/core/util'
 
 import { chainGroupingKey } from './chainGroupingKey.ts'
 
+import type { ReadKey } from './readIdentity.ts'
 import type { ChainFeatureData } from './webglRpcTypes.ts'
 
 // How a mate's supplementary segment splits away from its own primary. Kept as a
@@ -201,7 +202,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   const chainHasMultiple = new Uint8Array(numChains)
   const chainFirstReadIndices = new Uint32Array(numChains)
 
-  const featureIdToChainIdx = new Map<string, number>()
+  const featureIdToChainIdx = new Map<ReadKey, number>()
   for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
     const [chainKey, chain] = chainEntries[chainIdx]!
     const summary = summarizeChain(chain)

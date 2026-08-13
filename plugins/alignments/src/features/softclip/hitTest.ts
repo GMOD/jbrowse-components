@@ -2,6 +2,7 @@ import {
   findTopmostOnRow,
   isWithinReadBand,
 } from '../../shared/hitTestTypes.ts'
+import { readIdAt } from '../../shared/readIdentity.ts'
 
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
@@ -47,6 +48,6 @@ export function hitTestSoftclipBase(
     return undefined
   }
   const readIdx = softclipBaseReadIndices[i]!
-  const id = resolved.rpcData.readIds[readIdx]
+  const id = readIdAt(resolved.rpcData, readIdx)
   return id === undefined ? undefined : { id, index: readIdx }
 }

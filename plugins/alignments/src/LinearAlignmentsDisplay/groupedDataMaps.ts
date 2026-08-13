@@ -3,6 +3,7 @@ import {
   mergeJunctions,
 } from '../features/sashimi/junctions.ts'
 import { compareGroupKeys } from '../shared/groupFeatures.ts'
+import { readIdAt } from '../shared/readIdentity.ts'
 import { getOrCreate } from '../shared/util.ts'
 
 import type {
@@ -176,9 +177,9 @@ export function buildReadIdsByChainName(
   if (chainMode) {
     for (const { data } of eachGroup(rpcDataMap)) {
       if (data.readChainIndices && data.chainNames) {
-        for (let i = 0; i < data.readIds.length; i++) {
+        for (let i = 0; i < data.readKeys.length; i++) {
           const name = data.chainNames[data.readChainIndices[i]!]
-          const id = data.readIds[i]
+          const id = readIdAt(data, i)
           if (name !== undefined && id !== undefined) {
             getOrCreate(map, name, () => []).push(id)
           }
@@ -236,8 +237,8 @@ export function buildReadIdIndexMap(
     { displayedRegionIndex: number; groupKey: string; idx: number }
   >()
   for (const { displayedRegionIndex, key, data } of eachGroup(rpcDataMap)) {
-    for (let i = 0; i < data.readIds.length; i++) {
-      const id = data.readIds[i]
+    for (let i = 0; i < data.readKeys.length; i++) {
+      const id = readIdAt(data, i)
       if (id !== undefined) {
         map.set(id, { displayedRegionIndex, groupKey: key, idx: i })
       }

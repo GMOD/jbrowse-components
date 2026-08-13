@@ -16,7 +16,7 @@ function region(spans: [number, number][]) {
       0,
       {
         ...makeEmptyPileupData(),
-        readIds: spans.map((_, i) => `f${i}`),
+        readKeys: spans.map((_, i) => `f${i}`),
         readPositions: positions,
         readYs: new Uint16Array(spans.length),
       },

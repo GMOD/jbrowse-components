@@ -45,9 +45,10 @@ function makeChainData(opts: {
     }
   }
 
-  const readIds = Array.from({ length: numReads }, (_, i) => `id${i}`)
+  const readKeys = Array.from({ length: numReads }, (_, i) => `id${i}`)
 
   return {
+    readIdPrefix: undefined,
     readChainIndices,
     chainNames,
     chainAbsMinStarts,
@@ -56,8 +57,8 @@ function makeChainData(opts: {
     chainHasMultiple,
     chainFirstReadIndices,
     maxY: 0,
-    readIds,
-    readNames: readIds.slice(),
+    readKeys,
+    readNames: readKeys.slice(),
     readPositions: new Uint32Array(numReads * 2),
     readYs: new Uint16Array(numReads),
     readFlags: new Uint16Array(numReads),

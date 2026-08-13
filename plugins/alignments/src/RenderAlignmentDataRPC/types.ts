@@ -8,6 +8,7 @@
  */
 
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
+import type { ReadKeys } from '../shared/readIdentity.ts'
 import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
@@ -101,7 +102,11 @@ export interface PileupDataResult {
   readStrands: Int8Array // -1=reverse, 0=unknown, 1=forward
   readChainHasSupp?: Uint8Array // 0=no supp, 1=supp+primary fwd, 2=supp+primary rev, 3=paired split inversion, 4=paired split deletion
   readInterchrom: Uint8Array // 1 = mate on a different chromosome (else 0)
-  readIds: string[] // feature IDs for hit testing
+  // Per-read identity for hit testing, dedupe and layout tiebreaks — numeric
+  // for BAM/CRAM, with `readIdPrefix` rebuilding the `feature.id()` string at
+  // the few places one escapes. shared/readIdentity.ts holds the invariant.
+  readKeys: ReadKeys
+  readIdPrefix: string | undefined
   readNames: string[] // read names (QNAME) for tooltip display
   readNextRefs?: string[] // mate reference name for inter-chromosomal tooltip
   readChainIndices?: Uint32Array // chain index per read (only in chain mode)
@@ -221,7 +226,7 @@ export interface PileupDataResult {
   // boundary. Only populated (main-thread) when colorBy.type === 'tag'.
   readTagColors: Uint32Array
 
-  // Raw per-read tag value strings (parallel to readIds), populated by the
+  // Raw per-read tag value strings (parallel to readKeys), populated by the
   // worker only in tag color mode. The main thread bakes these into
   // readTagColors via colorTagMap.
   readTagValues?: string[]
@@ -345,7 +350,7 @@ export interface PileupDataResult {
   // Unique tag values discovered during feature iteration (for colorBy tag mode)
   newTagValues?: string[]
 
-  // Per-read tag values for tag sort, parallel to readIds (only populated when sortedBy.type === 'tag').
+  // Per-read tag values for tag sort, parallel to readKeys (only populated when sortedBy.type === 'tag').
   // Main thread uses these to compute sorted layout without needing a re-fetch.
   sortTagValues?: string[]
 

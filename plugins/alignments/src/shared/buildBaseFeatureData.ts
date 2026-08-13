@@ -1,5 +1,6 @@
 import { pairDirection } from '@jbrowse/alignments-core'
 
+import { readKeyOf } from './readIdentity.ts'
 import { getFlags, getMappingQuality, getStrand } from './util.ts'
 
 import type { ChainFeatureData, FeatureData } from './webglRpcTypes.ts'
@@ -22,9 +23,19 @@ function pairOrientationToNum(pairOrientation: string | undefined) {
   return dir ? PAIR_DIRECTION_NUM[dir] : 0
 }
 
-export function buildBaseFeatureData(feature: Feature): FeatureData {
+/**
+ * `readIdPrefix` is the fetch's verified `${adapter.id}-` (see
+ * `readIdPrefixOf`), or undefined when these features have no numeric record id
+ * — and it is what decides which form `id` takes. Undefined means read the
+ * string, so a numeric key can never exist without a prefix to rebuild its
+ * string from.
+ */
+export function buildBaseFeatureData(
+  feature: Feature,
+  readIdPrefix: string | undefined,
+): FeatureData {
   return {
-    id: feature.id(),
+    id: readIdPrefix === undefined ? feature.id() : readKeyOf(feature),
     name: feature.get('name') ?? '',
     start: feature.get('start'),
     end: feature.get('end'),
@@ -43,9 +54,12 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
   }
 }
 
-export function buildChainFeatureData(feature: Feature): ChainFeatureData {
+export function buildChainFeatureData(
+  feature: Feature,
+  readIdPrefix: string | undefined,
+): ChainFeatureData {
   return {
-    ...buildBaseFeatureData(feature),
+    ...buildBaseFeatureData(feature, readIdPrefix),
     nextRef: feature.get('next_ref') as string | undefined,
   }
 }

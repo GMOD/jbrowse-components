@@ -53,7 +53,7 @@ function makeData(opts: {
   }
   return makePileupDataResult({
     readNames: opts.names,
-    readIds: opts.names.map((_, i) => `id${i}`),
+    readKeys: opts.names.map((_, i) => `id${i}`),
     readFlags: new Uint16Array(opts.flags),
     readStrands: new Int8Array(opts.strands),
     readPositions,
@@ -478,7 +478,7 @@ describe('readGroupConnections', () => {
 
   it('keeps a genuine split read whose segments are separate records (distinct ids)', () => {
     // Contrast with the dedup case: a real split read's primary + supplementary
-    // are distinct records (distinct fileOffsets → distinct readIds), so they
+    // are distinct records (distinct fileOffsets → distinct readKeys), so they
     // must NOT be deduped even when they land in different regions.
     const regionA = makeData({
       names: ['r1'],
@@ -496,8 +496,8 @@ describe('readGroupConnections', () => {
       orientations: [0],
       ys: [0],
     })
-    regionA.readIds[0] = 'primary'
-    regionB.readIds[0] = 'supplementary'
+    regionA.readKeys[0] = 'primary'
+    regionB.readKeys[0] = 'supplementary'
     const cs = readGroupConnections([
       makeEntry(regionA, 0, 0),
       makeEntry(regionB, 0, 1),
@@ -838,7 +838,7 @@ describe('computeLinkedReadLinesByRegion', () => {
 describe('groupReadsByName', () => {
   const named = (names: string[]) =>
     makePileupDataResult({
-      readIds: names.map((n, i) => `${n}-${i}`),
+      readKeys: names.map((n, i) => `${n}-${i}`),
       readNames: names,
     })
 

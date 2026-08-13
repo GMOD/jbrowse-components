@@ -21,6 +21,7 @@ import {
   spanOf,
   strandOf,
 } from '../../shared/readGroupConnections.ts'
+import { readIdAt } from '../../shared/readIdentity.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -439,7 +440,7 @@ function groupReadsByName(
   for (const region of regions) {
     const data = rpcDataMap.get(region.displayedRegionIndex)
     if (data) {
-      for (let i = 0; i < data.readIds.length; i++) {
+      for (let i = 0; i < data.readKeys.length; i++) {
         const name = data.readNames[i]!
         if (name) {
           getOrCreate(readsByName, name, () => []).push({
@@ -460,7 +461,7 @@ function computePairingInfo(rpcDataMap: ReadonlyMap<number, PileupDataResult>) {
   let stats: InsertSizeBand | undefined
   for (const data of rpcDataMap.values()) {
     if (!hasPaired) {
-      for (let i = 0; i < data.readIds.length; i++) {
+      for (let i = 0; i < data.readKeys.length; i++) {
         if (data.readFlags[i]! & SAM_FLAG_PAIRED) {
           hasPaired = true
           break
@@ -554,7 +555,7 @@ function saSegments(
   const { data, readIdx } = entry
   return featurizeSA(
     data.readSuppAlignments?.[readIdx],
-    data.readIds[readIdx]!,
+    readIdAt(data, readIdx)!,
     data.readStrands[readIdx],
     data.readNames[readIdx],
   )

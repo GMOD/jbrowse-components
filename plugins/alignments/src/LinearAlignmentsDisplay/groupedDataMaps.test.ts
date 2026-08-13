@@ -20,12 +20,12 @@ import type { Feature } from '@jbrowse/core/util'
 
 // Minimal PileupDataResult stub: only the fields these scans read.
 function data(
-  readIds: string[],
+  readKeys: string[],
   readChainIndices?: number[],
   chainNames?: string[],
 ): PileupDataResult {
   return makePileupDataResult({
-    readIds,
+    readKeys,
     readChainIndices: readChainIndices
       ? new Uint32Array(readChainIndices)
       : undefined,

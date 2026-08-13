@@ -40,7 +40,7 @@ export function makePileupDataResult(
     ? overrides.readPositions.length / 2
     : (overrides.readFlags?.length ??
       overrides.readStrands?.length ??
-      overrides.readIds?.length ??
+      overrides.readKeys?.length ??
       overrides.readNames?.length ??
       0)
   return { ...basePileupDataResult(n), ...overrides }
@@ -57,7 +57,13 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     readPairOrientations: new Uint8Array(n),
     readStrands: new Int8Array(n),
     readInterchrom: new Uint8Array(n),
-    readIds: Array.from({ length: n }, (_, i) => `id${i}`),
+    // The string branch of `readKeys` (shared/readIdentity.ts): a fixture read
+    // is named by its whole id, as it is for a SAM or PAF-backed display. The
+    // numeric branch is covered by readIdentity.test.ts and the numeric cases in
+    // sortLayout.test.ts, since it changes the canonical tiebreak from a
+    // lexicographic compare to a numeric one.
+    readKeys: Array.from({ length: n }, (_, i) => `id${i}`),
+    readIdPrefix: undefined,
     readNames: Array.from({ length: n }, (_, i) => `read${i}`),
     readTagColors: new Uint32Array(0),
     readColorCategories: new Uint8Array(0),

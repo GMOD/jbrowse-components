@@ -7,6 +7,7 @@ import {
   INTERBASE_SOFTCLIP,
 } from '../shared/types.ts'
 
+import type { ReadKey, ReadKeys } from '../shared/readIdentity.ts'
 import type { SortedBy } from '../shared/types.ts'
 import type { PileupDataResult } from './types'
 
@@ -34,12 +35,15 @@ const INTERBASE_SORT_TYPES: Partial<Record<SortedBy['type'], number>> = {
  * of the set alone. (This was suspected of causing the cross-backend gate's
  * pileup drift, but never confirmed to — see browser-tests/crossBackendGate.ts.)
  *
- * Span is compared first so the common case stays numeric; the string compare
- * only runs for reads sharing both endpoints.
+ * Span is compared first, so the key compare only runs for reads sharing both
+ * endpoints. The key is numeric for BAM/CRAM and the id string otherwise
+ * (shared/readIdentity.ts), and `<`/`>` totally order either — a numeric file
+ * offset and a lexicographic id are equally arbitrary, and all this has to be is
+ * a function of the read set.
  */
 function compareReadsCanonically(
   readPositions: Uint32Array,
-  readIds: string[],
+  readKeys: ReadKeys,
   a: number,
   b: number,
 ) {
@@ -51,8 +55,8 @@ function compareReadsCanonically(
   if (endDiff !== 0) {
     return endDiff
   }
-  const ia = readIds[a]!
-  const ib = readIds[b]!
+  const ia = readKeys[a]!
+  const ib = readKeys[b]!
   return ia < ib ? -1 : ia > ib ? 1 : 0
 }
 
@@ -62,7 +66,7 @@ function sortByMapWithUnknownsLast(
   desc: boolean,
   data: PileupDataResult,
 ) {
-  const { readPositions, readIds } = data
+  const { readPositions, readKeys } = data
   arr.sort((a, b) => {
     const aVal = map.get(a) ?? 0
     const bVal = map.get(b) ?? 0
@@ -75,7 +79,7 @@ function sortByMapWithUnknownsLast(
     const byVal = desc ? bVal - aVal : aVal - bVal
     return byVal !== 0
       ? byVal
-      : compareReadsCanonically(readPositions, readIds, a, b)
+      : compareReadsCanonically(readPositions, readKeys, a, b)
   })
 }
 
@@ -225,9 +229,9 @@ function sortOverlappingByIndex(
   sortTagValues: string[] | undefined,
 ) {
   const { type, pos: sortPos } = sortedBy
-  const { readPositions, readIds } = data
+  const { readPositions, readKeys } = data
   const canonical = (a: number, b: number) =>
-    compareReadsCanonically(readPositions, readIds, a, b)
+    compareReadsCanonically(readPositions, readKeys, a, b)
   const keyMap = buildSortKeyMap(data, type, sortPos)
   if (keyMap) {
     sortByMapWithUnknownsLast(overlapping, keyMap.map, keyMap.desc, data)
@@ -384,11 +388,11 @@ class MinHeap {
  * (~30ms — many small sorts plus the slicing beat one optimized sort).
  */
 function buildCanonicalOrder(data: PileupDataResult, numReads: number) {
-  const { readPositions, readIds } = data
+  const { readPositions, readKeys } = data
   for (let i = 1; i < numReads; i++) {
-    if (compareReadsCanonically(readPositions, readIds, i - 1, i) > 0) {
+    if (compareReadsCanonically(readPositions, readKeys, i - 1, i) > 0) {
       return Array.from({ length: numReads }, (_, k) => k).sort((a, b) =>
-        compareReadsCanonically(readPositions, readIds, a, b),
+        compareReadsCanonically(readPositions, readKeys, a, b),
       )
     }
   }
@@ -400,11 +404,11 @@ function buildSoftclipOrder(
   ext: ReadExtents,
   numReads: number,
 ) {
-  const { readPositions, readIds } = data
+  const { readPositions, readKeys } = data
   return Array.from({ length: numReads }, (_, i) => i).sort(
     (a, b) =>
       ext.starts[a]! - ext.starts[b]! ||
-      compareReadsCanonically(readPositions, readIds, a, b),
+      compareReadsCanonically(readPositions, readKeys, a, b),
   )
 }
 
@@ -419,7 +423,7 @@ function buildLargeFirstOrder(
   ext: ReadExtents,
   numReads: number,
 ) {
-  const { readPositions, readIds } = data
+  const { readPositions, readKeys } = data
   return Array.from({ length: numReads }, (_, i) => i).sort(
     (a, b) =>
       compareByExtentDesc(
@@ -427,7 +431,7 @@ function buildLargeFirstOrder(
         ext.ends[a]!,
         ext.starts[b]!,
         ext.ends[b]!,
-      ) || compareReadsCanonically(readPositions, readIds, a, b),
+      ) || compareReadsCanonically(readPositions, readKeys, a, b),
   )
 }
 
@@ -502,7 +506,7 @@ export function computeLayout(
   maxRows = Number.POSITIVE_INFINITY,
   largeFeaturesFirst?: boolean,
 ) {
-  const numReads = data.readIds.length
+  const numReads = data.readKeys.length
   const expansions = showSoftClipping
     ? buildSoftclipExpansions(data)
     : undefined
@@ -568,7 +572,7 @@ export function computeSortedLayout(
   maxRows = Number.POSITIVE_INFINITY,
 ) {
   const { readPositions } = data
-  const numReads = data.readIds.length
+  const numReads = data.readKeys.length
   const { pos: sortPos } = sortedBy
   const expansions = showSoftClipping
     ? buildSoftclipExpansions(data)
@@ -590,7 +594,7 @@ export function computeSortedLayout(
   // The gap-filling reads are placed after the sorted ones, and first-fit is
   // order-sensitive, so they need a canonical order for the same reason.
   nonOverlapping.sort((a, b) =>
-    compareReadsCanonically(readPositions, data.readIds, a, b),
+    compareReadsCanonically(readPositions, data.readKeys, a, b),
   )
 
   // Soft-clip-expanded extents only when clips are shown; otherwise the read's
@@ -705,7 +709,7 @@ export function refNameAxisShift(spans: RefNameSpans) {
 
 // A read only ever spans regions of one refName, so its unioned extent shifts as
 // a unit onto that refName's segment of the placement axis.
-function segmentExtentsByRefName(extents: Map<string, ReadExtent>) {
+function segmentExtentsByRefName(extents: Map<ReadKey, ReadExtent>) {
   const spans: RefNameSpans = new Map()
   for (const { start, end, refName } of extents.values()) {
     extendRefNameSpan(spans, refName, start, end)
@@ -745,19 +749,19 @@ export function computeMultiRegionLayout({
   maxRows?: number
   largeFeaturesFirst?: boolean
 }) {
-  // Union extent per read (keyed by featureId) across every region it appears
+  // Union extent per read (keyed by read key) across every region it appears
   // in, including soft-clip expansion — a read spanning a boundary gets one
   // extent, so it lands on one row. `orderedIds` collects them in first-seen
   // order and is canonicalized below.
-  const extents = new Map<string, ReadExtent>()
-  const orderedIds: string[] = []
+  const extents = new Map<ReadKey, ReadExtent>()
+  const orderedIds: ReadKey[] = []
   for (const [idx, data] of entries) {
-    const numReads = data.readIds.length
+    const numReads = data.readKeys.length
     const exp = showSoftClipping ? buildSoftclipExpansions(data) : undefined
     const ext = buildReadExtents(data, exp, numReads)
     const refName = regions?.get(idx)?.refName
     for (let i = 0; i < numReads; i++) {
-      const id = data.readIds[i]!
+      const id = data.readKeys[i]!
       const start = ext.starts[i]!
       const end = ext.ends[i]!
       const cur = extents.get(id)
@@ -779,7 +783,7 @@ export function computeMultiRegionLayout({
   // First-seen order is arrival order, which first-fit placement would bake into
   // the row assignment. Canonicalize on the unioned extent, then the id, so this
   // layout is a pure function of the read set like the single-region paths.
-  const compareIdsCanonically = (a: string, b: string) => {
+  const compareIdsCanonically = (a: ReadKey, b: ReadKey) => {
     const ea = extents.get(a)!
     const eb = extents.get(b)!
     return (
@@ -808,7 +812,7 @@ export function computeMultiRegionLayout({
     if (sortEntry) {
       const [, sData] = sortEntry
       const overlapping: number[] = []
-      for (let i = 0; i < sData.readIds.length; i++) {
+      for (let i = 0; i < sData.readKeys.length; i++) {
         const start = sData.readPositions[i * 2]!
         const end = sData.readPositions[i * 2 + 1]!
         if (start <= sortPos && end > sortPos) {
@@ -823,7 +827,7 @@ export function computeMultiRegionLayout({
       )
       // Sorted overlapping reads first (each gets its own row — they all collide
       // at sortPos), then the rest in dedup order fills gaps around them.
-      const overlappingIds = overlapping.map(i => sData.readIds[i]!)
+      const overlappingIds = overlapping.map(i => sData.readKeys[i]!)
       const overlappingSet = new Set(overlappingIds)
       placementOrder = [
         ...overlappingIds,
@@ -846,7 +850,7 @@ export function computeMultiRegionLayout({
     })
   }
 
-  const rowMap = new Map<string, number>()
+  const rowMap = new Map<ReadKey, number>()
   const rows: number[][] = []
   let truncated = false
   for (const id of placementOrder) {
@@ -933,7 +937,7 @@ function computePileupRowLayout(
   const empties: [number, PileupDataResult][] = []
   const withReads: [number, PileupDataResult][] = []
   for (const [k, v] of dataMap) {
-    if (v.readIds.length === 0) {
+    if (v.readKeys.length === 0) {
       empties.push([k, v])
     } else {
       withReads.push([k, v])
@@ -966,10 +970,10 @@ function computePileupRowLayout(
   const laid = countOnly
     ? []
     : withReads.map(([idx, data]) => {
-        const numReads = data.readIds.length
+        const numReads = data.readKeys.length
         const readYs = new Uint16Array(numReads)
         for (let i = 0; i < numReads; i++) {
-          readYs[i] = rowMap.get(data.readIds[i]!)!
+          readYs[i] = rowMap.get(data.readKeys[i]!)!
         }
         return { idx, data, readYs }
       })

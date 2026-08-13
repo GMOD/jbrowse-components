@@ -141,7 +141,7 @@ function pileupData(): PileupDataResult {
     readInterchrom: new Uint8Array([0, 0]),
     readTagColors: new Uint32Array(0),
     readChainHasSupp: undefined,
-    readIds: ['r1', 'r2'],
+    readKeys: ['r1', 'r2'],
     insertSizeStats: undefined,
     maxY: 2,
     segmentPositions: new Uint32Array([

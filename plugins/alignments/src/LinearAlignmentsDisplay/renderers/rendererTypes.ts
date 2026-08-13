@@ -6,10 +6,12 @@ import {
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { intronAlpha } from '../../shaders/slang/gap.js.generated.ts'
 import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.iface.generated.ts'
+import { readIdAt } from '../../shared/readIdentity.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
+import type { ReadIdentity } from '../../shared/readIdentity.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
@@ -23,10 +25,10 @@ export type {
   ReadUploadData,
 } from '../../shared/uploadTypes.ts'
 
-export function buildReadIdToIndex(ids: string[], n: number) {
+export function buildReadIdToIndex(d: ReadIdentity) {
   const m = new Map<string, number>()
-  for (let i = 0; i < n; i++) {
-    m.set(ids[i]!, i)
+  for (let i = 0; i < d.readKeys.length; i++) {
+    m.set(readIdAt(d, i)!, i)
   }
   return m
 }
@@ -37,11 +39,16 @@ export function buildReadIdToIndex(ids: string[], n: number) {
 // the single largest main-thread cost (~104ms of 660ms busy). Deferring to the
 // first lookup keeps it off the initial-render path; `model.readIdIndexMap` is
 // gated the same way one layer up.
-export function lazyReadIdToIndex(ids: string[]) {
+//
+// It is also where the id STRINGS get built at all, now that the worker ships
+// keys (shared/readIdentity.ts) — the overlays match against
+// `featureIdUnderMouse`, which is a string. Same deferral, so a cold render
+// still builds none of them.
+export function lazyReadIdToIndex(d: ReadIdentity) {
   let map: Map<string, number> | undefined
   return () => {
     if (map === undefined) {
-      map = buildReadIdToIndex(ids, ids.length)
+      map = buildReadIdToIndex(d)
     }
     return map
   }

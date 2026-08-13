@@ -755,7 +755,7 @@ describe('the feature-details lookup', () => {
           label: '',
           data: {
             ...makeEmptyPileupData(),
-            readIds: ['read1'],
+            readKeys: ['read1'],
             readNames: ['readA'],
             readPositions: new Uint32Array([1000, 5000]),
             readYs: new Uint16Array([0]),
@@ -1054,7 +1054,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
           label: '',
           data: {
             ...makeEmptyPileupData(),
-            readIds: ['r1'],
+            readKeys: ['r1'],
             readNames: ['r1'],
             readPositions: new Uint32Array([100, 200]),
             readYs: new Uint16Array(1),

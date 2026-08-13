@@ -44,7 +44,7 @@ function entries(specs: ReadSpec[], region = 0): Entry[] {
     // optional, so the base leaves it out — this suite is about read-order
     // sorting, which is the one thing it decides
     readClipAtStart: new Uint32Array(specs.map(s => s.clipAtStart ?? 0)),
-    readIds: specs.map(s => s.id),
+    readKeys: specs.map(s => s.id),
     readNames: specs.map(() => 'readA'),
   }
   return specs.map((s, readIdx) => ({

@@ -150,7 +150,7 @@ function createEnvWithPileup(depth: number) {
         label: '',
         data: {
           ...makeEmptyPileupData(),
-          readIds: Array.from({ length: depth }, (_, i) => `r${i}`),
+          readKeys: Array.from({ length: depth }, (_, i) => `r${i}`),
           readNames: Array.from({ length: depth }, (_, i) => `r${i}`),
           readPositions,
           readYs: new Uint16Array(depth),

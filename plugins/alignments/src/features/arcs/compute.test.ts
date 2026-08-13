@@ -575,8 +575,8 @@ describe('computeArcsFromPileupData', () => {
     // Mates are distinct records: distinct fileOffsets => distinct f.id(). (The
     // helper's per-array id${i} would collide both on 'id0', which can't happen
     // in real data and would trip the same-read cross-region dedup.)
-    data0.readIds[0] = 'readA-mate1'
-    data1.readIds[0] = 'readA-mate2'
+    data0.readKeys[0] = 'readA-mate1'
+    data1.readKeys[0] = 'readA-mate2'
 
     const rpcDataMap = new Map([
       [0, data0],
@@ -1737,8 +1737,8 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       readPairOrientations: new Uint8Array([1, 1]),
       readNames: [name, name],
     })
-    data.readIds[0] = ids[0]
-    data.readIds[1] = ids[1]
+    data.readKeys[0] = ids[0]
+    data.readKeys[1] = ids[1]
     return data
   }
 
@@ -1772,7 +1772,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       readPairOrientations: new Uint8Array([1]),
       readNames: ['readC'],
     })
-    near.readIds[0] = 'c1'
+    near.readKeys[0] = 'c1'
     const far = makePileupData({
       readPositions: new Uint32Array([900000, 900100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR]),
@@ -1781,7 +1781,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       readPairOrientations: new Uint8Array([1]),
       readNames: ['readC'],
     })
-    far.readIds[0] = 'c2'
+    far.readKeys[0] = 'c2'
 
     const regionMap = computeArcsByGroup(
       new Map([

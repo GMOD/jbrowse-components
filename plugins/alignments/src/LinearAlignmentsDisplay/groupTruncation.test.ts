@@ -138,7 +138,7 @@ function stackedReads(n: number): PileupDataResult {
   }
   return {
     ...makeEmptyPileupData(),
-    readIds: Array.from({ length: n }, (_, i) => `r${i}`),
+    readKeys: Array.from({ length: n }, (_, i) => `r${i}`),
     readNames: Array.from({ length: n }, (_, i) => `read${i}`),
     readPositions,
     readYs: new Uint16Array(n),

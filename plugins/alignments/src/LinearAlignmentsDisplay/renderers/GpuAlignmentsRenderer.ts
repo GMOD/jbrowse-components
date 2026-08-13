@@ -354,7 +354,10 @@ export { UNIFORMS_SIZE_BYTES }
 // (arcs whose mate is off-screen bring their own region key).
 function emptyRegion(): LocalRegion {
   return {
-    readIdToIndex: lazyReadIdToIndex([]),
+    readIdToIndex: lazyReadIdToIndex({
+      readKeys: [],
+      readIdPrefix: undefined,
+    }),
     readPositions: new Uint32Array(0),
     readYs: new Uint16Array(0),
     maxDepth: 0,
@@ -372,7 +375,7 @@ function emptyRegion(): LocalRegion {
 function regionMeta(data: ReadUploadData & CoverageUploadData): LocalRegion {
   const hasCoverage = data.coverageGpuBinCount > 0
   return {
-    readIdToIndex: lazyReadIdToIndex(data.readIds),
+    readIdToIndex: lazyReadIdToIndex(data),
     readPositions: data.readPositions,
     readYs: data.readYs,
     insertSizeStats: data.insertSizeStats,

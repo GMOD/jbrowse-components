@@ -38,12 +38,12 @@ function makePileupData(opts: {
     : undefined
 
   const readPositions = new Uint32Array(numReads * 2)
-  const readIds: string[] = []
+  const readKeys: string[] = []
   const readNames: string[] = []
   for (const [i, r] of reads.entries()) {
     readPositions[i * 2] = r.start
     readPositions[i * 2 + 1] = r.end
-    readIds.push(r.id ?? `${idPrefix}${i}`)
+    readKeys.push(r.id ?? `${idPrefix}${i}`)
     readNames.push(r.id ?? `${idPrefix}${i}`)
   }
 
@@ -88,7 +88,8 @@ function makePileupData(opts: {
   }
 
   return {
-    readIds,
+    readKeys,
+    readIdPrefix: undefined,
     readNames,
     readPositions,
     readYs: new Uint16Array(numReads),
@@ -208,7 +209,7 @@ function assertNonOverlappingLayout(
   readYs: Uint16Array,
 ) {
   const { readPositions } = data
-  const numReads = data.readIds.length
+  const numReads = data.readKeys.length
   const byRow = new Map<number, { start: number; end: number; idx: number }[]>()
   for (let i = 0; i < numReads; i++) {
     const row = readYs[i]!
@@ -408,7 +409,7 @@ describe('computeLayout fast path (interval partitioning)', () => {
   // an end frees its row when paddedEnd <= start, so process ends before starts
   // at an equal coordinate (delta -1 sorts before +1).
   function peakPaddedDepth(data: PileupDataResult) {
-    const n = data.readIds.length
+    const n = data.readKeys.length
     const events: [number, number][] = []
     for (let i = 0; i < n; i++) {
       events.push([data.readPositions[i * 2]!, 1])
@@ -484,18 +485,22 @@ describe('computeLayout fast path (interval partitioning)', () => {
   // Placement order is part of the spec: a plain pileup places reads by genomic
   // span then read id, never by array position (see compareReadsCanonically).
   function canonicalOrder(data: PileupDataResult) {
-    const { readPositions, readIds } = data
-    return Array.from({ length: readIds.length }, (_, i) => i).sort(
+    const { readPositions, readKeys } = data
+    return Array.from({ length: readKeys.length }, (_, i) => i).sort(
       (a, b) =>
         readPositions[a * 2]! - readPositions[b * 2]! ||
         readPositions[a * 2 + 1]! - readPositions[b * 2 + 1]! ||
-        (readIds[a]! < readIds[b]! ? -1 : readIds[a]! > readIds[b]! ? 1 : 0),
+        (readKeys[a]! < readKeys[b]!
+          ? -1
+          : readKeys[a]! > readKeys[b]!
+            ? 1
+            : 0),
     )
   }
 
   function refFirstFit(data: PileupDataResult, maxRows: number) {
     const { readPositions } = data
-    const n = data.readIds.length
+    const n = data.readKeys.length
     const rowEnds: number[] = [] // rowEnds[r] = last padded end placed in row r
     const ys = new Uint16Array(n)
     let truncated = false

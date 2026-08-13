@@ -31,7 +31,7 @@ import type { HitTestOptions } from './hitTestPipeline.ts'
 // Two reads, both on row 0, both spanning the cursor at genomicPos 100.
 // Index 1 is drawn second, so it is the one on top.
 const TWO_OVERLAPPING_READS = {
-  readIds: ['under', 'over'],
+  readKeys: ['under', 'over'],
   readYs: new Uint16Array([0, 0]),
   readPositions: new Uint32Array([0, 200, 50, 200]),
 }

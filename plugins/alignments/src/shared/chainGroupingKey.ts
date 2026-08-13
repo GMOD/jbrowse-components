@@ -1,7 +1,9 @@
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 
+import { readKeyOf } from './readIdentity.ts'
 import { getFlags } from './util.ts'
 
+import type { ReadKey } from './readIdentity.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
@@ -31,7 +33,7 @@ import type { Feature } from '@jbrowse/core/util'
  * answer, and it is the same answer for the ordinary case of a SAM record whose
  * QNAME the source dropped.
  */
-export function chainGroupingKey(name: string, id: string, flags: number) {
+export function chainGroupingKey(name: string, id: ReadKey, flags: number) {
   return !name || flags & SAM_FLAG_SECONDARY ? `\0${id}` : name
 }
 
@@ -45,7 +47,7 @@ export function chainGroupingKey(name: string, id: string, flags: number) {
 export function featureChainKey(feature: Feature) {
   return chainGroupingKey(
     feature.get('name') ?? '',
-    feature.id(),
+    readKeyOf(feature),
     getFlags(feature),
   )
 }

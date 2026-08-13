@@ -1,4 +1,43 @@
+import type { ReadKeys } from './readIdentity.ts'
 import type { FeatureData } from './webglRpcTypes.ts'
+
+/**
+ * Collect the per-read identity keys. Numeric — one transferable rather than
+ * `n` cloned strings — whenever the features carry a record id, which is what
+ * `readIdPrefix` being defined means. See shared/readIdentity.ts for the
+ * measurement and the invariant.
+ *
+ * The prefix decides the branch — `buildBaseFeatureData` reads `id()` whenever
+ * it is undefined, so a numeric key never exists without a verified prefix to
+ * rebuild its string from. Every feature of one fetch comes from one adapter, so
+ * the branch is uniform; the per-read check is only there so a mixed set falls
+ * back to strings rather than writing `NaN` into the array, and the fallback
+ * still spells each id through the prefix so both branches carry the same one.
+ */
+function buildReadKeys(
+  features: FeatureData[],
+  readIdPrefix: string | undefined,
+): ReadKeys {
+  const n = features.length
+  if (readIdPrefix !== undefined) {
+    const keys = new Float64Array(n)
+    let i = 0
+    for (; i < n; i++) {
+      const key = features[i]!.id
+      if (typeof key !== 'number') {
+        break
+      }
+      keys[i] = key
+    }
+    if (i === n) {
+      return keys
+    }
+  }
+  const prefix = readIdPrefix ?? ''
+  return features.map(f =>
+    typeof f.id === 'number' ? `${prefix}${f.id}` : f.id,
+  )
+}
 
 /**
  * Build the per-read TypedArrays that pileup and chain executors share. Y
@@ -23,7 +62,10 @@ import type { FeatureData } from './webglRpcTypes.ts'
  * buildSegments clips the rectangle and records the clipped edge in
  * segmentEdgeFlags so no chevron is drawn at a false read end.
  */
-export function buildBaseReadArrays(features: FeatureData[]) {
+export function buildBaseReadArrays(
+  features: FeatureData[],
+  readIdPrefix: string | undefined,
+) {
   const n = features.length
   const readPositions = new Uint32Array(n * 2)
   const readYs = new Uint16Array(n)
@@ -32,7 +74,6 @@ export function buildBaseReadArrays(features: FeatureData[]) {
   const readInsertSizes = new Float32Array(n)
   const readPairOrientations = new Uint8Array(n)
   const readStrands = new Int8Array(n)
-  const readIds: string[] = []
   const readNames: string[] = []
 
   for (let i = 0; i < n; i++) {
@@ -44,7 +85,6 @@ export function buildBaseReadArrays(features: FeatureData[]) {
     readInsertSizes[i] = f.insertSize
     readPairOrientations[i] = f.pairOrientation
     readStrands[i] = f.strand
-    readIds.push(f.id)
     readNames.push(f.name)
   }
 
@@ -57,7 +97,8 @@ export function buildBaseReadArrays(features: FeatureData[]) {
       readInsertSizes,
       readPairOrientations,
       readStrands,
-      readIds,
+      readKeys: buildReadKeys(features, readIdPrefix),
+      readIdPrefix,
       readNames,
     },
   }
