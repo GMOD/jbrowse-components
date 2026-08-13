@@ -649,10 +649,54 @@ twenty-one tail chunks are **never read**. Same records (207,260 either way),
 1.8MB less fetched, and the speed came from work skipped rather than from
 requests coalesced.
 
-Which retires the whole seam as originally framed. What is left is a narrower
-and more interesting question — whether those twenty-one 0.1MB reads are needed
-at all, or whether the early stop should be reaching them — and that is about
-the index and `isPastQuery`, not about chunking or the transport.
+Which retires the whole seam as originally framed, and leaves one live question.
+
+### The twenty-one tail chunks contribute NOTHING, and the early stop should have caught them
+
+Reading each chunk and counting how many of its records fall in the query
+answers it outright:
+
+    chunk 0-6    32,800-35,504 records each, in range      <- the query's data
+    chunk 7-27   131-349 records each, ZERO in range       <- 2.0 MB for nothing
+
+Every read in those twenty-one starts past the query end. Their first-record
+positions say what they are:
+
+    10125165, 10141549, 10157933 …   step 16,384    = 2^14
+    10354541, 10485613               step 131,072   = 2^17
+    11534189, 12582765               step 1,048,576 = 2^20
+    25165677, 33554285, 41942893 …   step 8,388,608 = 2^23
+
+That is the BAI **bin hierarchy** — one chunk per level, each at the start of a
+successively larger bin. `reg2bins` returns the containing bins at all six
+levels and every one contributes its chunks, including chunks that sit after the
+query. The linear index prunes only from below; the format has no upper bound.
+
+**The index cannot fix it, and @gmod/bam already knows why.** `chunksLikelyRead`
+computes exactly this upper bound and is deliberately a *forecast only*: a long
+read reaching into the next window pins that window's linear-index entry low, so
+pruning a fetch by it would drop records. Right call — that path is unsound.
+
+**What can fix it is the early stop, which is calibrated on an assumption deep
+coverage breaks.** `_fetchChunkFeatures` checks `isPastQuery` ONCE, over the
+first `MAX_CONCURRENT_CHUNK_READS` (6) chunks, and ADR 0010 justifies the single
+barrier with "the stop always fired inside the first batch on every fixture
+measured (the first 1-3 chunks)". At 300x the query's OWN data is seven chunks —
+one more than the batch — so chunk 5's last record is still inside the query, the
+stop cannot fire, and all twenty-one tail chunks are then read. The batch size
+doubles as the early-stop window, and that coupling breaks exactly when a
+query's data is deeper than six chunks.
+
+The fix that stays deterministic is a **prefix check rather than a barrier**:
+re-test the stop whenever a chunk completes AND every chunk before it has
+completed. Same index-ordered decision ADR 0010 requires, no extra barrier, and
+it fires at chunk 6 here. Requests would fall from 28 to roughly 12 — the
+in-flight pool keeps a few tail chunks already started.
+
+For the size of it: the cap-raised experiment above skipped the tail as a side
+effect and that query went **4.08s -> 1.13s**. The bytes are only 2.0MB of 26.8,
+so this is not about bytes; it is twenty-one round trips against a link where
+one request gets 24 MB/s and many get 5.
 
 ### Why samtools makes one request where we make 28
 
