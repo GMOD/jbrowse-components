@@ -377,17 +377,26 @@ export default class HicFile {
     const [x1, x2] = binWindow(r1, binsize)
     const [y1, y2] = binWindow(r2, binsize)
 
-    // Normalization vectors are loop-invariant across blocks, so resolve them
-    // once up front. Each is paired with the bin offset its values start at.
-    const norm = await this.getNormVectors(
-      normalization,
-      r1,
-      r2,
-      units,
-      binsize,
-    )
-
-    const blocks = await this.getBlocks(r1, r2, binsize)
+    // Two independent read chains, so they run concurrently rather than in
+    // sequence. The normalization vectors are keyed on (type, chr, unit,
+    // binsize) and the blocks on the region pair; neither reads anything the
+    // other produces, and awaiting them in order made every pair pay the SUM of
+    // their round-trip depths instead of the deeper of the two.
+    //
+    // Both are two hops — norm-vector header then its values, matrix header then
+    // its blocks — so a pair went 4 sequential waves deep where 2 will do
+    // (`readChainDepth.test.ts` measures this against the real file). That is
+    // the everyday single-region fetch; `getMultiRegionContactRecords` then runs
+    // 6 pairs at a time on top of it. The adapter's own note says the loop is
+    // latency-bound, not CPU-bound.
+    //
+    // Vectors are loop-invariant across blocks either way, so they are still
+    // resolved once per pair rather than per block, each paired with the bin
+    // offset its values start at.
+    const [norm, blocks] = await Promise.all([
+      this.getNormVectors(normalization, r1, r2, units, binsize),
+      this.getBlocks(r1, r2, binsize),
+    ])
 
     // Sum of the blocks' record counts bounds the survivors, so the output is
     // allocated once and filled by a write cursor. Blocks overlap the window
