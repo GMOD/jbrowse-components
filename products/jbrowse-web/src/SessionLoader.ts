@@ -5,6 +5,7 @@ import { destroy, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { createPluginManager } from './createPluginManager.ts'
+import { resolveConfigPath } from './resolveConfigPath.ts'
 import {
   buildLgvInit,
   fetchRemoteConfig,
@@ -272,7 +273,7 @@ const SessionLoader = types
      * #getter
      */
     get resolvedConfigPath() {
-      return self.configPath || window.__jbrowseConfigPath || 'config.json'
+      return resolveConfigPath(self.configPath)
     },
   }))
   .views(self => ({
