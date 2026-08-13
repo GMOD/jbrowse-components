@@ -58,6 +58,40 @@ export interface ArcHitBandOptions {
   canvasWidthPx: number
 }
 
+// The rect the arc pass is scissored to, in screen px, spelled as the four SVG
+// `<rect>` attributes so an overlay is `<rect {...clip} />` and cannot transpose
+// them. BOTH axes, because the pass is cut on both: the GPU takes
+// `scissorX`/`scissorW` and Canvas2D takes
+// `ctx.rect(scissorX, arcBand.top, scissorW, arcBand.height)`.
+//
+// The vertical half was carried from the start, for the reason
+// `resolveArcBandHover` gives — a far pair's semicircle rises hundreds of px
+// above a band tens of px tall. The horizontal half is the same argument turned
+// sideways and it was missing: that same semicircle also runs `rx` px SIDEWAYS
+// from its midpoint, `rx` being half the pair's on-screen span, so an
+// off-screen-mate or cross-region arc traced a highlight straight out of the
+// block the renderer had cut it at — across the neighbouring region's arcs,
+// marking pixels no arc was painted on. Invisible in the single full-width-block
+// view and only there.
+export interface ArcBandClip {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+// The band's own screen rect, which IS the clip — named once because the hover
+// and the debug overlay both draw it and both used to carry it as four loose
+// fields under two different sets of names.
+function arcBandClip(scale: ArcBandScale): ArcBandClip {
+  return {
+    x: scale.clipLeft,
+    y: scale.arcsTop,
+    width: scale.screenWidthPx,
+    height: scale.arcsH,
+  }
+}
+
 // Everything an arc hover produces: the arc, and the ink to draw over it.
 //
 // `hit` feeds the tooltip and `highlight` feeds the overlay — one field each,
@@ -71,24 +105,9 @@ export interface ArcBandHover {
 // Flat on purpose: an SVG path, the rect to clip it to, and a stroke width. The
 // overlay strokes it and nothing else reads it, so there is nothing here to
 // destructure twice.
-//
-// The clip rect is BOTH axes, because the arc pass is scissored on both: the GPU
-// takes `scissorX`/`scissorW` and Canvas2D takes
-// `ctx.rect(scissorX, arcBand.top, scissorW, arcBand.height)`. The vertical half
-// was carried from the start, for the reason `resolveArcBandHover` gives — a far
-// pair's semicircle rises hundreds of px above a band tens of px tall. The
-// horizontal half is the same argument turned sideways and it was missing: that
-// same semicircle also runs `rx` px SIDEWAYS from its midpoint, `rx` being half
-// the pair's on-screen span, so an off-screen-mate or cross-region arc traced a
-// highlight straight out of the block the renderer had cut it at — across the
-// neighbouring region's arcs, marking pixels no arc was painted on. Invisible in
-// the single full-width-block view and only there.
 export interface ArcHighlight {
   d: string
-  clipLeft: number
-  clipWidth: number
-  clipTop: number
-  clipHeight: number
+  clip: ArcBandClip
   lineWidth: number
 }
 
@@ -187,22 +206,19 @@ export interface ArcDebugShape {
 // do not sit on the painted arcs, that disagreement IS the finding.
 export interface ArcDebugGeometry {
   shapes: ArcDebugShape[]
-  arcsTop: number
-  arcsH: number
   // Where a dome's apex used to be pinned before the clamp came off. Drawn as a
   // reference line: ink lying along it is the clamped-plateau signature, so the
   // overlay can tell "this arc is genuinely flat here" from "something is still
   // clamping".
   legacyCeilingY: number
-  // The block's scissor — left edge, and the width that is also the shader's
-  // `canvasW`. The overlay draws its band rect AT these and clips its traced
-  // paths to them, which matters more here than anywhere: this overlay's whole
-  // contract is that a path not sitting on its painted arc IS the finding, so a
-  // full-width trace over a block-clipped paint manufactures one. It also drew
-  // every region's band as the same full-width rect, which in the multi-region
-  // view the region loop was added to serve stacked them into one.
-  clipLeft: number
-  screenWidthPx: number
+  // The band rect AND the scissor, which are the same rect. The overlay draws
+  // its band outline at it and clips its traced paths to it, which matters more
+  // here than anywhere: this overlay's whole contract is that a path not sitting
+  // on its painted arc IS the finding, so a full-width trace over a
+  // block-clipped paint manufactures one. It also drew every region's band as
+  // the same full-width rect, which in the multi-region view the region loop was
+  // added to serve stacked them into one.
+  clip: ArcBandClip
 }
 
 export function resolveArcBandDebug(
@@ -221,7 +237,7 @@ export function resolveArcBandDebug(
   if (!scale) {
     return undefined
   }
-  const { arcsTop, arcsH, pairedArcsDown, screenWidthPx, clipLeft } = scale
+  const { arcsTop, arcsH, pairedArcsDown, screenWidthPx } = scale
   const shapes: ArcDebugShape[] = []
   for (let i = 0; i < arcs.numArcs; i++) {
     // `arcPlacement`, not a second reading of the Y scale beside it. The
@@ -247,13 +263,10 @@ export function resolveArcBandDebug(
   const ceiling = ARC_APEX_FRACTION * arcAvailH(arcsH)
   return {
     shapes,
-    arcsTop,
-    arcsH,
     legacyCeilingY: pairedArcsDown
       ? arcsTop + ceiling
       : arcsTop + arcsH - ceiling,
-    clipLeft,
-    screenWidthPx,
+    clip: arcBandClip(scale),
   }
 }
 
@@ -277,31 +290,32 @@ export function resolveArcBandHover(
     return undefined
   }
   const scale = arcBandScreenScale(opts)
-  const hit = scale && hitTestArcBand(canvasX, canvasY, arcs, scale)
-  return scale && hit
-    ? {
-        hit,
-        highlight: {
-          d:
-            hit.kind === 'tick'
-              ? arcLineScreenPath(arcs, hit.index, scale)
-              : arcScreenPath(arcs, hit.index, scale),
-          // The arc pass's own clip, on BOTH axes — see `ArcHighlight`. Not
-          // decoration: a far pair's semicircle rises hundreds of px above a
-          // band tens of px tall and runs as far again to either side, and the
-          // renderers cut it at the band and at the block, so an unclipped
-          // highlight traces a curve across the coverage histogram and across
-          // the next region that no arc was ever painted on.
-          clipLeft: scale.clipLeft,
-          clipWidth: scale.screenWidthPx,
-          clipTop: scale.arcsTop,
-          clipHeight: scale.arcsH,
-          // Never thinner than the mark's own ink, so the highlight reads as it
-          // lighting up rather than as a second, finer curve laid beside a
-          // heavy one. One `arcLineWidth` call for both families, since ticks
-          // take their width from support on the same curve the arcs do.
-          lineWidth: arcLineWidth(hit.support, scale.lineWidth),
-        },
-      }
-    : undefined
+  if (!scale) {
+    return undefined
+  }
+  const hit = hitTestArcBand(canvasX, canvasY, arcs, scale)
+  if (!hit) {
+    return undefined
+  }
+  return {
+    hit,
+    highlight: {
+      d:
+        hit.kind === 'tick'
+          ? arcLineScreenPath(arcs, hit.index, scale)
+          : arcScreenPath(arcs, hit.index, scale),
+      // The arc pass's own clip, on BOTH axes — see `ArcBandClip`. Not
+      // decoration: a far pair's semicircle rises hundreds of px above a band
+      // tens of px tall and runs as far again to either side, and the renderers
+      // cut it at the band and at the block, so an unclipped highlight traces a
+      // curve across the coverage histogram and across the next region that no
+      // arc was ever painted on.
+      clip: arcBandClip(scale),
+      // Never thinner than the mark's own ink, so the highlight reads as it
+      // lighting up rather than as a second, finer curve laid beside a heavy
+      // one. One `arcLineWidth` call for both families, since ticks take their
+      // width from support on the same curve the arcs do.
+      lineWidth: arcLineWidth(hit.support, scale.lineWidth),
+    },
+  }
 }

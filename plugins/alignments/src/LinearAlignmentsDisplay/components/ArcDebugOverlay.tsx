@@ -83,11 +83,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
         model.arcsByGroup.get(sec.groupKey)?.get(region.displayedRegionIndex),
         {
           region,
-          band: {
-            arcBandTop: sec.arcBandTop,
-            arcBandHeight: sec.arcBandHeight,
-            arcDown: sec.arcDown,
-          },
+          band: sec,
           scroll: model.scrollModel,
           lineWidth: model.readConnectionsLineWidth,
           arcsYDomainBp: model.arcsYDomainBp,
@@ -119,29 +115,18 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
           <g key={bi}>
             <defs>
               <clipPath id={clipId}>
-                <rect
-                  x={band.clipLeft}
-                  y={band.arcsTop}
-                  width={band.screenWidthPx}
-                  height={band.arcsH}
-                />
+                <rect {...band.clip} />
               </clipPath>
             </defs>
-            <rect
-              className={classes.band}
-              x={band.clipLeft}
-              y={band.arcsTop}
-              width={band.screenWidthPx}
-              height={band.arcsH}
-            />
+            <rect className={classes.band} {...band.clip} />
             {/* Clipped to the same rect the renderers cut the paint to. An
                 unclipped trace over a clipped paint is a disagreement this
                 overlay would report as a finding, having created it. */}
             <g clipPath={`url(#${clipId})`}>
               <line
                 className={classes.ceiling}
-                x1={band.clipLeft}
-                x2={band.clipLeft + band.screenWidthPx}
+                x1={band.clip.x}
+                x2={band.clip.x + band.clip.width}
                 y1={band.legacyCeilingY}
                 y2={band.legacyCeilingY}
               />
@@ -154,7 +139,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
               <g
                 // eslint-disable-next-line @eslint-react/no-array-index-key -- the index IS the identity here: it is the label's row in the stack, as the transform below reads
                 key={`l${i}`}
-                transform={`translate(${band.clipLeft + 6} ${band.arcsTop + 12 + i * 12})`}
+                transform={`translate(${band.clip.x + 6} ${band.clip.y + 12 + i * 12})`}
               >
                 <rect
                   className={classes.labelBg}

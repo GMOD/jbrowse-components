@@ -28,10 +28,7 @@ function renderOverlay(hoveredArcHighlight: ArcHighlight | undefined) {
 // block covers only part of the track.
 const HIGHLIGHT = {
   d: 'M 200 100 A 200 30 0 0 1 600 100',
-  clipLeft: 150,
-  clipWidth: 500,
-  clipTop: 20,
-  clipHeight: 80,
+  clip: { x: 150, y: 20, width: 500, height: 80 },
   lineWidth: 2,
 }
 
@@ -55,8 +52,8 @@ test('the mark is clipped to the arc band, as the arc pass is', () => {
   // curve across the coverage histogram that no arc was painted on.
   const container = renderOverlay(HIGHLIGHT)
   const rect = container.querySelector('clipPath rect')!
-  expect(rect.getAttribute('y')).toBe(String(HIGHLIGHT.clipTop))
-  expect(rect.getAttribute('height')).toBe(String(HIGHLIGHT.clipHeight))
+  expect(rect.getAttribute('y')).toBe(String(HIGHLIGHT.clip.y))
+  expect(rect.getAttribute('height')).toBe(String(HIGHLIGHT.clip.height))
   expect(container.querySelector('path')!.getAttribute('clip-path')).toContain(
     container.querySelector('clipPath')!.id,
   )
@@ -69,8 +66,8 @@ test('and to the block, which the arc pass is also scissored to', () => {
   // (GPU `scissorX`/`scissorW`, Canvas2D `ctx.rect(scissorX, …, scissorW, …)`);
   // a full-width clip let the highlight run on across the next region.
   const rect = renderOverlay(HIGHLIGHT).querySelector('clipPath rect')!
-  expect(rect.getAttribute('x')).toBe(String(HIGHLIGHT.clipLeft))
-  expect(rect.getAttribute('width')).toBe(String(HIGHLIGHT.clipWidth))
+  expect(rect.getAttribute('x')).toBe(String(HIGHLIGHT.clip.x))
+  expect(rect.getAttribute('width')).toBe(String(HIGHLIGHT.clip.width))
 })
 
 test('the overlay never takes the pointer', () => {

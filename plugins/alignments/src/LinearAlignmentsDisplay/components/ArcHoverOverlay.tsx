@@ -44,7 +44,7 @@ const ArcHoverOverlay = observer(function ArcHoverOverlay({
   if (!highlight) {
     return null
   }
-  const { d, clipLeft, clipWidth, clipTop, clipHeight, lineWidth } = highlight
+  const { d, clip, lineWidth } = highlight
   const clipId = `arc-hover-clip-${model.id}`
   return (
     <svg className={classes.svg} height={model.height}>
@@ -54,12 +54,7 @@ const ArcHoverOverlay = observer(function ArcHoverOverlay({
               arc pass to. Was `x=0 width="100%"`, which clipped the half of a
               far arc that leaves through the band ceiling and let through the
               half that leaves through the block's side. */}
-          <rect
-            x={clipLeft}
-            y={clipTop}
-            width={clipWidth}
-            height={clipHeight}
-          />
+          <rect {...clip} />
         </clipPath>
       </defs>
       <path

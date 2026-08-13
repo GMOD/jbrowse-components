@@ -180,8 +180,8 @@ describe('a band of ticks and no arcs', () => {
     // same two edges, so the mark is that line and not a curve.
     const highlight = resolveArcBandHover(400, 50, TICKS, OPTS)?.highlight
     expect(highlight?.d).toBe('M 400 0 L 400 100')
-    expect(highlight?.clipTop).toBe(0)
-    expect(highlight?.clipHeight).toBe(100)
+    expect(highlight?.clip.y).toBe(0)
+    expect(highlight?.clip.height).toBe(100)
   })
 
   test('the highlight is at least as wide as the ink it covers', () => {
