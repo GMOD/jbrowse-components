@@ -792,6 +792,18 @@ the assembly from a `chrom.sizes` file (two tab-separated columns,
 `name<TAB>length`), skipping the multi-GB sequence a genome-wide dotplot never
 draws.
 
+So the flags alternate, and each one's position is what it means:
+
+```
+--chromSizes a.chrom.sizes    assembly 1, the top row
+--paf        a_vs_b.paf       the ribbon between rows 1 and 2
+--chromSizes b.chrom.sizes    assembly 2
+--paf        b_vs_c.paf       the ribbon between rows 2 and 3
+--chromSizes c.chrom.sizes    assembly 3, the bottom row
+```
+
+which as a command is:
+
 ```bash
 jb2export synteny \
   --chromSizes a.chrom.sizes \
