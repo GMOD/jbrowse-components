@@ -21,8 +21,8 @@ those tracks is a checkbox away, with nothing to download, index or configure.
 ## Opening a genome
 
 [genomes.jbrowse.org](https://genomes.jbrowse.org) indexes every UCSC database
-plus the GenArk assemblies. The front page lists the handful most people want,
-with a link to each one in JBrowse and the matching page at UCSC.
+plus the GenArk assemblies, each with a link into JBrowse and one to its page at
+UCSC.
 
 <Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes; the GenArk half below it is the bulk catalog, split by clade and by project." />
 
@@ -52,9 +52,7 @@ ships a name index, so gene symbols resolve with no setup, and coordinates like
 
 RefSeq All draws each transcript on its own row, and TP53 has more of them than
 the track's height shows, so the rest are behind the track's own scrollbar. The
-isoform control at the bottom right of the track collapses them, and is worth
-knowing about early because a gene with this many transcripts is otherwise most
-of the window.
+isoform control at the bottom right of the track collapses them.
 
 ## Finding a track
 
@@ -65,9 +63,8 @@ alignment**, which sits under Comparative Genomics.
 
 <Figure src="/img/genomes_basics/turn_on_phylop.png" caption="Left: Filter tracks narrowed to phyloP, which leaves the Comparative Genomics rows. Right: the same drawer after the checkbox, with the track drawn under the genes." />
 
-The names are UCSC's, so a track you know from the UCSC browser is findable
-under the label it has there, and nothing about the checkbox is particular to a
-signal file.
+The names are UCSC's, so a track known from the UCSC browser is findable under
+the label it has there.
 
 ## Reading it
 
@@ -77,11 +74,9 @@ line changes more slowly than neutral, red below it faster.
 
 <Figure src="/img/genomes_basics/phylop_tp53.png" caption="The RefSeq transcripts over the TP53 body with phyloP under them, both as they open. The tall peaks sit under the columns where the coding exons (yellow) stack up, including the lone exon out in the middle of the intron. The wide 3' UTR block at the left is an exon too, and carries nothing like them." />
 
-The peaks are the width of the coding exons rather than of the gene, and the
-control sits in the same frame twice: the introns between them drop to the
-pivot, and the widest exon in the view is the 3' UTR block at the left end,
-which carries none of the tall peaks. Conservation here tracks the protein, not
-the transcript.
+The peaks are the width of the coding exons rather than of the gene: the introns
+between them drop to the pivot, and the 3' UTR block at the left end is an exon
+carrying none of them.
 
 ## Checking it against the raw data
 
@@ -89,20 +84,17 @@ At gene zoom a per-base score and a smoothed band are the same picture, so zoom
 in until the sequence appears. The exon below is in the DNA binding domain and
 covers R248 and R249, two of the codons most often mutated in human cancer.
 
-Two more clicks make it readable, both covered above: tick **Reference
-sequence**, which is off by default, and set the gene track's isoform control to
-**Longest coding transcript** so the codon row is drawn once rather than once
-per transcript.
+Two more clicks make it readable: tick **Reference sequence**, which is off by
+default, and set the gene track's isoform control to **Longest coding
+transcript**, so the codon row is drawn once.
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, open. It carries the same Auto, All transcripts and Longest coding transcript options as the track menu's Gene glyph radio." />
 
 <Figure src="/img/genomes_basics/phylop_bases.png" caption="One coding exon of TP53 at base zoom: the gene collapsed to one transcript with its residue labels, phyloP under it, and the reference sequence with its translation below that. The signal is one bar per base, and within each codon the third base is the short one. The few bars that go red are third positions." />
 
-The bars are one per base and are not equal within a codon: the third base is
-short and the first two carry the height, which is the signature of constraint
-on the protein rather than on the DNA, since most third-position changes leave
-the amino acid alone. The handful of bars that go red here are third positions
-too. Hovering a bar reads back its score.
+Within a codon the third base is the short one: most third-position changes
+leave the amino acid alone, so the constraint is on the protein rather than on
+the DNA. Hovering a bar reads back its score.
 
 ## The alignment the score came from
 
@@ -114,48 +106,40 @@ Genomics: **Multiz Alignments - 470-way Mammal Alignment (Hiller lab)** and
 
 <Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: the gene collapsed to one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from, one row per species down the tree. A base is drawn only where it differs from human. The column under S240 keeps a positive score; T256 and G244 are where it goes red." />
 
-Each row is one species, ordered by the tree drawn at the left, and a base is
-only drawn where it differs from human. Most columns are therefore blank, which
-is what a positive score is made of.
+Most columns are blank, which is what a positive score is made of. The ones that
+are not do not score the way their density suggests. Under S240 nearly every
+species differs from human, but they all carry the **same** base, and the score
+stays above the line: that is one substitution on the human branch, however many
+rows show it. Under T256 and G244 fewer rows differ and the ones that do
+disagree with each other too, and those are the columns where the score goes
+red. phyloP counts substitution events on the tree, not rows that differ from
+the reference.
 
-The columns that are not blank come in two kinds, and they do not score the way
-their density suggests. Under S240 nearly every species carries a base that
-differs from human, but they all carry the **same** one, and the score there
-stays above the line. That pattern is what a single substitution on the human
-branch looks like, however many rows show it. Under T256 and G244 far fewer rows
-differ, but the ones that do disagree with each other as well as with human, and
-those are the two columns where the score goes red. What phyloP counts is
-substitution events on the tree, not rows that differ from the reference.
-
-This track only opens at this zoom. Its whole-genome file is read by byte range
-like the phyloP one, but a MAF block carries a row per species, so the estimate
-crosses the too-much-data limit within a few kb and a gene-wide view asks you to
-confirm before fetching. Zoomed further out it swaps to a precomputed summary
-and draws a conservation bar per species instead of bases.
+This track only opens at this zoom. A MAF block carries a row per species, so
+the byte estimate crosses the too-much-data limit within a few kb and a
+gene-wide view asks you to confirm before fetching. Zoomed further out it swaps
+to a precomputed summary and draws a conservation bar per species instead of
+bases.
 
 ## The regulatory end of the same gene
 
-Conservation is one category of about a dozen, and the rest of this page is the
-same two clicks on the others, at the same gene. Start at the promoter, which
-for _TP53_ is at the high-coordinate end because the gene is on the minus
-strand. Four Regulation tracks put a picture there: **CpG Islands**, **ENCODE
-cCREs - ENCODE4 cCREs**, **Layered H3K4Me3 (hg19)** and **Layered H3K27Ac
-(hg19)**, plus **EPDnew Promoters - EPDnew v6** from Expression.
+Conservation is one category of about a dozen, and the others are the same two
+clicks. Start at the promoter, which for _TP53_ is at the high-coordinate end
+because the gene is on the minus strand. Four Regulation tracks put a picture
+there: **CpG Islands**, **ENCODE cCREs - ENCODE4 cCREs**, **Layered H3K4Me3
+(hg19)** and **Layered H3K27Ac (hg19)**, plus **EPDnew Promoters - EPDnew v6**
+from Expression.
 
-The two histone tracks each hold seven cell lines. They open drawn over one
-another, which is what UCSC calls layered and what their names say; the track
-menu's **Plot type → Multi-row → XY plot** gives each cell line a row of its own
-instead, which is how they are drawn below. Their names carry hg19 because that
-is the assembly ENCODE3 released them on, and the files the hg38 config points
-at are the hg38 ones.
+The two histone tracks each hold seven cell lines, drawn over one another as
+they open. The track menu's **Plot type → Multi-row → XY plot** gives each cell
+line a row of its own, which is how they are drawn below. Their names carry hg19
+because that is the assembly ENCODE3 released them on; the files this config
+points at are the hg38 ones.
 
-<Figure src="/img/genomes_basics/promoter_regulation.png" caption="The promoter end of TP53, with WRAP53 running the other way out of the same interval: CpG islands, ENCODE cCREs coloured by class, then H3K4me3 and H3K27ac as one row per cell line, over EPDnew's promoter calls." />
+<Figure src="/img/genomes_basics/promoter_regulation.png" caption="The promoter end of TP53: CpG islands, ENCODE cCREs coloured by class, then H3K4me3 and H3K27ac as one row per cell line, over EPDnew's promoter calls." />
 
 H3K4me3 marks a promoter and H3K27ac marks an active one, so a cell line with
-both is transcribing here. Every one of the seven carries both, which is what a
-housekeeping-level promoter looks like. EPDnew names a promoter for _TP53_ and
-several for _WRAP53_, which starts transcribing the other way out of the same
-place.
+both is transcribing here. All seven carry both.
 
 ## Four readings of one exon
 
@@ -170,9 +154,7 @@ base: a column is a position, a row is what it would become.
 AlphaMissense cells are empty where the substitution leaves the residue alone; a
 column tall in all four rows is a position where no substitution is predicted to
 be tolerated. Most columns in this exon are, phyloP is high over the same bases,
-and pathogenic is the commonest ClinVar classification here. The three are
-independent: a prediction from the protein, a measurement across species, and
-submitted clinical classifications.
+and pathogenic is the commonest ClinVar classification here.
 
 The fourth reading needs the whole transcript. **gnomAD v4.1 - gnomAD v4.1
 Exomes** under Variation and Repeats opens as several thousand records over the
@@ -189,20 +171,18 @@ instead, so the legend can say which group is which.
 <Figure src="/img/genomes_basics/gnomad_filters.png" caption="The TP53 transcript with phyloP and gnomAD exomes, filtered three ways. Top: every record. Middle: variants above 0.1 percent, coloured by the ancestry group carrying each at its highest frequency. Bottom: the variants gnomAD calls predicted loss of function." />
 
 Unfiltered, gnomAD is densest where phyloP peaks, since that is what an exome
-captures. Filtered to the common variants, few remain in coding sequence; the
-rest are intronic or in the 3' UTR, and all six groups gnomAD reports a maximum
-for occur across this one gene. Filtered to predicted loss of function, the
-track fills the coding exons again, and those variants are near enough all
-singletons: the two filters select opposite populations out of one file.
+captures. Filtered to the common variants, few remain in coding sequence and the
+rest are intronic or in the 3' UTR. Filtered to predicted loss of function, the
+track fills the coding exons again.
 
 ClinVar takes the same treatment on its own classification column, `clinSign`,
 which leaves the records called pathogenic. Clicking one reads it back.
 
 <Figure src="/img/genomes_basics/variant_details.png" caption="ClinVar filtered to the pathogenic classes, with one variant clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
 
-A BigBed's extra fields arrive as fields, so nothing about this panel is
-particular to ClinVar: whatever columns the published file carries are what a
-click gives back, and are what there is to filter and colour on.
+A BigBed's extra fields arrive as fields: whatever columns the published file
+carries are what a click gives back, and are what there is to filter and colour
+on.
 
 ## Where the protein binds
 
@@ -221,10 +201,9 @@ ENCODE4 cCREs**, **Layered H3K4Me3 (hg19)** and **Layered H3K27Ac (hg19)**.
 Six positions match the motif well enough to be called, spread across the
 upstream region. The signal tracks are low over the upstream half and rise from
 the shaded pair toward the gene. Each of those two falls inside a cCRE, one
-classified a promoter and one a proximal enhancer, about 2.3 kb and 1.4 kb
-upstream of the canonical transcription start site, which is where the response
-elements for p21 were described. The other four have the motif and no signal
-under it, as expected for matches to a ten-base pattern.
+classified a promoter and one a proximal enhancer, and they are where the
+response elements for p21 were described. The other four have the motif and no
+signal under it.
 
 **PANDAR** and **DINOL**, drawn by the same RefSeq track, are p53-induced
 lncRNAs transcribed from the same region.
@@ -265,9 +244,9 @@ The phyloP file covers the whole genome and only the blocks under the current
 view are fetched, which is why a genome-wide signal track opens at gene zoom
 without downloading it.
 
-The URL is the file itself, so anything else that reads a BigWig by range takes
-it as it stands. In R that is `rtracklayer`, which reads the same bytes over the
-same range into a `GRanges` for a figure of your own:
+The URL is the file itself, so anything that reads a BigWig by range can take
+it. In R that is `rtracklayer`, which reads the same bytes over the same range
+into a `GRanges` for a figure of your own:
 
 ```r
 library(rtracklayer)
@@ -277,8 +256,7 @@ scores <- import(
 )
 ```
 
-The BigBeds behind the variant and annotation tracks come back the same way, so
-a track read here is a track a script can go on to use.
+The BigBeds behind the variant and annotation tracks read the same way.
 
 ## Trying another genome
 
@@ -299,14 +277,11 @@ The gene is the same gene and the track set is the familiar one. The span is
 not: the axolotl genome is large and repeat-rich, and RepeatMasker under the
 introns is where that shows.
 
-Both tracks under the gene carry a setting from their own track menus.
-RepeatMasker is one lane per repeat class, through **Display types → Multi-row
-feature display (painting)**, which is the subject of
-[](/docs/tutorials/repeatmasker_classes); in the single packed lane it opens
-with, the classes are interleaved and a window this repeat-rich reads as one
-field of blocks. GC percent is on **Score → Summary score mode → Average**, and
-on the 30 to 70 percent bounds UCSC's own trackDb asks for, through **Score →
-Set min/max score...**.
+Both tracks under the gene carry a setting from their track menus. RepeatMasker
+is one lane per repeat class, through **Display types → Multi-row feature
+display (painting)**, the subject of [](/docs/tutorials/repeatmasker_classes).
+GC percent is on **Score → Summary score mode → Average** and the 30 to 70
+bounds UCSC's own trackDb asks for, through **Score → Set min/max score...**.
 
 ## See also
 
