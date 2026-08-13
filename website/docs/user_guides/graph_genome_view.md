@@ -164,9 +164,7 @@ selection)** does the same for a window you choose, with no track menu involved.
 
 Each line in the launched graph is one graph link, drawn when both of its
 endpoints are inside the cut, so an allele near the window's edge draws only the
-link that stays inside it. That direction is the right-hand half of the
-[round-trip figure](#from-a-node-back-to-a-genome) below; the left-hand half is
-the same journey the other way.
+link that stays inside it.
 
 ## Route 2: a GFA file
 
@@ -186,19 +184,16 @@ menu → Settings → Reference path**. `odgi extract` writes the window into th
 path name (`K12#1#chr:1004500-1004961`), which is where the offsets come from; a
 whole-genome path simply starts at zero.
 
-Anchoring on paths is also what answers "which samples go through this node".
-The `P` and `W` lines state every traversal, so each node knows its visitors and
-**Node details** lists them under `carriedBy`. A true rGFA has no traversals to
-read: `carriedBy` is empty there and the panel reports `contributingAssembly`,
-the one assembly `SN` credits the segment to. That is the file rather than the
-view, and it is why the two formats answer different questions about the same
-graph.
+Anchoring on paths is also what answers which samples go through a node. The `P`
+and `W` lines state every traversal, so **Node details** lists them under
+`carriedBy`. A true rGFA has no traversals to read: `carriedBy` is empty there
+and the panel reports `contributingAssembly`, the one assembly `SN` credits the
+segment to.
 
 Route 1 gets the same answer without the file, as long as the index came from a
 plain GFA: `build_pggb_tabix.sh` does the traversal walk offline and writes each
-segment's carriers into the index as `SM:Z:`, which the view reads back into
-`carriedBy` exactly as if it had walked the paths itself. So the split is by
-format rather than by route, and only a minigraph rGFA is without it.
+segment's carriers into the index as `SM:Z:`. So the split is by format rather
+than by route, and only a minigraph rGFA is without it.
 
 **Sample rows** is a row per contributing assembly rather than a drawing of that
 whole set: a node is drawn once, on the row of the first path that reaches it,
@@ -231,42 +226,36 @@ the axes mean:
 | Sample rows               | reference bp   | one row per assembly    |
 | **Force-directed layout** | nothing (FMMM) | nothing                 |
 
-Force-directed is the default, and the one most of these figures use: an
-anchored drawing flattens both routes through a locus onto the reference axis,
-so an allele reads as a stub hanging under a line rather than as the other side
-of a bubble. The anchored modes are one dropdown click away, and the figures
-that take them are the ones about the axis itself.
+Force-directed is the default: an anchored drawing flattens both routes through
+a locus onto the reference axis, so an allele reads as a stub hanging under a
+line rather than as the other side of a bubble.
 
 Both reference-anchored modes need a backbone, from rGFA tags or from a
-reference path. Only a graph with neither leaves them greyed out, and there
-force-directed is the honest picture: the classic Bandage one, where alternate
-alleles fall out as bubbles rather than as rows (the
+reference path, and a graph with neither leaves them greyed out. There
+force-directed is the only picture available: the classic Bandage one, where
+alternate alleles fall out as bubbles rather than as rows (the
 [MHC figure](/docs/tutorials/pangenome_hprc#open-a-locus-as-a-graph) shows it
 beside a linear view).
 
 **Rank** is minigraph's `SR` tag and it counts build order: 0 is the first
 assembly on the command line, 1 is sequence first added with the second, and so
-on. So a high-rank segment is sequence none of the earlier assemblies had, and
-only rank 0 has reference coordinates, which is why it is the only rank a linear
-view of the reference can show, and why the figure at the top of this page has
-fewer blocks above than the graph has nodes below.
+on. A high-rank segment is sequence none of the earlier assemblies had, and only
+rank 0 has reference coordinates, which is why it is the only rank a linear view
+of the reference can show.
 
-Rank is a property of how the graph was built, not of any genome: at a dense
-locus one rank holds alleles from many haplotypes, so a rank row means nothing
-biological. **Sample rows** rows by the assembly each allele came from instead,
-so reading across a row says what that strain does to the reference.
-
-In **Sample rows** the top row is the K12 backbone, carrying each segment's
-length, and every row under it is one strain whose charcoal marks are the
-segments it takes instead, tied by grey threads to where they attach.
+Rank is a property of how the graph was built rather than of any genome: at a
+dense locus one rank holds alleles from many haplotypes, so a rank row means
+nothing biological. **Sample rows** rows by the assembly each allele came from
+instead, so reading across a row says what that strain does to the reference,
+with the backbone on top and each strain's charcoal marks under it, tied by grey
+threads to where they attach.
 
 <Figure caption="460 bp of the pggb graph drawn twice, under the genes, MAF and segments lanes for the same window. Left, Sample rows. Right, the same nodes force-directed, where the locus reads as a shape rather than as rows." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
-What "came from" means depends on the format, and it is the one place the two
-formats say genuinely different things. On rGFA it is the strain that _first
-contributed_ the sequence, because `SR` is build order and nothing in the file
-records who else carries it. On a path GFA every path that visits a segment is
-stated outright, so a row is carriage and the node popup lists the rest.
+What "came from" means depends on the format. On rGFA it is the strain that
+_first contributed_ the sequence, because `SR` is build order and nothing in the
+file records who else carries it. On a path GFA every path that visits a segment
+is stated outright, so a row is carriage and the node popup lists the rest.
 
 Both anchored layouts draw an allele across **the reference it replaces, never
 its own sequence length**: an insertion consumes no reference, so it draws as a
@@ -278,9 +267,7 @@ mark where it attaches, with its size in the tooltip.
 drawn length in the force layout (the anchored layouts place a node from its
 coordinates, so it does nothing there). The engine comes from Bandage, whose
 graphs are assembled contigs of kb to Mb, so it maps length linearly with a tiny
-floor: a pangenome allele of a few bases clamps to a stub, both arms of a bubble
-land inside one node thickness of each other, and the window draws as a single
-thread.
+floor and a pangenome allele of a few bases clamps to a stub.
 
 Two instruments fix that, and they are alternatives rather than a stack:
 
@@ -306,13 +293,10 @@ rather than as the one event it is. A hop closes those, costing a query per
 off-reference segment already reached. **None** shows what the region query
 alone reaches.
 
-Both halves below share their genes and segments lane, and colour each node the
-same way, so a segment can be found in either. The long green block is the
-island; the blue and orange boxes are the two nodes where one CFT073 detour
-leaves the backbone and rejoins it. A hop is one step, so the right half stops
-with a loose end of its own, and the node and edge counts in the header rise to
-match what it reached. It expands only over off-reference segments, so it does
-not drag in the backbone either side of the window.
+Both halves below share their genes and segments lane and colour each node the
+same way, so a segment can be found in either. A hop is one step, so the right
+half stops with a loose end of its own. It expands only over off-reference
+segments, so it does not drag in the backbone either side of the window.
 
 <Figure caption="The paa island cut from the same segments track twice, each under the linear view it was made from. Left, at Graph context None, the two boxed nodes end in mid-air. Right, at 1 hop, the red arrow marks the interior the extra queries found, closing them into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
@@ -389,12 +373,9 @@ aligns straight through it.
 
 <Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies in the linear view above, across every track there. The node is a non-reference insertion: that interval is the 2 kb of K12 between the segments the allele leaves and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
 
-The same event drawn as an alignment rather than as a graph is a synteny gap,
-and it is worth drawing because it is separate evidence: the graph's claim comes
-out of its own segment and link indexes, and the alignment below comes out of a
-whole-genome alignment the graph had no part in. Two panels at two scales, each
-window running from one flanking chain to the other, so the flanks align ribbon
-to ribbon at both edges and nothing at all sits between them.
+The same event drawn as an alignment is separate evidence: the graph's claim
+comes out of its own segment and link indexes, and the alignment below out of a
+whole-genome alignment the graph had no part in.
 
 <Figure caption="The same insertion as an alignment, K12 above and CFT073 below, each panel at its own scale. The flanking chains align ribbon to ribbon at both frame edges, and everything CFT073 carries between them lands on nothing." src="/img/pangenome/rgfa_insertion_synteny.png" />
 
@@ -431,23 +412,16 @@ Taking the other entry answers a different question. K12's `asnW`/`asnU`/`asnV`
 tRNA genes are the sites E. coli pathogenicity islands integrate at, and in that
 window the graph gives CFT073 tens of kilobases the reference does not have.
 Clicking that strain's entry opens the sequence on CFT073's own coordinates,
-where its gene track names it: `clbA` to `clbS`, the colibactin island.
+where its gene track names it: `clbA` to `clbS`, the colibactin island. No
+alignment is consulted; the launched coordinates come from the segments' own
+`SN`/`SO` tags.
 
-The colors in the left half below are **Stable rank**, so the labeled orange arm
-is the segment only CFT073 carries and the blue is backbone it shares with K12.
-That arm is `CFT073#1#chr:2,258,597` plus 58,610 bp, against the 64,668 bp
-window the menu row and the launched view's header both show, so the launch is
-very nearly the arm and the rest of it is shared backbone. No alignment is
-consulted, the launched coordinates come from the segments' own `SN`/`SO` tags.
-
-The two halves are the same journey in opposite directions, which is why they
-are one figure. Left, a graph launching a linear view; right, a linear view
-launching a graph — the right-click on segment `s1277` from
+The two halves of the figure are the same journey in opposite directions: left,
+a graph launching a linear view; right, a linear view launching a graph, the
+right-click on segment `s1277` from
 [Route 1](#route-1-a-graph-track-browsable-by-locus) above. Their colorings
-differ because the questions do: stable rank on the left says _whose_ sequence
-an arm is, while the reference-position ramp on the right says _where_ each
-segment sits, which is also what the lane above it is painted with, so a segment
-is the same hue in the lane and in the graph it launches.
+differ because the questions do: stable rank says _whose_ sequence an arm is,
+while the reference-position ramp says _where_ each segment sits.
 
 <Figure caption="The round trip between the two views. Left: the graph at K12's tRNA cluster with the CFT073 entry boxed, above the view that entry launches. Right: a right-click on segment s1277 in a linear view, above the subgraph it cuts." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
 
