@@ -125,6 +125,16 @@ way.
 
 ## The conversion
 
+OrthoFinder takes a directory of proteomes, one FASTA per genome, and `-og`
+stops it after the orthogroups, which is all this table needs:
+
+```bash
+orthofinder -f proteomes -og -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
+```
+
+It writes `proteomes/OrthoFinder/Results_<date>/Orthogroups/Orthogroups.tsv`,
+naming the directory for the day it ran.
+
 `Orthogroups.tsv` is already one row per orthogroup and one column per genome.
 It needs the header row and the leading `Orthogroup` id column dropped, each
 cell reduced to a gene id, and an empty cell marked `.`:

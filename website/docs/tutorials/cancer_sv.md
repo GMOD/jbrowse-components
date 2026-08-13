@@ -48,6 +48,23 @@ chromosome. It covers the transcript side: PacBio Iso-Seq from
 segments from [DepMap](https://depmap.org/portal/), which publishes the same
 pipeline output for roughly 1900 cell lines.
 
+Its DNA breakpoints come from ENCODE on hg19, and lifting a BND callset is the
+one step here that fails quietly. A breakend record carries a second coordinate
+inside its `ALT` string, so a plain `liftOver` of the `POS` column produces a
+valid VCF whose partner coordinates still point at hg19.
+[`lift_bnd_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/lift_bnd_vcf.py)
+moves both:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/lift_bnd_vcf.py
+python3 lift_bnd_vcf.py calls.hg19.vcf.gz hg19ToHg38.over.chain.gz \
+  ./liftOver calls.hg38.vcf liftwork
+bgzip calls.hg38.vcf && tabix -p vcf calls.hg38.vcf.gz
+```
+
+Its five arguments are the input VCF, the chain, the `liftOver` binary, the
+output VCF and a scratch directory.
+
 ## Multi-hop fusions
 
 Fusion callers generally look for one junction joining two genes. Two genes can
