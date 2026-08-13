@@ -202,6 +202,12 @@ export interface CommonSpecFields extends BaseSpecFields {
 export interface SessionUrlSpec extends CommonSpecFields {
   mode: 'url'
   url: string // full query string starting with '?' or a full URL
+  // what the figure's live link is called, when "Open this view in JBrowse" is
+  // not what clicking it does. Only an absolute-url spec can need this: a
+  // session spec always opens a view, but a capture of a plain web page (the
+  // genomes.jbrowse.org catalog pages) opens a page, and the default label
+  // would be a false statement about where the link goes.
+  liveLabel?: string
   readyText?: string // text to wait for before settle
   readySelector?: string // CSS selector to wait for before settle
   readyTimeout?: number // ms override for the ready wait (default 30000)

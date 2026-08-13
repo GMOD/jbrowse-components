@@ -18,13 +18,13 @@ import { alignmentsSpecs } from './specs/alignments.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
 import { cancerSvSpecs } from './specs/cancer_sv.ts'
 import { cnv1000gSpecs } from './specs/cnv1000g.ts'
-import { conservationSpecs } from './specs/conservation.ts'
 import { cookbookSpecs } from './specs/cookbook.ts'
 import { dog10kSpecs } from './specs/dog10k.ts'
 import { dtuSpecs } from './specs/dtu.ts'
 import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
+import { genomesBasicsSpecs } from './specs/genomes_basics.ts'
 // the pangenome graph figures, split by organism — see specs/graph-fixtures.ts
 import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
 import { hprcGraphSpecs } from './specs/graph-hprc.ts'
@@ -62,7 +62,7 @@ export const specs: ScreenshotSpec[] = [
   ...variantsSpecs,
   ...dtuSpecs,
   ...bigwigSpecs,
-  ...conservationSpecs,
+  ...genomesBasicsSpecs,
   ...featuresSpecs,
   ...uiSpecs,
   ...methylationSpecs,
@@ -124,6 +124,17 @@ export const screenshotLiveUrls: Record<string, string> = Object.fromEntries(
     const url = specLiveUrl(spec)
     return url ? [[spec.name, url] as const] : []
   }),
+)
+
+// screenshot name -> what to call its live link, for the specs whose link opens
+// something other than a JBrowse view (see SessionUrlSpec.liveLabel). Only the
+// overrides are here; the Figure macro's own default covers everything else.
+export const screenshotLiveLabels: Record<string, string> = Object.fromEntries(
+  specs.flatMap(spec =>
+    spec.mode === 'url' && spec.liveLabel
+      ? [[spec.name, spec.liveLabel] as const]
+      : [],
+  ),
 )
 
 // Specs whose live session is genuinely slow to open — a heavy remote fetch

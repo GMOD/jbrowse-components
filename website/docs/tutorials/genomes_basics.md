@@ -1,8 +1,8 @@
 ---
 title: Basic usage of genomes.jbrowse.org
 description:
-  Open a hosted genome, search a gene, and turn on a track from the UCSC
-  catalog, worked on hg38 phyloP conservation over TP53
+  Open a hosted genome, search a gene, and work through the UCSC track catalog
+  on hg38 at TP53, from phyloP conservation to pangenome genotypes
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 data: hosted
@@ -21,16 +21,37 @@ those tracks is a checkbox away, with nothing to download, index or configure.
 
 [genomes.jbrowse.org](https://genomes.jbrowse.org) indexes every UCSC database
 plus the GenArk assemblies. The front page lists the handful most people want,
-[/ucsc](https://genomes.jbrowse.org/ucsc) lists the UCSC databases in full, and
-the search box in the header takes a common name, a species, an assembly name or
-an accession and covers all of them at once. Picking one loads a JBrowse
-instance at a plain URL, so wherever you end up is shareable as a link.
+with a link to each one in JBrowse and the matching page at UCSC.
 
-Open hg38 and type `TP53` into the location box. The hosted config ships a name
-index, so gene symbols resolve with no setup, and coordinates like
-`chr17:7,668,400-7,687,550` work anywhere a symbol does. The view arrives with
-**NCBI RefSeq - RefSeq All** on, which stacks every transcript of a gene; the
-isoform control at the bottom right of the track collapses them.
+<Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes; the GenArk half below it is the bulk catalog, split by clade and by project." />
+
+[/ucsc](https://genomes.jbrowse.org/ucsc) is the same thing without the
+shortlist: every UCSC database, with a filter box over the names, species and
+descriptions.
+
+<Figure src="/img/genomes_basics/site_ucsc_list.png" caption="The full UCSC database listing. Each row opens the same kind of JBrowse instance the front page links to." />
+
+The search box in the header takes a common name, a species, an assembly name or
+an accession, and covers both catalogs at once.
+
+<Figure src="/img/genomes_basics/site_search.png" caption="The header search box, mid-query. The dropdown mixes UCSC database names with GenArk accessions, since both catalogs are in the one index." />
+
+Picking one loads a JBrowse instance at a plain URL, so wherever you end up is
+shareable as a link.
+
+## Searching for a gene
+
+Open hg38. It arrives at its own default locus with **NCBI RefSeq - RefSeq All**
+on and the track selector already showing, which is where the next section
+starts. The hosted config ships a name index, so gene symbols resolve with no
+setup, and coordinates like `chr17:7,668,400-7,687,550` work anywhere a symbol
+does.
+
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view after TP53 goes into the location box, with RefSeq All stacking every transcript of the gene." />
+
+RefSeq All draws each transcript on its own row. The isoform control at the
+bottom right of the track collapses them, and is worth knowing about early
+because a gene with this many transcripts is otherwise most of the window.
 
 ## Finding a track
 
@@ -38,6 +59,8 @@ Open the track selector at the top left. The drawer lists the catalog under
 UCSC's own categories, and **Filter tracks** searches all of them at once. Type
 `phyloP` and tick **Basewise Conservation (phyloP) - 100-way vertebrate
 alignment**, which sits under Comparative Genomics.
+
+<Figure src="/img/genomes_basics/turn_on_phylop.png" caption="Left: Filter tracks narrowed to phyloP, which leaves the Comparative Genomics rows. Right: the same drawer after the checkbox, with the track drawn under the genes." />
 
 The names are UCSC's, so a track you know from the UCSC browser is findable
 under the label it has there, and nothing about the checkbox is particular to a
@@ -67,6 +90,8 @@ Two more clicks make it readable, both covered above: tick **Reference
 sequence**, which is off by default, and set the gene track's isoform control to
 **Longest coding transcript** so the codon row is drawn once rather than once
 per transcript.
+
+<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, open. It carries the same Auto, All transcripts and Longest coding transcript options as the track menu's Gene glyph radio." />
 
 <Figure src="/img/genomes_basics/phylop_bases.png" caption="One coding exon of TP53 at base zoom: the gene collapsed to one transcript with its residue labels, phyloP under it, and the reference sequence with its translation below that. The signal is one bar per base, and within each codon the third base is the short one. The few bars that go red are third positions." />
 
@@ -105,19 +130,88 @@ crosses the too-much-data limit within a few kb and a gene-wide view asks you to
 confirm before fetching. Zoomed further out it swaps to a precomputed summary
 and draws a conservation bar per species instead of bases.
 
+## The regulatory end of the same gene
+
+Conservation is one category of about a dozen, and the rest of this page is the
+same two clicks on the others, at the same gene. Start at the promoter, which
+for _TP53_ is at the high-coordinate end because the gene is on the minus
+strand. Four Regulation tracks put a picture there: **CpG Islands**, **ENCODE
+cCREs - ENCODE4 cCREs**, **DNase (Layered)** and **H3K27ac (Layered)**, plus
+**EPDnew Promoters - EPDnew v6** from Expression.
+
+<Figure src="/img/genomes_basics/promoter_regulation.png" caption="The promoter end of TP53, with WRAP53 running the other way out of the same interval: CpG islands, ENCODE cCREs coloured by class, and the layered DNase and H3K27ac signal, one colour per tissue, over EPDnew's promoter calls." />
+
+The two layered tracks are each one track holding dozens of tissue subtracks
+drawn over one another, which is how UCSC publishes them. Open chromatin and the
+active-promoter mark both peak where the cCREs are called promoters rather than
+enhancers, and the neighbouring gene _WRAP53_ starts transcribing the other way
+out of the same interval.
+
+## What a substitution would do
+
+phyloP says which bases have not changed. AlphaMissense, under Phenotypes,
+Variants, and Literature, says what would happen if they did: it scores every
+possible single-base substitution for the effect of the amino acid change it
+causes. The track is four subtracks, one per substituted base, so a column is a
+position and a row is what that position would become.
+
+<Figure src="/img/genomes_basics/alphamissense_exon.png" caption="The same DNA binding domain exon: AlphaMissense in four rows, one per substituted base, over phyloP and the reference sequence with its translation. The empty cells in each row are the positions already carrying that base." />
+
+The two tracks agree where they should and for a reason worth reading off the
+frame: the third base of each codon dips in both, since a third-position change
+usually leaves the amino acid alone and there is nothing for either method to
+score. The gap in each AlphaMissense row is the position that already carries
+that base.
+
+## Clinical and population variation
+
+The same locus, from three more catalogs: **ClinVar Variants - ClinVar SNVs**
+under Phenotypes, Variants, and Literature, and **gnomAD v4.1 - gnomAD v4.1
+Exomes** and **gnomAD - gnomAD Mut Constraint** under Variation and Repeats.
+
+<Figure src="/img/genomes_basics/clinvar_gnomad.png" caption="ClinVar SNVs, gnomAD v4.1 exome variants and gnomAD's mutational constraint over the TP53 transcript, with the gene collapsed above them. ClinVar colours each variant by clinical significance." />
+
+Both variant sets pile up on the coding exons, and for different reasons:
+ClinVar's records are there because that is where the submitted variants were
+looked for, gnomAD's exome callset because that is where the exome capture
+reads. The colours are the part that separates them, and clicking a variant is
+how to read one.
+
+<Figure src="/img/genomes_basics/variant_details.png" caption="A ClinVar variant clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
+
+A BigBed's extra fields arrive as fields, so nothing about this panel is
+particular to ClinVar: whatever columns the published file carries are what a
+click gives back.
+
+## A pangenome panel
+
+Under Variation and Repeats, **Human Pangenome (HPRC)** holds the pangenome
+callset for the same coordinates: variants called from assembled haplotypes
+rather than from reads mapped to the reference. Its default display is one
+allele-frequency band; the track menu's display types include a per-sample one,
+which draws a row per haplotype.
+
+<Figure src="/img/genomes_basics/hprc_pangenome.png" caption="The HPRC pangenome callset over TP53 as a genotype matrix, one row per haplotype and one column per variant, drawn at each variant's real position. The legend names the genotype colours." />
+
+A column that runs the full height is a variant most haplotypes carry, which is
+to say a place the reference is the unusual sequence. The scattered single cells
+are the opposite.
+
 ## Other tracks, same two clicks
 
-Nothing above was specific to conservation. Some others worth opening, with the
-category each one filters out of:
+Nothing above was specific to conservation, regulation or variation. Some others
+worth opening, with the category each one filters out of:
 
 - **Conserved Elements - 100 Vert. El** (Comparative Genomics) is the interval
-  companion to this track. phyloP scores each base, phastCons calls the runs.
-- **ENCODE cCREs - ENCODE4 cCREs** (Regulation) puts candidate regulatory
-  elements under the promoters and enhancers.
-- **ClinVar Variants - ClinVar SNVs** (Phenotypes, Variants, and Literature)
-  brings clinical interpretations to the same locus.
+  companion to phyloP. phyloP scores each base, phastCons calls the runs.
 - **RepeatMasker** (Repeats) says which parts of a window are repeat elements,
   which is worth knowing before reading much into a signal over one.
+- **JASPAR Transcription Factors - JASPAR 2026 TFBS** (Regulation) puts motif
+  matches under the peaks above, and is dense enough to want a narrow window.
+- **GTEx cis-eQTLs - GTEx DAP-G eQTLs** (Regulation) names the variants
+  associated with expression of nearby genes.
+- **Long-read SVs - CoLoRSdb 1427 SVs** (Variation and Repeats) covers the size
+  range short reads call badly.
 - **liftOver** (Pairwise alignments) is a genome-to-genome alignment rather than
   an annotation, and gets a page of its own in
   [](/docs/tutorials/genomes_synteny).
@@ -128,9 +222,15 @@ its header to reorder, and the `×` in the header closes it again.
 ## What is actually downloaded
 
 The config lives on jbrowse.org, but most UCSC track data resolves back to
-hgdownload and JBrowse reads those files by byte range. The phyloP file covers
-the whole genome and only the blocks under the current view are fetched, which
-is why a genome-wide signal track opens at gene zoom without downloading it.
+hgdownload and JBrowse reads those files by byte range. The track menu's **About
+track** prints the adapter, which is where to look when a track is slow or
+missing: the file it names is the one being read.
+
+<Figure src="/img/genomes_basics/about_track.png" caption="About track on the phyloP track. The adapter names the BigWig on hgdownload, and the metadata below it is UCSC's own trackDb entry, carried through the conversion." />
+
+The phyloP file covers the whole genome and only the blocks under the current
+view are fetched, which is why a genome-wide signal track opens at gene zoom
+without downloading it.
 
 ## Trying another genome
 
@@ -145,6 +245,12 @@ An assembly released both ways appears under both accessions, same sequence, and
 only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 `GCA_040938575.1`.
 
+<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The gene track is the one the name index answered from, with GC percent and RepeatMasker under it." />
+
+The gene is the same gene and the track set is the familiar one, at a scale the
+human locus does not prepare you for: the axolotl genome is large and
+repeat-rich, and the introns are where that lands.
+
 ## See also
 
 - [](/docs/tutorials/genomes_synteny)
@@ -158,6 +264,10 @@ only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 
 - [Pollard KS et al. Detection of nonneutral substitution rates on mammalian phylogenies. _Genome Res_ 2010](https://pmc.ncbi.nlm.nih.gov/articles/PMC2798823/),
   the phyloP method
+- [Cheng J et al. Accurate proteome-wide missense variant effect prediction with AlphaMissense. _Science_ 2023](https://pubmed.ncbi.nlm.nih.gov/37733863/),
+  the AlphaMissense scores
 - [Bouaoun L et al. TP53 variations in human cancers. _Hum Mutat_ 2016](https://pubmed.ncbi.nlm.nih.gov/27328919/),
   the mutation distribution across TP53 codons
+- [Liao WW et al. A draft human pangenome reference. _Nature_ 2023](https://pubmed.ncbi.nlm.nih.gov/37165242/),
+  the HPRC assemblies the pangenome callset is built from
 - [UCSC hg38 conservation downloads](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/)

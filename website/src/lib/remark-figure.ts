@@ -1,6 +1,7 @@
 import { SKIP, visit } from 'unist-util-visit'
 
 import {
+  screenshotLiveLabels,
   screenshotLiveUrls,
   screenshotSlowSpecNames,
 } from '../../scripts/screenshot-specs.ts'
@@ -144,7 +145,10 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         node.value = `<figure>${zoom(img, { url: first.url, label: `${first.label} ↗` })}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption>${dialogs.join('')}</figure>`
       } else if (liveUrl) {
         const help = helpFor(liveUrl, live?.name)
-        node.value = `<figure>${zoom(img, { url: liveUrl, label: 'Open this view in JBrowse ↗' })}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}${help.button}${slowNote(live?.name)}</figcaption>${help.dialog}</figure>`
+        // a spec whose link opens a plain page rather than a view says so
+        // itself; everything else is a session and gets the default
+        const label = `${(live?.name ? screenshotLiveLabels[live.name] : undefined) ?? 'Open this view in JBrowse'} ↗`
+        node.value = `<figure>${zoom(img, { url: liveUrl, label })}<figcaption>${caption} ${a(liveUrl, label)}${help.button}${slowNote(live?.name)}</figcaption>${help.dialog}</figure>`
       } else {
         node.value = `<figure>${zoom(img)}<figcaption>${caption}</figcaption></figure>`
       }

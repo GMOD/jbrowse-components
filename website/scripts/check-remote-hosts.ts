@@ -37,7 +37,10 @@ const listFile = join(import.meta.dirname, 'third-party-hosts.txt')
 // at jbrowse.org anyway — path-style bypasses the CloudFront distribution — but
 // that is a spec change, not this check's business.)
 const OURS = [
-  /^jbrowse\.org(\/|$)/,
+  // subdomains too, matching check-external-links.ts's OUR_HOST: the
+  // genomes_basics figures capture genomes.jbrowse.org's own catalog pages, and
+  // that site is ours (~/src/jb2hubs) rather than a server we depend on
+  /(^|\.)jbrowse\.org(\/|$)/,
   /^s3\.amazonaws\.com\/jbrowse\.org(\/|$)/,
   /^localhost(\/|$)/,
   /^127\.0\.0\.1(\/|$)/,
