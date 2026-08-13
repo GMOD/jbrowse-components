@@ -89,17 +89,10 @@ export function resolveLateType(maybeLate: IAnyType) {
     !isArrayType(maybeLate) &&
     isLateType(maybeLate)
   ) {
-    // the negated identity guards above narrow `maybeLate` to `never`, so route
-    // it through a function arg (never is assignable to IAnyType) to read the
-    // late type's resolved inner type via getSubTypes()
-    return lateSubtype(maybeLate) ?? maybeLate
+    const sub = maybeLate.getSubTypes()
+    return isSubtype(sub) ? sub : maybeLate
   }
   return maybeLate
-}
-
-function lateSubtype(type: IAnyType) {
-  const sub = type.getSubTypes()
-  return isSubtype(sub) ? sub : undefined
 }
 
 export { getUnionSubtypes as getUnionSubTypes } from '@jbrowse/mobx-state-tree'
