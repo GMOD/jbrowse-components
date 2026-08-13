@@ -331,6 +331,52 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   half an entry (sampler texel-center convention vs `round(t * 255)`), which is
   sub-visible on a 256-entry smooth ramp. Closing it adds machinery for no
   effect.
+- **Culling hi-C contacts by distance from the diagonal** — measured 2026-08-13
+  and declined. The rotated matrix hangs `width/2` px below the diagonal while
+  the track is `height` px tall (300 by default, `squashToHeight` off), so at
+  1500x300 only 64% of the triangle's AREA is on screen and at 2500x300 only
+  42%. Driving that bound through the RPC into `getBlockNumbers` — where a v9
+  file's blocks are indexed by depth from the diagonal — looks like a 2-3x cut
+  in fetch, decode, transfer and vertex load at once.
+  Contacts are not distributed by area. On `extra_test_data/test.hic` (hg19,
+  chr1, 100 kb) at 1500x300 the visible band holds **91.3%** of contacts
+  (maxDelta 997 bins), at 2500x300 **85.5%** — and **0 of 6** blocks fall
+  entirely below the band, so there is no read to skip. 9-15% of the contacts,
+  none of the network.
+  It also costs two things. The fetch would depend on display height, where
+  today a resize only repaints (`computeTriangleYScalar` says so); and
+  `renderTransform` rescales the STALE matrix on zoom-out during the debounce,
+  so a culled one shows a flat-bottomed triangle for up to a second.
+  **What would change the answer:** a deep v9 map at a fine binsize, where
+  blocks are small enough that whole depth levels sit below the band. This file
+  is a 5 MB downsample with ~1000-bin blocks, so every block straddles the
+  boundary. Re-measure the block accounting, not the contact fraction, before
+  re-proposing.
+- **Rendering the hi-C matrix as a dense count texture instead of instanced
+  quads** — measured 2026-08-13 and declined. The shader is vertex-bound by its
+  own account (6 verts per ~1.4 px bin, so a full-width triangle emits several
+  times more vertices than fragments), which argues for rasterizing the counts
+  into a grid and drawing one quad that inverts the transform per fragment —
+  the inverse already exists as `hicScreenToData` and hover already trusts it.
+  The matrix is too sparse. Same file and window: 60,109 contacts over
+  3,108,771 triangle cells, **1.93% occupancy**, so a dense R32F grid is ~50x
+  the memory of the sparse instance list it replaces. The auto binsize argument
+  ("bins are ~1.4 px, so texels are screen-sized") holds on the genomic axis and
+  not on the depth axis, which is compressed a further ~3.3x — the grid is
+  oversampled ~5.5x against the pixels it feeds.
+  **What would change the answer:** occupancy, which rises with map depth and
+  coarser binsizes. Measure it on the target file first; it is one pass over
+  `getContactRecords` output against `nBins*(nBins+1)/2`.
+- **Deriving a hi-C normalization vector's value count from its index entry** —
+  measured 2026-08-13 and declined. `readNormalizationVector` reads 8 bytes at
+  the record start purely to learn `nValues`, which the norm-vector index entry
+  already implies: `(idx.size - 4) / 8` matched the read value on every entry of
+  the v8 test file. Dropping the read takes that chain from two hops to one.
+  It buys no latency. Both of a region pair's read chains are two hops
+  (`readChainDepth.test.ts` measures each), and they now run concurrently, so
+  the pair waits `max(2, 2)` — shortening one leg to 1 leaves it waiting on the
+  blocks. It saves one request, not one round trip, against a `sizeInBytes`
+  semantics verified on v8 only (v9 would be `(size - 8) / 4`, unchecked).
 - **Workspaces/dockview freeze — two dead ends already paid for.** Width-set
   thrash disproven (that run used canvas2d + empty views and never reproduced
   the freeze, so it bounds `setWidth` only). View-stack windowing disproven as
