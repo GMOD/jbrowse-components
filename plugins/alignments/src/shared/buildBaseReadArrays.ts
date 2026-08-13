@@ -46,9 +46,10 @@ function buildReadKeys(
  * Read index is the feature's position in `features`; detail builders carry
  * that integer on each primitive (no id→index map needed).
  *
- * Chain mode calls this for the common 10 fields and then layers chain-
- * specific arrays (readChainIndices, readChainHasSupp, readNextRefs) in a
- * separate pass over `features`.
+ * Chain mode calls this for the common fields and then layers chain-specific
+ * arrays (readChainIndices, readChainHasSupp, the chain metadata) in a separate
+ * pass over `features`. The mate reference is NOT among them — it is
+ * `buildReadNextRefs`, off the raw features, for both modes.
  *
  * readPositions is the read's true alignment span — one meaning, no region
  * involved. It used to clip `start` to the region, a leftover from when these
