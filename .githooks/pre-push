@@ -1,30 +1,41 @@
 #!/bin/sh
-# Runs `pnpm check-docs` and `pnpm autogen --check` over what you are about to
-# push, so main does not go red on something a local check would have caught.
-# `pnpm install` points core.hooksPath here; skip with SKIP_DOCS_CHECK=1 or
-# `git push --no-verify`.
+# Runs the CI gates that nothing else here runs — docs, generated artifacts,
+# lint and the ESM build — over what you are about to push, so main does not go
+# red on something a local check would have caught. `pnpm install` points
+# core.hooksPath here; skip with SKIP_DOCS_CHECK=1 or `git push --no-verify`.
 #
-# WHY PRE-PUSH AND NOT PRE-COMMIT. Both commands read the whole tree — there is
+# WHY PRE-PUSH AND NOT PRE-COMMIT. All of them read the whole tree — there is
 # no staged-paths version of "is this generated artifact current", because the
 # artifact is a function of every source that feeds it. At ~45s that is far too
 # slow per commit and about right per push, which is also the moment the cost
 # lands on other people rather than on you.
 #
-# WHAT IT COSTS. Measured 2026-08-10 on this tree, warm:
+# WHAT IT COSTS. Measured warm on this tree (docs/autogen 2026-08-10, the rest
+# 2026-08-13):
 #   pnpm check-docs         43.1s
 #   pnpm autogen --check    33.9s
-# Run in parallel below, so ~45s wall. Against that, the CI jobs they stand in
-# for take ~8 and ~4 minutes to report, and until someone fixes it main is red
-# for everyone pulling.
+#   pnpm lint:eslint        29s
+#   pnpm lint                7s
+#   pnpm build:esm           1s incremental
+# Run in parallel below. That is ~115s wall measured, not the ~45s the sum of
+# the long pole would suggest: they are all CPU-bound and this machine runs
+# several agents, so they contend rather than overlap. Budget two minutes.
 #
-# WHY IT EARNS THE 45s. On 2026-08-10 these two gates went red on main four
+# A COLD `build:esm` is worse and happens once per checkout — tsc has no
+# .tsbuildinfo to reuse and takes minutes. Every run after that is the 1s above.
+#
+# WHY IT EARNS THE 45s. On 2026-08-10 the first two gates went red on main four
 # separate times in one day, every time because a figure or docs commit landed
-# without its regeneration: stale gallery links, an unpushed tutorial thumb, a
-# jbrowse-img README whose CLI options had moved, three captions over the
-# ratchet. Every one of them was already visible locally at commit time.
+# without its regeneration. On 2026-08-13 the other three were found red on main
+# ALL AT ONCE, having drifted unseen for two days: 11 eslint errors across
+# several authors (oldest two days old), check-config-read-types up 147 -> 148,
+# and `build:esm` broken that morning by a node-only test helper compiled into
+# the browser bundle. None of it was visible to anyone, because work lands
+# locally here and these gates only ran on push — and main had not been pushed.
+# Every one was a one-line fix at the moment it landed.
 #
-# IT READS THE WORKING TREE, NOT THE COMMITS BEING PUSHED. Both commands answer
-# "is this artifact current" against the files on disk, so pushing from the
+# IT READS THE WORKING TREE, NOT THE COMMITS BEING PUSHED. Every command here
+# answers its question against the files on disk, so pushing from the
 # SHARED primary checkout reports on whatever else is uncommitted there — the
 # first push after this landed was told `config/model/api docs` was stale, which
 # was six model docs another agent had regenerated and not yet committed, not
@@ -82,7 +93,7 @@ if ! printf '%s' "$range_files" | grep -Eq \
   exit 0
 fi
 
-echo "pre-push: checking docs and generated artifacts (~45s, SKIP_DOCS_CHECK=1 to skip)" >&2
+echo "pre-push: checking docs, generated artifacts, lint and the esm build (~2min, SKIP_DOCS_CHECK=1 to skip)" >&2
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -127,6 +138,23 @@ fi
 pnpm autogen --check >"$tmp/autogen.log" 2>&1 &
 autogen_pid=$!
 
+# Both linters, because they catch different things and CI runs both: oxlint is
+# the fast pass, `lint:eslint` the backstop for the react-compiler and
+# import/unicorn rules oxlint has no equivalent for. The 2026-08-13 batch was
+# entirely eslint-only rules, so oxlint alone would have caught none of it.
+pnpm lint >"$tmp/lint.log" 2>&1 &
+lint_pid=$!
+pnpm lint:eslint >"$tmp/eslint.log" 2>&1 &
+eslint_pid=$!
+
+# `tsc --noEmit` (what `pnpm typecheck` runs) does NOT stand in for this. That
+# reads the root tsconfig, where node types are present and every file is in
+# scope; the ESM build reads each package's own config, which has neither. A
+# file can typecheck cleanly and still fail the build — a node-only helper
+# compiled as browser source is exactly how main broke on 2026-08-13.
+pnpm build:esm >"$tmp/build.log" 2>&1 &
+build_pid=$!
+
 status=0
 wait "$docs_pid" || status=$?
 if [ "$status" != 0 ]; then
@@ -153,6 +181,33 @@ if [ "$astatus" != 0 ]; then
     status=$astatus
   fi
   cat "$tmp/autogen.log" >&2
+fi
+
+lstatus=0
+wait "$lint_pid" || lstatus=$?
+if [ "$lstatus" != 0 ]; then
+  echo >&2
+  echo "pre-push: pnpm lint failed — 'pnpm lint --fix' fixes most" >&2
+  cat "$tmp/lint.log" >&2
+  status=$lstatus
+fi
+
+estatus=0
+wait "$eslint_pid" || estatus=$?
+if [ "$estatus" != 0 ]; then
+  echo >&2
+  echo "pre-push: pnpm lint:eslint failed — 'pnpm lint:eslint --fix' fixes most" >&2
+  cat "$tmp/eslint.log" >&2
+  status=$estatus
+fi
+
+bstatus=0
+wait "$build_pid" || bstatus=$?
+if [ "$bstatus" != 0 ]; then
+  echo >&2
+  echo "pre-push: pnpm build:esm failed" >&2
+  cat "$tmp/build.log" >&2
+  status=$bstatus
 fi
 
 if [ "$status" != 0 ]; then
