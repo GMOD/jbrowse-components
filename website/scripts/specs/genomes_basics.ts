@@ -72,41 +72,36 @@ const AXOLOTL_CONFIG = encodeURIComponent(
 )
 const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 
-// The two tracks the closing figure opens beside the gene, AS THE CHECKBOX
-// LEAVES THEM. This page is the point-and-click one, so a display setting here
-// is a claim that a reader clicking along gets this picture, and neither of the
-// two settings worth making is reachable by clicking on the live site today:
+// This figure opens NO track of its own, and the two it used to open are worth
+// naming because both are traps on a page whose whole claim is that a track is a
+// checkbox away. A display setting in a spec here asserts that a reader clicking
+// along arrives at this picture, and neither of the two settings these tracks
+// want is reachable by clicking on the live site:
 //
-// - GC Percent. UCSC's own trackDb for gc5Base asks for `windowingFunction
-//   Mean` and `viewLimits 30:70`, which is a legible curve where the wiggle
-//   default (whiskers, autoscaled) is a solid block: the file is 5-base bins,
-//   so every summary bin in a several-hundred-kb window spans a min near 0 and
-//   a max near 100. Both values ride in the hub config's `metadata.ucsc`, and
-//   nothing translates them into `summaryScoreMode` / `minScore` / `maxScore`,
-//   so a reader gets there through two track-menu trips (Score → Summary score
-//   mode, then Score → Set min/max score) or not at all. jb2hubs is where that
-//   belongs.
-// - RepeatMasker by class. `LinearMultiRowFeatureDisplay` has no menu item for
-//   `partitionField` and defaults it to `name`, which on a GenArk bigRmskBed is
-//   one row per repeat -- thousands of hairlines, checked rather than reasoned
-//   about. The class needs the jexl that cuts it off the name suffix, and
-//   jb2hubs ALREADY writes exactly that display (hubtools' repeatClassDisplay,
-//   with the colours and row order too). It is gated behind
-//   RMSK_MULTIROW_DISPLAY because the display type landed after v4.3.0, which
-//   is what jbrowse.org/code/jb2/latest still serves and therefore what the
-//   live site runs. So today the lanes are not one click, they are none.
+// - GC Percent wants UCSC's own trackDb parameters for gc5Base,
+//   `windowingFunction Mean` and `viewLimits 30:70`. That is a legible curve
+//   where the wiggle default (whiskers, autoscaled) is a solid block: the file
+//   is 5-base bins, so every summary bin in a several-hundred-kb window spans a
+//   min near 0 and a max near 100. Both values ride in the hub config's
+//   `metadata.ucsc` and nothing translates them into `summaryScoreMode` /
+//   `minScore` / `maxScore`, so a reader gets there through two track-menu trips
+//   or not at all.
+// - RepeatMasker wants one lane per repeat class.
+//   `LinearMultiRowFeatureDisplay` has no menu item for `partitionField` and
+//   defaults it to `name`, which on a GenArk bigRmskBed is one row per repeat --
+//   thousands of hairlines, rendered rather than reasoned about. jb2hubs ALREADY
+//   writes the right display (hubtools' repeatClassDisplay, jexl partition,
+//   cookbook colours, fixed row order); it is gated behind RMSK_MULTIROW_DISPLAY
+//   because the display type landed after v4.3.0, which is what
+//   jbrowse.org/code/jb2/latest serves and so what the live site runs. That
+//   repo's CLAUDE.md has the part that is easy to get wrong: a release opens the
+//   gate for /ucsc/* and NOT for GenArk, whose config.json is a permanent-url
+//   production file pinned v4 hosts and Desktop still read.
 //
-// When that gate drops, the by-class display arrives in the track's own
-// `displays[]` and the figure gets it from the plain checkbox, with the same
-// colours the cookbook uses. Add nothing here to bring it forward.
-const AXOLOTL_GC_TRACK = {
-  trackId: `${AXOLOTL_ASSEMBLY}-gc5Base`,
-  height: 80,
-}
-const AXOLOTL_RMSK_ROWS = {
-  trackId: `${AXOLOTL_ASSEMBLY}-repeatMasker`,
-  height: 220,
-}
+// So the closing frame is the gene track the SEARCH opened and nothing else,
+// which is also all its section is about. When the gate opens, the by-class
+// display arrives in the track's own `displays[]` and a checkbox is once again
+// the whole story -- that is when a repeat lane comes back here, not before.
 
 // The gene track the site itself opens with (its defaultSession shows
 // `hg38-ncbiRefSeq`, RefSeq All), and nothing else: no height, no glyph mode, no
@@ -969,10 +964,16 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // A GenArk assembly, to close the page where it started: same app, same two
-  // clicks, a smaller catalog. Same gene, too -- `loc` is the bare symbol rather
-  // than a coordinate, so the frame is also the proof that the accession's own
-  // name index answered it.
+  // A GenArk assembly, to close the page where it started: same app, same
+  // checkbox, a smaller catalog. Same gene, too -- `loc` is the bare symbol
+  // rather than a coordinate, so the frame is also the proof that the
+  // accession's own name index answered it.
+  //
+  // No `tracks` at all, which is the point rather than an omission: the search
+  // opens the track whose index answered -- RefSeq All (GFF) -- and highlights
+  // the hit in it, so this frame is what typing a gene symbol gets you and
+  // nothing else. See the note over AXOLOTL_CONFIG for the two tracks that used
+  // to be here and why neither is a click.
   {
     mode: 'url',
     name: 'genomes_basics/genark_axolotl',
@@ -982,17 +983,13 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: AXOLOTL_ASSEMBLY,
           loc: 'tp53',
-          // No gene track listed. The search opens the one whose index answered
-          // -- RefSeq All (GFF) -- and highlights the hit in it, so naming a
-          // second gene track here would draw the same gene twice.
-          tracks: [AXOLOTL_GC_TRACK, AXOLOTL_RMSK_ROWS],
         },
       ],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 180000,
     settleMs: 10000,
-    viewportHeight: 740,
+    viewportHeight: 335,
     diffThreshold: 0.02,
   },
 ]

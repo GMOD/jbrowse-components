@@ -271,14 +271,10 @@ An assembly released both ways appears under both accessions, same sequence, and
 only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 `GCA_040938575.1`.
 
-<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The gene track is the one the name index answered from, with GC percent and RepeatMasker under it." />
+<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The search opened the gene track its own name index answered from, and highlighted the hit." />
 
-The gene is the same gene and the track set is the familiar one. The span is
-not: the axolotl genome is large and repeat-rich, and RepeatMasker under the
-introns is where that shows.
-
-Reading a repeat track by class rather than as one packed lane is
-[](/docs/tutorials/repeatmasker_classes).
+The gene is the same gene. The span is not: the axolotl genome is one of the
+largest sequenced, and this locus covers a few hundred kb of it.
 
 ## See also
 
