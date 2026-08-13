@@ -72,6 +72,10 @@ interface ArcSettings {
   cloud?: boolean
   drawInter: boolean
   drawLongRange: boolean
+  // Reads a translocation breakpoint must gather before its ticks are drawn —
+  // see `clusteredInterchromSupport`. 1 (or 0) draws every one, which is what
+  // this did before the setting existed.
+  minInterchromSupport?: number
   // See `CanonicalRefName`. Without it a split junction between a fetched read
   // (`1`) and its SA segment (`chr1`) reads as inter-chromosomal and paints as a
   // connector tick instead of the intra-chromosomal split-inversion arc.
@@ -943,6 +947,89 @@ function arcKey(a: {
   return `${r1}\0${b1}\0${r2}\0${b2}\0${a.colorType}\0${a.shapeType}\0${a.yBp}`
 }
 
+// Fallback clustering window when the fetch produced no insert-size band —
+// unpaired data, or too few proper pairs to characterize one. A translocation
+// found by split reads rather than by mates has its evidence at the breakpoint
+// itself, so a window is not what it needs; this is only so the pass has a
+// finite number when `stats` is absent.
+const DEFAULT_INTERCHROM_WINDOW_BP = 1000
+
+// How many reads agree on each interchromosomal connection, counted over a
+// WINDOW rather than at a coordinate — returns the per-connection support, index
+// for index with `arcs`.
+//
+// A mate-pair breakpoint is not localized to a base. The two mates straddle it,
+// so a read supporting a translocation can start anywhere within about one
+// fragment length of it, and the fetched pairs land scattered across that span
+// rather than stacked on a coordinate. `arcKey` counts exact coincidences, which
+// is right for the split junctions it was written for (a split read KNOWS the
+// breakpoint to the base — see its comment, and the HG002 chr12 fold-back it
+// cites) and counts almost nothing here: measured on HG002 300x over 200 kb at
+// 1:2,000,000, 862 of 865 interchromosomal connections were the sole occupant of
+// their coordinate.
+//
+// So a support floor over `arcKey`'s count would delete a real translocation as
+// thoroughly as the noise — every one of its hundred supporting pairs is a
+// singleton at its own bp. Counting over a window is what makes the floor mean
+// "this breakpoint has evidence" instead of "two reads happened to start on the
+// same base".
+//
+// BOTH SIDES have to agree, and that is the discriminator. Real supporting pairs
+// cluster at the source AND point into the same window on the partner
+// chromosome; mismapping clusters at neither. A one-sided window would instead
+// merge unrelated breakpoints that happen to sit near each other, manufacturing
+// support out of local density — which is exactly how the same-chromosome
+// version of this idea failed when it was measured (see
+// `agent-docs/reference/DEEP_COVERAGE.md`), and is why this is offered for the
+// interchromosomal family only.
+//
+// Single-linkage, so a run of reads stepping across the span stays one cluster.
+// The `some` is over one cluster's mates and clusters are 1-2 members on real
+// data, so this is linear in practice; a genuine translocation makes one big
+// cluster and pays a few thousand comparisons once.
+function clusteredInterchromSupport(
+  arcs: PendingArc[],
+  windowBp: number,
+): number[] {
+  const support = new Array<number>(arcs.length).fill(0)
+  // Keyed on the ORDERED pair of contigs: a connection chr1->chr7 and one
+  // chr7->chr1 are the two ends of one event and are emitted as two separate
+  // pending arcs, each of which gets its own cluster at its own end.
+  const byContigPair = new Map<string, number[]>()
+  for (const [i, arc] of arcs.entries()) {
+    getOrCreate(byContigPair, `${arc.p1Ref}\0${arc.p2Ref}`, () => []).push(i)
+  }
+  for (const indices of byContigPair.values()) {
+    indices.sort((a, b) => arcs[a]!.p1Bp - arcs[b]!.p1Bp)
+    let members: number[] = []
+    let mates: number[] = []
+    let lastBp = 0
+    const flush = () => {
+      for (const m of members) {
+        support[m] = members.length
+      }
+    }
+    for (const i of indices) {
+      const arc = arcs[i]!
+      if (
+        members.length > 0 &&
+        arc.p1Bp - lastBp <= windowBp &&
+        mates.some(m => Math.abs(m - arc.p2Bp) <= windowBp)
+      ) {
+        members.push(i)
+        mates.push(arc.p2Bp)
+      } else {
+        flush()
+        members = [i]
+        mates = [arc.p2Bp]
+      }
+      lastBp = arc.p1Bp
+    }
+    flush()
+  }
+  return support
+}
+
 // Colour + shape one group's resolved connections against the pooled scale,
 // COALESCING connections that would draw as the same arc.
 //
@@ -966,11 +1053,36 @@ function resolveArcs(
   { hasPaired, stats }: ArcScale,
   settings: ArcSettings,
 ) {
-  const { colorByType, cloud = false, drawInter } = settings
+  const {
+    colorByType,
+    cloud = false,
+    drawInter,
+    minInterchromSupport = 1,
+  } = settings
   const arcs: ComputedArc[] = []
   const byKey = new Map<string, ComputedArc>()
   const lines: ComputedLine[] = []
   const byLineKey = new Map<string, ComputedLine>()
+
+  // The window is the LIBRARY's, not a constant: how far a supporting read can
+  // sit from the breakpoint is one fragment length, and `stats.upper` is the
+  // number this pipeline already computes for it. A hardcoded window would be
+  // wrong at both ends — too wide to discriminate on a 150 bp amplicon library,
+  // too narrow to hold one cluster together on a 3 kb mate-pair library, where
+  // it would split a real translocation into the singletons the floor then eats.
+  //
+  // Skipped outright at support 1, which is the default: the pass is pure
+  // overhead when nothing can be filtered out.
+  const interchromSupport =
+    minInterchromSupport > 1
+      ? clusteredInterchromSupport(
+          pendingArcs.filter(a => a.p1Ref !== a.p2Ref),
+          stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
+        )
+      : undefined
+  // Walked in step with the filtered array above rather than indexed by the
+  // outer loop's position, which counts intra-chromosomal arcs too.
+  let interchromIdx = 0
 
   // One tick per breakpoint, COUNTING the reads that agree on it — the same
   // move `arcKey` makes for arcs, and for the same two reasons.
@@ -1016,7 +1128,17 @@ function resolveArcs(
     // its own: ARC_COLOR_INTERCHROM is the whole rule, and it lives in
     // arcLine.slang where the pass reads it.
     if (p1Ref !== p2Ref) {
-      if (drawInter) {
+      // Scattered IS the criterion, so the filter drops the whole connection
+      // rather than merging it: a breakpoint whose reads cluster keeps every
+      // tick at the coordinate its own read put it at, and the dense picket of
+      // them is what a translocation looks like. Merging a cluster into one tick
+      // would have to invent a position for it, which is the thing `arcKey`'s
+      // exact-coordinate rule exists to refuse.
+      const support = interchromSupport?.[interchromIdx++]
+      if (
+        drawInter &&
+        (support === undefined || support >= minInterchromSupport)
+      ) {
         // Each endpoint's tick names the OTHER endpoint's chromosome — that is
         // the whole content of a translocation marker, and the direction is
         // what makes the two ticks different marks rather than a mirrored pair.

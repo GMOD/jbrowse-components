@@ -1,5 +1,8 @@
+import { makeSizeMenu } from '@jbrowse/core/ui'
 import { checkboxItem, promotableToggleItem } from '@jbrowse/core/ui/menuItems'
 import PolylineIcon from '@mui/icons-material/Polyline'
+
+import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { Pin } from '@jbrowse/core/configuration'
@@ -20,6 +23,8 @@ interface ReadConnectionsModel {
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
   setDrawInter: (draw: boolean) => void
+  minInterchromSupport: number
+  setMinInterchromSupport: (support: number) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
   debugArcGeometry: boolean
@@ -118,6 +123,35 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
               'reads whose mate — or split-read segment — maps to a different chromosome, drawn as a connector tick at each breakpoint. Independent of the setting above: a single-chromosome view never loads the far end of a translocation, so this one has to be able to draw it on its own.',
           },
         ),
+        makeSizeMenu({
+          label: 'Inter-chromosomal evidence',
+          title: 'Min reads at a breakpoint',
+          // Support is counted over a window of one fragment length on BOTH
+          // sides, not at an exact base: mates straddle a breakpoint rather than
+          // landing on it, so a real translocation is a scatter of reads across
+          // the fragment span and never a stack on one coordinate. See
+          // `clusteredInterchromSupport`.
+          //
+          // Linear and small-topped, unlike sashimi's log slider to 10,000: this
+          // counts read PAIRS spanning a breakpoint, which even at 300x is tens,
+          // where a sashimi junction's read support runs to thousands on deep
+          // RNA-seq. 1 shows every connection, which is the pre-setting
+          // behaviour. Tier 4 (rebuilds `arcsByGroup`), so a live onChange is
+          // fine.
+          scale: 'linear',
+          min: 1,
+          max: 20,
+          format: n => (n === 1 ? 'all' : `${n}`),
+          getValue: () => model.minInterchromSupport,
+          isDefault:
+            model.minInterchromSupport === DEFAULT_MIN_INTERCHROM_SUPPORT,
+          onChange: support => {
+            model.setMinInterchromSupport(support)
+          },
+          onReset: () => {
+            model.setMinInterchromSupport(DEFAULT_MIN_INTERCHROM_SUPPORT)
+          },
+        }),
         checkboxItem(
           'Debug: show arc geometry',
           model.debugArcGeometry,

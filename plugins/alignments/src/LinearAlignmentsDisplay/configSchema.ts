@@ -481,6 +481,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      minInterchromSupport: {
+        type: 'number',
+        // Reads are counted over a window of one fragment length on BOTH sides,
+        // not at a coordinate — a mate-pair breakpoint is not localized to a
+        // base. See `clusteredInterchromSupport`. 1 draws every connection.
+        defaultValue: 2,
+        description:
+          'Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint',
+      },
+      /**
+       * #slot
+       */
       drawLongRange: {
         type: 'boolean',
         defaultValue: true,

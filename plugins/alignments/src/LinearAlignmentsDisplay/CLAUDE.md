@@ -238,6 +238,17 @@ in paint order and both scans running ascending. It used to rank on `support`,
 which was the same thing only while support _was_ the sort key — so a fixture
 built out of feed order now tests a state production cannot reach.
 
+**A support FLOOR is offered for the ticks and deliberately not for the arcs.**
+`minInterchromSupport` counts reads over a window of one fragment length on
+_both_ sides (`clusteredInterchromSupport`), never at a coordinate: mates
+straddle a breakpoint rather than landing on it, so `arcKey`'s exact count is 1
+for essentially every interchromosomal connection and a floor over it would
+delete a real translocation as thoroughly as the mismapping. The window comes
+from `stats.upper`, so it tracks the library instead of a constant. The same
+floor on same-chromosome arcs was measured and declined — at depth it is a
+density filter, not an evidence filter. Both results are in
+`agent-docs/reference/DEEP_COVERAGE.md`.
+
 **Both families carry `support` and both spend it the same way.** An arc and a
 tick are each ONE junction that `resolveArcs` coalesced, and `arcLineWidth` is
 the one curve turning that count into ink for Canvas2D, the SVG export and both

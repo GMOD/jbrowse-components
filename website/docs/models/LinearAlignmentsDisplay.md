@@ -158,6 +158,7 @@ the whole surface.
 | <span id="getter-flipstrandlongreadchains">**flipStrandLongReadChains**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-colorsupplementarychains">**colorSupplementaryChains**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-drawinter">**drawInter**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-mininterchromsupport">**minInterchromSupport**</span><br><code>number</code> | Reads a translocation must gather, within one fragment length on both sides, before its connector ticks are drawn. See `clusteredInterchromSupport` — the count is over a window because a mate-pair breakpoint is not localized to a base. | LinearAlignmentsDisplay |
 | <span id="getter-drawlongrange">**drawLongRange**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-arccolorbytype">**arcColorByType**</span><br><code>ArcColorByType</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-readconnections">**readConnections**</span><br><code>"off" &#124; "arc" &#124; "cloud"</code> |  | LinearAlignmentsDisplay |
@@ -405,6 +406,7 @@ the whole surface.
 | <span id="action-setshowsashimilabels">**setShowSashimiLabels**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setreadconnectionslinewidth">**setReadConnectionsLineWidth**</span><br><code>(width: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setdrawinter">**setDrawInter**</span><br><code>(draw: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
+| <span id="action-setmininterchromsupport">**setMinInterchromSupport**</span><br><code>(support: number) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setdrawlongrange">**setDrawLongRange**</span><br><code>(draw: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setarccolorbytype">**setArcColorByType**</span><br><code>(type: ArcColorByType) =&gt; void</code> |  | LinearAlignmentsDisplay |
 | <span id="action-setshowmismatches">**setShowMismatches**</span><br><code>(show: boolean) =&gt; void</code> |  | LinearAlignmentsDisplay |

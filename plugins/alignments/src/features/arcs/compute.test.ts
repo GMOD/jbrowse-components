@@ -217,6 +217,98 @@ describe('computeArcsFromPileupData', () => {
     ])
   })
 
+  // A mate-pair breakpoint is not localized to a base: the mates straddle it, so
+  // supporting reads land scattered across roughly a fragment length rather than
+  // stacked on a coordinate. `arcKey`'s exact count is therefore ~1 for every
+  // one of them, and a floor over it would delete a real translocation as
+  // thoroughly as the noise. These pin the windowed count that makes the floor
+  // mean "this breakpoint has evidence" instead of "two reads started on the
+  // same base".
+  describe('minInterchromSupport counts over a window, not a coordinate', () => {
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
+    ]
+    // n pairs whose chr1 ends step across `spread` bp and whose chr2 mates step
+    // across the same — the shape a real translocation actually has.
+    function scattered(
+      starts: number[],
+      mateBps: number[],
+      insertSizeStats?: { upper: number; lower: number },
+    ) {
+      return makePileupData({
+        readPositions: new Uint32Array(starts.flatMap(s => [s, s + 100])),
+        readFlags: new Uint16Array(starts.length).fill(SAM_FLAG_PAIRED),
+        readStrands: new Int8Array(starts.length).fill(1),
+        readInsertSizes: new Float32Array(starts.length),
+        readPairOrientations: new Uint8Array(starts.length).fill(1),
+        ...namesToBlock(starts.map((_, i) => `read${i}`)),
+        ...nextRefsToTable(starts.map(() => 'chr2')),
+        readNextPositions: new Uint32Array(mateBps),
+        insertSizeStats,
+      })
+    }
+    const run = (data: PileupDataResult, minInterchromSupport: number) =>
+      computeArcsFromPileupData(new Map([[0, data]]), regions, {
+        colorByType: 'insertSize',
+        drawInter: true,
+        drawLongRange: true,
+        minInterchromSupport,
+      })
+
+    // The case the whole thing exists for. Five pairs agreeing on a breakpoint,
+    // no two sharing a coordinate: exact-key support is 1 apiece, so a naive
+    // floor of 2 would erase all five.
+    test('a scattered but agreeing breakpoint survives a floor of 2', () => {
+      const data = scattered(
+        [2000, 2130, 2260, 2390, 2520],
+        [5000, 5140, 5280, 5410, 5550],
+        { upper: 600, lower: 100 },
+      )
+      expect(
+        run(data, 1).lines.filter(l => l.x.refName === 'chr1'),
+      ).toHaveLength(5)
+      // every tick kept, each still at its own read's coordinate — the cluster
+      // is not merged, because merging would have to invent a position for it
+      expect(
+        run(data, 2).lines.filter(l => l.x.refName === 'chr1'),
+      ).toHaveLength(5)
+    })
+
+    // ...and the noise it is meant to remove: same five chr1 positions, but the
+    // mates point all over chr2. Agreeing on one side is not evidence.
+    test('reads agreeing on one side only are dropped', () => {
+      const data = scattered(
+        [2000, 2130, 2260, 2390, 2520],
+        [5000, 200_000, 900_000, 1_400_000, 3_000_000],
+        { upper: 600, lower: 100 },
+      )
+      expect(
+        run(data, 1).lines.filter(l => l.x.refName === 'chr1'),
+      ).toHaveLength(5)
+      expect(run(data, 2).lines).toEqual([])
+    })
+
+    // The window is the library's own fragment length, so the same reads cluster
+    // or not depending on the band the fetch computed — a hardcoded window would
+    // be wrong on a mate-pair library at one end and an amplicon one at the other.
+    test('the window comes from the insert-size band', () => {
+      const starts = [2000, 2500, 3000]
+      const mates = [5000, 5500, 6000]
+      // 500 bp steps: inside a 600 bp fragment, outside a 200 bp one
+      expect(
+        run(scattered(starts, mates, { upper: 600, lower: 100 }), 2).lines,
+      ).not.toEqual([])
+      expect(
+        run(scattered(starts, mates, { upper: 200, lower: 50 }), 2).lines,
+      ).toEqual([])
+    })
+
+    test('support 1 keeps every connection, as before the setting existed', () => {
+      const data = scattered([2000], [5000], { upper: 600, lower: 100 })
+      expect(run(data, 1).lines).toHaveLength(2)
+    })
+  })
+
   test('a breakpoint reaching two chromosomes names both, sorted', () => {
     // A complex rearrangement: the same locus on chr1 has mates on chr9 and on
     // chr2. Collapsing that to whichever arrived first would be a confident

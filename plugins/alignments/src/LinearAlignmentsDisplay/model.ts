@@ -456,6 +456,16 @@ export default function stateModelFactory(
         get drawInter(): boolean {
           return getConf(self, 'drawInter')
         },
+        /**
+         * #getter
+         * Reads a translocation must gather, within one fragment length on both
+         * sides, before its connector ticks are drawn. See
+         * `clusteredInterchromSupport` — the count is over a window because a
+         * mate-pair breakpoint is not localized to a base.
+         */
+        get minInterchromSupport(): number {
+          return getConf(self, 'minInterchromSupport')
+        },
         /** #getter */
         get drawLongRange(): boolean {
           return getConf(self, 'drawLongRange')
@@ -1820,6 +1830,7 @@ export default function stateModelFactory(
             cloud: self.readConnections === 'cloud',
             drawInter: self.drawInter,
             drawLongRange: self.drawLongRange,
+            minInterchromSupport: self.minInterchromSupport,
             // SA-tag / RNEXT refNames use the BAM's own naming, so a same-chr
             // split junction to an SA segment would otherwise be misclassified
             // inter-chromosomal. Undefined = no aliasing (identity).
@@ -3370,6 +3381,13 @@ export default function stateModelFactory(
            */
           setDrawInter(draw: boolean) {
             setConf(self, 'drawInter', draw)
+          },
+
+          /**
+           * #action
+           */
+          setMinInterchromSupport(support: number) {
+            setConf(self, 'minInterchromSupport', support)
           },
 
           /**

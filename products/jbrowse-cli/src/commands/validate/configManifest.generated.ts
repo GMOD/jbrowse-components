@@ -3192,6 +3192,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "minInterchromSupport",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "drawLongRange",
           "type": "(JexlString | boolean)"
         },
@@ -3488,6 +3492,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "drawInter",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "minInterchromSupport",
+          "type": "(JexlString | number)"
         },
         {
           "name": "drawLongRange",

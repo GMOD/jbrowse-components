@@ -1,5 +1,6 @@
 import { staysOpenOnClick } from '@jbrowse/core/ui'
 
+import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 import type { Pin } from '@jbrowse/core/configuration'
@@ -50,6 +51,10 @@ function makeModel() {
     debugArcGeometry: false,
     setDebugArcGeometry(v: boolean) {
       this.debugArcGeometry = v
+    },
+    minInterchromSupport: DEFAULT_MIN_INTERCHROM_SUPPORT,
+    setMinInterchromSupport(v: number) {
+      this.minInterchromSupport = v
     },
   }
 }

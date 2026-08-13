@@ -16,6 +16,23 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
+- **A clustered read-support floor for SAME-CHROMOSOME discordant arcs** —
+  measured 2026-08-13 and declined, having been proposed as the obvious twin of
+  the interchromosomal one that shipped. Windowed support genuinely gathers
+  there — 257 clusters at W=0 become 109 at W=600, with apparent support of 24,
+  14, 10, 9, 9 — and every one of those clusters is an artifact. Their |TLEN|s
+  are a smooth continuum starting at the band's cut (1145, 1152, 1154, 1160,
+  1162, 1171, …), which is a distribution tail being sliced; a real 4 kb
+  deletion would put twenty pairs at ~4600 ± 100. The clusters are **density**:
+  at 300x a 600 bp window holds ~1200 pairs, so a fraction of a percent of tail
+  yields several flagged pairs per window and single-linkage chains them.
+  **What was given up:** nothing — the filter would have been a density filter
+  presented as an evidence filter, growing more aggressive exactly where
+  coverage is deepest, and it would have counted the same tail the insert-size
+  band floor already handles. The interchromosomal family is different and does
+  get the floor, because there the reads do not cluster at all (852 of 868
+  dropped) and a window is needed only so a real translocation is not deleted
+  with them. Full working in [DEEP_COVERAGE.md](DEEP_COVERAGE.md).
 - **Colouring an arc long-insert from the pair's drawn SPAN** — shipped, then
   removed 2026-08. `getArcColorType` overrode the TLEN class whenever the mates
   sat more than `LARGE_INSERT_THRESHOLD` apart, on the sound ground that a
