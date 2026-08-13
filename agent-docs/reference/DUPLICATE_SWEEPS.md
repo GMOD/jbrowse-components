@@ -1,6 +1,6 @@
 ---
 name: duplicate-sweeps
-description: What a repo-wide sweep for same-named exports actually turns up, the seven false-positive classes that make up nearly all of it, the four mechanisms this repo already uses to hold a legitimate copy in step, and the one case where deleting a duplicate cost 12 KB of eager bundle. Read before deleting a copy that looks accidental.
+description: What repo-wide duplicate sweeps actually turn up — both the same-named-export scan and the structural clone scan, their different false-positive classes, the four mechanisms this repo uses to hold a legitimate copy in step, and the case where deleting a duplicate cost 12 KB of eager bundle. Read before deleting a copy that looks accidental.
 ---
 
 # Sweeping for duplicates
@@ -106,3 +106,50 @@ Everything else was a name collision, a documented copy, or a missing pin. The
 sweep's yield is low and its cost is a whole session; the useful version of it
 is not "find duplicates" but **"find copies whose mechanism is missing"** —
 which is a much smaller question, and the one the classes above leave you with.
+
+## The other scan: structural, not by name
+
+A name scan only finds copies that agree on a name. The complement is a clone
+detector — normalize each `.ts` to non-blank non-comment lines, slide an 8-line
+window, hash, and report windows appearing in more than one file. It finds the
+copies that were renamed, and misses nothing to do with names.
+
+**Filter import statements first or that is all you get.** The first run's entire
+top ten was blocks of `CIGAR_D, CIGAR_EQ, CIGAR_I, …` — files importing the same
+constants, which is sharing working correctly.
+
+Its false-positive classes are *different* from the seven above, because those
+are name-shaped and these are body-shaped:
+
+- **Declarative config.** Adapter `configSchema.ts` files dominate the results.
+  Mostly inherent; one real find lived here (below).
+- **N implementations of one public interface.** The five view models each
+  spell `loadingMessage` / `loadingProgress` identically, and
+  `PROGRESS_REPORTING.md` even says "the same shape each time" — but those
+  getters are the *taught embedder API*: ~15 `examples-site` pages read them,
+  `LoadingAndErrors.tsx` teaches them by name, and jbrowse-web has per-view
+  tests. Five identical bodies there are five conformances, and their per-view
+  doc rows are the point. **Do not merge them**; a mixin would preserve the API
+  but move the docs off the pages that should carry them.
+- **Residue of already-shared helpers.** Three RPC executors share their
+  preamble — destructure args, `createStopTokenChecker`, `getFeatureAdapterOrThrow`.
+  The substance is already extracted; what repeats is the call sequence.
+
+**This scan is MORE prone to the eager-bundle trap than the name scan, not
+less.** Its evidence is "these bodies are identical", and byte-identical bodies
+are exactly what a deliberate module split produces — see "The one that bit"
+above, which a structural scan would have nominated even more confidently than
+the name scan did. tsc, jest and lint cannot see a bundle boundary. Before
+merging any copy, read the **file header**, not just the comment at the
+duplication: in that case the header stated the rule in bold twenty lines up
+while the comment beside the code only said the copies mirror each other.
+
+A cheap check when a header hints at a boundary: walk value-imports transitively
+from the module that must stay light and assert what it cannot reach — e.g. the
+alignments Canvas2D/SVG renderer reaches 52 modules and **zero** carrying
+`WGSL_SOURCE`, which is what keeps shader source out of the export path.
+
+**Yield: one real find in five clusters examined** — the tabix shorthand
+expansion, written out by eight adapters (`f669c03f04`), which the name scan
+could not have found because all eight are called `normalizeSnapshot` and so are
+others that are not this.
