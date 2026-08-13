@@ -1,3 +1,4 @@
+import { addTrackRowAdornment } from '@jbrowse/core/ui/trackRowAdornment'
 import { syntenyRowAdornment } from '@jbrowse/synteny-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
@@ -20,8 +21,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * comparative-adapters' deliberately does not (ADR-043).
  */
 export default function SyntenyRowAdornmentF(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'TrackSelector-trackRowAdornment',
+  addTrackRowAdornment(
+    pluginManager,
     (adornment, { conf, session, viewAssemblyNames }) => {
       const found = syntenyRowAdornment({
         conf,
