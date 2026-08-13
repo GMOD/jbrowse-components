@@ -110,31 +110,18 @@ RFLP-mapped by Devos et al. and revisited against the reference assemblies by
 Dvorak et al. Nothing was aligned to draw any of it: the input is orthogroup
 membership and each gene's position.
 
-## Dating the two exchanges
+## The same locus against the other donor
 
-Those two papers put the 4AL/5AL exchange at the diploid level and the 4AL/7BS
-one in polyploid wheat. Both claims are checkable against the rows already in
-the stack, with no new file and no second track: name two other assemblies in
-the same two-row view. Triticum urartu, the diploid A-genome donor, should carry
-the first and not the second.
+Bread wheat 4A is an A-genome chromosome, and the row over it so far has been
+Aegilops tauschii, the D-genome donor. Triticum urartu, the A-genome donor, is
+the same two-row view with one assembly swapped.
 
-<Figure caption="Triticum urartu's seven chromosomes over bread wheat 4A, the same track and locus as the figure above. Where tauschii gave three blocks, urartu gives two." src="/img/orthofinder_synteny/wheat_4a_urartu.png" />
+<Figure caption="Triticum urartu's seven chromosomes over bread wheat 4A, the same track and locus as the figure above. Where tauschii's three blocks came off three chromosomes, urartu's come off two." src="/img/orthofinder_synteny/wheat_4a_urartu.png" />
 
-It carries the first. Where tauschii answered for 4A with three chromosomes,
-urartu answers with two, its chromosome 4 taking both of the first two blocks,
-so the 4AL/5AL exchange is already there in the diploid donor. The distal block
-is still on urartu's chromosome 7, so the 4AL/7BS one is not.
-
-Two more rows finish the dating:
-
-- **durum and wild emmer**, the A+B tetraploids, answer for the whole of 4A on
-  their own 4A, distal block included
-- **T. timopheevii**, formed from the same A-genome donor but independently of
-  that lineage, sits with urartu instead: its 4At carries the first two blocks
-  and the distal one is on a chromosome 7
-
-The 7BS exchange therefore happened in the durum and bread wheat lineage, after
-it split from timopheevii's.
+Urartu answers for 4A with two chromosomes where tauschii answered with three:
+its chromosome 4 covers both of the first two blocks, and the distal block is on
+its chromosome 7. Any of the other four assemblies in the track opens the same
+way.
 
 ## The conversion
 

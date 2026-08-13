@@ -1795,18 +1795,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
   //   4   1996 links   5th-95th pct    15.1 Mb - 636.7 Mb
   //   7    340 links   5th-95th pct   642.2 Mb - 742.5 Mb
   // with every other urartu chromosome under 40 links over the whole of 4A. Two
-  // blocks where tauschii gave three, and the boundary between them sits where
-  // tauschii's 5D block ends rather than where it starts: urartu chromosome 4
-  // covers both the 4D and the 5D intervals. That is the 4AL/5AL exchange
-  // already present in the diploid A-genome donor. The distal segment is still
-  // on urartu chromosome 7, so the 4AL/7BS exchange is not, which dates it after
-  // the diploid.
+  // chromosomes where tauschii gave three, and the boundary between them sits
+  // where tauschii's 5D block ends rather than where it starts: urartu
+  // chromosome 4 covers both the 4D and the 5D intervals, and only the distal
+  // segment is on a chromosome 7.
   //
-  // The other three rows of the stack finish the argument and need no figure:
-  // durum and emmer (the AB tetraploids that carry both events) answer for the
-  // whole of 4A on their own 4A, and T. timopheevii - the independently formed
-  // AG tetraploid - sits with urartu, Chr4At over the first two blocks and a
-  // chromosome 7 over the distal one.
+  // The page stops at that observation. It used to run the comparison out to a
+  // date for each exchange, over three more rows that have no figure - durum
+  // and emmer answering for the whole of 4A on their own 4A, T. timopheevii
+  // sitting with urartu - and the dating was more than these two pictures can
+  // carry. Devos et al. and Dvorak et al. are cited on the page for the
+  // translocation pair itself; the history is theirs to state, not ours.
   {
     mode: 'url',
     name: 'orthofinder_synteny/wheat_4a_urartu',
@@ -1841,23 +1840,24 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 15000,
     viewportHeight: 640,
-    // The same two names as the tauschii figure, so the pair is read by
-    // comparing which chromosome each is on rather than by re-reading the
-    // caption. That is the whole result: urartu's chromosome 4 covers both of
-    // the first two blocks, so the 4AL/5AL exchange is already in the diploid
-    // A-genome donor, and the distal block is still on its chromosome 7, so
-    // the 4AL/7BS one is not.
+    // Exactly the two names the tauschii figure carries, on the donor
+    // chromosome each block leaves, so the pair is read by comparing where the
+    // same two names sit rather than by re-reading the captions: 4AL/5AL moves
+    // from 5D to chromosome 4, 4AL/7BS is on a chromosome 7 in both. They named
+    // a verdict before ('4AL/5AL present', '4AL/7BS absent'), which read as
+    // contradicting the frame - the absent one sits beside a full magenta
+    // bundle - and asserted the comparison the reader is here to make.
     annotations: [
       {
         type: 'text',
-        text: '4AL/5AL present',
+        text: '4AL/5AL',
         fontSize: 20,
         anchor: { text: '4', alignX: 'left' },
         dy: 54,
       },
       {
         type: 'text',
-        text: '4AL/7BS absent',
+        text: '4AL/7BS',
         fontSize: 20,
         anchor: { text: '7', alignX: 'right' },
         dx: -30,
