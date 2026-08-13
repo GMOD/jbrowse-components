@@ -31,6 +31,9 @@ welcome your [feedback](/contact).
 - `bedGraphToBigWig` (UCSC kentUtils), htslib (`bgzip`, `tabix`), `samtools`,
   `python3`, `unzip`, `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
+- the GraphGenomeView plugin, for
+  [drawing the graph as a graph](#installing-the-plugin); every other track here
+  is a built-in type
 
 On Debian/Ubuntu, `apt install samtools tabix unzip wget python3` covers five of
 those. Docker installs from
@@ -432,6 +435,33 @@ Every projection above flattens the graph onto K12. JBrowse can also draw it as
 a graph, through the
 [graph genome view plugin](/docs/user_guides/graph_genome_view).
 
+### Installing the plugin
+
+The plugin is beta and not in the [plugin store](/docs/user_guides/plugin_store)
+yet, so it loads by URL. In JBrowse Web that means a `plugins` array at the top
+level of `config.json`, beside `assemblies` and `tracks` (see
+[configuring plugins](/docs/config_guides/plugins)):
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ]
+}
+```
+
+`RgfaTabixAdapter` ships in the same plugin, so the segments track below needs
+it as much as the view does. On [JBrowse Desktop](/docs/quickstart_desktop)
+there is no config file to edit: install it once from the start screen at
+**Global plugins... → Add custom plugin**, putting that `esmUrl` under
+**Advanced options** in **ESM build URL** and leaving the two fields above it
+empty.
+
+### Indexing the graph
+
 `mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags, so it takes the plain-GFA
 route: `build_pggb_tabix.sh` walks the path lines offline and writes the two
 tabix-indexed BEDs `RgfaTabixAdapter` reads, which makes the whole graph
@@ -448,11 +478,31 @@ K12 path. The non-reference paths carry a trailing subpath tag
 (`Sakai#0#chr#0`), which changes nothing here, since PanSN still resolves the
 sample.
 
+The pair loads as one `FeatureTrack` pointed at the shared prefix, beside the
+projection tracks the build script already wrote:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_cactus_segments",
+  "name": "Cactus graph segments",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_cactus"
+  }
+}
+```
+
+The segments then draw as an ordinary track on K12, and **Track menu → Launch
+view → Graph genome view (this region)** cuts a subgraph at whatever is on
+screen.
+
 The
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)
-covers the track config this produces, the decisions in the walk that decide
-what it can be trusted for, and the graph size past which cutting one window
-offline with `odgi extract` is the better route.
+covers the decisions in the walk that decide what it can be trusted for, and the
+graph size past which cutting one window offline with `odgi extract` is the
+better route.
 
 ## Compared to `odgi viz`
 
@@ -496,7 +546,8 @@ covers the gene-level version of that zoom.
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_cactus.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_cactus.sh)
-runs everything above in one shot, encoding the HAL's MAF with
+runs everything above except the graph index in one shot, encoding the HAL's MAF
+with
 [`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py):
 
 ```bash
@@ -511,6 +562,10 @@ projections above, maps the KTa004 reads through the graph, downloads JBrowse,
 and writes a `config.json` with the five assemblies, per-strain gene tracks, the
 projection tracks, and a default session. It needs the same tools listed under
 [Prerequisites](#prerequisites).
+
+That `config.json` carries no `plugins` block and no segments track, so the
+graph is built over the `mc/ecoli.gfa.gz` the run leaves behind: index it and
+add both from [Drawing this graph as a graph](#drawing-this-graph-as-a-graph).
 
 It picks its container runtime from what is on `PATH`, docker first and then
 singularity or apptainer. Force one with `CONTAINER=singularity`.

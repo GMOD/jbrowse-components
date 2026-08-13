@@ -22,8 +22,9 @@ welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- the GraphGenomeView plugin, for the tracks that use `RgfaTabixAdapter` and
-  `MinigraphBubbleAdapter`; every other track here is a URL you can paste
+- [the GraphGenomeView plugin](#the-graphgenomeview-plugin), for the tracks that
+  use `RgfaTabixAdapter` and `MinigraphBubbleAdapter`; every other track here is
+  a URL you can paste
 - to rebuild the hosted files rather than read them: htslib (`bgzip`, `tabix`)
   and [`gfatools`](https://github.com/lh3/gfatools) for the graph indexes and
   the bubble file, plus `bedtools` and UCSC's `bedGraphToBigWig` and
@@ -48,7 +49,9 @@ projections we prebuilt and host, with the build script in
 ## The GraphGenomeView plugin
 
 It is beta and not in the [plugin store](/docs/user_guides/plugin_store) yet, so
-it loads by URL:
+it loads by URL. In JBrowse Web that means a `plugins` array at the top level of
+`config.json`, beside `assemblies` and `tracks` (see
+[configuring plugins](/docs/config_guides/plugins)):
 
 ```json
 {
@@ -60,6 +63,11 @@ it loads by URL:
   ]
 }
 ```
+
+On [JBrowse Desktop](/docs/quickstart_desktop) there is no config file to edit:
+install it once from the start screen at **Global plugins... → Add custom
+plugin**, putting that `esmUrl` under **Advanced options** in **ESM build URL**
+and leaving the two fields above it empty.
 
 The [graph genome view guide](/docs/user_guides/graph_genome_view) covers the
 view's layouts, colors and menus on a smaller graph than this one. The allele

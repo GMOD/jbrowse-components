@@ -383,9 +383,9 @@ file. A pangenome graph does say it: the island is a segment, and each strain's
 walk either goes through that segment or takes a detour around it.
 
 The E. coli tutorials build that minigraph graph of the same five strains, and
-the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of
-it beside the alignment. Against the ribbons rather than the lanes, the same
-event reads twice over:
+the [graph genome view](/docs/user_guides/graph_genome_view) plugin opens a
+window of it beside the alignment. Against the ribbons rather than the lanes,
+the same event reads twice over:
 
 Each row carries its own genes and both bands from the all-vs-all PAF. The
 NCTC86 band runs unbroken across the island; the Sakai band breaks before it and

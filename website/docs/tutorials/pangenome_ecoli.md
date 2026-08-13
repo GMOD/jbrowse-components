@@ -29,6 +29,8 @@ welcome your [feedback](/contact).
 - `samtools`, `bedGraphToBigWig` (UCSC kentUtils)
 - `python3`, htslib (`bgzip`, `tabix`), `unzip`
 - `node`, for the [JBrowse CLI](/docs/cli)
+- the GraphGenomeView plugin, for [the graph itself](#installing-the-plugin);
+  every other track here is a built-in type
 
 On Debian/Ubuntu, `apt install samtools tabix unzip python3` covers four of
 those. Docker installs from
@@ -729,6 +731,30 @@ graph, beside a linear view of the same window, through the
 [graph genome view plugin](/docs/user_guides/graph_genome_view). That guide
 covers the view itself, its layouts, and moving between the two panels. This
 section covers the part specific to pggb: getting a base-level graph in.
+
+### Installing the plugin
+
+The plugin is beta and not in the [plugin store](/docs/user_guides/plugin_store)
+yet, so it loads by URL. In JBrowse Web that means a `plugins` array at the top
+level of `config.json`, beside `assemblies` and `tracks` (see
+[configuring plugins](/docs/config_guides/plugins)):
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ]
+}
+```
+
+`RgfaTabixAdapter` ships in the same plugin, so the segment tracks below need it
+as much as the view does. On [JBrowse Desktop](/docs/quickstart_desktop) there
+is no config file to edit: install it once from the start screen at **Global
+plugins... → Add custom plugin**, putting that `esmUrl` under **Advanced
+options** in **ESM build URL** and leaving the two fields above it empty.
 
 ### Browsing the whole graph by locus
 
