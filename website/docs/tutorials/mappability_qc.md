@@ -39,19 +39,16 @@ Nothing about the pileup itself announces it.
 
 <Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, a wide span of chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read SV callset. Bottom, a window inside it, with Umap k100 mappability and NA12878 reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
-The affected sequence is not the gene but a much larger block containing it, so
-a locus can be inside one of these regions without being inside anything that
-carries the gene's name. Neither boundary is sharp, and the two published
-annotations disagree about where the block ends: GIAB's interval stops well
-short of where ENCODE's blacklist continues to. A locus sitting between the two
-edges is one to check by hand, and `scan_mappability_qc.sh` bins the coverage
-lane so that it can be settled by measurement rather than by picking a file. The
-lane stays low across the span GIAB has let go of and recovers at ENCODE's edge.
+The affected sequence is a much larger block than the gene, so a locus can be
+inside one of these regions without being inside anything that carries the
+gene's name. The two published annotations disagree about where the block ends:
+GIAB's interval stops well short of where ENCODE's blacklist continues to.
+`scan_mappability_qc.sh` bins the coverage lane so a locus between the two edges
+can be settled by measurement, and the lane stays low across the span GIAB has
+let go of.
 
-The lower panel is the same block at the scale a read lives at. Reads do not
-recover until well past the end of _SMN1_, which is why it is one wide window
-with that edge inside it rather than a pair of panels a reader has to hold in
-mind at once.
+The lower panel is the same block at the scale a read lives at, where reads do
+not recover until well past the end of _SMN1_.
 
 ## Would a finished assembly fix it?
 
@@ -70,11 +67,10 @@ sides, and some of them run backwards.
 <Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on its own SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross rather than stack." links="Open this view=qc/smn_vs_t2t" />
 
 The gene order is the same in both assemblies (_SMN2_ first, then _SMN1_), so
-this is not the block being inverted. It is two copies similar enough that a
-whole-genome chainer can join either one to either one, which is what the Umap
-and MAPQ lanes below say per base. The array is not even the same length in the
-two assemblies, the two genes sitting closer together in CHM13, which is what a
-copy-number-variable region does between any two haplotypes.
+this is two copies similar enough that a whole-genome chainer can join either
+one to either one, which is what the Umap and MAPQ lanes below say per base. The
+array is not even the same length in the two assemblies, the genes sitting
+closer together in CHM13.
 
 The reads can be asked directly. The 1000 Genomes ONT release, the same project
 as the long-read SV callset in the wide figure, aligned some of its samples to
@@ -104,15 +100,12 @@ stacking:
   the genome. Positions where no 100-mer is unique are absent from the file
   rather than stored as zero, so the lane goes blank rather than to the floor.
   Most of the genome scores near the top of its range, so a blank stretch is
-  unusual. It is a per-base track, and how it summarizes decides whether it
-  survives a wide window: with the default **avg** a zoom bin that is mostly
-  absent averages the few present positions and the lane draws a wall near the
-  ceiling, while **min** takes the worst position in the bin and the lane sits
-  on the floor across the block and steps up at its edge. That step lands at the
-  same coordinate as the MAPQ 0 to MAPQ 60 transition in the reads and the
-  gnomAD coverage step. Once a pixel covers more than about a kilobase even
-  **min** saturates low, so this lane belongs in the narrower frame and not in
-  the wide one above it.
+  unusual. How it summarizes decides whether it survives a wide window: the
+  default **avg** draws a wall near the ceiling where a zoom bin is mostly
+  absent, while **min** takes the worst position in the bin and sits on the
+  floor across the block, stepping up at the same coordinate as the MAPQ 0 to
+  MAPQ 60 transition and the gnomAD coverage step. Past about a kilobase per
+  pixel even **min** saturates low, so this lane belongs in the narrower frame.
 - **gnomAD v3 mean genome coverage** is the outcome of that annotation on real
   data, averaged over tens of thousands of sequenced genomes. gnomAD drops
   non-uniquely-placed reads before computing it, so wherever the lane above is
@@ -150,11 +143,10 @@ the flagged block and an equal-width window on either side of it,
 `scan_mappability_qc.sh` finds the callset nearly silent inside and populated on
 both sides, where the older DGV catalogue carries records throughout.
 
-Widen the same count to the whole chromosome and the picture changes. Both
-catalogues put a larger share of their calls inside the flagged regions than
-those regions' share of chr5 would predict, and by about the same factor.
-Segmental duplications are copy-number variable, so this is where real variation
-lives as well as where artifacts do.
+Widen the same count to the whole chromosome and both catalogues put a larger
+share of their calls inside the flagged regions than those regions' share of
+chr5 would predict. Segmental duplications are copy-number variable, so this is
+where real variation lives as well as where artifacts do.
 
 The lanes support something narrower than a verdict on either callset: at this
 locus, in this sample, a short-read call cannot be checked against the reads,

@@ -279,12 +279,9 @@ Bytes over the wire for three views, counted through each reader:
 | chr17 end to end       | 411 KB      | 237 KB     | 12            |
 | whole genome           | 5843 KB     | 1176 KB    | 4             |
 
-The first row is the widest gap and most of it is not the binning: TCGA segments
-average 2.6 Mb, so a query has to reach back to wherever an overlapping segment
-started, and tabix reads the same 411 KB for a 200 kb window as for the whole
-chromosome. Set against that, the store is 25 MB on disk to the BED's 5.9 MB, so
-it earns its place on the zoomed-out views and on larger cohorts rather than as
-a replacement for the stack.
+TCGA segments average 2.6 Mb, so a query has to reach back to wherever an
+overlapping segment started, and tabix reads the same 411 KB for a 200 kb window
+as for the whole chromosome. The store is 25 MB on disk to the BED's 5.9 MB.
 
 The plugin is in **beta** and not in the
 [plugin store](/docs/user_guides/plugin_store) yet, but the built bundle is

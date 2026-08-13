@@ -124,17 +124,14 @@ its own data. Add each track object below to the `tracks` array of your
 }
 ```
 
-Load the Fst and π scans as two separate tracks. Fst and π sit on very different
-scales (Fst approaches 1, π stays near 0.01), so each needs its own y-axis (this
-is the figure below). A
-[multi-wiggle](/docs/config_guides/multiquantitative_track) is not appropriate
-here: it shares one y-axis across its rows, which would flatten π against the
-much larger Fst.
+Load the Fst and π scans as two separate tracks: they sit on very different
+scales (Fst approaches 1, π stays near 0.01), so each needs its own y-axis,
+where a [multi-wiggle](/docs/config_guides/multiquantitative_track) shares one
+across its rows.
 
-A multi-wiggle is appropriate when the rows are on the same scale, such as the
-same statistic across groups. The per-group π bigWigs (`pi_INV.bw`/`pi_STD.bw`)
-share a scale, so inverted and standard diversity load as one track on one
-shared y-domain:
+A multi-wiggle suits rows on the same scale, such as the same statistic across
+groups. The per-group π bigWigs (`pi_INV.bw`/`pi_STD.bw`) share a scale, so
+inverted and standard diversity load as one track on one shared y-domain:
 
 ```json
 {
@@ -203,11 +200,10 @@ structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
 in the
 [regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail),
 which draws each genotype at the call's true span so the carriers line up under
-the Fst plateau. A per-SNP view can't hold a ~11 Mb inversion on screen: zoom
-out far enough to see both breakpoints and the individual markers shrink to
-nothing. One SV call sidesteps that, because the inversion is a single feature
-no matter how wide it is. [](/docs/tutorials/ld_mosquitoes) builds the same
-one-record karyotype track for a 22 Mb mosquito inversion.
+the Fst plateau. A per-SNP view cannot hold an ~11 Mb inversion on screen; one
+SV call is a single feature no matter how wide it is.
+[](/docs/tutorials/ld_mosquitoes) builds the same one-record karyotype track for
+a 22 Mb mosquito inversion.
 
 The build script writes both inputs: a `samples.tsv` whose first column is the
 sample name and whose other columns are attributes the display can order and

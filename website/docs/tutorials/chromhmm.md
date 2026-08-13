@@ -68,14 +68,11 @@ column names from the data rather than from the config. `tabix -p bed` keeps `#`
 lines as the header, and the script writes the defline outside the coordinate
 sort so it stays first.
 
-The merged output is coordinate-sorted, so indexing it is just `bgzip` plus
-`tabix -p bed`: JBrowse fetches any region on demand, with no bigBed conversion,
-no autoSql schema, and no chrom.sizes file. To skip the build entirely, the
-finished 9-cell-type file is also hosted as a bigBed at
-`https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb`, which carries
-the same column names in its embedded autoSql: swap the adapter below for a
-[`BigBedAdapter`](/docs/config/bigbedadapter) pointed at that URL and the rest
-of the track is unchanged.
+The merged output is coordinate-sorted, so indexing it is `bgzip` plus
+`tabix -p bed`. The finished 9-cell-type file is also hosted as a bigBed at
+`https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb`: swap the
+adapter below for a [`BigBedAdapter`](/docs/config/bigbedadapter) pointed at
+that URL and the rest of the track is unchanged.
 
 ## Configure the multi-row feature display
 
@@ -274,12 +271,8 @@ order from that file's `GROUP` and `EID` columns, and the state colors from
 `colormap_15_coreMarks.tab`, since the segmentations themselves are BED4 and
 carry no color at all.
 
-127 epigenomes is 5.25 GB of merged text and still does not need a bigBed: the
-tabix index covers genomic bins rather than records, so stacking 127 rows into
-the same coordinates barely grows it. What a bigBed buys is bytes per view, and
-mostly when zoomed in, against a somewhat larger file and a second binary to
-install. The hosted copy above is a bigBed holding those same records, so either
-format loads the track with nothing else changing.
+The hosted copy above is a bigBed of those same records; either format loads the
+track with nothing else changing.
 
 ## See also
 
