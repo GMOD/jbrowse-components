@@ -32,7 +32,9 @@ reference others may hold, not as free-form prose.
 - [Hi-C](#hi-c) — user color threshold, normalization availability, A/B
   compartments, inter-chromosomal UI
 - [Canvas glyph system](#canvas-glyph-system-pluginscanvas-renderfeaturedatarpc) —
-  the compact-mode label bug, and the glyph registry that was rejected
+  the compact-mode label bug, the glyph registry that was rejected, and the
+  per-gene isoform cap (why it is top-N and not first-N, and why it belongs on
+  the main thread)
 - [Display height system redesign](#display-height-system-redesign) — three options
   for retiring the `heightOverride` name
 - [Vertical real estate](#vertical-real-estate--the-scrolls-within-scrolls-problem) —
@@ -525,6 +527,62 @@ four grounded reasons — don't re-litigate without new information:
    into a layout `switch` symmetric with emit — trades small dependency-free files
    (preferred) for a switch with no correctness/drift benefit.
 
+**Cap isoforms per gene at top-N, with a "show N more" affordance.** Absorbs the
+old one-line "Isoform expansion" entry from the UI / UX section. The gap is
+narrower than it first sounds, and the design turns almost entirely on *which
+thread* the cap runs on.
+
+`geneGlyphMode` already defaults to `auto`, which resolves (model.ts,
+`effectiveGeneGlyphMode`) to `longestCoding` above 100 bp/px and `all` below. So
+the zoomed-*out* case is handled and has been since the gene-glyph control
+landed. The uncapped case is zoomed *in*: park on one 30 kb Gencode gene in a
+1000 px window and you are at 30 bp/px, so `auto` gives you `all`, and a
+40-transcript gene owns the track.
+
+**"First N" is the wrong selector — it wants to be "top N."** GFF child order is
+arbitrary, so a first-N cap routinely hides MANE Select and shows a
+retained-intron fragment. The ranking already exists: `longestCodingTranscript`
+(`glyphs/subfeatures.ts`) is top-1 by summed CDS length with a widest-span
+fallback for non-coding genes, and it carries a CDS dedupe (Gencode duplicate CDS
+rows) plus a tie-break that fixtures depend on. Generalizing that reduce to top-N
+inherits all of it; anything else re-derives it worse.
+
+**The cap belongs on the main thread, not in `layoutSubfeatures`.** Cross-gene
+row packing is already main-thread (`LinearBasicDisplay/layout.ts`,
+GranularRectLayout); only the within-gene isoform stack is computed in the
+worker. And `rpcProps()` is the RPC cache key — `baseModel.ts` carries a long
+list of slots that were silent refetch triggers, `height` among them, removed
+because the resize handle wrote it every drag frame. A per-gene expanded-set in
+`DisplayConfig` is exactly that mistake again: every "show 12 more" click clears
+and refetches every visible region.
+
+If instead the worker emits all isoform children with a rank, and the main thread
+sums only the visible ones to get the gene's height, per-gene expansion is a
+relayout with no round-trip — the same split `displayMode`'s compact scaling
+already uses, for the reason stated at the top of `renderConfig.ts` ("displayMode
+is NOT sent to the worker ... so switching modes skips an RPC round-trip"). Keep
+worker-side `longestCoding` for the zoomed-out case, where cutting payload
+genuinely matters; the cap is a zoomed-in concern, where it does not.
+
+**The button is the expensive part, not the cap.** The track paints to canvas, so
+"show N more" is not a DOM button — it needs a painted label, a hit region that
+is not a feature, and click routing that does not open the feature detail widget.
+That is the actual project. The cap itself is small.
+
+So the order is: ship the cap as a fourth mode on the existing `GeneGlyphControl`
+chip, reusing the chrome that is already built — no new hit-testing, no per-gene
+state — and see whether that alone kills the annoyance before building the
+per-gene button.
+
+On the default, prefer generous: 10, not 3. Seeing every isoform is frequently
+*why* someone zoomed into a gene, so a tight cap is a more opinionated default
+than `auto` is today; at 10 it fires only on genuinely pathological genes. Side
+benefit worth having either way — bounded per-gene height makes fit-to-height
+much better behaved on Gencode than it currently is.
+
+One concrete gap in the existing data: the worker emits `hasMultipleIsoforms` and
+`isoformsCollapsed` as booleans, and "show 12 more" needs the count.
+
 ## Display height system redesign
 
 `TrackHeightMixin` persists `heightOverride` (`types.maybe`, `>= MIN_DISPLAY_HEIGHT`); the
@@ -749,8 +807,6 @@ pans/zooms (like `plugins/sequence`).
 **Side labels for genes.** Gene-name labels in the left/right margin instead of inline.
 
 **Global scrollZoom.** Per-view → global setting.
-
-**Isoform expansion.** Click a collapsed isoform to expand all for that gene.
 
 **Init/loading feedback.** Distinguish initialized vs loading state in LinearGenomeView.
 
