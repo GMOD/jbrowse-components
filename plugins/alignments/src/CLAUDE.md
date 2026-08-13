@@ -2,21 +2,12 @@
 
 ## Shaders are `src/shaders`, a peer of `src/features`
 
-They lived under `src/LinearAlignmentsDisplay/shaders` and the dependency arrow
-pointed the wrong way: 39 files outside that display imported them against 11
-inside, every `features/*` directory reaching back up through
-`../../LinearAlignmentsDisplay/shaders/slang/...`. `features/` is the shared
-layer here — one pass per directory, packing for whichever renderer draws it —
-so the shaders it packs for belong beside it, not inside the single display that
-happens to mount them.
-
-Other plugins do keep shaders display-local, and that is right for them: their
-shaders have exactly one consumer. This plugin is the one with a `features/`
-layer, which is why it is the one that differs.
-
-Nothing in the build cared — `build-shaders` walks for `.slang` rather than
-being pointed at a directory, and `js-export-out` / `consts-out` name their
-destinations in `packages/`.
+`features/` is the shared layer here — one pass per directory, packing for
+whichever renderer draws it — so the shaders it packs for belong beside it, not
+inside the single display that happens to mount them. Other plugins keep shaders
+display-local and are right to: theirs have exactly one consumer. This is the
+plugin with a `features/` layer, which is why it differs. The build is
+indifferent either way (`build-shaders` walks for `.slang`).
 
 ## Strand comes from `strand`; `flags` answers everything else
 
@@ -80,30 +71,27 @@ click lands on "Could not load details" rather than an error.
 
 The result carries `readNameBlock` (every QNAME concatenated) plus
 `readNameOffsets`, not `readNames: string[]`. Same object-count reason as
-`readKeys`, plus a bigger one: a name is **decoded**, not copied — `@gmod/bam`
-builds it from the record's bytes on every read of `.name` — so a deep pileup
-was paying 34.7ms of `String.fromCharCode` and 7.5ms of clone for an array it
-reads on hover. 42.2ms -> 24.7ms (`benches/readNames.bench.ts`).
+`readKeys`, plus a bigger one: a name is **decoded**, not copied, so a deep
+pileup was paying to build an array it reads on hover. The measurements and the
+upstream half are `agent-docs/reference/BAM_STACK_INTEGRATION.md` seam 6.
 
 - **`readNameAt(data, i)`, never `readNameBlock.slice` by hand.** V8 slices a
-  long string in O(1), so this is free on a hover and 4.7ms for all 153,677.
+  long string in O(1), so this is free on a hover.
 - **`FeatureData` has no `name`.** The QNAME is on `ChainFeatureData` only,
   because chain mode is the one path that needs one per read
   (`chainGroupingKey`). Adding it back to the base shape puts the per-read
   decode back with it.
 - **Anything feeding the block must be allocation-free.**
-  `BamSlightlyLazyFeature` exposes `nameLength` + `copyNameInto`, and the
-  obvious `nameBytes` view was tried and reverted: a `subarray` per read gave
-  the entire win back (35.9ms against 21.1ms), which is no better than just
-  decoding every name.
+  `BamSlightlyLazyFeature` exposes `nameLength` + `copyNameInto`; the obvious
+  `nameBytes` view was tried and reverted, because a `subarray` per read gave
+  the entire win back.
 - **Grouping pays for it, and that is priced in.** Hashing a SlicedString
-  flattens it, so `groupReadsByName` is 31.9ms out of the block against 16.1ms
-  out of a `string[]` — a small net win in arcs/chain mode, 1.7x in plain
-  pileup. Don't "fix" it by materialising the array again.
+  flattens it, so `groupReadsByName` is dearer out of the block than out of a
+  `string[]` — still a net win overall. Don't "fix" it by materialising the
+  array again.
 
-The regime is read COUNT: 31k reads is 8.2ms all in, and 335 long reads is
-0.08ms, where the block loses. `agent-docs/reference/BAM_STACK_INTEGRATION.md`
-seam 6 is the upstream half.
+The regime is read COUNT: the block loses on a few hundred long reads and wins
+from tens of thousands up.
 
 ## Adapter hot path (BAM/CRAM)
 
@@ -124,21 +112,13 @@ object; moving it to two targeted lookups measured **5.7-9.2x** on the repo's
 spliced fixtures, and it runs once per spliced read.
 
 The one regime where that inverts is a read whose tag block is dominated by a
-long `MD`: each targeted walk byte-scans to the string's null terminator, so two
-walks lose to one decode once MD is kilobytes (0.66x on `200x.longread`). Check
-which regime you are in — `benches/gapStrand.bench.ts` prints tag bytes/read
-alongside the ratio.
-
-That inversion is **fixable, and not by folding the walks into one** — one walk
-is 1.11x there, because the cost is not how many walks but that any walk past a
-kilobyte MD scans it byte by byte. Jumping that single value is 34x, and the
-metadata to jump it already exists: `NUMERIC_MD` memoizes a subarray **view** of
-MD's bytes, so a record that has resolved it knows MD's start and length in O(1)
-— and on this path `forEachMismatch` has always resolved it before
-`getEffectiveStrand` runs. The cursor belongs to `@gmod/bam` though, so it is a
-library change, and the skip costs ~11% of the walk in the short-tag regime that
-dominates. Sized in the bench, filed as seam 5 in
-`agent-docs/reference/BAM_STACK_INTEGRATION.md`.
+long `MD`, where a targeted walk byte-scans past kilobytes to reach anything
+after it. Check which regime you are in — `benches/gapStrand.bench.ts` prints
+tag bytes/read alongside the ratio. **Don't try to fix it by folding the walks
+into one**; the cost is the scan, not the number of walks. The real fix is a
+library change and is sized as seam 5 in
+`agent-docs/reference/BAM_STACK_INTEGRATION.md`, which also has the full sweep
+behind both regimes.
 
 ## `withRegionRef`, never `record.ref = …`
 

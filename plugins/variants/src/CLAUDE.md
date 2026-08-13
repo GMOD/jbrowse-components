@@ -1,4 +1,4 @@
-# shared (MultiSampleVariant)
+# Multi-sample variants
 
 ## Hot loops: indexed for-loops only
 
@@ -7,6 +7,34 @@ indexed `for`, `for (const key in obj)`, no `??`/`||` wrapping an allocating
 right-side. Applies to `computeVariantCells.ts`, `computeVariantMatrixCells.ts`,
 and the upload/render callbacks — **not** elsewhere; the rest of the codebase
 prefers declarative iteration.
+
+## The genotype pipeline
+
+How a genotype reaches those loops — the interned-code pass, what it replaced,
+and what each half measured — is
+[reference/MULTI_SAMPLE_VARIANTS.md](../../../agent-docs/reference/MULTI_SAMPLE_VARIANTS.md).
+Read it before adding a consumer of genotype data or re-evaluating either
+optimization. The rules that fall out of it:
+
+- **Genotypes reach the cell loops as codes, never as strings**, and **a new
+  consumer reads codes.** Reintroducing a per-feature
+  `Record<sampleName, genotype>` to serve one is how four redundant passes come
+  back.
+- **Nothing on the per-cell path may be keyed by sample NAME** — that is 10⁸
+  string hashes on a real panel. Index by the column the callback already holds.
+- **A code's column is the canonical `sampleNames` position, never
+  `processGenotypes`' `sampleIdx`.** They differ only for
+  `SplitVcfTabixAdapter`, and the disagreement files every genotype against a
+  neighbouring sample in silence. `buildHeaderRemap` is the translation;
+  `phaseSetReader` needs it too.
+- **Phase-set coloring reads PS through `processFormatFields`, not `samples`** —
+  `get('samples')` is an order of magnitude and three orders of memory worse.
+  `makePhaseSetReader` is shared by both cell loops so the absent/malformed
+  rules cannot drift.
+- **Codes are Uint32**, because Uint16 capped the dictionary at 65535 and past
+  the cap a genotype interned to 0, which now means "no call".
+- **Don't re-evaluate the packed key and the name-lookup removal separately** —
+  the packed key is 1.02x alone and 1.15x once the name lookup is gone.
 
 ## Invariants
 
@@ -25,74 +53,6 @@ prefers declarative iteration.
   painted-cells copy made every hom-ref row decode as MISSING to the anchored
   sort — while the matrix, which always paints ref, sorted the same data
   differently.
-- **Genotypes reach the cell loops as codes, never as strings.**
-  `computeSampleInfo` makes one `processGenotypes` pass per feature — the
-  `@gmod/vcf` callback that reports a genotype as a range into the line — and
-  from it interns `genotypeCodes`, accumulates `sampleInfo`, and folds the
-  legend flags. The cell loops then index those codes by a source's column
-  (`buildSourceSampleIndices`, resolved once per pass) and key their style memos
-  by code, so a genotype string is materialized once per (site, distinct
-  genotype) rather than once per cell. What this replaced was a
-  `Record<sampleName, genotype>` per feature, built by `GENOTYPES()` and walked
-  three more times — flags, colors, interning — to reproduce a payload the
-  worker only ever ships as codes: the analyze+cells stage went 613ms → 168ms on
-  2504 samples × 400 variants, and the 168ms covers the cell painting the 613ms
-  doesn't. **A new consumer reads codes.** Reintroducing the record to serve one
-  is how the four passes come back.
-- **Nothing in that callback may be keyed by sample NAME.** It runs once per
-  cell, so a string-hash lookup there is 10⁸ hashes on a real panel — and
-  `sampleInfo` was exactly that, an object with one property per sample, looked
-  up by name to accumulate ploidy and phasing. It accumulates into typed arrays
-  indexed by the column the callback already holds, and folds into the
-  name-keyed `Record` once after the pass, through the same
-  `accumulateSampleInfo` the record path uses so a mixed fetch still agrees. The
-  fold has to run **before** the record block, which reads `sampleInfo`'s keys
-  to extend the canonical order. Ploidy 0 means "column never reported", which
-  is what keeps a genotype-less sample out of `sampleInfo`.
-- **The site memo probes by packed int where it can.** `packGenotypeKey` folds a
-  genotype of ≤4 ASCII chars — every diploid call an ordinary VCF spells — into
-  one int, so recognizing a repeat is an int compare rather than a two-range
-  character walk. Longer genotypes (polyploid, two-digit allele indices at a
-  decomposed multiallelic site) key 0 and keep the range compare; a non-ASCII
-  code unit declines to pack rather than truncating, because a truncated unit
-  could land on another genotype's key and paint the wrong cell.
-- The two above measured **1.87x** together on 1000G phase 3 (2504 samples) and
-  **2.47x** on 1000G high-coverage (3202 samples, `GT:AB:AD:DP:GQ:PGT:PID:PL`),
-  with byte-identical codes, dictionary, sample order, ploidy/phasing and legend
-  flags. Note the packed key measured **1.02x on its own** and read as not worth
-  having — the name lookup was masking it, and it was worth another 1.15x once
-  that went. Don't re-evaluate either half in isolation.
-- **A code's column is the canonical `sampleNames` position, never
-  `processGenotypes`' `sampleIdx`.** That callback numbers samples against the
-  header of the file _its own_ feature came from; `sampleNames` is the union of
-  every header in the fetch. The two are the same list for a single-header
-  adapter — which is all of them but `SplitVcfTabixAdapter` — and are not the
-  same list when per-contig files order or omit samples differently, which is
-  the case the union exists for. `buildHeaderRemap` translates header position
-  to column and answers `undefined` when they already agree, so the common fetch
-  keeps its direct index and pays no extra read. Writing `codes[sampleIdx]`
-  filed each genotype, and each sample's ploidy, against a neighbouring sample
-  on any multi-contig view over such files — silently, since every row still
-  held a real genotype. `phaseSetReader` reads PS through the same callback and
-  so needs the same translation.
-- **Phase-set coloring reads PS through `processFormatFields`, not `samples`.**
-  `feature.get('samples')` parses every FORMAT field of every sample — an object
-  and an array apiece — to reach one: 343ms/239MB per fetch on a 100-sample
-  phased callset over 2k variants, 1686ms/1.17GB at 500 samples, against
-  33ms/113ms and 4MB. `makePhaseSetReader` is shared by both cell loops rather
-  than written twice, because the two displays paint the same phase sets and a
-  second copy of the absent/malformed rules is how they drift: an absent column,
-  an empty field and `.` all mean "no phase set" and fall back to allele
-  coloring, while a present-but-unparseable id is NaN and paints hue 0 — which
-  is what `SAMPLES()`' `+` coercion produced. GT is deliberately not read there;
-  it comes from the interned codes, so there is one source of it. An adapter
-  that can't report FORMAT ranges paints by allele, the same outcome an absent
-  `samples` field already gave.
-- Codes are **Uint32**. They were Uint16, which capped the dict at 65535
-  distinct genotype strings — reachable on a decomposed pangenome callset, where
-  a multiallelic site's genotypes grow with the square of the alt count. Past
-  the cap a genotype interned to 0, and 0 now means "this sample has no call",
-  so the cell loops would decline to paint it at all.
 - **`NaN` is the only missing marker** in genotype matrices. A sentinel on the
   value scale (`-1`) made samples cluster by missingness.
 - **`featureColor` is the single cell-coloring axis.** Add new modes there, not
@@ -150,11 +110,10 @@ Render input → the subclass `renderState` getter.
   focused clade is genuinely fewer cells to compute. Same split maf makes
   (`subtreeFilter` + `placeMafRegionData`); multi-wiggle makes it by passing
   sources as a structural arg and re-encoding from `gpuProps()`. **Nothing may
-  wait on the refetch this removed** — the cluster tree did, stashed as
-  `pendingClusterTree` and promoted in `setCellData`, so a `runClustering: true`
-  display silently drew no dendrogram once reorders stopped refetching. It
-  applies immediately now, which is safe because `rowRemap` is derived from
-  `sources`: the cells re-place in the tick the layout changes.
+  wait on the refetch this removed** — the cluster tree did, and silently drew
+  nothing once reorders stopped refetching (CLUSTERING_WORKFLOW.md, "Why the
+  tree no longer waits"). Applying immediately is safe because `rowRemap` is
+  derived from `sources`: the cells re-place in the tick the layout changes.
 - The cell arrays stay in the **worker's** row numbering, because they are
   sorted by `(featureIndex, rowIndex)` and `findCellIndex` binary-searches that.
   Placement writes a second array; the hit test converts its one query row

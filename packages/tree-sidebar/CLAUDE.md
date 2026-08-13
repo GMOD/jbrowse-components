@@ -35,27 +35,21 @@ returns nothing, so that is what to grep for if rows ever come back scrambled.
 
 ## "Does the tree describe these rows" is derived, not remembered
 
-`clusterLayout` spaces the tree's own leaves evenly along the row axis — leaf
-_i_ lands on row _i_, positionally, with nothing reconciling leaf name to row
-name at draw time. So a tree that no longer names the rows on screen draws the
-whole dendrogram against the wrong ones, silently.
+`clusterLayout` positions leaves _positionally_ — leaf _i_ on row _i_, with
+nothing reconciling leaf name to row name at draw time — so a tree that no
+longer names the rows on screen draws the whole dendrogram against the wrong
+ones, silently. The two enforcement halves, and the three ways rows move with no
+layout write at all, are
+[reference/CLUSTERING_WORKFLOW.md](../../agent-docs/reference/CLUSTERING_WORKFLOW.md)
+§"Staleness has one imperative half and one derived half".
 
-`setLayout` → `willClearTree` catches the writes that go through it, and it
-stays for the color dialog's pre-submit warning (which has to answer _before_
-the write). It cannot catch the rest, because rows move without any layout
-write:
+What that means when writing a display here:
 
-- a display decorating `sources` downstream of `layout` (multi-row features'
-  `rowGroups` partition regroups them; the tree then correctly stops drawing —
-  clustering and `rowGroups` are two orders for one axis)
-- a discovered row set growing as regions load (multi-row features,
-  multi-wiggle) or unioning in a newly seen genome (maf)
-- multi-sample variants' phased expansion switching on when ploidy arrives
-
-So the backstop is `computeClusterHierarchy`, which every display already routes
-through and which takes the **drawn rows** and declines to position a tree whose
-leaves aren't them. Pass `sources` — after every reorder, filter and decoration
-— never the pre-layout list.
+- **Every action that moves rows routes through `setLayout`**, never a direct
+  `self.layout =`.
+- **Pass `sources` to `computeClusterHierarchy`** — after every reorder, filter
+  and decoration — never the pre-layout list. It is the backstop, and it can
+  only do its job on the rows actually drawn.
 
 `StaleTreeHint` (rendered by `TreeSidebar`, so no display wires it up) says so
 on screen, since the alternative is a dendrogram that vanishes with no
@@ -91,18 +85,12 @@ that it was supplied rather than computed.
 
 ## `subtreeFilter` goes with the row _names_, not with the tree
 
-It is a set of names; `filterRowsBySubtree` matches on `name` with no tree
-involved. So a reorder or a re-cluster leaves it valid and `setLayout`
-deliberately keeps it — dropping a focused clade on every reorder discards the
-user's focus, and for maf (where `subtreeFilter` is a fetch argument) refetches
-every loaded region. `clearLayout` clears it because that is a full reset.
-
-What does invalidate it is a change to what rows are _called_: the multi-sample
-variant displays' rendering mode renames rows between sample and haplotype
-(`HG001` ↔ `HG001 HP0`), and `setPhasedMode` clears it for exactly that reason.
-Because it outlives the tree, "Clear subtree filter"
-(`clearSubtreeFilterMenuItems`) is gated on the filter alone and never on a
-tree.
+It is a set of names matched without a tree, so a reorder or a re-cluster leaves
+it valid and `setLayout` deliberately keeps it; only a change to what rows are
+_called_ invalidates it (CLUSTERING_WORKFLOW.md, same section). Two consequences
+that live here: `clearLayout` clears it because that is a full reset, and "Clear
+subtree filter" (`clearSubtreeFilterMenuItems`) is gated on the filter alone and
+never on a tree, because it outlives one.
 
 ## The two `length` encodings
 
