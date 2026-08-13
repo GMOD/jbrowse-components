@@ -1,3 +1,4 @@
+import { SimpleFeature } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
@@ -332,6 +333,73 @@ describe('getBoxColor (BED itemRgb)', () => {
       attrs: { itemRgb: '31,120,180' },
     })
     expect(boxColor(flat)).toBe('31,120,180')
+  })
+})
+
+describe('getBoxColor (a per-transcript attribute read from the box)', () => {
+  const palette = { framesCDS: [] } as unknown as JBrowsePalette
+  const jexl = createJexlInstance()
+
+  // A GFF3 carries a per-transcript statistic on the transcript row only, and
+  // the glyph paints one box per child — so the callback reaches up. Nothing
+  // has to be copied onto the children first.
+  const COLOR = "jexl:feature.parent.dtu=='liver'?'#124f95':'#b2b1ac'"
+
+  const gene = new SimpleFeature({
+    uniqueId: 'gene1',
+    refName: 'chr1',
+    start: 0,
+    end: 100,
+    type: 'gene',
+    subfeatures: [
+      {
+        uniqueId: 'tx1',
+        refName: 'chr1',
+        start: 0,
+        end: 100,
+        type: 'mRNA',
+        dtu: 'liver',
+        subfeatures: [
+          { uniqueId: 'e1', refName: 'chr1', start: 0, end: 100, type: 'exon' },
+          { uniqueId: 'c1', refName: 'chr1', start: 20, end: 80, type: 'CDS' },
+        ],
+      },
+    ],
+  })
+  const config = mockDisplayConfig({ color: COLOR })
+
+  function boxColor(feature: Feature) {
+    return getBoxColor({ feature, config, colorByCDS: false, palette, jexl })
+  }
+
+  it('every child box resolves the transcript attribute', () => {
+    for (const child of gene.get('subfeatures')![0]!.get('subfeatures')!) {
+      expect(boxColor(child)).toBe('#124f95')
+    }
+  })
+
+  // The reach-up needs no guard: member access on a nullish subject is
+  // undefined in the jexl fork, not a throw, so the top of the chain just takes
+  // the expression's own default branch. Only an expression that can evaluate to
+  // undefined outright falls back to the slot's magenta.
+  it('a rootless feature takes the default branch, not the invalid-color fallback', () => {
+    const orphan = new SimpleFeature({
+      uniqueId: 'o1',
+      refName: 'chr1',
+      start: 0,
+      end: 10,
+      type: 'mRNA',
+    })
+    expect(boxColor(orphan)).toBe('#b2b1ac')
+    expect(
+      getBoxColor({
+        feature: orphan,
+        config: mockDisplayConfig({ color: 'jexl:feature.parent.dtu' }),
+        colorByCDS: false,
+        palette,
+        jexl,
+      }),
+    ).toBe('magenta')
   })
 })
 

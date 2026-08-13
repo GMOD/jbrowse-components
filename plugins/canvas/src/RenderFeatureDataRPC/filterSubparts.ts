@@ -43,6 +43,30 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   const parentStrand = parent.get('strand') ?? 0
   const parentRefName = parent.get('refName')
 
+  // The `parent` handle is the reason this is a helper rather than four inline
+  // constructions. A synthesized UTR is a subfeature like any other, so a
+  // per-feature callback that reaches up from the box it paints — `color:
+  // 'jexl:feature.parent.dif'`, or the itemRgb walk in getBoxColor — has to find
+  // the transcript from here too. Built without it, a transcript's implied UTRs
+  // took the default color while its exons and CDS took the callback's.
+  const impliedUTR = (
+    id: string,
+    start: number,
+    end: number,
+    isFivePrime: boolean,
+  ) =>
+    new SimpleFeature({
+      id,
+      data: {
+        refName: parentRefName,
+        start,
+        end,
+        strand: parentStrand,
+        type: utrType(parentStrand, isFivePrime),
+      },
+      parent,
+    })
+
   // Snapshot the exons before pushing: appending to `subparts` while iterating
   // it would otherwise visit the synthesized UTRs (they're skipped only because
   // they aren't exons — a fragile invariant to lean on).
@@ -57,26 +81,12 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   if (exons.length === 0) {
     if (parentStart < codeStart) {
       subparts.push(
-        new SimpleFeature({
-          uniqueId: `${parent.id()}-utr-left`,
-          refName: parentRefName,
-          start: parentStart,
-          end: codeStart,
-          strand: parentStrand,
-          type: utrType(parentStrand, true),
-        }),
+        impliedUTR(`${parent.id()}-utr-left`, parentStart, codeStart, true),
       )
     }
     if (parentEnd > codeEnd) {
       subparts.push(
-        new SimpleFeature({
-          uniqueId: `${parent.id()}-utr-right`,
-          refName: parentRefName,
-          start: codeEnd,
-          end: parentEnd,
-          strand: parentStrand,
-          type: utrType(parentStrand, false),
-        }),
+        impliedUTR(`${parent.id()}-utr-right`, codeEnd, parentEnd, false),
       )
     }
     return subparts
@@ -87,26 +97,22 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
     const exonEnd = sub.get('end')
     if (exonStart < codeStart) {
       subparts.push(
-        new SimpleFeature({
-          uniqueId: `${sub.id()}-utr`,
-          refName: parentRefName,
-          start: exonStart,
-          end: Math.min(exonEnd, codeStart),
-          strand: parentStrand,
-          type: utrType(parentStrand, true),
-        }),
+        impliedUTR(
+          `${sub.id()}-utr`,
+          exonStart,
+          Math.min(exonEnd, codeStart),
+          true,
+        ),
       )
     }
     if (exonEnd > codeEnd) {
       subparts.push(
-        new SimpleFeature({
-          uniqueId: `${sub.id()}-utr2`,
-          refName: parentRefName,
-          start: Math.max(exonStart, codeEnd),
-          end: exonEnd,
-          strand: parentStrand,
-          type: utrType(parentStrand, false),
-        }),
+        impliedUTR(
+          `${sub.id()}-utr2`,
+          Math.max(exonStart, codeEnd),
+          exonEnd,
+          false,
+        ),
       )
     }
   }

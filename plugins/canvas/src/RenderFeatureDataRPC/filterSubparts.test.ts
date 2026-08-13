@@ -164,6 +164,21 @@ describe('getSubparts implied UTRs', () => {
     expect(typesOf(getSubparts(tightExon, config))).toEqual(['CDS'])
   })
 
+  it('gives synthesized UTRs the transcript as their parent', () => {
+    // A per-feature callback reads the box it paints, so a per-transcript
+    // attribute is reached with `feature.parent.x` — and an implied UTR built
+    // without a parent handle answers undefined, coming out the default color
+    // beside exons and CDS that took the callback's.
+    const tx = transcript('mRNA')
+    const utrs = getSubparts(tx, config).filter(f =>
+      String(f.get('type')).endsWith('UTR'),
+    )
+    expect(utrs).toHaveLength(2)
+    for (const utr of utrs) {
+      expect(utr.parent!()).toBe(tx)
+    }
+  })
+
   it('does not duplicate explicit UTRs even when impliedUTRs is forced on', () => {
     // impliedUTRs config previously bypassed the !hasUTRs guard, so a transcript
     // with explicit UTRs but no exon subfeatures got a second, parent-derived
