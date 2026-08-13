@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { waitFor } from '@testing-library/react'
 
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
@@ -235,6 +236,69 @@ test('a followed row dragged away by hand is put back', async () => {
     expect(win.start).toBeGreaterThan(29500)
     expect(win.end).toBeLessThan(32000)
   }, timeout)
+})
+
+// The exact pass reads the MOVED row's debounced window too, and
+// `navToLocString` flushes it — so applying an answer wakes the pass that
+// produced it, and the moved row's own refetch wakes it again. Both used to
+// walk the same CIGAR a second time to place a row already sitting on it.
+test('an answer the follow has just applied is not resolved a second time', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setRowSyncMode('follow')
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(29500)
+  }, timeout)
+
+  const call = jest.spyOn(getSession(query!).rpcManager, 'call')
+  await query!.navToLocString('ctgA:40000..41000', QUERY_ASM)
+  await waitFor(() => {
+    expect(windowOf(target!).start).toBeGreaterThan(39500)
+  }, timeout)
+  // long enough that every pass this move woke has run
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  expect(
+    call.mock.calls.filter(c => c[1] === 'SyntenyResolveMatchingRegion'),
+  ).toHaveLength(1)
+})
+
+// A resolve is an RPC, and the mode can be switched off while one is in flight.
+// The latest-wins guard does not cover that: switching off issues no resolve of
+// its own, so nothing bumps the sequence the in-flight one checks against, and
+// the row moved once more after the user had already stopped the follow.
+test('a resolve landing after the mode is switched off does not move the row', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  const { rpcManager } = getSession(query!)
+  const inner = rpcManager.call.bind(rpcManager)
+  let release: (() => void) | undefined
+  jest
+    .spyOn(rpcManager, 'call')
+    .mockImplementation(async (sessionId, functionName, args, opts) => {
+      if (functionName === 'SyntenyResolveMatchingRegion') {
+        await new Promise<void>(resolve => {
+          release = resolve
+        })
+      }
+      return inner(sessionId, functionName, args, opts)
+    })
+
+  view.setRowSyncMode('follow')
+  await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
+  await waitFor(() => {
+    expect(release).toBeDefined()
+  }, timeout)
+  // nothing has placed the row yet: the frame pass steers by what a completed
+  // resolve caches, and this one is being held open
+  const held = windowOf(target!)
+
+  view.setRowSyncMode('independent')
+  release!()
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  expect(windowOf(target!)).toEqual(held)
 })
 
 test('anchoring the bottom row reverses which row moves', async () => {

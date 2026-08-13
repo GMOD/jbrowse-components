@@ -15,6 +15,7 @@ import type {
   FeatPos,
   LinearSyntenyDisplayModel,
 } from '../LinearSyntenyDisplay/model.ts'
+import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 import type { FollowTransform } from './followTransform.ts'
 import type { FollowStep } from './planFollowStep.ts'
@@ -64,6 +65,69 @@ interface LevelState {
   // the last exact answer as a local mapping, which is what the per-frame pass
   // steers by between resolves. See followTransform.
   transform?: FollowTransform
+  // the last thing asked, and the asking of it. See answerFor.
+  answerKey?: string
+  answer?: Promise<ResolvedSpan>
+}
+
+/**
+ * What the exact answer depends on — undefined where it depends on more than
+ * the step can name.
+ *
+ * The single-block answer is a function of the alignment, the window and the
+ * direction: one CIGAR walk, or one interpolation across the block. The
+ * envelope is the union of every loaded block, so an unchanged window and
+ * alignment still resolve differently once more of them arrive — and it costs
+ * no RPC, so there is nothing to save by holding on to it.
+ */
+function stepKey(step: FollowStep) {
+  const { display, feat, toMate, window, windowInsideFeat } = step
+  const { refName, start, end } = window
+  return windowInsideFeat
+    ? `${display.id} ${feat.id} ${toMate} ${refName}:${start}-${end}`
+    : undefined
+}
+
+/**
+ * The answer for one step, asked at most once.
+ *
+ * A SETTLE WAKES THIS PASS THREE TIMES, all with the same question. The moving
+ * row's refetch is one, and applying the answer is another two — the nav
+ * flushes that row's coarse blocks, which this pass reads to know where the row
+ * actually is. Each was a second and third walk of the same CIGAR in the
+ * worker.
+ *
+ * The promise rather than the resolved span, so the two of those that arrive
+ * before the first one lands share the request in flight instead of issuing
+ * their own. Every pass still awaits it and still runs its own `alreadyShowing`
+ * check afterwards, against the window IT read — which is what keeps a row
+ * nudged by hand between passes from being written off as already in place.
+ *
+ * A rejection is dropped rather than kept, so the next wake retries instead of
+ * replaying one failure for as long as the window sits still.
+ */
+function answerFor(
+  state: LevelState,
+  key: string | undefined,
+  step: FollowStep,
+) {
+  const shared =
+    key !== undefined && key === state.answerKey ? state.answer : undefined
+  if (shared) {
+    return shared
+  }
+  const request = resolveFollowSpan(step)
+  if (key !== undefined) {
+    state.answerKey = key
+    state.answer = request
+    request.catch(() => {
+      if (state.answer === request) {
+        state.answerKey = undefined
+        state.answer = undefined
+      }
+    })
+  }
+  return request
 }
 
 /**
@@ -115,9 +179,16 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const { movingView } = pair
     const state = stateFor(pair.level.level)
     const seq = ++state.seq
-    const span = await resolveFollowSpan(step)
-    // superseded while the resolve was in flight, or the view went away
-    if (seq !== state.seq || !isAlive(self) || !isAlive(movingView)) {
+    const span = await answerFor(state, stepKey(step), step)
+    // superseded while the resolve was in flight, the view went away, or the
+    // mode was switched off — the last of which supersedes nothing on its own,
+    // since it issues no resolve to bump `seq` with
+    if (
+      seq !== state.seq ||
+      !isAlive(self) ||
+      !isAlive(movingView) ||
+      !self.followSynteny
+    ) {
       return
     }
     state.featureId = step.feat.id
@@ -153,6 +224,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   }
 
   function reportError(e: unknown) {
+    // An RPC outliving the view it was issued for rejects into here, and
+    // `getSession` throws on a node with no parent — out of a catch handler,
+    // where it becomes an unhandled rejection rather than a notification
+    if (!isAlive(self)) {
+      return
+    }
     // ONCE PER DISTINCT MESSAGE. A follow that cannot resolve usually cannot
     // resolve repeatedly — an assembly whose refName the moving row does not
     // have keeps failing the same way on every pan — and a snackbar per settle
