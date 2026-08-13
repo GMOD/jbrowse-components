@@ -61,12 +61,10 @@ Three schemes surface per-read or per-base signal directly on the pileup:
   the aligner puts no better than even odds on that being the right copy.
   Aligners assign it when the best alignment score is tied across positions
   ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108), which
-  introduced the estimator). This is separate from a **secondary** alignment
+  introduced the estimator). That is separate from a **secondary** alignment
   (FLAG `0x100`), which is one of the competing placements recorded as its own
-  record. A MAPQ 0 read does not imply secondary records exist — bwa-mem reports
-  one primary with MAPQ 0 unless asked for all hits — and JBrowse's default
-  `flagExclude` of 1540 (duplicate, QC-fail, unmapped) does not filter secondary
-  records out when a file does carry them. The
+  record; JBrowse's default `flagExclude` of 1540 (duplicate, QC-fail, unmapped)
+  does not filter those out. The
   [mappability QC tutorial](/docs/tutorials/mappability_qc) works through a
   locus where MAPQ 0 covers a whole gene.
 - Per-base quality colors every base by its Phred score on a red→yellow→green
@@ -87,15 +85,12 @@ data), **Color by → Modifications** paints them. It offers two modes:
   **Modification types** to restrict to a single type such as 5mC (both sit
   directly beneath the two mode radios).
 - **One color per type, plus low-probability & unmodified in blue** (IGV calls
-  this "2-color") does everything the by-type view does and additionally paints
-  the not-modified side blue: modified sites keep their per-type color, while
-  low-probability and unmodified sites turn blue. For methylation (cytosine)
-  data it fills every CpG in context, including the ones the basecaller left
-  implicit (drawn blue). Those blue positions aren't in the MM tag; JBrowse
-  infers them from the reference CpG context. That's why a hypomethylated island
-  fills with solid blue here but looks nearly empty in the by-type mode. The
-  cytosine context (CpG/CHG/CHH) is a **Cytosine context** submenu in the same
-  list.
+  this "2-color") additionally paints the not-modified side blue: modified sites
+  keep their per-type color, while low-probability and unmodified sites turn
+  blue. For methylation (cytosine) data it fills every CpG in context, including
+  the ones the basecaller left implicit, which JBrowse infers from the reference
+  CpG context rather than reading from the MM tag. The cytosine context
+  (CpG/CHG/CHH) is a **Cytosine context** submenu in the same list.
 
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
@@ -149,12 +144,9 @@ section per value of a chosen dimension: strand, split read (whether the read
 carries an `SA` tag, which separates the reads crossing a breakpoint from the
 ones spanning it intact), read group (RG), or any tag such as `HP`. Each group
 gets a divider label and the groups share one coverage scale, so they read
-independently. Grouping a phased BAM by `HP` turns it into one pileup per
-haplotype. Reads missing the chosen tag collect in a trailing "none" section
-rather than disappearing. Grouping costs no extra fetching (the worker
-partitions one fetch into sections), and each section's divider has a control to
-collapse it down to just its coverage, so you can fold away the groups you
-aren't reading.
+independently, and reads missing the chosen tag collect in a trailing "none"
+section rather than disappearing. Grouping costs no extra fetching, and each
+divider has a control to collapse its section down to just its coverage.
 
 <Figure caption="Group by... opens a dialog where you pick the dimension (here the HP haplotype tag) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
 
@@ -175,10 +167,7 @@ a pair of genes transcribed in opposite directions.
 
 On data where read strand carries meaning, the two bands are the whole result.
 Long-read cDNA is the clearest case: the reads are oriented to the transcript,
-so a gene's coverage lands in one band and its neighbour's in the other. A viral
-genome makes it clearest of all, because the genes are packed on both strands
-and unspliced — one screen holds two whole transcription units, and every base
-of both carries reads.
+so a gene's coverage lands in one band and its neighbour's in the other.
 
 <Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band carries the coverage over its own gene and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
 
@@ -316,23 +305,17 @@ both can be toggled off. Dragging the track taller re-fits the arcs into the
 available height.
 
 Reads describing the same connection draw as **one arc, thickened by how many of
-them there are**, the way a sashimi arc is sized by its junction's read count. A
-junction crossed by thirty reads is one thick curve rather than thirty identical
-curves stacked on the same pixels, so the arcs rank the evidence instead of only
-locating it. Thickness is on a log scale, and a connection supported by a single
-read draws at the width
+them there are**, the way a sashimi arc is sized by its junction's read count,
+so the arcs rank the evidence instead of only locating it. Thickness is on a log
+scale, and a connection supported by a single read draws at the width
 [`readConnectionsLineWidth`](/docs/config/linearalignmentsdisplay/#slot-readconnectionslinewidth)
-sets. Arcs coalesce only on exactly equal endpoints: junctions a few bases apart
-stay separate curves, because at long-read scale they are usually separate
-events. Which mate a read names first does not matter — a junction is one arc
-either way.
+sets. Arcs coalesce only on exactly equal endpoints, so junctions a few bases
+apart stay separate curves.
 
 Hovering an arc reports the junction behind it: its location, the distance
 between the two ends, how many reads support it, and which colour bucket it fell
-in. The read count is the number the thickness encodes, so the tooltip is how
-you read a specific value off a picture that otherwise only ranks. In read-cloud
-mode the tooltip also gives the pair's insert size, which is what that mode
-plots on the Y axis.
+in. In read-cloud mode the tooltip also gives the pair's insert size, which is
+what that mode plots on the Y axis.
 
 <Figure caption="Enabling 'Show read arcs' from the Read connections submenu; the arcs draw alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
 
@@ -369,13 +352,11 @@ additional locus, records the whole set in each record's `SA` tag, and the
 pileup draws them as separate rows, often far apart or on different chromosomes.
 
 Right-click any of them and choose **Launch view → Linear read vs ref** to put
-them back together. The `SA` tag is what makes this possible from one record:
-the view reads the read's other segments straight off it, so no search of the
-rest of the genome is needed. The read becomes its own assembly along one lane,
-every reference locus it touches is laid out along the other, and each alignment
-segment is drawn as a ribbon between them. The segments then appear in the order
-the read visits them rather than in reference order, which is what makes the
-structure of the rearrangement readable from a single molecule.
+them back together. The `SA` tag is what makes this possible from one record, so
+no search of the rest of the genome is needed. The read becomes its own assembly
+along one lane, every reference locus it touches is laid out along the other,
+and each alignment segment is drawn as a ribbon between them, in the order the
+read visits them rather than in reference order.
 
 An insertion shows as a gap in the diagonal, since those bases are in the read
 and not in the reference. Dragging over a region in the read lane extracts that
