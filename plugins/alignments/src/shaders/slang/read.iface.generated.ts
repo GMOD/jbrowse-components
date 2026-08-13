@@ -182,6 +182,55 @@ export const UNIFORM_SLOT_ARRAYS = {
   readCategoryColor: [132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220] as const,
 } as const
 
+// Element `i` of the `arcColor` uniform array (4 components).
+export function setUniformArcColor(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.arcColor[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
+
+// Element `i` of the `linkedReadColor` uniform array (4 components).
+export function setUniformLinkedReadColor(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.linkedReadColor[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
+
+// Element `i` of the `readCategoryColor` uniform array (4 components).
+export function setUniformReadCategoryColor(
+  f32: Float32Array,
+  i: number,
+  v0: number,
+  v1: number,
+  v2: number,
+  v3: number,
+) {
+  const o = UNIFORM_SLOT_ARRAYS.readCategoryColor[i]!
+  f32[o] = v0
+  f32[o + 1] = v1
+  f32[o + 2] = v2
+  f32[o + 3] = v3
+}
+
+
 export interface Uniforms {
   bpHi: number
   bpLo: number

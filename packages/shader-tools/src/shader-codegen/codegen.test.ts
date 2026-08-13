@@ -133,6 +133,46 @@ describe('emitInterface uniforms', () => {
     expect(out).not.toMatch(/^ {2}palette: \d+,$/m)
   })
 
+  // The offsets alone left the component stores to be written out at every site
+  // that fills a palette — the gap `setInstance<Field>` had already closed on
+  // the instance side.
+  test('emits a per-element setter that resolves the std140 offset itself', () => {
+    expect(out).toContain(
+      [
+        'export function setUniformPalette(',
+        '  f32: Float32Array,',
+        '  i: number,',
+        '  v0: number,',
+        '  v1: number,',
+        '  v2: number,',
+        '  v3: number,',
+        ') {',
+        '  const o = UNIFORM_SLOT_ARRAYS.palette[i]!',
+        '  f32[o] = v0',
+        '  f32[o + 1] = v1',
+        '  f32[o + 2] = v2',
+        '  f32[o + 3] = v3',
+        '}',
+      ].join('\n'),
+    )
+  })
+
+  // Taking every component is the property, not the ergonomics: a uniform slot
+  // nobody writes keeps the previous frame's value, and alpha is the lane that
+  // gets forgotten because the shaders read `.xyz` and set their own.
+  test('takes one parameter per component so an element cannot be half-written', () => {
+    const setter = /export function setUniformPalette\(([\s\S]*?)\) \{/.exec(
+      out,
+    )!
+    expect(setter[1]!.match(/v\d: number/g)).toHaveLength(4)
+  })
+
+  // Nothing in the tree reads a palette slot back; the instance side emits a
+  // getter only because the hic hit test does.
+  test('emits no matching getter', () => {
+    expect(out).not.toContain('getUniformPalette')
+  })
+
   test('writeUniforms selects u32 / i32 / f32 views per field', () => {
     expect(out).toContain('const f32 = new Float32Array(buf)')
     expect(out).toContain('const u32 = new Uint32Array(buf)')

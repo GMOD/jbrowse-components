@@ -400,6 +400,62 @@ function instanceAccessorLines(attrs: InstanceAttr[]) {
   return lines
 }
 
+/**
+ * Per-element set over an array-valued uniform slot.
+ *
+ * `UNIFORM_SLOT_ARRAYS` gives a caller the word offset of element `i` — which is
+ * the part std140 makes non-obvious, since elements stride by 16 bytes and not
+ * by their own size — and then stops, leaving the component stores to be written
+ * out at every site that fills a palette. Two sites in the alignments renderer
+ * did that, spelling the same four assignments, and the instance side had
+ * already closed exactly this gap with `setInstance<Field>`.
+ *
+ * **Every component is a parameter, and that is the point rather than a
+ * convenience.** A uniform slot nobody writes keeps whatever the previous
+ * render left in it, so a half-written element is a stale value rather than a
+ * zero — and the lane this happens to is alpha, because the shaders read `.xyz`
+ * and set their own, which makes the fourth store look optional at the call
+ * site. Taking it as a parameter means it cannot be omitted.
+ *
+ * No matching getter: nothing in the tree reads a palette slot back, and the
+ * instance side emits one only because the hic hit test does.
+ */
+function uniformArraySetterLines(
+  fields: readonly {
+    name: string
+    words: number[]
+    type: ArrayType
+    view: View
+  }[],
+) {
+  const lines: string[] = []
+  for (const a of fields) {
+    // `assertNoScalarArray` has already refused a scalar element, so this is a
+    // vector and `elementCount` is its component count.
+    const comps =
+      a.type.elementType.kind === 'scalar' ? 1 : a.type.elementType.elementCount
+    const array = VIEW_ARRAY[a.view]
+    const Name = a.name.charAt(0).toUpperCase() + a.name.slice(1)
+    lines.push(
+      `// Element \`i\` of the \`${a.name}\` uniform array (${comps} components).`,
+      // #shaderExport setUniform<Field> | writes one element of an array-valued uniform slot, through that field's own typed view; takes every component so an element cannot be half-written
+      `export function setUniform${Name}(`,
+      `  ${a.view}: ${array},`,
+      '  i: number,',
+      ...Array.from({ length: comps }, (_, c) => `  v${c}: number,`),
+      ') {',
+      `  const o = UNIFORM_SLOT_ARRAYS.${a.name}[i]!`,
+      ...Array.from(
+        { length: comps },
+        (_, c) => `  ${a.view}[o${c === 0 ? '' : ` + ${c}`}] = v${c}`,
+      ),
+      '}',
+      '',
+    )
+  }
+  return lines
+}
+
 // Names the instance emitters bind in their own scope, either as a
 // parameter/local or (for the two stride constants they reference) at module
 // scope. An instance field sharing one of them is shadowed by the binding:
@@ -781,7 +837,14 @@ export function emitInterface(inputs: CodegenInputs) {
         return []
       }
       assertNoScalarArray(baseName, f, f.type)
-      return [{ name: f.name, words: arrayElementWords(f, f.type) }]
+      return [
+        {
+          name: f.name,
+          words: arrayElementWords(f, f.type),
+          type: f.type,
+          view: viewOf(f.type),
+        },
+      ]
     })
     if (arrayFields.length > 0) {
       lines.push(
@@ -796,7 +859,8 @@ export function emitInterface(inputs: CodegenInputs) {
       for (const a of arrayFields) {
         lines.push(`  ${a.name}: [${a.words.join(', ')}] as const,`)
       }
-      lines.push('} as const')
+      lines.push('} as const', '')
+      lines.push(...uniformArraySetterLines(arrayFields))
     }
 
     lines.push('', 'export interface Uniforms {')

@@ -303,19 +303,25 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   for (const [uniform, key] of Object.entries(PALETTE_UNIFORM_FIELDS)) {
     u[UU[uniform as keyof typeof UU]] = packRgb(c[key])
   }
+  // Takes the shader's own generated setter, which writes every component of an
+  // element — so the alpha lane cannot be left out here. The shaders read `.xyz`
+  // and set their own, which is what made the fourth store look optional, and a
+  // uniform slot left unwritten keeps whatever the last block render put there.
   const writeSlots = (
-    slots: readonly number[],
+    set: (
+      f32: Float32Array,
+      i: number,
+      v0: number,
+      v1: number,
+      v2: number,
+      v3: number,
+    ) => void,
+    slotCount: number,
     palette: readonly RGBColor[],
   ) => {
-    for (let i = 0; i < slots.length; i++) {
-      const at = slots[i]!
+    for (let i = 0; i < slotCount; i++) {
       const rgb = palette[i]!
-      f[at] = rgb[0]
-      f[at + 1] = rgb[1]
-      f[at + 2] = rgb[2]
-      // Alpha. The shaders read `.xyz` and set their own, but a uniform slot
-      // left unwritten is whatever the last block render put there.
-      f[at + 3] = 1
+      set(f, i, rgb[0], rgb[1], rgb[2], 1)
     }
   }
   // Driven by the SHADER's slot count, not the palette's, so a palette that
@@ -329,22 +335,30 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   // read-cloud endpoint squares alike. The squares had a `arcMarkerColor` copy
   // of their own for a substitution that no longer exists (a pale short-insert
   // fill against the saturated stroke; both are pale now).
-  writeSlots(USLOTS.arcColor, buildArcColorPalette(c))
-  writeSlots(USLOTS.linkedReadColor, buildLinkedReadColorPalette(c))
+  writeSlots(
+    readShader.setUniformArcColor,
+    USLOTS.arcColor.length,
+    buildArcColorPalette(c),
+  )
+  writeSlots(
+    readShader.setUniformLinkedReadColor,
+    USLOTS.linkedReadColor.length,
+    buildLinkedReadColorPalette(c),
+  )
   // One color per read category, indexed by the RC_* the CPU classifier baked
   // into each instance. read.slang used to branch through 17 `cat == RC_X` arms
   // to reach the same named colors; this is that mapping, from the one table
   // the legend also reads.
   for (const [category, key] of Object.entries(readCategoryPaletteKeys)) {
-    const at =
-      USLOTS.readCategoryColor[
-        READ_COLOR_CATEGORY[category as ReadColorCategory]
-      ]!
     const rgb = c[key]
-    f[at] = rgb[0]
-    f[at + 1] = rgb[1]
-    f[at + 2] = rgb[2]
-    f[at + 3] = 1
+    readShader.setUniformReadCategoryColor(
+      f,
+      READ_COLOR_CATEGORY[category as ReadColorCategory],
+      rgb[0],
+      rgb[1],
+      rgb[2],
+      1,
+    )
   }
 }
 
