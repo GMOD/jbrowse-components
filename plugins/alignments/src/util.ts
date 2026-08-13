@@ -1,3 +1,4 @@
+import { randomColor } from '@jbrowse/core/util/color'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -25,15 +26,16 @@ export async function fetchSequence(
   return feats[0]?.get('seq') as string | undefined
 }
 
-export function randomColor(str: string) {
-  let sum = 0
-
-  for (let i = 0; i < str.length; i++) {
-    sum += str.charCodeAt(i)
-  }
-  return `hsl(${sum * 10}, 20%, 50%)`
-}
-
+// The IGV-derived table covers the ~14 modifications with conventional colors;
+// anything else — a ChEBI id, a rare code — takes core's hash color.
+//
+// That fallback used to be a local `randomColor` summing char codes into
+// `hsl(sum * 10, 20%, 50%)`, which reaches **36 of 360 hues**, every one of them
+// at the same fixed 20% saturation: the whole unnamed-modification palette was
+// three dozen washed-out near-greys, beside named mods drawn in full-strength
+// red and magenta. Core's is djb2-hashed into oklch with an independently mixed
+// lightness/chroma tier, and its own tests pin that distinct strings separate
+// and that nothing lands on grey.
 export function getColorForModification(str: string) {
   return modificationData[str]?.color ?? randomColor(str)
 }
