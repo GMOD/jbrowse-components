@@ -71,14 +71,10 @@ interface LevelState {
 }
 
 /**
- * What the exact answer depends on — undefined where it depends on more than
- * the step can name.
- *
- * The single-block answer is a function of the alignment, the window and the
- * direction: one CIGAR walk, or one interpolation across the block. The
- * envelope is the union of every loaded block, so an unchanged window and
- * alignment still resolve differently once more of them arrive — and it costs
- * no RPC, so there is nothing to save by holding on to it.
+ * What the exact answer depends on, and undefined where it depends on more than
+ * the step can name: the envelope is the union of every loaded block, so an
+ * unchanged window and alignment still resolve differently once more of them
+ * arrive — and it costs no RPC, so there is nothing to save by keeping it.
  */
 function stepKey(step: FollowStep) {
   const { display, feat, toMate, window, windowInsideFeat } = step
@@ -91,20 +87,18 @@ function stepKey(step: FollowStep) {
 /**
  * The answer for one step, asked at most once.
  *
- * A SETTLE WAKES THIS PASS THREE TIMES, all with the same question. The moving
- * row's refetch is one, and applying the answer is another two — the nav
- * flushes that row's coarse blocks, which this pass reads to know where the row
- * actually is. Each was a second and third walk of the same CIGAR in the
- * worker.
+ * A SETTLE WAKES THIS PASS THREE TIMES with the same question: the moving row's
+ * refetch, and applying the answer, which flushes that row's coarse blocks —
+ * read here to know where the row actually is. Each was another walk of the
+ * same CIGAR in the worker.
  *
- * The promise rather than the resolved span, so the two of those that arrive
- * before the first one lands share the request in flight instead of issuing
- * their own. Every pass still awaits it and still runs its own `alreadyShowing`
- * check afterwards, against the window IT read — which is what keeps a row
+ * The promise rather than the span, so the wakes arriving before it lands share
+ * the request in flight. Every pass still awaits it and runs its own
+ * `alreadyShowing` check against the window IT read, which is what keeps a row
  * nudged by hand between passes from being written off as already in place.
  *
- * A rejection is dropped rather than kept, so the next wake retries instead of
- * replaying one failure for as long as the window sits still.
+ * A rejection is dropped, so the next wake retries rather than replaying one
+ * failure for as long as the window sits still.
  */
 function answerFor(
   state: LevelState,
@@ -133,30 +127,26 @@ function answerFor(
 /**
  * Keep the non-anchor genome rows on the region that aligns to the anchor row.
  *
- * This is the continuous form of the band context menu's "Move bottom panel to
- * the matching region", and it resolves the same way: the anchor's visible
- * WINDOW mapped through the alignments, as a span rather than a midpoint, so the
- * moved row matches the anchor's scale and the ribbons between them stay
- * near-vertical. What differs is that nobody clicks a band — the alignment is
- * picked by overlap with the anchor window (`planFollowStep`), and a CIGAR-less
- * block is interpolated across rather than refused (`interpolateFollowSpan` says
- * why those two answer it differently).
+ * The continuous form of the band context menu's "Move bottom panel to the
+ * matching region", resolved the same way: the anchor's visible WINDOW mapped
+ * through the alignments, as a span rather than a midpoint, so the moved row
+ * matches the anchor's scale and the ribbons stay near-vertical. What differs
+ * is that nobody clicks a band — the alignment is picked by overlap
+ * (`planFollowStep`) and a CIGAR-less one is interpolated across rather than
+ * refused (`interpolateFollowSpan` says why those two answer that differently).
  *
  * TWO PASSES, and the split is the whole design.
  *
  * The EXACT pass runs on the debounced window (`coarseDynamicBlocks`, ~500ms
  * behind the pointer), because it costs an RPC and resolving per pointer-move
  * would issue one per frame to park a row the user is still moving away from.
- * It also reads what is DRAWN rather than what is current: the features scanned
- * are the ones the display holds, which after a large jump can briefly be the
- * previous window's — the same ones still painted on screen. Following those is
- * honest, the fetch window carries a pan buffer so the common case is not stale,
- * and the pass re-runs when the fetch lands and corrects itself.
+ * It also reads what is DRAWN rather than what is current: after a large jump
+ * the display can briefly still hold the previous window's features, which are
+ * the ones on screen. The pass re-runs when the fetch lands and corrects itself.
  *
- * The PER-FRAME pass then fills in the motion between those, steering by the
- * cached transform alone. Without it the followed row does not lag — it sits
- * perfectly still through a drag and jumps once, half a second late, which is
- * what "jumpy" means here. See followTransform.
+ * The PER-FRAME pass fills in the motion between those. Without it the followed
+ * row does not lag — it sits perfectly still through a drag and jumps once, half
+ * a second late, which is what "jumpy" means here.
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = new Map<number, LevelState>()
@@ -198,19 +188,15 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     state.feat = step.feat
     state.display = step.display
     state.toMate = step.toMate
-    // Cached even when the row is already in place: this is what the per-frame
-    // pass steers by, so it has to be refreshed on every resolve rather than
-    // only on the ones that move something.
+    // Refreshed on every resolve, not only the ones that move something, since
+    // this is what the per-frame pass steers by.
     //
-    // ONLY FROM THE SINGLE-BLOCK ANSWER, which is the only case the per-frame
-    // pass applies it to. An envelope resolve maps the window onto a union
-    // several blocks contributed to, so there is no one strand to carry — and a
-    // forward transform cached from one, then applied after a zoom in to an
-    // INVERTED alignment, placed the row mirrored inside that block for the
-    // ~500ms until the next settle: half a second of motion running the wrong
-    // way, in exactly the mode that exists to keep the ribbons vertical.
-    // Dropping it instead falls the frame pass back to interpolating the block,
-    // which reads the strand off the block itself.
+    // ONLY FROM THE SINGLE-BLOCK ANSWER. An envelope maps the window onto a
+    // union several blocks contributed to, so there is no one strand to carry —
+    // and a forward transform cached from one, applied after a zoom in to an
+    // INVERTED alignment, placed the row mirrored inside that block until the
+    // next settle. Dropping it falls the frame pass back to interpolating the
+    // block, which reads the strand off the block itself.
     state.transform = step.windowInsideFeat
       ? followTransform(
           step.window,
@@ -233,11 +219,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     if (!isAlive(self)) {
       return
     }
-    // ONCE PER DISTINCT MESSAGE. A follow that cannot resolve usually cannot
-    // resolve repeatedly — an assembly whose refName the moving row does not
-    // have keeps failing the same way on every pan — and a snackbar per settle
-    // would bury the app in identical notifications for a background action
-    // nobody asked to run.
+    // A follow that cannot resolve usually cannot resolve repeatedly — an
+    // assembly whose refName the moving row does not have fails the same way on
+    // every pan — and a snackbar per settle would bury the app in identical
+    // notifications for a background action nobody asked to run.
     const message = `${e}`
     if (message !== lastErrorMessage) {
       lastErrorMessage = message
@@ -250,18 +235,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     autorun(
       function syntenyFollowAutorun() {
         if (!self.followSynteny) {
-          // so the header's warning form does not survive the mode being
-          // switched off over unaligned sequence and greet the next person who
-          // switches it back on. One write, since `followSynteny` is the only
-          // thing this pass reads while off.
+          // Nothing switched off should greet the next person who switches it
+          // back on: not the header's warning, not a cached transform (the
+          // frame pass wakes the moment the flag flips and would place the row
+          // from it for ~500ms), and not a suppressed error.
           self.setFollowUnaligned(false)
           self.setFollowApproximate(false)
-          // and neither does the cache: the frame pass wakes the moment the
-          // flag flips back, so a stale transform placed the row for the
-          // ~500ms until the first resolve corrected it
           levelStates.clear()
-          // same for the error memo — a failure re-triggered deliberately
-          // should be reported again
           lastErrorMessage = undefined
           return
         }
@@ -270,13 +250,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // and its reads would not be tracked.
         const work: [FollowPair, FollowStep, FollowWindow | undefined][] = []
         // Levels that HAVE alignments loaded and still found none over the
-        // anchor window — the state the header reports, see setFollowUnaligned.
-        // Loading is deliberately not counted: a level whose fetch has not
-        // landed has no answer yet rather than no answer, and flagging it would
-        // blink a warning on every pan.
+        // window. Loading is deliberately not counted: a level whose fetch has
+        // not landed has no answer YET rather than no answer, and flagging it
+        // would blink a warning on every pan.
         let unaligned = false
-        // Levels whose placement will be a proportional mapping rather than a
-        // CIGAR walk, which interpolateFollowSpan asks its callers to say.
         let approximate = false
         for (const pair of self.followPairs) {
           const { level, stayingView, movingView, toMate, mateAssembly } = pair
@@ -284,14 +261,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           if (!window) {
             continue
           }
-          // The moving row's own settled window, read here so this pass owns
-          // every observable the follow depends on. It makes that row a
-          // DEPENDENCY, which is deliberate and is what re-asserts the follow
-          // over a row the user nudged by hand. The debounced blocks, not the
-          // live ones, for the same reason the anchor uses them: tracking the
-          // live position would wake this pass on every frame of a drag. It
-          // converges — the nav settles, wakes this once more, and
-          // `alreadyShowing` then says there is nothing to do.
+          // Reading the moving row here makes it a DEPENDENCY, which is
+          // deliberate: it is what re-asserts the follow over a row the user
+          // nudged by hand. Debounced rather than live, for the same reason the
+          // anchor is.
           const movingWindow = followAnchorWindow(
             movingView.coarseDynamicBlocks,
           )
@@ -304,18 +277,17 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           })
           if (step) {
             work.push([pair, step, movingWindow])
-            // Off the plan rather than the answer, so it lands in this
+            // off the plan rather than the answer, so it lands in this
             // synchronous pass. `hasCigar` is per-FETCH, so a file mixing them
             // under-reports here — no worse than the silence this replaces.
             if (!step.windowInsideFeat || !step.hasCigar) {
               approximate = true
             }
           } else if (level.linearSyntenyDisplays.some(d => d.featureData)) {
-            // No alignment over the anchor window. The moving row HOLDS
-            // POSITION rather than being sent somewhere invented, and picks the
-            // follow back up when the anchor pans into aligned sequence again —
-            // reported rather than only silent, since a row that stops tracking
-            // with nothing said is the same picture as a broken follow.
+            // The row holds position and picks the follow back up when the
+            // anchor pans into aligned sequence again — said out loud, since a
+            // row that stops tracking silently is the same picture as a broken
+            // follow.
             unaligned = true
           }
         }
@@ -334,29 +306,22 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // The per-frame half, and the reason the follow moves rather than teleports.
   //
   // IT REPLANS AGAINST THE LIVE WINDOW rather than extrapolating the last exact
-  // answer, and only the RPC is left out. Extrapolating was the first version
-  // and it tracked a drag perfectly and then snapped on settle — measured on
-  // grape/peach at 43% of a screen at 5 Mb and 66% at 20 Mb, which is the same
-  // complaint one step further along. The reason is structural: past the width
-  // of a single alignment the exact answer is the ENVELOPE, and an envelope is
-  // not an affine function of the window — blocks enter and leave it as the
-  // anchor pans, so its edges move in steps no cached mapping can predict. The
-  // envelope is also the half that costs nothing: main-thread arithmetic over
-  // typed arrays the display already holds.
-  //
-  // So the cached transform is kept for exactly the case it models well — a
-  // window inside one alignment, where the correspondence IS affine outside the
-  // indels and where the RPC's CIGAR walk is the only thing this pass cannot
-  // reproduce. That case measured 9.8%, most of it the CIGAR detail.
+  // answer, and only the RPC is left out. Extrapolating was the first version:
+  // it tracked a drag perfectly and then snapped on settle, by 43% of a screen
+  // at 5 Mb on grape/peach and 66% at 20 Mb. Past the width of a single
+  // alignment the answer is the ENVELOPE, which is not an affine function of
+  // the window — blocks enter and leave it as the anchor pans, so its edges
+  // move in steps no cached mapping can predict. Recomputing it costs nothing
+  // here: main-thread arithmetic over arrays the display already holds. The
+  // cached transform is kept for the one case it models well, a window inside
+  // one alignment, which measured 9.8% and is mostly the CIGAR detail.
   //
   // READS EACH LEVEL'S STAYING ROW AND THE LOADED FEATURES, NEVER ITS MOVING
-  // ROW. `positionViewOnSpan` writes that row's zoom and offset, so tracking
-  // anything on it here would be a dependency on this pass's own write. In a
-  // stack of three or more an interior row is both — placed by the level nearer
-  // the anchor and read by the one beyond it — which is why `followPairs` comes
-  // back ordered OUTWARD FROM THE ANCHOR: the nearer level's write lands before
-  // the farther level reads it, so one pass settles the stack instead of one
-  // pass per level.
+  // ROW, which this pass writes. In a stack of three or more an interior row is
+  // both — placed by the level nearer the anchor and read by the one beyond it
+  // — which is why `followPairs` comes back ordered OUTWARD FROM THE ANCHOR: the
+  // nearer level's write lands before the farther level reads it, so one pass
+  // settles the stack instead of one pass per level.
   addDisposer(
     self,
     autorun(
@@ -372,17 +337,14 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           if (!window) {
             continue
           }
-          // The block the last settle chose, rather than re-picking one. That
-          // choice costs a full scan of every loaded block, and this pass is
-          // already paying for one in `followWindowMapping`; a whole-genome
-          // PAF's loaded set runs to hundreds of thousands, where each scan is
-          // a measurable slice of a frame. Nothing is placed until the first
-          // settle populates this, which is a few hundred ms after the mode is
-          // switched on.
+          // The block the last settle chose, rather than re-picking one: that
+          // costs a scan of every loaded block, and this pass already pays for
+          // one in `followWindowMapping`. Nothing is placed until the first
+          // settle populates it.
           //
           // Checked against its direction, since moving the anchor across this
           // level flips `toMate` and the cached block was picked on the other
-          // axis; and against the display's liveness, since hiding that synteny
+          // axis; and against the display's liveness, since hiding the synteny
           // track destroys the node and reading `featureData` off it throws
           // from inside this autorun.
           const cached = levelStates.get(level.level)

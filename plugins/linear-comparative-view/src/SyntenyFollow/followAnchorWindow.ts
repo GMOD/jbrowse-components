@@ -8,17 +8,15 @@ export interface FollowWindow {
 
 /**
  * The window a follow reads off the anchor panel: its visible span on the ONE
- * refName it is mostly showing.
+ * refName it is mostly showing, since an alignment lives on one contig pair.
  *
- * One refName, because a follow maps a window through a single alignment and an
- * alignment lives on one contig pair. A panel straddling a region boundary (two
- * contigs on screen at once, or a whole-genome view) has no single window to
- * map, so the widest contig by SCREEN px wins — the same thing the eye picks as
- * "where the view is". Screen px rather than bp is what makes that true across a
- * region set whose contigs differ in size by orders of magnitude.
+ * A panel straddling a region boundary (two contigs at once, or a whole-genome
+ * view) has no single window to map, so the widest contig by SCREEN px wins —
+ * the same thing the eye picks as "where the view is", and true across a region
+ * set whose contigs differ in size by orders of magnitude in a way bp is not.
  *
  * The span is the union of that refName's blocks rather than the widest single
- * block, so a contig split across a padding block still yields the whole visible
+ * one, so a contig split across a padding block still yields the whole visible
  * stretch — matching `visibleSpanOnRefName`, which the click-driven move uses.
  *
  * `undefined` when the panel is showing nothing, which is a panel mid-init.
@@ -48,9 +46,8 @@ export function followAnchorWindow(
       best = entry
     }
   }
-  // rebuilt rather than returned as-is: `widthPx` is the accumulator that picked
-  // the winner, not part of the window, and letting it ride along puts a field
-  // in the result that the type does not declare
+  // rebuilt rather than returned as-is, so `widthPx` — the accumulator that
+  // picked the winner — does not ride along undeclared
   return best
     ? {
         refName: best.refName,

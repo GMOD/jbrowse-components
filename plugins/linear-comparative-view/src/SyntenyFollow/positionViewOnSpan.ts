@@ -13,22 +13,20 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  *
  * Base1DUtils' `moveTo` rather than the view ACTION of the same name, which
  * wraps it and then FLUSHES the view's coarse blocks, on the argument that a
- * discrete jump has nothing to coalesce. Per frame that stops being true — it
+ * discrete jump has nothing to coalesce. Per frame that stops being true: it
  * would republish the followed row's debounced window sixty times a second, and
  * the exact pass tracks exactly that, so every frame of a drag would wake an
  * RPC. Pan and zoom deliberately do not flush, and this is pan and zoom.
  *
- * The zoom-then-scroll pair underneath has to measure its offset against the
- * bpPerPx `zoomTo` LANDED on rather than the one asked for, and re-centre when
- * those differ. Getting only the first half of that right left the row flush
- * against the span's left edge wherever the clamp bit, half a screen from where
- * the exact pass puts it through `navToLocString` — which is the same `moveTo`.
+ * The zoom-then-scroll pair underneath measures its offset against the bpPerPx
+ * `zoomTo` LANDED on rather than the one asked for, and re-centres when those
+ * differ. Doing only the first of those left the row flush against the span's
+ * left edge wherever the clamp bit, half a screen from where the exact pass
+ * puts it through `navToLocString` — which is the same `moveTo`.
  *
- * False when the span is not inside the displayed regions at all — the followed
- * row is showing one contig and the follow has mapped onto another. The frame
- * pass leaves the row alone there rather than acting on it: changing what a row
- * displays is a real navigation, and the exact pass's `navToLocString` is
- * already on its way to do exactly that.
+ * False when the span is not inside the displayed regions at all: the row is
+ * showing one contig and the follow has mapped onto another. Changing that is a
+ * real navigation, which the exact pass is already on its way to do.
  */
 export function positionViewOnSpan(
   view: LinearGenomeViewModel,

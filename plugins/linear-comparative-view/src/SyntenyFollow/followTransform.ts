@@ -5,15 +5,11 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * The local correspondence between the two rows, cached from the last exact
  * resolve so the followed row can be placed WITHOUT one.
  *
- * This is what makes the follow smooth rather than a teleport. The exact answer
- * costs an RPC and is taken from the debounced window, so on its own the
- * followed row sits still through a drag and then jumps half a second after the
- * drag ends — which is the motion, not a lag: the row never moves WITH the
- * anchor, only after it. Between resolves the correspondence is very nearly
- * affine (synteny is locally collinear, and one alignment block is exactly
- * affine outside its indels), so caching the last one and applying it per frame
- * places the row correctly enough to move continuously, and the next resolve
- * corrects the accumulated error rather than supplying all of the motion.
+ * Between resolves the correspondence is very nearly affine — synteny is
+ * locally collinear, and one alignment block is exactly affine outside its
+ * indels — so applying the last one per frame places the row well enough to
+ * move continuously, and the next resolve corrects the accumulated error rather
+ * than supplying all of the motion.
  */
 export interface FollowTransform {
   // the anchor-axis window this was measured over

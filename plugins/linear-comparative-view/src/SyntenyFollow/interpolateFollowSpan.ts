@@ -6,31 +6,23 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * Where a follow sends the moving panel when the alignment carries no CIGAR to
  * walk: the window mapped straight across the block, proportionally.
  *
- * THIS IS THE ONE PLACE THE SYNTENY CODE NAVIGATES ON AN INTERPOLATION, and it
- * is a deliberate departure from the click-driven move, which refuses (see
- * `resolveAlignmentSpan`'s note: a straight-line guess parked flush against its
- * neighbour presents itself as a correspondence). The reasoning does not carry
- * over to a follow. A PIF's coarse tier is CIGAR-less by construction and is
- * what serves whole-genome zoom, so refusing there would make the mode work
- * while zoomed in and silently stop working when zoomed out — the moving panel
- * simply stranded, with the user's own pan as the only visible cause. Between a
- * bounded approximation and a feature that quietly comes and goes with zoom, the
- * approximation is the smaller lie, and it is exactly the geometry the ribbon on
- * screen is already drawn with: no per-base correspondence is known at that
- * tier, so the band IS a straight quadrilateral between the two blocks' corners
- * and this reads the mate position off that same straight edge.
+ * THIS IS THE ONE PLACE THE SYNTENY CODE NAVIGATES ON AN INTERPOLATION, and a
+ * deliberate departure from the click-driven move, which refuses (see
+ * `resolveAlignmentSpan`: a straight-line guess parked flush against its
+ * neighbour presents itself as a correspondence). A PIF's coarse tier is
+ * CIGAR-less by construction and is what serves whole-genome zoom, so refusing
+ * would make the mode work zoomed in and silently stop working zoomed out, with
+ * the user's own pan as the only visible cause. It is also exactly the geometry
+ * on screen: at that tier the band IS a straight quadrilateral between the two
+ * blocks' corners, and this reads the mate position off that same edge.
  *
  * The skew is NOT bounded by the tier's 10kb indel split threshold — many
  * smaller indels accumulate inside one coarse row without triggering a split —
- * so a caller that can tell the user the answer is approximate should.
- *
- * Both directions clamp to the block first, so a window wider than the
- * alignment (or one starting off its end) lands back on the block's own ends
- * rather than extrapolating off the far side of the mate.
+ * so a caller that can say the answer is approximate should.
  *
  * One formula for both directions, over an anchor axis `a` and a placed axis
- * `b` that swap with `toMate`: the window edge as a fraction along `a`, read
- * off `b` from its far end when the strands disagree.
+ * `b` that swap with `toMate`, clamped to the block so a window wider than the
+ * alignment lands on its ends rather than off the far side of the mate.
  */
 export function interpolateFollowSpan({
   feat,

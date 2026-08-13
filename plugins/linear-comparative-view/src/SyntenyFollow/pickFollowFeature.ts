@@ -1,14 +1,12 @@
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
-// How much wider a challenger's overlap of the anchor window has to be before a
-// follow abandons the alignment it is already on. Pure hysteresis: without it,
-// two alignments covering the same window within a few bp of each other (a
-// segmental duplication, a fragmented assembly, two rows of an all-vs-all file)
-// trade places on the ordinary rounding that a pan produces, and the followed
-// panel snaps back and forth between paralogous loci while the anchor moves
-// smoothly. 1.5x is above that noise and well below the step a genuinely better
-// alignment makes when the window leaves one block for the next.
+// How much wider a challenger's overlap has to be before a follow abandons the
+// alignment it is on. Without it, two alignments covering the same window
+// within a few bp of each other (a segmental duplication, a fragmented
+// assembly, two rows of an all-vs-all file) trade places on the rounding a pan
+// produces, and the followed panel snaps between paralogous loci while the
+// anchor moves smoothly.
 const SWITCH_MARGIN = 1.5
 
 export interface FollowCandidate {
@@ -35,35 +33,24 @@ export function preferIncumbent<T extends FollowCandidate>(
  * covering the most of that window, biased toward the one already being
  * followed.
  *
- * Scans the display's packed arrays directly rather than materializing
- * `FeatPos` objects — this runs on every settled pan of the anchor panel, and a
- * whole-genome PAF's loaded set runs to hundreds of thousands of blocks.
- *
- * THE AXIS DEPENDS ON THE DIRECTION. `starts`/`ends`/`refNames` are the query
- * axis (the level's upper panel) and `mateStarts`/`mateEnds`/`mateRefNames` the
- * target axis, so the window is matched against whichever axis the STAYING
- * panel is on: the query axis when the mate panel is the one moving, the mate
- * axis when it is not.
+ * Scans the packed arrays rather than materializing `FeatPos` objects — this
+ * runs on every settled pan and a whole-genome PAF's loaded set runs to
+ * hundreds of thousands of blocks.
  *
  * `mateAssembly` KEEPS AN ALL-VS-ALL TRACK IN ITS LANE — belt to the adapter's
  * braces, deliberately. The fetch is single-axis (query regions in, every mate
- * out), so nothing in the SHAPE of what arrives here says the mates all belong
- * to the assembly the level's lower row is on; that they do is a property of the
+ * out), so nothing in the SHAPE of what arrives says the mates all belong to
+ * the assembly the level's lower row is on; that they do is a property of the
  * adapters we ship, which honor the `targetAssemblyName` the synteny fetch
- * passes (`AllVsAllPAFAdapter.getFeatures` drops the other pairs at the source).
- * An adapter that ignores it — a third-party one, or a future path that stops
- * passing it — would put alignments to every sample in a PanSN file in front of
- * this function, and the widest of them would win and send the row to a contig
- * of a different genome. Cheap enough to not depend on a contract two layers
- * away. It is the mate array that is checked in both directions, because the
- * mate axis is the multi-assembly one and is also the only one every adapter
- * reliably fills in (the worker defaults a missing feature-side `assemblyName`
- * to '').
+ * passes. One that ignores it would put every sample in a PanSN file in front
+ * of this, and the widest would win and send the row to another genome's
+ * contig. It is the MATE array that is checked in both directions, because that
+ * is the multi-assembly axis and the only one every adapter reliably fills in
+ * (the worker defaults a missing feature-side `assemblyName` to '').
  *
- * `undefined` when nothing on that axis overlaps the window, which is an
- * ordinary answer rather than an error — a haplotype-specific insertion, a
- * centromere, or simply a panel parked off the end of the alignments. The
- * caller holds position rather than guessing.
+ * `undefined` when nothing overlaps the window is an ordinary answer, not an
+ * error: a haplotype-specific insertion, a centromere, a panel parked off the
+ * end of the alignments. The caller holds position rather than guessing.
  */
 export function pickFollowFeature({
   data,
@@ -76,9 +63,8 @@ export function pickFollowFeature({
   window: FollowWindow
   toMate: boolean
   // the assembly of the panel on the level's MATE axis (always `views[level +
-  // 1]`), whichever of the two panels is the one moving. Undefined only where
-  // the caller cannot name it, which skips the filter rather than dropping
-  // every candidate.
+  // 1]`), whichever panel is the one moving. Undefined where the caller cannot
+  // name it, which skips the filter rather than dropping every candidate.
   mateAssembly?: string
   // the feature id this level followed last time, if it is still loaded
   incumbentId?: string
@@ -98,10 +84,8 @@ export function pickFollowFeature({
     ) {
       continue
     }
-    // normalized because a reverse-strand block's mate coords arrive genomic
-    // (start < end) from every adapter we ship, but a `min`/`max` here costs
-    // nothing and a negative-width block would otherwise score as a huge
-    // negative overlap and never be picked even where it is the only candidate
+    // a negative-width block would score as a huge negative overlap and never
+    // be picked, even where it is the only candidate
     const lo = Math.min(starts[i]!, ends[i]!)
     const hi = Math.max(starts[i]!, ends[i]!)
     const overlap = Math.min(hi, window.end) - Math.max(lo, window.start)
