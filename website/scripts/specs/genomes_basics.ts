@@ -102,6 +102,31 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // which is the tempting way to write the cast that isn't needed.
 const GNOMAD_COMMON_FILTER = 'jexl:feature.AF >= 0.001'
 
+// Which genetic ancestry group carries a variant at its highest frequency.
+// `grpmax` is an in-line bigBed column, so this needs nothing but a colour
+// callback -- the per-group table gnomAD's own browser draws lives in a sidecar
+// file JBrowse does not read, and this is the part of it that ships in the
+// track. Six groups occur (Finnish, Ashkenazi and Amish are excluded from
+// grpmax by gnomAD), plus N/A where every group is zero.
+//
+// Okabe-Ito, which is colourblind-safe; the keys carry spaces, slashes and
+// parens and jexl takes them quoted (checked against createJexlInstance).
+const GNOMAD_ANCESTRY_COLORS: [string, string][] = [
+  ['African/African American', '#E69F00'],
+  ['Admixed American', '#56B4E9'],
+  ['East Asian', '#009E73'],
+  ['European (Non-Finnish)', '#0072B2'],
+  ['Middle Eastern', '#D55E00'],
+  ['South Asian', '#CC79A7'],
+]
+const GNOMAD_ANCESTRY_COLOR = `jexl:{${GNOMAD_ANCESTRY_COLORS.map(
+  ([k, v]) => `'${k}':'${v}'`,
+).join(',')}}[feature.grpmax] || '#999999'`
+const GNOMAD_ANCESTRY_LEGEND = [
+  ...GNOMAD_ANCESTRY_COLORS.map(([label, color]) => ({ label, color })),
+  { label: 'No group above zero', color: '#999999' },
+]
+
 // One factor out of the whole JASPAR collection. `TFName` is a column of the
 // file's own autoSql, so this is the expression a reader types into the track
 // menu's "Filter by..." -- `jexlFiltersSetting` is the model prop that dialog
@@ -570,10 +595,16 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // inside. That is the whole figure, and none of those numbers is in the prose
   // -- the two frames show it.
   //
+  // The second frame is also coloured by `grpmax`, the group carrying the
+  // variant at its highest frequency, which is what makes it more than the same
+  // track with fewer features in it. All six groups occur over this window
+  // (measured 2026-08-13: 19 African/African American, 15 East Asian, 14
+  // European non-Finnish, 9 Admixed American, 7 South Asian, 7 Middle Eastern
+  // among the 71 common variants), and the most skewed is chr17:7,674,638 at
+  // 0.6% overall against 17% in African/African American.
+  //
   // `jexlFiltersSetting`, the model prop the "Filter by..." dialog writes: the
-  // frame is a reader having applied the filter. `AF` is a column of the file's
-  // own autoSql and arrives as a string, so the comparison is on a cast rather
-  // than on the raw field.
+  // frame is a reader having applied the filter.
   {
     mode: 'url',
     name: 'genomes_basics/gnomad_common_rare',
@@ -616,6 +647,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
                   trackId: GNOMAD_TRACK_ID,
                   height: 130,
                   jexlFiltersSetting: [GNOMAD_COMMON_FILTER],
+                  color: GNOMAD_ANCESTRY_COLOR,
+                  legend: GNOMAD_ANCESTRY_LEGEND,
                 },
               ],
             },

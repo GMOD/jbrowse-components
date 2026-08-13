@@ -173,12 +173,18 @@ Exomes** under Variation and Repeats has many records over the exon; they differ
 in frequency. **Filter by...** takes that as readily as it took a factor name:
 `feature.AF >= 0.001`.
 
-<Figure src="/img/genomes_basics/gnomad_common_rare.png" caption="The TP53 transcript with phyloP, ClinVar and gnomAD exomes. Top: gnomAD as the checkbox gives it, densest over the coding exons. Bottom: the same track filtered to variants above 0.1 percent." />
+The file also records which genetic ancestry group carries each variant at its
+highest frequency, in a `grpmax` column. **Color by... → Attribute...** takes
+any column name and assigns each value a colour; the figure below uses a named
+palette instead, so the legend can say which group is which.
+
+<Figure src="/img/genomes_basics/gnomad_common_rare.png" caption="The TP53 transcript with phyloP, ClinVar and gnomAD exomes. Top: gnomAD as the checkbox gives it, densest over the coding exons. Bottom: the same track filtered to variants above 0.1 percent and coloured by the ancestry group carrying each one at its highest frequency." />
 
 Unfiltered, gnomAD is densest where phyloP peaks, since that is what an exome
 captures. Filtered to the common variants, few remain in coding sequence; the
 rest are intronic or in the 3' UTR. ClinVar's pathogenic records are in the
-exons.
+exons. All six groups gnomAD reports a maximum for occur across this one gene,
+and which group it is changes from variant to variant.
 
 <Figure src="/img/genomes_basics/variant_details.png" caption="A ClinVar variant clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
 
