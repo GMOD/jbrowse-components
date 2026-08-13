@@ -43,6 +43,39 @@ Rules that need a strand AND a flag (`firstOfPairStrand`) live in
 `shared/util.ts` and are called by both consumers, so a "these must match"
 comment never stands in for actually sharing the code.
 
+## A read's identity is `readKeys`; `readIdAt` is where the string is built
+
+The result ships **keys**, not id strings: `readKeys` is a transferable
+`Float64Array` of the record id BAM and CRAM already hold, plus `readIdPrefix`,
+which spells `feature.id()` back. Building the string per read cost 24.5ms and
+cloning it 8.6ms on a 153,677-read window — about what the whole mismatch walk
+costs on the same fixture (`benches/readIds.bench.ts`). Structured clone is
+priced by object **count**, so the two halves are independent and a fix that
+removes only one buys half.
+
+So, for anything reading a read's identity:
+
+- **A map key, a dedupe key or a sort tiebreak takes the key.** That is nearly
+  every consumer — `sortLayout`'s canonical order, `dedupeByReadId`,
+  `featureIdToChainIdx`. A `Map<ReadKey, …>` is fine and faster.
+- **`readIdAt(data, i)` only where the id leaves these arrays** —
+  `featureIdUnderMouse` (MST state, saved and restored), the feature-details
+  fetch, the tooltip. Each is one read: a hover or a click produces exactly one.
+  The two bulk consumers left (`readIdIndexMap`, `lazyReadIdToIndex`) are the
+  deferred ones, so a cold render still builds none.
+- **Never spell the string yourself.** `shared/readIdentity.ts` is the one place
+  that joins prefix to key, and the prefix is derived by stripping a record id
+  off a real `id()` and checking the strip — so an adapter whose features carry
+  no `recordId` (SAM, and the PAF/synteny blocks LGVSyntenyDisplay pushes
+  through) falls back to whole strings instead of shipping a wrong prefix.
+  `ReadKey` is `number | string` for that reason, and every comparison and map
+  works on either.
+
+The failure mode if this is got wrong is silent: the details RPC compares the
+rebuilt string against `feature.id()` **in the worker**, finds nothing, and the
+click lands on "Could not load details" rather than an error.
+`browser-tests/suites/alignments-read-identity.ts` is the crossing test.
+
 ## Adapter hot path (BAM/CRAM)
 
 `extractFeatureArrays` calls `feature.get(...)` per read, so keep work out of

@@ -1,4 +1,13 @@
-// What does `readIds: string[]` cost, built and then posted?
+// What did `readIds: string[]` cost, built and then posted?
+//
+// LANDED. The numeric arm is what ships — the result carries `readKeys`
+// (a transferable Float64Array of the record id) plus the `readIdPrefix` that
+// spells the string back where one escapes; see shared/readIdentity.ts. This
+// bench is kept because it is the A/B that decided it, and because the two
+// halves have to stay separated for the reason below.
+//
+// Latest run, 1000x.shortread, 153,677 reads: build 21.25 -> 1.53ms,
+// post 7.95 -> 0.19ms, total 29.20 -> 1.71ms (17.0x), control 0.983x.
 //
 //   node --expose-gc plugins/alignments/benches/readIds.bench.ts --only=1000x
 //
@@ -6,11 +15,11 @@
 //
 // ONE FIXTURE PER PROCESS — agent-docs/reference/BENCHMARKING.md.
 //
-// THE QUESTION. `buildBaseFeatureData` puts `id: feature.id()` on every read,
-// which for the alignments features is `` `${adapter.id}-${fileOffset}` `` — a
-// template literal per read — and `buildBaseReadArrays` collects them into
-// `readIds: string[]`, which is then structured-cloned to the main thread with
-// the rest of the RPC result.
+// THE QUESTION AS IT STOOD. `buildBaseFeatureData` put `id: feature.id()` on
+// every read, which for the alignments features is
+// `` `${adapter.id}-${fileOffset}` `` — a template literal per read — and
+// `buildBaseReadArrays` collected them into `readIds: string[]`, which was then
+// structured-cloned to the main thread with the rest of the RPC result.
 //
 // Two reasons to suspect it. `dedupeById` used to build the same string per
 // read and dropping it took the dedupe from 12.5% to 5.9% of worker busy time,
@@ -23,7 +32,7 @@
 // build but still posts 153k strings, or vice versa, buys only half.
 //
 // FOUR ARMS + a control, all over the same records:
-//   build-str   — what ships: a template literal per read into a string[]
+//   build-str   — what shipped: a template literal per read into a string[]
 //   build-num   — a Float64Array of the raw fileOffset. Float64, not Uint32:
 //                 a BAM virtual offset is (blockStart << 16) | inBlock, which
 //                 passes 2^32 on any file over ~64 GB and is exact in a double
