@@ -28,6 +28,7 @@ before anyone noticed.
 | [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
 | [Validate the react-app site's volvox config](#run-jbrowse-validate-over-the-react-app-sites-volvox-configjson) | embedded, config | 8 errors already reported; fix the file, then ask why it is a copy |
 | [Pool the coordinate ruler's tick divs](#pool-the-coordinate-rulers-tick-divs-so-a-zoom-stops-rebuilding-them) | LGV, perf | measured; a fixed pool is the low-risk version |
+| [Emit the shader constants as their own module](#emit-the-shader-constants-as-their-own-module) | shaders, bundle | the fix is in the codegen, so it answers to the Shaders CI job |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
