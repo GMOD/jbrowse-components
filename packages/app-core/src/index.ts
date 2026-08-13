@@ -17,11 +17,12 @@ export type {
   PanelNode,
   TabNode,
   // named by the emitted BaseWebSession/sessionModel declarations, whose
-  // `applyLayoutSpec`/`setPendingMove`/`tileViews` signatures tsc otherwise
-  // serializes as a `src/` path a published tarball doesn't ship
+  // `applyLayoutSpec`/`setPendingMove`/`tileViews`/`findTab` signatures tsc
+  // otherwise serializes as a `src/` path a published tarball doesn't ship
   LayoutSpecNode,
   PendingMove,
   TileMode,
+  TabHome,
 } from './WorkspaceLayout/index.ts'
 export {
   addSessionTracks,

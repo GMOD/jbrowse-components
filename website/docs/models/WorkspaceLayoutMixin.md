@@ -34,12 +34,12 @@ is `applySnapshot` on this node and nothing else has to be told.
 | <span id="property-id">**id**</span><br><code>id: types.identifier</code> |  |
 | <span id="property-viewids">**viewIds**</span><br><code>viewIds: types.array(types.string)</code> |  |
 | <span id="property-title">**title**</span><br><code>title: types.maybe(types.string)</code> | set only by an explicit rename; otherwise the name is derived from views |
-| <span id="property-id">**id**</span><br><code>id: types.identifier</code> |  |
+| **id**<br><code>id: types.identifier</code> |  |
 | <span id="property-size">**size**</span><br><code>size: types.optional(types.number, 1)</code> |  |
 | <span id="property-tabs">**tabs**</span><br><code>tabs: types.array(LayoutTab)</code> |  |
 | <span id="property-activetabid">**activeTabId**</span><br><code>activeTabId: types.maybe(types.string)</code> |  |
-| <span id="property-id">**id**</span><br><code>id: types.identifier</code> |  |
-| <span id="property-size">**size**</span><br><code>size: types.optional(types.number, 1)</code> |  |
+| **id**<br><code>id: types.identifier</code> |  |
+| **size**<br><code>size: types.optional(types.number, 1)</code> |  |
 | <span id="property-direction">**direction**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>direction: types.enumeration('LayoutDirection', ['row', 'column…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>direction: types.enumeration('LayoutDirection', ['row', 'column'])</code></pre></dialog></span> |  |
 | <span id="property-children">**children**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>children: types.array( types.late((): typeof LayoutPanel =&gt; Lay…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>children: types.array(&#10;&#160;&#160;&#160;&#160;types.late((): typeof LayoutPanel =&gt; LayoutNode as never),&#10;&#160;&#160;)</code></pre></dialog></span> |  |
 | <span id="property-layout">**layout**</span><br><code>layout: types.optional(LayoutNode, emptyPanel)</code> |  |

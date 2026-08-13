@@ -287,16 +287,32 @@ function memberAnchor(def: MemberKind, name: string) {
 // pages carry a copy of every BaseDisplay member — so pagefind is told to index
 // it only where it is defined, and a search lands on that model rather than on a
 // wall of near-identical descendants. The row still renders for the reader.
+// `seen` carries the anchors already emitted on this page, and only the first
+// row for a name gets the `id`. A model composed of several sub-models lists
+// each one's members in the same table — WorkspaceLayoutMixin has three `id`
+// properties and two `size` ones, from LayoutTab, LayoutPanel and LayoutNode —
+// and repeating the anchor renders duplicate ids, which the website build
+// fails on. The first occurrence keeps the canonical anchor, so every existing
+// deep link into these pages still resolves.
 function memberRow(
   def: MemberKind,
   m: Member,
-  { definedBy, inherited }: { definedBy?: string; inherited: boolean },
+  {
+    definedBy,
+    inherited,
+    seen,
+  }: { definedBy?: string; inherited: boolean; seen: Set<string> },
 ) {
   const description = [proseCell(m.docs), exampleCell(m.examples)]
     .filter(Boolean)
     .join('<br>')
+  const anchor = memberAnchor(def, m.name)
+  const named = seen.has(anchor)
+    ? `**${m.name}**`
+    : `<span id="${anchor}">**${m.name}**</span>`
+  seen.add(anchor)
   const cells = [
-    `<span id="${memberAnchor(def, m.name)}">**${m.name}**</span><br>${codeCell(def.memberCode(m))}`,
+    `${named}<br>${codeCell(def.memberCode(m))}`,
     inherited && description
       ? `<span data-pagefind-ignore>${description}</span>`
       : description,
@@ -318,11 +334,13 @@ function kindSection(
   inherited: InheritedGroup[],
 ) {
   const hasInherited = inherited.some(g => g.members[def.key].length)
+  const seen = new Set<string>()
   const rows = [
     ...ownMembers.map(m =>
       memberRow(def, m, {
         definedBy: hasInherited ? ownName : undefined,
         inherited: false,
+        seen,
       }),
     ),
     ...inherited.flatMap(({ model, members }) =>
@@ -330,6 +348,7 @@ function kindSection(
         memberRow(def, m, {
           definedBy: `[${model.header.name}](../${model.header.id}#${memberAnchor(def, m.name)})`,
           inherited: true,
+          seen,
         }),
       ),
     ),
