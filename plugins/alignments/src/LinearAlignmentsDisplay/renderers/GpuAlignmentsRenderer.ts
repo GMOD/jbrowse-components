@@ -847,61 +847,18 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       uploadModifications(this.hal, idx, data)
       uploadPerBaseQuality(this.hal, idx, data)
       uploadPerBaseLetter(this.hal, idx, data)
-      this.uploadCoverage(idx, data)
-      uploadModCoverage(
-        this.hal,
-        idx,
-        data.modCovPackedBuffer,
-        data.modCovPositions.length,
-      )
-      if (data.connectingLinePositions.length > 0) {
-        uploadConnectingLines(this.hal, idx, data)
-      }
-      if (data.numLinkedReadLines > 0) {
-        uploadLinkedReadLines(this.hal, idx, data)
-      }
-      if (data.overlapPositions.length > 0) {
-        uploadOverlaps(this.hal, idx, data)
-      }
+      uploadCoverageBins(this.hal, idx, data)
+      uploadSnpCoverage(this.hal, idx, data)
+      uploadInterbase(this.hal, idx, data)
+      uploadIndicators(this.hal, idx, data)
+      uploadModCoverage(this.hal, idx, data)
+      uploadConnectingLines(this.hal, idx, data)
+      uploadLinkedReadLines(this.hal, idx, data)
+      uploadOverlaps(this.hal, idx, data)
     }
     if (arcs) {
       uploadArcs(this.hal, idx, arcs, arcLineWidth)
     }
-  }
-
-  private uploadCoverage(
-    displayedRegionIndex: number,
-    data: CoverageUploadData,
-  ) {
-    if (data.coverageGpuBinCount > 0) {
-      uploadCoverageBins(
-        this.hal,
-        displayedRegionIndex,
-        data.coveragePackedBuffer,
-        data.coverageGpuBinCount,
-      )
-    }
-
-    uploadSnpCoverage(
-      this.hal,
-      displayedRegionIndex,
-      data.snpPackedBuffer,
-      data.snpPositions.length,
-    )
-
-    uploadInterbase(
-      this.hal,
-      displayedRegionIndex,
-      data.interbasePackedBuffer,
-      data.interbaseCovPositions.length,
-    )
-
-    uploadIndicators(
-      this.hal,
-      displayedRegionIndex,
-      data.indicatorPackedBuffer,
-      data.indicatorPositions.length,
-    )
   }
 
   private writeUniforms(state: RenderState, frame: BlockFrame) {

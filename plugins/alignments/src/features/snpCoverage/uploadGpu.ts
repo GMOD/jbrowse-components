@@ -1,19 +1,20 @@
 import { PASS_SNP_COV } from './packGpu.ts'
 
+import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 import type { GpuHal } from '@jbrowse/render-core/hal'
 
 export function uploadSnpCoverage(
   hal: GpuHal,
   displayedRegionIndex: number,
-  packedBuffer: ArrayBuffer,
-  segmentCount: number,
+  data: CoverageUploadData,
 ) {
-  if (segmentCount > 0) {
+  const n = data.snpPositions.length
+  if (n > 0) {
     hal.uploadBuffer(
       displayedRegionIndex,
       PASS_SNP_COV,
-      packedBuffer,
-      segmentCount,
+      data.snpPackedBuffer,
+      n,
     )
   }
 }
