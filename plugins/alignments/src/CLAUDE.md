@@ -95,9 +95,9 @@ from tens of thousands up.
 
 ## The other two per-read string arrays, and the rule they share
 
-`readNextRefs` and `readSuppAlignments` are gone too, each for its own reason,
-and between them they were ~42ms a fetch on the deep short-read window
-(`benches/readNextRefs.bench.ts`).
+`readNextRefs` is gone and `readSuppAlignments` ships conditionally, each for
+its own reason; between them they were ~42ms a fetch on the deep short-read
+window (`benches/readNextRefs.bench.ts`).
 
 - **Mate reference is `readNextRefIds` + `nextRefNames`; `nextRefAt` reads
   one.** The array held ONE distinct value across 153,677 entries. `refIdToName`
@@ -105,18 +105,27 @@ and between them they were ~42ms a fetch on the deep short-read window
   the worker reads `nextRefId` and resolves a name once per contig. 24.5 ->
   8.8ms. `buildReadInterchrom` lives beside it and compares per SLOT, not per
   read.
-- **`readSuppAlignments` is only built when connections are on.**
+- **`readSuppAlignments` ships only when some read in the group HAS one.**
   `getTag(f, 'SA')` walks the read's whole tag block, for a tag present on
-  **zero** of those 153,677 reads, feeding an array whose only consumer is the
-  arc computation. `readConnections` is therefore in `rpcProps` — toggling
-  connections **refetches**, the same trade `showCoverage` makes, and
-  `fetchAutorun.test.ts` pins it in that direction on purpose.
+  **zero** of those 153,677 reads. The walk itself is unconditional; what the
+  absent array saves is the clone, which is priced by object count.
+
+  **Gating the WALK on `readConnections` is the mistake to not repeat.** It was
+  tried, on the belief that the arc computation is the only consumer, and
+  `derivativePathCandidates` is the second — ungated by design, so the default
+  fetch carried no SA and the "Reconstruct derivative allele" dialog lost every
+  off-screen split segment, which in a single-region view is all of them.
+  `readConnections` is therefore **not** in `rpcProps`, and
+  `fetchAutorun.test.ts` pins that direction.
 
 The shared rule, and the one to apply to the next array: **ask what the consumer
-actually is before making the shape cheaper.** Both of these had no bulk
+actually is before making the shape cheaper.** `readNextRefs` had no bulk
 consumer at all — one bit per read derived inside the worker, then one lookup on
-hover and one per drawn arc. A cheaper encoding of an array nothing reads is
-still an array nothing reads.
+hover and one per drawn arc — and a cheaper encoding of an array nothing reads
+is still an array nothing reads. `readSuppAlignments` is the other half of that
+lesson: **enumerate the consumers before deciding not to BUILD one**, because a
+missing reader costs correctness rather than milliseconds, and it fails in a
+dialog nobody re-opened.
 
 `readTagValues` and `sortTagValues` are the two that remain, and they are
 deliberately left: `extractFeatureArrays` fills them only under a tag color

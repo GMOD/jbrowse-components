@@ -340,9 +340,13 @@ private fields; a real implementation belongs inside `BamRecord`, where
 `tagValueEnd` is already the shared cursor `_findTag`, `getTagAlt` and
 `_computeTags` walk with, so it should be an argument-count change rather than a
 fourth copy of the walk. And the consumer-side alternative — stop reading `SA`
-unconditionally, since it feeds `readSuppAlignments` and only the arc overlay
-reads that — needs a new `rpcProps` entry, which invalidates the fetch when it
-toggles, so it is a worse trade than it looks.
+unconditionally — is **closed, not open**: it was implemented and reverted. Only
+the arc overlay was believed to read `readSuppAlignments`, and
+`derivativePathCandidates` is the second reader, ungated by design, so gating the
+walk emptied the derivative-allele dialog on the default fetch. The `rpcProps`
+entry it needs also invalidates the fetch on a draw toggle, which was the smaller
+of its two problems. The clone half of that saving is taken instead, by shipping
+no array at all when the group has no SA tag anywhere.
 
 ## Seam 5 — a tag walk rescans an MD the record has already located
 

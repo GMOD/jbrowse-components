@@ -2824,14 +2824,15 @@ export default function stateModelFactory(
             drawProperPairs: self.drawProperPairs,
             showOnlySplitAlignments: self.showOnlySplitAlignments,
             linkedReads: self.linkedReads,
-            // The worker reads this for one thing: whether to walk each read's
-            // tag block for SA. That walk is the whole cost of
-            // `readSuppAlignments` and the arc computation is its only
-            // consumer, so with connections off the fetch skips it entirely —
-            // 23ms on a deep pileup. Being in rpcProps means toggling
-            // connections refetches, the same trade `showCoverage` makes just
-            // above.
-            readConnections: self.readConnections,
+            // `readConnections` is deliberately NOT here. It was, briefly, to
+            // let the worker skip the per-read SA tag walk with connections
+            // off — but `derivativePathCandidates` reads the same chains and is
+            // ungated by design, so the skip silently emptied the
+            // "Reconstruct derivative allele" dialog on the default fetch. The
+            // walk is unconditional again (`extractFeatureArrays` has the
+            // measurements), which puts connections back where the rest of the
+            // arc settings already are: a draw setting that repaints from data
+            // already in memory.
             // Detail tier, for adapters that serve more than one (the tiered PIF
             // adapters behind LGVSyntenyDisplay, which overrides this to resolve
             // it). Declared here — undefined meaning "whatever the adapter picks"

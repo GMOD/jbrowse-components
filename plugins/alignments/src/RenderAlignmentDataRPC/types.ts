@@ -58,11 +58,6 @@ export interface RenderAlignmentDataArgs {
   // not on every zoom step.
   lodMode?: BaseOptions['lodMode']
   linkedReads?: 'off' | 'normal'
-  // Whether the display draws read connections. The worker reads it for one
-  // thing only — whether to walk each read's tag block for SA — and that walk
-  // is the whole cost of `readSuppAlignments`, which nothing but the arc
-  // computation consumes. `'off'` is the default, so the default fetch skips it.
-  readConnections?: string
   drawSingletons?: boolean
   drawProperPairs?: boolean
   showOnlySplitAlignments?: boolean
@@ -370,7 +365,11 @@ export interface PileupDataResult {
   // Per-read mate position (PNEXT) for main-thread arc computation
   readNextPositions?: Uint32Array
 
-  // Per-read SA tag strings for main-thread arc computation
+  // Per-read SA tag strings, for the main thread's two chain readers — the arc
+  // computation and `derivativePathCandidates`. Absent when no read in the
+  // group carried one, which is the deep short-read case and every synteny one;
+  // see `extractFeatureArrays` for why that is the whole of the optimization
+  // here and why the walk itself is unconditional.
   readSuppAlignments?: string[]
 
   // Per-read soft/hard-clip length at the 5' start of the read, in read

@@ -501,7 +501,6 @@ export async function executeRenderAlignmentData({
     showSoftClipping = false,
     showCoverage = true,
     linkedReads = 'off',
-    readConnections = 'off',
     drawSingletons = true,
     drawProperPairs = true,
     showOnlySplitAlignments = false,
@@ -562,11 +561,6 @@ export async function executeRenderAlignmentData({
     ? (f: Feature) => buildChainFeatureData(f, readIdPrefix)
     : (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
   const extractOpts = {
-    // The arc computation is the only reader of `readSuppAlignments`, and it
-    // does nothing when connections are off — so the worker skips the per-read
-    // SA tag walk entirely. Toggling connections refetches, which is the same
-    // trade `showCoverage` makes.
-    needsSuppAlignments: readConnections !== 'off',
     colorBy,
     showSoftClipping: effShowSoftClipping,
     region,

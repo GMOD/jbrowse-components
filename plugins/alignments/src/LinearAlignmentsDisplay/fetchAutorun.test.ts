@@ -686,14 +686,13 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callCount)
   })
 
-  // This used to assert the opposite, on the reasoning that connections are an
-  // arc-only DRAW setting. They are not only that: the worker walks each read's
-  // tag block for SA solely to fill `readSuppAlignments`, which nothing but the
-  // arc computation reads — 23ms on a deep pileup, for an array that on that
-  // fixture is empty on every one of 153,677 reads. So `readConnections` is in
-  // `rpcProps` and turning connections on fetches the SA data it needs, the
-  // same trade `showCoverage` makes for the coverage pipeline.
-  it('DOES refetch when readConnections toggles — the worker skips the SA walk', async () => {
+  // Connections are a DRAW setting and the fetch must not depend on them. This
+  // briefly asserted the opposite, to let the worker skip the per-read SA tag
+  // walk while they were off — but `derivativePathCandidates` reads the same SA
+  // chains and is ungated by design, so the skip took every off-screen split
+  // segment away from the "Reconstruct derivative allele" dialog on the default
+  // fetch. The walk is unconditional again, so this is a repaint.
+  it('does NOT refetch when readConnections toggles', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -708,7 +707,7 @@ describe('FetchVisibleRegions autorun', () => {
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
-    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
   it('does NOT refetch when arc draw settings change', async () => {

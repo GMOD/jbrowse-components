@@ -58,7 +58,6 @@ const buildFeatureData = (f: Feature): FeatureData => ({
 
 function extract(features: Feature[], colorBy: ColorBy) {
   return extractFeatureArrays(features, buildFeatureData, {
-    needsSuppAlignments: true,
     colorBy,
     showSoftClipping: false,
     region,
@@ -117,6 +116,52 @@ describe('mateRefName extraction', () => {
     expect(
       extract([syntenyFeature('ctgA', 'ctgB')], { type: 'strand' })
         .uniqueTagValues,
+    ).toBeUndefined()
+  })
+})
+
+// The SA tag walk is UNCONDITIONAL, and this is the test that says so.
+//
+// It was briefly gated on `readConnections !== 'off'` — 18.1ms of tag-block
+// scanning over 153,677 reads, for an array the arc computation was believed to
+// be the only reader of. It is not: `computeReadChains` also feeds
+// `derivativePathCandidates`, which is ungated on purpose, so on the default
+// fetch every off-screen split segment disappeared from the "Reconstruct
+// derivative allele" dialog. A translocation's far segment is off-screen by
+// definition in a single-region view, which is most of what that dialog is for.
+//
+// What the gate was really worth is the CLONE, and that survives as the
+// `undefined` below: structured clone is priced by object count, so a group with
+// no SA anywhere ships one value instead of one empty string per read.
+describe('SA tags are extracted whatever the display is drawing', () => {
+  function splitRead(id: string, sa: string | undefined) {
+    return new SimpleFeature({
+      uniqueId: id,
+      refName: 'ctgA',
+      start: 100,
+      end: 200,
+      strand: 1,
+      tags: sa === undefined ? {} : { SA: sa },
+    })
+  }
+
+  const SA = 'ctgB,500,+,50M50S,60,0;'
+
+  test('a read carrying one reports it, with no setting asked about', () => {
+    expect(
+      extract([splitRead('a', SA), splitRead('b', undefined)], {
+        type: 'strand',
+      }).suppAlignments,
+    ).toEqual([SA, ''])
+  })
+
+  // The whole of the optimization, and the deep short-read case: 153,677 reads,
+  // not one SA tag between them.
+  test('a group with none anywhere ships nothing rather than a string per read', () => {
+    expect(
+      extract([splitRead('a', undefined), splitRead('b', undefined)], {
+        type: 'strand',
+      }).suppAlignments,
     ).toBeUndefined()
   })
 })
