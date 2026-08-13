@@ -37,6 +37,26 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   Canvas2D calls, coverage is individual passes vs one `drawCoverage` wrapper,
   mismatch is one gate over three passes. Uniform rows need shims that add back
   what the table removes. ~17 gated lines, guarded by `coverageParity.test.ts`.
+- **Collapsing `features/*/uploadGpu.ts` into one table-driven upload** —
+  declined 2026-08-12, and the temptation grew rather than shrank that day.
+  16 files, 340 lines, one exported wrapper each; a table keyed by pass id
+  reaches ~5. What the wrappers hold is the per-pass instance count, and it is
+  not derivable from the buffer: `gapPositions.length / 2` (start/end pairs),
+  `mismatchPositions.length`, `numInsertions`, `coverageGpuBinCount` (bin-capped,
+  so decoupled from `coverageDepths.length`). Each is the number its own packer
+  wrote, and a wrong one is a silent GPU mis-render — no throw, no test failure,
+  just geometry read off the end or short. `arcs/uploadGpu.ts` is the proof: four
+  passes, and `curvedArcCount` exists precisely because a second subtraction that
+  agreed with the packer was not good enough.
+  **What changed the same day and does not reopen it:** five of the sixteen
+  took `(hal, idx, packedBuffer, count)` — the worker-packed coverage family,
+  which has no main-thread `pack*` call — so the count sat at the renderer call
+  site as a loose positional argument next to the buffer. Those now take the
+  typed payload like the other ten, and all fifteen non-arc wrappers are the
+  same three-argument shape. That uniformity is what makes the table look
+  free, and it isn't: the shape is uniform because the count moved *into* each
+  pass, not because the counts became the same. See the draw-dispatch entry
+  above — same conclusion one tier down.
 - **Mirrored-band strand-split coverage** — rejected across three passes.
   Group-by-strand already splits SNPs: `buildGroupResult` runs the coverage
   pipeline per group, verified in-app 2026-08-05 (volvox_bam,
