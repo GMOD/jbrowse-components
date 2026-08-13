@@ -1,4 +1,4 @@
-// Does `computeReadBaseCounts` need the CIGAR *string*?
+// Where `computeReadBaseCounts` spends its time, one step at a time.
 //
 //   node --expose-gc plugins/alignments/benches/readBaseCounts.bench.ts
 //
@@ -8,37 +8,57 @@
 // identity check before any timing is believed) are in
 // agent-docs/reference/BENCHMARKING.md. Read that before changing this.
 //
-// THE QUESTION. `computeReadBaseCounts` is the modification-render path's
-// per-strand base pileup, and its own header records it at 33% of the RPC
-// worker's busy time on 200x.longread.mod.bam. It reads its CIGAR as
+// THE QUESTION. `computeReadBaseCounts` is the modification render path's
+// per-strand base pileup, and was 33% of the RPC worker's busy time on
+// `200x.longread.mod.bam` — the largest single cost there. Four things about
+// the shape it had looked wasteful. The arms apply them CUMULATIVELY, so each
+// row is what that step added on top of the one above it, and the last one is
+// what shipped.
 //
-//   const cigar = f.get('CIGAR'); const ops = parseCigar2(cigar)
+// SIX ARMS, one a control:
+//   string     — what shipped before `515d9d1306`: `get('CIGAR')` +
+//                `parseCigar2`, a per-base walk gated by a bitmap, a
+//                `Map<pos, Record<base, {fwd,rev}>>`
+//   packed     — `packedCigarOps(f)` instead. The feature was being asked to
+//                BUILD a CIGAR string out of the packed ops it already held so
+//                that `parseCigar2` could parse it straight back into the same
+//                `(len << 4) | opIndex` encoding
+//   packed+cc  — plus the base as a char code, not `seq[i]?.toUpperCase()` (a
+//                one-char string and a case fold at every wanted column)
+//   +typed     — plus a flat `Uint32Array` tally addressed by
+//                `(rank << 5) | (slot << 1) | strand`, instead of the Map
+//   +cursor    — plus iterating the wanted COLUMNS rather than every base
+//   +packedSEQ — plus reading the base out of `NUMERIC_SEQ`'s nibbles instead
+//                of decoding `seq` to a string. **This one does not pay** —
+//                see below. It is kept as an arm so the negative result stays
+//                reproducible
+//   control    — a second, separately-declared copy of `string`
 //
-// i.e. it asks the feature to BUILD a CIGAR string out of the packed ops it
-// already holds, then parses that string straight back into the same packed
-// form. `parseCigar2`'s output is `(len << 4) | opIndex` over the BAM op order,
-// which is what `NUMERIC_CIGAR` already is — so `packedCigarOps(f)` is the same
-// array without the round trip. Every other per-base walk in this plugin
-// (extractModifications, extractBisulfite, perBaseQuality, perBaseLetter) was
-// already moved off the string form for exactly this reason; this one was
-// missed.
+// WHAT IT SAYS, on `200x.longread.mod.bam` (335 reads, mean 50 kb, 41,854
+// modified columns), three samples, control 0.98-1.02x throughout:
 //
-// FOUR ARMS, one a control:
-//   string    — what ships: get('CIGAR') + parseCigar2
-//   packed    — packedCigarOps(f), everything else identical
-//   packed+cc — packed, plus reading the base as a char code rather than
-//               `seq[i]?.toUpperCase()` (a 1-char string + a case fold per
-//               base, at every modified column of every read)
-//   control   — a second, separately-declared copy of `string`
+//   packed      1.10-1.19x    the CIGAR round trip
+//   packed+cc   1.25-1.51x
+//   +typed      3.87-4.35x    <- the Map was the big one
+//   +cursor     6.36-7.36x    <- and the per-base walk was the next
+//   +packedSEQ  6.44-6.95x    parity with +cursor: NO WIN
 //
-// Written out longhand, four times. Do NOT refactor these into one driver
+// `+packedSEQ` is the interesting negative. Once the walk only visits the
+// wanted columns it reads ~28% of a read's bases, so decoding the other 72%
+// into a string looks like pure waste — and it is not, because the string
+// decode is a `TextDecoder` pass at ~GB/s and `charCodeAt` on the flat result
+// is one load, while the nibble path pays a shift, a mask and a second table
+// indirection at every column. They trade evenly. Don't reintroduce it: it
+// would also fork the function, since CRAM has no packed SEQ.
+//
+// Written out longhand, six times. Do NOT refactor these into one driver
 // parameterized by a flag: a shared driver makes the call site polymorphic and
-// hands all four arms one set of inline caches, which has scored a
+// hands all the arms one set of inline caches, which has scored a
 // byte-identical control at 1.14x in this repo's sibling benches.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { BamFile } from '@gmod/bam'
+import { BamFile, CHAR_CODE_FROM_NIBBLE } from '@gmod/bam'
 import {
   CIGAR_D,
   CIGAR_EQ,
@@ -557,6 +577,111 @@ function runCursor(features: Shim[], positions: Set<number>) {
   return counts
 }
 
+// Same again, but the base comes out of the PACKED sequence rather than the
+// decoded string. `NUMERIC_SEQ` is BAM's on-disk 4-bit SEQ handed over
+// zero-copy, and `CHAR_CODE_FROM_NIBBLE` (exported by @gmod/bam for exactly
+// this — reading a base back out of a packed region) turns a nibble into the
+// upper-case char code the slot table already keys on. So a read whose wanted
+// columns are 14k of its 50k bases stops decoding all 50k into a string it
+// samples 28% of. CRAM has no packed SEQ — its `getReadBases()` is a string,
+// and a cached one — so a feature without `NUMERIC_SEQ` keeps the string path.
+function runNibble(features: Shim[], positions: Set<number>) {
+  const counts = new Map<number, StrandBaseCounts>()
+  const n = positions.size
+  if (n === 0) {
+    return counts
+  }
+  const columns = new Uint32Array(n)
+  let w = 0
+  for (const p of positions) {
+    columns[w++] = p
+  }
+  columns.sort()
+  const tally = new Uint32Array(n * 32)
+
+  for (const f of features) {
+    const numericSeq = f.get('NUMERIC_SEQ') as Uint8Array | undefined
+    const seq = numericSeq ? undefined : (f.get('seq') as string | undefined)
+    const numeric = f.get('NUMERIC_CIGAR') as ArrayLike<number> | undefined
+    const ops =
+      numeric ?? parseCigar2((f.get('CIGAR') as string | undefined) ?? '')
+    if ((!numericSeq && !seq) || !ops.length) {
+      continue
+    }
+    const start = f.get('start') as number
+    const strandBit = f.get('strand') === -1 ? 1 : 0
+    let lo = 0
+    let hi = n
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (columns[mid]! < start) {
+        lo = mid + 1
+      } else {
+        hi = mid
+      }
+    }
+    let k = lo
+    let readPos = 0
+    let refPos = 0
+    for (let i = 0, l = ops.length; i < l && k < n; i++) {
+      const packed = ops[i]!
+      const len = packed >> 4
+      const op = packed & 0xf
+      if (op === CIGAR_S || op === CIGAR_I) {
+        readPos += len
+      } else if (op === CIGAR_D || op === CIGAR_N) {
+        refPos += len
+      } else if (op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X) {
+        const opRef = start + refPos
+        const opEnd = opRef + len
+        while (k < n && columns[k]! < opRef) {
+          k++
+        }
+        if (numericSeq) {
+          while (k < n && columns[k]! < opEnd) {
+            const idx = readPos + columns[k]! - opRef
+            const nibble =
+              (numericSeq[idx >> 1]! >> ((1 - (idx & 1)) << 2)) & 0xf
+            const slot = SLOT_OF_CODE[CHAR_CODE_FROM_NIBBLE[nibble]!]!
+            if (slot >= 0) {
+              tally[(k << 5) | (slot << 1) | strandBit]!++
+            }
+            k++
+          }
+        } else {
+          while (k < n && columns[k]! < opEnd) {
+            const code = seq!.charCodeAt(readPos + columns[k]! - opRef) & ~0x20
+            const slot = SLOT_OF_CODE[code]!
+            if (slot >= 0) {
+              tally[(k << 5) | (slot << 1) | strandBit]!++
+            }
+            k++
+          }
+        }
+        readPos += len
+        refPos += len
+      }
+    }
+  }
+
+  for (let i = 0; i < n; i++) {
+    let sc: StrandBaseCounts | undefined
+    const base = i << 5
+    for (let s2 = 0; s2 < 16; s2++) {
+      const fwd = tally[base | (s2 << 1)]!
+      const rev = tally[base | (s2 << 1) | 1]!
+      if (fwd !== 0 || rev !== 0) {
+        sc ??= {}
+        sc[SEQ_ALPHABET[s2]!] = { fwd, rev }
+      }
+    }
+    if (sc) {
+      counts.set(columns[i]!, sc)
+    }
+  }
+  return counts
+}
+
 function runControl(features: Shim[], positions: Set<number>) {
   const counts = new Map<number, StrandBaseCounts>()
   if (positions.size === 0) {
@@ -772,12 +897,14 @@ async function main() {
     const outCharCode = serialize(runPackedCharCode(features, positions))
     const outTyped = serialize(runTyped(features, positions))
     const outCursor = serialize(runCursor(features, positions))
+    const outNibble = serialize(runNibble(features, positions))
     const outControl = serialize(runControl(features, positions))
 
     const diffPacked = firstDifference(outString, outPacked)
     const diffCharCode = firstDifference(outString, outCharCode)
     const diffTyped = firstDifference(outString, outTyped)
     const diffCursor = firstDifference(outString, outCursor)
+    const diffNibble = firstDifference(outString, outNibble)
     const diffControl = firstDifference(outString, outControl)
     if (diffControl) {
       throw new Error(
@@ -791,6 +918,7 @@ async function main() {
       cc: Infinity,
       typed: Infinity,
       cursor: Infinity,
+      nibble: Infinity,
       ctl: Infinity,
     }
     const sides = [
@@ -799,6 +927,7 @@ async function main() {
       { k: 'cc' as const, run: () => runPackedCharCode(features, positions) },
       { k: 'typed' as const, run: () => runTyped(features, positions) },
       { k: 'cursor' as const, run: () => runCursor(features, positions) },
+      { k: 'nibble' as const, run: () => runNibble(features, positions) },
       { k: 'ctl' as const, run: () => runControl(features, positions) },
     ]
     for (let round = 0; round < ROUNDS; round++) {
@@ -823,6 +952,8 @@ async function main() {
         `output ${diffTyped ? `DIFFERS — ${diffTyped}` : 'identical'}\n` +
         `  +column cursor  ${best.cursor.toFixed(2).padStart(8)} ms   ${x(best.cursor)}   ` +
         `output ${diffCursor ? `DIFFERS — ${diffCursor}` : 'identical'}\n` +
+        `  +packed SEQ     ${best.nibble.toFixed(2).padStart(8)} ms   ${x(best.nibble)}   ` +
+        `output ${diffNibble ? `DIFFERS — ${diffNibble}` : 'identical'}\n` +
         `  control         ${best.ctl.toFixed(2).padStart(8)} ms   ${x(best.ctl)}   <- noise floor\n`,
     )
   }
