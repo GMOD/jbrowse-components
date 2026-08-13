@@ -77,7 +77,7 @@
     "@eslint-react/eslint-plugin": "^5.18.3",
     "@eslint/js": "^10.0.1",
     "@gmod/bbi": "^11.0.1",
-    "@jbrowse/mobx-state-tree": "^6.1.0",
+    "@jbrowse/mobx-state-tree": "^6.2.0",
     "@jbrowse/web": "workspace:^",
     "@mui/material": "^9.3.1",
     "@mui/system": "^9.3.0",
