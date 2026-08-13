@@ -25,10 +25,12 @@ function darkenColor(
   return [rgb[0] * (1 - amount), rgb[1] * (1 - amount), rgb[2] * (1 - amount)]
 }
 
-// A source's contribution to the render, before it's placed in a row. Same
-// shape as SourceRenderData minus rowIndex, which buildSourceRenderData assigns
-// once so row-placement lives in a single spot.
-export type WiggleLayer = Omit<SourceRenderData, 'rowIndex'>
+// A source's contribution to the render, before it's placed in a row: geometry
+// and color. The two fields SourceRenderData has on top of that are the two
+// buildSourceRenderData stamps — `rowIndex`, so row-placement lives in a single
+// spot, and `renderingType`, so the rendering a layer is encoded for is decided
+// once alongside which layers there are at all.
+export type WiggleLayer = Omit<SourceRenderData, 'rowIndex' | 'renderingType'>
 
 // One whisker band's per-instance colors: each feature gets posColor or negColor
 // by whether that band's value sits above or below the pivot, then the band tint

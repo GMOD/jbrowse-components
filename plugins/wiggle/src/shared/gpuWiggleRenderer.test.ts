@@ -31,6 +31,7 @@ function makeSource(overrides?: Partial<SourceRenderData>): SourceRenderData {
     numFeatures: 2,
     color: [1, 0, 0],
     rowIndex: 0,
+    renderingType: RENDERING_TYPE_XYPLOT,
     ...overrides,
   }
 }
@@ -60,10 +61,13 @@ const DEFAULT_STATE = {
 }
 
 describe('GpuWiggleRenderer', () => {
+  // A step-line layer, so every word this checks is one the encoding carries —
+  // prevScore/nextScore are the step-line pass's and a fill layer leaves them
+  // zero (wiggleInstanceBuffer.test.ts covers which mode writes what).
   it('uploads region data as interleaved buffer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
-    const source = makeSource()
+    const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
 
     renderer.uploadRegion(0, [source])
 
@@ -175,7 +179,7 @@ describe('GpuWiggleRenderer', () => {
   it('uses line pass for LINE rendering type', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
-    const source = makeSource()
+    const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
 
     renderer.uploadRegion(0, [source])
     renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
@@ -188,6 +192,41 @@ describe('GpuWiggleRenderer', () => {
     expect(drawCalls[0]!.args[0]).toBe('line')
     expect(drawCalls[0]!.args[1]).toBe(0)
     expect(drawCalls[0]!.args[2]).toBe('fill')
+  })
+
+  // The buffer carries only the neighbor fields its own rendering reads, so the
+  // pass has to follow the layers rather than the render state. Those two reach
+  // the display through separate autoruns and the render one is registered
+  // first, so the frame right after a plot-type switch really does see a state
+  // that has moved and a region that has not — drawing the previous plot once is
+  // correct; drawing the line pass over a fill-encoded buffer is not.
+  it('draws the pass the region was encoded for, not the one the state names', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+    const stale = makeSource({ renderingType: RENDERING_TYPE_XYPLOT })
+
+    renderer.uploadRegion(0, [stale])
+    renderer.renderBlocks([makeBlock()], new Map([[0, [stale]]]), {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_LINE,
+    })
+
+    expect(hal.callsOf('drawPass')[0]!.args[0]).toBe('fill')
+  })
+
+  // Nothing to draw either way — an empty pack releases the pass's buffer — so
+  // this is only pinning that the missing-layer lookup doesn't throw.
+  it('falls back to the render state when a region has no layers', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+
+    renderer.uploadRegion(0, [])
+    renderer.renderBlocks([makeBlock()], new Map([[0, []]]), {
+      ...DEFAULT_STATE,
+      renderingType: RENDERING_TYPE_LINE,
+    })
+
+    expect(hal.callsOf('drawPass')[0]!.args[0]).toBe('line')
   })
 
   it('uses fill pass for XY plot rendering type', () => {

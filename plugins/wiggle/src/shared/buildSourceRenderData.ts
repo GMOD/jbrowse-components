@@ -161,11 +161,11 @@ export function buildSourceRenderData(
   } = gpuProps
   const overlay = isOverlayMode(renderingType)
   const scatter = isScatterMode(renderingType)
-  const lineCenter =
-    renderingTypeToInt(renderingType) === RENDERING_TYPE_LINE_CENTER
+  const renderingTypeInt = renderingTypeToInt(renderingType)
+  const lineCenter = renderingTypeInt === RENDERING_TYPE_LINE_CENTER
   // Filled bars (xyplot, incl. multi-row/overlay variants) need whiskers split
   // by sign for correct back-to-front stacking; line/scatter/density don't.
-  const filled = renderingTypeToInt(renderingType) === RENDERING_TYPE_XYPLOT
+  const filled = renderingTypeInt === RENDERING_TYPE_XYPLOT
   const defaultPosColor = cssColorToNormalizedRgb(defaultPosColorStr)
   const defaultNegColor = cssColorToNormalizedRgb(defaultNegColorStr)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
@@ -207,6 +207,7 @@ export function buildSourceRenderData(
         result.push({
           ...layer,
           rowIndex: row,
+          renderingType: renderingTypeInt,
           gapLimitBp: layerGapLimitBp(
             layer.featurePositions,
             layer.numFeatures,

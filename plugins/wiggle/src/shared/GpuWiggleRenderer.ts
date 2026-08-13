@@ -90,13 +90,23 @@ export class GpuWiggleRenderer
   protected drawRegion(
     block: RenderBlock,
     clip: BlockClipResult,
-    _sources: SourceRenderData[],
+    sources: SourceRenderData[],
     state: WiggleGPURenderState,
   ) {
+    // Off the encoded layers, not off `state` — the buffer carries only the
+    // neighbor fields the rendering it was encoded for reads, so the pass has to
+    // be that same rendering or it reads fields nobody wrote. The two arrive
+    // through separate autoruns and the render one can fire first, so `state`
+    // may already name the rendering the user just switched to while this
+    // region's buffer is still the previous one; drawing the previous plot for
+    // one frame is the correct stale, and the re-encode bumps renderTick behind
+    // it. Empty layers mean the pass has no buffer at all (an empty pack is the
+    // release), so nothing draws and `state` is as good an answer as any.
+    const renderingType = sources[0]?.renderingType ?? state.renderingType
     const passId =
-      state.renderingType === RENDERING_TYPE_LINE
+      renderingType === RENDERING_TYPE_LINE
         ? PASS_LINE
-        : state.renderingType === RENDERING_TYPE_LINE_CENTER
+        : renderingType === RENDERING_TYPE_LINE_CENTER
           ? PASS_LINE_CENTER
           : PASS_FILL
 

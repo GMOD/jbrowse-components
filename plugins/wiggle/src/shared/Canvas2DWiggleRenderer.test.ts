@@ -86,6 +86,11 @@ function makeSource(scores: number[], startBps: number[], endBps: number[]) {
     numFeatures: scores.length,
     color: [0.5, 0.5, 0.5] as [number, number, number],
     rowIndex: 0,
+    // Inert on this backend: `renderingType` on a layer names the GPU instance
+    // encoding, and the Canvas2D path branches on the render state instead. Set
+    // to satisfy the type; the tests below that draw lines pass the mode in
+    // their state, which is what this renderer reads.
+    renderingType: RENDERING_TYPE_XYPLOT,
   }
 }
 

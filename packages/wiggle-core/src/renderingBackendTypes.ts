@@ -77,6 +77,21 @@ export interface SourceRenderData {
   numFeatures: number
   color: [number, number, number]
   rowIndex: number
+  // The rendering this layer was encoded *for*, stamped by
+  // buildSourceRenderData from the same `renderingType` that chose the layers.
+  //
+  // Load-bearing on the GPU path, where it names both which neighbor-derived
+  // instance fields the encoder writes and which pass draws them — one
+  // decision, so a buffer can't be drawn by a pass it wasn't encoded for. That
+  // pairing used to be implicit: the encoder wrote every field unconditionally
+  // and `drawRegion` picked the pass off the render state. The two reach the
+  // display through separate autoruns (encode is per-region under
+  // installPerRegionLifecycle, render is RenderLifecycleMixin's), and the
+  // render one is registered first, so a plot-type switch can paint once with
+  // the new pass against the old buffer. Harmless while every buffer carried
+  // every field; not harmless once the encoder skips the fields the pass in
+  // force will never read.
+  renderingType: WiggleRenderingType
   // Optional per-instance packed ABGR colors. Used by bicolor whiskers, where
   // each band (max/mean/min) is colored by its own value's sign vs the pivot,
   // then tinted. When present it overrides `color` per feature in both backends;
