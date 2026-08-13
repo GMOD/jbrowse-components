@@ -51,6 +51,20 @@ describe('host entries', () => {
     )
   })
 
+  // the cookie-domain spelling of the same intent. It worked under the old
+  // substring test, so a config in the wild can be written this way
+  it('accepts a leading dot, and still holds the boundary', () => {
+    expect(
+      uriMatchesDomains('https://www.dropbox.com/s/x.bam', ['.dropbox.com']),
+    ).toBe(true)
+    expect(
+      uriMatchesDomains('https://dropbox.com/s/x.bam', ['.dropbox.com']),
+    ).toBe(true)
+    expect(
+      uriMatchesDomains('https://evil-dropbox.com/x.bam', ['.dropbox.com']),
+    ).toBe(false)
+  })
+
   it('matches an entry naming a port, and one omitting it', () => {
     expect(
       uriMatchesDomains('http://localhost:8080/x.bam', ['localhost']),

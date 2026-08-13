@@ -55,7 +55,11 @@ export function uriMatchesDomains(uri: string, domains: string[]) {
             candidate[domain.length] === '/'),
       )
     }
-    const lower = domain.toLowerCase()
+    // A leading dot is the cookie-domain spelling of "and its subdomains",
+    // which is what this branch does anyway. It read as a substring under the
+    // old `includes` test and so worked; taken literally here it is a hostname
+    // no URL can have, and the account would have gone quietly unused.
+    const lower = domain.toLowerCase().replace(/^\./, '')
     return hosts.some(host => host === lower || host.endsWith(`.${lower}`))
   })
 }
