@@ -693,6 +693,23 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "ecoli_cactus_segments",
+      "name": "MC graph: segments (whole graph, by locus)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "ecoli_cactus"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "showLabels": false
+        }
+      ],
+      "description": "The Minigraph-Cactus graph itself, indexed by locus the same way the pggb segments track is: build_pggb_tabix.sh walks the graph's P and W lines offline and writes the two tabix BEDs RgfaTabixAdapter reads. Launch view -> Graph genome view (this region) cuts the subgraph for whatever window is on screen, so the two builders' graphs can be opened over the same locus."
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "ecoli_e146_ont",
       "name": "E146 nanopore reads (vs K12)",
