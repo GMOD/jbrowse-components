@@ -286,6 +286,22 @@ describe('read-cloud flat lines', () => {
   })
 })
 
+// The scan skips any arc whose ink cannot reach the cursor's column before
+// placing it, and the pad it allows has to be at least the reach the distance
+// test itself grants — otherwise the prefilter, not the geometry, decides the
+// edge of the target, and it does so silently: the arc simply stops answering a
+// few px out from its own foot.
+test('the column prefilter is wider than the reach of the ink it guards', () => {
+  // Support 64 draws 4px of stroke (2 either side) and gets ARC_HIT_SLOP_PX on
+  // top, so a foot answers ~5px outside its own endpoint — well past the
+  // endpoint the prefilter bounds arcs by.
+  const data = arcsData([{ x1: 200, x2: 600, yBp: 40, support: 64 }])
+  const foot = BAND.arcsH - 1
+  expect(hitTestArcBand(195.1, foot, data, BAND)?.index).toBe(0)
+  // And it is a prefilter, not a widening: further out is still a miss.
+  expect(hitTestArcBand(180, foot, data, BAND)).toBeUndefined()
+})
+
 test('an empty feed answers nothing', () => {
   expect(hitTestArcBand(400, 50, emptyArcsUploadData(), BAND)).toBeUndefined()
 })

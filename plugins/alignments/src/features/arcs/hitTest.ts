@@ -10,6 +10,7 @@
 // meaning is least guessable from its shape was the one you could not ask.
 import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
+import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAnchorY } from './arcYScale.ts'
 import { ellipseDistance } from './ellipseDistance.ts'
@@ -288,29 +289,60 @@ function arcCandidate(
   for (let i = 0; i < data.numArcs; i++) {
     const support = data.arcSupport[i]!
     const halfWidth = arcLineWidth(support, lineWidth) / 2
-    // Nothing is drawn on the far side of the anchor line, and the stroke does
-    // not cross it either: at the feet the tangent is vertical, so the stroke
-    // there runs horizontally, out to the sides rather than down. Without this
-    // the mirrored half of the conic answers hovers over blank band. Ahead of
-    // `arcPlacement` because it is the one rejection that costs nothing.
-    if (localY >= -(halfWidth + ARC_HIT_SLOP_PX)) {
-      // `destY` is the apex height above the anchor on the drawn side, which is
-      // the frame `localY` is in — so an up band and a down band are one case
-      // here, and the flat/dome Y split is `arcPlacement`'s to make rather than
-      // this file's to remember.
-      const { sx1, sx2, destY, isFlat } = arcPlacement(data, i, opts)
-      const dist = isFlat
-        ? flatDistance(canvasX, localY, sx1, sx2, destY)
-        : curveDistance(canvasX, localY, sx1, sx2, destY, screenWidthPx)
-      // How far past this arc's own ink the cursor is: the quantity that both
-      // gates the hit and sorts the two buckets.
-      picker.consider(i, support, dist - halfWidth)
+    if (!nearArcColumns(canvasX, data, i, opts, halfWidth)) {
+      continue
     }
+    // `destY` is the apex height above the anchor on the drawn side, which is
+    // the frame `localY` is in — so an up band and a down band are one case
+    // here, and the flat/dome Y split is `arcPlacement`'s to make rather than
+    // this file's to remember.
+    const { sx1, sx2, destY, isFlat } = arcPlacement(data, i, opts)
+    const dist = isFlat
+      ? flatDistance(canvasX, localY, sx1, sx2, destY)
+      : curveDistance(canvasX, localY, sx1, sx2, destY, screenWidthPx)
+    // How far past this arc's own ink the cursor is: the quantity that both
+    // gates the hit and sorts the two buckets.
+    picker.consider(i, support, dist - halfWidth)
   }
   const found = picker.best()
   return found === undefined
     ? undefined
     : { hit: arcHitAt(data, found.index), outside: found.outside }
+}
+
+// Whether arc `i` can possibly have ink in the cursor's COLUMN — the cheap
+// rejection that keeps the scan from solving a quartic per arc. The read cloud
+// emits thousands of arcs into one band and this runs on every hover frame, so
+// what it skips is the whole of `arcPlacement` + `ellipseDistance` for every arc
+// the cursor is nowhere near.
+//
+// Horizontal because that is the only bound available without placing the arc,
+// and it holds for all three mark kinds: a dome and a far pair's circle are both
+// centred on the midpoint with `rx` = the pair's own half-span (`arcRadiiPx`
+// returns nothing wider), so neither reaches past its own endpoints, and a flat
+// bar reaches past them only by the `ARC_FLAT_MIN_PX` widening. Deliberately
+// over-inclusive — the pad is the widest case for every arc — because a
+// prefilter that is merely conservative costs a few extra solves, while one that
+// is tight is a second placement free to disagree with the real one.
+//
+// It replaces a guard that tested `localY` against the anchor, which read as
+// rejecting the mirrored half of the conic and in fact rejected nothing:
+// `hitTestArcBand` has already confined `canvasY` to the band, and the anchor is
+// one of the band's two edges, so `localY` is in `[0, arcsH]` by then. It cost
+// the scan nothing and saved it nothing.
+function nearArcColumns(
+  canvasX: number,
+  data: ArcsUploadData,
+  i: number,
+  { bpToScreenX }: ArcHitOptions,
+  strokeHalfWidth: number,
+) {
+  const sx1 = bpToScreenX(data.arcX1[i]!)
+  const sx2 = bpToScreenX(data.arcX2[i]!)
+  const pad = strokeHalfWidth + ARC_HIT_SLOP_PX + ARC_FLAT_MIN_PX / 2
+  return (
+    canvasX >= Math.min(sx1, sx2) - pad && canvasX <= Math.max(sx1, sx2) + pad
+  )
 }
 
 // The read cloud's flat connector: a horizontal segment at the arc's Y, widened
@@ -343,8 +375,10 @@ function curveDistance(
   arcH: number,
   screenWidthPx: number,
 ) {
-  const halfWidth = Math.abs(sx2 - sx1) / 2
-  const [rx, ry] = arcRadiiPx(halfWidth, arcH, screenWidthPx)
+  // The pair's half SPAN, not the stroke's half width the caller measures
+  // against — `arcRadiiPx`'s first argument, and the dome's `rx`.
+  const halfSpanPx = Math.abs(sx2 - sx1) / 2
+  const [rx, ry] = arcRadiiPx(halfSpanPx, arcH, screenWidthPx)
   // `rx === ry` IS the far-pair branch — that is the only thing arcRadiiPx
   // returns an equal pair for, short of a near arc whose apex coincidentally
   // lands there, and a near arc that happens to be a circle is measured the same
