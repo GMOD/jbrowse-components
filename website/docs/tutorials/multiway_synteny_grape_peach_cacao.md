@@ -82,11 +82,10 @@ per species: grape `GCF_030704535.1`, peach `GCF_000346465.2`, cacao
 `GCF_000208745.1`, and for the extra lanes arabidopsis `GCF_000001735.4`, poplar
 `GCF_000002775.5`, tomato `GCF_036512215.1` and citrus `GCF_000493195.1`. One
 accession supplies the genome, the annotation and (through `gffread`) the CDS,
-so the assembly and the annotation drawn on it cannot be two different builds, a
-mismatch that shows up as features quietly failing to resolve rather than as an
-error. From there: GFF3 to jcvi BED, catalog orthologs against grape, MCScan
-each pair, join the results. The [end-to-end script](#reproduce-it-end-to-end)
-runs every command.
+so the assembly and the annotation drawn on it cannot be two different builds.
+From there: GFF3 to jcvi BED, catalog orthologs against grape, MCScan each pair,
+join the results. The [end-to-end script](#reproduce-it-end-to-end) runs every
+command.
 
 Each assembly also gets a `refNameAliases` file built from the download's own
 sequence report, since NCBI names sequences by accession. That is a lookup, not

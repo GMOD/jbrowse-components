@@ -155,12 +155,11 @@ tabix -p bed trio.hapibd.bed.gz
 sorts the rest under `LC_ALL=C`, so the adapter can read the column names off
 the file and the order does not shift with your locale.
 
-Load the result as a `FeatureTrack` using a `LinearMultiRowFeatureDisplay`. That
-display draws one row per distinct value of `partitionField`, so pointing it at
-`parenthap` gives the four parental-haplotype rows, and `rowOrder` sets their
-top-to-bottom order. There's no color config: a BED carrying `itemRgb` is
-painted with it automatically. Drop this into the `tracks` array of your
-`config.json`, or paste it into the add-track JSON editor in the app:
+Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`, which
+draws one row per distinct value of `partitionField`, so `parenthap` gives the
+four parental-haplotype rows and `rowOrder` sets their top-to-bottom order.
+There is no color config: a BED carrying `itemRgb` is painted with it
+automatically.
 
 ```json
 {
@@ -203,13 +202,10 @@ of them is filled at any position, and that is which of the father's two copies
 the child got there. Every step between the blue rows is a crossover. The red
 rows work the same way for the maternal chromosome.
 
-That rule is also the figure's own control, and it is worth checking before
-reading any block off it. A child has one paternal chromosome, so exactly one
-blue row is filled wherever the data supports a call, and likewise one red row.
-Two filled blue rows at a position, or neither, is a contradiction rather than a
-result: hap-ibd has matched one child haplotype to both of the father's copies
-or to neither, and nothing there should be read as a crossover. The centromere
-is the legitimate blank, being a stretch with no markers to match on at all.
+That rule is also the figure's own control. Two filled blue rows at a position,
+or neither, is a contradiction rather than a result: hap-ibd has matched one
+child haplotype to both of the father's copies or to neither. The centromere is
+the legitimate blank, having no markers to match on at all.
 
 The same display paints rows by whatever category is in the BED: point
 `partitionField` at a different column and the rows change with it. The
@@ -220,16 +216,12 @@ haplotype to paint FLARE ancestry calls, and the
 ## Relating the painting back to the genotypes
 
 Stack the painting directly above the same VCF in the **phased multi-sample
-variant display** to see where the blocks came from. That display draws
-genotypes at their real genomic positions. Use it rather than _matrix_ mode,
-whose evenly-spaced columns won't line up with the painting. Its six rows are
-the two haplotypes of each trio member, and the painting above is just a summary
-of which parental haplotype the child matches where.
+variant display**, which draws genotypes at their real genomic positions, rather
+than _matrix_ mode, whose evenly-spaced columns will not line up with it.
 
-Zoomed out to the whole chromosome the genotype rows are a solid block of color,
-so there's nothing to see. Zoom to a few hundred kb around one boundary instead,
-where the block-step is obvious and the genotype columns resolve into individual
-variants. Start with the paternal crossover near chr1:29.7 Mb:
+Zoom to a few hundred kb around one boundary, where the block-step is obvious
+and the genotype columns resolve into individual variants. Start with the
+paternal crossover near chr1:29.7 Mb:
 
 <Figure caption="Paternal crossover at chr1:29,697,418, in a 400 kb window. The painting steps from Father hap2 to Father hap1, and the tinted frames read that switch off the raw genotypes." src="/img/trio-crossover-paternal.png"/>
 
@@ -239,9 +231,8 @@ copies:
 
 <Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window, the same idea in a different palette: the painting steps from Mother hap2 to Mother hap1, and the frames tie Child hap2 to each in turn." src="/img/trio-crossover-maternal.png"/>
 
-The painting is the clean summary. The genotypes underneath switch between the
-two parental copies far more often than real crossovers do, so the painted
-block-step above is easier to trust than the raw genotypes below it.
+The genotypes underneath switch between the two parental copies far more often
+than real crossovers do, which is what the painting above summarises away.
 
 ## Where the boundaries come from
 
