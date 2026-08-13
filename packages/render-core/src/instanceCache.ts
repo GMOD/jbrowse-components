@@ -25,8 +25,8 @@ export interface InstanceCacheOpts<TData> {
  * and dotplot 5; both had measured the patch as the difference between a
  * toggle that feels instant and one that doesn't.
  *
- * Shared because both had written it, identically, down to a `SYNC:` comment
- * on the patch loop saying the color write must mirror the interleave. What
+ * Shared because both had written it, identically, down to a sync comment on
+ * the patch loop saying the color write must mirror the interleave. What
  * makes it worth a helper rather than two copies is the invalidation: get the
  * `geomToken` comparison or the `colors` write-back wrong and the failure is
  * stale geometry on screen, which no test catches and which looks like a data

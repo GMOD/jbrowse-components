@@ -85,10 +85,11 @@ export const SYNTENY_INSTANCE_CACHE: InstanceCacheOpts<SyntenyInstanceData> = {
 // (48 verts/instance), for one outline, for as long as the selection is live.
 // A base feature is one instance per region, so this makes the pass ~1.
 //
-// SYNC: the predicate is `isClickedSilhouette` in syntenyTypes.slang — the kind
-// tests here are that shader's own, generated (adr-051). The shader keeps its
-// copy, so this narrowing can only ever remove instances the GPU would have
-// discarded anyway. It is exactly narrower in one case: the shader compares
+// The predicate is `isClickedSilhouette` in syntenyTypes.slang — the kind tests
+// here are that shader's own, generated (adr-051), so this is not a second
+// copy. The shader keeps evaluating it too, which is what makes this narrowing
+// safe: it can only ever remove instances the GPU would have discarded anyway.
+// A DELIBERATE divergence, in one direction only: the shader compares
 // featureIds as Float32 (`abs(diff) < 0.5`), which aliases neighbours past 2^24
 // features (see interleaveInstances), while the integer compare here cannot.
 export function packClickedOutlineInstances(

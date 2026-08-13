@@ -160,8 +160,12 @@ export function pickFeatureAtPoint(
       if (isRibbonCulled(c, canvasLogicalWidth, state.overdrawPx)) {
         continue
       }
-      // SYNC: mirrors the perpW<1 fill/stroke split in
-      // Canvas2DSyntenyRenderer.drawSyntenyTrack. A ribbon thinner than 1px
+      // The other half of the perpW<1 fill/stroke split in
+      // Canvas2DSyntenyRenderer.drawSyntenyTrack — not a copy of it: both call
+      // the same `ribbonPerpWidth`, and `syntenyPickRenderAgreement.test.ts`
+      // pins the one thing that could still drift, this threshold.
+      //
+      // A ribbon thinner than 1px
       // perpendicular is drawn as a 1px centerline (or faded on the GPU), not a
       // solid fill — its silhouette polygon is a sub-pixel sliver that
       // isPointInPath can't reliably hit, so it's a non-pickable line. Ribbons

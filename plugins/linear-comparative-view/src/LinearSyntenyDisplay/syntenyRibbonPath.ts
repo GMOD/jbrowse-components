@@ -162,11 +162,14 @@ export interface ComputedTransform {
   panPx1: number
 }
 
-// SYNC: matches GpuSyntenyRenderer.writeUniforms and computeCorners in
-// syntenyTypes.slang. `panPx = (base - offsetPx*bpPerPx)/bpPerPx` is how far
-// the view has panned from the geometry's fetch-time base. Float64 here (the
-// GPU narrows it to Float32, which is exact because the delta is bounded by the
-// pan buffer). See ADR-067.
+// The uniforms the shader consumes, computed once for the CPU paths too —
+// `GpuSyntenyRenderer.writeUniforms` writes these same values into the UBO, so
+// this is the producer rather than a copy of a consumer.
+//
+// `panPx = (base - offsetPx*bpPerPx)/bpPerPx` is how far the view has panned
+// from the geometry's fetch-time base. Float64 here (the GPU narrows it to
+// Float32, which is exact because the delta is bounded by the pan buffer). See
+// ADR-067.
 export function computeTransform(
   params: SyntenyTrackRenderParams,
   data: { base0: number; base1: number },
@@ -296,10 +299,11 @@ export function isRibbonCulled(
 // `< 2.55` IS `< 3`, and the divide leaves the per-instance loops.
 const MIN_VISIBLE_ALPHA_BYTE = 3
 
-// SYNC: the draw loop (Canvas2DSyntenyRenderer.drawSyntenyTrack) and the pick
-// engine must answer this identically, or a ribbon too faint to paint stays
-// hoverable — the same "drawn and pickable are one boundary" rule
-// `ribbonPerpWidth` enforces for sub-pixel thinness.
+// The draw loop (Canvas2DSyntenyRenderer.drawSyntenyTrack) and the pick engine
+// must answer this identically, or a ribbon too faint to paint stays hoverable
+// — the same "drawn and pickable are one boundary" rule `ribbonPerpWidth`
+// enforces for sub-pixel thinness. Which is why it is this function and not a
+// literal in each: there is one answer, so there is nothing to keep in step.
 export function isInstanceInvisible(packedColor: number) {
   return abgrAlpha(packedColor) < MIN_VISIBLE_ALPHA_BYTE
 }

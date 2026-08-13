@@ -502,7 +502,17 @@ touching either path, preserve whichever of these the display uses:
   two implementations must preserve while staying different (a numeric oracle
   test, as `syntenyShaderParity.test.ts` does for the bezier). Also grep the
   counterpart before trusting an existing tag — five named shader branches that
-  had been deleted. Count the survivors with
+  had been deleted.
+
+  **The tag means an UNSHARED duplication, and only that.** Nearly half the
+  registry once didn't: it tagged a predicate two callers reach through one
+  exported function, a threshold with its own agreement test, a deliberate
+  narrowing of a generated shader predicate, and a producer of uniforms its
+  "counterpart" merely consumes. None of those can drift, and reading them as
+  places where a mechanism was declined is what the tag costs when it over-
+  reports — the whole point of grepping it is to find where you gave up. Say
+  what the coupling is in prose; spend the tag only when there are genuinely two
+  copies. Count the survivors with
   `grep -rn 'SYNC:' --include='*.ts' packages plugins products` rather than
   restating a number; each falls in a class ADR-051 §"Deliberately not exported"
   classifies, and
