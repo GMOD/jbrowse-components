@@ -44,7 +44,6 @@ const data: SyntenyFeatureData = {
 
 const win = (start: number, end: number): FollowWindow => ({
   refName: 'chr1',
-  assemblyName: 'grape',
   start,
   end,
 })
@@ -89,7 +88,7 @@ test('a window on another contig holds the row', () => {
     followFrameSpan({
       feat,
       data,
-      window: { refName: 'chr9', assemblyName: 'grape', start: 0, end: 1000 },
+      window: { refName: 'chr9', start: 0, end: 1000 },
       toMate: true,
     }),
   ).toBeUndefined()

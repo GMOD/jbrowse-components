@@ -35,7 +35,6 @@ function data(blocks: Block[]): SyntenyFeatureData {
 
 const win = (start: number, end: number, refName = 'chr1'): FollowWindow => ({
   refName,
-  assemblyName: 'grape',
   start,
   end,
 })

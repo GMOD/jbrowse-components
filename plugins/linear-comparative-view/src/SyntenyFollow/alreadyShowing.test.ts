@@ -5,7 +5,7 @@ import type { FollowWindow } from './followAnchorWindow.ts'
 const SPAN = { refName: 'ctgA', start: 10000, end: 11000 }
 
 function shown(start: number, end: number, refName = 'ctgA'): FollowWindow {
-  return { refName, assemblyName: 'volvox', start, end }
+  return { refName, start, end }
 }
 
 test('a row sitting on the resolved span is left alone', () => {

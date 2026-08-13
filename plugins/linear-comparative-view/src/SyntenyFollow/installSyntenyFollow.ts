@@ -191,6 +191,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     ) {
       return
     }
+    // consecutive duplicates, not every message ever seen: a failure that comes
+    // back after the follow worked again is news
+    lastErrorMessage = undefined
     state.featureId = step.feat.id
     state.feat = step.feat
     state.display = step.display

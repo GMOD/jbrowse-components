@@ -32,7 +32,6 @@ test('a panel showing one contig yields that contig and its visible span', () =>
     ]),
   ).toEqual({
     refName: 'chr1',
-    assemblyName: 'hg002mat',
     start: 100,
     end: 200,
   })

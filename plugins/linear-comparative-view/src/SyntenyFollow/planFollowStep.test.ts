@@ -38,7 +38,6 @@ function display(blocks: Block[], hasCigar = true) {
 
 const WINDOW: FollowWindow = {
   refName: 'chr1',
-  assemblyName: 'hg002mat',
   start: 1000,
   end: 2000,
 }

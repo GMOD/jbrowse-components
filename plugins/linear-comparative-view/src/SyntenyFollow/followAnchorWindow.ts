@@ -2,7 +2,6 @@ import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 export interface FollowWindow {
   refName: string
-  assemblyName: string
   start: number
   end: number
 }
@@ -37,7 +36,6 @@ export function followAnchorWindow(
     } else {
       byRefName.set(b.refName, {
         refName: b.refName,
-        assemblyName: b.assemblyName,
         widthPx: b.widthPx,
         start: b.start,
         end: b.end,
@@ -56,7 +54,6 @@ export function followAnchorWindow(
   return best
     ? {
         refName: best.refName,
-        assemblyName: best.assemblyName,
         start: best.start,
         end: best.end,
       }

@@ -4,7 +4,6 @@ import type { FollowWindow } from './followAnchorWindow.ts'
 
 const win = (start: number, end: number, refName = 'chr1'): FollowWindow => ({
   refName,
-  assemblyName: 'hg002mat',
   start,
   end,
 })

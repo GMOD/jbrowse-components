@@ -28,7 +28,7 @@ function feat({
 }
 
 function win(start: number, end: number): FollowWindow {
-  return { refName: 'chr1', assemblyName: 'hg002mat', start, end }
+  return { refName: 'chr1', start, end }
 }
 
 test('a window over the middle of a block lands on the middle of its mate', () => {
