@@ -18,7 +18,7 @@ import {
   tabs,
 } from './tree.ts'
 
-import type { LayoutTree, PanelNode } from './tree.ts'
+import type { BranchNode, LayoutTree, PanelNode } from './tree.ts'
 
 // one tab per panel unless a test says otherwise, since the tab level is
 // orthogonal to every structural rule below
@@ -430,7 +430,33 @@ test('any sequence of operations leaves a canonical tree', () => {
     } else if (roll < 0.5 && ids.length > 1) {
       tree = removePanel(tree, target)
     } else if (roll < 0.65 && someTab) {
-      tree = moveTabToPanel(tree, someTab.id, target)
+      // WITH an index as well as without. Driving this operation with no index
+      // at all left the fiddliest arithmetic in the file outside the sequence:
+      // a stated index counts the strip AS IT STANDS, and `moveTabToPanel`
+      // shifts it for its own remove-then-insert exactly when the tab starts
+      // left of the gap it was dropped in.
+      //
+      // The invariant below is that reading, stated without reproducing the
+      // shift — restating the implementation would prove nothing. Whatever was
+      // left of the gap on screen is what ends up left of the tab, minus the
+      // tab itself when it was one of them.
+      const into = panels(tree).find(p => p.id === target)!
+      const onScreen = into.tabs.map(t => t.id)
+      // half the moves are a REORDER — a tab of the target panel, which is the
+      // only case the shift applies to. Picking the tab from the whole tree
+      // made that 5 of 160 indexed moves, which is not a sample of anything.
+      const moving = (rng() < 0.5 ? pick(into.tabs) : undefined) ?? someTab
+      const at =
+        rng() < 0.5 ? undefined : Math.floor(rng() * (onScreen.length + 1))
+      tree = moveTabToPanel(tree, moving.id, target, at)
+      if (at !== undefined) {
+        const landed = panels(tree)
+          .find(p => p.id === target)!
+          .tabs.map(t => t.id)
+        expect(landed.slice(0, landed.indexOf(moving.id))).toEqual(
+          onScreen.slice(0, at).filter(id => id !== moving.id),
+        )
+      }
     } else if (roll < 0.72) {
       n++
       tree = addTab(tree, target, { id: `t${n}`, viewIds: [`v${n}`] })
@@ -459,12 +485,19 @@ test('any sequence of operations leaves a canonical tree', () => {
       tree = pruneEmptyPanel(tree, target)
     } else if (roll < 0.96 && someTab) {
       tree = pruneEmptyTabIn(tree, target, someTab.id)
-    } else if (isBranch(tree)) {
-      tree = setSizes(
-        tree,
-        tree.id,
-        tree.children.map(() => rng() + 0.01),
-      )
+    } else {
+      // any branch, not just the root. Sizing a NESTED one is what puts rule 3
+      // under load — flattening a same-direction branch rescales its children
+      // to the share that branch held, so a nested branch whose sizes were just
+      // rewritten is where that arithmetic has something to get wrong.
+      const branch = pick(branchesIn(tree))
+      if (branch) {
+        tree = setSizes(
+          tree,
+          branch.id,
+          branch.children.map(() => rng() + 0.01),
+        )
+      }
     }
     expectCanonical(tree)
     // canonical AND settled: normalising again must change nothing at all.
@@ -486,6 +519,12 @@ test('any sequence of operations leaves a canonical tree', () => {
     }
   }
 })
+
+// there are no parent pointers, so a branch is found by walking rather than by
+// asking one — the same reason `panels` exists
+function branchesIn(node: LayoutTree): BranchNode[] {
+  return isBranch(node) ? [node, ...node.children.flatMap(branchesIn)] : []
+}
 
 function mulberry32(seed: number) {
   return () => {
