@@ -1094,7 +1094,9 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     settleMs: 10000,
     diffThreshold: 0.02,
-    viewportHeight: 480,
+    // 500: the run reported 14 css px of the sequence track below the fold at
+    // 480, which is the reverse-strand row this frame is read on
+    viewportHeight: 500,
     actions: [PARK_CURSOR],
   },
   // "About track" on the phyloP track, for the section about what a checkbox
