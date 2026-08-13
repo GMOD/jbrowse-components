@@ -1294,3 +1294,62 @@ describe('the pileup sort is gated on refName in the single-region path too', ()
     expect([...out.get(0)!.readYs]).toEqual([2, 0, 1])
   })
 })
+
+// The rest of this file lays out the string branch of `readKeys` — the form a
+// SAM or PAF-backed display carries. BAM and CRAM ship a Float64Array of record
+// ids instead (shared/readIdentity.ts), which changes what the canonical
+// tiebreak compares: a numeric compare where it used to be a lexicographic one.
+// Both are arbitrary total orders and either satisfies the invariant the
+// tiebreak exists for, but this is the branch every real deep pileup takes, so
+// it gets its own coverage.
+describe('numeric read keys', () => {
+  // Two reads sharing a full span, so only the key decides which takes row 0 —
+  // and keys where the two orders disagree: numerically 3 < 20, lexically
+  // '20' < '3'.
+  const tiedSpan = (keys: number[]) => ({
+    ...makePileupData({
+      regionStart: 100,
+      reads: keys.map(() => ({ start: 100, end: 200 })),
+    }),
+    readKeys: new Float64Array(keys),
+    readIdPrefix: 'a-',
+  })
+
+  test('the canonical tiebreak orders keys numerically', () => {
+    const { readYs } = computeLayout(tiedSpan([20, 3]))
+    // key 3 first, so the read at index 1 takes row 0
+    expect([...readYs]).toEqual([1, 0])
+  })
+
+  test('layout stays a function of the read set, not its arrival order', () => {
+    const forward = computeLayout(tiedSpan([3, 20]))
+    const reversed = computeLayout(tiedSpan([20, 3]))
+    expect([...forward.readYs]).toEqual([0, 1])
+    expect([...reversed.readYs]).toEqual([1, 0])
+  })
+
+  // A read spanning a region boundary arrives in both regions' fetches carrying
+  // the same record id, which is the whole reason the multi-region layout
+  // dedupes on the key rather than on array position.
+  test('multi-region layout dedupes a boundary-spanning read by key', () => {
+    const region = (starts: number[], keys: number[]) => ({
+      ...makePileupData({
+        regionStart: starts[0]!,
+        reads: starts.map(s => ({ start: s, end: s + 100 })),
+      }),
+      readKeys: new Float64Array(keys),
+      readIdPrefix: 'a-',
+    })
+    const { rowMap, maxY } = computeMultiRegionLayout({
+      entries: [
+        [0, region([100, 300], [7, 9])],
+        [1, region([100, 500], [7, 11])],
+      ],
+    })
+    // three distinct reads, and key 7 placed once
+    expect(maxY).toBe(1)
+    expect([...rowMap.keys()].sort((a, b) => Number(a) - Number(b))).toEqual([
+      7, 9, 11,
+    ])
+  })
+})
