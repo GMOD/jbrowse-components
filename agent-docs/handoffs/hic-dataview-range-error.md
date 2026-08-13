@@ -85,13 +85,29 @@ being wrong.
 
 ## Related, and deliberately not folded in
 
-The same sweep surfaced two unrelated failures. They are noted here only so the
-next person does not rediscover them and assume one cause:
+The same sweep surfaced other failures. They are noted here so the next person
+does not rediscover them, and so the one that is *not* separate is not filed
+twice:
 
 - **`protein/connected` fails hard** — `TypeError: Cannot read properties of
   undefined (reading 'filter')`, reported by the generator as
   `capture not settled ... Failed to launch ProteinView view`. Unlike the hic
-  one this does block its figure.
-- **MST liveliness warnings** across `replaceView()`, `removeView()` and
-  `addSessionAssembly()` on several synteny and dotplot specs. That is the
-  ADR-069 destroy-versus-detach rule, and it is a third thread again.
+  one this does block its figure. Unrelated to everything else here.
+- **`multisv_rhd_dosage` is not a bug** — `Failed to fetch` on two
+  `ftp.sra.ebi.ac.uk` CRAMs. Someone else's outage, which is the reason the
+  sweep is weekly rather than a PR gate.
+- **The MST liveliness warnings and `no containing view found` are one bug,**
+  not two. The warnings appear on `replaceView()`, `removeView()` and
+  `addSessionAssembly()` across several synteny, dotplot and cancer_sv specs;
+  `cancer_sv/multihop_split_view` then throws `Error: no containing view found`
+  into an ErrorBoundary, and its subsequent `hover target not found:
+  [aria-label="JBrowse"]` says the app header was gone, i.e. the crash took the
+  page rather than one lane.
+
+  The mechanism is ADR-069's, and it is legible end to end:
+  `getContainingView` (`packages/core/src/util/mstUtils.ts:108`) finds a view by
+  walking parents and throws when there is none, so a display React is still
+  rendering after its view was destroyed fails that walk. That is precisely the
+  escalation ADR-069 describes, from liveliness warning on an already-read
+  property to a hard throw on a node whose parent is gone. Worth fixing as one
+  thing.
