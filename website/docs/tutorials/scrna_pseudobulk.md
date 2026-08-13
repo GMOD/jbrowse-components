@@ -19,9 +19,9 @@ rows.
   from (Cell Ranger's `possorted_genome_bam.bam`, or any BAM carrying a
   corrected cell-barcode tag)
 - [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) from the UCSC
-  utilities, or `pip install deeptools sinto` for the split-the-BAM route; the
-  [reproduce script](#reproduce-it-end-to-end) needs neither, since it does its
-  own binning
+  utilities, or `pip install deeptools sinto` plus `samtools` for the
+  split-the-BAM route; the [reproduce script](#reproduce-it-end-to-end) bins the
+  reads itself, so it needs `bedGraphToBigWig` but neither of the other two
 - a JBrowse instance to load the finished BigWigs into (see the
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop))
@@ -69,9 +69,21 @@ The familiar route is to split the BAM by label with
 [`sinto filterbarcodes`](https://timoast.github.io/sinto/basic_usage.html) and
 run
 [`bamCoverage`](https://deeptools.readthedocs.io/en/develop/content/tools/bamCoverage.html)
-on each output with
-`--samFlagExclude 1024 --minMappingQuality 255 --normalizeUsing CPM`. That
-writes a second copy of the BAM to disk, split N ways.
+on each output:
+
+```bash
+# barcodes.tsv is two columns: cell barcode, cell-type label
+sinto filterbarcodes -b possorted_genome_bam.bam -c barcodes.tsv -p 8
+for bam in *.bam; do
+  samtools index "$bam"
+  bamCoverage -b "$bam" -o "${bam%.bam}.bw" \
+    --samFlagExclude 1024 --minMappingQuality 255 --normalizeUsing CPM
+done
+```
+
+`--samFlagExclude 1024` is the duplicate filter and `--minMappingQuality 255`
+the unique-mapping one, the two decisions above. That writes a second copy of
+the BAM to disk, split N ways.
 
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 takes the other route: it reads the BAM by region straight over HTTPS,
