@@ -52,6 +52,21 @@ getter allocates — the render path drives `forEachMismatch` instead. Don't add
 memo without an interleaved A/B behind it; the ones that were there measured as
 pure state.
 
+**`get('tags')` is never the way to read a tag on this path**, however many you
+want. It is the full decode — a null-prototype object plus every tag value on
+the read — and BAM memoizes it onto a record that lives in a shared chunk LRU,
+so it is retained as well as paid for. Use `getTag`, or `getTagAlt` for an alias
+pair, both of which walk the tag block without decoding anything else.
+`getEffectiveStrand` wanted three names (`XS`/`TS`/`ts`) and reached for the
+object; moving it to two targeted lookups measured **5.7-9.2x** on the repo's
+spliced fixtures, and it runs once per spliced read.
+
+The one regime where that inverts is a read whose tag block is dominated by a
+long `MD`: each targeted walk byte-scans to the string's null terminator, so two
+walks lose to one decode once MD is kilobytes (0.68x on `200x.longread`). Check
+which regime you are in — `benches/gapStrand.bench.ts` prints tag bytes/read
+alongside the ratio.
+
 ## `withRegionRef`, never `record.ref = …`
 
 `@gmod/bam` memoizes decoded records in a per-file chunk LRU, so two queries can
