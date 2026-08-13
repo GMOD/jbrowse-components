@@ -27,7 +27,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { docFiles, reportProblems, walkFiles } from './check-utils.ts'
-import { docRelative, docsDir, repoRoot } from './paths.ts'
+import { docRelative, docsDir, pluginCheckout, repoRoot } from './paths.ts'
 
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- menu-path-ok -->'
@@ -50,8 +50,7 @@ const SUPPRESS = '<!-- menu-path-ok -->'
 // silently stops applying to anything, and the page it now names — none — goes
 // unchecked forever. Same reason spec-recipe-unmapped.txt is a checked-in list
 // of names rather than a count.
-const PLUGIN_SRC = (name: string) =>
-  join(repoRoot, '..', 'jb2plugins', `jbrowse-plugin-${name}`, 'src')
+const PLUGIN_SRC = (name: string) => join(pluginCheckout(name), 'src')
 
 const EXTERNAL_PLUGIN_PAGES = new Map([
   ['user_guides/graph_genome_view.md', PLUGIN_SRC('graphgenomeview')],

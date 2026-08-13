@@ -2,8 +2,8 @@
 // re-derive for itself. Node-only, and now free of `import.meta` (see the walk
 // below), which is what made it safe to import from the bundled `src/` side as
 // well as from scripts/.
-import { existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { existsSync, readFileSync, statSync } from 'node:fs'
+import { dirname, isAbsolute, join, resolve, sep } from 'node:path'
 
 // The workspace root, found by walking up from the process's working directory
 // for the marker only the root carries, NOT derived from this module's own
@@ -47,6 +47,51 @@ export const repoRoot = findRepoRoot()
 export const websiteDir = join(repoRoot, 'website')
 export const docsDir = join(websiteDir, 'docs')
 export const distDir = join(websiteDir, 'dist')
+
+// The checkout the sibling repositories sit beside, which is the PRIMARY one
+// even when this code runs from a worktree. `repoRoot` above answers "which tree
+// am I in", and for anything outside the tree that is the wrong question:
+// `join(repoRoot, '..')` is `.claude/worktrees/` in a worktree session, so a
+// path built from it looks for `.claude/worktrees/jb2plugins` and finds nothing.
+//
+// What that cost: `check-menu-labels` reads the graph and protein-3D plugins'
+// `src/` for the labels those pages name, skips a page whose plugin checkout is
+// absent, and exits 0 — so from every agent worktree it silently skipped five
+// pages, including the three pangenome tutorials, while reporting success. A
+// check that covers less than it says is worse than one that fails.
+//
+// `<root>/.git` is a directory in the primary checkout and a FILE in a worktree,
+// holding `gitdir: <primary>/.git/worktrees/<name>`. That is the link back, and
+// it needs no subprocess. Anything unexpected (no git, an unreadable pointer, a
+// gitdir that is not under `worktrees/`) falls back to `repoRoot`, which is the
+// answer for a plain checkout anyway.
+function findPrimaryRepoRoot() {
+  const dotGit = join(repoRoot, '.git')
+  if (!existsSync(dotGit) || statSync(dotGit).isDirectory()) {
+    return repoRoot
+  }
+  const pointer = /^gitdir:\s*(.+)$/m.exec(readFileSync(dotGit, 'utf8'))
+  if (!pointer) {
+    return repoRoot
+  }
+  // git may write this relative to the worktree (`--relative-paths`)
+  const gitDir = isAbsolute(pointer[1]!.trim())
+    ? pointer[1]!.trim()
+    : resolve(repoRoot, pointer[1]!.trim())
+  const marker = `${sep}.git${sep}worktrees${sep}`
+  const cut = gitDir.indexOf(marker)
+  return cut === -1 ? repoRoot : gitDir.slice(0, cut)
+}
+
+export const primaryRepoRoot = findPrimaryRepoRoot()
+
+// A JBrowse plugin developed in its own repo, checked out beside this one. The
+// two readers are `check-menu-labels` (its `src/`, for the labels the docs name)
+// and `specs/graph-fixtures.ts` (its `dist/`, under GRAPH_PLUGIN_LOCAL), so the
+// `jb2plugins` directory and the `jbrowse-plugin-` prefix are written once.
+export function pluginCheckout(name: string) {
+  return join(primaryRepoRoot, '..', 'jb2plugins', `jbrowse-plugin-${name}`)
+}
 
 // A doc's path relative to website/docs ("tutorials/foo.md") — the form every
 // validator reports a problem against and prefix-matches the generated

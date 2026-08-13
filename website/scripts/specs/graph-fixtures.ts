@@ -27,7 +27,7 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 
-import { repoRoot } from '../paths.ts'
+import { pluginCheckout, repoRoot } from '../paths.ts'
 import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
 
 // The url the tracked fixture configs hardcode, and what ECOLI_DEMO_BASE
@@ -119,7 +119,7 @@ const localEsmUrl =
 if (process.env.GRAPH_PLUGIN_LOCAL) {
   const pluginDist =
     process.env.GRAPH_PLUGIN_DIST ??
-    join(repoRoot, '..', 'jb2plugins', 'jbrowse-plugin-graphgenomeview', 'dist')
+    join(pluginCheckout('graphgenomeview'), 'dist')
   if (!existsSync(pluginDist)) {
     throw new Error(
       `GRAPH_PLUGIN_LOCAL is set but no plugin build at ${pluginDist} — run \`pnpm build\` in the plugin, or set GRAPH_PLUGIN_DIST`,
