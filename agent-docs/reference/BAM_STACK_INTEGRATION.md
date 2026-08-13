@@ -467,6 +467,36 @@ are already handled by returning views the caller consumes immediately; the
 difference here is that a name's consumer is a concatenation, so a view is a
 temporary that exists only to be copied out of.
 
+## Checked against a real 300x file, not just the fixtures
+
+`jb2bench`'s deepest fixture is a synthetic 1000x pileup in a 268MB file, and
+three design choices in the per-read arrays rest on properties of the DATA that
+such a file cannot show either way. `benches/giab300x.bench.ts` runs the shipped
+builders against GIAB's HG002 300x novoalign BAM (600GB, hs37d5) over HTTP range
+requests. Two windows, 207,260 and 100,939 reads:
+
+- **Virtual offsets pass 2^32 by four orders of magnitude.** The largest seen was
+  128,299,878,811,863 — **29,872x** over — which is why `readKeys` is a
+  `Float64Array`. A `Uint32Array` would have truncated every read id on this file
+  silently, and no local fixture could have caught it. It is still 70x inside a
+  double's exact-integer range, so the headroom is real rather than lucky.
+- **A window really does see few mate references.** 24-27 distinct, against
+  207,260 reads. The synthetic fixture says 1, which is not evidence for the
+  slot table; this is.
+- **SA is genuinely absent**, on 0.00% of reads at every window tried, because
+  novoalign emits no supplementary alignments. So the per-read SA tag walk was
+  waste on real data too, not only on the fixture. **A BWA-MEM file would answer
+  differently** — that is the one claim here that does not generalise, and the
+  gate is on whether anything READS the array rather than on whether it is
+  empty, so it holds either way.
+
+Every read also round-trips through `readIdAt` / `readNameAt` / `nextRefAt`
+against what the record itself says: 0 mismatches over 300k+ reads.
+
+The four arrays cost **134ms** on the 207,260-read window and **44ms** after —
+3.0x, or 0.65ms per 1,000 reads before. Read names are 37.5 bytes each here
+against the fixture's 41.9, so the fixture was if anything flattering.
+
 ## Things checked and found already integrated
 
 Stated so the next audit does not re-derive them.
