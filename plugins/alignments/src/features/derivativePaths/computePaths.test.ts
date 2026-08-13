@@ -355,6 +355,30 @@ describe('computeDerivativePaths', () => {
     const b = computeDerivativePaths({ chains: [reverse, reverse] })
     expect(a[0]!.pathId).toBe(b[0]!.pathId)
   })
+
+  // Support and segment count are not a total order — two routes can agree on
+  // both, which is the ordinary shape of a window holding several two-segment,
+  // two-read candidates. What separated them was `groups`' insertion order,
+  // i.e. the order the reads were walked, so the same window ranked the same
+  // two alleles either way round on different runs. The picker shows only the
+  // first `MAX_SHOWN` rows, so that decided which candidates a person was
+  // offered at all.
+  it('ranks equal candidates the same way whatever order the reads arrive in', () => {
+    const routeA = (j = 0) => [
+      seg('chr1', 1000, 5000 + j, 1, 0),
+      seg('chr7', 20_000 + j, 24_000, 1, 4000),
+    ]
+    const routeB = (j = 0) => [
+      seg('chr2', 8000, 9000 + j, 1, 0),
+      seg('chr9', 40_000 + j, 41_000, 1, 1000),
+    ]
+    const ids = (chains: SegAln[][]) =>
+      computeDerivativePaths({ chains }).map(c => c.pathId)
+
+    const forwards = ids([routeA(), routeA(2), routeB(), routeB(2)])
+    expect(forwards).toHaveLength(2)
+    expect(ids([routeB(), routeB(2), routeA(), routeA(2)])).toEqual(forwards)
+  })
 })
 
 describe('derivativeLocString', () => {

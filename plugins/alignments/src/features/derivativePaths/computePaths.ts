@@ -345,16 +345,31 @@ export function computeDerivativePaths(
 
   return candidates.sort(
     (a, b) =>
-      // Support first. The segment count then breaks ties DETERMINISTICALLY,
-      // and that is the whole of its job: rows have to come back in a stable
-      // order, and two routes at equal support have nothing else to separate
-      // them. It is not a claim that the longer route is the likelier one —
-      // this file ranks by how many reads say a thing and never by how
-      // interesting the thing is, and at COLO829's chr9 fold-back the tiebreak
-      // duly puts a three-segment route above the two-segment allele the
-      // tutorial is about. That is why the picker's rows carry a
-      // `derivative-path-<refNames>` testid and every spec selects by it: rank
-      // is stable, but it is not meaningful, so nothing may key on position.
-      b.readCount - a.readCount || b.segments.length - a.segments.length,
+      // Support first, then the segment count, then the path id — and the LAST
+      // of the three is what actually makes the order deterministic. The other
+      // two are not a total order: two routes can agree on both, which is the
+      // ordinary shape of a window holding several two-segment, two-read
+      // candidates. What separated them was then `groups`' insertion order,
+      // i.e. the order the reads were walked, which is the order their fetches
+      // completed — so the same window ranked the same two alleles either way
+      // round on different runs.
+      //
+      // That is not only untidy. The picker shows the first `MAX_SHOWN` rows,
+      // so an unstable tail decides WHICH candidates a person is offered, and
+      // the dialog is opened over a pileup that is often still streaming — the
+      // same hazard the selection already holds a `pathId` rather than a row
+      // index for. `pathId` IS the group key, unique by construction, so this
+      // is the tie-break `resolveArcs` makes on `arcKey` for the same reason.
+      //
+      // None of the three is a claim about likelihood. This file ranks by how
+      // many reads say a thing and never by how interesting the thing is, and
+      // at COLO829's chr9 fold-back the segment count duly puts a three-segment
+      // route above the two-segment allele the tutorial is about. That is why
+      // the picker's rows carry a `derivative-path-<refNames>` testid and every
+      // spec selects by it: rank is stable, but it is not meaningful, so
+      // nothing may key on position.
+      b.readCount - a.readCount ||
+      b.segments.length - a.segments.length ||
+      (a.pathId < b.pathId ? -1 : 1),
   )
 }
