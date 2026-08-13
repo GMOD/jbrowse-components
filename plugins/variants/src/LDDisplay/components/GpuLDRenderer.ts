@@ -15,34 +15,34 @@ const PASS_MAIN = 'main'
 const PASS_GENOMIC = 'genomic'
 const REGION_KEY = 0
 
-const F_F32 = ldGenomicShader.INSTANCE_OFFSET_F32
-const STRIDE = ldGenomicShader.INSTANCE_STRIDE_WORDS
-const STRIDE_BYTES = ldGenomicShader.INSTANCE_STRIDE_BYTES
-
 // Both shader variants share an identical uniform block (ldUniforms.slang
 // module) — either module's offsets are authoritative.
 const UNIFORMS_SIZE_BYTES = ldGenomicShader.UNIFORMS_SIZE_BYTES
 const U = ldGenomicShader.UNIFORM_OFFSET_F32
 const UU = ldGenomicShader.UNIFORM_OFFSET_U32
 
-function interleaveLDInstances(data: {
+// The generated packer, not a loop of our own: `ldGenomic`'s instance struct is
+// exactly `{position: float2, cellSize: float2, ldValue: float}`, and
+// `packInstances` reads a vecN field as N consecutive values per instance —
+// which is the shape `positions` and `cellSizes` already have. The hand-written
+// interleave this replaces was a field-for-field transcription of it.
+//
+// Unlike the append-at-a-time `InstanceWriter`, this costs nothing: it is one
+// call containing the whole loop, not a call per instance.
+export function interleaveLDInstances(data: {
   positions: Float32Array
   cellSizes: Float32Array
   ldValues: Float32Array
   numCells: number
 }) {
-  const count = data.numCells
-  const buf = new ArrayBuffer(count * STRIDE_BYTES)
-  const f32 = new Float32Array(buf)
-  for (let i = 0; i < count; i++) {
-    const off = i * STRIDE
-    f32[off + F_F32.position] = data.positions[i * 2]!
-    f32[off + F_F32.position + 1] = data.positions[i * 2 + 1]!
-    f32[off + F_F32.cellSize] = data.cellSizes[i * 2]!
-    f32[off + F_F32.cellSize + 1] = data.cellSizes[i * 2 + 1]!
-    f32[off + F_F32.ldValue] = data.ldValues[i]!
-  }
-  return buf
+  return ldGenomicShader.packInstances(
+    {
+      position: data.positions,
+      cellSize: data.cellSizes,
+      ldValue: data.ldValues,
+    },
+    data.numCells,
+  )
 }
 
 export const LD_PASSES: PipelineDescriptor[] = [
