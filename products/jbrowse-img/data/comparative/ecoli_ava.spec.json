@@ -1,0 +1,13 @@
+{
+  "type": "LinearSyntenyView",
+  "views": [
+    { "assembly": "K12" },
+    { "assembly": "Sakai" },
+    { "assembly": "CFT073" },
+    { "assembly": "NCTC86" },
+    { "assembly": "IAI39" }
+  ],
+  "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
+  "minAlignmentLength": 10000,
+  "levelHeights": [130, 130, 130, 130]
+}

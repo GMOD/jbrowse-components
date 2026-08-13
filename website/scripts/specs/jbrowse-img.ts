@@ -202,6 +202,25 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
+  // One all-vs-all PAF backing all four bands of a five-strain E. coli stack —
+  // the dataset of the all-vs-all synteny tutorial, from its hosted demo config.
+  // The spec file is what selects the track: that config carries four all-vs-all
+  // tracks (minimap2, pggb/wfmash, cactus, untangle), and a bare
+  // `synteny --config` would place every one of them on every band, so the
+  // figure would be four overlaid pipelines rather than one.
+  //
+  // minAlignmentLength hides minimap2's short alignments, which otherwise bury
+  // the shared backbone in a noise band; levelHeights is what makes the bottom
+  // band tall enough to read IAI39's inversions as crossings.
+  cliSpec('ecoli_ava_synteny', [
+    '--config',
+    'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+    '--spec',
+    'data/comparative/ecoli_ava.spec.json',
+    '--width',
+    '1400',
+  ]),
+
   // Circular structural-variant chord plot: SKBR3 (breast-cancer cell line,
   // hg19) long-read Sniffles SV calls, where each inter-chromosomal chord is a
   // translocation — the classic dense rearranged-cancer-genome view. (The cgiab
