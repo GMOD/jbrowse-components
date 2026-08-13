@@ -430,21 +430,15 @@ test('any sequence of operations leaves a canonical tree', () => {
     } else if (roll < 0.5 && ids.length > 1) {
       tree = removePanel(tree, target)
     } else if (roll < 0.65 && someTab) {
-      // WITH an index as well as without. Driving this operation with no index
-      // at all left the fiddliest arithmetic in the file outside the sequence:
-      // a stated index counts the strip AS IT STANDS, and `moveTabToPanel`
-      // shifts it for its own remove-then-insert exactly when the tab starts
-      // left of the gap it was dropped in.
-      //
-      // The invariant below is that reading, stated without reproducing the
-      // shift — restating the implementation would prove nothing. Whatever was
-      // left of the gap on screen is what ends up left of the tab, minus the
-      // tab itself when it was one of them.
+      // With an index as well as without: driving it with none left the index
+      // shift — the fiddliest arithmetic in the file — outside the sequence.
+      // The assertion states the reading rather than reproducing the shift,
+      // which would prove nothing: whatever was left of the gap on screen is
+      // what ends up left of the tab, minus the tab itself.
       const into = panels(tree).find(p => p.id === target)!
       const onScreen = into.tabs.map(t => t.id)
-      // half the moves are a REORDER — a tab of the target panel, which is the
-      // only case the shift applies to. Picking the tab from the whole tree
-      // made that 5 of 160 indexed moves, which is not a sample of anything.
+      // half of them a REORDER, the only case the shift applies to — picked
+      // from the whole tree it was 5 of 160, which samples nothing
       const moving = (rng() < 0.5 ? pick(into.tabs) : undefined) ?? someTab
       const at =
         rng() < 0.5 ? undefined : Math.floor(rng() * (onScreen.length + 1))
@@ -486,10 +480,9 @@ test('any sequence of operations leaves a canonical tree', () => {
     } else if (roll < 0.96 && someTab) {
       tree = pruneEmptyTabIn(tree, target, someTab.id)
     } else {
-      // any branch, not just the root. Sizing a NESTED one is what puts rule 3
-      // under load — flattening a same-direction branch rescales its children
-      // to the share that branch held, so a nested branch whose sizes were just
-      // rewritten is where that arithmetic has something to get wrong.
+      // any branch, not just the root: rule 3 rescales a flattened branch's
+      // children to the share it held, so a nested one just resized is the
+      // input that exercises that arithmetic
       const branch = pick(branchesIn(tree))
       if (branch) {
         tree = setSizes(

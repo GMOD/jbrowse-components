@@ -144,13 +144,11 @@ const DropIndicator = observer(function DropIndicator({
       <div
         data-drop-caret={drop.strip.index}
         className={classes.caret}
-        // `stripDropAt` answers with the gap's VISUAL x, and a strip that has
-        // been scrolled puts its left-most visible gap at a negative
-        // panel-relative one — the tab it belongs to starts outside the strip.
-        // The panel has no `overflow: hidden`, so the caret drew a few pixels
-        // into whatever the neighbouring cell was showing. Clamped here rather
-        // than in `stripDropAt`, which does not know that the space it was
-        // handed rects in has its origin at the panel's left edge.
+        // A scrolled strip's left-most gap has a negative panel-relative x, and
+        // the panel has no `overflow: hidden` — the caret drew into the
+        // neighbour. Clamped here because `stripDropAt` is deliberately
+        // ignorant of which coordinate space it was handed, so it cannot know
+        // where zero is.
         style={{ left: Math.max(0, drop.strip.left) }}
       />
     )

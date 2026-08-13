@@ -40,7 +40,7 @@ reference others may hold, not as free-form prose.
 - [UI / UX](#ui--ux) — highlight API, super-compact mode
 - [Workspace layout](#workspace-layout-tabs-and-panels) — panel maximize and where
   its flag must not live, a tab overflow menu and what has to measure for it, and
-  two cleanups parked as too small
+  the drag gesture having no keyboard equivalent
 
 **Synteny and comparative**
 
@@ -757,7 +757,15 @@ set. `tree.ts` stays untouched, the pure functions keep their current contracts,
 and the flag becomes exactly the same class of thing `activePanelId` already is —
 including its failure mode, which the model already has the pattern for: an id
 naming a panel that has since been closed must fall back rather than render
-nothing (see `closePanel`).
+nothing. That repair is now one named function, `keepActivePanel`, stating the
+invariant rather than "the panel I just closed" — so this is a line inside it
+and not a third copy of it. Stated as the invariant is the part that matters:
+a removal collapses branches on the way out, so the cell that disappears is not
+always the one that was named.
+
+The gesture is unassigned, and double-clicking the strip background is both the
+IDE convention and free — `TabStrip`'s only `onDoubleClick` is the one on a
+tab's own label, for rename.
 
 Two things to settle before writing it. **Is it session state?** If it is, a shared
 link opens maximized and undo steps through it, which is probably right and is the
@@ -785,26 +793,16 @@ re-renders the chrome was not worth it. So the honest options are (1) accept one
 observer per panel and say why it is worth it here, or (2) find a CSS-only tell.
 Nobody has looked for (2).
 
-**`get tree()` deep-clones on every read.** `JSON.parse(JSON.stringify(self.layout))`
-where `getSnapshot(self.layout)` is MST's own memoized snapshot. Worth knowing
-before dismissing it: an MST `.views()` getter is a mobx computed, and a computed
-only caches **while observed** — inside an action nothing is observing, so each of
-the several `self.tree` reads in a model action is a fresh deep clone of the whole
-layout.
-
-Parked rather than done because the layout is a handful of panels and this is
-microseconds; the reason to write it down is the one behavioural difference, which
-is not obvious. A JSON round-trip **drops keys whose value is `undefined`** where
-`getSnapshot` keeps them, and both `title` and `activeTabId` are `types.maybe`.
-Every consumer reads through `tab.title` / `panel.activeTabId` so the two spell the
-same, but a test comparing whole snapshots could notice.
-
-**Clamp the drop caret at a scrolled strip's left edge.** `stripDropAt` returns the
-gap's visual x, so a tab scrolled partly out of the list has a negative
-panel-relative left and the caret can draw a few pixels outside the panel, which
-has no `overflow: hidden`. One `Math.max(0, …)`. Only reachable while dropping onto
-the left-most visible gap of an already-scrolled strip, which is why it is here and
-not in the code.
+**A tab drag has no keyboard equivalent.** Activating a tab, moving focus along
+the strip and moving a splitter are all operable; MOVING a tab between cells, or
+reordering one within a strip, is pointer-only. The View menu's "move to new
+tab" / "move to split view" cover the view level and are the reason this is
+mildly rather than badly wrong — but they are per-view, so a tab holding a stack
+of them has no keyboard move at all. dockview has no answer here either, so
+there is nothing to transcribe: the design question is whether it is a pair of
+tab-menu items (`Move tab left` / `Move tab right`, plus something for the cell
+axis) or a modifier on the strip's existing arrow handling, and the second is
+cheaper to reach but collides with the roving tabindex the arrows already own.
 
 ## Synteny / comparative
 

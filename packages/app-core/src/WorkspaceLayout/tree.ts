@@ -462,7 +462,9 @@ export function homeViews(
   let next = root
   let homeTabId = activeTabIn(target)?.id
   if (!homeTabId) {
-    // a panel with no tabs is legal, but it cannot be where a view lands
+    // A panel with no tabs is legal, but it cannot be where a view lands — so
+    // this mints one rather than declining, which also means a blank cell built
+    // by `closePanel` on the last panel is repaired by the next homing pass.
     homeTabId = nextTabId()
     next = addTab(next, target.id, { id: homeTabId, viewIds: [] })
   }
@@ -505,6 +507,11 @@ export function pruneEmptyPanel(root: LayoutTree, panelId: string): LayoutTree {
  * The mirror of `pruneEmptyPanel`, and deliberately as narrow: an empty tab is
  * legitimate (it shows the view launcher), so this only ever runs on the tab a
  * move just emptied, never as a rule over the tree.
+ *
+ * Which is why closing a tab's last VIEW leaves the tab standing where a move
+ * out of it does not: the move acted somewhere else and left this behind, and
+ * the close acted here, where an empty tab is a usable place to open the next
+ * thing. A cell's last tab prunes because a blank cell is not usable.
  */
 export function pruneEmptyTabIn(
   root: LayoutTree,

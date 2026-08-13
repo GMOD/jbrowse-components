@@ -45,7 +45,9 @@ held: with views left in the session the prunes above collapse the cell, and
 with none `ViewsContainer` renders `ViewLauncher` in place of the whole
 workspace rather than mounting `WorkspaceContainer` at all. So the blank cell
 needs no launcher of its own, and giving `renderTabContent` an `undefined`-tab
-case to serve one would be answering a state nothing can show.
+case to serve one would be answering a state nothing can show. `homeViews` is a
+second floor under that — it mints a tab in a tabless panel rather than
+declining to home into one — so the state self-heals if it is ever built.
 
 ## Ids are random, not a counter
 
@@ -223,7 +225,10 @@ because there is no gap under the pointer and no caret drawn. `dropTabInPanel`
 therefore declines it, where it used to append and send the tab to the end of
 its own strip. dockview declines the same drop. The rule belongs to the gesture
 and not to `moveTabToPanel`, where no index still means append: that is the only
-reading a total function has.
+reading a total function has. It is one decision and not two agreeing ones —
+`useLayoutDrag` publishes no drag for it, so the wash is not painted either
+(`declines`), and `dropTabInPanel` keeps its guard for callers that are not the
+gesture.
 
 `useLayoutDrag` is the DOM half and is deliberately dumb. The React test stubs
 geometry and therefore covers **wiring only**, and says so. A test that stubs
