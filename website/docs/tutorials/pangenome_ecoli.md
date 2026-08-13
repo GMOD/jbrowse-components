@@ -554,13 +554,24 @@ the PanSN path to the assembly's `chr`, and convert to bigWig with
 [`bedGraphToBigWig`](https://genome.ucsc.edu/goldenPath/help/bigWig.html):
 
 ```bash
-in_pggb odgi depth -i "/data/$og" -b /data/depth_windows.bed
+reflen=$(awk -v p="K12#1#chr" '$1 == p {print $2}' all.fa.gz.fai)
+awk -v p="K12#1#chr" -v len="$reflen" -v w=500 \
+  'BEGIN { for (s = 0; s < len; s += w) { e = s + w; if (e > len) e = len
+           print p "\t" s "\t" e } }' > depth_windows.bed
+
+in_pggb odgi depth -i "/data/$og" -b /data/depth_windows.bed |
+  awk -v p="K12#1#chr" -v OFS='\t' '$1 == p && $4 + 0 == $4 { print "chr", $2, $3, $4 }' |
+  sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
+
+printf 'chr\t%s\n' "$reflen" > chrom.sizes
+bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
 ```
 
 `-b` is the whole trick: odgi reports one row per window rather than per base,
 with the mean depth in column 4, so the window size is the resolution of the
-curve. The [build script](#reproduce-it-end-to-end) tiles `depth_windows.bed`
-off `all.fa.gz.fai` at 500 bp, renames the path, and runs `bedGraphToBigWig`.
+curve. The awk in the middle does the renaming, dropping the PanSN `K12#1#chr`
+for the `chr` the assembly uses, which is why `chrom.sizes` is written by hand
+rather than cut from the `.fai`.
 
 Load it as a [`QuantitativeTrack`](/docs/config_guides/quantitative_track) on
 K12:
@@ -622,13 +633,19 @@ own bigWig and load the set as one
 [`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track):
 
 ```bash
-in_pggb odgi pav -i "/data/$og" -b /data/depth_windows.bed
+in_pggb odgi pav -i "/data/$og" -b /data/depth_windows.bed > pav.tsv
+for strain in Sakai CFT073 NCTC86 IAI39; do
+  awk -F'\t' -v OFS='\t' -v g="${strain}#1#chr" \
+    '$5 == g && $6 + 0 == $6 { print "chr", $2, $3, $6 }' pav.tsv |
+    sort -k1,1 -k2,2n > "pav_${strain}.bedgraph"
+  bedGraphToBigWig "pav_${strain}.bedgraph" chrom.sizes "ecoli_pggb_pav_${strain}.bw"
+done
 ```
 
 Same windows as the depth curve, so the two lanes line up. The output is one row
 per window per path (`chrom start end name group pav`), where `group` is the
-PanSN path and `pav` the fraction: one bigWig per strain is that file split on
-`group`, which the [build script](#reproduce-it-end-to-end) does.
+PanSN path and `pav` the fraction, which is what the loop splits on. K12 is left
+out because it is present over its own windows by construction.
 
 ```json
 {
