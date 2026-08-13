@@ -159,9 +159,17 @@ and pathogenic is the commonest ClinVar classification here.
 The fourth reading needs the whole transcript. **gnomAD v4.1 - gnomAD v4.1
 Exomes** under Variation and Repeats opens as several thousand records over the
 gene, which is one block of colour. Two of its columns cut that down to
-something with a shape, and **Filter by...** takes either: `feature.AF` is the
-allele frequency, and `feature.annot` is gnomAD's own consequence class, one of
-pLoF, missense, synonymous or other.
+something with a shape, and **Track menu → Filter by...** takes either:
+`feature.AF` is the allele frequency, and `feature.annot` is gnomAD's own
+consequence class, one of pLoF, missense, synonymous or other.
+
+The dialog takes one jexl expression per line, and the track redraws with the
+records that pass all of them. A new expression goes on a line of its own under
+the default already in the box: `jexl:feature.AF >= 0.001` keeps the variants
+standing in the population, and `jexl:feature.annot == 'pLoF'` the ones gnomAD
+calls predicted loss of function.
+
+<Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class expression typed in." />
 
 `grpmax` is a third column, naming the genetic ancestry group that carries the
 variant at its highest frequency. **Color by... → Attribute...** takes any

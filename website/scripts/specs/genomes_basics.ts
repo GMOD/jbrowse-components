@@ -1,6 +1,7 @@
 import {
   PARK_CURSOR,
   UCSC_HG38_CONFIG,
+  cascadeBoxes,
   displayReady,
   openTrackSelector,
   sessionSpec,
@@ -647,6 +648,95 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     // four readings the frame is named for.
     viewportHeight: 990,
     diffThreshold: 0.02,
+  },
+
+  // Where the three frames below come from. The gnomAD figure is a stack of
+  // results, and a result stack shows nothing of the step that produced it: its
+  // three frames differ only in which records are drawn, so a reader who has
+  // not opened that menu reads them as three different tracks rather than one
+  // track filtered three ways. The declarative `jexlFiltersSetting` in the spec
+  // makes that worse, not better -- the frames arrive already filtered, so the
+  // app never shows the dialog the prose is telling someone to type into.
+  //
+  // Same two-frame shape as `about_track`, and for the same reason: the menu
+  // item is the question and the dialog is the answer. Stacked rather than
+  // side by side, because the dialog's content is a fixed 80em (JexlFilterDialog)
+  // and two of those abreast is a figure nothing renders legibly.
+  //
+  // The track is alone in the view so the menu has the frame to open into, and
+  // it is UNFILTERED -- with a filter in effect `filterMenuItems` relabels the
+  // row "Filter by... (1)" and turns it into a submenu, so the click path the
+  // reader is being shown would not be the one they get.
+  //
+  // The pLoF expression rather than the AF one, so the typed text lines up with
+  // the bottom frame of the figure below it, which is the one whose filter has
+  // no visible-in-the-picture analogue (a frequency cut looks like fewer
+  // variants; a consequence class does not look like anything).
+  {
+    mode: 'url',
+    name: 'genomes_basics/gnomad_filter_menu',
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: TP53_TRANSCRIPT_WINDOW,
+          tracks: [{ trackId: GNOMAD_TRACK_ID, height: 200 }],
+        },
+      ],
+    }),
+    readyText: 'gnomAD',
+    readyTimeout: 180000,
+    settleMs: 10000,
+    viewportHeight: 640,
+    diffThreshold: 0.02,
+    // the menu is driven by clicking, which leaves the track's own hover
+    // tooltip standing over the frame the menu is the subject of
+    hideTooltip: true,
+    stages: [
+      {
+        actions: [
+          trackMenuIcon(GNOMAD_TRACK_ID),
+          { type: 'waitForText', text: 'Filter by...' },
+        ],
+        // the menu is long and every row in it is a plausible next click, which
+        // is the one thing the picture cannot say on its own
+        annotations: cascadeBoxes(['Filter by...']),
+        // the menu, not the empty page under it -- the track it opens from
+        // scrolls its own rows, so nothing below the view's fold is content
+        viewportHeight: 560,
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Filter by...' },
+          { type: 'waitForText', text: 'Add track filters' },
+          // The visible textarea, not the autosize shadow MUI renders beside
+          // it, and APPENDED on a new line rather than typed into an empty
+          // box. `BaseLinearDisplay`'s `jexlFilters` slot has a non-empty
+          // DEFAULT (the NCBI gbkey=Src cut), so `activeFilters()` prefills
+          // this dialog on every feature track and a bare type ran straight on
+          // to the end of that line, into a red parse error. Appending is also
+          // the truer picture of what the dialog is: a list, one expression per
+          // line, that the reader adds to.
+          //
+          // That default is a no-op on this file (a bigBed with no gbkey field
+          // -- nothing to drop), which is why the figure below can set
+          // `jexlFiltersSetting`, which REPLACES the configured list rather
+          // than extending it, and still draw what a reader clicking along
+          // would get.
+          {
+            type: 'type',
+            selector: '.MuiDialog-container textarea:not([aria-hidden="true"])',
+            value: `\n${GNOMAD_PLOF_FILTER}`,
+          },
+          { type: 'delay', ms: 500 },
+        ],
+        // back to the spec's own height, which the shorter first frame would
+        // otherwise carry into this one -- the dialog is the taller of the two
+        // and clears its bottom edge by a line
+        viewportHeight: 640,
+      },
+    ],
   },
 
   // The population reading, at the transcript rather than the exon. Three
