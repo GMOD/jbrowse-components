@@ -396,6 +396,88 @@ describe('attributeColumns', () => {
   })
 })
 
+// `jcvi mcscan` writes a column per chain of synteny blocks rather than per
+// genome, so at --iter=2 a grape gene syntenic to two peach regions has a peach
+// id in each of two columns. grape_peach_iter2.blocks is that shape: the first
+// chain pairs g1/g2/g4, the second pairs g1 and g2 with the copy one over.
+describe('a genome in several columns (mcscan --iter=2)', () => {
+  const iterAdapter = (assemblyNames: string[]) =>
+    new Adapter(
+      configSchema.create({
+        mcscanBlocksLocation: bed('grape_peach_iter2.blocks'),
+        blockAssemblies: ['grape', 'peach', 'peach'],
+        bedLocations: [bed('grape.bed'), bed('peach.bed'), bed('peach.bed')],
+        assemblyNames,
+      }),
+    )
+  const iterFeats = (
+    assemblyNames: string[],
+    region: Record<string, unknown>,
+  ) =>
+    firstValueFrom(
+      iterAdapter(assemblyNames)
+        .getFeatures(region as never)
+        .pipe(toArray()),
+    )
+  const grapeRegion = {
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  }
+
+  test('every copy column is drawn, not just the first', async () => {
+    const fa = await iterFeats(['grape', 'peach'], grapeRegion)
+    // 3 links from column 1, 2 more from column 2
+    expect(fa.length).toBe(5)
+    expect(new Set(fa.map(f => f.id())).size).toBe(5)
+    expect(
+      new Set(
+        fa.map(f => (f.get('mate') as { assemblyName: string }).assemblyName),
+      ),
+    ).toEqual(new Set(['peach']))
+  })
+
+  // What the extra column means: one grape gene, two peach copies, so the band
+  // draws a ribbon to each rather than picking one
+  test('a duplicated gene draws a ribbon to each copy', async () => {
+    const fa = await iterFeats(['grape', 'peach'], grapeRegion)
+    const g1 = fa.filter(f => f.get('name') === 'g1')
+    expect(
+      g1.map(f => (f.get('mate') as { name: string }).name).sort(),
+    ).toEqual(['p1', 'p2'])
+  })
+
+  // The copy columns are on the mate side of a grape query and on the QUERY
+  // side of a peach one, so resolving only the query's first column would make
+  // the same band draw a different number of links from each row.
+  test('the pair reads the same from the other side', async () => {
+    const fa = await iterFeats(['grape', 'peach'], {
+      refName: 'Pp1',
+      start: 0,
+      end: 2000,
+      assemblyName: 'peach',
+    })
+    expect(fa.length).toBe(5)
+    expect(new Set(fa.map(f => f.id())).size).toBe(5)
+  })
+
+  // assemblyNames is free to name the genome once per column it holds, and that
+  // must not draw every link twice
+  test('naming the mate once per column does not double the links', async () => {
+    const fa = await iterFeats(['grape', 'peach', 'peach'], grapeRegion)
+    expect(fa.length).toBe(5)
+  })
+
+  test('getRefNames covers the copy columns too', async () => {
+    const names = await iterAdapter(['grape', 'peach']).getRefNames({
+      assemblyName: 'peach',
+      targetAssemblyName: 'grape',
+    })
+    expect(names).toEqual(['Pp1'])
+  })
+})
+
 // One assembly in two columns: wheat's homoeologs against each other, or an
 // MCScanX whole-genome-duplication run. `indexOf` answers the same column twice
 // there, which paired every gene with itself and, with no "other" assembly to

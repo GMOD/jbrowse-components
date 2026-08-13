@@ -79,9 +79,12 @@ grape02   peach02   .
 grape03   .         .
 ```
 
-The adapter draws a pair from the first column naming each genome, so the second
-peach column is never read. The shape it does read is a copy per row, repeating
-the grape id:
+Name that column in `blockAssemblies` like any other, `peach` twice with
+`peach.bed` twice beside it, and both are drawn: a grape gene with a copy in
+each column links to each. `assemblyNames` still names peach once, since it
+lists the genomes the track can render rather than the file's columns.
+
+The other convention is a copy per row, repeating the grape id:
 
 ```
 grape01   peach01    cacao01

@@ -87,7 +87,11 @@ const MCScanBlocksAdapter = ConfigurationSchema(
     /**
      * #slot
      * one assembly name per column of the blocks file, in column order
-     * (column 0 is the reference)
+     * (column 0 is the reference). A genome may hold several columns, which is
+     * what `jcvi mcscan` writes above `--iter=1` (a column per chain of synteny
+     * blocks, so a duplicated region is a further column of the same genome)
+     * and what a self-comparison is; every column of a genome is drawn, so a
+     * gene with two copies in its mate draws a link to each
      */
     blockAssemblies: {
       type: 'stringArray',
@@ -107,7 +111,8 @@ const MCScanBlocksAdapter = ConfigurationSchema(
      * the assemblies this track can render; list all of blockAssemblies to let
      * one track back every band of a multi-way view (the view picks each band's
      * pair), or just two to pin it to a single pair. Every entry must appear in
-     * blockAssemblies
+     * blockAssemblies. A genome spanning several columns is named once here,
+     * not once per column
      */
     assemblyNames: {
       type: 'stringArray',
