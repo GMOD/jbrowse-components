@@ -29,6 +29,15 @@ export const LABEL_PADDING_PX = 6
 // layout/hit-test reservations always match what is drawn.
 export const MAX_DESCRIPTION_LABEL_WIDTH_PX = 200
 
+// How far in from the left edge of the drawing area a label is held when its
+// feature runs off that edge. A gene wider than the window has no on-screen
+// start to hang its name from, so the name is clamped to where the drawing
+// begins — at 0 that puts the text against the panel border, or against the
+// neighbouring panel in a synteny or breakpoint-split row, and it reads as
+// clipped rather than as pinned. Small enough not to move a label whose feature
+// genuinely starts near the edge by anything a reader would notice.
+export const LABEL_EDGE_GUTTER_PX = 4
+
 // Translucent light backing rect drawn behind an "overlay"-style label so its
 // (theme.palette.common.black) text stays readable over the colored feature box.
 // Single source so the on-screen DOM overlay and the SVG export use the same

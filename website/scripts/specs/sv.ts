@@ -1607,6 +1607,50 @@ export const svSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 360,
       },
+      // WHAT THE TWO CATALOGUE LANES ANSWER (review: "why do i care about
+      // common germline svs here? consider remove"). They were added a round
+      // earlier, on "i want tracks that confirm; prose is tl;dr 99% of the
+      // time" — and then said nothing, because one of them is empty and the
+      // other draws two bars whose relationship to the call is the whole point
+      // and is not legible from the drawing.
+      //
+      // MEASURED against the two bigBeds rather than read off the picture
+      // (api.genome.ucsc.edu, 2026-08-13), because the lanes' size filters
+      // decide what is in them and the answer is different above and below the
+      // cut. SV_85 is chr10:122,835,344-122,837,142.
+      //
+      //   clinvarCnv   15 records span this window and the SMALLEST is 2.2 Mb —
+      //                whole-arm losses, every one of them filtered out by
+      //                `_varLen < 50000`. So the empty lane is the reading: no
+      //                submitted pathogenic CNV at anything like this event's
+      //                scale.
+      //   dgvMerged    two records survive the size cut and BOTH overlap the
+      //                call — nsv1159779 (12.9 kb deletion) over its first
+      //                kilobase, nsv975804 (3.0 kb duplication) over most of
+      //                it.
+      //
+      // Which is the opposite of a clearance, and is the reason the lane is
+      // worth its rows: this deletion sits in ordinary germline copy-number
+      // territory, which is where a somatic caller most often emits something
+      // that was never somatic.
+      //
+      // Anchored to the DGV lane's own band, in the strip under its two
+      // records, so it moves with the track rather than with the page.
+      {
+        type: 'text',
+        text: 'No ClinVar CNV at this size. Two common germline CNVs do overlap the call, which is the check a somatic caller has to survive.',
+        anchor: {
+          view: 1,
+          track: DGV_TRACK.trackId,
+          fracY: 1,
+          alignX: 'left',
+          dx: 30,
+          dy: -6,
+        },
+        textAlign: 'start',
+        fontSize: 18,
+        maxWidth: 470,
+      },
     ],
     // No diffThreshold: back on the default gate, deliberately.
     //

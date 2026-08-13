@@ -1,5 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
+import { LABEL_EDGE_GUTTER_PX } from '../../RenderFeatureDataRPC/constants.ts'
 import {
   LABEL_CULL_BUCKET_PX,
   computeLabelExtraWidth,
@@ -190,6 +191,41 @@ describe('forEachRenderedLabel', () => {
       { showLabels: true, showDescriptions: true },
     )
     expect(emitted!.labels[0]!.labelX).toBeGreaterThanOrEqual(50)
+  })
+
+  // A gene wider than the window: the clamp is the only thing deciding where
+  // its name goes, and at 0 it lands on the panel border.
+  test('a feature running off the left holds its label inside the edge', () => {
+    const data = makeData({
+      f1: makeLabelData('f1', {
+        minX: -400,
+        maxX: 900,
+        nameLabel: makeLabel({ textWidth: 30 }),
+      }),
+    })
+    const [emitted] = collect(data, FULL_REGION, {
+      showLabels: true,
+      showDescriptions: true,
+    })
+    expect(emitted!.labels[0]!.labelX).toBe(LABEL_EDGE_GUTTER_PX)
+  })
+
+  // and the gutter never outranks the right-edge clamp: a feature whose right
+  // edge is within a label's width of the screen left keeps its label on that
+  // right edge, off screen and all
+  test('the right-edge clamp still wins over the gutter', () => {
+    const data = makeData({
+      f1: makeLabelData('f1', {
+        minX: -400,
+        maxX: 2,
+        nameLabel: makeLabel({ textWidth: 30 }),
+      }),
+    })
+    const [emitted] = collect(data, FULL_REGION, {
+      showLabels: true,
+      showDescriptions: true,
+    })
+    expect(emitted!.labels[0]!.labelX).toBeLessThan(LABEL_EDGE_GUTTER_PX)
   })
 
   test('culls a feature whose row is outside the cull band', () => {

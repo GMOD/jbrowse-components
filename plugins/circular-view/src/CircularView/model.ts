@@ -347,17 +347,28 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * top-left of the figure within the view's box. The figure is centered
-       * there — a view much wider than it is tall would otherwise leave the
-       * circle jammed in the corner under the controls, and a figure zoomed
-       * past the box overflows evenly rather than only off the bottom-right —
-       * and then shifted by the zoom-to-cursor pan
+       * top-left of the figure within the view's box, then shifted by the
+       * zoom-to-cursor pan.
+       *
+       * Centered horizontally: a view much wider than it is tall would
+       * otherwise leave the circle jammed in the corner under the controls.
+       *
+       * Vertically it hangs from the TOP whenever the box is taller than the
+       * figure, and only centers when the figure is bigger than the box.
+       * `autoFit` sizes the figure to `min(width, height)`, so exactly one axis
+       * ever has slack — and the axis with slack is the height precisely when
+       * the view is TALLER than it is wide, which is the SV inspector's
+       * circular pane beside a full-height spreadsheet. Splitting that slack
+       * evenly left the chord plot floating in the middle of its pane with
+       * nothing above or below it. `Math.min(0, …)` keeps the centering where it
+       * was load-bearing: a figure zoomed past its box has a negative offset and
+       * still overflows evenly rather than only off the bottom.
        */
       get figureOriginXY(): [number, number] {
         const { figureSize } = this
         return [
           (this.width - figureSize) / 2 + self.panX,
-          (self.height - figureSize) / 2 + self.panY,
+          Math.min(0, (self.height - figureSize) / 2) + self.panY,
         ]
       },
       /**

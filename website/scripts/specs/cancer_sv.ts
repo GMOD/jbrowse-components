@@ -97,10 +97,21 @@ const MULTIHOP_GENE_HEIGHT = 70
 
 // K562's Iso-Seq is ~600x over BCR and the split-read subset of it is still
 // ~250 rows, so the row height is what decides whether the pileup ends inside
-// the figure or behind a scrollbar. Two pixels fits all of it and still leaves
-// each read a row the bezier connector can leave from; one merges the rows into
-// a solid block and the connectors then fan out of a smear.
-const SPLIT_READS = { featureHeight: 2 }
+// the figure or behind a scrollbar.
+//
+// FOUR PIXELS, where this was two (review: "potentially stop using
+// 'supercompact' to more clearly see lines"). Two fits the whole read set in a
+// 700px lane and was chosen for that, but a 2px row with a 1px gap is a hairline
+// and the figure's claim is that each line is one molecule — which a reader has
+// to be able to follow across the join to believe. Four doubles the pileup, so
+// the lane and the frame grow with it rather than the rows going behind the
+// track's own scrollbar; that scrollbar is the thing to check the regen for,
+// since neither of the run's size reports can see an overflow INSIDE a track.
+//
+// The review's other idea, filtering to split reads by grouping on the SA tag,
+// is already what `showOnlySplitAlignments` does one line down, and it is why
+// the set is 250 rows rather than 600x of coverage.
+const SPLIT_READS = { featureHeight: 4 }
 
 // The 29 reads realigned to the derivative used to share one row height across
 // the three figures that draw them. They no longer do, and the reason is that
@@ -1993,10 +2004,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/k562_bcr_abl_split',
-    // 1030 put ~11% of the chains behind the pileup's own scrollbar (the
-    // thumb, not either size report, is what says so -- both of those measure
-    // the PAGE and the overflow here is inside a track)
-    viewportHeight: 1110,
+    // Off the run's own below-the-fold report, which is trustworthy again now
+    // the track grows to its rows rather than scrolling them: at a fixed height
+    // this number had to be read off the scrollbar thumb by eye, and was twice.
+    viewportHeight: 1725,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr22:23,286,000-23,293,000 chr9:130,851,000-130,858,000',
@@ -2015,7 +2026,17 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // the fan between the two regions is that read set, read by read.
         {
           trackId: 'K562_isoseq',
-          height: 700,
+          // `grow` rather than a guessed height, which is what a fixed 700 was
+          // at the 2px pitch: the track sizes to its own rows, so nothing ends
+          // up behind the pileup's scrollbar and the page height the run
+          // reports becomes the real one. Both of the run's size reports
+          // measure the PAGE, so a fixed height hides its own overflow from
+          // them and the scrollbar thumb is the only witness — the thing this
+          // spec had to be read by eye for twice.
+          heightMode: 'grow',
+          // over the 800 default, which would clamp this stack and scroll away
+          // the rows the figure is about
+          growMaxHeight: 2400,
           coverageHeight: 190,
           showOnlySplitAlignments: true,
           // one row per molecule across both regions -- see the note above

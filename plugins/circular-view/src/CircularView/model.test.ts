@@ -89,6 +89,34 @@ test('the figure is centered in the box', () => {
   expect(originY).toBeCloseTo(0)
 })
 
+// The SV inspector's circular pane: a full-height column beside the
+// spreadsheet, so the fit is width-bound and every spare pixel is vertical.
+// Split evenly the plot floats in the middle of its own pane.
+test('a taller-than-wide box hangs the figure from the top', () => {
+  const view = createView({
+    regions: [region('chr1', 1_000_000)],
+    width: 300,
+    height: 900,
+  })
+  expect(view.figureSize).toBeCloseTo(300)
+  const [originX, originY] = view.figureOriginXY
+  expect(originX).toBeCloseTo(0)
+  expect(originY).toBe(0)
+})
+
+// and the case the centering is still there for. A box this short cannot hold
+// the figure at all — `minimumRadiusPx` floors the fit — so the figure is
+// bigger than its box, and it overflows top and bottom equally rather than only
+// off the bottom. Same arithmetic a zoom past the box produces.
+test('a figure bigger than its box still overflows evenly', () => {
+  const view = createView({ regions: [region('chr1', 1_000_000)] })
+  view.setHeight(200)
+  const [, originY] = view.figureOriginXY
+  expect(view.figureSize).toBeGreaterThan(200)
+  expect(originY).toBeCloseTo((200 - view.figureSize) / 2)
+  expect(originY).toBeLessThan(0)
+})
+
 // zooming toward a point keeps whatever is under the cursor under the cursor:
 // the point's on-screen position is figureOrigin + centerXY + its offset from
 // the center, and the drawing scales that offset with the radius.

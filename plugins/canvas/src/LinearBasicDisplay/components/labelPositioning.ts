@@ -1,6 +1,7 @@
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
+  LABEL_EDGE_GUTTER_PX,
   LABEL_FONT_SIZE,
   renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
@@ -99,10 +100,19 @@ export interface LabelMetrics {
 // right-edge limit wins the `Math.min`, so a feature whose right edge sits
 // within textWidth of the screen left keeps the label anchored to that right
 // edge even though its start then falls left of screen.
+//
+// `visibleStart` clamps to a small gutter rather than to 0, so a gene running
+// off the left edge carries its name a few px inside the drawing instead of
+// against the border (LABEL_EDGE_GUTTER_PX). It stays under the right-edge
+// limit, so it can never push a label past the feature it belongs to.
 function computeLabelLeftPx(textWidth: number, bounds: FeatureBoundsPx) {
   const { featureLeftPx, featureRightPx, screenStartPx } = bounds
   const fitsInFeature = textWidth <= featureRightPx - featureLeftPx
-  const visibleStart = Math.max(screenStartPx, featureLeftPx, 0)
+  const visibleStart = Math.max(
+    screenStartPx + LABEL_EDGE_GUTTER_PX,
+    featureLeftPx,
+    LABEL_EDGE_GUTTER_PX,
+  )
   const rightEdgeLimit = featureRightPx - textWidth
   return fitsInFeature ? Math.min(visibleStart, rightEdgeLimit) : featureLeftPx
 }
