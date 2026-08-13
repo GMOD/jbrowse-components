@@ -146,6 +146,7 @@ export type { ComparativeStatusModel } from './ComparativeFetchStatus.tsx'
 export { default as MinLengthSlider } from './MinLengthSlider.tsx'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {
+  connectedEndpoints,
   getConnectedAssemblies,
   getSyntenyTracks,
   isSyntenyTrack,

@@ -3,15 +3,9 @@ import {
   quickStartSyntenyTracks,
   syntenyTrackRows,
 } from './syntenyTrackRows.ts'
+import { assemblyManager, loadingAssemblyManager, track } from './testUtils.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-const track = (trackId: string, type: string, assemblyNames: string[]) =>
-  ({
-    trackId,
-    type,
-    configuration: { assemblyNames },
-  }) as unknown as AnyConfigurationModel
 
 jest.mock('@jbrowse/core/configuration', () => ({
   readConfObject: (t: { configuration: { assemblyNames: string[] } }) =>
@@ -36,13 +30,6 @@ test('a self-alignment track keeps its repeated assembly', () => {
   expect(syntenyTrackRows(selfA)).toEqual(['a', 'a'])
 })
 
-// 'ghost' is named by a track and configured by nothing, which is what the real
-// manager answers undefined for; every other name is its own
-const assemblyManager = {
-  getCanonicalAssemblyName: (name: string) =>
-    name === 'ghost' ? undefined : name,
-  has: (name: string) => name !== 'ghost',
-}
 const quickStart = (tracks: AnyConfigurationModel[]) =>
   quickStartSyntenyTracks(tracks, assemblyManager)
 
@@ -73,11 +60,9 @@ test('one unopenable endpoint disqualifies the whole all-vs-all track', () => {
 // startup window, so a session with a launchable dataset would open on Manual —
 // which is the regression the first version of this had.
 test('a track whose assemblies are configured but not built still qualifies', () => {
-  const loading = {
-    getCanonicalAssemblyName: () => undefined,
-    has: () => true,
-  }
-  expect(quickStartSyntenyTracks([cross], loading)).toEqual([cross])
+  expect(quickStartSyntenyTracks([cross], loadingAssemblyManager)).toEqual([
+    cross,
+  ])
 })
 
 // This mapping has been written backwards more than once. assemblyNames is

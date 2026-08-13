@@ -2,8 +2,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { isSyntenyTrack } from './getSyntenyTracks.ts'
 
-import type { SessionAssemblies } from './getSyntenyTracks.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
 
 /**
  * The assembly rows a synteny track implies, for the import forms' "Quick
@@ -52,15 +52,12 @@ export function dotplotAxesFromRows(rows: string[], swapped = false) {
  *
  * - it names fewer than two assemblies, so it implies a single-row view, which
  *   a synteny/dotplot view cannot open;
- * - it names an assembly the session has no configuration for — a hub whose
- *   assemblies were never loaded, a config one was removed from. Quick start is
+ * - it names an assembly the session has no configuration for. Quick start is
  *   the opening mode whenever any track qualifies, so such a track seeded the
  *   form with a row whose name is not among the assembly Select's options (it
  *   renders empty), and Launch built a row whose init fails with "Assembly X
- *   not found", which errors the whole view.
- *
- * getAddRowOptions and getConnectedAssemblies screen their own lists on the
- * same test; see SessionAssemblies for why it is `has`.
+ *   not found", which errors the whole view. `connectedEndpoints` screens the
+ *   other way into a row on the same test, and says why it is `has`.
  */
 export function quickStartSyntenyTracks(
   tracks: AnyConfigurationModel[],

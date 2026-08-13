@@ -59,6 +59,31 @@ export function getTrackAssemblyNames(
 }
 
 /**
+ * What {@link canonicalAssemblyNames} needs of an assembly manager — the one
+ * method — so a picker that only resolves names says so in its signature and a
+ * test can stand in for it without building a session.
+ */
+export interface AssemblyNameResolver {
+  getCanonicalAssemblyName: (name: string) => string | undefined
+}
+
+/**
+ * {@link AssemblyNameResolver} plus the presence test, for a picker that also
+ * has to screen out names the session cannot open at all.
+ *
+ * The screen is `has`, deliberately, and not
+ * `getCanonicalAssemblyName(name) !== undefined`: that reads `assemblyNameMap`,
+ * which is built from assembly *models*, so it answers no during the window
+ * where a config exists and the manager's afterAttach autorun hasn't built its
+ * model yet — which is exactly when an import form first renders. `has` also
+ * consults `assemblyNamesList`, read off the configs, so it covers both. See
+ * assemblyManager's own note on the pair.
+ */
+export interface SessionAssemblies extends AssemblyNameResolver {
+  has: (assemblyName: string) => boolean
+}
+
+/**
  * Assembly names as the aliases resolve them, so a track configured against
  * `hg38` compares equal to a view on `GRCh38`. Every "does this track belong to
  * these assemblies" test should run both sides through this, or the same track
@@ -71,15 +96,6 @@ export function getTrackAssemblyNames(
  * answer in the window before the assembly manager has built its models. Empty
  * names are dropped: a half-initialized view pads its assembly list with them.
  */
-/**
- * What {@link canonicalAssemblyNames} needs of an assembly manager — the one
- * method — so a picker that only resolves names says so in its signature and a
- * test can stand in for it without building a session.
- */
-export interface AssemblyNameResolver {
-  getCanonicalAssemblyName: (name: string) => string | undefined
-}
-
 export function canonicalAssemblyNames(
   names: string[],
   assemblyManager: AssemblyNameResolver,

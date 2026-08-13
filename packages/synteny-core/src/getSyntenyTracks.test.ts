@@ -1,13 +1,7 @@
 import { getConnectedAssemblies, getSyntenyTracks } from './getSyntenyTracks.ts'
+import { assemblyManager, loadingAssemblyManager, track } from './testUtils.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-const track = (trackId: string, type: string, assemblyNames: string[]) =>
-  ({
-    trackId,
-    type,
-    configuration: { assemblyNames },
-  }) as unknown as AnyConfigurationModel
 
 jest.mock('@jbrowse/core/configuration', () => ({
   readConfObject: (t: { configuration: { assemblyNames: string[] } }) =>
@@ -18,14 +12,6 @@ const cross = track('cross', 'SyntenyTrack', ['a', 'b'])
 const selfA = track('selfA', 'SyntenyTrack', ['a', 'a'])
 const feature = track('feature', 'FeatureTrack', ['a', 'b'])
 
-// 'aliasOfA' is another name for assembly 'a'; 'ghost' is named by a track and
-// configured by nothing, which is what the real manager answers undefined for;
-// every other name is its own
-const assemblyManager = {
-  getCanonicalAssemblyName: (name: string) =>
-    name === 'aliasOfA' ? 'a' : name === 'ghost' ? undefined : name,
-  has: (name: string) => name !== 'ghost',
-}
 const matching = (tracks: AnyConfigurationModel[], assemblies: string[]) =>
   getSyntenyTracks(tracks, assemblies, assemblyManager)
 
@@ -96,10 +82,8 @@ describe('getConnectedAssemblies', () => {
   // getCanonicalAssemblyName instead would empty this list for the whole
   // startup window and report a connected session as unconnected.
   test('an assembly configured but not yet built is still a connection', () => {
-    const loading = {
-      getCanonicalAssemblyName: () => undefined,
-      has: () => true,
-    }
-    expect(getConnectedAssemblies([cross], 'a', loading)).toEqual(['b'])
+    expect(
+      getConnectedAssemblies([cross], 'a', loadingAssemblyManager),
+    ).toEqual(['b'])
   })
 })

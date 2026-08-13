@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { canonicalAssemblyNames, getTrackName } from '@jbrowse/core/util/tracks'
-import { allSessionTracks, getSyntenyTracks } from '@jbrowse/synteny-core'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import { allSessionTracks, connectedEndpoints } from '@jbrowse/synteny-core'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -23,49 +23,23 @@ export function getAddRowOptions(
 ): AddRowOption[] {
   // allSessionTracks, not session.tracks: a dataset from a connection extends the
   // stack just as well as a config one
-  const { assemblyManager } = session
-  const tracks = getSyntenyTracks(
+  const { datasets } = connectedEndpoints(
     allSessionTracks(session),
-    [terminalAssembly],
-    assemblyManager,
+    terminalAssembly,
+    session.assemblyManager,
   )
-  // canonical on both sides of the comparison and in the result: newAssembly
-  // becomes an assembly row, and an alias read off the track config would name
-  // a row the rest of the form can't match
-  const [canonicalTerminal = terminalAssembly] = canonicalAssemblyNames(
-    [terminalAssembly],
-    assemblyManager,
-  )
-  return (
-    tracks
-      .map(track => {
-        const assemblyNames = canonicalAssemblyNames(
-          readConfObject(track, 'assemblyNames') as string[],
-          assemblyManager,
-        )
-        return {
-          trackId: readConfObject(track, 'trackId') as string,
-          name: getTrackName(track, session),
-          newAssembly:
-            assemblyNames.find(name => name !== canonicalTerminal) ??
-            canonicalTerminal,
-        }
-      })
-      // Every option has to be one `appendRow` can actually open, and a track
-      // config is free to name an assembly the session doesn't have — a hub
-      // whose assemblies were never loaded, or a config one was removed from.
-      // Picking one of those is not a broken row but a broken view: the row's
-      // init fails with "Assembly X not found", which sets the whole synteny
-      // view's error, and `showImportForm` reads that error — so choosing an
-      // offered option replaced the user's working stack with the import form.
-      //
-      // `has`, not `getCanonicalAssemblyName(...) !== undefined`: the latter
-      // reads a map built from assembly *models*, so it answers no in the
-      // window where a config exists and the manager hasn't built its model —
-      // which would empty this list, and the dialog would report a session with
-      // datasets as having none. See synteny-core's SessionAssemblies. A
-      // self-alignment's endpoint is the terminal row's own assembly, which is
-      // live by construction, so it survives either way.
-      .filter(o => assemblyManager.has(o.newAssembly))
+  // A dataset whose only other endpoint the screen removed reaches nowhere, and
+  // is dropped rather than offered: every option has to be one `appendRow` can
+  // actually open. connectedEndpoints says why.
+  return datasets.flatMap(({ track, newAssemblies: [newAssembly] }) =>
+    newAssembly
+      ? [
+          {
+            trackId: readConfObject(track, 'trackId') as string,
+            name: getTrackName(track, session),
+            newAssembly,
+          },
+        ]
+      : [],
   )
 }

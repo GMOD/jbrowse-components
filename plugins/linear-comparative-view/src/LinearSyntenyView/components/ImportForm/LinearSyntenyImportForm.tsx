@@ -66,10 +66,7 @@ const LinearSyntenyViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const { assemblyNames } = session
-    const quick = useQuickStartState(
-      allSessionTracks(session),
-      session.assemblyManager,
-    )
+    const quick = useQuickStartState(session)
     const [selectedRow, setSelectedRow] = useState(0)
     // names the per-pair heading so it is also the track radio group's label:
     // one piece of text, rather than a heading and a duplicate screen-reader

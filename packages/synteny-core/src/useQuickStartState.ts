@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { allSessionTracks } from '@jbrowse/core/util/tracks'
+
 import { pickSyntenyTrackId } from './getSyntenyTracks.ts'
 import {
   quickStartSyntenyTracks,
@@ -7,8 +9,7 @@ import {
 } from './syntenyTrackRows.ts'
 
 import type { ImportFormMode } from './ImportFormModeToggle.tsx'
-import type { SessionAssemblies } from './getSyntenyTracks.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
 
 /**
  * The Quick start / Manual mode state shared by the linear synteny and dotplot
@@ -33,10 +34,16 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  * nothing.
  */
 export function useQuickStartState(
-  tracks: AnyConfigurationModel[],
-  assemblyManager: SessionAssemblies,
+  // the session, not a track list: the tracks and the manager that screens them
+  // have to come from the same one, and every caller has it in hand
+  session: Parameters<typeof allSessionTracks>[0] & {
+    assemblyManager: SessionAssemblies
+  },
 ) {
-  const quickTracks = quickStartSyntenyTracks(tracks, assemblyManager)
+  const quickTracks = quickStartSyntenyTracks(
+    allSessionTracks(session),
+    session.assemblyManager,
+  )
   const [mode, setMode] = useState<ImportFormMode>(
     quickTracks.length ? 'quick' : 'manual',
   )

@@ -2,21 +2,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
-
-/**
- * The assembly-manager slice the "can the session open this?" screens need.
- *
- * `has`, deliberately, and not `getCanonicalAssemblyName(name) !== undefined`:
- * that reads `assemblyNameMap`, which is built from assembly *models*, so it
- * answers no during the window where a config exists and the manager's
- * afterAttach autorun hasn't built its model yet — which is exactly when an
- * import form first renders. `has` also consults `assemblyNamesList`, read off
- * the configs, so it covers both. See assemblyManager's own note on the pair.
- */
-export interface SessionAssemblies extends AssemblyNameResolver {
-  has: (assemblyName: string) => boolean
-}
+import type {
+  AssemblyNameResolver,
+  SessionAssemblies,
+} from '@jbrowse/core/util/tracks'
 
 function countByName(names: string[]) {
   const counts = new Map<string, number>()
@@ -89,42 +78,79 @@ export function getSyntenyTracks(
 }
 
 /**
- * Assemblies reachable from `assembly` by a single synteny dataset — the other
- * endpoint of every synteny track that references it. Used to default a newly
- * added synteny row to an assembly that is actually connected to the row above,
- * so the new pair is launchable instead of immediately flagged as unconfigured.
+ * Every synteny dataset that reaches `assembly`, paired with the assemblies it
+ * reaches — its other endpoints. The single derivation behind both "extend the
+ * stack from this row" pickers: the add-row dialog's options and
+ * {@link getConnectedAssemblies}' names.
+ *
+ * Both feed their result into a row, so both need the same two things and
+ * neither can skip either:
+ *
+ * - **canonical names**, because the row's assembly Select is populated from
+ *   the session's own names and an alias read off a track config would be a
+ *   value matching no option, which MUI renders as an empty field;
+ * - **`assemblyManager.has`**, because a track config is free to name an
+ *   assembly the session has no configuration for — a hub whose assemblies were
+ *   never loaded, a config one was removed from — and such a row is not merely
+ *   blank but a broken view: its init fails with "Assembly X not found", which
+ *   sets the view's error, and `showImportForm` reads that error. See
+ *   SessionAssemblies for why the screen is `has` rather than
+ *   `getCanonicalAssemblyName(...) !== undefined`.
+ *
+ * A self-alignment's other endpoint is the anchor itself, reported as such: it
+ * is live by construction (so it needs no screening), it makes the dataset an
+ * offerable option, and it is distinguishable from a dataset whose only other
+ * endpoint the screen just removed — which must not be offered at all.
+ */
+export function connectedEndpoints(
+  tracks: AnyConfigurationModel[],
+  assembly: string,
+  assemblyManager: SessionAssemblies,
+) {
+  const [canonicalAssembly = assembly] = canonicalAssemblyNames(
+    [assembly],
+    assemblyManager,
+  )
+  return {
+    canonicalAssembly,
+    datasets: getSyntenyTracks(tracks, [assembly], assemblyManager).map(
+      track => {
+        const others = canonicalAssemblyNames(
+          readConfObject(track, 'assemblyNames') as string[],
+          assemblyManager,
+        ).filter(name => name !== canonicalAssembly)
+        return {
+          track,
+          newAssemblies: others.length
+            ? others.filter(name => assemblyManager.has(name))
+            : [canonicalAssembly],
+        }
+      },
+    ),
+  }
+}
+
+/**
+ * Assemblies reachable from `assembly` by a single synteny dataset. Used to
+ * default a newly added synteny row to an assembly that is actually connected
+ * to the row above, so the new pair is launchable instead of immediately
+ * flagged as unconfigured.
  */
 export function getConnectedAssemblies(
   tracks: AnyConfigurationModel[],
   assembly: string,
   assemblyManager: SessionAssemblies,
 ) {
-  // canonical throughout: the caller feeds these back into an assembly dropdown
-  // whose options are the session's own names, so an alias read off a track
-  // config would be an option that matches nothing
-  const [canonicalAssembly] = canonicalAssemblyNames(
-    [assembly],
+  const { canonicalAssembly, datasets } = connectedEndpoints(
+    tracks,
+    assembly,
     assemblyManager,
   )
-  const names = new Set<string>()
-  for (const track of getSyntenyTracks(tracks, [assembly], assemblyManager)) {
-    for (const name of canonicalAssemblyNames(
-      readConfObject(track, 'assemblyNames') as string[],
-      assemblyManager,
-    )) {
-      // Only assemblies the session can actually open. A track config is free
-      // to name one the session has no configuration for — a hub whose
-      // assemblies were never loaded, a config one was removed from — and the
-      // caller feeds this into a row that becomes an AssemblySelector value.
-      // A value that is not one of the Select's options renders as an empty
-      // field, so "Add row" produced an unnamed row rather than the connected
-      // default it exists to give. See SessionAssemblies for why this is `has`.
-      if (name !== canonicalAssembly && assemblyManager.has(name)) {
-        names.add(name)
-      }
-    }
-  }
-  return [...names]
+  return [...new Set(datasets.flatMap(d => d.newAssemblies))].filter(
+    // a self-alignment reports the anchor as its endpoint, and connects the
+    // assembly to nothing new
+    name => name !== canonicalAssembly,
+  )
 }
 
 /**
