@@ -191,4 +191,62 @@ describe('waitForOAuthMessage', () => {
     window.dispatchEvent(new MessageEvent('message', { data: {} }))
     expect(callCount).toBe(1)
   })
+
+  describe('with a popup to watch', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    // getToken caches this promise, so a pending one is not a flow still in
+    // progress — it is an account that will never authenticate again
+    it('rejects when the user closes the popup', async () => {
+      const popup = { closed: false }
+      const promise = waitForOAuthMessage(async () => undefined, {
+        popup,
+        isOwnMessage: () => false,
+      })
+      popup.closed = true
+      jest.advanceTimersByTime(2000)
+      await expect(promise).rejects.toThrow('OAuth flow was cancelled')
+    })
+
+    // the popup posts its redirect and then closes itself, and the code flow
+    // spends a token exchange finishing — a close is not a cancellation while
+    // one of ours is in hand
+    it('does not cancel a redirect that is still being finished', async () => {
+      const popup = { closed: false }
+      let finishRedirect: (token: string) => void
+      const promise = waitForOAuthMessage(
+        async () =>
+          new Promise<string>(resolve => {
+            finishRedirect = resolve
+          }),
+        { popup, isOwnMessage: () => true },
+      )
+      window.dispatchEvent(new MessageEvent('message', { data: {} }))
+      await Promise.resolve()
+
+      popup.closed = true
+      jest.advanceTimersByTime(5000)
+      finishRedirect!('exchanged-token')
+      expect(await promise).toBe('exchanged-token')
+    })
+
+    it('stops polling once the flow completes', async () => {
+      const popup = { closed: false }
+      const promise = waitForOAuthMessage(async () => 'token', {
+        popup,
+        isOwnMessage: () => true,
+      })
+      window.dispatchEvent(new MessageEvent('message', { data: {} }))
+      expect(await promise).toBe('token')
+
+      popup.closed = true
+      jest.advanceTimersByTime(5000)
+      expect(jest.getTimerCount()).toBe(0)
+    })
+  })
 })

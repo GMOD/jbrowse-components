@@ -18,6 +18,7 @@ import { getResponseError } from '../util.ts'
 import {
   finishOAuthRedirect,
   finishOAuthWindow,
+  getOAuthRedirectUri,
   parseOAuthError,
   waitForOAuthMessage,
 } from './util.ts'
@@ -394,8 +395,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           // no await between the open above and the listener below, so the
           // redirect message cannot be delivered before we are listening
-          return waitForOAuthMessage(event =>
-            finishOAuthWindow(event, oauthParams),
+          return waitForOAuthMessage(
+            event => finishOAuthWindow(event, oauthParams),
+            {
+              popup,
+              isOwnMessage: event =>
+                getOAuthRedirectUri(event, self.internetAccountId) !==
+                undefined,
+            },
           )
         }
       },
