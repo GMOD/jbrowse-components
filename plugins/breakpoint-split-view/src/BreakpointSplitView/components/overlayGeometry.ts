@@ -19,10 +19,16 @@
 // side used them. The four below are duplicated, which is the price of the
 // boundary, and they are all small and pinned by ../util.test.ts and
 // overlayUtils.test.ts on their respective sides.
+//
+// They read as accidental copies, and a duplication sweep (24aba4d012) undid
+// three of them — pointing this file, BreakpointSplitView.tsx and
+// overlayUtils.tsx at ../util.ts. Nothing failed: tsc passed and so did every
+// suite, because the only thing that disagreed was the byo examples site's
+// eager-bundle budget, which needs a full Astro build to say anything. It
+// measured 678 -> 690 KB gzip on the synteny page. Restored, and
+// ../eagerBoundary.test.ts now fails on the import instead of the bundle.
 import { notEmpty } from '@jbrowse/core/util'
 import { safeParseBreakend } from '@jbrowse/sv-core'
-
-import { isOffscreenLayout } from '../util.ts'
 
 import type { LayoutRecord } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -37,6 +43,19 @@ export function findMatchingAlt(feat1: Feature, feat2: Feature) {
     ?.map(alt => safeParseBreakend(alt))
     .filter(notEmpty)
     .find(bnd => bnd.MatePosition === target)
+}
+
+// Mirrors VIEW_DIVIDER_HEIGHT in ../util.ts, which is also the CSS height of
+// viewDivider in BreakpointSplitView.tsx. Three numbers that must agree; the
+// other two are one import apart.
+export const VIEW_DIVIDER_HEIGHT = 3
+
+// Mirrors OFFSCREEN_Y_SENTINEL in ../util.ts. The pair is what makes the two
+// isOffscreenLayout copies read the same records, so they move together.
+export const OFFSCREEN_Y_SENTINEL = Number.POSITIVE_INFINITY
+
+export function isOffscreenLayout(c: LayoutRecord) {
+  return c[1] === OFFSCREEN_Y_SENTINEL
 }
 
 // Horizontal screen position of an overlay endpoint, the sibling of
