@@ -1,6 +1,6 @@
 ---
 name: hic
-description: A user-draggable color threshold, checking normalization-vector availability before calling hic-straw, an A/B compartment log-ratio mode, and surfacing the inter-chromosomal data `getHeader` already detects but never shows.
+description: A user-draggable color threshold, checking normalization-vector availability before calling hic-straw, an A/B compartment log-ratio mode, and a chromosome-pair selector for inter-chromosomal contacts — which nothing detects today, contrary to what this doc used to claim.
 ---
 
 # Hi-C
@@ -20,6 +20,14 @@ results or inspecting masterIndex keys.
 control/background map is loaded — needs a second `hicLocation` and `RatioColorScale`
 logic.
 
-**Inter-chromosomal UI.** `getHeader` already computes `hasInterChromosomalData` but
-never surfaces it; when true, show a chromosome-pair selector (chr1 × chr2) to navigate
-inter-chromosomal contact blocks without a manual multi-region view.
+**Inter-chromosomal UI.** A chromosome-pair selector (chr1 × chr2) for navigating
+inter-chromosomal contact blocks without hand-building a multi-region view.
+Corrected 2026-08-13, because the earlier version of this entry made it sound
+nearly free: **nothing detects whether a file has inter-chromosomal data.**
+`getHeader` returns `{ norms, resolutions }` and `setup` parses only
+`chromosomes`/`resolutions`, so there is no `hasInterChromosomalData` to surface
+— detecting it is part of the work, not a prerequisite already met. The half
+that *is* in place is the fetch shape: `getMultiRegionContactRecords` already
+returns `pairs: RegionPairRun[]` describing which region pair each stretch of
+`bin1`/`bin2` came from, so an off-diagonal block is expressible without
+touching the contact-record path.

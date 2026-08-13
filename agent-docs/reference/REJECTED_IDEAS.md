@@ -130,6 +130,41 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   via
   [ADR-032](../architecture-decision-records/adr-032-track-config-nodes-are-throwaway-views.md)
   plus the `writeDelta` choke point. Not a bug.
+- **A throw in `fullConfSnapshot` for arrays/maps of sub-schemas** — declined in
+  the 2026-08-09 audit of `packages/core/src/configuration`, matching the
+  `assertNoPromotableSlots` treatment three lines below it. Those are dropped
+  because "nothing has needed them"; a config that does carry one is silently
+  fine today and a throw would break it at the first worker payload. Establish
+  that no display config carries such a slot before converting silence into a
+  throw. Related negative result, already paid for: dropping `type` and the
+  identifier from a display snapshot breaks no consumer — grepped
+  `displayConfig.type` / `displayConfig[` across `packages`, `plugins`,
+  `products`, and the one production call of `getConfigSnapshotWithPromotables`
+  is `plugins/canvas/src/LinearBasicDisplay/baseModel.ts`, which reads neither.
+- **The config editor enumerating slots off the registry** instead of
+  `getMembers(schema).properties` (`ConfigurationEditor.tsx`) — declined in the
+  same audit. It is the last reader of slot structure going through MST
+  reflection rather than `getConfigurationSchemaDefinition`, which
+  `schemaRegistry.ts` calls "the single accessor". Row order *should* survive
+  the swap, since `modelDefinition` is built by iterating the definition and
+  just prepends `type` and the identifier, both of which render as null — but
+  that is reasoned, not run, and the panel has snapshot tests. The payoff is
+  tidiness, so the check has to be worth it.
+- **A global `Tools → Sign out...` menu item** — built and backed out (2026-08).
+  A dialog listing every account holding a credential, with
+  `signOut()`/`hasCredential()` seams on the base internet-account model and a
+  `signOut()` override on the OAuth account to drop the refresh token too
+  (dropping only the access token silently signs the user back in on the next
+  read — that part is real and worth keeping if this ever returns). Rejected as
+  overfitting: authentication is rare, and a permanent top-level row in every
+  install to serve it is disproportionate. Apollo — whose product *is*
+  authenticated — already has its own `LogOut.tsx`; their having built one is
+  evidence about Apollo, not demand here, and reading it as demand is the
+  mistake to avoid repeating. Without a caller the `signOut()` seam is another
+  unused extension point, which is what `SelectorComponent` and
+  `getValidatedToken` were deleted for. If it earns its place later, the
+  contextual spot is the FileSelector beside the account toggle you just picked,
+  not a global menu. See [../ideas/internet-accounts.md](../ideas/internet-accounts.md).
 
 ## Performance and measurement
 
@@ -476,6 +511,23 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Comparative and pangenome
 
+- **An auto-category for synteny tracks in the LGV track selector** (issue
+  [#4327](https://github.com/GMOD/jbrowse-components/issues/4327)) — answered a
+  different way, so don't rebuild it as a category. The complaint is real: a
+  plain LGV's flat list keeps any track whose `assemblyNames` *contains* the
+  view's assembly, so an `hg38` LGV shows both `hg38-vs-mm10` and `mm10-vs-hg38`
+  with no signal they are comparative. The issue proposed "query relative" /
+  "reference relative" auto-categories and a parked counter-proposal argued for
+  one flat `' Synteny'` bucket instead. What shipped is neither: a **per-row
+  adornment** naming what the track compares against ("vs mm10"), which the
+  filter box also matches on, plus a toggle to take the suffix off the row and
+  out of search (`syntenyAdornment.test.tsx`, `syntenyInLgv.test.ts`,
+  `HamburgerMenu.tsx`). It answers "is this track relevant to me?" per row,
+  where a category answers it per group and then has to name an "other
+  assembly" that all-vs-all and 3-way tracks do not have. The direction-based
+  split was separately unsound: the adapter convention is `[query, target]` but
+  the open-custom-track path writes `[target, query]`, so those tracks would be
+  mislabeled.
 - **Projecting the graph onto the reference axis** ("linearizing the
   pangenome") — treat any proposal of this shape as suspect. Repeated source of
   heartache.
@@ -630,6 +682,20 @@ re-attempt without genuinely new data.
 
 ## Tooling, tests and docs
 
+- **A comparative-genomics chooser on the tutorials page** — declined by Colin,
+  2026-08-09: "overly complicated, they will just have to read the titles." The
+  entry argued that the ten synteny and pangenome cards have interchangeable
+  ribbon-stack thumbnails, so a reader holding a PAF cannot tell which page is
+  theirs, and proposed a decision page routing on what you have. The premise was
+  wrong: it reasoned from the thumbnails and skipped the line underneath them.
+  Those titles already name the input or the tool — "(pairwise minimap2)",
+  "(all-vs-all minimap2)", "Synteny from an ortholog table", "Synteny from
+  MCScan anchors", "Pangenome (pggb)" — which is the same key the chooser would
+  have routed on.
+  **The general form, worth remembering before proposing the next router:** when
+  a navigation aid's routing key is already in the labels a reader is looking
+  at, the aid adds a surface rather than an answer. Fix the titles that do not
+  carry it instead.
 - **A shared helper for the RPC method classes' `execute`** — declined three
   times. ~15 classes across 7 plugins repeat `deserializeArguments` → dynamic
   `import()` → `execute({pluginManager, args})`, but the `import()` specifier

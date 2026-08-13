@@ -356,24 +356,11 @@ than a page of its own.
 Cheaper than any new tutorial, and some of them raise the value of every
 tutorial already there.
 
-**A comparative-genomics chooser: declined by Colin, 2026-08-09.** "Overly
-complicated, they will just have to read the titles." Don't rebuild it.
-
-The entry argued that the ten synteny and pangenome cards have interchangeable
-ribbon-stack thumbnails, so a reader holding a PAF cannot tell which page is
-theirs, and proposed a decision page routing on what you have (pairwise
-alignment, all-vs-all PAF, ortholog table, graph pipeline). The premise was
-wrong: it reasoned from the thumbnails and skipped the line underneath them.
-Those titles already name the input or the tool — "(pairwise minimap2)",
-"(all-vs-all minimap2)", "Synteny from an ortholog table", "Synteny from MCScan
-anchors", "Pangenome (pggb)" — which is the same key the chooser would have
-routed on. A page that restates the card titles as a table is a second index of
-the section, kept in sync by hand.
-
-The general form, worth remembering before proposing the next router: when a
-navigation aid's routing key is already in the labels a reader is looking at,
-the aid adds a surface rather than an answer. Fix the titles that do not carry
-it instead.
+**A comparative-genomics chooser: declined by Colin, 2026-08-09**, and filed
+under "Tooling, tests and docs" in
+[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) — including the
+general rule it produced about navigation aids that route on a key the reader
+can already see.
 
 **Badge what a tutorial costs the reader.** Half these pages open a hosted link
 and half want pggb, Cactus, or minimap2 run first, and the cards say nothing

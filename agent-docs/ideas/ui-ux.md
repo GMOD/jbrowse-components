@@ -1,6 +1,6 @@
 ---
 name: ui-ux
-description: Loose UI threads: the CSS Custom Highlight API for search text, height-resize gestures, a canvas offscreen buffer, super-compact mode, side labels for genes, global scrollZoom, and init/loading feedback.
+description: Loose UI threads: the CSS Custom Highlight API for search text, height-resize gestures, a canvas offscreen buffer, super-compact mode, side labels for genes, global scrollZoom, init/loading feedback, and a search advanced panel whose surface was never decided.
 ---
 
 # UI / UX
@@ -27,12 +27,9 @@ pans/zooms (like `plugins/sequence`).
 
 **Init/loading feedback.** Distinguish initialized vs loading state in LinearGenomeView.
 
-**Collapsed multi-transcript indicator.** When a gene track collapses to the longest
-coding transcript per gene, users have no cue it happened. Options considered, ranked by
-noise vs discoverability: (1) hover-tooltip-only ("4 transcripts · showing longest
-coding") — invisible until hovered, good companion to anything else but too quiet alone;
-(2) **recommended** — small stack/layers icon next to the track name in the header, shown
-only when collapse is active, tooltip explains + optionally toggles "show all"; one icon
-per track, not per gene, sits with existing track controls; (3) corner badge overlaid on
-the render area — more discoverable, but floats over the data; (4) per-gene stacked-shadow
-glyph — communicates without text but is the noisiest since it repeats per gene.
+**A search advanced panel.** Carried over from a two-line `search-misc` note that
+said it "may need a pagefind inverted index". If that meant the *website* docs
+search, the premise is already met — pagefind backs it today (`pnpm index`,
+`static/pagefind/`), so what is left is only the panel. If it meant the app's own
+search box, pagefind is the wrong tool and the note never said which. Decide
+which surface before costing it.

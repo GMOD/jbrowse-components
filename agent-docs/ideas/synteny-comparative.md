@@ -13,35 +13,6 @@ query/reference.
 **Better defaults for human vs mouse.** Tune color schemes and default display options
 for common interspecies comparisons.
 
-**Auto-group synteny tracks in the LGV track selector** (issue
-[#4327](https://github.com/GMOD/jbrowse-components/issues/4327)). Synteny tracks
-leak into a plain LGV's flat track list with no signal they're comparative:
-`filterTracks.ts` keeps any track whose `assemblyNames` *contains* the view's
-assembly (`containsAll`, order-insensitive), so for an `hg38` LGV both
-`hg38-vs-mm10` and `mm10-vs-hg38` appear, undifferentiated. The issue proposes
-auto-categories named "query relative" / "reference relative", mirroring the
-`' Session tracks'` auto-category (`generateHierarchy.ts:42-47`, a synthetic
-category prefixed onto the conf's own `category` before the tree is built).
-**Recommendation: flat top-level `' Synteny'` group instead of the
-direction-based split**, for both clarity and reliability:
-- Clarity — one predictable bucket answers the issue's real complaint ("is this
-  comparative track relevant to me?") without exposing query/target jargon; in a
-  plain LGV `LGVSyntenyDisplay` anchors on the current view's coords regardless
-  of file direction, so forward/reverse render essentially the same thing and a
-  direction split would scatter near-duplicates into separate categories.
-- Reliability — a direction-based scheme keyed on track-level `assemblyNames`
-  order is *unsound*: the adapter convention is `[query, target]`
-  (`comparative-adapters/src/util.ts`, `PAFAdapter.ts` `flip = index === 0`) but
-  the open-custom-track path writes the track config as `[target, query]`
-  (`ImportSyntenyOpenCustomTrack.tsx`), so such tracks would be mislabeled. It
-  also sidesteps the ambiguous "other assembly" problem for all-vs-all / 3-way
-  tracks (no single mate to name).
-- Detection keys on `assemblyNames.length > 1` (a plain, always-present config
-  fact — more robust than probing display/track types); the group appears only
-  when such tracks exist since categories are created lazily. No `filterTracks`
-  change is needed — the tracks already appear; this only categorizes them.
-  ~4-line mirror of the `isSessionTrack` block.
-
 **Barycenter / layer-sweep chromosome diagonalization (upgrade over single-pass greedy
 best-hit).** `diagonalizeRegions` (packages/core) assigns each query chromosome to its
 single **best** reference (max aligned bases) and sorts by position within that one ref —

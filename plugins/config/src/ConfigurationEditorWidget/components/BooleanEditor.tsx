@@ -31,7 +31,8 @@ const BooleanEditor = observer(function BooleanEditor({
         // (SlotEditor's `modified`) is what still separates inherited from
         // customized; this only fixes which state is *shown*. The session tier
         // is out of reach here, so a value promoted this session isn't
-        // reflected — see agent-docs/ideas/config-cleanups-declined.md.
+        // reflected — see agent-docs/ideas/promotable-slot-ui.md, which is
+        // where that raw-vs-resolved gap is worked out.
         checked={slot.value ?? !!slot.promotedBase}
         onChange={val => {
           slot.set(val)

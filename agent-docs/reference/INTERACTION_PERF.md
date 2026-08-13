@@ -1,9 +1,12 @@
 ---
 name: interaction-perf
-description: Measured: the per-frame re-render culprit is the coordinate ruler, not the alignments overlays. Read before optimizing the wrong component.
+description: Measured: interaction is main-thread React re-render bound, and the per-frame churn is the LGV coordinate ruler creating ~144 tick divs per zoom, not the alignments overlays. Read before optimizing the wrong component.
 ---
 
 # Interaction perf: which components re-render per frame
+
+Measurements, not a proposal — the one open action they point at (pooling the
+ruler's tick `<div>`s) is in [TODO.md](../TODO.md).
 
 ### Where this leaves the perf story (all measured)
 

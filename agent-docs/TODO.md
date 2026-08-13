@@ -87,6 +87,26 @@ Doing this for every site at once means the check belongs in
 `@jbrowse/cli` in all four sites' installs for one function — weigh that against
 two fixtures.
 
+### Pool the coordinate ruler's tick `<div>`s so a zoom stops rebuilding them
+
+`ScalebarCoordinateLabels` (`plugins/linear-genome-view`) creates and destroys
+~144 tick nodes per zoom click. Its `key`-by-base reuse works for *pan* (the
+same bases scroll across) but not *zoom*: the scale changes, so the tick set and
+its keys change every frame, React tears down and rebuilds the whole list, and
+each new node pays the emotion/tss `tickLabel` styling cost. This is the
+measured dominant source of per-frame DOM churn during interaction — 719
+structural add/removes plus 439 style-attr mutations out of ~2056 attributed
+during a 5× zoom, against **2 of 2056** in the alignments overlays, which are
+already zoom-invariant and should not be chased.
+[reference/INTERACTION_PERF.md](reference/INTERACTION_PERF.md) has the
+measurement and the repro tooling.
+
+Lowest-risk fix first: a fixed pool of tick `<div>`s that is repositioned and
+relabelled rather than added and removed — kills the structural churn and keeps
+accessible DOM text. Alternatives if that is not enough: a canvas ruler (bigger
+win, loses selectable text), or coarsening ticks off `coarseBpPerPx` during the
+zoom spring and snapping exact on settle.
+
 ### Extra large text SVG mode for pub-ready figures
 
 `BaseExportSvgDialog` exposes font *family* only. Text size is per-element

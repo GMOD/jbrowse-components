@@ -100,10 +100,3 @@ scope-creep risk (ship `trackId`/`trackType`/predicate only, log+skip unknown
 keys). 80/20 fallback if appetite is low: just add `matchesTrackId` + a
 `select`-based wrapper over the *existing* points + fix docs — removes the
 footguns but keeps the clobber bug for replace-style uses.
-
-**Sample drift bug (fix regardless):** `extension_points.md:514` tells readers
-to open `test_data/volvox/umd_plugin.js` and "search for
-`TrackSelector-folderDialog`" for a worked example — that file is two empty
-no-op plugin classes; the example isn't there (`public/` copy is identical).
-`umd_plugin.js` is the natural home for live hand-written examples of these
-points.

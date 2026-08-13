@@ -97,6 +97,12 @@ ARG. A tree-sequence adapter (tsinfer / ARG-Needle `.trees`) supplying the local
 at the view centre would let the existing sidebar render it unchanged, updating as you
 pan.
 
+**Unread: [LDZip](https://github.com/23andMe/LDZip)** (23andMe), LD-aware
+genotype compression. Carried over unevaluated from a `search-misc` note; filed
+here because `VariantRPC/genotypeMatrixEncoding.ts` is the encoding it would
+bear on. Nobody has looked at whether it is a wire format, a storage format, or
+neither for us.
+
 **Frequency weighting for the clustering distance.** Every variant contributes equally
 to the genotype-matrix distance, so the largest LD block in the window numerically
 dominates the row ordering — a 10 kb window that is one haplotype block gives a clean

@@ -144,24 +144,9 @@ flow is an ordinary implicit grant with a custom endpoint and could be
 
 ## Declined: a global sign-out menu item
 
-Built and backed out (2026-08). A `Tools → Sign out...` row opening a dialog
-listing every account holding a credential, with `signOut()`/`hasCredential()`
-seams on the base model and a `signOut()` override on the OAuth account to drop
-the refresh token too (dropping only the access token silently signs the user
-back in on the next read — that part is real and worth keeping if this ever
-returns).
-
-**Rejected as overfitting.** Authentication is rare; a permanent top-level row
-in every install to serve it is disproportionate, and Apollo — whose product
-*is* authenticated — already has its own `LogOut.tsx`. Their having built one is
-evidence about Apollo, not demand for it here; reading it as demand is the
-mistake to avoid repeating. Without a caller the `signOut()` seam is also just
-another unused extension point, which is what `SelectorComponent` and
-`getValidatedToken` were deleted for.
-
-If it ever does earn its place, the contextual spot is the FileSelector beside
-the account toggle you just picked — where the user is already thinking about
-that account — not a global menu.
+Built and backed out (2026-08), filed under "Config and MST" in
+[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) with the
+`signOut()` refresh-token detail that is worth keeping if it ever returns.
 
 ## Already landed, so don't re-derive it
 

@@ -1,6 +1,6 @@
 ---
 name: configuration-spec-layer
-description: ConfigurationLayer, adapter shorthands, and the declarative spec.
+description: ConfigurationLayer, adapter-type inference from a file extension, and the declarative spec. The bare-`{ uri }` shorthand this used to propose has shipped.
 ---
 
 # Configuration & spec layer
@@ -12,13 +12,11 @@ where a child overrides a handful of slots and inherits the rest dynamically. Ne
 built; the current `baseConfiguration` extension covers most of the practical need
 (inherits the *schema*, not the live values).
 
-**Adapter-wrapper shorthands.** `refNameAliases`/`cytobands` still require the
-full `{ adapter: { type: 'RefNameAliasAdapter', uri: '...' } }` wrapper — a
-`refNameAliases: { uri: '...' }` shorthand (defaulting `adapter.type`) would trim
-that via the same `preProcessSnapshot` idiom already in place there. Riskier
-extension (deferred, only if you want maximal terseness): auto-detect adapter
-type from file extension (`fasta: 'foo.fa.gz'` → infer `BgzipFastaAdapter`) —
-implicit magic, do only if comfortable with that.
+**Adapter-type inference from a file extension** (`fasta: 'foo.fa.gz'` → infer
+`BgzipFastaAdapter`). The bare-`{ uri }` shorthand this used to sit beside
+shipped — `refNameAliases`/`cytobands` both take one, via the
+`preProcessSnapshot` idiom (`assemblyConfigSchema.ts`). Extension-sniffing is
+the riskier half that did not: implicit magic, do only if comfortable with that.
 
 **Declarative JBrowse spec.** Current config is internal MST serialization. Extend
 `session-spec` to a simpler data → encoding → mark grammar (Vega-Lite style). Infer
