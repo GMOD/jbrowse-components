@@ -40,7 +40,6 @@ before anyone noticed.
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
-| [Release the jexl index-coercion fix](#release-the-jexl-index-coercion-fix-and-bump) | jexl fork | written and green on a branch; release, bump, update the canary |
 | [Liveliness warnings and `no containing view found`](#the-liveliness-warnings-and-no-containing-view-found-are-one-bug) | MST, comparative | name the destroys — one of these takes the page down |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
@@ -255,26 +254,6 @@ how a correct pill shipped invisible for a round (see
 [reference/SCREENSHOT_CALLOUT_ANCHORS.md](reference/SCREENSHOT_CALLOUT_ANCHORS.md)).
 An item whose drawn rect falls outside the capture is almost always a bug —
 report it the way the overlay already reports an unresolvable anchor.
-
-### Release the jexl index-coercion fix and bump
-
-**Written and green in `GMOD/jexl` on `fix-index-coercion`; what is left is a
-release and a bump here.** `obj[key]` indexes by a non-string key's string form
-again, which is what it did before 3.1.0 lowered the evaluator to closures and
-narrowed the index — in a minor. Every `@gmod/vcf` INFO value is a list
-(`CLNSIG=Pathogenic` parses to `['Pathogenic']`), so a lookup table indexed by
-one had started missing, and the `|| fallback` such expressions always carry
-answered for every record.
-
-Two narrowings against a plain revert, both covered: a multi-valued list still
-misses (`['a','b']` is the key `'a,b'`, not `'a'` — reading through would be the
-index guessing), and a plain object answers `undefined` rather than looking up
-'[object Object]'.
-
-When the bump lands, **`jexlStrings.test.ts` fails on purpose** — its second
-assertion is the canary for exactly this, and its comment says what to do.
-Nothing else moves: `[0]` reads the same either way, so the configs and the docs
-teaching it stay correct across the bump.
 
 ### The liveliness warnings and `no containing view found` are one bug
 

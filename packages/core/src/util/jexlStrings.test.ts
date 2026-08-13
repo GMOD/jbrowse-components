@@ -121,49 +121,52 @@ describe('color functions', () => {
   })
 })
 
-// **A VCF INFO value is an ARRAY, and indexing a lookup table with one needs the
-// `[0]`.** `@gmod/vcf` returns every INFO field as a list — `Number=1` included,
+// **A VCF INFO value is an ARRAY, and every way of reading one has to cope with
+// that.** `@gmod/vcf` returns every INFO field as a list — `Number=1` included,
 // so `CLNSIG=Pathogenic` parses to `['Pathogenic']` — while the natural way to
 // colour by one is an object literal indexed by its value.
 //
-// The two used to meet by accident: our jexl fork evaluated `subject?.[index]`,
-// so JS coerced the one-element array to its string. 3.1.0 lowered the evaluator
-// to closures and made that a `typeof indexVal === 'string' || 'number'` guard,
-// which answers `undefined` instead — and an undefined lookup is exactly what the
-// `|| fallback` every such expression carries is there to absorb, so a whole
-// track quietly went one flat colour. A website figure was the only thing that
-// noticed.
+// Pinned because the indexing half broke once and nothing here noticed. Our jexl
+// fork evaluated `subject?.[index]`, so JS coerced the one-element array to its
+// string; 3.1.0 lowered the evaluator to closures, narrowed the index to a
+// string or a number, and answered `undefined` for anything else. That is
+// exactly what the `|| fallback` every such expression carries is there to
+// absorb, so a whole ClinVar track went one flat colour and a website figure was
+// the only thing that saw it. Restored in 4.0.1.
 //
-// Pinned because the docs teach the `[0]` form (`variant_track.md`,
-// `cookbook.md`) and this is the reason they have to: every OTHER way of reading
-// an INFO value still coerces, which is what makes the one that doesn't so easy
-// to write.
-//
-// **The fork is fixed, so the second assertion is a release canary.** GMOD/jexl
-// restores the coercion after 4.0.0; when a bump lands here, `[feature.INFO.X]`
-// answers `'red'` rather than `undefined` and this fails. That is the test
-// working — update the expectation and say which version restored it. Nothing
-// else has to move: `[0]` reads the same either way, so the configs and the docs
-// teaching it stay correct across the bump.
-describe('a VCF INFO value indexes a lookup table only through [0]', () => {
+// So both spellings are asserted, and they must stay that way. `[0]` is what
+// `variant_track.md` and `cookbook.md` teach and it is the honest one for a
+// list; the bare form is what a config written before 3.1.0 carries, and there
+// are configs in the wild that do.
+describe('a VCF INFO value indexes a lookup table either way', () => {
   const COLORS = "{'Pathogenic':'red','Benign':'blue'}"
   const feature = { INFO: { CLNSIG: ['Pathogenic'], AF: [0.25] } }
   const evaluate = (str: string) =>
     stringToJexlExpression(str, jexl).eval({ feature })
 
-  it('indexes with [0], and answers undefined without it', () => {
+  it('indexes with [0] and without it', () => {
     expect(evaluate(`jexl:${COLORS}[feature.INFO.CLNSIG[0]]`)).toBe('red')
-    expect(evaluate(`jexl:${COLORS}[feature.INFO.CLNSIG]`)).toBeUndefined()
+    expect(evaluate(`jexl:${COLORS}[feature.INFO.CLNSIG]`)).toBe('red')
   })
 
-  // The forms that still coerce, so the failure above stays legible as the
-  // exception it is rather than being read as "INFO needs [0] everywhere".
+  it('misses on a multi-valued field rather than guessing its first value', () => {
+    const multi = { INFO: { CLNSIG: ['Benign', 'Likely_benign'] } }
+    expect(
+      stringToJexlExpression(
+        `jexl:${COLORS}[feature.INFO.CLNSIG] || 'purple'`,
+        jexl,
+      ).eval({ feature: multi }),
+    ).toBe('purple')
+  })
+
+  // The other readings, which coerced throughout and are here so the indexing
+  // ones above are not read as the only way INFO needs handling.
   it.each([
     [`jexl:feature.INFO.CLNSIG == 'Pathogenic'`, true],
     [`jexl:feature.INFO.CLNSIG != 'Benign'`, true],
     [`jexl:feature.INFO.AF > 0.1`, true],
     [`jexl:feature.INFO.CLNSIG == 'Pathogenic' ? 'red' : 'blue'`, 'red'],
-  ])('%s still reads through the array', (expr, expected) => {
+  ])('%s reads through the array', (expr, expected) => {
     expect(evaluate(expr)).toBe(expected)
   })
 })

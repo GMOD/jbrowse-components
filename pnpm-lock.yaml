@@ -408,8 +408,8 @@ importers:
         specifier: ^1.5.1
         version: 1.5.1
       '@jbrowse/jexl':
-        specifier: ^4.0.0
-        version: 4.0.0
+        specifier: ^4.0.1
+        version: 4.0.1
       '@jbrowse/mobx-state-tree':
         specifier: ^6.3.0
         version: 6.3.0(mobx@7.0.0)
@@ -817,8 +817,8 @@ importers:
         version: 19.2.8(react@19.2.8)
     devDependencies:
       '@jbrowse/jexl':
-        specifier: ^4.0.0
-        version: 4.0.0
+        specifier: ^4.0.1
+        version: 4.0.1
 
   plugins/authentication:
     dependencies:
@@ -4580,8 +4580,8 @@ packages:
     resolution: {integrity: sha512-+Sg6GCR/wy1oSmQDFq4LQDAhm3ETKnorxN+y5nbLULOR3P0c14f2Wurzj3/xqPXtasLFfHd5iRFQ7AJt4KH2cw==}
     engines: {node: '>=8'}
 
-  '@jbrowse/jexl@4.0.0':
-    resolution: {integrity: sha512-4v57FDn1R+ZDAk4r3fJPgbOHrCRCVc/PjArzybeiQTDuzSB+Nv0d0PMkij/wCWNQrm8KAOy4jG1qeUEBUacsTA==}
+  '@jbrowse/jexl@4.0.1':
+    resolution: {integrity: sha512-UfAX0QuIASikBCT9bbP3EKwRkNHCoqe7VsN0JKV85WYfsSygOnI9M09PG9tJ7oV1Olq71q5XQoxN8mgryI51/A==}
 
   '@jbrowse/mobx-state-tree@6.3.0':
     resolution: {integrity: sha512-xaaN1Wk1GrsH2p+PNb9kqPNc7Vn/DhlpGQsDmpvkREPKf+eQdfyBiWl4s7yNhBLsXF+uYOaznfempMG0wsyA1w==}
@@ -12461,7 +12461,7 @@ snapshots:
 
   '@istanbuljs/schema@0.1.6': {}
 
-  '@jbrowse/jexl@4.0.0': {}
+  '@jbrowse/jexl@4.0.1': {}
 
   '@jbrowse/mobx-state-tree@6.3.0(mobx@7.0.0)':
     dependencies:
