@@ -69,6 +69,23 @@ test('dropping a cell’s only tab on its own edge collapses back', () => {
   expect(session.panels.every(p => p.tabs.length > 0)).toBe(true)
 })
 
+// The gesture no longer publishes a drag for this at all, so nothing reaches
+// the action by that route — which is the reason to pin it here. `useLayoutDrag`
+// declining and `dropTabInPanel` declining are one rule at two layers, the same
+// shape as `moveTabToPanel`'s totality under the model's own guards.
+test('dropping a tab in its own cell without an index does nothing', () => {
+  const { session, left, tabA, tabB } = twoPanels()
+  const before = getSnapshot(session)
+
+  session.dropTabInPanel(tabA, left)
+
+  expect(session.panels.find(p => p.id === left)!.tabs.map(t => t.id)).toEqual([
+    tabA,
+    tabB,
+  ])
+  expect(getSnapshot(session)).toEqual(before)
+})
+
 test('a cell with tabs left over is not pruned', () => {
   const { session, right, tabA, left } = twoPanels()
 

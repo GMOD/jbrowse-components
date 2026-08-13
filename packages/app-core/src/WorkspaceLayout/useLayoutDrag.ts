@@ -42,6 +42,30 @@ function samePlace(a: DragState | undefined, b: DragState | undefined) {
 }
 
 /**
+ * A drop the model would decline, so there is nothing to draw for it.
+ *
+ * The centre wash says "be a tab of this cell", which a tab already in that
+ * cell already is, and there is no gap under the pointer to state a position
+ * with — `dropTabInPanel` declines exactly this. Publishing it anyway painted
+ * the promise for the whole hover and then did nothing on release, which is the
+ * disagreement between indicator and outcome the decline was written to remove,
+ * with the operands swapped.
+ *
+ * Declining here rather than at the release is what makes it ONE decision: the
+ * drag is never published, so `onTabPointerUp` finds nothing in `dragRef` and
+ * needs no case of its own. `pendingRef` stays armed, so this is a gesture
+ * crossing its own cell rather than a gesture that ended — moving on to a cell
+ * that would take the tab picks the drag straight back up.
+ */
+function declines(layout: WorkspaceLayout, drag: DragState) {
+  return (
+    !drag.strip &&
+    drag.zone === 'center' &&
+    layout.findTab(drag.tabId)?.panel.id === drag.panelId
+  )
+}
+
+/**
  * Dragging a tab: pointer events, not HTML5 drag-and-drop.
  *
  * HTML5 DnD would hand us a drag image we don't want, a `dragover` we can't
@@ -162,9 +186,10 @@ export function useLayoutDrag(layout: WorkspaceLayout) {
         return
       }
       const target = resolveTarget(event.clientX, event.clientY)
-      showDrag(target ? { tabId: pending.tabId, ...target } : undefined)
+      const next = target ? { tabId: pending.tabId, ...target } : undefined
+      showDrag(next && !declines(layout, next) ? next : undefined)
     },
-    [resolveTarget, showDrag],
+    [layout, resolveTarget, showDrag],
   )
 
   /**

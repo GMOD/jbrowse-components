@@ -322,6 +322,35 @@ test('a cancelled pointer takes the drag with it, and it does not resume', () =>
   expect(session.panels).toHaveLength(2)
 })
 
+// The other half of "a drop that says nothing does nothing": a drop the model
+// declines must not be PROMISED either, and the centre wash over the cell a tab
+// is already in was drawn for the whole hover before it did nothing on release.
+//
+// And the clearing must not end the gesture. `pending` stays armed, so this is
+// a drag crossing its own cell rather than one that stopped — which is the
+// thing declining at the release instead would not have had to get right.
+test('crossing its own cell promises nothing, and does not end the drag', () => {
+  const { session, right, tabA } = setup()
+  const tab = screen.getByTestId(`tab-${tabA}`)
+
+  act(() => {
+    fireEvent.pointerDown(tab, { clientX: 10, clientY: 10 })
+    // the middle of the cell the tab is already in
+    fireEvent.pointerMove(tab, { clientX: 200, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+
+  act(() => {
+    fireEvent.pointerMove(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(document.querySelector('[data-drop-indicator="center"]')).toBeTruthy()
+
+  act(() => {
+    fireEvent.pointerUp(tab, { clientX: 600, clientY: 200 })
+  })
+  expect(session.findTab(tabA)?.panel.id).toBe(right)
+})
+
 test('dragging a tab into the middle of another cell moves it there', () => {
   const { session, right, tabA } = setup()
   const tab = screen.getByTestId(`tab-${tabA}`)
@@ -549,10 +578,45 @@ describe('reordering within a strip', () => {
   // the drop did not say. It used to send the tab to the end.
   test('a drop on its own body leaves the order alone', () => {
     const { a, b, c, session, order } = setupStrip()
-    dragTabTo(a, 200, 200).drop()
+    const dragging = dragTabTo(a, 200, 200)
 
+    // nothing is promised on the way, either — see the crossing test above
+    expect(document.querySelector('[data-drop-indicator]')).toBeNull()
+    expect(document.querySelector('[data-drop-caret]')).toBeNull()
+
+    dragging.drop()
     expect(order()).toEqual([a, b, c])
     expect(session.panels).toHaveLength(1)
+  })
+
+  // `stripDropAt` answers with the gap's visual x, so a strip that has been
+  // scrolled puts its left-most visible gap at a NEGATIVE panel-relative one.
+  // The panel has no `overflow: hidden`, so the caret drew outside its own cell.
+  test('the caret stays inside the panel on a scrolled strip', () => {
+    const session = TestSession.create({ name: 't' })
+    const left = session.panels[0]!.id
+    const a = session.tabs[0]!.id
+    const b = session.addTab(left, ['view-2'])!.id
+
+    stubGeometry({
+      [left]: { left: 0, top: 0, width: 400, height: 400 } as DOMRect,
+      [`strip:${left}`]: { left: 0, top: 0, width: 400, height: 35 } as DOMRect,
+      // scrolled right by 30px: `a` begins outside the strip's own left edge
+      [`tab:${a}`]: { left: -30, top: 0, width: 100, height: 35 } as DOMRect,
+      [`tab:${b}`]: { left: 70, top: 0, width: 100, height: 35 } as DOMRect,
+    })
+    render(<Harness session={session} />)
+
+    const tab = screen.getByTestId(`tab-${b}`)
+    act(() => {
+      fireEvent.pointerDown(tab, { clientX: 100, clientY: 10 })
+      fireEvent.pointerMove(tab, { clientX: 5, clientY: 10 })
+    })
+
+    const caret = document.querySelector<HTMLElement>('[data-drop-caret]')
+    // the gap before `a`, whose own left edge is off-strip at -30
+    expect(caret!.dataset.dropCaret).toBe('0')
+    expect(caret!.style.left).toBe('0px')
   })
 
   // ...but the same drop into a DIFFERENT cell states a cell and not a
