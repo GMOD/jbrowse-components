@@ -49,11 +49,15 @@ starts. Type `TP53` into the location box and press Enter. The hosted config
 ships a name index, so gene symbols resolve with no setup, and coordinates like
 `chr17:7,668,400-7,687,550` work anywhere a symbol does.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view after TP53 goes into the location box, with RefSeq All drawing one transcript per row, past the bottom of the track." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view at TP53, with RefSeq All sized to its own content, so the whole transcript stack and the gene name under it are in the track." />
 
-RefSeq All draws each transcript on its own row, and TP53 has more of them than
-the track's height shows, so the rest are behind the track's own scrollbar. The
-isoform control at the bottom right of the track collapses them.
+RefSeq All draws each transcript of a gene on its own row and writes the gene
+name under the stack, and TP53 has more transcripts than a track opens tall
+enough to show, so both the last rows and the name are behind its scrollbar.
+**Track menu → Set feature height → Fixed feature height + autogrow track
+height** <!-- menu-path-ok --> sizes the track to whatever it is holding, which
+is what the lower panel above is set to; the isoform control at the bottom right
+collapses the stack instead.
 
 ## Finding a track
 
@@ -61,8 +65,6 @@ Open the track selector at the top left. The drawer lists the catalog under
 UCSC's own categories, and **Filter tracks** searches all of them at once. Type
 `phyloP` and tick **Basewise Conservation (phyloP) - 100-way vertebrate
 alignment**, which sits under Comparative Genomics.
-
-<Figure src="/img/genomes_basics/turn_on_phylop.png" caption="Left: Filter tracks narrowed to phyloP, which leaves the Comparative Genomics rows. Right: the same drawer after the checkbox, with the track drawn under the genes." />
 
 The names are UCSC's, so a track known from the UCSC browser is findable under
 the label it has there.
@@ -91,13 +93,12 @@ Two more clicks make it readable: tick **Reference sequence**, which is off by
 default, and set the gene track's isoform control to **Longest coding
 transcript**, so the codon row is drawn once.
 
-<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, open. It carries the same Auto, All transcripts and Longest coding transcript options as the track menu's Gene glyph radio." />
+<Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Longest coding transcript options as the track menu's Gene glyph radio." />
 
-<Figure src="/img/genomes_basics/phylop_bases.png" caption="One coding exon of TP53 at base zoom: the gene collapsed to one transcript with its residue labels, phyloP under it, and the reference sequence with its translation below that." />
-
-Within a codon the third base is the short one: most third-position changes
-leave the amino acid alone, so the constraint is on the protein rather than on
-the DNA. Hovering a bar reads back its score.
+At that zoom the score is visibly one bar per base, and within a codon the third
+base is the short one: most third-position changes leave the amino acid alone,
+so the constraint is on the protein rather than on the DNA. Hovering a bar reads
+back its score.
 
 ## The alignment the score came from
 
@@ -125,41 +126,43 @@ bases.
 ## The regulatory end of the same gene
 
 Conservation is one category of about a dozen, and the others are the same two
-clicks. Start at the promoter, which for _TP53_ is at the high-coordinate end
-because the gene is on the minus strand. Four Regulation tracks put a picture
-there: **CpG Islands**, **ENCODE cCREs - ENCODE4 cCREs**, **Layered H3K4Me3
-(hg19)** and **Layered H3K27Ac (hg19)**, plus **EPDnew Promoters - EPDnew v6**
-from Expression.
+clicks. Zoom out to the whole gene. Five Regulation and Expression tracks put a
+picture over it: **CpG Islands**, **ENCODE cCREs - ENCODE4 cCREs**, **Layered
+H3K4Me3 (hg19)**, **Layered H3K27Ac (hg19)** and **EPDnew Promoters - EPDnew
+v6**.
 
 The two histone tracks each hold seven cell lines, drawn over one another as
 they open. **Track menu → Plot type → Multi-row → XY plot** gives each cell line
 a row of its own. Their names carry hg19 because that is the assembly ENCODE3
 released them on; the files this config points at are the hg38 ones.
 
-<Figure src="/img/genomes_basics/plot_type_multirow.png" caption="H3K4me3 and H3K27ac over the TP53 promoter. Top: as they open, seven cell lines over one another, with the Plot type menu that separates them. Bottom: the same two tracks after it, one row per cell line." />
+<Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53 and its promoter, with CpG islands, ENCODE cCREs coloured by class, H3K4me3, H3K27ac and EPDnew's promoter calls. Left: the marks as they open, seven cell lines over one another, with the Plot type menu that separates them. Right: the same six tracks after it." />
 
-The other three go in the same window.
-
-<Figure src="/img/genomes_basics/promoter_regulation.png" caption="The promoter end of TP53: CpG islands, ENCODE cCREs coloured by class, then H3K4me3 and H3K27ac as one row per cell line, over EPDnew's promoter calls." />
-
+The promoter is at the high-coordinate end because the gene is on the minus
+strand, and everything lands there together: the CpG island, a promoter-class
+cCRE, the EPDnew call and both marks. Over the gene body the marks are flat.
 H3K4me3 marks a promoter and H3K27ac marks an active one, so a cell line with
 both is transcribing here. All seven carry both.
 
-## Four readings of one exon
+## Four readings of one exon edge
 
 Two more tracks from Phenotypes, Variants, and Literature go on the same exon,
-with its three hotspot codons shaded this time. **ClinVar Variants - ClinVar
-SNVs** carries variants submitted with a clinical interpretation.
+this time shifted to take in the intron beside it and with the three hotspot
+codons shaded. **ClinVar Variants - ClinVar SNVs** carries variants submitted
+with a clinical interpretation; it is dense enough here that its per-record
+labels are worth turning off under **Track menu → Show... → None**.
 **AlphaMissense** scores every possible single-base substitution for the amino
 acid change it would cause, as four subtracks, one per substituted base: a
 column is a position, a row is what it would become.
 
-<Figure src="/img/genomes_basics/exon_four_ways.png" caption="One DNA binding domain exon of TP53, with codons 245, 248 and 249 shaded: AlphaMissense in four substitution rows, phyloP, ClinVar coloured by clinical significance, and the reference sequence with its translation." />
+<Figure src="/img/genomes_basics/exon_four_ways.png" caption="The downstream edge of a TP53 DNA binding domain exon, with codons 245, 248 and 249 shaded: AlphaMissense in four substitution rows, phyloP, ClinVar coloured by clinical significance, and the reference sequence with its translation." />
 
-AlphaMissense cells are empty where the substitution leaves the residue alone; a
-column tall in all four rows is a position where no substitution is predicted to
-be tolerated. Most columns in this exon are, phyloP is high over the same bases,
-and pathogenic is the commonest ClinVar classification here.
+All four change at the same base. AlphaMissense scores coding sequence, so its
+columns end where the exon does; phyloP drops to the pivot a few bases into the
+intron; ClinVar thins out. Inside the exon, AlphaMissense cells are empty where
+the substitution leaves the residue alone, and a column tall in all four rows is
+a position where no substitution is predicted to be tolerated. Most columns here
+are.
 
 The fourth reading needs the whole transcript. **gnomAD v4.1 - gnomAD v4.1
 Exomes** under Variation and Repeats opens as several thousand records over the
@@ -179,7 +182,7 @@ The colours are the file's own, and gnomAD uses them for the same consequence
 class `annot` names, so the loss-of-function filter leaves a track drawn in one
 colour.
 
-<Figure src="/img/genomes_basics/gnomad_filters.png" caption="The TP53 transcript with phyloP and gnomAD exomes, filtered three ways. Top: every record. Middle: the common variants. Bottom: the variants gnomAD calls predicted loss of function." />
+<Figure src="/img/genomes_basics/gnomad_filters.png" caption="The TP53 transcript with phyloP and gnomAD exomes, each frame labelled with the expression the track is filtered by: every record, then the common variants, then the ones gnomAD calls predicted loss of function." />
 
 Unfiltered, gnomAD is densest where phyloP peaks, since that is what an exome
 captures. Filtered to the common variants, few remain in coding sequence and the
@@ -190,11 +193,13 @@ ClinVar takes the same treatment on its own classification column:
 `jexl:feature.clinSign == 'Pathogenic'`. Back at the exon, that leaves a stack
 of records over Arg248, and clicking one reads it back.
 
-<Figure src="/img/genomes_basics/variant_details.png" caption="ClinVar filtered to its pathogenic records, with one of those over the shaded Arg248 codon clicked open. The panel carries the file's own columns, each linking out." />
+<Figure src="/img/genomes_basics/variant_details.png" caption="AlphaMissense and phyloP over ClinVar filtered to its pathogenic records, with one of those over the shaded Arg248 codon clicked open. The panel carries the file's own columns, each linking out." />
 
-A BigBed's extra fields arrive as fields: whatever columns the published file
-carries are what a click gives back, and are what there is to filter and colour
-on.
+The two lanes above were computed without reference to the submissions below,
+and neither of them dips over the shaded column: no substitution there is
+predicted tolerated, and the bases are conserved. A BigBed's extra fields arrive
+as fields, so whatever columns the published file carries are what a click gives
+back, and are what there is to filter and colour on.
 
 ## Where the protein binds
 
@@ -204,24 +209,23 @@ DNA damage. Type `CDKN1A` into the location box.
 
 **JASPAR Transcription Factors - JASPAR 2026 TFBS** under Regulation holds motif
 matches for every factor in the collection, so **Filter by...** asks for one:
-`feature.TFName == 'TP53'`. Under it go three Regulation tracks from the
-promoter section, which are what the matches get read against: **ENCODE cCREs -
-ENCODE4 cCREs**, **Layered H3K4Me3 (hg19)** and **Layered H3K27Ac (hg19)**.
+`feature.TFName == 'TP53'`. Under it go two Regulation tracks from the promoter
+section, which are what the matches get read against: **ENCODE cCREs - ENCODE4
+cCREs** and **Layered H3K27Ac (hg19)**.
 
-<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, then H3K4me3 and H3K27ac as one row per cell line. The shaded pair fall in a cCRE with signal over it." />
+<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="Top: the CDKN1A promoter region with RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs and H3K27ac, and the two marked matches. Bottom: the distal one at base zoom, with the promoter-class cCRE it sits inside and the reference sequence. The match is called on both strands, which is what the two boxes span." />
 
-Six positions match the motif well enough to be called. The signal tracks are
-low over the upstream half and rise from the shaded pair toward the gene. Each
-of those two falls inside a cCRE, one classified a promoter and one a proximal
-enhancer, and they are where the response elements for p21 were described; the
-other four have the motif and no signal under it.
+Six positions match the motif well enough to be called. The signal is low over
+the upstream half and rises from the marked pair toward the gene. Each of those
+two falls inside a cCRE, one classified a promoter and one a proximal enhancer,
+and they are where the response elements for p21 were described; the other four
+have the motif and no signal under it.
 
 **PANDAR** and **DINOL**, drawn by the same RefSeq track, are p53-induced
 lncRNAs transcribed from the same region.
 
-Zooming to the higher-scoring element shows the motif against the sequence.
-
-<Figure src="/img/genomes_basics/p53_element_sequence.png" caption="The distal element at base zoom: the JASPAR match, the promoter-class cCRE it sits inside, and the reference sequence. The match is called on both strands, which is what the two boxes span." />
+The lower panel zooms to the higher-scoring of the pair, where the motif is
+readable against the sequence.
 
 ## Tracks in the other categories
 
@@ -249,7 +253,7 @@ hgdownload and JBrowse reads those files by byte range. The track menu's **About
 track** prints the adapter, which is where to look when a track is slow or
 missing: the file it names is the one being read.
 
-<Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu. Right: the About track dialog, naming the BigWig on hgdownload with UCSC's own trackDb entry below it." />
+<Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu, with the icon that opens it circled and About track boxed. Right: the dialog it opens, naming the BigWig on hgdownload with UCSC's own trackDb entry below it." />
 
 The phyloP file covers the whole genome and only the blocks under the current
 view are fetched, which is why a genome-wide signal track opens at gene zoom
