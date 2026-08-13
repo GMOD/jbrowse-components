@@ -473,14 +473,24 @@ function writerParams(attrs: readonly InstanceAttr[]) {
  * An append-at-a-time writer over the packed instance layout.
  *
  * `packInstances` covers the case where the caller has one flat array per field
- * and knows the instance count up front. Three encoders in the tree have
- * neither: maf merges runs of same-coloured cells so the count is not known
- * until the walk ends, multi-row features skips whatever a hidden legend
- * category filters out, and synteny computes one field rather than reading it.
- * Each had written this class by hand against its own shader's offsets — maf's
- * spelled `push(startBp, endBp, rowIndex, color)` with the four stores listed
- * out, and all three re-derived `count * INSTANCE_STRIDE_WORDS` and chose each
- * field's typed-array view themselves.
+ * and knows the instance count up front. Two encoders in the tree have neither:
+ * maf merges runs of same-coloured cells so the count is not known until the
+ * walk ends, and multi-row features skips whatever a hidden legend category
+ * filters out. Both had written this class by hand against their own shader's
+ * offsets — maf's spelled `push(startBp, endBp, rowIndex, color)` with the four
+ * stores listed out — and both re-derived `count * INSTANCE_STRIDE_WORDS` and
+ * chose each field's typed-array view themselves.
+ *
+ * **Reach for it where an append is already happening, not for a plain indexed
+ * loop.** Measured over 100k/500k/2M instances against byte-identical output:
+ * against multi-row's previous form — an append inside a callback, incrementing
+ * a counter captured in a closure — the writer is ~10% FASTER, because V8 heap-
+ * allocates a mutated closure variable and a field on a monomorphic object beats
+ * it. Against synteny's previous form — a plain `for` over a known count with
+ * both views hoisted out of the loop — it is **1.15x to 1.92x SLOWER**, and
+ * synteny keeps its raw loop for that reason. The writer costs a call, a growth
+ * branch and a `this.count` round trip per instance; an append pays that anyway
+ * and an indexed loop does not.
  *
  * Two things the hand-written copies did not generalize. The views come from the
  * shader, so a struct mixing `float` and `uint` fields gets both arrays over one
