@@ -94,37 +94,12 @@ export default function stateModelFactory(
        */
       async validateToken(token: string, location: UriLocation) {
         const uri = getUri(location.uri)
-        const fetchMetadata = (authToken: string) =>
-          fetch(uri, { headers: { Authorization: `Bearer ${authToken}` } })
-
-        const response = await fetchMetadata(token)
-        if (response.ok) {
-          return token
-        }
-        const refreshToken = self.retrieveRefreshToken()
-        if (!refreshToken) {
-          throw new Error(
-            await getDescriptiveErrorMessage(
-              response,
-              'Token could not be validated',
-            ),
-          )
-        }
-        // Retry exactly once. Recursing here instead looped forever on a file
-        // that fails for a reason no new token fixes — one the account cannot
-        // see — refreshing against the token endpoint on every pass.
-        const newToken = await self.exchangeRefreshForAccessToken(refreshToken)
-        const retry = await fetchMetadata(newToken)
-        if (!retry.ok) {
-          throw new Error(
-            await getDescriptiveErrorMessage(
-              retry,
-              'Token could not be validated',
-            ),
-          )
-        }
-        self.replaceToken(newToken)
-        return newToken
+        return self.validateTokenWithProbe(
+          token,
+          authToken =>
+            fetch(uri, { headers: { Authorization: `Bearer ${authToken}` } }),
+          getDescriptiveErrorMessage,
+        )
       },
     }))
     .actions(self => ({

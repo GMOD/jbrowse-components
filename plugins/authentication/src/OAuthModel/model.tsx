@@ -162,19 +162,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       retrieveRefreshToken() {
         return localStorageGetItem(self.refreshTokenKey)
       },
-      /**
-       * #action
-       * Swap in an access token obtained from a refresh, in place of the one it
-       * replaces.
-       */
-      replaceToken(token: string) {
-        // storeToken alone writes sessionStorage but cannot reach getToken's
-        // in-memory promise (a closure declared after it), so on its own it
-        // leaves the invalidated token cached and every later request pays the
-        // same refresh again. removeToken is what drops that promise.
-        self.removeToken()
-        self.storeToken(token)
-      },
     }))
     .actions(self => {
       // Shared across concurrent exchangeRefreshForAccessToken calls so parallel
@@ -225,7 +212,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
          * #action
          */
         async exchangeRefreshForAccessToken(refreshToken: string) {
-          exchangePromise ??= (async () => {
+          const inFlight = (exchangePromise ??= (async () => {
             const response = await fetch(self.tokenEndpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -254,16 +241,69 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               self.storeRefreshToken(data.refresh_token)
             }
             return data.access_token
-          })()
+          })())
           try {
-            return await exchangePromise
+            return await inFlight
           } finally {
-            exchangePromise = undefined
+            // only if it is still ours: every awaiter of a shared exchange runs
+            // this, and a later caller can have started its own between two of
+            // them — clearing unconditionally then dropped that one from the
+            // slot and let the next 401 open a second refresh in parallel
+            if (exchangePromise === inFlight) {
+              exchangePromise = undefined
+            }
           }
         },
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       * Prove a token against the resource and, if that fails, refresh it once
+       * and prove the new one. Returns whichever token worked; throws if
+       * neither does. Every OAuth account validates this way and they differ
+       * only in what a probe is — a HEAD of the resource here, a metadata call
+       * for Dropbox and Google Drive.
+       *
+       * @param token - the token to prove
+       * @param probe - issues a request that succeeds iff the token is good
+       * @param describeError - turns a failed probe into a message
+       */
+      async validateTokenWithProbe(
+        token: string,
+        probe: (token: string) => Promise<Response>,
+        describeError: (response: Response, reason?: string) => Promise<string>,
+      ) {
+        const response = await probe(token)
+        if (response.ok) {
+          return token
+        }
+        // Every path out of here leaves this token unusable, so drop it before
+        // taking any of them — that is what lets the next getToken re-prompt.
+        // Without it an account with no refresh token to fall back on (Google
+        // Drive's implicit flow issues none, and its access tokens last an
+        // hour) kept handing the expired token back out of getToken's cached
+        // promise: every later request threw this same error, and nothing
+        // short of a page reload ever asked the user to log in again.
+        self.removeToken()
+        const refreshToken = self.retrieveRefreshToken()
+        if (!refreshToken) {
+          throw new Error(
+            await describeError(response, 'Error validating token'),
+          )
+        }
+        // Exactly once. Recursing here instead looped forever on a resource
+        // that fails for a reason no new token fixes — a file the account
+        // cannot see — refreshing against the token endpoint on every pass.
+        const newToken = await self.exchangeRefreshForAccessToken(refreshToken)
+        const retry = await probe(newToken)
+        if (!retry.ok) {
+          throw new Error(await describeError(retry, 'Error validating token'))
+        }
+        // removeToken above dropped the cached promise, so storing is enough
+        self.storeToken(newToken)
+        return newToken
+      },
       /**
        * #action
        * Opens the provider's auth page and returns a promise for the resulting
@@ -389,31 +429,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
        * #action
        */
       async validateToken(token: string, location: UriLocation) {
-        const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
-        const response = await fetch(location.uri, newInit)
-        if (!response.ok) {
-          self.removeToken()
-          const refreshToken = self.retrieveRefreshToken()
-          if (refreshToken) {
-            try {
-              const newToken =
-                await self.exchangeRefreshForAccessToken(refreshToken)
-              // removeToken above already dropped the cached one
-              self.storeToken(newToken)
-              return newToken
-            } catch (err) {
-              console.error('Token could not be refreshed', err)
-            }
-          }
-
-          throw new Error(
-            await getResponseError({
-              response,
-              reason: 'Error validating token',
-            }),
-          )
-        }
-        return token
+        return self.validateTokenWithProbe(
+          token,
+          probeToken =>
+            fetch(
+              location.uri,
+              self.addAuthHeaderToInit({ method: 'HEAD' }, probeToken),
+            ),
+          (response, reason) => getResponseError({ response, reason }),
+        )
       },
     }))
     .actions(self => ({

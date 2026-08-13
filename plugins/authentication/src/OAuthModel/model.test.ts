@@ -61,6 +61,8 @@ test('a 401 refreshes the token once and retries the request', async () => {
     .mockResolvedValueOnce(
       new Response(JSON.stringify({ access_token: 'fresh-token' })),
     )
+    // the HEAD again, proving the refreshed token before it is handed back
+    .mockResolvedValueOnce(new Response(''))
     // the retried read
     .mockResolvedValueOnce(new Response('data'))
 
@@ -70,7 +72,7 @@ test('a 401 refreshes the token once and retries the request', async () => {
   expect(response.status).toBe(200)
   expect(await response.text()).toBe('data')
   expect(
-    new Headers(fetchMock.mock.calls[3]?.[1]?.headers).get('Authorization'),
+    new Headers(fetchMock.mock.calls[4]?.[1]?.headers).get('Authorization'),
   ).toBe('Bearer fresh-token')
   // the refreshed token replaces the cached one, so the next read does not
   // repeat the whole validate-and-refresh round trip
@@ -78,7 +80,7 @@ test('a 401 refreshes the token once and retries the request', async () => {
 
   fetchMock.mockResolvedValue(new Response('more data'))
   await account.getFetcher(location)(location.uri)
-  expect(fetchMock).toHaveBeenCalledTimes(5)
+  expect(fetchMock).toHaveBeenCalledTimes(6)
 })
 
 test('the authorization request carries a generated state and no provider-specific params', async () => {
@@ -126,4 +128,29 @@ test('a 401 with no refresh token surfaces the validation error', async () => {
   await expect(
     makeAccount().getFetcher(location)(location.uri),
   ).rejects.toThrow('HTTP 401 - Error validating token - nope')
+})
+
+// An account with no refresh token to fall back on — which is every account
+// using the implicit flow, Google Drive included — used to keep the dead token
+// cached, so it threw the same error on every later request and never asked the
+// user to log in again
+test('a token that fails validation is dropped, so the next read re-prompts', async () => {
+  sessionStorage.setItem('testOAuth-token', 'expired-token')
+  fetchMock.mockResolvedValue(new Response('nope', { status: 401 }))
+
+  const account = makeAccount()
+  await expect(account.getFetcher(location)(location.uri)).rejects.toThrow()
+
+  expect(sessionStorage.getItem('testOAuth-token')).toBeNull()
+  // and the in-memory cache went with it: the next read starts a fresh auth
+  // flow rather than replaying the token that just failed
+  const opened: string[] = []
+  window.open = jest.fn(url => {
+    opened.push(String(url))
+    return {} as Window
+  })
+  void account.getFetcher(location)(location.uri)
+  await Promise.resolve()
+  await Promise.resolve()
+  expect(opened).toHaveLength(1)
 })

@@ -88,49 +88,24 @@ const stateModelFactory = (
         token: string,
         location: UriLocation,
       ): Promise<string> {
-        const fetchMetadata = (authToken: string) =>
-          fetch(
-            'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-                'Content-Type': 'application/json',
+        return self.validateTokenWithProbe(
+          token,
+          authToken =>
+            fetch(
+              'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${authToken}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  url: location.uri,
+                }),
               },
-              body: JSON.stringify({
-                url: location.uri,
-              }),
-            },
-          )
-
-        const response = await fetchMetadata(token)
-        if (response.ok) {
-          return token
-        }
-        const refreshToken = self.retrieveRefreshToken()
-        if (!refreshToken) {
-          throw new Error(
-            await getDescriptiveErrorMessage(
-              response,
-              'Token could not be validated',
             ),
-          )
-        }
-        // Retry exactly once. Recursing here instead looped forever on a link
-        // that fails for a reason no new token fixes — a file the account
-        // cannot see — refreshing against the token endpoint on every pass.
-        const newToken = await self.exchangeRefreshForAccessToken(refreshToken)
-        const retry = await fetchMetadata(newToken)
-        if (!retry.ok) {
-          throw new Error(
-            await getDescriptiveErrorMessage(
-              retry,
-              'Token could not be validated',
-            ),
-          )
-        }
-        self.replaceToken(newToken)
-        return newToken
+          getDescriptiveErrorMessage,
+        )
       },
     }))
 }
