@@ -233,3 +233,79 @@ it('gives the same answer whichever order the regions arrive in', () => {
   )
   expect(fills(forwards, 1)).toEqual(fills(backwards, 1))
 })
+
+// The frame is derived from what is on screen, so PANNING is the one input that
+// can move it without the data moving. Two different claims, and only the first
+// is a guarantee.
+describe('panning', () => {
+  const anchorSegs: Seg[] = [
+    { chain: 'a', start: 1000, end: 1800, strand: 1 },
+    { chain: 'a', start: 1200, end: 1500, strand: -1 },
+    { chain: 'b', start: 1000, end: 1800, strand: 1 },
+    { chain: 'b', start: 1200, end: 1500, strand: -1 },
+    { chain: 'c', start: 1000, end: 1800, strand: 1 },
+    { chain: 'c', start: 1200, end: 1500, strand: -1 },
+    { chain: 'd', start: 1000, end: 1800, strand: -1 },
+    { chain: 'd', start: 1200, end: 1500, strand: 1 },
+    { chain: 'e', start: 1000, end: 1800, strand: -1 },
+    { chain: 'e', start: 1200, end: 1500, strand: 1 },
+  ]
+  const insert = region([
+    { chain: 'a', start: 9000, end: 9200, strand: 1 },
+    { chain: 'b', start: 9000, end: 9200, strand: 1 },
+    { chain: 'c', start: 9000, end: 9200, strand: 1 },
+    { chain: 'd', start: 9000, end: 9200, strand: -1 },
+    { chain: 'e', start: 9000, end: 9200, strand: -1 },
+  ])
+  const bothLoci = () =>
+    new Map([
+      [0, region(anchorSegs)],
+      [1, insert],
+    ])
+
+  it('does not repaint a chain when other reads scroll into view', () => {
+    // the ordinary pan: more reads arrive at a locus a chain is already framed
+    // by. Rows the user is looking at must not change colour underneath them.
+    const before = consensusChainStrandFrames(bothLoci())
+    const after = consensusChainStrandFrames(
+      new Map([
+        [
+          0,
+          region([
+            ...anchorSegs,
+            { chain: 'f', start: 1000, end: 1800, strand: 1 },
+            { chain: 'f', start: 1200, end: 1500, strand: -1 },
+          ]),
+        ],
+        [1, insert],
+      ]),
+    )
+    expect(fills(after, 0).slice(0, anchorSegs.length)).toEqual(
+      fills(before, 0),
+    )
+  })
+
+  // The honest limit, pinned because it IS reachable and is deliberately not
+  // fixed here. Pan the second locus away and the chains it was framing drop to
+  // one bucket, so `solveFrames`' freeze applies and they fall back to the frame
+  // their own primary gives.
+  //
+  // That is a colour change with no data change, and the reason to accept it is
+  // that the fallback is exactly the answer these reads had before this pass
+  // existed: the pass can only CHANGE a chain where cross-locus evidence is on
+  // screen, so losing that evidence cannot land the display anywhere it could
+  // not already have been. Anything that tried to hold the old frame would have
+  // to carry state across fetches, and would then be showing a frame derived
+  // from reads that are no longer on screen.
+  it('falls back to the primary frame when the evidence pans away', () => {
+    const both = fills(consensusChainStrandFrames(bothLoci()), 0)
+    const anchorOnly = fills(
+      consensusChainStrandFrames(new Map([[0, region(anchorSegs)]])),
+      0,
+    )
+    expect(both).not.toEqual(anchorOnly)
+    // every chain back on its own primary's answer, which is what `region`
+    // seeds — not some third state
+    expect(anchorOnly).toEqual(Array(anchorSegs.length).fill(FWD))
+  })
+})

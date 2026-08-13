@@ -74,6 +74,23 @@ they arrived with), because negating every frame is an equally optimal answer
 and nothing in the objective picks between them — without the anchor the pileup
 can swap red for blue between two renders of identical data.
 
+**Panning can change a frame, and that is accepted rather than unfixed.** The
+evidence is what is on screen, so panning a chain's second locus away drops it
+to one bucket, the freeze applies, and it falls back to its primary's answer.
+That fallback is exactly what these reads showed before the pass existed — it
+can only CHANGE a chain where cross-locus evidence is on screen, so losing that
+evidence cannot land the display anywhere it could not already have been.
+Holding the old frame would mean carrying state across fetches and painting from
+reads that are no longer visible. Both halves are pinned in
+`chainStrandConsensus.test.ts` ("panning").
+
+**The figure sweep across every chain-mode lane, for the next person who
+wonders.** `inversion_long_read` — an ONT inversion, the case the freeze rule
+exists for — regenerated **byte-identical**. `pangenome/long_reads` moved by one
+chain, correctly. The `inverted_duplication` pair moved too and NOT because of
+this: they are paired-end, which the pass skips entirely, so that was ambient
+drift.
+
 So: **don't re-derive a frame at a call site.** Read `readChainHasSupp`.
 `framesUnpairedChainStrand` is the single statement of when the framing is live
 at all, and gates the pass on it.
