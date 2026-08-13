@@ -75,13 +75,12 @@ per-transcript number carried in the GFF3 attribute column can drive the fill.
 Two things to know before writing one:
 
 - **Attribute names arrive lowercased**, and their values arrive as strings. An
-  attribute written `dIF=0.79` is read as `feature.dif`, and comparing it
+  attribute written `dIF=0.79` is read under the key `dif`, and comparing it
   numerically needs `parseFloat`.
 - **The expression is evaluated against the box being painted** — an exon, CDS,
-  or UTR — not against the transcript above it. Repeat the attribute onto those
-  children when you write the file. Set `utrColor` to the same expression too,
-  or UTRs keep the default contrasting fill and only part of each glyph carries
-  the encoding.
+  or UTR — so a transcript's own attribute is read with `feature.parent.dif`.
+  One expression covers the whole glyph: a UTR follows `color` unless `utrColor`
+  claims it.
 - **Test the significance flag, not the magnitude.** A large effect on a
   transcript the test could not separate is not a result, so the expression
   below branches on a `dtu` attribute the analysis wrote and only then reads the
@@ -89,8 +88,9 @@ Two things to know before writing one:
 
 A `jexl:` color is a lookup table only its author can read, so declare what it
 means in the `legend` slot; the key is drawn over the track and can be
-dismissed. `mouseover` is the other half of the encoding, reading the numbers
-behind a transcript's color back on hover.
+dismissed. Hovering a transcript names the isoform and the exon under the
+cursor; clicking one opens that transcript's own attributes in the details
+panel.
 
 See the [jexl configuration guide](/docs/config_guides/jexl) for the expression
 syntax.
