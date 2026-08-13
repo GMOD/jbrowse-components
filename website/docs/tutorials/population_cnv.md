@@ -88,9 +88,8 @@ display settings turn that into a copy-number heatmap:
 - [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore) and
   [`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore) pin the
   scale. Two copies mean the same thing in every window, so the color should
-  too, and autoscale breaks that twice over: nearly every bin sits at the
-  baseline, so it follows the noise there and clips the amplifications, and it
-  rescales after every navigation.
+  too, and autoscale follows the noise at the baseline, clips the
+  amplifications, and rescales after every navigation.
 
   Keep the bounds **symmetric around the pivot**. The ramp divides both sides by
   the longer one, so 0 to 6 would cap a homozygous deletion at half saturation,
@@ -163,15 +162,11 @@ Against the hosted files, at a median range request of 25 ms:
 Six reads per BigWig, against two metadata reads plus one chunk of 2504 samples
 by 256 bins.
 
-The bytes are not the problem. The request count is. Every BigWig needs a few
-reads to find where a region's values live before it can read them, and those
-reads happen once per file and wait on each other, so the cost is a round trip
-times the number of files. The times above scale with whatever that round trip
-is on your own network.
-
-The fix is a format that answers the same question in a couple of requests: one
-array of samples by bins, stored so that a single read covers every sample at
-once.
+The bytes are not the problem, the request count is: every BigWig needs a few
+reads to find where a region's values live, once per file and waiting on each
+other, so the cost is a round trip times the number of files. The fix is a
+format that answers the same question in a couple of requests, one array of
+samples by bins stored so that a single read covers every sample at once.
 
 [Zarr](https://zarr.dev/) v3 is that format, and it needs no tile server:
 [zarrita.js](https://github.com/manzt/zarrita.js) reads chunks straight off
@@ -268,13 +263,11 @@ averages, the way a BigWig zoom record carries all three.
 picks which one a view draws, so an amplification narrower than a bin is visible
 under `max` and averaged back to the diploid baseline under `avg`.
 
-The finest level is the one to choose deliberately, because it is the only one
-held whole in memory while the rest derive from it. That, rather than the
-genome, is what a whole-genome build runs into: drop the `--region` flags and
+The finest level is the one to choose deliberately, being the only one held
+whole in memory while the rest derive from it. Drop the `--region` flags and
 this panel is a few GB of matrix at 10 kb bins and about 31 GB at the BigWigs'
-own 1 kb, so a whole-genome pyramid starts coarse and spends the levels it saves
-on depth. The converter prints the size of that level before it allocates, and
-refuses when it will not fit rather than leaving it to the OOM killer.
+own 1 kb, so a whole-genome pyramid starts coarse. The converter prints the size
+of that level before it allocates, and refuses when it will not fit.
 
 The output is an ordinary folder of files. Copy it to any static host with CORS
 enabled and point a track at it, the same way you would host a BigWig. Nothing
@@ -292,8 +285,7 @@ on the same scale, run [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over
 its aligned reads. The lab's
 [tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md) takes
 one 30x 1000 Genomes CRAM through `count` and `est` command by command, with its
-own sample output to check against, so follow that rather than a paraphrase of
-it here. For GRCh38 its k-mer index is
+own sample output to check against. For GRCh38 its k-mer index is
 [prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/),
 which skips the `search` pass over the reference. It is a cluster-sized job
 either way: the tutorial reports 67 GB of reference files, roughly 50 GB of RAM
