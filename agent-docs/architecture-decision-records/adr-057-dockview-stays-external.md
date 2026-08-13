@@ -40,11 +40,10 @@ Read below for the analysis of the seam itself, which ADR-068 does not repeat.
 
 `@jbrowse/app-core` embeds [dockview](https://dockview.dev) as the tiled window
 manager behind the workspaces mode. The seam between it and the rest of the app
-is genuinely awkward to work in — enough that
-[app-core/CLAUDE.md](../../packages/app-core/CLAUDE.md) devotes most of its
-length to explaining it, and that everything hard in `useDockviewController.ts`
-is keeping dockview and MST consistent rather than doing anything a window
-manager does.
+is genuinely awkward to work in — enough that app-core's own working notes
+devoted most of their length to explaining it, and that everything hard in
+`useDockviewController.ts` is keeping dockview and MST consistent rather than
+doing anything a window manager does.
 
 The proposal arrives in two forms, and they need separate answers:
 

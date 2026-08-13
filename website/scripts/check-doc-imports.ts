@@ -476,27 +476,18 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // server-side-block predecessor precisely to stop the next reader grepping
   // for it. It was a live-precedent claim here until 2026-08.
   'renderProps',
-  // packages/app-core/CLAUDE.md, "It is also the only 'arrange the panels like
-  // this' channel": names the volatile second channel that was deleted, in the
-  // past tense, so the reader doesn't go looking for it.
-  'pendingMove',
-  // packages/app-core/CLAUDE.md, "This replaced a try/finally flag": names the
-  // suppression flag dockview's mutation brackets made unnecessary, and says
-  // not to reintroduce one. The name is the thing a reader would otherwise
-  // grep for.
+  // adr-068 §"What this bought" and adr-057, which name the two halves of the
+  // dockview seam they respectively removed and defended: the suppression flag
+  // that was unenforceable, and the layout-echo comparison. An ADR recording
+  // what a decision deleted is the one place naming an absent symbol is the
+  // point rather than a mistake.
+  //
+  // Both were also quoted by packages/app-core/CLAUDE.md until that file was
+  // trimmed to the rules and the archaeology was left to the ADRs. If a third
+  // doc ever needs one of these, that is the signal the story is being retold
+  // rather than cited.
   'withSuppressedPanelRemoval',
-  // packages/app-core/CLAUDE.md, "If you are reading an old comment or commit
-  // that talks about ... all of it is gone": the layout-echo comparison that
-  // went with dockview. Its sentence-mate above is here for the same reason,
-  // and a doc whose whole purpose is to list departed names is the one place
-  // naming an absent symbol is the point rather than a mistake.
   'layoutsEqual',
-  // packages/app-core/CLAUDE.md, "The four 'Global:' tilings went with ... in
-  // ADR-068 and nobody noticed for 225 commits": the component whose deletion
-  // took the menu items with it, named as the worked example of the section's
-  // rule that a component holding menu items is not interchangeable with the
-  // items it holds. Its absence is the whole point of the sentence.
-  'DockviewRightHeaderActions',
 ])
 
 // Symbols belonging to a DEPENDENCY, named because our behaviour turns on
@@ -510,29 +501,11 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
 // identifier is the evidence, because a reader checking the claim has to find
 // it in node_modules.
 const DOC_THIRD_PARTY = new Set([
-  // packages/app-core/CLAUDE.md, "the one method upstream does not wrap in
-  // `withOrigin('api')`": dockview's own internal wrapper, and the asymmetry is
-  // the caveat that section exists to record.
-  'withOrigin',
-  // products/jbrowse-build-your-own/examples-site/CLAUDE.md: a rolldown config
-  // key, named because that section records what happened when the lever was
-  // pulled (104 KB a page worse) so nobody pulls it again. Naming the option is
-  // the whole point of the note, and it is not ours to define.
+  // agent-docs/reference/REJECTED_IDEAS.md: a rolldown config key, named
+  // because that entry records what happened when the lever was pulled (104 KB
+  // a page worse) so nobody pulls it again. Naming the option is the whole
+  // point of the note, and it is not ours to define.
   'advancedChunks',
-  // packages/app-core/CLAUDE.md, "Choosing pointer events means owning the
-  // rules HTML5 dnd was giving us": dockview's own pointer drag source, named
-  // twice because the section derives our tab-drag rules by contrast with it —
-  // it is touch/pen only unless `dndStrategy: 'pointer'`, and it tracks the
-  // same single `pointerId` we do.
-  //
-  // Note this entry does NOT satisfy the "find it in node_modules" rationale
-  // above: ea9cb165af replaced dockview with the MST-native workspace, so it is
-  // no longer a dependency and a reader has to go to dockview's own repo. It is
-  // still a third-party symbol rather than one of ours that was deleted, which
-  // is why it is here and not in DOC_ABSENT_ON_PURPOSE — but `withOrigin` above
-  // is stale in exactly the same way, so if a third set is ever wanted for
-  // "symbol of a dependency we dropped", these two are it.
-  'PointerDragSource',
 ])
 
 // Build output, which must not contribute symbols. `esm/` holds a `.d.ts` per

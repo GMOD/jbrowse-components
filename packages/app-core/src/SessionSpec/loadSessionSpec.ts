@@ -21,7 +21,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 // runtime behind the `in` guard below, so renaming the action without renaming
 // it here does not fail to compile and does not throw — the guard just goes
 // false and every spec layout is silently declined. That is exactly how
-// `setPendingMove` broke once already; see app-core/CLAUDE.md.
+// `setPendingMove` broke once already; see app-core/src/WorkspaceLayout/CLAUDE.md.
 interface SessionWithWorkspaceLayout {
   setUseWorkspaces: (useWorkspaces: boolean) => void
   applyLayoutSpec: (spec: LayoutSpecNode) => string[]

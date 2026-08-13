@@ -81,7 +81,7 @@ export function bakeSessionCascades(
  * `effectiveUseWorkspaces` is read behind an `in` guard because
  * `AbstractSessionModel` cannot name it (it lives on MultipleViewsSessionMixin,
  * one layer up), so renaming that getter silently stops the bake rather than
- * failing to compile — the hazard app-core/CLAUDE.md describes for
+ * failing to compile — the hazard app-core/src/WorkspaceLayout/CLAUDE.md describes for
  * `setPendingMove`. jbrowse-web's `sessionModel/exportLayout.test.ts` is the
  * canary, since the bake needs a real session to have a cascade at all.
  */
