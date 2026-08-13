@@ -1,4 +1,5 @@
-import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
+import { isAlive } from '@jbrowse/mobx-state-tree'
+import { scheduleDetachedDestroy } from '@jbrowse/product-core'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { StartScreenPluginManager } from './pluginManagers.tsx'
@@ -50,19 +51,32 @@ export async function openSpecLink(link: string) {
 }
 
 /**
- * Tear down a plugin manager that is being replaced: terminate its RPC worker
- * threads and destroy the root model so its autorun disposers (e.g. autosave)
- * fire. Without this, every session switch / plugin reload orphans the previous
- * worker pool and leaves a live autosave loop holding the old tree.
+ * Tear down a plugin manager that is being replaced: stop everything of the root
+ * model's that reaches outside its tree — the RPC worker threads, the autosave
+ * autorun — and destroy the tree on a later task.
  *
- * Stays here rather than in pluginManagers.tsx, and stays synchronous: the
- * Loader calls it while replacing its own state, and it needs nothing from the
- * plugin graph — only a live root model, which by definition already exists.
+ * **Detach now, destroy later, and both halves are load-bearing.** The Loader
+ * calls this from the same callback that swaps its own state, so React is still
+ * holding the outgoing views and widgets in props it has yet to finish reading.
+ * Destroying there is a liveliness warning on a property already read and a hard
+ * throw on a child node never materialized, which is the crash #5618 fixed in
+ * jbrowse-web. Deferring is only safe because `detach()` has already stopped
+ * everything that would otherwise keep running in the gap. ADR-069.
+ *
+ * The destroy is equally not optional: `beforeDestroy` and `addDisposer` are a
+ * plugin-facing contract that fires on destroy and on nothing else —
+ * jbrowse-plugin-apollo closes its websocket in one. Detaching and forgetting is
+ * silent and leaks everything under the root.
+ *
+ * Stays here rather than in pluginManagers.tsx, and the detach half stays
+ * synchronous: the Loader calls it while replacing its own state, and it needs
+ * nothing from the plugin graph — only a live root model, which by definition
+ * already exists.
  */
 export function destroyPluginManager(pluginManager: PluginManager) {
   const rootModel = pluginManager.rootModel as DesktopRootModel | undefined
   if (rootModel && isAlive(rootModel)) {
-    rootModel.rpcManager.destroy()
-    destroy(rootModel)
+    rootModel.detach()
+    scheduleDetachedDestroy(rootModel)
   }
 }

@@ -133,6 +133,17 @@ export default function rootModelFactory({
       .volatile(() => ({
         version: packageJSON.version,
         adminMode: true,
+        /**
+         * #volatile
+         * What has to stop the moment the Loader lets go of this root — here,
+         * the autosave autorun, which writes to disk over IPC.
+         *
+         * Not `addDisposer`, which fires only on destroy, and the destroy is
+         * now a task later than the swap. An autosave left running in that gap
+         * writes the *outgoing* session to `sessionPath`, which the replacement
+         * has already been loaded from. See `detach`.
+         */
+        detachDisposers: [] as (() => void)[],
         openNewSessionCallback: async (_path: string) => {
           console.error('openNewSessionCallback unimplemented')
         },
@@ -144,6 +155,36 @@ export default function rootModelFactory({
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         * Register something that must stop when the Loader detaches this root.
+         * See the `detachDisposers` volatile for why this is not `addDisposer`.
+         */
+        addDetachDisposer(disposer: () => void) {
+          self.detachDisposers.push(disposer)
+        },
+        /**
+         * #action
+         * The Loader has let go of this root: stop everything of ours that
+         * reaches outside the tree — the worker pool and the autosave autorun —
+         * and leave the tree itself alone.
+         *
+         * Half the teardown. The caller destroys the tree on a later task
+         * (`scheduleDetachedDestroy`), which is what runs the `beforeDestroy`
+         * hooks in it — a plugin-facing contract, so skipping it is not an
+         * option. What this action does is take everything reaching outside the
+         * tree off that deferral, so nothing keeps running in between. ADR-069.
+         */
+        detach() {
+          // rpcManager is a plain object on a volatile, so MST teardown never
+          // reached it
+          self.rpcManager.destroy()
+          const disposers = self.detachDisposers
+          self.detachDisposers = []
+          for (const disposer of disposers) {
+            disposer()
+          }
+        },
         /**
          * #action
          */
@@ -214,8 +255,14 @@ export default function rootModelFactory({
           }
         },
         afterCreate() {
-          addDisposer(
-            self,
+          // on detach AND on destroy: detach is what the Loader performs, and
+          // the destroy that follows it a task later is what a test that builds
+          // a root directly does instead. Running a disposer twice is harmless.
+          const registerTeardown = (disposer: () => void) => {
+            self.addDetachDisposer(disposer)
+            addDisposer(self, disposer)
+          }
+          registerTeardown(
             autorun(
               async () => {
                 // NOT `await this.flushSession()`, tempting as the reuse is: an
