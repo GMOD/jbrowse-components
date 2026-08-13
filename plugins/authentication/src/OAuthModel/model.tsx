@@ -163,6 +163,49 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         return localStorageGetItem(self.refreshTokenKey)
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       * POST a grant to the token endpoint and read the access token out of the
+       * answer. Both grants this account makes — trading the authorization code
+       * on the way in, trading the refresh token when the access token expires
+       * — are the same form-encoded request to the same endpoint answered by
+       * the same body, and OAuth 2 says so (RFC 6749 §4.1.3, §6). They differ
+       * in the grant's own parameters and in what a failure means, which is
+       * what stays at the call sites.
+       *
+       * @param grant - the grant-specific parameters; `client_id` is added
+       * @param describeError - turns a failed exchange into a message, and is
+       * where a grant does whatever invalidating its failure implies
+       */
+      async postTokenGrant(
+        grant: Record<string, string>,
+        describeError: (response: Response) => Promise<string>,
+      ) {
+        const response = await fetch(self.tokenEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: self.clientId,
+            ...grant,
+          }).toString(),
+        })
+        if (!response.ok) {
+          throw new Error(await describeError(response))
+        }
+        const data = (await response.json()) as {
+          refresh_token?: string
+          access_token: string
+        }
+        // Either grant may rotate the refresh token, and a provider that does
+        // so invalidates the old one — so this is not specific to the code
+        // exchange even though that is where one first arrives.
+        if (data.refresh_token) {
+          self.storeRefreshToken(data.refresh_token)
+        }
+        return data.access_token
+      },
+    }))
     .actions(self => {
       // Shared across concurrent exchangeRefreshForAccessToken calls so parallel
       // 401s all wait on the same refresh request rather than each triggering a
@@ -176,54 +219,28 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           code: string,
           redirectUri: string,
         ) {
-          const params = new URLSearchParams({
-            code,
-            grant_type: 'authorization_code',
-            client_id: self.clientId,
-            redirect_uri: redirectUri,
-            ...(self.needsPKCE ? { code_verifier: self.codeVerifierPKCE } : {}),
-          })
-
-          const response = await fetch(self.tokenEndpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: params.toString(),
-          })
-
-          if (!response.ok) {
-            throw new Error(
-              await getResponseError({
-                response,
-                reason: 'Failed to obtain token',
-              }),
-            )
-          }
-
-          const data = (await response.json()) as {
-            refresh_token?: string
-            access_token: string
-          }
-          if (data.refresh_token) {
-            self.storeRefreshToken(data.refresh_token)
-          }
-          return data.access_token
+          return self.postTokenGrant(
+            {
+              grant_type: 'authorization_code',
+              code,
+              redirect_uri: redirectUri,
+              ...(self.needsPKCE
+                ? { code_verifier: self.codeVerifierPKCE }
+                : {}),
+            },
+            response =>
+              getResponseError({ response, reason: 'Failed to obtain token' }),
+          )
         },
         /**
          * #action
          */
         async exchangeRefreshForAccessToken(refreshToken: string) {
-          const inFlight = (exchangePromise ??= (async () => {
-            const response = await fetch(self.tokenEndpoint, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: new URLSearchParams({
-                grant_type: 'refresh_token',
-                refresh_token: refreshToken,
-                client_id: self.clientId,
-              }).toString(),
-            })
-
-            if (!response.ok) {
+          const inFlight = (exchangePromise ??= self.postTokenGrant(
+            { grant_type: 'refresh_token', refresh_token: refreshToken },
+            async response => {
+              // the access token this was going to replace is gone either way,
+              // and an invalid_grant means the refresh token itself is spent
               self.removeToken()
               const { isInvalidGrant, statusText } = parseOAuthError(
                 await response.text(),
@@ -231,17 +248,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               if (isInvalidGrant) {
                 self.removeRefreshToken()
               }
-              throw new Error(await getResponseError({ response, statusText }))
-            }
-            const data = (await response.json()) as {
-              refresh_token?: string
-              access_token: string
-            }
-            if (data.refresh_token) {
-              self.storeRefreshToken(data.refresh_token)
-            }
-            return data.access_token
-          })())
+              return getResponseError({ response, statusText })
+            },
+          ))
           try {
             return await inFlight
           } finally {
