@@ -69,10 +69,16 @@ lines as the header, and the script writes the defline outside the coordinate
 sort so it stays first.
 
 The merged output is coordinate-sorted, so indexing it is `bgzip` plus
-`tabix -p bed`. The finished 9-cell-type file is also hosted as a bigBed at
-`https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb`: swap the
-adapter below for a [`BigBedAdapter`](/docs/config/bigbedadapter) pointed at
-that URL and the rest of the track is unchanged.
+`tabix -p bed`. That is what the build scripts write, and what a
+`BedTabixAdapter` reads.
+
+Both merged files are also hosted, as bigBeds, for reading with nothing built:
+`https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb` for the nine
+cell types and
+`https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb` for the
+127 epigenomes. Those take a [`BigBedAdapter`](/docs/config/bigbedadapter),
+which is why the two track configs below name different adapters: the first
+reads a file you built, the second a file we host.
 
 ## Configure the multi-row feature display
 
@@ -270,9 +276,6 @@ is one Roadmap publishes: the row labels come from `EID_metadata.tab`, the row
 order from that file's `GROUP` and `EID` columns, and the state colors from
 `colormap_15_coreMarks.tab`, since the segmentations themselves are BED4 and
 carry no color at all.
-
-The hosted copy above is a bigBed of those same records; either format loads the
-track with nothing else changing.
 
 ## See also
 

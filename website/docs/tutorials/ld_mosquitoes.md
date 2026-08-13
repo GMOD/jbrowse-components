@@ -40,26 +40,21 @@ it, whose cells are drawn at those same coordinates from a different file.
 
 What marks the span as recombination-suppressed, rather than merely dense in
 common variants, is that the correlation does not fall off with distance inside
-it. Markers at opposite ends of the block are about as correlated as
-neighbouring ones, which is why the Cameroon triangle stays filled out to its
-apex instead of fading away from the diagonal. Everywhere else on the arm, and
-across the whole Gabon panel, r² decays with separation in the ordinary way.
-That contrast is the diagnostic; a block that faded with distance would be a
-region of low recombination rather than one of none.
+it: markers at opposite ends of the block are about as correlated as
+neighbouring ones. A block that faded with distance would be a region of low
+recombination rather than one of none.
 
-The Gabon panel is a control rather than a second example. That population is
-not inversion-free: 5 of its 69 mosquitoes are heterozygous, the blue rows at
-the bottom of its karyotype lane. What it lacks is enough of them to hold the
-segment together, since the other 64 recombine across it freely, so there is
-nothing to correlate over the 2La span. It still carries a block at the
-low-coordinate end of the arm, near the voltage-gated sodium channel, which says
-the display works and the span is genuinely uncorrelated rather than unread.
+The Gabon panel is a control rather than a second example. It is not
+inversion-free: 5 of its 69 mosquitoes are heterozygous, but the other 64
+recombine across the span freely, so there is nothing to correlate over it. It
+still carries a block at the low-coordinate end of the arm, which says the span
+is genuinely uncorrelated rather than unread.
 
 Both files were built with a minor allele frequency floor, and in Gabon the
 inverted arrangement sits far below it, so the variants tagging those five
-carriers are not in the file at all. The empty panel supports the claim that the
-arrangement is too rare there to structure the common variation around it, not
-that no correlated carrier haplotype exists.
+carriers are not in the file at all. The empty panel says the arrangement is too
+rare there to structure the common variation around it, not that no correlated
+carrier haplotype exists.
 
 ## The rearrangement itself, per mosquito
 
@@ -124,12 +119,10 @@ That is the same information, but as a rectangle striped by the gaps between
 rows, which reads as a texture rather than as background.
 
 There is no `rowHeight` here, because it is a display model property rather than
-a config slot: rows divide the lane's height between them, so the lane height is
-the row height. 297 mosquitoes in a 297-pixel lane get a pixel each. That is
-also why each population is its own track rather than both being one: the
+a config slot: rows divide the lane's height between them, so 297 mosquitoes in
+a 297-pixel lane get a pixel each. Each population is its own track because the
 display draws a row for every sample in the file and has no sample filter, so
-the file is the row set, and at a one-pixel row the sidebar has no space for a
-text label, leaving the track header as the only place a population name can go.
+the file is the row set.
 
 ### What is inferred here, and what is not
 
@@ -175,23 +168,19 @@ of these:
 
 ## Metric and allele-frequency floor
 
-r² and D' answer different questions, so they disagree about the same data by
-design. D' asks whether recombination has been seen between two markers: it is
-scaled by the most the two allele frequencies would allow, so it saturates near
-1 wherever no recombinant haplotype has turned up. r² asks how well one marker
-predicts the other, which also requires the two to be at similar frequency, so a
-pair can be in complete linkage and still score low.
+r² and D' answer different questions. D' asks whether recombination has been
+seen between two markers, so it saturates near 1 wherever no recombinant
+haplotype has turned up. r² asks how well one marker predicts the other, which
+also requires the two to be at similar frequency, so a pair can be in complete
+linkage and still score low.
 
-That is why the same block reads brighter under D', and why D' also tints the
-region outside it where r² collapses to near zero. Contrast against background,
-not cell brightness, is what makes a block legible, so r² usually draws the
-sharper boundary despite looking dimmer, and it is the one to read when the
-question is whether a marker can stand in for another. D' is the better read on
-where recombination stops, which is why the reproduce script uses it, not r², to
-recover the breakpoints. Switch with
+The same block therefore reads brighter under D', which also tints the region
+outside it. r² draws the sharper boundary and is the one to read when the
+question is whether a marker can stand in for another; D' is the better read on
+where recombination stops, which is why the reproduce script uses it to recover
+the breakpoints. Switch with
 [`ldMetric`](/docs/config/sharedlddisplay/#slot-ldmetric); the script prints
-both ratios for every panel, so the two metrics can be compared on identical
-pairs before either one is drawn.
+both ratios for every panel.
 
 Raising the minor allele frequency filter
 ([`minorAlleleFrequencyFilter`](/docs/config/sharedlddisplay/#slot-minorallelefrequencyfilter))

@@ -149,12 +149,10 @@ Two neighbours sit inside the same 101 bp, and the display filters them out:
 }
 ```
 
-Drop the filter to see them as a contrast. One is the same codon's second base.
-The other has its own distribution across these breeds, with one of the wolves
-carrying it, so tracking breed structure is a property of a particular variant
-rather than of the locus. The figure shows a single column because three
-unlabelled columns in one frame invite reading that wolf as a counterexample to
-the stop-gained allele.
+Drop the filter to see them. One is the same codon's second base; the other has
+its own distribution across these breeds, with one of the wolves carrying it, so
+tracking breed structure is a property of a particular variant rather than of
+the locus.
 
 ## The gene is also copy-number variable
 
@@ -181,13 +179,10 @@ evidence and is painted at 1 kb resolution. A narrower window would buy that
 resolution by speckling the baseline, which sliding a wide one avoids.
 
 Callset depth is a different measurement from read depth, taken only where a
-variant was called, so the build script validates it rather than assuming. The
-Dog10K share also publishes 15 CRAMs, and running the same ratio over their
-reads gives an independent estimate for those dogs; over the shared windows the
-two agree at r = 0.92 with no bias. That painting is in the config as
-`dog10k_cyp1a2_cn` if you want to add it, but it is not shown here: which 15
-dogs have CRAMs is an accident of what the share published, so the picture
-invites a question about those breeds that the data cannot answer.
+variant was called, so the build script validates it against the 15 CRAMs the
+Dog10K share publishes: over the shared windows the two agree at r = 0.92 with
+no bias. That painting is in the config as `dog10k_cyp1a2_cn`, but is not shown
+here, since which 15 dogs have CRAMs is an accident of what the share published.
 
 Two lanes read below, each window colored by its rounded call with grey being
 two copies: named animals above, then all 1,987 canids clustered on their
