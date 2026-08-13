@@ -3,6 +3,7 @@ import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import type { BreakpointSplitViewInitView } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 
 export interface ImportFormRowData {
   assembly: string
@@ -20,9 +21,7 @@ export interface ImportFormRowData {
 export function getSharedTracks(
   tracks: AnyConfigurationModel[],
   assemblies: string[],
-  assemblyManager: {
-    getCanonicalAssemblyName: (name: string) => string | undefined
-  },
+  assemblyManager: AssemblyNameResolver,
 ) {
   const needed = canonicalAssemblyNames(assemblies, assemblyManager)
   return tracks.filter(track => {

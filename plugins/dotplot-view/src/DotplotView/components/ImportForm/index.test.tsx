@@ -15,8 +15,9 @@ afterEach(() => {
   jest.restoreAllMocks()
 })
 
-const assembly = (name: string) => ({
+const assembly = (name: string, aliases: string[] = []) => ({
   name,
+  aliases,
   sequence: {
     type: 'ReferenceSequenceTrack',
     trackId: `${name}_refseq`,
@@ -45,17 +46,20 @@ const syntenyTrack = (trackId: string, assemblyNames: string[]) => ({
 
 function setup({
   assemblyNames = ['hg38', 'mm39'],
+  aliases = {},
   tracks = [],
   connectionTracks,
 }: {
   assemblyNames?: string[]
+  // other names for an assembly, which a track config is free to use
+  aliases?: Record<string, string[]>
   tracks?: ReturnType<typeof syntenyTrack>[]
   // tracks a connection supplies, which live outside session.tracks
   connectionTracks?: ReturnType<typeof syntenyTrack>[]
 } = {}) {
   const session = createTestSession({
     jbrowseConfig: {
-      assemblies: assemblyNames.map(assembly),
+      assemblies: assemblyNames.map(name => assembly(name, aliases[name])),
       tracks,
       connections: connectionTracks
         ? [{ type: 'JBrowse1Connection', connectionId: 'conn', name: 'conn' }]
@@ -126,6 +130,19 @@ test('a session with a synteny track opens on Quick start naming both axes', () 
   setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   const axes = screen.getByTestId('quick-start-axes')
   // a track's assemblyNames are [query, target] = [y, x]
+  expect(axes).toHaveTextContent('X-axis: mm39')
+  expect(axes).toHaveTextContent('Y-axis: hg38')
+})
+
+// The axes come from the track's rows, which go into an AssemblySelector on
+// handover and into assembly1/assembly2 on Launch — both of which want the
+// session's own name for the assembly, not whichever name the track uses.
+test('an alias-named track names its axes by the assembly', () => {
+  setup({
+    aliases: { hg38: ['GRCh38'] },
+    tracks: [syntenyTrack('aliased', ['GRCh38', 'mm39'])],
+  })
+  const axes = screen.getByTestId('quick-start-axes')
   expect(axes).toHaveTextContent('X-axis: mm39')
   expect(axes).toHaveTextContent('Y-axis: hg38')
 })
