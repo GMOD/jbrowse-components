@@ -1,6 +1,6 @@
 ---
 name: cram-stack-integration
-description: The vertical audit of CramAdapter x @gmod/cram — every lever the library exposes, whether the adapter reaches it, the five non-integrations that are deliberate, the three seams that remain, and the one BAM optimization that does not transfer. Read before adding a CRAM read-path optimization.
+description: The vertical audit of CramAdapter x @gmod/cram — every lever the library exposes, whether the adapter reaches it, the five non-integrations that are deliberate, the three seams that remain, and the two BAM optimizations that do not transfer. Read before adding a CRAM read-path optimization.
 ---
 
 # The CRAM stack, layer by layer
@@ -170,6 +170,38 @@ and `NUMERIC_CIGAR` is built only on demand. So the LRU may now be doing its own
 bookkeeping to preserve 8 bytes per read, while also retaining the records
 themselves. Deleting it is the simpler answer if that is what a measurement
 says; it is in place because nobody has measured, not because it is known to pay.
+
+## The per-read array pass, and how little of it transferred
+
+The jbrowse worker's four per-read `string[]`s were rebuilt for BAM this week
+(BAM_STACK_INTEGRATION seams and `plugins/alignments/src/CLAUDE.md`). Measured
+on `1000x.shortread.cram`, the same 153,677-record window as the BAM fixture:
+
+| | CRAM | BAM |
+| --- | --: | --: |
+| `readKeys` | 4.40ms, already numeric | 3.2ms |
+| name block | 18.36ms, against 22.29 as a `string[]` — **1.2x** | 42.2 -> 24.7, **1.7x** |
+| `readNextRefs`, stock | 10.88ms | — |
+| `readNextRefs`, with `nextRefId` | **5.31ms — 2.1x** | 2.8x |
+
+- **`readKeys` transferred for free.** `CramSlightlyLazyFeature.recordId` is
+  cram-js's record `uniqueId`, so the numeric identity path was already reached
+  the day it landed.
+- **The name block did NOT transfer, and this is the interesting one.** BAM's
+  1.7x is almost entirely the DECODE — `@gmod/bam` builds each QNAME with
+  `String.fromCharCode` on every access, and the fix was to copy bytes and decode
+  once. cram-js has already decoded `readName` by the time a record exists, so
+  there is no per-read decode to avoid and no raw bytes to copy; all that is left
+  is the join against the clone, 22.29ms -> 18.36ms. Worth keeping for the one
+  shape downstream, not worth pursuing further. **Do not add a `copyNameInto` to
+  `@gmod/cram`** on the strength of the BAM number.
+- **`readNextRefs` transferred, by a different field.** cram-js stores the
+  mate's reference as `nextSequenceId`, so `nextRefId` resolves one name per
+  contig exactly as BAM's does. The one subtlety is CRAM's: `hasNextPosition()`
+  is the test, not `>= 0`, because **-2 means the file gave no position at all**
+  and is deliberately distinct from **-1**, a next segment that has a position
+  but is unplaced. Both collapse to the table's -1 slot; only one is a missing
+  mate.
 
 ## Things checked and found already integrated, or found not to transfer
 

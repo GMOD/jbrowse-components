@@ -90,6 +90,21 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
       : undefined
   }
 
+  /**
+   * The mate's reference as the number the FILE stores, so `buildReadNextRefs`
+   * can tell two mates apart without `refIdToName` building a string per read.
+   * The BAM twin (over `next_refid`) carries the reasoning.
+   *
+   * `hasNextPosition()` is the test rather than a `>= 0` check, for the reason
+   * `next_ref` above states: `nextSequenceId` is **-2** when the file gave no
+   * position at all, which is deliberately distinct from **-1**, a next segment
+   * that has a position but is unplaced. Both collapse to the table's -1 slot —
+   * "no mate reference to show" — but only one of them is a missing mate.
+   */
+  get nextRefId() {
+    return this.record.hasNextPosition() ? this.record.nextSequenceId : -1
+  }
+
   get next_segment_position() {
     return this.record.hasNextPosition()
       ? `${this.adapter.refIdToName(this.record.nextSequenceId)}:${

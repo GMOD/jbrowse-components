@@ -4,7 +4,9 @@ import { toArray } from 'rxjs/operators'
 
 import BamAdapter from '../BamAdapter/BamAdapter.ts'
 import bamConfigSchema from '../BamAdapter/configSchema.ts'
+import CramAdapter from '../CramAdapter/CramAdapter.ts'
 import { SequenceAdapter } from '../CramAdapter/CramTestAdapters.ts'
+import cramConfigSchema from '../CramAdapter/configSchema.ts'
 import {
   buildReadInterchrom,
   buildReadNextRefs,
@@ -51,6 +53,33 @@ async function bamFeatures() {
   )
 }
 
+async function cramFeatures() {
+  const adapter = new CramAdapter(
+    cramConfigSchema.create({
+      cramLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        locationType: 'LocalPathLocation',
+      },
+      craiLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+    getVolvoxSequenceSubAdapter,
+  )
+  adapter.setSequenceAdapterConfig({ type: 'TestSequenceAdapter' })
+  return firstValueFrom(
+    adapter
+      .getFeatures({
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: 1,
+        end: 10200,
+      })
+      .pipe(toArray()),
+  )
+}
+
 // The whole contract: the slot table answers exactly what a string per read
 // answered. The BAM path never asks a feature for `next_ref` except once per
 // contig, so this is what stands between it and a table that is silently one
@@ -71,6 +100,22 @@ test('BAM resolves one name per contig and still answers per read', async () => 
   // however many reads.
   expect(table.nextRefNames.length).toBeLessThanOrEqual(2)
 })
+
+// CRAM reaches the same numeric path by a different field: cram-js stores the
+// mate's reference as `nextSequenceId`, so `refIdToName` is called once per
+// contig here too rather than once per read.
+test('CRAM resolves one name per contig and still answers per read', async () => {
+  const features = await cramFeatures()
+  expect(features.length).toBeGreaterThan(0)
+  expect(
+    (features[0] as Feature & { nextRefId?: number }).nextRefId,
+  ).toBeDefined()
+  const table = buildReadNextRefs(features)
+  for (let i = 0; i < features.length; i++) {
+    expect(nextRefAt(table, i)).toBe(features[i]!.get('next_ref') ?? '')
+  }
+  expect(table.nextRefNames.length).toBeLessThanOrEqual(2)
+}, 20000)
 
 describe('nextRefsToTable', () => {
   test('interns repeats and keeps first-seen order', () => {
