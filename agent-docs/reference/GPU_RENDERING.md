@@ -449,31 +449,49 @@ touching either path, preserve whichever of these the display uses:
   not one caller. The same trick covers shared *predicates*, not just geometry —
   canvas's `canvasEdgeFlags` derives the continuation-marker edge gates for both
   backends so the 0.5px epsilon can't drift from `continuation.slang`'s.
-- **One registry, exhaustively keyed — and *every* wiring point keyed, not just
-  the draw.** Multi-layer displays list layers/z-order/gating once and map each
-  id to a per-backend mechanism through a `Record<LayerId, …>`. Alignments'
-  `PILEUP_LAYERS` feeds three: `GPU_PILEUP_PASS`, the Canvas2D draw-fn map, and
-  `GPU_PILEUP_UPLOAD`. The exhaustive Record makes a half-added layer a compile
-  error; `coverageParity.test.ts` cross-checks output.
+- **One registry, exhaustively keyed — and count the wiring points before
+  trusting it.** Multi-layer displays list layers/z-order/gating once and map
+  each id to a per-backend mechanism through a `Record<LayerId, …>`, which makes
+  a half-added layer a compile error; `coverageParity.test.ts` cross-checks
+  output.
 
-  The upload one was added last, and it is the instructive one: it was a flat
-  list of calls for as long as the other two were Records, and a layer wired
-  everywhere *but* there compiles, registers, draws — and paints nothing,
-  because the pass has no buffer. **A pass that is drawn but never uploaded
-  fails silently and on the GPU backend only**, so the Canvas2D half of a parity
-  comparison still paints it and the result reads as a GPU bug rather than a
-  missing entry. Count the wiring points before trusting that a union is
-  governing them. The coverage band has no layer list, so it keys its own map on
-  a pass-id union (`CoveragePassId` → `GPU_COVERAGE_UPLOAD`) — where no union
-  exists, write one rather than falling back to a flat list.
+  **A pass that is drawn but never uploaded fails silently and on the GPU
+  backend only**, so the Canvas2D half of a parity comparison still paints it and
+  the result reads as a GPU bug rather than a missing entry. Alignments hit that
+  because it had FOUR wiring points per pass — registered in a hand-kept
+  `ALIGNMENTS_PASSES`, mapped layer→pass id, mapped layer→upload fn, and packed —
+  and only two of them were keyed by the layer union.
+
+  Keying the third was the first fix and it was the weaker one: two exhaustive
+  `Record<PileupLayerId, …>` still state the correspondence twice, and two
+  statements can disagree. **The one that holds is to make the pass and its
+  packer one object** — `instancePass()` in `plugins/alignments/src/shared`,
+  bundling the descriptor with the function that fills its buffer. The
+  layer→pass map is then the layer→upload map, the arc band and the coverage
+  band (`COVERAGE_LAYERS`) are the same shape, and `ALIGNMENTS_PASSES` is derived
+  from those registries rather than hand-listed beside them, so registration
+  stops being a wiring point at all. Four became one. Where a display has no
+  layer union to key on, the ordered pass list with its gates *is* the registry —
+  write it rather than a flat sequence of calls.
+
+  **The instance count comes with it, and that half is not optional.** `uploadPass`
+  derives the count as `buf.byteLength / pass.instanceStride`, because a count
+  arriving separately is a second expression for a number the buffer already
+  states, and a count past what the bytes hold reads off the end — undefined
+  pixels, no throw. Alignments had 17 such second expressions, one of them
+  (`curvedArcCount`) commented as needing to agree with the packer's own. If a
+  worker packs the buffer and the main thread would count a parallel array, pin
+  the two where they are actually joined — `packCoverageArea.test.ts`, over the
+  real worker packers, one length per pass so a crossed pairing fails — not at
+  the upload, which should simply not be asking.
 
   **Reach for this at the scale that needs it.** What made alignments break was
-  17 passes, three independent wiring points, and 250 lines between the upload
-  and the draw. `LinearBasicDisplay`'s 5-pass renderer gets the same guarantee
-  more cheaply: one `CANVAS_FEATURE_PASSES` list with the two non-obvious cases
-  commented on the entries themselves (chevron draws off line's buffer;
-  continuation is uploaded alongside rects), upload and draw ~60 lines apart and
-  readable together. Don't add registries to a renderer you can check by reading.
+  17 passes and 250 lines between the upload and the draw. `LinearBasicDisplay`'s
+  5-pass renderer gets the same guarantee more cheaply: one
+  `CANVAS_FEATURE_PASSES` list with the two non-obvious cases commented on the
+  entries themselves (chevron draws off line's buffer; continuation is uploaded
+  alongside rects), upload and draw ~60 lines apart and readable together. Don't
+  add registries to a renderer you can check by reading.
 - **`SYNC:` comments anchor formulas** — the fallback, not a mechanism. Where a
   value must match across files and none of the above applies, a
   `SYNC:`/`mirrors` comment names the counterpart; grep the tag before editing

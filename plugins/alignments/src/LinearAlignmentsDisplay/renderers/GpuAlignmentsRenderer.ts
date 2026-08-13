@@ -172,12 +172,11 @@ function fillFrameUniforms(
 }
 
 // ---------------------------------------------------------------------------
-// Pure buffer-pack helpers. Each takes an RPC payload and returns a ready-to-
-// upload ArrayBuffer matching the corresponding Slang shader's instance
-// layout. They live outside the renderer class because they touch no HAL
-// state — and all performance-sensitive inner loops hoist the host-object
-// property accesses to locals so V8 reads through typed-array views directly.
-// Per-feature pack/upload helpers live in features/X/{packGpu,uploadGpu}.ts.
+// Pure UBO-fill helpers. They live outside the renderer class because they touch
+// no HAL state, and they are all this file holds of the per-pass detail: each
+// pass's instance packing lives in its own `features/X/packGpu.ts`, carried by
+// the pass descriptor itself (`instancePass`), so the renderer names passes
+// without knowing what any of them packs.
 // ---------------------------------------------------------------------------
 
 // Arc-pass UBO patch. The arc shaders read the same UBO as the read pass but

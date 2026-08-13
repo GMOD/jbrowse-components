@@ -38,34 +38,37 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   mismatch is one gate over three passes. Uniform rows need shims that add back
   what the table removes. ~17 gated lines, guarded by `coverageParity.test.ts`.
 - **Collapsing `features/*/uploadGpu.ts` into one table-driven upload** —
-  declined 2026-08-12, and the temptation grew rather than shrank that day.
-  16 files, 340 lines, one exported wrapper each; a table keyed by pass id
-  reaches ~5. What the wrappers hold is the per-pass instance count, and it is
-  not derivable from the buffer: `gapPositions.length / 2` (start/end pairs),
-  `mismatchPositions.length`, `numInsertions`, `coverageGpuBinCount` (bin-capped,
-  so decoupled from `coverageDepths.length`). Each is the number its own packer
-  wrote, and a wrong one is a silent GPU mis-render — no throw, no test failure,
-  just geometry read off the end or short. `arcs/uploadGpu.ts` is the proof: four
-  passes, and `curvedArcCount` exists precisely because a second subtraction that
-  agreed with the packer was not good enough.
-  **What changed the same day and does not reopen it:** five of the sixteen
-  took `(hal, idx, packedBuffer, count)` — the worker-packed coverage family,
-  which has no main-thread `pack*` call — so the count sat at the renderer call
-  site as a loose positional argument next to the buffer. Those now take the
-  typed payload like the other ten, and all fifteen non-arc wrappers are the
-  same three-argument shape. That uniformity is what makes the table look
-  free, and it isn't: the shape is uniform because the count moved *into* each
-  pass, not because the counts became the same.
-  **The table that WAS right, and landed instead** (`GPU_PILEUP_UPLOAD`): keyed
-  on `PileupLayerId`, holding the wrappers rather than replacing them. The
-  original argument against a table was "a transposed argument at one wide call
-  site", and that was the weak half of it — a table of NAMED fields has no
-  positional transposition to make. The half that survives is co-location: a
-  count belongs beside the packer it has to agree with, in the same directory.
-  A table over layer *ids* takes nothing out of the feature directories, and it
-  closes a real gap — `syncRegion`'s flat list was the one of three wiring
-  points that wasn't exhaustive, so a layer could draw with no buffer. Decline
-  the table that moves per-pass knowledge; build the one that only names it.
+  declined twice in 2026-08, then **overturned on 2026-08-13**, and the way the
+  decline went wrong is the useful part.
+  The standing argument was: what the 16 wrappers hold is the per-pass instance
+  count, and it is *not derivable from the buffer* — `gapPositions.length / 2`
+  (start/end pairs), `mismatchPositions.length`, `numInsertions`,
+  `coverageGpuBinCount` (bin-capped, so decoupled from `coverageDepths.length`).
+  A wrong count is a silent GPU mis-render: no throw, no test failure, just
+  geometry read off the end or short.
+  **That premise was false, and the entry contains its own refutation.** The
+  counts are not derivable from any *other array* — `coverageGpuBinCount` really
+  is decoupled from `coverageDepths.length` — but they are exactly derivable
+  from the *buffer*, because every packer, main-thread and worker alike,
+  allocates `n * INSTANCE_STRIDE_BYTES` from the same `n`. So
+  `buf.byteLength / pass.instanceStride` is the count, for all 17 passes,
+  checked. The entry even cited `curvedArcCount` as proof the wrappers were
+  needed — "a second subtraction that agreed with the packer was not good
+  enough" — which is the argument for **zero** statements of the count, not for
+  two with a comment between them. Read a "not derivable" claim as naming what
+  it was derived *from*: swapping the source silently swaps the claim.
+  **What landed instead** (`instancePass()`, `shared/instancePass.ts`): the pass
+  descriptor carries its own packer, `uploadPass` takes the count off the bytes,
+  and the wrappers, the counts and the `if (n > 0)` guards are gone — 776 lines
+  deleted, 17 files. The one objection that survived every round is co-location,
+  and it is satisfied rather than traded away: the packer never leaves its
+  feature directory, and there is no count beside it to keep in agreement. The
+  renderer's registry names a pass; it holds no per-pass knowledge.
+  The genuinely separate lesson from the declines still holds and predates this:
+  a table over layer *ids* closes a wiring gap (a layer that draws with no
+  buffer), and that is why `GPU_PILEUP_PASS` is keyed on `PileupLayerId` rather
+  than being a flat list. See GPU_RENDERING.md § "Keeping the two backends in
+  parity".
 - **Mirrored-band strand-split coverage** — rejected across three passes.
   Group-by-strand already splits SNPs: `buildGroupResult` runs the coverage
   pipeline per group, verified in-app 2026-08-05 (volvox_bam,
