@@ -17,14 +17,6 @@ export default function LocationInput({
   inline?: boolean
   setLocation: (arg: FileLocation) => void
 }) {
-  if (selectedAccount?.SelectorComponent) {
-    return (
-      <selectedAccount.SelectorComponent
-        setLocation={setLocation}
-        selectedAccount={selectedAccount}
-      />
-    )
-  }
   if (toggleButtonValue === 'url') {
     return (
       <UrlChooser
