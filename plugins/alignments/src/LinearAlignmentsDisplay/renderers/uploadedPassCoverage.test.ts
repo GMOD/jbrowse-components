@@ -19,10 +19,12 @@ import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
  * no throw, no blank-screen crash, just a layer silently missing on the GPU
  * backend while Canvas2D still paints it.
  *
- * `GPU_PILEUP_UPLOAD` now makes the pileup half a compile error instead. The
- * coverage band is the half that still needs a runtime check: its passes come
- * from `coveragePassPlan`, a plain tuple list with no id union to be exhaustive
- * over.
+ * `GPU_PILEUP_UPLOAD` and `GPU_COVERAGE_UPLOAD` now make an unwired pass a
+ * compile error. What is left for a runtime check is the part a `Record` can't
+ * see: that the upload a map names actually WRITES something. Every entry is
+ * `if (n > 0)` over a count it reads off the payload, so a wrong field name —
+ * `snpPositions` where `snpRelDepths` was meant, both real, both `Uint32Array`-
+ * ish — type-checks, sits in a fully-populated map, and uploads nothing.
  */
 
 const START = 10_000

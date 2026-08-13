@@ -653,6 +653,29 @@ const GPU_PILEUP_UPLOAD: Record<PileupLayerId, PileupUploadFn> = {
   perBaseLetter: uploadPerBaseLetter,
 }
 
+// The coverage band's pass set. It plays the part PileupLayerId plays for the
+// pileup band — the thing the plan below and the upload map above are each
+// exhaustive over — and it is a union rather than the bare `string` this used
+// to be so that adding a sixth coverage pass is a compile error in the upload
+// map instead of a layer that draws with no buffer.
+export type CoveragePassId =
+  | typeof PASS_COVERAGE
+  | typeof PASS_SNP_COV
+  | typeof PASS_MOD_COV
+  | typeof PASS_INTERBASE
+  | typeof PASS_INDICATOR
+
+// Each coverage pass's upload, keyed like GPU_PILEUP_UPLOAD. Keyed by PASS id
+// rather than by a layer id because the coverage band has no layer list — the
+// pass ids are its vocabulary, and `coveragePassPlan` already speaks it.
+const GPU_COVERAGE_UPLOAD: Record<CoveragePassId, PileupUploadFn> = {
+  [PASS_COVERAGE]: uploadCoverageBins,
+  [PASS_SNP_COV]: uploadSnpCoverage,
+  [PASS_MOD_COV]: uploadModCoverage,
+  [PASS_INTERBASE]: uploadInterbase,
+  [PASS_INDICATOR]: uploadIndicators,
+}
+
 // Coverage-band passes in z-order; the band itself is gated by `showCoverage`
 // at the call site. The depth-scaled passes need the autoscaled domain max, so
 // they are skipped until coverage stats settle (coarseDynamicBlocks is
@@ -662,7 +685,7 @@ const GPU_PILEUP_UPLOAD: Record<PileupLayerId, PileupUploadFn> = {
 // `showInterbaseIndicators` — the one toggle governs all interbase marks.
 export function coveragePassPlan(
   state: RenderState,
-): [pass: string, enabled: boolean][] {
+): [pass: CoveragePassId, enabled: boolean][] {
   const hasDomain = hasCoverageScale(state)
   return [
     [PASS_COVERAGE, hasDomain],
@@ -880,15 +903,17 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       for (const upload of Object.values(GPU_PILEUP_UPLOAD)) {
         upload(this.hal, idx, data)
       }
-      // Coverage band — not PILEUP_LAYERS entries, so no map to iterate. The
-      // set is `coveragePassPlan`'s, and `uploadedPassCoverage.test.ts` is what
-      // holds the two together.
-      uploadCoverageBins(this.hal, idx, data)
-      uploadSnpCoverage(this.hal, idx, data)
-      uploadInterbase(this.hal, idx, data)
-      uploadIndicators(this.hal, idx, data)
-      uploadModCoverage(this.hal, idx, data)
+      // Coverage band. Same rule, keyed on CoveragePassId instead — and
+      // likewise ungated, since `coveragePassPlan`'s gates are the DRAW's.
+      for (const upload of Object.values(GPU_COVERAGE_UPLOAD)) {
+        upload(this.hal, idx, data)
+      }
     }
+    // The arc band is the one upload with no map, and the signature says why:
+    // it reads `arcs` rather than `data` (a separate RPC result, absent
+    // whenever the band is off) and takes the configured line width, because
+    // each arc's own width is resolved at pack time from its read support. It
+    // is not a `(hal, idx, data)` upload wearing a disguise.
     if (arcs) {
       uploadArcs(this.hal, idx, arcs, arcLineWidth)
     }
