@@ -63,6 +63,14 @@ const useStyles = makeStyles()(theme => ({
     // read as the gap below the rule; the inline value clobbered it and the text
     // sat on the hairline. `CAPTION_GAP_PX` is that gap, applied where the
     // number is actually decided.
+    //
+    // BELOW the line is the intent rather than a guess at one, and `rule` above
+    // is where that is said independently: it is a zero-height box precisely so
+    // "the caption below can sit outside it". A caption ON the rule is the other
+    // reading — a label knocking a gap in a hairline is a real idiom, and the
+    // paper background here would serve it — but it is not what either comment
+    // asks for, and the two agreed with each other while the screen agreed with
+    // neither.
     fontSize: 10,
     lineHeight: CAPTION_LINE_PX,
     padding: '0 3px',
