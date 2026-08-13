@@ -1,4 +1,4 @@
-import { getResponseError } from '../util.ts'
+import { descriptiveErrorMessage } from '../util.ts'
 
 interface GoogleDriveError {
   error: {
@@ -14,17 +14,5 @@ interface GoogleDriveError {
   }
 }
 
-export async function getDescriptiveErrorMessage(
-  response: Response,
-  reason?: string,
-) {
-  const text = await response.text()
-  let statusText = text
-  try {
-    const err = JSON.parse(text) as GoogleDriveError
-    statusText = err.error.message
-  } catch {
-    // statusText stays as raw response text
-  }
-  return getResponseError({ response, reason, statusText })
-}
+export const getDescriptiveErrorMessage =
+  descriptiveErrorMessage<GoogleDriveError>(err => err.error.message)

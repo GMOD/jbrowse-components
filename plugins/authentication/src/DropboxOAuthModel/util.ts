@@ -1,4 +1,4 @@
-import { getResponseError } from '../util.ts'
+import { descriptiveErrorMessage } from '../util.ts'
 
 interface DropboxError {
   error_summary: string
@@ -20,18 +20,9 @@ const dropboxErrorMessages: Record<string, string> = {
   shared_link_is_directory: 'Directories cannot be retrieved by this endpoint.',
 }
 
-export async function getDescriptiveErrorMessage(
-  response: Response,
-  reason?: string,
-) {
-  const text = await response.text()
-  let statusText = text
-  try {
-    const err = JSON.parse(text) as DropboxError
+export const getDescriptiveErrorMessage = descriptiveErrorMessage<DropboxError>(
+  err => {
     const tag = err.error['.tag']
-    statusText = dropboxErrorMessages[tag] ?? tag
-  } catch {
-    // statusText stays as raw response text
-  }
-  return getResponseError({ response, reason, statusText })
-}
+    return dropboxErrorMessages[tag] ?? tag
+  },
+)
