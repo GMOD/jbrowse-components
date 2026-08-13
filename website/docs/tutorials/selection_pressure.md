@@ -1,6 +1,6 @@
 ---
 title: Selection pressure between two genomes (dN/dS)
-sidebar_label: Selection pressure (dN/dS)
+sidebar_label: Synteny (dN/dS)
 description:
   Colour an ortholog track by the ratio of non-synonymous to synonymous
   substitution, and read selection pressure off a gene neighbourhood

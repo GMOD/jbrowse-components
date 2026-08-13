@@ -131,6 +131,24 @@ data at all (the embedding and display-settings walkthroughs) leaves the field
 off rather than picking the nearest of three. An unknown value fails the build;
 an absent one is silently no chip, which is why the two must not be confused.
 
+**A `sidebar_label` leads with the word its kin lead with.** The tutorials
+sidebar is one flat alphabetical list of 44 rows, so a label's first word is the
+only thing grouping it: `Synteny (…)`, `SVs (…)`, `Pangenome (…)`, `LD …`,
+`Methylation (…)`, `Single-cell …`, `CNV …`, `genomes.jbrowse.org (…)`. Lead
+with the family and put what distinguishes the page — the method, then the
+dataset if the method doesn't already say it — in the parenthetical:
+`Synteny (MCScan anchors)`, not `MCScan anchors (grape, peach)`, which sorted
+between "Low-mappability regions" and "Methylation" with the four other synteny
+pages twenty rows below it. The family word is whatever the sibling pages
+already use, not a new one — a page that starts a family of its own is a page
+with no siblings yet, and it just keeps its own name.
+
+The `title` is unaffected by this and stays the page's real name: the landing
+page's cards and the search index read `title`, the sidebar reads
+`sidebar_label ?? title`, so a page needs the second only when the first does
+not already sort where it belongs. Eighteen of the 44 have none, and should not
+grow one to restate a title that already leads with the right word.
+
 A page closes with `## See also`, then `## References` if it has one. Nothing
 goes below them: a worked example parked under `See also` and reached by an
 anchor from higher up the page is still content, and belongs above the closing

@@ -1,5 +1,6 @@
 ---
 title: Protein alignments on genomes.jbrowse.org
+sidebar_label: genomes.jbrowse.org (protein alignments)
 description:
   Right-click a gene and build a cross-species protein alignment from NCBI's
   precomputed orthologs, with conserved domains overlaid

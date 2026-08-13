@@ -1,6 +1,6 @@
 ---
 title: Complex rearrangements and gene fusions
-sidebar_label: Complex rearrangements
+sidebar_label: SVs (complex rearrangements)
 description:
   Search a somatic SV callset for rearrangements that take several junctions to
   make, reconstruct the derivative allele, and check it against the reads

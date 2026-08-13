@@ -1,5 +1,6 @@
 ---
 title: Synteny on genomes.jbrowse.org
+sidebar_label: genomes.jbrowse.org (synteny)
 description:
   Open a UCSC liftOver track in a linear genome view and launch a synteny view
   from it

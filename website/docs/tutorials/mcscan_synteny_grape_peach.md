@@ -1,6 +1,6 @@
 ---
 title: Synteny from MCScan anchors (grape, peach)
-sidebar_label: MCScan anchors (grape, peach)
+sidebar_label: Synteny (MCScan anchors)
 description:
   Load a pairwise jcvi MCScan run as gene-level and block-level synteny tracks,
   and convert an MCScanX run into the same files

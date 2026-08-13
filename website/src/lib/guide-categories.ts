@@ -78,11 +78,12 @@ export const DEVELOPER_CATEGORIES = [
 // four sections, each sitting among pages that want minimap2, pggb or a
 // tabix'd file first, so the one group a reader can follow without downloading
 // anything was the one group that could not be seen. They already read as a
-// series: all four cross-link each other, and the flat tutorials sidebar
-// happens to sort three of them adjacent. This is not the same axis as "costs
-// the reader nothing", which is wider (the demo-instance pages are zero-setup
-// too, and `mappability_qc` is a hosted click path whose subject is SMN, not
-// the site) and wants a per-card badge rather than a heading.
+// series: all four cross-link each other, and all four lead their sidebar_label
+// with the site's name so the flat sidebar sorts them as one run. This is not
+// the same axis as "costs the reader nothing", which is wider (the
+// demo-instance pages are zero-setup too, and `mappability_qc` is a hosted
+// click path whose subject is SMN, not the site) and wants a per-card badge
+// rather than a heading.
 export const TUTORIAL_CATEGORIES = [
   'genomes.jbrowse.org',
   'Getting started',
@@ -240,7 +241,11 @@ export function guideRank(dirName: string, slug: string): number {
 // `models` order by the category in their generated `sidebar_label`, and `api`
 // not at all. `tutorials` is deliberately absent: its sidebar list stays flat
 // and alphabetical, with no prefix — the landing page sections the same pages,
-// which is enough categorization.
+// which is enough categorization. The grouping the sidebar does have comes from
+// the labels themselves: a tutorial's sidebar_label leads with the word its kin
+// lead with ("Synteny (…)", "SVs (…)", "Pangenome (…)"), so sorting them
+// alphabetically puts each family in one run. docs/tutorials/CLAUDE.md is where
+// that convention is written for authors.
 export const GUIDE_CATEGORY_ORDER: Record<string, string[]> = {
   user_guides: USER_CATEGORIES,
   config_guides: CONFIG_CATEGORIES,

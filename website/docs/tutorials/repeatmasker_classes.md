@@ -1,5 +1,6 @@
 ---
 title: RepeatMasker as one lane per class
+sidebar_label: genomes.jbrowse.org (RepeatMasker lanes)
 description:
   Split a hub's RepeatMasker track into a labelled lane per repeat class,
   without preparing any data

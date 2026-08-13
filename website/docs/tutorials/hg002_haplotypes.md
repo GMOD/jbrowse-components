@@ -1,6 +1,6 @@
 ---
 title: Comparing one genome's two haplotypes (T2T-HG002)
-sidebar_label: Haplotype synteny (T2T-HG002)
+sidebar_label: Synteny (haplotypes, T2T-HG002)
 description:
   Load T2T-HG002 v1.2 and the Q100 project's own maternal-to-paternal chain,
   plot one haplotype against the other genome-wide, and look at the 8p23.1

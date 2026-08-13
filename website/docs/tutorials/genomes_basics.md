@@ -1,5 +1,6 @@
 ---
 title: Basic usage of genomes.jbrowse.org
+sidebar_label: genomes.jbrowse.org (basic usage)
 description:
   Open a hosted genome, search a gene, and work through the UCSC track catalog
   on hg38, from conservation and variation at TP53 to p53's own binding sites at
