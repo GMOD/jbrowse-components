@@ -83,9 +83,7 @@ breakpoints and splits into forward and reverse-strand alignments. With View as
 pairs / link supplementary alignments on, those segments chain onto one row: the
 inverted middle paints the reverse-strand color between the forward-strand
 segments on either side, and the split junctions are joined by a magenta
-inversion arc. The figure below shows this ~1.2 kb inversion in one 1000 Genomes
-sample (HG00151) with Oxford Nanopore long reads, the 1KGP ensemble SV call
-marking the locus above.
+inversion arc.
 
 **Group by... → Split read (SA tag)** in the track menu puts the reads carrying
 a supplementary alignment in their own section. In that section each read breaks
@@ -123,10 +121,9 @@ menu), the Insert size option uses threshold-based coloring:
 <!-- COLOR_TABLE alignments-insert-size END -->
 
 The "expected" range is a robust band around the typical insert size,
-`median ± 3·1.4826·MAD`, rather than `mean ± 3σ`. The long right tail of large
+`median ± 3·1.4826·MAD` rather than `mean ± 3σ`: the long right tail of large
 inserts (deletions, SVs) inflates the standard deviation, pushing a `mean − 3σ`
-lower bound below zero so short inserts are never flagged; the median and MAD
-ignore that tail, keeping the short-insert (pink) threshold meaningful.
+lower bound below zero so short inserts are never flagged.
 
 Insert size and orientation combines both signals and is often the most
 informative setting for a general SV scan. The two signals are prioritized so
@@ -225,9 +222,8 @@ of curves rather than scattered singleton pileup rows.
 A read can look concordant (light-grey LR fill) yet still carry a colored
 connector: the read itself crosses the breakpoint, splitting into a primary and
 a strand-flipped supplementary alignment, and the arc joining them takes the
-split-read inversion color rather than the RR-pair blue. That is independent
-evidence for the inversion, from one read rather than a pair. Hover any
-connector for its classification.
+split-read inversion color rather than the RR-pair blue. That is evidence from
+one read rather than a pair. Hover any connector for its classification.
 
 ## Read cloud
 
@@ -315,11 +311,10 @@ both loci on one contig with the orientation flip the reads describe
 
 ### Which events it recovers
 
-Run over every junction in two somatic callsets rather than at chosen loci, what
-recall depends on is event size, because the reconstruction reads split
-alignments and an aligner represents a short deletion inside one read's CIGAR
-instead of splitting it. Below, COLO829 against its ONT calls and HG008-T
-against the C-GIAB benchmark:
+Recall depends on event size, because the reconstruction reads split alignments
+and an aligner represents a short deletion inside one read's CIGAR instead of
+splitting it. Below, COLO829 against its ONT calls and HG008-T against the
+C-GIAB benchmark, run over every junction rather than at chosen loci:
 
 | Event size       | COLO829, ONT | HG008-T, PacBio HiFi |
 | ---------------- | ------------ | -------------------- |
@@ -331,13 +326,12 @@ against the C-GIAB benchmark:
 
 Where the junction is recovered it is the first or second route listed in every
 case in both datasets, and its two ends land a median of 1 to 2 bp from the
-called breakend. At the same windows in each matched normal, no somatic junction
-is recovered.
+called breakend. No somatic junction is recovered at the same windows in each
+matched normal.
 
 So the tool is for events large enough that the aligner splits the read across
 them, which is what the segment sizes beside each row let you check. Routes do
-appear at loci with no event, in both the normal and at random positions, which
-is what the caveat above the list is about.
+appear at loci with no event, which is what the caveat above the list is about.
 
 ## Breakpoint split view
 
@@ -378,12 +372,11 @@ the rest from the callset: at each end of the chain it looks for another
 junction leaving from within a kilobase of the same place, and takes it when
 there is exactly one, adding a panel per hop up to four.
 
-It is reading two junctions that leave one locus as one molecule, which is not
-something the caller asserts, so it declines the cases where that would be a
-guess. Two open continuations at a locus stop the walk, since the records cannot
-say which molecule carries which. A continuation that leads back to a locus
-already on screen stops it too, because a closed cycle is a shape the panels
-already show in full. Where the reads are the evidence rather than the record
+It reads two junctions that leave one locus as one molecule, which the caller
+does not assert, so it declines where that would be a guess: two open
+continuations at a locus stop the walk, since the records cannot say which
+molecule carries which, and so does a continuation leading back to a locus
+already on screen. Where the reads are the evidence rather than the record
 layout, the tool is
 [Reconstruct derivative allele](/docs/tutorials/cancer_sv#reconstructing-the-derivative-allele-in-the-browser),
 which ranks whole routes by how many molecules independently take each.
