@@ -35,6 +35,12 @@ import type { LinearAlignmentsDisplayModel } from '../model.ts'
 // not, and a stacked grouping can have one lane clipped and the next not. The
 // gate is `isGroupCeilingClipped`, which also carries the fit-mode and
 // hidden-pileup suppressions.
+// The caption hangs below the rule: this much clear of it, and this tall. Both
+// are read by the cull below as well as by the layout, which is the reason they
+// are numbers here rather than literals in the style block.
+const CAPTION_GAP_PX = 2
+const CAPTION_LINE_PX = 12
+
 const useStyles = makeStyles()(theme => ({
   rule: {
     position: 'absolute',
@@ -52,11 +58,13 @@ const useStyles = makeStyles()(theme => ({
   caption: {
     position: 'absolute',
     left: 4,
-    // Clear of the rule itself; the pileup below it is the collapsed overflow
-    // row, which is what the caption is naming.
-    top: 2,
+    // No `top` here: the component sets one inline per section, which would
+    // override anything declared at this level. It used to declare `top: 2` and
+    // read as the gap below the rule; the inline value clobbered it and the text
+    // sat on the hairline. `CAPTION_GAP_PX` is that gap, applied where the
+    // number is actually decided.
     fontSize: 10,
-    lineHeight: '12px',
+    lineHeight: CAPTION_LINE_PX,
     padding: '0 3px',
     color: theme.palette.text.secondary,
     background: theme.palette.background.paper,
@@ -89,16 +97,33 @@ const PileupTruncationRule = observer(function PileupTruncationRule({
           section.topOffset + section.pileupHeight,
           scroll,
         )
-        // Culled on the CAPTION's extent, not the line's: the caption hangs
-        // below the rule, so a boundary a few px past the bottom edge still has
-        // text on screen.
-        if (top < 0 || top > scroll.canvasHeight) {
+        // Culled on the pair's extent, not the line's alone. The caption hangs
+        // BELOW the rule, so scrolling the boundary just off the top leaves its
+        // text on screen for another `CAPTION_GAP_PX + CAPTION_LINE_PX` — and
+        // culling at 0 took the caption away while its own subject was still
+        // legible. The bottom needs no such slack, since anything below the rule
+        // is further below the viewport.
+        if (
+          top < -(CAPTION_GAP_PX + CAPTION_LINE_PX) ||
+          top > scroll.canvasHeight
+        ) {
           return null
         }
         return (
           <div key={sectionKey(section.groupKey)}>
-            <div className={classes.rule} style={{ top }} />
-            <div className={classes.caption} style={{ top }}>
+            {/* The line IS the claim — it is the boundary the reads stop at —
+                so it is what the tests assert a position on. They used to read
+                the caption's `top` as a proxy, which held only while the caption
+                sat exactly on the rule rather than clear of it. */}
+            <div
+              data-testid="pileup-truncation-rule"
+              className={classes.rule}
+              style={{ top }}
+            />
+            <div
+              className={classes.caption}
+              style={{ top: top + CAPTION_GAP_PX }}
+            >
               Max height reached — deeper reads are not stacked
             </div>
           </div>
