@@ -377,7 +377,7 @@ Compose `MultiRegionDisplayMixin` (which includes `RenderLifecycleMixin` and the
 fetch autoruns), store the worker output in an `rpcDataMap`, and wire the render
 lifecycle with `installPerRegionLifecycle`. This is the **per-region streamed**
 upload pattern from the
-[architecture spec's three upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#three-upload-patterns),
+[architecture spec's four upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#four-upload-patterns),
 the right shape when each region's data is independent (no cross-region layout
 coupling).
 

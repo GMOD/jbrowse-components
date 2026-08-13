@@ -947,7 +947,7 @@ it belongs in the uniform/draw params.
 A genuine recolor does still produce a fresh `colors` array over the same
 coordinate arrays, and a naive keyed-upload backend re-packs every lane to change
 one. The two-line memo that avoids it is a backend concern:
-[GPU_RENDERING.md § Three upload patterns](reference/GPU_RENDERING.md#three-upload-patterns),
+[GPU_RENDERING.md § Four upload patterns](reference/GPU_RENDERING.md#four-upload-patterns),
 under "the color-lane patch".
 
 Derived region maps apply when upload needs whole fresh per-region payloads, not

@@ -83,7 +83,7 @@ strand case.
   once, and the three backends that implemented their interfaces standalone —
   alignments, dotplot, synteny, the largest allocators in the app — were exactly
   the three whose OOMs reached nobody. Required now, so forgetting is a compile
-  error. A plugin's `XRenderingBackend` should be the shared contract
+  error. A plugin's own backend interface should be the shared contract
   (`PerRegionRenderingBackend` / `GlobalRenderingBackend` /
   `KeyedRenderingBackend`), not a member-for-member re-declaration of one: the
   copy that existed had drifted into citing the real contract for its own
