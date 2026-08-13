@@ -1,4 +1,5 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import {
@@ -33,12 +34,23 @@ const UI = wiggleShader.UNIFORM_OFFSET_I32
 // connect-points line as a 6-vert capsule per feature under max blend.
 const LINE_VERTS_PER_INSTANCE = 18
 
+// The only pass with a buffer of its own; the two below draw off it, so they
+// are registered here and absent from `regionPasses`.
+const FILL_PASS = instancePass({
+  id: PASS_FILL,
+  mod: wiggleShader,
+  topology: 'triangle-list',
+  pack: (sources: SourceRenderData[]) => {
+    let totalFeatures = 0
+    for (const source of sources) {
+      totalFeatures += source.numFeatures
+    }
+    return interleaveInstances(sources, totalFeatures)
+  },
+})
+
 export const WIGGLE_PASSES: PassDescriptor[] = [
-  slangPass({
-    id: PASS_FILL,
-    mod: wiggleShader,
-    topology: 'triangle-list',
-  }),
+  FILL_PASS,
   slangPass({
     id: PASS_LINE,
     mod: wiggleShader,
@@ -64,26 +76,14 @@ export class GpuWiggleRenderer
 {
   private uniformF32: Float32Array
   private uniformI32: Int32Array
+  // One buffer, uploaded to PASS_FILL; PASS_LINE and PASS_LINE_CENTER read it
+  // via drawPass's bufferPassId rather than carrying buffers of their own.
+  protected regionPasses = [FILL_PASS]
 
   constructor(hal: GpuHal) {
     super(hal, wiggleShader.UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.uniformI32 = new Int32Array(this.uniformData)
-  }
-
-  uploadRegion(displayedRegionIndex: number, sources: SourceRenderData[]) {
-    let totalFeatures = 0
-    for (const source of sources) {
-      totalFeatures += source.numFeatures
-    }
-    if (totalFeatures === 0) {
-      this.hal.deleteRegion(displayedRegionIndex)
-      return
-    }
-    const buf = interleaveInstances(sources, totalFeatures)
-    // Upload once to PASS_FILL; PASS_LINE and PASS_LINE_CENTER read the same
-    // buffer via drawPass's bufferPassId.
-    this.hal.uploadBuffer(displayedRegionIndex, PASS_FILL, buf, totalFeatures)
   }
 
   protected drawRegion(

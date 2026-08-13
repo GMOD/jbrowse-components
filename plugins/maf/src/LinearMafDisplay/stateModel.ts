@@ -2256,17 +2256,17 @@ export default function stateModelFactory(
               // color-by-chromosome all paint the rows on sibling canvases.
               // Encoding anyway built and uploaded a buffer (tens of MB on a
               // wide region) that never reached a pixel. An empty payload skips
-              // the encode *and* releases the GPU buffer (uploadRegion routes
-              // count 0 to deleteRegion); the autorun stays subscribed, so
-              // flipping back to `bases` re-encodes immediately.
+              // the encode *and* releases the GPU buffer (an empty pack deletes
+              // the pass's buffer); the autorun stays subscribed, so flipping
+              // back to `bases` re-encodes immediately.
               if (!self.basesRenderingActive) {
-                return { instanceBuffer: new Uint32Array(0), instanceCount: 0 }
+                return { instanceBuffer: new Uint32Array(0) }
               }
-              const { buffer, count } = buildInstanceBuffer({
+              const { buffer } = buildInstanceBuffer({
                 blocks: regionData.blocks,
                 ...self.gpuProps(),
               })
-              return { instanceBuffer: buffer, instanceCount: count }
+              return { instanceBuffer: buffer }
             },
             b => {
               // First-paint gate: no fetch has landed yet, so skip the tick

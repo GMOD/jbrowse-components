@@ -1,20 +1,25 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/manhattan.generated.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const PASS = 'point'
 const U = shader.UNIFORM_OFFSET_F32
 
-export const MANHATTAN_PASSES: PassDescriptor[] = [
-  slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
+export const MANHATTAN_PASSES = [
+  instancePass({
+    id: PASS,
+    mod: shader,
+    topology: 'triangle-list',
+    pack: buildInstanceBuffer,
+  }),
 ]
 
 export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
@@ -22,23 +27,11 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
   ManhattanRenderState
 > {
   private uniformF32: Float32Array
+  protected regionPasses = MANHATTAN_PASSES
 
   constructor(hal: GpuHal) {
     super(hal, shader.UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: ManhattanRpcResult) {
-    if (data.numFeatures === 0) {
-      this.hal.deleteRegion(displayedRegionIndex)
-      return
-    }
-    this.hal.uploadBuffer(
-      displayedRegionIndex,
-      PASS,
-      buildInstanceBuffer(data),
-      data.numFeatures,
-    )
   }
 
   protected drawRegion(

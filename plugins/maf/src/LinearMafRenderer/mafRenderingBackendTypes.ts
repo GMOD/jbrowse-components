@@ -261,8 +261,11 @@ export interface MafUploadPayload {
   // a copy rather than handing back a subarray of its over-allocation — the
   // payload is retained for as long as the region is loaded, and a view would
   // pin the dead tail with it.
+  //
+  // Being right-sized is also why there is no count beside it: the upload takes
+  // the instance count off the bytes (`uploadPass`), so a second field could
+  // only ever disagree.
   instanceBuffer: Uint32Array
-  instanceCount: number
 }
 
 // MAF uploads a pre-encoded GPU buffer; the render-side reads raw blocks

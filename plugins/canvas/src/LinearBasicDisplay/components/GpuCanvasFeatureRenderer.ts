@@ -31,93 +31,102 @@ import type {
 } from './canvasFeatureRenderingBackendTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { InstancePass } from '@jbrowse/render-core/instancePass'
 
 export const CANVAS_FEATURE_UNIFORM_BYTE_SIZE = FEATURE_GLYPH_UNIFORM_BYTE_SIZE
 
+// The glyph passes in `../passes` are deliberately payload-agnostic (RFC-001
+// §5's shared shape library), so each is bound to this display's RPC payload
+// here rather than there. Every one of them names the same count twice over —
+// the packer's loop bound and the instance count handed to the HAL — so the
+// binding is where that stops: `uploadPass` reads the count off the bytes the
+// packer allocated.
+const RECT_INSTANCES: InstancePass<RegionRenderData> = {
+  ...RectPass,
+  pack: data =>
+    packRects(
+      {
+        startEnd: data.rectPositions,
+        y: data.rectYs,
+        height: data.rectHeights,
+        color: data.rectColors,
+        densityFade: data.rectDensityFade,
+      },
+      data.rectYs.length,
+    ),
+}
+
+// Its own buffer (rect geometry + strand), from the same rects.
+const CONTINUATION_INSTANCES: InstancePass<RegionRenderData> = {
+  ...ContinuationPass,
+  pack: data =>
+    packContinuations(
+      {
+        startEnd: data.rectPositions,
+        y: data.rectYs,
+        height: data.rectHeights,
+        color: data.rectColors,
+        strand: data.rectStrands,
+      },
+      data.rectYs.length,
+    ),
+}
+
+const LINE_INSTANCES: InstancePass<RegionRenderData> = {
+  ...LinePass,
+  pack: data =>
+    packLines(
+      {
+        startEnd: data.linePositions,
+        y: data.lineYs,
+        height: data.lineHeights,
+        direction: data.lineDirections,
+        color: data.lineColors,
+      },
+      data.lineYs.length,
+    ),
+}
+
+const ARROW_INSTANCES: InstancePass<RegionRenderData> = {
+  ...ArrowPass,
+  pack: data =>
+    packArrows(
+      {
+        x: data.arrowXs,
+        y: data.arrowYs,
+        height: data.arrowHeights,
+        widthBp: data.arrowWidthsBp,
+        direction: data.arrowDirections,
+        color: data.arrowColors,
+      },
+      data.arrowYs.length,
+    ),
+}
+
 export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
-  RectPass,
-  LinePass,
+  RECT_INSTANCES,
+  LINE_INSTANCES,
   // Chevron reads line's vertex buffer via drawPass(chevron, region,
-  // bufferPassId=line), so its attribute layout must match line's.
+  // bufferPassId=line), so its attribute layout must match line's — and so it
+  // is registered but never uploaded to.
   makeChevronPass(MAX_VISIBLE_CHEVRONS_PER_LINE),
-  ArrowPass,
-  // Has its own buffer (rect geometry + strand) uploaded alongside rects.
-  ContinuationPass,
+  ARROW_INSTANCES,
+  CONTINUATION_INSTANCES,
 ]
 
 export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
   RegionRenderData,
   RenderState
 > {
+  protected regionPasses = [
+    RECT_INSTANCES,
+    LINE_INSTANCES,
+    ARROW_INSTANCES,
+    CONTINUATION_INSTANCES,
+  ]
+
   constructor(hal: GpuHal) {
     super(hal, CANVAS_FEATURE_UNIFORM_BYTE_SIZE)
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: RegionRenderData) {
-    this.hal.deleteRegion(displayedRegionIndex)
-
-    const numRects = data.rectYs.length
-    if (numRects > 0) {
-      const buf = packRects(
-        {
-          startEnd: data.rectPositions,
-          y: data.rectYs,
-          height: data.rectHeights,
-          color: data.rectColors,
-          densityFade: data.rectDensityFade,
-        },
-        numRects,
-      )
-      this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, buf, numRects)
-
-      const contBuf = packContinuations(
-        {
-          startEnd: data.rectPositions,
-          y: data.rectYs,
-          height: data.rectHeights,
-          color: data.rectColors,
-          strand: data.rectStrands,
-        },
-        numRects,
-      )
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_CONTINUATION,
-        contBuf,
-        numRects,
-      )
-    }
-
-    const numLines = data.lineYs.length
-    if (numLines > 0) {
-      const buf = packLines(
-        {
-          startEnd: data.linePositions,
-          y: data.lineYs,
-          height: data.lineHeights,
-          direction: data.lineDirections,
-          color: data.lineColors,
-        },
-        numLines,
-      )
-      this.hal.uploadBuffer(displayedRegionIndex, PASS_LINE, buf, numLines)
-    }
-
-    const numArrows = data.arrowYs.length
-    if (numArrows > 0) {
-      const buf = packArrows(
-        {
-          x: data.arrowXs,
-          y: data.arrowYs,
-          height: data.arrowHeights,
-          widthBp: data.arrowWidthsBp,
-          direction: data.arrowDirections,
-          color: data.arrowColors,
-        },
-        numArrows,
-      )
-      this.hal.uploadBuffer(displayedRegionIndex, PASS_ARROW, buf, numArrows)
-    }
   }
 
   protected drawRegion(

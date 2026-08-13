@@ -35,9 +35,10 @@ export interface MultiRowRenderState {
 // built on the main thread so a row reorder / recolor re-encodes without an RPC
 // roundtrip. Diverges from `MultiRowRegionData` (the render side reads the raw
 // region data); mirrors MAF.
+// Right-sized by the encoder, which is why no count travels with it: the upload
+// takes the instance count off the bytes (`uploadPass`).
 export interface MultiRowUploadPayload {
   instanceBuffer: ArrayBuffer
-  instanceCount: number
 }
 
 export type MultiRowRenderingBackend = PerRegionRenderingBackend<

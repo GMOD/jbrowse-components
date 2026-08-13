@@ -5,6 +5,7 @@ import {
 } from './perRegionRenderingBackend.ts'
 
 import type { BlockClipResult } from './blockClipUtils.ts'
+import type { InstancePass } from './instancePass.ts'
 import type { FrameDimensions } from './perRegionRenderingBackend.ts'
 import type { RenderBlock } from './renderBlock.ts'
 
@@ -38,8 +39,7 @@ class TestGpuBackend extends GpuPerRegionRenderingBackend<
   FrameDimensions
 > {
   drawn: number[] = []
-
-  uploadRegion() {}
+  protected regionPasses = []
 
   protected drawRegion(
     b: RenderBlock,
@@ -172,5 +172,74 @@ describe('Canvas2DPerRegionRenderingBackend.renderBlocks paint reporting', () =>
         gpuBackend().renderBlocks(blocks, regions, STATE),
       )
     }
+  })
+})
+
+// `uploadRegion` is the base's too, driven by each backend's `regionPasses`.
+// What the six hand-written versions it replaced all had to get right — and
+// each spelled differently — is that a pass whose data went empty must not keep
+// drawing its last buffer. The base gets that from the HAL rather than from a
+// guard of its own: an empty pack IS the release, so a multi-pass backend
+// clears exactly the passes that emptied.
+describe('GpuPerRegionRenderingBackend.uploadRegion', () => {
+  const STRIDE = 8
+
+  function countingPass(
+    id: string,
+    instances: (d: Data) => number,
+  ): InstancePass<Data> {
+    return {
+      id,
+      wgslSource: '',
+      glslVertex: '',
+      glslFragment: '',
+      instanceStride: STRIDE,
+      verticesPerInstance: 6,
+      blend: true,
+      glAttributes: [],
+      pack: d => new ArrayBuffer(instances(d) * STRIDE),
+    }
+  }
+
+  class TwoPassBackend extends GpuPerRegionRenderingBackend<
+    Data,
+    FrameDimensions
+  > {
+    // `b` empties one step before `a` does, so the two can be told apart.
+    protected regionPasses = [
+      countingPass('a', d => d.value),
+      countingPass('b', d => (d.value > 1 ? 1 : 0)),
+    ]
+
+    protected drawRegion() {}
+  }
+
+  function counts(hal: MockHal) {
+    return [hal.getBufferCount(0, 'a'), hal.getBufferCount(0, 'b')]
+  }
+
+  function backend() {
+    const hal = new MockHal([])
+    return { hal, b: new TwoPassBackend(hal, 256) }
+  }
+
+  test('each pass gets as many instances as its packed bytes hold', () => {
+    const { hal, b } = backend()
+    b.uploadRegion(0, { value: 3 })
+    expect(counts(hal)).toEqual([3, 1])
+  })
+
+  test('a pass that empties releases its buffer; its siblings keep theirs', () => {
+    const { hal, b } = backend()
+    b.uploadRegion(0, { value: 3 })
+    b.uploadRegion(0, { value: 1 })
+    expect(counts(hal)).toEqual([1, 0])
+  })
+
+  test('a region that empties holds no buffers', () => {
+    const { hal, b } = backend()
+    b.uploadRegion(0, { value: 3 })
+    b.uploadRegion(0, { value: 0 })
+    expect(counts(hal)).toEqual([0, 0])
   })
 })

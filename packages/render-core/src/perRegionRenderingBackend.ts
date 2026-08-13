@@ -1,11 +1,13 @@
 import { clipBlock } from './blockClipUtils.ts'
 import { getDpr, prepareCanvas } from './canvas2dUtils.ts'
+import { uploadPass } from './instancePass.ts'
 import {
   Canvas2DRenderingBackendBase,
   GpuRenderingBackendBase,
 } from './renderingBackendBase.ts'
 
 import type { BlockClipResult } from './blockClipUtils.ts'
+import type { InstancePass } from './instancePass.ts'
 import type { RenderBlock } from './renderBlock.ts'
 
 /**
@@ -141,7 +143,33 @@ export abstract class GpuPerRegionRenderingBackend<
     this.hal.pruneRegions(activeRegions)
   }
 
-  abstract uploadRegion(displayedRegionIndex: number, data: UploadData): void
+  /**
+   * The passes this backend fills from one region's payload, each carrying its
+   * own packer. Usually the same array handed to `createRenderingBackend` —
+   * minus any pass that draws off another's buffer (wiggle's line passes,
+   * canvas's chevron), which is registered but never uploaded to.
+   */
+  protected abstract regionPasses: InstancePass<UploadData>[]
+
+  /**
+   * Pack and upload every pass for one region.
+   *
+   * Concrete for the same reason `renderBlocks` below is: the invariants are
+   * the base's to keep. Each subclass used to write this, and each wrote the
+   * empty case differently — `if (count === 0) deleteRegion() else upload()`
+   * five times, an unconditional leading `deleteRegion()` once. Both spellings
+   * exist because a pass whose data went empty must not keep drawing its last
+   * buffer, and `uploadPass` gets that from the HAL: an empty pack deletes that
+   * pass's buffer, so a multi-pass backend clears exactly the passes that went
+   * empty instead of dropping the whole region and rebuilding it.
+   *
+   * Override only for a payload no packer can take — none does today.
+   */
+  uploadRegion(displayedRegionIndex: number, data: UploadData): void {
+    for (const pass of this.regionPasses) {
+      uploadPass(this.hal, displayedRegionIndex, pass, data)
+    }
+  }
 
   renderBlocks(
     blocks: Block[],

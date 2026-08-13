@@ -1,6 +1,6 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as multiRowShader from './shaders/multiRow.generated.ts'
 import {
@@ -14,13 +14,20 @@ import type {
   MultiRowUploadPayload,
 } from './multiRowRenderingBackendTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const PASS_RECT = 'rect'
 
-export const MULTI_ROW_PASSES: PassDescriptor[] = [
-  slangPass({ id: PASS_RECT, mod: multiRowShader, topology: 'triangle-list' }),
+export const MULTI_ROW_PASSES = [
+  instancePass({
+    id: PASS_RECT,
+    mod: multiRowShader,
+    topology: 'triangle-list',
+    // Pre-encoded on the main thread by the per-region encode autorun
+    // (`buildMultiRowInstanceBuffer`, right-sized on return).
+    pack: (data: MultiRowUploadPayload) => data.instanceBuffer,
+  }),
 ]
 
 const U = UNIFORM_OFFSET_F32
@@ -32,24 +39,11 @@ export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
   MultiRowRegionData
 > {
   private uniformF32: Float32Array
+  protected regionPasses = MULTI_ROW_PASSES
 
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: MultiRowUploadPayload) {
-    const { instanceBuffer, instanceCount } = data
-    if (instanceCount === 0) {
-      this.hal.deleteRegion(displayedRegionIndex)
-    } else {
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_RECT,
-        instanceBuffer,
-        instanceCount,
-      )
-    }
   }
 
   protected drawRegion(

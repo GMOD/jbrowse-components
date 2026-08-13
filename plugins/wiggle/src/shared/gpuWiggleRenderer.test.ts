@@ -86,7 +86,7 @@ describe('GpuWiggleRenderer', () => {
     expect(f32[F_F32.rowIndex]).toBe(0)
   })
 
-  it('deletes region when uploading empty sources', () => {
+  it('releases the buffer when uploading empty sources', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
@@ -95,7 +95,6 @@ describe('GpuWiggleRenderer', () => {
 
     renderer.uploadRegion(0, [])
     expect(hal.getBufferCount(0, 'fill')).toBe(0)
-    expect(hal.callsOf('deleteRegion').length).toBe(1)
   })
 
   it('prunes inactive regions', () => {

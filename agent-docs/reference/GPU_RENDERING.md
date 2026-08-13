@@ -528,11 +528,14 @@ specialize one generic type and inherit from one of two abstract base classes in
 // Plugin specializes the interface (used in model + React code):
 export type XxxRenderingBackend = PerRegionRenderingBackend<XxxUploadData, XxxRenderState>
 
-// GPU renderer implements uploadRegion + renderBlocks:
+// Each pass carries the function that packs its instance buffer:
+export const XXX_PASSES = [instancePass({ id: PASS, mod: shader, pack: (d: XxxUploadData) => … })]
+
+// GPU renderer declares its passes and implements drawRegion:
 export class GpuXxxRenderer extends GpuPerRegionRenderingBackend<XxxUploadData, XxxRenderState> {
+  protected regionPasses = XXX_PASSES
   constructor(hal: GpuHal) { super(hal, XXX_UNIFORM_BYTE_SIZE) }
-  uploadRegion(idx, data) { … }
-  renderBlocks(blocks, regions, state) { … }
+  protected drawRegion(block, clip, region, state) { … }
 }
 
 // Canvas2D renderer implements renderBlocks only:
@@ -548,7 +551,14 @@ The bases own everything that's truly shared:
   since the source of truth is the `regions` map.
 - `GpuPerRegionRenderingBackend` owns the `hal` reference and a pre-allocated
   uniform scratch `ArrayBuffer`. Default `pruneRegions(active)` delegates to
-  `hal.pruneRegions(active)`; default `dispose()` calls `hal.dispose()`.
+  `hal.pruneRegions(active)`; default `dispose()` calls `hal.dispose()`. It also
+  owns `uploadRegion`, over the `regionPasses` the subclass declares — six
+  subclasses wrote that method, each restating an instance count the packed
+  buffer already stated, and each spelling the empty case differently (five
+  `if (count === 0) deleteRegion()`, one unconditional leading `deleteRegion()`).
+  A pass registered but never uploaded to — wiggle's line passes, canvas's
+  chevron, which draw off a sibling's buffer — is simply absent from
+  `regionPasses`.
 
 Two invariants keep the renderer implementations small and uniform:
 

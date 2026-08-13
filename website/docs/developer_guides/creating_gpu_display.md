@@ -247,35 +247,54 @@ confined to that one line; in TypeScript outside uniform writes, use plain
 ## Step 3: GPU renderer
 
 The base class `GpuPerRegionRenderingBackend` owns the per-frame scaffold:
-`resize`, `beginFrame`/`endFrame`, and the per-block scissor/viewport clip. You
-implement only two methods: `uploadRegion` (pack a region's features into a HAL
-buffer) and `drawRegion` (write uniforms and issue the draw pass for one
-already-clipped block).
+`resize`, `beginFrame`/`endFrame`, and the per-block scissor/viewport clip. It
+also owns the upload, driven by the `regionPasses` you declare — each pass
+carries the function that packs its instance buffer, so there is one place a
+pass is named and no instance count to keep in agreement with the bytes.
+
+You implement one method: `drawRegion`, which writes uniforms and issues the
+draw pass for one already-clipped block.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/GpuScoreRenderer.ts -->
 
 ```ts
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/score.generated.ts'
 
 import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
 import type { ScoreRenderState } from './scoreTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const PASS = 'score'
 const U = shader.UNIFORM_OFFSET_F32
 const UU = shader.UNIFORM_OFFSET_U32
 
-// Exported so the factory can hand the pass list to the HAL. Six vertices per
-// instance = two triangles, so the boxes need a triangle-list topology.
-export const SCORE_PASSES: PassDescriptor[] = [
-  slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
+// A pass is its shader plus the function that fills its instance buffer. Six
+// vertices per instance = two triangles, so the boxes need a triangle-list
+// topology. Exported so the factory can hand the pass list to the HAL.
+//
+// You write no upload: the base class packs every pass in `regionPasses` and
+// hands the bytes to the HAL, taking the instance count from the buffer's own
+// length. Nothing to keep in agreement, and an empty pack releases the buffer.
+export const SCORE_PASSES = [
+  instancePass({
+    id: PASS,
+    mod: shader,
+    topology: 'triangle-list',
+    // the generated packInstances interleaves the parallel arrays into the
+    // GL_ATTRIBUTES layout, no manual DataView offsets
+    pack: (data: ScoreRegionData) =>
+      shader.packInstances(
+        { startBp: data.starts, endBp: data.ends, score: data.scores },
+        data.numFeatures,
+      ),
+  }),
 ]
 
 export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
@@ -284,26 +303,13 @@ export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<
 > {
   private uniformF32: Float32Array
   private uniformU32: Uint32Array
+  protected regionPasses = SCORE_PASSES
 
   constructor(hal: GpuHal) {
     // the base allocates the reusable this.uniformData scratch buffer
     super(hal, shader.UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
     this.uniformU32 = new Uint32Array(this.uniformData)
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: ScoreRegionData) {
-    if (data.numFeatures === 0) {
-      this.hal.deleteRegion(displayedRegionIndex)
-      return
-    }
-    // the generated packInstances interleaves the parallel arrays into the
-    // GL_ATTRIBUTES layout, no manual DataView offsets
-    const buf = shader.packInstances(
-      { startBp: data.starts, endBp: data.ends, score: data.scores },
-      data.numFeatures,
-    )
-    this.hal.uploadBuffer(displayedRegionIndex, PASS, buf, data.numFeatures)
   }
 
   protected drawRegion(

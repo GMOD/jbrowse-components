@@ -20,8 +20,16 @@ import type {
  * `forEachDrawnFeature`, which decides both which features appear here and what
  * color they carry.
  *
- * The buffer is sized for every feature but only `count` of them are written,
- * so a caller uploads `count` instances and ignores the tail.
+ * Sized for every feature, then right-sized to what was written — a hidden
+ * legend category or a filtered row means fewer instances than features. The
+ * returned buffer is therefore exactly `count` instances, which is what lets the
+ * upload read the count off its bytes.
+ *
+ * A right-sized COPY rather than a subarray view, for maf's reason
+ * (`InstanceWriter.finish`): a view would pin the whole over-allocation, and
+ * this payload is retained per region for as long as the region is loaded. One
+ * copy at encode is cheap next to holding the dead tail for the session — and
+ * next to uploading it, which is what the full buffer did.
  */
 export function buildMultiRowInstanceBuffer(
   data: MultiRowRegionData,
@@ -31,8 +39,8 @@ export function buildMultiRowInstanceBuffer(
   >,
 ): { buffer: ArrayBuffer; count: number } {
   const { featureStarts, featureEnds } = data
-  const buffer = new ArrayBuffer(featureStarts.length * INSTANCE_STRIDE_BYTES)
-  const u32 = new Uint32Array(buffer)
+  const capacity = new ArrayBuffer(featureStarts.length * INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(capacity)
   let count = 0
   forEachDrawnFeature(
     data,
@@ -46,5 +54,9 @@ export function buildMultiRowInstanceBuffer(
       count++
     },
   )
-  return { buffer, count }
+  const used = count * INSTANCE_STRIDE_BYTES
+  return {
+    buffer: used === capacity.byteLength ? capacity : capacity.slice(0, used),
+    count,
+  }
 }

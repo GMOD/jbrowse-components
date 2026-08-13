@@ -1056,11 +1056,11 @@ export default function stateModelFactory(
             // as uniforms. Reading the wider getter here made a track-height
             // drag or a window resize re-encode every region, every frame, to
             // produce the same bytes.
-            const { buffer, count } = buildMultiRowInstanceBuffer(
+            const { buffer } = buildMultiRowInstanceBuffer(
               regionData,
               self.featurePaintInputs,
             )
-            return { instanceBuffer: buffer, instanceCount: count }
+            return { instanceBuffer: buffer }
           },
           b =>
             b.renderBlocks(

@@ -1,6 +1,6 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as variantShader from './shaders/variant.generated.ts'
 import { interleaveVariantInstances } from './variantShaders.ts'
@@ -11,17 +11,18 @@ import type {
   VariantUploadData,
 } from './variantRenderingBackendTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 
 const PASS_MAIN = 'main'
 const UNIFORMS_SIZE_BYTES = variantShader.UNIFORMS_SIZE_BYTES
 const U = variantShader.UNIFORM_OFFSET_F32
 
-export const VARIANT_PASSES: PassDescriptor[] = [
-  slangPass({
+export const VARIANT_PASSES = [
+  instancePass({
     id: PASS_MAIN,
     mod: variantShader,
     blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+    pack: interleaveVariantInstances,
   }),
 ]
 
@@ -32,19 +33,11 @@ export class GpuVariantRenderer extends GpuPerRegionRenderingBackend<
   VariantRenderState
 > {
   private uniformF32: Float32Array
+  protected regionPasses = VARIANT_PASSES
 
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: VariantUploadData) {
-    if (data.numCells === 0) {
-      this.hal.deleteRegion(displayedRegionIndex)
-      return
-    }
-    const buf = interleaveVariantInstances(data)
-    this.hal.uploadBuffer(displayedRegionIndex, PASS_MAIN, buf, data.numCells)
   }
 
   protected drawRegion(

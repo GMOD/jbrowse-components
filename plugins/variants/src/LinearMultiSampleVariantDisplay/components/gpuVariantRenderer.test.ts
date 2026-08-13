@@ -80,7 +80,7 @@ describe('GpuVariantRenderer', () => {
     expect(u32[off + 4]).toBe(0x8000ff00)
   })
 
-  it('deletes region on empty upload', () => {
+  it('releases the buffer on empty upload', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
 
@@ -88,7 +88,6 @@ describe('GpuVariantRenderer', () => {
     renderer.uploadRegion(0, { ...makeUploadData(), numCells: 0 })
 
     expect(hal.getBufferCount(0, 'main')).toBe(0)
-    expect(hal.callsOf('deleteRegion').length).toBe(1)
   })
 
   it('renders with correct frame lifecycle and uniforms', () => {

@@ -15,6 +15,11 @@ import type { SlangPassOpts } from './slangPass.ts'
  * on a wide payload accepts a packer of a supertype by contravariance, so
  * declaring only the fields a pass actually reads costs nothing at the point of
  * use.
+ *
+ * A descriptor built elsewhere — one of the deliberately payload-agnostic glyph
+ * shapes, say — becomes one by spreading: `{ ...RectPass, pack: … }`. That is
+ * all `instancePass` does over `slangPass`, and it exists only so the common
+ * case declares the packer inside the same braces as the shader.
  */
 export interface InstancePass<TData> extends PassDescriptor {
   pack: (data: TData) => ArrayBuffer | ArrayBufferView

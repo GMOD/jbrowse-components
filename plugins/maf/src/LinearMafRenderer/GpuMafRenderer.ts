@@ -1,6 +1,6 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
+import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as mafShader from './shaders/maf.generated.ts'
 import {
@@ -15,12 +15,20 @@ import type {
   MafUploadPayload,
 } from './mafRenderingBackendTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal } from '@jbrowse/render-core/hal'
 
 const PASS_RECT = 'rect'
 
-export const MAF_PASSES: PassDescriptor[] = [
-  slangPass({ id: PASS_RECT, mod: mafShader, topology: 'triangle-list' }),
+export const MAF_PASSES = [
+  instancePass({
+    id: PASS_RECT,
+    mod: mafShader,
+    topology: 'triangle-list',
+    // Pre-encoded on the main thread by the per-region encode autorun
+    // (`InstanceWriter`, right-sized on finish), so the pack is the handoff.
+    // The shader unpacks absolute genomic coords + rowIndex + color.
+    pack: (data: MafUploadPayload) => data.instanceBuffer,
+  }),
 ]
 
 const U = UNIFORM_OFFSET_F32
@@ -32,26 +40,11 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
   MafRegionData
 > {
   private uniformF32: Float32Array
+  protected regionPasses = MAF_PASSES
 
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
     this.uniformF32 = new Float32Array(this.uniformData)
-  }
-
-  uploadRegion(displayedRegionIndex: number, data: MafUploadPayload) {
-    const { instanceBuffer, instanceCount } = data
-    if (instanceCount === 0) {
-      this.hal.deleteRegion(displayedRegionIndex)
-    } else {
-      // Buffer is pre-encoded on the main thread by the per-region encode autorun.
-      // The shader unpacks absolute genomic coords + rowIndex + color.
-      this.hal.uploadBuffer(
-        displayedRegionIndex,
-        PASS_RECT,
-        instanceBuffer,
-        instanceCount,
-      )
-    }
   }
 
   protected drawRegion(
