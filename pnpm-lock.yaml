@@ -723,8 +723,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^8.8.1
-        version: 8.8.1
+        specifier: ^8.9.0
+        version: 8.9.0
       '@gmod/bgzf-filehandle':
         specifier: ^6.6.0
         version: 6.6.0
@@ -4325,8 +4325,8 @@ packages:
   '@fontsource/roboto@5.3.0':
     resolution: {integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==}
 
-  '@gmod/bam@8.8.1':
-    resolution: {integrity: sha512-69BNTrmpufI0wvpxaLd535Ia3aBvicwASUrjPj0yvv6hRlaLZOyHGvoa4C5LvYaFaTTliat/v6GWWMv5JGyeoQ==}
+  '@gmod/bam@8.9.0':
+    resolution: {integrity: sha512-rH2sz6eVJWS+NlUSe2DQFzNZNlU1iC/+CazBXKzFYbNtUJk6zqdetMQupTJ5RREyjNwvA47rUCzafCruq/Jjvg==}
 
   '@gmod/bbi@11.1.0':
     resolution: {integrity: sha512-DAlT7KF6DWRCWaCb0LTkmtRob3JdNPlWL7geiCOWLBKTZsX0VPfKbsG4xjYhG1mhEckjmIRsO+8etRC2sfZ6HQ==}
@@ -12216,7 +12216,7 @@ snapshots:
 
   '@fontsource/roboto@5.3.0': {}
 
-  '@gmod/bam@8.8.1':
+  '@gmod/bam@8.9.0':
     dependencies:
       '@gmod/bgzf-filehandle': 6.6.0
       '@gmod/shared-read-cache': 1.5.1
