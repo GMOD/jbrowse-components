@@ -3192,6 +3192,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "drawProperPairArcs",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "minInterchromSupport",
           "type": "(JexlString | number)"
         },
@@ -3491,6 +3495,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "drawInter",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "drawProperPairArcs",
           "type": "(JexlString | boolean)"
         },
         {

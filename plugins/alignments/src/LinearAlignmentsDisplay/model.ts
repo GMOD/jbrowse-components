@@ -458,6 +458,15 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * Whether ordinary concordant pairs get an arc. Same definition of
+         * concordant as `drawProperPairs`, which hides the reads themselves —
+         * see `isConcordantPairRead`.
+         */
+        get drawProperPairArcs(): boolean {
+          return getConf(self, 'drawProperPairArcs')
+        },
+        /**
+         * #getter
          * Reads a translocation must gather, within one fragment length on both
          * sides, before its connector ticks are drawn. See
          * `clusteredInterchromSupport` — the count is over a window because a
@@ -1830,6 +1839,7 @@ export default function stateModelFactory(
             cloud: self.readConnections === 'cloud',
             drawInter: self.drawInter,
             drawLongRange: self.drawLongRange,
+            drawProperPairArcs: self.drawProperPairArcs,
             minInterchromSupport: self.minInterchromSupport,
             // SA-tag / RNEXT refNames use the BAM's own naming, so a same-chr
             // split junction to an SA segment would otherwise be misclassified
@@ -3381,6 +3391,13 @@ export default function stateModelFactory(
            */
           setDrawInter(draw: boolean) {
             setConf(self, 'drawInter', draw)
+          },
+
+          /**
+           * #action
+           */
+          setDrawProperPairArcs(draw: boolean) {
+            setConf(self, 'drawProperPairArcs', draw)
           },
 
           /**

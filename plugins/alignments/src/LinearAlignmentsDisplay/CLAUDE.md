@@ -243,6 +243,26 @@ in paint order and both scans running ascending. It used to rank on `support`,
 which was the same thing only while support _was_ the sort key — so a fixture
 built out of feed order now tests a state production cannot reach.
 
+**"Concordant" has one definition and two settings spend it.**
+`isConcordantPairRead` (`shared/buildBaseFeatureData.ts`) is the aligner's
+verdict — flagged proper, not supplementary, mates facing — and it is called by
+both the worker's read filter behind "Show proper pairs" (`isProperPairChain`)
+and the arc filter behind "Show concordant-pair arcs" (`resolveArcs`). One hides
+the reads, the other their arcs; `concordantPairParity.test.ts` holds the read
+filter's real answer against the predicate so the two cannot drift.
+
+The arc filter adds a second condition the read filter has no use for: the arc
+must also be painting the **baseline colour slot** (`arcPaintRank`). Without it
+the setting hides arcs the display is drawing as a category — a proper-flagged
+pair whose |TLEN| is below the band paints short-insert, and 42 of 48 pink arcs
+disappeared in testing. Nothing coloured may be hidden as routine, and keying on
+`arcPaintRank` makes "hidden" and "grey" the same set by construction under
+whatever `colorByType` is selected.
+
+Not to be confused with the read cloud's `isConcordantFRPair`, which asks
+whether |TLEN| sits in the modal band rather than what the aligner concluded.
+Both readings are deliberate; each function's comment names the other.
+
 **A support FLOOR is offered for the ticks and deliberately not for the arcs.**
 `minInterchromSupport` counts reads over a window of one fragment length on
 _both_ sides (`clusteredInterchromSupport`), never at a coordinate: mates

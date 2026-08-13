@@ -47,6 +47,8 @@ function arcCategory(
         p2Strand: -1,
         pairOrientationNum,
         tlen,
+        // carried for the concordant-arc filter, which colouring never consults
+        flags: 0,
       },
       colorByType,
       hasPaired: true,

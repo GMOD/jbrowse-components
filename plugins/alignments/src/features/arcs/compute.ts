@@ -12,6 +12,7 @@ import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 // Generated constants, imported from the generated modules with no re-export
 // hop through palettes.ts (SHADER_JS_CODEGEN.md).
 import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
+import { isConcordantPairRead } from '../../shared/buildBaseFeatureData.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import {
   clipAt,
@@ -72,6 +73,11 @@ interface ArcSettings {
   cloud?: boolean
   drawInter: boolean
   drawLongRange: boolean
+  // Whether ordinary concordant pairs get an arc. Shares its definition of
+  // "concordant" with the read filter behind "Show proper pairs"
+  // (`isConcordantPairRead`). Defaults true — every arc drawn, as before the
+  // setting existed.
+  drawProperPairArcs?: boolean
   // Reads a translocation breakpoint must gather before its ticks are drawn —
   // see `clusteredInterchromSupport`. 1 (or 0) draws every one, which is what
   // this did before the setting existed.
@@ -360,6 +366,12 @@ interface PairedPendingArc extends PendingArcEndpoints {
   isSplit: false
   pairOrientationNum: number
   tlen: number
+  // SAM flags of the record the pair fields were sourced from, carried for
+  // `isConcordantPairRead` alone — the aligner's own verdict on the pair, which
+  // is what "Show concordant-pair arcs" hides. On the split arm there is nothing
+  // to carry: a junction between two segments of one read has no pair to call
+  // proper, which is the same reason `tlen` and the orientation live here.
+  flags: number
 }
 
 type PendingArc = SplitPendingArc | PairedPendingArc
@@ -761,6 +773,11 @@ function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
     isSplit: false,
     pairOrientationNum: src.data.readPairOrientations[src.readIdx]!,
     tlen: src.data.readInsertSizes[src.readIdx]!,
+    // Off the SAME entry the orientation and tlen come from — `pairFieldEntry`
+    // picks a primary, and the proper-pair flag is a pair field like the other
+    // two. Taking it off `e1` instead would read a supplementary's flags where
+    // the other two read a primary's.
+    flags: flagsOf(src),
   }
 }
 
@@ -810,6 +827,7 @@ function offScreenMateArcs(
       p2Strand: flagsOf(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1,
       pairOrientationNum: data.readPairOrientations[readIdx]!,
       tlen: data.readInsertSizes[readIdx]!,
+      flags: flagsOf(entry),
       isSplit: false,
     },
   ]
@@ -1057,6 +1075,7 @@ function resolveArcs(
     colorByType,
     cloud = false,
     drawInter,
+    drawProperPairArcs = true,
     minInterchromSupport = 1,
   } = settings
   const arcs: ComputedArc[] = []
@@ -1150,6 +1169,13 @@ function resolveArcs(
 
     // Read cloud suppresses the modal-insert FR pairs so SV signals stand out.
     // Split junctions have no template length, so they never qualify.
+    //
+    // NOT the same test as the one above, deliberately: this asks whether |TLEN|
+    // sits in the modal band, that one asks what the aligner concluded. The
+    // cloud exists to surface anything anomalous in SIZE, so it must catch a
+    // pair the flags call proper; `isConcordantPairRead`'s comment has the full
+    // split. Both can apply — the cloud's is unconditional in cloud mode and the
+    // setting above still filters on top of it.
     if (
       cloud &&
       !arc.isSplit &&
@@ -1172,6 +1198,42 @@ function resolveArcs(
       hasPaired,
       stats,
     })
+    // The user's own suppression of the ordinary case, and the reason it is a
+    // setting where the cloud's is not: in ARC mode the concordant domes are the
+    // context a discordant pair is read against, so on shallow data they earn
+    // their ink. At depth they stop being context and become the picture — 9138
+    // of 9204 arcs at 1:2,000,000 on HG002 300x, all painting the baseline slot,
+    // with the 66 that mean something riding on top of them
+    // (agent-docs/reference/DEEP_COVERAGE.md).
+    //
+    // TWO conditions, and the second is what keeps the setting honest.
+    //
+    // `isConcordantPairRead` is the READ filter's rule, shared verbatim, so
+    // "Show proper pairs" and this hide the same pairs — one the reads, the
+    // other their arcs. But that rule reads the aligner's verdict, and the arc's
+    // COLOUR can disagree with it: a pair flagged proper whose |TLEN| falls
+    // below the insert band paints short-insert. Hiding it would take a pink arc
+    // off the screen under a setting about ordinary pairs, which reads as a bug
+    // — measured, it was 42 of the 48 short-insert arcs in that window.
+    //
+    // So it must ALSO be painting the baseline slot: nothing the display is
+    // currently drawing as a category can be hidden as routine, whatever the
+    // flags say. `arcPaintRank` is the same classifier the paint order uses, so
+    // "hidden" and "grey" are the same set by construction, and both follow
+    // `colorByType` — under `orientation` a short insert IS routine, and the
+    // setting agrees without being told.
+    //
+    // A split junction has no pair to call proper and is never suppressed: it is
+    // evidence whatever the reads around it are flagged.
+    if (
+      !drawProperPairArcs &&
+      !arc.isSplit &&
+      arcPaintRank(colorType) === 0 &&
+      isConcordantPairRead(arc.flags, arc.pairOrientationNum)
+    ) {
+      continue
+    }
+
     const { shapeType, yBp, spanBp } = computeArcShape({ cloud, arc, absrad })
 
     const key = arcKey({ p1Ref, p1Bp, p2Ref, p2Bp, colorType, shapeType, yBp })

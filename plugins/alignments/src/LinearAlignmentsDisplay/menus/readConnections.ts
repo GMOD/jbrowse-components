@@ -23,6 +23,8 @@ interface ReadConnectionsModel {
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
   setDrawInter: (draw: boolean) => void
+  drawProperPairArcs: boolean
+  setDrawProperPairArcs: (draw: boolean) => void
   minInterchromSupport: number
   setMinInterchromSupport: (support: number) => void
   showBezierConnections: boolean
@@ -101,6 +103,17 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           },
           pin: model.readConnectionsDownDisplayTypeDefault,
         }),
+        checkboxItem(
+          'Show concordant-pair arcs',
+          model.drawProperPairArcs,
+          () => {
+            model.setDrawProperPairArcs(!model.drawProperPairArcs)
+          },
+          {
+            helpText:
+              'Uncheck to draw only the arcs that carry a category — abnormal insert size or orientation, and split junctions — leaving out the ordinary pairs. "Concordant" means exactly what it means for "Show proper pairs" under Show...: the aligner flagged the pair proper (SAM 0x2), it is not a chimeric segment, and its mates face each other. That setting hides the reads; this one hides their arcs, so you can keep the pileup whole and still read the band. On deep coverage it is the difference between a readable band and a solid mass — at 300x roughly 99 arcs in 100 are the ordinary case.',
+          },
+        ),
         checkboxItem(
           'Show off-screen mate connections',
           model.drawLongRange,

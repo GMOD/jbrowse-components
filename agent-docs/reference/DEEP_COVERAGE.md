@@ -137,6 +137,26 @@ order is load-bearing rather than a nicety: 66 arcs carrying a meaning against
 (0.18%) where the un-floored band would have painted ~1%, so the floor is doing
 on live data what the offline sweep predicted.
 
+That ratio is also what `drawProperPairArcs` ("Show concordant-pair arcs") is
+for. Unticked, the same window draws **68 arcs instead of 9204** — a 99.3% cut
+with the categorized set untouched (17 / 48 / 1, identical to the counts above):
+
+```
+                         arcs   baseline   long   short   pairRR
+show concordant  on       9204       9138     17      48        1
+show concordant  off        68          2     17      48        1
+```
+
+The two-condition rule is what makes the right column identical. It hides an arc
+only when the aligner called the pair proper (`isConcordantPairRead`, shared
+verbatim with the "Show proper pairs" READ filter) **and** the arc is painting
+the baseline slot. The first condition alone is not enough and the measurement
+is why: a pair can be flagged proper and still have a |TLEN| below the band, so
+it paints short-insert — 42 of those 48 pink arcs vanished under the flag test
+on its own, which would read as a bug. Requiring the baseline colour as well
+means nothing the display is currently drawing as a category can be hidden as
+routine, and it follows `colorByType` for free.
+
 The 431-vs-750 row count is the one that corrected a mistake. Reproduce any of
 it by pointing a local jbrowse-web at a `ChromSizesAdapter` assembly named with
 plain `1`/`2`/... contigs (the BAM is hs37d5, so no alias file is needed) and

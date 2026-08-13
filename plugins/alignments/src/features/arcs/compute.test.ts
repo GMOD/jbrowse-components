@@ -2,12 +2,14 @@ import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
+  SAM_FLAG_PROPER_PAIR,
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
 import { basePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
@@ -306,6 +308,106 @@ describe('computeArcsFromPileupData', () => {
     test('support 1 keeps every connection, as before the setting existed', () => {
       const data = scattered([2000], [5000], { upper: 600, lower: 100 })
       expect(run(data, 1).lines).toHaveLength(2)
+    })
+  })
+
+  // At depth the concordant domes stop being context and become the picture —
+  // 9138 of 9204 arcs on HG002 300x. The setting drops them, and what it must
+  // NOT drop is anything carrying evidence, whatever the flags say.
+  describe('drawProperPairArcs hides the ordinary pairs and nothing else', () => {
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
+    ]
+    // one pair per entry, each with its own flags/orientation
+    function pairs(entries: { flags: number; orientation: number }[]) {
+      return makePileupData({
+        readPositions: new Uint32Array(
+          entries.flatMap((_, i) => [1000 + i * 10, 1100 + i * 10]),
+        ),
+        readFlags: new Uint16Array(entries.map(e => e.flags)),
+        readStrands: new Int8Array(entries.length).fill(1),
+        readInsertSizes: new Float32Array(entries.length).fill(500),
+        readPairOrientations: new Uint8Array(entries.map(e => e.orientation)),
+        ...namesToBlock(entries.map((_, i) => `read${i}`)),
+        ...nextRefsToTable(entries.map(() => 'chr1')),
+        readNextPositions: new Uint32Array(entries.map(() => 3000)),
+      })
+    }
+    const run = (data: PileupDataResult, drawProperPairArcs: boolean) =>
+      computeArcsFromPileupData(new Map([[0, data]]), regions, {
+        colorByType: 'insertSizeAndOrientation',
+        drawInter: false,
+        drawLongRange: true,
+        drawProperPairArcs,
+      })
+
+    const PROPER = SAM_FLAG_PAIRED | SAM_FLAG_PROPER_PAIR
+
+    test('an ordinary concordant pair goes, and comes back when re-ticked', () => {
+      const data = pairs([{ flags: PROPER, orientation: 1 }])
+      expect(run(data, true).arcs).toHaveLength(1)
+      expect(run(data, false).arcs).toHaveLength(0)
+    })
+
+    test('an abnormal orientation stays even when flagged proper', () => {
+      // RR: the aligner set 0x2, the orientation says otherwise, and the
+      // orientation is the evidence
+      const data = pairs([{ flags: PROPER, orientation: 3 }])
+      expect(run(data, false).arcs).toHaveLength(1)
+    })
+
+    test('an unflagged pair stays', () => {
+      const data = pairs([{ flags: SAM_FLAG_PAIRED, orientation: 1 }])
+      expect(run(data, false).arcs).toHaveLength(1)
+    })
+
+    // The second condition, and the one that keeps the setting honest: the
+    // aligner's verdict and the arc's colour can disagree, and the colour wins.
+    // A pair flagged proper whose |TLEN| falls below the band paints
+    // short-insert, and taking a pink arc off the screen under a setting about
+    // ordinary pairs reads as a bug — it was 42 of the 48 short-insert arcs in
+    // the measured window before this condition existed.
+    test('a categorized arc stays even when the flags call it proper', () => {
+      const data = makePileupData({
+        readPositions: new Uint32Array([1000, 1100, 1200, 1300]),
+        readFlags: new Uint16Array(2).fill(PROPER),
+        readStrands: new Int8Array([1, 1]),
+        // one far below the band, one inside it
+        readInsertSizes: new Float32Array([20, 500]),
+        readPairOrientations: new Uint8Array([1, 1]),
+        ...namesToBlock(['short', 'normal']),
+        ...nextRefsToTable(['chr1', 'chr1']),
+        readNextPositions: new Uint32Array([3000, 3000]),
+        insertSizeStats: { upper: 900, lower: 100 },
+      })
+      // both are flagged proper and FR; only the one the display paints as
+      // routine is hidden
+      expect(run(data, true).arcs).toHaveLength(2)
+      const kept = run(data, false).arcs
+      expect(kept).toHaveLength(1)
+      expect(kept[0]!.colorType).toBe(ARC_COLOR_SHORT_INSERT)
+    })
+
+    // BWA-MEM propagates 0x2 onto supplementary records because the flag
+    // describes the pair, not the segment — so a chimeric read carrying
+    // split-read evidence must not be filtered away as routine. Same rule, same
+    // reason, as the read filter's.
+    test('a supplementary segment is never ordinary', () => {
+      const data = pairs([
+        { flags: PROPER | SAM_FLAG_SUPPLEMENTARY, orientation: 1 },
+      ])
+      expect(run(data, false).arcs).toHaveLength(1)
+    })
+
+    test('the ordinary ones go while the evidence stays, in one feed', () => {
+      const data = pairs([
+        { flags: PROPER, orientation: 1 },
+        { flags: PROPER, orientation: 1 },
+        { flags: PROPER, orientation: 4 },
+        { flags: SAM_FLAG_PAIRED, orientation: 1 },
+      ])
+      expect(run(data, true).arcs).toHaveLength(4)
+      expect(run(data, false).arcs).toHaveLength(2)
     })
   })
 

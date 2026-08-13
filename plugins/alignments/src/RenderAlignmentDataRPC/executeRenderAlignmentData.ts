@@ -1,10 +1,5 @@
 import {
-  isAbnormalPairDirection,
-  pairDirection,
-} from '@jbrowse/alignments-core'
-import {
   SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_PROPER_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import {
@@ -24,6 +19,8 @@ import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays
 import {
   buildBaseFeatureData,
   buildChainFeatureData,
+  isConcordantPairRead,
+  pairOrientationToNum,
 } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import {
@@ -70,32 +67,22 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
-// A pair is only "proper" when its mates have the normal FR orientation
-// (F1R2 / F2R1). Discordant orientations (RL, RR, LL) signal structural
-// variants and stay visible even when proper pairs are hidden, regardless of
-// whether the aligner set the 0x2 flag.
-function isConcordantOrientation(f: Feature) {
-  const orientation = f.get('pair_orientation') as string | undefined
-  // LR (F1R2/F2R1) — or unknown — is concordant; everything else is aberrant.
-  // Defers to the shared FR classifier so the LR set lives in one place.
-  return !isAbnormalPairDirection(pairDirection(orientation))
-}
-
-// A chain counts as a proper pair only when every read carries the proper-pair
-// flag and has a concordant orientation. A chain containing any supplementary
-// (chimeric) segment is split-read SV evidence — aligners like BWA-MEM
-// propagate the 0x2 proper-pair flag onto supplementary records since 0x2
-// describes the pair, not the segment — so it must never be filtered as a plain
-// proper pair (mirrors PRIMARY_PROPER_PAIR_MASK in computePairedInsertSizeStats).
+// A chain counts as a proper pair only when EVERY read in it is the ordinary
+// concordant case. The per-read rule is `isConcordantPairRead` — shared with the
+// arc filter behind "Show concordant-pair arcs", so hiding the boring pairs and
+// hiding their arcs cannot come to mean different things. It carries the reasons
+// (why unknown orientation counts, why a supplementary never does).
+//
+// What is local here is only the quantifier and the conversion: this side holds
+// `Feature`s, so the orientation string goes through `pairOrientationToNum` to
+// reach the numeric form both callers share.
 function isProperPairChain(chain: Feature[]) {
-  return chain.every((f: Feature) => {
-    const flags = getFlags(f)
-    return (
-      !!(flags & SAM_FLAG_PROPER_PAIR) &&
-      !(flags & SAM_FLAG_SUPPLEMENTARY) &&
-      isConcordantOrientation(f)
-    )
-  })
+  return chain.every((f: Feature) =>
+    isConcordantPairRead(
+      getFlags(f),
+      pairOrientationToNum(f.get('pair_orientation') as string | undefined),
+    ),
+  )
 }
 
 // Guard against the same physical record being emitted twice — a dup would

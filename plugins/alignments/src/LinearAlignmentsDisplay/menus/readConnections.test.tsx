@@ -52,6 +52,10 @@ function makeModel() {
     setDebugArcGeometry(v: boolean) {
       this.debugArcGeometry = v
     },
+    drawProperPairArcs: true,
+    setDrawProperPairArcs(v: boolean) {
+      this.drawProperPairArcs = v
+    },
     minInterchromSupport: DEFAULT_MIN_INTERCHROM_SUPPORT,
     setMinInterchromSupport(v: number) {
       this.minInterchromSupport = v

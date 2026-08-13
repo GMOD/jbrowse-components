@@ -481,6 +481,19 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      drawProperPairArcs: {
+        type: 'boolean',
+        // "Concordant" here is `isConcordantPairRead`, the same rule the
+        // `drawProperPairs` READ filter uses — that setting hides the reads,
+        // this one hides their arcs. Default true, so the band is unchanged
+        // until asked.
+        defaultValue: true,
+        description:
+          'Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass',
+      },
+      /**
+       * #slot
+       */
       minInterchromSupport: {
         type: 'number',
         // Reads are counted over a window of one fragment length on BOTH sides,
