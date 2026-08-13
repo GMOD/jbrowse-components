@@ -336,7 +336,12 @@ as the arms either side of them. Realigned against the derivative, reads the
 reference tore into pieces run straight through: none clips at a junction, and
 depth holds flat across them.
 
-<Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the same molecules against hg38, each row stopping at a junction with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
+Each hg38 window runs past the segment the allele takes, so the bare reference
+either side of the reads is what this allele leaves behind. That lane draws
+split alignments only, and its coverage band counts the same subset: the reads
+carrying a junction, stepping down as each arm runs out.
+
+<Figure caption="The stitching at base scale: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. Above, the same molecules against hg38, split alignments only, each row stopping at a junction with a connector to the piece it continues on; below, the allele's segments over the reads realigned to them at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
 
 Following one read across the two alignments is what a breakpoint split view
 does: soft clipping is shown on both sides, and a curve joins each molecule's

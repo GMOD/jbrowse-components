@@ -1210,8 +1210,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // have somewhere to be drawn (140 of rows, and the 13 the run then
     // reported clipped below the fold), then -40 for that lane's coverage band
     // going and +180 for the der3 lane matching its pitch and taking a band of
-    // its own
-    viewportHeight: 1194,
+    // its own, then +45 for that lane's band coming back over a doubled window
+    viewportHeight: 1239,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1222,7 +1222,23 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           views: [
             {
               assembly: 'hg38',
-              loc: 'chr3:25358900-25359700 chr10:58717380-58717740 chr12:72273040-72273360',
+              // TWICE THE WINDOW ON EACH LOCUS, keeping the centres. At 800 /
+              // 360 / 320 bp every panel was filled edge to edge by the reads
+              // that built the allele, so the pileup ended where the PANEL
+              // ended and a reader could not tell a tear from a crop. The chr3
+              // window is the one that pays: its junction is at 25,359,568 and
+              // the old right edge was 132 bp past it, which reads as margin;
+              // 532 bp of reference with no read on it reads as the piece this
+              // allele abandons. The other two widen with it because the three
+              // share one panel width in proportion to their bp, so leaving
+              // them would have squeezed both inserts into slivers.
+              //
+              // Not wider than 2x: the chr3 window holds BOTH the outgoing
+              // junction and the return of the inverted arm at 25,359,111, and
+              // those 457 bp are the structure the bezier connectors are drawn
+              // over. At 2x they are still better than a quarter of the panel;
+              // past that the two junctions close up on each other.
+              loc: 'chr3:25358500-25360100 chr10:58717200-58717920 chr12:72272880-72273520',
               // the genes each junction lands in, named. All three windows are
               // deep inside an intron, so the glyphs are lines rather than exon
               // stacks, but they answer which gene each piece was taken from
@@ -1302,15 +1318,27 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // twenty draw, and nothing else in the frame says what a
                   // curve means.
                   showLegend: true,
-                  // NO COVERAGE BAND, and not for the reason the der3 lane's
-                  // was dropped -- this one was WRONG. `showOnlySplitAlignments`
-                  // filters in the worker (`filterChainFeatures`), before
-                  // partitioning and therefore before `runCoveragePipeline`, so
-                  // the band drew depth over the chimeric subset while reading
-                  // exactly like tumour coverage. The figure makes no claim
-                  // about how deep the split reads are, and the depth claim it
-                  // DOES make now sits on the lane that can support it, below.
-                  showCoverage: false,
+                  // A BAND OVER THE SPLIT SUBSET, which is what this lane is
+                  // and what the band therefore has to be read as.
+                  // `showOnlySplitAlignments` filters in the worker
+                  // (`filterChainFeatures`), before partitioning and therefore
+                  // before `runCoveragePipeline`, so the depth here counts only
+                  // the chimeric reads drawn under it and is NOT tumour
+                  // coverage. That is why it used to be off, and what changes
+                  // it is the wider window above: the profile now steps down
+                  // twice on chr3 -- once where the inverted arm stops
+                  // contributing at 25,359,111, then to nothing at the junction
+                  // at 25,359,568 -- and holds at nothing across the reference
+                  // the allele abandons. The ragged right edge of a pileup says
+                  // that once; a profile says it as a height, in each of the
+                  // three windows at the same time.
+                  //
+                  // The der3 lane's band below is unfiltered realigned depth,
+                  // so the two are NOT comparable as numbers and nothing in the
+                  // frame could say so -- the caption names this lane as split
+                  // alignments only for that reason.
+                  showCoverage: true,
+                  coverageHeight: 40,
                 },
               ],
             },
