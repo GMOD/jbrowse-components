@@ -10,6 +10,7 @@ import {
 } from '../../util/sessionStorage.ts'
 import { ElementId } from '../../util/types/mst.ts'
 import { BaseInternetAccountConfig } from './baseInternetAccountConfig.ts'
+import { uriMatchesDomains } from './uriMatchesDomains.ts'
 
 import type {
   AnyReactComponentType,
@@ -117,7 +118,7 @@ export const InternetAccount = types
      * @returns true or false
      */
     handlesLocation(location: UriLocation) {
-      return self.domains.some(domain => location.uri.includes(domain))
+      return uriMatchesDomains(location.uri, self.domains)
     },
     /**
      * #getter
