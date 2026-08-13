@@ -99,14 +99,10 @@ a deletion call but the caller declining to answer. The record lane is where
 that reading is confirmed: the same column is a copy-number call there, not a
 deletion.
 
-The depth lane answers it outright, which is what a callset cannot do for a
-nested call. A genotype is a caller's discrete verdict per record, so a locus
-carrying calls inside other calls is read as a stack of columns whose relation
-to each other is not on screen, and a record the caller declined leaves a hole.
-Copy number is one continuous quantity per bin per individual, taken from the
-reads rather than from a caller, so the column that is olive above is red below:
-those samples carry an extra copy of the nested span, and the rest of the
-deletion around it shows the same three levels as the matrix. The
+The depth lane answers it outright. A genotype is a caller's discrete verdict
+per record, so a record the caller declined leaves a hole; copy number is one
+continuous quantity per bin per individual, taken from the reads rather than
+from a caller, so the column that is olive above is red below. The
 [copy-number tutorial](/docs/tutorials/population_cnv) is where that lane comes
 from, and it is the same store.
 

@@ -85,16 +85,14 @@ carries plenty of other calls. Everything after the pyrin is shared, so the
 overlay reads as one block on the left that a few rows have, and a matching
 stack of blocks to the right of it that every row has.
 
-That is a clade-level pattern rather than a quirk of one row, which is what a
-panel of twelve mammals buys over a panel of five. It is also a statement about
-annotation and not only about biology: the block is drawn where NCBI's
-conserved-domain database has called one, and a species missing the call is not
-the same as a species missing the sequence, which is what the residue check
-below is for.
+That is a clade-level pattern rather than a quirk of one row. It is also a
+statement about annotation: the block is drawn where NCBI's conserved-domain
+database has called one, and a species missing the call is not the same as a
+species missing the sequence, which is what the residue check below is for.
 
-That shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD
-are present in every row, so they have to line up in the same columns; a missing
-block only means something because the blocks around it agree.
+The shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD are
+present in every row, so a missing block only means something because the blocks
+around it agree.
 
 The calls ride along on NCBI's own protein records, so they arrive with the
 sequences and cost no extra step. For a protein NCBI has no calls for, the view
@@ -107,15 +105,11 @@ A whole-protein view cannot tell "no domain annotated" from "no sequence", so
 read the residues. The zoom the view opened at is already the right one: scroll
 back to it, or use the alignment's **Zoom in** button until the letters return.
 
-Which columns the view opens on is worth one detour, because it is a property of
-any panel of unequal proteins rather than of this gene. An alignment is as long
-as its longest row, so its leftmost columns belong to whichever protein reaches
-furthest past the others and every other row is gap underneath them. On a panel
-this wide those opening columns are one or two rows' private N-terminal
-extensions, which is not what the comparison is about. **Hide columns w/ >N%
-gaps**, the slider in the alignment's toolbar, is the lever: bring it down until
-the columns only a row or two hold disappear, and the columns the panel shares
-(the pyrin among them) come to the left edge.
+An alignment is as long as its longest row, so its leftmost columns belong to
+whichever protein reaches furthest past the others, which on a panel this wide
+is one or two rows' private N-terminal extensions. **Hide columns w/ >N% gaps**,
+the slider in the alignment's toolbar, brings the columns the panel shares (the
+pyrin among them) to the left edge.
 
 The rows without a pyrin block are not empty there. Sheep, cattle and dog carry
 ordinary residues under the same columns with nothing called over them, which is
@@ -158,19 +152,15 @@ through to the BLAST tab.
 a dialog whose **Launch 3D protein structure view** renders the AlphaFold model
 of the same protein, mapped back to the genome the way the alignment is.
 
-That dialog has two more options here than it would on a site running protein3d
-alone: it checks whether msaview is loaded, and offers **Launch MSA view** and
-**Launch 3D structure + MSA view** when it is, for a protein AlphaFold also
-publishes its input alignment for. Both build an MSA view from that alignment
-rather than from orthologs. The first carries the same name as the right-click
-launcher this page opened with and does something different, so read the
-description under it, which is where the a3m is named.
+That dialog offers **Launch MSA view** and **Launch 3D structure + MSA view**
+when msaview is loaded and AlphaFold publishes an input alignment for the
+protein. Both build an MSA view from that alignment rather than from orthologs,
+and the first carries the same name as the right-click launcher this page opened
+with, so read the description under it, which is where the a3m is named.
 
-The two alignments answer different questions. The ortholog panel is one row per
-named species, which is what makes a present-or-absent domain call readable
-across the tree. AlphaFold's is the deep unlabelled alignment its own pipeline
-folded from, so it shows what the structure prediction had to work with, and it
-is a much larger download.
+The ortholog panel is one row per named species, which is what makes a
+present-or-absent domain call readable across the tree. AlphaFold's is the deep
+unlabelled alignment its own pipeline folded from, and a much larger download.
 
 Both views map a genomic position to a residue the same way, described under
 [](/docs/tutorials/protein_structure#how-positions-are-mapped).
