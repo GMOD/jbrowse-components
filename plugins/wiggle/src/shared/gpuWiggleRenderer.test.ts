@@ -8,12 +8,17 @@ import {
 
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
 import {
-  INSTANCE_OFFSET_F32 as F_F32,
-  INSTANCE_OFFSET_U32 as F_U32,
-  INSTANCE_STRIDE_WORDS as INSTANCE_STRIDE,
+  INSTANCE_OFFSET_F32 as FILL_F32,
+  INSTANCE_OFFSET_U32 as FILL_U32,
+  INSTANCE_STRIDE_WORDS as FILL_INSTANCE_STRIDE,
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_I32 as UI,
 } from './shaders/wiggle.generated.ts'
+import {
+  INSTANCE_OFFSET_F32 as F_F32,
+  INSTANCE_OFFSET_U32 as F_U32,
+  INSTANCE_STRIDE_WORDS as INSTANCE_STRIDE,
+} from './shaders/wiggleLine.generated.ts'
 
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
@@ -62,8 +67,9 @@ const DEFAULT_STATE = {
 
 describe('GpuWiggleRenderer', () => {
   // A step-line layer, so every word this checks is one the encoding carries —
-  // prevScore/nextScore are the step-line pass's and a fill layer leaves them
-  // zero (wiggleInstanceBuffer.test.ts covers which mode writes what).
+  // prevScore/nextScore are the step-line pass's, and they live in the line
+  // shader's record, which is why this reads the 'line' buffer
+  // (wiggleInstanceBuffer.test.ts covers which mode writes what).
   it('uploads region data as interleaved buffer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
@@ -71,7 +77,7 @@ describe('GpuWiggleRenderer', () => {
 
     renderer.uploadRegion(0, [source])
 
-    const buf = hal.getBuffer(0, 'fill')
+    const buf = hal.getBuffer(0, 'line')
     expect(buf).toBeDefined()
     expect(buf!.count).toBe(2)
     expect(buf!.data.byteLength).toBe(2 * INSTANCE_STRIDE * 4)
@@ -88,6 +94,25 @@ describe('GpuWiggleRenderer', () => {
     // color [1,0,0] ABGR-packed → A=255,B=0,G=0,R=255
     expect(u32[F_U32.color]).toBe(0xff0000ff)
     expect(f32[F_F32.rowIndex]).toBe(0)
+  })
+
+  // The fill record has no room for the neighbour fields at all — that saving is
+  // the point of the two shaders — so a fill region uploads the narrower buffer
+  // and leaves the line pass without one.
+  it('uploads the narrow record for a fill rendering, and no line buffer', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+
+    renderer.uploadRegion(0, [
+      makeSource({ renderingType: RENDERING_TYPE_XYPLOT }),
+    ])
+
+    const fill = hal.getBuffer(0, 'fill')
+    expect(fill).toBeDefined()
+    expect(fill!.count).toBe(2)
+    expect(fill!.data.byteLength).toBe(2 * FILL_INSTANCE_STRIDE * 4)
+    expect(FILL_INSTANCE_STRIDE).toBe(INSTANCE_STRIDE / 2)
+    expect(hal.getBufferCount(0, 'line')).toBe(0)
   })
 
   it('releases the buffer when uploading empty sources', () => {
@@ -191,7 +216,8 @@ describe('GpuWiggleRenderer', () => {
     expect(drawCalls.length).toBe(1)
     expect(drawCalls[0]!.args[0]).toBe('line')
     expect(drawCalls[0]!.args[1]).toBe(0)
-    expect(drawCalls[0]!.args[2]).toBe('fill')
+    // draws off the line record, which is the one it was packed into
+    expect(drawCalls[0]!.args[2]).toBe('line')
   })
 
   // The buffer carries only the neighbor fields its own rendering reads, so the
@@ -329,17 +355,18 @@ describe('GpuWiggleRenderer', () => {
 
     renderer.uploadRegion(0, [source0, source1])
 
+    // default sources are xyplot, so this is the fill record
     const buf = hal.getBuffer(0, 'fill')
     expect(buf!.count).toBe(4) // 2 features * 2 sources
 
     const f32 = new Float32Array(buf!.data)
     const u32 = new Uint32Array(buf!.data)
-    expect(f32[F_F32.rowIndex]).toBe(0)
+    expect(f32[FILL_F32.rowIndex]).toBe(0)
     // second source starts after the first source's two instances
-    const src1 = 2 * INSTANCE_STRIDE
-    expect(f32[src1 + F_F32.rowIndex]).toBe(1)
+    const src1 = 2 * FILL_INSTANCE_STRIDE
+    expect(f32[src1 + FILL_F32.rowIndex]).toBe(1)
     // color [0,1,0] ABGR-packed → A=255,B=0,G=255,R=0
-    expect(u32[src1 + F_U32.color]).toBe(0xff00ff00)
+    expect(u32[src1 + FILL_U32.color]).toBe(0xff00ff00)
   })
 
   it('disposes cleanly', () => {

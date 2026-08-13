@@ -7,7 +7,8 @@ import {
 } from '@jbrowse/wiggle-core'
 
 import * as wiggleShader from './shaders/wiggle.generated.ts'
-import { interleaveInstances } from './wiggleInstanceBuffer.ts'
+import * as wiggleLineShader from './shaders/wiggleLine.generated.ts'
+import { packFillInstances, packLineInstances } from './wiggleInstanceBuffer.ts'
 
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
@@ -25,47 +26,52 @@ const PASS_LINE_CENTER = 'lineCenter'
 const U = wiggleShader.UNIFORM_OFFSET_F32
 const UI = wiggleShader.UNIFORM_OFFSET_I32
 
-// One shader, three triangle-list passes sharing the same vertex buffer.
-// PASS_FILL draws xyplot / density / scatter as 6-vert quads; PASS_LINE draws
-// the thick step-line as 18 verts per feature (3 square-capped quad segments) so
+// Two shaders, three triangle-list passes. PASS_FILL draws xyplot / density /
+// scatter as 6-vert quads off wiggle.slang's 20-byte record; PASS_LINE draws the
+// thick step-line as 18 verts per feature (3 square-capped quad segments) so
 // stroke thickness honors the lineWidth uniform (line-list topology can't — its
 // width is hard-locked to 1px on WebGPU/WebGL); PASS_LINE_CENTER draws the
-// connect-points line as a 6-vert capsule per feature under max blend.
+// connect-points line as a 6-vert capsule per feature under max blend. The two
+// line passes share wiggleLine.slang and so share one buffer; the fill pass
+// cannot join them, because the record it reads is the one without the
+// neighbour fields.
 const LINE_VERTS_PER_INSTANCE = 18
 
-// The only pass with a buffer of its own; the two below draw off it, so they
-// are registered here and absent from `regionPasses`.
+// One buffer per instance layout, so two of the three passes carry a packer.
+// Each returns empty for the renderings that aren't its own, which releases that
+// pass's buffer (an empty pack IS the release), so only the layout actually
+// being drawn stays resident.
 const FILL_PASS = {
   ...slangPass({
     id: PASS_FILL,
     mod: wiggleShader,
     topology: 'triangle-list',
   }),
-  pack: (sources: SourceRenderData[]) => {
-    let totalFeatures = 0
-    for (const source of sources) {
-      totalFeatures += source.numFeatures
-    }
-    return interleaveInstances(sources, totalFeatures)
-  },
+  pack: packFillInstances,
+}
+
+const LINE_PASS = {
+  ...slangPass({
+    id: PASS_LINE,
+    mod: wiggleLineShader,
+    topology: 'triangle-list',
+    verticesPerInstance: LINE_VERTS_PER_INSTANCE,
+  }),
+  pack: packLineInstances,
 }
 
 export const WIGGLE_PASSES: PassDescriptor[] = [
   FILL_PASS,
-  slangPass({
-    id: PASS_LINE,
-    mod: wiggleShader,
-    topology: 'triangle-list',
-    verticesPerInstance: LINE_VERTS_PER_INSTANCE,
-  }),
-  // Center-line: one 6-vert quad per feature (shares PASS_FILL's buffer). Drawn
-  // with premultiplied MAX blend so the analytic-AA ribbon's overlapping
-  // segments and caps union (take the higher coverage) instead of accumulating
-  // into dark seams under standard src-over. Valid because the target clears to
-  // transparent black and only this pass draws in center-line mode.
+  LINE_PASS,
+  // Center-line: one 6-vert quad per feature (shares PASS_LINE's buffer — same
+  // shader module, same record). Drawn with premultiplied MAX blend so the
+  // analytic-AA ribbon's overlapping segments and caps union (take the higher
+  // coverage) instead of accumulating into dark seams under standard src-over.
+  // Valid because the target clears to transparent black and only this pass
+  // draws in center-line mode.
   slangPass({
     id: PASS_LINE_CENTER,
-    mod: wiggleShader,
+    mod: wiggleLineShader,
     topology: 'triangle-list',
     blendState: { op: 'max' },
   }),
@@ -77,9 +83,11 @@ export class GpuWiggleRenderer
 {
   private uniformF32: Float32Array
   private uniformI32: Int32Array
-  // One buffer, uploaded to PASS_FILL; PASS_LINE and PASS_LINE_CENTER read it
-  // via drawPass's bufferPassId rather than carrying buffers of their own.
-  protected regionPasses = [FILL_PASS]
+  // One per instance layout. Both are packed for every region and one of them
+  // comes back empty, which releases its buffer — so a region holds only the
+  // layout its rendering actually draws. PASS_LINE_CENTER reads PASS_LINE's via
+  // drawPass's bufferPassId rather than carrying a third.
+  protected regionPasses = [FILL_PASS, LINE_PASS]
 
   constructor(hal: GpuHal) {
     super(hal, wiggleShader.UNIFORMS_SIZE_BYTES)
@@ -103,17 +111,23 @@ export class GpuWiggleRenderer
     // it. Empty layers mean the pass has no buffer at all (an empty pack is the
     // release), so nothing draws and `state` is as good an answer as any.
     const renderingType = sources[0]?.renderingType ?? state.renderingType
-    const passId =
-      renderingType === RENDERING_TYPE_LINE
+    const isLine =
+      renderingType === RENDERING_TYPE_LINE ||
+      renderingType === RENDERING_TYPE_LINE_CENTER
+    const passId = isLine
+      ? renderingType === RENDERING_TYPE_LINE
         ? PASS_LINE
-        : renderingType === RENDERING_TYPE_LINE_CENTER
-          ? PASS_LINE_CENTER
-          : PASS_FILL
+        : PASS_LINE_CENTER
+      : PASS_FILL
 
     writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
     this.uniformF32[U.canvasHeight] = state.canvasHeight
     this.uniformI32[UI.scaleType] = state.scaleType
-    this.uniformI32[UI.renderingType] = state.renderingType
+    // The layers' rendering, for the same reason the pass is: it is what the
+    // shader branches on, so taking it from `state` could tell a fill shader to
+    // draw a rendering its module no longer contains. Buffer, pass and uniform
+    // are one decision.
+    this.uniformI32[UI.renderingType] = renderingType
     this.uniformF32[U.numRows] = state.numRows
     this.uniformF32[U.domainYMin] = state.domainY[0]
     this.uniformF32[U.domainYMax] = state.domainY[1]
@@ -135,6 +149,12 @@ export class GpuWiggleRenderer
     this.uniformF32[U.origin] = state.origin
 
     this.hal.writeUniforms(this.uniformData)
-    this.hal.drawPass(passId, block.displayedRegionIndex, PASS_FILL)
+    // Each pass draws off the buffer for its own layout — the line passes share
+    // PASS_LINE's, the fill pass owns PASS_FILL's.
+    this.hal.drawPass(
+      passId,
+      block.displayedRegionIndex,
+      isLine ? PASS_LINE : PASS_FILL,
+    )
   }
 }

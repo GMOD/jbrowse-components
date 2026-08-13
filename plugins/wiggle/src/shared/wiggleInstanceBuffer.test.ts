@@ -5,11 +5,18 @@ import {
 } from '@jbrowse/wiggle-core'
 
 import {
+  INSTANCE_OFFSET_F32 as FILL_F32,
+  INSTANCE_OFFSET_U32 as FILL_U32,
+  INSTANCE_STRIDE_BYTES as FILL_STRIDE_BYTES,
+  INSTANCE_STRIDE_WORDS as FILL_STRIDE_WORDS,
+} from './shaders/wiggle.generated.ts'
+import {
   INSTANCE_OFFSET_F32,
   INSTANCE_OFFSET_U32,
+  INSTANCE_STRIDE_BYTES as LINE_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS,
-} from './shaders/wiggle.generated.ts'
-import { interleaveInstances } from './wiggleInstanceBuffer.ts'
+} from './shaders/wiggleLine.generated.ts'
+import { packFillInstances, packLineInstances } from './wiggleInstanceBuffer.ts'
 
 import type {
   SourceRenderData,
@@ -77,9 +84,9 @@ function readInstance(buf: ArrayBuffer, i: number) {
 // in wiggle.slang.
 const NO_PREV_START = 0xffffffff
 
-describe('interleaveInstances', () => {
+describe('packLineInstances', () => {
   test('single isolated feature has prevScore=0 and nextScore=0', () => {
-    const buf = interleaveInstances([stepSource([5], [0], [100])], 1)
+    const buf = packLineInstances([stepSource([5], [0], [100])])
     const f = readInstance(buf, 0)
     expect(f.score).toBe(5)
     expect(f.prevScore).toBe(0)
@@ -87,10 +94,7 @@ describe('interleaveInstances', () => {
   })
 
   test('adjacent pair: first rises from zero and uses self-nextScore; second transitions and drops', () => {
-    const buf = interleaveInstances(
-      [stepSource([5, 8], [0, 100], [100, 200])],
-      2,
-    )
+    const buf = packLineInstances([stepSource([5, 8], [0, 100], [100, 200])])
     const f0 = readInstance(buf, 0)
     const f1 = readInstance(buf, 1)
 
@@ -105,10 +109,7 @@ describe('interleaveInstances', () => {
 
   test('non-adjacent pair: both features rise from and drop to zero independently', () => {
     // gap between bp 100 and 200
-    const buf = interleaveInstances(
-      [stepSource([5, 8], [0, 200], [100, 300])],
-      2,
-    )
+    const buf = packLineInstances([stepSource([5, 8], [0, 200], [100, 300])])
     const f0 = readInstance(buf, 0)
     const f1 = readInstance(buf, 1)
 
@@ -119,10 +120,9 @@ describe('interleaveInstances', () => {
   })
 
   test('middle feature in adjacent triple: prevScore=left, nextScore=self', () => {
-    const buf = interleaveInstances(
-      [stepSource([3, 7, 5], [0, 100, 200], [100, 200, 300])],
-      3,
-    )
+    const buf = packLineInstances([
+      stepSource([3, 7, 5], [0, 100, 200], [100, 200, 300]),
+    ])
     const f = readInstance(buf, 1)
     expect(f.score).toBe(7)
     expect(f.prevScore).toBe(3)
@@ -134,7 +134,7 @@ describe('interleaveInstances', () => {
     // Two sources at the same genomic position; they are independent signals
     const src0 = stepSource([5], [0], [100])
     const src1 = stepSource([8], [0], [100])
-    const buf = interleaveInstances([src0, src1], 2)
+    const buf = packLineInstances([src0, src1])
     const f0 = readInstance(buf, 0)
     const f1 = readInstance(buf, 1)
 
@@ -146,10 +146,9 @@ describe('interleaveInstances', () => {
 
   test('gap in middle of three features: boundary features isolated, middle one stranded', () => {
     // features: [0-100], gap, [200-300], [300-400]
-    const buf = interleaveInstances(
-      [stepSource([3, 7, 5], [0, 200, 300], [100, 300, 400])],
-      3,
-    )
+    const buf = packLineInstances([
+      stepSource([3, 7, 5], [0, 200, 300], [100, 300, 400]),
+    ])
     const f0 = readInstance(buf, 0)
     const f1 = readInstance(buf, 1)
     const f2 = readInstance(buf, 2)
@@ -178,7 +177,7 @@ describe('interleaveInstances', () => {
   describe('center-line (prevStartEnd / prevScoreLine)', () => {
     test('first feature has no previous → sentinel', () => {
       const f = readInstance(
-        interleaveInstances([centerSource([5], [0], [100])], 1),
+        packLineInstances([centerSource([5], [0], [100])]),
         0,
       )
       expect(f.prevStart).toBe(NO_PREV_START)
@@ -186,10 +185,9 @@ describe('interleaveInstances', () => {
     })
 
     test('adjacent feature carries the previous span and score', () => {
-      const buf = interleaveInstances(
-        [centerSource([5, 8], [0, 100], [100, 201])],
-        2,
-      )
+      const buf = packLineInstances([
+        centerSource([5, 8], [0, 100], [100, 201]),
+      ])
       expect(readInstance(buf, 0).prevStart).toBe(NO_PREV_START)
       expect(readInstance(buf, 1).prevStart).toBe(0)
       expect(readInstance(buf, 1).prevEnd).toBe(100)
@@ -199,30 +197,28 @@ describe('interleaveInstances', () => {
     test('odd-width bins keep their half-base midpoint intact', () => {
       // 1bp bins: midpoints are 100.5 / 101.5, unrepresentable as integer bp.
       // The span reaches the shader whole, so the average stays exact.
-      const buf = interleaveInstances(
-        [centerSource([5, 8], [100, 101], [101, 102])],
-        2,
-      )
+      const buf = packLineInstances([
+        centerSource([5, 8], [100, 101], [101, 102]),
+      ])
       expect(readInstance(buf, 1).prevStart).toBe(100)
       expect(readInstance(buf, 1).prevEnd).toBe(101)
     })
 
     test('non-adjacent (gapped) features still connect: prev span + real score', () => {
       // gap between bp 100 and 200; the center-line bridges it rather than break
-      const buf = interleaveInstances(
-        [centerSource([5, 8], [0, 200], [100, 300])],
-        2,
-      )
+      const buf = packLineInstances([
+        centerSource([5, 8], [0, 200], [100, 300]),
+      ])
       expect(readInstance(buf, 1).prevStart).toBe(0)
       expect(readInstance(buf, 1).prevEnd).toBe(100)
       expect(readInstance(buf, 1).prevScoreLine).toBe(5) // real prev score, not 0
     })
 
     test('each source restarts the run (first feature = sentinel)', () => {
-      const buf = interleaveInstances(
-        [centerSource([5], [0], [100]), centerSource([8], [0], [100])],
-        2,
-      )
+      const buf = packLineInstances([
+        centerSource([5], [0], [100]),
+        centerSource([8], [0], [100]),
+      ])
       expect(readInstance(buf, 0).prevStart).toBe(NO_PREV_START)
       expect(readInstance(buf, 1).prevStart).toBe(NO_PREV_START)
     })
@@ -230,10 +226,9 @@ describe('interleaveInstances', () => {
     test('large coordinates near uint32 range survive intact', () => {
       const a = 4_000_000_000
       const b = 4_000_000_100
-      const buf = interleaveInstances(
-        [centerSource([5, 8], [a, b], [b, b + 100])],
-        2,
-      )
+      const buf = packLineInstances([
+        centerSource([5, 8], [a, b], [b, b + 100]),
+      ])
       expect(readInstance(buf, 1).prevStart).toBe(a)
       expect(readInstance(buf, 1).prevEnd).toBe(b)
     })
@@ -245,14 +240,14 @@ describe('interleaveInstances', () => {
 // NO_PREV_START the source start uses, which collapses that capsule in the
 // shader. buildSourceRenderData supplies the threshold so this and
 // drawLineCenter break in the same places.
-describe('interleaveInstances center-line gap breaks', () => {
+describe('packLineInstances center-line gap breaks', () => {
   // bins at 0..10, 10..20, then a hole, then 1000..1010
   const starts = [0, 10, 1000]
   const ends = [10, 20, 1010]
   const scores = [1, 2, 3]
 
   test('a gap past gapLimitBp restarts the run', () => {
-    const buf = interleaveInstances([centerSource(scores, starts, ends, 50)], 3)
+    const buf = packLineInstances([centerSource(scores, starts, ends, 50)])
     // the in-run feature still links to its predecessor
     expect(readInstance(buf, 1).prevStart).toBe(0)
     expect(readInstance(buf, 1).prevScoreLine).toBe(1)
@@ -262,10 +257,7 @@ describe('interleaveInstances center-line gap breaks', () => {
   })
 
   test('a gap within gapLimitBp stays connected', () => {
-    const buf = interleaveInstances(
-      [centerSource(scores, starts, ends, 5000)],
-      3,
-    )
+    const buf = packLineInstances([centerSource(scores, starts, ends, 5000)])
     expect(readInstance(buf, 2).prevStart).toBe(10)
     expect(readInstance(buf, 2).prevScoreLine).toBe(2)
   })
@@ -273,42 +265,53 @@ describe('interleaveInstances center-line gap breaks', () => {
   // buildSourceRenderData leaves the limit unset for every rendering but this
   // one, which is one connected run.
   test('no limit means one connected run, as before', () => {
-    const buf = interleaveInstances([centerSource(scores, starts, ends)], 3)
+    const buf = packLineInstances([centerSource(scores, starts, ends)])
     expect(readInstance(buf, 2).prevStart).toBe(10)
     expect(readInstance(buf, 2).prevScoreLine).toBe(2)
   })
 })
 
-// Each rendering pays only for the neighbor fields its own pass reads — the
-// step-line's prevScore/nextScore and the center-line's
-// prevStartEnd/prevScoreLine are guarded by separate branches of wiggle.slang's
-// vs_main, and xyplot/density/scatter read neither. The unwritten words keep the
-// zeroes a fresh ArrayBuffer hands out, which is why the pass has to come from
-// the layer too (see GpuWiggleRenderer.drawRegion): 0 is a legal prevStart, so a
-// fill buffer drawn by the center-line pass would chord every feature back to
-// bp 0 rather than draw nothing.
-describe('interleaveInstances writes only the fields its rendering reads', () => {
+// A region's layers feed exactly one packer, and the other returns empty — which
+// is how that pass releases its buffer, so only the layout being drawn stays
+// resident. This is also what makes GpuWiggleRenderer.drawRegion take the pass
+// off the layers rather than the render state: the two layouts are different
+// sizes, so a pass reading the wrong one reads past the end of its records.
+describe('each packer serves only its own renderings', () => {
   const scores = [3, 7, 5]
   const starts = [0, 100, 200]
   const ends = [100, 200, 300]
 
-  test('a fill rendering writes neither neighbor group', () => {
-    const buf = interleaveInstances([fillSource(scores, starts, ends)], 3)
+  test('a fill rendering packs 20 bytes a feature and no line buffer', () => {
+    const layers = [fillSource(scores, starts, ends)]
+    const fill = packFillInstances(layers)
+    expect(fill.byteLength).toBe(3 * FILL_STRIDE_BYTES)
+    expect(FILL_STRIDE_BYTES).toBe(20)
+    // nothing for the line passes to draw, so their buffer is released
+    expect(packLineInstances(layers).byteLength).toBe(0)
+
+    const f32 = new Float32Array(fill)
+    const u32 = new Uint32Array(fill)
     for (let i = 0; i < 3; i++) {
-      const f = readInstance(buf, i)
-      // the geometry every pass reads is still there
-      expect(f.score).toBe(scores[i])
-      expect(f.prevScore).toBe(0)
-      expect(f.nextScore).toBe(0)
-      expect(f.prevStart).toBe(0)
-      expect(f.prevEnd).toBe(0)
-      expect(f.prevScoreLine).toBe(0)
+      const base = i * FILL_STRIDE_WORDS
+      expect(u32[base + FILL_U32.startEnd]).toBe(starts[i])
+      expect(u32[base + FILL_U32.startEnd + 1]).toBe(ends[i])
+      expect(f32[base + FILL_F32.score]).toBe(scores[i])
+      expect(f32[base + FILL_F32.rowIndex]).toBe(0)
     }
   })
 
+  test('a line rendering packs 40 bytes a feature and no fill buffer', () => {
+    const layers = [stepSource(scores, starts, ends)]
+    expect(packLineInstances(layers).byteLength).toBe(3 * LINE_STRIDE_BYTES)
+    expect(LINE_STRIDE_BYTES).toBe(40)
+    expect(packFillInstances(layers).byteLength).toBe(0)
+  })
+
+  // Within the shared line record, each of the two renderings still writes only
+  // its own neighbour group; the other keeps the zeroes ArrayBuffer hands out.
   test('the step-line writes prevScore/nextScore and not the center-line pair', () => {
     const f = readInstance(
-      interleaveInstances([stepSource(scores, starts, ends)], 3),
+      packLineInstances([stepSource(scores, starts, ends)]),
       1,
     )
     expect(f.prevScore).toBe(3)
@@ -319,7 +322,7 @@ describe('interleaveInstances writes only the fields its rendering reads', () =>
 
   test('the center-line writes prevStartEnd/prevScoreLine and not the step pair', () => {
     const f = readInstance(
-      interleaveInstances([centerSource(scores, starts, ends)], 3),
+      packLineInstances([centerSource(scores, starts, ends)]),
       1,
     )
     expect(f.prevStart).toBe(0)

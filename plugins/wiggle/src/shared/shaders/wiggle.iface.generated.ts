@@ -66,45 +66,33 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[13] = uniforms.origin
 }
 
-export const INSTANCE_STRIDE_BYTES = 40
-export const INSTANCE_STRIDE_WORDS = 10
+export const INSTANCE_STRIDE_BYTES = 20
+export const INSTANCE_STRIDE_WORDS = 5
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
   score: 2,
-  prevScore: 3,
-  nextScore: 4,
-  rowIndex: 6,
-  prevScoreLine: 9,
+  rowIndex: 4,
 } as const
 
 // Word indices into a Uint32Array view over the instance buffer.
 export const INSTANCE_OFFSET_U32 = {
   startEnd: 0,
-  color: 5,
-  prevStartEnd: 7,
+  color: 3,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_startEnd', components: 2, type: 'uint', offsetBytes: 0, integer: true },
   { name: 'a_score', components: 1, type: 'float', offsetBytes: 8, integer: false },
-  { name: 'a_prevScore', components: 1, type: 'float', offsetBytes: 12, integer: false },
-  { name: 'a_nextScore', components: 1, type: 'float', offsetBytes: 16, integer: false },
-  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 20, integer: true },
-  { name: 'a_rowIndex', components: 1, type: 'float', offsetBytes: 24, integer: false },
-  { name: 'a_prevStartEnd', components: 2, type: 'uint', offsetBytes: 28, integer: true },
-  { name: 'a_prevScoreLine', components: 1, type: 'float', offsetBytes: 36, integer: false },
+  { name: 'a_color', components: 1, type: 'uint', offsetBytes: 12, integer: true },
+  { name: 'a_rowIndex', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
 
 export interface InstanceArrays {
   startEnd: ArrayLike<number>
   score: ArrayLike<number>
-  prevScore: ArrayLike<number>
-  nextScore: ArrayLike<number>
   color: ArrayLike<number>
   rowIndex: ArrayLike<number>
-  prevStartEnd: ArrayLike<number>
-  prevScoreLine: ArrayLike<number>
 }
 
 export function packInstances(
@@ -114,19 +102,14 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { startEnd, score, prevScore, nextScore, color, rowIndex, prevStartEnd, prevScoreLine } = arrays
+  const { startEnd, score, color, rowIndex } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = startEnd[i * 2 + 0]!
     u32[o + 1] = startEnd[i * 2 + 1]!
     f32[o + 2] = score[i]!
-    f32[o + 3] = prevScore[i]!
-    f32[o + 4] = nextScore[i]!
-    u32[o + 5] = color[i]!
-    f32[o + 6] = rowIndex[i]!
-    u32[o + 7] = prevStartEnd[i * 2 + 0]!
-    u32[o + 8] = prevStartEnd[i * 2 + 1]!
-    f32[o + 9] = prevScoreLine[i]!
+    u32[o + 3] = color[i]!
+    f32[o + 4] = rowIndex[i]!
   }
   return buf
 }
