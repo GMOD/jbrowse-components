@@ -224,7 +224,7 @@ Underneath it go the three Regulation tracks from the promoter section, which
 are what the motif matches get read against: **ENCODE cCREs - ENCODE4 cCREs**,
 **DNase (Layered)** and **H3K27ac (Layered)**.
 
-<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region, five tracks deep: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, and the layered DNase and H3K27ac signal. The shaded pair are the two motif matches inside the gene's active region; the matches at the left edge are over flat signal." />
+<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region, five tracks deep: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, and the layered DNase and H3K27ac signal. The shaded pair are the two motif matches inside the gene's active region; the four to their left are over the quiet part of the window." />
 
 Six positions in this window match the p53 motif well enough to be called,
 spread across the whole upstream stretch, and the tracks under them are not flat
