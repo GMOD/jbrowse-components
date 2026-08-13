@@ -162,21 +162,12 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // which is the tempting way to write the cast that isn't needed.
 const GNOMAD_COMMON_FILTER = 'jexl:feature.AF >= 0.001'
 
-// The middle frame of the gnomAD figure used to be coloured by `grpmax`, the
-// ancestry group carrying each variant at its highest frequency, out of a
-// hand-written Okabe-Ito map in a jexl `color` callback plus a matching
-// `legend`. It is not coming back, and the reason is not the palette:
-//
-// NEITHER of those is reachable by clicking. "Color by... → Attribute..." writes
+// No colour callback belongs in this figure: neither half of one is reachable
+// by clicking. "Color by... → Attribute..." writes
 // `jexl:randomColor(get(feature,'attr'))` (featureColors.ts), which is
-// hash-derived colours and no key at all, and `legend` is a config slot with no
-// menu item anywhere. So the frame was a picture of a config a reader of a page
-// called "basic usage" had no way to arrive at, sitting between two frames that
-// were one dialog away -- and the prose covered it in half a sentence that read
-// as a note about taste rather than "you cannot get this".
-//
-// The three frames are one filter each now, in the track's own itemRgb colours,
-// which carry gnomAD's consequence classes for free.
+// hash-derived colours and no key, and `legend` is a config slot with no menu
+// item. The frames draw in the track's own itemRgb, which is gnomAD's
+// consequence colouring.
 
 // Histone marks over the ENCODE3 seven-cell-line panel (GM12878, H1-hESC,
 // HSMM, HUVEC, K562, NHEK, NHLF), one row per cell line.
@@ -210,12 +201,9 @@ const H3K27AC_ROWS = {
 // and an import would make it vacuous.
 const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 
-// ClinVar's own classification column, at its single strictest value. This used
-// to be a three-clause OR over Pathogenic / Likely pathogenic / Pathogenic-
-// Likely pathogenic -- correct, and the longest expression on a page whose
-// subject is a checkbox. The frame it produces is the same wall of red either
-// way, so the extra two clauses bought nothing a reader could see and cost the
-// one place this page asks somebody to type jexl its worst example.
+// ClinVar's own classification column, at its single strictest value. Widening
+// it to the other two pathogenic classes draws the same wall of red and costs
+// the page's one typed-jexl example two more clauses.
 //
 // Not a prefix match, which is the tempting shortening: jexl has no startsWith,
 // and "Conflicting classifications of pathogenicity" contains the word without
@@ -251,11 +239,9 @@ function gnomadFrame(gnomad: object = {}) {
 // menu's "Filter by..." -- `jexlFiltersSetting` is the model prop that dialog
 // writes, rather than the `jexlFilters` config slot a config would ship.
 //
-// `feature.TFName`, the form website/docs/CLAUDE.md asks for and the form the
-// prose beside the figure prints. It was `get(feature,'TFName')` here while the
-// page said the short one, so a reader typing what they were shown produced a
-// different string from the one the picture was made with -- on the page's
-// longest jexl, in the section that asks them to type it.
+// Short form, which is what website/docs/CLAUDE.md asks for and what the prose
+// beside the figure prints: the two have to be the same string, or a reader
+// types what they were shown and gets a different picture.
 const JASPAR_TP53_FILTER = "jexl:feature.TFName == 'TP53'"
 
 // Collapsed to the longest coding transcript, which the page reaches through the
@@ -599,12 +585,10 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // through, so a track earns its figure by showing something about this gene
   // rather than by being a nice picture of somewhere else.
 
-  // How the histone tracks below get one row per cell line, which is the other
-  // setting on this page that a figure asserted and no figure showed. The hub
-  // ships both as MultiQuantitativeTracks defaulting to `multixyplot`, so they
-  // open with all seven cell lines drawn over one another -- and the figure
-  // under this one shows them separated, out of a `defaultRendering` key in the
-  // spec, with the path named in prose and nothing picturing it.
+  // How the histone tracks below get one row per cell line. The hub ships both
+  // as MultiQuantitativeTracks defaulting to `multixyplot`, so they open with
+  // all seven cell lines drawn over one another, and the figure under this one
+  // shows them separated out of a `defaultRendering` key in the spec.
   //
   // So: the default in frame 1 under the menu that changes it, the result in
   // frame 2. Both frames carry the same two tracks at the same height, so the
@@ -731,12 +715,10 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // track is here for its colour and its density, not for its rows, so 150px
   // showing the top of the pile is the frame rather than a clipped one.
   //
-  // The three hotspot codons are shaded, which is the thing the four tracks are
-  // agreeing ABOUT and the one thing none of them draws: every column in this
-  // exon is intolerant, so "the tall ones matter" is not a reading a reader can
-  // take off the picture, and the residues that make this exon the one worth
-  // showing are named nowhere in it. A `highlight` says where they are without
-  // a word, which is what the shading exception in website/CLAUDE.md is for.
+  // The three hotspot codons are shaded, which is what the four tracks are
+  // agreeing about and the one thing none of them draws: every column in this
+  // exon is intolerant, so which ones are the hotspots is not readable off the
+  // picture.
   {
     mode: 'url',
     name: 'genomes_basics/exon_four_ways',
@@ -746,12 +728,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: TP53_EXON_WINDOW,
-          // No `showHighlightChips`: a chip is as wide as what it labels, and
-          // what it labels is three bases -- so the labels render "R2", "R24"
-          // and "G2", two of which are the same two characters. The gene
-          // track's own translation row is directly under the shading and
-          // already prints the residue, so the chips were relabelling it
-          // worse.
           highlight: TP53_HOTSPOT_CODONS,
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 70 },
@@ -772,23 +748,18 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // Where the three frames below come from. The gnomAD figure is a stack of
-  // results, and a result stack shows nothing of the step that produced it: its
-  // three frames differ only in which records are drawn, so a reader who has
-  // not opened that menu reads them as three different tracks rather than one
-  // track filtered three ways. The declarative `jexlFiltersSetting` in the spec
-  // makes that worse, not better -- the frames arrive already filtered, so the
-  // app never shows the dialog the prose is telling someone to type into.
+  // Where the three frames below come from. Those frames arrive already
+  // filtered, out of `jexlFiltersSetting`, so the app never draws the dialog
+  // the prose tells a reader to type into.
   //
-  // Same two-frame shape as `about_track`, and for the same reason: the menu
-  // item is the question and the dialog is the answer. Stacked rather than
-  // side by side, because the dialog's content is a fixed 80em (JexlFilterDialog)
-  // and two of those abreast is a figure nothing renders legibly.
+  // Same two-frame shape as `about_track`: the menu item is the question and
+  // the dialog is the answer. Stacked rather than side by side, because the
+  // dialog's content is a fixed 80em (JexlFilterDialog).
   //
   // The track is alone in the view so the menu has the frame to open into, and
   // it is UNFILTERED -- with a filter in effect `filterMenuItems` relabels the
-  // row "Filter by... (1)" and turns it into a submenu, so the click path the
-  // reader is being shown would not be the one they get.
+  // row "Filter by... (1)" and turns it into a submenu, which is a different
+  // click path from the one the reader is being shown.
   //
   // The pLoF expression rather than the AF one, so the typed text lines up with
   // the bottom frame of the figure below it, which is the one whose filter has
@@ -821,8 +792,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           trackMenuIcon(GNOMAD_TRACK_ID),
           { type: 'waitForText', text: 'Filter by...' },
         ],
-        // the menu is long and every row in it is a plausible next click, which
-        // is the one thing the picture cannot say on its own
+        // boxed: the menu is long and every row in it is a plausible next click
         annotations: cascadeBoxes(['Filter by...']),
         // the menu, not the empty page under it -- the track it opens from
         // scrolls its own rows, so nothing below the view's fold is content
@@ -833,19 +803,17 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           { type: 'click', text: 'Filter by...' },
           { type: 'waitForText', text: 'Add track filters' },
           // The visible textarea, not the autosize shadow MUI renders beside
-          // it, and APPENDED on a new line rather than typed into an empty
-          // box. `BaseLinearDisplay`'s `jexlFilters` slot has a non-empty
-          // DEFAULT (the NCBI gbkey=Src cut), so `activeFilters()` prefills
-          // this dialog on every feature track and a bare type ran straight on
-          // to the end of that line, into a red parse error. Appending is also
-          // the truer picture of what the dialog is: a list, one expression per
+          // it, and appended on a NEW LINE. `BaseLinearDisplay`'s `jexlFilters`
+          // slot has a non-empty default (the NCBI gbkey=Src cut), so
+          // `activeFilters()` prefills this dialog on every feature track and a
+          // bare type runs on to the end of that line, into a parse error. It
+          // is also the truer picture of the dialog: a list, one expression per
           // line, that the reader adds to.
           //
-          // That default is a no-op on this file (a bigBed with no gbkey field
-          // -- nothing to drop), which is why the figure below can set
-          // `jexlFiltersSetting`, which REPLACES the configured list rather
-          // than extending it, and still draw what a reader clicking along
-          // would get.
+          // That default finds nothing in a bigBed with no gbkey field, which
+          // is why the figure below can set `jexlFiltersSetting` -- which
+          // REPLACES the configured list rather than extending it -- and still
+          // draw what a reader clicking along would get.
           {
             type: 'type',
             selector: '.MuiDialog-container textarea:not([aria-hidden="true"])',
@@ -885,9 +853,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   //
   // Every frame draws in the track's own itemRgb, which is gnomAD's consequence
   // colouring (pLoF red, missense yellow, synonymous green, other grey), so the
-  // pLoF frame comes out red without anything being set to make it. See the
-  // note over GNOMAD_COMMON_FILTER for the `grpmax` colouring that used to be
-  // on frame 2 and why no config-only picture belongs in this figure.
+  // pLoF frame comes out red without anything being set to make it. The note
+  // over GNOMAD_COMMON_FILTER has why no colour callback belongs here.
   //
   // ClinVar is deliberately NOT in this figure. It was, and three dense variant
   // tracks over one gene read as noise; the exon figure above is where ClinVar
@@ -932,17 +899,13 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // point from the live model instead of from a measurement that was true for
   // one window width.
   //
-  // It lands in the Arg248 column, which is what makes the panel worth opening
-  // rather than a demonstration that panels open. WHICH of the records stacked
-  // there the row under `fracY` holds is the layout's business and will move,
-  // and it does not need pinning: filtered to Pathogenic, every record covering
-  // that base alters Arg248 -- the three substitutions of the codon, a
-  // duplication frameshifting in it, and four deletions ending on it (nine in
-  // all, api.genome.ucsc.edu 2026-08-13). So the prose names the residue and
-  // not the record, and any row satisfies it.
-  //
-  // The codon is shaded in the figure above, so the two frames are about the
-  // same three bases.
+  // It lands in the Arg248 column, shaded here and in the figure above so the
+  // two frames are about the same three bases. Which of the records stacked
+  // there the row under `fracY` holds is the layout's business and needs no
+  // pinning: filtered to Pathogenic, all nine covering that base alter Arg248
+  // (three substitutions of the codon, a duplication frameshifting in it, four
+  // deletions ending on it; api.genome.ucsc.edu 2026-08-13), so the prose names
+  // the residue rather than the record.
   {
     mode: 'url',
     name: 'genomes_basics/variant_details',
