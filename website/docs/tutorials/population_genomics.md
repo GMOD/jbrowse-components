@@ -70,14 +70,48 @@ The heterozygotes are dropped from both groups, since contrasting homozygous
 arrangements gives the clearest inversion signal.
 
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
-runs the whole pipeline: it downloads both files, derives the two sample lists
-(normalizing DGRPool's `DGRP_021` to the VCF's `DGRP-021`), runs
-[vcftools](https://vcftools.github.io/) for the Weir & Cockerham Fst estimator
-([Weir & Cockerham 1984](https://doi.org/10.2307/2408641)), per-window
-nucleotide diversity and Tajima's D
-([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) in 2 kb windows, and
-packs each into a bigWig with `bedGraphToBigWig`. See
-[reproduce it end to end](#reproduce-it-end-to-end) for the invocation.
+downloads both files and derives the two sample lists, normalizing DGRPool's
+`DGRP_021` to the VCF's `DGRP-021`. Each list is one sample name per line, which
+is the form [vcftools](https://vcftools.github.io/) takes for `--weir-fst-pop`
+and `--keep`.
+
+Each scan is then one vcftools run, an awk turning its table into a bedGraph,
+and a pack into a bigWig. Fst uses the Weir & Cockerham estimator
+([Weir & Cockerham 1984](https://doi.org/10.2307/2408641)):
+
+```bash
+bcftools view -h dgrp2.vcf.gz |
+  awk -F'[=,>]' '/^##contig/{print $3"\t"$5}' > dm6.chrom.sizes
+
+vcftools --gzvcf dgrp2.vcf.gz \
+  --weir-fst-pop In2Lt_INV.txt --weir-fst-pop In2Lt_STD.txt \
+  --fst-window-size 2000 --fst-window-step 2000 --out fst_In2Lt
+awk 'NR>1 && $5!="nan" && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
+  fst_In2Lt.windowed.weir.fst | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
+bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
+```
+
+Taking `chrom.sizes` from the VCF header rather than from the assembly is what
+keeps the naming consistent, since the scans carry the header's contig names.
+Diversity is the same three steps with `--window-pi 2000`, reading `$5` of
+`pi_all.windowed.pi`, and `--keep` restricts it to one arrangement.
+
+Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) needs two
+adjustments the other two do not. `--TajimaD` reports `BIN_START` 0-based, so it
+takes no `-1` shift, and reports no `BIN_END`, so the window end is constructed
+here and clamped to the contig length: bedGraphToBigWig rejects an interval
+running past the end of its chromosome.
+
+```bash
+vcftools --gzvcf dgrp2.vcf.gz --TajimaD 2000 --out tajimad_all
+awk -F'\t' 'NR==FNR{len[$1]=$2; next}
+     FNR>1 && $4!="nan" && $4!="-nan" {
+       end=$2+2000; if (end>len[$1]) end=len[$1]
+       if (end>$2) print $1"\t"$2"\t"end"\t"$4
+     }' dm6.chrom.sizes tajimad_all.Tajima.D |
+  sort -k1,1 -k2,2n > tajimad_all.bedgraph
+bedGraphToBigWig tajimad_all.bedgraph dm6.chrom.sizes tajimad_all.bw
+```
 
 Window size trades resolution for smoothness. 2 kb is dense enough in this panel
 that a single-gene sweep like `Cyp6g1` resolves sharply. Widen toward 5-10 kb

@@ -108,6 +108,17 @@ subset splits into `chr1.ref.vcf.gz` (the two panels) and `chr1.gt.vcf.gz` (the
 targets: 243 animals, the eight wolfdogs, the Shiloh Shepherd and Tamaskan, the
 German Shepherd lineage, eight held-out gray wolves, and the 219-breed sweep).
 
+```bash
+PANEL=https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
+bcftools view -r chr1 -S all.txt --force-samples -Oz -o chr1.subset.vcf.gz "$PANEL"
+bcftools view -S <(cat wolves.txt dogs.txt) --force-samples \
+  -Oz -o chr1.ref.vcf.gz chr1.subset.vcf.gz
+bcftools view -S targets.txt --force-samples -Oz -o chr1.gt.vcf.gz chr1.subset.vcf.gz
+```
+
+Each of `all.txt`, `wolves.txt`, `dogs.txt` and `targets.txt` is one sample name
+per line; the build script derives them from the Dog10K sample table.
+
 ### The genetic map
 
 FLARE requires one, and a uniform cM/Mb stand-in asserts a constant rate the
@@ -120,9 +131,16 @@ four PLINK columns FLARE reads.
 ### Running FLARE
 
 FLARE takes the two panel VCFs, the `ref-panel` file, and the map, and writes
-`wolfdog_chr1.anc.vcf.gz` plus a summary. Check `wolfdog_chr1.global.anc.gz`
-before painting anything. It is the per-sample summary, and on chr1 it already
-sorts the targets:
+`wolfdog_chr1.anc.vcf.gz` plus a summary:
+
+```bash
+java -Xmx12g -jar flare.jar ref=chr1.ref.vcf.gz ref-panel=refpanel.txt \
+  gt=chr1.gt.vcf.gz map=chr1.map out=wolfdog_chr1 seed=42
+```
+
+`seed=42` makes the run repeatable. Check `wolfdog_chr1.global.anc.gz` before
+painting anything. It is the per-sample summary, and on chr1 it already sorts
+the targets:
 
 ```
 SAMPLE          Wolf    Dog
@@ -150,6 +168,15 @@ FLARE writes per-marker calls into the `AN1`/`AN2` `FORMAT` fields of
 [`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
 collapses each haplotype's run of identical calls into one BED9 line, taking row
 labels from a two-column `labels.tsv` and coloring by ancestry via `itemRgb`:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/flare_anc_to_bed.py
+python3 flare_anc_to_bed.py wolfdog_chr1.anc.vcf.gz labels.tsv ancestry.chr1.bed
+jbrowse sort-bed ancestry.chr1.bed | bgzip > ancestry.chr1.bed.gz
+tabix -p bed ancestry.chr1.bed.gz
+```
+
+Each output line looks like this:
 
 ```
 #chrom	chromStart	chromEnd	name	score	strand	thickStart	thickEnd	itemRgb	sample	ancestry
