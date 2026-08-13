@@ -47,11 +47,12 @@ reset — goes through it.
   things reaching *outside* the tree — the `beforeunload` listener, the
   sessionStorage and IndexedDB autoruns, registered through `addDetachDisposer`
   rather than `addDisposer` — and leaves the tree alone.
-The same shape applies to `setSession`, where the outgoing session would be
-detached inside the action and destroyed on a later task. That one is proposed
-rather than landed (#5621) and is a weaker case: measured, every read there is
-of a scalar or a reference, which warns and cannot throw, so it buys a quieter
-console rather than preventing a crash.
+- `setSession` detaches the outgoing session inside the action and destroys it
+  on a later task (#5621). It is the weaker of the two cases and worth saying so:
+  measured, every read there is of a scalar or a reference, which warns and
+  cannot throw, so it buys a quieter console rather than preventing a crash. It
+  also repairs the restore-on-throw path, which had been re-attaching a
+  destroyed node.
 
 ## Rejected
 
@@ -88,10 +89,13 @@ components are mounted over a tree, nothing reads a dead node. In a browser the
 plugin-install path went from **46 dead-node reads to 0**.
 
 It does **not** make the console silent. A session switch still logs ~14 reads
-while the detached tree is destroyed, down from 19. What changed is where a read
-can land: those are now plain reads on a tree nothing renders, and the throw
-they can produce lands in a `setTimeout` callback instead of React's error
-boundary. Severity, not volume.
+while the detached tree is destroyed, down from 19. On that path the gain is
+volume and placement, not severity: every read measured there is of a scalar or
+a reference (`type`, `view`, `trackContainerId`), which warns and cannot throw,
+and the ones left now happen on a detached tree nothing renders, outside the
+action. The crash this rule exists for is the loader path's — an unmaterialized
+complex child, demonstrated in #5618 — and nothing of that shape was found
+under `setSession`.
 
 It does not promise prompt collection either. Measured with a `WeakRef` after a
 forced gc, a superseded root is still reachable — and so is one that has been
@@ -106,6 +110,10 @@ Each fails without its fix and is scoped to what is deterministic:
 
 - `products/jbrowse-web/src/tests/rootModelTeardown.test.tsx` — real teardown,
   real component tree, React's real render-logging, zero dead reads.
+- `products/jbrowse-web/src/tests/sessionSwitchTeardown.test.tsx` — a real
+  session switch, asserting zero dead reads across the action and the reaction
+  flush closing it, and that the outgoing session is destroyed afterwards
+  rather than left detached and leaking its `beforeDestroy` contracts.
 - `products/jbrowse-web/src/components/workerPoolTeardown.test.ts` — a spy on
   `rpcManager.destroy`, because the bug was that nothing called it. No harness
   here can watch a worker thread die; see [TODO.md](../TODO.md).

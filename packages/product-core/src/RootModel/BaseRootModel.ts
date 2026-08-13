@@ -1,10 +1,17 @@
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { cast, getType, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  detach,
+  getType,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { filterSessionInPlace } from '../sessionUtils.ts'
+import { scheduleSessionDestroy } from './scheduleSessionDestroy.ts'
 
 import type { BaseSession } from '../Session/BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -121,6 +128,12 @@ export function BaseRootModelFactory({
           sessionSnapshot && typeof sessionSnapshot === 'object'
             ? migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>)
             : sessionSnapshot
+        // Detach first: assigning over it would destroy it inside this action,
+        // and MobX runs the action's pending reactions afterwards, against the
+        // nodes it just killed. ADR-069.
+        if (oldSession) {
+          detach(oldSession)
+        }
         self.session = cast(migrated)
         if (self.session) {
           try {
@@ -139,9 +152,17 @@ export function BaseRootModelFactory({
               )
             }
           } catch (error) {
+            // put it back, and do not schedule the destroy below — this is the
+            // one path where the old session goes on being the live one
             self.session = oldSession
             throw error
           }
+        }
+        // and it does still get destroyed, once the reaction flush has
+        // unwound. `beforeDestroy` is a plugin-facing contract and leaving a
+        // detached session alive forever would skip it. ADR-069.
+        if (oldSession) {
+          scheduleSessionDestroy(oldSession)
         }
       },
       /**
