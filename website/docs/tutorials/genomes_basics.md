@@ -151,39 +151,34 @@ broader and covers the interval around them. EPDnew names a promoter for _TP53_
 and several for _WRAP53_, which starts transcribing the other way out of the
 same place.
 
-## What a substitution would do
+## Four readings of one exon
 
-phyloP says which bases have not changed. AlphaMissense, under Phenotypes,
-Variants, and Literature, says what would happen if they did: it scores every
-possible single-base substitution for the effect of the amino acid change it
-causes. The track is four subtracks, one per substituted base, so a column is a
-position and a row is what that position would become.
+Two more tracks from Phenotypes, Variants, and Literature go on the same exon.
+**ClinVar Variants - ClinVar SNVs** carries variants submitted with a clinical
+interpretation. **AlphaMissense** scores every possible single-base substitution
+for the amino acid change it would cause, as four subtracks, one per substituted
+base: a column is a position, a row is what it would become.
 
-<Figure src="/img/genomes_basics/alphamissense_exon.png" caption="The same DNA binding domain exon: AlphaMissense in four rows, one per substituted base, over phyloP and the reference sequence with its translation." />
+<Figure src="/img/genomes_basics/exon_four_ways.png" caption="One DNA binding domain exon of TP53: AlphaMissense in four substitution rows, phyloP, ClinVar coloured by clinical significance, and the reference sequence with its translation." />
 
-Cells are empty where there is no amino acid change to score, which is the base
-a position already carries and the substitutions that leave the residue alone.
-Where a column is tall in all four rows, no substitution there is predicted to
-be tolerated.
+AlphaMissense cells are empty where the substitution leaves the residue alone;
+where a column is tall in all four rows, nothing there is predicted to be
+tolerated. Across this exon almost every column is, phyloP stays high over the
+same bases, and ClinVar's red is most of what it draws. The three methods share
+nothing: a prediction from the protein, a measurement across species, and a file
+of laboratory submissions.
 
-The two tracks are independent readings of the same exon rather than two views
-of one number: phyloP is measured, from the alignment across species, and
-AlphaMissense is predicted, from the protein. Both are read the same way in
-JBrowse, and hovering either gives the score back.
+The fourth reading needs the whole transcript. **gnomAD v4.1 - gnomAD v4.1
+Exomes** under Variation and Repeats has plenty of records over the exon; what
+separates them is frequency. **Filter by...** takes that the way it took a
+factor name: `feature.AF >= 0.001`.
 
-## Clinical and population variation
+<Figure src="/img/genomes_basics/gnomad_common_rare.png" caption="The TP53 transcript with phyloP, ClinVar and gnomAD exomes. Top: gnomAD as the checkbox gives it, densest over the coding exons. Bottom: the same track filtered to variants above 0.1 percent." />
 
-The same locus, from two more catalogs: **ClinVar Variants - ClinVar SNVs**
-under Phenotypes, Variants, and Literature, and **gnomAD v4.1 - gnomAD v4.1
-Exomes** under Variation and Repeats.
-
-<Figure src="/img/genomes_basics/clinvar_gnomad.png" caption="ClinVar SNVs and gnomAD v4.1 exome variants over the TP53 transcript, with the gene collapsed above them. ClinVar colours each variant by clinical significance." />
-
-Both variant sets pile up on the coding exons, and for different reasons:
-ClinVar's records are there because that is where the submitted variants were
-looked for, gnomAD's exome callset because that is where the exome capture
-reads. The colours are the part that separates them, and clicking a variant is
-how to read one.
+Unfiltered, gnomAD is densest where phyloP peaks, because that is where the
+exome capture reads. Filtered to what is common, it nearly empties out of the
+exons into the introns and the 3' UTR. ClinVar's pathogenic calls are in the
+place the common variation left.
 
 <Figure src="/img/genomes_basics/variant_details.png" caption="A ClinVar variant clicked open. The panel carries the file's own columns, including clinical significance, review status, molecular consequence and the phenotype cross-references, each linking out." />
 
@@ -191,77 +186,47 @@ A BigBed's extra fields arrive as fields, so nothing about this panel is
 particular to ClinVar: whatever columns the published file carries are what a
 click gives back.
 
-## A pangenome panel
-
-Variation and Repeats has a **Human Pangenome (HPRC)** group inside it, and
-**HPRC pangenome variants (minigraph-cactus v2.0, GRCh38)** holds the callset
-for the same coordinates: variants called from assembled haplotypes rather than
-from reads mapped to the reference. Its default display is one allele-frequency
-band; the track menu's display types include a per-sample one, which draws a row
-per haplotype.
-
-<Figure src="/img/genomes_basics/hprc_pangenome.png" caption="The HPRC pangenome callset over TP53 as a genotype matrix, one row per haplotype and one column per variant, drawn at each variant's real position. The legend names the genotype colours." />
-
-A column that runs the full height is a variant most haplotypes carry, which is
-to say a place the reference is the unusual sequence. The scattered single cells
-are the opposite.
-
 ## Where the protein binds
 
-Everything above reads _TP53_ as a stretch of sequence. It codes for a
-transcription factor, so the rest of its story is at other genes, and the
-catalog can follow it there. _CDKN1A_ encodes p21, which p53 switches on to halt
-the cell cycle after DNA damage. Type `CDKN1A` into the location box; the name
-index answers it the same way it answered TP53.
+_TP53_ codes for a transcription factor, so the rest of its story is at other
+genes. _CDKN1A_ encodes p21, which p53 switches on to halt the cell cycle after
+DNA damage. Type `CDKN1A` into the location box.
 
 **JASPAR Transcription Factors - JASPAR 2026 TFBS** under Regulation holds motif
-matches for every factor in the collection, so the question is asked with a
-filter. The track menu's **Filter by...** takes a jexl expression over any
-column the file carries, and JASPAR carries the factor name:
-`feature.TFName == 'TP53'` leaves the p53 sites alone.
-
-Underneath it go the three Regulation tracks from the promoter section, which
-are what the motif matches get read against: **ENCODE cCREs - ENCODE4 cCREs**,
-**DNase (Layered)** and **H3K27ac (Layered)**.
+matches for every factor in the collection, so **Filter by...** asks for one:
+`feature.TFName == 'TP53'`. Under it go three Regulation tracks from the
+promoter section, which are what the matches get read against: **ENCODE cCREs -
+ENCODE4 cCREs**, **DNase (Layered)** and **H3K27ac (Layered)**.
 
 <Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="The CDKN1A promoter region, five tracks deep: RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs, and the layered DNase and H3K27ac signal. The shaded pair are the two motif matches inside the gene's active region; the four to their left are over the quiet part of the window." />
 
-Six positions in this window match the p53 motif well enough to be called,
-spread across the whole upstream stretch, and the tracks under them are not flat
-across that stretch. Signal begins around the shaded pair and rises from there
-into the gene, and each of those two sits in a cCRE of its own, one called a
-promoter and one a proximal enhancer. They are about 2.3 kb and 1.4 kb upstream
-of the canonical transcription start site, which is where the response elements
-for p21 were described. The matches further left are over the quiet part of the
-window, which is the ordinary fate of a match to a ten-base pattern in a genome
-this size.
+Six positions match the motif well enough to be called, spread across the
+upstream stretch, and the tracks under them are not flat across it. Signal
+begins at the shaded pair and rises into the gene, and each of those two sits in
+a cCRE of its own, one a promoter and one a proximal enhancer, about 2.3 kb and
+1.4 kb upstream of the canonical transcription start site. That is where the
+response elements for p21 were described. The four further left have the motif
+and nothing under it, which is the ordinary fate of a match to a ten-base
+pattern.
 
-The two lanes disagree about which end of the region is busiest, and that is the
-usual split between the two marks: accessibility peaks hard on the transcription
-start site and downstream, while H3K27ac carries out over the elements upstream
-of it.
+The two signal lanes disagree about which end is busiest, the usual split
+between the marks: accessibility peaks on the start site, H3K27ac carries out
+over the elements upstream. **PANDAR** and **DINOL**, drawn by the same RefSeq
+track, are p53-induced lncRNAs transcribed off the same promoter.
 
-The region holds more than the coding gene. **PANDAR** and **DINOL**, both
-transcribed away from the p21 promoter, are p53-induced lncRNAs, and they arrive
-with the same RefSeq track that drew the gene.
-
-Zooming to the higher-scoring of the two puts the motif on the sequence it was
-called from.
+Zooming to the higher-scoring element puts the motif on its sequence.
 
 <Figure src="/img/genomes_basics/p53_element_sequence.png" caption="The distal element at base zoom: the JASPAR match, the promoter-class cCRE it sits inside, and the reference sequence. The match is called on both strands because the site is two copies of the p53 half-site end to end, which is what the boxes span." />
 
-## Other tracks, same two clicks
+## Categories this page did not open
 
-Nothing above was specific to conservation, regulation or variation. Some others
-worth opening, with the category each one filters out of:
+Four categories carried everything above. The next tracks a reader usually wants
+sit in the ones it skipped:
 
 - **Conserved Elements - 100 Vert. El** (Comparative Genomics) is the interval
-  companion to phyloP. phyloP scores each base, phastCons calls the runs.
+  companion to phyloP: phyloP scores each base, phastCons calls the runs.
 - **RepeatMasker** (Repeats) says which parts of a window are repeat elements,
-  which is worth knowing before reading much into a signal over one.
-- **JASPAR Transcription Factors - JASPAR 2026 TFBS** (Regulation) puts motif
-  matches under the peaks above, for every factor rather than the one filtered
-  for at _CDKN1A_.
+  worth knowing before reading much into a signal over one.
 - **GTEx cis-eQTLs - GTEx DAP-G eQTLs** (Regulation) names the variants
   associated with expression of nearby genes.
 - **Long-read SVs - CoLoRSdb 1427 SVs** (Variation and Repeats) covers the size
@@ -270,8 +235,8 @@ worth opening, with the category each one filters out of:
   an annotation, and gets a page of its own in
   [](/docs/tutorials/genomes_synteny).
 
-Turning several on at once is fine. Drag a track by the handle at the left of
-its header to reorder, and the `×` in the header closes it again.
+Drag a track by the handle at the left of its header to reorder it; the `×`
+closes it.
 
 ## What is actually downloaded
 
@@ -310,6 +275,7 @@ introns is where that shows.
 - [](/docs/user_guides/gene_track)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/genomes_msa)
+- [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/repeatmasker_classes)
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/hub_url)

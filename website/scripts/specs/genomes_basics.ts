@@ -91,6 +91,16 @@ const PHYLOP_NAME =
 // that stops resolving fails the capture where a stale name would quietly render
 // an empty track.
 const JASPAR_TRACK_ID = 'hg38-jaspar2026'
+const CLINVAR_TRACK_ID = 'hg38-clinvarMain'
+// EXOMES rather than genomes: coding sequence is what the comparison is about,
+// and the exome callset is both denser there and a fraction of the bytes.
+const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
+
+// Common enough to be standing in the population, at 0.1%. `AF` is a string
+// column in the file's autoSql, and no cast is needed: jexl's `>=` is JS's, so
+// "0.00025" >= 0.001 coerces and is false. A unary `+` does not parse in jexl,
+// which is the tempting way to write the cast that isn't needed.
+const GNOMAD_COMMON_FILTER = 'jexl:feature.AF >= 0.001'
 
 // One factor out of the whole JASPAR collection. `TFName` is a column of the
 // file's own autoSql, so this is the expression a reader types into the track
@@ -498,18 +508,24 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // AlphaMissense over the same exon phyloP was read on, so the two figures are
-  // the same 110 bases and can be compared row by row.
+  // Four readings of one exon, on the same 110 bases the phyloP figure used:
+  // AlphaMissense (predicted, from the protein), phyloP (measured, across
+  // species), ClinVar (submitted, by diagnostic laboratories) and the reference
+  // sequence with its translation. The point is that four methods with nothing
+  // in common land on the same columns, so all four have to be in one frame.
   //
-  // The track is one MultiQuantitativeTrack whose four subtracks are the four
-  // possible substituted bases, so a column is a position and a row is "what if
-  // this base became an A/C/G/T". That is what makes it the pair to a
-  // conservation track rather than a second copy of one: phyloP says a base does
-  // not change, AlphaMissense says what would happen if it did, and the
-  // third-codon-position dip appears in both for the same reason.
+  // AlphaMissense is one MultiQuantitativeTrack whose four subtracks are the
+  // four possible substituted bases, so a column is a position and a row is
+  // "what if this base became an A/C/G/T".
+  //
+  // ClinVar over these 110 bp is 348 records, of which 151 are pathogenic or
+  // likely pathogenic and 45 benign or likely benign (measured 2026-08-13 off
+  // clinvarMain.bb). It is a wall at any height, and that IS the reading -- the
+  // track is here for its colour and its density, not for its rows, so 150px
+  // showing the top of the pile is the frame rather than a clipped one.
   {
     mode: 'url',
-    name: 'genomes_basics/alphamissense_exon',
+    name: 'genomes_basics/exon_four_ways',
     url: sessionSpec(UCSC_HG38_CONFIG, {
       views: [
         {
@@ -518,9 +534,10 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           loc: TP53_EXON_WINDOW,
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 70 },
-            { trackId: 'hg38-alphaMissense', height: 220 },
-            { ...PHYLOP_TRACK, height: 100 },
-            { trackId: 'hg38-refseq', height: 120 },
+            { trackId: 'hg38-alphaMissense', height: 200 },
+            { ...PHYLOP_TRACK, height: 90 },
+            { trackId: CLINVAR_TRACK_ID, height: 150 },
+            { trackId: 'hg38-refseq', height: 110 },
           ],
         },
       ],
@@ -528,24 +545,38 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyText: 'TP53',
     readyTimeout: 180000,
     settleMs: 10000,
-    viewportHeight: 840,
+    // 990: at 900 the run cut 83px of the sequence track, which is one of the
+    // four readings the frame is named for.
+    viewportHeight: 990,
     diffThreshold: 0.02,
   },
 
-  // Clinical and population variation over the transcript: ClinVar's calls pile
-  // up on the exons phyloP peaked over, and gnomAD's observed variants sit
-  // beside them from a different kind of source.
+  // The population reading, which needs the transcript rather than the exon:
+  // gnomAD as the checkbox gives it, then filtered to the variants that are
+  // actually common. Two frames of the same window, so the redistribution is
+  // read across rather than inferred.
   //
-  // gnomAD v4.1 EXOMES rather than genomes: the coding exons are what the
-  // comparison is about, and the exome callset is both denser there and a
-  // fraction of the bytes.
+  // Measured 2026-08-13 over this window against exomes.bb, with NM_000546.6's
+  // coding exons from api.genome.ucsc.edu:
   //
-  // gnomAD Mut Constraint was here as a third track and is dropped: its scores
-  // are 1 kb windows, so over a 9 kb view it is four blue blocks, and a reader
-  // cannot tell a saturated score from a track that failed to load.
+  //   coding bases                  1,182 of 9,200 in the window   (12.8%)
+  //   gnomAD, any AF                3,045 records, 685 coding      (22.5%)
+  //   gnomAD, AF >= 0.001              71 records,   3 coding       (4.2%)
+  //   ClinVar pathogenic-ish        1,132 records, 1006 coding     (88.9%)
+  //
+  // So the raw callset is enriched on coding sequence (exome capture) and the
+  // common half of it is depleted there by about three-fold against the base
+  // composition of the window, while the pathogenic calls are almost entirely
+  // inside. That is the whole figure, and none of those numbers is in the prose
+  // -- the two frames show it.
+  //
+  // `jexlFiltersSetting`, the model prop the "Filter by..." dialog writes: the
+  // frame is a reader having applied the filter. `AF` is a column of the file's
+  // own autoSql and arrives as a string, so the comparison is on a cast rather
+  // than on the raw field.
   {
     mode: 'url',
-    name: 'genomes_basics/clinvar_gnomad',
+    name: 'genomes_basics/gnomad_common_rare',
     url: sessionSpec(UCSC_HG38_CONFIG, {
       views: [
         {
@@ -554,8 +585,9 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           loc: TP53_TRANSCRIPT_WINDOW,
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 60 },
-            { trackId: 'hg38-clinvarMain', height: 150 },
-            { trackId: 'hg38-gnomadExomesVariantsV4_1', height: 150 },
+            { ...PHYLOP_TRACK, height: 90 },
+            { trackId: CLINVAR_TRACK_ID, height: 110 },
+            { trackId: GNOMAD_TRACK_ID, height: 130 },
           ],
         },
       ],
@@ -563,8 +595,35 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyText: 'TP53',
     readyTimeout: 180000,
     settleMs: 10000,
-    viewportHeight: 660,
+    // 720: at 640 the run cut 74px, which on the unfiltered frame is the bottom
+    // of the gnomAD pile the comparison is about.
+    viewportHeight: 720,
     diffThreshold: 0.02,
+    stages: [
+      { actions: [PARK_CURSOR] },
+      {
+        url: sessionSpec(UCSC_HG38_CONFIG, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              loc: TP53_TRANSCRIPT_WINDOW,
+              tracks: [
+                { ...GENE_TRACK_COLLAPSED, height: 60 },
+                { ...PHYLOP_TRACK, height: 90 },
+                { trackId: CLINVAR_TRACK_ID, height: 110 },
+                {
+                  trackId: GNOMAD_TRACK_ID,
+                  height: 130,
+                  jexlFiltersSetting: [GNOMAD_COMMON_FILTER],
+                },
+              ],
+            },
+          ],
+        }),
+        actions: [PARK_CURSOR],
+      },
+    ],
   },
 
   // What a click on one of those variants gives back: the feature details
@@ -613,46 +672,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'phenotypeList' },
       { type: 'delay', ms: 1500 },
     ],
-  },
-
-  // The HPRC pangenome callset as a genotype matrix: one row per haplotype of
-  // the 232-sample minigraph-cactus graph, drawn at each variant's real
-  // position, over the same transcript window as the ClinVar figure.
-  //
-  // LinearMultiSampleVariantDisplay rather than the track's default, which is
-  // one allele-frequency band and says nothing about who carries what. Naming
-  // the display type is a `type` on the view's tracks entry -- a config that a
-  // reader reaches through the track menu's "Display types".
-  //
-  // The track's own companion, the allele inventory, is NOT here and was tried:
-  // it carries only the graph's larger indels (59 of them across a megabyte of
-  // chr17, none inside TP53's 24 kb), so at this locus it is an empty track
-  // being correct.
-  {
-    mode: 'url',
-    name: 'genomes_basics/hprc_pangenome',
-    url: sessionSpec(UCSC_HG38_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: TP53_TRANSCRIPT_WINDOW,
-          tracks: [
-            { ...GENE_TRACK_COLLAPSED, height: 60 },
-            {
-              trackId: 'hg38-hprc-v2.0-pangenome-vcf',
-              type: 'LinearMultiSampleVariantDisplay',
-              height: 420,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'TP53',
-    readyTimeout: 180000,
-    settleMs: 10000,
-    viewportHeight: 730,
-    diffThreshold: 0.02,
   },
 
   // ── What the protein the gene codes for does ───────────────────────
