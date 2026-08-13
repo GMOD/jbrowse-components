@@ -61,23 +61,59 @@ sequences, so the C→T signal survives for JBrowse to compare against the
 reference at render time. Bismark is an equally common aligner, especially in
 the plant community, and JBrowse reads its BAMs the same way.
 
+Trimming and alignment are four commands, on any pair of WGBS or EM-seq FASTQs:
+
+```bash
+trim_galore --paired R1.fastq.gz R2.fastq.gz
+bwameth.py index tair10.fa
+bwameth.py --reference tair10.fa -t 8 R1_val_1.fq.gz R2_val_2.fq.gz \
+  | samtools sort -o arabidopsis_wgbs.bam -
+samtools index arabidopsis_wgbs.bam
+```
+
+`bwameth.py index` writes a C→T converted copy of the reference next to the
+original, so the reference directory has to be writable.
+
 ### Check the conversion rate
 
 An unconverted cytosine is indistinguishable from a methylated one, so the
 library's conversion rate is worth having before reading anything off the track.
-The chloroplast is unmethylated, which makes it the control: the script runs
-MethylDackel over it in CHH context and prints the rate. Modern libraries
-convert above 99%.
+The chloroplast is unmethylated, which makes it the control:
+
+```bash
+MethylDackel extract --CHH -r NC_000932.1 -o conversion \
+  tair10.fa arabidopsis_wgbs.bam
+```
+
+Column 4 of the resulting `conversion_CHH.bedGraph` is the methylated percentage
+at each cytosine, and on an unmethylated sequence that is the fraction the
+conversion missed. Modern libraries convert above 99%. An organism with no
+plastid uses whatever the library spiked in for this, usually unmethylated
+lambda or pUC19, added to the reference as an extra contig. The
+[reproduce script](#reproduce-it-end-to-end) prints the rate for this run.
 
 ### Aggregate methylation, optionally
 
 A per-position methylation fraction across the whole genome is complementary to
 the per-read coloring, and
 [MethylDackel](https://github.com/dpryan79/MethylDackel) calls one in all three
-plant contexts. Group the resulting bigWigs into a single
-`MultiQuantitativeTrack`, a subadapter per context, and they render as three
-labeled rows, the Aggregate methylation track in the figures below. This is the
-same mechanism as the
+plant contexts. It writes a bedGraph per context, which becomes a bigWig once
+the header line is dropped and the percentage column kept:
+
+```bash
+MethylDackel extract --CHG --CHH tair10.fa arabidopsis_wgbs.bam
+samtools faidx tair10.fa
+cut -f1,2 tair10.fa.fai > tair10.chrom.sizes
+for ctx in CpG CHG CHH; do
+  tail -n +2 arabidopsis_wgbs_${ctx}.bedGraph | cut -f1-4 |
+    sort -k1,1 -k2,2n > ${ctx}.bg
+  bedGraphToBigWig ${ctx}.bg tair10.chrom.sizes arabidopsis_wgbs_${ctx}.bw
+done
+```
+
+Group the resulting bigWigs into a single `MultiQuantitativeTrack`, a subadapter
+per context, and they render as three labeled rows, the Aggregate methylation
+track in the figures below. This is the same mechanism as the
 [DNA methylation tutorial's aggregate section](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl).
 
 ```json
@@ -134,8 +170,9 @@ tabix -p gff tair10.gff.gz
 jbrowse add-track tair10.gff.gz --name "TAIR10 genes" --load copy
 ```
 
-Then add the alignments track. The per-read bisulfite coloring is a property of
-this track, no separate configuration:
+Then add the alignments track. The coloring needs no extra files and no tags in
+the BAM. `displayDefaults` decides which context the track opens on, and the
+track menu switches it afterwards:
 
 ```json addtrack
 {
@@ -146,9 +183,19 @@ this track, no separate configuration:
   "adapter": {
     "type": "BamAdapter",
     "uri": "arabidopsis_wgbs.bam"
+  },
+  "displayDefaults": {
+    "colorBy": {
+      "type": "bisulfite",
+      "modifications": { "cytosineContext": "CG" }
+    }
   }
 }
 ```
+
+[`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-colorby) takes
+`CG`, `CHG`, `CHH` or `all`. Leave `displayDefaults` off and the track opens
+uncolored, with the same choice available from the menu.
 
 See the [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent assembly JSON.
