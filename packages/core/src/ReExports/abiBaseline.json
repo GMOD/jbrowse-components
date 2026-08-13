@@ -526,10 +526,6 @@
     "toggleTrackGeneric"
   ],
   "@jbrowse/core/util/Base1DViewModel": [
-    "C",
-    "N",
-    "S",
-    "T",
     "duplicateKeysChecked",
     "flags",
     "identifierAttribute",
@@ -542,7 +538,6 @@
     "preProcessSnapshot",
     "preProcessor",
     "properties",
-    "propertiesArePreProcessed",
     "propertyNames",
     "props"
   ],
