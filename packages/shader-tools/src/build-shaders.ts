@@ -45,6 +45,7 @@ import { availableParallelism, tmpdir } from 'node:os'
 import path from 'node:path'
 
 import { pool } from './pool.ts'
+import { assertUniformLayoutMatches } from './shader-codegen/assertUniformLayout.ts'
 import { assertVertexInputsMatch } from './shader-codegen/assertVertexInputs.ts'
 import {
   assertBindingsMatchWgsl,
@@ -57,6 +58,7 @@ import {
   emitShaderStrings,
   header,
   instanceAttrsFor,
+  uniformFieldsFor,
 } from './shader-codegen/codegen.ts'
 import {
   assertJsSkipsResolve,
@@ -328,6 +330,13 @@ const SCANS: ShaderScan[] = []
 // is inlined into every importer's WGSL, so it shows up in a dozen scans while
 // being declared once.
 const EXPORTED = new Set<string>()
+
+// How many emitted uniform blocks `assertUniformLayoutMatches` actually compared,
+// summed over the tree. Per shader, "this backend declared no uniform block" is a
+// legitimate answer — Slang eliminates a block the entry points never read. Over
+// a whole tree it is not: it would mean slangc renamed the declaration and every
+// shader is now skipped, which is the one failure a per-shader guard cannot see.
+let UNIFORM_BLOCKS_COMPARED = 0
 
 const LIFT_REPORT_PATH = 'agent-docs/reference/SHADER_LIFT_INVENTORY.md'
 
@@ -710,6 +719,20 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       )
     }
 
+    // And the same for the other struct the TS side writes through. Reflection
+    // gives these offsets rather than the codegen inventing them, which is why
+    // it went unchecked for longer — but reflection and codegen are two slangc
+    // outputs, and a disagreement puts every uniform in the shader one word off.
+    const uniforms = uniformFieldsFor(reflection)
+    if (uniforms) {
+      UNIFORM_BLOCKS_COMPARED += assertUniformLayoutMatches(
+        path.relative(PROJECT_ROOT, slangPath),
+        uniforms.fields,
+        uniforms.totalBytes,
+        { wgsl, glslVertex },
+      )
+    }
+
     const codegenInputs = {
       baseName: base,
       reflection,
@@ -861,6 +884,18 @@ async function main() {
   // Given an explicit path list the scan covers those shaders alone, and
   // writing the report from it would delete every other shader's rows.
   if (argPaths.length === 0) {
+    if (UNIFORM_BLOCKS_COMPARED === 0) {
+      throw new Error(
+        `no shader's uniform block was compared against its emitted source. ` +
+          `Every shader in the tree read as "Slang eliminated the block", which ` +
+          `one shader legitimately can be and all of them cannot — slangc has ` +
+          `changed how it declares a uniform block, and assertUniformLayout.ts's ` +
+          `patterns need updating before the layout is trusted again.`,
+      )
+    }
+    console.log(
+      `  ok: ${UNIFORM_BLOCKS_COMPARED} uniform block(s) agree with their emitted layout`,
+    )
     assertNoOrphans()
     // Skips come from every file, modules included — see `collectSkips`.
     const skips = collectSkips(

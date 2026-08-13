@@ -33,6 +33,10 @@ export type SlangType = ScalarType | VectorType
  * that — slangc emits `array<vec4<u32>, 9>` for WGSL and leaves the GLSL member
  * inside its `layout(std140)` block — so one packed buffer feeds both, as long
  * as the TS side strides by this and not by 4.
+ *
+ * That agreement is checked rather than asserted: `assertUniformLayoutMatches`
+ * recomputes the block from each emitted backend's own declaration on every
+ * build and fails if either disagrees with the offsets reflected here.
  */
 export interface ArrayType {
   kind: 'array'

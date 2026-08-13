@@ -80,6 +80,7 @@ see them.
 | `build-shaders.ts` `writeJsExports` | lifts from the shader's own WGSL, or from a synthesized compute wrapper for `module` files |
 | `liftReport.ts` | the generated inventory + the `js-skip` staleness check |
 | `check-oracle.ts`, `oracleProbe.ts` | the differential check against slangc's C++ (`pnpm check-shader-oracle`) |
+| `assertVertexInputs.ts`, `assertUniformLayout.ts` | the two build-time layout gates — the instance struct and the uniform block, each against both emitted backends |
 | `*.generated.ts` / `*.iface.generated.ts` / `*.consts.generated.ts` | strings / layout + packers / `export-consts` integers — three modules, one shader, see below |
 | `*.js.generated.ts` | the generated twins — never hand-edit |
 | `*Parity.test.ts` | the retirement gates |
@@ -190,8 +191,16 @@ pnpm test --testPathPatterns 'Parity\.test\.ts$'
 
 The emitter is coupled to the *shape* of slangc's WGSL — identifier mangling, how
 `&&` and `?:` are desugared, whether a literal arrives as `u32(10)` or `10u`.
-Nothing else in the tree depends on that shape, so this is the only place a bump
-can go quietly wrong.
+
+**Two other things read that shape, and both fail the build rather than the
+review**: `assertVertexInputsMatch` parses the vertex inputs out of both emitted
+backends, and `assertUniformLayoutMatches` parses the uniform block out of both
+and checks the reflected offsets against it. So a bump that changes how slangc
+declares either struct is a `pnpm gen:shaders` failure, not a rendering bug found
+later. Read the numbers those print: a full build says how many uniform blocks it
+actually compared, and a run that compares none says so, because "the parser
+matched nothing" and "the shader has no uniform block" are otherwise the same
+green.
 
 **`pnpm check-shader-oracle` is what makes that checkable rather than
 reviewable.** slangc will also emit C++ for the same Slang, so the second

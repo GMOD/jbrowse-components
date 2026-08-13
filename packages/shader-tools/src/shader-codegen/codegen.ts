@@ -285,6 +285,36 @@ export function instanceAttrsFor(reflection: Reflection) {
     ? { attrs: instanceAttrs(vs.struct, vs.source), source: vs.source }
     : undefined
 }
+// The uniform block's reflected layout, in the shape `assertUniformLayoutMatches`
+// checks the emitted shaders against. Built from the same `binding.offset` /
+// `uniformStride` that `UNIFORM_OFFSET_*`, `UNIFORM_SLOT_ARRAYS` and
+// `writeUniforms` are emitted from below, deliberately: the point is to pin the
+// numbers that ship, not to recompute a second opinion of them here and check
+// that against a third.
+export function uniformFieldsFor(reflection: Reflection) {
+  const cb = findConstantBuffer(reflection)
+  if (!cb) {
+    return undefined
+  }
+  return {
+    totalBytes: cb.elementVarLayout.binding.size,
+    fields: cb.elementType.fields.flatMap(f =>
+      f.binding?.kind === 'uniform'
+        ? [
+            {
+              name: f.name,
+              offsetBytes: f.binding.offset,
+              strideBytes:
+                f.type.kind === 'array' ? f.type.uniformStride : undefined,
+              elementCount:
+                f.type.kind === 'array' ? f.type.elementCount : undefined,
+            },
+          ]
+        : [],
+    ),
+  }
+}
+
 export function instanceStride(attrs: InstanceAttr[]) {
   const last = attrs.at(-1)
   return last ? last.offsetBytes + last.size : 0
