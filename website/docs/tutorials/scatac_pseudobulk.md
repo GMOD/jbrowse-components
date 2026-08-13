@@ -28,20 +28,14 @@ draws one row per file.
 ## Pooling cells into rows
 
 One ATAC cell contributes only a few thousand fragments, so a coverage track of
-a single cell is almost entirely zero and no locus reads as open or closed.
-Pseudobulking is the usual way around that: take the labels your clustering
-already assigned, pool every fragment belonging to a label into one profile, and
-each cell type comes out as a dense track resembling a bulk ATAC experiment run
-on that cell type alone. JBrowse stacks the resulting files as rows of one
-track, so accessibility restricted to one lineage draws as a peak present in a
-few rows and flat in the rest.
+a single cell is almost entirely zero. Pseudobulking pools every fragment
+belonging to a label into one profile, and each cell type comes out as a dense
+track resembling a bulk ATAC experiment run on that cell type alone. JBrowse
+stacks the resulting files as rows of one track.
 
 PBMCs make a good dataset to try this on, since the answer is known in advance:
 at a T-cell marker the T-cell rows should carry the signal, and at a B-cell
 marker those rows should go flat while the B-cell rows light up.
-
-Each row keeps the color its cluster had in the single-cell object, and the rows
-are ordered by lineage, so the two markers land in different blocks.
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
 
@@ -191,20 +185,14 @@ three-cell-type example against hg38:
 ```
 
 Three things about that list are worth writing deliberately rather than taking
-from the filesystem.
+from the filesystem:
 
-Subadapters draw in the order given, so list them **grouped by lineage**. A
-single-cell object's own category order usually is not: the one behind the
-figure above interleaves the monocyte labels among the T-cell ones and puts NK
-between the two B-cell labels, which scatters each lineage down the stack.
-
-Take each row's `color` from the cluster's color in your analysis, so a cell
-type is the same color in the browser as on the UMAP and a reader can move
-between the two pictures.
-
-`group` is what the sidebar tree branches on, and it is also what
-[](/docs/user_guides/clustering) reorders when you ask it to cluster rows by
-score at the locus in view.
+- **Order.** Subadapters draw in the order given, so list them grouped by
+  lineage. A single-cell object's own category order usually interleaves them.
+- **`color`.** Take each row's from the cluster's color in your analysis, so a
+  cell type is the same color in the browser as on the UMAP.
+- **`group`.** What the sidebar tree branches on, and what
+  [](/docs/user_guides/clustering) reorders.
 
 If you don't need per-row names, colors or groups, the `bigWigs` shorthand takes
 a plain array of URLs and derives each row's label from its filename:
@@ -321,10 +309,6 @@ own work is short:
   experiment means replacing it
 - `jbrowse create` plus `add-assembly` for hg38 and a RefSeq gene track, then
   the one `MultiQuantitativeTrack` those subadapters make up
-
-Everything upstream of `export_coverage` is the part a genome browser does not
-do, and this dataset is a convenient place to skip it. Running it on your own
-experiment means substituting your labeled object at that one call.
 
 Navigate the finished instance to the two markers in the figure and read the
 rows against the labels. Rows that stay open everywhere usually mean the

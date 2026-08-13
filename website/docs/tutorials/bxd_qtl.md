@@ -43,9 +43,6 @@ This tutorial builds two JBrowse tracks from the same BXD panel, on mm10:
 - a QTL Manhattan track ([plugins/gwas](/docs/config_guides/gwas_track)) from a
   single-marker scan of a real BXD phenotype.
 
-Stack them in one view and you see the trait peak on top with the B/D blocks
-that drive it directly underneath.
-
 The GWAS/Manhattan and multi-row feature tracks shown here also render inline
 through the [Python anywidget interface](/docs/jbrowse_anywidget) (or
 [](/docs/jbrowser) in R), so you can run the scan and view the peak in one
@@ -74,10 +71,9 @@ Download it from
 
 Its own header describes what the columns are: "198 BXD strains and ... the
 reciprocal F1s", of which "191 are independent, whereas 7 are substrains". The
-painting below skips the F1 columns. An F1 is heterozygous at every marker by
-construction, so its row is a solid band of `H` that says something about the
-cross rather than about any strain's recombination, and the QTL scan is computed
-over the strains rather than the F1s.
+painting below skips the F1 columns, since an F1 is heterozygous at every marker
+by construction and the QTL scan is computed over the strains rather than the
+F1s.
 
 On JBrowse Desktop, add the `.bed.gz`/`.tsv.gz` files you build through **Add
 track** with no hosting step needed
@@ -239,19 +235,15 @@ blocks away from the locus.
 
 ### Ordering the rows by the whole chromosome instead
 
-Sorting keys every row on one column and lets the rest of the chromosome fall
-where it may. The track menu's **Clustering** → **Cluster rows by similarity**
-keys them on the whole visible region instead, and draws the tree it built down
-the left-hand side. A session can trigger it declaratively with
-`runClustering: true`, the same way `sortRowsBy` bakes in a sort. See
-[](/docs/user_guides/multivariant_track) for what the dialog and its dendrogram
-look like.
+Sorting keys every row on one column. The track menu's **Clustering** →
+**Cluster rows by similarity** keys them on the whole visible region instead and
+draws the tree down the left-hand side; a session can trigger it declaratively
+with `runClustering: true`, the same way `sortRowsBy` bakes in a sort. See
+[](/docs/user_guides/multivariant_track).
 
-Clustering is computed over the region in view, so this is chr4 similarity, not
-a genome-wide relatedness: pan somewhere else and the same menu item gives a
-different order. For this scan the sorted order above is the one to read: the
-peak is what the association is about, and keying the rows on it is what puts
-the B/D split directly under it.
+Clustering is computed over the region in view, so this is chr4 similarity
+rather than a genome-wide relatedness. For this scan the sorted order above is
+the one to read.
 
 ## Reproduce it end to end
 
