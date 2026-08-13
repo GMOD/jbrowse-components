@@ -2,8 +2,8 @@
 title: Basic usage of genomes.jbrowse.org
 description:
   Open a hosted genome, search a gene, and work through the UCSC track catalog
-  on hg38: conservation, regulation and variation at TP53, then p53's own
-  binding sites at CDKN1A
+  on hg38, from conservation and variation at TP53 to p53's own binding sites at
+  CDKN1A
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 data: hosted
