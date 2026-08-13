@@ -126,6 +126,27 @@ const COLOR_SPLIT_INVERSION = 7
 // supplementary yellow, matching the read-fill + connector deletion color.
 const COLOR_SPLIT_DELETION = 8
 
+// Paint rank of an arc color slot: 0 for the baseline "nothing to see here"
+// slot, 1 for every slot that says something. Array order is paint order and
+// the strokes are opaque, so this is the coarsest key of `resolveArcs`' sort —
+// every categorized arc lands over every uncategorized one.
+//
+// A deep short-read pileup is overwhelmingly concordant pairs, and they all
+// paint COLOR_DEFAULT. On HG002 300x the ratio is about 50:1 even after the
+// insert-size band was floored to the event scale, so the handful of arcs
+// carrying a category were being punched through by grey arcs fetched later —
+// support-ascending order is arbitrary with respect to whether an arc means
+// anything. The signal is what the band is drawn for, and it has to survive the
+// noise crossing it.
+//
+// Deliberately binary rather than a per-slot priority list: the distinction
+// that matters is categorized vs not, and ranking the categories against each
+// other would be asserting that a short insert outranks an inversion, which
+// nothing here knows. Within a rank, `support` still orders them.
+export function arcPaintRank(colorType: number) {
+  return colorType === COLOR_DEFAULT ? 0 : 1
+}
+
 // Legend category for an arc / read-cloud color slot. The read legend is
 // otherwise driven purely by read-fill categories (readColorCategory), so
 // cloud-only buckets — split junctions especially, which no read fill produces
@@ -1055,14 +1076,19 @@ function resolveArcs(
     arcs.push(computed)
   }
 
-  // ASCENDING SUPPORT, because array order is paint order and the strokes are
-  // opaque: the last arc drawn over a shared pixel is the one that keeps it.
-  // First-seen order is the reads' order, which is arbitrary with respect to
-  // support, so a singleton fetched late punched a gap through every heavier arc
-  // it crossed — and `hitTestArcs`' last-drawn-wins tie-break then handed those
-  // pixels to it too. Heaviest-last is the ranking `arcLineWidth` exists to
-  // express, and it is what lets the hit test resolve an overlap toward the
-  // strongest junction and still be describing the arc on top.
+  // CATEGORY FIRST, then ASCENDING SUPPORT, because array order is paint order
+  // and the strokes are opaque: the last arc drawn over a shared pixel is the
+  // one that keeps it.
+  //
+  // `arcPaintRank` is the coarse key — every arc that says something paints
+  // over every arc that does not; see it for why a deep pileup needs that.
+  // Support orders each rank internally: first-seen order is the reads' order,
+  // which is arbitrary with respect to support, so a singleton fetched late
+  // punched a gap through every heavier arc it crossed — and `hitTestArcs`'
+  // last-drawn-wins tie-break then handed those pixels to it too. Heaviest-last
+  // is the ranking `arcLineWidth` exists to express, and it is what lets the hit
+  // test resolve an overlap toward the strongest junction and still be
+  // describing the arc on top.
   //
   // TOTAL, tie-broken on the dedup key, because "the reads' order they arrived
   // in" — which is what a merely stable sort leaves equal-support arcs in — is
@@ -1078,7 +1104,12 @@ function resolveArcs(
   // had changed. `key` is what arcs are deduped by, so no two share it and this
   // is a strict weak ordering; which arc wins a tie does not matter, only that
   // the same one wins it every time.
-  arcs.sort((a, b) => a.support - b.support || (a.key < b.key ? -1 : 1))
+  arcs.sort(
+    (a, b) =>
+      arcPaintRank(a.colorType) - arcPaintRank(b.colorType) ||
+      a.support - b.support ||
+      (a.key < b.key ? -1 : 1),
+  )
 
   // The same ordering, for the same reason, over the ticks. They are opaque
   // full-band verticals, so two within a stroke width of each other resolve by

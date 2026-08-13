@@ -85,52 +85,48 @@ interface Candidate<T> {
  *
  * Two buckets, and the split is the decision:
  *
- * ON THE INK (`outside <= 0`) — the cursor is literally over this mark. Stroke
- * width IS support (`arcLineWidth`: a 10-read mark paints roughly three times
- * the ink of a singleton), so ranking these on distance to the centre line, as
- * this used to, reported whichever hairline the cursor was nearest and threw
- * away the target the per-mark tolerance had just widened. Heaviest wins
- * instead, which is also the mark painted on top — `resolveArcs` orders both
- * feeds by support — so the hover and the picture name the same one.
+ * ON THE INK (`outside <= 0`) — the cursor is literally over this mark, so the
+ * answer is whichever mark is painted ON TOP at that pixel, the strokes being
+ * opaque. Both feeds arrive in paint order and both scans run ascending, so
+ * that is simply the LAST on-ink candidate considered. Ranking these on
+ * distance to the centre line, as this once did, reported whichever hairline
+ * the cursor was nearest and threw away the target the per-mark tolerance had
+ * just widened.
+ *
+ * Reading the paint order off the feed rather than re-deriving it is the point:
+ * it used to rank on support, which was equivalent only while support WAS the
+ * sort key. `resolveArcs` now sorts the arcs by category first, so a lone
+ * discordant arc paints over a heavily-supported concordant one and a
+ * support-ranked hover would have named the grey arc underneath — the exact
+ * drift this comment previously claimed could not happen.
  *
  * NEAR THE INK — reached only through `ARC_HIT_SLOP_PX`, so the cursor is over
  * blank band and the answer is a best guess. Nearest wins, measured from each
  * mark's own ink rather than its centre so a fat mark is not beaten by a
- * hairline it is visibly wider than. Consulted only when nothing is on ink.
- *
- * `>=` on both supports, so equal candidates resolve to the LAST considered —
- * the one painted over the other, both scans running ascending.
+ * hairline it is visibly wider than. Consulted only when nothing is on ink, and
+ * `<=` so a tie again resolves to the later-painted one.
  *
  * Shared because the arcs and the ticks were two spellings of it, each with the
- * same five locals and the same tie-breaks, under comments on the tick side
- * saying it was the "same two-bucket ranking as the arcs". Two instances of one
- * rule is a missing function — the argument `mark.ts` makes for the
- * geometry, applied to the ranking. One object per scan (two per mousemove);
- * the per-mark loops it serves still only write numbers.
+ * same locals and the same tie-breaks, under comments on the tick side saying
+ * it was the "same two-bucket ranking as the arcs". Two instances of one rule
+ * is a missing function — the argument `mark.ts` makes for the geometry,
+ * applied to the ranking. One object per scan (two per mousemove); the per-mark
+ * loops it serves still only write numbers.
  */
 function bestMark() {
   let onInk = -1
-  let onInkSupport = -1
   let nearest = -1
   let nearestOutside = Number.POSITIVE_INFINITY
-  let nearestSupport = -1
   return {
-    consider(index: number, support: number, outside: number) {
+    consider(index: number, outside: number) {
       if (outside > ARC_HIT_SLOP_PX) {
         return
       }
       if (outside <= 0) {
-        if (support >= onInkSupport) {
-          onInk = index
-          onInkSupport = support
-        }
-      } else if (
-        outside < nearestOutside ||
-        (outside === nearestOutside && support >= nearestSupport)
-      ) {
+        onInk = index
+      } else if (outside <= nearestOutside) {
         nearest = index
         nearestOutside = outside
-        nearestSupport = support
       }
     },
     // `outside` 0 for an on-ink winner: `pickBetween` reads it as the on-ink
@@ -175,8 +171,8 @@ export interface ArcHitOptions extends ArcBandFrame {
  * The single entry point on purpose. Both families are drawn into one rect and
  * overlap freely, so "which one answers" is a question about PAINT ORDER, and
  * the answer belongs here rather than at each call site: `drawArcsPass` runs
- * arc → flat → marker → line, and `drawArcs` strokes the arcs then the ticks,
- * so a tick is always the later ink.
+ * line → arc → flat → marker, and `drawArcs` strokes the ticks then the arcs,
+ * so an arc is always the later ink.
  */
 export function hitTestArcBand(
   canvasX: number,
@@ -205,10 +201,15 @@ export function hitTestArcBand(
 // The two families' winners, resolved by the rule the picture already states.
 //
 // ON THE INK beats near it, whichever family: the cursor is literally over that
-// mark, and a mark it is merely NEAR is a guess. Within that, the tick wins,
-// because it is painted over the arcs and naming the one underneath would
-// describe a colour the reader cannot see. Only when neither is on ink does
-// distance decide, and a tie there goes to the tick for the same reason.
+// mark, and a mark it is merely NEAR is a guess. Within that, the ARC wins,
+// because the tick pass now paints first (see `ARC_PASSES`) and naming the mark
+// underneath would describe a colour the reader cannot see. Only when neither is
+// on ink does distance decide, and a tie there goes to the arc for the same
+// reason.
+//
+// This whole function inverts with the pass order and must: it is the one place
+// that reads paint order as an answer, which is why the ordering is stated in
+// `ARC_PASSES` and consumed here rather than being asserted twice.
 function pickBetween(
   arc: Candidate<ArcHitResult> | undefined,
   tick: Candidate<ArcLineHitResult> | undefined,
@@ -225,15 +226,15 @@ function pickBetween(
     return arcOnInk ? arc.hit : tick.hit
   }
   if (arcOnInk) {
-    return tick.hit
+    return arc.hit
   }
-  return arc.outside < tick.outside ? arc.hit : tick.hit
+  return arc.outside <= tick.outside ? arc.hit : tick.hit
 }
 
 // The ticks: full-band verticals, so the distance is purely horizontal and the
 // band gate above has already settled Y. `bestMark` is the ranking, shared with
-// the arcs — `resolveArcs` orders the tick feed by support too, so heaviest and
-// last-drawn are the same tick here as well.
+// the arcs — `resolveArcs` leaves the tick feed in paint order too, so scanning
+// it ascending puts the last-drawn tick last here as well.
 function tickCandidate(
   canvasX: number,
   data: ArcsUploadData,
@@ -242,11 +243,9 @@ function tickCandidate(
   const { bpToScreenX, lineWidth } = opts
   const picker = bestMark()
   for (let i = 0; i < data.numArcLines; i++) {
-    const support = data.arcLineSupport[i]!
-    const halfWidth = arcLineWidth(support, lineWidth) / 2
+    const halfWidth = arcLineWidth(data.arcLineSupport[i]!, lineWidth) / 2
     picker.consider(
       i,
-      support,
       Math.abs(canvasX - bpToScreenX(data.arcLinePositions[i]!)) - halfWidth,
     )
   }
@@ -281,12 +280,12 @@ function arcCandidate(
   const localY = (canvasY - anchorY) * (pairedArcsDown ? 1 : -1)
 
   // `bestMark` is the two-bucket ranking — see it for why on-ink is settled by
-  // support and near-ink by distance. What is local to the arcs is the DISTANCE
-  // fed to it, which needs a mark per arc where a tick needs one subtract.
+  // paint order and near-ink by distance. What is local to the arcs is the
+  // DISTANCE fed to it, which needs a mark per arc where a tick needs one
+  // subtract.
   const picker = bestMark()
   for (let i = 0; i < data.numArcs; i++) {
-    const support = data.arcSupport[i]!
-    const halfWidth = arcLineWidth(support, lineWidth) / 2
+    const halfWidth = arcLineWidth(data.arcSupport[i]!, lineWidth) / 2
     if (!nearArcColumns(canvasX, data, i, opts, halfWidth)) {
       continue
     }
@@ -294,7 +293,6 @@ function arcCandidate(
     // gates the hit and sorts the two buckets.
     picker.consider(
       i,
-      support,
       markDistance(canvasX, localY, arcMark(data, i, opts)) - halfWidth,
     )
   }

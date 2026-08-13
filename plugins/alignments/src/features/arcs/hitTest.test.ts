@@ -198,8 +198,15 @@ describe('support widens the target the way it widens the ink', () => {
 //
 // Flat (read-cloud) lines, because inside the bar's own span the distance to one
 // IS the difference in Y — every number below is readable without solving a
-// conic. The heavy arc is index 0 in each fixture, so nothing here can pass by
-// the last-drawn-wins tie-break instead of by the rule under test.
+// conic.
+//
+// Each fixture is in PAINT ORDER, which is `resolveArcs`' output order and the
+// invariant the on-ink rule reads: last considered is last drawn. These used to
+// be built heavy-first, deliberately against that order, back when the rule
+// re-derived paint order from `support` and so could be tested apart from it.
+// It cannot be any more — a category-first sort means support no longer implies
+// paint order — so a fixture out of feed order is testing a state production
+// does not produce. `resolveArcs`' own ordering is pinned in compute.test.ts.
 describe('when arcs crowd together, the visible one wins', () => {
   // localY (drawn-side-positive, measured off the anchor at the band bottom) is
   // `arcsH - canvasY`, and yBp maps 1:1 to px in BAND — so an arc at yBp 40 is
@@ -215,7 +222,8 @@ describe('when arcs crowd together, the visible one wins', () => {
   })
 
   test('on both arcs at once, the heavier one answers', () => {
-    const data = arcsData([flat(40, 32), flat(42, 1)])
+    // Support-ascending within one category, so the heavy line is the later ink.
+    const data = arcsData([flat(42, 1), flat(40, 32)])
     // 1.6px off the thick line's centre — inside its 1.875px half-width — and
     // 0.4px off the hairline's. Both are ink under the cursor; the old rule took
     // the nearer centre and reported the singleton.
@@ -223,7 +231,7 @@ describe('when arcs crowd together, the visible one wins', () => {
   })
 
   test('a singleton the cursor is on beats a heavy neighbour it is not on', () => {
-    const data = arcsData([flat(38, 32), flat(42, 1)])
+    const data = arcsData([flat(42, 1), flat(38, 32)])
     // Dead on the hairline, 4px off the thick line — past its ink, inside its
     // slop. Support is a tie-break between arcs under the cursor, not a
     // licence to capture hovers on somebody else's stroke.
@@ -231,7 +239,7 @@ describe('when arcs crowd together, the visible one wins', () => {
   })
 
   test('off every stroke, nearest decides — measured from the ink, not the centre', () => {
-    const data = arcsData([flat(40, 32), flat(44, 1)])
+    const data = arcsData([flat(44, 1), flat(40, 32)])
     // 2.5px off the thick line and 1.5px off the hairline, on neither: 0.625px
     // outside the thick ink against 1.0px outside the thin. The thick arc is
     // the nearer MARK even though its centre is further away.
@@ -386,9 +394,9 @@ describe('a connector tick answers along its whole height', () => {
 
 describe('a tick and an arc under one cursor', () => {
   // A dome from 200 to 600 rising 40, with a tick standing on its apex. Both
-  // renderers paint the ticks after the arcs (`drawArcsPass` runs the line pass
-  // last; `drawArcs` strokes the ticks after the curves), so where the two
-  // overlap the tick is the ink actually on screen.
+  // renderers paint the ticks BEFORE the arcs (`drawArcsPass` runs the line pass
+  // first; `drawArcs` strokes the ticks before the curves), so where the two
+  // overlap the arc is the ink actually on screen.
   const both = withTicks(
     arcsData([{ x1: 200, x2: 600, yBp: 40, support: 99 }]),
     [{ bp: 400 }],
@@ -398,24 +406,35 @@ describe('a tick and an arc under one cursor', () => {
   const onCurveAt = (x: number) =>
     BAND.arcsH - 0.75 * 40 * Math.sqrt(Math.max(1 - ((x - 400) / 200) ** 2, 0))
 
-  test('the tick wins, because it is the one painted on top', () => {
-    // Support 99 on the arc against 1 on the tick: this is paint order, not a
-    // weight comparison, so the far heavier arc still loses.
-    expect(hitTestArcBand(400, onCurveAt(400), both, BAND)?.kind).toBe('tick')
+  test('the arc wins, because it is the one painted on top', () => {
+    // Support 1 on the tick against 99 on the arc, but this is paint order and
+    // not a weight comparison: a tick of any weight would still lose here,
+    // which is the point of drawing the interchromosomal claim underneath the
+    // evidence rather than over it.
+    expect(hitTestArcBand(400, onCurveAt(400), both, BAND)?.kind).toBe('arc')
   })
 
-  test('but only where the tick is actually inked', () => {
-    // Along the same arc, well away from the tick, the arc answers — a tick
-    // must not shadow the whole band merely by being drawn later.
-    expect(hitTestArcBand(300, onCurveAt(300), both, BAND)?.kind).toBe('arc')
+  test('a tick still answers where no arc is inked', () => {
+    // Off the dome entirely but on the tick's own stroke: drawing the ticks
+    // first must not make them unhoverable, only overdrawable.
+    expect(hitTestArcBand(400, 5, both, BAND)?.kind).toBe('tick')
   })
 
   test('on-ink beats near-ink whichever family is which', () => {
-    // Cursor inside the arc's own stroke and only NEAR the tick. The arc is
-    // what the cursor is over, so the tick's slop — a guess — does not pre-empt
-    // it. This is the case that makes the rule two-tier rather than "tick
-    // always".
+    // Cursor inside the arc's own stroke and only NEAR the tick — the arc wins
+    // here on both counts, so it is the converse below that carries the rule.
     const x = 400 + arcLineWidth(1, BAND.lineWidth) / 2 + 2
     expect(hitTestArcBand(x, onCurveAt(x), both, BAND)?.kind).toBe('arc')
+  })
+
+  // The case that makes the rule two-tier rather than "arc always": on the
+  // tick's ink, merely NEAR the arc's. Paint order only decides between two
+  // marks the cursor is equally on; it must not let the later family capture
+  // hovers on the earlier one's actual stroke, which is the same asymmetry the
+  // ticks used to be on the winning side of.
+  test('a tick on ink beats an arc the cursor is only near', () => {
+    const y =
+      onCurveAt(400) + arcLineWidth(99, BAND.lineWidth) / 2 + ARC_HIT_SLOP_PX
+    expect(hitTestArcBand(400, y, both, BAND)?.kind).toBe('tick')
   })
 })

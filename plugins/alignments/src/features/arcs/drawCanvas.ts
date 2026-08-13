@@ -169,6 +169,32 @@ export function drawArcs(
     fullBlockWidth / bpLength,
   )
   const arcColors = buildArcColorPalette(state.colors)
+
+  // Interchromosomal connector ticks FIRST, under everything else in the band:
+  // a vertical line spanning the arc band at the breakpoint, matching
+  // arcLine.slang's full-band ±1 span. Every tick is ARC_COLOR_INTERCHROM — the
+  // shader names the same slot — so the COLOR is hoisted out of the loop rather
+  // than read per instance. The WIDTH is not: a tick is one breakpoint since
+  // `resolveArcs` coalesced them, so it draws at the width its read support
+  // earns, exactly as the arcs below do.
+  //
+  // Mirrors `ARC_PASSES`, where `ARC_LINE_PASS` leads for the reason given
+  // there; `hitTestArcBand` resolves its ties by this same order.
+  ctx.setLineDash([])
+  ctx.strokeStyle = rgb255(arcColors[ARC_COLOR_INTERCHROM]!)
+  for (let i = 0; i < region.numArcLines; i++) {
+    const bp = region.arcLinePositions[i]!
+    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    ctx.lineWidth = arcLineWidth(
+      region.arcLineSupport[i]!,
+      state.readConnectionsLineWidth,
+    )
+    ctx.beginPath()
+    ctx.moveTo(x, arcsTop)
+    ctx.lineTo(x, arcsTop + arcsH)
+    ctx.stroke()
+  }
+
   drawArcsToCtx(ctx, region, {
     bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
     arcsYDomainBp: domainBp,
@@ -192,25 +218,4 @@ export function drawArcs(
     flatConnectorColor: state.colors.colorFlatConnector,
     screenWidthPx,
   })
-
-  // Interchromosomal connector ticks: a vertical line spanning the arc band at
-  // the breakpoint, matching arcLine.slang's full-band ±1 span. Every tick is
-  // ARC_COLOR_INTERCHROM — the shader names the same slot — so the COLOR is
-  // hoisted out of the loop rather than read per instance. The WIDTH is not:
-  // a tick is one breakpoint since `resolveArcs` coalesced them, so it draws at
-  // the width its read support earns, exactly as the arcs above do.
-  ctx.setLineDash([])
-  ctx.strokeStyle = rgb255(arcColors[ARC_COLOR_INTERCHROM]!)
-  for (let i = 0; i < region.numArcLines; i++) {
-    const bp = region.arcLinePositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    ctx.lineWidth = arcLineWidth(
-      region.arcLineSupport[i]!,
-      state.readConnectionsLineWidth,
-    )
-    ctx.beginPath()
-    ctx.moveTo(x, arcsTop)
-    ctx.lineTo(x, arcsTop + arcsH)
-    ctx.stroke()
-  }
 }

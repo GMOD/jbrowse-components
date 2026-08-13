@@ -198,10 +198,30 @@ ticks (`arcLine`) share one rect, one Y scale and one palette, and they overlap
 freely. `hitTestArcBand` is the single entry point for that reason: which one a
 hover resolves to is a question about **paint order**, and the answer belongs
 beside the scan rather than at each call site. Both renderers run the line pass
-last (`drawArcsPass`; `drawArcs` strokes the ticks after the curves), so a tick
-is always the later ink. The rule is two-tier — on-ink beats near-ink either
-way, the tick wins among on-ink, and a near-ink tie goes the same way — because
-"tick always" would let a full-band vertical shadow every arc crossing it.
+**first** (`drawArcsPass`; `drawArcs` strokes the ticks before the curves), so
+an arc is always the later ink. The rule is two-tier — on-ink beats near-ink
+either way, the arc wins among on-ink, and a near-ink tie goes the same way —
+because "arc always" would make a tick unhoverable wherever any arc crosses it.
+
+**Paint order in this band is an interest ranking, not a data order**, and it is
+stated in two places for the two things that overlap:
+
+- Between the families, in `ARC_PASSES`: ticks under arcs. A translocation is
+  the one claim here a single window cannot support on its own, and on deep
+  short-read data mismapped pairs put a full-height opaque vertical at a large
+  share of loci — straight through the arcs that carry insert size and
+  orientation.
+- Within the arcs, in `resolveArcs`' sort: `arcPaintRank` (categorized over
+  uncategorized) first, `support` second, dedup key last. A deep pileup is
+  overwhelmingly concordant pairs and they all paint the baseline slot, so
+  support-ascending alone let grey punch through the few arcs that mean
+  something.
+
+`hitTestArcBand` reads that order rather than re-deriving it: `bestMark`'s
+on-ink winner is simply the **last candidate considered**, both feeds arriving
+in paint order and both scans running ascending. It used to rank on `support`,
+which was the same thing only while support _was_ the sort key — so a fixture
+built out of feed order now tests a state production cannot reach.
 
 **Both families carry `support` and both spend it the same way.** An arc and a
 tick are each ONE junction that `resolveArcs` coalesced, and `arcLineWidth` is

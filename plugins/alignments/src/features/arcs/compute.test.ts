@@ -16,6 +16,7 @@ import {
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
   arcColorLegendCategory,
+  arcPaintRank,
   arcsToRegionResult,
   computeArcsByGroup,
   computeArcsFromPileupData,
@@ -2110,6 +2111,34 @@ describe('identical arcs coalesce and carry their support', () => {
     expect(Array.from(arcsToRegionResult(arcs, lines).arcSupport)).toEqual([
       1, 3,
     ])
+  })
+
+  // ...but support is the SECOND key. A deep short-read pileup is almost all
+  // concordant pairs, so ordering on support alone let a wall of grey arcs
+  // punch through the few arcs that carry a category — the ones the band is
+  // drawn for. Category first, so the signal survives the noise crossing it.
+  test('a categorized arc packs over a heavier uncategorized one', () => {
+    // Three reads on one concordant (LR) junction, one read on an RR junction.
+    // The singleton is the only arc here that says anything.
+    const data = makePileupData({
+      readPositions: new Uint32Array([
+        1000, 1100, 1000, 1100, 1000, 1100, 1500, 1600,
+      ]),
+      readFlags: new Uint16Array(new Array(4).fill(SAM_FLAG_PAIRED)),
+      readStrands: new Int8Array([1, 1, 1, 1]),
+      readInsertSizes: new Float32Array([500, 500, 500, 500]),
+      readPairOrientations: new Uint8Array([1, 1, 1, 3]),
+      ...namesToBlock(['a', 'b', 'c', 'rr']),
+      ...nextRefsToTable(new Array(4).fill('chr1')),
+      readNextPositions: new Uint32Array([2000, 2000, 2000, 2500]),
+    })
+    const { arcs } = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      regions,
+      settings,
+    )
+    expect(arcs.map(a => a.support)).toEqual([3, 1])
+    expect(arcs.map(a => arcPaintRank(a.colorType))).toEqual([0, 1])
   })
 })
 

@@ -583,20 +583,28 @@ export const COVERAGE_LAYERS: {
   { pass: INDICATOR_PASS, enabled: s => s.showInterbaseIndicators },
 ]
 
-// The arc band's passes, in paint order — curves then flat connectors (one of
-// the two is always empty, since read cloud draws only flats and arc mode only
-// curves), then the endpoint squares that paint on top of the black flat
-// connector lines, then the interchromosomal ticks. The line pass runs last in
-// both renderers, which is the paint order `hitTestArcBand` resolves ties by.
+// The arc band's passes, in paint order — the interchromosomal ticks FIRST,
+// then curves and flat connectors (one of the two is always empty, since read
+// cloud draws only flats and arc mode only curves), then the endpoint squares
+// that paint on top of the black flat connector lines. The line pass runs first
+// in both renderers, which is the paint order `hitTestArcBand` resolves ties by.
+//
+// The ticks used to run last, on the reading that a full-band vertical is the
+// strongest statement in the band. On deep short-read data it is the opposite:
+// mismapped pairs put a tick at a large share of loci, each one a full-height
+// opaque line straight through every arc crossing it, and the arcs are the marks
+// carrying insert size and orientation. A translocation is also the one call
+// here that a single window cannot support on its own, so it is the claim to
+// draw UNDER the evidence rather than over it.
 //
 // A separate list from the two above because the band packs from a separate RPC
 // result plus the configured line width (`ArcsPackData`), not from the pileup
 // payload — and it has no per-pass gate: the band as a whole is drawn or not.
 const ARC_PASSES: InstancePass<ArcsPackData>[] = [
+  ARC_LINE_PASS,
   ARC_PASS,
   ARC_FLAT_PASS,
   ARC_MARKER_PASS,
-  ARC_LINE_PASS,
 ]
 
 // Everything the HAL compiles, derived from the three registries above plus the
