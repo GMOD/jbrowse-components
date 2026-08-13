@@ -19,7 +19,7 @@
 // The two kind predicates are pure scalar decisions the Canvas2D renderer and
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
-//! js-export: isCigarKind, isMarkerKind, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
+//! js-export: isCigarKind, isMarkerKind, spanOutsideBand, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
 //! export-consts: KIND_CIGAR_MIN, KIND_MARKER
 //! js-skip: sBlendDeriv — the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative
 //! js-skip: yCurveDeriv — same as sBlendDeriv, the other half of the tangent
@@ -154,6 +154,24 @@ public float4 computeCorners(Instance inst, Uniforms u) {
                 inst.bp4 * u.bpPerPxInv1 + u.panPx1);
 }
 
+// Does [lo, hi] lie entirely outside the visible band, which is [0, w] widened
+// by `pad` on both sides?
+//
+// Six sites ask it: the hull and the two ribbon edges in `isCulled` below, and
+// the same three in `isRibbonCulled` (syntenyRibbonPath.ts), which the Canvas2D
+// draw and the CPU pick engine share. `isCulled` takes a float4 and so is
+// outside the twin emitter's scalar subset — the CPU side cannot import the
+// whole decision, so this is the part of it that is `//! js-export`ed, and the
+// comparison is one function for all six.
+//
+// `pad` is a parameter rather than `u.overdrawPx` read inside because the two
+// sides pass different pads: the band's overdraw for the per-edge tests, and on
+// the CPU a tighter canvas-edge one for the hull. Which pad applies is the
+// caller's decision; the comparison is not.
+public bool spanOutsideBand(float lo, float hi, float w, float pad) {
+  return hi < -pad || lo > w + pad;
+}
+
 public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
   // No `minAlignmentLength > 0` guard needed: lengths are non-negative, so an
   // unset (0) filter never matches.
@@ -165,8 +183,8 @@ public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
   // Hull: nothing of the instance is anywhere near the band. Subsumed by the
   // per-edge test below for a ribbon (both edges out implies the hull is out),
   // so it is here for the marker case, which returns right after it.
-  if (max(max(c.x, c.y), max(c.z, c.w)) < -mOff
-      || min(min(c.x, c.y), min(c.z, c.w)) > rW + mOff) {
+  if (spanOutsideBand(min(min(c.x, c.y), min(c.z, c.w)),
+                      max(max(c.x, c.y), max(c.z, c.w)), rW, mOff)) {
     return true;
   }
   // A MARKER STOPS HERE. It is a 1px line between two points, one per view, so
@@ -182,8 +200,8 @@ public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
   // Per-edge for ribbons, and deliberately harsher than the hull: an edge
   // entirely outside the band contributes only a sliver, and keeping the
   // instance costs a trapezoid spanning the whole horizontal travel.
-  return max(c.x, c.y) < -mOff || min(c.x, c.y) > rW + mOff
-      || max(c.z, c.w) < -mOff || min(c.z, c.w) > rW + mOff;
+  return spanOutsideBand(min(c.x, c.y), max(c.x, c.y), rW, mOff)
+      || spanOutsideBand(min(c.z, c.w), max(c.z, c.w), rW, mOff);
 }
 
 // Ease-in-out ribbon basis (single source of truth). Curve mode traces y(t) =

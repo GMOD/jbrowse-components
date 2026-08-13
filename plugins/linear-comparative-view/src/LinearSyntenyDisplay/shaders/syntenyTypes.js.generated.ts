@@ -24,6 +24,16 @@ export function isMarkerKind(kind: number): boolean {
   return (Math.abs((kind - 2.0)) < 0.5)
 }
 
+export function spanOutsideBand(lo: number, hi: number, w: number, pad: number): boolean {
+  let _t0: boolean
+  if ((hi < -pad)) {
+    _t0 = true
+  } else {
+    _t0 = (lo > (w + pad))
+  }
+  return _t0
+}
+
 export function fillShade(colorAlpha: number, displayAlpha: number, isHovered: boolean): number {
   let a = (colorAlpha * displayAlpha)
   let _t0: number

@@ -1,5 +1,7 @@
 import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 
+import { spanOutsideBand } from './shaders/syntenyTypes.js.generated.ts'
+
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { SyntenyTrackRenderParams } from './syntenyRenderingBackendTypes.ts'
 
@@ -242,10 +244,13 @@ const HULL_CULL_PAD_PX = 1
 // entirely outside the level's clip rect, since overdrawPx defaults to 1000px).
 //
 // Per-edge: drop the instance when any single edge lies entirely outside the
-// overdraw band. Mirrors the viewport half of isCulled() in
-// syntenyTypes.slang — the shader also folds in the minAlignmentLength cull,
-// which here the draw/pick callers apply separately per instance. A hull-only
-// check would keep drawing trapezoids that span huge horizontal travel.
+// overdraw band. A hull-only check would keep drawing trapezoids that span huge
+// horizontal travel.
+//
+// Both tests are `spanOutsideBand`, the generated twin of the comparison
+// isCulled() makes in syntenyTypes.slang, so the two sides differ only in what
+// they pass it: the hull here runs at a tighter pad, and the minAlignmentLength
+// cull the shader folds in is applied per instance by the draw/pick callers.
 export function isRibbonCulled(
   c: ProjectedCorners,
   viewWidth: number,
@@ -269,19 +274,19 @@ export function isRibbonCulled(
   // all when overdrawPx is under a pixel.
   const hullPad = Math.min(HULL_CULL_PAD_PX, overdrawPx)
   if (
-    Math.max(topMax, botMax) < -hullPad ||
-    Math.min(topMin, botMin) > viewWidth + hullPad
+    spanOutsideBand(
+      Math.min(topMin, botMin),
+      Math.max(topMax, botMax),
+      viewWidth,
+      hullPad,
+    )
   ) {
     return true
   }
-  const leftLimit = -overdrawPx
-  const rightLimit = viewWidth + overdrawPx
   return (
     !isMarker &&
-    (topMax < leftLimit ||
-      topMin > rightLimit ||
-      botMax < leftLimit ||
-      botMin > rightLimit)
+    (spanOutsideBand(topMin, topMax, viewWidth, overdrawPx) ||
+      spanOutsideBand(botMin, botMax, viewWidth, overdrawPx))
   )
 }
 

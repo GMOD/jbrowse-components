@@ -67,4 +67,8 @@
   use it — the `// SYNC:` comments mark the JS↔Slang pairs that must stay in
   lockstep, and `syntenyRibbonPath.ts` is where the shared predicates
   (`isRibbonCulled`, `ribbonPerpWidth`, `isInstanceInvisible`) live so "drawn"
-  and "pickable" cannot answer differently.
+  and "pickable" cannot answer differently. The cull's own comparison is not a
+  SYNC pair: `isRibbonCulled` asks its three questions through
+  `spanOutsideBand`, `//! js-export`ed from syntenyTypes.slang, so both sides
+  run the shader's function and choose only what they pass it — the pads, and
+  where the `minAlignmentLength` cull is applied.
