@@ -191,12 +191,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // width, no callout paint, and the one frame that says "derivative allele"
     // rather than "another read pileup".
     //
-    // 0.41 rather than 0.24 since the figure gained an hg38 read lane above
-    // the ribbons: the band is the same CONTENT it always framed (ribbons down
-    // through the top of the realigned pileup), re-derived off the taller
-    // frame. A fraction only survives a re-render of the SAME layout.
+    // 0.52 rather than 0.41 rather than 0.24: the figure gained an hg38 read
+    // lane above the ribbons, and then that lane came off a 1px pitch so its
+    // bezier connectors had room. The band is the same CONTENT it always
+    // framed (ribbons down through the top of the realigned pileup),
+    // re-derived off each taller frame — a fraction only survives a re-render
+    // of the SAME layout.
     src: 'cancer_sv/derivative_inserts.png',
-    band: [0.41, 0.88],
+    band: [0.52, 0.92],
   },
   sv_visualization_cgiab: {
     // depth over BAF genome-wide; the translocation split view is the gallery
