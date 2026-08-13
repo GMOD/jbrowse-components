@@ -103,27 +103,29 @@ const ARROW_INSTANCES: InstancePass<RegionRenderData> = {
     ),
 }
 
-export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
+// Every pass with a buffer of its own.
+const UPLOADED_PASSES = [
   RECT_INSTANCES,
   LINE_INSTANCES,
-  // Chevron reads line's vertex buffer via drawPass(chevron, region,
-  // bufferPassId=line), so its attribute layout must match line's — and so it
-  // is registered but never uploaded to.
-  makeChevronPass(MAX_VISIBLE_CHEVRONS_PER_LINE),
   ARROW_INSTANCES,
   CONTINUATION_INSTANCES,
+]
+
+export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
+  ...UPLOADED_PASSES,
+  // Chevron reads line's vertex buffer via drawPass(chevron, region,
+  // bufferPassId=line), so its attribute layout must match line's — and so it
+  // is the one pass registered without being uploaded to. Registration is
+  // therefore the upload list plus this, rather than a second list of the same
+  // names.
+  makeChevronPass(MAX_VISIBLE_CHEVRONS_PER_LINE),
 ]
 
 export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
   RegionRenderData,
   RenderState
 > {
-  protected regionPasses = [
-    RECT_INSTANCES,
-    LINE_INSTANCES,
-    ARROW_INSTANCES,
-    CONTINUATION_INSTANCES,
-  ]
+  protected regionPasses = UPLOADED_PASSES
 
   constructor(hal: GpuHal) {
     super(hal, CANVAS_FEATURE_UNIFORM_BYTE_SIZE)
