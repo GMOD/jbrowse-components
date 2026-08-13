@@ -4,7 +4,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 
-import { getInsertSizeStats } from './insertSizeStats.ts'
+import { getInsertSizeStats, widenBandToEventScale } from './insertSizeStats.ts'
 
 import type { FeatureData } from './webglRpcTypes.ts'
 
@@ -15,8 +15,10 @@ function isPrimaryProperPair(flags: number) {
 }
 
 /**
- * Insert-size stats (robust median ± 3·1.4826·MAD color thresholds; see
- * getInsertSizeStats) from primary proper-pair reads only. `insertSize` is
+ * Insert-size stats (robust median ± 3·1.4826·MAD, widened to the event scale
+ * — see getInsertSizeStats and widenBandToEventScale) from primary proper-pair
+ * reads only. This is the band anything COLOURS from, which is why the floor is
+ * applied here and not in the statistics. `insertSize` is
  * already `abs(template_length)`, so this is the
  * chain denominator (template length) too — pileup and chain share one scale.
  * The insert-size distribution is a property of the whole fetched read set, so
@@ -55,5 +57,11 @@ export function computePairedInsertSizeStats(groups: FeatureData[][]) {
     }
   }
   const band = count > 0 ? getInsertSizeStats(pairedInsertSizes) : undefined
-  return band && band.upper > band.lower ? band : undefined
+  // Widened AFTER the degenerate check, not before: the check's whole signal is
+  // `upper === lower`, and a floor is a widening, so applying it first would
+  // turn every collapsed band into a plausible-looking wide one built on a
+  // single distinct value.
+  return band && band.upper > band.lower
+    ? widenBandToEventScale(band)
+    : undefined
 }

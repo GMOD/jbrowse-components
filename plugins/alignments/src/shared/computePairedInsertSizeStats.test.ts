@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { computePairedInsertSizeStats } from './computePairedInsertSizeStats.ts'
+import { classifyInsertSize, getInsertSizeStats } from './insertSizeStats.ts'
 
 import type { FeatureData } from './webglRpcTypes.ts'
 
@@ -66,5 +67,64 @@ describe('degenerate bands are rejected', () => {
     expect(
       computePairedInsertSizeStats([[read(350), read(350), read(900)]]),
     ).toBeDefined()
+  })
+})
+
+// The band is widened to the event scale here and not inside the statistics —
+// see LONG_INSERT_MIN_RATIO for the HG002 300x measurements behind it. What
+// these pin is the CONSEQUENCE at depth, which is the whole point: a tight
+// library sampled deeply must not paint its own right tail long-insert.
+describe('the coloring band is floored to the event scale', () => {
+  // The measured HG002 300x shape: ~20k proper pairs, median 571, MAD ~94, and
+  // a distribution that stops dead at 1141. Synthesized as a discretized normal
+  // rather than shipped as a fixture, since the only property under test is
+  // that the widest fragment the library actually produces stays 'normal'.
+  //
+  // PEAKED, not uniform, and that is the whole fixture: MAD is what sets the
+  // threshold, so a uniform bulk over the same RANGE has 3x the MAD and a band
+  // wide enough to pass this test while proving nothing. sd 140 gives
+  // MAD = 0.6745·140 ≈ 94, which is the measured value.
+  function tightLibrary() {
+    const reads: FeatureData[] = []
+    for (let tlen = 1; tlen <= 1141; tlen++) {
+      const z = (tlen - 571) / 140
+      for (let k = Math.round(60 * Math.exp(-0.5 * z * z)); k > 0; k--) {
+        reads.push(read(tlen))
+      }
+    }
+    // The extreme itself: at z = 4.07 its true share rounds to zero copies, and
+    // one read at the far edge is exactly the case in question.
+    reads.push(read(1141))
+    return reads
+  }
+
+  test('the raw 3-MAD band would call the library tail long', () => {
+    const raw = getInsertSizeStats(
+      Int32Array.from(tightLibrary(), r => r.insertSize),
+    )
+    expect(classifyInsertSize(1141, raw)).toBe('long')
+  })
+
+  test('the widened band does not', () => {
+    const band = computePairedInsertSizeStats([tightLibrary()])!
+    expect(band.upper).toBeGreaterThanOrEqual(1141)
+    expect(classifyInsertSize(1141, band)).toBe('normal')
+  })
+
+  test('a genuinely discordant pair is still flagged', () => {
+    const band = computePairedInsertSizeStats([tightLibrary()])!
+    expect(classifyInsertSize(5000, band)).toBe('long')
+    expect(classifyInsertSize(1_500_000, band)).toBe('long')
+  })
+
+  // A max/min, so the floor only ever widens, and it goes slack exactly when
+  // the spread already reaches the centre — a library loose enough that 3
+  // robust SDs span the whole fragment size. There the raw band survives
+  // untouched.
+  test('a band already wider than the ratio is left alone', () => {
+    const loose = Array.from({ length: 2000 }, (_, i) => read(100 + (i % 801)))
+    const band = computePairedInsertSizeStats([loose])!
+    const raw = getInsertSizeStats(Int32Array.from(loose, r => r.insertSize))
+    expect(band).toEqual(raw)
   })
 })

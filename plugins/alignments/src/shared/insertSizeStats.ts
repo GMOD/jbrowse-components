@@ -92,6 +92,39 @@ export function classifyInsertSize(
         : 'normal'
 }
 
+// How far from the library's typical fragment an insert must sit before the
+// band will call it short or long, as a MULTIPLE of that typical fragment. The
+// statistical band is widened to at least this (`widenBandToEventScale`), never
+// narrowed to it.
+//
+// The reason it exists is that ±3 robust SDs is a *relative* outlier test: it
+// flags a roughly fixed fraction of the sample whatever the sample is, so the
+// count of red arcs grows with coverage even where nothing biological changed.
+// Measured on HG002 300x (`NHGRI_Illumina300X_AJtrio` novoalign, hs37d5), a
+// 200 kb window at 1:2,000,000: 340,210 proper pairs, median 571, MAD 94, so
+// the raw band's upper bound is 989 — and 3235 records (0.95%) paint
+// long-insert. But the largest |TLEN| anywhere in that sample is 1141: the
+// window holds no deletion at all, and 2625 of those 3235 — 81% — sit in
+// 989..1142, which is the library's own right tail. The picture was one
+// unreadable red wash over ordinary sequence.
+//
+// A ratio is the right shape for the floor because it says what the colour is
+// supposed to MEAN — this pair implies an event comparable in size to the
+// fragment itself — and because it is scale-free, so a 3 kb mate-pair library
+// gets a 6 kb threshold from the same constant a 570 bp library gets 1142 from.
+// The same window under the floor keeps 608 records, and those are the
+// genuinely discordant ones (510 at 1142-2 kb, 2 past 2 kb, 96 with the mate on
+// another contig).
+//
+// The cost is real and worth stating: a deletion shorter than about one
+// fragment no longer separates from the tail by colour. At 341k inserts drawn
+// from a distribution that stops at 1141 it was never separable — the tail was
+// swamping it either way — but on a shallow pileup the raw band is tighter than
+// this floor and, being a max/min, is what survives. So sensitivity is given up
+// exactly where the depth had already taken it.
+const LONG_INSERT_MIN_RATIO = 2
+const SHORT_INSERT_MAX_RATIO = 0.5
+
 export interface RobustSpread {
   center: number
   spread: number
@@ -145,5 +178,28 @@ export function getInsertSizeStats(
   return {
     upper: center + spread,
     lower: Math.max(0, center - spread),
+  }
+}
+
+// Widen a raw statistical band out to the event scale — see
+// LONG_INSERT_MIN_RATIO for why, and for the measurements.
+//
+// Deliberately NOT folded into `getInsertSizeStats`, which is the statistics and
+// stays that: `robustSpread` also serves callers that want a spread rather than
+// a colour rule, and the widening is a claim about what a colour should mean.
+// Keeping it separate is also what preserves the degenerate-band signal — a
+// sample with no spread returns `upper === lower`, which is
+// `computePairedInsertSizeStats`' cue to colour nothing, and a floor applied
+// before that check would hand it a wide band built on one distinct value.
+//
+// The centre is recovered as the band's own midpoint rather than threaded down
+// from `robustSpread`, which is exact except where `lower` clamped at 0 — and
+// there the clamp means the spread already reaches the origin, so the floor
+// cannot bind on either side and the recovered centre is unused.
+export function widenBandToEventScale(band: InsertSizeBand): InsertSizeBand {
+  const center = (band.upper + band.lower) / 2
+  return {
+    upper: Math.max(band.upper, center * LONG_INSERT_MIN_RATIO),
+    lower: Math.max(0, Math.min(band.lower, center * SHORT_INSERT_MAX_RATIO)),
   }
 }
