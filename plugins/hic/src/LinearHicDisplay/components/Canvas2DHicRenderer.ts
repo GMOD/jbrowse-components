@@ -74,11 +74,24 @@ export function drawHicBlocks(
 
   // Strided over the packed instance buffer — one cache line per contact rather
   // than the two streams the parallel positions/counts arrays were. The
-  // accessors are the shader's own generated ones (see
-  // `HicDataResult.instances`); they are single typed-array indexes, so V8
-  // inlines them, which is what lets this loop use them at all — it runs over
-  // 300k-4.5M contacts a frame, the same budget that keeps hicTransform.ts's
-  // helpers spelled out inline above.
+  // accessors are the shader's own generated ones (see `HicDataResult.instances`).
+  //
+  // That they are cheap enough for this loop was an assertion — "single
+  // typed-array indexes, so V8 inlines them" — and it is now measured, because
+  // the same reasoning about `InstanceWriter.push` was wrong by 2.3x.
+  // `benches/instanceAccessors.bench.ts` puts the accessor arm within ~3.5% of
+  // indexing the buffer directly at 4.5M contacts, which is the one row that
+  // cleared its control arm; a busy machine could not resolve the smaller sizes
+  // at all. So the assertion holds, and the reason it holds where the writer's
+  // did not is worth keeping: these are free functions doing one indexed read,
+  // with no growth branch and no field mutation to defeat the inliner. What they
+  // do cost is arithmetic — each recomputes `i * INSTANCE_STRIDE_WORDS`, so the
+  // three calls do three multiplies where a raw loop does one.
+  //
+  // Don't reach for the raw form on the strength of that 3.5%: at 4.5M contacts
+  // this pass is ~400ms with or without it, so the accessors are not what makes
+  // the big case slow, and the budget is the same one that keeps
+  // hicTransform.ts's helpers spelled out inline above.
   for (let i = 0; i < numContacts; i++) {
     const px = getInstancePosition(instances, i, 0)
     const py = getInstancePosition(instances, i, 1)
