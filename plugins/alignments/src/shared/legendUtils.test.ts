@@ -17,6 +17,7 @@ function legendFor(
     detectedModifications?: Map<string, string>
     colorTagMap?: Record<string, string>
     presentTagValues?: ReadonlySet<string>
+    chainFramed?: boolean
   },
 ) {
   return getReadDisplayLegendItems({
@@ -68,6 +69,19 @@ describe('getReadDisplayLegendItems', () => {
       'Forward strand',
       'Reverse strand',
     ])
+  })
+
+  // The strand scheme is the one the chain framing REFINES rather than replaces,
+  // so it is also the one whose plain wording goes wrong the moment framing is
+  // live: the swatch is painted on segments framed against their chain, half of
+  // which are reverse-mapped. Every other scheme already words fwd/rev as
+  // something other than the read's own strand, so only this one turns on it.
+  test('the strand scheme drops "Forward strand" once the framing is live', () => {
+    expect(
+      legendFor({ type: 'strand' }, ['fwdStrand', 'revStrand'], {
+        chainFramed: true,
+      }).map(i => i.label),
+    ).toEqual(['Split segment (same strand)', 'Split segment (inverted)'])
   })
 
   // `noStrand` is the defensive branch of `strandCategory` (strand 0). NEITHER

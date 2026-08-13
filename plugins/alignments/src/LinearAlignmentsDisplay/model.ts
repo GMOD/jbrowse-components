@@ -79,7 +79,10 @@ import {
   updateColorTagMap as updateColorTagMapPure,
   updateQueryNameColorMap,
 } from './colorTagUtils.ts'
-import { READ_COLOR_CATEGORY_BY_INDEX } from './colorUtils.ts'
+import {
+  READ_COLOR_CATEGORY_BY_INDEX,
+  framesUnpairedChainStrand,
+} from './colorUtils.ts'
 import {
   buildColorPaletteFromPalette,
   makeBpToScreenX,
@@ -1423,6 +1426,10 @@ export default function stateModelFactory(
             detectedModifications: self.detectedModifications,
             colorTagMap: self.colorTagMap,
             presentTagValues: this.presentTagValues,
+            chainFramed: framesUnpairedChainStrand(
+              colorSchemeIndexFor(this.colorBy.type),
+              this.readColorOpts,
+            ),
           })
         },
 
