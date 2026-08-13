@@ -115,9 +115,12 @@ export function identityLegendItems(mode: RowIdentityMode): LegendItem[] {
  * blocks reuse measured 2.4x over the old code against 1.5x for per-block
  * allocation, and the two are equivalent when blocks are few and large.
  *
- * Same growable-typed-array shape as `InstanceWriter` in `mafInstanceBuffer.ts`,
- * and for the same reason — a per-frame main-thread path that must not allocate
- * per item.
+ * **Not the `InstanceWriter` shape**, though it looks like it from a distance and
+ * this comment used to say it was. That class doubles because its count is
+ * unknown until the walk ends; here the bound is `refBytes.length`, known before
+ * the loop starts, so the buffers are sized once and grown only when a later
+ * block needs more. Nothing to generate from a shader either way — these are four
+ * parallel arrays, not one interleaved buffer with a reflected stride.
  */
 export class IdentityColumns {
   private cols = new Uint32Array(0)

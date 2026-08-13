@@ -557,15 +557,19 @@ export function parseBlend(source: string) {
  *
  * Opt-in, where `packInstances` and the per-field accessors are emitted for every
  * shader, and the asymmetry is deliberate rather than an oversight. A generated
- * module is imported as a namespace (`import * as readShader`), which defeats
- * tree-shaking, so everything a `.iface.generated.ts` carries is paid for by
- * every eager importer of it — `read.iface.generated.ts` is already the largest
- * item on the eager-bundle backlog at 20.6 KB. Three encoders in the tree want a
- * writer; emitting one into the other forty modules would put a class nobody
- * calls into the always-loaded chunk.
+ * module is imported as a namespace (`import * as readShader`), which marks every
+ * export used, so everything a `.iface.generated.ts` carries is paid for by every
+ * eager importer of it. Two encoders in the tree want a writer; emitting one into
+ * the other forty modules would put a class nobody calls into the always-loaded
+ * chunk.
  *
- * Relaxing this is a one-line change if the namespace-import problem is ever
- * fixed: drop the flag and emit unconditionally.
+ * Relaxing this is a one-line change once no `.iface.generated.ts` is eager —
+ * drop the flag and emit unconditionally. That is not yet true and the check is
+ * cheap: `pnpm probe-eager-graph --page synteny --holds iface.generated` in the
+ * byo examples site currently names eight, hic and the four synteny shaders among
+ * them, none of which wants a writer. (Splitting the `export-consts` into their
+ * own module took the largest of them, `read.iface.generated.ts`, out of the
+ * eager set entirely, so this list only gets shorter.)
  */
 export function parseInstanceWriter(source: string) {
   return /^\/\/!\s*instance-writer\s*$/m.test(source)
