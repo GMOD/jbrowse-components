@@ -25,13 +25,28 @@ import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
  * `dotplotAxesFromRows`. Reversing the stack is not the same operation once a
  * track names more than two assemblies.
  *
- * The opening mode is Quick start when there is a launchable track and Manual
- * otherwise, so an empty session opens on the form that can actually do
- * something. Only the opening mode is a snapshot: which track is picked resolves
- * against the current list on every render, so a track list that grows after
- * mount (a connection finishing its load) can't leave the picker holding an id
- * that isn't in it, showing a blank Select over a Launch that silently opens
- * nothing.
+ * The mode is Quick start when there is a launchable track and Manual
+ * otherwise, so an empty session shows the form that can actually do something
+ * — **derived, not snapshotted at mount**. Nothing about the launchable list is
+ * settled on the first render: a connection has not finished loading its
+ * tracks, and the assembly models an alias-named track resolves through are not
+ * built yet. A session with one connection-supplied dataset is the ordinary
+ * hub case, and it opened on Manual and stayed there for the rest of the
+ * session — the one mode that cannot launch that dataset in a click. Deriving
+ * also keeps Quick start from sitting selected over an empty panel when the
+ * last launchable track goes away.
+ *
+ * A mode the user picks latches, so nothing finishing its load afterwards moves
+ * the form under them. What can still move is a form typed into without ever
+ * touching the toggle: that flip is Manual → Quick start, it only happens while
+ * the session is still filling itself in (so, within a moment of opening), and
+ * Manual is one click away with its state intact. That is the better half of
+ * the trade against a mode that is wrong for the whole session.
+ *
+ * Which track is picked resolves against the current list on every render for
+ * the same reason, so a list that grows after mount can't leave the picker
+ * holding an id that isn't in it, showing a blank Select over a Launch that
+ * silently opens nothing.
  */
 export function useQuickStartState(
   // the session, not a track list: the tracks and the manager that screens them
@@ -44,9 +59,8 @@ export function useQuickStartState(
     allSessionTracks(session),
     session.assemblyManager,
   )
-  const [mode, setMode] = useState<ImportFormMode>(
-    quickTracks.length ? 'quick' : 'manual',
-  )
+  const [chosenMode, setMode] = useState<ImportFormMode>()
+  const mode = chosenMode ?? (quickTracks.length ? 'quick' : 'manual')
   const [preferredTrackId, setTrackId] = useState('')
   const [swapped, setSwapped] = useState(false)
 

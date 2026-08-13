@@ -29,11 +29,13 @@ export default function ImportFormModeToggle({
       value={mode}
       aria-label="Import form mode"
       onChange={(_event, value: ImportFormMode | null) => {
-        // a null value is the click that would de-select the active button;
-        // ignore it so the form always has a mode
-        if (value) {
-          onChange(value)
-        }
+        // null is the click that would de-select the active button. Reported as
+        // a choice of the mode already showing, rather than dropped: the form
+        // must always have a mode, and while the user has picked none the one
+        // showing is derived from what the session has finished loading — so
+        // clicking the button you are already on is how you say "stay here",
+        // and it has to reach the state that latches that.
+        onChange(value ?? mode)
       }}
     >
       <ToggleButton value="quick">Quick start</ToggleButton>

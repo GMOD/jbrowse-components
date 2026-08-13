@@ -289,11 +289,64 @@ test('a synteny track from a connection is applied to its pair', () => {
     /No synteny dataset connects/,
   )
   loadConnection()
+  // the connection's dataset is launchable, so the form now offers Quick start;
+  // this is the manual flow, which the toggle still reaches with the rows the
+  // user was already looking at
+  goManual()
   expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
     /Configure synteny track/,
   )
   fireEvent.click(launchButton())
   expect(levelTrackIds(model)).toEqual([['conn_track']])
+})
+
+// The launchable list is empty on the first render of a session whose synteny
+// dataset comes from a connection — connect() has not resolved — and the mode
+// used to be snapshotted there, so the one dataset the session has was never
+// offered in the mode that launches it in a click.
+test('a connection that loads after mount still offers Quick start', () => {
+  const { loadConnection } = setup({
+    assemblyNames: ['hg38', 'mm39'],
+    connectionTracks: [syntenyTrack('conn_track', ['hg38', 'mm39'])],
+  })
+  expect(screen.getByRole('button', { name: 'Manual' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  loadConnection()
+  expect(screen.getByRole('button', { name: 'Quick start' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(screen.getByTestId('quick-start-rows')).toHaveTextContent('1. hg38')
+})
+
+// Clicking the button you are already on is how a derived mode gets latched, so
+// it reaches the same handler the real switch does — and must not also re-run
+// the handover, which resets the rows to the Quick start track's.
+test('re-clicking Manual keeps what the manual form already holds', () => {
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
+  })
+  goManual()
+  pickAssembly(1, 'rn7')
+  goManual()
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'rn7'])
+})
+
+// nothing loading afterwards moves the form under a user who has picked a mode
+test('a mode the user picked survives a connection loading', () => {
+  const { loadConnection } = setup({
+    assemblyNames: ['hg38', 'mm39'],
+    connectionTracks: [syntenyTrack('conn_track', ['hg38', 'mm39'])],
+  })
+  goManual()
+  loadConnection()
+  expect(screen.getByRole('button', { name: 'Manual' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
 })
 
 test('Add row defaults to an assembly connected to the current bottom row', () => {

@@ -61,7 +61,11 @@ const ImportFormModes = observer(function ImportFormModes({
         <ImportFormModeToggle
           mode={quick.mode}
           onChange={newMode => {
-            if (newMode === 'manual' && quick.track) {
+            // `newMode !== quick.mode`: re-clicking the mode already showing is
+            // how the user latches a derived one, and it must not also hand the
+            // form over — that would reset what they had already filled in to
+            // the Quick start track's rows.
+            if (newMode === 'manual' && newMode !== quick.mode && quick.track) {
               onHandoverToManual()
             }
             quick.setMode(newMode)
