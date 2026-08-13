@@ -198,8 +198,14 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 ## Other demos
 
 - **DTU (differential transcript usage)** — ENCODE ENTEx muscle vs liver,
-  satuRn stats written into a GENCODE GFF3. Pipeline lives only in
-  `~/scratch/dtu/`; **nothing in the repo rebuilds the GFF**.
+  satuRn stats written into a GENCODE GFF3, behind
+  `website/docs/tutorials/dtu.md`. `scripts/build_dtu_demo.sh` rebuilds it from
+  the ENCODE accessions up, and reproduces the hosted GFF3 byte for byte. Two
+  traps it encodes: satuRn's **empirical** FDR swallows this contrast whole (min
+  0.97 across 39,596 tests, `locfdr` warning "f(z) misfit"), so the gate is
+  `regular_FDR`; and the sample list is written out rather than re-derived from
+  an ENCODE portal search, whose facets move. The eight RSEM quantifications are
+  the statistic, the four bigWigs are one donor per tissue.
 - **Hi-C translocation** — GM12878 vs K562 BCR-ABL1, two windows (chr9 ABL1,
   chr22 BCR) in one LGV so JBrowse fetches the chr9×chr22 block: empty in a
   normal karyotype, solid in K562. Replaced an orphaned loops-arc config.

@@ -106,6 +106,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'rnaseq/basic.png',
     band: [0.3, 1],
   },
+  dtu: {
+    // the colored transcript stack, below the two coverage lanes: the ramp is
+    // what the card is about and it only exists in the gene lane
+    src: 'dtu/dtu_colored_gene_glyph.png',
+    band: [0.35, 1],
+  },
   methylation: {
     // hg002 5mC at SNRPN. Not alignments/modifications2.png, which carries
     // hand-added callout boxes — the card is a gallery surface.

@@ -131,7 +131,12 @@ the test separated colored, and the eight it could not staying neutral rather
 than competing for attention. Zoomed to one cassette exon, the same color says
 which isoform the reads under it belong to.
 
-<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38). ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the change in isoform fraction that satuRn measured between the two tissues. ATP5F1C-201 (muscle-preferred) and ATP5F1C-202 (liver-preferred) carry the color and the other eight are gray. The marked column is the 37 bp cassette exon that separates them: no muscle reads, a clear liver peak, and an exon drawn on the liver-preferred transcript alone." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
+<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38). ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the change in isoform fraction that satuRn measured between the two tissues. ATP5F1C-201 (muscle-preferred) and ATP5F1C-202 (liver-preferred) carry the color and the other eight are gray. The marked column is the 37 bp cassette exon: no muscle reads, a clear liver peak, and of the two colored transcripts only the liver-preferred one draws an exon there." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
+
+The [differential transcript usage tutorial](/docs/tutorials/dtu) works this
+dataset through end to end: where the statistic comes from, what the gray
+transcripts are controlling for, and the pipeline that writes the attributes
+this expression reads.
 
 ## Peptide lettering
 
