@@ -6,21 +6,28 @@ description: The backlog — action items to build or fix, grouped by how ready 
 # Backlog
 
 Grouped by **what you have to do first**, because that is the thing most of these
-entries actually disagree on. A third of them are ordinary build work; another
-third carry a design that survived a rejected alternative and needs following
+entries actually disagree on. Roughly two fifths are ordinary build work; a
+quarter carry a design that survived a rejected alternative and needs following
 rather than re-deriving; most of the rest open with an instruction to go measure
 something, because the premise or the cost attribution is not established and
-building first would be guessing. One is blocked on a decision that is not the
-implementer's to make.
+building first would be guessing. Three are blocked on a visual call that is not
+the implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
 [ideas/](ideas/README.md), one file per proposal.
 
+**The index below is checked, not merely written.**
+`website/scripts/check-todo-index.ts` (under `pnpm check-docs`) fails when a
+`###` here has no row or a row points at a heading that does not exist — it
+cannot check the `Area` and `First move` columns, which are editorial, but the
+half that rots is the half it covers. It exists because this table drifted twice
+before anyone noticed.
+
 | Item | Area | First move |
 | --- | --- | --- |
 | [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
-| [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Validate the react-app site's volvox config](#run-jbrowse-validate-over-the-react-app-sites-volvox-configjson) | embedded, config | 8 errors already reported; fix the file, then ask why it is a copy |
+| [Pool the coordinate ruler's tick divs](#pool-the-coordinate-rulers-tick-divs-so-a-zoom-stops-rebuilding-them) | LGV, perf | measured; a fixed pool is the low-risk version |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
@@ -49,7 +56,7 @@ Exploratory concepts that are *not* committed work live in
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
-| [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
+| [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 
@@ -61,11 +68,6 @@ Exploratory concepts that are *not* committed work live in
 relative to genome" radio entirely when `showGenomicCoordsOption(mode)` is
 false, so the option disappears rather than explaining itself. Render it
 disabled, with the reason the label already carries.
-
-### Autofit height for the lineargenomeview example-site demo
-
-No view-level auto-height in `products/jbrowse-react-linear-genome-view`; only
-per-track `heightMode` grow/fit (demoed in `examples-site` `WithTrackSizing`).
 
 ### Run `jbrowse validate` over the react-app site's volvox-config.json
 
@@ -932,22 +934,22 @@ allocate it rather than copy it — the catch being that `cloneMutableFields` is
 shared with `scaleLaidOutData`, which does not rewrite the array and still needs
 the copy, so that split costs a per-caller flag or a second clone helper.
 
-### `featureItemMap` is an O(N) build serving a handful of point queries
+#### `featureItemMap` is the same allocation, in the same file
 
-`baseModel.ts`'s `featureItemMap` allocates one entry object per feature AND per
-subfeature across every visible region, on every layout change, pan, or zoom. Its
-consumers ask very little of it: `useHighlightOverlays` does a handful of `.get()`s
-(and genuinely needs `entry.vr` / `entry.data`), while `useFloatingLabels` uses it
-only for `?.kind === 'feature'` to decide whether a label is clickable.
+Take it in the same pass; it was a separate entry until 2026-08-13 and each one
+said to pair it with the other, which is the tell. `baseModel.ts`'s
+`featureItemMap` allocates one entry object per feature AND per subfeature across
+every visible region, on every layout change, pan or zoom. Its consumers ask very
+little of it: `useHighlightOverlays` does a handful of `.get()`s (and genuinely
+needs `entry.vr` / `entry.data`), while `useFloatingLabels` uses it only for
+`?.kind === 'feature'` to decide whether a label is clickable.
 
 That second consumer is removable outright. `emitSubfeatureLabel` always sets
 `parentFeatureId` and `processFeatureRecord` never does, so
 `clickable === (labelData.parentFeatureId === undefined)` with no map at all.
 
 With it gone the map is built for roughly five lookups, so replace it with an
-on-demand region scan or a lazily-populated per-id cache. Worth pairing with the
-`cloneMutableFields` item above, since both are per-layout allocation over the same
-arrays.
+on-demand region scan or a lazily-populated per-id cache.
 
 ### The SV inspector rebuilds its chord track from the whole callset per filter
 
@@ -976,6 +978,15 @@ in `SpreadsheetModel.tsx`), so what is left is genuine filter changes only, and
 that is what needs timing.
 
 ### Give the RPC workers one inflate pool and one byte cache between them
+
+**Read the close condition before the design: this entry is more likely to end
+in a measurement than in a build.** Three of the four reasons it was opened have
+since been measured out or fixed upstream — the thread count (no arm beat the
+status quo), the sizing worry (unsupported), and the resting memory (reaped
+upstream in `@gmod/bgzf-filehandle` 6.6.0). What is left is the memory *peak*
+while someone is actively browsing several tracks, and if that turns out not to
+matter, **close this rather than building the channel**; the duplication is then
+untidy and free.
 
 **The multiplication is measured; what is open is the sizing.**
 `browser-tests/percontext-probe.ts`, production build, 16 cores:
@@ -1027,13 +1038,15 @@ Do **not** touch `SharedBudget` (ADR-064) while doing this. Per context is the
 right scope for it — a worker OOMs on its own heap — and only threads and the
 network are being bounded from the wrong place.
 
-One smaller thing is still going begging: `sweepIdleCache` is exported for a
-tab-hidden sweep that no in-tree code registers. (The pool half of this pair is
-done — and note the fix could NOT be "call `destroySharedWorkerPool` when the
-last bgzip track closes", which is the obvious shape and a footgun: a destroyed
-pool throws out of `decompressBlocks`, and `BamFile` holds the pool promise for
-the life of the track, so that would break open readers rather than reclaim
-anything. It had to be reaping inside the pool.)
+Both halves of the reclamation pair are now done, so don't re-open either. The
+cache sweeps itself on an interval that starts with the first chunk and stops
+when the sweep empties the cache (`RemoteFileWithRangeCache.ts`); the exported
+`sweepIdleCache` is a documented extra for a caller with its own schedule, not a
+dangling hook. And the pool's fix could NOT have been "call
+`destroySharedWorkerPool` when the last bgzip track closes", which is the obvious
+shape and a footgun: a destroyed pool throws out of `decompressBlocks`, and
+`BamFile` holds the pool promise for the life of the track, so that would break
+open readers rather than reclaim anything. It had to be reaping inside the pool.
 
 Node cannot measure any of it — `getSharedWorkerPool` returns `undefined` there,
 so every vitest bench in all three repos reports parity forever. Use
@@ -1046,7 +1059,3 @@ sharing the cache across workers looks free on it whatever the truth is — the
 duplication is real (measured: one reference download per RPC worker) but its
 COST is invisible until a pan can miss that cache.
 
-## Auto-detect when to use first-of-pair strand?
-
-we already have smart 'sashimi' settings
-could add a 'token' on bottom right of display similar to auto for gene glyphs

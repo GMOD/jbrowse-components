@@ -17,6 +17,14 @@ Missing in the 1kg demo — may be a bug or unimplemented; needs reproduction.
 **Quality-aware feature fade.** Toggle to disable sub-pixel fade for high-quality
 reads (Illumina/HiFi) where most mismatches are real variants, not errors.
 
+**Auto-detect when to use first-of-pair strand.** The precedents are both in
+hand: sashimi already picks its own settings, and `geneGlyphMode`'s `auto` is the
+shape of the affordance — a token in the bottom-right of the display saying which
+way it resolved, so the automatic choice is visible and overridable rather than
+silent. What is undecided is the detection itself: what in the data says a
+library is stranded first-of-pair, and how wrong the guess can be before it is
+worse than the current explicit setting.
+
 **Legend.** Visual guide: strand colors, paired/unpaired styles, SNP colors.
 
 **Typed-array refactor.** Worker return is flat parallel arrays — could regroup into
