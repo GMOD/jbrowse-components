@@ -271,17 +271,14 @@ An assembly released both ways appears under both accessions, same sequence, and
 only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 `GCA_040938575.1`.
 
-<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The gene track is the one the name index answered from, with GC percent and RepeatMasker under it, the repeats drawn as one lane per class." />
+<Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession. The gene track is the one the name index answered from, with GC percent and RepeatMasker under it." />
 
 The gene is the same gene and the track set is the familiar one. The span is
 not: the axolotl genome is large and repeat-rich, and RepeatMasker under the
 introns is where that shows.
 
-Both tracks under the gene carry a setting from their track menus. RepeatMasker
-is one lane per repeat class, through **Display types → Multi-row feature
-display (painting)**, the subject of [](/docs/tutorials/repeatmasker_classes).
-GC percent is on **Score → Summary score mode → Average** and the 30 to 70
-bounds UCSC's own trackDb asks for, through **Score → Set min/max score...**.
+Reading a repeat track by class rather than as one packed lane is
+[](/docs/tutorials/repeatmasker_classes).
 
 ## See also
 

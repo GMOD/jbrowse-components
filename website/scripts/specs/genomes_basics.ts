@@ -72,34 +72,39 @@ const AXOLOTL_CONFIG = encodeURIComponent(
 )
 const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 
-// GC Percent, drawn the way UCSC's own trackDb entry for gc5Base asks for it:
-// `windowingFunction Mean` and `viewLimits 30:70`, both carried into the hub
-// config's metadata. JBrowse's wiggle defaults are whiskers over an autoscaled
-// axis, and on this file that is a solid block -- the track is 5-base bins, so
-// every summary bin in a several-hundred-kb window spans a min near 0 and a max
-// near 100 and the band fills the whole track with the average buried in it.
+// The two tracks the closing figure opens beside the gene, AS THE CHECKBOX
+// LEAVES THEM. This page is the point-and-click one, so a display setting here
+// is a claim that a reader clicking along gets this picture, and neither of the
+// two settings worth making is reachable by clicking on the live site today:
+//
+// - GC Percent. UCSC's own trackDb for gc5Base asks for `windowingFunction
+//   Mean` and `viewLimits 30:70`, which is a legible curve where the wiggle
+//   default (whiskers, autoscaled) is a solid block: the file is 5-base bins,
+//   so every summary bin in a several-hundred-kb window spans a min near 0 and
+//   a max near 100. Both values ride in the hub config's `metadata.ucsc`, and
+//   nothing translates them into `summaryScoreMode` / `minScore` / `maxScore`,
+//   so a reader gets there through two track-menu trips (Score → Summary score
+//   mode, then Score → Set min/max score) or not at all. jb2hubs is where that
+//   belongs.
+// - RepeatMasker by class. `LinearMultiRowFeatureDisplay` has no menu item for
+//   `partitionField` and defaults it to `name`, which on a GenArk bigRmskBed is
+//   one row per repeat -- thousands of hairlines, checked rather than reasoned
+//   about. The class needs the jexl that cuts it off the name suffix, and
+//   jb2hubs ALREADY writes exactly that display (hubtools' repeatClassDisplay,
+//   with the colours and row order too). It is gated behind
+//   RMSK_MULTIROW_DISPLAY because the display type landed after v4.3.0, which
+//   is what jbrowse.org/code/jb2/latest still serves and therefore what the
+//   live site runs. So today the lanes are not one click, they are none.
+//
+// When that gate drops, the by-class display arrives in the track's own
+// `displays[]` and the figure gets it from the plain checkbox, with the same
+// colours the cookbook uses. Add nothing here to bring it forward.
 const AXOLOTL_GC_TRACK = {
   trackId: `${AXOLOTL_ASSEMBLY}-gc5Base`,
-  summaryScoreMode: 'avg',
-  minScore: 30,
-  maxScore: 70,
   height: 80,
 }
-
-// RepeatMasker as one lane per repeat class. Packed into a single lane, a
-// repeat-rich genome at this zoom is a wall of identical blocks: the classes are
-// interleaved, so nothing in the picture says which part of the window is LINE
-// and which is simple repeat.
-//
-// The class is not a column in this file. GenArk ships bigRmskBed, whose autoSql
-// has no class field -- it rides on the name as a suffix (`L1HS#LINE/L1`) -- so
-// `partitionField` takes the jexl that cuts it out rather than an attribute
-// name, the expression /docs/user_guides/multirow_feature_track documents for
-// exactly this file type.
 const AXOLOTL_RMSK_ROWS = {
   trackId: `${AXOLOTL_ASSEMBLY}-repeatMasker`,
-  type: 'LinearMultiRowFeatureDisplay',
-  partitionField: "jexl:split(split(feature.name,'#')[1],'/')[0]",
   height: 220,
 }
 
