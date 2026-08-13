@@ -520,11 +520,18 @@ const DOC_THIRD_PARTY = new Set([
   // the whole point of the note, and it is not ours to define.
   'advancedChunks',
   // packages/app-core/CLAUDE.md, "Choosing pointer events means owning the
-  // rules HTML5 dnd was giving us": dockview's own pointer drag source
-  // (dockview-core/dist/cjs/dnd/pointer/pointerDragSource.d.ts), named twice
-  // because our tab drag is defined against it — it is touch/pen only unless
-  // `dndStrategy: 'pointer'`, and it tracks the same single `pointerId` we do.
-  // A reader checking either claim has to read it in node_modules.
+  // rules HTML5 dnd was giving us": dockview's own pointer drag source, named
+  // twice because the section derives our tab-drag rules by contrast with it —
+  // it is touch/pen only unless `dndStrategy: 'pointer'`, and it tracks the
+  // same single `pointerId` we do.
+  //
+  // Note this entry does NOT satisfy the "find it in node_modules" rationale
+  // above: ea9cb165af replaced dockview with the MST-native workspace, so it is
+  // no longer a dependency and a reader has to go to dockview's own repo. It is
+  // still a third-party symbol rather than one of ours that was deleted, which
+  // is why it is here and not in DOC_ABSENT_ON_PURPOSE — but `withOrigin` above
+  // is stale in exactly the same way, so if a third set is ever wanted for
+  // "symbol of a dependency we dropped", these two are it.
   'PointerDragSource',
 ])
 
