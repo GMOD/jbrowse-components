@@ -77,8 +77,9 @@ row to live in. Grape against either mate is a direct alignment, while peach
 against cacao is what their shared grape genes imply, which is the approximation
 [Direct vs transitive pairs](#direct-vs-transitive-pairs) measures.
 
-**OrthoFinder orthogroups are not**, being inferred across all the genomes at
-once. [](/docs/tutorials/orthofinder_synteny) builds a six-genome view that way.
+**OrthoFinder orthogroups are not**, so every pair of columns is as good as any
+other. [](/docs/tutorials/orthofinder_synteny) builds a six-genome view that
+way.
 
 **[MCScanX](https://github.com/wyp1125/MCScanX) compares every pair** and writes
 them to one `.collinearity` file, so its result is all against all before
