@@ -34,6 +34,7 @@ import {
 } from './annotations.ts'
 import {
   IM,
+  IM_REPRODUCIBLE,
   commitScreenshot,
   imageSize,
   optimizePng,
@@ -211,6 +212,7 @@ function padPanels(files: string[]) {
       'white',
       '-border',
       `${GRID_GUTTER_PX / 2}`,
+      ...IM_REPRODUCIBLE,
       f,
     ])
   }
@@ -245,7 +247,7 @@ async function captureStages(
       padPanels(stageFiles)
       for (const [r, row] of rowFiles.entries()) {
         const frames = stageFiles.slice(r * cols, r * cols + cols)
-        execFileSync(IM, [...frames, '+append', row])
+        execFileSync(IM, [...frames, ...IM_REPRODUCIBLE, '+append', row])
       }
       execFileSync(IM, [
         ...rowFiles,
@@ -253,11 +255,17 @@ async function captureStages(
         'white',
         '-gravity',
         'west',
+        ...IM_REPRODUCIBLE,
         '-append',
         renderPath,
       ])
     } else {
-      execFileSync(IM, [...stageFiles, '-append', renderPath])
+      execFileSync(IM, [
+        ...stageFiles,
+        ...IM_REPRODUCIBLE,
+        '-append',
+        renderPath,
+      ])
     }
   } finally {
     for (const f of rowFiles) {
@@ -637,6 +645,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
     }
     execFileSync(IM, [
       ...partPaths,
+      ...IM_REPRODUCIBLE,
       horizontal ? '+append' : '-append',
       renderPath,
     ])

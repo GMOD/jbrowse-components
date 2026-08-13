@@ -14,6 +14,19 @@ import sharp, { type OutputInfo } from 'sharp'
 // 7 prints a deprecation warning for every `convert` invocation.
 const HAS_MAGICK = spawnSync('magick', ['-version']).status === 0
 export const IM = HAS_MAGICK ? 'magick' : 'convert'
+
+// Every ImageMagick write, or the figure is a new file each time it is made.
+// IM stamps `date:create`, `date:modify`, `date:timestamp` and `tIME` into the
+// PNG, so a composed capture that redrew not one pixel still hashes differently
+// on every run -- and the manifest is content-addressed, so that is a fresh
+// blob in the store, a rewritten figures.lock line, and a name on the
+// "NOT IN THE FIGURE STORE" report. A sweep of 19 figures reported 6 changed
+// and 6 of those were this.
+//
+// Only composed figures were affected, which is what made it look like content:
+// the single-capture path writes through sharp and is byte-stable, so the ones
+// that kept moving were exactly the multi-stage ones.
+export const IM_REPRODUCIBLE = ['-define', 'png:exclude-chunks=date,time']
 // `identify` as a standalone binary is IM6's layout; an IM7 install can ship
 // only `magick`, where the same tool is the `magick identify` subcommand.
 const IDENTIFY_BIN = HAS_MAGICK ? 'magick' : 'identify'
