@@ -1,12 +1,15 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
 import * as overlapShader from '../../shaders/slang/overlap.generated.ts'
+import { instancePass } from '../../shared/instancePass.ts'
 
 import type { OverlapsUploadData } from './types.ts'
 
 export const PASS_OVERLAP = 'overlap'
 
-export const OVERLAP_PASS = slangPass({ id: PASS_OVERLAP, mod: overlapShader })
+export const OVERLAP_PASS = instancePass({
+  id: PASS_OVERLAP,
+  mod: overlapShader,
+  pack: packOverlaps,
+})
 
 export function packOverlaps(data: OverlapsUploadData): ArrayBuffer {
   const n = data.overlapPositions.length / 2

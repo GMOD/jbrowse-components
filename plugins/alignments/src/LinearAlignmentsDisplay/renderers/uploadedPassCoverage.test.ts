@@ -8,28 +8,30 @@ import { PASS_MOD_COV } from '../../features/modCoverage/packGpu.ts'
 import { PASS_SNP_COV } from '../../features/snpCoverage/packGpu.ts'
 import {
   ALIGNMENTS_PASSES,
+  COVERAGE_LAYERS,
   GPU_PILEUP_PASS,
   GpuAlignmentsRenderer,
-  coveragePassPlan,
 } from './GpuAlignmentsRenderer.ts'
 
-import type { AlignmentsSources, RenderState } from './rendererTypes.ts'
+import type { AlignmentsSources } from './rendererTypes.ts'
 
 /**
  * A pass has to be wired in three places to paint: registered in
- * `ALIGNMENTS_PASSES`, drawn (`GPU_PILEUP_PASS` / `coveragePassPlan`), and
- * UPLOADED in `syncRegion`. `coverageParity.test.ts` locks the first two
- * together. This file locks the third, which was the one with no guard at all:
- * a drawn-but-never-uploaded pass has no buffer, so it draws zero instances —
- * no throw, no blank-screen crash, just a layer silently missing on the GPU
- * backend while Canvas2D still paints it.
+ * `ALIGNMENTS_PASSES`, drawn, and UPLOADED. Two of those are now structural —
+ * an `InstancePass` carries its own packer, so a drawn pass has an upload by
+ * construction, and `ALIGNMENTS_PASSES` is built from the registries the draw
+ * loops read, so a drawn pass is registered by construction.
  *
- * `GPU_PILEUP_UPLOAD` and `GPU_COVERAGE_UPLOAD` now make an unwired pass a
- * compile error. What is left for a runtime check is the part a `Record` can't
- * see: that the upload a map names actually WRITES something. Every entry is
- * `if (n > 0)` over a count it reads off the payload, so a wrong field name —
- * `snpPositions` where `snpRelDepths` was meant, both real, both `Uint32Array`-
- * ish — type-checks, sits in a fully-populated map, and uploads nothing.
+ * What no type can see is whether the packer a pass carries actually WRITES
+ * anything. Every one of them reads fields off the payload, and a wrong field
+ * name that happens to type-check — `snpPositions` where `snpRelDepths` was
+ * meant, `interbasePackedBuffer` where `snpPackedBuffer` was, all real, all the
+ * right type — packs an empty or wrong-length buffer, uploads nothing (or the
+ * wrong pass's instances), and paints a layer missing on the GPU backend only
+ * while Canvas2D still draws it.
+ *
+ * So: hand every pass a fixture with exactly one instance's worth of data, and
+ * require that every pass uploads.
  */
 
 const START = 10_000
@@ -37,6 +39,9 @@ const START = 10_000
 const STRIDE = new Map(ALIGNMENTS_PASSES.map(p => [p.id, p.instanceStride]))
 
 // One instance's worth of bytes for a pass, at that pass's generated stride.
+// The five coverage passes take a worker-packed buffer verbatim, so sizing
+// their fixtures by hand is sizing them the way no packer would: at the real
+// stride, "one instance" is one instance on both sides.
 function oneInstance(passId: string) {
   return new ArrayBuffer(STRIDE.get(passId)!)
 }
@@ -100,12 +105,6 @@ function fullyPopulated() {
     linkedReadLineColorTypes: new Uint8Array([0]),
     numLinkedReadLines: 1,
 
-    // Position-aggregate passes upload a worker-packed buffer verbatim. Sized
-    // from the pass's real stride, not a round number: these are the ONLY
-    // uploads whose buffer and count are decided on opposite sides of the RPC
-    // boundary — the worker sizes the bytes, the main thread counts a parallel
-    // array — so a fixture with arbitrary byte counts is a fixture no packer
-    // could have produced, and it makes the consistency case below vacuous.
     coverageGpuBinCount: 1,
     coveragePackedBuffer: oneInstance(PASS_COVERAGE),
     snpPositions: new Uint32Array([START + 1]),
@@ -132,24 +131,12 @@ function oneRegion(): AlignmentsSources {
   }
 }
 
-function uploadCalls() {
+function uploadedPasses() {
   const hal = new MockHal(ALIGNMENTS_PASSES)
   new GpuAlignmentsRenderer(hal).sync(oneRegion())
-  return hal.calls
-    .filter(c => c.method === 'uploadBuffer')
-    .map(c => {
-      const [, pass, byteLength, count] = c.args as [
-        number,
-        string,
-        number,
-        number,
-      ]
-      return { pass, byteLength, count }
-    })
-}
-
-function uploadedPasses() {
-  return new Set(uploadCalls().map(c => c.pass))
+  return new Set(
+    hal.calls.filter(c => c.method === 'uploadBuffer').map(c => c.args[1]),
+  )
 }
 
 describe('every drawn pass is also uploaded', () => {
@@ -157,49 +144,25 @@ describe('every drawn pass is also uploaded', () => {
     // Guards the guard: if a future field rename empties an array, the
     // assertions below would pass vacuously by uploading nothing at all.
     expect(uploadedPasses().size).toBe(
-      Object.keys(GPU_PILEUP_PASS).length +
-        coveragePassPlan({
-          coverageMaxDepth: 50,
-          showInterbaseIndicators: true,
-        } as unknown as RenderState).length,
+      Object.keys(GPU_PILEUP_PASS).length + COVERAGE_LAYERS.length,
     )
   })
 
   it('every pileup-layer pass gets a buffer', () => {
     const uploaded = uploadedPasses()
     for (const [layer, pass] of Object.entries(GPU_PILEUP_PASS)) {
-      expect({ layer, uploaded: uploaded.has(pass) }).toEqual({
+      expect({ layer, uploaded: uploaded.has(pass.id) }).toEqual({
         layer,
         uploaded: true,
       })
     }
   })
 
-  // The count handed to the HAL is what it multiplies the stride by to find the
-  // last instance, so a count past `byteLength / stride` reads off the end of
-  // the buffer — undefined pixels, no throw. For the main-thread packers this
-  // is near-trivial: one function allocates `n * stride` and passes `n`. It has
-  // teeth for the five coverage passes, where the WORKER sizes the buffer and
-  // the main thread counts a parallel array, so nothing but this holds the two
-  // sides of the RPC boundary to the same number.
-  it('every upload declares exactly as many instances as its bytes hold', () => {
-    for (const { pass, byteLength, count } of uploadCalls()) {
-      expect({ pass, count }).toEqual({
-        pass,
-        count: byteLength / STRIDE.get(pass)!,
-      })
-    }
-  })
-
   it('every coverage-band pass gets a buffer', () => {
     const uploaded = uploadedPasses()
-    const state = {
-      coverageMaxDepth: 50,
-      showInterbaseIndicators: true,
-    } as unknown as RenderState
-    for (const [pass] of coveragePassPlan(state)) {
-      expect({ pass, uploaded: uploaded.has(pass) }).toEqual({
-        pass,
+    for (const { pass } of COVERAGE_LAYERS) {
+      expect({ pass: pass.id, uploaded: uploaded.has(pass.id) }).toEqual({
+        pass: pass.id,
         uploaded: true,
       })
     }

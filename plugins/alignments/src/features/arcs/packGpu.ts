@@ -1,9 +1,8 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
 import * as arcShader from '../../shaders/slang/arc.generated.ts'
 import * as arcFlatShader from '../../shaders/slang/arcFlat.generated.ts'
 import * as arcLineShader from '../../shaders/slang/arcLine.generated.ts'
 import * as arcMarkerShader from '../../shaders/slang/arcMarker.generated.ts'
+import { instancePass } from '../../shared/instancePass.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
@@ -14,33 +13,49 @@ export const PASS_ARC_FLAT = 'arcFlat'
 export const PASS_ARC_LINE = 'arcLine'
 export const PASS_ARC_MARKER = 'arcMarker'
 
+// What the arc-band passes pack from. The band is the one upload whose input
+// isn't the pileup payload: `arcs` is a separate RPC result (absent whenever the
+// band is off) and `baseWidth` is the configured `readConnectionsLineWidth`,
+// which reaches the pack tier rather than staying a per-frame uniform because
+// each arc's own width is resolved from its read support at pack time — that
+// makes the setting part of what a buffer was packed from, which is why the
+// renderer's upload memo carries it.
+export interface ArcsPackData {
+  arcs: ArcsUploadData
+  baseWidth: number
+}
+
 // Curved paired-read arcs only. 130 vertices per instance, because the strip is
 // a hull that must contain the analytic dome the fragment measures.
-export const ARC_PASS = slangPass({
+export const ARC_PASS = instancePass({
   id: PASS_ARC,
   mod: arcShader,
   topology: 'triangle-strip',
+  pack: (d: ArcsPackData) => packArcs(d.arcs, d.baseWidth),
 })
 
 // Default triangle-list topology — a flat read-cloud connector is a 6-vertex
 // quad. It used to be an instance of ARC_PASS, i.e. 130 vertices tessellating a
 // straight line, in the one mode that draws thousands of them.
-export const ARC_FLAT_PASS = slangPass({
+export const ARC_FLAT_PASS = instancePass({
   id: PASS_ARC_FLAT,
   mod: arcFlatShader,
+  pack: (d: ArcsPackData) => packArcFlats(d.arcs, d.baseWidth),
 })
 
 // Default triangle-list topology — the tick is an antialiased 6-vertex quad,
 // not a native line (see arcLine.slang).
-export const ARC_LINE_PASS = slangPass({
+export const ARC_LINE_PASS = instancePass({
   id: PASS_ARC_LINE,
   mod: arcLineShader,
+  pack: (d: ArcsPackData) => packArcLines(d.arcs, d.baseWidth),
 })
 
 // Default triangle-list topology — each marker is a 6-vertex quad.
-export const ARC_MARKER_PASS = slangPass({
+export const ARC_MARKER_PASS = instancePass({
   id: PASS_ARC_MARKER,
   mod: arcMarkerShader,
+  pack: (d: ArcsPackData) => packArcMarkers(d.arcs),
 })
 
 // The two shape families are packed into two buffers rather than one buffer the
@@ -51,7 +66,12 @@ export const ARC_MARKER_PASS = slangPass({
 // In practice one of the two is always empty — `computeArcShape` emits a flat
 // shape iff `cloud` — so the extra pass costs nothing in either mode. Nothing
 // depends on that, though: a mixed feed packs and draws correctly.
-export function curvedArcCount(data: ArcsUploadData) {
+//
+// Module-private: this is `packArcs`' own allocation size, and the upload tier
+// used to export it to recompute the instance count a second time. The count is
+// now the packed buffer's own length (`uploadPass`), so this subtraction has
+// exactly one reader.
+function curvedArcCount(data: ArcsUploadData) {
   return data.numArcs - data.numFlatArcs
 }
 

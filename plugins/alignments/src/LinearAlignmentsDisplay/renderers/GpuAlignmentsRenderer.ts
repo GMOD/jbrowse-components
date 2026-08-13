@@ -18,91 +18,32 @@ import {
   ARC_LINE_PASS,
   ARC_MARKER_PASS,
   ARC_PASS,
-  PASS_ARC,
-  PASS_ARC_FLAT,
-  PASS_ARC_LINE,
-  PASS_ARC_MARKER,
 } from '../../features/arcs/packGpu.ts'
-import { uploadArcs } from '../../features/arcs/uploadGpu.ts'
-import {
-  CONN_LINE_PASS,
-  PASS_CONN_LINE,
-} from '../../features/connectingLines/packGpu.ts'
-import { uploadConnectingLines } from '../../features/connectingLines/uploadGpu.ts'
+import { CONN_LINE_PASS } from '../../features/connectingLines/packGpu.ts'
 import { hasCoverageScale } from '../../features/coverage/coverageScale.ts'
-import {
-  COVERAGE_PASS,
-  PASS_COVERAGE,
-} from '../../features/coverage/packGpu.ts'
-import { uploadCoverageBins } from '../../features/coverage/uploadGpu.ts'
-import { GAP_PASS, PASS_GAP } from '../../features/gap/packGpu.ts'
-import { uploadGaps } from '../../features/gap/uploadGpu.ts'
-import {
-  INDICATOR_PASS,
-  PASS_INDICATOR,
-} from '../../features/indicator/packGpu.ts'
-import { uploadIndicators } from '../../features/indicator/uploadGpu.ts'
-import {
-  INSERTION_PASS,
-  PASS_INSERTION,
-} from '../../features/insertion/packGpu.ts'
-import { uploadInsertions } from '../../features/insertion/uploadGpu.ts'
-import {
-  INTERBASE_PASS,
-  PASS_INTERBASE,
-} from '../../features/interbase/packGpu.ts'
-import { uploadInterbase } from '../../features/interbase/uploadGpu.ts'
-import {
-  LINKED_READ_LINE_PASS,
-  PASS_LINKED_READ_LINE,
-} from '../../features/linkedReads/packGpu.ts'
-import { uploadLinkedReadLines } from '../../features/linkedReads/uploadGpu.ts'
-import {
-  MISMATCH_PASS,
-  PASS_MISMATCH,
-} from '../../features/mismatch/packGpu.ts'
-import { uploadMismatches } from '../../features/mismatch/uploadGpu.ts'
-import {
-  MOD_COVERAGE_PASS,
-  PASS_MOD_COV,
-} from '../../features/modCoverage/packGpu.ts'
-import { uploadModCoverage } from '../../features/modCoverage/uploadGpu.ts'
-import {
-  MODIFICATION_PASS,
-  PASS_MOD,
-} from '../../features/modification/packGpu.ts'
-import { uploadModifications } from '../../features/modification/uploadGpu.ts'
-import { OVERLAP_PASS, PASS_OVERLAP } from '../../features/overlap/packGpu.ts'
-import { uploadOverlaps } from '../../features/overlap/uploadGpu.ts'
-import {
-  PASS_PER_BASE_LETTER,
-  PER_BASE_LETTER_PASS,
-} from '../../features/perBaseLetter/packGpu.ts'
-import { uploadPerBaseLetter } from '../../features/perBaseLetter/uploadGpu.ts'
-import {
-  PASS_PER_BASE_QUAL,
-  PER_BASE_QUALITY_PASS,
-} from '../../features/perBaseQuality/packGpu.ts'
-import { uploadPerBaseQuality } from '../../features/perBaseQuality/uploadGpu.ts'
-import { PASS_READ, READ_PASS } from '../../features/read/packGpu.ts'
-import { uploadReads as uploadReadSegments } from '../../features/read/uploadGpu.ts'
-import {
-  PASS_SNP_COV,
-  SNP_COVERAGE_PASS,
-} from '../../features/snpCoverage/packGpu.ts'
-import { uploadSnpCoverage } from '../../features/snpCoverage/uploadGpu.ts'
-import {
-  PASS_SOFTCLIP_BASES,
-  SOFTCLIP_BASES_PASS,
-} from '../../features/softclip/packBases.ts'
-import { uploadSoftclipBases } from '../../features/softclip/uploadBases.ts'
+import { COVERAGE_PASS } from '../../features/coverage/packGpu.ts'
+import { GAP_PASS } from '../../features/gap/packGpu.ts'
+import { INDICATOR_PASS } from '../../features/indicator/packGpu.ts'
+import { INSERTION_PASS } from '../../features/insertion/packGpu.ts'
+import { INTERBASE_PASS } from '../../features/interbase/packGpu.ts'
+import { LINKED_READ_LINE_PASS } from '../../features/linkedReads/packGpu.ts'
+import { MISMATCH_PASS } from '../../features/mismatch/packGpu.ts'
+import { MOD_COVERAGE_PASS } from '../../features/modCoverage/packGpu.ts'
+import { MODIFICATION_PASS } from '../../features/modification/packGpu.ts'
+import { OVERLAP_PASS } from '../../features/overlap/packGpu.ts'
+import { PER_BASE_LETTER_PASS } from '../../features/perBaseLetter/packGpu.ts'
+import { PER_BASE_QUALITY_PASS } from '../../features/perBaseQuality/packGpu.ts'
+import { READ_PASS } from '../../features/read/packGpu.ts'
+import { SNP_COVERAGE_PASS } from '../../features/snpCoverage/packGpu.ts'
+import { SOFTCLIP_BASES_PASS } from '../../features/softclip/packBases.ts'
 import {
   buildArcColorPalette,
   buildLinkedReadColorPalette,
 } from '../../shaders/palettes.ts'
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
-import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
+import { CLIP_PASS } from '../../shared/clipPass.ts'
+import { uploadPass } from '../../shared/instancePass.ts'
 import { READ_COLOR_CATEGORY, readCategoryPaletteKeys } from '../colorUtils.ts'
 import {
   getSelectionBounds,
@@ -117,8 +58,10 @@ import {
 } from './rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
+import type { InstancePass } from '../../shared/instancePass.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
@@ -144,9 +87,15 @@ const UI = readShader.UNIFORM_OFFSET_I32
 const UU = readShader.UNIFORM_OFFSET_U32
 const USLOTS = readShader.UNIFORM_SLOT_ARRAYS
 
-// Pass IDs not yet hosted by a feature folder. Per-feature PASS_* constants
-// are imported from features/X/packGpu.ts.
+// The selection-frame overlay: the one pass with no feature folder and no
+// packer, because its instances aren't a region's data — they are four quads
+// built per frame from the current selection (see `drawOverlayQuads`), uploaded
+// under their own region key and deleted at the end of the frame.
 const PASS_FLAT_QUAD = 'flatQuad'
+const FLAT_QUAD_PASS = slangPass({
+  id: PASS_FLAT_QUAD,
+  mod: flatQuadShader,
+})
 
 // Fill the per-frame UBO slots. Pure — mutates only the given typed-array
 // views. Every field here corresponds to a `u.fieldName` in
@@ -399,34 +348,6 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   }
 }
 
-export const ALIGNMENTS_PASSES: PassDescriptor[] = [
-  READ_PASS,
-  GAP_PASS,
-  MISMATCH_PASS,
-  INSERTION_PASS,
-  CLIP_PASS,
-  MODIFICATION_PASS,
-  PER_BASE_QUALITY_PASS,
-  PER_BASE_LETTER_PASS,
-  COVERAGE_PASS,
-  SNP_COVERAGE_PASS,
-  MOD_COVERAGE_PASS,
-  INTERBASE_PASS,
-  INDICATOR_PASS,
-  ARC_PASS,
-  ARC_FLAT_PASS,
-  ARC_MARKER_PASS,
-  ARC_LINE_PASS,
-  CONN_LINE_PASS,
-  LINKED_READ_LINE_PASS,
-  OVERLAP_PASS,
-  SOFTCLIP_BASES_PASS,
-  slangPass({
-    id: PASS_FLAT_QUAD,
-    mod: flatQuadShader,
-  }),
-]
-
 export { UNIFORMS_SIZE_BYTES }
 
 // Pure LocalRegion constructor — the shape a region with no pileup feed gets
@@ -599,102 +520,92 @@ function computeBlockGeom(
   }
 }
 
-// Each pileup layer's shader pass id. The z-order and visibility gating live in
-// the shared `PILEUP_LAYERS` list (also driving the Canvas2D renderer); this map
-// just resolves each layer to its GPU pass. Typed `Record<PileupLayerId, …>` so
-// a new layer can't be added without wiring its pass here.
-export const GPU_PILEUP_PASS: Record<PileupLayerId, string> = {
-  connLine: PASS_CONN_LINE,
-  linkedReadLine: PASS_LINKED_READ_LINE,
-  read: PASS_READ,
-  overlap: PASS_OVERLAP,
-  mod: PASS_MOD,
-  perBaseQual: PASS_PER_BASE_QUAL,
-  gap: PASS_GAP,
-  mismatch: PASS_MISMATCH,
-  insertion: PASS_INSERTION,
-  clip: PASS_CLIP,
-  softclipBases: PASS_SOFTCLIP_BASES,
-  perBaseLetter: PASS_PER_BASE_LETTER,
-}
+// A pass over one region's pileup payload. Each `features/*/packGpu.ts` states
+// its own narrow input (`GapUploadData`); the wide payload is accepted here
+// because a packer of a supertype satisfies a registry of the subtype.
+type PileupPass = InstancePass<PileupDataResult>
 
-// Each pileup layer's upload. The third `Record<PileupLayerId, …>` beside
-// GPU_PILEUP_PASS and Canvas2D's CANVAS_PILEUP_DRAW, and it exists for the same
-// reason: a layer added to PILEUP_LAYERS with a pass wired and no upload
-// compiles, registers, draws — and paints nothing, because the pass has no
-// buffer. That is the one wiring gap the other two maps left open, and it fails
-// on the GPU backend only, so the Canvas2D side of a parity check still looks
-// right.
+// Each pileup layer's GPU pass — which is also its upload, because an
+// `InstancePass` carries the packer that fills it. The z-order and visibility
+// gating live in the shared `PILEUP_LAYERS` list (also driving the Canvas2D
+// renderer); this map resolves each layer to the pass that draws it.
 //
-// Every entry is `(hal, regionIndex, data)` because each upload owns its own
-// instance count (`features/*/uploadGpu.ts`) — the shape is uniform here
-// because the per-pass knowledge moved into the passes, not because the passes
-// agree. The coverage band and the arc band are NOT in this map: they aren't
-// PILEUP_LAYERS entries, and `uploadArcs` additionally takes the configured
-// line width. Both are uploaded explicitly in syncRegion.
-type PileupUploadFn = (
-  hal: GpuHal,
-  displayedRegionIndex: number,
-  data: PileupDataResult,
-) => void
-
-const GPU_PILEUP_UPLOAD: Record<PileupLayerId, PileupUploadFn> = {
-  connLine: uploadConnectingLines,
-  linkedReadLine: uploadLinkedReadLines,
-  read: uploadReadSegments,
-  overlap: uploadOverlaps,
-  mod: uploadModifications,
-  perBaseQual: uploadPerBaseQuality,
-  gap: uploadGaps,
-  mismatch: uploadMismatches,
-  insertion: uploadInsertions,
-  clip: uploadClips,
-  softclipBases: uploadSoftclipBases,
-  perBaseLetter: uploadPerBaseLetter,
+// It used to be two maps: this one holding a pass ID string and a second
+// holding an upload function, both `Record<PileupLayerId, …>`. A layer wired
+// into the first and missed in the second compiles, registers, draws — and
+// paints nothing, because the pass has no buffer, silently and on the GPU
+// backend only. Two maps could disagree; one cannot.
+export const GPU_PILEUP_PASS: Record<PileupLayerId, PileupPass> = {
+  connLine: CONN_LINE_PASS,
+  linkedReadLine: LINKED_READ_LINE_PASS,
+  read: READ_PASS,
+  overlap: OVERLAP_PASS,
+  mod: MODIFICATION_PASS,
+  perBaseQual: PER_BASE_QUALITY_PASS,
+  gap: GAP_PASS,
+  mismatch: MISMATCH_PASS,
+  insertion: INSERTION_PASS,
+  clip: CLIP_PASS,
+  softclipBases: SOFTCLIP_BASES_PASS,
+  perBaseLetter: PER_BASE_LETTER_PASS,
 }
 
-// The coverage band's pass set. It plays the part PileupLayerId plays for the
-// pileup band — the thing the plan below and the upload map above are each
-// exhaustive over — and it is a union rather than the bare `string` this used
-// to be so that adding a sixth coverage pass is a compile error in the upload
-// map instead of a layer that draws with no buffer.
-export type CoveragePassId =
-  | typeof PASS_COVERAGE
-  | typeof PASS_SNP_COV
-  | typeof PASS_MOD_COV
-  | typeof PASS_INTERBASE
-  | typeof PASS_INDICATOR
+// Coverage-band passes in z-order with their draw gates — the band's answer to
+// PILEUP_LAYERS, which it has no share in: these are position-aggregate passes
+// packed in the worker, not row-instanced marks, and the Canvas2D band draws
+// them through its own path rather than a per-layer draw fn.
+//
+// The band itself is gated by `showCoverage` at the call site. The depth-scaled
+// passes need the autoscaled domain max, so they are skipped until coverage
+// stats settle (coarseDynamicBlocks is 500ms-debounced and `coverageMaxDepth`
+// is undefined until then) — matching the Canvas2D `domainMax !== undefined`
+// gate. The interbase count bars (depth-scaled) and the fixed-size indicator
+// triangles are both gated on the user's `showInterbaseIndicators` — the one
+// toggle governs all interbase marks.
+//
+// `enabled` is the DRAW's, never the upload's: gating an upload on a repaint-
+// tier setting would make a mid-session toggle paint nothing until the next
+// fetch replaced the buffer it never wrote.
+export const COVERAGE_LAYERS: {
+  pass: PileupPass
+  enabled: (state: RenderState) => boolean
+}[] = [
+  { pass: COVERAGE_PASS, enabled: hasCoverageScale },
+  { pass: SNP_COVERAGE_PASS, enabled: hasCoverageScale },
+  { pass: MOD_COVERAGE_PASS, enabled: hasCoverageScale },
+  {
+    pass: INTERBASE_PASS,
+    enabled: s => hasCoverageScale(s) && s.showInterbaseIndicators,
+  },
+  { pass: INDICATOR_PASS, enabled: s => s.showInterbaseIndicators },
+]
 
-// Each coverage pass's upload, keyed like GPU_PILEUP_UPLOAD. Keyed by PASS id
-// rather than by a layer id because the coverage band has no layer list — the
-// pass ids are its vocabulary, and `coveragePassPlan` already speaks it.
-const GPU_COVERAGE_UPLOAD: Record<CoveragePassId, PileupUploadFn> = {
-  [PASS_COVERAGE]: uploadCoverageBins,
-  [PASS_SNP_COV]: uploadSnpCoverage,
-  [PASS_MOD_COV]: uploadModCoverage,
-  [PASS_INTERBASE]: uploadInterbase,
-  [PASS_INDICATOR]: uploadIndicators,
-}
+// The arc band's passes, in paint order — curves then flat connectors (one of
+// the two is always empty, since read cloud draws only flats and arc mode only
+// curves), then the endpoint squares that paint on top of the black flat
+// connector lines, then the interchromosomal ticks. The line pass runs last in
+// both renderers, which is the paint order `hitTestArcBand` resolves ties by.
+//
+// A separate list from the two above because the band packs from a separate RPC
+// result plus the configured line width (`ArcsPackData`), not from the pileup
+// payload — and it has no per-pass gate: the band as a whole is drawn or not.
+const ARC_PASSES: InstancePass<ArcsPackData>[] = [
+  ARC_PASS,
+  ARC_FLAT_PASS,
+  ARC_MARKER_PASS,
+  ARC_LINE_PASS,
+]
 
-// Coverage-band passes in z-order; the band itself is gated by `showCoverage`
-// at the call site. The depth-scaled passes need the autoscaled domain max, so
-// they are skipped until coverage stats settle (coarseDynamicBlocks is
-// 500ms-debounced and `coverageMaxDepth` is undefined until then) — matching the
-// Canvas2D `domainMax !== undefined` gate. The interbase count bars (depth-
-// scaled) and the fixed-size indicator triangles are both gated on the user's
-// `showInterbaseIndicators` — the one toggle governs all interbase marks.
-export function coveragePassPlan(
-  state: RenderState,
-): [pass: CoveragePassId, enabled: boolean][] {
-  const hasDomain = hasCoverageScale(state)
-  return [
-    [PASS_COVERAGE, hasDomain],
-    [PASS_SNP_COV, hasDomain],
-    [PASS_MOD_COV, hasDomain],
-    [PASS_INTERBASE, hasDomain && state.showInterbaseIndicators],
-    [PASS_INDICATOR, state.showInterbaseIndicators],
-  ]
-}
+// Everything the HAL compiles, derived from the three registries above plus the
+// packer-less overlay pass, so that registering a pass is not a fourth wiring
+// point a new layer can be missed from. `drawPass` on an unregistered id draws
+// nothing and throws nothing.
+export const ALIGNMENTS_PASSES: PassDescriptor[] = [
+  ...Object.values(GPU_PILEUP_PASS),
+  ...COVERAGE_LAYERS.map(l => l.pass),
+  ...ARC_PASSES,
+  FLAT_QUAD_PASS,
+]
 
 // JBrowse brand blue (#00B8FF approx) in normalized linear RGB.
 const SELECTION_RGBA = [0, 0.722, 1, 1] as const
@@ -890,32 +801,29 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         (prev.tagColors !== data.readTagColors ||
           prev.colorCategories !== data.readColorCategories)
       ) {
-        uploadReadSegments(this.hal, idx, data)
+        uploadPass(this.hal, idx, GPU_PILEUP_PASS.read, data)
       }
       return
     }
 
     if (data) {
-      // Pileup layers: every PILEUP_LAYERS id, by construction. Uploads are
-      // unconditional — the layer's `enabled` gate belongs to the DRAW, not to
-      // this. Gating the upload too would make a mid-session toggle paint
-      // nothing until the next fetch replaced the buffer it never wrote.
-      for (const upload of Object.values(GPU_PILEUP_UPLOAD)) {
-        upload(this.hal, idx, data)
+      // Every pileup layer and every coverage-band pass, by construction — the
+      // registries are exhaustive over their key sets and the pass carries its
+      // own packer. Uploads are unconditional: a layer's `enabled` gate belongs
+      // to the DRAW (see COVERAGE_LAYERS).
+      for (const pass of Object.values(GPU_PILEUP_PASS)) {
+        uploadPass(this.hal, idx, pass, data)
       }
-      // Coverage band. Same rule, keyed on CoveragePassId instead — and
-      // likewise ungated, since `coveragePassPlan`'s gates are the DRAW's.
-      for (const upload of Object.values(GPU_COVERAGE_UPLOAD)) {
-        upload(this.hal, idx, data)
+      for (const { pass } of COVERAGE_LAYERS) {
+        uploadPass(this.hal, idx, pass, data)
       }
     }
-    // The arc band is the one upload with no map, and the signature says why:
-    // it reads `arcs` rather than `data` (a separate RPC result, absent
-    // whenever the band is off) and takes the configured line width, because
-    // each arc's own width is resolved at pack time from its read support. It
-    // is not a `(hal, idx, data)` upload wearing a disguise.
+    // The arc band packs from its own input — a separate RPC result, absent
+    // whenever the band is off, plus the configured line width.
     if (arcs) {
-      uploadArcs(this.hal, idx, arcs, arcLineWidth)
+      for (const pass of ARC_PASSES) {
+        uploadPass(this.hal, idx, pass, { arcs, baseWidth: arcLineWidth })
+      }
     }
   }
 
@@ -1006,9 +914,9 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     const drewCoverage = state.showCoverage && cov.height > 0
     if (drewCoverage) {
       this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)
-      for (const [pass, enabled] of coveragePassPlan(state)) {
-        if (enabled) {
-          this.hal.drawPass(pass, regionKey)
+      for (const { pass, enabled } of COVERAGE_LAYERS) {
+        if (enabled(state)) {
+          this.hal.drawPass(pass.id, regionKey)
         }
       }
     }
@@ -1022,7 +930,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       this.hal.setScissor(geom.vpX, pileup.top, geom.vpW, pileup.height)
       for (const layer of PILEUP_LAYERS) {
         if (layer.enabled(state)) {
-          this.hal.drawPass(GPU_PILEUP_PASS[layer.id], regionKey)
+          this.hal.drawPass(GPU_PILEUP_PASS[layer.id].id, regionKey)
         }
       }
       this.renderFeatureOverlays(block, sectionState, frame, geom, pileup, bufH)
@@ -1091,13 +999,10 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
       this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
       this.hal.setScissor(geom.vpX, scissor.top, geom.vpW, scissor.height)
-      // Curves then flat connectors — one of the two is always empty, since
-      // read cloud draws only flats and arc mode only curves.
-      this.hal.drawPass(PASS_ARC, regionKey)
-      this.hal.drawPass(PASS_ARC_FLAT, regionKey)
-      // Endpoint squares paint on top of the (black) flat connector lines.
-      this.hal.drawPass(PASS_ARC_MARKER, regionKey)
-      this.hal.drawPass(PASS_ARC_LINE, regionKey)
+      // In ARC_PASSES order, which is the paint order and says why.
+      for (const pass of ARC_PASSES) {
+        this.hal.drawPass(pass.id, regionKey)
+      }
 
       this.restoreUBO()
       this.hal.writeUniforms(this.uData)

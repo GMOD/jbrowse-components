@@ -1,12 +1,15 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
 import * as readShader from '../../shaders/slang/read.generated.ts'
+import { instancePass } from '../../shared/instancePass.ts'
 
 import type { ReadUploadData } from '../../shared/uploadTypes.ts'
 
 export const PASS_READ = 'read'
 
-export const READ_PASS = slangPass({ id: PASS_READ, mod: readShader })
+export const READ_PASS = instancePass({
+  id: PASS_READ,
+  mod: readShader,
+  pack: packReadSegments,
+})
 
 // Pure: pack per-segment instances for the read pass. Hot loop over
 // thousands of segments — all host-object property accesses are hoisted

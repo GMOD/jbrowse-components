@@ -1,16 +1,16 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
 // Softclip-base bases reuse the mismatch pass's shader/geometry — same
 // instanced quad with a base-letter slot.
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
+import { instancePass } from '../../shared/instancePass.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 
 export const PASS_SOFTCLIP_BASES = 'softclipBases'
 
-export const SOFTCLIP_BASES_PASS = slangPass({
+export const SOFTCLIP_BASES_PASS = instancePass({
   id: PASS_SOFTCLIP_BASES,
   mod: mismatchShader,
+  pack: packSoftclipBases,
 })
 
 export function packSoftclipBases(data: CigarUploadData): ArrayBuffer {

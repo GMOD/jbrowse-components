@@ -1,8 +1,7 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
 import { passesFrequencyGate } from '../LinearAlignmentsDisplay/constants.ts'
 import * as clipShader from '../shaders/slang/clip.generated.ts'
 import { findTopmostOnRow } from './hitTestTypes.ts'
+import { instancePass } from './instancePass.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
 
 import type {
@@ -11,7 +10,6 @@ import type {
   ResolvedBlock,
 } from './hitTestTypes.ts'
 import type { CigarUploadData } from './uploadTypes.ts'
-import type { GpuHal } from '@jbrowse/render-core/hal'
 
 export const PASS_CLIP = 'clip'
 
@@ -20,9 +18,10 @@ export const PASS_CLIP = 'clip'
 export const CLIP_KIND_SOFT = 0
 export const CLIP_KIND_HARD = 1
 
-export const CLIP_PASS = slangPass({
+export const CLIP_PASS = instancePass({
   id: PASS_CLIP,
   mod: clipShader,
+  pack: packClips,
 })
 
 // Worker lays out interbases as (insertions, softclips, hardclips); pack
@@ -47,17 +46,6 @@ export function packClips(data: CigarUploadData): ArrayBuffer {
     u32[o + F_U32.kind] = i < scEnd ? CLIP_KIND_SOFT : CLIP_KIND_HARD
   }
   return buf
-}
-
-export function uploadClips(
-  hal: GpuHal,
-  displayedRegionIndex: number,
-  data: CigarUploadData,
-) {
-  const count = data.numSoftclips + data.numHardclips
-  if (count > 0) {
-    hal.uploadBuffer(displayedRegionIndex, PASS_CLIP, packClips(data), count)
-  }
 }
 
 // Hit test for soft + hard clips, over the same `[insEnd, hcEnd)` slice

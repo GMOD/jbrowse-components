@@ -1,14 +1,14 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
 import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
+import { instancePass } from '../../shared/instancePass.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 
 export const PASS_INSERTION = 'insertion'
 
-export const INSERTION_PASS = slangPass({
+export const INSERTION_PASS = instancePass({
   id: PASS_INSERTION,
   mod: insertionShader,
+  pack: packInsertions,
 })
 
 // Reads from the merged interbase array's first `numInsertions` entries —

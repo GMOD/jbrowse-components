@@ -86,7 +86,7 @@ export function getReadsMenuItems(model: ReadsModel) {
       pin: model.softClippingDisplayTypeDefault,
     }),
     // Every interbase mark — the count bars and the fixed-size triangles
-    // alike — draws inside the coverage band (`coveragePassPlan`, and the
+    // alike — draws inside the coverage band (`COVERAGE_LAYERS`, and the
     // Canvas2D twin), and the hit test spells the same conjunction. So the
     // dependency is stated here rather than gated on: with coverage off this
     // toggle is inert, and the same sentence is on LGVSyntenyDisplay's

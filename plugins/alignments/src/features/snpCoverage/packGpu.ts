@@ -1,14 +1,17 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
 import * as snpCoverageShader from '../../shaders/slang/snpCoverage.generated.ts'
+import { instancePass } from '../../shared/instancePass.ts'
+
+import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
 
 export const PASS_SNP_COV = 'snpCov'
 
-export const SNP_COVERAGE_PASS = slangPass({
+// Packed worker-side by `packSnpSegmentsForGpu` (single linear pass into the
+// GPU-layout buffer) and uploaded verbatim.
+export const SNP_COVERAGE_PASS = instancePass({
   id: PASS_SNP_COV,
   mod: snpCoverageShader,
+  pack: (data: Pick<CoverageUploadData, 'snpPackedBuffer'>) =>
+    data.snpPackedBuffer,
 })
 
-// Worker-side pack from alignments-core. Single linear pass into the
-// GPU-layout buffer; consumed by uploadSnpCoverage on the main thread.
 export { packSnpSegmentsForGpu } from '@jbrowse/alignments-core'

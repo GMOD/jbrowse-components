@@ -1,14 +1,14 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
+import { instancePass } from '../../shared/instancePass.ts'
 
 import type { MismatchUploadData } from './types.ts'
 
 export const PASS_MISMATCH = 'mismatch'
 
-export const MISMATCH_PASS = slangPass({
+export const MISMATCH_PASS = instancePass({
   id: PASS_MISMATCH,
   mod: mismatchShader,
+  pack: packMismatches,
 })
 
 export function packMismatches(data: MismatchUploadData): ArrayBuffer {
