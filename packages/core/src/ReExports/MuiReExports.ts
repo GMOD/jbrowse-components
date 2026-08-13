@@ -17,6 +17,7 @@ import Switch from '@mui/material/Switch'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
+import type { MuiComponentName } from './muiComponentNames.ts'
 import type { ComponentType } from 'react'
 
 // A `lazy(...)` entry is served to plugins Suspense-wrapped (see lazify); a bare
@@ -30,7 +31,7 @@ import type { ComponentType } from 'react'
 // right on the second" bug. These are all already statically imported elsewhere
 // in the host, so eager-loading them costs no extra bundle — `lazy` was saving
 // nothing here and only introduced the misposition.
-export const Entries: Record<string, ComponentType<any>> = {
+export const Entries: Record<MuiComponentName, ComponentType<any>> = {
   Checkbox,
   Divider,
   ListItem,
