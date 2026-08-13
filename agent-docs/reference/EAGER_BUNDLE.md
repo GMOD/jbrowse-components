@@ -403,6 +403,27 @@ Two things follow, and the second is the general one:
   genuinely needs sharing, move it to a *third* module neither side's eager
   entry imports; do not point the lazy side at the eager one.
 
+## A multi-page site's budgets are coupled: adding a page moves all of them
+
+On the examples sites, each page's eager figure is measured independently and
+ratcheted in `eagerBundleSizes.json` — but the numbers are not independent.
+Rolldown cuts chunks by which pages reach a module together, so a new entry
+re-partitions chunks across the whole site and pages that import nothing new
+start downloading co-located modules they don't use.
+
+Measured, since the figure is what makes a budget move readable: building
+`jbrowse-build-your-own`'s site with and without `synteny.astro` moves each of
+the other eleven pages by **~13 KB gzip**. Nothing about those pages changed.
+
+So when a budget moves and the page it names is not the page anyone touched,
+check whether a page was added or removed before hunting an import. Two such
+steps are banked in that site's committed figures — `synteny` (~11 KB a page,
+the only page on a second product) and `track-settings` (1-2 KB, a twelfth entry
+on the same product) — and both were attributed rather than assumed, with
+`pnpm probe-eager-graph --page ultraminimal --holds <pkg>` reporting **zero**
+eager modules importing the new page's product. The ratchet is normal again from
+a banked step; a further rise is a real regression.
+
 ## What is not worth chasing
 
 **Not worth chasing:** the ~1.4 MB raw that remains is dominated by plugin

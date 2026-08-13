@@ -26,17 +26,14 @@ that genuinely differs per page goes in `DIVERGES` **with a reason**.
 **Should the copies exist?** A block in `COPY_THRESHOLD` (3) files or more needs
 a `COPIED` entry saying why it is the reader's own to write. Identical-ness says
 nothing about this, so before `COPIED` existed a green run sat on ~1400
-redundant lines and the "publish the block" escape hatch fired only when someone
-happened to look. A failure here has two possible fixes and choosing between
-them _is_ the check:
+redundant lines. A failure here has two possible fixes and choosing between them
+_is_ the check:
 
 - the reader would write it anyway — their box, their track config, their app's
   dark-mode wiring — so add the entry.
 - the reader would have to write it because JBrowse publishes no equivalent.
   That is a missing export. `usePanZoom` was eight hand-rolled copies, each
-  worse than the gesture layer JBrowse already ran; `useSessionPalette` was
-  eight copies of a `setConf` that silently discarded the host's configured
-  theme colors.
+  worse than the gesture layer JBrowse already ran.
 
 Deliberately **not** a redundant-line budget. Adding a page adds copies, which
 is the rule working; introducing a new widely-shared block is the event worth
@@ -44,115 +41,50 @@ interrupting. The line total is printed for the trend, and gates nothing.
 
 **It only sees named top-level declarations, so behaviour that repeats has to be
 given a name.** Repeated JSX written inline has nothing to group by and is
-invisible to both halves above — which is not hypothetical: the most-repeated
-thing on this site was the pan/zoom container div, its four style properties
-written out inline in 13 files, and the check had never looked at it. One of the
-four is `touchAction: 'none'`, whose absence costs nothing on a desktop and
-makes the demo inert on a phone, silently. It is `viewport` now, one `const` per
-file. When a styled div reaches a fifth example, name it there rather than
-reading a green run as coverage.
+invisible to both halves above — the most-repeated thing on this site was the
+pan/zoom container div, its four style properties written out inline in 13
+files, and the check had never looked at it. One of the four is
+`touchAction: 'none'`, whose absence costs nothing on a desktop and makes the
+demo inert on a phone, silently. It is `viewport` now, one `const` per file.
+When a styled div reaches a fifth example, name it there rather than reading a
+green run as coverage.
 
 Keep both lists short. If either starts growing, the shared surface has outgrown
 copy-paste and the answer is a different rule argued here, not more entries.
 
 ## Two measured claims this site makes, and both are ratchets
 
-- **`smoke.mjs` holds the evidence for this site's central claim**, in two
-  halves: `MUI_BUDGET` counts `Mui*`-classed elements, and `muiThemedStyling`
-  counts elements whose font came from MUI's default theme — which is the only
-  way to see a `makeStyles` component, since an emotion class has no `Mui` in
-  its name. Every page that installs `plainChromeOverlays` + `plainTrackControl`
-  scores **zero** on both. When one fails, the fix is almost never to change the
-  number — it is that a display started rendering a Material component that
-  isn't behind either provider. Raising the budget quietly makes the prose
-  false. Background: `agent-docs/reference/DISPLAYCHROME.md`, "The
-  bring-your-own seams".
-- **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` (what
-  each page downloads before it can run — the static-import closure from its
-  entry) and re-checked by `pnpm smoke`. Going **under** a budget fails as well
-  as going over — bank the win by re-running and committing, or the next change
-  quietly spends it. When a page goes over, the cause is essentially always one
-  static import from an eagerly-evaluated module to a React component;
-  `agent-docs/reference/EAGER_BUNDLE.md` names the three shapes and how to
-  attribute a new one. Don't raise a budget to make it pass, for the same reason
-  `MUI_BUDGET` isn't raised.
+**`smoke.mjs` holds the evidence for this site's central claim**, in two halves:
+`MUI_BUDGET` counts `Mui*`-classed elements, and `muiThemedStyling` counts
+elements whose font came from MUI's default theme — the only way to see a
+`makeStyles` component, since an emotion class has no `Mui` in its name. Every
+page that installs `plainChromeOverlays` + `plainTrackControl` scores **zero**
+on both. When one fails, the fix is almost never to change the number — it is
+that a display started rendering a Material component that isn't behind either
+provider. Raising the budget quietly makes the prose false. Background:
+`agent-docs/reference/DISPLAYCHROME.md`, "The bring-your-own seams".
 
-  **Every budget stepped up ~11 KB when the synteny page landed, and that one is
-  not a regression to hunt.** That page is the only one on a second product
-  (`@jbrowse/react-app2`, for a session whose views are an array), and a second
-  entry graph makes rolldown re-partition chunks across the whole site: pages
-  that import nothing new now download co-located modules they don't use.
-  Measured rather than assumed —
-  `pnpm probe-eager-graph --page ultraminimal --holds jbrowse-react-app` reports
-  **zero** eager modules importing the app product, so nothing leaked as a
-  static import. The bytes are still real, because whole chunks are fetched,
-  which is why the figures moved rather than being waived.
+**`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` (what each
+page downloads before it can run — the static-import closure from its entry) and
+re-checked by `pnpm smoke`. Going **under** a budget fails as well as going over
+— bank the win by re-running and committing, or the next change quietly spends
+it. Don't raise a budget to make it pass, for the same reason `MUI_BUDGET` isn't
+raised.
 
-  So the step is banked once, with this note, and the ratchet goes back to
-  normal from there: a further rise is a real regression again.
+Two things to check before hunting an import, both written up in
+`agent-docs/reference/EAGER_BUNDLE.md`:
 
-  **The chunking config that was supposed to reclaim those 11 KB has now been
-  tried, and it costs 104 KB a page.** One rolldown `advancedChunks` group
-  naming a chunk per third-party package — so a chunk's contents follow the
-  module's own identity instead of which pages reach it together — decoupled the
-  pages and made every one of them enormously worse: `ultraminimal` 508 -> 645,
-  `index` 560 -> 664, `synteny` 675 -> 771. The reason is the thing the idea was
-  built on. Chunks are page-dependent _because_ rolldown cuts them by usage, and
-  that fine cut is what keeps a page from downloading a whole package for three
-  components of it — pin the boundary by package and every page pays for all of
-  `@mui/material`. Don't retry this without a plan for partially-used vendors;
-  the coupling is the price of the optimization, not a defect beside it.
-
-  **What that coupling costs, measured**, since the figure is what makes a
-  budget move readable: building the site with and without `synteny.astro` moves
-  each of the other eleven pages by ~13 KB gzip. Nothing about those pages
-  changed — their chunks were re-cut around a graph they never load. So when a
-  budget moves and the page it names is not the page anyone touched, this is
-  why, and the first thing to do is check whether a page was added or removed
-  before hunting an import.
-
-  **Rewriting an example to import lazily is not the lever either**, and it
-  backfired when tried: putting `LevelSyntenyCanvas` behind `React.lazy` in
-  `SyntenyRibbons.tsx` — sound on its face, since it drags 120 KB of compiled
-  synteny shaders — _raised_ every page (`synteny` 675 -> 686, `index` 560 ->
-  565), because the new lazy boundary re-partitioned the shared chunks again. It
-  also costs the thing the site exists for: an example is meant to be pasted and
-  run, so `lazy` belongs in one only when the example is _about_ deferring
-  something. Bundle size is not a reason to complicate one.
-
-  **Every budget stepped up 1-2 KB again when `track-settings` landed, and that
-  one is the same mechanism at a twelfth the size.** Not a second product this
-  time — the page is on `@jbrowse/react-linear-genome-view2` like every other —
-  just a twelfth entry, which re-partitions chunks across the site the same way.
-  Attributed rather than assumed:
-  `pnpm probe-eager-graph --page ultraminimal --holds @jbrowse/plugin-alignments`
-  reports **zero** eager modules importing the alignments plugin, so
-  `pickColorOptions` did not leak out of the one page that imports it, and
-  `track-settings` itself lands at 554 KB, mid-pack among its siblings. Banked
-  once, here; the ratchet is normal again from there.
-
-  **A shared React-free module lands in the LAZY chunk, and that is what two
-  regressions since have actually been.** Not the shape the failure text names —
-  in both, `--holds` reported _zero_ eagerly-evaluated modules importing any
-  React component. A module imported by both an eager module and a lazy one gets
-  grouped with the lazy chunk, so the eager import pays for the whole chunk. The
-  asymmetry to remember: a lazy module importing an eager one is free; only the
-  shared module costs. Check that before hunting for a component import that
-  isn't there.
-
-  - Fixed: `breakpoint-split-view`'s `model.ts -> components/util.ts` was
-    dragging eight overlay components and `@floating-ui` onto every page.
-    `components/overlayGeometry.ts` states the boundary and the duplication it
-    costs. 668 -> 655 KB.
-  - **Banked, and the next thing to fix:**
-    `plugins/alignments/src/shaders/slang/read.iface.generated.ts`. Its eager
-    consumers (`LinearAlignmentsDisplay/constants.ts`, `colorUtils.ts`) want ten
-    `CS_*` integers; the module also carries `writeUniforms`, 10.7 KB of its
-    20.6, for the lazy renderer. Same rule, one plugin over. The fix is in the
-    shader codegen — emit the constants as their own module — which regenerates
-    every shader in the repo and answers to the Shaders job, so it is its own
-    change rather than a lint-sized one. ~11 KB on `synteny`, banked into the
-    figures below rather than left failing.
+- **Was a page added or removed?** Page budgets here are coupled — a new entry
+  re-partitions chunks across the whole site, worth ~13 KB gzip a page. Two such
+  steps are banked in the committed figures. See §"A multi-page site's budgets
+  are coupled".
+- **Is it a shared React-free module?** A module imported by both an eager and a
+  lazy module gets grouped with the lazy chunk, so the eager import pays for the
+  whole chunk. This, not a component import, is what both regressions since have
+  been — in each, `--holds` reported _zero_ eagerly-evaluated modules importing
+  any React component. A lazy module importing an eager one is free; only the
+  shared module costs. See §"A duplicate is how a bundling split looks from the
+  inside".
 
 ## `pnpm probe-eager-graph` answers _why_, and is the one to reach for first
 
@@ -168,11 +100,11 @@ chunks with per-module byte counts (`generateBundle`) — and intersects them, s
 
 It is committed because three sessions in a row rebuilt it from scratch, and
 because every wrong bundle number in EAGER_BUNDLE.md's history came from
-reasoning where this would have answered. Two of those traps are wired into it
-rather than left as advice: it attributes at module level, never by chunk name
-(a rolldown chunk is named after one of its modules and holds unrelated ones);
-and when nothing first-party names the target directly it falls back to listing
-the package's barrel importers, because `import { Button } from '@mui/material'`
+reasoning where this would have answered. Two traps are wired into it rather
+than left as advice: it attributes at module level, never by chunk name (a
+rolldown chunk is named after one of its modules and holds unrelated ones); and
+when nothing first-party names the target directly it falls back to listing the
+package's barrel importers, because `import { Button } from '@mui/material'`
 records an edge to the barrel and a direct-importer query would report "nothing
 to fix".
 

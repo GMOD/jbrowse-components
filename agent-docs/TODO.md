@@ -106,6 +106,21 @@ relabelled rather than added and removed — kills the structural churn and keep
 accessible DOM text. Alternatives if that is not enough: a canvas ruler (bigger
 win, loses selectable text), or coarsening ticks off `coarseBpPerPx` during the
 zoom spring and snapping exact on settle.
+### Emit the shader constants as their own module
+
+`plugins/alignments/src/shaders/slang/read.iface.generated.ts` is the next eager
+-bundle item, already attributed and banked into the examples sites' committed
+figures (~11 KB on `synteny`). Its eager consumers
+(`LinearAlignmentsDisplay/constants.ts`, `colorUtils.ts`) want ten `CS_*`
+integers; the module also carries `writeUniforms`, 10.7 KB of its 20.6, for the
+lazy renderer — so the eager import pays for the whole thing. Same shape as the
+breakpoint-split-view case in
+[EAGER_BUNDLE.md](reference/EAGER_BUNDLE.md) §"A duplicate is how a bundling
+split looks from the inside", one plugin over.
+
+The fix is in the shader codegen rather than in either consumer, which means it
+regenerates every shader in the repo and answers to the Shaders CI job — its own
+change, not a lint-sized one.
 
 ### Extra large text SVG mode for pub-ready figures
 

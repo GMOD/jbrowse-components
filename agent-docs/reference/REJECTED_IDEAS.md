@@ -708,6 +708,23 @@ re-attempt without genuinely new data.
   a flag to suppress the row the declaration implies. The shape fits a menu that
   owns the undo; see `packages/core/src/ui/CLAUDE.md`.
 
+- **A rolldown `advancedChunks` group naming a chunk per third-party package**,
+  to decouple the examples sites' page budgets from each other — measured and
+  reverted. It costs **104 KB a page**: `ultraminimal` 508 -> 645, `index`
+  560 -> 664, `synteny` 675 -> 771. The reason is the premise. Chunks are
+  page-dependent *because* rolldown cuts them by usage, and that fine cut is
+  what keeps a page from downloading a whole package for three components of it;
+  pin the boundary by package and every page pays for all of `@mui/material`.
+  The coupling is the price of the optimization, not a defect beside it — don't
+  retry without a plan for partially-used vendors. See
+  [EAGER_BUNDLE.md](EAGER_BUNDLE.md) §"A multi-page site's budgets are coupled".
+- **Rewriting an example to import lazily, for bundle size** — backfired.
+  `LevelSyntenyCanvas` behind `React.lazy` in `SyntenyRibbons.tsx` is sound on
+  its face (it drags 120 KB of compiled synteny shaders) and *raised* every page:
+  `synteny` 675 -> 686, `index` 560 -> 565, because the new lazy boundary
+  re-partitioned the shared chunks again. It also costs the thing an examples
+  site exists for — an example is meant to be pasted and run, so `lazy` belongs
+  in one only when the example is *about* deferring something.
 - **Golden-snapshot browser tests** — not worth the investment; the one version
   worth building is automated canvas-vs-GPU parity.
 - **Prop-change tests via RTL `rerender()`** — it remounts the tree in this jest
