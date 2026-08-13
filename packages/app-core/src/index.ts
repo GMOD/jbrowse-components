@@ -16,6 +16,12 @@ export type {
   LayoutTree,
   PanelNode,
   TabNode,
+  // named by the emitted BaseWebSession/sessionModel declarations, whose
+  // `applyLayoutSpec`/`setPendingMove`/`tileViews` signatures tsc otherwise
+  // serializes as a `src/` path a published tarball doesn't ship
+  LayoutSpecNode,
+  PendingMove,
+  TileMode,
 } from './WorkspaceLayout/index.ts'
 export {
   addSessionTracks,

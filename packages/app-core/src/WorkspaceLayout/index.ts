@@ -5,4 +5,5 @@ export { useLayoutDrag } from './useLayoutDrag.ts'
 
 export type { WorkspaceLayoutMixinType, WorkspaceLayout } from './model.ts'
 export type { LayoutTree, PanelNode, TabNode, BranchNode } from './tree.ts'
+export type { LayoutSpecNode, PendingMove, TileMode } from './spec.ts'
 export type { DropZone } from './dropZone.ts'
