@@ -128,6 +128,8 @@ export function makeEmptyPileupData(): PileupDataResult {
     readKeys: [],
     readIdPrefix: undefined,
     ...namesToBlock([]),
+    readNextRefIds: new Int32Array(0),
+    nextRefNames: [],
     segmentPositions: new Uint32Array(0),
     segmentReadIndices: new Uint32Array(0),
     segmentEdgeFlags: new Uint8Array(0),

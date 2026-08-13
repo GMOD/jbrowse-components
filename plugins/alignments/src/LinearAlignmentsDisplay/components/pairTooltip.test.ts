@@ -1,4 +1,5 @@
 import { namesToBlock } from '../../shared/readNameBlock.ts'
+import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import { formatChainTooltip, formatFeatureLabel } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -16,7 +17,7 @@ function makeRpcData(
     readFlags: new Uint16Array([1]), // paired
     readInsertSizes: new Float32Array([500]),
     readPairOrientations: new Uint8Array([1]), // LR
-    readNextRefs: ['chr1'],
+    ...nextRefsToTable(['chr1']),
     readInterchrom: new Uint8Array([0]),
     insertSizeStats: { upper: 1000, lower: 200 },
     ...overrides,
@@ -79,7 +80,7 @@ describe('formatChainTooltip pair anomalies', () => {
   it('inter-chromosomal mate pre-empts insert/orientation anomalies', () => {
     const tip = formatChainTooltip(
       makeRpcData({
-        readNextRefs: ['chr2'],
+        ...nextRefsToTable(['chr2']),
         readInterchrom: new Uint8Array([1]),
         readPairOrientations: new Uint8Array([2]),
         readInsertSizes: new Float32Array([5000]),
@@ -102,7 +103,7 @@ describe('formatChainTooltip pair anomalies', () => {
   it('does not call an aliased same-chromosome mate inter-chromosomal', () => {
     const tip = formatChainTooltip(
       makeRpcData({
-        readNextRefs: ['chr1'], // file naming
+        ...nextRefsToTable(['chr1']), // file naming
         readInterchrom: new Uint8Array([0]), // worker: same chromosome
         readPairOrientations: new Uint8Array([2]),
         readInsertSizes: new Float32Array([5000]),

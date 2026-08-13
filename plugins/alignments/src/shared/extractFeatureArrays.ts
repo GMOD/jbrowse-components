@@ -42,6 +42,9 @@ function getMateRefName(feature: Feature) {
 }
 
 interface ExtractOpts {
+  // Whether anything will read `readSuppAlignments` — the arc computation is
+  // its only consumer. See the comment at its declaration.
+  needsSuppAlignments: boolean
   colorBy: ColorBy | undefined
   showSoftClipping: boolean
   region: Region
@@ -58,6 +61,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   report?: ProgressReporter,
 ) {
   const { colorBy, showSoftClipping, region, sortTag } = opts
+  const { needsSuppAlignments } = opts
   const { regionSequence, regionSequenceStart } = opts
   const detectedModifications = new Set<string>()
   // Unique (strand, type) pairs across all reads → global simplex resolution.
@@ -78,8 +82,16 @@ export function extractFeatureArrays<T extends FeatureData>(
   const isPerBaseLetterMode = colorBy?.type === 'perBaseLetter'
   const tagColorValues: string[] = []
   const nextPositions: number[] = []
-  const nextRefs: string[] = []
-  const suppAlignments: string[] = []
+  // Only when something will read it. `getTag(feature, 'SA')` walks the read's
+  // whole tag block to find a tag that, on the deepest short-read fixture, is
+  // present on ZERO of 153,677 reads — 18.1ms of walking plus 5.3ms of cloning
+  // 153,677 empty strings, for an array whose only consumer is the arc
+  // computation. `needsSuppAlignments` is `readConnections !== 'off'`, and it
+  // lives in `rpcProps` for the same reason `showCoverage` does: the worker
+  // skips real work, so toggling it refetches.
+  const suppAlignments: string[] | undefined = needsSuppAlignments
+    ? []
+    : undefined
   // Soft/hard-clip length at the 5' start of the read in read coordinates
   // (getClip already accounts for strand). This is the read-order sort key that
   // lets the main thread chain split segments in true read order rather than
@@ -107,8 +119,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     features.push(buildFeatureData(feature))
 
     nextPositions.push((feature.get('next_pos') as number | undefined) ?? 0)
-    nextRefs.push((feature.get('next_ref') as string | undefined) ?? '')
-    suppAlignments.push((getTag(feature, 'SA') as string | undefined) ?? '')
+    suppAlignments?.push((getTag(feature, 'SA') as string | undefined) ?? '')
     const isMismatch = isMismatchFeature(feature)
     // Read once: it drives both the start clip and the indel walk below.
     const cigarString = isMismatch
@@ -241,7 +252,6 @@ export function extractFeatureArrays<T extends FeatureData>(
     uniqueTagValues,
     sortTagValues,
     nextPositions,
-    nextRefs,
     suppAlignments,
     clipAtStart,
     detectedModifications,

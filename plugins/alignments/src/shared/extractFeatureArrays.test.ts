@@ -58,6 +58,7 @@ const buildFeatureData = (f: Feature): FeatureData => ({
 
 function extract(features: Feature[], colorBy: ColorBy) {
   return extractFeatureArrays(features, buildFeatureData, {
+    needsSuppAlignments: true,
     colorBy,
     showSoftClipping: false,
     region,

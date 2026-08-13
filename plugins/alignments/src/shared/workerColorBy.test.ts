@@ -52,6 +52,7 @@ const buildFeatureData = (f: Feature): FeatureData => ({
 // reference sequence is supplied so the bisulfite path can run.
 function extracted(colorBy: ColorBy | undefined) {
   const out = extractFeatureArrays([makeFeature()], buildFeatureData, {
+    needsSuppAlignments: true,
     colorBy,
     showSoftClipping: false,
     region,

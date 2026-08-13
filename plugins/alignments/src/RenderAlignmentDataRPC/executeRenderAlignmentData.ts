@@ -45,8 +45,11 @@ import {
   partitionFeatures,
 } from '../shared/groupFeatures.ts'
 import { readIdPrefixOf, readKeyOf } from '../shared/readIdentity.ts'
-import { buildReadInterchrom } from '../shared/readInterchrom.ts'
 import { buildReadNameBlock } from '../shared/readNameBlock.ts'
+import {
+  buildReadInterchrom,
+  buildReadNextRefs,
+} from '../shared/readNextRefs.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import {
   CHAIN_FILL_SPLIT_DELETION,
@@ -227,7 +230,6 @@ function buildChainResultFields(
 
   const readChainHasSupp = new Uint8Array(features.length)
   const readChainIndices = new Uint32Array(features.length)
-  const readNextRefs: string[] = []
   const chainFirstReadSeen = new Uint8Array(numChains)
   for (let i = 0; i < features.length; i++) {
     const f = features[i]!
@@ -246,7 +248,6 @@ function buildChainResultFields(
           ? CHAIN_FILL_SPLIT_DELETION
           : chainSuppTypes[cIdx]!
     readChainIndices[i] = cIdx
-    readNextRefs.push(f.nextRef ?? '')
     // Only overwrite when the chain's primary (paired) read set an orientation;
     // a supplementary whose primary is in another region keeps its own value.
     if (f.flags & SAM_FLAG_SUPPLEMENTARY && chainPairOrientations[cIdx]! > 0) {
@@ -260,7 +261,6 @@ function buildChainResultFields(
   return {
     readChainHasSupp,
     readChainIndices,
-    readNextRefs,
     chainAbsMinStarts,
     chainAbsMaxEnds,
     chainDistances,
@@ -319,7 +319,6 @@ async function buildGroupResult(
     tagColorValues,
     sortTagValues,
     uniqueTagValues,
-    nextRefs,
     nextPositions,
     suppAlignments,
     clipAtStart,
@@ -349,6 +348,10 @@ async function buildGroupResult(
   // per read. `extractFeatureArrays` is 1:1 with its input, so index i is the
   // same read in both.
   const readNames = buildReadNameBlock(rawFeatures)
+  // Both modes, off the raw features, for the same reason the name block is:
+  // the mate's reference is a NUMBER on the record and only becomes a string
+  // through `refIdToName`. See shared/readNextRefs.ts.
+  const nextRefs = buildReadNextRefs(rawFeatures)
 
   // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
   const chainFields: Partial<PileupDataResult> = isChain
@@ -356,10 +359,7 @@ async function buildGroupResult(
         features as ChainFeatureData[],
         readArrays.readPairOrientations,
       )
-    : {
-        readNextRefs: nextRefs,
-        sortTagValues,
-      }
+    : { sortTagValues }
 
   const {
     gapArrays,
@@ -419,10 +419,11 @@ async function buildGroupResult(
     stopTokenCheck,
   })
 
-  // Derived here where both branches' readNextRefs and the region refName are in
-  // scope, rather than threaded through the array builders.
+  // Derived here where the mate-reference table and the region refName are both
+  // in scope, rather than threaded through the array builders. Resolved per
+  // distinct contig rather than per read.
   const readInterchrom = buildReadInterchrom(
-    chainFields.readNextRefs,
+    nextRefs,
     region.refName,
     features.length,
   )
@@ -430,6 +431,7 @@ async function buildGroupResult(
   return {
     ...readArrays,
     ...readNames,
+    ...nextRefs,
     readInterchrom,
     ...segmentArrays,
     ...gapArrays,
@@ -512,6 +514,7 @@ export async function executeRenderAlignmentData({
     showSoftClipping = false,
     showCoverage = true,
     linkedReads = 'off',
+    readConnections = 'off',
     drawSingletons = true,
     drawProperPairs = true,
     showOnlySplitAlignments = false,
@@ -572,6 +575,11 @@ export async function executeRenderAlignmentData({
     ? (f: Feature) => buildChainFeatureData(f, readIdPrefix)
     : (f: Feature) => buildBaseFeatureData(f, readIdPrefix)
   const extractOpts = {
+    // The arc computation is the only reader of `readSuppAlignments`, and it
+    // does nothing when connections are off — so the worker skips the per-read
+    // SA tag walk entirely. Toggling connections refetches, which is the same
+    // trade `showCoverage` makes.
+    needsSuppAlignments: readConnections !== 'off',
     colorBy,
     showSoftClipping: effShowSoftClipping,
     region,

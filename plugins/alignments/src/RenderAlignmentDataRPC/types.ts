@@ -58,6 +58,11 @@ export interface RenderAlignmentDataArgs {
   // not on every zoom step.
   lodMode?: BaseOptions['lodMode']
   linkedReads?: 'off' | 'normal'
+  // Whether the display draws read connections. The worker reads it for one
+  // thing only — whether to walk each read's tag block for SA — and that walk
+  // is the whole cost of `readSuppAlignments`, which nothing but the arc
+  // computation consumes. `'off'` is the default, so the default fetch skips it.
+  readConnections?: string
   drawSingletons?: boolean
   drawProperPairs?: boolean
   showOnlySplitAlignments?: boolean
@@ -112,7 +117,11 @@ export interface PileupDataResult {
   // array, and what that costs the two consumers that want all of them.
   readNameBlock: string
   readNameOffsets: Uint32Array
-  readNextRefs?: string[] // mate reference name for inter-chromosomal tooltip
+  // Mate reference per read as a slot into `nextRefNames` — `nextRefAt` reads
+  // one. A string per read held ONE distinct value on the deepest fixture; see
+  // shared/readNextRefs.ts.
+  readNextRefIds: Int32Array
+  nextRefNames: string[]
   readChainIndices?: Uint32Array // chain index per read (only in chain mode)
 
   // Segment data - per-exon segments for GPU instancing (reads split at skip gaps)

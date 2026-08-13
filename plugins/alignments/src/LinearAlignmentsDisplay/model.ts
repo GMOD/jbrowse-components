@@ -2790,6 +2790,14 @@ export default function stateModelFactory(
             drawProperPairs: self.drawProperPairs,
             showOnlySplitAlignments: self.showOnlySplitAlignments,
             linkedReads: self.linkedReads,
+            // The worker reads this for one thing: whether to walk each read's
+            // tag block for SA. That walk is the whole cost of
+            // `readSuppAlignments` and the arc computation is its only
+            // consumer, so with connections off the fetch skips it entirely —
+            // 23ms on a deep pileup. Being in rpcProps means toggling
+            // connections refetches, the same trade `showCoverage` makes just
+            // above.
+            readConnections: self.readConnections,
             // Detail tier, for adapters that serve more than one (the tiered PIF
             // adapters behind LGVSyntenyDisplay, which overrides this to resolve
             // it). Declared here — undefined meaning "whatever the adapter picks"

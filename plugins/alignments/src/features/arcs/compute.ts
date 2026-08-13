@@ -23,6 +23,7 @@ import {
 } from '../../shared/readGroupConnections.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
 import { readNameAt } from '../../shared/readNameBlock.ts'
+import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -759,7 +760,7 @@ function offScreenMateArcs(
   ctx: ArcChainContext,
 ): PendingArc[] {
   const { data, readIdx, refName } = entry
-  const mateRef = data.readNextRefs?.[readIdx]
+  const mateRef = nextRefAt(data, readIdx)
   const mateBp = data.readNextPositions?.[readIdx]
   const mateUnmapped = (flagsOf(entry) & SAM_FLAG_MATE_UNMAPPED) !== 0
   if (mateUnmapped || !mateRef || !mateBp) {

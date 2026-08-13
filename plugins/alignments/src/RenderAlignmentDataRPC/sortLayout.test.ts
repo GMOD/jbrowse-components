@@ -1,4 +1,5 @@
 import { namesToBlock } from '../shared/readNameBlock.ts'
+import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import { INTERBASE_SOFTCLIP } from '../shared/types.ts'
 import {
   buildLaidOutPileupMap,
@@ -91,6 +92,7 @@ function makePileupData(opts: {
   return {
     readKeys,
     readIdPrefix: undefined,
+    ...nextRefsToTable(reads.map(() => '')),
     ...namesToBlock(readNames),
     readPositions,
     readYs: new Uint16Array(numReads),

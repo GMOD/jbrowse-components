@@ -11,6 +11,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import { namesToBlock } from '../shared/readNameBlock.ts'
+import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 import { makeEmptyPileupData } from './testUtils.ts'
@@ -151,7 +152,7 @@ function oneRead(mateBp?: number): PileupDataResult {
     readStrands: new Int8Array([1]),
     readInsertSizes: new Float32Array([500]),
     readPairOrientations: new Uint8Array([1]),
-    readNextRefs: mateBp === undefined ? undefined : ['ctgA'],
+    ...nextRefsToTable(mateBp === undefined ? [''] : ['ctgA']),
     readNextPositions:
       mateBp === undefined ? undefined : new Uint32Array([mateBp]),
   }
@@ -219,6 +220,16 @@ test('turning read connections off drops the band from the lane that had one', (
   const { display } = twoLanes()
   const withArcs = display.sections.contentHeight
   display.setReadConnections('off')
+  // Connections are an rpcProps setting — the worker skips the per-read SA tag
+  // walk when they are off — so toggling drops the fetched data. Re-seed it
+  // here, standing in for the refetch, since what this test is about is the
+  // band the layout reserves rather than the invalidation.
+  display.setRpcData(0, {
+    groups: [
+      { key: 'notsplit', label: 'Not split', data: oneRead() },
+      { key: 'split', label: 'Split (SA)', data: oneRead(2000) },
+    ],
+  })
   const layout: SectionsLayout = display.sections
   expect(layout.sections.every(s => !s.hasArcsBand)).toBe(true)
   expect(display.sections.contentHeight).toBe(

@@ -686,7 +686,14 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callCount)
   })
 
-  it('does NOT refetch when readConnections toggles (arc-only setting)', async () => {
+  // This used to assert the opposite, on the reasoning that connections are an
+  // arc-only DRAW setting. They are not only that: the worker walks each read's
+  // tag block for SA solely to fill `readSuppAlignments`, which nothing but the
+  // arc computation reads — 23ms on a deep pileup, for an array that on that
+  // fixture is empty on every one of 153,677 reads. So `readConnections` is in
+  // `rpcProps` and turning connections on fetches the SA data it needs, the
+  // same trade `showCoverage` makes for the coverage pipeline.
+  it('DOES refetch when readConnections toggles — the worker skips the SA walk', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
@@ -701,7 +708,7 @@ describe('FetchVisibleRegions autorun', () => {
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
-    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
   })
 
   it('does NOT refetch when arc draw settings change', async () => {

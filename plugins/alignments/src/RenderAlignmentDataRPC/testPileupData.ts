@@ -69,6 +69,10 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     // `read0read1...` with the offsets that cut it back up, which is the shape
     // the worker ships (shared/readNameBlock.ts).
     ...namesToBlock(Array.from({ length: n }, (_, i) => `read${i}`)),
+    // No mate anywhere, which is the `-1` slot — a fixture that wants
+    // interchromosomal reads sets `readNextRefIds` and `nextRefNames` together.
+    readNextRefIds: new Int32Array(n).fill(-1),
+    nextRefNames: [],
     readTagColors: new Uint32Array(0),
     readColorCategories: new Uint8Array(0),
     segmentPositions: new Uint32Array(n * 2),

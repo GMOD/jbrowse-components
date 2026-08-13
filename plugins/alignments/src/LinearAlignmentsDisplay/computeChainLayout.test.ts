@@ -1,4 +1,5 @@
 import { namesToBlock } from '../shared/readNameBlock.ts'
+import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
   buildChainConnectingData,
   computeChainLayout,
@@ -50,6 +51,7 @@ function makeChainData(opts: {
 
   return {
     readIdPrefix: undefined,
+    ...nextRefsToTable(Array.from({ length: numReads }, () => '')),
     readChainIndices,
     chainNames,
     chainAbsMinStarts,

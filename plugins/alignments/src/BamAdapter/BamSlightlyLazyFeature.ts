@@ -277,6 +277,17 @@ export default class BamSlightlyLazyFeature
       : undefined
   }
 
+  /**
+   * The mate's reference as the number the FILE stores, so `buildReadNextRefs`
+   * can tell two mates apart without `refIdToName` building a string per read —
+   * it resolves one name per distinct contig instead. -1 (BAM's own "no
+   * reference") for an unpaired read, matching what `next_ref` returns nothing
+   * for.
+   */
+  get nextRefId() {
+    return this.isPaired() ? this.next_refid : -1
+  }
+
   get next_segment_position() {
     return this.isPaired()
       ? `${this.adapter.refIdToName(this.next_refid)}:${this.next_pos + 1}`
@@ -359,6 +370,10 @@ class RegionBoundBamFeature implements MismatchFeature {
 
   get recordId() {
     return this.base.recordId
+  }
+
+  get nextRefId() {
+    return this.base.nextRefId
   }
 
   get nameLength() {
