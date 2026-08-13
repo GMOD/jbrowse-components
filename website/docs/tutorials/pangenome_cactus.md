@@ -485,12 +485,13 @@ projection tracks the build script already wrote:
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_cactus_segments",
-  "name": "Cactus graph segments",
+  "name": "MC graph: segments (whole graph, by locus)",
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_cactus"
-  }
+  },
+  "displayDefaults": { "showLabels": false }
 }
 ```
 
@@ -546,8 +547,7 @@ covers the gene-level version of that zoom.
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_cactus.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_cactus.sh)
-runs everything above except the graph index in one shot, encoding the HAL's MAF
-with
+runs everything above in one shot, encoding the HAL's MAF with
 [`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py):
 
 ```bash
@@ -558,14 +558,14 @@ npx --yes serve ecoli_cactus_build/jbrowse2
 
 It downloads the same five RefSeq genomes as the pggb build, runs
 `cactus-pangenome`, converts the HAL, VCF, `odgi depth`, and `odgi pav` into the
-projections above, maps the KTa004 reads through the graph, downloads JBrowse,
-and writes a `config.json` with the five assemblies, per-strain gene tracks, the
-projection tracks, and a default session. It needs the same tools listed under
+projections above, maps the KTa004 reads through the graph, indexes the graph
+itself with `build_pggb_tabix.sh`, downloads JBrowse, and writes a `config.json`
+with the five assemblies, per-strain gene tracks, the projection tracks, the
+segments track, and a default session. It needs the same tools listed under
 [Prerequisites](#prerequisites).
 
-That `config.json` carries no `plugins` block and no segments track, so the
-graph is built over the `mc/ecoli.gfa.gz` the run leaves behind: index it and
-add both from [Drawing this graph as a graph](#drawing-this-graph-as-a-graph).
+The `config.json` declares the graph genome view plugin, so the segments track
+and its launch menu item work without adding the plugin by hand.
 
 It picks its container runtime from what is on `PATH`, docker first and then
 singularity or apptainer. Force one with `CONTAINER=singularity`.

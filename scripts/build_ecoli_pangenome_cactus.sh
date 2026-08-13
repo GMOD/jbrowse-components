@@ -10,6 +10,8 @@
 # bigWig per strain as a MultiWiggle). It also maps a fifth isolate's short reads
 # (E. coli KTa004, ENA DRR063408) through the graph with `--giraffe`/`vg giraffe`
 # and surjects them onto K12, and copies the `--viz` odgi 1D raster as a figure.
+# The graph itself goes in too, indexed by locus (build_pggb_tabix.sh) and drawn
+# by the graph genome view plugin, which the config declares by url.
 #
 # It downloads the same five RefSeq E. coli chromosomes as the pggb tutorial
 # (build_ecoli_pangenome_graph.sh), so the two demos are a direct pggb-vs-MC
@@ -35,7 +37,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so maf_to_bed.py resolves after 
 
 # Sibling helpers this script runs, fetched next to it when absent, so a bare
 # `curl -fO` of this one file behaves the same as a repo checkout.
-HELPERS=(maf_to_bed.py)
+# build_pggb_tabix.sh fetches its own helper the same way.
+HELPERS=(maf_to_bed.py build_pggb_tabix.sh)
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -210,6 +213,25 @@ for strain in $STRAINS; do
     | sort -k1,1 -k2,2n > "ecoli_cactus_pav_${strain}.bedgraph"
   bedGraphToBigWig "ecoli_cactus_pav_${strain}.bedgraph" chrom.sizes "ecoli_cactus_pav_${strain}.bw"
 done
+
+# ── The graph itself, browsable by locus (the two tabix indexes) ───────────────
+# Every projection above flattens the graph onto K12; this indexes the graph so
+# it can be drawn AS a graph, at any locus, with no per-window extraction step.
+# Only the minigraph stage of Minigraph-Cactus writes rGFA, so mc/ecoli.gfa.gz
+# carries no SN/SO/SR tags and pggb_gfa_to_bed.py's walk stands in for them: it
+# derives each segment's reference interval from the path lines, and $REF anchors
+# rank 0 on the K12 path. Cactus writes the reference as a P line and the
+# haplotypes as W lines, which the walk reads alike; the trailing subpath tag on
+# a non-reference path (Sakai#0#chr#0) changes nothing, since PanSN still
+# resolves the sample. Emits the two BEDs RgfaTabixAdapter reads, so the region
+# query, the subgraph cut, both anchored layouts, the launch menus and hover sync
+# all work off these. Host-side (python3 only, no container).
+# --gfa writes mc/ecoli.gfa.gz; fall back to whatever GFA the run did write, so
+# a cactus bump that renames it fails in build_pggb_tabix.sh with the name it
+# looked for rather than here with a glob.
+GRAPH_GFA=mc/ecoli.gfa.gz
+[ -f "$GRAPH_GFA" ] || GRAPH_GFA=$(ls mc/*.gfa.gz | awk 'NR <= 1')
+bash "$SCRIPT_DIR/build_pggb_tabix.sh" "$GRAPH_GFA" ecoli_cactus "$REF"
 
 # ── Graph overview: odgi viz (the "vs odgi viz" comparison figure) ────────────
 # --viz already wrote mc/ecoli.viz/chr.full.viz.png, but its default layout is
@@ -462,6 +484,49 @@ jb add-track-json pav_track.json --update --out "$APP"
 jb add-track ecoli_cactus_reads.bam --trackId ecoli_cactus_reads \
   --name "KTa004 reads mapped through the graph (vs K12)" -a K12 --load copy --force --out "$APP"
 
+# the graph itself: RgfaTabixAdapter reads the two indexes built above; its `uri`
+# is the shared prefix, and it resolves `.segs.bed.gz`/`.links.bed.gz` and their
+# `.tbi`. The graph's stable names are PanSN and the sample prefix already equals
+# the assembly name, so no assemblyNameToPanSN mapping is needed. Needs the four
+# files beside config.json, since add-track-json copies nothing.
+cp ecoli_cactus.segs.bed.gz ecoli_cactus.segs.bed.gz.tbi \
+   ecoli_cactus.links.bed.gz ecoli_cactus.links.bed.gz.tbi "$APP/"
+cat > segments_track.json <<'JSON'
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_cactus_segments",
+  "name": "MC graph: segments (whole graph, by locus)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "ecoli_cactus"
+  },
+  "displays": [{ "type": "LinearBasicDisplay", "showLabels": false }]
+}
+JSON
+jb add-track-json segments_track.json --update --out "$APP"
+
+# The adapter and the view both come from the graph genome view plugin, which is
+# not bundled in JBrowse Web and has no CLI command, so declare it directly. It
+# is a native ES module loaded at runtime from its own url. Without this the
+# track above loads nothing and its Launch view menu item is absent.
+python3 - "$APP/config.json" <<'PY'
+import json, sys
+
+path = sys.argv[1]
+with open(path) as fh:
+    config = json.load(fh)
+plugins = config.setdefault('plugins', [])
+name = 'GraphGenomeView'
+if not any(p.get('name') == name for p in plugins):
+    plugins.append({
+        'name': name,
+        'esmUrl': 'https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js',
+    })
+with open(path, 'w') as fh:
+    json.dump(config, fh, indent=2)
+PY
+
 # ── Default session: all four projections ─────────────────────────────────────
 cat > session.json <<'JSON'
 {
@@ -498,6 +563,9 @@ jb set-default-session --session session.json --out "$APP"
 echo
 echo "Built $APP/config.json with the $(echo "$STRAINS" | wc -w) assemblies, gene tracks, the"
 echo "Minigraph-Cactus projections (synteny, variants, MAF, depth, per-strain"
-echo "presence), and the KTa004 read pileup mapped through the graph. Serve it:"
+echo "presence), the KTa004 read pileup mapped through the graph, and the graph"
+echo "itself as a segments track. Serve it:"
 echo "  npx serve $(pwd)/$APP"
+echo "Turn on 'MC graph: segments' and use its track menu's Launch view to draw"
+echo "any window as a graph; the config declares the plugin that does it."
 echo "The graph overview raster is ecoli_cactus_graph.png (odgi viz, from --viz)."
