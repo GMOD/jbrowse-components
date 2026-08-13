@@ -374,6 +374,35 @@ deferring it means moving theme construction to the products — which already
 import Material UI, and where it costs a bring-your-own host nothing). Neither
 is worth starting without deciding both.
 
+## A duplicate is how a bundling split looks from the inside
+
+The pins above are things to remove. This is the opposite: a place where the
+duplication is the fix, and reads exactly like an oversight.
+
+`breakpoint-split-view`'s `components/overlayGeometry.ts` holds four small
+helpers that also exist in `../util.ts` — a 3, a sentinel, and two four-line
+functions, character for character the same. `model.ts` is eager, `components/`
+is behind a `lazy()`, and a React-free module imported by both gets grouped with
+the lazy chunk, so the eager import drags it in. Duplicating the helpers is what
+keeps the two sides from sharing a module.
+
+A duplication sweep deleted three of the four (`24aba4d012`) and pointed the
+lazy side at `../util.ts`. **Nothing in the ordinary workflow disagreed**: tsc
+passed, every suite passed, lint passed. The synteny page went 678 -> 690 KB
+gzip eager and broke its own committed budget, and the only thing that says so
+is `pnpm smoke` here, which needs a full Astro build. Restored in `0e8f92550f`.
+
+Two things follow, and the second is the general one:
+
+- That plugin now has `eagerBoundary.test.ts`, which greps `components/` for a
+  static `from '../util.ts'` and fails in 1.3s. Any other module pair holding a
+  split like this deserves the same — the boundary is invisible to every other
+  check.
+- **Identical trivial copies are the expected shape of a deliberate split, not
+  evidence against one.** Read the file header before deleting one. If a helper
+  genuinely needs sharing, move it to a *third* module neither side's eager
+  entry imports; do not point the lazy side at the eager one.
+
 ## What is not worth chasing
 
 **Not worth chasing:** the ~1.4 MB raw that remains is dominated by plugin
