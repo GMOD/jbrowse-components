@@ -63,9 +63,14 @@ the plant community, and JBrowse reads its BAMs the same way.
 
 Trimming and alignment are four commands, on any pair of WGBS or EM-seq FASTQs:
 
+<!-- from: scripts/build_arabidopsis_wgbs.sh -->
+
 ```bash
 trim_galore --paired R1.fastq.gz R2.fastq.gz
+# index once per reference: bwameth aligns against a C->T copy of it
 bwameth.py index tair10.fa
+# no methylation flags anywhere: the BAM keeps the original read sequences,
+# and JBrowse makes the comparison at render time
 bwameth.py --reference tair10.fa -t 8 R1_val_1.fq.gz R2_val_2.fq.gz \
   | samtools sort -o arabidopsis_wgbs.bam -
 samtools index arabidopsis_wgbs.bam
@@ -79,6 +84,8 @@ original, so the reference directory has to be writable.
 An unconverted cytosine is indistinguishable from a methylated one, so the
 library's conversion rate is worth having before reading anything off the track.
 The chloroplast is unmethylated, which makes it the control:
+
+<!-- from: scripts/build_arabidopsis_wgbs.sh -->
 
 ```bash
 MethylDackel extract --CHH -r NC_000932.1 -o conversion \
@@ -101,11 +108,14 @@ plant contexts. It writes a bedGraph per context, which becomes a bigWig once
 the header line is dropped and the percentage column kept:
 
 ```bash
+# CpG is emitted always; --CHG --CHH add the two plant contexts.
+# -o fixes the output prefix, which the loop below reads back.
 MethylDackel extract --CHG --CHH -o arabidopsis_wgbs \
   tair10.fa arabidopsis_wgbs.bam
 samtools faidx tair10.fa
-cut -f1,2 tair10.fa.fai > tair10.chrom.sizes
+cut -f1,2 tair10.fa.fai > tair10.chrom.sizes  # two columns, not the .fai itself
 for ctx in CpG CHG CHH; do
+  # tail drops MethylDackel's track line; cut keeps the percentage column
   tail -n +2 arabidopsis_wgbs_${ctx}.bedGraph | cut -f1-4 |
     sort -k1,1 -k2,2n > ${ctx}.bg
   bedGraphToBigWig ${ctx}.bg tair10.chrom.sizes arabidopsis_wgbs_${ctx}.bw

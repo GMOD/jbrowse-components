@@ -44,6 +44,15 @@ const VALIDATORS: Validator[] = [
     argv: web('check-config-blocks.ts'),
   },
   {
+    // The bash counterpart to sync-doc-snippets, which covers TS only because
+    // a shell fence used to have no source to point at. A tutorial's
+    // subject-file command now comes out of its build_*.sh, so a flag renamed
+    // there has a page to go stale. Checks tools and flags rather than text,
+    // since the page deliberately carries the general form.
+    name: 'tutorial commands still run in their build script',
+    argv: web('check-script-commands.ts'),
+  },
+  {
     // Round-trips every figure's jbrowse:// link through Desktop's
     // parseProtocolUrl and app-core's parseSessionSpecUrl.
     name: 'figure recipes round-trip',

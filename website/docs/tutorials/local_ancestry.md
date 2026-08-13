@@ -108,8 +108,12 @@ subset splits into `chr1.ref.vcf.gz` (the two panels) and `chr1.gt.vcf.gz` (the
 targets: 243 animals, the eight wolfdogs, the Shiloh Shepherd and Tamaskan, the
 German Shepherd lineage, eight held-out gray wolves, and the 219-breed sweep).
 
+<!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
+
 ```bash
 PANEL=https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
+# -r over HTTP costs one chromosome, not the whole 6 GB file; the two later
+# views re-slice that local subset rather than fetching twice
 bcftools view -r chr1 -S all.txt --force-samples -Oz -o chr1.subset.vcf.gz "$PANEL"
 bcftools view -S <(cat wolves.txt dogs.txt) --force-samples \
   -Oz -o chr1.ref.vcf.gz chr1.subset.vcf.gz
@@ -133,7 +137,16 @@ four PLINK columns FLARE reads.
 FLARE takes the two panel VCFs, the `ref-panel` file, and the map, and writes
 `wolfdog_chr1.anc.vcf.gz` plus a summary:
 
+<!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
+
 ```bash
+# FLARE draws random samples while it infers, so two runs of the same input
+# give slightly different block boundaries unless the seed is pinned.
+#   seed=42    any fixed number, so a re-run reproduces this painting exactly
+#   -Xmx12g    Java's memory ceiling, raise it for more targets or a longer
+#              chromosome (FLARE dies with an OutOfMemoryError rather than
+#              slowing down)
+#   out=       a prefix, not a file: FLARE appends .anc.vcf.gz, .global.anc.gz
 java -Xmx12g -jar flare.jar ref=chr1.ref.vcf.gz ref-panel=refpanel.txt \
   gt=chr1.gt.vcf.gz map=chr1.map out=wolfdog_chr1 seed=42
 ```
@@ -168,6 +181,8 @@ FLARE writes per-marker calls into the `AN1`/`AN2` `FORMAT` fields of
 [`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py)
 collapses each haplotype's run of identical calls into one BED9 line, taking row
 labels from a two-column `labels.tsv` and coloring by ancestry via `itemRgb`:
+
+<!-- from: scripts/build_dog10k_wolfdog_ancestry.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/flare_anc_to_bed.py

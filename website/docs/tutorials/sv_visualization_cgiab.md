@@ -177,13 +177,19 @@ balanced region is one band at 0.5, a loss-of-heterozygosity region two bands at
 0 and 1. Build it by piling up the tumor reads at the sites the **normal** calls
 heterozygous and taking the alt fraction:
 
+<!-- from: scripts/build_sv_visualization_cgiab.sh -->
+
 ```bash
+# het sites from the NORMAL, which is the choice the whole track rests on
 bcftools view -g het -Oz -o hets.vcf.gz normal.deepvariant.vcf.gz
 tabix -p vcf hets.vcf.gz
 cut -f1,2 GRCh38.fa.fai > GRCh38.chrom.sizes
 
+# -q 1 drops multi-mapped reads, -Q 0 leaves HiFi base qualities alone
 bcftools mpileup -f GRCh38.fa -T hets.vcf.gz -a AD -q 1 -Q 0 tumor.bam |
   bcftools query -f '%CHROM\t%POS\t[%AD]\n' |
+  # unfolded alt fraction, so LOH separates into 0 and 1 instead of folding
+  # onto one band; the 10x floor keeps thin coverage from painting a fake 0/1
   awk -F'[\t,]' '{d=$3+$4; if (d>=10) printf "%s\t%d\t%d\t%.4f\n",$1,$2-1,$2,$4/d}' |
   LC_COLLATE=C sort -k1,1 -k2,2n > baf.bedgraph
 bedGraphToBigWig baf.bedgraph GRCh38.chrom.sizes tumor_baf.bw

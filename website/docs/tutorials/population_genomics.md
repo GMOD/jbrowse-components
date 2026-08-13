@@ -79,13 +79,20 @@ Each scan is then one vcftools run, an awk turning its table into a bedGraph,
 and a pack into a bigWig. Fst uses the Weir & Cockerham estimator
 ([Weir & Cockerham 1984](https://doi.org/10.2307/2408641)):
 
+<!-- from: scripts/build_dgrp_popgen.sh -->
+
 ```bash
+# chrom.sizes from the VCF header, so it carries the same contig names the
+# scans will
 bcftools view -h dgrp2.vcf.gz |
   awk -F'[=,>]' '/^##contig/{print $3"\t"$5}' > dm6.chrom.sizes
 
+# window == step, so windows tile rather than overlap
 vcftools --gzvcf dgrp2.vcf.gz \
   --weir-fst-pop In2Lt_INV.txt --weir-fst-pop In2Lt_STD.txt \
   --fst-window-size 2000 --fst-window-step 2000 --out fst_In2Lt
+# BIN_START is 1-based here, hence -1; negative Fst is an estimator artifact
+# at low-differentiation sites and is floored at 0
 awk 'NR>1 && $5!="nan" && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
   fst_In2Lt.windowed.weir.fst | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
@@ -102,8 +109,12 @@ takes no `-1` shift, and reports no `BIN_END`, so the window end is constructed
 here and clamped to the contig length: bedGraphToBigWig rejects an interval
 running past the end of its chromosome.
 
+<!-- from: scripts/build_dgrp_popgen.sh -->
+
 ```bash
 vcftools --gzvcf dgrp2.vcf.gz --TajimaD 2000 --out tajimad_all
+# BIN_START is already 0-based (no -1), and there is no BIN_END, so the end is
+# built here and clamped: an interval past the contig end is rejected downstream
 awk -F'\t' 'NR==FNR{len[$1]=$2; next}
      FNR>1 && $4!="nan" && $4!="-nan" {
        end=$2+2000; if (end>len[$1]) end=len[$1]

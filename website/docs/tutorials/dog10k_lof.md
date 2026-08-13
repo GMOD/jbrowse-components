@@ -161,7 +161,22 @@ is the other half of its figure and the reason a genotype at this locus is
 harder to read than it looks. Those copy-number estimates were never published,
 but they do not have to be: the SNV callset already carries a per-sample `DP` at
 every site, so one tabix slice of it, stripped to the depth field, covers every
-canid in the collection.
+canid in the collection:
+
+<!-- from: scripts/build_dog10k_cyp1a2_cn.sh -->
+
+```bash
+# -r reads only the locus over HTTP; -x drops everything but FORMAT/DP, which
+# is what keeps a 397 GB callset to a slice
+bcftools view -r chr30:38205000-38400000 -Ou "$SNVS" |
+  bcftools annotate -x 'INFO,^FORMAT/DP' -Oz -o dp.vcf.gz
+bcftools query -l dp.vcf.gz > cohort.samples
+bcftools query -f '%POS[\t%DP]\n' dp.vcf.gz > cohort.dp
+```
+
+Dropping everything but `FORMAT/DP` is what keeps this to a slice rather than a
+download: the source VCF is 397 GB, and `-r` reads only the locus out of it over
+HTTP.
 
 Depth is converted to copy number by comparison within each dog. The sequence
 around the element in that same dog is copy number two, so it serves as the

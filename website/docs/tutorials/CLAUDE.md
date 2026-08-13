@@ -82,6 +82,21 @@ it stays in the tutorial's `scripts/build_*.sh` under
 specific cohort, the QC arithmetic, the config patching. Link to
 `quickstart_web.md` for bgzip/tabix/`text-index` prep rather than re-pasting it.
 
+**Mark the fence `<!-- from: scripts/build_x.sh -->`** and
+`check-script-commands` (in `pnpm check-docs`) asserts every tool and flag in it
+still runs in that script, so a flag renamed there fails CI instead of leaving
+the page quietly wrong. It checks tools and flags rather than text, because the
+page carries the general form and the script the pinned one, so
+`sync-doc-snippets`-style generation would drag `$OUTDIR` and the accessions
+back onto the page. Leave the marker off a fence showing a route the script does
+not take, which is the case for `scrna`'s sinto/deeptools alternative and
+`scatac`'s four routes.
+
+Explain the flags in comments inside the fence, and do not assume the reader
+knows why one is there: `seed=42` is not "fixes the run", it is "FLARE draws
+random samples while it infers, so two runs differ unless the seed is pinned".
+Several short comment lines beat one dense one.
+
 The test is whether a reader with their own data would run the line as written.
 `bwameth.py --reference ref.fa -t 8 R1.fq.gz R2.fq.gz` passes; anything naming
 an accession, a sample list or a locus is script. Filenames are not the axis, so

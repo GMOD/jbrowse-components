@@ -85,9 +85,13 @@ accession supplies the genome, the annotation and (through `gffread`) the CDS,
 so the assembly and the annotation drawn on it cannot be two different builds.
 From there, `gffread` extracts the CDS and jcvi converts the annotation:
 
+<!-- from: scripts/build_grape_peach_cacao_synteny.sh -->
+
 ```bash
 for sp in grape peach cacao; do
   gffread "$sp.gff3" -g "$sp.fa" -x "$sp.cds.fa"
+  # --key=ID on both sides is what makes the two files join; --primary_only
+  # keeps one transcript per gene, so a link is gene to gene
   python -m jcvi.formats.gff bed --type=mRNA --key=ID --primary_only \
     "$sp.gff3" -o "$sp.bed"
   python -m jcvi.formats.fasta format "$sp.cds.fa" "$sp.cds"
@@ -103,9 +107,13 @@ a BED full of those joins to nothing.
 
 Then catalog orthologs against the reference, MCScan each pair, and join:
 
+<!-- from: scripts/build_grape_peach_cacao_synteny.sh -->
+
 ```bash
 for sp in peach cacao; do
+  # --no_strip_names keeps the ids matching the BEDs above
   python -m jcvi.compara.catalog ortholog --no_strip_names grape "$sp"
+  # --iter=1 keeps one block per grape gene, which is one lane per mate
   python -m jcvi.compara.synteny mcscan grape.bed "grape.$sp.lifted.anchors" \
     --iter=1 -o "grape.$sp.i1.blocks"
 done

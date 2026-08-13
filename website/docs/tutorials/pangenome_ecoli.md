@@ -553,12 +553,17 @@ Tile the K12 path into windows, ask odgi for each window's mean depth, rename
 the PanSN path to the assembly's `chr`, and convert to bigWig with
 [`bedGraphToBigWig`](https://genome.ucsc.edu/goldenPath/help/bigWig.html):
 
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
+
 ```bash
 reflen=$(awk -v p="K12#1#chr" '$1 == p {print $2}' all.fa.gz.fai)
 awk -v p="K12#1#chr" -v len="$reflen" -v w=500 \
   'BEGIN { for (s = 0; s < len; s += w) { e = s + w; if (e > len) e = len
            print p "\t" s "\t" e } }' > depth_windows.bed
 
+# -b gives one row per window instead of per base, so the window size above is
+# the resolution of the curve; the awk drops the PanSN prefix for the plain
+# refName the K12 assembly uses
 in_pggb odgi depth -i "/data/$og" -b /data/depth_windows.bed |
   awk -v p="K12#1#chr" -v OFS='\t' '$1 == p && $4 + 0 == $4 { print "chr", $2, $3, $4 }' |
   sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
@@ -632,9 +637,13 @@ toward 0 where the window is accessory in it. Slice each strain's rows into its
 own bigWig and load the set as one
 [`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track):
 
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
+
 ```bash
 in_pggb odgi pav -i "/data/$og" -b /data/depth_windows.bed > pav.tsv
+# K12 omitted: it is present over its own windows by construction
 for strain in Sakai CFT073 NCTC86 IAI39; do
+  # column 5 is the PanSN path, column 6 the presence fraction
   awk -F'\t' -v OFS='\t' -v g="${strain}#1#chr" \
     '$5 == g && $6 + 0 == $6 { print "chr", $2, $3, $6 }' pav.tsv |
     sort -k1,1 -k2,2n > "pav_${strain}.bedgraph"

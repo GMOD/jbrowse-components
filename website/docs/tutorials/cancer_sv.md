@@ -55,6 +55,8 @@ valid VCF whose partner coordinates still point at hg19.
 [`lift_bnd_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/lift_bnd_vcf.py)
 moves both:
 
+<!-- from: scripts/build_cancer_sv_demo.sh -->
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/lift_bnd_vcf.py
 python3 lift_bnd_vcf.py calls.hg19.vcf.gz hg19ToHg38.over.chain.gz \

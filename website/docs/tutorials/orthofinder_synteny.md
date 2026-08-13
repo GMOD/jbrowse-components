@@ -128,7 +128,12 @@ way.
 OrthoFinder takes a directory of proteomes, one FASTA per genome, and `-og`
 stops it after the orthogroups, which is all this table needs:
 
+<!-- from: scripts/build_orthofinder_synteny.sh -->
+
 ```bash
+# -og stops after the orthogroups, skipping the gene trees and the species
+# tree, which this table does not use and which are most of the runtime.
+# -S diamond picks the aligner; -t is threads.
 orthofinder -f proteomes -og -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
 ```
 

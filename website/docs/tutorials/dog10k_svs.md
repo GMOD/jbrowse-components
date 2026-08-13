@@ -156,9 +156,21 @@ The middle lane is not from the callset. [OMIA](https://omia.org) curates the
 published causal variants of Mendelian traits in animals, one record per variant
 with its phenotype, mode of inheritance and the coordinates the paper reported,
 and its Collie eye anomaly record (OMIA 000218-9615) is this deletion. Its span
-was published on CanFam3.1 and lifted to this assembly, so the bar and the
-genotype column below it come from two different publications by two different
-routes:
+was published on CanFam3.1 and lifted to this assembly with UCSC's chain, so the
+bar and the genotype column below it come from two different publications by two
+different routes:
+
+<!-- from: scripts/build_omia_dog_variants.sh -->
+
+```bash
+curl -fO https://hgdownload.soe.ucsc.edu/goldenPath/canFam3/liftOver/canFam3ToCanFam4.over.chain.gz
+./liftOver omia_canFam3.bed canFam3ToCanFam4.over.chain.gz lifted.bed unmapped.bed
+wc -l < unmapped.bed   # records the chain could not place
+```
+
+An interval lifts as a unit here, so a plain `liftOver` is enough. A breakend
+callset is the case where it is not, since a BND carries its partner coordinate
+inside `ALT`; the [cancer SV tutorial](/docs/tutorials/cancer_sv) covers that.
 
 ```json addtrack
 {
