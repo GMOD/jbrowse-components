@@ -2,7 +2,8 @@
 // bounding-box quad; the fragment shader uses an SDF to carve the inversion
 // triangle glyph out of the quad when shapeType != RECT.
 //! targets: wgsl, glsl
-//! js-export: drawnCellHeightPx, snapCellEdgePx, snappedCellWidthPx, snappedCellLeftPx
+//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx
+//! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
 import hpmath;
 import colorPack;
@@ -22,10 +23,11 @@ float drawnCellHeightPx(float rowHeight) {
   return max(rowHeight, 2.0);
 }
 
-// Snap a cell edge to the pixel grid, `//! js-export`ed because the Canvas2D
-// backend and the SVG export both have to land on the pixels the GPU already
-// drew — at genome-wide zoom every variant is thinner than 1px, so a half-pixel
-// disagreement is not a corner case there, it is every cell.
+// Snap a cell edge to the pixel grid. The Canvas2D backend and the SVG export
+// both have to land on the pixels the GPU already drew — at genome-wide zoom
+// every variant is thinner than 1px, so a half-pixel disagreement is not a
+// corner case there, it is every cell — and they get that by importing the two
+// functions below, which reach this one inside the generated module.
 //
 // The half-canvas offset is not decoration. Clip space is 2 units across
 // `canvasWidth` px, so the shader's natural `floor(clipX / pxSize + 0.5)` rounds

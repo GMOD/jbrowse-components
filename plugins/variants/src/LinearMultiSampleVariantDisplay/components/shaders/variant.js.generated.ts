@@ -8,7 +8,7 @@ function _max(a: number, b: number) {
   return a > b ? a : b
 }
 
-export function snapCellEdgePx(xPx: number, canvasWidth: number): number {
+function snapCellEdgePx(xPx: number, canvasWidth: number): number {
   let half = (canvasWidth * 0.5)
   return (Math.floor(((xPx - half) + 0.5)) + half)
 }
