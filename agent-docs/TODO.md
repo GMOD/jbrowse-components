@@ -253,8 +253,17 @@ The other half of the superseded-loader crash, and the half that is still open.
 `disposePluginManager()`, which calls `destroy(rootModel)` from the unmount side
 of a passive-effect flush — while views and widgets are in mounted components'
 props. React's dev-mode `logComponentRender` then diffs those props in the mount
-half of the same flush. In a browser this currently shows as two liveliness
-warnings on `LinearGenomeView` after a plugin-install reload.
+half of the same flush.
+
+Measured, rather than reasoned about: render the real `Loader` (not
+`tests/loaderUtil.tsx`'s `App` — see below), import
+`components/enableReactRenderLogging.ts` first, and do one
+`reloadPluginManagerCallback`. That is **16 dead-node reads**, on
+`HierarchicalTrackSelectorWidget` (`.type`, `.view`, `.trackContainerId`) and on
+the assembly model (`refNameAliases`, `lowerCaseRefNameAliases`,
+`canonicalToSeqAdapterRefNames`, `cytobands`, `volatileRegions`,
+`loadedGeneticCodes`, `statusMessage`, `statusProgress`). It does not throw,
+because on that config every one of them had already been materialized.
 
 The reason it is worth fixing rather than tolerating is that a warning and a
 crash are the same event here, decided by something nobody controls.
@@ -272,6 +281,18 @@ available here: the rootModel owns the `beforeunload` listener
 those only come apart on `destroy`. So this one needs a teardown ordering — free
 the effects when the host detaches, and destroy the node once React has dropped
 the fiber that holds it — not a deletion.
+
+**Nothing in the suite can see any of this, and that is the first thing to
+fix.** `tests/loaderUtil.tsx` — the harness behind every test that renders the
+real app — mocks `disposeLoader` to a no-op, so the teardown never runs in the
+ten suites that mount JBrowse. Its comment says "Production behavior is
+preserved", which is true of production and false of the tests: the one path
+that produced the reported crash is stubbed out of every test that could
+observe it. Deleting the mock costs one test — `Loader.test.tsx` "approves
+sessionPlugins from plugin list" then **hangs** to its 50s timeout, the other
+669 pass — and that hang is not noise to route around, it is this entry's
+"races with pending async work" reproducing on demand. Fix the ordering, then
+delete the mock, then the regression test can exist.
 
 Do not reach for `queueMicrotask` around the `destroy` without re-measuring.
 That is PR #5616's shape, it does fix the reported crash, and it was declined
