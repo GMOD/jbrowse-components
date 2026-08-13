@@ -9,7 +9,6 @@ import { Compare } from './Compare.tsx'
 import { isChanged, isNew, partsAhead } from './filters.ts'
 
 import type { SpecEntry } from '../review-payload.ts'
-import type { CompareMode } from './filters.ts'
 import type {
   CardMessage,
   DraftStore,
@@ -118,8 +117,6 @@ export interface CardProps {
   // this card is done with as far as the current filters are concerned, and is
   // only still on screen because taking it away is the reviewer's call
   settled: boolean
-  compareMode: CompareMode
-  onCompareMode: (name: string, mode: CompareMode) => void
   // the note goes with the verdict, and it is the text in this card's box —
   // see useReview for the two ways the report's copy stops matching it
   onSetVerdict: (name: string, status: 'good' | 'bad', note: string) => void
@@ -134,8 +131,6 @@ export const Card = memo(function Card({
   pressed,
   drafts,
   settled,
-  compareMode,
-  onCompareMode,
   onSetVerdict,
   onClearVerdict,
   onSaveNote,
@@ -194,13 +189,7 @@ export const Card = memo(function Card({
     <div
       className={`card ${spec.stale ? 'stale' : status}${settled ? ' settled' : ''}`}
     >
-      <Compare
-        spec={spec}
-        mode={compareMode}
-        onMode={m => {
-          onCompareMode(spec.name, m)
-        }}
-      />
+      <Compare spec={spec} />
       <div className="meta">
         <h2>
           {spec.name}

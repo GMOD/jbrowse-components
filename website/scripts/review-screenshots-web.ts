@@ -50,7 +50,8 @@ Usage: pnpm review-screenshots-web [--port=3335]
 
 Each figure is shown against the same figure on origin/main, with where the
 docs use it, and approve/deny/note controls. Four ways to look at the pair,
-per card or for every card from the Compare control:
+set for the whole page — from the Compare control, or from the bar on whichever
+card you are looking at:
 
   side    the two images in two columns
   onion   stacked, with a slider that fades between them (and a blink toggle)

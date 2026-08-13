@@ -266,6 +266,19 @@ main {
   max-width: 1400px;
   margin: 0 auto;
 }
+/* The cards' own column, one level in from `main` because this element is what
+   carries the amplify and blink classes for every stage below it. Same column as
+   `main`'s, so the cards stack as they did when they were its direct children,
+   alongside the load error and the requeue button which still are. Empty it is
+   nothing, rather than 18px of gap between the two of those. */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.cards:empty {
+  display: none;
+}
 /* The status stripe is always 5px and only its COLOUR says which status, because
    a border is layout: growing it 1px → 5px on a verdict takes 4px off the
    content width, the two figure columns reflow into it, and the card gets
@@ -565,12 +578,15 @@ main {
 .cmpstage.diff .cmptop {
   mix-blend-mode: difference;
 }
-.cmpstage.diff.amp {
+/* Amplify and blink are set on the cards wrapper rather than the stage: both are
+   the page's setting, and a class up there turns every stage on at once without
+   React drawing 349 of them again. */
+.cmpamp .cmpstage.diff {
   filter: brightness(8);
 }
 /* Blink comparator: hard cuts, not a crossfade — a fade is a change everywhere,
    which is the one thing that hides a change somewhere. */
-.cmpstage.onion.blink .cmptop {
+.cmpblink .cmpstage.onion .cmptop {
   animation: cmpblink 1.4s infinite;
 }
 @keyframes cmpblink {

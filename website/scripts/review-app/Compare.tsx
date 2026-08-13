@@ -1,11 +1,20 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import {
+  createContext,
+  use,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { COMPARE_MODES } from './filters.ts'
 
 import type { SpecEntry } from '../review-payload.ts'
 import type { CompareMode } from './filters.ts'
+import type { ReactNode, RefObject } from 'react'
 
-// The two pictures, however this card is set to show them.
+// The two pictures, however the page is set to show them.
 //
 // Side by side answers "what changed" only for a change big enough to find
 // twice; a figure whose row packing moved by a few pixels, or whose one bar
@@ -43,27 +52,183 @@ export const currentSrc = (spec: SpecEntry) =>
 
 const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)))
 
-export function Compare({
-  spec,
-  mode: wanted,
-  onMode,
-}: {
-  spec: SpecEntry
+// How the pair is being looked at is one setting for the whole page, not one per
+// card. A reviewer working down 150 figures is asking the same question of each
+// of them, so the mode reached for on the card in front of you is the mode the
+// next one wants too — per-card state meant switching to onion 150 times, and it
+// meant the header's Compare control could only be believed by throwing away
+// every card that had been switched by hand.
+//
+// It reaches the cards as context rather than as props on Card, so a change here
+// redraws the compare half of each card and not the pills, note box and verdict
+// buttons below it — those are memoized past it.
+export interface CompareView {
   mode: CompareMode
-  onMode: (mode: CompareMode) => void
+  amp: boolean
+  blink: boolean
+  fade: FadeStore
+  onMode: (m: CompareMode) => void
+  onAmp: (v: boolean) => void
+  onBlink: (v: boolean) => void
+}
+
+const CompareViewContext = createContext<CompareView | undefined>(undefined)
+
+function useCompareView() {
+  const view = use(CompareViewContext)
+  if (!view) {
+    throw new Error('a Compare card was drawn outside CompareViewProvider')
+  }
+  return view
+}
+
+// The fade — the onion's opacity, the swipe's divider — is the one of these that
+// moves with the pointer down, sixty times a second, and it is now the page's
+// rather than one card's. Through React that is every card redrawn per frame,
+// and on the 349-card All tab it measured 122ms a frame passed as a prop and
+// 80ms as a context value (a changed context walks the tree looking for
+// consumers whether or not any of them re-render), against 31ms for writing the
+// two custom properties onto the stages and nothing else. So this value alone is
+// kept out of the render: what wants it registers a write, and `set` calls them.
+//
+// Writing it once on an ancestor and letting the stages inherit is the obvious
+// alternative and is worse — 65ms, because a custom property on a wrapper
+// invalidates style for the whole subtree under it rather than for 349 stages.
+//
+// Everything else here is a click, and stays ordinary React.
+export interface FadeStore {
+  get: () => number
+  set: (v: number) => void
+  subscribe: (el: Element, apply: (v: number) => void) => () => void
+}
+
+// Off screen is not written. A drag over the All tab is three or four elements a
+// reviewer can see and ~1400 they cannot, and the ones they cannot are the
+// expensive ones: writing every slider position and readout as well as every
+// stage measured 98ms a frame against 34ms for the stages alone, because text
+// and form values dirty layout where a custom property only dirties style. Each
+// registration is caught up the moment it comes into view, and `rootMargin`
+// makes that a screenful early rather than at the edge, so a stage cannot paint
+// once at the old fade on the way in.
+function createFadeStore(): FadeStore {
+  let value = COMPARE_DEFAULT
+  const subs = new Map<
+    Element,
+    { apply: (v: number) => void; shown: boolean }
+  >()
+  const io = new IntersectionObserver(
+    entries => {
+      for (const e of entries) {
+        const sub = subs.get(e.target)
+        if (sub) {
+          sub.shown = e.isIntersecting
+          if (e.isIntersecting) {
+            sub.apply(value)
+          }
+        }
+      }
+    },
+    { rootMargin: '800px 0px' },
+  )
+  return {
+    get: () => value,
+    set: v => {
+      if (v !== value) {
+        value = v
+        for (const sub of subs.values()) {
+          if (sub.shown) {
+            sub.apply(v)
+          }
+        }
+      }
+    },
+    subscribe: (el, apply) => {
+      subs.set(el, { apply, shown: true })
+      apply(value)
+      io.observe(el)
+      return () => {
+        io.unobserve(el)
+        subs.delete(el)
+      }
+    },
+  }
+}
+
+// `apply` has to be stable — both callers write through a ref and so have
+// nothing to close over. A layout effect, and `subscribe` applies once on
+// registering, so a stage or slider that has just been mounted — a mode change,
+// or a card the reviewer has scrolled to — is drawn at the page's fade rather
+// than at the default for a frame.
+function useFade(
+  ref: RefObject<Element | null>,
+  apply: (v: number) => void,
+): void {
+  const { fade } = useCompareView()
+  useLayoutEffect(() => {
+    const el = ref.current
+    return el ? fade.subscribe(el, apply) : undefined
+  }, [fade, ref, apply])
+}
+
+// The mode comes from above, because it is a filter and lives in the URL with
+// the rest of them. The other three are momentary aids rather than ways of
+// looking — you turn one on for the four seconds it takes to answer a question —
+// so they are held here and are not worth a URL parameter.
+//
+// `children` is built by the caller, so a change here re-renders this component,
+// the wrapper's class and whichever cards read the context — never the cards
+// themselves, which are the same element objects React already has.
+export function CompareViewProvider({
+  mode,
+  onMode,
+  children,
+}: {
+  mode: CompareMode
+  onMode: (m: CompareMode) => void
+  children: ReactNode
 }) {
+  const [fade] = useState(createFadeStore)
+  const [amp, setAmp] = useState(false)
+  const [blink, setBlink] = useState(false)
+  const view = useMemo(
+    () => ({
+      mode,
+      amp,
+      blink,
+      fade,
+      onMode,
+      onAmp: setAmp,
+      onBlink: setBlink,
+    }),
+    [mode, amp, blink, fade, onMode],
+  )
+  return (
+    <CompareViewContext value={view}>
+      {/* Amplify and blink are classes on the wrapper rather than props on the
+          stage: both are the page's, and one class toggle turns every stage on
+          without redrawing a card. The fade cannot ride up here with them, for
+          the reason above — a click can afford the subtree-wide style
+          invalidation an inherited property costs, and a drag cannot. */}
+      <div
+        className={`cards${amp ? ' cmpamp' : ''}${blink ? ' cmpblink' : ''}`}
+      >
+        {children}
+      </div>
+    </CompareViewContext>
+  )
+}
+
+export function Compare({ spec }: { spec: SpecEntry }) {
+  const { mode: wanted, amp, blink, onMode, onAmp, onBlink } = useCompareView()
   // A stacked comparison is only offered where there are two pictures to stack:
   // a figure added on this branch has no baseline, and one that is not on disk
   // has nothing to draw. The side-by-side column already says which of those it
   // is, so those cards get no bar and no choice.
+  //
+  // Only this card, though: it is not a vote on what the rest of the page shows,
+  // so the page-wide mode is left alone and this one falls back to side.
   const canCompare = spec.exists && !!spec.mainUrl
   const mode = canCompare ? wanted : 'side'
-  const [value, setValue] = useState(COMPARE_DEFAULT)
-  // Amplify (diff) and blink (onion) are momentary aids rather than ways of
-  // looking — you turn one on for the four seconds it takes to answer a
-  // question — so neither is a mode, and neither goes in the URL.
-  const [amp, setAmp] = useState(false)
-  const [blink, setBlink] = useState(false)
   // The natural sizes of whichever images have arrived. Held here rather than in
   // the stage so the size-mismatch warning, which is drawn up in the bar, is
   // derived rather than pushed.
@@ -100,12 +265,10 @@ export function Compare({
           spec={spec}
           mode={mode}
           onMode={onMode}
-          value={value}
-          onValue={setValue}
           amp={amp}
-          onAmp={setAmp}
+          onAmp={onAmp}
           blink={blink}
-          onBlink={setBlink}
+          onBlink={onBlink}
           note={note}
         />
       ) : null}
@@ -115,10 +278,6 @@ export function Compare({
         <Stage
           spec={spec}
           mode={mode}
-          value={value}
-          onValue={setValue}
-          amp={amp}
-          blink={blink}
           dims={dims}
           onDim={onDim}
           noBaseline={noBaseline}
@@ -154,14 +313,55 @@ function CmpBtn({
   )
 }
 
+// The keyboard-reachable half of the fade, and — in swipe — of the divider the
+// stage itself is dragged by. Uncontrolled, and the readout beside it is written
+// rather than rendered, because the value driving both is the page's and belongs
+// to no card's render: see FadeStore. `defaultValue` is only ever the value the
+// store starts at; the effect owns it from mount onwards, and runs before the
+// first paint, so a slider mounted later still comes up in the right place.
+function FadeSlider({ label }: { label: string }) {
+  const { fade } = useCompareView()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const pctRef = useRef<HTMLSpanElement>(null)
+  useFade(
+    inputRef,
+    useCallback((v: number) => {
+      if (inputRef.current) {
+        inputRef.current.value = String(v)
+      }
+      if (pctRef.current) {
+        pctRef.current.textContent = `${v}%`
+      }
+    }, []),
+  )
+  return (
+    <>
+      <input
+        className="cmpslider"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        ref={inputRef}
+        defaultValue={COMPARE_DEFAULT}
+        aria-label={label}
+        onChange={e => {
+          fade.set(Number(e.target.value))
+        }}
+      />
+      <span className="cmppct" ref={pctRef} />
+    </>
+  )
+}
+
 // One bar per card, in every mode, so the way you are looking at a pair is
-// always switchable from the same place.
+// always switchable from where you are looking. Every control on it sets the
+// page, though — the bar is drawn on each card because that is where the hand
+// is, not because the setting belongs to the card.
 function CompareBar({
   spec,
   mode,
   onMode,
-  value,
-  onValue,
   amp,
   onAmp,
   blink,
@@ -171,31 +371,12 @@ function CompareBar({
   spec: SpecEntry
   mode: CompareMode
   onMode: (m: CompareMode) => void
-  value: number
-  onValue: (v: number) => void
   amp: boolean
   onAmp: (v: boolean) => void
   blink: boolean
   onBlink: (v: boolean) => void
   note: string
 }) {
-  const slider = (label: string) => (
-    <>
-      <input
-        className="cmpslider"
-        type="range"
-        min="0"
-        max="100"
-        step="1"
-        value={value}
-        aria-label={label}
-        onChange={e => {
-          onValue(Number(e.target.value))
-        }}
-      />
-      <span className="cmppct">{value}%</span>
-    </>
-  )
   return (
     <div className="cmpbar">
       {/* the four ways of looking are one segmented control, not four loose
@@ -222,7 +403,7 @@ function CompareBar({
               picture is which — and getting that backwards turns "the new one
               lost a track" into "the new one gained a track". */}
           <span>origin/main</span>
-          {slider('Fade between origin/main and the current branch')}
+          <FadeSlider label="Fade between origin/main and the current branch" />
           <span>current branch</span>
           <CmpBtn
             on={blink}
@@ -239,9 +420,7 @@ function CompareBar({
         // the slider would contradict them everywhere except the ends.
         <>
           <span>divider</span>
-          {slider(
-            'Move the divider between origin/main and the current branch',
-          )}
+          <FadeSlider label="Move the divider between origin/main and the current branch" />
         </>
       ) : (
         <>
@@ -370,10 +549,6 @@ function SideBySide({ spec }: { spec: SpecEntry }) {
 function Stage({
   spec,
   mode,
-  value,
-  onValue,
-  amp,
-  blink,
   dims,
   onDim,
   noBaseline,
@@ -381,17 +556,30 @@ function Stage({
 }: {
   spec: SpecEntry
   mode: Exclude<CompareMode, 'side'>
-  value: number
-  onValue: (v: number) => void
-  amp: boolean
-  blink: boolean
   dims: { base?: Dim; top?: Dim }
   onDim: (which: 'base' | 'top', d: Dim) => void
   noBaseline: boolean
   onBaselineFailed: () => void
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
   const [wrapW, setWrapW] = useState(0)
+  const { fade } = useCompareView()
+
+  // Both `--fade` and `--wipe` are written in every mode, and each mode's CSS
+  // reads the one it cares about. A mode-dependent write would leave the other
+  // property behind at whatever it was when the mode last changed, which shows
+  // up the moment you switch modes mid-review.
+  useFade(
+    stageRef,
+    useCallback((v: number) => {
+      const el = stageRef.current
+      if (el) {
+        el.style.setProperty('--fade', String(v / 100))
+        el.style.setProperty('--wipe', `${v}%`)
+      }
+    }, []),
+  )
 
   // The stage is sized in px off natural dimensions, so a narrowed window would
   // otherwise leave it overflowing the card. An observer on the wrap rather than
@@ -442,7 +630,7 @@ function Stage({
   const dragging = useRef(false)
   const moveTo = (el: HTMLDivElement, clientX: number) => {
     const rect = el.getBoundingClientRect()
-    onValue(clamp(((clientX - rect.left) / rect.width) * 100))
+    fade.set(clamp(((clientX - rect.left) / rect.width) * 100))
   }
 
   // Dragging on the picture itself is what a swipe comparison IS — the pointer
@@ -470,29 +658,16 @@ function Stage({
       }
     }
 
-  const classes = ['cmpstage', mode]
-  if (mode === 'diff' && amp) {
-    classes.push('amp')
-  }
-  if (mode === 'onion' && blink) {
-    classes.push('blink')
-  }
-
   return (
     <div className="cmpwrap" ref={wrapRef}>
+      {/* React renders the mode and the box, and nothing else: the box is the
+          only one of a stage's inputs that is this card's own, and it is what
+          gives the card its height. Amplify and blink arrive as a class on the
+          wrapper above, the fade as two custom properties the effect writes. */}
       <div
-        className={classes.join(' ')}
-        // Both `--fade` and `--wipe` are written in every mode, and each mode's
-        // CSS reads the one it cares about. A mode-dependent write would leave
-        // the other property behind at whatever it was when the mode last
-        // changed, which shows up the moment you switch modes mid-review.
-        style={
-          {
-            '--fade': value / 100,
-            '--wipe': `${value}%`,
-            ...box,
-          } as React.CSSProperties
-        }
+        className={`cmpstage ${mode}`}
+        style={box}
+        ref={stageRef}
         onPointerDown={onPointerDown}
         onPointerMove={e => {
           if (dragging.current) {

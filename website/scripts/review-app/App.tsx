@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/browser-test-utils/reviewApp'
 
 import { Card } from './Card.tsx'
+import { CompareViewProvider } from './Compare.tsx'
 import { StoreBanner } from './StoreBanner.tsx'
 import {
   COMPARE_MODES,
@@ -124,11 +125,6 @@ export function App() {
   const [loadError, setLoadError] = useState<string>()
   const [figureState, setFigureState] = useState<FigureState>()
   const [figureError, setFigureError] = useState<string>()
-  // The header sets the default compare mode and a card's own control overrides
-  // it, so changing the default drops the overrides: otherwise switching
-  // everything to onion would silently leave behind whichever cards had been
-  // switched individually.
-  const [overrides, setOverrides] = useState<Record<string, CompareMode>>({})
 
   // The fetch behind the whole page, run on mount and again whenever the
   // reviewer asks for it.
@@ -227,9 +223,18 @@ export function App() {
     [],
   )
 
-  const onCompareMode = useCallback((name: string, mode: CompareMode) => {
-    setOverrides(o => ({ ...o, [name]: mode }))
-  }, [])
+  // The header control and every card's own segmented buttons are the same
+  // setting reached from two places: pressing onion on the card in front of you
+  // is how you say "show me all of them this way", which is what a reviewer
+  // means by it. It sits in the filters because it is the one way-of-looking
+  // worth keeping in the URL — see queryKey for why it does not re-capture the
+  // queue.
+  const onCompareMode = useCallback(
+    (mode: CompareMode) => {
+      changeFilter('compare', mode)
+    },
+    [changeFilter],
+  )
 
   const groups = useMemo(
     () => [...new Set(entries.map(s => nameGroup(s.name)))].sort(),
@@ -348,10 +353,7 @@ export function App() {
             title="How each card shows the current image against origin/main"
             value={filters.compare}
             onChange={e => {
-              // the default these overrode has moved, so the overrides no longer
-              // mean what the reviewer set them to
-              setOverrides({})
-              changeFilter('compare', e.target.value as CompareMode)
+              onCompareMode(e.target.value as CompareMode)
             }}
           >
             {COMPARE_MODES.map(([id, , , label]) => (
@@ -484,22 +486,22 @@ export function App() {
             {loadError}
           </div>
         ) : null}
-        {queue.map(spec => (
-          <Card
-            key={spec.name}
-            spec={spec}
-            message={messages[spec.name]}
-            pressed={pressed[spec.name]}
-            drafts={drafts}
-            settled={leaving.has(spec.name)}
-            compareMode={overrides[spec.name] ?? filters.compare}
-            onCompareMode={onCompareMode}
-            onSetVerdict={setVerdict}
-            onClearVerdict={clearVerdict}
-            onSaveNote={saveNote}
-            onDismiss={dismiss}
-          />
-        ))}
+        <CompareViewProvider mode={filters.compare} onMode={onCompareMode}>
+          {queue.map(spec => (
+            <Card
+              key={spec.name}
+              spec={spec}
+              message={messages[spec.name]}
+              pressed={pressed[spec.name]}
+              drafts={drafts}
+              settled={leaving.has(spec.name)}
+              onSetVerdict={setVerdict}
+              onClearVerdict={clearVerdict}
+              onSaveNote={saveNote}
+              onDismiss={dismiss}
+            />
+          ))}
+        </CompareViewProvider>
         {/* The live query selects cards this capture does not hold, which the
             reviewer cannot tell from "nothing left to review": the queue is a
             capture, so it stays as it is until it is retaken. */}
