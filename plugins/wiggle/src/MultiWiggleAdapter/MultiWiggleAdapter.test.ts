@@ -788,3 +788,86 @@ describe('MultiWiggleAdapter.getFeatures source stamping', () => {
     expect(feats.find(f => f.get('source') === 'cond1/sample')!.id()).toBe('f1')
   })
 })
+
+// A multiwiggle is routinely pointed at hundreds of files. The fan-out is
+// bounded because each in-flight subtrack fetch holds its downloaded block
+// group, its wasm decompression output and its parsed arrays until it resolves
+// — so unbounded, peak memory tracks the subtrack count rather than the machine
+// (see SUBTRACK_FETCH_CONCURRENCY).
+describe('MultiWiggleAdapter.getMultiSourceFeatureArraysMulti concurrency', () => {
+  const REGIONS = [{ refName: 'chr1', start: 0, end: 100, assemblyName: 'a' }]
+
+  function makeGatedAdapter(count: number) {
+    let inFlight = 0
+    let peak = 0
+    const releases: (() => void)[] = []
+    const started: string[] = []
+
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: {
+          getFeatureArraysMulti: async () => {
+            started.push(conf.source!)
+            inFlight++
+            peak = Math.max(peak, inFlight)
+            await new Promise<void>(res => {
+              releases.push(res)
+            })
+            inFlight--
+            return [
+              {
+                starts: new Int32Array(1),
+                ends: new Int32Array(1),
+                scores: new Float32Array(1),
+                minScores: undefined,
+                maxScores: undefined,
+                count: 1,
+              },
+            ]
+          },
+        },
+      }))
+
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: Array.from(
+          { length: count },
+          (_, i) => `https://example.com/s${i}.bw`,
+        ),
+      }),
+      mockGetSubAdapter,
+    )
+    return { adapter, releases, started, peak: () => peak }
+  }
+
+  it('caps in-flight subtrack fetches and still returns every source in order', async () => {
+    const count = 25
+    const { adapter, releases, started, peak } = makeGatedAdapter(count)
+
+    const p = adapter.getMultiSourceFeatureArraysMulti(REGIONS, {})
+
+    // Drain by ticks rather than by draining `releases` to empty: the pool only
+    // refills a slot after the task holding it resolves, so the queue is
+    // legitimately empty between ticks and "empty" is not "finished". One tick
+    // clears a whole poolful, so `count` of them is far more than enough, and
+    // the spare ones are no-ops.
+    for (let tick = 0; tick < count; tick++) {
+      for (const release of releases.splice(0)) {
+        release()
+      }
+      await new Promise(res => setTimeout(res, 0))
+    }
+    const out = await p
+
+    expect(out).toHaveLength(count)
+    expect(out.map(o => o.source)).toEqual(
+      Array.from({ length: count }, (_, i) => `s${i}`),
+    )
+    expect(started).toHaveLength(count)
+    // the bound itself
+    expect(peak()).toBeLessThanOrEqual(10)
+    // and it really did run them concurrently rather than one at a time
+    expect(peak()).toBeGreaterThan(1)
+  })
+})

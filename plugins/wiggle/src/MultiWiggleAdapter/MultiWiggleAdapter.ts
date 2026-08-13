@@ -10,6 +10,7 @@ import { map } from 'rxjs/operators'
 
 import { fetchRegionRaws } from '../fetchRegionRaws.ts'
 import { getFilename } from '../util.ts'
+import { mapWithConcurrency } from './mapWithConcurrency.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
@@ -23,6 +24,25 @@ import type {
 interface WiggleOptions extends WiggleAdapterOptions {
   sources?: { name: string }[]
 }
+
+// How many subtracks fetch at once. A multiwiggle carries as many subtracks as
+// someone points at it — hundreds is ordinary, a thousand happens — and the
+// fan-out used to be a bare Promise.all over every one of them.
+//
+// The bound is about bytes in flight, not sockets. The browser already caps
+// connections per origin, so the requests queue either way; what does not queue
+// is what each in-flight fetch holds while it runs — the block group it
+// downloaded, the wasm decompression output, and the parsed typed arrays. All
+// of those live at once, per subtrack, and none of it is released until that
+// subtrack's fetch resolves. Unbounded, peak worker memory scales with the
+// subtrack count rather than with anything the machine has, which is a tab that
+// dies rather than a view that is slow.
+//
+// Ten because wall-clock is set by the server and the connection cap well below
+// this, so a higher number buys throughput no one can use and costs memory
+// linearly. Deliberately a constant and not a config slot: nobody has a reason
+// to tune it yet, and a slot is a support surface forever.
+const SUBTRACK_FETCH_CONCURRENCY = 10
 
 interface AdapterConfig {
   type?: string
@@ -224,20 +244,26 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // and the first file to finish blanks the label while the other 39 are still
   // going. Aggregated, N subtracks read as one Σbytes bar. Same idiom as
   // BaseFeatureDataAdapter.getFeaturesInMultipleRegions.
+  //
+  // Concurrently, but not all at once — see SUBTRACK_FETCH_CONCURRENCY. A slot
+  // is taken when a subtrack actually starts rather than up front, so the bar
+  // aggregates the ones in flight instead of showing hundreds of silent slots.
   public async getMultiSourceFeatureArraysMulti(
     regions: Region[],
     opts: WiggleOptions = {},
   ): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
     const adapters = await this.getFilteredAdapters(opts.sources)
     const slot = createStatusFanOut(opts.statusCallback)
-    return Promise.all(
-      adapters.map(async ({ source, dataAdapter }) => ({
+    return mapWithConcurrency(
+      adapters,
+      SUBTRACK_FETCH_CONCURRENCY,
+      async ({ source, dataAdapter }) => ({
         source,
         raws: await fetchRegionRaws(dataAdapter, regions, {
           ...opts,
           statusCallback: slot(),
         }),
-      })),
+      }),
     )
   }
 
