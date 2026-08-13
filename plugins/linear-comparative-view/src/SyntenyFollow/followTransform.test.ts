@@ -86,6 +86,30 @@ test('a transform says nothing about another contig', () => {
   expect(applyFollowTransform(forward, win(1000, 2000, 'chr7'))).toBeUndefined()
 })
 
+describe('extrapolating off the start of the contig', () => {
+  // the only reader that extrapolates rather than interpolating, so it is the
+  // only one that can be asked about a coordinate below zero
+  const nearZero = followTransform(
+    win(1000, 2000),
+    { refName: 'chr1_pat', start: 100, end: 1100 },
+    false,
+  )!
+
+  test('a span straddling zero is clamped, not moved', () => {
+    expect(applyFollowTransform(nearZero, win(500, 2000))).toEqual({
+      refName: 'chr1_pat',
+      start: 0,
+      end: 1100,
+    })
+  })
+
+  test('a span wholly below zero yields no answer at all', () => {
+    // clamping only `start` used to turn this into `{start: 0, end: -1400}`, an
+    // inverted span; holding the row is what the caller does with `undefined`
+    expect(applyFollowTransform(nearZero, win(-1500, -500))).toBeUndefined()
+  })
+})
+
 test('a degenerate window or span builds no transform', () => {
   // dividing by its width is the first thing applying one does
   expect(

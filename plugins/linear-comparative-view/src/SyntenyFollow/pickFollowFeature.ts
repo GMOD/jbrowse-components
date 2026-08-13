@@ -67,11 +67,10 @@ export function pickFollowFeature({
     ) {
       continue
     }
-    // a negative-width block would score as a huge negative overlap and never
-    // be picked, even where it is the only candidate
-    const lo = Math.min(starts[i]!, ends[i]!)
-    const hi = Math.max(starts[i]!, ends[i]!)
-    const overlap = Math.min(hi, window.end) - Math.max(lo, window.start)
+    // start <= end, direction in `strands` — the packing convention, and what
+    // windowInsideFeat and interpolateFollowSpan already read these arrays as
+    const overlap =
+      Math.min(ends[i]!, window.end) - Math.max(starts[i]!, window.start)
     if (overlap <= 0) {
       continue
     }

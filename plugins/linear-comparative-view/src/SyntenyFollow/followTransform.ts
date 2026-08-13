@@ -44,12 +44,16 @@ export function applyFollowTransform(
   const at = (x: number) => t.b0 + ((x - t.a0) / (t.a1 - t.a0)) * (t.b1 - t.b0)
   const p = at(window.start)
   const q = at(window.end)
-  const lo = Math.min(p, q)
+  // Clamped BEFORE the ordering test, unlike the mapping, which needs no clamp
+  // at all: this one extrapolates, so a window panned left of `a0` maps below
+  // zero, and clamping only `start` afterwards turned a wholly-negative answer
+  // into an inverted span rather than into no answer.
+  const lo = Math.max(0, Math.min(p, q))
   const hi = Math.max(p, q)
   return hi > lo
     ? {
         refName: t.targetRefName,
-        start: Math.max(0, lo),
+        start: lo,
         end: hi,
       }
     : undefined

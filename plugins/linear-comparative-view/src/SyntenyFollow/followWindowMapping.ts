@@ -132,8 +132,8 @@ export function followWindowMapping({
         endAt.push(newAccumulator(windowEndBp))
       }
     }
-    const aLo = Math.min(starts[i]!, ends[i]!)
-    const aHi = Math.max(starts[i]!, ends[i]!)
+    const aLo = starts[i]!
+    const aHi = ends[i]!
     // ONE TARGET CONTIG, by summed overlap: a genome-scale window reaches
     // several of the other assembly's, and an answer spanning them is not a
     // place. One only reached by blocks off the window's ends totals zero and
@@ -142,14 +142,12 @@ export function followWindowMapping({
     if (overlap > 0) {
       totals[lastIdx]! += overlap
     }
-    const bLo = Math.min(otherStarts[i]!, otherEnds[i]!)
-    const bHi = Math.max(otherStarts[i]!, otherEnds[i]!)
     // `atLo`/`atHi` are the mate coordinates this block's LEFT and RIGHT anchor
     // edges map to, so a reverse-strand block simply reports them swapped and
     // one interpolation formula serves both orientations.
     const flip = data.strands[i] === -1
-    const atLo = flip ? bHi : bLo
-    const atHi = flip ? bLo : bHi
+    const atLo = flip ? otherEnds[i]! : otherStarts[i]!
+    const atHi = flip ? otherStarts[i]! : otherEnds[i]!
     offer(startAt[lastIdx]!, aLo, aHi, atLo, atHi)
     offer(endAt[lastIdx]!, aLo, aHi, atLo, atHi)
   }
@@ -171,10 +169,14 @@ export function followWindowMapping({
   }
   const lo = Math.min(p, q)
   const hi = Math.max(p, q)
+  // No zero-clamp: every value `resolve` can return is a block coordinate or a
+  // point between two of them, so it is already in range — and clamping only
+  // `start` while `end` came off the unclamped `lo` would invert the span it was
+  // added to protect.
   return hi > lo
     ? {
         refName: names[target]!,
-        start: Math.max(0, Math.floor(lo)),
+        start: Math.floor(lo),
         // at least one base, since a zero-width span assembles into an inverted
         // locstring
         end: Math.max(Math.floor(lo) + 1, Math.ceil(hi)),
