@@ -124,6 +124,14 @@ export const WorkspaceTab = observer(function WorkspaceTab({
           }}
           onBlur={save}
           onKeyDown={e => {
+            // The box sits INSIDE the `role="tab"` that owns the strip's roving
+            // tabindex, and every key it handles — the arrows, Home, End, Enter
+            // and Space — it also preventDefault()s. All of them reach that
+            // handler by bubbling out of here, so while the box is open the
+            // arrows jumped to the next tab instead of moving the caret and a
+            // space never reached the input at all: a tab could not be given a
+            // name with a space in it.
+            e.stopPropagation()
             if (e.key === 'Enter') {
               save()
             } else if (e.key === 'Escape') {

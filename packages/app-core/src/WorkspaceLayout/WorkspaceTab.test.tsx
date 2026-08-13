@@ -1,6 +1,10 @@
+import { types } from '@jbrowse/mobx-state-tree'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { observer } from 'mobx-react'
 
+import { LayoutRenderer } from './LayoutRenderer.tsx'
 import { WorkspaceTab, tabDisplayName } from './WorkspaceTab.tsx'
+import { WorkspaceLayoutMixin } from './model.ts'
 
 import type { WorkspaceSessionType } from '../ui/App/types.ts'
 import type { WorkspaceLayout } from './model.ts'
@@ -99,5 +103,83 @@ describe('renaming', () => {
     fireEvent.change(input, { target: { value: 'Something else' } })
     fireEvent.keyDown(input, { key: 'Escape' })
     expect(renamed).toEqual([])
+  })
+})
+
+// The box is not a component on its own: it renders INSIDE the `role="tab"`
+// that carries the strip's roving tabindex, and every key that handler takes —
+// the arrows, Home, End, Enter, Space — it also preventDefault()s. All of them
+// reach it by bubbling out of the box, so this has to be rendered in a real
+// strip to be about anything. Isolated, the tests above pass either way.
+describe('renaming inside the tab strip', () => {
+  const TestSession = types.compose(
+    'TestSession',
+    types.model({ name: types.string }),
+    WorkspaceLayoutMixin(),
+  )
+
+  const Harness = observer(function Harness({
+    session,
+  }: {
+    session: ReturnType<typeof TestSession.create>
+  }) {
+    return (
+      <LayoutRenderer
+        node={session.tree}
+        layout={session}
+        chrome={{
+          dragHandlers: {
+            onTabPointerDown: () => {},
+            onTabPointerMove: () => {},
+            onTabPointerUp: () => {},
+          },
+          renderTabLabel: t => (
+            <WorkspaceTab
+              tab={t}
+              views={[]}
+              session={session as unknown as WorkspaceSessionType}
+              layout={session}
+              onClose={() => {}}
+            />
+          ),
+          renderTabContent: () => null,
+        }}
+      />
+    )
+  })
+
+  function openTheBox() {
+    const session = TestSession.create({ name: 't' })
+    render(<Harness session={session} />)
+    fireEvent.doubleClick(screen.getByText('Empty'))
+    return { session, input: screen.getByRole('textbox') }
+  }
+
+  // `fireEvent` returns false when a handler called preventDefault, which is
+  // what decides whether the character is inserted at all
+  test('a space reaches the box, so a tab name can have one in it', () => {
+    const { input } = openTheBox()
+    expect(fireEvent.keyDown(input, { key: ' ' })).toBe(true)
+  })
+
+  test('the arrows move the caret rather than jumping to the next tab', () => {
+    const { input } = openTheBox()
+    expect(fireEvent.keyDown(input, { key: 'ArrowLeft' })).toBe(true)
+    expect(fireEvent.keyDown(input, { key: 'ArrowRight' })).toBe(true)
+    expect(document.activeElement).toBe(input)
+  })
+
+  test('Home and End reach the box too', () => {
+    const { input } = openTheBox()
+    expect(fireEvent.keyDown(input, { key: 'Home' })).toBe(true)
+    expect(fireEvent.keyDown(input, { key: 'End' })).toBe(true)
+    expect(document.activeElement).toBe(input)
+  })
+
+  test('Enter still commits the name', () => {
+    const { session, input } = openTheBox()
+    fireEvent.change(input, { target: { value: 'My comparison' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(session.tabs[0]!.title).toBe('My comparison')
   })
 })
