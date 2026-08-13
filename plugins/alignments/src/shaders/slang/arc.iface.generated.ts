@@ -48,16 +48,6 @@ export const UNIFORM_OFFSET_F32 = {
   dpr: 227,
 } as const
 
-// Word indices into a Int32Array view over the uniform buffer.
-export const UNIFORM_OFFSET_I32 = {
-  colorScheme: 27,
-  chainMode: 28,
-  showStroke: 29,
-  coverageScaleType: 30,
-  filterMismatchesByFrequency: 31,
-  mismatchAlpha: 32,
-} as const
-
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
   colorFwd: 34,
@@ -91,6 +81,16 @@ export const UNIFORM_OFFSET_U32 = {
   colorMutedSnpBase: 62,
   colorFlatConnector: 63,
   colorSplitInversion: 225,
+} as const
+
+// Word indices into a Int32Array view over the uniform buffer.
+export const UNIFORM_OFFSET_I32 = {
+  colorScheme: 27,
+  chainMode: 28,
+  showStroke: 29,
+  coverageScaleType: 30,
+  filterMismatchesByFrequency: 31,
+  mismatchAlpha: 32,
 } as const
 
 

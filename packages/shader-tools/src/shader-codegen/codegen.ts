@@ -137,6 +137,13 @@ function arrayElementWords(field: Field, type: ArrayType) {
 // `writeUniforms` writes, the `packInstances` writes and the VERTEX_ATTRIBUTES
 // component type all read it, and they were four separate spellings of the
 // same three-way branch.
+//
+// `VIEWS` is the emission order as well as the set, so every per-view block a
+// generated module carries appears in the same order. The uniform offset maps
+// spelled their own `['f32', 'i32', 'u32'] as const` and so emitted `_I32`
+// before `_U32` while the instance maps two screens down emitted `_U32` first —
+// a second copy of the list, disagreeing, in the file whose comment says there
+// is one.
 type View = 'f32' | 'u32' | 'i32'
 const VIEWS: readonly View[] = ['f32', 'u32', 'i32']
 const VIEW_ARRAY: Record<View, string> = {
@@ -838,7 +845,7 @@ export function emitInterface(inputs: CodegenInputs) {
         ? [{ name: f.name, word: f.binding.offset / 4, view: viewOf(f.type) }]
         : [],
     )
-    for (const view of ['f32', 'i32', 'u32'] as const) {
+    for (const view of VIEWS) {
       const fields = uniformOffsets.filter(o => o.view === view)
       if (fields.length > 0) {
         lines.push(

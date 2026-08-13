@@ -16,11 +16,15 @@
 // is what the packed offsets encode. Buffer-sharing passes lean on this: the
 // canvas chevron pass reads line's buffer, and each side reads only some fields.
 //
-// `vertexAttributeSync.test.ts` (products/jbrowse-web) checks name+type on the GLSL
-// side, but it lives three packages away, skips the alignments and
-// multi-synteny plugins over jest resolution problems, and never looks at WGSL
-// or at locations. Checking here fails `pnpm gen:shaders` at the moment the bad
-// file would be written, for every shader and both targets.
+// This is the only check of the attribute layout, and deliberately so. A jest
+// suite in products/jbrowse-web used to re-derive it from the built
+// `PipelineDescriptor`s — but `slangPass` copies `VERTEX_ATTRIBUTES` and
+// `GLSL_VERTEX` straight off the generated module (there is no per-pass override
+// of either, by design; see slangPass.ts), so it compared the same two artifacts
+// this compares, minus WGSL, minus locations, and minus the alignments and
+// multi-synteny plugins, which it skipped over jest resolution problems.
+// Checking here fails `pnpm gen:shaders` at the moment the bad file would be
+// written, for every shader and both targets.
 
 import { demangle } from './slangcMangling.ts'
 

@@ -19,14 +19,19 @@ const EMITTER = 'packages/shader-tools/src/shader-codegen/codegen.ts'
 // A line that pushes an `export …` into the generated module, in either quoting
 // style the emitter uses.
 //
-// `class` and `interface` are in the list because leaving a kind out is silent
-// in the direction that matters: an untagged emit is fatal, but an emit this
-// pattern does not recognize is not an emit at all, so `InstanceWriter` was
-// tagged, skipped, and absent from the guide with nothing said — and `Uniforms`
-// / `InstanceArrays` were absent for the same reason, while the two functions
-// that take them as arguments were listed. Any new `export <kind>` the emitter
-// learns has to be added here in the same commit.
-const EMIT_SITE = /['"`]export (?:const|function|class|interface) /
+// **Kind-agnostic on purpose.** This was a list of kinds — `const|function` —
+// and leaving one out is silent in the direction that matters: an untagged emit
+// is fatal, but an emit the pattern does not recognize is not an emit at all, so
+// `InstanceWriter` was tagged, skipped, and absent from the guide with nothing
+// said, and `Uniforms` / `InstanceArrays` were absent for the same reason while
+// the two functions taking them as arguments were listed. Adding `class` and
+// `interface` fixed those three and left the next kind to fail the same way, so
+// the pattern takes any word now and the list is gone.
+//
+// `export *` is the one form deliberately outside it: the re-export lines tying
+// a shader's three generated modules together name no export of their own, and
+// the names they forward are tagged where they are emitted.
+const EMIT_SITE = /['"`]export \w+[ {]/
 
 interface ShaderExport {
   name: string

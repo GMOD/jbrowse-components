@@ -217,8 +217,11 @@ rejected the composition helper as single-consumer.
   `rect.generated.ts` / `rect.iface.generated.ts`.
 - Pass assembly: `packages/render-core/src/slangPass.ts`,
   `plugins/canvas/src/LinearBasicDisplay/passes/index.ts`.
-- GL-attribute safety net (keep green):
-  `products/jbrowse-web/src/tests/vertexAttributeSync.test.ts`.
+- Attribute safety net (keep green):
+  `assertVertexInputsMatch` in
+  `packages/shader-tools/src/shader-codegen/assertVertexInputs.ts`, run by
+  `pnpm gen:shaders`. A `vertexAttributeSync.test.ts` in jbrowse-web was the
+  weaker half of this pair and is gone.
 - Prior decisions: `agent-docs/reference/RFC-001-community-plugin-api.md` §5,
   `agent-docs/architecture-decision-records/adr-005-shader-codegen-slang.md`.
 - Standardized `bpRangeX` uniform write: `writeBpRangeUniforms(...)` across the
