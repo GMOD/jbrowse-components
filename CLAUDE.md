@@ -7,96 +7,48 @@ regionStart-relative arithmetic crosses the worker boundary.
 Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then `reference/`
 and the ADRs).
 
-## Git and worktrees
+## Git
 
-Work in a worktree (`EnterWorktree`), branched from `main`. It is your own
-checkout, so ordinary git is yours to use without asking.
+The general worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 
-- **Commit as you go, without being told.** Every coherent step — a fix, a
-  passing test, a doc — is a commit. Don't accumulate a session's work in the
-  working tree waiting for permission.
-- **Rebase onto `main` frequently.** A worktree that tracks main is a worktree
-  that lands as a fast-forward.
-- **Land with `git -C ~/src/jbrowse-components merge --ff-only <branch>`.** Main
-  lives in the primary checkout, so the merge runs there. It fast-forwards even
-  when that checkout is dirty, _unless_ the merge would overwrite one of its
-  modified files — then it refuses and changes nothing. On a refusal, rebase and
-  retry; never `git update-ref` main or force the merge. The two things that
-  look like shortcuts are both worse: `git push . HEAD:main` just refuses here
-  (`receive.denyCurrentBranch` is unset), and `update-ref` on a checked-out
-  dirty `main` desynchronises its index from its worktree.
-- **Land small and often** rather than saving a branch up. The longer a branch
-  runs, the more likely a fast-forward stops being possible.
-- **Don't push to `origin` (GMOD/jbrowse-components) or open a PR unless
-  asked.** Local commits and local merges are yours; publishing is not.
-- **Never `git stash` here, worktree or not — the stack is repo-global.** Every
-  worktree shares one stash list, so `git stash pop` takes whatever is on top,
-  which is routinely another agent's work: `git stash` when you have no local
-  changes prints "No local changes to save" and creates nothing, and the `pop`
-  you wrote to undo it then applies THEIR entry into your tree, usually as
-  conflicts. The pop keeps the entry on a conflict, so the recovery is
-  `git reset --hard HEAD` and a check that `git stash list` still holds it — but
-  a clean apply would have dropped it. Commit to your branch instead; to test a
-  tree without your changes, check out the file or compare against `main`
+- **Never `git stash`, worktree or not — this overrides the general rule.** The
+  stack is repo-global, so every worktree shares one list and `git stash pop`
+  takes whatever is on top, routinely another agent's work. Commit to your
+  branch instead; to test a tree without your changes, compare against `main`
   (`git diff main -- <path>`).
-- The primary checkout is shared with other agents and usually carries
-  uncommitted work. Keep it clean when you can — continuous landing only works
-  while main's checkout can fast-forward. If you must work there directly, use
-  the shared-checkout rules in `~/.claude/CLAUDE.md`.
 - **Never merge a `*.generated.ts` conflict — regenerate it.** Take either side,
   re-run the generator (see Tooling), `git add`. Only the sources conflict for
   real.
-- **A worktree from `EnterWorktree` arrives installed.** The `WorktreeCreate`
-  hook (`.claude/hooks/setup-worktree.sh`) creates it off local `main` and runs
-  `pnpm install --frozen-lockfile` before the session starts — ~20s with a warm
-  store — so `node_modules`, the per-package `@jbrowse/*` links, and everything
-  `postinstall` generates are already there. That includes
-  `products/jbrowse-web/src/buildInfo.ts`, which is gitignored and which `tsc`
-  dies on when absent, taking ~5 suites with it (anything reaching `rootModel`).
-  A worktree you made yourself with `git worktree add` gets none of this: run
-  the install by hand there.
+- **Don't push to `origin` (GMOD/jbrowse-components) or open a PR unless
+  asked.**
+- Land with `git -C ~/src/jbrowse-components merge --ff-only <branch>`. The two
+  things that look like shortcuts are worse: `git push . HEAD:main` refuses here
+  (`receive.denyCurrentBranch` is unset), and `update-ref` on a checked-out
+  dirty `main` desynchronises its index from its worktree.
 
-- **Figures are the one thing the install does not bring.** `website/static/img`
-  is a gitignored corpus, so anything reading figures sees an empty one — and
-  every `website/scripts/*.ts` needs `puppeteer`, which is not hoisted to the
-  root, so resolve it from `packages/browser-test-utils/`
-  (`createRequire(<that>/package.json)`) or run from a package that depends on
-  it. **Two** corpora, not one — `products/jbrowse-img/img` is separate and just
-  as gitignored:
+**A worktree from `EnterWorktree` arrives installed** — the `WorktreeCreate`
+hook runs `pnpm install --frozen-lockfile` first. That includes
+`products/jbrowse-web/src/buildInfo.ts`, which is gitignored and which `tsc`
+dies on when absent, taking ~5 suites with it. A worktree made by hand with
+`git worktree add` gets none of this; run the install yourself. Don't symlink
+`node_modules` from the primary checkout — the per-package `@jbrowse/*` links
+are relative, so every cross-package import would resolve to the primary
+checkout's sources instead of yours.
 
-  ```
-  ln -s ~/src/jbrowse-components/website/static/img website/static/img
-  ln -s ~/src/jbrowse-components/products/jbrowse-img/img products/jbrowse-img/img
-  ```
+**Figures are the one thing the install does not bring.** Two gitignored
+corpora:
 
-  Those links are what let figure tooling see the machine's real figures,
-  unpushed regens included, which is the whole point of a before/after
-  comparison. They are gitignored and can be left in place — but that is a
-  recent repair, and it is worth knowing what it repaired: the two ignore
-  entries used to end in `/`, which matches directories only, so the links
-  themselves were **not** ignored and a `git add -A` committed an absolute
-  `/home/<user>/src/...` path over the figure directory. If a checkout ever
-  arrives with `website/static/img` a dangling link, that is what happened.
+```
+ln -s ~/src/jbrowse-components/website/static/img website/static/img
+ln -s ~/src/jbrowse-components/products/jbrowse-img/img products/jbrowse-img/img
+```
 
-  Miss the second one and `pnpm autogen` **dies** on the jbrowse-img doc
-  generator (`README references /img/jbrowse-img/1.png but … does not exist`)
-  rather than reporting it stale, so every generator after it in the run never
-  executes and the report you get is short by however many those are.
-  `pnpm figures:pull` is the other way to get both, and is what CI does.
-
-- **Never symlink `node_modules` from the primary checkout.** This section used
-  to recommend it, before the install was automatic, and it is a trap worth
-  knowing because the damage is silent. Each package's `node_modules/@jbrowse/*`
-  link is **relative**
-  (`plugins/canvas/node_modules/@jbrowse/core -> ../../../../packages/core`), so
-  borrowing the primary's tree makes every cross-package import resolve to the
-  primary checkout's sources instead of yours. A test importing `./Thing.tsx`
-  then sees your edit while a test importing `@jbrowse/some-core` does not — the
-  same edit, tested twice, disagreeing, and the package-level one failing
-  locally while passing in CI, or the reverse. A whole-repo `--noEmit`
-  typechecks _its_ code against your edit and passes, which is a clean run that
-  proved nothing. It is not a stale cache; don't chase it as one. A real install
-  resolves those links inside the worktree and none of this arises.
+Miss the second and `pnpm autogen` **dies** on the jbrowse-img doc generator
+rather than reporting it stale, so every generator after it never runs and the
+report is short by however many those are. `pnpm figures:pull` is the other way
+to get both, and is what CI does. Every `website/scripts/*.ts` needs
+`puppeteer`, which is not hoisted to the root — resolve it from
+`packages/browser-test-utils/` (`createRequire(<that>/package.json)`).
 
 ## MST
 
@@ -104,10 +56,9 @@ checkout, so ordinary git is yours to use without asking.
 - Keep the main model chain in one file; don't split `.views()`/`.actions()`
   across files.
 - A bare getter returns a resolved value, never `undefined`. Where a slot or
-  prop encodes a sentinel (`rowHeight === 0` = fit-to-height — a config slot,
-  read through a raw same-named getter, on the displays that make it a setting),
-  expose the resolved value under a distinct getter every consumer reads
-  (`effectiveRowHeight`).
+  prop encodes a sentinel (`rowHeight === 0` = fit-to-height), expose the
+  resolved value under a distinct getter every consumer reads
+  (`effectiveRowHeight`). See `agent-docs/reference/ROW_HEIGHT_AND_FIT.md`.
 - Write config with `setConf`, not `configuration.setSlot`. Promotable slots
   resolve only through `resolveConf`, never `getConf`.
 - In React, `autorun` inside `useEffect` to track observables (prefer over
@@ -121,16 +72,13 @@ checkout, so ordinary git is yours to use without asking.
   reads instead and say why.
 - **Export a model's instance type as `interface X extends Instance<…> {}`**,
   not `type X = Instance<…>`. A view naming its displays and a display naming
-  its view is an ordinary pair of getters and a mutual type reference; only the
-  interface form defers it. As aliases the pair collapses — TS7023 on the
-  factory, TS2456 on the type, then ~20 implicit-any errors in unrelated files,
-  which is what you'll actually see first. Don't route around it by duck-typing
-  the view. ADR-055.
+  its view is a mutual type reference; only the interface form defers it. As
+  aliases the pair collapses — TS7023 on the factory, TS2456 on the type, then
+  ~20 implicit-any errors in unrelated files, which is what you'll see first.
+  Don't route around it by duck-typing the view. ADR-055.
 - A duck-typed `interface XSelf` extends **`IStateTreeNode`**, never
   `IAnyStateTreeNode` — the latter resolves through `STNValue<any, …>` to `any`,
-  so extending it silently turns off checking for every member you just
-  declared. `IStateTreeNode` carries the same node-ness (still assignable to
-  every `getSession`/`addDisposer`-style helper) and keeps the shape checked.
+  silently turning off checking for every member you just declared.
 
 ## React Compiler × MobX
 
@@ -142,65 +90,49 @@ checkout, so ordinary git is yours to use without asking.
 
 **Any reading of user-supplied refName text resolves through
 `getCanonicalRefName`, or it silently disagrees with the readings that do.**
-That method is the normalization layer, and it does two jobs at once —
+That method does two jobs at once —
 `refNameAliases[n] || lowerCaseRefNameAliases[n.toLowerCase()]` — so it resolves
 aliases _and_ casing. Code that tests `region.refName` directly gets neither.
 
-The failure is always the same and is always silent: an exact name works, a
-pattern over the same names returns nothing, and **nothing distinguishes that
-from "this assembly has no such contigs"** — so it reads as the feature being
-broken or the data being absent, and no error is raised for anyone to act on.
-Three instances of it landed in one session, all in glob matching of
-`displayedRegionNames`: the glob tested canonical names while the exact entry
-resolved aliases; then the glob was case-sensitive while the exact entry was
-not; then the search box's picker matched `regions` while `searchRefNames`, in
-the same dropdown, had always matched `allRefNames`.
-
-So, concretely, for anything matching refName text:
+The failure is always silent and always the same: an exact name works, a pattern
+over the same names returns nothing, and **nothing distinguishes that from "this
+assembly has no such contigs"**. So, for anything matching refName text:
 
 - **Match over `allRefNames`, not `regions`.** `buildRefNameMaps` identity-maps
   every region into `refNameAliases`, so `allRefNames` is a strict superset of
   the canonical names and matching over it loses nothing.
 - **Resolve hits to canonical, then emit by walking `regions`.** That two-pass
-  shape is what keeps assembly order instead of alias-file order, and dedupes
-  the ordinary case of several names for one contig.
+  shape keeps assembly order instead of alias-file order, and dedupes the
+  ordinary case of several names for one contig.
 - **Case-insensitivity is the regex's `i` flag, not a wider list.**
   `allRefNames` deliberately excludes `lowerCaseRefNameAliases` so it stays
-  normal-cased; its getter says so.
+  normal-cased.
 
 `selectNamedRegions.ts` holds the only two readings of `*` — the resolver a
 session spec goes through and `matchRefNames`, which the search box's dropdown
 and its enter key share — and `globToRegExp` is module-private to keep it that
-way. A third reading growing elsewhere is how the above starts over.
+way.
 
 ### A display reading a refName out of its own state calls `canonicalizeViewRefName`
 
 The rule above is usually met about _matching_. The other half is **storage**,
-and it is the half that keeps being missed, because two of the three ways a
-refName reaches a display are safe by construction and hide the third:
-
-- a right-click or a center-line menu copies the refName off the region it just
-  hit — canonical already;
-- a text search goes through a producer that canonicalizes
-  (`searchResultHighlight.ts` does, and says why);
-- a **session spec, config slot or URL** carries whatever a person typed, which
-  is whatever the location box showed them. Nothing normalizes it, and every
-  region, block and loaded span it is about to be compared against is canonical.
+and it keeps being missed because two of the three ways a refName reaches a
+display are safe by construction: a right-click or center-line menu copies the
+refName off the region it just hit, and a text search goes through a producer
+that canonicalizes. The third — a **session spec, config slot or URL** — carries
+whatever a person typed, and every region, block and loaded span it is about to
+be compared against is canonical.
 
 `canonicalizeViewRefName(node, refName)` (`@jbrowse/core/util`) is that
 normalization, resolved against the containing view's assembly and falling back
 to the input before the aliases load — `getCanonicalRefName` **throws** until
 then, and these getters run from the first render.
 
-What makes this worth a rule rather than a fix is that it is
-**assembly-dependent**: `chr12` is right on an assembly canonicalized `chr12`
-and matches nothing on one canonicalized `12`. So the same spec key works in the
-demo config it was written against and quietly does nothing in the next one, and
-the figure that catches it is the one nobody re-ran. Three landed together —
-canvas `featureHighlights`, the tree-sidebar `sortRowsBy` shared by multi-wiggle
-and multi-row features, and the alignments `sortedBy` slot — and the last two
-also never clear their one-shot trigger, so the dead spec persists in the
-snapshot.
+What makes this a rule rather than a fix is that it is **assembly-dependent**:
+`chr12` is right on an assembly canonicalized `chr12` and matches nothing on one
+canonicalized `12`. So the same spec key works in the demo config it was written
+against and quietly does nothing in the next one, and the figure that catches it
+is the one nobody re-ran.
 
 Normalize once, where the state is read (a getter, or the autorun's single choke
 point), not at each comparison — the comparisons are the part that multiplies.
@@ -210,32 +142,21 @@ into the _adapter's_ naming scheme inside `serializeArguments`, so `refName`
 means the assembly's canonical name before the RPC boundary and the file's name
 after it, in the same field of the same type (`util/renameRegions.ts` is the
 statement of this). Canonicalizing a refName that is about to be compared
-worker-side therefore breaks it on exactly the aliased tracks the rule above is
-meant to fix.
+worker-side breaks it on exactly the aliased tracks the rule above is meant to
+fix. Check which side a comparison runs on before normalizing either operand —
+alignments layout looks worker-side and is not (ADR-053).
 
-Both the sortRowsBy and sortedBy comparisons above _look_ worker-side — one
-lives in `RenderAlignmentDataRPC/sortLayout.ts` — and are not: alignments layout
-is main-thread (ADR-053) over `loadedRegions`, which is the display's own
-un-renamed copy. Check which side a comparison runs on before normalizing either
-operand.
-
-The worker layer already handles its half, four ways, and each is worth
-recognizing rather than reinventing: bundle a stray refName into `regions` so it
-rides the same rename pass (gwas `indexSnp`); carry the view's names in a
-parallel array (hic `viewBlocks[].refName`); return no refName at all
-(`GetConsensusSequence`); or canonicalize on receipt (breakpoint-split's
-overlays).
+The worker layer already handles its half four ways, each worth recognizing
+rather than reinventing: bundle a stray refName into `regions` so it rides the
+same rename pass (gwas `indexSnp`); carry the view's names in a parallel array
+(hic `viewBlocks[].refName`); return no refName at all (`GetConsensusSequence`);
+or canonicalize on receipt (breakpoint-split's overlays).
 
 ## Assembly names read off a track config: canonical, **and** screened
 
-Refnames have a normalization layer. Assembly names have two obligations, and
-missing either fails silently in its own way — five instances landed in one
-week, all from a track config's `assemblyNames`, which is free to name an alias
-_and_ free to name an assembly the session has no configuration for (a hub whose
-assemblies were never loaded, a config one was removed from).
-
-Any such name that ends up as an **`AssemblySelector` value** or in a **view
-init** must be:
+A track config's `assemblyNames` is free to name an alias _and_ free to name an
+assembly the session has no configuration for. Any such name that ends up as an
+**`AssemblySelector` value** or in a **view init** must be:
 
 - **canonical** — `canonicalAssemblyNames` (`@jbrowse/core/util/tracks`).
   `AssemblySelector`'s options are the session's own `assemblyNames` and it
@@ -249,14 +170,12 @@ init** must be:
   a blank row but a broken view: the row's init fails with "Assembly X not
   found", which sets the view's error, and `showImportForm` reads that error, so
   the user's working stack is replaced by an import form. `SessionAssemblies`
-  (core, next to `AssemblyNameResolver`) is the slice and says why it is `has` —
-  which now answers off the configs, aliases included, from the first render.
+  (core, next to `AssemblyNameResolver`) is the slice and says why it is `has`.
 
 Both live in one derivation per path, and it is worth keeping it that way:
-`connectedEndpoints` for "extend the stack from this row" (the add-row dialog
-and the connections list project it), `syntenyTrackRows` for "the rows this
-track implies" (Quick start's summary, its handover to Manual, and its launch).
-A fourth screen growing elsewhere is how the five started.
+`connectedEndpoints` for "extend the stack from this row", `syntenyTrackRows`
+for "the rows this track implies". A fourth screen growing elsewhere is how the
+five that landed in one week started.
 
 Unlike refNames, nothing renames assembly names at the RPC boundary, so there is
 no worker-side exception here.
@@ -265,75 +184,49 @@ no worker-side exception here.
 
 - Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
   not the full suite. Lint with `--fix`.
-- **A full-suite run from the shared primary checkout also _lies_**, which is
-  the reason the rule above matters more than the runtime does: other agents
-  edit the tree mid-run, so a different unrelated suite fails each time and none
-  of it is about your change. Judge your own change by a scoped run, in your own
-  worktree.
+- **A full-suite run from the shared primary checkout also _lies_** — other
+  agents edit the tree mid-run, so a different unrelated suite fails each time
+  and none of it is about your change. Judge your own change by a scoped run, in
+  your own worktree.
+- **Your test runs get 2 jest workers, deliberately — don't raise it.**
+  `jest.config.js` reads `CLAUDECODE` and hands agent sessions 2 where an
+  interactive run gets 4. The point is the machine-wide total, which no per-run
+  config can see: each concurrent agent worktree sizes itself independently.
+  `JEST_MAX_WORKERS=<n>` outranks the tier for one command, but a scoped
+  `pnpm test <dir>` is nearly always the better answer.
+- **`jest.config.js`'s `.claude/` ignore is load-bearing — don't re-diagnose
+  it.** Without it a nested agent worktree gives jest-haste-map duplicate
+  `plugins/*/package.json`, a hard throw that fails every cross-package suite.
 - **`pnpm format <paths>` — pass paths.** Bare `pnpm format` rewrites all ~5800
-  files. In your own worktree that is merely an unreviewable diff that will
-  never fast-forward onto main; in the shared primary checkout it also lands
-  another agent's reformatting under your commit message. The path argument used
-  to be silently ignored (`oxfmt .` hardcoded the dot and the argument fell
-  through to the astro pass); `oxfmt` now defaults to the cwd on its own and the
-  astro pass is a `postformat` hook, so an argument reaches it. The hook still
-  sweeps every `.astro`, which is a no-op unless one is genuinely unformatted —
-  they all live under `website/src`.
+  files.
 - **`agent-docs` is on `.prettierignore`, and naming it explicitly overrides
-  that.** oxfmt skips the tree when it walks into it, so those docs have never
-  been formatted and are hand-wrapped. Passing the directory as an argument
-  (`oxfmt agent-docs/`) formats all ~118 of them anyway — 9k lines of rewrapped
-  prose and repadded tables around whatever you actually changed. Never format
+  that.** Passing the directory as an argument formats all ~118 of them anyway —
+  9k lines of rewrapped prose around whatever you actually changed. Never format
   that path; the ignore is doing real work.
 - **`pnpm autogen` rewrites every generated-and-committed artifact** and is the
   answer to almost any "X is out of date" CI failure. It owns `package.json`
   `exports` maps, `tsconfig.build.esm.json` `references`, and the doc tables
   built from JSDoc tags — never hand-edit those.
 - **Shaders are the one exception: `pnpm gen:shaders`, not `autogen`.**
-  `*.generated.ts` is compiled from `.slang` by its own script, checked by its
-  own CI job (Shaders), and `scripts/autogen.ts` has no shader generator — so
-  `pnpm autogen` on a stale-shader failure rewrites nothing and looks like the
-  check is wrong. Edit the `.slang`, never the generated module.
-- **`pnpm gen:shaders` regenerates every shader in the repo, not just yours**,
-  so in the shared checkout the next agent's regen commit sweeps up your
-  `*.generated.ts` while your `.slang` sources are still uncommitted — which has
-  happened, and reads afterwards as their commit having changed your shader.
-  Commit sources promptly, or work in a worktree.
+  `*.generated.ts` is compiled from `.slang` by its own script and checked by
+  its own CI job, so `pnpm autogen` on a stale-shader failure rewrites nothing
+  and looks like the check is wrong. Edit the `.slang`, never the generated
+  module. It regenerates every shader in the repo, so commit sources promptly in
+  a shared checkout.
 - **Check `gen:shaders`' EXIT CODE, not its output and not `git status`.** A
   `.slang` that fails to compile leaves its `.generated.ts` **untouched**, so
-  the failure looks exactly like a file that needed no regen: the source shows
-  modified, the generated module does not, and a second `gen:shaders` followed
-  by a clean `git status` reads as "already in sync". Nothing downstream
-  disagrees either — `tsc` and jest import the stale generated module and pass,
-  because the only thing that changed is a `.slang` neither of them reads. The
-  run says `gen:shaders failed: 1 of 51 .slang file(s) failed` and exits 1, and
-  that line is the whole signal; piping to `grep -c 'ok:'` counts the survivors
-  and hides it. A shader edit is verified by grepping the emitted WGSL for the
-  thing you changed, which is one command and is conclusive.
+  the failure looks exactly like a file that needed no regen — and `tsc` and
+  jest pass, because they import the stale generated module. The run says
+  `gen:shaders failed: 1 of 51 .slang file(s) failed` and exits 1; piping to
+  `grep -c 'ok:'` hides it. Verify a shader edit by grepping the emitted WGSL
+  for the thing you changed.
 - **A pass naming a packed colour uniform must `import colorPack;` itself.**
   Slang does not re-export through an import, so `import alignmentsUniforms` is
-  not enough to call `unpackRGBA` even though that module uses it — the pattern
-  every named-colour pass carries is the pair (`mismatch.slang`, `read.slang`).
-  This is the most likely thing to be behind the silent stale-generated case
-  above, since it is a compile error in the one file you just edited.
-- **`jest.config.js`'s `.claude/` ignore is load-bearing — don't re-diagnose
-  it.** Without it a nested agent worktree gives jest-haste-map duplicate
-  `packages/__mocks__/**` and duplicate `plugins/*/package.json`, and the latter
-  is a hard `_assertNoDuplicates` throw that fails every cross-package suite.
-  Already fixed (`824e95eda3`).
-- **Your test runs get 2 jest workers, deliberately — don't raise it.**
-  `jest.config.js` reads `CLAUDECODE`, which the CLI exports into every command
-  it runs, and hands agent sessions 2 where an interactive run gets 4. The point
-  is the machine-wide total, which no per-run config can see: each concurrent
-  agent worktree sizes itself independently, so several sessions at a
-  "reasonable" per-run number still saturate the box together. Two sessions at
-  the old `maxWorkers: '50%'` measured 8 workers **each** on a 16-core machine.
-  If a run genuinely needs more, `JEST_MAX_WORKERS=<n>` outranks the tier for
-  that one command — but a scoped `pnpm test <dir>` is nearly always the better
-  answer, since wall-clock here is dominated by the serial transform prefix
-  rather than by worker count.
+  not enough to call `unpackRGBA`. This is the most likely thing behind a silent
+  stale-generated case, since it is a compile error in the file you just edited.
 - Two TypeScript versions on purpose: `typescript` 6.x for lint, aliased
-  `typescript7` for `pnpm typecheck`. Don't unify them.
+  `typescript7` for `pnpm typecheck`. Don't unify them. Use `--checkers 1`;
+  TypeScript 7 memory usage from many parallel checkers is high.
 - The `@jbrowse/core/*` modules in `ReExports/modules.ts` are the ABI external
   plugins resolve against, guarded by `ReExports/abi.test.ts` against
   `abiBaseline.json`. Removals fail there; additions don't. To drop a name,
@@ -343,7 +236,7 @@ no worker-side exception here.
   plugin looks its members up at runtime, often behind `'x' in session`, so
   removing one throws nothing — the plugin just stops asking and silently does
   less. `jbrowse-web/src/tests/pluginFacingSessionApi.test.ts` pins the members
-  published bundles actually call, same doctrine as the ABI baseline.
+  published bundles actually call.
 - `demos/<name>/config.json` deploys via `scripts/deploy-demo.sh`. Never
   `aws s3 cp` a config from elsewhere — the bucket has no versioning, so an
   overwrite that drops a track is unrecoverable.
