@@ -4,30 +4,41 @@ import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/render
 import type { RGBColor } from '../../shaders/colors.ts'
 import type { CigarOpDrawColors } from '@jbrowse/alignments-core'
 
-// Canvas-side equivalents of the GPU palette swap in GpuAlignmentsRenderer.writeUniforms.
-// When showModifications is true, all per-base colors collapse to colorMutedSnpBase (grey)
-// so that modification overlays stand out. Any new canvas feature that renders per-base
-// colors must call one of these builders rather than inlining the palette selection.
+/**
+ * The five per-base colors after the modifications-mode mute: when
+ * `showModifications` is on they all collapse to `colorMutedSnpBase` so the
+ * overlay stands out.
+ *
+ * **The one place that rule is written**, for either backend. It used to be
+ * four: a ternary in `buildBaseColorTupleMap`, another in `baseColorFallback`,
+ * a `??` chain in `buildCigarOpDrawColors`, and five uniform writes in
+ * `GpuAlignmentsRenderer.writeUniforms` — the GPU one tied to the rest by a
+ * comment saying to keep them in step. It had already gone missing from three
+ * canvas call sites once (see the fallback below), and a miss is a base painted
+ * its own colour on one backend and grey on the other, in the one mode whose
+ * point is that bases recede.
+ */
+export function effectiveBaseColors(state: RenderState) {
+  const { colors } = state
+  const muted = state.showModifications ? colors.colorMutedSnpBase : undefined
+  return {
+    A: muted ?? colors.colorBaseA,
+    C: muted ?? colors.colorBaseC,
+    G: muted ?? colors.colorBaseG,
+    T: muted ?? colors.colorBaseT,
+    N: muted ?? colors.colorBaseN,
+  }
+}
 
-// Single source for per-base canvas colors (mismatch + softclip-base draws),
-// keyed by uppercase-ASCII base code. Returns RGBColor tuples so mismatch draws
-// can apply per-mismatch alpha via rgba255(); softclip-base draws wrap in
-// rgb255(). N (78) has its own color; other non-A/C/G/T/N bytes take
-// `baseColorFallback`. Under showModifications every base mutes to grey.
+// Per-base canvas colors (mismatch + softclip-base draws), keyed by
+// uppercase-ASCII base code. RGBColor tuples so mismatch draws can apply
+// per-mismatch alpha via rgba255(); softclip-base draws wrap in rgb255(). N
+// (78) has its own color; other non-A/C/G/T/N bytes take `baseColorFallback`.
 export function buildBaseColorTupleMap(
   state: RenderState,
 ): Record<number, RGBColor> {
-  const { colors } = state
-  const muted = colors.colorMutedSnpBase
-  return state.showModifications
-    ? { 65: muted, 67: muted, 71: muted, 84: muted, 78: muted }
-    : {
-        65: colors.colorBaseA,
-        67: colors.colorBaseC,
-        71: colors.colorBaseG,
-        84: colors.colorBaseT,
-        78: colors.colorBaseN,
-      }
+  const c = effectiveBaseColors(state)
+  return { 65: c.A, 67: c.C, 71: c.G, 84: c.T, 78: c.N }
 }
 
 // The color a byte that is not A/C/G/T/N takes. Reachable in ordinary data:
@@ -35,14 +46,13 @@ export function buildBaseColorTupleMap(
 // both reach the per-base draws, and the extractors only upper-case the byte
 // (`& ~0x20`) rather than folding it to N.
 //
-// Must mute under showModifications. The GPU reaches this same case through
-// mismatch.slang's `default: colorBaseN`, and writeUniforms has ALREADY swapped
-// colorBaseN to grey by then — so a call site reading the raw `colors.colorBaseN`
-// painted a stray IUPAC base blue on Canvas2D while the GPU painted it grey.
+// It is N's color, muted or not, rather than a second reading of
+// `showModifications`: the GPU reaches this same case through mismatch.slang's
+// `default: colorBaseN`, so the fallback IS whatever N resolved to. Spelling it
+// as its own ternary is what once painted a stray IUPAC base blue on Canvas2D
+// while the GPU painted it grey.
 export function baseColorFallback(state: RenderState): RGBColor {
-  return state.showModifications
-    ? state.colors.colorMutedSnpBase
-    : state.colors.colorBaseN
+  return effectiveBaseColors(state).N
 }
 
 // The same palette as CSS strings, in a 256-entry table indexed by the raw base
@@ -68,18 +78,15 @@ export function buildBaseCssMap(state: RenderState): string[] {
 
 // CigarOpDrawColors palette for Canvas2D SNP-coverage segment draws.
 export function buildCigarOpDrawColors(state: RenderState): CigarOpDrawColors {
-  const { colors } = state
-  const base = state.showModifications
-    ? rgb255(colors.colorMutedSnpBase)
-    : undefined
+  const c = effectiveBaseColors(state)
   return {
-    baseA: base ?? rgb255(colors.colorBaseA),
-    baseC: base ?? rgb255(colors.colorBaseC),
-    baseG: base ?? rgb255(colors.colorBaseG),
-    baseT: base ?? rgb255(colors.colorBaseT),
-    baseN: base ?? rgb255(colors.colorBaseN),
+    baseA: rgb255(c.A),
+    baseC: rgb255(c.C),
+    baseG: rgb255(c.G),
+    baseT: rgb255(c.T),
+    baseN: rgb255(c.N),
     mismatch: '',
-    deletion: rgb255(colors.colorDeletion),
+    deletion: rgb255(state.colors.colorDeletion),
     insertion: '',
   }
 }

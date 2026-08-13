@@ -29,6 +29,7 @@ import { INDICATOR_PASS } from '../../features/indicator/packGpu.ts'
 import { INSERTION_PASS } from '../../features/insertion/packGpu.ts'
 import { INTERBASE_PASS } from '../../features/interbase/packGpu.ts'
 import { LINKED_READ_LINE_PASS } from '../../features/linkedReads/packGpu.ts'
+import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
 import { MISMATCH_PASS } from '../../features/mismatch/packGpu.ts'
 import { MOD_COVERAGE_PASS } from '../../features/modCoverage/packGpu.ts'
 import { MODIFICATION_PASS } from '../../features/modification/packGpu.ts'
@@ -294,14 +295,13 @@ export const PALETTE_UNIFORM_FIELDS = {
 // floats per slot: std140 pads an array element to 16 bytes whatever it holds,
 // so the packed form would occupy the same space and still cost an unpack per
 // vertex (and slangc can't compile it — see colorPack.slang).
+function packRgb(rgb: RGBColor) {
+  return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
+}
+
 function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   for (const [uniform, key] of Object.entries(PALETTE_UNIFORM_FIELDS)) {
-    const rgb = c[key]
-    u[UU[uniform as keyof typeof UU]] = normalizedRgbToABGR(
-      rgb[0],
-      rgb[1],
-      rgb[2],
-    )
+    u[UU[uniform as keyof typeof UU]] = packRgb(c[key])
   }
   const writeSlots = (
     slots: readonly number[],
@@ -838,17 +838,17 @@ export class GpuAlignmentsRenderer
   private writeUniforms(state: RenderState, frame: BlockFrame) {
     fillFrameUniforms(this.uF32, this.uI32, state, frame)
     writePaletteToUbo(this.uU32, this.uF32, state.colors)
-    if (state.showModifications) {
-      // Canvas equivalent: buildBaseColorTupleMap / buildCigarOpDrawColors in
-      // features/mismatch/baseColors.ts — keep in sync when changing this.
-      const m = state.colors.colorMutedSnpBase
-      const grey = normalizedRgbToABGR(m[0], m[1], m[2])
-      this.uU32[UU.colorBaseA] = grey
-      this.uU32[UU.colorBaseC] = grey
-      this.uU32[UU.colorBaseG] = grey
-      this.uU32[UU.colorBaseT] = grey
-      this.uU32[UU.colorBaseN] = grey
-    }
+    // Overwrite the five base slots `writePaletteToUbo` just filled from the raw
+    // palette with the resolved ones — unconditional, because
+    // `effectiveBaseColors` is where the modifications-mode mute is decided for
+    // both backends. Written here rather than inside `writePaletteToUbo`
+    // because that takes a `ColorPalette` and the mute needs `RenderState`.
+    const base = effectiveBaseColors(state)
+    this.uU32[UU.colorBaseA] = packRgb(base.A)
+    this.uU32[UU.colorBaseC] = packRgb(base.C)
+    this.uU32[UU.colorBaseG] = packRgb(base.G)
+    this.uU32[UU.colorBaseT] = packRgb(base.T)
+    this.uU32[UU.colorBaseN] = packRgb(base.N)
     this.hal.writeUniforms(this.uData)
   }
 

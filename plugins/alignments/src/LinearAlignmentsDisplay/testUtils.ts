@@ -2,6 +2,7 @@ import { getClip, getLengthOnRef } from '@jbrowse/cigar-utils'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
+import type { RenderState } from './renderers/rendererTypes.ts'
 
 // A full ColorPalette with every channel zeroed, for tests that only assert on
 // a few roles. Pass `overrides` to set the colors a case actually checks; the
@@ -42,6 +43,67 @@ export function makeTestPalette(
     colorUnmappedMate: z,
     colorInterchrom: z,
     colorFlatConnector: z,
+    ...overrides,
+  }
+}
+
+/**
+ * A full `RenderState` with everything off and one full-height section, for
+ * tests that drive a real renderer and care about a handful of fields.
+ *
+ * An explicit literal rather than a cast, for `makeTestPalette`'s reason: a
+ * `as unknown as RenderState` fixture silently stops covering a field the type
+ * gains, and the renderers read this straight through to `drawSection` — the
+ * shape that bit was `selectedChainReadIds`, absent from a hand-built state and
+ * dereferenced unconditionally by `getSelectionBounds`.
+ */
+export function makeTestRenderState(
+  overrides: Partial<RenderState> = {},
+): RenderState {
+  return {
+    canvasWidth: 200,
+    canvasHeight: 100,
+    scrollTop: 0,
+    colorScheme: 0,
+    featureHeight: 10,
+    featureSpacing: 1,
+    showCoverage: false,
+    coverageHeight: 0,
+    coverageYOffset: 0,
+    coverageMinDepth: undefined,
+    coverageMaxDepth: undefined,
+    coverageIsLog: false,
+    showMismatches: false,
+    filterMismatchesByFrequency: false,
+    mismatchAlpha: false,
+    showSoftClipping: false,
+    showInterbaseIndicators: false,
+    showModifications: false,
+    showPerBaseQuality: false,
+    showPerBaseLetter: false,
+    selectedChainReadIds: [],
+    selectedFeatureId: undefined,
+    colors: makeTestPalette(),
+    chainMode: false,
+    showLinkedReadLines: false,
+    collapseGroupRows: false,
+    readConnectionsLineWidth: 1,
+    readConnections: 'off',
+    readConnectionsDown: false,
+    readConnectionsHeight: 0,
+    pileupTopOffset: 0,
+    coverageTopOffset: 0,
+    showOutline: false,
+    sections: [
+      {
+        pileupTopOffset: 0,
+        coverageTopOffset: 0,
+        covClipTop: 0,
+        covClipHeight: 0,
+        pileupClipTop: 0,
+        pileupClipHeight: 100,
+      },
+    ],
     ...overrides,
   }
 }
