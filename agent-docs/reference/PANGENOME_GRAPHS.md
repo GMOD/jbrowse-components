@@ -276,6 +276,14 @@ Facts behind it, each measured rather than assumed:
   build, 4.8 MB + 21 MB. A human base-level graph is orders of magnitude past
   that; there, index a chromosome at a time or browse the SV-resolution
   minigraph rGFA instead.
+- **The builder's name says nothing about resolution.** The same five strains
+  through Minigraph-Cactus land in the same place as pggb: 628k segments, 842k
+  links, 13.5 s, 5.0 MB + 20.8 MB (measured 2026-08-13), because
+  `mc/ecoli.gfa.gz` is the base-level graph. The SV-resolution one is
+  `mc/ecoli.sv.gfa.gz` sitting beside it, from the minigraph stage, and a fifth
+  the size as a file. So "index the Cactus graph" is two different jobs
+  depending on which of the two, and a glob over `mc/*.gfa.gz` picks by sort
+  order rather than by intent.
 - **The drawable window is node-density-bound, not index-bound.** 1 kb of that
   pggb graph is ~150 nodes and legible; 3 kb is 519 and draws as a braid.
 - **Force layout does not get better with more nodes.** Measured over real
@@ -431,6 +439,16 @@ missing feature and is usually a claim the graph cannot support.
   with the `.gfa` and `-V` VCF beside it, plus the PanSN fastas in
   `~/ecoli_graph5/`. Do **not** use `~/depth_build/`, the pre-IAI39 four-strain
   run.
+- **So is the Minigraph-Cactus run**, in `~/ecoli_cactus5/`, and it is the one
+  the live demo was built from: its `ecoli_cactus_depth.bw` matches the hosted
+  object byte for byte, where `~/ecoli_cactus_build/`'s does not. That is the
+  cheap way to tell two old build directories apart before rebuilding either.
+- **The MC graph is indexed and hosted** as of 2026-08-13:
+  `demos/ecoli_pangenome/ecoli_cactus.{segs,links}.bed.gz{,.tbi}`, read by the
+  demo's `ecoli_cactus_segments` track and written from then on by
+  `build_ecoli_pangenome_cactus.sh`. Remote `tabix` over the hosted pair answers
+  `K12#0#chr` range queries, which is the adapter's own access pattern and the
+  whole check that an upload of one of these worked.
 
 ## Measured on the hosted HPRC link index
 
