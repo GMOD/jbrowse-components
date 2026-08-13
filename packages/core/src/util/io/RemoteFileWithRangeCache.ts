@@ -293,6 +293,25 @@ function assertReadArgs(length: number, position: number) {
 }
 
 /**
+ * Record a size a filehandle learned some way other than a range request — a
+ * `stat` the underlying source answers directly, or one a subclass gets from a
+ * metadata endpoint. Authoritative, so unlike the Content-Range observation
+ * below it overwrites what is already there.
+ *
+ * Guarded on finiteness because a non-finite size does not fail, it *poisons*:
+ * `Math.min(start + length, NaN)` is NaN, so getCachedRange's chunk loop never
+ * runs and every later read of that file returns empty with nothing said. Drive
+ * populates `size` only for files that have one — not for folders, shortcuts or
+ * native editor documents — so `Number(undefined)` is a reachable input rather
+ * than a hypothetical.
+ */
+function recordSize(key: string, size: number) {
+  if (Number.isFinite(size)) {
+    sizeCache.set(key, size)
+  }
+}
+
+/**
  * Record a file's total size from a `Content-Range` header — `bytes 0-255/12345`
  * on a 206, `bytes * /12345` on a 416. An already-known size is left alone (the
  * file is not expected to change under us mid-session).
@@ -336,6 +355,21 @@ function copyChunkInto({
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
+  /**
+   * Publish a size this handle learned other than by a range request.
+   *
+   * A subclass that overrides `stat` answers from somewhere the chunk cache
+   * never sees — GoogleDriveFile reads Drive's metadata endpoint — and so leaves
+   * `sizeCache` empty for its URL however many times it is called. That clamp is
+   * not an optimization: @gmod/bam and @gmod/tabix compute their last read of a
+   * file to include the whole final bgzf block, so it runs past EOF by
+   * construction, and without a known size that tail asks for chunks starting
+   * past the end and the server answers 416.
+   */
+  protected recordSize(size: number) {
+    recordSize(this.url, size)
+  }
+
   async stat() {
     if (!sizeCache.has(this.url)) {
       // Bypass the chunk cache: a populated chunk would otherwise short-circuit
@@ -546,7 +580,7 @@ export class CachedFilehandle implements GenericFilehandle {
     const stats = await this.inner.stat()
     // lets getCachedRange clamp reads that run past EOF, which every bgzf
     // reader does by construction on its last block
-    sizeCache.set(this.key, stats.size)
+    recordSize(this.key, stats.size)
     return stats
   }
 

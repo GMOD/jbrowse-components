@@ -24,7 +24,17 @@ export class GoogleDriveFile extends RemoteFileWithRangeCache {
       // Drive serializes its int64 fields as JSON strings, so `size` arrives as
       // "12345" — passed on untouched it satisfies `Stats` in name only, and
       // the first caller to do arithmetic on it concatenates instead
-      .then(({ size }) => ({ size: Number(size) }))
+      .then(({ size }) => {
+        const stats = { size: Number(size) }
+        // This is the only place the size of a Drive file is ever observed: the
+        // metadata request carries no Content-Range, so the chunk cache's own
+        // way of learning it never fires here, and without it every bgzf
+        // reader's deliberate over-read of the final block goes to the network
+        // to be refused. Drive omits `size` for a file that has none, and
+        // recordSize drops the NaN that produces rather than caching it.
+        this.recordSize(stats.size)
+        return stats
+      })
       // a cached rejection is permanent, so one dropped request would take
       // every later stat() of this file with it
       .catch((error: unknown) => {

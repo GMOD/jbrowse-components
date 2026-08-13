@@ -198,6 +198,17 @@ describe('CachedFilehandle wraps any filehandle', () => {
     expect(calls.every(c => c.position < FILE_SIZE)).toBe(true)
   })
 
+  test('a stat with no usable size is not cached', async () => {
+    const { inner } = fakeInner()
+    // A non-finite size does not fail, it poisons: the clamp is
+    // `Math.min(start + length, size)`, so caching a NaN makes every later read
+    // of the file return empty with nothing said.
+    inner.stat = () => Promise.resolve({ size: Number(undefined) })
+    const file = new CachedFilehandle(inner, 'file:///tmp/nan.bam')
+    expect((await file.stat()).size).toBeNaN()
+    expect((await file.read(100, 0)).length).toBe(100)
+  })
+
   test('an over-read past EOF is short even with no size known', async () => {
     const { inner } = fakeInner()
     const file = new CachedFilehandle(inner, 'file:///tmp/v.bam')
