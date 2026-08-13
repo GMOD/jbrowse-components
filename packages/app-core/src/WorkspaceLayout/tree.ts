@@ -140,6 +140,24 @@ export function normalize(node: LayoutTree): LayoutTree {
 }
 
 /**
+ * Siblings whose sizes are already right are left ALONE, rather than divided by
+ * a sum of 1 and multiplied by 1.
+ *
+ * That round trip is not the identity in floating point, and normalisation runs
+ * on every action: seven equal panes renormalise to `0.14285714285714285`,
+ * which sums to `0.9999999999999998`, which renormalises to
+ * `0.14285714285714288`, which sums to `1.0000000000000002`, which renormalises
+ * back. So `normalize` had no fixed point — every action rewrote every size,
+ * a settled layout emitted a snapshot for each one, and the undo history filled
+ * with entries in which nothing observable changed. Exactly the failure
+ * dockview's echoing layout event caused, arrived at from the other side.
+ *
+ * The tolerance is what makes it terminate; the drift it admits does not
+ * accumulate, because the sizes stop moving as soon as they are inside it.
+ */
+const SIZE_EPSILON = 1e-9
+
+/**
  * Rescale a set of siblings so their sizes sum to `total`.
  *
  * Rule 4 renormalises to 1; rule 3 rescales a flattened branch's children to
@@ -149,10 +167,12 @@ export function normalize(node: LayoutTree): LayoutTree {
  */
 function scaleSizes(children: LayoutTree[], total = 1): LayoutTree[] {
   const sum = children.reduce((acc, c) => acc + c.size, 0)
-  return children.map(c => ({
-    ...c,
-    size: sum > 0 ? (c.size / sum) * total : total / children.length,
-  }))
+  if (sum <= 0) {
+    return children.map(c => ({ ...c, size: total / children.length }))
+  }
+  return Math.abs(sum - total) < SIZE_EPSILON
+    ? children
+    : children.map(c => ({ ...c, size: (c.size / sum) * total }))
 }
 
 /** Rebuild `node` with `replacer` applied to the subtree with id `targetId`. */

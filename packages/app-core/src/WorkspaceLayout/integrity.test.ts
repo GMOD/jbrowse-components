@@ -72,6 +72,29 @@ test('homing writes nothing when there is nothing to home', () => {
   expect(snapshots).toBe(0)
 })
 
+// 2b. The same claim, but about the LAYOUT rather than about membership — and
+// the case where it was false. `normalize` runs on every action, so if it has
+// no fixed point then every action rewrites every size and the undo history
+// fills with entries in which nothing observable changed. Seven equal panes is
+// the first shape a user reaches by accident: "Global: tile horizontally" with
+// seven views.
+test('a tiled workspace stops emitting snapshots once it is settled', () => {
+  const session = TestSession.create({ name: 't' })
+  const views = Array.from({ length: 7 }, (_, i) => `view-${i}`)
+  session.tileViews('horizontal', views)
+  session.homeUnassignedViews(views)
+
+  let snapshots = 0
+  const dispose = onSnapshot(session, () => {
+    snapshots++
+  })
+  for (let i = 0; i < 5; i++) {
+    session.homeUnassignedViews(views)
+  }
+  dispose()
+  expect(snapshots).toBe(0)
+})
+
 // 3. activeTabId must always name a tab that panel actually has, through every
 // operation that can retire one.
 test('activeTabId never dangles', () => {

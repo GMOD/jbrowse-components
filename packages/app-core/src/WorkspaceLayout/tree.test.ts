@@ -141,6 +141,23 @@ describe('normalize', () => {
     expectCanonical(once)
   })
 
+  // ...including in floating point, which is the half that was not true.
+  // Dividing by a sum of 1 and multiplying by 1 is not the identity for most
+  // pane counts, and normalisation runs on EVERY action — so an equal split of
+  // six or more panes oscillated between two size vectors forever, and every
+  // action on a settled layout wrote a snapshot in which nothing had changed.
+  test('is idempotent for an equal split of any size', () => {
+    for (const count of [2, 3, 5, 6, 7, 11, 19, 24]) {
+      const once = normalize({
+        id: 'root',
+        size: 1,
+        direction: 'row',
+        children: Array.from({ length: count }, (_, i) => panel(`p${i}`)),
+      })
+      expect(normalize(once)).toEqual(once)
+    }
+  })
+
   test('an empty tab survives — it is what a new empty tab is', () => {
     const result = normalize({
       id: 'root',
@@ -433,6 +450,10 @@ test('any sequence of operations leaves a canonical tree', () => {
       )
     }
     expectCanonical(tree)
+    // canonical AND settled: normalising again must change nothing at all.
+    // `expectCanonical` alone cannot see this — it asserts the sizes sum to 1
+    // to six places, which every step of an oscillation does.
+    expect(normalize(tree)).toEqual(tree)
     // no view and no tab is ever duplicated or stranded
     const allViews = tabs(tree).flatMap(t => t.viewIds)
     expect(new Set(allViews).size).toBe(allViews.length)
