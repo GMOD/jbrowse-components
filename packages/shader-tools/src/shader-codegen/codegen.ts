@@ -50,6 +50,7 @@ export interface CodegenInputs {
   exportedConsts?: Record<string, number>
   topology?: Topology
   blend?: BlendMode
+  instanceWriter?: boolean
 }
 
 // The factor pair each blend mode means, in the `BlendState` shape
@@ -407,10 +408,14 @@ function instanceAccessorLines(attrs: InstanceAttr[]) {
 // `o[i]` is a number. Fail at emit time instead, where the message can name the
 // field.
 //
-// One set for both `packInstances` and the per-field accessors, because the
-// consequence is the same shape and a second list would drift: the accessors
-// bind `c` (component index) and `v`/`v0…` (the values written), and a field
-// named `v0` would compile to `f32[o] = v0` reading its own parameter.
+// One set for `packInstances`, the per-field accessors and `InstanceWriter`,
+// because the consequence is the same shape and a second list would drift: the
+// accessors bind `c` (component index) and `v`/`v0…` (the values written), and a
+// field named `v0` would compile to `f32[o] = v0` reading its own parameter.
+//
+// `count` is deliberately NOT here. The writer's own count is `this.count`, so a
+// field named `count` — hic has one — is only ever a parameter, and `packInstances`
+// avoids the collision by calling its loop bound `numInstances`.
 const INSTANCE_EMIT_RESERVED = new Set([
   'arrays',
   'numInstances',
@@ -424,10 +429,125 @@ const INSTANCE_EMIT_RESERVED = new Set([
   'v1',
   'v2',
   'v3',
+  // the writer's one local that is not `this.`-qualified
+  'grown',
   ...VIEWS,
   'INSTANCE_STRIDE_BYTES',
   'INSTANCE_STRIDE_WORDS',
 ])
+
+// One `push` parameter per COMPONENT: a scalar field contributes its own name, a
+// vecN field contributes `<name>0…<name>N-1`. Positional rather than an options
+// object because the writer's whole reason to exist is a loop over 10^5-10^6
+// instances on the main thread, and an object per push is an allocation per
+// instance — which is exactly the two-pass shape maf measured at ~3x slower and
+// wrote this machinery by hand to avoid.
+function writerParams(attrs: readonly InstanceAttr[]) {
+  const params = attrs.flatMap(a =>
+    a.type.kind === 'scalar'
+      ? [{ name: a.name, attr: a, component: 0 }]
+      : Array.from({ length: a.type.elementCount }, (_, c) => ({
+          name: `${a.name}${c}`,
+          attr: a,
+          component: c,
+        })),
+  )
+  // A scalar field named `position0` alongside a `float2 position` would give
+  // two parameters one name, and the second would silently win for both lanes.
+  const seen = new Set<string>()
+  for (const p of params) {
+    if (seen.has(p.name)) {
+      throw new Error(
+        `instance fields collide in the generated InstanceWriter: two push ` +
+          `parameters would be named '${p.name}'. A vecN field contributes ` +
+          `'<name>0'…, so a scalar field of that name cannot also exist. ` +
+          `Rename one in the .slang struct.`,
+      )
+    }
+    seen.add(p.name)
+  }
+  return params
+}
+
+/**
+ * An append-at-a-time writer over the packed instance layout.
+ *
+ * `packInstances` covers the case where the caller has one flat array per field
+ * and knows the instance count up front. Three encoders in the tree have
+ * neither: maf merges runs of same-coloured cells so the count is not known
+ * until the walk ends, multi-row features skips whatever a hidden legend
+ * category filters out, and synteny computes one field rather than reading it.
+ * Each had written this class by hand against its own shader's offsets — maf's
+ * spelled `push(startBp, endBp, rowIndex, color)` with the four stores listed
+ * out, and all three re-derived `count * INSTANCE_STRIDE_WORDS` and chose each
+ * field's typed-array view themselves.
+ *
+ * Two things the hand-written copies did not generalize. The views come from the
+ * shader, so a struct mixing `float` and `uint` fields gets both arrays over one
+ * buffer and both are rebuilt on growth — maf's copy assumed every field was
+ * `u32`, which was true of maf's struct and of nothing else. And `finish`
+ * right-sizes with a copy rather than a subarray view, because these payloads are
+ * retained per region for as long as the region is loaded and a view would pin
+ * the whole over-allocation (the rule in `packages/render-core/CLAUDE.md`).
+ *
+ * `finish` returns the buffer alone. The instance count is `writer.count`, and
+ * `uploadPass` takes it off `byteLength / stride` — returning a `{buffer, count}`
+ * pair here would be the "second expression" that rule exists to prevent.
+ */
+function instanceWriterLines(attrs: readonly InstanceAttr[]) {
+  const params = writerParams(attrs)
+  const used = new Set(attrs.map(a => viewOf(a.type)))
+  const views = VIEWS.filter(v => used.has(v))
+  const lines = [
+    '// Appends instances one at a time, for an encoder that cannot say up front',
+    '// how many it will emit. Seed the constructor with an upper bound and the',
+    '// common path allocates exactly once; the doubling is a correctness',
+    '// backstop, not the expected route.',
+    // #shaderExport InstanceWriter | append-at-a-time writer over the packed instance layout, for an encoder whose instance count is not known up front
+    'export class InstanceWriter {',
+    '  private buf: ArrayBuffer',
+    ...views.map(v => `  private ${v}: ${VIEW_ARRAY[v]}`),
+    '  private capacity: number',
+    '  count = 0',
+    '',
+    '  constructor(capacity: number) {',
+    '    this.capacity = Math.max(1, capacity)',
+    '    this.buf = new ArrayBuffer(this.capacity * INSTANCE_STRIDE_BYTES)',
+    ...views.map(v => `    this.${v} = new ${VIEW_ARRAY[v]}(this.buf)`),
+    '  }',
+    '',
+    `  push(${params.map(p => `${p.name}: number`).join(', ')}) {`,
+    '    if (this.count === this.capacity) {',
+    '      this.capacity *= 2',
+    '      const grown = new ArrayBuffer(this.capacity * INSTANCE_STRIDE_BYTES)',
+    '      new Uint8Array(grown).set(new Uint8Array(this.buf))',
+    '      this.buf = grown',
+    ...views.map(v => `      this.${v} = new ${VIEW_ARRAY[v]}(grown)`),
+    '    }',
+    '    const o = this.count * INSTANCE_STRIDE_WORDS',
+  ]
+  for (const p of params) {
+    const view = viewOf(p.attr.type)
+    const word = p.attr.offsetBytes / 4 + p.component
+    lines.push(
+      `    this.${view}[o${word === 0 ? '' : ` + ${word}`}] = ${p.name}`,
+    )
+  }
+  lines.push(
+    '    this.count++',
+    '  }',
+    '',
+    '  // A right-sized COPY, not a subarray view — see the class comment. Skipped',
+    '  // entirely when the seed turned out to be exact, which is the common path.',
+    '  finish() {',
+    '    const used = this.count * INSTANCE_STRIDE_BYTES',
+    '    return used === this.buf.byteLength ? this.buf : this.buf.slice(0, used)',
+    '  }',
+    '}',
+    '',
+  )
+  return lines
+}
 
 // The provenance banner every generated artifact opens with. Exported because
 // the JS twins carry it too, and `writeJsExports` was re-typing these two lines
@@ -479,6 +599,7 @@ export function emitInterface(inputs: CodegenInputs) {
     exportedConsts,
     topology,
     blend,
+    instanceWriter,
   } = inputs
   const lines = header(baseName)
 
@@ -540,6 +661,14 @@ export function emitInterface(inputs: CodegenInputs) {
   // Refused on a shader with no vertex stage rather than emitted and ignored: a
   // compute kernel is dispatched, not drawn, so neither has any meaning there
   // and a directive on one is a misunderstanding worth naming.
+  if (instanceWriter && !vs) {
+    throw new Error(
+      `${baseName}.slang declares //! instance-writer but reflects no instance ` +
+        `struct, so there is no layout to append to. The directive belongs on a ` +
+        `shader whose vertex inputs (or StructuredBuffer element) are the record ` +
+        `an encoder packs.`,
+    )
+  }
   if ((topology !== undefined || blend !== undefined) && !vs) {
     throw new Error(
       `${baseName}.slang declares //! ${topology !== undefined ? 'topology' : 'blend'} ` +
@@ -779,6 +908,9 @@ export function emitInterface(inputs: CodegenInputs) {
       }
     }
     lines.push('  }', '  return buf', '}', '', ...instanceAccessorLines(attrs))
+    if (instanceWriter) {
+      lines.push(...instanceWriterLines(attrs))
+    }
   }
 
   if (textures && textures.length > 1) {

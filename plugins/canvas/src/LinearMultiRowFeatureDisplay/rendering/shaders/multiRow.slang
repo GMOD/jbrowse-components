@@ -8,6 +8,7 @@
 // points over it. The only difference upstream: features here are already
 // intervals (no per-base run-merging).
 //! targets: wgsl, glsl
+//! instance-writer
 
 import rowRect;
 

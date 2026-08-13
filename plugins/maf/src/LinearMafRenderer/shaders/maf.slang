@@ -14,6 +14,7 @@
 // MAF-named entry points over it. rowIndex is stored in the instance so row
 // layout can be adjusted purely via uniforms — no refetch on rowHeight change.
 //! targets: wgsl, glsl
+//! instance-writer
 
 import rowRect;
 

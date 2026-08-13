@@ -220,6 +220,7 @@ What lands in `score.generated.ts`, and what a plugin imports from it:
 | `setInstance<Field>` | writes one instance field into a packed buffer, through that field's own typed view |
 | `getInstance<Field> (vector field)` | reads one component of a vector instance field; takes a component index |
 | `setInstance<Field> (vector field)` | writes a whole vector instance field; takes one value per component |
+| `InstanceWriter` | append-at-a-time writer over the packed instance layout, for an encoder whose instance count is not known up front |
 | `WGSL_SOURCE` | the compiled WGSL, when the shader targets wgsl |
 | `GLSL_VERTEX` | the compiled WebGL2 vertex stage |
 | `GLSL_FRAGMENT` | the compiled WebGL2 fragment stage |

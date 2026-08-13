@@ -6,6 +6,7 @@
 // linear (s=t) and so is y (sd=1, dydt=height), so each edge's slope is just
 // its constant top-to-bottom dx over the height.
 //! targets: wgsl, glsl
+//! instance-writer
 
 import syntenyTypes;
 

@@ -1,8 +1,8 @@
 import {
-  INSTANCE_OFFSET_F32,
   INSTANCE_OFFSET_U32,
   INSTANCE_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS,
+  InstanceWriter,
 } from './shaders/syntenyFillStraight.iface.generated.ts'
 import {
   isCigarKind,
@@ -12,12 +12,15 @@ import {
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { InstanceCacheOpts } from '@jbrowse/render-core/instanceCache'
 
-// Hand-written rather than the generated `packInstances` the repo's other GPU
-// renderers call: `packInstances` takes one flat ArrayLike per field, and this
-// layout's `featureId` is `instanceFeatureIdx[i] + 1`, so feeding it would mean
-// materializing a whole extra n-length array. Only the loop is local — the
-// offsets and stride still come from the shader's generated interface, so the
-// layout itself cannot drift.
+// The generated `InstanceWriter` rather than the generated `packInstances`:
+// `packInstances` takes one flat ArrayLike per field, and this layout's
+// `featureId` is `instanceFeatureIdx[i] + 1`, so feeding it would mean
+// materializing a whole extra n-length array. The writer takes the value per
+// instance instead, so the computed field costs nothing extra and the field
+// order, the per-field typed-array view and the stride are all the shader's.
+//
+// Seeded at exactly `n` and every instance is written, so `finish` returns the
+// writer's own buffer with no right-sizing copy.
 export function interleaveInstances(data: SyntenyInstanceData) {
   const {
     bp1,
@@ -30,17 +33,8 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     alignmentLengths,
     instanceCount: n,
   } = data
-  const buf = new ArrayBuffer(n * INSTANCE_STRIDE_BYTES)
-  const f = new Float32Array(buf)
-  const u32 = new Uint32Array(buf)
-
+  const out = new InstanceWriter(n)
   for (let i = 0; i < n; i++) {
-    const off = i * INSTANCE_STRIDE_WORDS
-    f[off + INSTANCE_OFFSET_F32.bp1] = bp1[i]!
-    f[off + INSTANCE_OFFSET_F32.bp2] = bp2[i]!
-    f[off + INSTANCE_OFFSET_F32.bp3] = bp3[i]!
-    f[off + INSTANCE_OFFSET_F32.bp4] = bp4[i]!
-    u32[off + INSTANCE_OFFSET_U32.color] = colors[i]!
     // featureId goes through the Float32 view (shader reads it as a float
     // attribute + compares to the float hovered/clickedFeatureId uniforms), so
     // it's exact only to 2^24 ~= 16.7M features. Past that, adjacent ids
@@ -49,11 +43,18 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     // Fix = make featureId a uint attribute+uniform. See
     // agent-docs/ideas/synteny-comparative.md §"Synteny featureId instance
     // ceiling".
-    f[off + INSTANCE_OFFSET_F32.featureId] = instanceFeatureIdx[i]! + 1
-    f[off + INSTANCE_OFFSET_F32.alignmentLength] = alignmentLengths[i]!
-    f[off + INSTANCE_OFFSET_F32.kind] = kinds[i]!
+    out.push(
+      bp1[i]!,
+      bp2[i]!,
+      bp3[i]!,
+      bp4[i]!,
+      colors[i]!,
+      instanceFeatureIdx[i]! + 1,
+      alignmentLengths[i]!,
+      kinds[i]!,
+    )
   }
-  return buf
+  return out.finish()
 }
 
 // How the renderer caches the buffer above and recolors it: a colorBy /

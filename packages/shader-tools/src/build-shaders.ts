@@ -60,6 +60,7 @@ import {
   assertOutPathsUnique,
   parseBlend,
   parseExportedConsts,
+  parseInstanceWriter,
   parseJsExports,
   parseJsSkips,
   parseOutPath,
@@ -712,6 +713,7 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       exportedConsts: parseExportedConsts(source, imported),
       topology: parseTopology(source),
       blend: parseBlend(source),
+      instanceWriter: parseInstanceWriter(source),
     }
     // The interface is emitted FIRST, because it is the one that refuses an
     // unmodeled uniform/instance field or a second sampler. Writing the strings

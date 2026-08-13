@@ -200,3 +200,50 @@ export function getInstanceKind(f32: Float32Array, i: number) {
 export function setInstanceKind(f32: Float32Array, i: number, v: number) {
   f32[i * INSTANCE_STRIDE_WORDS + 7] = v
 }
+
+// Appends instances one at a time, for an encoder that cannot say up front
+// how many it will emit. Seed the constructor with an upper bound and the
+// common path allocates exactly once; the doubling is a correctness
+// backstop, not the expected route.
+export class InstanceWriter {
+  private buf: ArrayBuffer
+  private f32: Float32Array
+  private u32: Uint32Array
+  private capacity: number
+  count = 0
+
+  constructor(capacity: number) {
+    this.capacity = Math.max(1, capacity)
+    this.buf = new ArrayBuffer(this.capacity * INSTANCE_STRIDE_BYTES)
+    this.f32 = new Float32Array(this.buf)
+    this.u32 = new Uint32Array(this.buf)
+  }
+
+  push(bp1: number, bp2: number, bp3: number, bp4: number, color: number, featureId: number, alignmentLength: number, kind: number) {
+    if (this.count === this.capacity) {
+      this.capacity *= 2
+      const grown = new ArrayBuffer(this.capacity * INSTANCE_STRIDE_BYTES)
+      new Uint8Array(grown).set(new Uint8Array(this.buf))
+      this.buf = grown
+      this.f32 = new Float32Array(grown)
+      this.u32 = new Uint32Array(grown)
+    }
+    const o = this.count * INSTANCE_STRIDE_WORDS
+    this.f32[o] = bp1
+    this.f32[o + 1] = bp2
+    this.f32[o + 2] = bp3
+    this.f32[o + 3] = bp4
+    this.u32[o + 4] = color
+    this.f32[o + 5] = featureId
+    this.f32[o + 6] = alignmentLength
+    this.f32[o + 7] = kind
+    this.count++
+  }
+
+  // A right-sized COPY, not a subarray view — see the class comment. Skipped
+  // entirely when the seed turned out to be exact, which is the common path.
+  finish() {
+    const used = this.count * INSTANCE_STRIDE_BYTES
+    return used === this.buf.byteLength ? this.buf : this.buf.slice(0, used)
+  }
+}

@@ -123,3 +123,43 @@ export function getInstanceColor(u32: Uint32Array, i: number) {
 export function setInstanceColor(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 3] = v
 }
+
+// Appends instances one at a time, for an encoder that cannot say up front
+// how many it will emit. Seed the constructor with an upper bound and the
+// common path allocates exactly once; the doubling is a correctness
+// backstop, not the expected route.
+export class InstanceWriter {
+  private buf: ArrayBuffer
+  private u32: Uint32Array
+  private capacity: number
+  count = 0
+
+  constructor(capacity: number) {
+    this.capacity = Math.max(1, capacity)
+    this.buf = new ArrayBuffer(this.capacity * INSTANCE_STRIDE_BYTES)
+    this.u32 = new Uint32Array(this.buf)
+  }
+
+  push(startBp: number, endBp: number, rowIndex: number, color: number) {
+    if (this.count === this.capacity) {
+      this.capacity *= 2
+      const grown = new ArrayBuffer(this.capacity * INSTANCE_STRIDE_BYTES)
+      new Uint8Array(grown).set(new Uint8Array(this.buf))
+      this.buf = grown
+      this.u32 = new Uint32Array(grown)
+    }
+    const o = this.count * INSTANCE_STRIDE_WORDS
+    this.u32[o] = startBp
+    this.u32[o + 1] = endBp
+    this.u32[o + 2] = rowIndex
+    this.u32[o + 3] = color
+    this.count++
+  }
+
+  // A right-sized COPY, not a subarray view — see the class comment. Skipped
+  // entirely when the seed turned out to be exact, which is the common path.
+  finish() {
+    const used = this.count * INSTANCE_STRIDE_BYTES
+    return used === this.buf.byteLength ? this.buf : this.buf.slice(0, used)
+  }
+}

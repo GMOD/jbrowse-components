@@ -18,7 +18,13 @@ const EMITTER = 'packages/shader-tools/src/shader-codegen/codegen.ts'
 
 // A line that pushes an `export …` into the generated module, in either quoting
 // style the emitter uses.
-const EMIT_SITE = /['"`]export (?:const|function) /
+//
+// `class` is in the list because leaving it out is silent in the direction that
+// matters: an untagged emit is fatal, but an emit this pattern does not
+// recognize is not an emit at all, so `InstanceWriter` was tagged, skipped, and
+// absent from the guide with nothing said. Any new `export <kind>` the emitter
+// learns has to be added here in the same commit.
+const EMIT_SITE = /['"`]export (?:const|function|class) /
 
 interface ShaderExport {
   name: string

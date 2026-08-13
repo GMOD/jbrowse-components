@@ -5,10 +5,7 @@ import {
   packMafCellColorConfig,
   resolveCellPacked,
 } from './resolveCellColor.ts'
-import {
-  INSTANCE_OFFSET_U32,
-  INSTANCE_STRIDE_WORDS,
-} from './shaders/maf.iface.generated.ts'
+import { InstanceWriter } from './shaders/maf.iface.generated.ts'
 
 import type { MafBlock } from './mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from './util.ts'
@@ -40,54 +37,6 @@ function maxInstances(blocks: MafBlock[], binBp: number) {
       Math.ceil((block.endBp - block.startBp) / binBp) * block.rows.length
   }
   return total
-}
-
-/**
- * Appends packed instances into a `Uint32Array`. Writing the packed form
- * directly is ~3x faster than collecting `{startBp, endBp, rowIndex, color}`
- * objects and packing them in a second pass, which is worth the small amount of
- * machinery here: a wide MAF region emits over a million runs, and this runs on
- * the *main thread*.
- *
- * Seeded with `maxInstances` so the common path allocates exactly once; the
- * doubling below is a correctness backstop, not the expected route.
- */
-class InstanceWriter {
-  private u32: Uint32Array
-  private capacity: number
-  count = 0
-
-  constructor(initialCapacity: number) {
-    this.capacity = Math.max(1, initialCapacity)
-    this.u32 = new Uint32Array(this.capacity * INSTANCE_STRIDE_WORDS)
-  }
-
-  push(startBp: number, endBp: number, rowIndex: number, color: number) {
-    if (this.count === this.capacity) {
-      this.capacity *= 2
-      const next = new Uint32Array(this.capacity * INSTANCE_STRIDE_WORDS)
-      next.set(this.u32)
-      this.u32 = next
-    }
-    const base = this.count * INSTANCE_STRIDE_WORDS
-    this.u32[base + INSTANCE_OFFSET_U32.startBp] = startBp
-    this.u32[base + INSTANCE_OFFSET_U32.endBp] = endBp
-    this.u32[base + INSTANCE_OFFSET_U32.rowIndex] = rowIndex
-    this.u32[base + INSTANCE_OFFSET_U32.color] = color
-    this.count++
-  }
-
-  // Right-sized copy rather than a subarray view. A view would pin the whole
-  // over-allocation — `maxInstances` bounds windows, but runs merge, so the
-  // slack is real — and the encoded payload is retained per region for as long
-  // as that region is loaded. One copy of the final buffer is cheap next to
-  // holding several MB of dead tail per region for the session.
-  finish() {
-    return {
-      buffer: this.u32.slice(0, this.count * INSTANCE_STRIDE_WORDS),
-      count: this.count,
-    }
-  }
 }
 
 /**
@@ -180,5 +129,9 @@ export function buildInstanceBuffer(args: BuildInstancesArgs) {
     }
   }
 
-  return out.finish()
+  // A view over the writer's own right-sized buffer, not a copy of it: `finish`
+  // has already trimmed the over-allocation `maxInstances` left, so this covers
+  // exactly the instances written and pins nothing beyond them. The payload
+  // stays a Uint32Array because every MAF consumer reads it as words.
+  return { buffer: new Uint32Array(out.finish()), count: out.count }
 }

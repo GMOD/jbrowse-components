@@ -2,6 +2,7 @@ import {
   assertOutPathsUnique,
   parseBlend,
   parseExportedConsts,
+  parseInstanceWriter,
   parseJsExports,
   parseOutPath,
   OUT_DIRECTIVES,
@@ -317,6 +318,30 @@ describe('parseTopology / parseBlend', () => {
   // `none` is deliberately not a mode — see the comment on BLEND_MODES.
   test('rejects blend: none rather than emitting an unconsumed disable', () => {
     expect(() => parseBlend('//! blend: none')).toThrow(/none/)
+  })
+})
+
+describe('parseInstanceWriter', () => {
+  test('reads the bare directive', () => {
+    expect(parseInstanceWriter('//! instance-writer')).toBe(true)
+    expect(
+      parseInstanceWriter('//! targets: wgsl\n//! instance-writer\n'),
+    ).toBe(true)
+  })
+
+  test('false when absent', () => {
+    expect(parseInstanceWriter('// no directive')).toBe(false)
+    expect(parseInstanceWriter('//! targets: wgsl, glsl')).toBe(false)
+  })
+
+  // It takes no argument, so a line that supplies one is a misunderstanding
+  // rather than a directive — matching it loosely would accept
+  // `//! instance-writer: startBp, endBp` as though the field list were
+  // configurable, when it comes from the struct.
+  test('does not match a directive carrying an argument', () => {
+    expect(parseInstanceWriter('//! instance-writer: startBp, color')).toBe(
+      false,
+    )
   })
 })
 

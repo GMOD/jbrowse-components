@@ -316,6 +316,109 @@ describe('emitInterface compute', () => {
   })
 })
 
+// The `reflection` fixture's instance struct is `pos: float2, id: uint32, kind:
+// int32`, which exercises everything the writer has to generalize in one shape:
+// a vector field expanded into per-component parameters, and all three
+// typed-array views over one buffer.
+describe('emitInterface InstanceWriter', () => {
+  const out = emitInterface({
+    baseName: 'test',
+    reflection,
+    instanceWriter: true,
+  })
+
+  // Opt-in: a generated module is namespace-imported, which defeats
+  // tree-shaking, so a class nobody calls is paid for by every eager importer.
+  test('emits nothing without the directive', () => {
+    expect(emitInterface({ baseName: 'test', reflection })).not.toContain(
+      'InstanceWriter',
+    )
+  })
+
+  test('expands a vector field into one parameter per component', () => {
+    expect(out).toContain(
+      '  push(pos0: number, pos1: number, id: number, kind: number) {',
+    )
+  })
+
+  // The view per field is the shader's answer, which is the half maf's
+  // hand-written copy could not generalize: it assumed every field was u32,
+  // true of maf's struct and of nothing else.
+  test('routes each field through the view its Slang type takes', () => {
+    expect(out).toContain('    this.f32[o] = pos0')
+    expect(out).toContain('    this.f32[o + 1] = pos1')
+    expect(out).toContain('    this.u32[o + 2] = id')
+    expect(out).toContain('    this.i32[o + 3] = kind')
+  })
+
+  // Every view has to be rebuilt against the new buffer, not just the first.
+  // A grow that reattached only one would leave the others writing into the
+  // buffer that was just abandoned — silently, and only past the seed.
+  test('rebuilds every view on growth', () => {
+    for (const v of ['f32', 'u32', 'i32']) {
+      expect(out).toContain(`      this.${v} = new`)
+      expect(out).toContain(`    this.${v} = new`)
+    }
+  })
+
+  // A view would pin the whole over-allocation, and these payloads are retained
+  // per region for as long as the region is loaded.
+  test('right-sizes with a copy, and skips it when the seed was exact', () => {
+    expect(out).toContain(
+      '    return used === this.buf.byteLength ? this.buf : this.buf.slice(0, used)',
+    )
+  })
+
+  // `finish` returns the buffer alone; the count is `writer.count`, and
+  // `uploadPass` takes it off byteLength/stride.
+  test('finish returns the buffer, not a {buffer, count} pair', () => {
+    expect(out).not.toContain('count: this.count')
+  })
+
+  test('refuses on a shader with no instance struct', () => {
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: computeReflection,
+        instanceWriter: true,
+      }),
+    ).toThrow(/no instance struct/)
+  })
+
+  // A vecN field contributes `<name>0`…, so a scalar of that name would give two
+  // parameters one name and the second would silently win for both lanes.
+  test('refuses two push parameters that would share a name', () => {
+    const collide = {
+      parameters: [
+        {
+          name: 'instances',
+          binding: { kind: 'descriptorTableSlot' as const, index: 0 },
+          type: {
+            kind: 'resource' as const,
+            baseShape: 'structuredBuffer',
+            resultType: {
+              kind: 'struct' as const,
+              name: 'Inst',
+              fields: [
+                { name: 'position', type: vector(2, 'float32') },
+                { name: 'position0', type: scalar('float32') },
+              ],
+            },
+          },
+        },
+      ],
+      entryPoints: [],
+    } as Reflection
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: collide,
+        instanceWriter: true,
+      }),
+    ).toThrow(/would be named 'position0'/)
+  })
+})
+
 describe('emitInterface pipeline state', () => {
   test('emits nothing when the shader declares neither', () => {
     const out = emitInterface({ baseName: 'test', reflection })

@@ -553,6 +553,25 @@ export function parseBlend(source: string) {
 }
 
 /**
+ * `//! instance-writer` — emit the append-at-a-time `InstanceWriter` class.
+ *
+ * Opt-in, where `packInstances` and the per-field accessors are emitted for every
+ * shader, and the asymmetry is deliberate rather than an oversight. A generated
+ * module is imported as a namespace (`import * as readShader`), which defeats
+ * tree-shaking, so everything a `.iface.generated.ts` carries is paid for by
+ * every eager importer of it — `read.iface.generated.ts` is already the largest
+ * item on the eager-bundle backlog at 20.6 KB. Three encoders in the tree want a
+ * writer; emitting one into the other forty modules would put a class nobody
+ * calls into the always-loaded chunk.
+ *
+ * Relaxing this is a one-line change if the namespace-import problem is ever
+ * fixed: drop the flag and emit unconditionally.
+ */
+export function parseInstanceWriter(source: string) {
+  return /^\/\/!\s*instance-writer\s*$/m.test(source)
+}
+
+/**
  * The `//! <kind>-out: <repo-relative path>` directives, which redirect one
  * generated artifact to a second location for a package that can't import the
  * plugin owning the shader.
