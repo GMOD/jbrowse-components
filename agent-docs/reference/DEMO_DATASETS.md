@@ -200,13 +200,22 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **DTU (differential transcript usage)** — ENCODE ENTEx muscle vs liver,
   satuRn stats written into a GENCODE GFF3, behind
   `website/docs/tutorials/dtu.md`. `scripts/build_dtu_demo.sh` rebuilds it from
-  the ENCODE accessions up, and reproduces the hosted GFF3 byte for byte. Two
-  traps it encodes: no transcript passes satuRn's **empirical** FDR on this
-  contrast (min 0.97 across 39,596 tests, `locfdr` warning "f(z) misfit"), so
-  the gate is `regular_FDR`; and the sample list is written out rather than
-  re-derived from
-  an ENCODE portal search, whose facets move. The eight RSEM quantifications are
-  the statistic, the four bigWigs are one donor per tissue.
+  the ENCODE accessions up. Two traps it encodes: no transcript passes satuRn's
+  **empirical** FDR on this contrast (min 0.97 across 39,596 tests, `locfdr`
+  warning "f(z) misfit"), so the gate is `regular_FDR`; and the sample list is
+  written out rather than re-derived from an ENCODE portal search, whose facets
+  move. The eight RSEM quantifications are the statistic, the four bigWigs are
+  one donor per tissue.
+
+  **The script's GFF3 and the deployed one differ, deliberately and not yet
+  reconciled.** The script writes the statistics onto gene and transcript rows
+  only, which is what `feature.parent.dif` in the track config reads. The
+  deployed file predates that and also repeats them onto every exon/CDS/UTR
+  child, and carries a `Name=` the script no longer adds. Same 103,222 rows
+  either way, and the config works against both, since a parent lookup succeeds
+  whether or not the child also carries the value. Redeploy via
+  `scripts/deploy-demo.sh` to converge them; until then do not describe the
+  script as reproducing the hosted bytes.
 - **The `*.demo_slices.bam` files** — three region-sliced GIAB alignments (HG002
   ONT haplotagged, HG002 Illumina 2x250, HG008-T PacBio Revio), rebuilt by
   `scripts/build_demo_slices.sh`. **A sliced BAM records its own provenance**:
