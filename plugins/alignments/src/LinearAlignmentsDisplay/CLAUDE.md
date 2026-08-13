@@ -30,6 +30,54 @@ display doesn't relayout on every frame of a coverage-band resize drag.
 - Read color is classified once at tier 2, so `flipStrandLongReadChains` /
   `colorSupplementaryChains` are deliberately absent from `renderState`.
 
+## A split segment's colour is framed by the CHAINS ON SCREEN, not by its primary
+
+`readChainHasSupp`'s 1/2 is a chain-level **frame** — "which way is red here" —
+and the worker's answer to it is a starting point that the main thread
+overwrites twice, in this order:
+
+1. `reconcileChainSuppAcrossRegions` — what one molecule's own segments say,
+   unioned across displayed regions. A worker call sees one region.
+2. `consensusChainStrandFrames` — what the molecules say about **each other**. A
+   worker call also sees one chain.
+
+The second exists because the frame the worker computes is `primaryStrand`, and
+**on a foldback the primary flag is arbitrary**: the two arms align to
+overlapping reference in opposite orientations, so both are candidates for
+"longest alignment" and which one is flagged turns on where the read started.
+Measured on the COLO829 chr3 foldback (`cancer_sv/derivative_inserts`, 33 split
+molecules): 19 reads' primary ends at one arm's junction and 14 at the other's,
+that split predicts the painted colour with no exceptions, and each insert
+window came out a coin flip. It is **not** the sequencing direction —
+`strand * primaryStrand` cancels that correctly, and both classes hold a mix of
+forward and reverse primaries. No per-chain rule fixes it, because a foldback
+has no locally identifiable canonical segment; longest-alignment,
+first-along-the-read and leftmost-in-region measured 58/52/61% agreement where
+the consensus reaches 100%.
+
+Two properties of that pass are load-bearing and each looks like a detail:
+
+- **Votes are purity-normalized, not length-weighted.** Raw length lets one
+  chain's 32 kb arm outvote every 200 bp insert on screen — and since that arm
+  is also the primary, every chain then agrees with every other by construction
+  and the pass flips nothing (measured: 0 of 33). Normalizing also makes a
+  foldback chain **abstain** at the locus where its own two arms cancel, which
+  is the tie the primary flag was silently breaking.
+- **A chain seen at ONE locus is frozen.** There its frame and its mapping
+  strand are the same statement, so re-framing it is not resolving an ambiguity,
+  it is replacing the read's orientation with its neighbours' — which deletes
+  exactly the lone inverted supplementary at a breakpoint that this colouring
+  exists to show. Frozen chains still vote.
+
+The global sign is anchored separately (keep the majority of chains on the frame
+they arrived with), because negating every frame is an equally optimal answer
+and nothing in the objective picks between them — without the anchor the pileup
+can swap red for blue between two renders of identical data.
+
+So: **don't re-derive a frame at a call site.** Read `readChainHasSupp`.
+`framesUnpairedChainStrand` is the single statement of when the framing is live
+at all, and gates the pass on it.
+
 ## Three different "is it grouped?" questions
 
 `isGrouped` (>1 section) is the scroll model. `showsGroupLabels` is the chips —

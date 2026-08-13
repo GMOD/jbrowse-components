@@ -245,14 +245,14 @@ function supplementaryItem(
       'Enable "Read connections ▸ View as pairs / link supplementary alignments" first',
     subMenu: [
       checkboxItem(
-        'Color supplementary alignments by primary strand',
+        'Color supplementary alignments by consensus strand',
         supp.flipStrandLongReadChains,
         () => {
           supp.setFlipStrandLongReadChains(!supp.flipStrandLongReadChains)
         },
         {
           subLabel:
-            'long (unpaired) reads: the primary stays red and a segment that flipped at the junction goes blue, so an inversion reads as a color flip',
+            'long (unpaired) reads: segments agreeing with the orientation most reads on screen share stay red and the ones inverted at a junction go blue, so an inversion reads as a color flip',
         },
       ),
       checkboxItem(

@@ -160,6 +160,29 @@ const dataFillSchemes = new Set([
   ColorScheme.modifications,
 ])
 
+// Whether the unpaired chain-strand framing below is actually going to be read,
+// which is the gate on running `consensusChainStrandFrames` at all — that pass
+// rewrites the very marker the framing reads, so under a scheme or a tickbox
+// that discards the framing it would be work whose result nothing looks at.
+// Every condition here is one of the branch's own, spelled once so the two
+// cannot drift; the default for `flipStrandLongReadChains` mirrors the
+// destructuring default in `readColorCategory`.
+export function framesUnpairedChainStrand(
+  colorScheme: number,
+  {
+    chainMode = false,
+    flipStrandLongReadChains = true,
+    colorSupplementaryChains = false,
+  }: ReadColorOpts = {},
+) {
+  return (
+    chainMode &&
+    flipStrandLongReadChains &&
+    !colorSupplementaryChains &&
+    !dataFillSchemes.has(colorScheme)
+  )
+}
+
 // Category → the shader's RC_* index. Built from the generated constants, so
 // the GPU and this file cannot disagree on what an index means. Exhaustive by
 // type: adding a ReadColorCategory member without an index fails to compile.
@@ -284,16 +307,25 @@ export function readColorCategory(
   }
 
   // Long-read (unpaired) supplementary chains frame each segment's strand
-  // against the primary: the primary is always forward-red and a segment that
-  // flipped at the split junction goes reverse-blue, so an inversion reads as a
-  // colour flip rather than as something to look up.
+  // against the chain's frame: a segment agreeing with it is forward-red and one
+  // that flipped at the split junction goes reverse-blue, so an inversion reads
+  // as a colour flip rather than as something to look up.
+  //
+  // The frame itself is NOT this file's to decide, and used to be — it was the
+  // chain's own primary strand, which a foldback makes arbitrary (both arms are
+  // candidates for "longest alignment", so the flag lands on whichever the read
+  // happened to cover more of, and the colours flip with it). It is now settled
+  // across chains by `consensusChainStrandFrames`, which rewrites this same
+  // marker before the bake. Read the marker; don't re-derive a frame here.
   //
   // Held off the data-carrying schemes (`dataFillSchemes`) so it refines the
   // fill rather than replacing it, and off entirely when the user unticks
   // `flipStrandLongReadChains` — its checkbox says "color supplementary
-  // alignments by primary strand", and unticking it used to keep colouring them
-  // by strand, just unframed, which under `strand` (the one scheme it was ever
-  // tested against) is indistinguishable from having no effect at all.
+  // alignments by consensus strand", and unticking it used to keep colouring
+  // them by strand, just unframed, which under `strand` (the one scheme it was
+  // ever tested against) is indistinguishable from having no effect at all.
+  // `framesUnpairedChainStrand` restates these four conditions for the consensus
+  // pass, which must not run where they don't hold.
   if (
     isChain &&
     hasSupp &&
@@ -311,8 +343,8 @@ export function readColorCategory(
     // strand framing inverted; naming the code makes an unexpected marker fall
     // to the unframed +1 instead, which is what "we don't know" should look
     // like. Identical for 1 and 2, which is every real chain.
-    const primaryStrand = chainSupp === CHAIN_FILL_SUPP_PRIMARY_REV ? -1 : 1
-    return strandCategory(strand * primaryStrand)
+    const chainFrame = chainSupp === CHAIN_FILL_SUPP_PRIMARY_REV ? -1 : 1
+    return strandCategory(strand * chainFrame)
   }
 
   // Paired split read whose supplementary segment maps opposite-strand to its

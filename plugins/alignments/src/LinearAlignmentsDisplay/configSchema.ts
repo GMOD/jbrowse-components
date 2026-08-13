@@ -456,7 +456,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       flipStrandLongReadChains: {
         type: 'boolean',
         defaultValue: true,
-        description: 'Flip strand coloring for reverse long-read chains',
+        // Named for what it did when it framed each chain against its own
+        // primary. It now frames every chain against the orientation the chains
+        // on screen agree on (`consensusChainStrandFrames`) — the slot name is
+        // kept because sessions and configs in the wild carry it, and it still
+        // answers the same question: is a split segment coloured by its own
+        // mapping strand, or relative to the rest of its molecule.
+        description:
+          'Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand',
       },
       /**
        * #slot

@@ -142,6 +142,11 @@ function mateSplitKinds(chain: ChainFeatureData[], summary: ChainSummary) {
  * regions and this runs per region: `reconcileChainSuppAcrossRegions` re-answers
  * it from the union, and must encode the answer the same way rather than the
  * same way again.
+ *
+ * The 1/2 the worker writes here is a STARTING POINT, not the painted answer.
+ * `consensusChainStrandFrames` then re-answers the same two codes on the main
+ * thread from all the chains on screen at once, because the primary flag is
+ * arbitrary on a foldback — no worker call, seeing one chain, can tell.
  */
 export function chainSuppFill(hasSupp: boolean, primaryStrand: number) {
   return hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0

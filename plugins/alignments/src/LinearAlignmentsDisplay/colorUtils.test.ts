@@ -1,7 +1,12 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { partitionFeatures } from '../shared/groupFeatures.ts'
-import { getReadColor, readColorCategory, rgb255 } from './colorUtils.ts'
+import {
+  framesUnpairedChainStrand,
+  getReadColor,
+  readColorCategory,
+  rgb255,
+} from './colorUtils.ts'
 import { ColorScheme } from './constants.ts'
 import { makeTestPalette } from './testUtils.ts'
 
@@ -534,5 +539,58 @@ describe('firstOfPairStrand: color and grouping agree', () => {
       type: 'firstOfPairStrand',
     })
     expect(groups[0]!.key).toBe(category === 'revStrand' ? '-' : '+')
+  })
+})
+
+// The gate on running `consensusChainStrandFrames`, which rewrites the very
+// marker the framing branch reads. Its four conditions are that branch's own, so
+// this checks it stays a restatement rather than a second opinion — a `true`
+// where the branch discards the framing is wasted work, and a `false` where the
+// branch honors it is the consensus silently not running.
+describe('framesUnpairedChainStrand', () => {
+  const on = { chainMode: true }
+  test.each([
+    ['chain mode with the defaults', ColorScheme.strand, on, true],
+    ['pileup mode', ColorScheme.strand, {}, false],
+    [
+      'the tickbox off',
+      ColorScheme.strand,
+      { ...on, flipStrandLongReadChains: false },
+      false,
+    ],
+    [
+      'the orange override, which outranks the framing',
+      ColorScheme.strand,
+      { ...on, colorSupplementaryChains: true },
+      false,
+    ],
+    // the data-carrying schemes: the framing would displace the datum the user
+    // asked to see, so the branch is held off them and so is the pass
+    ['a tag scheme', ColorScheme.tag, on, false],
+    ['a mapq scheme', ColorScheme.mappingQuality, on, false],
+    ['a modifications scheme', ColorScheme.modifications, on, false],
+    // geometry schemes, which the framing refines rather than replaces
+    ['the pair-orientation scheme', ColorScheme.pairOrientation, on, true],
+    ['the insert-size scheme', ColorScheme.insertSize, on, true],
+  ])('%s', (_label, scheme, opts, expected) => {
+    expect(framesUnpairedChainStrand(scheme, opts)).toBe(expected)
+  })
+
+  test('agrees with the branch it gates on every scheme', () => {
+    for (const scheme of Object.values(ColorScheme)) {
+      // A REVERSE segment under a REVERSE frame is the probe, because
+      // `fwdStrand` is the one category no other branch can produce for it: the
+      // strand and first-of-pair schemes would both call it reverse, and every
+      // other scheme answers in its own vocabulary. Probing with a forward frame
+      // instead makes this vacuous under those two.
+      const framed =
+        readColorCategory(
+          0,
+          makeData({ strand: -1, chainHasSupp: 2 }),
+          scheme,
+          on,
+        ) === 'fwdStrand'
+      expect(framesUnpairedChainStrand(scheme, on)).toBe(framed)
+    }
   })
 })

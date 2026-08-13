@@ -313,10 +313,16 @@ export function readColorCategoryLabel(
 // linked-reads (chain) mode, where only the splits pick up a color.
 //
 // "Forward"/"reverse" was the wrong axis to name: the branch frames each segment
-// against its chain's PRIMARY (`strand * primaryStrand`), so red means agrees
-// with the primary and blue means flipped at the junction — the read's own
-// mapping strand is not what the color says. A reverse-mapped long read whose
-// segments all agree is entirely red.
+// against its chain's FRAME (`strand * chainFrame`), so red means agrees with
+// the frame and blue means flipped at the junction — the read's own mapping
+// strand is not what the color says. A reverse-mapped long read whose segments
+// all agree is entirely red.
+//
+// The frame is the orientation the chains on screen agree on
+// (`consensusChainStrandFrames`), not each chain's own primary, which is why the
+// labels say neither. On a foldback the primary is arbitrary — the same molecule
+// gets either colour depending on which arm the aligner flagged — so a label
+// naming it would have been wrong on exactly the data this branch exists for.
 //
 // That makes this the same measurement as `splitInversion`/`splitDeletion`
 // above, run on disjoint data (that branch is unpaired-only, those are
@@ -326,10 +332,10 @@ export function readColorCategoryLabel(
 // noun is chosen from what the color is actually painted ONTO.
 //
 // "Segment", not "read", and the difference is visible in the pileup: here only
-// the flipped segment turns blue, while its primary stays red — the primary
-// takes this branch too (`readChainHasSupp` is a chain-level value, and
-// `strand * primaryStrand` is +1 for it), so one long read shows both colors at
-// once and neither row can honestly be about the read. The paired markers
+// the flipped segment turns blue, while the segments agreeing with the frame
+// stay red — every segment takes this branch (`readChainHasSupp` is a
+// chain-level value), so one long read shows both colors at once and neither row
+// can honestly be about the read. The paired markers
 // opposite paint every segment of the split mate one color, so there the row IS
 // about the read.
 const SPLIT_STRAND_LABELS: Partial<Record<SwatchCategory, string>> = {

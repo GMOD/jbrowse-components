@@ -1874,7 +1874,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // branch). So the frame holds three categories and the legend names
           // all three: `Split segment (same strand)`, `Split segment (inverted)`
           // and plain `Reads` — same/flipped being relative to the chain's
-          // primary, which is why the rows do not name a strand.
+          // frame, which is why the rows do not name a strand. The frame is the
+          // orientation the chains on screen agree on
+          // (`consensusChainStrandFrames`), no longer each chain's own primary;
+          // on this two-locus join both answer the same, and derivative_inserts
+          // is the figure where they don't.
           //
           // AND THE LEFT/RIGHT ASYMMETRY THE REVIEWER SAW WAS A BUG, not the
           // classification: `readChainHasSupp` was computed per WORKER CALL and

@@ -1,5 +1,9 @@
+import { consensusChainStrandFrames } from './chainStrandConsensus.ts'
 import { reconcileChainSuppAcrossRegions } from './chainSuppAcrossRegions.ts'
-import { buildReadColorCategories } from './colorUtils.ts'
+import {
+  buildReadColorCategories,
+  framesUnpairedChainStrand,
+} from './colorUtils.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
@@ -20,12 +24,22 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // sees one region, so a fusion read's primary and its supplementary are
 // classified by two calls that each saw half a molecule. Chain mode only, and a
 // no-op on a single-region view.
+//
+// `consensusChainStrandFrames` then re-answers the same marker a second time,
+// and the order is the dependency: reconciliation settles what each chain's own
+// segments say across the regions, and the consensus settles the one thing no
+// single chain can — which way "same strand" points — by comparing chains to
+// each other. Gated on the framing actually being read, since it rewrites only
+// the field that framing consumes.
 export function overlayReadColorCategories(
   map: Map<number, PileupDataResult>,
   colorScheme: number,
   opts: ReadColorOpts,
 ): Map<number, PileupDataResult> {
-  const src = opts.chainMode ? reconcileChainSuppAcrossRegions(map) : map
+  const reconciled = opts.chainMode ? reconcileChainSuppAcrossRegions(map) : map
+  const src = framesUnpairedChainStrand(colorScheme, opts)
+    ? consensusChainStrandFrames(reconciled)
+    : reconciled
   const out = new Map<number, PileupDataResult>()
   for (const [idx, data] of src) {
     out.set(idx, {
