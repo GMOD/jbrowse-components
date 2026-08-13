@@ -102,6 +102,51 @@ warnings are things it will complain about itself. Full description in
 A validator beats a manual here. An agent that has read every page can still
 invent a slot name; one that can check its work recovers from having done so.
 
+## Where the browser comes from
+
+Step 5 assumes an application, and which one to reach for is decided by where
+the data is rather than by what the picture should look like:
+
+|                       | to run it                          | the data it can read              |
+| --------------------- | ---------------------------------- | --------------------------------- |
+| `@jbrowse/img`        | nothing                            | local paths (`localPath`) or URLs |
+| Desktop               | an install, no server              | local paths                       |
+| `@jbrowse/capture`    | a Chromium `npx` fetches           | public URLs the browser may fetch |
+| your own web instance | `jbrowse create` + a static server | whatever that server serves       |
+
+The first two need no web server at all. `@jbrowse/img` renders server-side, so
+a config whose locations are `localPath` produces a figure from files on disk
+with nothing served and nothing installed; Desktop opens a config path directly
+and keeps local paths in the session, which is the one to hand a human.
+
+`@jbrowse/capture` is different in a way worth knowing before it fails: it
+drives the **public** build at `jbrowse.org/code/jb2/latest/`, so every file the
+view names is fetched by a page on jbrowse.org and has to be a URL that permits
+it. A path on your disk is not one.
+
+For data that is not public, serve the app and the data together:
+
+```bash
+jbrowse create jbrowse2
+jbrowse add-assembly hg38.fa.gz --load copy --out jbrowse2
+jbrowse add-track sample.bam --load copy --out jbrowse2
+npx serve -S jbrowse2                          ## http://localhost:3000
+
+npx @jbrowse/capture --instance http://localhost:3000 \
+  --config http://localhost:3000/config.json --assembly hg38 \
+  --loc chr17:43,044,000-43,126,000 --track sample -o out.png
+```
+
+`--load copy` puts the files inside the directory being served, so the app and
+its data come off one origin and CORS never enters into it. `--instance` is what
+points capture at that build instead of the public one.
+
+**The static server has to honor `Range`.** `npx serve` answers a range request
+with `206 Partial Content`; `python3 -m http.server` ignores the header and
+returns the whole file with `200`, which is the difference between a track that
+reads a slice and one that downloads the file again for every read. Full setup,
+including the prerequisites, is [](/docs/quickstart_web).
+
 ## Then look at it
 
 The validator reads the config. It cannot tell you the file was unindexed, the
@@ -226,7 +271,7 @@ In rough order of frequency:
 - **Setting display options on the track instead of the display.** Per-track
   height and color live on the display; `displayDefaults` is the shorthand that
   routes them there without naming a display type.
-- **Handing the browser a path instead of a URL.** A track is fetched by the
-  page, in range requests, so a local file needs a server in front of it — any
-  static one that honors `Range` — or Desktop, which opens a path directly. A
-  `file://` uri and a bare path both reach jbrowse-web as a failed fetch.
+- **Handing a web page a path.** A track is fetched by the browser, so a local
+  file reaches jbrowse-web as a failed fetch whether it arrives as a bare path
+  or a `file://` uri. Which application removes the problem rather than working
+  around it is the [section above](#where-the-browser-comes-from).

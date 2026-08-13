@@ -40,6 +40,12 @@ Both take `--hub` for a [hosted assembly](/docs/agents_hosted_data), `--config`
 for any config URL, and `--loc` as either a locstring or — on a config with a
 text index — a gene name. `jb2capture --help` lists the rest.
 
+The page `@jbrowse/capture` drives is the public JBrowse Web build at
+`jbrowse.org/code/jb2/latest/`, which is why a config and its data have to be
+URLs that page may fetch. `--instance http://localhost:3000` points it at a
+build of your own instead, and [](/docs/agents#where-the-browser-comes-from) is
+the setup that goes with it.
+
 ```bash
 ## point at your own data instead
 npx @jbrowse/capture --config https://example.org/config.json --assembly mygenome \

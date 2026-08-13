@@ -40,6 +40,29 @@ a gene name where the config has a text index), and repeatable `--track`.
 `npx @jbrowse/capture --help` for the rest; `--session <file.json>` takes a
 whole session spec.
 
+## Where the app comes from
+
+`@jbrowse/img` needs none — it renders server-side, and a config using
+`localPath` locations makes a figure out of files on disk with nothing served.
+
+`@jbrowse/capture` drives the **public** build at
+`jbrowse.org/code/jb2/latest/`, so a config and its data must be URLs that page
+may fetch; a path on disk is not one. For local data, serve the app and the data
+from one directory and point capture at it:
+
+```bash
+jbrowse create jbrowse2
+jbrowse add-track sample.bam --load copy --out jbrowse2   # trackId = "sample"
+npx serve -S jbrowse2                                     # http://localhost:3000
+npx @jbrowse/capture --instance http://localhost:3000 \
+  --config http://localhost:3000/config.json --assembly hg38 \
+  --loc chr17:43,044,000-43,126,000 --track sample -o out.png
+```
+
+Same origin for app and data, so CORS is not a question. The server must honor
+`Range`: `npx serve` answers `206`, `python3 -m http.server` ignores the header
+and returns the whole file with `200`.
+
 ## The one thing that goes wrong
 
 **Every readiness signal JBrowse publishes is negative** — no loading overlay,
