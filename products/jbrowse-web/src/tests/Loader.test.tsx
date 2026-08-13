@@ -81,20 +81,25 @@ test('can use config from a url with shared session ', async () => {
 }, 20000)
 
 // minimal session with plugin in our plugins.json
+//
+// Asserts the absence of the triage dialog its evil-plugin sibling below
+// asserts the presence of, which is what "approves" means here.
+//
+// It used to wait for sessionStorage to be written instead, and that was a
+// false green: this session never gets far enough to write anything, because
+// approving the plugin goes on to import it from jbrowse.org and jsdom does
+// not fetch that, so the load parks there. The wait passed on the PREVIOUS
+// test's rootModel, which was still alive with its autosave autorun attached —
+// disposeLoader was mocked to a no-op for every suite in this directory — and
+// wrote sessionStorage from under it after afterEach had cleared it. Run this
+// test on its own and it failed even then. With the real teardown the zombie
+// is gone, and so is the false green.
 test('approves sessionPlugins from plugin list', async () => {
-  expect(sessionStorage.length).toBe(0)
-  render(
+  const { findByText } = render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://jbrowse.org/plugins/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js","name":"MsaView"}]}}' />,
   )
-  await waitFor(
-    () => {
-      expect(sessionStorage.length).toBeGreaterThan(0)
-    },
-    {
-      timeout: 50000,
-    },
-  )
-}, 50000)
+  await expect(findByText(/Warning/, {}, { timeout: 2000 })).rejects.toThrow()
+}, 20000)
 
 // minimal session,
 // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}

@@ -119,7 +119,10 @@ export async function setupSessionDB(self: WebRootModel) {
     // the first, then stay quiet until it works again, exactly as
     // setupSessionStorageAutosave does below.
     let savingFailed = false
-    addDisposer(
+    // registerTeardown rather than addDisposer: this writes to IndexedDB, so
+    // it has to stop when the React host detaches, and this root is no longer
+    // destroyed at that point (rootModel's `detach`).
+    registerTeardown(
       self,
       autorun(
         async () => {
@@ -194,6 +197,16 @@ function writeSessionSnapshot(sessionSnap: unknown) {
 // can be tuned for cost alone.
 //
 // Safe to do synchronously here, which is why this is worth doing at all:
+// Stop this when the React host detaches the root, AND if anything destroys it
+// outright (tests do). Both, because the two teardowns are now different
+// events: `detach` is the one the app performs and the one that has to stop
+// anything reaching outside the tree, while `destroy` no longer happens on
+// that path at all. Running a disposer twice is harmless.
+function registerTeardown(self: WebRootModel, disposer: () => void) {
+  self.addDetachDisposer(disposer)
+  addDisposer(self, disposer)
+}
+
 // sessionStorage.setItem is synchronous, so unlike an async save there is nothing
 // to await and no way to wedge the unload. Errors are swallowed rather than
 // reported — the page is going away, and a quota failure has already been
@@ -216,9 +229,15 @@ function setupUnloadFlush(self: WebRootModel) {
   // behind accumulates one per reload for the life of the tab. It is the leak this
   // prevents, not a bad write — the isAlive check above already covers that, and
   // the two are deliberately redundant.
-  addDisposer(self, () => {
+  //
+  // On detach rather than on destroy, because this root is no longer destroyed
+  // (rootModel's `detach`). addDisposer as well, for the tests that destroy a
+  // root directly; both are idempotent.
+  const remove = () => {
     window.removeEventListener('beforeunload', flush)
-  })
+  }
+  self.addDetachDisposer(remove)
+  addDisposer(self, remove)
 }
 
 // The config the replacement app boots from when a plugin is installed.
@@ -256,7 +275,10 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
   // torn down. Kept local rather than clearing pluginsUpdated, which the
   // autorun observes and would re-trigger itself by writing.
   let reloadRequested = false
-  addDisposer(
+  // registerTeardown rather than addDisposer: this writes sessionStorage, and
+  // a detached root that kept writing would overwrite the session its
+  // replacement is restoring.
+  registerTeardown(
     self,
     autorun(
       () => {

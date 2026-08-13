@@ -1,7 +1,7 @@
 import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
 import { createElementId } from '@jbrowse/core/util/types/mst'
-import { destroy, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { createPluginManager } from './createPluginManager.ts'
@@ -31,12 +31,20 @@ import type {
 } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance, IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 type ReloadPluginManagerCallback = (
   configSnapshot: Snap,
   sessionSnapshot: Snap,
 ) => void
+
+// PluginManager types rootModel as AbstractRootModel, which is the shape every
+// product shares; `detach` belongs to jbrowse-web's, and this file only ever
+// runs against that one. Duck-typed rather than imported because rootModel.ts
+// is downstream of here, through createPluginManager.
+interface DetachableRootModel extends IStateTreeNode {
+  detach: () => void
+}
 
 /**
  * #stateModel SessionLoader
@@ -401,7 +409,27 @@ const SessionLoader = types
           // already-loaded records restore the snapshot as-is.
           self.sessionPlugins ??= []
         }
-        destroy(rootModel)
+        // Detached, not destroyed — the same answer disposeLoader reached for
+        // superseded loaders, for the same reason.
+        //
+        // This runs from a React effect cleanup, i.e. the unmount half of a
+        // passive-effect flush; React's dev-mode logComponentRender then diffs
+        // the outgoing props in the mount half of that flush and in flushes
+        // after it, recursing four levels into any plain object it finds. That
+        // reaches this rootModel through `{pluginManager}` and the session
+        // below it, so destroying here made each property it walked a
+        // liveliness warning — 16 on an ordinary volvox session — and would
+        // make any landing on an unmaterialized array child a hard throw
+        // instead, which is the crash this fixed for the loader.
+        //
+        // Deferring the destroy a microtask was tried and rejected: it takes
+        // that 16 to 4, not to 0, because a later flush still diffs a widget
+        // React is holding. There is no delay that is provably long enough,
+        // which is what makes "stop the effects, keep the node" the fix rather
+        // than a workaround. detach() stops everything of this root's that
+        // reaches outside the tree; see it for what
+        // that does and does not claim about the tree being collected.
+        ;(rootModel as unknown as DetachableRootModel).detach()
       }
       self.pluginManager = undefined
     },

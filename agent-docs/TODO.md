@@ -33,7 +33,6 @@ Exploratory concepts that are *not* committed work live in
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
-| [rootModel destroyed while React holds it](#the-rootmodel-is-destroyed-while-react-still-holds-it-in-props) | jbrowse-web | the other half of #5618; needs teardown ordering, not a deletion |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -245,65 +244,6 @@ is the method, including why the 40 remaining raw coordinates are deliberate.
 
 Each of these carries a design that already survived a rejected alternative.
 Read the linked ADR or reference doc before re-proposing the thing it rejected.
-
-### The rootModel is destroyed while React still holds it in props
-
-The other half of the superseded-loader crash, and the half that is still open.
-`disposeLoader` no longer destroys the loader, but `deactivate()` still runs
-`disposePluginManager()`, which calls `destroy(rootModel)` from the unmount side
-of a passive-effect flush — while views and widgets are in mounted components'
-props. React's dev-mode `logComponentRender` then diffs those props in the mount
-half of the same flush.
-
-Measured, rather than reasoned about: render the real `Loader` (not
-`tests/loaderUtil.tsx`'s `App` — see below), import
-`components/enableReactRenderLogging.ts` first, and do one
-`reloadPluginManagerCallback`. That is **16 dead-node reads**, on
-`HierarchicalTrackSelectorWidget` (`.type`, `.view`, `.trackContainerId`) and on
-the assembly model (`refNameAliases`, `lowerCaseRefNameAliases`,
-`canonicalToSeqAdapterRefNames`, `cytobands`, `volatileRegions`,
-`loadedGeneticCodes`, `statusMessage`, `statusProgress`). It does not throw,
-because on that config every one of them had already been materialized.
-
-The reason it is worth fixing rather than tolerating is that a warning and a
-crash are the same event here, decided by something nobody controls.
-`addObjectDiffToProperties` reads `prev[key]` and recurses four levels into any
-`[object Object]`/`[object Array]` pair, so `{pluginManager}` reaches
-`rootModel` and `session`. An already-materialized MST child warns; an array
-child still UNINITIALIZED throws `the creation of the observable instance must
-be done on the initializing phase`, which is a white page. Which properties
-happen to have been read before the destroy is what separates the two, and that
-is a function of what the user had open.
-
-The loader half was fixed by not destroying at all, and that option is not
-available here: the rootModel owns the `beforeunload` listener
-(`rootModel/persistence.ts`) and the autoruns registered with `addDisposer`, and
-those only come apart on `destroy`. So this one needs a teardown ordering — free
-the effects when the host detaches, and destroy the node once React has dropped
-the fiber that holds it — not a deletion.
-
-**Nothing in the suite can see any of this, and that is the first thing to
-fix.** `tests/loaderUtil.tsx` — the harness behind every test that renders the
-real app — mocks `disposeLoader` to a no-op, so the teardown never runs in the
-ten suites that mount JBrowse. Its comment says "Production behavior is
-preserved", which is true of production and false of the tests: the one path
-that produced the reported crash is stubbed out of every test that could
-observe it. Deleting the mock costs one test — `Loader.test.tsx` "approves
-sessionPlugins from plugin list" then **hangs** to its 50s timeout, the other
-669 pass — and that hang is not noise to route around, it is this entry's
-"races with pending async work" reproducing on demand. Fix the ordering, then
-delete the mock, then the regression test can exist.
-
-Do not reach for `queueMicrotask` around the `destroy` without re-measuring.
-That is PR #5616's shape, it does fix the reported crash, and it was declined
-for the loader because leaving the node alive removes the window rather than
-racing it. Here there is no such option, so a deferral may well be right — but
-the earlier experiments against this half were run before
-`enableReactRenderLogging` existed, which means they were run in an environment
-where the mechanism was switched off entirely and proved nothing. Redo them
-against a test that renders a view tree;
-`components/renderLoggingReadsLoader.test.tsx` is the pattern, and it asserts
-the logging actually ran.
 
 ### Give the comparative displays a cancel and a retry
 
