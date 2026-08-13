@@ -610,12 +610,49 @@ later reads are issued a network round trip apart, and any delay long enough to
 catch them is longer than the request it would save.
 
 **The information needed is upstream.** Only @gmod/bam knows the whole chunk list
-before the first byte is fetched. So if this is worth fixing, the fix is there
-and it is still not widening the merge: keep merging at 5MB so the parsed cache
-keys stay fine-grained, and separately issue ONE transport read spanning a run of
-adjacent merged chunks, slicing it back out to them. Request shape and cache
-shape decoupled inside the layer that can see both. Not attempted; the reverted
-transport experiment is the evidence that it has to happen there.
+before the first byte is fetched. So the fix was built there too — and that is
+where the premise finally broke.
+
+### What the 28 requests actually are
+
+Printing the chunk list for that query ends the guessing:
+
+    chunk  0-6    ~3.5 MB each, each OVERLAPPING the next by exactly 65,536 B
+                  (one max BGZF block) — 24.5 MB of contiguous pileup data
+    chunk  7-27   ~0.1 MB each, scattered, gaps of 3 MB … 200 MB … 22 GB
+
+It was never one contiguous span chopped into 28 pieces. It is **seven adjacent
+chunks plus twenty-one tiny scattered ones**, and no adjacency merging can touch
+the twenty-one. The ceiling for this whole line of attack is 28 -> 23 requests.
+
+A demand-driven group prefetch in `_fetchChunkFeatures` — plan groups of chunks
+whose byte ranges join, read each group once, hand the slices to the per-chunk
+reads, leaving `optimizeChunks` and the parsed-cache keys untouched — reaches 24
+(the 16MB group bound splits the 21MB head) and moves the wall clock not at all:
+3.16 / 5.82 / 7.23s against a stock 5.98 / 5.18 / 5.78s. Records identical. Built,
+tested green against bam-js's 259, measured, reverted.
+
+**The `<=` is the one part worth keeping if anyone rebuilds this.** A chunk's
+`endPosition` defaults to a whole max-size BGZF block past `maxv`, because the
+index does not carry that block's compressed length. Consecutive chunks therefore
+*overlap* rather than exactly touch, and a `===` adjacency test finds no groups
+whatsoever — measured, 28 requests unchanged, which is how the first version of
+this looked like it was working while doing nothing.
+
+### And the earlier 4x was mostly the early stop, not the request count
+
+Raising the 5MB cap produced 6 requests and 25.0MB where the current cap
+produces 28 and 26.8MB. That is not the same query needing fewer requests: with
+the cap raised, `optimizeChunks` merges chunks 0-6 into ONE chunk, so the first
+batch of six covers far more of the query, `isPastQuery` fires after it, and the
+twenty-one tail chunks are **never read**. Same records (207,260 either way),
+1.8MB less fetched, and the speed came from work skipped rather than from
+requests coalesced.
+
+Which retires the whole seam as originally framed. What is left is a narrower
+and more interesting question — whether those twenty-one 0.1MB reads are needed
+at all, or whether the early stop should be reaching them — and that is about
+the index and `isPastQuery`, not about chunking or the transport.
 
 ### Why samtools makes one request where we make 28
 
