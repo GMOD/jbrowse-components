@@ -300,6 +300,11 @@ export interface FeatureLabelData {
   featureId: string
   // label rows above this entry, shifting topY — see FlatbushItem.labelRows
   labelRowsAbove?: number
+  // label rows this entry CONTAINS, extending featureHeight. The name label
+  // hangs off `topY + featureHeight` (labelPositioning), so a gene whose
+  // transcripts each reserve a `below` row needs the same term its hit box
+  // gets, or the name is drawn that many rows up, inside its own stack.
+  labelRows?: number
   minX: number
   maxX: number
   topY: number

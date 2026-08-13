@@ -430,7 +430,12 @@ function applyHeightScale(
     labelData.topY =
       labelData.topY * multiplier +
       (labelData.labelRowsAbove ?? 0) * labelFontPx
-    labelData.featureHeight *= multiplier
+    // same term the flatbush loop above applies: the name label hangs off this
+    // height, so a container has to cover the label rows it contains or the
+    // name lands inside its own stack
+    labelData.featureHeight =
+      labelData.featureHeight * multiplier +
+      (labelData.labelRows ?? 0) * labelFontPx
   }
   if (data.aminoAcidOverlay) {
     for (const aa of data.aminoAcidOverlay) {

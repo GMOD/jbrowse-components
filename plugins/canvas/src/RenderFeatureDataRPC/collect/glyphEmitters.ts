@@ -750,6 +750,7 @@ export function processFeatureRecord(
       maxX: featureEnd,
       topY: 0,
       featureHeight: layout.height,
+      labelRows: layout.labelRows,
       nameLabel,
       descriptionLabel,
     }

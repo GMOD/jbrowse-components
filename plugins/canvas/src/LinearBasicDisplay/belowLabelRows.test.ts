@@ -86,8 +86,12 @@ function layoutAt(
   subfeatureLabels: string,
   feature = geneWithTranscripts(['mRNA-a', 'mRNA-b', 'mRNA-c']),
   glyph = layoutSubfeatures,
+  extraConfig: Record<string, unknown> = {},
 ) {
-  const config = mockDisplayConfig({ subfeatureLabels } as any)
+  const config = mockDisplayConfig({
+    subfeatureLabels,
+    ...extraConfig,
+  } as any)
   const layout = glyph({
     feature,
     config,
@@ -213,5 +217,46 @@ describe('below label rows on the polyprotein glyph', () => {
       const labeledGap = labeled[i]![0] - labeled[i - 1]![0]
       expect(labeledGap - plainGap).toBeCloseTo(drawnLabelPx, 5)
     }
+  })
+})
+
+// The gene's OWN name label hangs off `topY + featureHeight` of its
+// floatingLabelsData entry (labelPositioning), which is the same extent its hit
+// box reports — so the label rows its transcripts reserve have to be in both. In
+// the DTU figure, where ten transcripts each own a `below` row, a featureHeight
+// missing them drew the gene name four rows up, across a transcript.
+describe("a container's floating label clears the rows it contains", () => {
+  const modes: DisplayMode[] = ['normal', 'compact', 'superCompact']
+  // the gene needs a name label of its own for there to be an entry at all
+  const named = {
+    labels: { name: "jexl:get(feature,'name')", description: '' },
+  }
+  const geneLayout = (mode: DisplayMode, subfeatureLabels: string) =>
+    layoutAt(
+      mode,
+      subfeatureLabels,
+      geneWithTranscripts(['mRNA-a', 'mRNA-b', 'mRNA-c']),
+      layoutSubfeatures,
+      named,
+    )
+
+  it.each(modes)('matches the extent the hit box reports (%s)', mode => {
+    const data = geneLayout(mode, 'below')
+    const gene = data.flatbushItems.find(i => i.type === 'gene')!
+    const label = data.floatingLabelsData[gene.featureId]!
+    expect(label.featureHeight).toBeCloseTo(gene.featureHeightPx, 5)
+  })
+
+  it.each(modes)('grows by one drawn line per contained row (%s)', mode => {
+    const withLabels = geneLayout(mode, 'below')
+    const without = geneLayout(mode, 'none')
+    const heightOf = (data: FeatureDataResult) => {
+      const gene = data.flatbushItems.find(i => i.type === 'gene')!
+      return data.floatingLabelsData[gene.featureId]!.featureHeight
+    }
+    expect(heightOf(withLabels) - heightOf(without)).toBeCloseTo(
+      3 * labelFontSize(mode),
+      5,
+    )
   })
 })
