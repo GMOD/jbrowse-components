@@ -145,11 +145,10 @@ _NHEJ1_'s exons to be identified as intronic rather than coding.
 
 <Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
 
-The picture matches the literature: the deletion is common in the Collie clade,
-homozygous in several animals, and absent everywhere else in this set including
-the wolves. Reading the gene model with it shows why a deletion this size can
-segregate at this frequency, since it removes intronic sequence rather than
-coding exons.
+The deletion is common in the Collie clade, homozygous in several animals, and
+absent everywhere else in this set including the wolves. It removes intronic
+sequence rather than coding exons, which is why one this size can segregate at
+this frequency.
 
 ### Checking the call against a curated source
 
@@ -177,15 +176,13 @@ routes:
 }
 ```
 
-The mode of inheritance is drawn as the feature's description because it is what
-turns the two blues below into a result. Recessive means the homozygotes are the
-affected dogs and the heterozygotes are unaffected carriers, which no amount of
-looking at the genotype legend will say.
+The mode of inheritance is drawn as the feature's description: recessive means
+the homozygotes are the affected dogs and the heterozygotes unaffected carriers,
+which the genotype legend cannot say.
 
-Click the bar for the rest of the record: OMIA's own HGVS strings, the OMIA id,
-the assembly the coordinates were published on and whether this feature reached
-canFam4 through a chain. That last one matters when you use the track elsewhere.
-A lifted record can be right about the locus and wrong about the base.
+Click the bar for the rest of the record, including whether the feature reached
+canFam4 through a chain. A lifted record can be right about the locus and wrong
+about the base.
 
 ### Why the lane shows one record
 
@@ -211,13 +208,10 @@ The window holds nine SV records, and the figure filters to this one:
 }
 ```
 
-The filter is not cosmetic. Unfiltered, a second deletion nested inside the 7.8
-kb one paints a band of yellow no-calls against the darkest blue, and the two
-records read as one striped block rather than as one deletion.
-
-Those no-calls are not noise. The nested deletion is called reference in every
-dog in the panel except four, where it is missing, and those four are exactly
-the dogs homozygous for the larger deletion:
+Unfiltered, a second deletion nested inside the 7.8 kb one paints a band of
+yellow no-calls against the darkest blue, and the two records read as one
+striped block. Those no-calls are structural: the nested deletion is missing in
+exactly the four dogs homozygous for the larger one:
 
 ```bash
 # -i POS=… because -r is END-aware and would also return the deletion this one
@@ -227,17 +221,16 @@ bcftools query -r chr37:25578185-25578186 -i 'POS=25578185' \
   | tr ' ' '\n' | grep -v '=0/0'
 ```
 
-A dog with no copy of the surrounding sequence has no reads there to genotype
-the nested call from, so the genotyper returns missing. A SNV callset has no
-equivalent structure, so a no-call here should not be read as a failed sample.
+A dog with no copy of the surrounding sequence has no reads to genotype the
+nested call from, so the genotyper returns missing.
 
 ### What the panel does not say
 
 Lancashire Heelers are among the breeds Collie eye anomaly is reported in, and
-none of the four sampled here carry the deletion. Four dogs is not a frequency
-estimate. More broadly, this figure is one locus in one set of breeds, chosen
-because the variant was already characterized; the same track scrolled anywhere
-else in the callset is a screen of variants nobody has interpreted yet.
+none of the four sampled here carry the deletion; four dogs is not a frequency
+estimate. The variant was picked because it was already characterized, and the
+same track scrolled anywhere else in the callset is a screen of variants nobody
+has interpreted yet.
 
 ## Two diet genes that run opposite ways
 
@@ -297,19 +290,18 @@ the other slice's `uri`.
 
 <Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. Same 86 animals in the same order in both, so a row reads straight across: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
-The three Arctic breeds are drawn together to test a reading rather than to make
-one. Two of the three Greenland Dogs lack the duplication, but the third carries
-it and so does every Alaskan Malamute and every Samoyed, so "the sled breeds
-never got it" does not survive the three being in one frame. The grey
-Czechoslovakian Wolfdog row is CZEC000003, the animal
+The three Arctic breeds are in one frame to test a reading: two of the three
+Greenland Dogs lack the duplication, but the third carries it and so does every
+Alaskan Malamute and every Samoyed. The grey Czechoslovakian Wolfdog row is
+CZEC000003, the animal
 [the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
 wolf-derived blocks on.
 
 Every wolf carrying the insertion is heterozygous, so the lower lane is one
 shade where the upper one has two. Three of the six Iranian wolves carry the
-amylase duplication and none of them the ribonuclease insertion, while the Greek
-and Swedish wolves do the reverse, which is why the panel is every wolf rather
-than an outgroup of four.
+amylase duplication and none the ribonuclease insertion, while the Greek and
+Swedish wolves do the reverse, which is why the panel is every wolf rather than
+an outgroup of four.
 
 Copy number is what amylase is known for and is the one thing a genotype column
 does not carry: four copies and twenty are both `1/1`.
@@ -327,16 +319,12 @@ callset holds here is its shadow.
 [Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
 breed-defining short legs to an expressed _FGF4_ retrogene, a processed copy of
 the _FGF4_ transcript reinserted elsewhere. Processed means it was made from the
-spliced mRNA, so the copy has no introns, and that is what makes it findable
-without knowing where it landed. Short reads from the retrocopy map to the
-parent gene, because the parent's exons are the sequence they match, and they
-stop at each splice site. A short-read caller reading that pileup sees exon
-coverage continuing past where the reference's exons end, and calls a deletion
-of each intron.
+spliced mRNA, so it has no introns: short reads from the retrocopy map to the
+parent's exons and stop at each splice site, and a short-read caller reads that
+pileup as a deletion of each intron.
 
 Nothing is deleted. That reading comes from Parker et al. rather than from the
-callset, which cannot tell a retrocopy's footprint from a real deletion on its
-own.
+callset, which cannot tell a retrocopy's footprint from a real deletion.
 
 ### The records are the introns
 
@@ -402,14 +390,11 @@ samples TSV as above, with `colorBy` on the breed group.
 
 This figure needs the positional display rather than a clustered matrix: the
 whole claim is where the two blocks sit relative to the exons, and a matrix
-spaces one even column per record, which throws that geometry away. The two
-blocks fall in the two gaps of the gene model above them, which is the reason to
-draw this at a locus rather than as a table. An intron-shaped call is a
-retrocopy's footprint, and an intron-shaped call is something you can see.
+spaces one even column per record, which throws that geometry away.
 
 Every carrier is heterozygous. The parent gene's introns are still on both
-chromosomes, so the pileup a carrier produces is always a mixture and the caller
-never sees the homozygous loss a real deletion would give it.
+chromosomes, so a carrier's pileup is always a mixture and the caller never sees
+the homozygous loss a real deletion would give it.
 
 ### What one record cannot tell you
 
@@ -419,30 +404,24 @@ a different chromosome, to chondrodystrophy and intervertebral disc disease,
 which is why breeds of ordinary proportions carry a copy too.
 
 Both are copies of the same transcript, so both leave the same footprint at the
-parent gene, and one record cannot say which. That is why the swatch says what a
-breed looks like rather than what it carries: the spaniels are exactly the rows
-where the two disagree, and a swatch keyed on the genotype would have hidden
-them. Placing either insertion needs the other side of the junction, reads
-spanning retrocopy into the sequence it landed in, which is a different query
-against a different callset.
+parent gene and one record cannot say which. That is why the swatch says what a
+breed looks like rather than what it carries: the spaniels are the rows where
+the two disagree. Placing either insertion needs the other side of the junction,
+which is a different query against a different callset.
 
 ### The retrocopy itself, as sequence {#the-retrocopy-itself-as-sequence}
 
 Everything above is the caller's response to a retrocopy rather than the
-retrocopy. For this locus the retrocopy is also available directly: both copies
-were amplified and Sanger-sequenced and both are deposited, as
+retrocopy. Here both copies were amplified, Sanger-sequenced and deposited, as
 [MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) for the CFA18
 insertion and [MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221) for the
-CFA12 one. That is unusual. Most candidate retrocopies have no sequenced insert,
-which is why the callset footprint above is the method that generalizes and this
-is a check available here rather than a recipe.
+CFA12 one. Most candidate retrocopies have no sequenced insert, so the callset
+footprint above is the method that generalizes.
 
-Align with `minimap2 -x splice -c`. `-c` writes the base-level CIGAR, without
-which the ribbon is one gapless block per alignment, and `splice` is the preset
-that chains across the introns and lands both gaps on the annotated ones. The
-build script records which presets do not and why. It also rewrites the `N`
-operations a splice preset emits to `D`, since this is genomic sequence against
-a genomic locus and those bases really are absent from the retrocopy.
+Align with `minimap2 -x splice -c`: `-c` writes the base-level CIGAR, and
+`splice` chains across the introns and lands both gaps on the annotated ones.
+The build script rewrites the `N` operations a splice preset emits to `D`, since
+those bases really are absent from the retrocopy.
 
 Load each retrocopy as a one-contig assembly and its alignment as a
 `SyntenyTrack`:
@@ -465,44 +444,30 @@ Load each retrocopy as a one-contig assembly and its alignment as a
 `assemblyNames` is ordered `[query, target]`, which is the reverse of the order
 minimap2 takes its inputs.
 
-Each GenBank record is titled "complete cds" and carries a feature table, so the
-gene model on a retrocopy row is the submitters' annotation rather than a
-prediction. The build script writes it out as GFF3 and requires the CDS to be a
-single interval: a `join(...)` would mean the deposited copy has introns, which
-is the one thing a processed retrocopy cannot have. Loaded as an ordinary
-`FeatureTrack` per retrocopy, it states what the alignment does in a form that
-needs no reading of ribbons, since the parent's CDS is three boxes and a
+Each GenBank record carries a feature table, so the gene model on a retrocopy
+row is the submitters' annotation rather than a prediction. The build script
+writes it out as GFF3 and requires the CDS to be a single interval, which is the
+one thing a processed retrocopy's must be: the parent's CDS is three boxes and a
 processed copy's is one.
 
 Put the parent gene between the two retrocopies rather than beside them. Both
-align to the same three exons, so as two regions of one row their ribbons cross
-through each other; from above and below they close on the gene instead, and
-each intron is one gap seen twice.
-
-Each row carries the GenBank annotation of its own record, with the parent's
-RefSeq model and the per-breed sample rows between the two ribbons. Each ribbon
-gap sits over a record the chondrodysplastic breeds and both spaniels carry, and
-the Labradors, German Shepherds and Greek wolves do not.
+align to the same three exons, so side by side their ribbons cross through each
+other; from above and below each intron is one gap seen twice.
 
 <Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls at their own coordinates and then across 55 Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
 The window stops where the CFA18 alignment does, so that retrocopy is on screen
-end to end and the CFA12 ribbon runs on past it. The sample rows are the same
-track described above, in the same coordinates, so a block edge can be read
-against both the intron boundary above it and the breeds carrying it.
+end to end and the CFA12 ribbon runs on past it.
 
-Set the synteny view's indel drawing to **Transparent indels** rather than the
-default **Colored indels**. Colored indels name each CIGAR operation, and which
-name an operation gets depends on which side the alignment is read from: each
-gap is drawn as a deletion above the parent row and as an insertion below it, so
-one event takes two colors according to stacking order. Unpainted is the same on
-both sides.
+Set the synteny view's indel drawing to **Transparent indels**. Colored indels
+name each CIGAR operation from the side it is read, so one gap is a deletion
+above the parent row and an insertion below it, taking two colors by stacking
+order.
 
 The two records agree at 207 codons but their spans against chr18 differ, so the
-two retrocopies took the same coding sequence and different amounts of UTR. This
-still does not place either insertion: a retrocopy's deposited sequence is the
-insert, ending in its poly(A) tail, so none of its landing site comes with it to
-align anywhere else.
+two retrocopies took the same coding sequence and different amounts of UTR.
+Neither places the insertion: the deposited sequence ends at the poly(A) tail,
+so none of the landing site comes with it.
 
 ### Across the collection
 
@@ -522,17 +487,14 @@ Genotype counts per group, at the intron 1 record (chr18:48869782):
   most common (intron 1, intron 2) pairs: (0/0, 0/0) x1422  (0/1, 0/1) x409
 ```
 
-No wolf in the collection carries it, which the wolf rows in the figure already
-show for the panel and this extends to all of them. Manta called the two introns
-independently, so the agreement between them is a check on the reading rather
-than a restatement of it: one retrocopy takes both introns out of the pileup at
-once, and a caller responding to noise would have no reason to put the same
-animals on both records.
+No wolf in the collection carries it. Manta called the two introns
+independently, so their agreement is a check: one retrocopy takes both introns
+out of the pileup at once, and a caller responding to noise would have no reason
+to put the same animals on both records.
 
-The whole-collection track is in the config as `dog10k_fgf4_cohort_svs` if you
-want the lane, but it is not drawn here: 1,879 rows in a few hundred pixels puts
-each row well under a pixel, where rows alias and the stripe density stops being
-the carrier rate.
+The whole-collection track is in the config as `dog10k_fgf4_cohort_svs`, but is
+not drawn here: 1,879 rows in a few hundred pixels puts each row well under a
+pixel, where rows alias and the stripe density stops being the carrier rate.
 
 ## Where to go next
 

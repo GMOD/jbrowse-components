@@ -144,12 +144,10 @@ and `hal2maf`, so the projections need no other tool.
 
 ## All-vs-all synteny projection
 
-Cactus emits no all-vs-all PAF of its own. `odgi untangle` can project one, but
-on a near-colinear bacterial graph its cut points are sparse and it collapses
-each pair to a few whole-chromosome blocks.
+Cactus emits no all-vs-all PAF of its own, and `odgi untangle` collapses each
+pair to a few whole-chromosome blocks on a near-colinear bacterial graph.
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) reads the
-HAL's base-level alignment instead, and emits synteny blocks per genome pair. It
-is used here.
+HAL's base-level alignment instead, and emits synteny blocks per genome pair.
 
 `halSynteny` writes PSL, and names every sequence `chr` with no sample tag. The
 [build script](#reproduce-it-end-to-end) runs it for all six strain pairs and
@@ -211,14 +209,12 @@ synteny view**, whose Quick start fills in a row per assembly the track lists.
 
 <Figure caption="The Minigraph-Cactus graph's synteny projection: five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair. The bottom band crosses where IAI39 carries large inversions relative to the others." src="/img/pangenome_cactus/synteny.png" />
 
-This is the same five strains in the same row order as the
+Same five strains in the same row order as the
 [all-vs-all tutorial's stack](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
 and the [pggb one](/docs/tutorials/pangenome_ecoli#synteny-projection), and all
 three agree on the backbone and on IAI39's inversions. What differs is where the
-blocks came from. minimap2 aligns each pair of assemblies directly, so its
-blocks are one aligner's opinion about two genomes at a time. These are read out
-of the HAL, so they are the graph's own base-level alignment, and so is every
-other projection on this page.
+blocks came from: minimap2 aligns each pair of assemblies directly, where these
+are read out of the HAL and are the graph's own base-level alignment.
 
 ## Pangenome variants projection
 
@@ -299,13 +295,12 @@ and streams while it does it, which matters at whole-genome scale; see
 
 <Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. All five align continuously across this window." src="/img/pangenome_cactus/maf.png" />
 
-A row can be blank for two reasons. A stretch with no colored columns is
-sequence that strain shares with K12, which is the case in the window above. A
-row that stops entirely is a strain with no alignment to K12 there, which is
-what the same track shows on the
+A row can be blank for two reasons: no colored columns is sequence that strain
+shares with K12, while a row that stops entirely is a strain with no alignment
+to K12 there, as on the
 [pggb page's 60 kb window](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection).
-The coverage band separates the two: it drops where rows drop out and holds
-where they match.
+The coverage band separates them, dropping where rows drop out and holding where
+they match.
 
 `samples` both names the rows and fixes their order. To order them by how much
 of the graph each pair of strains shares instead, run
@@ -336,34 +331,25 @@ a trailing subpath tag (`Sakai#0#chr#0`), so the per-strain filter has to match
 a prefix rather than the whole name. The
 [build script](#reproduce-it-end-to-end) runs both.
 
-What depth counts is path **steps**, not strains, so a repeat the graph folded
-onto one run of nodes reads above the strain count: every path carrying several
-copies walks that run several times. That is where the two builders part company
-on identical input, and it is the one difference between them visible in a
-single frame. seqwish folds the rRNA copies together, so the pggb curve runs
-above the strain count there; the reference-first graph keeps them apart and its
-curve never exceeds the strain count anywhere on the chromosome.
+Depth counts path **steps** rather than strains, so a repeat the graph folded
+onto one run of nodes reads above the strain count. That is where the two
+builders part company on identical input: seqwish folds the rRNA copies
+together, so the pggb curve runs above the strain count there, while the
+reference-first graph keeps them apart.
 
 <Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move." src="/img/pangenome_cactus/builders.png" />
 
-Neither curve is wrong, and neither builder is the correct one. They were asked
-different questions: seqwish merges identical sequence wherever it occurs, while
-a reference-anchored build keeps each copy at its own coordinate. A collapsed
-repeat is where to look for variation _within_ an array, since every copy's
-bases stack on the same nodes, and a reference-anchored one is where to ask
-which copy a read came from. What follows for this projection is only that
-`odgi depth` counts steps, so it is a strain tally on the Minigraph-Cactus graph
-and not on the pggb one. The pggb tutorial reads the same operon the other way,
-as
-[several query segments landing on one reference span](/docs/tutorials/pangenome_ecoli#the-same-picture-read-out-of-the-graph).
+The two were asked different questions: seqwish merges identical sequence
+wherever it occurs, while a reference-anchored build keeps each copy at its own
+coordinate. A collapsed repeat is where to look for variation _within_ an array;
+a reference-anchored one is where to ask which copy a read came from. For this
+projection it means `odgi depth` is a strain tally on the Minigraph-Cactus graph
+and not on the pggb one.
 
 Drawn under the aggregate curve, the pav rows say which strain accounts for each
-dip: one falls to 0 over its own accessory stretch while the others hold at 1.
-The picture is the one the pggb tutorial already shows
+dip. The picture is the one the pggb tutorial already shows
 ([per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)),
-because at this scale the two graphs give the same answer. Where they do not is
-the rRNA operons, and that is the figure above rather than this one: the Cactus
-depth curve holds at 5 across them where the pggb curve doubles.
+because at this scale the two graphs agree.
 
 ## Mapping a new isolate through the graph
 
@@ -371,14 +357,9 @@ Every projection above re-plots a genome the graph was built from. This one does
 not: it takes a sample that is not in the graph at all and maps its short reads
 through the whole pangenome, then flattens the result onto K12.
 
-That is what the graph buys over a plain K12 reference, and the surjection step
-bounds how much of it a K12-anchored pileup can show. A read over an allele K12
-lacks does place in the graph, on whichever strain's path carries it, but that
-alignment has no K12 coordinate for `vg surject` to project onto, so it leaves
-surjection unmapped and the filter below drops it. The depth and presence tracks
-above are where that sequence is accounted for instead.
-
-What reaches the BAM is the other half of the benefit: reads over sequence K12
+A read over an allele K12 lacks does place in the graph, on whichever strain's
+path carries it, but has no K12 coordinate for `vg surject` to project onto, so
+surjection leaves it unmapped. What reaches the BAM is reads over sequence K12
 does carry, where the graph let a divergent read follow a non-reference path
 through a bubble rather than spend the difference on mismatches and soft clips.
 
@@ -530,12 +511,10 @@ graph's node order on the horizontal axis instead of a genome coordinate.
 
 <Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order rather than K12 position, so nothing lines up with a gene or coordinate. The gold band marks the locus carried over to the figure below." src="/img/pangenome_cactus/graph.png" />
 
-The `odgi pav` track carries the same information as the raster, one row per
-path painted where that path is present. Drawing it on K12's coordinates in the
-raster's row order and colors leaves the horizontal axis as the only difference
-between the two figures. The gold band marks the same 100 kb of K12,
-`chr:1,000,000-1,100,000`, in both. K12 has no row of its own below because it
-is the axis there.
+The `odgi pav` track carries the same information, one row per path painted
+where that path is present. Drawing it on K12's coordinates in the raster's row
+order and colors leaves the horizontal axis as the only difference between the
+two figures. The gold band marks the same `chr:1,000,000-1,100,000` in both.
 
 <Figure caption="The same paths, the same colors, on K12's coordinates instead of the graph's. The gold band is the same 100 kb in both figures, and takes up a visibly smaller share of this axis than of the graph axis above." src="/img/pangenome_cactus/graph_correspondence.png" />
 
@@ -545,11 +524,9 @@ takes up more of it, while the JBrowse axis holds every locus to its reference
 width. This is the 100 kb window where the gap is largest, which is why it sits
 over a dip in the depth track.
 
-Node ids in a Cactus graph run `1..N` in node order, so a node's pangenome
-offset is the cumulative length of every lower id, and walking K12's `P` line
-turns a K12 offset into a node and then a pangenome offset.
-`build_ecoli_pangenome_cactus.sh` does that walk and writes the pixel span it
-implies, so both bands come from the same arithmetic.
+Node ids in a Cactus graph run `1..N` in node order, so walking K12's `P` line
+turns a K12 offset into a pangenome offset. `build_ecoli_pangenome_cactus.sh`
+does that walk, so both bands come from the same arithmetic.
 
 The band contains Sakai's stx2 prophage and a second Sakai-only stretch, so
 crossing this 100 kb of K12 costs the other strains substantially more of their
