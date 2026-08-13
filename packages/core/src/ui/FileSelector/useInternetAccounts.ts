@@ -12,9 +12,7 @@ export default function useInternetAccounts(rootModel?: AbstractRootModel) {
   )
 
   const accounts = isAppRootModel(rootModel)
-    ? rootModel.internetAccounts.filter(
-        f => f.type !== 'HTTPBasicInternetAccount',
-      )
+    ? rootModel.internetAccounts.filter(f => f.showInFileSelector)
     : []
 
   // keyed by internetAccountId; also dedups any repeated account

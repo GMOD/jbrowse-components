@@ -13,6 +13,7 @@ const account = {
   internetAccountId: 'dropbox',
   type: 'DropboxInternetAccount',
   name: 'DBX',
+  showInFileSelector: true,
 } as BaseInternetAccountModel
 
 const rootModel = {

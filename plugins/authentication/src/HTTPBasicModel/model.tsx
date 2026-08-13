@@ -17,7 +17,18 @@ const stateModelFactory = (configSchema: HTTPBasicInternetAccountConfigModel) =>
     'HTTPBasicInternetAccount',
     configSchema,
     HTTPBasicLoginForm,
-  )
+  ).views(() => ({
+    /**
+     * #getter
+     * There is nothing to pick: an HTTP Basic account matches by domain and
+     * prompts on its own. RpcManager also mints one of these per origin on a
+     * 401, so offering them would fill the picker with a toggle per server the
+     * session happened to touch.
+     */
+    get showInFileSelector() {
+      return false
+    },
+  }))
 
 export default stateModelFactory
 export type HTTPBasicStateModel = ReturnType<typeof stateModelFactory>

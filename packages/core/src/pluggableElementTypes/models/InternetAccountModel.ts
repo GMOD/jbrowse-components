@@ -98,6 +98,16 @@ export const InternetAccount = types
     get selectorLabel(): string | undefined {
       return undefined
     },
+    /**
+     * #getter
+     * Whether the fileSelector offers this account as a source to pick. Turn it
+     * off for an account that only ever matches by domain and has nothing of
+     * its own to enter — HTTP Basic, whose ephemeral per-origin accounts would
+     * otherwise pile up as toggles nobody asked for.
+     */
+    get showInFileSelector(): boolean {
+      return true
+    },
   }))
   .views(self => ({
     /**

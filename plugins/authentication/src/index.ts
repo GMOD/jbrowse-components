@@ -23,6 +23,51 @@ import {
 } from './OAuthModel/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
+
+// Generic so each call checks its own factory against its own schema — the
+// three vary together and a table of them would only agree on their union
+function accountType<Schema extends AnyConfigurationSchemaType>(
+  name: string,
+  configSchema: Schema,
+  modelFactory: (configSchema: Schema) => IAnyModelType,
+) {
+  return () =>
+    new InternetAccountType({
+      name,
+      configSchema,
+      stateModel: modelFactory(configSchema),
+    })
+}
+
+const internetAccountTypes = [
+  accountType(
+    'OAuthInternetAccount',
+    OAuthConfigSchema,
+    OAuthInternetAccountModelFactory,
+  ),
+  accountType(
+    'ExternalTokenInternetAccount',
+    ExternalTokenConfigSchema,
+    ExternalTokenInternetAccountModelFactory,
+  ),
+  accountType(
+    'HTTPBasicInternetAccount',
+    HTTPBasicConfigSchema,
+    HTTPBasicInternetAccountModelFactory,
+  ),
+  accountType(
+    'DropboxOAuthInternetAccount',
+    DropboxOAuthConfigSchema,
+    DropboxOAuthInternetAccountModelFactory,
+  ),
+  accountType(
+    'GoogleDriveOAuthInternetAccount',
+    GoogleDriveOAuthConfigSchema,
+    GoogleDriveOAuthInternetAccountModelFactory,
+  ),
+]
 
 export default class AuthenticationPlugin extends Plugin {
   name = 'AuthenticationPlugin'
@@ -41,47 +86,9 @@ export default class AuthenticationPlugin extends Plugin {
   }
 
   install(pluginManager: PluginManager) {
-    pluginManager.addInternetAccountType(() => {
-      return new InternetAccountType({
-        name: 'OAuthInternetAccount',
-        configSchema: OAuthConfigSchema,
-        stateModel: OAuthInternetAccountModelFactory(OAuthConfigSchema),
-      })
-    })
-    pluginManager.addInternetAccountType(() => {
-      return new InternetAccountType({
-        name: 'ExternalTokenInternetAccount',
-        configSchema: ExternalTokenConfigSchema,
-        stateModel: ExternalTokenInternetAccountModelFactory(
-          ExternalTokenConfigSchema,
-        ),
-      })
-    })
-    pluginManager.addInternetAccountType(() => {
-      return new InternetAccountType({
-        name: 'HTTPBasicInternetAccount',
-        configSchema: HTTPBasicConfigSchema,
-        stateModel: HTTPBasicInternetAccountModelFactory(HTTPBasicConfigSchema),
-      })
-    })
-    pluginManager.addInternetAccountType(() => {
-      return new InternetAccountType({
-        name: 'DropboxOAuthInternetAccount',
-        configSchema: DropboxOAuthConfigSchema,
-        stateModel: DropboxOAuthInternetAccountModelFactory(
-          DropboxOAuthConfigSchema,
-        ),
-      })
-    })
-    pluginManager.addInternetAccountType(() => {
-      return new InternetAccountType({
-        name: 'GoogleDriveOAuthInternetAccount',
-        configSchema: GoogleDriveOAuthConfigSchema,
-        stateModel: GoogleDriveOAuthInternetAccountModelFactory(
-          GoogleDriveOAuthConfigSchema,
-        ),
-      })
-    })
+    for (const makeAccountType of internetAccountTypes) {
+      pluginManager.addInternetAccountType(makeAccountType)
+    }
   }
 }
 
