@@ -1397,11 +1397,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // THE SAME COLOR RULE AS THE LANE ABOVE, stated rather than
                   // inherited, because there is now one legend for the two of
                   // them. Both lanes are in chain mode, where
-                  // `flipStrandLongReadChains` (default true) colors a
-                  // chain's segments against its primary's strand rather than
-                  // absolutely -- so left unset, this lane's blues and salmons
-                  // need not mean what the key over the hg38 lane says they
-                  // mean.
+                  // `flipStrandLongReadChains` (default true) colors a chain's
+                  // segments against the orientation the chains on screen agree
+                  // on rather than absolutely -- so left unset, this lane's
+                  // blues and salmons need not mean what the key over the hg38
+                  // lane says they mean. (The key says `Split segment (same
+                  // strand)` / `(inverted)` for that reason, not fwd/rev.)
                   colorBy: { type: 'strand' },
                   // THE DEPTH CLAIM, which the tutorial makes in prose ("depth
                   // does not dip at them") and no lane had drawn since this
