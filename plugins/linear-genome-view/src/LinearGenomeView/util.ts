@@ -82,6 +82,14 @@ export interface Tick {
   base: number
 }
 
+/**
+ * Ticks for one span of the ruler. Not the dotplot's same-named function, which
+ * walks static blocks into a single continuous axis and therefore has to dedupe
+ * the shared block seam and carry each tick's px. Here every block draws its own
+ * clipped ruler, so this overscans its span instead of deduping and leaves px to
+ * `makeBlockTicks`. What the two do share is already shared: `chooseGridPitch`,
+ * and `base` as the 0-based coordinate that `getTickDisplayStr` labels `base+1`.
+ */
 export function makeTicks(
   start: number,
   end: number,

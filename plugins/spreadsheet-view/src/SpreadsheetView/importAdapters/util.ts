@@ -42,6 +42,12 @@ export function parseExtraCols(
   )
 }
 
+// `.`/absent is undefined here where plugin-bed's same-named helper answers 0,
+// and the two are interchangeable downstream — these features are
+// SimpleFeatureSerialized snapshots and every consumer of one reads
+// `strand ?? 0`. So a shared helper would only have to pick one of the two
+// unstranded values for both. maf's third copy answers +1, because a MAF row
+// has no unstranded case to encode.
 export function parseStrand(strand?: string) {
   return strand === '+' ? 1 : strand === '-' ? -1 : undefined
 }

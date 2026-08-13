@@ -328,6 +328,13 @@ export function tickLabel(tick: Tick, bpPerPx: number) {
 //   is therefore suppressed only on the block at the region's own left end
 //   (`isLeftEndOfDisplayedRegion`), measured from the edge the label is drawn
 //   at — `end` for a reversed region, which lays out right-to-left.
+//
+// Both of those follow from this axis being one continuous SVG, which is what
+// separates it from LinearGenomeView's same-named `makeTicks`: that one takes a
+// single span because each of its blocks draws its own clipped ruler, so it
+// overscans rather than dedupes and adds px in a second pass. The parts the two
+// genuinely share are already shared — `chooseGridPitch`, and `base` as the
+// 0-based coordinate that `getTickDisplayStr` labels `base+1`.
 export function makeTicks(regions: ContentBlock[], bpPerPx: number) {
   const ticks: Tick[] = []
   const seen = new Set<string>()

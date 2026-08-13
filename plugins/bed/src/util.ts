@@ -208,6 +208,10 @@ export function bedFeatureLocus({
   }
 }
 
+// Two sources, so this re-normalizes as much as it parses: `defaultParser`
+// hands over the raw BED text, while `@gmod/bed`'s `parseLine` has already run
+// its own parseStrand and hands over ±1/0 — which is what `BedData.strand`'s
+// union is about. `.` and a missing column are unstranded, i.e. 0.
 export function parseStrand(strand: string | number | undefined): number {
   if (strand === '-' || strand === -1) {
     return -1
