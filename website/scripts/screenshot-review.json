@@ -186,8 +186,8 @@
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
-    "status": "bad",
-    "note": "the circular view should float to top. weirdly in middle of screen",
+    "status": "answered",
+    "note": "the circular view should float to top. weirdly in middle of screen\n\nFIXED IN THE APP, not the figure. `figureOriginXY` centred the circular figure on BOTH axes, and `autoFit` sizes it to min(width, height) \u2014 so exactly one axis ever has slack, and it is the height precisely when the view is TALLER than it is wide. That is this pane: a circular view beside a full-height spreadsheet. Splitting the slack evenly is what left the chord plot hanging in the middle with nothing above or below it. It hangs from the top now (`Math.min(0, ...)`), which keeps the centring where it was load-bearing \u2014 a figure bigger than its box still overflows top and bottom equally rather than only off the bottom \u2014 and leaves horizontal centring alone, which is the case the original comment defends. Two tests pin both halves.",
     "reviewedAt": "2026-08-13T17:49:46.059Z",
     "hash": "218b3bcd22944fdfd32e3e72f2a0389417335953"
   },
@@ -877,8 +877,8 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "bad",
-    "note": "why do i care about common germline svs here? consider remove",
+    "status": "answered",
+    "note": "why do i care about common germline svs here? consider remove\n\nKEPT, AND MADE TO SAY SOMETHING, because the honest answer turned out to be the opposite of the obvious one. The lanes came in a round earlier on \"i want tracks that confirm; prose is tl;dr 99% of the time\", and then said nothing: ClinVar is empty and DGV draws two bars whose relationship to the call is the whole point and is not legible from the drawing. So I measured both bigBeds rather than reading the picture (api.genome.ucsc.edu, 2026-08-13). ClinVar: 15 records span this window and the SMALLEST is 2.2 Mb, whole-arm losses, every one filtered out by the size cut -- so the empty lane IS the reading, no submitted pathogenic CNV at anything like this event's scale. DGV: the two records that survive the cut BOTH overlap SV_85 (nsv1159779, a 12.9 kb deletion, over its first kilobase; nsv975804, a 3.0 kb duplication, over most of it). So the lane is not a clearance -- it says this deletion sits in ordinary germline copy-number territory, which is where a somatic caller most often emits something that was never somatic. That is why you care, and a pill in the frame now says it. The page's prose already said exactly this; the figure did not. (My first draft of the callout said the DGV records \"stop short of it\", which the measurement disproved before it was published.)",
     "reviewedAt": "2026-08-13T17:49:09.658Z",
     "hash": "788b4a437f9e8ae2ba78fa42f27d9185cfb8a5aa"
   },
@@ -2301,8 +2301,8 @@
   },
   "cancer_sv/k562_bcr_abl_split": {
     "name": "cancer_sv/k562_bcr_abl_split",
-    "status": "bad",
-    "note": "potentially stop using 'supercompact' to more clearly see lines. not sure if you can filter out reads with split alignment with groupBy SA tag",
+    "status": "answered",
+    "note": "potentially stop using 'supercompact' to more clearly see lines. not sure if you can filter out reads with split alignment with groupBy SA tag\n\nBOTH POINTS. The rows were 2px, not super-compact, but your reading of it is right: a 2px row with a 1px gap is a hairline and the figure's claim is that each line is one molecule, which a reader has to be able to follow across the join. 4px now. The height went with it, and that is the part worth knowing: the lane was a fixed 700px, and a fixed-height pileup scrolls its overflow INSIDE the track, where both of the run's size reports are blind to it -- they measure the page. The scrollbar thumb was the only witness and this spec had been read by eye for it twice. It is `heightMode: 'grow'` now, so the track sizes to its own rows and the page height the run reports is the real one. On the SA idea: that is what `showOnlySplitAlignments` on the next line already does, and it is why the set is ~250 rows rather than 600x of coverage.",
     "reviewedAt": "2026-08-13T17:46:42.653Z",
     "hash": "947db92afd758335b0b7fe2cc53549d69dd5810f"
   },
@@ -2993,8 +2993,8 @@
   },
   "cancer_sv/k562_fusion_inspector_reads": {
     "name": "cancer_sv/k562_fusion_inspector_reads",
-    "status": "bad",
-    "note": "the gene labels might want to get bumped globally away from left side of screen in plugins/canvas",
+    "status": "answered",
+    "note": "the gene labels might want to get bumped globally away from left side of screen in plugins/canvas\n\nDONE GLOBALLY, in plugins/canvas as you suggested. A gene wider than the window has no on-screen start to hang its name from, so `computeLabelLeftPx` clamped the label to 0 -- the panel border, or in a synteny or breakpoint-split row the edge of the NEIGHBOURING panel. It clamps to a 4px gutter now (LABEL_EDGE_GUTTER_PX). The right-edge limit still wins the Math.min, so the gutter can never push a label past the feature it belongs to; both are pinned by tests. It is corpus-wide, so the next weekly sweep will move every figure with a label clamped to a left edge -- BCR and ABL1 on the split view beside this one were the same case.",
     "reviewedAt": "2026-08-13T17:47:55.418Z",
     "hash": "24514dd32d5563e4ee7d8fc5fe96b8e4bcd42605"
   },
