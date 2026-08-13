@@ -40,7 +40,7 @@ before anyone noticed.
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
-| [A ClinVar `color` jexl stopped colouring](#a-clinvar-color-jexl-stopped-colouring) | variants, config | check whether `INFO` survives the trip to the worker |
+| [Should a jexl index coerce again](#decide-whether-objkey-in-jbrowsejexl-should-coerce-again) | jexl fork | a call, not a fix — both answers are written out |
 | [Liveliness warnings and `no containing view found`](#the-liveliness-warnings-and-no-containing-view-found-are-one-bug) | MST, comparative | name the destroys — one of these takes the page down |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
@@ -256,32 +256,32 @@ how a correct pill shipped invisible for a round (see
 An item whose drawn rect falls outside the capture is almost always a bug —
 report it the way the overlay already reports an unresolvable anchor.
 
-### A ClinVar `color` jexl stopped colouring
+### Decide whether `obj[key]` in `@jbrowse/jexl` should coerce again
 
-Same data, same config, different picture. `protein/connected`'s committed
-figure paints the ClinVar lane by clinical significance — the TP53 deletion at
-17:7,669,587 red, the rest blue/orange/grey — and a fresh capture of that same
-spec paints every one of them the `|| 'purple'` fallback. The config slot is
-`clinvar_ncbi_hg38`'s
+Nothing here is broken — the demo config is fixed and `jexlStrings.test.ts` pins
+the behaviour. What is open is a call about GMOD/jexl, which is ours: **3.1.0
+changed `obj[key]` to answer `undefined` for a key that is not a string or a
+number, and did it in a minor.** 3.0.2 evaluated `subject?.[index]`, so a
+one-element array coerced to its string.
 
-    jexl:({'Benign':'blue',…})[feature.INFO.CLNSIG] || 'purple'
+That is the whole gap, and every `@gmod/vcf` INFO value falls in it: `Number=1`
+included, `CLNSIG=Pathogenic` parses to `['Pathogenic']`, so a lookup table
+indexed by one now misses and the `|| fallback` such expressions always carry
+absorbs it. A track goes one flat colour and says nothing.
 
-and `tabix`ing the live file over that window still answers
-`CLNSIG=Pathogenic` / `Likely_benign` / `Uncertain_significance` — the exact
-keys that map. So the data did not drift and the expression did not change:
-something between the slot and the paint stopped resolving `feature.INFO`.
+Two defensible answers, and the reason to pick one on purpose:
 
-**Not a variant-track bug until that is checked** — `color` is
-`LinearCanvasBaseDisplay`'s slot, evaluated worker-side against a serialized
-feature, so the question is whether `INFO` survives that trip at all. `feature.x`
-and `get(feature,'x')` are interchangeable through `jexlFeatureProxy`, so the
-spelling is not it. Compare against the other `feature.INFO.*` configs before
-concluding it is ClinVar's.
+- **Restore the coercion.** The same 3.1.0 rewrite kept the opposite behaviour
+  one case up — `Identifier` still reads "an identifier chained off an array
+  through its first element", by name, in a comment — so `feature.INFO.X.y`
+  unwraps and `map[feature.INFO.X]` does not, in one file. `==`, `!=` and `>`
+  coerce too.
+- **Keep it strict and own the break.** `[0]` is what the variant-track and
+  cookbook docs already teach, and it is the honest spelling for a list. Then
+  the bug was the minor version, and what is owed is a note.
 
-**Until it is fixed, don't refresh `protein/connected`'s figure.** It captures
-again as of the `setPendingMove` fix and the frame is otherwise right, but the
-committed PNG predates this and is the better picture; republishing would bake
-the flat lane into the site.
+Either way every config in the wild carrying the old spelling is silently one
+colour until its author re-reads a figure, which is how this one was found.
 
 ### The liveliness warnings and `no containing view found` are one bug
 

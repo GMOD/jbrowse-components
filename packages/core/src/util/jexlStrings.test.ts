@@ -120,3 +120,43 @@ describe('color functions', () => {
     )
   })
 })
+
+// **A VCF INFO value is an ARRAY, and indexing a lookup table with one needs the
+// `[0]`.** `@gmod/vcf` returns every INFO field as a list — `Number=1` included,
+// so `CLNSIG=Pathogenic` parses to `['Pathogenic']` — while the natural way to
+// colour by one is an object literal indexed by its value.
+//
+// The two used to meet by accident: our jexl fork evaluated `subject?.[index]`,
+// so JS coerced the one-element array to its string. 3.1.0 lowered the evaluator
+// to closures and made that a `typeof indexVal === 'string' || 'number'` guard,
+// which answers `undefined` instead — and an undefined lookup is exactly what the
+// `|| fallback` every such expression carries is there to absorb, so a whole
+// track quietly went one flat colour. A website figure was the only thing that
+// noticed.
+//
+// Pinned because the docs teach the `[0]` form (`variant_track.md`,
+// `cookbook.md`) and this is the reason they have to: every OTHER way of reading
+// an INFO value still coerces, which is what makes the one that doesn't so easy
+// to write.
+describe('a VCF INFO value indexes a lookup table only through [0]', () => {
+  const COLORS = "{'Pathogenic':'red','Benign':'blue'}"
+  const feature = { INFO: { CLNSIG: ['Pathogenic'], AF: [0.25] } }
+  const evaluate = (str: string) =>
+    stringToJexlExpression(str, jexl).eval({ feature })
+
+  it('indexes with [0], and answers undefined without it', () => {
+    expect(evaluate(`jexl:${COLORS}[feature.INFO.CLNSIG[0]]`)).toBe('red')
+    expect(evaluate(`jexl:${COLORS}[feature.INFO.CLNSIG]`)).toBeUndefined()
+  })
+
+  // The forms that still coerce, so the failure above stays legible as the
+  // exception it is rather than being read as "INFO needs [0] everywhere".
+  it.each([
+    [`jexl:feature.INFO.CLNSIG == 'Pathogenic'`, true],
+    [`jexl:feature.INFO.CLNSIG != 'Benign'`, true],
+    [`jexl:feature.INFO.AF > 0.1`, true],
+    [`jexl:feature.INFO.CLNSIG == 'Pathogenic' ? 'red' : 'blue'`, 'red'],
+  ])('%s still reads through the array', (expr, expected) => {
+    expect(evaluate(expr)).toBe(expected)
+  })
+})
