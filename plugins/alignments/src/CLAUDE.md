@@ -63,9 +63,20 @@ spliced fixtures, and it runs once per spliced read.
 
 The one regime where that inverts is a read whose tag block is dominated by a
 long `MD`: each targeted walk byte-scans to the string's null terminator, so two
-walks lose to one decode once MD is kilobytes (0.68x on `200x.longread`). Check
+walks lose to one decode once MD is kilobytes (0.66x on `200x.longread`). Check
 which regime you are in — `benches/gapStrand.bench.ts` prints tag bytes/read
 alongside the ratio.
+
+That inversion is **fixable, and not by folding the walks into one** — one walk
+is 1.11x there, because the cost is not how many walks but that any walk past a
+kilobyte MD scans it byte by byte. Jumping that single value is 34x, and the
+metadata to jump it already exists: `NUMERIC_MD` memoizes a subarray **view** of
+MD's bytes, so a record that has resolved it knows MD's start and length in O(1)
+— and on this path `forEachMismatch` has always resolved it before
+`getEffectiveStrand` runs. The cursor belongs to `@gmod/bam` though, so it is a
+library change, and the skip costs ~11% of the walk in the short-tag regime that
+dominates. Sized in the bench, filed as seam 5 in
+`agent-docs/reference/BAM_STACK_INTEGRATION.md`.
 
 ## `withRegionRef`, never `record.ref = …`
 

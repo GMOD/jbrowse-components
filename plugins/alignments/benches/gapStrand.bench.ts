@@ -27,14 +27,56 @@
 // read), which on RNA-seq is every spliced read — the case the function exists
 // for.
 //
-// THREE ARMS, one a control:
-//   tags      — what ships: get('tags'), i.e. the full decode
-//   targeted  — getTagAlt('XS','TS') + getTag('ts'); two walks of the tag
-//               block, no value decoded but the one asked for
+// FIVE ARMS, one a control:
+//   tags      — what ships[1]: get('tags'), i.e. the full decode
+//   targeted  — what ships now: getTagAlt('XS','TS') + getTag('ts'); two walks
+//               of the tag block, no value decoded but the one asked for
+//   fused3    — one walk matching all three names. Does not exist as an API;
+//               hand-rolled over the record's bytes to size it
+//   fused3+MD — the same single walk, but JUMPING the MD value instead of
+//               scanning to its null terminator. Also not an API
 //   control   — a second, separately-declared copy of `tags`
 //
-// Written out longhand, three times, deliberately — a shared driver makes the
+// Written out longhand, five times, deliberately — a shared driver makes the
 // call site polymorphic and hands every arm one set of inline caches.
+//
+// WHAT IT SAYS. One fixture per process, controls 0.999x / 1.004x:
+//
+//                      spliced.bam       200x.longread
+//                      (44 tag B/read)   (9,135 tag B/read)
+//   tags (shipped[1])    1.00x             1.00x
+//   targeted (ships)     8.91x             0.66x
+//   fused3               6.15x             1.11x
+//   fused3+MD skip       5.53x            34.25x
+//
+// THE REGIME SPLIT IS FIXABLE, AND NOT BY THE OBVIOUS ROUTE. Folding the two
+// targeted walks into one barely helps (1.11x) — the cost is not the number of
+// walks, it is that ANY walk past a kilobyte-scale MD byte-scans to its
+// terminator. Jumping that one value is what collapses it, 34x, because the
+// walk then touches ~11 tag headers instead of 9,135 bytes.
+//
+// And the metadata to jump it ALREADY EXISTS: `NUMERIC_MD` memoizes a
+// `Uint8Array` **subarray view** of MD's bytes, so a record that has resolved it
+// carries MD's start and length in O(1) (`md.byteOffset - byteArray.byteOffset`,
+// `+ md.length + 1` for the terminator). On the alignments render path that memo
+// is always populated before `getEffectiveStrand` runs, because
+// `forEachMismatch` reads NUMERIC_MD to walk the read.
+//
+// TWO REASONS IT IS NOT DONE HERE. The cursor belongs to `@gmod/bam` —
+// `_findTag`, `getTagAlt` and `_computeTags` share `tagValueEnd`, and a consumer
+// cannot reach it. And the skip is not free in the regime that dominates: it
+// costs ~11% of the walk on short tag blocks (fused3+MD 9.40ms vs fused3
+// 8.46ms), where two plain targeted walks already win. A real implementation
+// must also read `_cachedNUMERIC_MD` ONLY when it is already populated, never
+// call the getter — triggering it costs exactly the walk being avoided.
+//
+// [1] `get('tags')` was replaced by the targeted form in the commit that added
+// this bench; it stays as the baseline every ratio is against.
+//
+// One caveat on the identity check: `200x.longread` carries no XS/TS/ts at all,
+// so every arm returns 0 there and agreement proves nothing. The spliced
+// fixtures do carry XS with both '+' and '-' (1740/527/779 reads), which is
+// where the arms are actually cross-checked.
 //
 // Note the arms must run against FRESH records each round: `_computeTags`
 // memoizes, so a second round over the same records measures a property read
@@ -93,6 +135,165 @@ function armTargeted(records: BamRecord[]) {
     } else {
       const ts = r.getTag('ts') as string | undefined
       sink += ts === '+' ? 1 : ts === '-' ? -1 : 0
+    }
+  }
+  return sink
+}
+
+// ---------------------------------------------------------------------------
+// Two candidates that do not exist as APIs yet. Both walk the record's bytes
+// directly, which a real implementation would not have to — inside BamRecord
+// this is an argument-count change to the cursor `_findTag`/`getTagAlt`/
+// `_computeTags` already share.
+
+// ONE pass matching all three names. The two-walk shape is what loses to a
+// single decode when MD is kilobytes, so the question is whether one walk beats
+// the decode in BOTH regimes — if it does, the regime split disappears rather
+// than being mitigated.
+function armFused3(records: BamRecord[]) {
+  let sink = 0
+  for (const r of records) {
+    const rec = r as unknown as {
+      byteArray: Uint8Array
+      tagsStart: number
+      _end: number
+      _dataView: DataView
+    }
+    const ba = rec.byteArray
+    const blockEnd = rec._end
+    let p = rec.tagsStart
+    let xs: number | undefined
+    let ts: number | undefined
+    while (p < blockEnd) {
+      const c0 = ba[p]!
+      const c1 = ba[p + 1]!
+      const type = ba[p + 2]!
+      const v = p + 3
+      let end: number
+      if (type === 0x41 || type === 0x63 || type === 0x43) {
+        end = v + 1
+      } else if (type === 0x73 || type === 0x53) {
+        end = v + 2
+      } else if (type === 0x69 || type === 0x49 || type === 0x66) {
+        end = v + 4
+      } else if (type === 0x5a || type === 0x48) {
+        let q = v
+        while (q < blockEnd && ba[q] !== 0) {
+          q++
+        }
+        end = q + 1
+      } else if (type === 0x42) {
+        const bt = ba[v]!
+        const limit = rec._dataView.getInt32(v + 1, true)
+        const w =
+          bt === 0x69 || bt === 0x49 || bt === 0x66
+            ? 4
+            : bt === 0x73 || bt === 0x53
+              ? 2
+              : 1
+        end = v + 5 + limit * w
+      } else {
+        break
+      }
+      // XS / TS take the first that appears; ts is distinct (lowercase)
+      if (type === 0x41) {
+        if (
+          xs === undefined &&
+          ((c0 === 88 && c1 === 83) || (c0 === 84 && c1 === 83))
+        ) {
+          xs = ba[v]!
+        } else if (c0 === 116 && c1 === 115) {
+          ts = ba[v]!
+        }
+      }
+      p = end
+    }
+    if (xs === 43) {
+      sink += 1
+    } else if (xs === 45) {
+      sink -= 1
+    } else {
+      sink += ts === 43 ? 1 : ts === 45 ? -1 : 0
+    }
+  }
+  return sink
+}
+
+// The same single pass, but jumping the MD value instead of scanning to its
+// null terminator. `NUMERIC_MD` memoizes a SUBARRAY VIEW of those bytes, so a
+// record that has resolved it already carries MD's start and length — the
+// "small metadata" is free and already there. On the render path the memo is
+// populated before this runs, since `forEachMismatch` reads NUMERIC_MD to walk
+// the read. Pre-warmed outside the timed region below, for every arm equally.
+function armFused3MdSkip(records: BamRecord[]) {
+  let sink = 0
+  for (const r of records) {
+    const rec = r as unknown as {
+      byteArray: Uint8Array
+      tagsStart: number
+      _end: number
+      _dataView: DataView
+    }
+    const ba = rec.byteArray
+    const blockEnd = rec._end
+    const md = r.NUMERIC_MD
+    // where MD's value starts and where the next tag begins, in O(1)
+    const mdStart = md ? md.byteOffset - ba.byteOffset : -1
+    const mdNext = md ? mdStart + md.length + 1 : -1
+    let p = rec.tagsStart
+    let xs: number | undefined
+    let ts: number | undefined
+    while (p < blockEnd) {
+      const c0 = ba[p]!
+      const c1 = ba[p + 1]!
+      const type = ba[p + 2]!
+      const v = p + 3
+      let end: number
+      if (v === mdStart) {
+        end = mdNext
+      } else if (type === 0x41 || type === 0x63 || type === 0x43) {
+        end = v + 1
+      } else if (type === 0x73 || type === 0x53) {
+        end = v + 2
+      } else if (type === 0x69 || type === 0x49 || type === 0x66) {
+        end = v + 4
+      } else if (type === 0x5a || type === 0x48) {
+        let q = v
+        while (q < blockEnd && ba[q] !== 0) {
+          q++
+        }
+        end = q + 1
+      } else if (type === 0x42) {
+        const bt = ba[v]!
+        const limit = rec._dataView.getInt32(v + 1, true)
+        const w =
+          bt === 0x69 || bt === 0x49 || bt === 0x66
+            ? 4
+            : bt === 0x73 || bt === 0x53
+              ? 2
+              : 1
+        end = v + 5 + limit * w
+      } else {
+        break
+      }
+      if (type === 0x41) {
+        if (
+          xs === undefined &&
+          ((c0 === 88 && c1 === 83) || (c0 === 84 && c1 === 83))
+        ) {
+          xs = ba[v]!
+        } else if (c0 === 116 && c1 === 115) {
+          ts = ba[v]!
+        }
+      }
+      p = end
+    }
+    if (xs === 43) {
+      sink += 1
+    } else if (xs === 45) {
+      sink -= 1
+    } else {
+      sink += ts === 43 ? 1 : ts === 45 ? -1 : 0
     }
   }
   return sink
@@ -167,16 +368,23 @@ async function main() {
     if (!one.length) {
       continue
     }
-    // Only the reads this function is ever called for.
-    const spliced = one.filter(r => {
-      const c = r.NUMERIC_CIGAR
-      for (let i = 0; i < c.length; i++) {
-        if ((c[i]! & 0xf) === 3) {
-          return true
-        }
-      }
-      return false
-    })
+    // Only the reads this function is ever called for — but ONLY for the
+    // test_data fixtures, which are the ones that carry skips. The jb2bench
+    // fixtures are regime probes rather than call sites: `200x.longread` has no
+    // skips at all, so this function never runs on it, and it is here purely to
+    // characterise what a kilobyte-scale MD does to the trade. Filtering it to
+    // spliced reads would leave nothing to measure.
+    const spliced = !path.includes('test_data')
+      ? one
+      : one.filter(r => {
+          const c = r.NUMERIC_CIGAR
+          for (let i = 0; i < c.length; i++) {
+            if ((c[i]! & 0xf) === 3) {
+              return true
+            }
+          }
+          return false
+        })
     if (!spliced.length) {
       continue
     }
@@ -216,8 +424,20 @@ async function main() {
     const b = armTargeted(records)
     reset(records)
     const c = armControl(records)
-    if (a !== b || a !== c) {
-      throw new Error(`arms disagree: tags=${a} targeted=${b} control=${c}`)
+    // NUMERIC_MD is memoized separately from tags and `reset` does not clear
+    // it; warm it for every arm alike, outside any timing, because that is the
+    // state the render path is in when getEffectiveStrand runs.
+    for (const r of records) {
+      void r.NUMERIC_MD
+    }
+    reset(records)
+    const d = armFused3(records)
+    reset(records)
+    const e = armFused3MdSkip(records)
+    if (a !== b || a !== c || a !== d || a !== e) {
+      throw new Error(
+        `arms disagree: tags=${a} targeted=${b} control=${c} fused3=${d} fused3md=${e}`,
+      )
     }
 
     let tagBytes = 0
@@ -228,10 +448,18 @@ async function main() {
       tagCount += Object.keys(r.tags).length
     }
 
-    const best = { tags: Infinity, targeted: Infinity, ctl: Infinity }
+    const best = {
+      tags: Infinity,
+      targeted: Infinity,
+      fused3: Infinity,
+      fused3md: Infinity,
+      ctl: Infinity,
+    }
     const sides = [
       { k: 'tags' as const, run: () => armTagsA(records) },
       { k: 'targeted' as const, run: () => armTargeted(records) },
+      { k: 'fused3' as const, run: () => armFused3(records) },
+      { k: 'fused3md' as const, run: () => armFused3MdSkip(records) },
       { k: 'ctl' as const, run: () => armControl(records) },
     ]
     for (let round = 0; round < ROUNDS; round++) {
@@ -247,6 +475,10 @@ async function main() {
         `  tags (ships)   ${best.tags.toFixed(2).padStart(8)} ms\n` +
         `  targeted       ${best.targeted.toFixed(2).padStart(8)} ms   ` +
         `${(best.tags / best.targeted).toFixed(2)}x\n` +
+        `  fused3 (1 pass)${best.fused3.toFixed(2).padStart(8)} ms   ` +
+        `${(best.tags / best.fused3).toFixed(2)}x\n` +
+        `  fused3+MD skip ${best.fused3md.toFixed(2).padStart(8)} ms   ` +
+        `${(best.tags / best.fused3md).toFixed(2)}x\n` +
         `  control        ${best.ctl.toFixed(2).padStart(8)} ms   ` +
         `${(best.tags / best.ctl).toFixed(3)}x  <- noise floor\n`,
     )

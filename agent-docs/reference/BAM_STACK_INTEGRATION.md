@@ -1,6 +1,6 @@
 ---
 name: bam-stack-integration
-description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the four seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
+description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the five seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
 ---
 
 # The BAM stack, layer by layer
@@ -343,6 +343,61 @@ fourth copy of the walk. And the consumer-side alternative — stop reading `SA`
 unconditionally, since it feeds `readSuppAlignments` and only the arc overlay
 reads that — needs a new `rpcProps` entry, which invalidates the fetch when it
 toggles, so it is a worse trade than it looks.
+
+## Seam 5 — a tag walk rescans an MD the record has already located
+
+**The best-sized item here, and the only one whose fix is a few lines.**
+
+Every walk of a record's tag block steps over each value to reach the next tag,
+and for a `Z` value that means scanning byte by byte to the null terminator
+(`tagValueEnd`). On long-read data `MD` is the whole tag block — 9,135 of the
+9,135 tag bytes per read on `200x.longread` — so **any** lookup that does not
+find its answer before MD pays a ~9 kB scan, and one that does two lookups pays
+it twice. That is the entire reason the targeted-lookup form inverts against the
+full decode in this regime.
+
+`benches/gapStrand.bench.ts` sizes the three candidate shapes, one fixture per
+process, controls 0.999x / 1.004x:
+
+| arm | spliced.bam (44 tag B/read) | 200x.longread (9,135 tag B/read) |
+| --- | --: | --: |
+| `get('tags')`, the full decode | 1.00x | 1.00x |
+| two targeted walks (what ships) | 8.91x | 0.66x |
+| one fused walk, three names | 6.15x | 1.11x |
+| one walk **jumping MD** | 5.53x | **34.25x** |
+
+**Folding the walks into one is not the fix** — 1.11x. The cost is not how many
+walks there are, it is that any walk past a kilobyte-scale MD scans it. Jumping
+that one value collapses the walk from 9,135 bytes to ~11 tag headers.
+
+**And the metadata to jump it already exists.** `NUMERIC_MD` memoizes
+`getTagRaw('MD')`, which for a `Z` tag is `byteArray.subarray(p, end - 1)` — a
+**view**, so it carries MD's start and length. The next tag begins at
+`md.byteOffset - byteArray.byteOffset + md.length + 1`, in O(1), with nothing new
+stored. On the alignments render path that memo is always populated before any
+of these lookups run, because `forEachMismatch` reads `NUMERIC_MD` to walk the
+read.
+
+Three things for whoever implements it, all of which the bench had to respect:
+
+- **It is a `@gmod/bam` change.** `_findTag`, `getTagAlt` and `_computeTags`
+  share `tagValueEnd`; a consumer cannot reach the cursor. The bench hand-rolls
+  the walk over the record's bytes purely to size it.
+- **Read `_cachedNUMERIC_MD` only when already populated — never call the
+  getter.** `NUMERIC_MD` resolves itself with `getTagRaw('MD')`, which is exactly
+  the walk being avoided, so triggering it to speed up a walk pays for the walk
+  twice.
+- **The skip is not free where it does not help.** It cost ~11% of the walk on
+  short tag blocks (9.40ms vs 8.46ms for the same walk without it), and short
+  tag blocks are the dominant case — on those, two plain targeted walks already
+  beat both fused shapes. Whether that 11% survives inside `_findTag`, which is
+  a tighter loop than the bench's hand-rolled one, is the thing to measure there
+  rather than assume.
+
+The generalisation, which is what makes this worth an entry rather than a patch:
+**a walk should never rescan a value the record has already located.** MD is the
+only tag that is both routinely kilobytes and routinely already resolved, which
+is why it is the one worth special-casing — but the rule is the reusable part.
 
 ## Things checked and found already integrated
 
