@@ -298,7 +298,7 @@ const time = (fn: () => unknown) => {
   const v = fn()
   const t = performance.now() - t0
   // keep the result alive past the clock so nothing is optimized out
-  if ((v as { length?: number }).length === -1) {
+  if (Number.isNaN((v as { length?: number }).length)) {
     throw new Error('unreachable')
   }
   return t

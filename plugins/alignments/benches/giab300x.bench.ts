@@ -103,7 +103,7 @@ const time = (fn: () => unknown) => {
   globalThis.gc?.()
   const t0 = performance.now()
   const v = fn()
-  if ((v as { length?: number }).length === -1) {
+  if (Number.isNaN((v as { length?: number }).length)) {
     throw new Error('unreachable')
   }
   return performance.now() - t0

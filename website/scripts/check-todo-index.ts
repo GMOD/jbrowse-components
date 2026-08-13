@@ -35,7 +35,7 @@ function slug(heading: string) {
   return heading
     .replaceAll('`', '')
     .toLowerCase()
-    .replace(/[^\w\- ]/g, '')
+    .replaceAll(/[^\w\- ]/g, '')
     .trim()
     .replaceAll(' ', '-')
 }

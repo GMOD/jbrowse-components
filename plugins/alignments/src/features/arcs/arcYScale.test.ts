@@ -20,8 +20,10 @@ import {
   arcColorSlot,
   linkedReadColorSlot,
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
-import { ARC_HEIGHT_MARGIN } from '../../shaders/slang/arc.iface.generated.ts'
+import {
+  ARC_COLOR_SHORT_INSERT,
+  ARC_HEIGHT_MARGIN,
+} from '../../shaders/slang/arc.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../shaders/slang/read.iface.generated.ts'
 import { arcAvailH, arcYFraction, arcYScale } from './arcYScale.ts'

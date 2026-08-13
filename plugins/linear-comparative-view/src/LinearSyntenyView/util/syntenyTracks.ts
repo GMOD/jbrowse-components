@@ -31,8 +31,9 @@ export function getAddRowOptions(
   // A dataset whose only other endpoint the screen removed reaches nowhere, and
   // is dropped rather than offered: every option has to be one `appendRow` can
   // actually open. connectedEndpoints says why.
-  return datasets.flatMap(({ track, newAssemblies: [newAssembly] }) =>
-    newAssembly
+  return datasets.flatMap(({ track, newAssemblies }) => {
+    const [newAssembly] = newAssemblies
+    return newAssembly
       ? [
           {
             trackId: readConfObject(track, 'trackId') as string,
@@ -40,6 +41,6 @@ export function getAddRowOptions(
             newAssembly,
           },
         ]
-      : [],
-  )
+      : []
+  })
 }

@@ -97,7 +97,7 @@ const suite: TestSuite = {
         const before = await windowOfRow(page, 1)
         if (before.refNames.length < 2) {
           throw new Error(
-            `expected the peach row to start on the whole assembly, got ${before.refNames.join()}`,
+            `expected the peach row to start on the whole assembly, got ${before.refNames.join(',')}`,
           )
         }
 
@@ -131,7 +131,7 @@ const suite: TestSuite = {
         // maximum zoom, and a mis-picked envelope spans the whole 47.9 Mb contig.
         if (width < 100_000 || width > 20_000_000) {
           throw new Error(
-            `peach row landed on ${after.refNames.join()}:${after.start}-${after.end}, ` +
+            `peach row landed on ${after.refNames.join(',')}:${after.start}-${after.end}, ` +
               `a ${width}bp window — expected a few Mb of ${EXPECTED_CONTIG}`,
           )
         }
