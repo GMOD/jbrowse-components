@@ -46,16 +46,43 @@ whole-genome all-vs-all PAF is usually a better source. See
 ## What a `.blocks` file is
 
 A `.blocks` file is a wide, tab-delimited table: one row per group of
-orthologous genes, one column per genome, `.` where a genome has no member.
+orthologous genes, one column per genome, `.` where a genome has no member. The
+file names none of its columns, so `blockAssemblies` does, by position. With
+placeholder ids, a grape, peach and cacao table reads:
 
 ```
-GSVIVT01012255001   Prupe.1G290900.1   Thecc1EG011472t1
-GSVIVT01012253001   Prupe.1G290800.2   Thecc1EG011473t1
-GSVIVT01012261001   .                  .
+grape01   peach01   cacao01
+grape02   peach02   cacao02
+grape03   .         .
 ```
+
+A real cell holds whatever that genome's annotation calls the gene, which for
+the NCBI annotations below looks like `rna-XM_007225519.2`.
 
 This is a coordinate-free gene-id table. The accompanying `.bed` files (one per
 genome, produced alongside) map each gene id to a genomic position.
+
+### A duplicated gene
+
+A cell holds one gene id, so a gene with two copies in another genome spreads
+across rows rather than widening a cell. Peach carrying two copies of `grape02`:
+
+```
+grape01   peach01    cacao01
+grape02   peach02a   cacao02
+grape02   peach02b   cacao02
+grape03   .          .
+```
+
+Both rows resolve, so the grape-peach band draws a ribbon from `grape02` to each
+copy, and the repeated `cacao02` draws its grape-cacao ribbon twice over.
+
+Whether the copies are in the table at all is up to the tool that wrote it:
+`orthogroups_to_blocks.py` writes one row per copy by default, while jcvi
+`mcscan --iter=1` and the MCScanX converter each keep one copy per reference
+gene. Raising `--iter` writes the extra copy as a second peach column instead of
+as rows, and the adapter draws a pair from the first column naming each genome,
+so keep the table one column per genome.
 
 ### One reference, or all against all
 
