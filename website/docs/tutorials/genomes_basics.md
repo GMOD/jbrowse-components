@@ -165,11 +165,11 @@ that base.
 
 ## Clinical and population variation
 
-The same locus, from three more catalogs: **ClinVar Variants - ClinVar SNVs**
+The same locus, from two more catalogs: **ClinVar Variants - ClinVar SNVs**
 under Phenotypes, Variants, and Literature, and **gnomAD v4.1 - gnomAD v4.1
-Exomes** and **gnomAD - gnomAD Mut Constraint** under Variation and Repeats.
+Exomes** under Variation and Repeats.
 
-<Figure src="/img/genomes_basics/clinvar_gnomad.png" caption="ClinVar SNVs, gnomAD v4.1 exome variants and gnomAD's mutational constraint over the TP53 transcript, with the gene collapsed above them. ClinVar colours each variant by clinical significance." />
+<Figure src="/img/genomes_basics/clinvar_gnomad.png" caption="ClinVar SNVs and gnomAD v4.1 exome variants over the TP53 transcript, with the gene collapsed above them. ClinVar colours each variant by clinical significance." />
 
 Both variant sets pile up on the coding exons, and for different reasons:
 ClinVar's records are there because that is where the submitted variants were

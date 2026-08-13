@@ -497,15 +497,17 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // Clinical and population variation over the transcript, which is the pairing
-  // the DNA-binding domain exists to be read through: ClinVar's pathogenic calls
-  // pile up on the exons phyloP peaked over, gnomAD's observed variants do not,
-  // and the constraint signal underneath is the genome-wide version of the same
-  // statement.
+  // Clinical and population variation over the transcript: ClinVar's calls pile
+  // up on the exons phyloP peaked over, and gnomAD's observed variants sit
+  // beside them from a different kind of source.
   //
   // gnomAD v4.1 EXOMES rather than genomes: the coding exons are what the
   // comparison is about, and the exome callset is both denser there and a
   // fraction of the bytes.
+  //
+  // gnomAD Mut Constraint was here as a third track and is dropped: its scores
+  // are 1 kb windows, so over a 9 kb view it is four blue blocks, and a reader
+  // cannot tell a saturated score from a track that failed to load.
   {
     mode: 'url',
     name: 'genomes_basics/clinvar_gnomad',
@@ -517,9 +519,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           loc: TP53_TRANSCRIPT_WINDOW,
           tracks: [
             { ...GENE_TRACK_COLLAPSED, height: 60 },
-            { trackId: 'hg38-clinvarMain', height: 120 },
-            { trackId: 'hg38-gnomadExomesVariantsV4_1', height: 120 },
-            { trackId: 'hg38-gnomadConstraint', height: 90 },
+            { trackId: 'hg38-clinvarMain', height: 150 },
+            { trackId: 'hg38-gnomadExomesVariantsV4_1', height: 150 },
           ],
         },
       ],
@@ -527,7 +528,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyText: 'TP53',
     readyTimeout: 180000,
     settleMs: 10000,
-    viewportHeight: 720,
+    viewportHeight: 660,
     diffThreshold: 0.02,
   },
 
