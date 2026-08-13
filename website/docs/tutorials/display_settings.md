@@ -116,7 +116,7 @@ feature. JBrowse Desktop has no session-URL server. Persist a track's startup
 state there through `config.json` (the
 [defaults](#in-configjson-persistent-defaults) above) instead.
 
-<Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, soft-clipping shown, and reads viewed as pairs, so each read links to its mate and is colored by insert size and orientation. The colored cluster at the left flags a structural variant, while concordant pairs stay grey." src="/img/display_settings_url_snapshot.png" />
+<Figure caption="What that link opens: the volvox-sv (cram) track at ctgA:1-10,000 as a 250px-tall pileup, soft-clipping shown, reads viewed as pairs and colored by insert size and orientation. The colored cluster at the left flags a structural variant." src="/img/display_settings_url_snapshot.png" />
 
 The display settings can equivalently be nested under an explicit
 `displaySnapshot` key

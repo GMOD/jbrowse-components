@@ -69,7 +69,7 @@ The view opens at residue zoom, which on a protein this long is a window on its
 N terminus. **Fit horizontally**, under the toolbar's fit and zoom button, puts
 the whole alignment on screen, which is the zoom the domain blocks read at.
 
-<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. Twelve of the twenty-three species offered have an NLRP1 ortholog. The pyrin block is on the great apes and the marmoset and on no other row; the NACHT-to-CARD core is in every row." />
+<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. The pyrin block is on the great apes and the marmoset and on no other row." />
 
 ## Reading the overlay
 
@@ -124,7 +124,7 @@ macaque rows carry a death-domain call that is not the pyrin-specific one. Mouse
 and guinea pig are the actual absence: gap right across the frame, because their
 rows begin further right in the alignment.
 
-<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 across the species NCBI has an ortholog for, at the residue zoom the view opens on, with the gappiest columns hidden so the human N terminus sits at the left edge. The pyrin call, in light blue, is on the human, chimpanzee, gorilla and marmoset rows and on no others." />
+<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 across the species NCBI has an ortholog for, at the residue zoom the view opens on, with the gappiest columns hidden. The pyrin call, in light blue, is on the human, chimpanzee, gorilla and marmoset rows and on no others." />
 
 ## The same domains in genome coordinates
 

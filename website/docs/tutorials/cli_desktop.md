@@ -154,7 +154,7 @@ jbrowse-desktop myproject/config.json
 (On macOS: `open -a "JBrowse 2" myproject/config.json`. See
 [launching from the command line](/docs/quickstart_desktop#launching-from-the-command-line).)
 
-<Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name, the assembly, and the My reads and My variants labels all come from the commands above (this one was built from the bundled volvox sample files)."/>
+<Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name, the assembly and the track labels all come from the commands above."/>
 
 Desktop's **Add track** picker still works for a one-off file. The CLI route
 here is the one to reach for when you want a scripted, repeatable setup, or the

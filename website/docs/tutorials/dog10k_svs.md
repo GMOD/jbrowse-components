@@ -143,7 +143,7 @@ _NHEJ1_'s exons to be identified as intronic rather than coding.
 
 ## Reading it
 
-<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant, whose span comes from a different publication than the callset does." src="/img/dog10k-nhej1-cea-deletion.png" />
+<Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
 
 The picture matches the literature: the deletion is common in the Collie clade,
 homozygous in several animals, and absent everywhere else in this set including
@@ -295,7 +295,7 @@ first column the sample name, every other column an attribute, and `colorBy`
 naming the one that paints the swatch. The RNASE1 track is that same config with
 the other slice's `uri`.
 
-<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease, each carrier a marker sized by the inserted bases. Same 86 animals in the same order in both, so a row reads straight across: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
+<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase. Right: a 223 bp insertion in pancreatic ribonuclease. Same 86 animals in the same order in both, so a row reads straight across: the dogs carry the amylase duplication and the wolves the ribonuclease insertion." src="/img/dog10k-diet-genes.png" />
 
 The three Arctic breeds are drawn together to test a reading rather than to make
 one. Two of the three Greenland Dogs lack the duplication, but the third carries
@@ -484,7 +484,7 @@ RefSeq model and the per-breed sample rows between the two ribbons. Each ribbon
 gap sits over a record the chondrodysplastic breeds and both spaniels carry, and
 the Labradors, German Shepherds and Greek wolves do not.
 
-<Figure caption="Two independent FGF4 retrocopies (CFA18, MF040222; CFA12, MF040221) aligned to the parent gene between them, with the Manta calls at their own coordinates and then across 55 Dog10K genomes. Every ribbon gap falls on a parent intron, and the blue blocks sit in those same two places: the retrogene rather than a deletion." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+<Figure caption="Two independent FGF4 retrocopies aligned to the parent gene between them, with the Manta calls at their own coordinates and then across 55 Dog10K genomes. Every ribbon gap falls on a parent intron and the blue blocks sit in those same two places." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
 The window stops where the CFA18 alignment does, so that retrocopy is on screen
 end to end and the CFA12 ribbon runs on past it. The sample rows are the same

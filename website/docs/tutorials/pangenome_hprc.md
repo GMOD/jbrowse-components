@@ -194,11 +194,10 @@ which the figures from here on read alongside the graph.
 
 <Figure caption="The C4 locus as a force-directed graph, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus, and the graph below is what it contains." src="/img/pangenome/hprc_c4_subgraph.png" />
 
-A force layout has no x axis to share with the linear view, so color is the only
-thing that can carry the correspondence. **Reference position**, which the graph
-opens on, ramps hue over the window the subgraph was cut from and drops any
-segment without a reference coordinate to flat charcoal, so a hue always states
-a position on GRCh38 rather than an allele's attachment point. The
+A force layout has no x axis to share with the linear view, so color carries the
+correspondence. **Reference position**, which the graph opens on, ramps hue over
+the window the subgraph was cut from and drops any segment without a reference
+coordinate to flat charcoal. The
 [guide](/docs/user_guides/graph_genome_view#colors-that-mean-the-same-thing-in-both-panels)
 covers the other schemes.
 
@@ -227,13 +226,11 @@ The two constants in the `color` are the window's start and its length, here the
 C4 window the figure above was cut from, so this belongs on the view rather than
 in a hosted config.
 
-The asymmetry between the panels is structural. A rank-0 segment sits on GRCh38
-and has a coordinate, while a rank>0 segment sits on some other assembly's
-refName and has none, so no coloring will put those loops on a GRCh38 axis as
-segments. Where each one attaches comes from the
-[anchored layout](#the-layout-dropdown), whose x is GRCh38 bp, or from a hover;
-the bubble lane and the [allele inventory](#the-allele-inventory) give their
-lengths.
+The asymmetry between the panels is structural: a rank-0 segment sits on GRCh38
+and has a coordinate, a rank>0 segment sits on another assembly's refName and
+has none, so no coloring puts those loops on a GRCh38 axis. Where each attaches
+comes from the [anchored layout](#the-layout-dropdown) or a hover; the bubble
+lane and the [allele inventory](#the-allele-inventory) give their lengths.
 
 **Bubble spread** and **Graph context** decide whether that picture is readable,
 and the
@@ -248,40 +245,30 @@ To cut an exact slice instead of a coordinate frontier,
 `gfatools view -R <region> -r 1` walks the graph itself.
 
 And the **window** is not a free parameter: the layout scales to a target node
-size, so ten times the nodes draws ten times as long a thread at a tenth the
-size and inks the same fraction of the canvas, turning the loops that carry the
-figure into specks. That is why every window in the table below is around a
-hundred kb.
+size, so ten times the nodes turns the loops that carry the figure into specks.
+That is why every window in the table below is around a hundred kb.
 
 ### What the graph shows that a linear view cannot
 
 Every node and every deletion arc carries its own size, so the drawing states
 what each alternative is worth without a hover.
 
-Extra sequence is a node in the graph, so it draws as a tube. Missing sequence
-is an **edge**: a link from one backbone segment to another that is not its
-neighbour, taken by the haplotypes that do not carry what lies between them.
-Those edges are drawn thick, dashed and near-black rather than on the color
-ramp, which separates a deletion from the solid charcoal stalks of the
-off-reference alleles around it.
+Extra sequence is a node, so it draws as a tube. Missing sequence is an
+**edge**: a link from one backbone segment to another that is not its neighbour,
+taken by the haplotypes that skip what lies between. Those edges are dashed and
+near-black rather than on the color ramp, which separates a deletion from the
+solid charcoal stalks around it.
 
 Read a deletion on the [anchored layout](#the-layout-dropdown), where x is
-GRCh38 bp, so the arc spans exactly the sequence it removes and sits under the
-same coordinates in the linear panel. The alternate-allele stalks stack below
-the backbone, one row per stable rank. The force layout bows the same edge out
-by the length of the backbone it bypasses, which states a size but not a
-position, since FMMM leaves the arc's two ends wherever the simulation puts
-them.
+GRCh38 bp, so the arc spans exactly the sequence it removes. The force layout
+states a size but not a position.
 
 <Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT annotation, and the dashed arc under the graph's reference row is the gap that removes CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
-Hovering one of these edges gives the interval and the bp it removes. A deletion
-has nothing to draw at the position it occurs, which is what a linear view is
-worst at and what the alternative route in a graph is.
+Hovering one of these edges gives the interval and the bp it removes.
 
 Release 2 annotates every assembly with CAT, on the assembly's own contigs, so a
-haplotype row can carry its own gene models instead of borrowing the
-reference's. The index
+haplotype row carries its own gene models rather than the reference's. The index
 ([`cat_genes_hprc_r2_v1.3.index.csv`](https://github.com/human-pangenomics/hprc_intermediate_assembly/blob/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv))
 gives one GFF3 per haplotype; load a slice of one as an ordinary `FeatureTrack`
 on that haplotype's assembly.

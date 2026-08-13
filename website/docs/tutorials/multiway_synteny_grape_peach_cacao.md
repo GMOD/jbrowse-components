@@ -338,7 +338,7 @@ properties beside `type`.
 ribbons run along the diagonal. `colorBy: "reference"` anchors every band on the
 shared middle row, so a cacao chromosome keeps one color across both.
 
-<Figure caption="Three genomes stacked peach-cacao-grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal. Color by → Reference anchors both bands on the shared middle row (cacao), so a cacao chromosome keeps one color as its orthologs are traced up into peach and down into grape." src="/img/multiway_synteny/grape_peach_cacao.png" />
+<Figure caption="Three genomes stacked peach-cacao-grape, with one MCScan .blocks file backing both synteny bands. autoDiagonalize has reordered and flipped each row's chromosomes so the ribbons run along the diagonal, and Color by → Reference anchors both bands on the shared middle row." src="/img/multiway_synteny/grape_peach_cacao.png" />
 
 ## Direct vs transitive pairs
 
@@ -375,7 +375,7 @@ every pair at once, and **Group by... → Mate assembly** splits them into a lan
 per genome. That reading scales: adding a genome adds a lane, not a panel, so
 the question becomes which of these kept it.
 
-<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, and a bar means that grape gene has a syntenic partner there, so the lanes read as presence and absence down a column: the four rosids keep most of the block, tomato keeps one gene of it, and arabidopsis keeps a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
+<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: the four rosids keep most of the block, tomato one gene of it, arabidopsis a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
 ## Reproduce it end to end
 

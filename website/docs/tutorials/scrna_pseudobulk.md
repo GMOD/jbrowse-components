@@ -32,7 +32,7 @@ A UMAP or a dot plot gives you how much of a gene each cell type made. Putting
 the same cells on genomic coordinates adds where in the gene the reads landed:
 which end, which exons, which annotated transcript the pile agrees with.
 
-<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view: the 3' end of IL7R, CD8A, GNLY, MS4A1, LYZ, FCGR3A, FCER1A, LILRA4 and PPBP, in the same order as the rows they mark. The signal walks down the diagonal, one marker per row." src="/img/scrna/marker_panel.png" />
+<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal walks down the diagonal." src="/img/scrna/marker_panel.png" />
 
 The signal piling up at one end of each gene is the chemistry showing through.
 10x 3' kits sequence the 3' end of each transcript, so a coverage track of that

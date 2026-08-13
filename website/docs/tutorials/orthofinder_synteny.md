@@ -55,7 +55,7 @@ back, and their orthologs still fall into chromosome-scale blocks. The teleost
 genome duplication shows up as a matter of counting: a human chromosome answers
 to one or two chicken chromosomes, and to more zebrafish ones.
 
-<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish, all four bands off one vertebrates_orthogroups track. Chicken against frog is nearly one chromosome to one; gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
+<Figure caption="Five vertebrate genomes stacked on OrthoFinder orthogroups: human, chicken, frog, spotted gar, zebrafish, all four bands off one vertebrates_orthogroups track. Gar against zebrafish, past the teleost duplication, is the dense band." src="/img/orthofinder_synteny/vertebrates.png" />
 
 Every band draws one line per ortholog, so a band resolves into wedges only
 where a chromosome's orthologs mostly land on one chromosome of the row below.
@@ -91,7 +91,7 @@ frame. Fitted individually, every row is the same length instead, which
 stretches the diploid donor's chromosomes across the same span as the
 hexaploid's and draws a one-to-one correspondence between the two as a wedge.
 
-<Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order: Aegilops tauschii, bread wheat, durum, wild emmer, Triticum urartu, T. timopheevii. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built and the tetraploids in between." src="/img/orthofinder_synteny/wheat.png" />
+<Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 
 ## Reading one chromosome out of the stack
 
@@ -101,7 +101,7 @@ over bread wheat 4A alone, with **Color by... → Query** painting each link by
 the tauschii chromosome it leaves rather than by the single chromosome they all
 arrive at.
 
-<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track as the six-row figure. Color by → Query gives each chromosome its own color. 4A resolves into three blocks in order along it: 4D over most of its length, then 5D, then 7D at the far end." src="/img/orthofinder_synteny/wheat_4a.png" />
+<Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track. Color by → Query gives each chromosome its own color, and 4A resolves into three blocks in order along it: 4D, then 5D, then 7D." src="/img/orthofinder_synteny/wheat_4a.png" />
 
 The middle bundle leaves the right-hand end of 5D rather than 6D, whose tick it
 nearly touches: 6D reaches 4A only as scattered singletons, like the other three
@@ -121,7 +121,7 @@ the stack, with no new file and no second track: name two other assemblies in
 the same two-row view. Triticum urartu, the diploid A-genome donor, should carry
 the first and not the second.
 
-<Figure caption="Triticum urartu's seven chromosomes over bread wheat 4A, the same track and locus as the figure above. Where tauschii gave three blocks, urartu gives two: chromosome 4 covers both of the first two, the second from its own distal end, and chromosome 7 covers the far end of 4A." src="/img/orthofinder_synteny/wheat_4a_urartu.png" />
+<Figure caption="Triticum urartu's seven chromosomes over bread wheat 4A, the same track and locus as the figure above. Where tauschii gave three blocks, urartu gives two." src="/img/orthofinder_synteny/wheat_4a_urartu.png" />
 
 It carries the first. Where tauschii answered for 4A with three chromosomes,
 urartu answers with two, its chromosome 4 taking both of the first two blocks,

@@ -127,7 +127,7 @@ homozygous reference. Two settings make them comparable:
   autoscale, which fits each row to its own maximum and draws three different
   depths at the same height.
 
-<Figure caption="The RHD deletion across three genotypes, coverage pinned to one shared axis, the banded span RHD itself. Top, HG00113 with no copy: coverage at full depth either side, collapsing across the gene. Middle, HG00096 with one: about half that depth. Bottom, HG00097 with two: flat throughout." src="/img/multisv_rhd_dosage.png" />
+<Figure caption="The RHD deletion across three genotypes, coverage pinned to one shared axis, the banded span RHD itself. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
 
 ## A closer look at the empty span
 

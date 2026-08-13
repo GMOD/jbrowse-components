@@ -48,7 +48,7 @@ annotation files derived from the same matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="The MYC contact domain, its bounding HiCCUPS loop and the denser triangle in the matrix, which are three readings of one file, under twelve single-cell ATAC pseudobulks, which are not. The ATAC peaks pile up inside the domain and thin out to its right in every blood lineage." links="Open this view=hic/loops_and_domains" />
+<Figure src="/img/hic/loops_and_domains.png" caption="The MYC contact domain, its bounding HiCCUPS loop and the denser triangle in the matrix, under twelve single-cell ATAC pseudobulks. The ATAC peaks pile up inside the domain and thin out to its right in every blood lineage." links="Open this view=hic/loops_and_domains" />
 
 A contact domain and the loop at its corner are the same object seen two ways.
 The block in the matrix and the arc above it end at the same two coordinates,
@@ -104,7 +104,7 @@ _ABL1_ on chr9, the fusion imatinib targets. GM12878 is a lymphoblastoid line
 with a normal karyotype. Both have deep in situ Hi-C from the same lab and
 pipeline in ENCODE, so the two maps are directly comparable.
 
-<Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) open as two windows in one linear view, with GM12878 above and K562 below. Each panel's own two triangles are its intra-chromosomal contacts; the wedge between them is chr9 against chr22. It is empty in GM12878 and carries a dense block in K562, arrowed, whose apex sits where the two highlighted genes meet." links="Open this view=hic/bcr_abl1_translocation" />
+<Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 (chr9) and BCR (chr22) as two windows in one linear view, GM12878 above and K562 below. The wedge between each panel's own triangles is chr9 against chr22: empty in GM12878, a dense arrowed block in K562." links="Open this view=hic/bcr_abl1_translocation" />
 
 Read the two panels as one comparison. The paired triangles are the same in
 both: chr9 and chr22 each fold normally in K562. What differs is the space
@@ -183,7 +183,7 @@ that call for every Hi-C experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments),
 both derived from the matrix already loaded.
 
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree. No contact matrix here, since a compartment appears only once a matrix is divided by its distance expectation, and the eigenvector is that computation, published." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree. No contact matrix here, since the eigenvector is that computation over one, published." links="Open this view=hic/compartment_switch" />
 
 The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
 K562, and the reason to believe it is the same reason the translocation was

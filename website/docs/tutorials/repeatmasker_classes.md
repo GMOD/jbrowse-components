@@ -54,7 +54,7 @@ fetch:
 
 <Figure caption="UCSC RepeatMasker over a 17q21 window, colored by repClass through a jexl lookup table. The key over the track is the display's legend slot. Every class shares one packed lane, so a class's blocks are interleaved with five others." src="/img/cookbook_color_by_type.png"/>
 
-<Figure caption="The same track and window partitioned on repClass instead. SINE fills the window, LINE comes in clusters, and the sparse classes read as classes rather than as stray blocks. The LTR? and Unknown lanes are values in the file that the lookup table above does not name." src="/img/cookbook_color_by_type_rows.png"/>
+<Figure caption="The same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters. The LTR? and Unknown lanes are values in the file that the lookup table above does not name." src="/img/cookbook_color_by_type_rows.png"/>
 
 ## Pinning it in a config
 

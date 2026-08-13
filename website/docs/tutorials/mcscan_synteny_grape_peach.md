@@ -70,7 +70,7 @@ each genome, so `.anchors.simple` draws one ribbon per block where `.anchors`
 draws one per gene pair. Neither file carries coordinates, which is what the BED
 files are for.
 
-<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="A run of MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone, one ribbon per orthologous gene pair. Bottom: both files on the same band, the .anchors.simple block ribbons pale underneath and their gene pairs drawn over them, so each block is the bundle of pairs it was reduced from." />
+<Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="A run of MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone, one ribbon per orthologous gene pair. Bottom: both files on the same band, so each block is the bundle of pairs it was reduced from." />
 
 ### BED files
 
@@ -164,7 +164,7 @@ The two tracks describe the same run at different granularity. Add a linear
 synteny view (**Add → Linear synteny view**), pick peach and grape, and turn on
 both.
 
-<Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks, red where the block is collinear and blue where it is inverted." src="/img/mcscan_anchors.png" />
+<Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks." src="/img/mcscan_anchors.png" />
 
 The block track is drawn here as an `LGVSyntenyDisplay`: a synteny track in an
 ordinary linear genome view row, drawn as features rather than a ribbon band.
@@ -202,7 +202,7 @@ and the ribbons above it say whether the genes inside hold their order.
 Zoom to one block with both gene tracks on and set to **Show only genes**, and
 the unit the file is made of is on screen.
 
-<Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line, one grape gene to one peach gene, drawn across each gene's own extent. The genes between them have no anchor in this run, so nothing is drawn for them." src="/img/mcscan_synteny/gene_level.png" />
+<Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line drawn across each gene's own extent; the genes between them have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
 
 Most genes in these windows carry no ribbon, the ordinary case inside a block:
 MCScan anchors what it could pair confidently and says nothing about the rest.
@@ -216,7 +216,7 @@ is one point and a block is a run of them. The axes start in each assembly's
 index order, which scatters the runs; **Re-order chromosomes** sorts the
 vertical axis to follow the horizontal one, using the alignments themselves.
 
-<Figure caption="Grape against peach after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block, and a peach column crossing several grape rows is one peach chromosome matching several grape ones." src="/img/mcscan_synteny/dotplot.png" />
+<Figure caption="Grape against peach after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block." src="/img/mcscan_synteny/dotplot.png" />
 
 Reordering puts each peach chromosome's strongest grape partner on the diagonal
 and leaves its other partners off it, which is a property of these genomes

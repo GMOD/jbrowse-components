@@ -85,7 +85,7 @@ blocks are red and the inverted ones blue.
 HG002 is male, so `chrX_MATERNAL` and `chrY_PATERNAL` have nothing on the other
 haplotype to chain to, and their column and row stay empty.
 
-<Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with its own counterpart on the diagonal; the blue ticks are inverted blocks and the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
+<Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with its own counterpart; the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
 
 ## The 8p23.1 inversion
 
@@ -138,7 +138,7 @@ Then, on each gene lane:
 - no gene can carry a label at this zoom; a second track over the same GFF, cut
   to a few genes with **Filter by...**, can
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand throughout: forward red, reverse blue. The inverted block is the long blue bar in both panels and the sweep crossing between them. The labeled lane beside the ribbons carries the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar in both panels, and the labeled lane beside the ribbons carries the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 ## Framing both panels on the same sequence
 
@@ -153,7 +153,7 @@ options → Show... → Show location markers**. It draws lines through the ribb
 at regularly spaced positions, each joining a point on the top row to the point
 it maps to on the bottom.
 
-<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the Q100 chain blocks on its own haplotype's coordinates. Right-clicking a block moves the other panel onto the sequence it matches; location markers then join positions across the ribbon." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the Q100 chain blocks on its own haplotype's coordinates. Right-clicking a block moves the other panel onto the sequence it matches." src="/img/hg002_haplotypes_follow_panel.png" />
 
 ## See also
 

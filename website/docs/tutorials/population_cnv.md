@@ -106,7 +106,7 @@ similar samples sit together.
 The heatmap is a summary of per-sample profiles, and those profiles are flat and
 quantized. Six individuals spanning the range, plotted rather than colored:
 
-<Figure caption="The same window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers, so the copies are countable rather than inferred from a color." src="/img/cnv1000g/ccl3l1_ladder.png" />
+<Figure caption="The same window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
 Two paralogous blocks carry the variation. The right-hand one spans CCL3L1 and
 CCL4L1, chemokine genes that exist in a variable number of tandem copies. The
@@ -222,7 +222,7 @@ the bin size and the resolution levels are attributes of the store, written by
 the converter. A relative `uri` resolves against the config that holds it, so a
 store sitting beside `config.json` needs no absolute URL.
 
-<Figure caption="All 2504 individuals of the 1000 Genomes panel over the CCL3L1 window, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. Every population is present, so each copy-number class is filled in rather than sampled." src="/img/cnv1000g/zarr_cohort.png" />
+<Figure caption="All 2504 individuals of the 1000 Genomes panel over the CCL3L1 window, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies." src="/img/cnv1000g/zarr_cohort.png" />
 
 That figure is the whole panel, and it cost the three requests measured above:
 the group metadata, the array metadata, and one chunk. The three do not grow

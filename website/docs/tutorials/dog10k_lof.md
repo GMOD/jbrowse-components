@@ -119,7 +119,7 @@ block, and the gene track still shows which exon it sits in.
 
 ## Reading it
 
-<Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site itself as an ordinary variant lane (C → T), then one row per dog. Five breeds carry it heterozygous (light blue) or homozygous (dark blue); the Labrador Retrievers, Boxers, and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
+<Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant lane, then one row per dog. Five breeds carry it; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
 The build script genotypes the same site over every canid in the callset. The
 allele is carried by 74 of the collection's 324 breeds and reaches homozygosity

@@ -212,7 +212,7 @@ and not the method: on the left each group is three near-collinear segments in
 its own block, which is what a plot like this looks like when the subgenomes
 stayed put.
 
-<Figure caption="Left, bread wheat aligned against itself; right, oat aligned against itself. Both hexaploids, both over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1 where blue is purifying selection. Wheat's groups stay in their own blocks; oat pairs across groups throughout, the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
+<Figure caption="Left, bread wheat aligned against itself; right, oat aligned against itself. Both hexaploids over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1. Wheat's groups stay in their own blocks; oat pairs across groups throughout." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
 
 The wheat panel comes from Ensembl Compara's own homoeolog calls
 ([`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py)),

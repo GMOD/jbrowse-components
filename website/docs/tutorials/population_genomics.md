@@ -248,7 +248,7 @@ darker block beneath it, with the karyotype strip down the sidebar. `groupBy` is
 what keeps those two blocks contiguous. Without it the rows keep the VCF's
 column order, and the split only reads as two blocks by luck.
 
-<Figure src="/img/popgen/in2lt_per_sample.png" caption="Whole chr2L. Top: the In(2L)t extent. Middle: Fst between arrangements. Bottom: one row per DGRP line, genotyped for the inversion as a single SV call and grouped by karyotype. The carrier block spans breakpoint to breakpoint, directly under the Fst plateau. Inversions draw as a tapered glyph, so each carrier row thins toward its left breakpoint."/>
+<Figure src="/img/popgen/in2lt_per_sample.png" caption="Whole chr2L. Top: the In(2L)t extent. Middle: Fst between arrangements. Bottom: one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint, directly under the Fst plateau."/>
 
 The genotypes here are the arrangement karyotypes themselves, so the lane is a
 direct record of which lines carry the inversion. That ordinary SNPs across the

@@ -51,7 +51,7 @@ kind: every primary tumor in a TCGA project stacked as its own row, so a
 copy-number change shared across the cohort reads as a vertical stripe running
 down hundreds of samples.
 
-<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain (red, up) and loss (blue, down) frequency per 100 kb. Recurrent events read as vertical stripes through the stack, each under a peak in the frequency track." src="/img/tcga/cohort_cnv_genome.png" />
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
 
 ## Load it into JBrowse
 
@@ -250,7 +250,7 @@ Each subtype gets its own pair of rows, gain in red over loss in blue, with the
 bottom row of each block holding the tumors whose receptor calls do not resolve
 a subtype.
 
-<Figure caption="Gain and loss frequency per 100 kb across the 22 autosomes and chrX, tallied separately for each receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row, and 16q loss is the event that row is missing; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
+<Figure caption="Gain and loss frequency per 100 kb across the 22 autosomes and chrX, tallied separately for each receptor subtype. 17q gain is confined to the HER2+ row, 5q loss and 10p gain to the triple-negative row; 1q and 8q gain are in every row." src="/img/tcga/cohort_cnv_recurrence_subtype.png" />
 
 The rows can only be read against each other because
 [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
@@ -336,7 +336,7 @@ hosted, so it loads from any config today (see
 }
 ```
 
-<Figure caption="The same 1104 primary tumors as the figure at the top of this page, and the same cohort recurrence above them, but read from the binned Zarr store instead of the segment BED. Clustered on the whole genome. The recurrent stripes fall in the same places because these are the same calls; the heatmap ramps continuously where the stack steps through five colors." src="/img/tcga/cohort_cnv_zarr_genome.png" />
+<Figure caption="The same 1104 primary tumors and cohort recurrence as the figure at the top of this page, read from the binned Zarr store instead of the segment BED and clustered on the whole genome. The recurrent stripes fall in the same places." src="/img/tcga/cohort_cnv_zarr_genome.png" />
 
 The adapter config is the store's location and nothing else: the sample list,
 the bin size and the resolution levels are attributes of the store. Each tumor's

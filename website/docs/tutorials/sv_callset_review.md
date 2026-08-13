@@ -100,7 +100,7 @@ chr10, so the junction wants a third panel. And the control belongs beside it
 rather than in a second directory: one render per sample, the same `--loc` list
 and the same `--width`, so the two are comparable line for line.
 
-<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumour nanopore reads carry a solid curve at every breakend; the matched normal carries none. On the right the same three loci as one 39.5 kb contig, the allele reconstructed from those junctions, with the spanning reads running through it." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumour nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one 39.5 kb reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
 Reads at 1 px apiece (`featureHeight:super-compact`) is what keeps six pileups
 on one screen; at the default height the picture is mostly pileup and the curves

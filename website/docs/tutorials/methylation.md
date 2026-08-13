@@ -114,12 +114,12 @@ computed in the browser with no external tool. The interleaved mix from the
 first section resolves: one band is methylated over the island, the other is
 not.
 
-<Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order, where methylated and unmethylated reads alternate down the pileup. Bottom: the same reads grouped by the HP tag, one band per haplotype. Only the grouping differs." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
+<Figure caption="HG002 ONT reads over the SNRPN CpG island, colored by 5mC with unmethylated CpGs in blue. Top: file order. Bottom: the same reads grouped by the HP tag, one band per haplotype. Only the grouping differs." src="/img/methylation/hg002_snrpn_group_by_hp.png" links="Ungrouped=methylation/hg002_snrpn_ungrouped,Grouped by HP=methylation/hg002_snrpn_grouped" />
 
 Loading the two per-haplotype bedMethyl files above the reads puts the summary
 and its source in the same view, on one x scale.
 
-<Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. Averaging the two would show half-methylation and hide it. Grouping reads by HP keeps the summary profile on top and the individual reads below it as the same data, so one can be checked against the other." src="/img/methylation/hg002_snrpn_combined.png" />
+<Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. Grouping reads by HP keeps the summary profile on top and the individual reads below it as the same data." src="/img/methylation/hg002_snrpn_combined.png" />
 
 Reading the figure top to bottom is the check worth making: the aggregate says
 one allele is methylated over the island and the other is not, and the reads

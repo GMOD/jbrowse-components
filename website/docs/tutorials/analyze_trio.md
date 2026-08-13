@@ -75,7 +75,7 @@ jump out: the child's two haplotypes match the mother's in some blocks and the
 father's in others. The rest of this tutorial turns that by-eye pattern into a
 painted track.
 
-<Figure caption="The phased mode with no markup added. Rows are child hap1/hap2, mother hap1/hap2, father hap1/hap2, top to bottom. Several stretches where rows match each other are visible by eye. The RefSeq genes above give the window its genomic scale, and the connector lines under them tie each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
+<Figure caption="The phased mode with no markup added. Rows are child hap1/hap2, mother hap1/hap2, father hap1/hap2, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
 ## Finding the matching blocks programmatically
 
@@ -231,13 +231,13 @@ so there's nothing to see. Zoom to a few hundred kb around one boundary instead,
 where the block-step is obvious and the genotype columns resolve into individual
 variants. Start with the paternal crossover near chr1:29.7 Mb:
 
-<Figure caption="Paternal crossover at chr1:29,697,418, in a 400 kb window. Up top the painting steps from Father hap2 (light blue) to Father hap1 (dark blue). The tinted frames read that switch off the raw genotypes: yellow ties Child hap1 to Father hap2, purple ties it to Father hap1." src="/img/trio-crossover-paternal.png"/>
+<Figure caption="Paternal crossover at chr1:29,697,418, in a 400 kb window. The painting steps from Father hap2 to Father hap1, and the tinted frames read that switch off the raw genotypes." src="/img/trio-crossover-paternal.png"/>
 
 The maternal chromosome does the same thing at its own boundaries. Near
 chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
 copies:
 
-<Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window. Same idea in a different palette: the painting steps from Mother hap2 (salmon) to Mother hap1 (dark red), the green frame ties Child hap2 to Mother hap2 on the left, orange ties it to Mother hap1 on the right." src="/img/trio-crossover-maternal.png"/>
+<Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window, the same idea in a different palette: the painting steps from Mother hap2 to Mother hap1, and the frames tie Child hap2 to each in turn." src="/img/trio-crossover-maternal.png"/>
 
 The painting is the clean summary. The genotypes underneath switch between the
 two parental copies far more often than real crossovers do, so the painted

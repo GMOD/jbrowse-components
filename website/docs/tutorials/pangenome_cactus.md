@@ -209,7 +209,7 @@ synteny view**, whose Quick start fills in a row per assembly the track lists.
 }
 ```
 
-<Figure caption="The Minigraph-Cactus graph's synteny projection: the five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair. The continuous diagonals of the top three bands are the shared backbone. The bottom band crosses where IAI39 carries large inversions relative to the others." src="/img/pangenome_cactus/synteny.png" />
+<Figure caption="The Minigraph-Cactus graph's synteny projection: five strains stacked K12 to IAI39, a halSynteny ribbon between each adjacent pair. The bottom band crosses where IAI39 carries large inversions relative to the others." src="/img/pangenome_cactus/synteny.png" />
 
 This is the same five strains in the same row order as the
 [all-vs-all tutorial's stack](/docs/tutorials/allvsall_synteny#stacking-the-genomes)
@@ -297,7 +297,7 @@ and streams while it does it, which matters at whole-genome scale; see
 }
 ```
 
-<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain (K12 first), colored where each differs from K12. All five align continuously across this window, so the blank stretch through the middle is sequence matching K12, not missing alignment." src="/img/pangenome_cactus/maf.png" />
+<Figure caption="The Minigraph-Cactus HAL projected onto K12 as a MAF: the coverage band on top, then one row per strain, colored where each differs from K12. All five align continuously across this window." src="/img/pangenome_cactus/maf.png" />
 
 A row can be blank for two reasons. A stretch with no colored columns is
 sequence that strain shares with K12, which is the case in the window above. A
@@ -344,7 +344,7 @@ single frame. seqwish folds the rRNA copies together, so the pggb curve runs
 above the strain count there; the reference-first graph keeps them apart and its
 curve never exceeds the strain count anywhere on the chromosome.
 
-<Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move. Both are correct about their own graph: the callout on each row names the operation that decides it." src="/img/pangenome_cactus/builders.png" />
+<Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move." src="/img/pangenome_cactus/builders.png" />
 
 Neither curve is wrong, and neither builder is the correct one. They were asked
 different questions: seqwish merges identical sequence wherever it occurs, while
@@ -528,7 +528,7 @@ raster the [pggb tutorial](/docs/tutorials/pangenome_ecoli#compared-to-odgi-viz)
 contrasts against its projections. It gives one row per strain, but puts the
 graph's node order on the horizontal axis instead of a genome coordinate.
 
-<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not. The horizontal axis is graph node order, not K12 position, so nothing lines up with a gene or coordinate. The gold band marks the locus carried over to the JBrowse figure below." src="/img/pangenome_cactus/graph.png" />
+<Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order rather than K12 position, so nothing lines up with a gene or coordinate. The gold band marks the locus carried over to the figure below." src="/img/pangenome_cactus/graph.png" />
 
 The `odgi pav` track carries the same information as the raster, one row per
 path painted where that path is present. Drawing it on K12's coordinates in the

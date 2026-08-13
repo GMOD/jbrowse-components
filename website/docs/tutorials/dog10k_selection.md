@@ -66,7 +66,7 @@ on the scale the plot draws, so only the column has to be named.
 Opening the assembly without a location shows all of its regions at once, so the
 display lays the autosomes out side by side rather than one at a time.
 
-<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, drawn as a Manhattan track, with three body-size genes labelled at the windows they fall in. Bottom: two megabases of chr15, the same scan rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The highlighted band is the single 200 kb window the top half scored it as." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
+<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled. Bottom: two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the single 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak names a region rather than a variant, and the
 run of high windows on chr10 is one region's worth. A genome-wide scan has to
@@ -193,7 +193,7 @@ instead of performing it, since the display takes `clusterRegion` beside
 
 ## Reading it
 
-<Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, with size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene, so the columns the row order keys on are the ones under the peak." src="/img/dog10k-igf1-haplotype.png" />
+<Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
 
 Clustering on genotypes alone recovers the size split without being told it: the
 two largest blocks down the size swatch are the toy and small breeds and the

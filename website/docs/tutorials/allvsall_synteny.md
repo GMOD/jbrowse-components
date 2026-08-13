@@ -279,7 +279,7 @@ The row order here is a free choice. Unlike a reference-anchored `.blocks`
 table, an all-vs-all file is a complete graph, so every adjacent pair you happen
 to stack is a direct alignment rather than a transitive link.
 
-<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all five, and the gaps are strain-specific islands. The bottom band is the one with structure: IAI39 is inverted against the others over much of its length." src="/img/multiway_synteny/ecoli_pangenome.png" />
+<Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 is inverted against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
 The gaps in those ribbons are where the strains differ. Sakai's largest carry
 its prophage Shiga-toxin genes, and CFT073's are its own pathogenicity islands.
@@ -312,7 +312,7 @@ With genes loaded, the gaps become readable. Navigate Sakai's row to
 subunits, sitting in a region where no alignment to K-12 exists. These
 prophage-borne genes are carried by Sakai and not by K-12.
 
-<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary (Sakai 1,246,166); everything right of it, stx2B included, is ~22 kb of Sakai with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
+<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary, and everything right of it, stx2B included, has no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
 The K-12 window is placed where that shared block ends, so the ribbon
 terminating mid-figure marks the island boundary.
@@ -363,7 +363,7 @@ The shaded band is K-12's phenylacetate (paa) operon, and Sakai, CFT073 and
 IAI39 all stop at its left edge where NCTC86 runs through. In the graph below
 it, the ringed node is the segment carrying the operon.
 
-<Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, K-12's own lane hidden. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
+<Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 The same mode zoomed out to the whole chromosome gives a per-strain overview of
 where each one diverges. Because a synteny view's rows are ordinary linear
@@ -373,7 +373,7 @@ the whole PAF is in memory on every pan; for a real pangenome, index it first
 with [make-pif](#large-files-index-with-make-pif) so each screen is a tabix
 range query instead:
 
-<Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps in the lanes are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12, so the blue stretches in its lane and the blue crossings in the band under them are the same inversions, once as a strand flip and once as a ribbon." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
+<Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
 ### The same gap, drawn as a graph
 

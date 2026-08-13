@@ -183,7 +183,7 @@ than being unexplained row ranges. Both are also in the track menu.
 Point the two slots at `histology` and the rows band by how the tumor was called
 under the microscope:
 
-<Figure caption="CDH1's exons with rows grouped and colored by histology and the gene's introns collapsed. The truncating (HIGH impact) cells crowd into the lobular band, and the much larger ductal band above it is nearly empty; the connector fan ties each column to the exon it was called in." src="/img/tcga/mutations_cdh1_histology.png" />
+<Figure caption="CDH1's exons with rows grouped and colored by histology and the gene's introns collapsed. The truncating (HIGH impact) cells crowd into the lobular band and the much larger ductal band above it is nearly empty." src="/img/tcga/mutations_cdh1_histology.png" />
 
 E-cadherin loss is the defining lesion of lobular breast cancer
 ([Ciriello et al. 2015](https://doi.org/10.1016/j.cell.2015.09.033)), and
@@ -223,7 +223,7 @@ Point the slots at `subtype` instead and the rows band by receptor status, which
 is where the cohort's other well-known contrast lives
 ([TCGA 2012](https://doi.org/10.1038/nature11412)):
 
-<Figure caption="TP53's exons with rows grouped and colored by receptor subtype, introns collapsed, the bands running HR+/HER2-, HER2+, triple-negative and unknown from the top. The triple-negative band is visibly the dense one and the much larger HR+/HER2- band above it is sparse, with the calls spread the length of the coding sequence rather than piled on a codon." src="/img/tcga/mutations_tp53_subtype.png" />
+<Figure caption="TP53's exons with rows grouped and colored by receptor subtype, introns collapsed. The triple-negative band is visibly the dense one and the much larger HR+/HER2- band above it is sparse, with the calls spread the length of the coding sequence." src="/img/tcga/mutations_tp53_subtype.png" />
 
 The bottom band is the tumors whose receptor calls do not resolve a subtype, a
 gap in the annotation rather than a fourth subtype. Hovering a column in the

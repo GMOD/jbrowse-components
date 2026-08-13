@@ -203,7 +203,7 @@ interval `AT1TE14315`, family META1. It comes from UCSC's GenArk hub for TAIR10,
 whose sequence names are the RefSeq accessions this assembly already uses, so it
 loads with no aliasing.
 
-<Figure caption="TAIR10 genes, the RepeatMasker lane, the aggregate MethylDackel track (one 0-100% row per context), and three copies of the same WGBS pileup colored by CpG, CHG, and CHH. AT1G12930 on the left is red in CpG only, at both levels. The LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
+<Figure caption="TAIR10 genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
 ## Reproduce it end to end
 
