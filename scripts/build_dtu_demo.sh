@@ -21,9 +21,9 @@
 #
 # Gate on regular_FDR, not empirical_FDR. satuRn's empirical null assumes most
 # tests are null, and on a muscle-vs-liver contrast roughly a quarter of
-# transcripts move. locfdr then warns "f(z) misfit" and the empirical null
-# swallows everything: across 39,596 tests the minimum empirical FDR is 0.97,
-# where plain BH puts 1,015 below 0.05.
+# transcripts move. locfdr then warns "f(z) misfit" and no transcript passes the
+# empirical FDR: across 39,596 tests its minimum is 0.97, where plain BH puts
+# 1,015 below 0.05.
 #
 # Effect size is dIF computed from TPM, not from counts. Isoform fraction is a
 # molar quantity and read counts scale with abundance x effective length, so a
