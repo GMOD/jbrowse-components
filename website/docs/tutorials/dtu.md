@@ -90,9 +90,10 @@ the minimum empirical FDR beside its count.
 ## Configuring the track
 
 One expression covers the whole transcript: a UTR follows `color` unless
-`utrColor` claims it. `labels.name` reads GENCODE's `transcript_name`, `legend`
-declares what the ramp means, and `mouseover` resolves against the gene, so it
-summarizes the gene rather than one isoform.
+`utrColor` claims it. `labels.name` reads GENCODE's `transcript_name`, which
+also names the isoform under the cursor, and `legend` declares what the ramp
+means. `mouseover` resolves against the gene, so it summarizes the gene; an
+isoform's own numbers are in the details panel, one click away.
 
 ```json addtrack
 {
