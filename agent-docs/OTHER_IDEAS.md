@@ -36,7 +36,8 @@ reference others may hold, not as free-form prose.
 - [Display height system redesign](#display-height-system-redesign) — three options
   for retiring the `heightOverride` name
 - [Vertical real estate](#vertical-real-estate--the-scrolls-within-scrolls-problem) —
-  the view-level height allocator, and what the wheel machinery already does
+  the view-level height allocator, what the wheel machinery already does, and the
+  publisher's own filter as a footprint lever
 - [UI / UX](#ui--ux) — highlight API, super-compact mode
 - [Workspace layout](#workspace-layout-tabs-and-panels) — panel maximize and where
   its flag must not live, a tab overflow menu and what has to measure for it, and
@@ -681,6 +682,37 @@ furniture. Overlaying labels onto data (floating-label machinery already exists)
 thinning gaps, and collapsing headers is footprint savings with **zero
 information loss**. Composes with Lever A: less chrome -> bigger `B` -> more fits
 natively before the waterfill ever compresses anything.
+
+### Lever C: don't draw what the publisher already hides
+
+A track can arrive over-tall because its own publisher's default was dropped in
+conversion, which is footprint spent on features nobody asked to see. UCSC's
+trackDb carries `filter.<field>` defaults its browser applies before drawing, and
+JASPAR is the case that shows the size of it: over the 2 kb around the TP53 start
+site the file holds 9,899 motif matches and UCSC draws the 500 scoring >= 400
+(measured 2026-08-13 against JASPAR2026.bb). Every one of those rows was vertical
+real estate. jb2hubs cc48aa2802a derives those onto `jexlFilters`, which is a
+level-2 outcome reached without touching the display at all.
+
+Two things make this compose rather than just help:
+
+- **The density gate already counts the admitted population.** Both the
+  pre-fetch sample and the exact post-fetch count in
+  `RenderFeatureDataRPC/executeRenderFeatureData.ts` take the same `admit`
+  predicate the layout pass uses, so a filtered track measures as what it draws.
+  A shipped filter therefore moves a track from behind a force-load prompt to
+  drawn, not merely from tall to short.
+- **The filter is visible and reversible.** "Filter by... (n)" carries the count
+  and clears, so a default that hides data says so — the property any
+  publisher-derived default has to have.
+
+What is still missing at level 2 is the summary rung **below** `collapsed`: when
+even one row of overlapping boxes is saturated, a feature track has nothing to
+degrade to, where an alignments track has coverage. A per-bin count strip drawn
+from the same fetch would be the feature-track equivalent, and would give the
+density gate somewhere to send a region instead of a prompt. Not attempted;
+noted because the gate's force-load prompt is the current answer and it is a
+question rather than a picture.
 
 ### Honest floor & scoping
 
