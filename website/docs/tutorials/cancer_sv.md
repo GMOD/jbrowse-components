@@ -99,7 +99,7 @@ every read crossing the junction has its remainder aligned elsewhere. The
 matched normal at the same locus is clean, which is what separates a somatic
 event from a mapping artifact.
 
-<Figure caption="Left: COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip where normal reads read through, and the nanomonsv records between them name chr12 and chr10 in their ALT. Right: the same event as a breakpoint split view over every locus the chain visits, tumor reads only." src="/img/cancer_sv/multihop_reads.png" />
+<Figure caption="Left: COLO829 tumor above COLO829BL normal at the two chr3 breakpoints, soft clipping shown. Tumor reads clip where normal reads read through. Right: the same event as a breakpoint split view over every locus the chain visits." src="/img/cancer_sv/multihop_reads.png" />
 
 Soft clipping is off by default. Turn it on from the track menu with **Show soft
 clipping**. These pileups are deep enough that the track asks before downloading
@@ -112,21 +112,16 @@ chain visits and draws the reads that leave one panel and arrive in another.
 
 The reads already know which loci those are and in what order, so the view is
 built from them rather than typed in. On the tumor track, **Launch view →
-Reconstruct derivative allele...** groups the reads in the window by their split
-alignments and lists the routes through the reference they describe; picking
-one, setting **Draw as** to **Breakpoint split view** and choosing **Replace
-current view** puts a panel per segment of that route in the launching view's
-place, in the order the reads cross it, carrying the tracks that view had. That
-is how the panels above were made, with no locus typed anywhere; the dialog
-itself is the top frame of
-[the reconstruction figure below](#reconstructing-the-derivative-allele-in-the-browser).
+Reconstruct derivative allele...** lists the routes the reads describe; pick
+one, set **Draw as** to **Breakpoint split view** and choose **Replace current
+view**, and the launching view is replaced by a panel per segment of that route,
+in the order the reads cross it, carrying the tracks that view had.
 
-One panel per segment rather than per chromosome, which is the difference
-between the two routes: this chain leaves chr3 and returns to it, so it gets two
-chr3 panels, and a form filled in by hand gets one. Every panel opens on the
-same span, centered on the junction its segment carries. A segment's own length
-is a property of the reads that happened to describe it, and panels at different
-zooms put the connecting curves in the corners instead of across the frame.
+One panel per segment rather than per chromosome: this chain leaves chr3 and
+returns to it, so it gets two chr3 panels where a hand-filled form gets one.
+Every panel opens on the same span, centered on the junction its segment
+carries, since panels at different zooms put the connecting curves in the
+corners instead of across the frame.
 
 **Add → Breakpoint split view** is still there for a view whose loci you already
 know, and takes one row per panel.
@@ -145,15 +140,13 @@ chr10 breakend it names has a second junction a couple of hundred bases away
 whose far end is on chr12. The walk then stops, since the only junction at the
 chr12 end returns to where the chain began.
 
-The option makes an assumption the caller does not: that two junctions leaving
-one locus belong to one molecule. It stops wherever that stops being safe. Two
-open continuations at a locus end the walk, because the records cannot say which
-molecule carries which; a continuation leading back into the chain ends it too,
-since a closed cycle is a shape already fully on screen. The evidence for the
-assumption is the reads, and it is the dialog above: **Reconstruct derivative
-allele** ranks whole routes by how many molecules independently take each.
+The option makes an assumption the caller does not, that two junctions leaving
+one locus belong to one molecule, and stops wherever that stops being safe: two
+open continuations at a locus end the walk, since the records cannot say which
+molecule carries which, and so does a continuation leading back into the chain.
+The evidence for the assumption is the reads, which is the dialog above.
 
-<Figure caption="Opening the split view from the record rather than the import form. 1: right-click the breakend and choose Open breakpoint split view. 2: the dialog, where the shape, the window each panel opens at, and whether to follow further breakends are set together. 3: the result, three panels because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
+<Figure caption="Opening the split view from the record rather than the import form: right-click the breakend, set the shape and window in the dialog, and get three panels because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
 
 For one read rather than the pileup, right-click a read and choose **Linear read
 vs ref**. That builds a synteny view with the read as its own assembly along the
@@ -163,11 +156,9 @@ introduced for this.
 
 Stacked panels confirm that reads cross a junction, but they describe the event
 in reference coordinates. Laying it out along the derivative instead shows the
-order and orientation of the pieces, which is the synteny view in the next
-section: the same three loci along the top, and the reconstructed derivative
-along the bottom with a ribbon per segment. The next section builds that view
-from the reads already on screen; the one after it rebuilds the allele's
-sequence, which the base-level checks need.
+order and orientation of the pieces. The next section builds that view from the
+reads already on screen; the one after it rebuilds the allele's sequence, which
+the base-level checks need.
 
 ## Reconstructing the derivative allele in the browser
 
@@ -184,18 +175,17 @@ splitting one read: a rearrangement is usually a long arm carrying short
 inserts, while a read chopped into pieces is a row of equal blocks, and the two
 have the same total length.
 
-The result is the same view type **Linear read vs ref** produces from a read you
+The result is the view type **Linear read vs ref** produces from a read you
 right-click, with the axis swapped: the lower panel is the path a group of reads
 agrees on rather than one molecule, so a ribbon carries its whole group's
-support. Picking a supporting read out of the pileup and running **Linear read
-vs ref** on it is then the single-molecule evidence behind one candidate.
-Whatever else was open in the view comes along onto the reference panel, so the
-path is read against the genes it runs through.
+support. Running **Linear read vs ref** on one supporting read is then the
+single-molecule evidence behind a candidate. Whatever else was open comes along
+onto the reference panel, so the path is read against the genes it runs through.
 
-The dialog offers two destinations. **Open in new view** appends the
-reconstruction below the pileup it came from; **Replace current view** puts it
-in that view's place, which is what the figures here use, since the window the
-pileup is showing is the window the reconstruction is anchored on.
+**Open in new view** appends the reconstruction below the pileup it came from;
+**Replace current view** puts it in that view's place, which is what the figures
+here use, since the pileup's window is the one the reconstruction is anchored
+on.
 
 ### A fold-back on one chromosome
 
@@ -206,75 +196,56 @@ arm turns around and continues backwards, which is a fold-back. A second call
 anchors 28 bp from the first, the pattern repeated breakage-fusion-bridge cycles
 leave behind.
 
-The fold-back's own row names the same chromosome twice, once inverted, which is
-the fold-back written out, and its strip draws it: two blocks of one color whose
-arrows point at each other. In the panel below, the track under the allele names
-the interval each arm came from.
+The fold-back's row names the same chromosome twice, once inverted, and its
+strip draws it as two blocks of one color whose arrows point at each other. It
+is not the first row: two routes here have the same read count, and rows tied on
+support are ordered by segment count, so the three-segment route through the
+second anchor sorts above it. The count ranks a row; the strip identifies it.
 
-It is not the first row. Two routes here are described by the same number of
-reads, and rows tied on support are ordered by segment count, so the
-three-segment route through the second anchor sorts above the two-segment
-fold-back. The count is what ranks a row; the strip is what identifies it.
+<Figure caption="Top: the candidate list at the chr9 fold-back anchors. Bottom: the two-segment fold-back drawn, two windows of chr9 above and the allele below. The ribbons cross instead of running parallel." src="/img/cancer_sv/foldback_reconstruction.png" />
 
-<Figure caption="Top: the candidate list at the chr9 fold-back anchors. Bottom: the two-segment fold-back drawn, two windows of chr9 on the reference panel and the allele below. The ribbons cross instead of running parallel, which is what a segment returning inverted looks like." src="/img/cancer_sv/foldback_reconstruction.png" />
-
-More than one row here means more than one allele. Reads reaching the anchors
+More than one row here means more than one allele: reads reaching the anchors
 from different directions describe different routes through the same
-breakpoints, and each route is offered separately with its own support.
+breakpoints, each offered with its own support.
 
 The window is deliberately narrower than the event. Reconstruction reads SA
-tags, so the arm a read returns from does not have to be on screen to be
-reconstructed, and asking for the whole event at this depth is more alignment
-than the track will fetch: the pileup then renders as `force load` with no reads
-behind it, and the reconstruction correctly reports that nothing in the window
-is supported.
+tags, so the arm a read returns from does not have to be on screen, and asking
+for the whole event at this depth is more alignment than the track will fetch.
 
 ### The der(3) allele, four segments across three chromosomes
 
 The same menu at the chr3 breakpoint this page has been following returns two
-rows, and the first is the whole event: a 52.3 kb arm of chr3, 199 bp of chr10,
-183 bp of chr12 inverted, then 8.43 kb of chr3 inverted. The second is the same
-route with the chr12 piece missing, chr3 to chr10 and straight back to chr3, and
-two reads take it. Both cross the same first junction, so the disagreement is
-about what follows it, and a picture drawn only from the reads that support the
-top row cannot contain it. The reconstruction is anchored on the window the
-pileup was showing, so the reference row is tens of kilobases of chr3 with the
-two insert loci occupying a few pixels at its right-hand end, and the ribbons
-reaching them are hairlines because the segments are hairlines. The genes of
-those loci, and the gene track carried up from the launching view, collide in
-the same few pixels. The next two sections open those junctions at base scale,
-where the same two pieces are as wide as the chr3 arms.
+rows. The first is the whole event: a 52.3 kb arm of chr3, 199 bp of chr10, 183
+bp of chr12 inverted, then 8.43 kb of chr3 inverted. The second is that route
+with the chr12 piece missing, and two reads take it; both cross the same first
+junction, so the disagreement is about what follows it.
 
-<Figure caption="Top: the candidate list over the tumor pileup it was computed from, each row a route through the reference that COLO829 reads cross in the same order and orientation, with its segments drawn to scale. Bottom: the synteny view the top row draws, reference above and allele below, a ribbon per segment." src="/img/cancer_sv/derivative_autogenerated.png" />
+The reconstruction is anchored on the window the pileup was showing, so the
+reference row is tens of kilobases of chr3 with the two insert loci a few pixels
+wide at its right-hand end, and the ribbons reaching them are hairlines. The
+next two sections open those junctions at base scale.
+
+<Figure caption="Top: the candidate list over the tumor pileup it was computed from, each row's segments drawn to scale. Bottom: the synteny view the top row draws, reference above and allele below, a ribbon per segment." src="/img/cancer_sv/derivative_autogenerated.png" />
 
 The reads describing one allele agree on its junctions and on nothing else: each
 starts and stops where its own molecule did, and each crosses the allele from
 whichever end it was sequenced from. Both are properties of the read rather than
 of the event, so paths are identified by their junctions alone and a chain is
-folded together with its reverse complement before the counting. That is what
-puts this event on one row rather than splitting its support across several.
-Which end the row is laid out from is a presentation choice, matching the
-orientation `derive` reports below.
+folded together with its reverse complement before the counting, which puts this
+event on one row rather than splitting its support across several.
 
-The lower panel has no sequence track. This reconstruction is the allele's order
-and orientation, taken from where the reads' alignments start and stop; it does
-not recover the bases at a junction. That is the next section.
+The output is a proposal rather than a call: reads mismapped into a repeat
+produce a confident-looking path, so check that the reads run through each
+junction instead of clipping at it, and that the segments land in the genes the
+event is supposed to involve.
 
-Read counts rank the candidates; they do not decide them. Reads mismapped into a
-repeat produce a confident-looking path, which is why the output is a proposal
-to look at rather than a call: check that the reads run through each junction
-instead of clipping at it, and that the segments land in the genes the event is
-supposed to involve. The segment sizes are the other check, and the reason this
-wants long reads: a route assembled from read-length pieces is an aligner
-splitting one short read across the genome.
-
-None of those checks are base-level, and none of them can be. The path is
-assembled from where the reads' alignments start and stop, so it agrees with
-those alignments by construction and inherits whatever the aligner got wrong.
-Deciding whether the reads' own bases support a junction takes a sequence to
-align them to, which is the next section: `derive` builds the allele's consensus
-and realigns the spanning reads onto it, and a wrong junction then shows as
-clipping and mismatches at that exact position.
+None of those checks are base-level, and none can be. The path is assembled from
+where the reads' alignments start and stop, so it agrees with those alignments
+by construction and inherits whatever the aligner got wrong. Deciding whether
+the reads' own bases support a junction takes a sequence to align them to, which
+is the next section: `derive` builds the allele's consensus and realigns the
+spanning reads onto it, and a wrong junction shows as clipping and mismatches at
+that exact position.
 
 ## Reconstructing the allele's sequence
 
@@ -337,7 +308,7 @@ Ribbons below are colored by the reference chromosome they come from, so the
 wide green one is the chr3 arm and the crossing ribbons at right are the chr10
 and chr12 inserts with chr3 returning inverted.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from. The same molecules end together on the last breakpoint against hg38 (top) and run the length of the allele at flat depth against it (bottom)." src="/img/cancer_sv/derivative_synteny.png" />
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 
@@ -345,20 +316,17 @@ Zoomed to the kilobase holding the junctions, the two inserts are the same width
 as the arms either side of them. Realigned against the derivative, reads that
 the reference split into four pieces run straight through: none of the 29
 spanning reads clips at any of the four junction positions, and depth does not
-dip at them. Both the reconstruction and this check come from the reads, so the
-figure is evidence rather than illustration.
+dip at them.
 
-<Figure caption="The stitching at base scale, over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. The pileup under the reference row stops in a straight line on the junction; the one under the allele crosses every join at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
+<Figure caption="The stitching at base scale over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards." src="/img/cancer_sv/derivative_inserts.png" />
 
-The two figures above put both alignments of those molecules in one frame but
-leave the correspondence to the coordinates. Following one read across is the
-next figure's job, and it is what a breakpoint split view does: soft clipping is
-shown on both sides, and a curve joins each molecule's pieces. The hg38 side
-carries a panel per locus the allele visits, so every connector runs between two
-segments that are both on screen. A connector drawn dashed would mean the
-opposite, that the read passes through a segment no panel is showing.
+Following one read across the two alignments is what a breakpoint split view
+does: soft clipping is shown on both sides, and a curve joins each molecule's
+pieces. The hg38 side carries a panel per locus the allele visits, so every
+connector runs between two segments that are both on screen; a dashed connector
+means the read passes through a segment no panel is showing.
 
-<Figure caption="COLO829 tumour ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped, and the curves follow the same molecules onto 199 bp of chr10, onto 183 bp of chr12, and back to chr3. Realigned to the derivative (right) they cross the junction at flat depth. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
+<Figure caption="COLO829 tumour ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped; realigned to the derivative (right) they cross at flat depth. The panes are at different zooms." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 
 ## The transcript view
 
@@ -368,19 +336,17 @@ fusion.
 
 The SV inspector opens DepMap's STAR-Fusion output as a table beside a circular
 view of it, one chord per row. **Add → SV inspector**, then a File Type of
-STAR-Fusion, which the wizard cannot infer from this file's `.tsv` extension;
-all 44 calls load as one table, their artifact tail converging on chrM between
-chrY and chr1. Both of those steps are live links under the figure below.
+STAR-Fusion, which the wizard cannot infer from this file's `.tsv` extension.
+Both of those steps are live links under the figure below.
 
 Searching the table narrows both halves, since the circle draws the rows the
 search leaves. `chr9` leaves `BCR--ABL1` and `NUP214--XKR3`, one junction seen
 from both sides, carrying an order of magnitude more junction reads than
 anything else in the file.
 
-A triaged row is not the end of the table. Every row carries a menu on its
-caret, and **Open in linear genome view** takes it to its own breakpoint; type
-the partner's window into the location box after it and the view holds both side
-by side.
+Every row carries a menu on its caret, and **Open in linear genome view** takes
+it to its own breakpoint; type the partner's window into the location box after
+it and the view holds both side by side.
 
 Then turn on **Read connections → View as pairs**. That merges each molecule's
 two alignments onto one row across the two regions, so the fusion reads as a
@@ -388,7 +354,7 @@ flat line per molecule instead of a fan of curves. Flip the chr22 region as well
 (`[rev]`): XKR3 is on the minus strand, so without it both halves of a molecule
 run opposite ways.
 
-<Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded green and each line is one Iso-Seq molecule running from NUP214 into XKR3. The legend names the read colors, which come from each segment's strand relative to its own chain rather than from the color-by setting." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
+<Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded green and each line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
 That is the `NUP214--XKR3` side of the pair. The `BCR--ABL1` side gets the rest
 of this section, in the same layout.
@@ -417,7 +383,7 @@ between the two, and with both partners displayed those curves cross from one
 region into the other. **Show... → Show only split alignments** then drops every
 read that stays on one chromosome, so the pileup is the fusion's own support.
 
-<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked. The arcs over the coverage are the reads' own exon junctions, and each row below is one molecule running from its chr22 alignment across to its chr9 supplementary." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
 roughly seven copies, while the chr22 partners sit at one, so what is amplified
@@ -435,7 +401,7 @@ lane above it steps up. The transcript junction the red arc uses is 122 kb to
 the right of that, inside _ABL1_'s first intron: the amplicon boundary is a DNA
 break, and the transcript is spliced from it to the nearest exon.
 
-<Figure caption="Copy number in three windows, with the calls as arcs across them. Red, the STAR-Fusion RNA junctions, running from the amplified chr9q34 block to its chr22 partners XKR3 and BCR. Blue, the same two junctions called from 10X linked-read DNA. The shaded stripe is chr9:130,731,760, where the DNA arc ends and copy number steps up. The red arc ends 122 kb further in." src="/img/cancer_sv/k562_cn_amplicon.png" />
+<Figure caption="Copy number in three windows with the calls as arcs across them. Red, the STAR-Fusion RNA junctions; blue, the same two junctions called from 10X linked-read DNA. The shaded stripe is where the DNA arc ends and copy number steps up." src="/img/cancer_sv/k562_cn_amplicon.png" />
 
 This is the reasoning SplitThreader applied to the _ERBB2_ amplicon in SK-BR-3:
 copy-number steps and breakpoints that describe the same interval are evidence
