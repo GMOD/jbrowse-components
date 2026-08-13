@@ -947,9 +947,9 @@ function svgChromeOf(module: string, seen = new Set<string>()): boolean {
  */
 function declaresName(src: ts.SourceFile, name: string) {
   for (const s of src.statements) {
-    const isDefaultExport = !!s.modifiers?.some(
-      m => m.kind === ts.SyntaxKind.DefaultKeyword,
-    )
+    const isDefaultExport =
+      ts.canHaveModifiers(s) &&
+      !!ts.getModifiers(s)?.some(m => m.kind === ts.SyntaxKind.DefaultKeyword)
     if (ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s)) {
       if (s.name?.text === name || (name === 'default' && isDefaultExport)) {
         return true
