@@ -9,7 +9,7 @@ import type {
   LDRenderingBackend,
   LDUploadData,
 } from './ldRenderingBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_MAIN = 'main'
 const PASS_GENOMIC = 'genomic'
@@ -50,7 +50,7 @@ function interleaveLDInstances(data: {
   return buf
 }
 
-export const LD_PASSES: PassDescriptor[] = [
+export const LD_PASSES: PipelineDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: ldUniformShader,

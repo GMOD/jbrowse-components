@@ -14,7 +14,7 @@ import {
 } from './GpuAlignmentsRenderer.ts'
 
 import type { AlignmentsSources } from './rendererTypes.ts'
-import type { PassDescriptor } from '@jbrowse/render-core/hal'
+import type { PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 /**
  * A pass has to be wired in three places to paint: registered in
@@ -41,7 +41,7 @@ const START = 10_000
 // The five coverage passes take a worker-packed buffer verbatim, so sizing
 // their fixtures by hand is sizing them the way no packer would: at the real
 // stride, "one instance" is one instance on both sides.
-function oneInstance(pass: PassDescriptor) {
+function oneInstance(pass: PipelineDescriptor) {
   return new ArrayBuffer(pass.instanceStride)
 }
 

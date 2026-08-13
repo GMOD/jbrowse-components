@@ -1,4 +1,4 @@
-import type { GpuHal, PassDescriptor } from './hal'
+import type { GpuHal, PipelineDescriptor } from './hal'
 
 /**
  * A shader pass bundled with the function that packs its instance buffer.
@@ -25,7 +25,7 @@ import type { GpuHal, PassDescriptor } from './hal'
  * declaring only the fields a pass actually reads costs nothing at the point of
  * use.
  */
-export interface InstancePass<TData> extends PassDescriptor {
+export interface InstancePass<TData> extends PipelineDescriptor {
   pack: (data: TData) => ArrayBuffer | ArrayBufferView
 }
 

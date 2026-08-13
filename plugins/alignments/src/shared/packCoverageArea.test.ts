@@ -5,7 +5,7 @@ import { MOD_COVERAGE_PASS } from '../features/modCoverage/packGpu.ts'
 import { SNP_COVERAGE_PASS } from '../features/snpCoverage/packGpu.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 
-import type { PassDescriptor } from '@jbrowse/render-core/hal'
+import type { PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 /**
  * The five coverage-band passes are the only uploads whose buffer and whose
@@ -76,7 +76,7 @@ function packed() {
   )
 }
 
-function instances(pass: PassDescriptor, buf: ArrayBuffer) {
+function instances(pass: PipelineDescriptor, buf: ArrayBuffer) {
   return buf.byteLength / pass.instanceStride
 }
 

@@ -407,12 +407,12 @@ generation agent prompted in standard real-time-rendering vocabulary — who nee
 to know which of our identifiers is the thing they already have a word for.
 
 Two of these are collisions rather than translations, and they are the reason
-this table exists at all: **our "pass" is a PSO**, and **our uniform "ring
-buffer" does not wrap**. Both are flagged below.
+this table exists at all: **a "pass" identifier means a PSO**, and **our uniform
+"ring buffer" does not wrap**. Both are flagged below.
 
 | Standard term | Our spelling | Owned by |
 |---|---|---|
-| **Pipeline state object (PSO)** | `PassDescriptor` — ⚠️ we call it a "pass" | `hal/types.ts`, built by `slangPass()` |
+| **Pipeline state object (PSO)** | `PipelineDescriptor` — but ⚠️ every identifier around it still says *pass* (`passId`, `drawPass`, `slangPass`, `InstancePass`, `*_PASSES`) | `hal/types.ts`, built by `slangPass()` |
 | **Render pass** (`beginRenderPass`) | the `beginFrame` / `endFrame` bracket — one per frame, not per `drawPass` | `webgpuHal.ts`, `webgl2Hal.ts` |
 | **Draw call** | `hal.drawPass(passId, regionKey)` | `hal/types.ts` |
 | **Instanced rendering** | the whole architecture — `stepMode: 'instance'`, `draw(verticesPerInstance, count)` | `InstancePass`, `uploadPass`, `instanceCache.ts` |
@@ -429,7 +429,7 @@ buffer" does not wrap**. Both are flagged below.
 | **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (§7a: GLSL ES has no SSBOs) | `getLDMatrixGPU.ts` |
 | **Compute pipeline / workgroup dispatch** | same words; 2D workgroup grid to clear `maxComputeWorkgroupsPerDimension` | `getLDMatrixGPU.ts` |
 | **Blend state** | `BlendState`, `STANDARD_BLEND_STATE` | `hal/types.ts`, `webgpuUtils.ts` |
-| **Primitive topology** | `PassDescriptor.topology` | `hal/types.ts` |
+| **Primitive topology** | `PipelineDescriptor.topology` | `hal/types.ts` |
 | **MSAA / resolve target** | `MSAA_SAMPLE_COUNT` (4×), `msaaView` + `resolveTarget` | `webgpuHal.ts` |
 | **Scissor / viewport** | same words | `hal/types.ts` |
 | **Frustum culling** | "cull" — CPU-side, over a 1D bp interval; there is no frustum and no camera | `syntenyRibbonCull.ts`, `syntenyFetchWindow.ts` |
@@ -480,15 +480,17 @@ buffer" does not wrap**. Both are flagged below.
 - **MSAA (multisample antialiasing)** — sampling each pixel several times so
   edges come out smooth; the samples are then **resolved** down to one image. We
   run 4×, resolving once per frame.
-- **Pass** — ⚠️ **in this codebase, a pipeline state object, not WebGPU's render
-  pass.** A `PassDescriptor` is one shader + vertex layout + blend + topology,
-  compiled to one pipeline. WebGPU's render pass is our `beginFrame`/`endFrame`
-  bracket, of which there is one per frame. See §8.
+- **Pass** — ⚠️ **as an identifier in this codebase, a pipeline state object, not
+  WebGPU's render pass.** The type is named honestly (`PipelineDescriptor`: one
+  shader + vertex layout + blend + topology, compiled to one pipeline), but
+  `passId`, `drawPass`, `slangPass`, `InstancePass` and every `*_PASSES` array
+  still say pass and all mean that pipeline. WebGPU's render pass is our
+  `beginFrame`/`endFrame` bracket, of which there is one per frame. See §8.
 - **Pipeline** — the GPU's fixed assembly line: vertex → raster → fragment →
   blend.
 - **Pipeline state object (PSO)** — the whole configuration of one draw baked
   into an immutable object: shaders, vertex layout, blend, depth/stencil,
-  topology. What we call a *pass*; compiled up front at HAL construction.
+  topology. Ours is `PipelineDescriptor`, compiled up front at HAL construction.
 - **Quad** — a rectangle built from two triangles (GPUs only draw triangles).
 - **Rasterizer** — the fixed stage that turns triangles into pixels and
   interpolates corner values.

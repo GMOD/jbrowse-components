@@ -9,7 +9,7 @@ import { WIGGLE_PASSES } from '../../../../plugins/wiggle/src/shared/GpuWiggleRe
 
 import type {
   VertexAttributeLayout,
-  PassDescriptor,
+  PipelineDescriptor,
 } from '@jbrowse/render-core/hal'
 
 // Alignments and multi-synteny are NOT validated here: their deep import chains
@@ -96,7 +96,10 @@ function validateSync(
   }
 }
 
-function validatePassDescriptors(label: string, passes: PassDescriptor[]) {
+function validatePipelineDescriptors(
+  label: string,
+  passes: PipelineDescriptor[],
+) {
   describe(`glAttribute ↔ GLSL sync — ${label}`, () => {
     for (const pass of passes) {
       validateSync(pass.id, pass.vertexAttributes, pass.glslVertex)
@@ -104,11 +107,11 @@ function validatePassDescriptors(label: string, passes: PassDescriptor[]) {
   })
 }
 
-validatePassDescriptors('wiggle', WIGGLE_PASSES)
-validatePassDescriptors('variant', VARIANT_PASSES)
-validatePassDescriptors('variant-matrix', VARIANT_MATRIX_PASSES)
-validatePassDescriptors('ld', LD_PASSES)
-validatePassDescriptors('hic', HIC_PASSES)
-validatePassDescriptors('canvas-feature', CANVAS_FEATURE_PASSES)
-validatePassDescriptors('dotplot', DOTPLOT_PASSES)
-validatePassDescriptors('synteny', SYNTENY_PASSES)
+validatePipelineDescriptors('wiggle', WIGGLE_PASSES)
+validatePipelineDescriptors('variant', VARIANT_PASSES)
+validatePipelineDescriptors('variant-matrix', VARIANT_MATRIX_PASSES)
+validatePipelineDescriptors('ld', LD_PASSES)
+validatePipelineDescriptors('hic', HIC_PASSES)
+validatePipelineDescriptors('canvas-feature', CANVAS_FEATURE_PASSES)
+validatePipelineDescriptors('dotplot', DOTPLOT_PASSES)
+validatePipelineDescriptors('synteny', SYNTENY_PASSES)

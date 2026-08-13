@@ -4,7 +4,7 @@
 // second consumer appears they live here, alongside the renderer that uses them.
 // Promote to @jbrowse/render-core if/when another plugin needs the same shapes.
 // These are building blocks — the renderer still owns its pass list, upload, and
-// draw loop; this module just supplies the shader modules, ready PassDescriptors,
+// draw loop; this module just supplies the shader modules, ready PipelineDescriptors,
 // and the generated struct-of-arrays packers.
 //
 // All four passes share the `FeatureGlyphUniforms` UBO (see
@@ -26,7 +26,7 @@ import * as continuationShader from './shaders/continuation.generated.ts'
 import * as lineShader from './shaders/line.generated.ts'
 import * as rectShader from './shaders/rect.generated.ts'
 
-import type { PassDescriptor } from '@jbrowse/render-core/hal'
+import type { PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 export {
   arrowShader,
@@ -43,16 +43,16 @@ export const ARROW_PASS = 'arrow'
 export const CHEVRON_PASS = 'chevron'
 export const CONTINUATION_PASS = 'continuation'
 
-// Ready PassDescriptors for the three self-contained passes.
-export const RectPass: PassDescriptor = slangPass({
+// Ready PipelineDescriptors for the three self-contained passes.
+export const RectPass: PipelineDescriptor = slangPass({
   id: RECT_PASS,
   mod: rectShader,
 })
-export const LinePass: PassDescriptor = slangPass({
+export const LinePass: PipelineDescriptor = slangPass({
   id: LINE_PASS,
   mod: lineShader,
 })
-export const ArrowPass: PassDescriptor = slangPass({
+export const ArrowPass: PipelineDescriptor = slangPass({
   id: ARROW_PASS,
   mod: arrowShader,
 })
@@ -60,7 +60,9 @@ export const ArrowPass: PassDescriptor = slangPass({
 // Chevron reuses line's vertex buffer (bufferStride/bufferAttributes from
 // `line`), and its per-instance vertex count scales with a consumer-chosen cap
 // on how many chevrons one line can host — so it's built per consumer.
-export function makeChevronPass(maxChevronsPerLine: number): PassDescriptor {
+export function makeChevronPass(
+  maxChevronsPerLine: number,
+): PipelineDescriptor {
   return slangPass({
     id: CHEVRON_PASS,
     mod: chevronShader,
@@ -72,7 +74,7 @@ export function makeChevronPass(maxChevronsPerLine: number): PassDescriptor {
 
 // Continuation has its own buffer (uploaded alongside rects) carrying rect
 // geometry + strand so the arrows point in the feature's genomic direction.
-export const ContinuationPass: PassDescriptor = slangPass({
+export const ContinuationPass: PipelineDescriptor = slangPass({
   id: CONTINUATION_PASS,
   mod: continuationShader,
 })

@@ -74,7 +74,7 @@ Deleted:
   `mockHal`).
 - `pickingTexture` / `pickingStagingBuffer` allocations in `webgpuHal`,
   `pickingFbo` / `pickingTex` in `webgl2Hal`, and the `picking?: boolean`
-  flag on `PassDescriptor` / `slangPass`.
+  flag on `PipelineDescriptor` / `slangPass`.
 - `inFlight` queue, `nextPick` coalescing slot, and `hoverGeneration`
   counter in `GpuSyntenyRenderer`.
 - The cancel-pick workaround in `LevelSyntenyCanvas.handleMouseLeave`

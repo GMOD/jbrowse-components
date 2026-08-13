@@ -77,7 +77,7 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 
 // Shader strides — every pass shares the same Uniforms struct (see
@@ -600,7 +600,7 @@ const ARC_PASSES: InstancePass<ArcsPackData>[] = [
 // packer-less overlay pass, so that registering a pass is not a fourth wiring
 // point a new layer can be missed from. `drawPass` on an unregistered id draws
 // nothing and throws nothing.
-export const ALIGNMENTS_PASSES: PassDescriptor[] = [
+export const ALIGNMENTS_PASSES: PipelineDescriptor[] = [
   ...Object.values(GPU_PILEUP_PASS),
   ...COVERAGE_LAYERS.map(l => l.pass),
   ...ARC_PASSES,

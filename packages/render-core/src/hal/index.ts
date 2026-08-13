@@ -6,7 +6,7 @@ export type {
   BlendState,
   VertexAttributeLayout,
   GpuHal,
-  PassDescriptor,
+  PipelineDescriptor,
   ShaderBinding,
   TextureBinding,
 } from './types.ts'

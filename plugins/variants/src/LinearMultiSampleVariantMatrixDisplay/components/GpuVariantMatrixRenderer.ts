@@ -9,14 +9,14 @@ import type {
   MatrixRenderState,
   VariantMatrixUploadData,
 } from './variantMatrixRenderingBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_MAIN = 'main'
 const REGION_KEY = 0
 const UNIFORMS_SIZE_BYTES = variantMatrixShader.UNIFORMS_SIZE_BYTES
 const U = variantMatrixShader.UNIFORM_OFFSET_F32
 
-export const VARIANT_MATRIX_PASSES: PassDescriptor[] = [
+export const VARIANT_MATRIX_PASSES: PipelineDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: variantMatrixShader,

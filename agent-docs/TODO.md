@@ -837,7 +837,7 @@ shipping the rest through a main-thread packer, cheapest first:
   never mutated" — the upload memo would need a layout-generation token instead
   of `readYs` identity.
 - **Y as a second instance buffer** (divisor 1 on GL, a second `vertex.buffers`
-  entry on WebGPU). `PassDescriptor` and both HALs grow multi-buffer support;
+  entry on WebGPU). `PipelineDescriptor` and both HALs grow multi-buffer support;
   relayout then uploads a `Uint16Array` per pass instead of the full struct.
 - **Y as an indirection** — instances carry `readIndex`, the shader reads the row
   from a per-read table. Makes relayout O(reads) rather than O(bases) and deletes

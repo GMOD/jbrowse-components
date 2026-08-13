@@ -4,7 +4,7 @@
 //   - WGSL / GLSL shader strings
 //   - Uniform std140 layout (field offsets, total size)
 //   - Per-instance vertex buffer layout (field offsets, stride)
-//   - VERTEX_ATTRIBUTES descriptors (for PassDescriptor)
+//   - VERTEX_ATTRIBUTES descriptors (for PipelineDescriptor)
 //   - Uniforms TS interface + writeUniforms() packer
 //   - InstanceArrays TS interface + packInstances() struct-of-arrays packer
 //
@@ -738,7 +738,7 @@ export function emitInterface(inputs: CodegenInputs) {
       `${baseName}.slang declares ${textures.length} combined samplers ` +
         `(${textures.map(t => t.name).join(', ')}), but the HALs bind only the ` +
         `first — multi-texture passes are not implemented. Combine them into ` +
-        `one texture, or teach both HALs (and PassDescriptor.textures) to bind ` +
+        `one texture, or teach both HALs (and PipelineDescriptor.textures) to bind ` +
         `the whole list.`,
     )
   }

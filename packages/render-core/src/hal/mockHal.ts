@@ -1,6 +1,6 @@
 import { RegionRegistry } from './regionRegistry.ts'
 
-import type { GpuHal, PassDescriptor } from './types.ts'
+import type { GpuHal, PipelineDescriptor } from './types.ts'
 
 export interface MockCall {
   method: string
@@ -25,7 +25,7 @@ export class MockHal implements GpuHal {
   // Parameter kept for parity with WebGL2Hal / WebGPUHal constructors so
   // tests can swap implementations; pass list isn't needed in the mock.
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
-  constructor(_passes: PassDescriptor[]) {}
+  constructor(_passes: PipelineDescriptor[]) {}
 
   private record(method: string, ...args: unknown[]) {
     this.calls.push({ method, args })

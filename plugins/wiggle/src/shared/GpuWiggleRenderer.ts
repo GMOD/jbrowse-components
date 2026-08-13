@@ -11,7 +11,7 @@ import * as wiggleLineShader from './shaders/wiggleLine.generated.ts'
 import { packFillInstances, packLineInstances } from './wiggleInstanceBuffer.ts'
 
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   SourceRenderData,
@@ -60,7 +60,7 @@ const LINE_PASS = {
   pack: packLineInstances,
 }
 
-export const WIGGLE_PASSES: PassDescriptor[] = [
+export const WIGGLE_PASSES: PipelineDescriptor[] = [
   FILL_PASS,
   LINE_PASS,
   // Center-line: one 6-vert quad per feature (shares PASS_LINE's buffer — same

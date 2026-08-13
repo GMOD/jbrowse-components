@@ -1,6 +1,6 @@
 import { createGpuHal } from './hal/index.ts'
 
-import type { GpuHal, PassDescriptor } from './hal/types.ts'
+import type { GpuHal, PipelineDescriptor } from './hal/types.ts'
 
 /**
  * Options for `createRenderingBackend`. The two factories are an options object
@@ -9,7 +9,7 @@ import type { GpuHal, PassDescriptor } from './hal/types.ts'
  * makes the GPU vs Canvas2D path unambiguous at every call site.
  */
 export interface RenderingBackendOptions<TRenderingBackend> {
-  passes: PassDescriptor[]
+  passes: PipelineDescriptor[]
   uniformByteSize: number
   createGpuBackend: (hal: GpuHal) => TRenderingBackend
   createCanvas2DBackend: (canvas: HTMLCanvasElement) => TRenderingBackend

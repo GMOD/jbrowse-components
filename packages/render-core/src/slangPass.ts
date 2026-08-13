@@ -1,7 +1,7 @@
 import type {
   BlendState,
   VertexAttributeLayout,
-  PassDescriptor,
+  PipelineDescriptor,
   ShaderBinding,
   TextureBinding,
 } from './hal'
@@ -37,7 +37,7 @@ export interface SlangPassOpts {
   // in the .slang source). Override only when the count is computed from a
   // TS-side runtime constant.
   verticesPerInstance?: number
-  topology?: PassDescriptor['topology']
+  topology?: PipelineDescriptor['topology']
   blend?: boolean
   blendState?: BlendState
   textures?: [TextureBinding, ...TextureBinding[]]
@@ -49,7 +49,7 @@ export interface SlangPassOpts {
   bufferAttributes?: readonly VertexAttributeLayout[]
 }
 
-export function slangPass(opts: SlangPassOpts): PassDescriptor {
+export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
   const verticesPerInstance =
     opts.verticesPerInstance ?? opts.mod.VERTS_PER_INSTANCE
   if (verticesPerInstance === undefined) {

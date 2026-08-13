@@ -11,13 +11,13 @@ import type {
   DotplotRenderState,
   DotplotRenderingBackend,
 } from './dotplotRenderingBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_LINE = 'line'
 const UNIFORMS_SIZE_BYTES = dotplotShader.UNIFORMS_SIZE_BYTES
 const U = dotplotShader.UNIFORM_OFFSET_F32
 
-export const DOTPLOT_PASSES: PassDescriptor[] = [
+export const DOTPLOT_PASSES: PipelineDescriptor[] = [
   slangPass({
     id: PASS_LINE,
     mod: dotplotShader,

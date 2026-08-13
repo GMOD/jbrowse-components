@@ -13,7 +13,7 @@ import {
 import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
-import type { BlendState, GpuHal, PassDescriptor } from './types.ts'
+import type { BlendState, GpuHal, PipelineDescriptor } from './types.ts'
 
 class ShaderCompileError extends Error {
   constructor(passId: string, details: string) {
@@ -122,7 +122,7 @@ function getOrCreateTexturedLayout(device: GPUDevice, state: LayoutState) {
 
 async function compilePipelines(
   device: GPUDevice,
-  descriptors: PassDescriptor[],
+  descriptors: PipelineDescriptor[],
   state: LayoutState,
 ) {
   const preferredFormat = navigator.gpu.getPreferredCanvasFormat()
@@ -209,7 +209,7 @@ export class WebGPUHal implements GpuHal {
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext
   private regions: RegionRegistry<RegionPassBuffer>
-  private descriptors: Map<string, PassDescriptor>
+  private descriptors: Map<string, PipelineDescriptor>
   private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
   // One bind group per textured pass, built lazily by `getBindGroup` and
@@ -255,7 +255,7 @@ export class WebGPUHal implements GpuHal {
     device: GPUDevice,
     canvas: HTMLCanvasElement,
     context: GPUCanvasContext,
-    descriptors: PassDescriptor[],
+    descriptors: PipelineDescriptor[],
     uniformByteSize: number,
     pipelines: Map<string, GPURenderPipeline>,
     layoutState: LayoutState,
@@ -290,7 +290,7 @@ export class WebGPUHal implements GpuHal {
 
   static async create(
     canvas: HTMLCanvasElement,
-    descriptors: PassDescriptor[],
+    descriptors: PipelineDescriptor[],
     uniformByteSize: number,
   ) {
     const device = await getGpuDevice()

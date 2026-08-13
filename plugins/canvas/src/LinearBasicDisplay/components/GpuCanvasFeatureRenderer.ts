@@ -30,7 +30,7 @@ import type {
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 
 export const CANVAS_FEATURE_UNIFORM_BYTE_SIZE = FEATURE_GLYPH_UNIFORM_BYTE_SIZE
@@ -111,7 +111,7 @@ const UPLOADED_PASSES = [
   CONTINUATION_INSTANCES,
 ]
 
-export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
+export const CANVAS_FEATURE_PASSES: PipelineDescriptor[] = [
   ...UPLOADED_PASSES,
   // Chevron reads line's vertex buffer via drawPass(chevron, region,
   // bufferPassId=line), so its attribute layout must match line's — and so it

@@ -17,7 +17,7 @@ We currently hand-write every shader twice — once in WGSL (`*Shaders.ts`) for
 the WebGPU backend, once in GLSL ES 3.00 (`*GlslShaders.ts`) for the WebGL2
 fallback — and hand-maintain a third parallel declaration in TypeScript for the
 byte offsets and strides used to pack per-instance buffers
-(`interleaveBuffers.ts`, `VertexAttributeLayout[]` arrays in `PassDescriptor`).
+(`interleaveBuffers.ts`, `VertexAttributeLayout[]` arrays in `PipelineDescriptor`).
 There are ~16 shader sets across the canvas, wiggle, variants, synteny, HiC,
 dotplot and LD plugins.
 
@@ -108,7 +108,7 @@ migrated:
 The current `WebGPUHal` hardcodes the storage-buffer pattern — `uploadBuffer`
 creates a `GPUBuffer` with `STORAGE` usage, the bind group layout declares
 `binding(0) = 'read-only-storage'`, pipelines have no `vertex.buffers:` entry.
-This must become a per-pass choice. `PassDescriptor` grows a
+This must become a per-pass choice. `PipelineDescriptor` grows a
 `vertexBuffer?: boolean` flag; when set:
 
 - `compilePipelines` declares
@@ -163,7 +163,7 @@ A build-time step compiles each `.slang` to:
    - `UNIFORMS_SIZE_BYTES`, `UniformOffsets`
    - TS interface types
    - `writeInstance(buf, i, inst)` typed packer
-   - `VERTEX_ATTRIBUTES: VertexAttributeLayout[]` (matches `PassDescriptor` shape)
+   - `VERTEX_ATTRIBUTES: VertexAttributeLayout[]` (matches `PipelineDescriptor` shape)
    - compute entry points only: `COMPUTE_ENTRY_POINT` and `WORKGROUP_SIZE_X`,
      read from the entry point's name and its `[numthreads(X, …)]`, so a TS
      dispatch count (`ceil(work / WORKGROUP_SIZE_X)`) can't drift from the
@@ -187,7 +187,7 @@ variant glyphs:
 - Uniform block at explicit `[[vk::binding(1, 0)]]` (so WebGPU bind group layout
   is uniform-only at binding 1 and `@binding(0)` is unused, matching the HAL's
   vertex-buffer pipeline layout).
-- `PassDescriptor.vertexBuffer: true` to select the HAL's vertex-buffer path
+- `PipelineDescriptor.vertexBuffer: true` to select the HAL's vertex-buffer path
   (see Prerequisite A).
 - Textures as `Sampler2D` (combined), **not** `Texture2D + SamplerState` (Slang
   emits Vulkan's separated-sampler pattern for the latter, which isn't
@@ -238,7 +238,7 @@ For each migrated shader set:
   continue to use the fast `u32[]` / `f32[]` path (not the per-instance
   `writeInstance` packer) for performance, but the offset constants they use are
   now derived from the shader struct rather than hand-maintained.
-- `PassDescriptor.vertexAttributes` inline arrays → `VERTEX_ATTRIBUTES` imported from
+- `PipelineDescriptor.vertexAttributes` inline arrays → `VERTEX_ATTRIBUTES` imported from
   `*.generated.ts`
 
 If `*.slang` changes in a way that shifts byte offsets, `*.generated.ts`
@@ -259,7 +259,7 @@ no longer expressible.
   more `HP_WGSL_CORE` / `HP_GLSL_CORE` duplication.
 - Reflection JSON gives us a machine-readable description of every shader
   interface — enables future tooling (shader browser, debug overlays, etc.)
-- The existing dual-backend `PassDescriptor` shape is unchanged; this is a
+- The existing dual-backend `PipelineDescriptor` shape is unchanged; this is a
   per-shader migration, not an architectural rewrite.
 
 ### Negative

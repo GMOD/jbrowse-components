@@ -3,7 +3,7 @@ import { canvasContextError, noteCanvasContext } from '../canvasContext.ts'
 import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
-import type { BlendFactor, GpuHal, PassDescriptor } from './types.ts'
+import type { BlendFactor, GpuHal, PipelineDescriptor } from './types.ts'
 
 function createShader(
   gl: WebGL2RenderingContext,
@@ -126,7 +126,7 @@ interface TextureState {
 interface PassState {
   program: WebGLProgram
   vao: WebGLVertexArrayObject
-  descriptor: PassDescriptor
+  descriptor: PipelineDescriptor
   textureState: TextureState | null
   attrLocs: number[]
 }
@@ -150,7 +150,7 @@ let totalDisposed = 0
 export class WebGL2Hal implements GpuHal {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
-  private descriptors: Map<string, PassDescriptor>
+  private descriptors: Map<string, PipelineDescriptor>
   // Compiled passes, filled on demand by `getPass`. A pass whose program failed
   // to build caches `null` so the failure is reported once, not every frame.
   private passes: Map<string, PassState | null>
@@ -189,7 +189,7 @@ export class WebGL2Hal implements GpuHal {
 
   constructor(
     canvas: HTMLCanvasElement,
-    descriptors: PassDescriptor[],
+    descriptors: PipelineDescriptor[],
     uniformByteSize: number,
   ) {
     this.canvas = canvas
@@ -270,7 +270,7 @@ export class WebGL2Hal implements GpuHal {
     gl.enable(gl.BLEND)
   }
 
-  private compilePass(desc: PassDescriptor): PassState {
+  private compilePass(desc: PipelineDescriptor): PassState {
     const gl = this.gl
     const fragShader = desc.glslFragmentOverride ?? desc.glslFragment
     const program = createProgram(gl, desc.glslVertex, fragShader)
@@ -594,7 +594,7 @@ export class WebGL2Hal implements GpuHal {
     // need explicit release again, gate it on navigator.userAgent.
   }
 
-  private applyBlendState(desc: PassDescriptor) {
+  private applyBlendState(desc: PipelineDescriptor) {
     const gl = this.gl
     if (!desc.blend) {
       gl.disable(gl.BLEND)

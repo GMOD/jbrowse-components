@@ -52,7 +52,19 @@ export interface TextureBinding {
   filter: 'linear' | 'nearest'
 }
 
-export interface PassDescriptor {
+/**
+ * A **pipeline state object (PSO)**: shaders, vertex input layout, blend state,
+ * primitive topology and texture bindings, baked into one immutable
+ * description. One of these compiles to exactly one `GPURenderPipeline`
+ * (`webgpuHal`) or one linked program + VAO (`webgl2Hal`), up front at HAL
+ * construction — never lazily mid-frame.
+ *
+ * `id` is the join key everything else calls a *pass*: `drawPass(id, …)` binds
+ * this pipeline and issues one instanced draw, and the HAL's buffer registry is
+ * keyed `(regionKey, id)`. That word does **not** mean WebGPU's render pass,
+ * which is the `beginFrame`/`endFrame` bracket and happens once per frame.
+ */
+export interface PipelineDescriptor {
   id: string
   wgslSource: string
   glslVertex: string

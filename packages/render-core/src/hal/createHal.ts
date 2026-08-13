@@ -3,7 +3,7 @@ import { getGraphicsCapabilities } from '../graphicsCapabilities.ts'
 import { WebGL2Hal } from './webgl2Hal.ts'
 import { WebGPUHal } from './webgpuHal.ts'
 
-import type { GpuHal, PassDescriptor } from './types.ts'
+import type { GpuHal, PipelineDescriptor } from './types.ts'
 
 // Per copy of this module rather than on the globalThis cell, deliberately: a
 // second bundled copy warning a second time is a duplicate console line, which
@@ -34,7 +34,7 @@ function warnSoftwareRasterizerOnce(glRenderer: string | undefined) {
 // `AggregateError.errors` (core's `formatErrorStack`), so they arrive with it.
 export async function createGpuHal(
   canvas: HTMLCanvasElement,
-  passes: PassDescriptor[],
+  passes: PipelineDescriptor[],
   uniformByteSize: number,
   failures?: unknown[],
 ): Promise<GpuHal | null> {

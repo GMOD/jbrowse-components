@@ -244,7 +244,7 @@ export function assertBindingsMatchWgsl(
 // machine that isn't the author's.
 //
 // This is a guard, not a second declaration: nothing here is used to bind
-// anything. `PassDescriptor.bindings` carries the shader's own table to the HAL.
+// anything. `PipelineDescriptor.bindings` carries the shader's own table to the HAL.
 const RENDER_SHAPES = ['uniform@1', 'uniform@1,texture@2,sampler@3'] as const
 
 export function bindingShape(bindings: readonly ShaderBinding[]) {

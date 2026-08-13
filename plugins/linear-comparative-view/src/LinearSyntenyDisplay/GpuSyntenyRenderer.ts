@@ -21,7 +21,7 @@ import type {
   SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_FILL_STRAIGHT = 'fillStraight'
 const PASS_FILL_CURVE = 'fillCurve'
@@ -42,7 +42,7 @@ const U = syntenyFillStraightShader.UNIFORM_OFFSET_F32
 // declare the same `Instance` struct out of syntenyTypes.slang and
 // syntenyPassGeometry.test.ts pins that, so the packed bytes are readable by
 // either pass of a mode regardless.
-export const SYNTENY_PASSES: PassDescriptor[] = [
+export const SYNTENY_PASSES: PipelineDescriptor[] = [
   slangPass({ id: PASS_FILL_STRAIGHT, mod: syntenyFillStraightShader }),
   slangPass({ id: PASS_FILL_CURVE, mod: syntenyFillCurveShader }),
   slangPass({ id: PASS_EDGE_STRAIGHT, mod: syntenyEdgeStraightShader }),

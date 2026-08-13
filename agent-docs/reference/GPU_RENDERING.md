@@ -906,18 +906,23 @@ maps](../ARCHITECTURE.md#gpuprops-and-derived-region-maps--re-upload-without-ref
 
 Hides the WebGPU/WebGL2 difference. Lives in `packages/render-core/src/hal/`.
 
-### "Pass" here means the pipeline, not WebGPU's render pass
+### The remaining "pass" names mean the pipeline, not WebGPU's render pass
 
 Read this before reading any HAL method name, because the word collides with
 WebGPU's own and the collision inverts what two of them appear to do.
 
-**Our `PassDescriptor` is a pipeline state object (PSO).** It carries shader
+**`PipelineDescriptor` is a pipeline state object (PSO).** It carries shader
 source, the vertex input layout, blend state, primitive topology and texture
 bindings, and `compilePipelines` turns each one into exactly one
 `GPURenderPipeline` (`webgpuHal.ts`) or one linked program + VAO
-(`webgl2Hal.ts`). One `PassDescriptor` ⇄ one PSO, built once at HAL
+(`webgl2Hal.ts`). One `PipelineDescriptor` ⇄ one PSO, built once at HAL
 construction — every pipeline in a display is compiled up front, never lazily
 mid-frame.
+
+The type says so; the **identifiers around it still say "pass"** — `passId`,
+`drawPass`, `slangPass`, `InstancePass`, every plugin's `*_PASSES` array. Those
+all mean *this* pipeline, and the rest of this section is about reading them
+that way.
 
 **WebGPU's render pass is the `beginFrame`/`endFrame` bracket.** There is
 exactly one per frame: `beginFrame` calls `beginRenderPass` with the MSAA
@@ -933,11 +938,16 @@ So, concretely:
 | `drawPass(passId, regionKey)` | bind PSO `passId`, bind that region's vertex buffer, issue **one instanced draw call**. It does not begin a pass. |
 | `beginFrame` / `endFrame` | open and close **the** render pass, plus the command encoder and submit |
 | `beginUpload` / `endUpload` | neither — a buffer-write transaction with a sweep (see "skipping a region inside the rebuild transaction") |
-| `PassDescriptor.blend` | one field of the PSO's fragment target state |
+| `PipelineDescriptor.blend` | one field of the PSO's fragment target state |
 
-The naming is historical and is not worth the churn to change: `passId` is a
-join key in the HAL's buffer registry, in every plugin's pass registry, and in
-`InstancePass`. Read it as "pipeline id" and the rest of the interface follows.
+**Why the rename stopped at the type.** `PassDescriptor` became
+`PipelineDescriptor` because a type name is read in isolation, by someone
+deciding what the thing *is* — that is where the wrong word costs most, and it
+is one declaration plus its imports. `passId` is not in that position: it is a
+join key spelled identically in the HAL's buffer registry, in `drawPass`'s
+signature, in `InstancePass`, and in every plugin's pass array, so renaming it
+touches hundreds of call sites to restate what the type now says once. Read
+`passId` as "pipeline id" and the whole interface follows.
 
 ```
 createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
@@ -1140,7 +1150,7 @@ identically (`pointGlyph.slang` disc/square markers, `diagonalGrid.slang` the
 colored-row rectangle). A shape module earns its place on the `pointGlyph` bar —
 two real consumers with a live drift hazard — not on surface similarity; see
 [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md).
-`slangPass()` turns a generated module into a `PassDescriptor`, with overrides for
+`slangPass()` turns a generated module into a `PipelineDescriptor`, with overrides for
 `topology`, `blendState`, `textures`, and buffer sharing. Authoring conventions
 and gotchas: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
 
@@ -1363,7 +1373,7 @@ does the Canvas2D-only version); keep them in step with any change here.
 - **Shader** — author `my.slang`; `pnpm gen:shaders` emits `my.generated.ts`.
 - **Renderers + factory** — `createRenderingBackend<MyRenderingBackend>` from
   `packages/render-core/src/createRenderingBackend.ts`. Use `slangPass()` to build
-  the `PassDescriptor`.
+  the `PipelineDescriptor`.
 - **MST model:**
   - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays (brings
     in `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the five fetch

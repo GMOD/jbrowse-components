@@ -8,7 +8,7 @@ import type {
   HicRenderingBackend,
   HicUploadData,
 } from './hicRenderingBackendTypes.ts'
-import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_MAIN = 'main'
 const REGION_KEY = 0
@@ -16,7 +16,7 @@ const UNIFORMS_SIZE_BYTES = hicShader.UNIFORMS_SIZE_BYTES
 const U = hicShader.UNIFORM_OFFSET_F32
 const UU = hicShader.UNIFORM_OFFSET_U32
 
-export const HIC_PASSES: PassDescriptor[] = [
+export const HIC_PASSES: PipelineDescriptor[] = [
   slangPass({
     id: PASS_MAIN,
     mod: hicShader,
