@@ -233,16 +233,16 @@ Rscript dtu.R
 
 # ------------------------------------------------------------ GFF3 for JBrowse
 # Subset GENCODE to the called genes and write the statistics into the attribute
-# column. Two things here are forced by how the glyph reads a feature, and both
-# fail silently when got wrong:
+# column. Each transcript's numbers go on its own transcript row and nowhere
+# else; the exon/CDS/UTR rows below it are passed through exactly as GENCODE
+# wrote them, and the track's color callback reaches up from the box it paints
+# with `feature.parent`.
 #
-#   * attribute names are written lowercase, because gff-nostream lowercases
-#     keys on the way in -- writing `dIF=` and reading feature.dIF in a jexl
-#     callback yields undefined, and an undefined branch just takes the default
-#     color
-#   * every attribute is repeated onto the transcript's exon/CDS/UTR children,
-#     because the canvas glyph draws one box per subfeature and evaluates the
-#     color callback against that box, not against the transcript above it
+# The one thing here forced by how the glyph reads a feature, and it fails
+# silently when got wrong: attribute names are written lowercase, because
+# gff-nostream lowercases keys on the way in -- writing `dIF=` and reading
+# feature.dIF in a jexl callback yields undefined, and an undefined branch just
+# takes the default color.
 python3 - <<'PY'
 import csv
 import gzip
@@ -304,7 +304,6 @@ def tx_attrs(tx_id):
 
 
 records = []
-kept_tx = {}
 n_in = 0
 
 with gzip.open('gencode.v29.annotation.gff3.gz', 'rt') as fh:
@@ -319,17 +318,14 @@ with gzip.open('gencode.v29.annotation.gff3.gz', 'rt') as fh:
         if gene_id not in genes:
             continue
         kind = cols[2]
-        # GENCODE carries the readable name as gene_name/transcript_name and no
-        # Name=, so without this every row in the track is labelled with its
-        # Ensembl accession.
+        # Only the two rows that gain something are rewritten. GENCODE carries no
+        # Name=, but the track's labels.name callback reads gene_name and
+        # transcript_name directly, so nothing has to be injected for the labels
+        # to read the way they do in the figure.
         if kind == 'gene':
-            cols[8] = f'Name={d["gene_name"]};{attrs};{gene_attr[gene_id]}'
+            cols[8] = f'{attrs};{gene_attr[gene_id]}'
         elif kind == 'transcript':
-            suffix = tx_attrs(d['transcript_id'])
-            kept_tx[d['transcript_id']] = suffix
-            cols[8] = f'Name={d["transcript_name"]};{attrs}{suffix}'
-        else:
-            cols[8] = attrs + kept_tx.get(d.get('transcript_id', ''), '')
+            cols[8] = attrs + tx_attrs(d['transcript_id'])
         records.append((cols[0], int(cols[3]), int(cols[4]), '\t'.join(cols)))
 
 print(f'{n_in} GENCODE rows scanned, {len(records)} kept')

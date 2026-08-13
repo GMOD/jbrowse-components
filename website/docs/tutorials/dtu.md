@@ -56,21 +56,21 @@ finished file, wrapped:
 
 ```
 chr10  HAVANA  transcript  7788129  7807815  .  +  .
-  Name=ATP5F1C-202;ID=ENST00000356708.11;Parent=ENSG00000165629.19;...;
+  ID=ENST00000356708.11;Parent=ENSG00000165629.19;gene_name=ATP5F1C;
+  transcript_name=ATP5F1C-202;...;
   dif=-0.299;fdr=0.0022;if_muscle=0.075;if_liver=0.375;
   tpm_muscle=10.03;tpm_liver=28.88;dtu=liver
 ```
 
-Four properties of that line, each of which fails without an error:
+Three properties of that line, each of which fails without an error:
 
 - **keys are lowercase**: the GFF parser lowercases them, so `dIF=` read back as
   `feature.dIF` is undefined, and an undefined branch returns the default color
 - **values are strings**, so numeric comparison requires `parseFloat`
-- **every attribute is repeated on the exon, CDS and UTR children**: the glyph
-  evaluates the color against the box being painted, not against the transcript
-- **`Name=` is added by the pipeline**: GENCODE provides only `gene_name` and
-  `transcript_name`, so an unmodified subset labels each row with its Ensembl
-  accession
+- **the numbers are on the transcript row and nothing below it**: the glyph
+  draws one box per exon, CDS and UTR and evaluates the color against the box it
+  is painting, so the callback reaches the transcript with `feature.parent.dif`.
+  `feature.dif` reads the exon, finds nothing, and paints the default
 
 `dtu` is a flag with the values `muscle`, `liver` and `ns`, set by the same
 threshold the script reports on. The color branches on it before reading `dif`,
@@ -90,9 +90,11 @@ the minimum empirical FDR beside its count.
 
 ## Configuring the track
 
-`color` and `utrColor` take the same expression, or UTRs keep the default fill
-and only part of each glyph carries the encoding. `legend` declares what the
-ramp means, and `mouseover` reads the numbers back on hover.
+One expression covers the whole transcript: a UTR follows `color` unless
+`utrColor` claims it. `labels.name` reads GENCODE's own `transcript_name`, which
+is what puts isoform names under the glyphs, and `legend` declares what the ramp
+means. `mouseover` is evaluated against the gene, so it summarizes the gene;
+hovering an isoform names that isoform and its exon.
 
 ```json addtrack
 {
@@ -106,9 +108,11 @@ ramp means, and `mouseover` reads the numbers back on hover.
   },
   "displayDefaults": {
     "subfeatureLabels": "below",
-    "color": "jexl:feature.dtu=='muscle'?(parseFloat(feature.dif)>0.6?'#901e21':parseFloat(feature.dif)>0.3?'#c63335':'#d5716a'):feature.dtu=='liver'?(parseFloat(feature.dif)<-0.6?'#124f95':parseFloat(feature.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
-    "utrColor": "jexl:feature.dtu=='muscle'?(parseFloat(feature.dif)>0.6?'#901e21':parseFloat(feature.dif)>0.3?'#c63335':'#d5716a'):feature.dtu=='liver'?(parseFloat(feature.dif)<-0.6?'#124f95':parseFloat(feature.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
-    "mouseover": "jexl:feature.transcript_name+(feature.dif?' — ΔIF '+feature.dif+' (usage '+feature.if_muscle+' muscle vs '+feature.if_liver+' liver, FDR '+feature.fdr+')':' — not tested')",
+    "color": "jexl:feature.parent.dtu=='muscle'?(parseFloat(feature.parent.dif)>0.6?'#901e21':parseFloat(feature.parent.dif)>0.3?'#c63335':'#d5716a'):feature.parent.dtu=='liver'?(parseFloat(feature.parent.dif)<-0.6?'#124f95':parseFloat(feature.parent.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
+    "labels": {
+      "name": "jexl:feature.transcript_name||feature.gene_name||feature.name||feature.id"
+    },
+    "mouseover": "jexl:feature.gene_name+': '+feature.dtu_transcripts+' isoform(s) with a usage shift, largest ΔIF '+feature.dtu_top_dif",
     "legend": [
       { "label": "muscle-preferred, ΔIF > 0.6", "color": "#901e21" },
       { "label": "muscle-preferred, ΔIF 0.3–0.6", "color": "#c63335" },
