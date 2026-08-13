@@ -197,10 +197,10 @@ const Splitter = observer(function Splitter({
 
   const onPointerUp = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      dragRef.current = undefined
+      endDrag()
       event.currentTarget.releasePointerCapture(event.pointerId)
     },
-    [],
+    [endDrag],
   )
 
   // A `separator` that can be moved is focusable and takes the arrow keys; one

@@ -204,6 +204,23 @@ export function WorkspaceLayoutMixin() {
         return from
       }
 
+      /**
+       * The panel a dropped tab is leaving, or `undefined` if the drop cannot
+       * happen — which BOTH drop gestures have to establish before they touch
+       * the tree, and for two different reasons. A missing tab leaves an
+       * edge-drop's new cell behind empty; a missing target splits nothing while
+       * the gesture goes on to point `activePanelId` at a cell nobody draws, and
+       * makes `moveTabToPanel`'s remove-then-insert a deletion.
+       *
+       * One place, so the next drop gesture inherits the rule rather than
+       * restating it — the two of them restating it is how one came to be
+       * missing half of it.
+       */
+      function dropSource(tabId: string, targetPanelId: string) {
+        const source = findTab(self.tree, tabId)?.panel
+        return source && self.hasPanel(targetPanelId) ? source : undefined
+      }
+
       // `apply` is deliberately not returned: it takes a whole tree, so as an
       // action it is a public "set the layout to this" on the session.
       return {
@@ -279,8 +296,8 @@ export function WorkspaceLayoutMixin() {
          * observe the gap and re-home the view.
          */
         dropTabInPanel(tabId: string, targetPanelId: string, index?: number) {
-          const source = findTab(self.tree, tabId)?.panel
-          if (!source || !self.hasPanel(targetPanelId)) {
+          const source = dropSource(tabId, targetPanelId)
+          if (!source) {
             return
           }
           let next = moveTabToPanel(self.tree, tabId, targetPanelId, index)
@@ -297,11 +314,8 @@ export function WorkspaceLayoutMixin() {
           direction: 'row' | 'column',
           before: boolean,
         ) {
-          const source = findTab(self.tree, tabId)?.panel
-          // Both checked BEFORE the split: a missing tab leaves the new cell
-          // behind empty, and a missing target splits nothing while this goes
-          // on to point activePanelId at a cell nobody draws.
-          if (!source || !self.hasPanel(targetPanelId)) {
+          const source = dropSource(tabId, targetPanelId)
+          if (!source) {
             return undefined
           }
           const panel: PanelNode = {
