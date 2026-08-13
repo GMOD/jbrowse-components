@@ -409,26 +409,9 @@ const SessionLoader = types
           // already-loaded records restore the snapshot as-is.
           self.sessionPlugins ??= []
         }
-        // Detached, not destroyed — the same answer disposeLoader reached for
-        // superseded loaders, for the same reason.
-        //
-        // This runs from a React effect cleanup, i.e. the unmount half of a
-        // passive-effect flush; React's dev-mode logComponentRender then diffs
-        // the outgoing props in the mount half of that flush and in flushes
-        // after it, recursing four levels into any plain object it finds. That
-        // reaches this rootModel through `{pluginManager}` and the session
-        // below it, so destroying here made each property it walked a
-        // liveliness warning — 16 on an ordinary volvox session — and would
-        // make any landing on an unmaterialized array child a hard throw
-        // instead, which is the crash this fixed for the loader.
-        //
-        // Deferring the destroy a microtask was tried and rejected: it takes
-        // that 16 to 4, not to 0, because a later flush still diffs a widget
-        // React is holding. There is no delay that is provably long enough,
-        // which is what makes "stop the effects, keep the node" the fix rather
-        // than a workaround. detach() stops everything of this root's that
-        // reaches outside the tree; see it for what
-        // that does and does not claim about the tree being collected.
+        // Detached, not destroyed. This runs from a React effect cleanup, and
+        // React reads the outgoing props after that — destroying here is what
+        // crashed the page. ADR-069.
         ;(rootModel as unknown as DetachableRootModel).detach()
       }
       self.pluginManager = undefined

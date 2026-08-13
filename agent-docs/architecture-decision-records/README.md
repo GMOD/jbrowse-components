@@ -78,4 +78,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [066](adr-066-callback-slots-are-read-raw-at-the-call-site.md) | Accepted | A config slot holding a `jexl:` callback is forwarded by reading it raw (`self.conf.slot`) at the call site — the reader was NOT changed to skip evaluation on an arg-less read, because that changes plugin-ABI semantics for every caller to fix two |
 | [067](adr-067-synteny-dotplot-window-relative-float32.md) | Accepted | Synteny and dotplot corners are window-relative Float32 against a fetch-time base (supersedes ADR-010 and ADR-018) |
 | [068](adr-068-workspace-layout-is-an-mst-tree.md) | Accepted | The workspace layout is one MST tree that React renders; dockview is gone. Supersedes ADR-057, whose ~8-9k-line estimate against this was about four times too high and was the thing holding the decision |
+| [069](adr-069-detach-do-not-destroy-what-react-may-hold.md) | Accepted | An MST node React may still be rendering is detached, never destroyed in place. Destroying it is what turned a plugin install into a white page, and no deferral is provably long enough |
 <!-- END GENERATED ADR INDEX -->
