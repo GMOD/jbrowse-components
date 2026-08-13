@@ -688,10 +688,11 @@ What the GPU doc covers, so you can jump straight in:
 | Life of a frame | Debugging "why didn't it redraw", context loss, tab visibility |
 | RenderingBackend interfaces per plugin | Writing a backend factory; going Canvas2D-only |
 | Keeping the two backends in parity | Touching either a `.slang` or a Canvas2D draw fn |
-| Three upload patterns / `installPerRegionLifecycle` | Choosing how a display shovels bytes; O(N²) upload bugs |
+| Four upload patterns / `installPerRegionLifecycle` | Choosing how a display shovels bytes; O(N²) upload bugs |
 | HAL / Renderers stay stateless | Touching `packages/render-core/src/hal/` or renderer state |
 | Shaders (Slang codegen) | Editing a `.slang` or a generated module |
 | Canvas scaling & hi-DPI / `displayedRegionIndex` | Blurry canvases; region↔buffer join keys |
+| What this architecture deliberately does not have | Before proposing a render graph, indirect draws, GPU culling, or SSBOs |
 | Adding a new GPU display type | The end-to-end checklist |
 
 ### Terminal states early-return their own root

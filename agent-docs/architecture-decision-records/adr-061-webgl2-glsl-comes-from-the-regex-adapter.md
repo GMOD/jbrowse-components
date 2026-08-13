@@ -39,7 +39,7 @@ A second auto-fetched, version-pinned binary in the build, plus a rework of
 every name-mangling assumption downstream of the GLSL text: `assertVertexInputsMatch`
 (`shader-codegen/assertVertexInputs.ts`), `renameMangled`
 (`vulkanGlslToWebgl2.ts`), and the `a_<field>` / `v_<field>` convention the
-generated `GL_ATTRIBUTES` array and the WebGL HAL both depend on. SPIRV-Cross
+generated `VERTEX_ATTRIBUTES` array and the WebGL HAL both depend on. SPIRV-Cross
 mangles differently; none of that survives untouched.
 
 ### What it would buy, measured

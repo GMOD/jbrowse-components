@@ -54,7 +54,7 @@ contract — decoupled from file layout.
 **What stays in `@jbrowse/core/gpu`:** the shared `passes/` and `shaders/` dirs
 (the runtime simple-shape passes and the `.slang` codegen includes — the codegen
 *logic* was unchanged by this extraction and was subsequently moved to its own
-`@jbrowse/shader-tools` package), and `glAttributeSync.test.ts` (a cross-plugin
+`@jbrowse/shader-tools` package), and `vertexAttributeSync.test.ts` (a cross-plugin
 integration test that imports plugin renderers, so it can't live in a leaf
 package).
 

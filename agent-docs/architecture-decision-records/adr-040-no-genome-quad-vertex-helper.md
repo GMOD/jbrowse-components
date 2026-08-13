@@ -191,7 +191,7 @@ second `flipX` double-flips reversed blocks (silent correctness bug).
    **`arrow`** (center-snap + extra fields) to prove the extra-per-mark-fields
    path.
 3. Run `pnpm gen:shaders`; **diff regenerated `rect.iface.generated.ts`
-   (`INSTANCE_OFFSET_*`, `GL_ATTRIBUTES`, `INSTANCE_STRIDE_*`) against the
+   (`INSTANCE_OFFSET_*`, `VERTEX_ATTRIBUTES`, `INSTANCE_STRIDE_*`) against the
    committed file.**
 4. Confirm `naga` (WGSL) and `glslangValidator` (GLSL) both accept the output —
    both run in CI, so red CI is the signal.
@@ -218,7 +218,7 @@ rejected the composition helper as single-consumer.
 - Pass assembly: `packages/render-core/src/slangPass.ts`,
   `plugins/canvas/src/LinearBasicDisplay/passes/index.ts`.
 - GL-attribute safety net (keep green):
-  `products/jbrowse-web/src/tests/glAttributeSync.test.ts`.
+  `products/jbrowse-web/src/tests/vertexAttributeSync.test.ts`.
 - Prior decisions: `agent-docs/reference/RFC-001-community-plugin-api.md` §5,
   `agent-docs/architecture-decision-records/adr-005-shader-codegen-slang.md`.
 - Standardized `bpRangeX` uniform write: `writeBpRangeUniforms(...)` across the

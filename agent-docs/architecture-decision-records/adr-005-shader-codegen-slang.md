@@ -17,7 +17,7 @@ We currently hand-write every shader twice — once in WGSL (`*Shaders.ts`) for
 the WebGPU backend, once in GLSL ES 3.00 (`*GlslShaders.ts`) for the WebGL2
 fallback — and hand-maintain a third parallel declaration in TypeScript for the
 byte offsets and strides used to pack per-instance buffers
-(`interleaveBuffers.ts`, `GlAttributeLayout[]` arrays in `PassDescriptor`).
+(`interleaveBuffers.ts`, `VertexAttributeLayout[]` arrays in `PassDescriptor`).
 There are ~16 shader sets across the canvas, wiggle, variants, synteny, HiC,
 dotplot and LD plugins.
 
@@ -113,7 +113,7 @@ This must become a per-pass choice. `PassDescriptor` grows a
 
 - `compilePipelines` declares
   `vertex.buffers: [{ arrayStride, stepMode: 'instance', attributes }]` from the
-  pass's `glAttributes`, and uses a uniform-only bind group layout (no storage
+  pass's `vertexAttributes`, and uses a uniform-only bind group layout (no storage
   at binding 0).
 - `uploadBuffer` creates a `GPUBuffer` with `VERTEX` usage and the uniform-only
   bind group.
@@ -163,12 +163,12 @@ A build-time step compiles each `.slang` to:
    - `UNIFORMS_SIZE_BYTES`, `UniformOffsets`
    - TS interface types
    - `writeInstance(buf, i, inst)` typed packer
-   - `GL_ATTRIBUTES: GlAttributeLayout[]` (matches `PassDescriptor` shape)
+   - `VERTEX_ATTRIBUTES: VertexAttributeLayout[]` (matches `PassDescriptor` shape)
    - compute entry points only: `COMPUTE_ENTRY_POINT` and `WORKGROUP_SIZE_X`,
      read from the entry point's name and its `[numthreads(X, …)]`, so a TS
      dispatch count (`ceil(work / WORKGROUP_SIZE_X)`) can't drift from the
      workgroup the kernel declares. A compute shader emits no instance layout
-     or `GL_ATTRIBUTES` — its `StructuredBuffer<T>` is a bound resource, not a
+     or `VERTEX_ATTRIBUTES` — its `StructuredBuffer<T>` is a bound resource, not a
      per-instance vertex buffer the CPU packs.
 
 Generated files are committed. CI regenerates and fails the build if the output
@@ -238,7 +238,7 @@ For each migrated shader set:
   continue to use the fast `u32[]` / `f32[]` path (not the per-instance
   `writeInstance` packer) for performance, but the offset constants they use are
   now derived from the shader struct rather than hand-maintained.
-- `PassDescriptor.glAttributes` inline arrays → `GL_ATTRIBUTES` imported from
+- `PassDescriptor.vertexAttributes` inline arrays → `VERTEX_ATTRIBUTES` imported from
   `*.generated.ts`
 
 If `*.slang` changes in a way that shifts byte offsets, `*.generated.ts`

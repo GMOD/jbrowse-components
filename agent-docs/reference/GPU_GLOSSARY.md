@@ -1,6 +1,6 @@
 ---
 name: gpu-glossary
-description: A plain-language GPU rendering glossary and Canvas2D to GPU primer. Read when writing about GPU internals for a non-specialist audience.
+description: A plain-language GPU rendering glossary and Canvas2D to GPU primer, plus a table mapping standard real-time-graphics terms onto our spellings. Read when writing about GPU internals for a non-specialist audience, or when you need the standard name for something in the render path.
 ---
 
 # GPU Rendering Glossary & Primer
@@ -13,8 +13,10 @@ How to read it, by audience:
 - **Leadership / mildly technical:** read §0 — it hands you the vocabulary and
   the contrasts in one page.
 - **New to GPU graphics:** read §0, then §1–§2 for the mental model.
-- **Writing the paper / talk:** §3–§7 are the techniques, §9 is paste-ready prose.
-- **Need a specific term:** jump to the §8 dictionary.
+- **Writing the paper / talk:** §3–§7 are the techniques, §10 is paste-ready prose.
+- **Already know real-time graphics, or prompting an agent that does:** §8 maps
+  the standard terms onto our spellings and names the file that owns each.
+- **Need a specific term:** jump to the §9 dictionary.
 
 ---
 
@@ -397,13 +399,57 @@ data is materialized once between worker and GPU."*
 
 ---
 
-## 8. Dictionary (jump in anywhere)
+## 8. Standard graphics terms → our spelling
+
+§0–§7 explain the architecture to someone who does not already know GPU
+graphics. This section is the opposite audience: someone who *does* — or a code
+generation agent prompted in standard real-time-rendering vocabulary — who needs
+to know which of our identifiers is the thing they already have a word for.
+
+Two of these are collisions rather than translations, and they are the reason
+this table exists at all: **our "pass" is a PSO**, and **our uniform "ring
+buffer" does not wrap**. Both are flagged below.
+
+| Standard term | Our spelling | Owned by |
+|---|---|---|
+| **Pipeline state object (PSO)** | `PassDescriptor` — ⚠️ we call it a "pass" | `hal/types.ts`, built by `slangPass()` |
+| **Render pass** (`beginRenderPass`) | the `beginFrame` / `endFrame` bracket — one per frame, not per `drawPass` | `webgpuHal.ts`, `webgl2Hal.ts` |
+| **Draw call** | `hal.drawPass(passId, regionKey)` | `hal/types.ts` |
+| **Instanced rendering** | the whole architecture — `stepMode: 'instance'`, `draw(verticesPerInstance, count)` | `InstancePass`, `uploadPass`, `instanceCache.ts` |
+| **Instance buffer / per-instance data** | the packed buffer a pass's `pack()` returns; `instanceStride` is its bytes-per-item | `instancePass.ts` |
+| **Vertex input layout / vertex buffer descriptor** | `vertexAttributes` (`VertexAttributeLayout`, generated as `VERTEX_ATTRIBUTES`) | `hal/types.ts`, emitted by the Slang codegen |
+| **Bind group / bind group layout** | same words | `webgpuUtils.ts`, `LayoutState` in `webgpuHal.ts` |
+| **Bind group caching** | `passBindGroups` + the shared `uniformOnlyBindGroup` | `webgpuHal.getBindGroup` |
+| **Pipeline layout** | same word | `LayoutState` |
+| **Shader reflection** | `ShaderBinding` / a shader module's `BINDINGS` export | `packages/shader-tools/src/shader-codegen/reflection.ts` |
+| **UBO / uniform buffer** | `writeUniforms`, bound at `@binding(1)` with `hasDynamicOffset` | `webgpuUtils.ts` |
+| **Dynamic uniform offset** | the per-draw `dynamicOffset` in `drawPass` | `webgpuHal.ts` |
+| **Ring buffer** | `uniformRingBuffer` — ⚠️ reset to slot 0 every `beginFrame`, so it is a per-frame linear arena, not a ring that wraps across frames | `webgpuHal.ts` |
+| **Staging buffer** | `uniformStaging` — coalesces a frame's uniform writes into one `queue.writeBuffer` at submit | `webgpuHal.ts` |
+| **SSBO / storage buffer** | `storage` / `read-only-storage` bindings — **compute only**, never the render path (§7a: GLSL ES has no SSBOs) | `getLDMatrixGPU.ts` |
+| **Compute pipeline / workgroup dispatch** | same words; 2D workgroup grid to clear `maxComputeWorkgroupsPerDimension` | `getLDMatrixGPU.ts` |
+| **Blend state** | `BlendState`, `STANDARD_BLEND_STATE` | `hal/types.ts`, `webgpuUtils.ts` |
+| **Primitive topology** | `PassDescriptor.topology` | `hal/types.ts` |
+| **MSAA / resolve target** | `MSAA_SAMPLE_COUNT` (4×), `msaaView` + `resolveTarget` | `webgpuHal.ts` |
+| **Scissor / viewport** | same words | `hal/types.ts` |
+| **Frustum culling** | "cull" — CPU-side, over a 1D bp interval; there is no frustum and no camera | `syntenyRibbonCull.ts`, `syntenyFetchWindow.ts` |
+| **Spatial index / BVH** | Flatbush (packed Hilbert R-tree) — **picking and hit-testing only**, never draw culling | `packages/core/src/util/flatbush/` |
+| **Scene graph** | the MST view → track → display tree; we never call it that | `ARCHITECTURE.md` §"Display stacks" |
+| **Render graph / frame graph** | none, deliberately | GPU_RENDERING.md §"What this architecture deliberately does not have" |
+| **Indirect drawing** | none, deliberately | same |
+| **Buffer pooling / sub-allocation** | none — one `GPUBuffer` per `(regionKey, passId)` | same |
+
+## 9. Dictionary (jump in anywhere)
 
 - **Attribute** — data that differs per gene (position, color); lives in the
   packed buffer. Opposite of a *uniform*.
 - **Backend** — which renderer is actually running: WebGPU, WebGL2, or Canvas2D.
 - **Bind / binding** — connecting a specific buffer/texture so a shader can read
   it.
+- **Bind group** — WebGPU's unit for handing a set of resources (uniform buffer,
+  texture, sampler) to a shader at once; a **bind group layout** is its shape,
+  declared when the pipeline is built. Ours are cached per pass, and uniform-only
+  passes all share one.
 - **Blending** — the rule for mixing a new pixel's color with what's already
   there; how transparency and overlaps work.
 - **Buffer** — a block of GPU memory holding the packed list of numbers.
@@ -411,8 +457,14 @@ data is materialized once between worker and GPU."*
   and the fallback when there's no GPU. The GPU path is opt-in on top of it.
 - **Clip space** — the GPU's own −1…+1 coordinate system; what the vertex shader
   outputs.
+- **Compute shader** — a shader that does general parallel work and writes to a
+  buffer instead of painting pixels. We use one place: the LD matrix kernels.
+- **Culling** — dropping work for things that can't be seen. Ours is on the CPU,
+  against the visible bp window (there is no camera, so no *frustum* culling).
 - **Draw call / draw pass** — the single command that runs the pipeline and
   paints (`hal.drawPass`).
+- **Dynamic offset** — a per-draw byte offset into one shared uniform buffer, so
+  every draw in a frame can read its own uniforms without its own bind group.
 - **Fragment shader** — the program that picks each pixel's color (Canvas2D's
   `fillStyle`, but per pixel). Also called a pixel shader.
 - **Framebuffer** — the image being drawn into; the canvas the user sees.
@@ -425,36 +477,64 @@ data is materialized once between worker and GPU."*
   from a packed list; the stride is the bytes-per-item.
 - **Interpolation (varying)** — a corner value blended smoothly across a shape
   before the fragment shader.
-- **Pass** — one configured run of the pipeline (its shaders + settings); a
-  renderer may do several.
+- **MSAA (multisample antialiasing)** — sampling each pixel several times so
+  edges come out smooth; the samples are then **resolved** down to one image. We
+  run 4×, resolving once per frame.
+- **Pass** — ⚠️ **in this codebase, a pipeline state object, not WebGPU's render
+  pass.** A `PassDescriptor` is one shader + vertex layout + blend + topology,
+  compiled to one pipeline. WebGPU's render pass is our `beginFrame`/`endFrame`
+  bracket, of which there is one per frame. See §8.
 - **Pipeline** — the GPU's fixed assembly line: vertex → raster → fragment →
   blend.
+- **Pipeline state object (PSO)** — the whole configuration of one draw baked
+  into an immutable object: shaders, vertex layout, blend, depth/stencil,
+  topology. What we call a *pass*; compiled up front at HAL construction.
 - **Quad** — a rectangle built from two triangles (GPUs only draw triangles).
 - **Rasterizer** — the fixed stage that turns triangles into pixels and
   interpolates corner values.
 - **Region** — a genomic block's slice of data in a per-region backend.
+- **Ring buffer** — normally, one buffer written at rotating offsets so the CPU
+  never overwrites bytes a frame in flight is still reading. ⚠️ Our
+  `uniformRingBuffer` is named for this but resets to slot 0 each frame, making
+  it a per-frame linear arena; ordering against the previous submit is what makes
+  that safe.
 - **Sampler** — the rule for how a texture is read (nearest pixel vs. blended).
 - **Scissor** — a hardware "paint only inside this rectangle" clip.
 - **Shader** — a small program the GPU runs in parallel (vertex or fragment).
 - **Slang** — the one language we write shaders in; compiled to WGSL + GLSL.
+- **Spatial index** — a structure for "what's in this box" queries (ours is
+  Flatbush, a packed Hilbert R-tree). Used for **picking**, never for culling.
+- **Staging buffer** — CPU-side scratch that a frame's writes accumulate into, so
+  the upload to GPU memory happens once instead of per write.
+- **Storage buffer (SSBO)** — a large buffer a shader can read or write at
+  arbitrary indices. Compute only here; the render path uses vertex buffers
+  because GLSL ES has no SSBOs.
 - **Texture** — an image or color strip in GPU memory that a shader looks up
   values in.
+- **Topology** — what the vertices are read as: a list of triangles, a strip, or
+  lines.
 - **Transfer (transferable)** — handing a block of bytes from worker to main
   thread without copying.
 - **Uniform** — one value that's the same for the whole draw call (zoom, canvas
   size). Opposite of an *attribute*.
 - **Upload** — copying data from regular memory into GPU memory; the cost
   Canvas2D never pays.
+- **Vertex attribute layout** — the map from bytes in a packed buffer to the
+  inputs a shader declares: name, offset, component count, type. Derived from the
+  shader by codegen, never hand-written.
 - **Vertex shader** — the program that places each corner on screen (the
   base-pair → pixel math).
 - **WebGL2 / WebGPU** — the browser's two GPU APIs; WebGPU is primary, WebGL2 the
   fallback.
 - **WGSL** — WebGPU's shader language; our other compile target.
 - **Worker** — a background thread where we compute geometry off the UI thread.
+  Unrelated to a GPU *workgroup*.
+- **Workgroup** — a block of compute-shader invocations that run together; a
+  dispatch is a grid of them.
 
 ---
 
-## 9. Sentences you can paste into prose
+## 10. Sentences you can paste into prose
 
 - "Per-feature geometry is computed in background workers, packed into flat
   binary buffers, and transferred to the main thread without copying."

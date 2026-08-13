@@ -1,6 +1,6 @@
 ---
 name: gpu-rendering
-description: The GPU render lifecycle in depth — RenderLifecycleMixin, the upload/render autoruns, per-plugin backends, the three upload patterns, the HAL, and Slang shaders. Read when touching a rendering backend, an upload path, or a shader.
+description: The GPU render lifecycle in depth — RenderLifecycleMixin, the upload/render autoruns, per-plugin backends, the four upload patterns, the HAL, and Slang shaders. Read when touching a rendering backend, an upload path, or a shader.
 ---
 
 # GPU rendering architecture
@@ -23,8 +23,9 @@ of it; see ARCHITECTURE.md §"Display stacks".
 - `render` returns `true` **only when real content was drawn**. That flips
   `canvasDrawn`, which is what dismisses the loading scrim.
 - Pick an **upload pattern** by data shape: per-region streamed (independent
-  regions), whole-map synced (cross-region Y layout), or monolithic (no region
-  partitioning). Getting this wrong is how you get O(N²) uploads.
+  regions), whole-map synced (cross-region Y layout), monolithic (no region
+  partitioning), or keyed shared-canvas (one canvas, several displays). Getting
+  this wrong is how you get O(N²) uploads.
 - Iterating `rpcDataMap` inside an upload callback tracks the **whole map**.
   `installPerRegionLifecycle` gives each key its own autorun; use it unless
   layout couples regions.
@@ -53,7 +54,9 @@ are. Per-display shaders/passes live per-plugin under
 [ADR-030](../architecture-decision-records/adr-030-render-core-package-static-import-only.md).
 
 HAL is the hardware abstraction layer (WebGL2 vs WebGPU). Full vocabulary +
-Canvas2D→GPU primer: [GPU_GLOSSARY.md](GPU_GLOSSARY.md).
+Canvas2D→GPU primer: [GPU_GLOSSARY.md](GPU_GLOSSARY.md), whose §8 maps standard
+real-time-graphics terms (PSO, bind group, staging buffer, SSBO…) onto the
+identifiers used here.
 
 ## The core contract
 
@@ -903,6 +906,39 @@ maps](../ARCHITECTURE.md#gpuprops-and-derived-region-maps--re-upload-without-ref
 
 Hides the WebGPU/WebGL2 difference. Lives in `packages/render-core/src/hal/`.
 
+### "Pass" here means the pipeline, not WebGPU's render pass
+
+Read this before reading any HAL method name, because the word collides with
+WebGPU's own and the collision inverts what two of them appear to do.
+
+**Our `PassDescriptor` is a pipeline state object (PSO).** It carries shader
+source, the vertex input layout, blend state, primitive topology and texture
+bindings, and `compilePipelines` turns each one into exactly one
+`GPURenderPipeline` (`webgpuHal.ts`) or one linked program + VAO
+(`webgl2Hal.ts`). One `PassDescriptor` ⇄ one PSO, built once at HAL
+construction — every pipeline in a display is compiled up front, never lazily
+mid-frame.
+
+**WebGPU's render pass is the `beginFrame`/`endFrame` bracket.** There is
+exactly one per frame: `beginFrame` calls `beginRenderPass` with the MSAA
+attachment and its resolve target, every draw in the frame is encoded into it,
+and `endFrame` ends it and submits a single command buffer. Batching the whole
+frame into one pass is deliberate — it makes MSAA resolve once instead of per
+draw, which is what keeps intermediate-resolve artifacts out.
+
+So, concretely:
+
+| Reads like | Actually is |
+|---|---|
+| `drawPass(passId, regionKey)` | bind PSO `passId`, bind that region's vertex buffer, issue **one instanced draw call**. It does not begin a pass. |
+| `beginFrame` / `endFrame` | open and close **the** render pass, plus the command encoder and submit |
+| `beginUpload` / `endUpload` | neither — a buffer-write transaction with a sweep (see "skipping a region inside the rebuild transaction") |
+| `PassDescriptor.blend` | one field of the PSO's fragment target state |
+
+The naming is historical and is not worth the churn to change: `passId` is a
+join key in the HAL's buffer registry, in every plugin's pass registry, and in
+`InstancePass`. Read it as "pipeline id" and the rest of the interface follows.
+
 ```
 createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
   ?renderer=canvas2d|canvas  → return null                 (Canvas2D backend)
@@ -1038,7 +1074,7 @@ weighed and declined in
 **Never hand-edit `*.generated.ts`** — edit the `.slang` source and run `pnpm
 gen:shaders`. The generated module exports source strings, per-field byte offsets,
 strides, typed uniform/instance structs, a typed `writeUniforms()` /
-`packInstances()`, and the `GL_ATTRIBUTES` array; TS imports these by name, so
+`packInstances()`, and the `VERTEX_ATTRIBUTES` array; TS imports these by name, so
 stride/offset drift between packer and shader is impossible by construction. CI
 runs `pnpm gen:shaders && git diff --exit-code` to catch stale outputs, and the
 build itself refuses a `.generated.ts` that no `.slang` produces any more — a
@@ -1259,6 +1295,61 @@ draw with different scissor clips.
 The join key across `model.rpcDataMap`, `hal.uploadBuffer(regionKey, ...)`, and
 `RenderBlock.displayedRegionIndex`. Multi-LGV displays (dotplot, synteny) key on a
 tuple of two displayedRegion indices.
+
+## What this architecture deliberately does not have
+
+Every entry below is a standard real-time-rendering technique that a reader
+coming from a game-engine background — or an agent prompted with game-engine
+vocabulary — will reach for, and that we have a specific reason not to use.
+Named here in the standard vocabulary so the reach lands on the reason.
+
+**Render graph / frame graph.** A frame graph exists to order passes and
+allocate transient render targets when a frame has many of both, with
+dependencies between them. Ours has one render pass, one color attachment, no
+offscreen targets, and no pass that consumes another's output. Ordering is a
+static z-ordered list in the renderer that owns it (`PILEUP_LAYERS` in
+`GpuAlignmentsRenderer.ts` is the largest, at ~16 entries with per-layer
+`enabled` gates), and resource lifetime is `RegionRegistry`'s. The closest
+proposal to this — a unified GPU/Canvas2D "layer manifest" driving draw dispatch
+from a table — was declined 2026-06 because the layers are not 1:1 across
+backends; see REJECTED_IDEAS.md.
+
+**Indirect drawing (`drawIndirect`).** Indirect draws exist to remove a CPU
+roundtrip when the GPU decides how much to draw. Nothing here generates geometry
+on the GPU, and the instance count is already the packed buffer's own
+`byteLength / instanceStride` (`uploadPass`), which the CPU computes as it packs.
+There is no roundtrip to remove.
+
+**GPU-driven culling.** Culling is CPU-side and stays there. Measured and
+declined twice: for dotplot (quads are a few px, so the rasterizer discards them
+about as cheaply as a vertex test would) and for hi-C contacts by distance from
+the diagonal (2026-08-13). Synteny's `isCulled` is the case that *does* earn its
+place, because its quads span the track. Both declines are in REJECTED_IDEAS.md
+with their numbers.
+
+**Storage buffers (SSBO) in the render path.** Every render pass feeds
+per-instance data through a **vertex buffer** with `stepMode: 'instance'`, never
+a storage binding, because Slang cross-compiles to GLSL ES 3.0, which has no
+SSBOs. Adopting them would fork every shader into two variants — precisely what
+the single-source Slang design exists to prevent. Storage buffers *are* used
+where there is no GLSL target: the LD compute kernels
+(`plugins/variants/src/VariantRPC/getLDMatrixGPU.ts`) bind `read-only-storage`
+input and `storage` output, and are WebGPU-only by construction.
+
+**Spatial acceleration structures for culling.** We index heavily with Flatbush
+(a packed Hilbert R-tree, vendored at `packages/core/src/util/flatbush/`) — but
+for **hit-testing and picking**, never to decide what to draw. A BVH/quadtree/
+octree accelerates culling in a 3D scene with a moving camera; the genome axis
+is 1D, and `view.displayedRegions` is already the spatial partition that
+`regionKey` and the scissor rects are built on.
+
+**Buffer pooling / sub-allocation.** Not present: `uploadBuffer` destroys and
+recreates one `GPUBuffer` per `(regionKey, passId)` per upload. This is the one
+item on this list that is an unclaimed opportunity rather than a settled
+decision — a size-classed pool behind `RegionRegistry` would be invisible to
+every caller. It is unclaimed because it is unmeasured. Measure the allocation
+churn on a pan with alignments open before building it, and file the number
+either way.
 
 ## Adding a new GPU display type
 
