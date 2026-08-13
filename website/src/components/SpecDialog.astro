@@ -25,9 +25,9 @@
     return x < box.left || x > box.right || y < box.top || y > box.bottom
   }
 
-  // open the recipe dialog for a clicked trigger. The trigger's whole visible
-  // area is an inline <svg>, so the click's target is an SVGElement — narrowing
-  // to HTMLElement here silently dropped every click on it.
+  // open the recipe dialog for a clicked trigger. Half the trigger's visible
+  // area is an inline <svg>, so a click's target is often an SVGElement —
+  // narrowing to HTMLElement here silently dropped every click on the icon.
   document.addEventListener('click', event => {
     const target = event.target
     if (target instanceof Element) {

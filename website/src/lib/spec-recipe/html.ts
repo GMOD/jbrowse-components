@@ -135,12 +135,14 @@ export function recipeDialogHtml(recipe: Recipe, id: string): string {
   ].join('')
 }
 
-// a subtle "steps/recipe" glyph (lucide clipboard-list) — every figure carries
-// one, so it stays muted and out of the way; the tooltip tells the curious
-// reader what it opens
+// a "steps/recipe" glyph (lucide clipboard-list). The label beside it carries
+// the meaning — an icon alone read as decoration and went unclicked — so the
+// pair stays muted and the tooltip says the longer form
 const RECIPE_ICON =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>'
 
 export function recipeButtonHtml(id: string): string {
-  return `<button type="button" class="spec-help" data-spec-dialog="${id}" aria-label="How to make this view yourself" title="How to make this view yourself">${RECIPE_ICON}</button>`
+  // no aria-label: the visible text is the accessible name, and an aria-label
+  // that differs from it is what voice control tries and fails to match
+  return `<button type="button" class="spec-help" data-spec-dialog="${id}" title="How to make this view yourself">${RECIPE_ICON}<span>Make this view yourself</span></button>`
 }
