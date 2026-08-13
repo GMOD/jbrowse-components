@@ -1,6 +1,6 @@
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
-import { densityGradientT } from './shaders/wiggle.js.generated.ts'
+import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 
 // Density-color factory: maps a score to an "rgb(r,g,b)" string that fades
 // from white at the pivot (`origin`, default 0) toward the (r,g,b) color as

@@ -9,22 +9,6 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
-export const RENDERING_TYPE_XYPLOT = 0
-
-export const RENDERING_TYPE_DENSITY = 1
-
-export const RENDERING_TYPE_LINE = 2
-
-export const RENDERING_TYPE_SCATTER = 3
-
-export const RENDERING_TYPE_LINE_CENTER = 4
-
-export const SCALE_TYPE_LOG = 1
-
-export const NO_PREV_START = 4294967295
-
-export const MIN_FILL_WIDTH_PX = 1.5
-
 export const UNIFORMS_SIZE_BYTES = 64
 
 // Word indices into a Float32Array view over the uniform buffer.

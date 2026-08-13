@@ -5,7 +5,7 @@ import {
   makeScoreNormalizer,
 } from '@jbrowse/wiggle-core'
 
-import { normalizeScore } from './shaders/wiggle.js.generated.ts'
+import { normalizeScore } from './shaders/wiggleCommon.js.generated.ts'
 
 // The two backends' score normalizers, swept against each other.
 //

@@ -1,5 +1,5 @@
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
-import { densityGradientT } from './shaders/wiggle.js.generated.ts'
+import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 
 // The retirement gate for wiggle.slang's `//! js-export` (adr-051).
 //
