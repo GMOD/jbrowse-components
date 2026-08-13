@@ -1205,8 +1205,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // as before, less the 160 px the read lane gives back once the secondary
     // alignments are filtered and the split segments chain (46 rows -> 28),
     // plus the hg38 read lane, then -270 for the compact pass, then -214 for
-    // the super-compact one (the run's own blank-below-content figure)
-    viewportHeight: 901,
+    // the super-compact one (the run's own blank-below-content figure), then
+    // +153 for the hg38 lane coming back off a 1px pitch so its connectors
+    // have somewhere to be drawn (140 of rows, and the 13 the run then
+    // reported clipped below the fold)
+    viewportHeight: 1054,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1261,14 +1264,30 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // stops at the junction, and the curve is what carries the eye
                   // to where the same molecule picks up again.
                   showBezierConnections: true,
-                  // super-compact, same reviewer note and same 'fit' -> 'grow'
-                  // reason as the sibling lane on derivative_synteny: a
-                  // configured featureHeight is ignored while fitting, so 1px
-                  // only takes effect once the lane stops deriving its pitch.
+                  // NOT super-compact, unlike every other pileup in this
+                  // tutorial, and the connectors above are the whole reason
+                  // (reviewer: "it is too hard to see the bezier curves"). A
+                  // curve is drawn from one read's row to the other's and then
+                  // dipped by an amount keyed on its horizontal SPAN
+                  // (bezierConnector.ts, saturating toward 110px), so at a 1px
+                  // pitch 28 molecules put 28 curves, each wanting tens of px
+                  // of dip, into a 28px band: they bottom out together against
+                  // the lane's lower edge and publish as one purple smear with
+                  // no individual curve in it. Row pitch is what the overlay
+                  // has to draw in, so the lane pays for it -- 6px (5 + the
+                  // 1px gap featureSpacingForHeight adds above 3) is 168px of
+                  // rows, and at the ~1/3 downscale this figure publishes at, a
+                  // row and the curve leaving it each survive as their own
+                  // mark.
+                  //
+                  // 'grow' rather than a fixed height for the same reason as
+                  // the sibling lane on derivative_synteny: a configured
+                  // featureHeight is ignored while fitting, so the pitch only
+                  // takes effect once the lane stops deriving it.
                   heightMode: 'grow',
                   height: 170,
                   coverageHeight: 40,
-                  featureHeight: 1,
+                  featureHeight: 5,
                   colorBy: { type: 'strand' },
                 },
               ],
