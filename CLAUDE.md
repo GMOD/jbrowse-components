@@ -226,6 +226,41 @@ parallel array (hic `viewBlocks[].refName`); return no refName at all
 (`GetConsensusSequence`); or canonicalize on receipt (breakpoint-split's
 overlays).
 
+## Assembly names read off a track config: canonical, **and** screened
+
+Refnames have a normalization layer. Assembly names have two obligations, and
+missing either fails silently in its own way — five instances landed in one
+week, all from a track config's `assemblyNames`, which is free to name an alias
+_and_ free to name an assembly the session has no configuration for (a hub whose
+assemblies were never loaded, a config one was removed from).
+
+Any such name that ends up as an **`AssemblySelector` value** or in a **view
+init** must be:
+
+- **canonical** — `canonicalAssemblyNames` (`@jbrowse/core/util/tracks`).
+  `AssemblySelector`'s options are the session's own `assemblyNames` and it
+  blanks a value that is not one of them, so an alias renders as an empty field
+  with nothing said. This is the half that keeps being missed, because the
+  _matching_ helpers (`getSyntenyTracks`, `getSharedTracks`) already
+  canonicalize both sides — so an alias-named track is found, and then hands
+  over a name the form it was found for cannot show.
+- **present** — `assemblyManager.has`, never
+  `getCanonicalAssemblyName(...) !== undefined`. A name the session lacks is not
+  a blank row but a broken view: the row's init fails with "Assembly X not
+  found", which sets the view's error, and `showImportForm` reads that error, so
+  the user's working stack is replaced by an import form. `SessionAssemblies`
+  (core, next to `AssemblyNameResolver`) is the slice and says why it is `has` —
+  which now answers off the configs, aliases included, from the first render.
+
+Both live in one derivation per path, and it is worth keeping it that way:
+`connectedEndpoints` for "extend the stack from this row" (the add-row dialog
+and the connections list project it), `syntenyTrackRows` for "the rows this
+track implies" (Quick start's summary, its handover to Manual, and its launch).
+A fourth screen growing elsewhere is how the five started.
+
+Unlike refNames, nothing renames assembly names at the RPC boundary, so there is
+no worker-side exception here.
+
 ## Tooling
 
 - Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
