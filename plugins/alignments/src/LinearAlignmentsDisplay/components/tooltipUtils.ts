@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
 
+import { ARC_SHAPE_FLAT } from '../../features/arcs/compute.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
 import { readNameAt } from '../../shared/readNameBlock.ts'
@@ -525,7 +526,6 @@ export function formatArcTooltip(
   hit: ArcHitResult,
   refName: string,
   category: string | undefined,
-  isFlat: boolean,
 ): ArcTooltipPayload {
   return {
     type: 'arc',
@@ -534,13 +534,22 @@ export function formatArcTooltip(
     end: Math.max(hit.x1, hit.x2),
     support: hit.support,
     category,
-    // A flat line plots |tlen| (that is what the read cloud is); a curve plots
-    // the genomic radius, which is just half the span already shown above.
+    // ARC_SHAPE_FLAT alone — the read cloud's MATE LINK, the one shape whose
+    // `spanBp` is a template length. Deliberately not `isFlatArcShape`, which
+    // is the right predicate for "does this draw as a bar" and the wrong one
+    // for "does this have an insert size": it also admits ARC_SHAPE_FLAT_SPLIT,
+    // and a split junction has no TLEN at all. `computeArcShape` gives that arm
+    // `spanBp = |p2Bp - p1Bp|`, which is exactly `end - start` above, so the row
+    // was the Distance line over again under a name the read cannot support.
+    //
+    // A curve is excluded for the milder reason: its Y is the genomic radius,
+    // half the span already shown.
     //
     // `spanBp`, NOT the `yBp` it draws at: the read cloud scales a line's Y by
     // a ±8% jitter so coincident pairs don't stack, and reading the drawn
-    // position back reported that jittered number as the template length.
-    ...(isFlat ? { insertSize: hit.spanBp } : {}),
+    // position back reported that jittered number as the template length. The
+    // hit no longer carries the drawn position at all.
+    ...(hit.shapeType === ARC_SHAPE_FLAT ? { insertSize: hit.spanBp } : {}),
   }
 }
 

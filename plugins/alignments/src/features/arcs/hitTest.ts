@@ -45,12 +45,15 @@ export interface ArcHitResult {
   support: number
   colorType: number
   shapeType: number
-  // Where the arc plots, jitter included. The drawn position — measure against
-  // it, don't report it.
-  yBp: number
-  // What that position means: |TLEN| for a read-cloud mate link, the breakpoint
+  // What the arc's Y MEANS: |TLEN| for a read-cloud mate link, the breakpoint
   // gap for a split junction, the genomic radius for a curve. The number a
   // tooltip may show.
+  //
+  // The drawn position (`arcYBp`) is deliberately NOT here. It carries the read
+  // cloud's ±8% jitter, so every consumer that reported it named a template
+  // length no read has; it was carried for a while with a comment saying not to
+  // report it, which is a field whose only use is the bug. Anything that really
+  // wants the plotted position has `index` into the arrays.
   spanBp: number
 }
 
@@ -129,14 +132,19 @@ function bestMark() {
         nearestOutside = outside
       }
     },
+    // Builds the winner rather than handing back its index, because both
+    // families' tails were the same `found === undefined ? undefined : { hit,
+    // outside }` — two instances of one shape, which is the argument this
+    // function was extracted on one level down.
+    //
     // `outside` 0 for an on-ink winner: `pickBetween` reads it as the on-ink
     // flag, so it must not carry the negative depth into the stroke.
-    best() {
+    best<T>(hitAt: (index: number) => T): Candidate<T> | undefined {
       return onInk !== -1
-        ? { index: onInk, outside: 0 }
+        ? { hit: hitAt(onInk), outside: 0 }
         : nearest === -1
           ? undefined
-          : { index: nearest, outside: nearestOutside }
+          : { hit: hitAt(nearest), outside: nearestOutside }
     },
   }
 }
@@ -150,8 +158,17 @@ function arcHitAt(data: ArcsUploadData, i: number): ArcHitResult {
     support: data.arcSupport[i]!,
     colorType: data.arcColorTypes[i]!,
     shapeType: data.arcShapeTypes[i]!,
-    yBp: data.arcYBp[i]!,
     spanBp: data.arcSpanBp[i]!,
+  }
+}
+
+function arcLineHitAt(data: ArcsUploadData, i: number): ArcLineHitResult {
+  return {
+    kind: 'tick',
+    index: i,
+    bp: data.arcLinePositions[i]!,
+    support: data.arcLineSupport[i]!,
+    partnerRefNames: data.arcLinePartnerRefNames[i] ?? [],
   }
 }
 
@@ -249,19 +266,7 @@ function tickCandidate(
       Math.abs(canvasX - bpToScreenX(data.arcLinePositions[i]!)) - halfWidth,
     )
   }
-  const found = picker.best()
-  return found === undefined
-    ? undefined
-    : {
-        hit: {
-          kind: 'tick',
-          index: found.index,
-          bp: data.arcLinePositions[found.index]!,
-          support: data.arcLineSupport[found.index]!,
-          partnerRefNames: data.arcLinePartnerRefNames[found.index] ?? [],
-        },
-        outside: found.outside,
-      }
+  return picker.best(i => arcLineHitAt(data, i))
 }
 
 function arcCandidate(
@@ -296,10 +301,7 @@ function arcCandidate(
       markDistance(canvasX, localY, arcMark(data, i, opts)) - halfWidth,
     )
   }
-  const found = picker.best()
-  return found === undefined
-    ? undefined
-    : { hit: arcHitAt(data, found.index), outside: found.outside }
+  return picker.best(i => arcHitAt(data, i))
 }
 
 // Whether arc `i` can possibly have ink in the cursor's COLUMN — the cheap

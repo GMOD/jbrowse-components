@@ -4,10 +4,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import {
-  arcColorLegendCategory,
-  isFlatArcShape,
-} from '../../features/arcs/compute.ts'
+import { arcColorLegendCategory } from '../../features/arcs/compute.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
 import { readColorCategoryLabel } from '../../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../../shared/util.ts'
@@ -210,7 +207,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
               readColorCategoryLabel(
                 arcColorLegendCategory(hit.colorType, model.arcColorByType),
               ),
-              isFlatArcShape(hit.shapeType),
             ),
       highlight,
     }
@@ -264,7 +260,31 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    const { resolved, result } = hitTestEvent(e)
+    const { resolved, result, picked } = hitTestEvent(e)
+
+    // The same guard `handleClick` carries, for the same reason and with the
+    // same reach: the hover resolves an arc AHEAD of the band it is painted
+    // over, so a right-click on an arc must not build a menu for whatever the
+    // arc happens to overlay. In up mode the arc band IS the coverage band
+    // (`computeArcBand` gives it top 0), and `hitTestInterbase` answers over the
+    // indicator strip and the bar stack inside it — so right-clicking an arc
+    // that crossed an indicator column opened the interbase menu for that
+    // column while the tooltip said "Read connection".
+    //
+    // Falls through to the browser's own menu rather than calling
+    // `preventDefault`, which is what every other mark with nothing to offer
+    // does here (`contextMenuFieldsForHit` returns `show: false` for coverage).
+    if (
+      picked &&
+      resolveArcHover(
+        e.nativeEvent.offsetX,
+        e.nativeEvent.offsetY,
+        picked.section,
+      )
+    ) {
+      return
+    }
+
     const { show, cigarHit, indicatorHit, modHit, featureId } =
       contextMenuFieldsForHit(result)
     if (show) {

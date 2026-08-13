@@ -355,3 +355,24 @@ nothing to say about a tick.
 The endpoint squares have no hit test of their own, covered by the bar's
 tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is arithmetic,
 not design, so `hitTest.test.ts` pins it.
+
+**An arc resolves ahead of the band it is painted over, so BOTH gestures need
+the guard.** `handleClick` and `handleContextMenu` each ask `resolveArcHover`
+first and return; an arc carries no read id, so there is nothing to select or
+open and the pointer cursor stays off. `93af1f54f0` added it to the click and
+not to the right-click, which left the sharper half: in up mode `computeArcBand`
+gives the band `top: 0`, which IS the coverage band, and `hitTestInterbase`
+answers over the indicator strip and the bar stack inside it — so a right-click
+on an arc built the interbase menu for the column underneath while the tooltip
+said "Read connection". Down mode never showed it (own band, `type: 'none'`),
+which is why it survives casual testing. Neither guard calls `preventDefault`: a
+mark with nothing to offer falls through to the browser's menu here, same as
+coverage.
+
+**`isFlatArcShape` answers "does this draw as a bar", never "does this have an
+insert size".** Both flat variants draw as a bar, and only `ARC_SHAPE_FLAT` —
+the mate link — has a TLEN. `computeArcShape` gives `ARC_SHAPE_FLAT_SPLIT`
+`spanBp = |p2Bp - p1Bp|`, which is exactly the arc's own span, so gating the
+tooltip's insert-size row on the drawing predicate printed the Distance line
+over again under a name a split read cannot carry. The two questions look like
+one because the read cloud is the only mode either is asked in.
