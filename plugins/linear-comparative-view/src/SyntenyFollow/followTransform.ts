@@ -2,21 +2,15 @@ import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
 /**
- * The local correspondence between the two rows, cached from the last exact
- * resolve so the followed row can be placed WITHOUT one.
- *
- * Between resolves the correspondence is very nearly affine — synteny is
- * locally collinear, and one alignment block is exactly affine outside its
- * indels — so applying the last one per frame places the row well enough to
- * move continuously, and the next resolve corrects the accumulated error rather
- * than supplying all of the motion.
+ * The anchor-axis window a0..a1 an exact resolve was measured over and the span
+ * b0..b1 it answered, applied per frame so the row moves between resolves. One
+ * alignment block is affine outside its indels, so the next resolve corrects
+ * accumulated error rather than supplying all the motion.
  */
 export interface FollowTransform {
-  // the anchor-axis window this was measured over
   refName: string
   a0: number
   a1: number
-  // and the span it resolved to
   targetRefName: string
   b0: number
   b1: number
@@ -25,8 +19,7 @@ export interface FollowTransform {
 export function followTransform(
   window: FollowWindow,
   span: ResolvedSpan,
-  // reverse-strand correspondences run the other way, and the resolved span is
-  // always min..max, so the direction has to be carried in rather than inferred
+  // a resolved span is always min..max, so the direction cannot be read off it
   flipped: boolean,
 ): FollowTransform | undefined {
   return window.end > window.start && span.end > span.start
@@ -41,12 +34,6 @@ export function followTransform(
     : undefined
 }
 
-/**
- * Where the followed row goes for an anchor window, under a cached transform.
- *
- * `undefined` when the anchor has moved onto a different contig, where the
- * transform says nothing and the next exact resolve has to answer instead.
- */
 export function applyFollowTransform(
   t: FollowTransform,
   window: FollowWindow,

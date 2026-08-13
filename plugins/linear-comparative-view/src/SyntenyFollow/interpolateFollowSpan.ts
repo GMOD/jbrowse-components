@@ -3,26 +3,16 @@ import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
 /**
- * Where a follow sends the moving panel when the alignment carries no CIGAR to
- * walk: the window mapped straight across the block, proportionally.
+ * The window mapped straight across one block, for an alignment with no CIGAR
+ * to walk. Clamped to the block, so a window wider than the alignment lands on
+ * its ends rather than off the far side of the mate.
  *
- * THIS IS THE ONE PLACE THE SYNTENY CODE NAVIGATES ON AN INTERPOLATION, and a
- * deliberate departure from the click-driven move, which refuses (see
- * `resolveAlignmentSpan`: a straight-line guess parked flush against its
- * neighbour presents itself as a correspondence). A PIF's coarse tier is
- * CIGAR-less by construction and is what serves whole-genome zoom, so refusing
- * would make the mode work zoomed in and silently stop working zoomed out, with
- * the user's own pan as the only visible cause. It is also exactly the geometry
- * on screen: at that tier the band IS a straight quadrilateral between the two
- * blocks' corners, and this reads the mate position off that same edge.
- *
- * The skew is NOT bounded by the tier's 10kb indel split threshold — many
- * smaller indels accumulate inside one coarse row without triggering a split —
- * so a caller that can say the answer is approximate should.
- *
- * One formula for both directions, over an anchor axis `a` and a placed axis
- * `b` that swap with `toMate`, clamped to the block so a window wider than the
- * alignment lands on its ends rather than off the far side of the mate.
+ * THE ONE PLACE THE SYNTENY CODE NAVIGATES ON AN INTERPOLATION, unlike the
+ * click-driven move, which refuses (`resolveAlignmentSpan`). A PIF's coarse
+ * tier is CIGAR-less by construction and serves whole-genome zoom, so refusing
+ * would make the mode work zoomed in and silently stop working zoomed out. The
+ * skew is not bounded by the tier's 10kb indel split threshold, so a caller
+ * that can say the answer is approximate should.
  */
 export function interpolateFollowSpan({
   feat,
@@ -42,12 +32,8 @@ export function interpolateFollowSpan({
   const bLen = bEnd - bStart
 
   const at = (x: number) => {
-    // a zero-length block has no interior to interpolate across; both ends
-    // collapse onto b's near corner
     const u =
       aLen > 0 ? (Math.min(Math.max(x, aStart), aEnd) - aStart) / aLen : 0
-    // a reverse-strand block runs the other way along the placed axis, so the
-    // walk counts down from its far end and the two ends arrive swapped
     return strand === -1 ? bEnd - u * bLen : bStart + u * bLen
   }
   const p = at(window.start)
@@ -56,9 +42,8 @@ export function interpolateFollowSpan({
   return {
     refName: toMate ? mate.refName : feat.refName,
     start: lo,
-    // at least one base: a window narrower than the rounding, or a zero-length
-    // block, would otherwise produce an inverted span that assembles into an
-    // inverted locstring
+    // at least one base, since a zero-width span assembles into an inverted
+    // locstring
     end: Math.max(lo + 1, Math.ceil(Math.max(p, q))),
   }
 }

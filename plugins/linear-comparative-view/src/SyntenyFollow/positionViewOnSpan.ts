@@ -11,22 +11,13 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * Put `view` on `span`, synchronously and without touching its displayed
  * regions.
  *
- * Base1DUtils' `moveTo` rather than the view ACTION of the same name, which
- * wraps it and then FLUSHES the view's coarse blocks, on the argument that a
- * discrete jump has nothing to coalesce. Per frame that stops being true: it
- * would republish the followed row's debounced window sixty times a second, and
- * the exact pass tracks exactly that, so every frame of a drag would wake an
- * RPC. Pan and zoom deliberately do not flush, and this is pan and zoom.
+ * Base1DUtils' `moveTo`, NOT the view action of the same name, which wraps it
+ * and then flushes the view's coarse blocks — sixty times a second that would
+ * wake the exact pass, which tracks them, into an RPC per frame.
  *
- * The zoom-then-scroll pair underneath measures its offset against the bpPerPx
- * `zoomTo` LANDED on rather than the one asked for, and re-centres when those
- * differ. Doing only the first of those left the row flush against the span's
- * left edge wherever the clamp bit, half a screen from where the exact pass
- * puts it through `navToLocString` — which is the same `moveTo`.
- *
- * False when the span is not inside the displayed regions at all: the row is
- * showing one contig and the follow has mapped onto another. Changing that is a
- * real navigation, which the exact pass is already on its way to do.
+ * False when the span is outside the displayed regions: the row is showing
+ * another contig, and changing that is a real navigation the exact pass is
+ * already on its way to do.
  */
 export function positionViewOnSpan(
   view: LinearGenomeViewModel,

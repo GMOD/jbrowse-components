@@ -2,21 +2,15 @@ import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
-/**
- * What one anchor coordinate has learned from the blocks seen so far: the
- * widest block containing it, and failing that the nearest block ending to its
- * left and the nearest starting to its right.
- */
+// What one anchor coordinate has learned from the blocks seen so far: the
+// widest block containing it and where that puts it, else the nearest block
+// each side and where their facing edges land.
 interface Accumulator {
   x: number
-  /** width of the widest containing block, -1 for none */
   insideWidth: number
-  /** where that block puts `x` */
   insideAt: number
-  /** the nearest block ending left of `x`, and where its right edge lands */
   leftEnd: number
   leftAt: number
-  /** the nearest block starting right of `x`, and where its left edge lands */
   rightStart: number
   rightAt: number
 }
@@ -33,7 +27,6 @@ function newAccumulator(x: number): Accumulator {
   }
 }
 
-/** Show one block to a coordinate, in whichever of the three roles it plays. */
 function offer(
   a: Accumulator,
   aLo: number,
@@ -42,7 +35,7 @@ function offer(
   atHi: number,
 ) {
   if (a.x >= aLo && a.x <= aHi) {
-    // the widest containing block wins, matching pickFollowFeature
+    // widest containing block wins, matching pickFollowFeature
     if (aHi - aLo > a.insideWidth) {
       a.insideWidth = aHi - aLo
       a.insideAt =
@@ -59,15 +52,9 @@ function offer(
   }
 }
 
-/**
- * The coordinate's mapped position: through its block, or across the gap
- * between the two it lies between, which is continuous because the gap
- * interpolation starts from exactly the value each block gives at its own edge.
- *
- * Off either end, the outermost block's edge rather than an extrapolation —
- * past the last alignment nothing is known, and a scale measured elsewhere
- * would invent a correspondence rather than admit there is none.
- */
+// Off either end this gives the outermost block's edge rather than
+// extrapolating: past the last alignment nothing is known, and a scale measured
+// elsewhere would invent a correspondence.
 function resolve(a: Accumulator) {
   if (a.insideWidth >= 0) {
     return a.insideAt
@@ -86,13 +73,9 @@ function resolve(a: Accumulator) {
 /**
  * Where the anchor window maps to, across every alignment under it.
  *
- * Each window EDGE mapped, rather than the union of the mapped blocks. The
- * union is the right ANSWER — it is what aligns to the window — but it is a
- * step function: its edges are set by whichever blocks are currently outermost,
- * so they sit still through a pan and then jump when a block enters or leaves.
- * Following it literally measured as 1 movement in 30 drag steps on grape/peach
- * at 5 Mb. Mapping the edges is continuous and agrees with the union wherever
- * the union is defined.
+ * Each window EDGE mapped, not the union of the mapped blocks. The union is the
+ * right answer but a step function — its edges jump as blocks enter and leave —
+ * which measured as 1 movement in 30 drag steps on grape/peach at 5 Mb.
  */
 export function followWindowMapping({
   data,
@@ -120,16 +103,10 @@ export function followWindowMapping({
   } = window
   const n = refNames.length
 
-  // ONE PASS, AND NOTHING ALLOCATED PER BLOCK. This runs per frame over every
-  // loaded block, and a whole-genome PAF's loaded set runs to hundreds of
-  // thousands. The readable version — a helper returning a small object per
-  // block, called once per edge — measured 51ms a frame at 500k, three times a
-  // 60fps budget, against 5ms for a bare pass over the same arrays. So the cost
-  // is traversals and allocation, which is why every candidate contig
-  // accumulates as it goes rather than the winner being chosen in a pass of its
-  // own, and why the book-keeping is parallel arrays rather than a Map. The
-  // names are few, so a linear scan of them beats hashing and `lastName` makes
-  // the common run of identical ones a pointer compare.
+  // One pass, nothing allocated per block, parallel arrays rather than a Map.
+  // This runs per frame over hundreds of thousands of blocks on a whole-genome
+  // PAF: allocating a small object per block measured 51ms a frame at 500k
+  // against 5ms for a bare pass, so traversals and allocation are the cost.
   const names: string[] = []
   const totals: number[] = []
   const startAt: Accumulator[] = []
