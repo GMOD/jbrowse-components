@@ -521,24 +521,18 @@ public static const float ARC_HEIGHT_MARGIN = 8.0;
 //
 // A band shorter than the margin is reachable from config alone —
 // `readConnectionsHeight` is a plain number slot, and the 20px floor
-// (`clampBandHeight`) is a constraint on DRAGGING, not on what a config or a
-// session snapshot may declare. Anything in 1..7 yields a negative plottable
-// height, and every consumer takes it at face value: `arcYOffsetPx` returns a
-// negative `destY`, so a dome's `ry` comes out negative and `ctx.ellipse` throws
-// IndexSizeError on a negative radius — one small number in a track config, and
-// the Canvas2D backend threw on every frame it drew arcs in, taking the rest of
-// that block's paint with it. The GPU threw nothing and drew the band inside out
-// instead, which is the same statement made quietly.
+// (`clampBandHeight`) constrains DRAGGING, not what a config or a session
+// snapshot may declare — so any height in 1..7 arrives here. Unfloored, such a
+// band gives `arcYOffsetPx` a negative `destY`, which is a negative `ry` on a
+// dome: `ctx.ellipse` throws IndexSizeError on a negative radius and takes the
+// rest of that block's Canvas2D paint with it, while the GPU throws nothing and
+// draws the band inside out.
 //
-// It is HERE, and `//! js-export`ed, because the subtraction had four sites:
-// arc.slang, arcFlat.slang, arcMarker.slang and a hand-written `Math.max` in
-// arcYScale.ts. Flooring the JS one alone left the three passes inverting a band
-// the Canvas2D path collapsed — the two backends disagreeing about the same
-// config, which is worse than the throw it replaced. One definition, asked by
-// both renderers' Y scales, `arcMark`, the hit test and the insert-size ruler,
-// keeps them agreeing at 0. At 0 every arc plots at `destY` 0 — the band
-// collapses to its anchor line, which is what a band with no room to plot in
-// should look like.
+// Five callers ask this — arc.slang, arcFlat.slang and arcMarker.slang, plus
+// arcYScale.ts's re-export, which is where both renderers' Y scales, `arcMark`,
+// the hit test and the insert-size ruler get it. One definition is what keeps
+// them agreeing at 0, where every arc plots at `destY` 0 and the band collapses
+// to its anchor line — what a band with no room to plot in should look like.
 public float arcAvailH(float bandH) {
   return max(0.0, bandH - ARC_HEIGHT_MARGIN);
 }
@@ -670,7 +664,10 @@ public float normalizeDepth(float relDepth, Uniforms u) {
 static const float MIN_VISIBLE_ALPHA = 0.00392156862745098; // 1/255
 
 // Sub-pixel alpha blend: lerp between `base` and 1.0 using per-site frequency.
-// Mirrors frequencyAlpha() in rendererTypes.ts.
+// The single definition of that lerp for both backends; `alphaShaderParity.test.ts`
+// holds its endpoints. Nothing on the CPU side imports it directly — it arrives
+// there inside the generated `frequencyFadeGate`, which is the decision callers
+// want.
 public float frequencyAlpha(float base, float freq) {
   return base + freq * (1.0 - base);
 }
@@ -684,13 +681,17 @@ public float frequencyAlpha(float base, float freq) {
 //
 // Every fading pass must go through this rather than reassembling the gate
 // locally — a hand-rolled copy is how the clip pass silently lost its
-// filterMismatchesByFrequency check. Mirrors frequencyFade() in rendererTypes.ts.
-// Split from the Uniforms wrapper below only so it can be `//! js-export`ed:
+// filterMismatchesByFrequency check. `frequencyFade()` in rendererTypes.ts calls
+// the generated twin of this, adding the two things that are the CPU side's
+// alone: reading the toggle off the render state, and normalizing the worker's
+// frequency byte.
+//
+// Split from the Uniforms wrapper below only so it can be `//! js-export`ed —
 // the wrapper takes the whole uniform block, which the scalar twin emitter
-// cannot carry across, and the GATE is the part that was hand-copied. The TS
-// side kept its own `state.filterMismatchesByFrequency && base < 1` — three
-// facts (the toggle, the sub-pixel test, and which one short-circuits) that
-// have to match, and losing the first of them is precisely the clip-pass bug.
+// cannot carry across, and the GATE is the part both backends need. It holds
+// three facts that have to agree: the toggle, the sub-pixel test, and which one
+// short-circuits. Dropping the toggle is what silently disabled the clip pass's
+// filter.
 public float frequencyFadeGate(float base, float freq, bool filterByFrequency) {
   return (filterByFrequency && base < 1.0) ? frequencyAlpha(base, freq) : 1.0;
 }

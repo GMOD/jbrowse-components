@@ -190,15 +190,14 @@ negative `destY`, so a dome's `ry` went negative and `ctx.ellipse` **threw**
 coverage bar computed a negative CSS height, which the browser drops, so the bar
 silently vanished.
 
-Floor it at the one place the EXPRESSION lives, not at the one place its
-consumers share — those are different, and the difference is what the arc band's
-first fix got wrong. `arcAvailH` was floored in `arcYScale.ts`, which every CPU
-consumer asks, while arc.slang, arcFlat.slang and arcMarker.slang each carried
-their own `u.arcBandH - ARC_HEIGHT_MARGIN` and kept inverting the band the
-Canvas2D path had just learned to collapse — the two backends disagreeing about
-one config, which is worse than the throw it replaced. A floor belongs in the
-slang beside the margin it subtracts, `//! js-export`ed, so the CPU twin is the
-shader's own arithmetic (adr-051) rather than a fourth spelling of it.
+Floor it where the EXPRESSION lives, which is not the same place its CPU
+consumers meet. `arcAvailH` is declared in alignmentsUniforms.slang beside the
+margin it subtracts and `//! js-export`ed, because arc.slang, arcFlat.slang and
+arcMarker.slang subtract that margin too: a floor applied only on the JS side
+leaves the three passes inverting a band the Canvas2D path collapses, and two
+backends disagreeing about one config is worse than the throw. Where a shader
+also computes the quantity, the CPU side takes the generated twin (adr-051)
+rather than spelling the floor again.
 
 `computeArcBand` is the single source of truth for the arc band and is decoupled
 from `showCoverage` — don't reintroduce a `covH > 0` gate. Arc and sashimi

@@ -12,11 +12,11 @@
 // and every caller already imports them from here; the shader adopted the same
 // spelling rather than the other way round.
 //
-// `arcAvailH` — the band's plottable height, floored at 0 — is the third, and
-// came here the same way: it was a hand-written `Math.max` next to three
-// `u.arcBandH - ARC_HEIGHT_MARGIN`s in arc/arcFlat/arcMarker.slang, so flooring
-// this side alone left the passes inverting a band this side collapsed. The
-// slang declaration carries why the floor exists.
+// `arcAvailH` — the band's plottable height, floored at 0 — is the third, and is
+// shared for the same reason: arc.slang, arcFlat.slang and arcMarker.slang each
+// subtract the margin too, and a floor only one side applies means the two
+// backends draw a too-short band differently. The slang declaration carries why
+// the floor is there.
 export {
   arcAvailH,
   arcYFraction,
