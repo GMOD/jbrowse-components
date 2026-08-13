@@ -1,6 +1,7 @@
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { renameRegionsIfNeeded } from '../util/index.ts'
+import { resolveUriLocation } from '../util/io/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
 import {
   getBlobMap,
@@ -248,11 +249,17 @@ export default abstract class RpcMethodType<
       return loc
     }
 
-    const account = rootModel.findAppropriateInternetAccount(loc)
+    // Resolved, because both halves below read the uri as a URL: the account is
+    // matched on host or URL prefix, and validating the token means probing the
+    // resource. A uri relative to a baseUri is neither until it is resolved.
+    // The pre-authorization still lands on `loc` as it stands — the worker
+    // resolves against the same baseUri when it opens the location.
+    const resolved = resolveUriLocation(loc)
+    const account = rootModel.findAppropriateInternetAccount(resolved)
 
     if (account) {
       loc.internetAccountPreAuthorization =
-        await account.getPreAuthorizationInformation(loc)
+        await account.getPreAuthorizationInformation(resolved)
     }
     return loc
   }

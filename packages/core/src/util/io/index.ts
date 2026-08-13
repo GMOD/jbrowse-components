@@ -100,12 +100,19 @@ export function openLocation(
       throw new Error('No URI provided')
     }
 
-    // Resolve any relative URLs to absolute URLs
+    // Resolve any relative URLs to absolute URLs. Before *choosing* the account
+    // and not only before opening: an account is matched on the location's host
+    // or URL prefix, which a uri relative to a baseUri does not carry yet — so
+    // a config that names its files relative to itself found no account at all
+    // and read every one of them unauthenticated.
     const absoluteLocation = resolveUriLocation(location)
 
     // If there is a plugin manager, we can try internet accounts
     if (pluginManager) {
-      const internetAccount = getInternetAccount(location, pluginManager)
+      const internetAccount = getInternetAccount(
+        absoluteLocation,
+        pluginManager,
+      )
       // If an internetAccount was found, use it to open the location
       if (internetAccount) {
         return internetAccount.openLocation(absoluteLocation)
@@ -144,9 +151,11 @@ export function getFetcher(
     throw new Error(`Not a valid UriLocation: ${JSON.stringify(location)}`)
   }
   if (pluginManager) {
-    const internetAccount = getInternetAccount(location, pluginManager)
+    // resolved for the same reason openLocation resolves before matching
+    const absoluteLocation = resolveUriLocation(location)
+    const internetAccount = getInternetAccount(absoluteLocation, pluginManager)
     if (internetAccount) {
-      return internetAccount.getFetcher(location)
+      return internetAccount.getFetcher(absoluteLocation)
     }
   }
   return checkAuthNeededFetch
