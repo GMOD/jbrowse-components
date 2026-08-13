@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { passesFrequencyGate } from '../LinearAlignmentsDisplay/constants.ts'
 import * as clipShader from '../shaders/slang/clip.generated.ts'
@@ -19,11 +19,13 @@ export const PASS_CLIP = 'clip'
 export const CLIP_KIND_SOFT = 0
 export const CLIP_KIND_HARD = 1
 
-export const CLIP_PASS = instancePass({
-  id: PASS_CLIP,
-  mod: clipShader,
+export const CLIP_PASS = {
+  ...slangPass({
+    id: PASS_CLIP,
+    mod: clipShader,
+  }),
   pack: packClips,
-})
+}
 
 // Worker lays out interbases as (insertions, softclips, hardclips); pack
 // soft+hard together into a single instanced draw with a per-instance kind.

@@ -1,5 +1,4 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
-import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import {
@@ -36,10 +35,12 @@ const LINE_VERTS_PER_INSTANCE = 18
 
 // The only pass with a buffer of its own; the two below draw off it, so they
 // are registered here and absent from `regionPasses`.
-const FILL_PASS = instancePass({
-  id: PASS_FILL,
-  mod: wiggleShader,
-  topology: 'triangle-list',
+const FILL_PASS = {
+  ...slangPass({
+    id: PASS_FILL,
+    mod: wiggleShader,
+    topology: 'triangle-list',
+  }),
   pack: (sources: SourceRenderData[]) => {
     let totalFeatures = 0
     for (const source of sources) {
@@ -47,7 +48,7 @@ const FILL_PASS = instancePass({
     }
     return interleaveInstances(sources, totalFeatures)
   },
-})
+}
 
 export const WIGGLE_PASSES: PassDescriptor[] = [
   FILL_PASS,

@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 import * as coverageShader from '../../shaders/slang/coverage.generated.ts'
 
 import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
@@ -11,9 +11,11 @@ export const PASS_COVERAGE = 'coverage'
 // repack. `coverageGpuBinCount` is that buffer's record count said a second
 // time, for the region metadata that has no buffer to ask; the upload asks the
 // buffer.
-export const COVERAGE_PASS = instancePass({
+export const COVERAGE_PASS = {
+  ...slangPass({
   id: PASS_COVERAGE,
-  mod: coverageShader,
+    mod: coverageShader,
+  }),
   pack: (data: Pick<CoverageUploadData, 'coveragePackedBuffer'>) =>
     data.coveragePackedBuffer,
-})
+}

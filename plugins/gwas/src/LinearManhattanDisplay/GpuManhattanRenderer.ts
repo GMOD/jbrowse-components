@@ -1,6 +1,6 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
-import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/manhattan.generated.ts'
 
@@ -14,12 +14,14 @@ const PASS = 'point'
 const U = shader.UNIFORM_OFFSET_F32
 
 export const MANHATTAN_PASSES = [
-  instancePass({
-    id: PASS,
-    mod: shader,
-    topology: 'triangle-list',
+  {
+    ...slangPass({
+      id: PASS,
+      mod: shader,
+      topology: 'triangle-list',
+    }),
     pack: buildInstanceBuffer,
-  }),
+  },
 ]
 
 export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<

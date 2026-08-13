@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as perBaseQualityShader from '../../shaders/slang/packedColorQuad.generated.ts'
 import { qualityAbgr } from './colors.ts'
@@ -7,11 +7,13 @@ import type { PerBaseQualityUploadData } from './types.ts'
 
 export const PASS_PER_BASE_QUAL = 'perBaseQuality'
 
-export const PER_BASE_QUALITY_PASS = instancePass({
-  id: PASS_PER_BASE_QUAL,
-  mod: perBaseQualityShader,
+export const PER_BASE_QUALITY_PASS = {
+  ...slangPass({
+    id: PASS_PER_BASE_QUAL,
+    mod: perBaseQualityShader,
+  }),
   pack: packPerBaseQuality,
-})
+}
 
 export function packPerBaseQuality(
   data: PerBaseQualityUploadData,

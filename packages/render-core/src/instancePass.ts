@@ -1,7 +1,4 @@
-import { slangPass } from './slangPass.ts'
-
 import type { GpuHal, PassDescriptor } from './hal'
-import type { SlangPassOpts } from './slangPass.ts'
 
 /**
  * A shader pass bundled with the function that packs its instance buffer.
@@ -9,28 +6,27 @@ import type { SlangPassOpts } from './slangPass.ts'
  * A pass id, the packer that fills its buffer, and the upload that joins them
  * are three statements of one fact, and renderers kept them in three places —
  * so a pass could be registered and drawn while nothing uploaded to it, which
- * paints nothing, silently, on the GPU backend only. Here they are one object.
+ * paints nothing, silently, on the GPU backend only. Here they are one object:
+ *
+ * ```ts
+ * export const GAP_PASS = {
+ *   ...slangPass({ id: PASS_GAP, mod: gapShader }),
+ *   pack: packGaps,
+ * }
+ * ```
+ *
+ * There is no constructor for this — `slangPass` is still how a pass is built,
+ * and a spread is how a packer joins it. That also covers the descriptor built
+ * somewhere payload-agnostic, like a shared glyph shape: `{ ...RectPass, pack }`
+ * is the same line.
  *
  * `TData` is the pass's own narrow payload, and stays narrow: a registry keyed
  * on a wide payload accepts a packer of a supertype by contravariance, so
  * declaring only the fields a pass actually reads costs nothing at the point of
  * use.
- *
- * A descriptor built elsewhere — one of the deliberately payload-agnostic glyph
- * shapes, say — becomes one by spreading: `{ ...RectPass, pack: … }`. That is
- * all `instancePass` does over `slangPass`, and it exists only so the common
- * case declares the packer inside the same braces as the shader.
  */
 export interface InstancePass<TData> extends PassDescriptor {
   pack: (data: TData) => ArrayBuffer | ArrayBufferView
-}
-
-export function instancePass<TData>(
-  opts: SlangPassOpts & {
-    pack: (data: TData) => ArrayBuffer | ArrayBufferView
-  },
-): InstancePass<TData> {
-  return { ...slangPass(opts), pack: opts.pack }
 }
 
 /**

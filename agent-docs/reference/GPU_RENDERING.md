@@ -465,8 +465,10 @@ touching either path, preserve whichever of these the display uses:
   Keying the third was the first fix and it was the weaker one: two exhaustive
   `Record<PileupLayerId, …>` still state the correspondence twice, and two
   statements can disagree. **The one that holds is to make the pass and its
-  packer one object** — `instancePass()` in `plugins/alignments/src/shared`,
-  bundling the descriptor with the function that fills its buffer. The
+  packer one object** — `{ ...slangPass({…}), pack }`, the `InstancePass` type in
+  `@jbrowse/render-core/instancePass`. No constructor wraps that spread: it also
+  has to serve a descriptor built somewhere payload-agnostic (a shared glyph
+  shape), and `{ ...RectPass, pack }` is the same line. The
   layer→pass map is then the layer→upload map, the arc band and the coverage
   band (`COVERAGE_LAYERS`) are the same shape, and `ALIGNMENTS_PASSES` is derived
   from those registries rather than hand-listed beside them, so registration
@@ -529,7 +531,9 @@ specialize one generic type and inherit from one of two abstract base classes in
 export type XxxRenderingBackend = PerRegionRenderingBackend<XxxUploadData, XxxRenderState>
 
 // Each pass carries the function that packs its instance buffer:
-export const XXX_PASSES = [instancePass({ id: PASS, mod: shader, pack: (d: XxxUploadData) => … })]
+export const XXX_PASSES = [
+  { ...slangPass({ id: PASS, mod: shader }), pack: (d: XxxUploadData) => … },
+]
 
 // GPU renderer declares its passes and implements drawRegion:
 export class GpuXxxRenderer extends GpuPerRegionRenderingBackend<XxxUploadData, XxxRenderState> {

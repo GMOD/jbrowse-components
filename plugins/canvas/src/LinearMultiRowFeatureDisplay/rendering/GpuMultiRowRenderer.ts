@@ -1,6 +1,6 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
-import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as multiRowShader from './shaders/multiRow.generated.ts'
 import {
@@ -20,14 +20,16 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 const PASS_RECT = 'rect'
 
 export const MULTI_ROW_PASSES = [
-  instancePass({
-    id: PASS_RECT,
-    mod: multiRowShader,
-    topology: 'triangle-list',
+  {
+    ...slangPass({
+      id: PASS_RECT,
+      mod: multiRowShader,
+      topology: 'triangle-list',
+    }),
     // Pre-encoded on the main thread by the per-region encode autorun
     // (`buildMultiRowInstanceBuffer`, right-sized on return).
     pack: (data: MultiRowUploadPayload) => data.instanceBuffer,
-  }),
+  },
 ]
 
 const U = UNIFORM_OFFSET_F32

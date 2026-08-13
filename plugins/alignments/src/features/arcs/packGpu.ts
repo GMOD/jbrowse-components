@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as arcShader from '../../shaders/slang/arc.generated.ts'
 import * as arcFlatShader from '../../shaders/slang/arcFlat.generated.ts'
@@ -28,36 +28,44 @@ export interface ArcsPackData {
 
 // Curved paired-read arcs only. 130 vertices per instance, because the strip is
 // a hull that must contain the analytic dome the fragment measures.
-export const ARC_PASS = instancePass({
-  id: PASS_ARC,
-  mod: arcShader,
-  topology: 'triangle-strip',
+export const ARC_PASS = {
+  ...slangPass({
+    id: PASS_ARC,
+    mod: arcShader,
+    topology: 'triangle-strip',
+  }),
   pack: (d: ArcsPackData) => packArcs(d.arcs, d.baseWidth),
-})
+}
 
 // Default triangle-list topology — a flat read-cloud connector is a 6-vertex
 // quad. It used to be an instance of ARC_PASS, i.e. 130 vertices tessellating a
 // straight line, in the one mode that draws thousands of them.
-export const ARC_FLAT_PASS = instancePass({
-  id: PASS_ARC_FLAT,
-  mod: arcFlatShader,
+export const ARC_FLAT_PASS = {
+  ...slangPass({
+    id: PASS_ARC_FLAT,
+    mod: arcFlatShader,
+  }),
   pack: (d: ArcsPackData) => packArcFlats(d.arcs, d.baseWidth),
-})
+}
 
 // Default triangle-list topology — the tick is an antialiased 6-vertex quad,
 // not a native line (see arcLine.slang).
-export const ARC_LINE_PASS = instancePass({
-  id: PASS_ARC_LINE,
-  mod: arcLineShader,
+export const ARC_LINE_PASS = {
+  ...slangPass({
+    id: PASS_ARC_LINE,
+    mod: arcLineShader,
+  }),
   pack: (d: ArcsPackData) => packArcLines(d.arcs, d.baseWidth),
-})
+}
 
 // Default triangle-list topology — each marker is a 6-vertex quad.
-export const ARC_MARKER_PASS = instancePass({
-  id: PASS_ARC_MARKER,
-  mod: arcMarkerShader,
+export const ARC_MARKER_PASS = {
+  ...slangPass({
+    id: PASS_ARC_MARKER,
+    mod: arcMarkerShader,
+  }),
   pack: (d: ArcsPackData) => packArcMarkers(d.arcs),
-})
+}
 
 // The two shape families are packed into two buffers rather than one buffer the
 // shader branches on, because their vertex counts differ by 32x (see

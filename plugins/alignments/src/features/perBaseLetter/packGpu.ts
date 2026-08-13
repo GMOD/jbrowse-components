@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 
@@ -9,11 +9,13 @@ export const PASS_PER_BASE_LETTER = 'perBaseLetter'
 // Reuses the mismatch shader: one themed 1bp quad per base, colored from the
 // base-color UBO uniforms. Per-base lettering is exactly "draw every aligned
 // base like a mismatch base", so the shader is shared rather than duplicated.
-export const PER_BASE_LETTER_PASS = instancePass({
-  id: PASS_PER_BASE_LETTER,
-  mod: mismatchShader,
+export const PER_BASE_LETTER_PASS = {
+  ...slangPass({
+    id: PASS_PER_BASE_LETTER,
+    mod: mismatchShader,
+  }),
   pack: packPerBaseLetter,
-})
+}
 
 export function packPerBaseLetter(data: PerBaseLetterUploadData): ArrayBuffer {
   const n = data.perBaseLetterPositions.length

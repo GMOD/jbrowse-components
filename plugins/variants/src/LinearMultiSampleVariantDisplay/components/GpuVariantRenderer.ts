@@ -1,6 +1,6 @@
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
-import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as variantShader from './shaders/variant.generated.ts'
 import { interleaveVariantInstances } from './variantShaders.ts'
@@ -18,12 +18,14 @@ const UNIFORMS_SIZE_BYTES = variantShader.UNIFORMS_SIZE_BYTES
 const U = variantShader.UNIFORM_OFFSET_F32
 
 export const VARIANT_PASSES = [
-  instancePass({
-    id: PASS_MAIN,
-    mod: variantShader,
-    blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+  {
+    ...slangPass({
+      id: PASS_MAIN,
+      mod: variantShader,
+      blendState: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+    }),
     pack: interleaveVariantInstances,
-  }),
+  },
 ]
 
 export { UNIFORMS_SIZE_BYTES as VARIANT_UNIFORM_BYTE_SIZE }

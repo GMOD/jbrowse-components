@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as connectingLineShader from '../../shaders/slang/connectingLine.generated.ts'
 
@@ -6,11 +6,13 @@ import type { ConnectingLinesUploadData } from './types.ts'
 
 export const PASS_CONN_LINE = 'connLine'
 
-export const CONN_LINE_PASS = instancePass({
-  id: PASS_CONN_LINE,
-  mod: connectingLineShader,
+export const CONN_LINE_PASS = {
+  ...slangPass({
+    id: PASS_CONN_LINE,
+    mod: connectingLineShader,
+  }),
   pack: packConnectingLines,
-})
+}
 
 export function packConnectingLines(
   data: ConnectingLinesUploadData,

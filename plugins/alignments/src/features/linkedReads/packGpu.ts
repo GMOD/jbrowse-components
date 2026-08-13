@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as linkedReadLineShader from '../../shaders/slang/linkedReadLine.generated.ts'
 
@@ -10,11 +10,13 @@ export const PASS_LINKED_READ_LINE = 'linkedReadLine'
 // quad, not a native line. A line list is 1 px on both GPU backends whatever
 // width you ask for, which is not the 1.5 px the Canvas2D twin strokes; see the
 // header of linkedReadLine.slang. Same move arcFlat and arcLine already made.
-export const LINKED_READ_LINE_PASS = instancePass({
-  id: PASS_LINKED_READ_LINE,
-  mod: linkedReadLineShader,
+export const LINKED_READ_LINE_PASS = {
+  ...slangPass({
+    id: PASS_LINKED_READ_LINE,
+    mod: linkedReadLineShader,
+  }),
   pack: packLinkedReadLines,
-})
+}
 
 export function packLinkedReadLines(
   data: LinkedReadLinesUploadData,

@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as modificationShader from '../../shaders/slang/packedColorQuad.generated.ts'
 
@@ -9,11 +9,13 @@ export const PASS_MOD = 'modification'
 // Pass descriptor exported so GpuAlignmentsRenderer's pileup-layer registry can
 // name it without re-importing the shader module — keeps the modification
 // shader, its pass shape and its packer in one place.
-export const MODIFICATION_PASS = instancePass({
-  id: PASS_MOD,
-  mod: modificationShader,
+export const MODIFICATION_PASS = {
+  ...slangPass({
+    id: PASS_MOD,
+    mod: modificationShader,
+  }),
   pack: packModifications,
-})
+}
 
 export function packModifications(data: ModificationUploadData): ArrayBuffer {
   // Pure field-for-field copy — delegate to the generated packInstances so the

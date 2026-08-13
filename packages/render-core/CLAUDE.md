@@ -94,12 +94,14 @@ strand case.
   `gpuProps()`, multi-row features' `featurePaintInputs` (which the hit test
   reads too, so it is deliberately not `gpuProps`). Manhattan and sequence
   encode `data => data` and read nothing, which is the other safe shape.
-- **A pass carries its packer (`instancePass`), and the instance count comes off
-  the packed bytes (`uploadPass`), never from a second expression.** A count
-  past `byteLength / stride` reads off the end of the buffer: undefined pixels,
-  no throw. The obligation that buys: **a packer that over-allocates must
-  right-size before returning**, and prefer the copy to a subarray view — a view
-  pins the whole allocation and these payloads are retained per region
+- **A pass carries its packer — `{ ...slangPass({…}), pack }`, an `InstancePass`
+  — and the instance count comes off the packed bytes (`uploadPass`), never from
+  a second expression.** A count past `byteLength / stride` reads off the end of
+  the buffer: undefined pixels, no throw. There is deliberately no constructor
+  wrapping that spread; `slangPass` stays the one way a pass is built. The
+  obligation that buys: **a packer that over-allocates must right-size before
+  returning**, and prefer the copy to a subarray view — a view pins the whole
+  allocation and these payloads are retained per region
   (`InstanceWriter.finish`, `buildMultiRowInstanceBuffer`).
 - **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
   before it looks at the count, so an empty pack IS the release. That is how a

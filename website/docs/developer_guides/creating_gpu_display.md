@@ -260,8 +260,8 @@ draw pass for one already-clipped block.
 ```ts
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
-import { instancePass } from '@jbrowse/render-core/instancePass'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/score.generated.ts'
 
@@ -283,10 +283,8 @@ const UU = shader.UNIFORM_OFFSET_U32
 // hands the bytes to the HAL, taking the instance count from the buffer's own
 // length. Nothing to keep in agreement, and an empty pack releases the buffer.
 export const SCORE_PASSES = [
-  instancePass({
-    id: PASS,
-    mod: shader,
-    topology: 'triangle-list',
+  {
+    ...slangPass({ id: PASS, mod: shader, topology: 'triangle-list' }),
     // the generated packInstances interleaves the parallel arrays into the
     // GL_ATTRIBUTES layout, no manual DataView offsets
     pack: (data: ScoreRegionData) =>
@@ -294,7 +292,7 @@ export const SCORE_PASSES = [
         { startBp: data.starts, endBp: data.ends, score: data.scores },
         data.numFeatures,
       ),
-  }),
+  },
 ]
 
 export class GpuScoreRenderer extends GpuPerRegionRenderingBackend<

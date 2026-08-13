@@ -1,4 +1,4 @@
-import { instancePass } from '@jbrowse/render-core/instancePass'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as gapShader from '../../shaders/slang/gap.generated.ts'
 
@@ -6,11 +6,13 @@ import type { GapUploadData } from './types.ts'
 
 export const PASS_GAP = 'gap'
 
-export const GAP_PASS = instancePass({
-  id: PASS_GAP,
-  mod: gapShader,
+export const GAP_PASS = {
+  ...slangPass({
+    id: PASS_GAP,
+    mod: gapShader,
+  }),
   pack: packGaps,
-})
+}
 
 export function packGaps(data: GapUploadData): ArrayBuffer {
   const n = data.gapPositions.length / 2

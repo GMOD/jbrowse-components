@@ -57,8 +57,9 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   enough" — which is the argument for **zero** statements of the count, not for
   two with a comment between them. Read a "not derivable" claim as naming what
   it was derived *from*: swapping the source silently swaps the claim.
-  **What landed instead** (`instancePass()`, `shared/instancePass.ts`): the pass
-  descriptor carries its own packer, `uploadPass` takes the count off the bytes,
+  **What landed instead** (`InstancePass`, `@jbrowse/render-core/instancePass`):
+  the pass descriptor carries its own packer, `uploadPass` takes the count off
+  the bytes,
   and the wrappers, the counts and the `if (n > 0)` guards are gone — 776 lines
   deleted, 17 files. The one objection that survived every round is co-location,
   and it is satisfied rather than traded away: the packer never leaves its
