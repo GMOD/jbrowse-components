@@ -1008,6 +1008,15 @@ const DEFAULT_INTERCHROM_WINDOW_BP = 1000
 // The `some` is over one cluster's mates and clusters are 1-2 members on real
 // data, so this is linear in practice; a genuine translocation makes one big
 // cluster and pays a few thousand comparisons once.
+// One interchromosomal connection, in the endpoint order the clustering keys on:
+// `bpA` on the lexicographically-first contig, `bpB` on the other, `index` back
+// into the caller's `pendingArcs`.
+interface ClusterEntry {
+  index: number
+  bpA: number
+  bpB: number
+}
+
 function clusteredInterchromSupport(
   arcs: PendingArc[],
   windowBp: number,
@@ -1029,46 +1038,52 @@ function clusteredInterchromSupport(
   //
   // Only the COUNTING is folded. Each tick still draws at the coordinate its own
   // read put it at — see the caller.
-  const bpA = new Float64Array(arcs.length)
-  const bpB = new Float64Array(arcs.length)
-  const byContigPair = new Map<string, number[]>()
+  //
+  // The normalized endpoints are carried on one small record per
+  // INTERCHROMOSOMAL arc rather than in two arrays sized to `arcs`: intra-chrom
+  // connections outnumber these by ~10:1 on deep short-read data (9204 arcs, 865
+  // of them interchromosomal, measured at 1:2,000,000 on HG002 300x), and only
+  // `support` has to span the whole feed.
+  const byContigPair = new Map<string, ClusterEntry[]>()
   for (let i = 0; i < arcs.length; i++) {
     const arc = arcs[i]!
     if (arc.p1Ref === arc.p2Ref) {
       continue
     }
     const swap = arc.p2Ref < arc.p1Ref
-    bpA[i] = swap ? arc.p2Bp : arc.p1Bp
-    bpB[i] = swap ? arc.p1Bp : arc.p2Bp
     const key = swap
       ? `${arc.p2Ref}\0${arc.p1Ref}`
       : `${arc.p1Ref}\0${arc.p2Ref}`
-    getOrCreate(byContigPair, key, () => []).push(i)
+    getOrCreate(byContigPair, key, () => []).push({
+      index: i,
+      bpA: swap ? arc.p2Bp : arc.p1Bp,
+      bpB: swap ? arc.p1Bp : arc.p2Bp,
+    })
   }
-  for (const indices of byContigPair.values()) {
-    indices.sort((a, b) => bpA[a]! - bpA[b]!)
-    let members: number[] = []
+  for (const entries of byContigPair.values()) {
+    entries.sort((a, b) => a.bpA - b.bpA)
+    let members: ClusterEntry[] = []
     let mates: number[] = []
     let lastBp = 0
     const flush = () => {
       for (const m of members) {
-        support[m] = members.length
+        support[m.index] = members.length
       }
     }
-    for (const i of indices) {
+    for (const entry of entries) {
       if (
         members.length > 0 &&
-        bpA[i]! - lastBp <= windowBp &&
-        mates.some(m => Math.abs(m - bpB[i]!) <= windowBp)
+        entry.bpA - lastBp <= windowBp &&
+        mates.some(m => Math.abs(m - entry.bpB) <= windowBp)
       ) {
-        members.push(i)
-        mates.push(bpB[i]!)
+        members.push(entry)
+        mates.push(entry.bpB)
       } else {
         flush()
-        members = [i]
-        mates = [bpB[i]!]
+        members = [entry]
+        mates = [entry.bpB]
       }
-      lastBp = bpA[i]!
+      lastBp = entry.bpA
     }
     flush()
   }
