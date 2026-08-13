@@ -1,8 +1,39 @@
 # plugins/wiggle
 
-Two displays over one shader, one Canvas2D twin and one hit test, all in
+Two displays over two shaders, one Canvas2D twin and one hit test, all in
 `src/shared`. Scale/axis/score machinery is `packages/wiggle-core`, because six
 other plugins draw a wiggle-shaped axis against it.
+
+## Two shaders, because a module reflects one instance struct
+
+`wiggle.slang` fills (xyplot, density, scatter) on a 20-byte record;
+`wiggleLine.slang` strokes (line, linecenter) on a 40-byte one. Only the two
+stroked renderings read a neighbour — the step-line's `prevScore`/`nextScore`,
+the center-line's `prevStartEnd`/`prevScoreLine` — and one module means one
+layout, so while they all shared a shader every fill buffer carried those 20
+bytes for nothing. At 1000 sources that was 164MB rather than 82MB in the single
+allocation a region's sources are packed into, against a 256MB `maxBufferSize`
+floor, which is a zoom ceiling and not just waste.
+
+`wiggleCommon.slang` holds what they must agree on — the `Uniforms` struct, the
+mode enums, and the score math — following `alignmentsUniforms`: the struct is
+shared, the **binding is not** (each declares its own
+`ConstantBuffer<Uniforms>`), and each re-imports `colorPack`/`hpmath`, since
+Slang does not re-export through an import. `consts-out` takes the whole
+`export-consts` list, so every generated constant lives there and
+`wiggleRenderModes.generated.ts` stays one file.
+
+**The pass, the buffer and the `renderingType` uniform all come off the encoded
+layers, never off `renderState`** (`SourceRenderData.renderingType`, stamped by
+`buildSourceRenderData`). Encode and render are separate autoruns and render is
+registered first, so the frame after a plot-type switch sees a state that moved
+and a region that has not; with two record sizes in play, a pass reading the
+wrong one reads past the end of its instances. Drawing the previous plot for one
+frame is the correct stale.
+
+Each pass packs its own buffer and returns **empty** for renderings that are not
+its own — an empty pack is how a pass releases its buffer — so a region holds
+only the layout it draws.
 
 ## The two displays differ in one thing: the vertical inset
 
@@ -28,7 +59,7 @@ its own note saying MAF's floor is unresolved. Not a precedent.
 
 ## Three separate decisions inside "how wide is a bar"
 
-- **Floor**: `MIN_FILL_WIDTH_PX`, `export-consts`ed from `wiggle.slang`
+- **Floor**: `MIN_FILL_WIDTH_PX`, `export-consts`ed from `wiggleCommon.slang`
   (adr-051), re-exported as `WIGGLE_MIN_PX`. One number, both backends.
 - **`WIGGLE_FUDGE_FACTOR` (0.8px) is Canvas2D-only.** `fillRect` at fractional
   coords antialiases its own edges and leaves hairline gaps; adjacent GPU quads
