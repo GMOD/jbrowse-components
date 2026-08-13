@@ -1,5 +1,5 @@
 import HicFile from './index.ts'
-import { openLocalTestHic } from './testFile.ts'
+import { openLocalTestHic } from './testFile.node.ts'
 
 test('parses real .hic file', async () => {
   const straw = new HicFile({ file: openLocalTestHic() })

@@ -1,5 +1,5 @@
 import HicFile from './index.ts'
-import { openLocalTestHic } from './testFile.ts'
+import { openLocalTestHic } from './testFile.node.ts'
 
 import type { HicRegion } from './types.ts'
 

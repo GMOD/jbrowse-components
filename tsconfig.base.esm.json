@@ -5,7 +5,14 @@
 {
   "extends": "./tsconfig.json",
   "include": ["${configDir}/src/**/*.ts*"],
-  "exclude": ["${configDir}/src/**/*.test.ts*"],
+  // `*.node.ts` is a helper that only a test or a script runs, reaching for
+  // `node:fs` and friends. This build has no node types and no business
+  // emitting it into a browser bundle, so the suffix keeps it out — a plain
+  // name lands in the build and fails it on the imports alone.
+  "exclude": [
+    "${configDir}/src/**/*.test.ts*",
+    "${configDir}/src/**/*.node.ts"
+  ],
   "compilerOptions": {
     "outDir": "${configDir}/esm",
     "rootDir": "${configDir}/src",
