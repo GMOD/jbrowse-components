@@ -131,10 +131,13 @@ there: **CpG Islands**, **ENCODE cCREs - ENCODE4 cCREs**, **Layered H3K4Me3
 from Expression.
 
 The two histone tracks each hold seven cell lines, drawn over one another as
-they open. The track menu's **Plot type → Multi-row → XY plot** gives each cell
-line a row of its own, which is how they are drawn below. Their names carry hg19
-because that is the assembly ENCODE3 released them on; the files this config
-points at are the hg38 ones.
+they open. **Track menu → Plot type → Multi-row → XY plot** gives each cell line
+a row of its own. Their names carry hg19 because that is the assembly ENCODE3
+released them on; the files this config points at are the hg38 ones.
+
+<Figure src="/img/genomes_basics/plot_type_multirow.png" caption="H3K4me3 and H3K27ac over the TP53 promoter. Top: as they open, seven cell lines over one another, with the Plot type menu that separates them. Bottom: the same two tracks after it, one row per cell line." />
+
+The other three go in the same window.
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="The promoter end of TP53: CpG islands, ENCODE cCREs coloured by class, then H3K4me3 and H3K27ac as one row per cell line, over EPDnew's promoter calls." />
 
@@ -171,12 +174,11 @@ calls predicted loss of function.
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class expression typed in." />
 
-`grpmax` is a third column, naming the genetic ancestry group that carries the
-variant at its highest frequency. **Color by... → Attribute...** takes any
-column name and assigns each value a colour; the figure uses a named palette
-instead, so the legend can say which group is which.
+The colours are the file's own, and gnomAD uses them for the same consequence
+class `annot` names, so the loss-of-function filter leaves a track drawn in one
+colour.
 
-<Figure src="/img/genomes_basics/gnomad_filters.png" caption="The TP53 transcript with phyloP and gnomAD exomes, filtered three ways. Top: every record. Middle: variants above 0.1 percent, coloured by the ancestry group carrying each at its highest frequency. Bottom: the variants gnomAD calls predicted loss of function." />
+<Figure src="/img/genomes_basics/gnomad_filters.png" caption="The TP53 transcript with phyloP and gnomAD exomes, filtered three ways. Top: every record. Middle: the common variants. Bottom: the variants gnomAD calls predicted loss of function." />
 
 Unfiltered, gnomAD is densest where phyloP peaks, since that is what an exome
 captures. Filtered to the common variants, few remain in coding sequence and the

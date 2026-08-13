@@ -3,6 +3,7 @@ import {
   UCSC_HG38_CONFIG,
   cascadeBoxes,
   displayReady,
+  menuCascade,
   openTrackSelector,
   sessionSpec,
   trackMenuIcon,
@@ -134,30 +135,21 @@ const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 // which is the tempting way to write the cast that isn't needed.
 const GNOMAD_COMMON_FILTER = 'jexl:feature.AF >= 0.001'
 
-// Which genetic ancestry group carries a variant at its highest frequency.
-// `grpmax` is an in-line bigBed column, so this needs nothing but a colour
-// callback -- the per-group table gnomAD's own browser draws lives in a sidecar
-// file JBrowse does not read, and this is the part of it that ships in the
-// track. Six groups occur (Finnish, Ashkenazi and Amish are excluded from
-// grpmax by gnomAD), plus N/A where every group is zero.
+// The middle frame of the gnomAD figure used to be coloured by `grpmax`, the
+// ancestry group carrying each variant at its highest frequency, out of a
+// hand-written Okabe-Ito map in a jexl `color` callback plus a matching
+// `legend`. It is not coming back, and the reason is not the palette:
 //
-// Okabe-Ito, which is colourblind-safe; the keys carry spaces, slashes and
-// parens and jexl takes them quoted (checked against createJexlInstance).
-const GNOMAD_ANCESTRY_COLORS: [string, string][] = [
-  ['African/African American', '#E69F00'],
-  ['Admixed American', '#56B4E9'],
-  ['East Asian', '#009E73'],
-  ['European (Non-Finnish)', '#0072B2'],
-  ['Middle Eastern', '#D55E00'],
-  ['South Asian', '#CC79A7'],
-]
-const GNOMAD_ANCESTRY_COLOR = `jexl:{${GNOMAD_ANCESTRY_COLORS.map(
-  ([k, v]) => `'${k}':'${v}'`,
-).join(',')}}[feature.grpmax] || '#999999'`
-const GNOMAD_ANCESTRY_LEGEND = [
-  ...GNOMAD_ANCESTRY_COLORS.map(([label, color]) => ({ label, color })),
-  { label: 'No group above zero', color: '#999999' },
-]
+// NEITHER of those is reachable by clicking. "Color by... → Attribute..." writes
+// `jexl:randomColor(get(feature,'attr'))` (featureColors.ts), which is
+// hash-derived colours and no key at all, and `legend` is a config slot with no
+// menu item anywhere. So the frame was a picture of a config a reader of a page
+// called "basic usage" had no way to arrive at, sitting between two frames that
+// were one dialog away -- and the prose covered it in half a sentence that read
+// as a note about taste rather than "you cannot get this".
+//
+// The three frames are one filter each now, in the track's own itemRgb colours,
+// which carry gnomAD's consequence classes for free.
 
 // Histone marks over the ENCODE3 seven-cell-line panel (GM12878, H1-hESC,
 // HSMM, HUVEC, K562, NHEK, NHLF), one row per cell line.
@@ -183,6 +175,13 @@ const H3K27AC_ROWS = {
   trackId: 'hg38-wgEncodeRegMarkH3k27ac',
   defaultRendering: 'multirowxy',
 }
+
+// The menu path `multirowxy` is behind, spelled once so the hovers, the callout
+// boxes and the prose cannot name it three ways. Written out rather than
+// imported from renderingTypes.ts: check-menu-labels resolves each segment
+// against the app's own literals, which is the check that would catch a rename,
+// and an import would make it vacuous.
+const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 
 // ClinVar's own classification column. The three pathogenic classes spelled
 // out rather than matched by prefix: jexl has no startsWith, and "Conflicting
@@ -561,6 +560,76 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // through, so a track earns its figure by showing something about this gene
   // rather than by being a nice picture of somewhere else.
 
+  // How the histone tracks below get one row per cell line, which is the other
+  // setting on this page that a figure asserted and no figure showed. The hub
+  // ships both as MultiQuantitativeTracks defaulting to `multixyplot`, so they
+  // open with all seven cell lines drawn over one another -- and the figure
+  // under this one shows them separated, out of a `defaultRendering` key in the
+  // spec, with the path named in prose and nothing picturing it.
+  //
+  // So: the default in frame 1 under the menu that changes it, the result in
+  // frame 2. Both frames carry the same two tracks at the same height, so the
+  // difference between them is the setting and not the layout.
+  //
+  // "XY plot" is the label under BOTH layout groups (renderingTypes.ts), which
+  // is only safe to click by text because one submenu is open at a time -- the
+  // Overlapping group is not in the DOM until it is hovered. `menuCascade`
+  // hovers each level in turn, so the path cannot skip one.
+  //
+  // Frame 2 loads a session rather than clicking "XY plot": the click would
+  // change ONE track, and a frame with one track separated and one still
+  // overlapping reads as a bug rather than a result.
+  {
+    mode: 'url',
+    name: 'genomes_basics/plot_type_multirow',
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: TP53_PROMOTER_WINDOW,
+          tracks: [
+            { ...GENE_TRACK_COLLAPSED, height: 60 },
+            { trackId: H3K4ME3_ROWS.trackId, height: 170 },
+            { trackId: H3K27AC_ROWS.trackId, height: 170 },
+          ],
+        },
+      ],
+    }),
+    readyText: 'TP53',
+    readyTimeout: 180000,
+    settleMs: 10000,
+    viewportHeight: 700,
+    diffThreshold: 0.02,
+    hideTooltip: true,
+    stages: [
+      {
+        actions: [
+          trackMenuIcon(H3K4ME3_ROWS.trackId),
+          ...menuCascade(PLOT_TYPE_PATH),
+        ],
+        annotations: cascadeBoxes(PLOT_TYPE_PATH),
+      },
+      {
+        url: sessionSpec(UCSC_HG38_CONFIG, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'hg38',
+              loc: TP53_PROMOTER_WINDOW,
+              tracks: [
+                { ...GENE_TRACK_COLLAPSED, height: 60 },
+                { ...H3K4ME3_ROWS, height: 170 },
+                { ...H3K27AC_ROWS, height: 170 },
+              ],
+            },
+          ],
+        }),
+        actions: [PARK_CURSOR],
+      },
+    ],
+  },
+
   // The promoter, which is at the RIGHT-hand end of the frame because TP53 is on
   // the minus strand: the TSS is at chr17:7,687,490 and transcription runs
   // leftwards, so the CpG island, the promoter-class cCRE and the histone peak
@@ -756,17 +825,16 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // three-fold against the base composition of the window. None of those
   // numbers is in the prose; the frames carry it.
   //
-  // Frame 2 is coloured by `grpmax`, the ancestry group carrying the variant at
-  // its highest frequency, so it is more than the same track with fewer rows.
-  // All six groups occur here (19 African/African American, 15 East Asian, 14
-  // European non-Finnish, 9 Admixed American, 7 South Asian, 7 Middle Eastern),
-  // and the most skewed is chr17:7,674,638, 0.6% overall against 17% in
-  // African/African American.
-  //
   // Frame 3 is the other axis a reader would filter on: `annot` is gnomAD's own
   // consequence class, and pLoF is the high-impact end of it. 93 records, all
   // in coding sequence by construction, and nearly all of them singletons --
   // the opposite population to frame 2, from the same file.
+  //
+  // Every frame draws in the track's own itemRgb, which is gnomAD's consequence
+  // colouring (pLoF red, missense yellow, synonymous green, other grey), so the
+  // pLoF frame comes out red without anything being set to make it. See the
+  // note over GNOMAD_COMMON_FILTER for the `grpmax` colouring that used to be
+  // on frame 2 and why no config-only picture belongs in this figure.
   //
   // ClinVar is deliberately NOT in this figure. It was, and three dense variant
   // tracks over one gene read as noise; the exon figure above is where ClinVar
@@ -785,11 +853,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     stages: [
       { actions: [PARK_CURSOR] },
       {
-        url: gnomadFrame({
-          jexlFiltersSetting: [GNOMAD_COMMON_FILTER],
-          color: GNOMAD_ANCESTRY_COLOR,
-          legend: GNOMAD_ANCESTRY_LEGEND,
-        }),
+        url: gnomadFrame({ jexlFiltersSetting: [GNOMAD_COMMON_FILTER] }),
         actions: [PARK_CURSOR],
       },
       {
