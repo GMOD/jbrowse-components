@@ -40,7 +40,7 @@ before anyone noticed.
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
-| [Whose bug is `protein/connected`](#find-out-whose-bug-proteinconnected-is) | figures, protein3d | get a stack; it may be the pinned plugin's, not ours |
+| [A ClinVar `color` jexl stopped colouring](#a-clinvar-color-jexl-stopped-colouring) | variants, config | check whether `INFO` survives the trip to the worker |
 | [Liveliness warnings and `no containing view found`](#the-liveliness-warnings-and-no-containing-view-found-are-one-bug) | MST, comparative | name the destroys — one of these takes the page down |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
@@ -256,22 +256,32 @@ how a correct pill shipped invisible for a round (see
 An item whose drawn rect falls outside the capture is almost always a bug —
 report it the way the overlay already reports an unresolvable anchor.
 
-### Find out whose bug `protein/connected` is
+### A ClinVar `color` jexl stopped colouring
 
-The spec fails hard and blocks its figure — `capture not settled … Failed to
-launch ProteinView view`, with `TypeError: Cannot read properties of undefined
-(reading 'filter')` in the console. Reported by the 2026-08-13 figure sweep and
-not reproduced since, so the stack is the first thing to get: `--filter
-protein/connected --headed`, or a `page.on('pageerror')` that prints
-`error.stack`.
+Same data, same config, different picture. `protein/connected`'s committed
+figure paints the ClinVar lane by clinical significance — the TP53 deletion at
+17:7,669,587 red, the rest blue/orange/grey — and a fresh capture of that same
+spec paints every one of them the `|| 'purple'` fallback. The config slot is
+`clinvar_ncbi_hg38`'s
 
-**Read the stack before assuming the fix is in this repo.** The spec pins the
-protein3d plugin to `jbrowse.org/plugins/…/0.8.0/` deliberately, so the throw is
-as likely to be inside that bundle as in anything here — and if it is, the
-choices are a pin bump or a spec change, not a code fix. The declarative launch
-it uses (`uniprotId` + `transcriptId` + `connectedView`) is the plugin's, and
-resolving the transcript out of the hg38-ncbiRefSeq track is where an undefined
-list would plausibly come from.
+    jexl:({'Benign':'blue',…})[feature.INFO.CLNSIG] || 'purple'
+
+and `tabix`ing the live file over that window still answers
+`CLNSIG=Pathogenic` / `Likely_benign` / `Uncertain_significance` — the exact
+keys that map. So the data did not drift and the expression did not change:
+something between the slot and the paint stopped resolving `feature.INFO`.
+
+**Not a variant-track bug until that is checked** — `color` is
+`LinearCanvasBaseDisplay`'s slot, evaluated worker-side against a serialized
+feature, so the question is whether `INFO` survives that trip at all. `feature.x`
+and `get(feature,'x')` are interchangeable through `jexlFeatureProxy`, so the
+spelling is not it. Compare against the other `feature.INFO.*` configs before
+concluding it is ClinVar's.
+
+**Until it is fixed, don't refresh `protein/connected`'s figure.** It captures
+again as of the `setPendingMove` fix and the frame is otherwise right, but the
+committed PNG predates this and is the better picture; republishing would bake
+the flat lane into the site.
 
 ### The liveliness warnings and `no containing view found` are one bug
 
