@@ -68,6 +68,43 @@ test('the session keeps every member a published plugin reaches for', () => {
   expect(missing).toEqual([])
 })
 
+// **Presence is only half of it, and the other half broke next.** The list above
+// asks whether the member is there; a plugin asks whether the CALL works, and a
+// member can keep its name while gaining a required argument. `setPendingMove`
+// did, in the workspace-layout rewrite, and calling it the way protein3d spells
+// it threw `Cannot read properties of undefined (reading 'filter')` out of a
+// launch the plugin does not wrap — so the view never got its split, the failure
+// went to a snackbar, and `protein/connected` stopped capturing.
+//
+// So this one performs the gesture rather than describing it, spelled exactly as
+// the published bundle spells it (jbrowse-plugin-protein3d 0.8.0, minified:
+// `Ec(e)&&(e.setPendingMove({type:"splitRight",viewId:t}),e.setUseWorkspaces(!0))`).
+// Casts because that is the plugin's view of the session too — it has no types
+// for any of this and reaches these members off `unknown`.
+test("protein3d's side-by-side launch still splits, called as the plugin calls it", () => {
+  const session = createTestSession() as any
+  const genome = session.addView('LinearGenomeView', {
+    type: 'LinearGenomeView',
+  })
+  const protein = session.addView('LinearGenomeView', {
+    type: 'LinearGenomeView',
+  })
+
+  session.setPendingMove({ type: 'splitRight', viewId: protein.id })
+  session.setUseWorkspaces(true)
+
+  // Two cells, not one: the point of the gesture. And the genome view is still
+  // in the layout — the argument the plugin cannot pass is the list homing uses
+  // to decide what stays, so defaulting it to nothing would drop this one and
+  // still leave a workspace with a protein view in it looking plausible.
+  expect(session.panels.length).toBe(2)
+  expect(session.tabContainingView(genome.id)).toBeDefined()
+  expect(session.tabContainingView(protein.id)).toBeDefined()
+  expect(session.tabContainingView(genome.id).panel.id).not.toBe(
+    session.tabContainingView(protein.id).panel.id,
+  )
+})
+
 // The same doctrine one level out, for the surface an automation SCRIPT reads
 // rather than a plugin. `components/JBrowse.tsx` assigns the live session to
 // `window.JBrowseSession`, and the walk below —

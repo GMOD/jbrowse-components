@@ -315,6 +315,16 @@ without that is the one tab nobody can see.
 
 A capability-detecting caller cannot tell you it lost a capability.
 
+**And the SIGNATURE is as public as the name.** Keeping `setPendingMove` and
+giving it a required second argument broke it exactly as deleting it would have,
+only louder: the plugin passes the move alone, `allViewIds` arrived `undefined`,
+and `specForPendingMove` threw `undefined.filter` into a launch the plugin does
+not wrap. `protein/connected` stopped capturing; nothing else noticed, because
+this repo has no caller of its own to break. So a plugin-facing member's
+arguments may be **added optional and never made required**, and the guard is
+`pluginFacingSessionApi.test.ts`, which now performs protein3d's call rather
+than asserting the member is there — presence was the half already covered.
+
 **A menu item is the third such surface, and the quietest.** Deleting one
 compiles, passes every model test, and changes no behaviour that anything
 asserts — the capability is simply no longer offered. Four "Global:" tilings

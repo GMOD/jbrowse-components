@@ -180,6 +180,22 @@ export function WorkspaceLayoutMixin() {
       }
 
       /**
+       * The session's whole set of views, for the one entry point that cannot
+       * be handed it.
+       *
+       * Every other one takes it as an argument on purpose — this mixin owns
+       * the tree and knows nothing else — and `setPendingMove` would too, if
+       * its caller were ours. It is a published plugin's, compiled against the
+       * signature that had no such argument, so asking is the only way it can
+       * be answered. Duck-typed because `views` is MultipleViewsSessionMixin's
+       * and composition is the only thing that puts the two together.
+       */
+      function sessionViewIds() {
+        const { views } = self as unknown as { views?: { id: string }[] }
+        return views?.map(v => v.id)
+      }
+
+      /**
        * `activePanelId` must name a cell that exists, whatever just stopped
        * existing. Homing falls back on it, so a dangling one puts views in a
        * cell nobody draws.
@@ -410,12 +426,24 @@ export function WorkspaceLayoutMixin() {
          * view). It survived the last storage change by being kept as sugar,
          * and it survives this one the same way — a capability-detecting caller
          * cannot tell you it lost a capability.
+         *
+         * **`allViewIds` is therefore OPTIONAL, and has to stay that way.** The
+         * plugin passes the move alone, because that was the whole signature
+         * when its call site was written; requiring the second argument threw
+         * `undefined.filter` out of a launch the plugin does not wrap, and the
+         * figure was again the only thing that noticed. Keeping the NAME is
+         * half of not breaking a runtime lookup — the call has to keep working
+         * as it is spelled.
          */
-        setPendingMove(move: PendingMove | undefined, allViewIds: string[]) {
-          if (!move) {
+        setPendingMove(move: PendingMove | undefined, allViewIds?: string[]) {
+          // Not `?? []`: homing drops every view the list does not name, so an
+          // empty one would answer "put this view beside nothing" and unhome
+          // the rest. Nothing to say is nothing to do.
+          const ids = allViewIds ?? sessionViewIds()
+          if (!move || !ids) {
             return
           }
-          this.applyLayoutSpec(specForPendingMove(move, allViewIds))
+          this.applyLayoutSpec(specForPendingMove(move, ids))
           // Show where the view went. A spec states an arrangement and not a
           // selection, so `treeFromSpec` shows each cell's FIRST tab — and
           // `newTab` puts the moved view in a tab beside the others, which
