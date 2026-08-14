@@ -3,3 +3,19 @@
 __downloads__/
 __compare__/
 snapshot-review.json
+
+# Golden BYTES live content-addressed in s3://jbrowse.org/jb2-snapshots/; git
+# tracks snapshots.lock beside this file. `pnpm snapshots pull` installs them,
+# and the runner does it for you. snapshot-store.ts has the measurement behind
+# the move — 3,949 blob revisions since December, 0.12 GiB of the pack.
+#
+# snapshots.lock is NOT ignored: it is a sibling of this directory, not inside
+# it, so one blanket rule covers the bytes and leaves the record.
+#
+# NO TRAILING SLASH, for the reason the root .gitignore gives about the figure
+# roots: a trailing slash matches directories only, and sharing one machine's
+# 31 MB between worktrees by symlinking this path is the obvious thing to reach
+# for. A symlink is not a directory, so it would not be ignored, and a
+# `git add -A` would commit an absolute /home/<user>/src/... path that lands as
+# a dangling link on every other machine.
+__snapshots__

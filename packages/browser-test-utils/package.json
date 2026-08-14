@@ -9,7 +9,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./annotationOverlay": "./src/annotationOverlay.ts",
-    "./reviewApp": "./src/reviewApp/index.ts"
+    "./reviewApp": "./src/reviewApp/index.ts",
+    "./blobStore": "./src/blobStore.ts"
   },
   "dependencies": {
     "@jbrowse/capture": "workspace:^",

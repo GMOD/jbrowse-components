@@ -20,6 +20,7 @@ import {
 import { BASICAUTH_PORT, OAUTH_PORT, PORT, setPort } from './helpers.ts'
 import { buildPath, startServerOnFreePort } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
+import { ensureGoldens } from './snapshot-store.ts'
 import { snapshotConfig, snapshotUpdates } from './snapshot.ts'
 
 import type { TestCase, TestSuite } from './types.ts'
@@ -563,6 +564,19 @@ async function main() {
         : 'Error: Build directory not found. Run `pnpm build` in products/jbrowse-web first.',
     )
     process.exit(1)
+  }
+
+  // Goldens are not in git — the bytes live in S3 and snapshots.lock is what is
+  // tracked (snapshot-store.ts). Installing them here rather than asking the
+  // reader to remember a command, the same way `pnpm dev` pulls figures.
+  //
+  // NOT under --gate-only, which is CI's mode: it never opens a golden, so a
+  // pull there would download 31 MB for nothing on every run. Not under
+  // --update-snapshots either — that run WRITES goldens, and the content-stable
+  // gate compares against whatever is on disk, so a pull first is only useful
+  // if the disk is missing them, which `ensureGoldens` decides for itself.
+  if (!gateOnly) {
+    await ensureGoldens()
   }
 
   console.log('Starting test server...')
