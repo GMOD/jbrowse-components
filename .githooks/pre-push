@@ -141,12 +141,26 @@ tree_state() {
 }
 tree_state >"$tmp/before" 2>/dev/null || true
 
+# The two files a REVIEW APP writes, which no fixer here writes. The comparison
+# above is a before/after over a ~2min window, so anything that changes during
+# the run is attributed to the fixers — including a person filing verdicts in
+# `pnpm review-screenshots-web` or `pnpm review-snapshots-web` in another
+# window, which is a normal thing to be doing while a push runs. Blocking on
+# those told someone their own half-finished review was a fixer's output and
+# demanded they commit it mid-pass, which is neither true nor what they want.
+#
+# Narrow on purpose: these are verdict logs, written only by a human clicking,
+# never derived from anything. Every other path stays blocking, because for
+# every other path the attribution is right.
+review_state='website/scripts/screenshot-review.json
+products/jbrowse-web/browser-tests/snapshot-review.json'
+
 # Paths that have changed since $1 was taken, so the end of the run can say
 # what the fixers did.
 changed_since() {
   tree_state >"$tmp/now" 2>/dev/null || true
   diff "$1" "$tmp/now" 2>/dev/null | sed -n 's/^[<>] //p' | awk '{print $NF}' |
-    sort -u || true
+    sort -u | grep -Fxv "$review_state" || true
 }
 
 status=0
