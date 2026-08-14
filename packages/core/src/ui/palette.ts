@@ -369,7 +369,36 @@ export const colorNostrand = '#c8c8c8'
  * #color alignments-pair-orientation | Inter-chromosomal | Mate maps to a different chromosome; colored distinctly rather than by orientation
  * #color alignments-insert-size | Mate on a different chromosome | Suggests an inter-chromosomal event
  */
-export const colorInterchrom = '#6e4b3a'
+// THIS SLOT AND `colorUnmappedMate` WERE CHOSEN TOGETHER, and reading either one
+// alone is how the previous pair got stuck. Both are warm, both belong to all
+// three mate-aware schemes, and at #6e4b3a / #b05a20 they sat 4.5 degrees apart
+// in hue — which left this one nowhere to go in any direction, because every
+// direction was that one:
+//
+//   more chroma at the same L*   -> dE 38.0 to unmappedMate becomes 20.7
+//   lighter                      -> dE 11.8 to it, then the greys past that
+//   darker                       -> the complaint, worse
+//   another hue                  -> the two schemes hold nine, and the widest
+//                                   gap is 91 degrees between pairLL and pairRL,
+//                                   whose midpoint reads as a second green-blue
+//
+// So it was the darkest slot in either scheme (L* 35.3 against 41.2 next) AND
+// the dullest (C* 20.4 against 34.6), which together is what "reads as a smudge"
+// means. Reported on `cancer_sv/k562_bcr_abl_split`: "the arcs for the
+// interchromosomal reads are very dark". The tell is a 2 px stroke — at that
+// weight it was the only colour in either scheme that disappeared, while as a
+// large flat read fill it was merely dull. This slot has to survive both.
+//
+// The fix is that unmappedMate left the warm family (see its own note), which
+// opens the band this now takes: L* 44.9, C* 60.1, and dE 42.2 to its nearest
+// neighbour — the pale supplementary tan — where it used to be 30.1 to a grey.
+// Contrast 5.39 on paper and 3.48 on #121212 puts it mid-pack on both grounds
+// rather than worst on either; it was 2.44 on dark, the worst in the palette.
+//
+// Hue 51.7 keeps it clear of `colorLongInsert` at 40, which is the one warm
+// neighbour that must not be confusable: red means "insert too long", and a
+// second red would read as a second statement about insert size.
+export const colorInterchrom = '#af4d19'
 /** #color alignments-insert-size | Insert larger than expected | Suggests a deletion spanning the pair */
 export const colorLongInsert = '#ff0000'
 /** #color alignments-insert-size | Insert smaller than expected | Suggests an insertion between the pair */
@@ -419,7 +448,32 @@ export const colorLongInsert = '#ff0000'
 // colorPairLL (52.0) and colorSupplementary (42.1) rather than shouting past
 // them.
 export const colorShortInsert = '#f582c0'
-export const colorUnmappedMate = '#b05a20'
+/**
+ * #color alignments-pair-orientation | Mate unmapped | The other end of the pair aligned nowhere, so orientation and insert size say nothing
+ * #color alignments-insert-size | Mate unmapped | The other end of the pair aligned nowhere, so insert size says nothing
+ */
+// TEAL, AND IT MOVED OUT OF THE WARM FAMILY so `colorInterchrom` could have it.
+// The two were 4.5 degrees apart and the pair is what boxed that slot in; this
+// is the half that gives, for three reasons.
+//
+// Nothing is ever read AGAINST this category. A reader compares LL to RR to see
+// an inversion, and long insert to short; nobody compares "mate unmapped" to
+// anything, so it is the slot that can afford a tighter neighbour — dE 31.7 to
+// `colorPairRL`, which is the closest anything here comes and is a comparison
+// no figure asks for.
+//
+// It is also the rarer of the two by figure count, which is what a move costs:
+// two committed figures paint it against six for interchrom.
+//
+// And it is the one whose meaning sits least comfortably in the warm family it
+// was in. Red, brown and tan there all say something about the pair's geometry;
+// this says the geometry is unanswerable. Being visibly not-of-that-family is
+// the point rather than a side effect.
+//
+// L* 48.1 / C* 34.0 / h 179.7: contrast 4.80 on paper and 3.91 on #121212, so
+// it holds on both grounds without a dark variant. Do not lighten it toward
+// `colorPairRL`'s cyan — 31.7 is the whole margin.
+export const colorUnmappedMate = '#008171'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'
 export const colorLongreadInv = '#7755bb'
