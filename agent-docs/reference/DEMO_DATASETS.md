@@ -1,6 +1,6 @@
 ---
 name: demo-datasets
-description: The data behind the demos, figures and tutorials — which fixtures cover only one contig, which loci were picked by measurement and must not be re-picked by reputation, which candidate datasets were tried and rejected, where each pipeline's build scripts live, and the file-format gotchas that cost hours. Read before choosing a demo locus, swapping a dataset, or diagnosing a figure that renders empty.
+description: The data behind the demos, figures and tutorials — which fixtures cover only one contig, which loci were picked by measurement and must not be re-picked by reputation, which candidate datasets were tried and rejected, which upstream a new demo's annotation should come from and which existing ones cannot move off Ensembl, where each pipeline's build scripts live, and the file-format gotchas that cost hours. Read before choosing a demo locus, swapping a dataset, picking an annotation source, or diagnosing a figure that renders empty.
 ---
 
 # Demo datasets
@@ -288,6 +288,44 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **rastair** methylation BED (TAPS / mod-C→T) is not modkit bedMethyl;
   detection keys on the `#`-header column names (`beta_est unmod mod coverage`),
   and `beta_est` is 0-1, scaled ×100 to match modkit.
+
+## Where a new demo's annotation comes from: NCBI datasets, then Ensembl
+
+**Default to `datasets download genome accession <acc> --include gff3,protein`.**
+Seven build scripts already take that route and
+`build_grape_peach_cacao_synteny.sh` is the worked multi-genome version, a short
+name/accession table looped over. Ensembl's FTP is the less reliable of the two
+and it is the only upstream these scripts routinely fail a re-run on.
+
+**No figure fetches Ensembl, so an outage costs a rebuild and nothing else.**
+It is a build-time host only: `website/scripts/third-party-hosts.txt` — the
+gated list of what a figure spec may fetch from — has no Ensembl entry, so the
+figures, the weekly sweep and the tutorials all read from jbrowse.org. That is
+the reason the demos below have not been migrated on uptime grounds alone.
+
+**Six scripts do fetch from it, and three of them cannot switch.** Checked
+against the assemblies each one pins, so these are worth not re-checking:
+
+- `build_orthofinder_synteny.sh` — `vertebrates` and `grasses` each have a
+  RefSeq annotation on the same assembly (the ten accessions are listed in the
+  script, checked 2026-08-03), so both could switch. `wheat` cannot: NCBI holds
+  four of its six assemblies under names other than Ensembl's, and
+  T. timopheevii (GCA_963921465.1) carries no NCBI annotation at all.
+- `build_oat_homoeologs.sh` — NCBI carries gene models for no oat assembly.
+- `build_wheat_homoeologs.sh` — the homoeolog calls are Ensembl Compara ortholog
+  tables, which NCBI publishes no equivalent of.
+- `build_grape_peach_anchors.sh` — the clearest switch candidate in the set. It
+  pulls genome, CDS and GFF3 from Ensembl Plants 58, and its own sibling
+  `build_grape_peach_cacao_synteny.sh` already fetches the same two genomes from
+  NCBI (GCF_030704535.1, GCF_000346465.2).
+- `build_primate_selection.sh` (Ensembl 116) and
+  `build_scrna_pseudobulk.sh` (one `rest.ensembl.org/lookup/symbol` call) — not
+  checked against NCBI either way.
+
+**Switching a demo that works is not a swap of download lines.** Different gene
+models mean a different OrthoFinder or anchor run and a re-upload of every file
+the demo serves, so the time to do it is while a script is being changed for
+another reason.
 
 ## Format gotchas
 
