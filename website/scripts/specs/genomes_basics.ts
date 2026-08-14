@@ -387,8 +387,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           //
           // NO LABEL. A highlight writes its label at the band's top-left, and
           // this band starts 20 bp into the window, so the text landed on the
-          // gene track's own drag handle and menu. The caption names the block
-          // instead, which is where a sentence fits.
+          // gene track's own drag handle and menu. The callout on the phyloP
+          // lane names the block, which is where a sentence fits.
           highlight: [
             {
               refName: 'chr17',
@@ -414,6 +414,38 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportHeight: 460,
     diffThreshold: 0.02,
+    // WHAT THE SHADED BAND IS FOR, said in the frame (review: "still unclear
+    // what the story is. why is the utr highlighted? who cares? needs red text
+    // annotation or delete"). The shading was doing half the work: a reader can
+    // see that the band is flat and cannot see that it is an EXON, which is the
+    // only reason its flatness says anything. Two sentences, and the second is
+    // the one a reader takes away from the page — a conservation track scores
+    // codons, so a variant in a transcribed, universally-included exon can
+    // still sit under no signal at all.
+    //
+    // Anchored in the GENE lane rather than the phyloP one, at the band's own
+    // left edge. Collapsed to one transcript row, that lane is a glyph across
+    // its top and empty below, full width — so a pill there covers nothing,
+    // where the same pill on the phyloP lane covers both its y axis and the
+    // first of the peaks it is about (the band is ~190 css px wide and the pill
+    // is wider than that at any legible size).
+    annotations: [
+      {
+        type: 'text',
+        anchor: {
+          track: 'hg38-ncbiRefSeq',
+          locus: 'chr17:7,668,420',
+          fracY: 0.45,
+          alignX: 'left',
+        },
+        text: "TP53's 3' UTR: an exon in every transcript, transcribed in full, and flat.\nThe peaks are coding exons — phyloP scores codons, not transcripts.",
+        fontSize: 15,
+        // Wide enough that neither authored line re-wraps. At 560 the first one
+        // did, and the third word of the wrap became a one-word fourth line
+        // hanging below the gene lane into the phyloP track's header.
+        maxWidth: 660,
+      },
+    ],
   },
 
   // The isoform control, which the next figure's session sets declaratively and

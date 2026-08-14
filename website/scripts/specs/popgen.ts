@@ -286,28 +286,50 @@ export const popgenSpecs: ScreenshotSpec[] = [
               label: 'Cyp6g1',
             },
           ],
+          // EVERY LANE SHORTER (review: "improve y-screen real estate
+          // better"). None of the four had a blank band to cut, so the saving
+          // is per-lane and taken where the lane's readout survives it:
+          //
+          // - Tajima's D 200 -> 150. It is the deepest lane, and its axis is
+          //   what says it can afford this: the excursion runs +3 to -2 across
+          //   a lane autoscaled to those extremes, so a quarter off the height
+          //   is a quarter off both halves of a signal that is a shape rather
+          //   than a value.
+          // - pi 150 -> 120 and sites 120 -> 100: both are read as "does this
+          //   fall where the one above it falls", which is a comparison of two
+          //   silhouettes.
+          // - genes 150 -> 100. This is the lane with real slack. Cyp6g1 and
+          //   Cyp6g2 are PINNED to the top row by featureHighlights below, so
+          //   the rows the height buys are the ~120 neighbouring CG-number
+          //   genes, which are context and not read individually at 400 kb.
+          //
+          // 620 px of track becomes 485.
           tracks: [
             {
               trackId: 'tajd_all',
               type: 'LinearWiggleDisplay',
-              height: 200,
+              height: 150,
             },
             {
               trackId: 'pi_all',
               type: 'LinearWiggleDisplay',
-              height: 150,
+              height: 120,
             },
             // Under pi rather than over it, so the two are read as a pair and
             // the eye compares how far each falls.
             {
               trackId: 'sites_all',
               type: 'LinearWiggleDisplay',
-              height: 120,
+              height: 100,
             },
             {
               trackId: 'dm6-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
-              height: 150,
+              // 115 rather than the 100 the paragraph above budgeted. A gene
+              // lane's height only cuts cleanly at a multiple of its row pitch,
+              // which is ~28.6 css px here, and 100 cut the fourth row through
+              // the middle of its glyphs.
+              height: 115,
               showOnlyGenes: true,
               // Name-only highlights: resolveFeatureHighlights boxes the match
               // AND pins it to the top row. Without that Cyp6g1 sits seven rows
@@ -327,10 +349,65 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('wiggle-display'),
     readyText: 'Tajima',
     readyTimeout: 90000,
-    // tajd(200) + pi(150) + sites(120) + genes(150) + 4 headers + ruler/overview
-    // + app bar
-    viewportHeight: 945,
+    // tajd(150) + pi(120) + sites(100) + genes(115) + 4 headers + ruler/overview
+    // + app bar. 945 - 135 of track.
+    viewportHeight: 810,
     settleMs: 12000,
+    // WHAT THE JOINT DIP MEANS, and what the third lane rules out (review: "try
+    // to also add red text annotation explaining significance").
+    //
+    // Two pills, and each says something the picture cannot. The first names the
+    // locus -- Cyp6g1 is the DDT/insecticide-resistance gene of Daborn et al.
+    // 2002, which is why anyone scans here -- and states that a joint fall in
+    // both statistics is what a hard sweep looks like. The second is the one
+    // that keeps the reading honest: a diversity trough has two explanations,
+    // and the sites lane is in the frame to decide between them.
+    //
+    // NO NUMBERS, per website/CLAUDE.md, and one number in particular stays out:
+    // the excursion is against the LOCAL BACKGROUND rather than against zero
+    // (see the baseline paragraph on TAJD_TRACK above), so the pill says
+    // "against the flanking windows" and leaves the median to the prose, where
+    // it can be attributed.
+    // PLACEMENT, because this frame has no blank corner and one pill in the
+    // wrong place would cover the dip it is about. Each lane's empty region is
+    // in a different place and neither is where a pill would normally go:
+    //
+    // - Tajima's D is signed and autoscaled to +3/-2, so its zero line sits
+    //   about three fifths down and the flanks BELOW that line are nearly white
+    //   — only the swept window goes deeply negative. fracY 0.63 on the left
+    //   flank is therefore the emptiest region in the figure, and it is also
+    //   directly beside the red bars it describes.
+    // - the sites lane fills from the bottom, so its slack is at the TOP. One
+    //   line rather than two for that reason: two would reach the data.
+    annotations: [
+      {
+        type: 'text',
+        anchor: {
+          track: 'tajd_all',
+          locus: 'chr2R:12,008,000',
+          fracY: 0.63,
+          alignX: 'left',
+        },
+        text: "Cyp6g1, insecticide resistance. Tajima's D and π both\nfall against the flanking windows: a recent hard sweep.",
+        fontSize: 15,
+        maxWidth: 440,
+      },
+      {
+        type: 'text',
+        anchor: {
+          track: 'sites_all',
+          locus: 'chr2R:12,008,000',
+          // 0.12, not 0.04: the anchor's fracY is taken over the track's whole
+          // box, so at 0.04 the pill's top edge landed on the track header's own
+          // name row.
+          fracY: 0.12,
+          alignX: 'left',
+        },
+        text: 'Called sites hold up, so what fell is allele frequencies',
+        fontSize: 15,
+        maxWidth: 440,
+      },
+    ],
   },
 
   // Whole 2L arm: the windowed Fst scan and the per-line genotypes of the same
