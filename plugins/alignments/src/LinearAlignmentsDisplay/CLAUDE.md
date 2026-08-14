@@ -309,6 +309,32 @@ an arc is always the later ink. The rule is two-tier — on-ink beats near-ink
 either way, the arc wins among on-ink, and a near-ink tie goes the same way —
 because "arc always" would make a tick unhoverable wherever any arc crosses it.
 
+**Which family an interchromosomal connection joins is decided per connection,
+by whether both of its feet are in displayed regions.** Both → one arc, in the
+cross-region overlay; otherwise → the two ticks, exactly as before. That is not
+a preference: a tick's whole claim is "there is a connection to somewhere you
+cannot see", which is precisely false when the far end is on screen, and the
+arc's feet are the two tick positions so no position is lost. Three things ride
+on it, each of which ships a silently wrong picture on its own:
+
+- **Arc mode only.** The read cloud's Y axis IS insert size, and an
+  interchromosomal pair has none — it carries TLEN 0, so `computeArcShape` falls
+  back to the endpoint gap, which becomes a real `maxFlatArcSpanBp`, which
+  `arcsYDomainBp` maxes across groups, which `insertSizeTickSections` PRINTS on
+  the ruler. One connection would rescale the cloud to a 107 Mb "insert size".
+  Arc mode's axis is genomic radius, where the band ceiling is already where a
+  maximally-far same-chromosome pair clamps (`INTERCHROM_ARC_YBP`).
+- **`drawInter` and `minInterchromSupport` gate both marks**, from one hoisted
+  condition. They used to sit inside the tick push, so an arc branch beside them
+  would inherit neither — "Show inter-chromosomal pairs: off" still drawing
+  arcs, and the mismapping floor bypassed for a mark BIGGER than the ticks it
+  replaced.
+- **The hover needs two refNames.** `formatArcTooltip` builds a range from
+  `min`/`max` of the two bp, which across chromosomes is a locstring naming one
+  and a coordinate from the other; `endRefName` switches it to two positions and
+  no distance. This is also the one thing a tick's hover was worth more than an
+  arc's, so an arc replacing ticks must not lose it.
+
 **Paint order in this band is an interest ranking, not a data order**, and it is
 stated in two places for the two things that overlap:
 
@@ -349,15 +375,16 @@ Not to be confused with the read cloud's `isConcordantFRPair`, which asks
 whether |TLEN| sits in the modal band rather than what the aligner concluded.
 Both readings are deliberate; each function's comment names the other.
 
-**A support FLOOR is offered for the ticks and deliberately not for the arcs.**
-`minInterchromSupport` counts reads over a window of one fragment length on
-_both_ sides (`clusteredInterchromSupport`), never at a coordinate: mates
-straddle a breakpoint rather than landing on it, so `arcKey`'s exact count is 1
-for essentially every interchromosomal connection and a floor over it would
-delete a real translocation as thoroughly as the mismapping. The window comes
-from `stats.upper`, so it tracks the library instead of a constant. The same
-floor on same-chromosome arcs was measured and declined — at depth it is a
-density filter, not an evidence filter. Both results are in
+**A support FLOOR is offered for the INTERCHROMOSOMAL family — either mark — and
+deliberately not for the same-chromosome arcs.** `minInterchromSupport` counts
+reads over a window of one fragment length on _both_ sides
+(`clusteredInterchromSupport`), never at a coordinate: mates straddle a
+breakpoint rather than landing on it, so `arcKey`'s exact count is 1 for
+essentially every interchromosomal connection and a floor over it would delete a
+real translocation as thoroughly as the mismapping. The window comes from
+`stats.upper`, so it tracks the library instead of a constant. The same floor on
+same-chromosome arcs was measured and declined — at depth it is a density
+filter, not an evidence filter. Both results are in
 `agent-docs/reference/DEEP_COVERAGE.md`.
 
 **Both families carry `support` and both spend it the same way.** An arc and a

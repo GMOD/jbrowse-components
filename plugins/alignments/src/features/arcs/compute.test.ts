@@ -319,7 +319,12 @@ describe('computeArcsFromPileupData', () => {
     // nothing else.
     //
     // Counted per raw direction, this event scored 1 and 1 rather than 2, and
-    // the default floor of 2 took all four of its ticks off the screen.
+    // the default floor of 2 took all four of its marks off the screen.
+    //
+    // Both contigs being displayed is also what makes these ARCS rather than
+    // ticks, so this doubles as the floor gating the arc branch: `drawInter` and
+    // `minInterchromSupport` used to sit inside the tick push, and an arc branch
+    // beside them would have inherited neither.
     test('a translocation counts both mate orders as one cluster', () => {
       const chr1 = makePileupData({
         readPositions: new Uint32Array([2000, 2100, 2100, 2200]),
@@ -357,25 +362,142 @@ describe('computeArcsFromPileupData', () => {
         { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
         { refName: 'chr2', start: 4000, end: 9000, displayedRegionIndex: 1 },
       ]
-      const { lines } = computeArcsFromPileupData(
-        new Map([
-          [0, chr1],
-          [1, chr2],
-        ]),
-        twoRegions,
-        {
-          colorByType: 'insertSize',
-          drawInter: true,
-          drawLongRange: true,
-          minInterchromSupport: 2,
-        },
+      const bothContigs = (settings: {
+        drawInter: boolean
+        minInterchromSupport?: number
+      }) =>
+        computeArcsFromPileupData(
+          new Map([
+            [0, chr1],
+            [1, chr2],
+          ]),
+          twoRegions,
+          {
+            colorByType: 'insertSize',
+            drawLongRange: true,
+            ...settings,
+          },
+        )
+      const { crossRegion, lines } = bothContigs({
+        drawInter: true,
+        minInterchromSupport: 2,
+      })
+      // One arc per junction, each spanning the two contigs, and no ticks: both
+      // feet are displayed, so the tick's whole claim — "a connection to
+      // somewhere you cannot see" — is false here.
+      expect(lines).toEqual([])
+      expect(
+        crossRegion
+          .map(a => `${a.p1.refName}:${a.p1.bp}-${a.p2.refName}:${a.p2.bp}`)
+          .sort(),
+      ).toEqual(['chr1:2000-chr2:5000', 'chr2:5100-chr1:2100'])
+      // And the settings still gate them: "Show inter-chromosomal pairs" off
+      // takes the arcs too, and so does a floor the cluster cannot clear.
+      expect(bothContigs({ drawInter: false }).crossRegion).toEqual([])
+      expect(
+        bothContigs({ drawInter: true, minInterchromSupport: 3 }).crossRegion,
+      ).toEqual([])
+    })
+  })
+
+  // A connection between two chromosomes draws as ONE arc when both of its ends
+  // are on screen, and as the two ticks it always drew otherwise. The decision
+  // is per connection, so a breakpoint reaching one displayed and one
+  // undisplayed chromosome gets an arc AND a tick and both counts stay honest.
+  describe('an interchromosomal connection with both feet on screen', () => {
+    const bothContigs = [
+      { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
+      { refName: 'chr2', start: 4000, end: 9000, displayedRegionIndex: 1 },
+    ]
+    const chr1Only = [bothContigs[0]!]
+
+    // n pairs on chr1 whose mates are all at the same chr2 coordinate — the
+    // split-read shape, where every supporting read agrees to the base.
+    function toChr2(starts: number[], mateBp: number) {
+      return makePileupData({
+        readPositions: new Uint32Array(starts.flatMap(s => [s, s + 100])),
+        readFlags: new Uint16Array(starts.length).fill(SAM_FLAG_PAIRED),
+        readStrands: new Int8Array(starts.length).fill(1),
+        // TLEN 0, which is what SAM sets across refs — and the input gap 1 turns
+        // on.
+        readInsertSizes: new Float32Array(starts.length),
+        readPairOrientations: new Uint8Array(starts.length).fill(1),
+        ...namesToBlock(starts.map((_, i) => `read${i}`)),
+        ...nextRefsToTable(starts.map(() => 'chr2')),
+        readNextPositions: new Uint32Array(starts.map(() => mateBp)),
+      })
+    }
+    const run = (
+      regions: typeof bothContigs,
+      data: PileupDataResult,
+      cloud = false,
+    ) =>
+      computeArcsFromPileupData(new Map([[0, data]]), regions, {
+        colorByType: 'insertSize',
+        cloud,
+        drawInter: true,
+        drawLongRange: true,
+      })
+
+    test('draws as one arc, coalesced and support-weighted', () => {
+      // Three reads at the SAME two coordinates: `arcKey` folds them into one
+      // arc carrying the count, which is the whole value of drawing this as an
+      // arc rather than as ticks — one mark whose stroke width is how many
+      // molecules say so.
+      const { arcs, crossRegion, lines } = run(
+        bothContigs,
+        toChr2([2000, 2000, 2000], 5000),
       )
-      expect(lines.map(l => `${l.x.refName}:${l.x.bp}`).sort()).toEqual([
+      expect(lines).toEqual([])
+      // Never in the per-region feed, whatever else is true — `groupArcsByRef`
+      // buckets on p1's refName alone.
+      expect(arcs).toEqual([])
+      expect(crossRegion).toHaveLength(1)
+      expect(crossRegion[0]!.support).toBe(3)
+      expect(crossRegion[0]!.p1RegionIndex).toBe(0)
+      expect(crossRegion[0]!.p2RegionIndex).toBe(1)
+    })
+
+    test('painted the interchromosomal colour, not the pair scheme', () => {
+      // The colour is now the ONLY channel saying "crosses chromosomes": a
+      // same-chromosome cross-region arc crosses the same panel divider and
+      // otherwise looks identical.
+      const { crossRegion } = run(bothContigs, toChr2([2000], 5000))
+      expect(crossRegion[0]!.colorType).toBe(ARC_COLOR_INTERCHROM)
+      // A curve, at the band ceiling — arc mode's axis is genomic radius, which
+      // this connection has none of, and the ceiling is where a maximally-far
+      // same-chromosome pair already clamps.
+      expect(crossRegion[0]!.shapeType).toBe(ARC_SHAPE_ARC)
+      expect(crossRegion[0]!.yBp).toBe(0xffffffff)
+    })
+
+    test('and keeps the ticks when the far chromosome is not displayed', () => {
+      const { crossRegion, lines } = run(chr1Only, toChr2([2000], 5000))
+      expect(crossRegion).toEqual([])
+      // The chr1 tick is drawn; the chr2 one reaches no region and is dropped
+      // downstream by `lineTouchesRegion`.
+      expect(lines.map(l => `${l.x.refName}:${l.x.bp}`)).toEqual([
         'chr1:2000',
-        'chr1:2100',
         'chr2:5000',
-        'chr2:5100',
       ])
+    })
+
+    // Gap 1, and a pixel test cannot catch it. In cloud mode `computeArcShape`
+    // returns a FLAT shape whose span falls back to the endpoint gap when TLEN
+    // is 0 — which it always is across refs — so an interchromosomal arc would
+    // carry |chr2bp - chr1bp| as a `maxFlatArcSpanBp`, `arcsYDomainBp` would max
+    // it across every group, and `insertSizeTickSections` would PRINT it on the
+    // ruler. The read cloud's Y axis IS insert size and this connection has
+    // none, so it keeps the ticks.
+    test('but the read cloud keeps the ticks, so nothing sizes its axis', () => {
+      const { arcs, crossRegion, lines } = run(
+        bothContigs,
+        toChr2([2000], 5000),
+        true,
+      )
+      expect(crossRegion).toEqual([])
+      expect(arcs).toEqual([])
+      expect(lines).toHaveLength(2)
     })
   })
 

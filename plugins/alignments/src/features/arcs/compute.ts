@@ -1017,6 +1017,23 @@ function arcKey(a: {
   return `${r1}\0${b1}\0${r2}\0${b2}\0${a.colorType}\0${a.shapeType}\0${a.yBp}`
 }
 
+// The Y an interchromosomal arc plots at: the top of the band, at every zoom.
+//
+// Arc mode's axis is GENOMIC RADIUS, and an interchromosomal connection has no
+// radius — but the ceiling is not an invented position on it either. It is
+// exactly where a maximally-far same-chromosome pair already ends up:
+// `arcYOffsetPx` clamps its offset to `availH`, and in arc mode the domain is
+// the bp span that FITS the band at the current zoom, so any pair wider than
+// that is already drawn there. The arc says "as far as this axis goes" rather
+// than claiming a distance it does not have.
+//
+// Uint32 max, because it has to exceed that zoom-dependent domain at every zoom
+// (the largest it reaches is ~availH * bpPerPx, three orders below this even on
+// a whole-genome view of a mammalian assembly) and because `arcYBp` is a
+// Uint32Array — which an interchromosomal arc never reaches, being cross-region
+// by construction, but the value should not be the thing that depends on it.
+const INTERCHROM_ARC_YBP = 0xffffffff
+
 // Fallback clustering window when the fetch produced no insert-size band —
 // unpaired data, or too few proper pairs to characterize one. A translocation
 // found by split reads rather than by mates has its evidence at the breakpoint
@@ -1240,6 +1257,64 @@ function resolveArcs(
     lines.push(line)
   }
 
+  // One arc per distinct junction, COALESCING the reads that agree on it — the
+  // same move `pushLine` makes for the ticks, keyed by `arcKey`.
+  //
+  // It also files each arc into the half that can DRAW it, off the two region
+  // indices resolved once per connection above. BOTH producers go through here,
+  // and that is what makes "an interchromosomal arc is never in the per-region
+  // feed" structural rather than a rule two branches happen to agree on: two
+  // refNames cannot land in one displayed region, so the cross-region branch is
+  // the only one such an arc can take. `groupArcsByRef` is keyed on exactly that.
+  function pushArc(
+    arc: Omit<ComputedArc, 'support' | 'key'>,
+    p1RegionIndex: number | undefined,
+    p2RegionIndex: number | undefined,
+  ) {
+    const key = arcKey({
+      p1Ref: arc.p1.refName,
+      p1Bp: arc.p1.bp,
+      p2Ref: arc.p2.refName,
+      p2Bp: arc.p2.bp,
+      colorType: arc.colorType,
+      shapeType: arc.shapeType,
+      yBp: arc.yBp,
+    })
+    const seen = byKey.get(key)
+    if (seen) {
+      seen.support++
+      return
+    }
+    const computed: ComputedArc = {
+      ...arc,
+      support: 1,
+      // kept for the sort's tie-break below, where it is the only thing that
+      // does not depend on what order the reads arrived in
+      key,
+    }
+    byKey.set(key, computed)
+    // pushed in first-seen order, so the feed's order is still the reads' —
+    // a later support bump mutates the entry already in the array
+    //
+    // An arc with EITHER foot in no displayed region is not cross-region: that
+    // is the off-screen-partner case, which has no second pixel to draw to and
+    // keeps `arcTouchesRegion`'s existing handling, where the leg rising toward
+    // the screen edge is the correct picture.
+    if (
+      p1RegionIndex !== undefined &&
+      p2RegionIndex !== undefined &&
+      p1RegionIndex !== p2RegionIndex
+    ) {
+      // `Object.assign`, not a spread: the object identity has to be the one in
+      // `byKey`, or a later `support++` lands on an arc nothing draws.
+      crossRegion.push(
+        Object.assign(computed, { p1RegionIndex, p2RegionIndex }),
+      )
+    } else {
+      arcs.push(computed)
+    }
+  }
+
   for (let i = 0; i < pendingArcs.length; i++) {
     const arc = pendingArcs[i]!
     const { p1Ref, p1Bp, p2Ref, p2Bp } = arc
@@ -1254,31 +1329,85 @@ function resolveArcs(
     // every connection that survives.
     const p1RegionIndex = regionIndexOf(displayedRegions, p1Ref, p1Bp)
     const p2RegionIndex = regionIndexOf(displayedRegions, p2Ref, p2Bp)
-    // Interchromosomal: never an arc — drop a tick on each endpoint, always
-    // painted the single dedicated interchromosomal color. Insert size,
-    // long-range distance, and pair orientation are all meaningless across refs
-    // (a cross-chromosome "pair orientation" is arbitrary), so coloring by them
-    // just produces visual noise — every translocation tick is one uniform
-    // color regardless of colorByType. That is why a tick carries no color of
-    // its own: ARC_COLOR_INTERCHROM is the whole rule, and it lives in
-    // arcLine.slang where the pass reads it.
+    // Interchromosomal. Always painted the single dedicated interchromosomal
+    // colour: insert size, long-range distance and pair orientation are all
+    // meaningless across refs (a cross-chromosome "pair orientation" is
+    // arbitrary), so colouring by them just produces visual noise — one uniform
+    // colour regardless of colorByType, and regardless of whether the evidence
+    // is a split read or a mate pair. As a TICK that was because the mark
+    // carries no colour of its own (ARC_COLOR_INTERCHROM lives in arcLine.slang,
+    // where the pass reads it). As an ARC the reason is stronger: "crosses
+    // chromosomes" used to be readable from the mark itself, and it is not from
+    // a curve — a same-chromosome cross-region arc crosses the same panel
+    // divider — so the colour is now the ONLY channel carrying it.
     if (p1Ref !== p2Ref) {
-      // Scattered IS the criterion, so the filter drops the whole connection
-      // rather than merging it: a breakpoint whose reads cluster keeps every
-      // tick at the coordinate its own read put it at, and the dense picket of
-      // them is what a translocation looks like. Merging a cluster into one tick
-      // would have to invent a position for it, which is the thing `arcKey`'s
-      // exact-coordinate rule exists to refuse.
+      // ONE gate over both marks, which is the point of hoisting it: `drawInter`
+      // and the mismapping floor used to sit inside the tick push, so an arc
+      // branch added beside them would have inherited neither — "Show
+      // inter-chromosomal pairs: off" still drawing arcs, and the floor bypassed
+      // for connections that now draw a BIGGER mark than the ticks they replace.
+      //
+      // Scattered IS the criterion for that floor, so it drops the whole
+      // connection rather than merging it: a breakpoint whose reads cluster
+      // keeps every mark at the coordinate its own read put it at. Merging a
+      // cluster would have to invent a position for it, which is the thing
+      // `arcKey`'s exact-coordinate rule exists to refuse.
       if (
         drawInter &&
         (interchromSupport === undefined ||
           interchromSupport[i]! >= minInterchromSupport)
       ) {
-        // Each endpoint's tick names the OTHER endpoint's chromosome — that is
-        // the whole content of a translocation marker, and the direction is
-        // what makes the two ticks different marks rather than a mirrored pair.
-        pushLine(p1Ref, p1Bp, p2Ref)
-        pushLine(p2Ref, p2Bp, p1Ref)
+        // AN ARC WHEN BOTH FEET ARE ON SCREEN, ticks otherwise — decided per
+        // connection, so a breakpoint reaching one displayed and one undisplayed
+        // chromosome gets an arc *and* a tick and both counts stay honest.
+        //
+        // Replacing the ticks rather than drawing beside them, because a tick's
+        // whole job is "there is a connection to somewhere you cannot see",
+        // which is precisely false in this configuration. No position is lost:
+        // the arc's feet are the two tick positions.
+        //
+        // NOT IN READ-CLOUD MODE, and that exclusion is the severe one. The
+        // cloud's Y axis IS insert size and an interchromosomal connection has
+        // none: it carries TLEN 0 (SAM sets it so across refs), so
+        // `computeArcShape` would fall back to the endpoint GAP — |ctgBbp -
+        // ctgAbp|, about 1.07e8 for a real chr9/chr22 junction — and that
+        // becomes a genuine `maxFlatArcSpanBp`, which `arcsYDomainBp` maxes
+        // across every group, which `insertSizeTickSections` prints on the
+        // ruler. One connection would rescale the whole read cloud to a 107 Mb
+        // "insert size" and label it. Arc mode's axis is genomic radius, where
+        // the band ceiling is not an invented position — see
+        // `INTERCHROM_ARC_YBP`.
+        if (
+          !cloud &&
+          p1RegionIndex !== undefined &&
+          p2RegionIndex !== undefined
+        ) {
+          pushArc(
+            {
+              p1: { refName: p1Ref, bp: p1Bp },
+              p2: { refName: p2Ref, bp: p2Bp },
+              colorType: ARC_COLOR_INTERCHROM,
+              shapeType: ARC_SHAPE_ARC,
+              yBp: INTERCHROM_ARC_YBP,
+              // No reported quantity: the hover prints two POSITIONS for this
+              // arc rather than a span, since a bp distance across a
+              // translocation is a subtraction of two unrelated number lines.
+              // Inert rather than arbitrary — `maxFlatArcSpanBp` reads only flat
+              // shapes and `formatArcTooltip` only ARC_SHAPE_FLAT.
+              spanBp: 0,
+            },
+            p1RegionIndex,
+            p2RegionIndex,
+          )
+        } else {
+          // Each endpoint's tick names the OTHER endpoint's chromosome — that is
+          // the whole content of a translocation marker, and the direction is
+          // what makes the two ticks different marks rather than a mirrored
+          // pair. The one whose chromosome is not displayed reaches no region
+          // and is dropped by `lineTouchesRegion`.
+          pushLine(p1Ref, p1Bp, p2Ref)
+          pushLine(p2Ref, p2Bp, p1Ref)
+        }
       }
       continue
     }
@@ -1350,47 +1479,16 @@ function resolveArcs(
       continue
     }
 
-    const { shapeType, yBp, spanBp } = computeArcShape({ cloud, arc, absrad })
-
-    const key = arcKey({ p1Ref, p1Bp, p2Ref, p2Bp, colorType, shapeType, yBp })
-    const seen = byKey.get(key)
-    if (seen) {
-      seen.support++
-      continue
-    }
-    const computed: ComputedArc = {
-      p1: { refName: p1Ref, bp: p1Bp },
-      p2: { refName: p2Ref, bp: p2Bp },
-      colorType,
-      shapeType,
-      yBp,
-      spanBp,
-      support: 1,
-      // kept for the sort's tie-break below, where it is the only thing that
-      // does not depend on what order the reads arrived in
-      key,
-    }
-    byKey.set(key, computed)
-    // pushed in first-seen order, so the feed's order is still the reads' —
-    // a later support bump mutates the entry already in the array
-    //
-    // An arc with EITHER foot in no displayed region is not cross-region: that
-    // is the off-screen-partner case, which has no second pixel to draw to and
-    // keeps `arcTouchesRegion`'s existing handling, where the leg rising toward
-    // the screen edge is the correct picture.
-    if (
-      p1RegionIndex !== undefined &&
-      p2RegionIndex !== undefined &&
-      p1RegionIndex !== p2RegionIndex
-    ) {
-      // `Object.assign`, not a spread: the object identity has to be the one in
-      // `byKey`, or a later `support++` lands on an arc nothing draws.
-      crossRegion.push(
-        Object.assign(computed, { p1RegionIndex, p2RegionIndex }),
-      )
-    } else {
-      arcs.push(computed)
-    }
+    pushArc(
+      {
+        p1: { refName: p1Ref, bp: p1Bp },
+        p2: { refName: p2Ref, bp: p2Bp },
+        colorType,
+        ...computeArcShape({ cloud, arc, absrad }),
+      },
+      p1RegionIndex,
+      p2RegionIndex,
+    )
   }
 
   // CATEGORY FIRST, then ASCENDING SUPPORT, because array order is paint order
