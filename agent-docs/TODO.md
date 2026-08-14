@@ -48,6 +48,8 @@ before anyone noticed.
 | [Contract checks are stripped in production](#the-display-contract-checks-are-stripped-in-production) | limits, plugins | the in-tree half is gated; decide the out-of-tree channel |
 | [The retry check calls HiC's Retry dead](#the-retry-check-calls-hics-retry-dead-and-it-isnt) | hic, limits | reported in tree today; decide whose contract bends |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | one call site passes it; nothing reads it |
+| [Canonicalize the synteny refName channels](#canonicalize-the-two-synteny-refname-channels) | synteny, RPC | read REFNAME_NAMESPACES.md; both channels or neither |
+| [The follow runs away on a swapped track](#the-synteny-follow-runs-away-on-a-swapped-assembly-track) | synteny | profile the hung worker; the swap is a lead, not isolated |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -436,6 +438,36 @@ replacing it.
 
 Each of these carries a design that already survived a rejected alternative.
 Read the linked ADR or reference doc before re-proposing the thing it rejected.
+
+### Canonicalize the two synteny refName channels
+
+Read [reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md) first —
+it holds the rule, the six plugins that hit it, and why five of them solved it
+differently. This entry is only the synteny half.
+
+`LinearSyntenyRefNameAlias.test.tsx` already fails on it, as `test.failing`, so
+fixing this breaks that file rather than leaving a dead skip.
+
+Both channels move together or neither does. `featureData.refNames` /
+`mateRefNames` at the fetch boundary (`LinearSyntenyDisplay/afterAttach.ts`'s
+`run`, after the RPC returns, where the forward `rename` already lives), and
+`ResolvedSpan.refName` on receipt in `resolveMatchingSpan`. Doing only the first
+is **worse than doing neither**: `alreadyShowing` then compares canonical against
+adapter-space, never matches, and renavigates on every wake, which breaks the
+one-RPC-per-settle count `LinearSyntenyFollow.test.tsx` asserts.
+
+`getAdapterToCanonicalRefNameMap` (`@jbrowse/synteny-core`) is the map, built
+per axis — query assembly for `refNames`, target for `mateRefNames` — not one
+merged map, so two contigs spelled alike on the two assemblies cannot collide.
+Skip the walk when the map is empty, which is every config we ship.
+
+Then brand the out-of-request names, which is what stops site twelve appearing
+quietly. The reference doc has the verified error codes and the one trap: both
+ends have to be branded or the comparison still compiles.
+
+Not in scope here, and worth keeping separate: the fourth-time-lucky version is
+a return-direction rename at the RPC layer, declared per method, which would
+collapse all five existing workarounds into one mechanism.
 
 ### Give the comparative displays a cancel and a retry
 
@@ -954,6 +986,32 @@ implementer's call, hence here rather than in the small-items section.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
+
+### The synteny follow runs away on a swapped-assembly track
+
+Turning `followSynteny` on with `volvox_del.paf` and navigating the anchor pegs
+one core at 90% with ~1.4 GB resident, indefinitely — observed twice at 18
+minutes of CPU on a test that should take four seconds. That is a locked tab,
+not a slow one.
+
+**Measure what is actually spinning before touching the follow.** The obvious
+suspect is a non-converging loop between the frame pass and the fetch, but
+nothing has attributed it; take a CPU profile of the hung worker first.
+
+What is already bracketed: `volvox_del.paf` declares rows
+`["volvox", "volvox_del"]` while its adapter declares
+`queryAssembly: volvox_del` / `targetAssembly: volvox`, so the level's top row is
+the adapter's *target* — the swapped-assemblies case the codebase already warns
+about elsewhere. `volvox_alias_control.paf` describes the same alignment with the
+orientation aligned and completes in four seconds
+(`LinearSyntenyRefNameAlias.test.tsx`). So the swap is the lead, but the two
+fixtures differ in orientation *and* in column order, so it is not isolated to
+one variable yet — one more fixture would settle that.
+
+Nothing in the suite covers a follow on a swapped track, which is why this has
+never been seen. Whatever the cause, a guard belongs in the follow: it should
+refuse or hold rather than spin, since a swapped track is a config someone can
+legitimately write.
 
 ### Destroying an MST tree that something still observes
 
