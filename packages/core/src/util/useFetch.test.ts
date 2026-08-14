@@ -10,8 +10,9 @@ import type { StopToken } from './stopToken.ts'
 // parameters; a single array-destructured parameter binds only the leading key
 // name and silently slices characters out of it. That mistake shipped in
 // MafSequenceWidget behind the hook's old `(...args: any[])` signature, so pin
-// the behavior here rather than only in the types. The stop token follows the
-// key arguments, so it is always last however long the key is.
+// the behavior here rather than only in the types. The stop token and the status
+// callback follow the key arguments, in that order, so they are always the last
+// two however long the key is.
 
 test('spreads an array key across the fetcher parameters', async () => {
   const fetcher = jest.fn(async () => 'done')
@@ -28,6 +29,7 @@ test('spreads an array key across the fetcher parameters', async () => {
     ['sampleA'],
     true,
     expect.anything(),
+    expect.any(Function),
   )
 })
 
@@ -38,7 +40,11 @@ test('passes a string key as the single fetcher argument', async () => {
   await waitFor(() => {
     expect(result.current.data).toBe('done')
   })
-  expect(fetcher).toHaveBeenCalledWith('https://example.com', expect.anything())
+  expect(fetcher).toHaveBeenCalledWith(
+    'https://example.com',
+    expect.anything(),
+    expect.any(Function),
+  )
 })
 
 test('a fetcher reading the key positionally sees the real key values', async () => {

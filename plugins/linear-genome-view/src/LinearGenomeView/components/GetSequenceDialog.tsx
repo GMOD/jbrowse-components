@@ -8,7 +8,12 @@ import {
   LoadingEllipses,
   MonospaceTextField,
 } from '@jbrowse/core/ui'
-import { complement, reverse, toLocale } from '@jbrowse/core/util'
+import {
+  complement,
+  reverse,
+  statusProgressLabel,
+  toLocale,
+} from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -56,15 +61,25 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
     data: sequenceChunks,
     error,
     isLoading: loading,
+    status,
   } = useFetch(
     tooLargeToFetch
       ? false
-      : ['fetchSequence', regions.map(r => `${r.refName}:${r.start}-${r.end}`)],
-    async () => {
+      : ([
+          'fetchSequence',
+          regions.map(r => `${r.refName}:${r.start}-${r.end}`),
+        ] as const),
+    // a selection this dialog will happily take is a whole chromosome of
+    // sequence, so both handles are forwarded: closing the dialog stops the
+    // read rather than leaving the worker on it, and the wait is named
+    async (_name, _locs, stopToken, statusCallback) => {
       if (regions.length === 0) {
         throw new Error('Selected region is out of bounds')
       }
-      const chunks = await fetchSequence(model, regions)
+      const chunks = await fetchSequence(model, regions, {
+        stopToken,
+        statusCallback,
+      })
       // validate here (in the async path) so a length mismatch surfaces via the
       // dialog's own ErrorBanner rather than throwing during render
       return chunks.map(chunk => {
@@ -119,7 +134,9 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         {error ? (
           <ErrorBanner error={error} />
         ) : loading ? (
-          <LoadingEllipses message="Retrieving sequences" />
+          <LoadingEllipses
+            message={statusProgressLabel(status) || 'Retrieving sequences'}
+          />
         ) : null}
         <MonospaceTextField
           fullWidth

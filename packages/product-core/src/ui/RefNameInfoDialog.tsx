@@ -5,6 +5,7 @@ import {
   ErrorBanner,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
+import { createStatusFanOut, statusProgressLabel } from '@jbrowse/core/util'
 import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -70,10 +71,13 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   const { rpcManager } = session
   const trackId = readConfSlot<string>(config, 'trackId')
 
-  const { data, error, isLoading } = useFetch(
-    ['CoreGetRefNames', trackId],
-    () =>
-      Promise.all(
+  const { data, error, isLoading, status } = useFetch(
+    ['CoreGetRefNames', trackId] as const,
+    (_name, _trackId, stopToken, statusCallback) => {
+      // one status slot per assembly, so N concurrent reads aggregate into one
+      // bar instead of the last writer winning
+      const slot = createStatusFanOut(statusCallback)
+      return Promise.all(
         [...new Set(aboutAssemblyNames(config))].map(
           async assemblyName =>
             [
@@ -84,10 +88,13 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
                   'adapter',
                 ),
                 assemblyName,
+                stopToken,
+                statusCallback: slot(),
               }),
             ] as const,
         ),
-      ),
+      )
+    },
   )
   // undefined here means the key was incomplete and the fetch never ran, not
   // that one is still in flight — `isLoading` is what says that. Treating the
@@ -106,7 +113,9 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
         {error ? (
           <ErrorBanner error={error} />
         ) : isLoading ? (
-          <LoadingEllipses message="Loading refNames" />
+          <LoadingEllipses
+            message={statusProgressLabel(status) || 'Loading refNames'}
+          />
         ) : (
           <>
             <CopyToClipboardButton

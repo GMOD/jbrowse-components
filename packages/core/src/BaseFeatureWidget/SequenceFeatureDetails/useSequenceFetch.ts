@@ -21,7 +21,7 @@ export function useSequenceFetch({
   upDownBp: number
 }) {
   const [forceLoad, setForceLoad] = useState(false)
-  const { sequence, error } = useFeatureSequence({
+  const { sequence, error, status } = useFeatureSequence({
     assemblyName,
     session,
     start: feature.start,
@@ -39,6 +39,7 @@ export function useSequenceFetch({
   return {
     sequence,
     error,
+    status,
     assemblyGeneticCodeId: assembly?.getGeneticCodeId(feature.refName),
     onForceLoad: () => {
       setForceLoad(true)

@@ -38,7 +38,15 @@ export async function fetchFeaturesFromAdapter({
   // Which detail tier a tiered adapter should serve. Only the synteny displays
   // set it (a PIF has a coarse no-CIGAR tier); read adapters ignore it.
   lodMode?: BaseOptions['lodMode']
-  statusCallback: StatusCallback
+  // Required key, nullable value, on purpose: a caller with no status channel
+  // has to say `statusCallback: undefined` rather than leave the property out,
+  // so forwarding one is a decision instead of something to remember. And
+  // `undefined` is the meaningful answer, not a shrug — it tells a reader to
+  // skip its progress bookkeeping entirely (`downloadStatusReporter` returns
+  // undefined for exactly that, which lets generic-filehandle2 take the fast
+  // `res.arrayBuffer()` path), which is why `() => {}` is the wrong way to say
+  // it and was what GetConsensusSequence had hard-coded.
+  statusCallback: StatusCallback | undefined
   stopToken?: StopToken
 }) {
   const stopTokenCheck = createStopTokenChecker(stopToken)

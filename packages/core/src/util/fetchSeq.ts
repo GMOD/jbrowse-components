@@ -1,5 +1,7 @@
 import { getConf } from '../configuration/index.ts'
 
+import type { StatusCallback } from './progress.ts'
+import type { StopToken } from './stopToken.ts'
 import type { AbstractSessionModel } from './types/index.ts'
 
 export async function fetchSeq({
@@ -8,12 +10,16 @@ export async function fetchSeq({
   refName,
   assemblyName,
   session,
+  stopToken,
+  statusCallback,
 }: {
   start: number
   end: number
   refName: string
   assemblyName: string
   session: AbstractSessionModel
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
 }) {
   const { rpcManager, assemblyManager } = session
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
@@ -37,6 +43,8 @@ export async function fetchSeq({
       refName: seqAdapterRefName,
       assemblyName,
     },
+    stopToken,
+    statusCallback,
   })
 
   return seq ?? ''

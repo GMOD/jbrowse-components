@@ -81,6 +81,8 @@ export interface GetFeatureDetailsArgs {
     end: number
     assemblyName: string
   }
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

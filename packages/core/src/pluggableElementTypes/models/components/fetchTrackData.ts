@@ -3,6 +3,8 @@ import { getEnv, getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 
 import type { Region } from '../../../util/index.ts'
+import type { StatusCallback } from '../../../util/progress.ts'
+import type { StopToken } from '../../../util/stopToken.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -19,6 +21,10 @@ export async function fetchTrackData(
   visibleRegions: Region[],
   type: string,
   options: Record<string, FileTypeExporter>,
+  // this reads every feature in the visible region, which on a deep track is the
+  // same work the display itself does — worth cancelling when the dialog closes,
+  // and worth naming while it runs
+  opts: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
 ): Promise<{ str: string; usedAdapterExport: boolean }> {
   const { pluginManager } = getEnv(model)
   const adapterConfig = getConf(model, ['adapter'])
@@ -33,6 +39,7 @@ export async function fetchTrackData(
       adapterConfig,
       regions,
       formatType: type,
+      ...opts,
     })
     return { str, usedAdapterExport: true }
   } else {
@@ -42,6 +49,7 @@ export async function fetchTrackData(
       {
         adapterConfig,
         regions,
+        ...opts,
       },
     )
     const str = await options[type]!.callback({

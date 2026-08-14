@@ -1,4 +1,5 @@
 import { fetchSeq } from './fetchSeq.ts'
+import { createStatusFanOut } from './progress.ts'
 import { useFetch } from './useFetch.ts'
 
 import type { AbstractSessionModel } from './index.ts'
@@ -28,9 +29,10 @@ export function useFeatureSequence({
     data: sequence,
     error,
     isLoading: loading,
+    status,
   } = useFetch(
     guard
-      ? [
+      ? ([
           'featureSequence',
           guard.assemblyName,
           refName,
@@ -38,16 +40,29 @@ export function useFeatureSequence({
           end,
           upDownBp,
           +forceLoad,
-        ]
+        ] as const)
       : null,
     guard
-      ? async () => {
+      ? async (
+          _name,
+          _asm,
+          _ref,
+          _start,
+          _end,
+          _upDown,
+          _force,
+          stopToken,
+          statusCallback,
+        ) => {
           const { session: s, assemblyName: asmName } = guard
           if (!forceLoad && end - start > BPLIMIT) {
             return {
               error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
             }
           }
+          // three concurrent reads sharing one status field, so each gets its
+          // own slot and they aggregate into one bar
+          const slot = createStatusFanOut(statusCallback)
           const [seq, upstream, downstream] = await Promise.all([
             fetchSeq({
               start,
@@ -55,6 +70,8 @@ export function useFeatureSequence({
               refName,
               assemblyName: asmName,
               session: s,
+              stopToken,
+              statusCallback: slot(),
             }),
             upDownBp > 0
               ? fetchSeq({
@@ -63,6 +80,8 @@ export function useFeatureSequence({
                   refName,
                   assemblyName: asmName,
                   session: s,
+                  stopToken,
+                  statusCallback: slot(),
                 })
               : Promise.resolve(''),
             upDownBp > 0
@@ -72,6 +91,8 @@ export function useFeatureSequence({
                   refName,
                   assemblyName: asmName,
                   session: s,
+                  stopToken,
+                  statusCallback: slot(),
                 })
               : Promise.resolve(''),
           ] as const)
@@ -80,5 +101,5 @@ export function useFeatureSequence({
       : null,
   )
 
-  return { sequence, loading, error }
+  return { sequence, loading, error, status }
 }

@@ -7,7 +7,7 @@ export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion {
   name = 'GetCanvasFeatureDetails'
 
   async execute(args: GetFeatureDetailsArgs, rpcDriverClassName: string) {
-    const { sessionId, adapterConfig, featureId, region } =
+    const { sessionId, adapterConfig, featureId, region, ...opts } =
       await this.deserializeArguments(args, rpcDriverClassName)
 
     const dataAdapter = await getFeatureAdapterOrThrow({
@@ -16,7 +16,7 @@ export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion {
       adapterConfig,
     })
 
-    const featuresArray = await dataAdapter.getFeaturesArray(region)
+    const featuresArray = await dataAdapter.getFeaturesArray(region, opts)
 
     const feature = featuresArray.find(f => f.id() === featureId)
 

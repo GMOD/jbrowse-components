@@ -8,7 +8,12 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getTag } from '@jbrowse/modifications-utils'
 
-import type { AbstractTrackModel, Feature } from '@jbrowse/core/util'
+import type {
+  AbstractTrackModel,
+  Feature,
+  StatusCallback,
+} from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * The primary alignment of the split read `preFeature` belongs to, fetched over
@@ -24,6 +29,7 @@ import type { AbstractTrackModel, Feature } from '@jbrowse/core/util'
 export async function fetchPrimaryAlignment(
   track: AbstractTrackModel,
   preFeature: Feature,
+  opts: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
 ) {
   if (!((preFeature.get('flags') as number) & SAM_FLAG_SUPPLEMENTARY)) {
     return preFeature
@@ -61,6 +67,7 @@ export async function fetchPrimaryAlignment(
         assemblyName: asm ?? '',
       },
     ],
+    ...opts,
   })
   const result = feats.find(
     f =>

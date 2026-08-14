@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { createGuardedStatusSink } from './progress.ts'
 import { createStopToken, stopStopToken } from './stopToken.ts'
 
+import type { RpcStatus, StatusCallback } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
 
 // Minimal data-fetching hook, replacing SWR. JBrowse only ever used the
@@ -25,15 +27,19 @@ type FetchingKey<Key> = Exclude<Key, null | undefined | false>
  * single argument (`useGenomesData`). Most fetchers close over what they need
  * and declare no parameters at all, which stays assignable either way.
  *
- * A stop token follows the key arguments. It is created per fetch and stopped
- * when the key changes or the component unmounts, so a fetcher that forwards it
- * to an RPC cancels the worker instead of leaving it grinding on an answer
- * nobody is waiting for. Fetchers that don't take it are unaffected.
+ * A stop token and a status callback follow the key arguments. The token is
+ * created per fetch and stopped when the key changes or the component unmounts,
+ * so a fetcher that forwards it to an RPC cancels the worker instead of leaving
+ * it grinding on an answer nobody is waiting for. The callback is what the RPC's
+ * own progress comes back through, and it surfaces on the hook's `status` — a
+ * dialog that forwards both gets "Downloading features 42%" and a cancel that
+ * works, instead of a bare spinner over an uninterruptible whole-chromosome
+ * read. Fetchers that take neither are unaffected.
  */
 type FetcherArgs<Key> =
   FetchingKey<Key> extends readonly unknown[]
-    ? [...FetchingKey<Key>, StopToken]
-    : [FetchingKey<Key>, StopToken]
+    ? [...FetchingKey<Key>, StopToken, StatusCallback]
+    : [FetchingKey<Key>, StopToken, StatusCallback]
 
 interface FetchState<Data> {
   data: Data | undefined
@@ -54,6 +60,14 @@ interface UseFetchResponse<Data> extends FetchState<Data> {
    */
   mutate: () => void
   isValidating: boolean
+  /**
+   * Latest progress the in-flight fetcher reported through its status callback,
+   * or undefined when it reported none or the fetch has settled. Render it with
+   * `statusProgressLabel` (and `statusFraction` for a bar); a fetcher that never
+   * calls its callback leaves this undefined and the consumer shows whatever it
+   * showed before.
+   */
+  status: RpcStatus | undefined
 }
 
 const isNil = (k: unknown) => k === null || k === undefined || k === false
@@ -110,6 +124,9 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
   }))
   // bumped to force a refetch (local mutate() or a cross-component mutate(key))
   const [nonce, setNonce] = useState(0)
+  // separate from `state` because it moves on its own cadence: the RPC status
+  // stream ticks throughout one fetch, while data/error/isLoading move once
+  const [status, setStatus] = useState<RpcStatus | undefined>(undefined)
   // refs let the fetch effect depend only on the serialized key + nonce without
   // re-running when the (often inline) fetcher/options/key identities change
   const optionsRef = useRef(options)
@@ -133,6 +150,11 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       return undefined
     } else {
       let alive = true
+      // `alive` is about this effect run; `settled` is about this fetch. They
+      // differ for exactly one thing, the throttled status sink below: its
+      // trailing write lands on a timer, so without a second term a status
+      // queued just before the fetch resolved reappears after it and sticks
+      let settled = false
       const stopToken = createStopToken()
       // A refetch under the same key — mutate(), or the cross-component
       // mutate(key) — is the same question asked again, so what is on screen is
@@ -151,6 +173,8 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
         error: undefined,
         isLoading: true,
       }))
+      // the previous fetch's last progress describes work that is over
+      setStatus(undefined)
       // The runtime counterpart of FetcherArgs: an array key becomes one
       // argument per element, anything else a single argument, then the stop
       // token. A conditional type over an unresolved `Key` can't be discharged
@@ -158,7 +182,14 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       // call — callers still get the precise arity, and the looseness stops
       // here.
       const keyArgs: unknown[] = Array.isArray(key) ? key : [key]
-      const args = [...keyArgs, stopToken]
+      // guarded and throttled for the same reason every other owner of a
+      // progress stream is: an RPC emits ~40 of these a second, and each one
+      // re-renders the dialog holding this hook
+      const statusCallback = createGuardedStatusSink({
+        isCurrent: () => alive && !settled,
+        sink: setStatus,
+      })
+      const args = [...keyArgs, stopToken, statusCallback]
       const call = fetcher as (...args: unknown[]) => Promise<Data>
       Promise.resolve()
         .then(() => call(...args))
@@ -172,6 +203,14 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
           if (alive) {
             setState({ data: undefined, error, isLoading: false })
             optionsRef.current.onError?.(error)
+          }
+        })
+        .finally(() => {
+          // however it settled, the progress it reported describes work that is
+          // over
+          settled = true
+          if (alive) {
+            setStatus(undefined)
           }
         })
       return () => {
@@ -207,5 +246,5 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
     setNonce(n => n + 1)
   }, [])
 
-  return { ...state, mutate, isValidating: state.isLoading }
+  return { ...state, mutate, isValidating: state.isLoading, status }
 }

@@ -140,7 +140,7 @@ import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -2257,6 +2257,10 @@ export default function baseStateModelFactory(
         async fetchFullFeature(
           featureId: string,
           displayedRegionIndex: number,
+          opts: {
+            stopToken?: StopToken
+            statusCallback?: StatusCallback
+          } = {},
         ) {
           const region = self.loadedRegions.get(displayedRegionIndex)
           if (!region) {
@@ -2268,6 +2272,7 @@ export default function baseStateModelFactory(
             self.adapterConfig,
             featureId,
             region,
+            opts,
           )
         },
       }))

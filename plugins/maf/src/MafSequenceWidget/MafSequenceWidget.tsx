@@ -1,5 +1,9 @@
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
+import {
+  getBpDisplayStr,
+  getSession,
+  statusProgressLabel,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Paper } from '@mui/material'
@@ -41,7 +45,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
   // Keyed on the RPC inputs, so it refetches when they change and a null key
   // skips the call until the inputs are present. useFetch drops stale
   // resolutions for us, so no manual cancellation flag is needed.
-  const { data, error } = useFetch(
+  const { data, error, status } = useFetch(
     adapterConfig && samples && regions
       ? ([
           'MafGetSequences',
@@ -64,6 +68,8 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
       regions,
       showAllLetters,
       includeInsertions,
+      stopToken,
+      statusCallback,
     ) =>
       session.rpcManager.call('MafSequenceWidget', 'MafGetSequences', {
         adapterConfig,
@@ -71,6 +77,8 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
         showAllLetters,
         includeInsertions,
         regions,
+        stopToken,
+        statusCallback,
       }),
   )
   const loading = !data && !error
@@ -105,7 +113,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
       {error ? (
         <ErrorMessage error={error} />
       ) : loading ? (
-        <LoadingEllipses />
+        <LoadingEllipses message={statusProgressLabel(status)} />
       ) : sequenceTooLarge ? (
         <div>
           {/* "Reference sequence" and "the Download button" both came over from

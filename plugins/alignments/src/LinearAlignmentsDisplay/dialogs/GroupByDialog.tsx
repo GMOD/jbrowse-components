@@ -3,10 +3,11 @@ import { useState } from 'react'
 import {
   ErrorBanner,
   LabeledCheckbox,
+  LoadingEllipses,
   SubmitDialog,
   TagTextField,
 } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, statusProgressLabel } from '@jbrowse/core/util'
 import { useDebounce } from '@jbrowse/core/util/hooks'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Typography } from '@mui/material'
@@ -93,14 +94,23 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   // its key, and an MST node stringifies to its whole snapshot — so the key both
   // cost a full serialization per render and changed on any unrelated model edit,
   // re-running this RPC over the visible blocks.
-  const { data: tagSet, error } = useFetch<string[]>(
-    debouncedTag ? ['getUniqueTags', model.id, debouncedTag] : null,
-    () =>
+  const {
+    data: tagSet,
+    error,
+    isLoading: loadingTags,
+    status,
+  } = useFetch(
+    debouncedTag ? (['getUniqueTags', model.id, debouncedTag] as const) : null,
+    // this is a full scan of every visible block, re-issued on every settled
+    // keystroke, so forwarding the token is what keeps a superseded tag's scan
+    // from running to completion behind the one the user actually wants
+    (_name, _id, _tag, stopToken, statusCallback) =>
       getUniqueTags({
         self: model,
         tag: debouncedTag,
         blocks: (getContainingView(model) as LinearGenomeViewModel)
           .staticBlocks,
+        opts: { stopToken, statusCallback },
       }),
   )
 
@@ -148,6 +158,12 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       />
       {error ? (
         <ErrorBanner error={error} />
+      ) : loadingTags ? (
+        <LoadingEllipses
+          message={
+            statusProgressLabel(status) || 'Scanning reads for tag values'
+          }
+        />
       ) : tooManyValues ? (
         <Typography variant="caption" color="error">
           {debouncedTag} takes {values.length} distinct values here — too many

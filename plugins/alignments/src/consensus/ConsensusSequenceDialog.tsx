@@ -15,11 +15,13 @@ import {
 import {
   addAndShowTrack,
   assembleLocString,
+  createStatusFanOut,
   getRpcSessionId,
   getSession,
   isSessionWithAddTracks,
   locStringsToRegions,
   saveAs,
+  statusProgressLabel,
   toLocale,
 } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
@@ -139,7 +141,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   // A consensus can be half a megabase of reads, so the fetch forwards
   // useFetch's stop token: dismissing the dialog, or nudging a slider, stops
   // the worker rather than leaving it grinding on a superseded answer.
-  const { data, error } = useFetch(
+  const { data, error, status } = useFetch(
     canFetch
       ? ([
           'getConsensus',
@@ -154,11 +156,19 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           },
         ] as const)
       : false,
-    async (_name, params, stopToken): Promise<ConsensusData> => {
+    async (
+      _name,
+      params,
+      stopToken,
+      statusCallback,
+    ): Promise<ConsensusData> => {
       const sessionId = getRpcSessionId(display)
       // every parsed region belongs to the dialog's one assembly, so the
       // sequence adapter is resolved once rather than per region
       const sequenceAdapter = getSequenceAdapterConfig(assembly)
+      // one status slot per region, so N concurrent consensus calls aggregate
+      // into one bar instead of the last writer winning
+      const slot = createStatusFanOut(statusCallback)
       const results = await Promise.all(
         params.regions.map(async region => {
           const { consensus, variants } = await session.rpcManager.call(
@@ -174,6 +184,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               hetFract: params.hetFract,
               includeInsertions: params.includeInsertions,
               stopToken,
+              statusCallback: slot(),
             },
           )
           return {
@@ -318,7 +329,9 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
         ) : error ? (
           <ErrorBanner error={error} />
         ) : loading ? (
-          <LoadingEllipses message="Computing consensus" />
+          <LoadingEllipses
+            message={statusProgressLabel(status) || 'Computing consensus'}
+          />
         ) : null}
         <MonospaceTextField
           fullWidth

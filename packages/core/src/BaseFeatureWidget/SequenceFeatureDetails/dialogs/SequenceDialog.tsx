@@ -8,7 +8,7 @@ import SequenceBody from '../SequenceBody.tsx'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 
-import type { SimpleFeatureSerialized } from '../../../util/index.ts'
+import type { RpcStatus, SimpleFeatureSerialized } from '../../../util/index.ts'
 import type { ErrorState, SeqState } from '../../util.tsx'
 import type {
   SequenceDisplayMode,
@@ -32,6 +32,7 @@ const SequenceDialog = observer(function SequenceDialog({
   setRevcomp,
   sequence,
   error,
+  status,
   assemblyGeneticCodeId,
   assemblyName,
   hoverTarget,
@@ -46,6 +47,7 @@ const SequenceDialog = observer(function SequenceDialog({
   setRevcomp: (arg: boolean) => void
   sequence: SeqState | ErrorState | undefined
   error: unknown
+  status?: RpcStatus
   assemblyGeneticCodeId?: number
   assemblyName?: string
   hoverTarget?: SequenceHoverTarget
@@ -82,6 +84,7 @@ const SequenceDialog = observer(function SequenceDialog({
         <SequenceBody
           error={error}
           sequence={sequence}
+          status={status}
           feature={feature}
           seqPanelRef={seqPanelRef}
           model={sequenceFeatureDetails}

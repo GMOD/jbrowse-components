@@ -1,8 +1,10 @@
 import { Button, Typography } from '@mui/material'
 
 import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
+import { statusProgressLabel } from '../../util/progress.ts'
 import SequencePanel from './SequencePanel.tsx'
 
+import type { RpcStatus } from '../../util/index.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { ErrorState, SeqState } from '../util.tsx'
 import type {
@@ -15,6 +17,7 @@ import type { RefObject } from 'react'
 export default function SequenceBody({
   error,
   sequence,
+  status,
   feature,
   seqPanelRef,
   model,
@@ -27,6 +30,7 @@ export default function SequenceBody({
 }: {
   error: unknown
   sequence: SeqState | ErrorState | undefined
+  status?: RpcStatus
   feature: SimpleFeatureSerialized
   seqPanelRef: RefObject<HTMLDivElement | null>
   model: SequenceFeatureDetailsModel
@@ -42,7 +46,7 @@ export default function SequenceBody({
       {error ? (
         <ErrorBanner error={error} />
       ) : !sequence ? (
-        <LoadingEllipses />
+        <LoadingEllipses message={statusProgressLabel(status)} />
       ) : 'error' in sequence ? (
         <>
           <Typography color="error">{sequence.error}</Typography>

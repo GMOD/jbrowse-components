@@ -12,7 +12,7 @@ import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface GetConsensusSequenceArgs {
@@ -26,6 +26,7 @@ interface GetConsensusSequenceArgs {
   hetFract?: number
   includeInsertions?: boolean
   stopToken?: StopToken
+  statusCallback?: StatusCallback
   rpcDriverName?: string
 }
 
@@ -59,6 +60,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       hetFract,
       includeInsertions,
       stopToken,
+      statusCallback,
     } = await this.deserializeArguments(args, rpcDriverClassName)
 
     const region = regions[0]!
@@ -76,7 +78,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       sequenceAdapter,
       region,
       filterBy,
-      statusCallback: () => {},
+      statusCallback,
       stopToken,
     })
 

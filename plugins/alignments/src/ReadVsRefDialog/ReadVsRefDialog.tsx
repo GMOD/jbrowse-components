@@ -3,14 +3,19 @@ import { useState } from 'react'
 import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import {
   ErrorMessage,
+  LoadingEllipses,
   NumberTextField,
   SubmitDialog,
   replaceViewAction,
 } from '@jbrowse/core/ui'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  statusProgressLabel,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import { CircularProgress, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 
 import { fetchPrimaryAlignment } from './fetchPrimaryAlignment.ts'
 
@@ -54,9 +59,14 @@ export default function ReadVsRefDialog({
   // caller hand over a view the read was not clicked in.
   const sourceView = getContainingView(track)
 
-  const { data: primaryFeature, error: fetchError } = useFetch(
-    ['primaryAlignment', preFeature.id()],
-    () => fetchPrimaryAlignment(track, preFeature),
+  const {
+    data: primaryFeature,
+    error: fetchError,
+    status,
+  } = useFetch(
+    ['primaryAlignment', preFeature.id()] as const,
+    (_name, _id, stopToken, statusCallback) =>
+      fetchPrimaryAlignment(track, preFeature, { stopToken, statusCallback }),
   )
   const error = submitError ?? fetchError
 
@@ -105,9 +115,11 @@ export default function ReadVsRefDialog({
         <div>
           <Typography>
             To accurately perform comparison we are fetching the primary
-            alignment. Loading primary feature...
+            alignment.
           </Typography>
-          <CircularProgress />
+          <LoadingEllipses
+            message={statusProgressLabel(status) || 'Loading primary feature'}
+          />
         </div>
       ) : (
         <div className={classes.root}>

@@ -1,7 +1,8 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // Re-fetch one full feature by id for the details widget. Both canvas displays
 // paint from slim render arrays that carry no attributes, so the complete
@@ -19,12 +20,13 @@ export async function fetchCanvasFeatureDetails(
   adapterConfig: Record<string, unknown>,
   featureId: string,
   region: Region,
+  opts: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
 ) {
   try {
     const result = await session.rpcManager.call(
       sessionId,
       'GetCanvasFeatureDetails',
-      { adapterConfig, featureId, region },
+      { adapterConfig, featureId, region, ...opts },
     )
     return result.feature ? new SimpleFeature(result.feature) : undefined
   } catch (e) {

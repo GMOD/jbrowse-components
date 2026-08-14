@@ -63,7 +63,7 @@ const SequenceFeatureDetailsPanel = observer(
     const [mode, setMode] = useState(() => getDefaultMode(effectiveFeature))
     const [revcomp, setRevcomp] = useState(false)
     const [openInDialog, setOpenInDialog] = useState(false)
-    const { sequence, error, assemblyGeneticCodeId, onForceLoad } =
+    const { sequence, error, status, assemblyGeneticCodeId, onForceLoad } =
       useSequenceFetch({
         session,
         assemblyName,
@@ -135,6 +135,7 @@ const SequenceFeatureDetailsPanel = observer(
             <SequenceBody
               error={error}
               sequence={sequence}
+              status={status}
               feature={effectiveFeature}
               seqPanelRef={seqPanelRef}
               model={model}

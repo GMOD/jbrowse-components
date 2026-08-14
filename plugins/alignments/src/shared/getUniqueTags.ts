@@ -1,6 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
+import type { StatusCallback } from '@jbrowse/core/util'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -19,7 +20,8 @@ export async function getUniqueTags({
   opts?: {
     headers?: Record<string, string>
     stopToken?: StopToken
-    filters: string[]
+    statusCallback?: StatusCallback
+    filters?: string[]
   }
 }) {
   const { rpcManager } = getSession(self)

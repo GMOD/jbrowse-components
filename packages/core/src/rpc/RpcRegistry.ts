@@ -35,6 +35,7 @@ export interface RpcRegistry {
       region: RegionLike
       adapterConfig: Record<string, unknown>
       stopToken?: StopToken
+      statusCallback?: StatusCallback
     }
     return: string | undefined
   }
@@ -68,6 +69,7 @@ export interface RpcRegistry {
     args: {
       adapterConfig: Record<string, unknown>
       stopToken?: StopToken
+      statusCallback?: StatusCallback
     }
     return: unknown
   }

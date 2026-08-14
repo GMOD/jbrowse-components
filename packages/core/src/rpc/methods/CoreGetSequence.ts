@@ -3,6 +3,7 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
 import type { Region } from '../../util/index.ts'
+import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
 // CoreGetSequence takes a single region whose refName fetchSeq() has already
@@ -16,10 +17,11 @@ export default class CoreGetSequence extends RpcMethodType<'CoreGetSequence'> {
       region: Region
       adapterConfig: Record<string, unknown>
       stopToken?: StopToken
+      statusCallback?: StatusCallback
     },
     rpcDriver: string,
   ) {
-    const { stopToken, sessionId, adapterConfig, region } =
+    const { stopToken, statusCallback, sessionId, adapterConfig, region } =
       await this.deserializeArguments(args, rpcDriver)
 
     const { dataAdapter } = await getAdapter(
@@ -30,6 +32,6 @@ export default class CoreGetSequence extends RpcMethodType<'CoreGetSequence'> {
     if (!isSequenceAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving sequences')
     }
-    return dataAdapter.getSequence(region, { stopToken })
+    return dataAdapter.getSequence(region, { stopToken, statusCallback })
   }
 }

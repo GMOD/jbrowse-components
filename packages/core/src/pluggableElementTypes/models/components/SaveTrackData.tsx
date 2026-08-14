@@ -21,7 +21,11 @@ import {
   ErrorBanner,
   InfoDialog,
 } from '../../../ui/index.ts'
-import { getContainingView, saveAs } from '../../../util/index.ts'
+import {
+  getContainingView,
+  saveAs,
+  statusProgressLabel,
+} from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFetch } from '../../../util/useFetch.ts'
 import { fetchTrackData } from './fetchTrackData.ts'
@@ -88,16 +92,21 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
     data: result,
     error,
     isLoading: loading,
+    status,
   } = useFetch(
     shouldFetch
-      ? [
+      ? ([
           'fetchTrackData',
           model,
           type,
           visibleRegions.map(r => `${r.refName}:${r.start}-${r.end}`).join(','),
-        ]
+        ] as const)
       : null,
-    () => fetchTrackData(model, visibleRegions!, type!, options),
+    (_name, _model, _type, _locs, stopToken, statusCallback) =>
+      fetchTrackData(model, visibleRegions!, type!, options, {
+        stopToken,
+        statusCallback,
+      }),
   )
   const { str, usedAdapterExport } = result ?? {
     str: '',
@@ -186,7 +195,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           fullWidth
           value={
             loading
-              ? 'Loading...'
+              ? statusProgressLabel(status) || 'Loading...'
               : str.length > 500_000
                 ? 'File greater than 500kb, too large to view here. Click "Download" to save results to file'
                 : str

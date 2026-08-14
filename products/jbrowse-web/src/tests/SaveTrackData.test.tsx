@@ -71,11 +71,18 @@ test.each([
 
     await screen.findByText(/File type/, ...opts)
 
-    // Wait for loading to complete before downloading
+    // Wait for loading to complete before downloading. Gated on the Download
+    // button rather than on the textarea's text: the dialog now shows the
+    // fetch's live progress there ("Downloading features 42%"), so a string
+    // comparison against the idle label passes on the first progress tick and
+    // clicks Download over an empty result. `disabled` is the state the click
+    // actually depends on.
     await waitFor(
       async () => {
-        const textField = document.querySelector('textarea')
-        expect(textField?.value).not.toBe('Loading...')
+        const button = (await screen.findByText('Download', ...opts)).closest(
+          'button',
+        )
+        expect(button?.disabled).toBe(false)
       },
       { timeout: 30000 },
     )
