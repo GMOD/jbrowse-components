@@ -41,6 +41,7 @@ before anyone noticed.
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
+| [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -281,6 +282,26 @@ drift:
 
 [reference/SCREENSHOT_CALLOUT_ANCHORS.md](reference/SCREENSHOT_CALLOUT_ANCHORS.md)
 is the method, including why the 40 remaining raw coordinates are deliberate.
+
+### Re-render the ortholog-table figures after the blocks dedupe
+
+`MCScanBlocksAdapter` now draws a gene pair once however many rows name it, and
+the five figures off a `.blocks` table were captured before that. They lose
+ribbons where the table repeated one, which for the OrthoFinder sets is not
+spread evenly: the wheat figure's tauschii/urartu band was 55% repeats against
+3% on the donor-to-hexaploid bands beside it, and the grasses figure's
+non-maize pairs were ~21% against ~10% on the maize ones. So the bands the
+duplication is NOT about get lighter and the ones it is about barely move, which
+is the point of the change.
+
+`orthofinder_synteny/vertebrates`, `/grasses`, `/wheat`, and the two multiway
+grape/peach/cacao ones off `grape.blocks` (its transitive peach/cacao pair is
+~12.5% repeats; the two direct pairs have none).
+
+The alpha values were tuned against the old density — 0.15 on wheat and grasses,
+0.3 on vertebrates, 0.5 on the two 4A figures. **Raise them only uniformly and
+only if the whole band reads too faint**, since the thing that just went away was
+a per-band bias and putting ink back per band would restore it.
 
 ## Ready to build: the design is settled
 
