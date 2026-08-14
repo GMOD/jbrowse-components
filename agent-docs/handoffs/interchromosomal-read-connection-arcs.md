@@ -1,10 +1,10 @@
 ---
 name: handoff-interchromosomal-read-connection-arcs
 description:
-  The arcs and the k562 figure landed; what is left is the second junction
-  producer that figure retires, one exploratory figure whose render IS the
-  measurement, and the one number the overlay's cap still rests on an estimate
-  for.
+  The arcs and the k562 figure landed; what is left is a decision on the second
+  junction producer, now parked on a remote branch and reviewed, one exploratory
+  figure whose render IS the measurement, and the one number the overlay's cap
+  still rests on an estimate for.
 ---
 
 # Handoff: interchromosomal read-connection arcs
@@ -34,18 +34,42 @@ with a tick at the BCR donor for the 37 molecules still reaching outside the
 frame. [DEMO_DATASETS.md](../reference/DEMO_DATASETS.md) has the acceptor
 distribution behind those numbers and what is and is not established about them.
 
-So the case for `showSplitJunctionArcs` — the counted sashimi overlay on branch
-`worktree-split-read-sashimi-arcs`, that thread's "piece A" — is spent. It is a
-second coalescer for the same junctions, clustering within 10 bp and taking the
-modal site where `arcKey` coalesces on exact coordinates, so at a junction with
-microhomology jitter the two print different counts at one locus. The arc band
-now draws what it was built to draw, in the figure it was built for.
+So the case for `showSplitJunctionArcs` — the counted sashimi overlay that was
+this thread's "piece A" — is spent. It is a second coalescer for the same
+junctions, clustering within 10 bp and taking the modal site where `arcKey`
+coalesces on exact coordinates, so at a junction with microhomology jitter the
+two print different counts at one locus. The arc band now draws what it was
+built to draw, in the figure it was built for.
+
+**It is parked on `origin/parked/split-read-sashimi-arcs`, not deleted, and a
+reviewer should expect a confusing branch.** Eight commits, of which four are
+the interchromosomal arc feature that HAS landed on main under rebased hashes,
+plus an obsolete handoff doc. The unlanded content is three commits:
+`cfeeb76274` (the overlay itself — a `showSplitJunctionArcs` config slot, a
+`splitJunctionsByGroup` getter, a second row in the sashimi submenu, and
+`features/sashimi/splitJunctions.ts` + `arcGeometry.ts`), `2053dc0e6b` and
+`0775fa61b4`. It is 103 commits behind main.
+
+Reviewed 2026-08-14 against current main. Findings, so the next reader does not
+redo them:
+
+- The "case is spent" argument above **holds**. `resolveArcs` coalesces by
+  `arcKey` and files both-feet-on-screen connections into `crossRegion`;
+  `ComputedArc.support` reaches the hover through `CrossRegionArcsOverlay`, and
+  the SVG export exists. Both paths dedupe per readId, so the counts agree.
+- Two losses the paragraph below missed. The branch's overlay was **not gated on
+  `readConnections`**, and it **tinted each arc by connection type** where main
+  paints every interchromosomal arc one `ARC_COLOR_INTERCHROM` — deliberately.
+- It would **cherry-pick cleanly** if anyone wanted it: the three sashimi commits
+  sit on the merge base, and the files they touch have zero churn since except
+  `model.ts` and `tooltipUtils.ts`. The cost is the duplication, not a rebase.
 
 What its removal loses is the printed count label and the position over the
 coverage band, nothing else. The label, if wanted, is a small later option on the
 arc band sourced from `ComputedArc.support` — one producer, one number, serving
-same-chromosome junctions too. It is not a reason to keep a second junction
-producer alive meanwhile.
+same-chromosome junctions too, roughly 60-100 lines reusing `SashimiArcLabels`'
+halo constants. It is not a reason to keep a second junction producer alive
+meanwhile.
 
 The clustering pre-pass that would have made the two agree is dead and filed:
 [REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md), "A clustering tolerance
@@ -89,12 +113,15 @@ called on, which is the best case this feature has. Partner coordinates come fro
 the nanomonsv VCF / `sv_multihop.py` output; the figure only works if those
 windows are right.
 
-## 3. Two things still unverified, and one number still an estimate
+## 3. One number still an estimate
 
-- **A dark-mode frame.** The overlay strokes from the same palette slot the
-  canvas passes resolve, so it should follow the theme, but no frame has been
-  looked at. (The SVG export IS verified — `svg-export.ts` exports the two-contig
-  view and checks the clip group and the stroke widths.)
+- ~~A dark-mode frame.~~ **Settled by reading, 2026-08-14, and it needed no
+  frame.** The question was whether the SVG overlay follows the theme the way
+  the canvas passes do. Both take `self.colorPalette`, which is
+  `buildColorPaletteFromPalette(getSession(self).palette)` — one getter off the
+  session theme, and there is no second colour path for the overlay to diverge
+  through. (The SVG export was already verified — `svg-export.ts` exports the
+  two-contig view and checks the clip group and the stroke widths.)
 - **The same-chromosome cross-region count at depth**, which is the number the
   overlay's 600-arc cap is sized from and is an estimate scaled from a 30x
   measurement, not a measurement. It is cheap now: read `crossRegion.length` off
