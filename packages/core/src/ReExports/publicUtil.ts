@@ -73,6 +73,7 @@ export {
   compareLocs,
   complement,
   complementTable,
+  createGuardedStatusSink,
   createProgressReporter,
   createScrollLatch,
   createSharedSetup,

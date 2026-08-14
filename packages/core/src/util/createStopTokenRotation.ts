@@ -1,6 +1,6 @@
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import { createStatusThrottle } from './progress.ts'
+import { createGuardedStatusSink, createStatusThrottle } from './progress.ts'
 import { createStopToken, stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus } from './progress.ts'
@@ -65,13 +65,13 @@ export function createStopTokenRotation(self: IStateTreeNode & StatusReporter) {
       return {
         stopToken,
         isCurrent,
-        statusCallback: status => {
-          if (isCurrent()) {
-            throttle.run(() => {
-              self.setStatusMessage(status)
-            })
-          }
-        },
+        statusCallback: createGuardedStatusSink({
+          isCurrent,
+          sink: status => {
+            self.setStatusMessage(status)
+          },
+          throttle,
+        }),
       }
     },
     dispose() {

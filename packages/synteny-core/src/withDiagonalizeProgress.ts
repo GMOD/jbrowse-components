@@ -1,5 +1,5 @@
-import { createStatusThrottle, isAbortException } from '@jbrowse/core/util'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
+import { createGuardedStatusSink, isAbortException } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
@@ -30,27 +30,30 @@ export async function withDiagonalizeProgress(
   model.setAwaitingAutoDiagonalize(true)
   const stopToken = createStopToken()
   model.setDiagonalizeStopToken(stopToken)
-  // The third owner of a progress stream, alongside FetchMixin and
-  // createStopTokenRotation: the diagonalize RPC emits at download granularity
-  // (~40/s) and every write repaints the reordering spinner, so it needs the
-  // same leading-edge window they use.
-  const throttle = createStatusThrottle()
   try {
     await run({
       stopToken,
-      statusCallback: s => {
-        if (isAlive(model)) {
-          throttle.run(() => {
-            model.setDiagonalizeStatus(s)
-          })
-        }
-      },
+      // The third owner of a progress stream, alongside FetchMixin and
+      // createStopTokenRotation: the diagonalize RPC emits at download
+      // granularity (~40/s) and every write repaints the reordering spinner, so
+      // it needs the same throttled window they use.
+      statusCallback: createGuardedStatusSink({
+        isCurrent: () => isAlive(model),
+        sink: status => {
+          model.setDiagonalizeStatus(status)
+        },
+      }),
     })
   } catch (e) {
     if (!isAbortException(e)) {
       console.error(e)
     }
   } finally {
+    // outside the isAlive guard, and unconditional: a run that *completed* owns
+    // a token nobody will ever stop otherwise, and an unstopped string token is
+    // a blob URL plus every AbortController taken against it, retained for the
+    // document's life
+    stopStopToken(stopToken)
     if (isAlive(model)) {
       model.setAwaitingAutoDiagonalize(false)
       model.setDiagonalizeStatus(undefined)

@@ -123,6 +123,11 @@ export default function DiagonalizeDialog({
         console.error(error)
         setState({ phase: 'failed', error })
       }
+    } finally {
+      // the Stop button covers only the cancelled run; a run that finished or
+      // failed owns a token nobody else will ever stop, and an unstopped string
+      // token retains a blob URL and every AbortController taken against it
+      stopStopToken(stopToken)
     }
   }
 

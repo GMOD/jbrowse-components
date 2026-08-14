@@ -257,6 +257,12 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         this.setRunning(false)
         this.setStatusMessage('')
         this.setJobName('')
+        // stop before dropping the reference: this runs after every job, and a
+        // job that *succeeded* was never stopped by `abortJob`, so dropping it
+        // here leaks the blob URL and any AbortControllers taken against it —
+        // one per indexing run, for the life of the window. Idempotent on the
+        // cancelled path, where abortJob already stopped it.
+        stopStopToken(self.stopToken)
         self.stopToken = undefined
         self.aborted = false
       },

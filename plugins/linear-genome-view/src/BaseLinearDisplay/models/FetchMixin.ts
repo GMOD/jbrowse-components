@@ -1,5 +1,6 @@
 import {
   aggregateStatus,
+  createGuardedStatusSink,
   createStatusThrottle,
   isAbortException,
   statusFraction,
@@ -8,12 +9,19 @@ import {
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
-import type { RpcStatus } from '@jbrowse/core/util'
+import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface FetchContext {
   stopToken: StopToken
   isStale: () => boolean
+  /**
+   * This display's RPC `statusCallback`, guarded and throttled — the same thing
+   * `makeStatusCallback()` returns, carried on the context so a helper that
+   * only ever receives a `ctx` (`byteGateBlocksFetch`, `fetchEachRegion`) can
+   * report progress without reaching back into the model for it.
+   */
+  statusCallback: StatusCallback
 }
 
 // Cancel-safe fetch lifecycle for any display that loads data over RPC.
@@ -222,6 +230,33 @@ export default function FetchMixin() {
           self.resetStatus()
         }
       },
+      /**
+       * #action
+       * An RPC `statusCallback` bound to this display: forwards progress to the
+       * shared `statusMessage`, guarded so a callback that fires after the node
+       * is torn down (RPCs resolve their status stream asynchronously) is a safe
+       * no-op, and throttled through the display-wide window. Pass directly as
+       * the `statusCallback` RPC arg instead of re-inlining the guard at every
+       * call site.
+       *
+       * Declared this early only so `runFetch` can put one on every
+       * `FetchContext`; its sibling `makeRegionStatusCallback` needs
+       * `setRegionStatus` and so stays below.
+       */
+      makeStatusCallback() {
+        return createGuardedStatusSink({
+          isCurrent: () => isAlive(self),
+          sink: status => {
+            self.setStatusMessage(status)
+          },
+          // the model-wide window, so N of these thin to one stream between them
+          throttle: {
+            run: apply => {
+              self.throttleStatus(apply)
+            },
+          },
+        })
+      },
     }))
     .actions(self => ({
       /**
@@ -321,7 +356,11 @@ export default function FetchMixin() {
           self.activeStopToken !== stopToken
 
         try {
-          yield work({ stopToken, isStale })
+          yield work({
+            stopToken,
+            isStale,
+            statusCallback: self.makeStatusCallback(),
+          })
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Fetch failed:', e)
@@ -345,23 +384,6 @@ export default function FetchMixin() {
       }),
     }))
     .views(self => ({
-      /**
-       * #method
-       * An RPC `statusCallback` bound to this display: forwards progress to the
-       * shared `statusMessage`, guarded by `isAlive` so a callback that fires
-       * after the node is torn down (RPCs resolve their status stream
-       * asynchronously) is a safe no-op. Pass directly as the `statusCallback`
-       * RPC arg instead of re-inlining the guard at every call site.
-       */
-      makeStatusCallback() {
-        return (status: RpcStatus) => {
-          if (isAlive(self)) {
-            self.throttleStatus(() => {
-              self.setStatusMessage(status)
-            })
-          }
-        }
-      },
       /**
        * #method
        * Per-region variant of `makeStatusCallback`: routes progress through

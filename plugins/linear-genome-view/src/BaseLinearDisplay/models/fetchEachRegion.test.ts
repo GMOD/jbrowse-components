@@ -44,7 +44,11 @@ test('commits every region and completes when nothing went stale', async () => {
   const committed: [number, string][] = []
   let completed = 0
   await fetchEachRegion(
-    selfWith({ stopToken: 'tok', isStale: () => false }),
+    selfWith({
+      stopToken: 'tok',
+      isStale: () => false,
+      statusCallback: () => {},
+    }),
     NEEDED,
     {
       call: region => Promise.resolve(region.refName),
@@ -65,7 +69,11 @@ test('a viewport that moved before any result lands commits nothing', async () =
   const committed: [number, string][] = []
   let completed = 0
   await fetchEachRegion(
-    selfWith({ stopToken: 'tok', isStale: () => true }),
+    selfWith({
+      stopToken: 'tok',
+      isStale: () => true,
+      statusCallback: () => {},
+    }),
     NEEDED,
     {
       call: region => Promise.resolve(region.refName),
@@ -90,7 +98,11 @@ test('a region that arrived before the move still commits; a later one does not'
   let completed = 0
   let stale = false
   await fetchEachRegion(
-    selfWith({ stopToken: 'tok', isStale: () => stale }),
+    selfWith({
+      stopToken: 'tok',
+      isStale: () => stale,
+      statusCallback: () => {},
+    }),
     NEEDED,
     {
       call: region => Promise.resolve(region.refName),
@@ -112,7 +124,11 @@ test('a region that arrived before the move still commits; a later one does not'
 // getting it from the enclosing scope instead is what makes parallel per-region
 // fetches clobber each other's progress instead of aggregating.
 test('call receives the region, the ctx and the displayed region index', async () => {
-  const ctx: FetchContext = { stopToken: 'tok', isStale: () => false }
+  const ctx: FetchContext = {
+    stopToken: 'tok',
+    isStale: () => false,
+    statusCallback: () => {},
+  }
   const seen: [string, boolean, number][] = []
   await fetchEachRegion(selfWith(ctx), NEEDED, {
     call: (region, callCtx, displayedRegionIndex) => {

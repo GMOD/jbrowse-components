@@ -64,6 +64,21 @@ export default abstract class BaseRpcDriver {
     const { statusCallback: _outOfBand, ...serializedArgs } =
       await rpcMethod.serializeArguments(args, this.name)
 
+    // Re-check, because serialization is the long await this method has: it
+    // resolves the refName map, which downloads the adapter's index and, for an
+    // in-memory adapter, the whole file. A stop landing in that window has
+    // nowhere to be seen — the entry check is already past, and the broadcast it
+    // fires reaches only *booted* workers, so on a driver's first call
+    // (`LazyWorker.workerP` still undefined until `transport` reaches
+    // `getWorker`) the notification is dropped on the floor and the worker never
+    // learns the token was stopped. It then grinds the fetch to completion.
+    // SharedArrayBuffer tokens are shared memory and see the stop regardless;
+    // this is the string-token path, i.e. any deployment that isn't
+    // cross-origin isolated.
+    if (isStopToken(args.stopToken)) {
+      checkStopToken(args.stopToken)
+    }
+
     const result = await this.transport(
       pluginManager,
       sessionId,

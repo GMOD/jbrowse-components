@@ -3,6 +3,7 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
+  updateStatus,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, getMembers, types } from '@jbrowse/mobx-state-tree'
@@ -15,6 +16,7 @@ import {
   resolveByteLimit,
 } from './regionTooLargeUtils.ts'
 
+import type { FetchContext } from '../BaseLinearDisplay/models/FetchMixin.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type { ByteEstimate, GateViewport } from './regionTooLargeUtils.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -826,7 +828,13 @@ export default function RegionTooLargeMixin() {
           end: number
           assemblyName: string
         }[],
-        ctx: { isStale: () => boolean },
+        // the whole FetchContext, not just its `isStale`: this measurement
+        // downloads index chunks on every viewport change for BAM/CRAM/tabix,
+        // so it is exactly as worth cancelling as the fetch it precedes — and
+        // it is the first thing the user waits on when a track opens wide, so
+        // it is worth naming on the status channel too. Narrowing the parameter
+        // to `isStale` left both on the floor at every call site.
+        ctx: FetchContext,
       ) {
         const viewport = self.gateViewport
         // `viewport` is `gateActive`'s own third term, restated only because
@@ -834,10 +842,20 @@ export default function RegionTooLargeMixin() {
         if (!self.measuresBytesPreFlight || !viewport || !self.gateActive) {
           return false
         }
-        const bytes = await getSession(self).rpcManager.call(
-          getRpcSessionId(self),
-          'CoreGetRegionByteEstimate',
-          { regions, adapterConfig: self.byteGateAdapterConfig },
+        const bytes = await updateStatus(
+          'Estimating size',
+          ctx.statusCallback,
+          () =>
+            getSession(self).rpcManager.call(
+              getRpcSessionId(self),
+              'CoreGetRegionByteEstimate',
+              {
+                regions,
+                adapterConfig: self.byteGateAdapterConfig,
+                stopToken: ctx.stopToken,
+                statusCallback: ctx.statusCallback,
+              },
+            ),
         )
         if (ctx.isStale()) {
           return true

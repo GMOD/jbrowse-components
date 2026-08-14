@@ -94,9 +94,13 @@ function makeSelf() {
       gateByteLimit: 1_000_000 as number | undefined,
       gateExempt: false,
       fetchRegions: (_needed: unknown, work: (ctx: FetchContext) => unknown) =>
-        Promise.resolve(work({ stopToken: 'tok', isStale: () => false })).then(
-          () => {},
-        ),
+        Promise.resolve(
+          work({
+            stopToken: 'tok',
+            isStale: () => false,
+            statusCallback: () => {},
+          }),
+        ).then(() => {}),
       makeRegionStatusCallback: (key: number) => {
         statusKeys.push(key)
         return () => {}

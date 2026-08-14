@@ -14,7 +14,7 @@ const NEEDED = [
 ]
 
 function makeCtx(): FetchContext {
-  return { stopToken: 'tok', isStale: () => false }
+  return { stopToken: 'tok', isStale: () => false, statusCallback: () => {} }
 }
 
 test('pairs each result with its displayedRegionIndex, in needed order', async () => {

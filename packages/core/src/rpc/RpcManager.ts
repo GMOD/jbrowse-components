@@ -119,23 +119,39 @@ export default class RpcManager {
     return this.getDriver(backendName)
   }
 
-  // `opts` has no caller in this repo — a per-call rpcDriverName travels inside
-  // `args` instead — but it stays part of the public API for external plugins.
+  // A per-call `rpcDriverName` travels inside `args`; `opts` stays part of the
+  // public API for external plugins, and several displays here use it to pass a
+  // `statusCallback`.
   async call<M extends string>(
     sessionId: string,
     functionName: M,
     args: RpcCallArgs<M>,
-    opts?: { rpcDriverName?: string } & Record<string, unknown>,
+    opts?: {
+      rpcDriverName?: string
+      statusCallback?: StatusCallback
+    } & Record<string, unknown>,
   ): Promise<RpcCallReturn<M>> {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
-    const a = { ...args, sessionId } as Record<string, unknown> & {
+    // statusCallback is accepted in either position and normalized to `args`
+    // here, which is the one place every driver reads it: `WorkerPoolRpcDriver`
+    // happened to also honor it out of `opts` (it spreads them over its own),
+    // and `MainThreadRpcDriver` ignores `opts` entirely — so a call passing it
+    // there had a working progress bar under a worker and a silent one under
+    // the main-thread driver every embedded component defaults to. Normalizing
+    // also puts it where `serializeArguments` can see it, which is what gets
+    // refName-map resolution reported (see BaseRpcDriver.call).
+    const { statusCallback, ...restOpts } = opts ?? {}
+    const a = { statusCallback, ...args, sessionId } as Record<
+      string,
+      unknown
+    > & {
       sessionId: string
       rpcDriverName?: string
       statusCallback?: StatusCallback
     }
-    const driverForCall = this.getDriverForCall(a, opts)
+    const driverForCall = this.getDriverForCall(a, restOpts)
     try {
       return (await this.withAuthRetry(() =>
         driverForCall.call(
@@ -143,7 +159,7 @@ export default class RpcManager {
           sessionId,
           functionName,
           a,
-          opts,
+          restOpts,
         ),
       )) as RpcCallReturn<M>
     } finally {

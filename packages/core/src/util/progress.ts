@@ -11,6 +11,13 @@ import type { StopToken, StopTokenChecker } from './stopToken.ts'
  * Indeterminate phase: set `label` on the status channel, run `fn`, then clear
  * it. Pass `stopToken` to check for cancellation before clearing (a no-op when
  * undefined). The determinate counterpart is {@link withProgress}.
+ *
+ * The clear is absolute — `''`, not "restore whatever was there" — so these do
+ * not nest: an inner phase blanks the label its caller set, for the rest of the
+ * caller's work. Run phases in sequence, or give the inner one no
+ * `statusCallback`. `cachedSetup` is the shape that keeps almost-tripping this,
+ * which is why the in-memory adapters that report from inside their load omit
+ * its `label`.
  */
 export async function updateStatus<U>(
   msg: string,
@@ -83,8 +90,19 @@ const STATUS_THROTTLE_MS = 100
  * fetches thin to one stream between them rather than N.
  *
  * Deliberately wraps only the *callback* path, never `setStatusMessage` itself
- * — a display writing a phase label by hand ("Downloading" → "Parsing") must
- * see every write land, and there is no trailing flush to recover a dropped one.
+ * — a display writing a phase label by hand ("Downloading" → "Parsing") is a
+ * sequence of distinct labels, and a trailing edge only guarantees the *last*
+ * of a burst, not each one in turn.
+ *
+ * Trailing, not merely leading: the last write of a phase is the one that
+ * matters most and is exactly the one a leading-edge-only gate drops. A
+ * determinate bar otherwise froze at whatever percentage happened to land on a
+ * window boundary, and the `''` that {@link updateStatus}/{@link withProgress}
+ * clear with — always the write closing a dense burst — left a finished phase's
+ * label on screen until something else wrote. A trailing fire can land after
+ * its own operation is torn down, so the guard on a sink has to be re-read
+ * inside the throttled body; {@link createGuardedStatusSink} is that shape and
+ * is what every owner should use rather than calling `run` directly.
  *
  * Both fetch families own one: `FetchMixin` for the LGV displays, and
  * `createStopTokenRotation` for the bare-autorun fetches (dotplot, synteny)
@@ -94,18 +112,86 @@ const STATUS_THROTTLE_MS = 100
  */
 export function createStatusThrottle() {
   let lastMs = 0
+  let pending: (() => void) | undefined
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const clearPending = () => {
+    if (timer !== undefined) {
+      clearTimeout(timer)
+      timer = undefined
+    }
+    pending = undefined
+  }
   return {
     run(apply: () => void) {
       const now = Date.now()
-      if (now - lastMs >= STATUS_THROTTLE_MS) {
+      const wait = STATUS_THROTTLE_MS - (now - lastMs)
+      if (wait <= 0) {
+        // a write passing on the leading edge supersedes anything queued behind
+        // it, so the trailing timer has nothing left to deliver
+        clearPending()
         lastMs = now
         apply()
+      } else {
+        // only the newest write of a burst survives — an older progress value
+        // is never what the user wants to be looking at
+        pending = apply
+        timer ??= setTimeout(() => {
+          timer = undefined
+          const run = pending
+          pending = undefined
+          if (run) {
+            lastMs = Date.now()
+            run()
+          }
+        }, wait)
       }
     },
-    /** reopen the window, so the next fetch reports its first status at once */
+    /**
+     * Reopen the window, so the next fetch reports its first status at once, and
+     * drop any queued trailing write — a reset accompanies clearing the status,
+     * which a late write from the fetch being reset would undo.
+     */
     reset() {
+      clearPending()
       lastMs = 0
     },
+  }
+}
+
+/**
+ * The status sink every owner of a progress stream wants: `sink` is called with
+ * each status, throttled to {@link createStatusThrottle}'s window and skipped
+ * entirely once `isCurrent()` goes false — a superseded fetch, or a torn-down
+ * model.
+ *
+ * `isCurrent` is read twice on purpose. Once before the throttle, so a
+ * superseded fetch's late status can't consume the window a live one is waiting
+ * on; once inside, because a trailing write fires on a timer and the operation
+ * it belongs to can be gone by then. That second read is the load-bearing one —
+ * without it a trailing status lands on a destroyed MST node.
+ *
+ * `throttle` defaults to a fresh window. Pass one to share it across an owner's
+ * several callbacks, which is what makes N concurrent per-region fetches thin to
+ * one stream between them rather than N (`FetchMixin` passes its model-wide one
+ * through `throttleStatus`).
+ */
+export function createGuardedStatusSink({
+  isCurrent,
+  sink,
+  throttle = createStatusThrottle(),
+}: {
+  isCurrent: () => boolean
+  sink: (status: RpcStatus) => void
+  throttle?: { run: (apply: () => void) => void }
+}): StatusCallback {
+  return status => {
+    if (isCurrent()) {
+      throttle.run(() => {
+        if (isCurrent()) {
+          sink(status)
+        }
+      })
+    }
   }
 }
 
@@ -190,6 +276,11 @@ export async function downloadStatus<T>(
  * message is borrowed from a determinate status when any is present (regions
  * downloading at once share the same phase label), else the first status.
  * Returns undefined when nothing is in flight.
+ *
+ * An operation reporting no total is still an operation in flight, so it is
+ * charged the mean of the totals we do know, with nothing completed against it.
+ * Dropping those outright is what let a fan-out where one region's response
+ * carried no Content-Length read 100% with that region still downloading.
  */
 export function aggregateStatus(
   statuses: (RpcStatus | undefined)[],
@@ -200,11 +291,13 @@ export function aggregateStatus(
   )
   if (determinate.length > 0) {
     let current = 0
-    let total = 0
+    let measured = 0
     for (const s of determinate) {
       current += s.current
-      total += s.total
+      measured += s.total
     }
+    const indeterminate = present.length - determinate.length
+    const total = measured + (indeterminate * measured) / determinate.length
     const [first] = determinate
     return { message: first ? first.message : '', current, total }
   } else {

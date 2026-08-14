@@ -1,4 +1,5 @@
 import {
+  createGuardedStatusSink,
   getContainingView,
   getSession,
   locStringsToRegions,
@@ -101,11 +102,13 @@ export function setupRunClusteringAutorun(
             sessionId: getRpcSessionId(self),
             regions,
             stopToken,
-            statusCallback: status => {
-              if (applying) {
-                report(status)
-              }
-            },
+            // `report` is already alive-guarded and throttled by FetchMixin;
+            // what this adds is the run's own `applying` guard, so a status
+            // arriving after the run settles can't repaint the chip
+            statusCallback: createGuardedStatusSink({
+              isCurrent: () => applying,
+              sink: report,
+            }),
           })
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {

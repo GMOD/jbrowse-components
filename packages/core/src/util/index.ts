@@ -125,6 +125,7 @@ export {
   type StatusCallback,
   type StatusWithProgress,
   aggregateStatus,
+  createGuardedStatusSink,
   createProgressReporter,
   createStatusFanOut,
   createStatusThrottle,

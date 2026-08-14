@@ -385,12 +385,23 @@ describe('aggregateStatus', () => {
     expect(statusFraction(agg)).toBeCloseTo(0.2)
   })
 
-  it('ignores indeterminate (string) statuses when any region is determinate', () => {
+  it('charges an indeterminate status the mean of the known totals', () => {
+    // the string status is a region still downloading with no Content-Length;
+    // dropping it read as 50/100 — a half-full bar for a fetch that is really
+    // only a quarter done, and 100% once that one region finished
     const agg = aggregateStatus([
       'Processing',
       { message: 'Downloading', current: 50, total: 100 },
     ])
-    expect(agg).toEqual({ message: 'Downloading', current: 50, total: 100 })
+    expect(agg).toEqual({ message: 'Downloading', current: 50, total: 200 })
+  })
+
+  it('cannot read complete while an indeterminate operation is in flight', () => {
+    const agg = aggregateStatus([
+      'Processing',
+      { message: 'Downloading', current: 100, total: 100 },
+    ])
+    expect(statusFraction(agg)).toBeCloseTo(0.5)
   })
 
   it('falls back to the first message when all are indeterminate', () => {

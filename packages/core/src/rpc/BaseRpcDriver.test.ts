@@ -105,6 +105,29 @@ describe('BaseRpcDriver.call envelope', () => {
     expect(driver.transportCalls).toHaveLength(0)
   })
 
+  test('refuses to dispatch when the stop lands during serialization', async () => {
+    const driver = new CapturingDriver()
+    const stopToken = createStopToken()
+    // serializeArguments is where the refName map is resolved, so it is the one
+    // long await in call(); a stop arriving here used to wake a worker anyway
+    const slowMethod = {
+      ...rpcMethod,
+      serializeArguments: async (args: Record<string, unknown>) => {
+        stopStopToken(stopToken)
+        return { ...args, serialized: true }
+      },
+    }
+    await expect(
+      driver.call(
+        { getRpcMethodType: () => slowMethod } as unknown as PluginManager,
+        'sid',
+        'SomeMethod',
+        { sessionId: 'sid', stopToken },
+      ),
+    ).rejects.toThrow('aborted')
+    expect(driver.transportCalls).toHaveLength(0)
+  })
+
   test('dispatches normally for a live stop token', async () => {
     const driver = new CapturingDriver()
     await driver.call(pluginManager, 'sid', 'SomeMethod', {

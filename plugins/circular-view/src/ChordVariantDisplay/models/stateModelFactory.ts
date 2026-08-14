@@ -4,13 +4,13 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
+  createStopTokenRotation,
   getContainingView,
   getEnv,
   getSession,
   isAbortException,
   isFeature,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   getRpcSessionId,
   getTrackAssemblyNames,
@@ -25,7 +25,6 @@ import type {
 import type { Slice } from '../../CircularView/slices.ts'
 import type { ChordVariantDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ThemeOptions } from '@mui/material'
 
 const ErrorMessageStackTraceDialog = lazy(
@@ -220,10 +219,18 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       }
     })
     .actions(self => {
-      let currentStopToken: StopToken | undefined
+      // the shared latest-wins rotation rather than a hand-rolled pair of
+      // locals: it also owns the disposer that stops the *last* token, which a
+      // rotation written by hand always misses — every fetch but the final one
+      // is released by its successor, and that one is left holding a blob URL
+      // and its AbortControllers for the life of the document
+      const rotation = createStopTokenRotation(self)
 
       return {
         afterAttach() {
+          addDisposer(self, () => {
+            rotation.dispose()
+          })
           addDisposer(
             self,
             autorun(
@@ -251,13 +258,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
                 const adapter = getConf(self.parentTrack, 'adapter')
                 const { rpcManager, assemblyManager } = getSession(self)
 
-                if (currentStopToken) {
-                  stopStopToken(currentStopToken)
-                }
-                const stopToken = createStopToken()
-                currentStopToken = stopToken
-                const current = () =>
-                  isAlive(self) && currentStopToken === stopToken
+                const { stopToken, isCurrent, statusCallback } =
+                  rotation.begin()
 
                 // the old map named the old assembly's refs; keeping it while
                 // the new one loads would let `ready` wave through a render
@@ -267,23 +269,28 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
 
                 try {
                   const [feats, refNameMap] = await Promise.all([
-                    rpcManager.call(sessionId, 'CoreGetFeatures', {
-                      adapterConfig,
-                      regions,
-                      stopToken,
-                    }),
+                    rpcManager.call(
+                      sessionId,
+                      'CoreGetFeatures',
+                      {
+                        adapterConfig,
+                        regions,
+                        stopToken,
+                      },
+                      { statusCallback },
+                    ),
                     assemblyManager.getRefNameMapForAdapter(
                       adapter,
                       assemblyNames[0],
-                      { stopToken, sessionId },
+                      { stopToken, sessionId, statusCallback },
                     ),
                   ])
-                  if (current()) {
+                  if (isCurrent()) {
                     self.setRefNameMap(refNameMap)
                     self.setFeatures(feats)
                   }
                 } catch (e) {
-                  if (!isAbortException(e) && current()) {
+                  if (!isAbortException(e) && isCurrent()) {
                     console.error(e)
                     self.setError(e)
                   }

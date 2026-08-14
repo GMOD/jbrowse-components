@@ -53,6 +53,13 @@ export default class RpcClient {
       if (idx !== -1) {
         listeners.splice(idx, 1)
       }
+      // drop the emptied key, not just the listener: every RPC call mints its
+      // own `message-<nanoid>` status channel (WebWorkerHandle.call), so a
+      // retained empty array is one dead Map entry per call for the life of the
+      // page — six figures of them in a long session
+      if (listeners.length === 0) {
+        this.events.delete(event)
+      }
     }
     return this
   }
