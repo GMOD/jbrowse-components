@@ -149,12 +149,14 @@ through the alignment's CIGAR and sends the panel below it there, again every
 time you pan. Right-click on a chain block offers **Move other panel to the
 matching region**, which does the same walk once.
 
+<Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks on each haplotype's own coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
+
 To check the alignment inside a ribbon rather than at its edges, turn on **View
 options → Show... → Show location markers**. It draws lines through the ribbon
 at regularly spaced positions, each joining a point on the top row to the point
 it maps to on the bottom.
 
-<Figure caption="Four numbered frames, read left to right. Each holds a maternal panel over a paternal one, both carrying the Q100 chain blocks on their own haplotype's coordinates: the follow button that moves one panel onto the sequence the other matches, then the location markers drawn through the ribbon." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="The same pair of panels with location markers on, and the menu path that turned them on still open over it." src="/img/hg002_haplotypes_location_markers.png" />
 
 ## See also
 

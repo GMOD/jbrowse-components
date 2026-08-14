@@ -169,13 +169,6 @@ The colours are the file's own, and gnomAD uses them for the same consequence
 class `annot` names, so the loss-of-function filter leaves a track drawn in one
 colour.
 
-<Figure src="/img/genomes_basics/gnomad_filters.png" caption="The TP53 transcript with phyloP and gnomAD exomes, each frame labelled with the expression the track is filtered by: every record, then the common variants, then the ones gnomAD calls predicted loss of function." />
-
-Unfiltered, gnomAD is densest where phyloP peaks, since that is what an exome
-captures. Filtered to the common variants, few remain in coding sequence and the
-rest are intronic or in the 3' UTR. Filtered to predicted loss of function, the
-track fills the coding exons again.
-
 A BigBed's extra fields arrive as fields, so whatever columns the published file
 carries are what there is to filter and colour on, and the same dialog takes
 them for any track. ClinVar's clinical classification is `feature.clinSign`, so

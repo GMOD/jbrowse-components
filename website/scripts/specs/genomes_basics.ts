@@ -7,7 +7,7 @@ import {
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
-import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // Figures for the genomes_basics tutorial: the click path from the
 // genomes.jbrowse.org front page to a track drawn over TP53, and then a walk
@@ -112,19 +112,6 @@ const PHYLOP_TRACK = { trackId: 'hg38-phyloP100way' }
 // and the exome callset is both denser there and a fraction of the bytes.
 const GNOMAD_TRACK_ID = 'hg38-gnomadExomesVariantsV4_1'
 
-// Common enough to be standing in the population, at 0.1%. `AF` is a string
-// column in the file's autoSql, and no cast is needed: jexl's `>=` is JS's, so
-// "0.00025" >= 0.001 coerces and is false. A unary `+` does not parse in jexl,
-// which is the tempting way to write the cast that isn't needed.
-const GNOMAD_COMMON_FILTER = 'jexl:feature.AF >= 0.001'
-
-// No colour callback belongs in this figure: neither half of one is reachable
-// by clicking. "Color by... → Attribute..." writes
-// `jexl:randomColor(get(feature,'attr'))` (featureColors.ts), which is
-// hash-derived colours and no key, and `legend` is a config slot with no menu
-// item. The frames draw in the track's own itemRgb, which is gnomAD's
-// consequence colouring.
-
 // Histone marks over the ENCODE3 seven-cell-line panel (GM12878, H1-hESC,
 // HSMM, HUVEC, K562, NHEK, NHLF), one row per cell line.
 //
@@ -160,46 +147,6 @@ const PLOT_TYPE_PATH = ['Plot type', 'Multi-row', 'XY plot']
 // gnomAD's own consequence class for the variant: pLoF, missense, synonymous
 // or other. pLoF is the high-impact end, 93 of the 4,695 records over TP53.
 const GNOMAD_PLOF_FILTER = "jexl:feature.annot == 'pLoF'"
-
-// One frame of the gnomAD figure: the same three tracks every time, with only
-// the gnomAD entry's extra keys changing. Written as a builder so the three
-// frames cannot drift in the two tracks the comparison is read against.
-function gnomadFrame(gnomad: object = {}) {
-  return sessionSpec(UCSC_HG38_CONFIG, {
-    views: [
-      {
-        type: 'LinearGenomeView',
-        assembly: 'hg38',
-        loc: TP53_TRANSCRIPT_WINDOW,
-        tracks: [
-          { ...GENE_TRACK_COLLAPSED, height: 60 },
-          { ...PHYLOP_TRACK, height: 90 },
-          { trackId: GNOMAD_TRACK_ID, height: 130, ...gnomad },
-        ],
-      },
-    ],
-  })
-}
-
-// The expression a frame of that figure was drawn under, as a pill under the
-// gnomAD track. Anchored to the track's own band at `fracY: 1`, so it sits in
-// the strip below the last row however tall the track is set and whatever the
-// filter leaves painted.
-function filterCallout(text: string): Annotation {
-  return {
-    type: 'text',
-    text,
-    fontSize: 18,
-    anchor: {
-      track: GNOMAD_TRACK_ID,
-      fracY: 1,
-      alignX: 'left',
-    },
-    textAlign: 'start',
-    dx: 34,
-    dy: 30,
-  }
-}
 
 // Collapsed to the longest coding transcript, which the page reaches through the
 // isoform control at the bottom right of the gene track: one click, on a chip
@@ -753,12 +700,19 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The population reading, at the transcript rather than the exon. Three
-  // frames of one window, each a filter the reader types into "Filter by...",
-  // and the track gets sparser and more specific down the stack.
+  // genomes_basics/gnomad_filters was here and is DELETED (review: "i might
+  // suggest deleting this figure. its just almost too detailed. we have the one
+  // filter screenshot"). It was three stacked frames of one window at three
+  // filters, and the second time it came back as too much: the three differ in
+  // one lane and repeat the whole app frame around it, which is 3000x3600 of
+  // PNG for a difference that lives in a sixth of each.
   //
-  // Measured 2026-08-13 over this window against exomes.bb, with NM_000546.6's
-  // coding exons from api.genome.ucsc.edu:
+  // gnomad_filter_menu above is the one that stays, and it is the one the
+  // section is actually about -- where the dialog is and what goes in it. The
+  // measurements that figure carried are kept here rather than deleted with it,
+  // because they are what a replacement would have to be built against
+  // (2026-08-13, over TP53_TRANSCRIPT_WINDOW against exomes.bb, with
+  // NM_000546.6's coding exons from api.genome.ucsc.edu):
   //
   //   coding bases                1,182 of 9,200 in the window   (12.8%)
   //   gnomAD, any AF              3,045 records, 685 coding      (22.5%)
@@ -767,54 +721,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   //
   // So the raw callset is enriched on coding sequence because that is what an
   // exome captures, and the common half of it is depleted there about
-  // three-fold against the base composition of the window. None of those
-  // numbers is in the prose; the frames carry it.
-  //
-  // Frame 3 is the other axis a reader would filter on: `annot` is gnomAD's own
-  // consequence class, and pLoF is the high-impact end of it. 93 records, all
-  // in coding sequence by construction, and nearly all of them singletons --
-  // the opposite population to frame 2, from the same file.
-  //
-  // Every frame draws in the track's own itemRgb, which is gnomAD's consequence
-  // colouring (pLoF red, missense yellow, synonymous green, other grey), so the
-  // pLoF frame comes out red without anything being set to make it. The note
-  // over GNOMAD_COMMON_FILTER has why no colour callback belongs here.
-  //
-  // ClinVar is deliberately NOT in this figure. It was, and three dense variant
-  // tracks over one gene read as noise; the exon figure above is where ClinVar
-  // is legible.
-  //
-  // Each frame carries the expression that made it, as a callout on the track
-  // it was typed into. Three frames of one window differing only in which
-  // records survive is exactly the figure a caption cannot index: "top, middle,
-  // bottom" is a mapping the reader has to hold, and the filter is the one thing
-  // in the frame that is not drawn anywhere. Under the track rather than over
-  // it, since the whole point of each frame is what is left painted.
-  //
-  // `jexlFiltersSetting` is the model prop the "Filter by..." dialog writes.
-  {
-    mode: 'url',
-    name: 'genomes_basics/gnomad_filters',
-    url: gnomadFrame(),
-    readyText: 'TP53',
-    readyTimeout: 180000,
-    settleMs: 10000,
-    viewportHeight: 600,
-    diffThreshold: 0.02,
-    stages: [
-      { actions: [PARK_CURSOR], annotations: [filterCallout('no filter')] },
-      {
-        url: gnomadFrame({ jexlFiltersSetting: [GNOMAD_COMMON_FILTER] }),
-        actions: [PARK_CURSOR],
-        annotations: [filterCallout(GNOMAD_COMMON_FILTER)],
-      },
-      {
-        url: gnomadFrame({ jexlFiltersSetting: [GNOMAD_PLOF_FILTER] }),
-        actions: [PARK_CURSOR],
-        annotations: [filterCallout(GNOMAD_PLOF_FILTER)],
-      },
-    ],
-  },
+  // three-fold against the base composition of the window.
+
   // "About track" on the phyloP track, for the section about what a checkbox
   // actually downloads: the dialog prints the adapter, so the hgdownload URL the
   // config points at is on screen rather than asserted in a paragraph.

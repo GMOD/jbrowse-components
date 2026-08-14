@@ -647,84 +647,73 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           },
         ],
       },
-      // THE OTHER HALF OF "AM I LOOKING AT THE SAME PLACE" (review: "add a
-      // screenshot showing the guidelines ... with screenshot showing how to
-      // enable them"). Location markers draw a line THROUGH the ribbon at
-      // regularly spaced positions, joining a point on the top panel to the
-      // point it maps to on the bottom, so a reader can read the
-      // correspondence off the band instead of taking the whole band on trust.
-      // They draw as lines spanning the ribbon, not as ticks on a lane, and the
-      // frame title says so. They are OFF by default, which is why
-      // there is an enable frame to show at all -- unlike the LGV hamburger's
-      // "Show guidelines", which is already on and would give a stage where
-      // nothing changes.
-      //
-      // The menu is the synteny view's own "View options" (aria-label, and the
-      // one handle that does not depend on which panel is which), then the
-      // "Show..." submenu. Both levels are boxed, because the item's own name
-      // is not enough to find it -- it is two clicks down from a MoreVert.
+    ],
+  },
+
+  // The markers, in ONE frame with the menu that turned them on still open
+  // (review: "ideally just show fig 4 with the menu from fig 3 open"). They were
+  // frames 3 and 4 of the four-up above -- a menu, then a ribbon -- and a
+  // checkbox row keeps CascadingMenu open, so the state right after the click IS
+  // both frames at once: the path is on screen, ticked, and what it drew is
+  // under it.
+  //
+  // The menu opens from the view's own "View options" at the top RIGHT and the
+  // markers are drawn across the ribbon, so unlike the submenu in the old frame
+  // 3 the two do not fight for the same pixels.
+  //
+  // It FOLLOWS FIRST, and that is not optional: markers pair a point on one
+  // panel with the point it maps to on the other, which says nothing while the
+  // two panels are still on the drifted windows the session opens at. So this
+  // frame is the state the figure above ends in, plus the markers.
+  {
+    ...CAPTURE,
+    name: 'hg002_haplotypes_location_markers',
+    url: haplotypeSession(
+      DRIFT_WINDOW_MAT,
+      DRIFT_WINDOW_PAT_BEFORE,
+      [CHAIN_BLOCKS],
+      [CHAIN_BLOCKS],
+    ),
+    // the same height as the figure above, whose end state this continues from
+    viewportHeight: 445,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', selector: '[data-testid="follow-synteny-toggle"]' },
+      // the follow's exact pass is an RPC per level off the anchor's SETTLED
+      // window, so this waits on a worker round trip and then on the moved
+      // panel refetching at its new window
+      { type: 'delay', ms: 10000 },
+      { type: 'click', selector: '[aria-label="View options"]' },
+      { type: 'waitForText', text: 'Show...' },
+      { type: 'hover', text: 'Show...' },
+      { type: 'waitForText', text: 'Show location markers' },
+      { type: 'click', text: 'Show location markers' },
+      // the markers come back through the synteny RPC rather than from a repaint
+      // of what is already on the GPU, so this waits on a refetch
+      { type: 'delay', ms: 5000 },
+    ],
+    annotations: [
       {
-        actions: [
-          { type: 'click', selector: '[aria-label="View options"]' },
-          { type: 'waitForText', text: 'Show...' },
-          { type: 'hover', text: 'Show...' },
-          { type: 'waitForText', text: 'Show location markers' },
-          { type: 'delay', ms: 500 },
-        ],
-        annotations: [
-          {
-            type: 'text',
-            anchor: {
-              selector: '[data-testid="app-bar"]',
-              alignX: 'left',
-              alignY: 'top',
-              dx: 24,
-              dy: 30,
-            },
-            fontSize: 22,
-            text: '(3) Turn on location markers from the view options menu',
-          },
-          {
-            type: 'circle',
-            anchor: { selector: '[aria-label="View options"]' },
-          },
-          { type: 'box', anchor: { text: 'Show...' }, strokeWidth: 3 },
-          {
-            type: 'box',
-            anchor: { text: 'Show location markers' },
-            strokeWidth: 3,
-          },
-        ],
+        type: 'text',
+        anchor: {
+          selector: '[data-testid="app-bar"]',
+          alignX: 'left',
+          alignY: 'top',
+          dx: 24,
+          dy: 30,
+        },
+        maxWidth: 640,
+        fontSize: 22,
+        text: 'Location markers pair a point on one panel with the point it maps to on the other',
       },
+      // Both levels are boxed, because the item's own name is not enough to find
+      // it -- it is two clicks down from a MoreVert.
+      { type: 'circle', anchor: { selector: '[aria-label="View options"]' } },
+      { type: 'box', anchor: { text: 'Show...' }, strokeWidth: 3 },
       {
-        actions: [
-          { type: 'click', text: 'Show location markers' },
-          // a checkbox row keeps CascadingMenu open, so dismiss BOTH levels --
-          // the submenu sits over the ribbon this frame is about. The hidden
-          // waits fail the spec rather than baking an open menu into the figure.
-          { type: 'press', key: 'Escape' },
-          { type: 'press', key: 'Escape' },
-          { type: 'waitForText', text: 'Show location markers', hidden: true },
-          { type: 'waitForText', text: 'Show...', hidden: true },
-          // the markers come back through the synteny RPC, not from a repaint
-          // of what is already on the GPU, so this waits on a refetch
-          { type: 'delay', ms: 4000 },
-        ],
-        closeMenusAfter: true,
-        annotations: [
-          {
-            type: 'text',
-            anchor: {
-              selector: '[data-testid="app-bar"]',
-              alignX: 'left',
-              alignY: 'top',
-              dx: 24,
-              dy: 30,
-            },
-            fontSize: 22,
-            text: '(4) The lines through the ribbon pair up positions across the two panels',
-          },
-        ],
+        type: 'box',
+        anchor: { text: 'Show location markers' },
+        strokeWidth: 3,
       },
     ],
   },
