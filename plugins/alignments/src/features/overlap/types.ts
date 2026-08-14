@@ -1,7 +1,9 @@
-// Main-thread payload for chain-mode read overlaps: genomic intervals where two
-// reads in the same chain (and thus the same row) overlap. Drawn as a mild
-// semi-transparent dark tint. Owned by the overlap feature. Computed in
-// computeChainLayout.
+// Main-thread payload for read overlaps: genomic intervals where two features
+// that share a row both align. Owned by the overlap feature; computed in
+// computeChainLayout (two segments of one molecule, merged) or collapsedLayout
+// (unrelated reads, deliberately not merged so the mark can stack). What each
+// form is DRAWN as is overlap.slang's branch, and the difference is the reason
+// the merge differs.
 export interface OverlapsUploadData {
   overlapPositions: Uint32Array // [start, end] absolute genomic uint32 pairs
   overlapYs: Uint16Array // shared chain row for each overlap

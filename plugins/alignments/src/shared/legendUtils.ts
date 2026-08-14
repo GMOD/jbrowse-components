@@ -13,6 +13,7 @@ import {
   categorySwatchColor,
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import { OVERLAP_ALPHA } from '../shaders/slang/overlap.iface.generated.ts'
 import { isModificationScheme } from './colorSchemes.ts'
 import { getModificationName } from './modificationData.ts'
 import {
@@ -472,6 +473,58 @@ function bucketItems(
   )
 }
 
+/**
+ * The overlap mark's row. Two layouts draw this mark and they mean different
+ * things by it, so the row differs in the one way a legend row can: chain mode
+ * is a COLOR and collapsed rows are a MODIFIER.
+ *
+ * **Chain (view-as-pairs / linked supplementary): one swatch, the color
+ * itself.** Two segments of one molecule cover that span, so no read color is
+ * the honest answer there and `overlap.slang` fills it with a theme neutral
+ * that is no category (`colorOverlap`). That is nameable the way every other
+ * row is, and the swatch is read from the same palette entry the pass paints
+ * from — the failure this replaces is a swatch DERIVED from the ink instead of
+ * shared with it, which showed the LR grey darkened by `OVERLAP_ALPHA` however
+ * the pass was actually painting, and so was a lie in the two directions at
+ * once: it named a color the pass didn't paint, and under any scheme but pair
+ * orientation it named a pair of colors nothing on screen carried.
+ *
+ * **Collapsed group rows: two swatches, "this but darker".** There the mark IS
+ * a modifier — unrelated reads deliberately share a row, spans are not merged
+ * (`collapsedLayout`, and the `mergeSpans` note in the display's CLAUDE.md), so
+ * the tint stacks and the darkness is the depth. There is no single swatch to
+ * list, because the tint lands on whatever the reads underneath already carry:
+ * under an insert-size scheme it darkens five different colors. The neutral
+ * read color and that same color tinted is the only honest form, and
+ * `LegendItem.swatches` exists for exactly this — one meaning drawn twice.
+ *
+ * **Composited to an opaque color, not shipped as `rgba(0,0,0,0.4)`.**
+ * `LegendSwatchGlyph` emits one `fill` for both the on-screen box and the SVG
+ * export, and an alpha fill is not honored by every consumer an exported figure
+ * reaches. `OVERLAP_ALPHA` is the shader's own constant (adr-051), so the
+ * composite cannot drift from the ink it describes.
+ */
+export function getOverlapLegendItem(
+  palette: ColorPalette,
+  collapsed: boolean,
+): LegendItem {
+  if (!collapsed) {
+    return {
+      color: rgb255(palette.colorOverlap),
+      label: 'Pair/chain reads overlap here',
+    }
+  }
+  const [r, g, b] = palette.colorPairLR
+  const k = 1 - OVERLAP_ALPHA
+  return {
+    swatches: [
+      { color: rgb255(palette.colorPairLR) },
+      { color: rgb255([r * k, g * k, b * k]) },
+    ],
+    label: 'Overlapping reads (darker = more)',
+  }
+}
+
 // …and the mark those colors are drawn AS, which is the other half of the same
 // point. Once the overlay's colors are folded into the read key (the usual case
 // — see `getAlignmentsLegendSections`), a square is the only thing left saying
@@ -674,12 +727,18 @@ export function getReadDisplayLegendItems({
   colorTagMap = {},
   presentTagValues,
   chainFramed = false,
+  overlaps,
 }: {
   colorBy: ColorBy | undefined
   presentCategories: ReadonlySet<ReadColorCategory>
   palette: ColorPalette
   detectedModifications?: ReadonlyMap<string, string>
   colorTagMap?: Record<string, string>
+  // Which overlap tint is on screen, or undefined for none — the display's
+  // `overlapLegendKind`, which is the draw gate and a real overlap interval,
+  // not just the layout. Last in the list because it modifies the colors above
+  // it rather than adding one.
+  overlaps?: 'chain' | 'collapsed'
   // Whether the unpaired chain-strand framing is live — `framesUnpairedChainStrand`
   // in the display, which is the same predicate that gates the consensus pass.
   // Only the `strand` scheme's wording turns on it; every other scheme already
@@ -713,5 +772,8 @@ export function getReadDisplayLegendItems({
       palette,
       readCategoryLabelOverrides(colorBy, chainFramed),
     ),
+    ...(overlaps === undefined
+      ? []
+      : [getOverlapLegendItem(palette, overlaps === 'collapsed')]),
   ]
 }

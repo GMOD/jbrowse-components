@@ -63,6 +63,7 @@ export function makeTestPalette(
     colorUnmappedMate: z,
     colorInterchrom: z,
     colorFlatConnector: z,
+    colorOverlap: z,
     ...overrides,
   }
 }

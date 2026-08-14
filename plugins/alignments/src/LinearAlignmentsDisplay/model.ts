@@ -127,6 +127,7 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
+import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
 import {
   belowCoverageBandsGeometry,
   buildSectionRenders,
@@ -1426,10 +1427,52 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         * Which overlap mark the reader is looking at, for the legend row that
+         * names it — undefined when there is none to name. The two layouts that
+         * put more than one feature on a row are drawn differently and the row
+         * differs with them: chain mode fills the span with a neutral that is no
+         * read category, collapsed rows tint what is underneath (overlap.slang).
+         *
+         * Two conditions, and the second is the one the other swatches already
+         * apply to themselves. The pass has to be DRAWING (`shouldDrawOverlaps`,
+         * shared with both renderers rather than restated here, so a legend row
+         * can't outlive the ink), and some region has to hold an actual
+         * interval. Without the second, a paired track in chain mode whose mates
+         * happen not to overlap anywhere in view gets a row explaining a mark
+         * that isn't on screen — the same failure `presentCategories` and
+         * `presentTagValues` exist to prevent, and it would be the common case
+         * on long-insert libraries.
+         *
+         * O(regions), not O(reads): the layout already reduced each region's
+         * overlaps to one array, so this reads a length per region.
+         */
+        get overlapLegendKind(): 'chain' | 'collapsed' | undefined {
+          if (
+            !shouldDrawOverlaps({
+              chainMode: self.isChainMode,
+              collapseGroupRows: this.collapseGroupRows,
+              featureHeight: this.featureHeight,
+            })
+          ) {
+            return undefined
+          }
+          for (const map of this.laidOutByGroup.values()) {
+            for (const { overlapPositions } of map.values()) {
+              if (overlapPositions.length > 0) {
+                return self.isChainMode ? 'chain' : 'collapsed'
+              }
+            }
+          }
+          return undefined
+        },
+
+        /**
          * #method
          */
         legendItems() {
           return getReadDisplayLegendItems({
+            overlaps: this.overlapLegendKind,
             colorBy: this.colorBy,
             presentCategories: this.arcColorsMatchReads
               ? new Set([

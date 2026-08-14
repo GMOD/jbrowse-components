@@ -41,6 +41,7 @@ is optional in a config theme; anything you don't set keeps its preset value.
 | `skip` | `string` | Skipped regions, such as introns in RNA-seq reads |
 | `hardclip` | `string` | Hard-clipped bases (clipped bases removed from the read) |
 | `deletion` | `string` | Deletion markers in alignments |
+| `readOverlap` | `string` | Span where two segments of one molecule both align (view-as-pairs / chains) |
 | `modificationFwd` | `string` | Base modifications on the forward strand |
 | `modificationRev` | `string` | Base modifications on the reverse strand |
 | `mutedSnpBase` | `string` | SNP bases muted when show-modifications coloring is on |

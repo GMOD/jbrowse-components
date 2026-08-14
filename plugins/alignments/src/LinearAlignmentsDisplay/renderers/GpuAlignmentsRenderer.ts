@@ -284,6 +284,7 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorInterchrom: 'colorInterchrom',
   colorMutedSnpBase: 'colorMutedSnpBase',
   colorFlatConnector: 'colorFlatConnector',
+  colorOverlap: 'colorOverlap',
 } satisfies Record<string, keyof ColorPalette>
 
 // Pack every palette color into the UBO. Pure — writes through the given views

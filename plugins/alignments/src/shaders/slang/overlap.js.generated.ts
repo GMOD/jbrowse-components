@@ -11,6 +11,10 @@ function _smoothstep(e0: number, e1: number, x: number) {
   return t * t * (3 - 2 * t)
 }
 
+export function overlapFade(pxWidth: number): number {
+  return _smoothstep(1.5, 12.0, pxWidth)
+}
+
 export function overlapAlpha(pxWidth: number): number {
-  return (0.40000000596046448 * _smoothstep(1.5, 12.0, pxWidth))
+  return (0.40000000596046448 * overlapFade(pxWidth))
 }

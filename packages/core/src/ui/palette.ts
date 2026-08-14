@@ -490,6 +490,8 @@ export interface StringColors {
   hardclip: string
   /** Deletion markers in alignments */
   deletion: string
+  /** Span where two segments of one molecule both align (view-as-pairs / chains) */
+  readOverlap: string
   /** Base modifications on the forward strand */
   modificationFwd: string
   /** Base modifications on the reverse strand */
@@ -532,6 +534,26 @@ const softclip = '#00f'
 const hardclip = '#f00'
 /** #color theme-colors | Skip (intron) | Skipped regions such as introns in RNA-seq reads */
 const skip = '#009a8a'
+/**
+ * #color alignments-indicators | Overlapping segments of one molecule | Both reads of a pair, or both arms of a split read, align here — so the junction between them is this span rather than a point
+ *
+ * Deliberately NOT a hue, and deliberately outside the categorical greys.
+ * Without a mark the two segments paint over each other and the display shows a
+ * clean junction at whichever coordinate the later one starts, which is a
+ * precise claim about a breakpoint that the data does not make. Painting the
+ * span as a darker version of either segment's color says "more of that one",
+ * which is the same lie louder — on a foldback the arms are opposite-strand
+ * red and blue, and darkening whichever drew last reads as extra-inverted.
+ *
+ * So the value has one job: read as NEITHER segment. Every categorized grey in
+ * the alignments vocabulary is light (`colorPairLR` #d3d3d3, `colorNostrand`
+ * #c8c8c8, `colorRevDiffChr` #969696, `colorUnknown` #808080), so this sits
+ * past the dark end of them in light mode and past the light end in dark mode,
+ * which is also why it inverts rather than dimming: on a dark track background
+ * a charcoal span is the background showing through, i.e. a gap where the mark
+ * should be.
+ */
+const readOverlap = '#555555'
 /** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */
 const modificationFwd = '#c8c8c8'
 /** #color theme-colors | Base modification (rev) | Base modifications on the reverse strand */
@@ -550,6 +572,7 @@ const lightStringColors: StringColors = {
   coverage: grey[400],
   insertion,
   deletion,
+  readOverlap,
   softclip,
   hardclip,
   skip,
@@ -586,6 +609,11 @@ const darkStringColors: Partial<StringColors> = {
   // the deletion rect replaces the read on the dark track background, where the
   // mid-grey #808080 reads as a muddy block, so lighten it
   deletion: '#c8c8c8',
+  // inverted rather than dimmed, for the reason on the light value: the mark
+  // has to be the one neutral no read category paints, and on a dark track that
+  // is the light end. Clear of the dark theme's own `colorPairLRDark` #8a8a8a
+  // and of `colorNostrand` #c8c8c8, the two lightest fills it can land beside.
+  readOverlap: '#e4e4e4',
 }
 
 const lightAlignmentFill: AlignmentFill = {

@@ -1,4 +1,7 @@
-import { overlapAlpha } from '../../shaders/slang/overlap.js.generated.ts'
+import {
+  overlapAlpha,
+  overlapFade,
+} from '../../shaders/slang/overlap.js.generated.ts'
 
 // Retirement gate for the overlap tint's Canvas2D twin (adr-051). drawCanvas.ts
 // multiplied the exported OVERLAP_ALPHA by its own hand-written `smoothstep`
@@ -39,4 +42,22 @@ test('the fade endpoints the draw gate depends on', () => {
       overlapAlpha((i + 1) * 0.75),
     )
   }
+})
+
+// The chain-mode form spends the same curve as the opacity of an opaque fill,
+// so the two branches share one fade rather than each owning a ramp — the
+// property that keeps a narrow overlap fading in identically in both layouts.
+test('the two branches are one fade, scaled', () => {
+  for (let i = 0; i <= 200; i++) {
+    const w = i * 0.1
+    expect(overlapAlpha(w)).toBeCloseTo(0.4 * overlapFade(w), 7)
+  }
+})
+
+test('the fade reaches full strength, which the opaque branch depends on', () => {
+  // chain mode paints AT this value, so anything short of 1 leaves the arm
+  // underneath showing through a fill whose whole point is that it doesn't
+  expect(overlapFade(12)).toBe(1)
+  expect(overlapFade(1000)).toBe(1)
+  expect(overlapFade(1.5)).toBe(0)
 })

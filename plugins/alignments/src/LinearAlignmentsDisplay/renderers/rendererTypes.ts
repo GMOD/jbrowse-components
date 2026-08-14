@@ -258,11 +258,22 @@ export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
   return { top: 0, height: bandH, down: false }
 }
 
+// The fields `shouldDrawOverlaps` reads. Narrower than `RenderState` for the
+// same reason `ArcBandInput` is — so the state model can ask the question
+// without assembling a render state, which it does to decide whether the legend
+// names the tint. A legend row explaining a darkness the pass isn't drawing is
+// the failure this shares rather than restates.
+export interface OverlapDrawInput {
+  chainMode: boolean
+  collapseGroupRows: boolean
+  featureHeight: number
+}
+
 // Whether to draw the overlap tint pass. Shared by both renderers so the gate
 // can't drift between them. Meaningful in the two layouts that put more than one
 // feature on a row — a linked-reads chain, or a collapsed group — and suppressed
 // below 3px row height where the tint is sub-pixel noise.
-export function shouldDrawOverlaps(state: RenderState) {
+export function shouldDrawOverlaps(state: OverlapDrawInput) {
   return (
     (state.chainMode || state.collapseGroupRows) && state.featureHeight >= 3
   )

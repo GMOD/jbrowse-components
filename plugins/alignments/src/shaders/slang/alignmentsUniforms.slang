@@ -147,6 +147,13 @@ public struct Uniforms {
   // so it wants the foreground colour, and both renderers hard-coded that as
   // black, which is the background in dark mode.
   public uint colorFlatConnector;
+  // The chain-layout overlap span (overlap.slang). Same argument as the flat
+  // connector above and the opposite conclusion about WHICH neutral: two
+  // segments of one molecule cover that span, so no read colour is right there,
+  // but unlike a hairline over the track background this is an opaque fill
+  // between two read fills, so it takes its own theme slot (`readOverlap`)
+  // rather than the foreground.
+  public uint colorOverlap;
   // Paired-read arc palette, indexed by the per-instance color type — a real
   // array, because that is what it is. The nine slots were nine separately-named
   // uniforms (arcColor0..8, the ninth appended at the tail years later for

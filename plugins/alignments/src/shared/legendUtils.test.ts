@@ -710,3 +710,50 @@ describe('getAlignmentsLegendSections', () => {
     ])
   })
 })
+
+// The row that names the overlap mark. Its shape is the argument: chain mode
+// paints ONE colour that is no read category, collapsed rows tint whatever is
+// underneath. What the cases below are really pinning is that the swatch is
+// SHARED with the ink rather than derived from it — the form this replaced
+// computed "the LR grey darkened by OVERLAP_ALPHA" and so kept describing a
+// black-over-grey tint after the pass had been changed to paint something else.
+describe('the overlap row', () => {
+  const items = (overlaps?: 'chain' | 'collapsed') =>
+    getReadDisplayLegendItems({
+      colorBy: { type: 'normal' },
+      presentCategories: new Set<ReadColorCategory>(['pairLR']),
+      palette: makeTestPalette({
+        colorPairLR: [1, 1, 1],
+        colorOverlap: [0.2, 0.2, 0.2],
+      }),
+      overlaps,
+    })
+
+  test('is absent when the pass is not drawing one', () => {
+    expect(items().some(i => /overlap/i.test(i.label))).toBe(false)
+  })
+
+  test('chain mode names the colour the pass fills with', () => {
+    const row = items('chain').at(-1)!
+    expect(row).toEqual({
+      color: 'rgb(51,51,51)',
+      label: 'Pair/chain reads overlap here',
+    })
+  })
+
+  test('collapsed rows name a modifier, in two swatches', () => {
+    const row = items('collapsed').at(-1)!
+    expect(row.color).toBeUndefined()
+    // the read colour, then that colour composited under the 0.4 black tint —
+    // opaque, since a legend swatch is one `fill` for the SVG export too
+    expect(row.swatches).toEqual([
+      { color: 'rgb(255,255,255)' },
+      { color: 'rgb(153,153,153)' },
+    ])
+    expect(row.label).toBe('Overlapping reads (darker = more)')
+  })
+
+  test('sits last, after the colours it modifies', () => {
+    expect(items('chain')).toHaveLength(items().length + 1)
+  })
+})

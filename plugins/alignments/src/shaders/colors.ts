@@ -42,6 +42,12 @@ export interface ColorPalette {
   colorSplitInversion: RGBColor
   colorUnmappedMate: RGBColor
   colorInterchrom: RGBColor
+  // The span where two segments of one molecule both align, in chain
+  // (view-as-pairs / linked-supplementary) layout. A theme neutral rather than
+  // a category: no read color is the honest answer there, which is the whole
+  // reason the span is marked. `palette.readOverlap` states why it inverts
+  // between themes instead of dimming.
+  colorOverlap: RGBColor
   // The read cloud's flat connector — the neutral line between a discordant
   // pair's two coloured endpoint squares. `text.primary`, so it is the theme's
   // foreground rather than a colour of its own: the line deliberately carries no

@@ -68,16 +68,24 @@ const ALL: ReadColorCategory[] = [
   'noTagValue',
 ]
 
+// The overlap row is appended by the same builder and is the longest label in
+// the vocabulary, so leaving it out of the sweep measured everything except the
+// row most likely to overflow. Both wordings, since they differ per layout.
+const OVERLAPS = [undefined, 'chain', 'collapsed'] as const
+
 function everyLabel() {
   const out = new Set<string>()
   for (const type of SCHEMES) {
-    for (const item of getReadDisplayLegendItems({
-      colorBy: { type },
-      presentCategories: new Set(ALL),
-      palette: makeTestPalette(),
-      detectedModifications: new Map([['m', 'red']]),
-    })) {
-      out.add(item.label)
+    for (const overlaps of OVERLAPS) {
+      for (const item of getReadDisplayLegendItems({
+        colorBy: { type },
+        presentCategories: new Set(ALL),
+        palette: makeTestPalette(),
+        detectedModifications: new Map([['m', 'red']]),
+        overlaps,
+      })) {
+        out.add(item.label)
+      }
     }
   }
   return [...out]
