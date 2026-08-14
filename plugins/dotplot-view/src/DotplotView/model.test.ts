@@ -281,6 +281,23 @@ test('zoomAt zooms both axes and holds the locus under the anchor', () => {
   )
 })
 
+// Turning the lock on squares the axes through the autorun alone — the menu
+// checkbox used to call squareView() as well, which re-ran applySquare over
+// already-equal axes and re-centered them through centerAt's offsetPx rounding.
+test('locking the aspect ratio squares the axes on its own', () => {
+  const model = setup()
+  model.setWidth(800)
+  model.hview.setBpPerPx(2)
+  expect(model.hview.bpPerPx).not.toBe(model.vview.bpPerPx)
+
+  model.setLockAspectRatio(true)
+  expect(model.hview.bpPerPx).toBe(model.vview.bpPerPx)
+
+  // and it keeps them squared as one axis is zoomed independently
+  model.vview.setBpPerPx(4)
+  expect(model.hview.bpPerPx).toBe(model.vview.bpPerPx)
+})
+
 test('a drag under the 3px threshold adds no highlight', () => {
   const model = setup()
   model.addHighlightFromMouseCoords([100, 100], [102, 102])
