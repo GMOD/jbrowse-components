@@ -84,6 +84,13 @@ export function parseInitHighlights(
 // `loc` takes — name a chromosome, show that chromosome — navigated nowhere and
 // said nothing, which is indistinguishable from the whole-genome default it was
 // written to override.
+//
+// Returns whether it navigated. False means the refName is in the assembly (an
+// unknown one throws out of `parseLocString`) but not on this axis, which is
+// reachable exactly one way: the same init restricted the axis with
+// `displayedRegionNames` and then asked for a `loc` outside the restriction. The
+// caller reports it — the whole-genome plot that comes back otherwise looks like
+// the `loc` was ignored for no reason.
 export function navAxisToLoc(
   view: Base1DViewModel,
   loc: string,
@@ -97,7 +104,7 @@ export function navAxisToLoc(
   const refName = asm?.getCanonicalRefName(parsed.refName) ?? parsed.refName
   const index = view.displayedRegions.findIndex(r => r.refName === refName)
   if (index === -1) {
-    return
+    return false
   }
   const region = view.displayedRegions[index]!
   const start = parsed.start ?? region.start
@@ -106,6 +113,7 @@ export function navAxisToLoc(
     region.reversed ? region.end - coord : coord - region.start
   const [lo, hi] = minmax(offsetOf(start), offsetOf(end))
   view.moveTo({ refName, index, offset: lo }, { refName, index, offset: hi })
+  return true
 }
 
 // Wait for `cond`, giving up on the two things that mean it will never come:
@@ -263,6 +271,19 @@ function applyInitDisplayedRegions(
   }
 }
 
+// What an axis shows, for a one-line report. Capped: the case this is written for
+// is a handful of restricted regions, but an unrestricted axis on a fragmented
+// assembly carries thousands of names and a snackbar has room for one line.
+const NAMES_IN_SUMMARY = 6
+
+function namedRegionSummary(regions: { refName: string }[]) {
+  const names = [...new Set(regions.map(r => r.refName))]
+  const shown = names.slice(0, NAMES_IN_SUMMARY).join(', ')
+  return names.length > NAMES_IN_SUMMARY
+    ? `${shown} and ${names.length - NAMES_IN_SUMMARY} more`
+    : shown
+}
+
 // region-based linking: navigate each axis to its requested loc. Assumes the
 // view is already initialized (caller waits) so displayed regions exist.
 function navigateInitLocs(self: DotplotViewModel, init: DotplotViewInit) {
@@ -275,12 +296,24 @@ function navigateInitLocs(self: DotplotViewModel, init: DotplotViewInit) {
       // refName. One bad axis is a half-placed plot, not a broken view — it must
       // not cost the other axis its navigation
       try {
-        navAxisToLoc(
-          axis,
-          v.loc,
-          self.assemblyNames[i]!,
-          session.assemblyManager,
-        )
+        if (
+          !navAxisToLoc(
+            axis,
+            v.loc,
+            self.assemblyNames[i]!,
+            session.assemblyManager,
+          )
+        ) {
+          // a warning rather than an error: the plot is up and usable, just not
+          // where it was asked to be. The only way here is a `loc` outside the
+          // same init's `displayedRegionNames` restriction, so name what the
+          // axis does show — capped, since an unrestricted axis on a fragmented
+          // assembly has thousands of names and a snackbar is one line.
+          session.notify(
+            `init loc "${v.loc}" is not on the ${i === 0 ? 'horizontal' : 'vertical'} axis, which shows ${namedRegionSummary(axis.displayedRegions)} — the axis was left where it was`,
+            'warning',
+          )
+        }
       } catch (e) {
         console.error(e)
         session.notifyError(`Invalid init loc "${v.loc}": ${e}`, e)

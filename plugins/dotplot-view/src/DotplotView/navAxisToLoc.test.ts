@@ -57,9 +57,14 @@ test('reversed region flips offsets and keeps them ordered', () => {
   )
 })
 
-test('does nothing when the refName is not displayed on the axis', () => {
+// says so rather than just declining: the one way here is an init that restricted
+// the axis with displayedRegionNames and then asked for a loc outside it, and the
+// caller turns this false into a warning naming what the axis does show
+test('does nothing, and reports it, when the refName is not on the axis', () => {
   const { view, moveTo } = fakeView({ refName: 'ctgA', start: 0, end: 50000 })
-  navAxisToLoc(view, 'ctgZ:5000-15000', 'volvox', assemblyManager)
+  expect(navAxisToLoc(view, 'ctgZ:5000-15000', 'volvox', assemblyManager)).toBe(
+    false,
+  )
   expect(moveTo).not.toHaveBeenCalled()
 })
 
