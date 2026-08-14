@@ -86,8 +86,16 @@ const useStyles = makeStyles()(theme => ({
     //
     // Inset (`outlineOffset: -2`) because `overflow: clip` above and the
     // scroll port this sits in would clip a ring drawn outside the border box.
+    //
+    // `secondary.contrastText`, which is the same token the header's icons take,
+    // because inset is what decides the color: the ring lands entirely on this
+    // element's own secondary-colored band, so it has to contrast with THAT and
+    // not with the page. `primary.main` was the reflex and is midnight (#0D233F)
+    // against grape (#721E63) — drawn, measured on screen, and all but invisible.
+    // contrastText is the one token guaranteed legible on this background
+    // whatever an embedder's theme sets.
     '&:focus-visible': {
-      outline: `2px solid ${theme.palette.primary.main}`,
+      outline: `2px solid ${theme.palette.secondary.contrastText}`,
       outlineOffset: -2,
     },
   },

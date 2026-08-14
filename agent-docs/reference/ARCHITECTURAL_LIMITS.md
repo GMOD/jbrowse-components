@@ -593,28 +593,46 @@ observing it.
 
 ## Accessibility
 
-### The primary surface has no name, role, or announced state
+### The primary surface is reachable and named; nothing under it is
 
-**Status:** Open.
+**Status:** Mostly closed (2026-08). The four retire conditions this entry
+carried are met; what is left is one level down and one axis over.
 
-Keyboard support is partial and undiscoverable rather than absent, which is the
-part worth stating precisely. `LinearGenomeView/keyboardHandler.ts` binds
-ctrl/cmd + arrows to slide and zoom, gated on `session.focusedViewId`; focus is
-assigned by `useFocusOnInteraction`, which listens for `mousedown`/`keydown`
-*inside* the container — and Tab **into** a view fires its keydown on the element
-being left, so the assignment lags a keystroke. The track area carries no
-`tabIndex`, so there is nothing to Tab to in the first place.
+What landed: the `ViewContainer` Paper is a tab stop (`tabIndex={0}`,
+`role="region"`, the header's own title as its name) with a `:focus-visible`-only
+ring, and `useFocusOnInteraction` now also listens for `focusin`, so a Tab
+**into** a view assigns `session.focusedViewId` on arrival rather than a
+keystroke later. Each track's display box carries `role="figure"` and a generated
+name (`TrackRenderingContainer`), one polite live region per LGV restates the
+settled locstring (`NavigationAnnouncer`), and the ctrl/cmd + arrow bindings are
+listed in the Help widget. `browser-tests/probe-a11y-focus.ts` is where the parts
+jsdom cannot see are verified — that a click draws no ring, that focus does not
+scroll the port, and that Tab reaches the next view.
 
-Past that: no `aria-` attributes in the LGV components except
-`HeaderPanControls`, no role or accessible name on any track canvas, and nothing
-announces the result of a pan, a zoom or a search. WCAG 2.1.1 (Keyboard) and
-4.1.2 (Name, Role, Value) are the two a procurement review fails on, and the
-model actions the first needs — `slide`, `zoom`, `moveTo` — all exist already.
+**Residual, in the order it bites:**
 
-**Retire when** the view container is focusable and shows it, each track canvas
-carries a role and a generated `aria-label`, one polite live region per view
-restates the locstring once navigation settles, and the shortcuts are listed
-somewhere a user can find them.
+- **The keyboard can reach a view; it cannot reach anything inside one.** No
+  feature is focusable, so there is no keyboard path to a click handler, a
+  tooltip or a right-click menu. This is the WCAG 2.1.1 half that is still open,
+  and it is the expensive one: features are canvas pixels, so it needs a
+  navigable model of what is drawn, not an attribute.
+- **The announcer and the track name are LGV-only.** Dotplot, circular, synteny
+  and breakpoint-split get the container's name and role and nothing else.
+- **Four bindings, all needing a modifier.** No bare arrow keys (they would have
+  to not fight page scroll), no `?` to open the list, nothing for the actions a
+  mouse user has — zoom to region, track menu, search.
+- **`role="figure"`, not `role="img"`.** `img` is the textbook role and makes
+  descendants presentational, which is wrong while a display draws interactive
+  chrome inline rather than portaling it out (`GroupLabelsOverlay`'s group
+  collapse buttons). Worth revisiting if that ever changes.
+- **A stack of views on one assembly gets one name repeated.** `viewTitle` falls
+  back to the assembly display name, so three LGVs on volvox are three landmarks
+  called "volvox". The header has the same ambiguity; whether the accessible name
+  should disambiguate where the visible title does not is a product decision.
+
+**Retire when** a display's features are reachable and actionable from the
+keyboard. The rest above is breadth over a solved shape, and belongs in
+[../TODO.md](../TODO.md) rather than here.
 
 ---
 
