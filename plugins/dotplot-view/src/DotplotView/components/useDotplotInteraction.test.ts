@@ -15,13 +15,18 @@ import type React from 'react'
 // unbatched drew a frame against a moved h axis and a stale v one.
 function setup(cursorMode: 'move' | 'crosshair') {
   const scrollXY = jest.fn()
+  const setHoveredFeature = jest.fn()
+  const hit = { displayKey: 1, featureIdx: 7, distancePx: 0 }
+  const pickFeatureAt = jest.fn(() => hit)
   const model = {
     scrollXY,
+    setHoveredFeature,
+    pickFeatureAt,
     cursorMode,
     lockAspectRatio: false,
   } as unknown as DotplotViewModel
   const { result } = renderHook(() => useDotplotInteraction(model))
-  return { scrollXY, result }
+  return { scrollXY, setHoveredFeature, pickFeatureAt, hit, result }
 }
 
 // getBoundingClientRect is stubbed at the origin so component-relative x/y are
@@ -74,8 +79,8 @@ test('a selection drag does not scroll either axis', () => {
   expect(result.current.selecting).toBe(true)
 })
 
-// A move with no button down is a hover: it feeds the coordinate tooltip and
-// must not scroll.
+// A move with no button down is a hover: it feeds the tooltip and must not
+// scroll.
 test('hovering does not scroll', () => {
   const { scrollXY, result } = setup('move')
   act(() => {
@@ -84,4 +89,46 @@ test('hovering does not scroll', () => {
 
   expect(scrollXY).not.toHaveBeenCalled()
   expect(result.current.pointer?.x).toBe(140)
+})
+
+test('hovering picks the alignment under the pointer', () => {
+  const { pickFeatureAt, setHoveredFeature, hit, result } = setup('move')
+  act(() => {
+    result.current.containerProps.onPointerMove(pointerEvent(140, 150))
+  })
+
+  expect(pickFeatureAt).toHaveBeenCalledWith(140, 150)
+  expect(setHoveredFeature).toHaveBeenCalledWith(hit)
+})
+
+// Both drags: a pan would pull the plot out from under the highlight, and a
+// selection drag wants this anchor for its own two coordinate tooltips. The
+// clear happens once, at pointerdown, rather than per move.
+test.each(['move', 'crosshair'] as const)(
+  'a %s drag drops the hover and picks nothing more',
+  cursorMode => {
+    const { pickFeatureAt, setHoveredFeature, result } = setup(cursorMode)
+    act(() => {
+      result.current.containerProps.onPointerDown(pointerEvent(100, 100))
+    })
+    expect(setHoveredFeature).toHaveBeenCalledWith(undefined)
+    pickFeatureAt.mockClear()
+
+    act(() => {
+      result.current.containerProps.onPointerMove(pointerEvent(160, 160))
+    })
+    expect(pickFeatureAt).not.toHaveBeenCalled()
+  },
+)
+
+test('leaving the plot drops the hover', () => {
+  const { setHoveredFeature, result } = setup('move')
+  act(() => {
+    result.current.containerProps.onPointerMove(pointerEvent(140, 140))
+  })
+  act(() => {
+    result.current.containerProps.onPointerLeave()
+  })
+
+  expect(setHoveredFeature).toHaveBeenLastCalledWith(undefined)
 })

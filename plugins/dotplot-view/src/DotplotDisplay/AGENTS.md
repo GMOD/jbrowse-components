@@ -38,6 +38,28 @@
   implicit-any errors in a dozen unrelated files, which is what the failure
   looks like from the outside. Don't "fix" that by duck-typing the view. See
   ADR-055.
+- **The hover pick is on the model, and its index needs no invalidation.**
+  `dotplotPickEngine` indexes FEATURE hulls in absolute cumBp, keyed in a
+  WeakMap on `instanceData.x1` — the same geometry token
+  `DOTPLOT_INSTANCE_CACHE` uses. A pan doesn't rebuild dotplot geometry and a
+  zoom does, so nothing here needs `syntenyPickEngine`'s `isIndexUsable` /
+  `MAX_PAN_SKEW_PX`; the pan enters through the query transform instead. Two
+  further deliberate differences from that twin: it answers **nearest**, not
+  topmost (thin lines, not opaque fills), and its exact test measures in **px**,
+  because the two axes are independently scaled. Nothing calls into a rendering
+  backend, so hover survives the Canvas2D fallback and a lost GPU context.
+- **Hover shading is `hoveredFeatureHighlight` + `DotplotHoverHighlight`, not a
+  shader uniform.** Restroking the one hovered feature over the canvas covers
+  the GPU path, the Canvas2D fallback and the SVG export at once. Synteny's
+  uniform route would cost an instance lane, a uniform, a hand-written Canvas2D
+  twin of `fillShade`/`hoverDarken` (which is not importable across plugins
+  anyway, and whose fragment output is straight alpha where dotplot's is
+  premultiplied), and a broken color run in `drawDotplotInstances`' batcher.
+- **A display getter that reads `this.view` needs an explicit return type.**
+  Every one of them has one, and an inferred one collapses the view/display
+  mutual reference — TS7023 on the factory, TS2310 on `DotplotDisplayModel`,
+  then implicit-anys across the plugin and `products/jbrowse-img`. That is what
+  `DotplotHoverHighlight` in `types.ts` is named for. ADR-055.
 - Geometry stays **absolute Float64 cumBp** (`buildLineSegments`) so the
   Canvas2D and SVG paths read it directly; the window-relative Float32
   conversion happens at GPU upload only. Synteny bakes it in the worker instead.
