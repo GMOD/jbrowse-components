@@ -1,4 +1,13 @@
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
+import {
+  buildFeaturePath,
+  computeTransform,
+  isInstanceInvisible,
+  isRibbonCulled,
+  makeCornerScratch,
+  projectCorners,
+  ribbonPerpWidth,
+} from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { PickCanvasLike, PickIndex } from './syntenyPickEngine.ts'
@@ -236,4 +245,137 @@ describe('per-candidate rejection', () => {
       ),
     ).toBeUndefined()
   })
+})
+
+// The index does not hold every instance: `buildPickIndex` leaves out the ones
+// whose horizontal width is under 1px on BOTH axes, because `perpFactor >= 1`
+// makes that sufficient to rule out `ribbonPerpWidth >= 1`, and because the pan
+// cancels out of that measure so it is settled by the two scales the index is
+// already keyed on. That is a real narrowing of what a stab can return, so it
+// wants a test that is not about one hand-placed ribbon: a selection predicate
+// which is merely *nearly* necessary would keep passing every positional test
+// above and silently drop pickable ribbons in some corner of the parameter
+// space.
+//
+// So this drives the real engine against a brute-force scan that applies the
+// same predicates, in the same order, over EVERY instance with no index at all,
+// and demands the identical verdict everywhere. Deliberately not a restatement
+// of the width bound — it never mentions it, so it cannot agree with a wrong
+// one.
+function bruteForcePick(
+  data: SyntenyInstanceData,
+  params: SyntenyTrackRenderParams,
+  overdrawPx: number,
+  canvasLogicalWidth: number,
+  x: number,
+  y: number,
+) {
+  const { height, minAlignmentLength } = params
+  if (y < params.yTop || y > params.yTop + height) {
+    return undefined
+  }
+  const t = computeTransform(params, data)
+  const scratch = makeCornerScratch()
+  const ctx = createPickCtx()
+  // Descending, so the topmost (last drawn) wins — the order the engine walks.
+  for (let i = data.instanceCount - 1; i >= 0; i--) {
+    if (data.alignmentLengths[i]! < minAlignmentLength) {
+      continue
+    }
+    if (isInstanceInvisible(data.colors[i]!)) {
+      continue
+    }
+    const c = projectCorners(data, i, t, scratch)
+    if (isRibbonCulled(c, canvasLogicalWidth, overdrawPx)) {
+      continue
+    }
+    if (ribbonPerpWidth(c, height) < 1) {
+      continue
+    }
+    buildFeaturePath(ctx, c, 0, height, params.drawCurves)
+    if (ctx.isPointInPath(x, y - params.yTop)) {
+      return { key: 0, featureIndex: i }
+    }
+  }
+  return undefined
+}
+
+// Widths deliberately straddle the 1px boundary the selection turns on, at both
+// ends and on each axis independently — a ribbon 0.4px wide on top and 6px on
+// the bottom is pickable and must survive the cut.
+function makeMixedData(seed: number, n: number): SyntenyInstanceData {
+  let s = seed
+  const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
+  const bp1 = new Float32Array(n)
+  const bp2 = new Float32Array(n)
+  const bp3 = new Float32Array(n)
+  const bp4 = new Float32Array(n)
+  const colors = new Uint32Array(n)
+  const kinds = new Uint8Array(n)
+  const alignmentLengths = new Float32Array(n)
+  for (let i = 0; i < n; i++) {
+    const wTop = rnd() < 0.5 ? rnd() * 1.2 : rnd() * 40
+    const wBot = rnd() < 0.5 ? rnd() * 1.2 : rnd() * 40
+    const q = rnd() * 800
+    const t = rnd() * 800
+    bp1[i] = q
+    bp2[i] = q + wTop
+    // reversed on some, so the corner order is not always ascending
+    bp3[i] = rnd() < 0.3 ? t : t + wBot
+    bp4[i] = rnd() < 0.3 ? t + wBot : t
+    // a few genuinely invisible, so that predicate is exercised too
+    colors[i] = rnd() < 0.1 ? 0x00808080 : 0xff808080
+    kinds[i] = 0
+    alignmentLengths[i] = Math.floor(rnd() * 20000)
+  }
+  return {
+    bp1,
+    bp2,
+    bp3,
+    bp4,
+    base0: 0,
+    base1: 0,
+    colors,
+    kinds,
+    instanceFeatureIdx: Uint32Array.from({ length: n }, (_, i) => i),
+    alignmentLengths,
+    instanceCount: n,
+  }
+}
+
+test('the index answers exactly what a brute-force scan answers', () => {
+  const data = makeMixedData(7, 400)
+  // Zooms either side of 1 (so the same bp deltas land on both sides of the 1px
+  // cut), one-sided pans within and past the skew cap, a min-length filter, and
+  // a curve pass.
+  const cases: Partial<SyntenyTrackRenderParams>[] = [
+    {},
+    { bpPerPx0: 4, bpPerPx1: 4 },
+    { bpPerPx0: 0.25, bpPerPx1: 0.25 },
+    { bpPerPx0: 3, bpPerPx1: 0.5 },
+    { offsetPx0: 40, offsetPx1: 0 },
+    { offsetPx0: 400, offsetPx1: 0 },
+    { offsetPx0: 120, offsetPx1: 120 },
+    { minAlignmentLength: 12000 },
+    { drawCurves: true },
+    { height: 7 },
+  ]
+  let hits = 0
+  for (const override of cases) {
+    const params = makeParams(override)
+    // One index per case, then reused across the sweep — which is also what
+    // exercises the reuse path against a moving query x.
+    const pickIndices = new Map<number, PickIndex>()
+    for (let x = 0; x <= 800; x += 3) {
+      const y = 50 % Math.max(params.height, 1)
+      const got = pickAt(x, y, params, pickIndices, data)
+      const want = bruteForcePick(data, params, 300, 800, x, y)
+      if (want) {
+        hits++
+      }
+      expect({ x, got }).toEqual({ x, got: want })
+    }
+  }
+  // Guards against passing vacuously on a sweep that never hits anything.
+  expect(hits).toBeGreaterThan(200)
 })

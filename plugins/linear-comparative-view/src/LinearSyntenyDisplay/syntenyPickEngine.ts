@@ -21,13 +21,21 @@ export interface PickCanvasLike extends CanvasLike {
   isPointInPath(x: number, y: number): boolean
 }
 
-// Lazily-built horizontal-extent index over one region's instances. Boxes hold
-// only the instance hull; every per-instance predicate (min length, alpha,
-// viewport cull, sub-pixel pickability) is evaluated on the few candidates a
-// query returns. `panPx0`/`panPx1` record the pan the boxes were projected at,
-// so a later pan is answered by shifting the query rather than rebuilding.
+// Lazily-built horizontal-extent index over one region's PICKABLE instances.
+// Boxes hold only the instance hull; the per-instance predicates that depend on
+// the live pan or on view state (min length, alpha, viewport cull) are evaluated
+// on the candidates a query returns. `panPx0`/`panPx1` record the pan the boxes
+// were projected at, so a later pan is answered by shifting the query rather
+// than rebuilding.
+//
+// `flatbush` is undefined when the region has nothing pickable at this zoom —
+// the common whole-genome case, and not a state Flatbush itself can represent
+// (it rejects a zero-item tree).
 export interface PickIndex {
-  flatbush: Flatbush
+  flatbush: Flatbush | undefined
+  // Flatbush position -> instance index. Not the identity, because unpickable
+  // instances are skipped rather than inserted (see buildPickIndex).
+  instanceOf: Int32Array
   bpPerPxInv0: number
   bpPerPxInv1: number
   panPx0: number
@@ -55,14 +63,67 @@ const MAX_PAN_SKEW_PX = 250
 // The y extent is a constant [0, 1] because a ribbon always spans its whole
 // track height: the index is a 1D interval index, and queries stab y = 0.5. That
 // keeps track height out of the invalidation key too.
+//
+// UNPICKABLE INSTANCES ARE NEVER INSERTED, which is the whole reason this scales.
+// A ribbon is pickable only where it is drawn as a solid fill, i.e. where
+// `ribbonPerpWidth(c, height) >= 1`; that is
+// `max(|sx2-sx1|, |sx4-sx3|) >= perpFactor`, and `perpFactor = sqrt(1+slope²)`
+// is at least 1, so `max(|sx2-sx1|, |sx4-sx3|) < 1` px rules an instance out
+// outright. Two properties make it a build-time question rather than a
+// per-candidate one:
+//
+//   - the PAN CANCELS. `sx2 - sx1 = (bp2 - bp1) * bpPerPxInv0` exactly (both
+//     corners carry the same `panPx0`), and likewise for the bottom edge, so
+//     this measure is a function of the two SCALES alone — precisely what
+//     `isIndexUsable` already pins, and nothing a pan has to rebuild for.
+//   - track HEIGHT drops out, because the bound uses only `perpFactor >= 1`
+//     rather than its value, so height stays out of the invalidation key the
+//     way the constant y extent above keeps it out.
+//
+// It is a NECESSARY condition, not the full test, so the loop still evaluates
+// `ribbonPerpWidth` exactly on what survives — this can only remove instances
+// the query was going to reject anyway. What it removes is most of them: at
+// whole-genome zoom nearly every ribbon is sub-pixel, which is also where the
+// tree is largest and where a distant-mate ribbon's x-hull spans the whole
+// canvas, so a POINT stab was returning ~150k candidates of which none could
+// ever be picked. Measured on a synthetic 300k-instance whole-genome pairing:
+// index build 472ms -> 67ms, and a warm hover 192ms -> under 0.01ms. Markers fall
+// out here for free (both their edges are single points, so both deltas are 0),
+// which is why the query needs no marker arm of `isRibbonCulled`.
 function buildPickIndex(
   data: SyntenyInstanceData,
   t: ComputedTransform,
 ): PickIndex {
-  const flatbush = new Flatbush(data.instanceCount)
+  const { bp1, bp2, bp3, bp4, instanceCount } = data
+  const { bpPerPxInv0, bpPerPxInv1 } = t
+  // One pass to select, then one over the selection to project. The selection
+  // pass reads bp deltas rather than projected corners, so it is cheaper than
+  // the single projection pass it replaces, and the projection then runs only on
+  // what is kept.
+  const instanceOfAll = new Int32Array(instanceCount)
+  let kept = 0
+  for (let i = 0; i < instanceCount; i++) {
+    const wTop = Math.abs(bp2[i]! - bp1[i]!) * bpPerPxInv0
+    const wBot = Math.abs(bp4[i]! - bp3[i]!) * bpPerPxInv1
+    if (wTop >= 1 || wBot >= 1) {
+      instanceOfAll[kept++] = i
+    }
+  }
+  const instanceOf = instanceOfAll.subarray(0, kept)
+  if (kept === 0) {
+    return {
+      flatbush: undefined,
+      instanceOf,
+      bpPerPxInv0,
+      bpPerPxInv1,
+      panPx0: t.panPx0,
+      panPx1: t.panPx1,
+    }
+  }
+  const flatbush = new Flatbush(kept)
   const scratch = makeCornerScratch()
-  for (let i = 0; i < data.instanceCount; i++) {
-    const c = projectCorners(data, i, t, scratch)
+  for (let k = 0; k < kept; k++) {
+    const c = projectCorners(data, instanceOf[k]!, t, scratch)
     flatbush.add(
       Math.min(c.sx1, c.sx2, c.sx3, c.sx4),
       0,
@@ -73,8 +134,9 @@ function buildPickIndex(
   flatbush.finish()
   return {
     flatbush,
-    bpPerPxInv0: t.bpPerPxInv0,
-    bpPerPxInv1: t.bpPerPxInv1,
+    instanceOf,
+    bpPerPxInv0,
+    bpPerPxInv1,
     panPx0: t.panPx0,
     panPx1: t.panPx1,
   }
@@ -126,6 +188,12 @@ export function pickFeatureAtPoint(
       idx = buildPickIndex(data, transform)
       pickIndices.set(key, idx)
     }
+    // Nothing in this region is wide enough to be pickable at this zoom. Cached
+    // as such, so a hover over a whole-genome hairball answers without touching
+    // the geometry again.
+    if (!idx.flatbush) {
+      continue
+    }
 
     // Panning by (d0, d1) since the boxes were projected moves an instance's top
     // corners by d0 and its bottom corners by d1, so its true hull satisfies
@@ -140,15 +208,20 @@ export function pickFeatureAtPoint(
     const panLo = Math.min(d0, d1)
     const panHi = Math.max(d0, d1)
     // Walked from the highest instance index down, so the topmost (last drawn)
-    // wins. Sorted as an Int32Array — on a dense whole-genome view a stab can
-    // return ~100k candidates, and the native numeric sort has no per-comparison
-    // call into JS the way `(a, b) => b - a` on the plain array `search` returns
-    // does. Ascending then walked backwards, so nothing has to be reversed.
+    // wins. Sorted as an Int32Array — the native numeric sort has no
+    // per-comparison call into JS the way `(a, b) => b - a` on the plain array
+    // `search` returns does. Ascending then walked backwards, so nothing has to
+    // be reversed.
+    //
+    // Sorting POSITIONS and resolving each to its instance index inside the loop
+    // is the same order: `instanceOf` is filled by an ascending scan, so it is
+    // strictly increasing and position order IS instance order.
     const candidates = new Int32Array(
       idx.flatbush.search(x - panHi, 0.5, x - panLo, 0.5),
     ).sort()
+    const { instanceOf } = idx
     for (let ci = candidates.length - 1; ci >= 0; ci--) {
-      const i = candidates[ci]!
+      const i = instanceOf[candidates[ci]!]!
       if (data.alignmentLengths[i]! < minAlignmentLength) {
         continue
       }
