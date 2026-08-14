@@ -66,19 +66,23 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
-The two halves of an INVdup call read out of two different things. Green LL,
-navy RR and magenta split reads are the inversion: the first two are mate pairs
-whose ends face the same way, the third is one read split into alignments that
-point in opposite directions, and all three are reads that cross a junction
-where the strand flips. They are a minority of an otherwise concordant grey
-pileup, so they cluster at the breakpoints, and drawn as arcs they overlap each
-other where the grey pairs around them nest — flip the segment between the two
-junctions and each one becomes an ordinary pair at an ordinary insert size,
-which is the same statement as the call. The duplication carries no orientation
-signature at all; where the second copy went is the segment the call names in
-`INFO.CPX_INTERVALS`, shaded here.
+An inversion turns a stretch of sequence around, and every read that was inside
+it turns around too. A pair with one end inside and one end outside therefore
+has one end reversed and one not, so both point the same way — forward-forward
+where the pair crosses the left junction, reverse-reverse where it crosses the
+right one. That is the whole of the LL/RR signature.
 
-<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the duplicated segment shaded, the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
+<Figure caption="A pair with both ends inside the inverted segment, or both outside it, is unremarkable. Only one straddling a junction has an end that moved without its mate." src="/img/inversion_pair_orientation.png" />
+
+The two halves of an INVdup call read out of two different things. Green LL,
+navy RR and magenta split reads are the inversion — the third is one read split
+into alignments that point in opposite directions, which is the same event seen
+within a single molecule. They are a minority of an otherwise concordant grey
+pileup, so they cluster at the breakpoints. The duplication carries no
+orientation signature at all: where the second copy went is the segment the call
+names in `INFO.CPX_INTERVALS`, and no read in the pileup states it.
+
+<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
 
 ### Short reads vs long reads
 

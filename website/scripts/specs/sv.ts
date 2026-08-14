@@ -298,20 +298,6 @@ const INVDUP_PILEUP = {
   fracY: 0,
 }
 
-// The duplicated copy inside HGSV_2721, read off the call's own
-// INFO.CPX_INTERVALS (`DUP_chr1:39660047-39660275`) rather than eyeballed off
-// the coverage step. The record's other interval is the inversion
-// (`INV_chr1:39658980-39660275`), which is half the view and is what the read
-// orientations are about; this 228 bp one is where the second copy went, and
-// shading it is all the figure claims about it.
-//
-// The figure once pointed a callout at the coverage step over this shading and
-// no longer does (reviewer: "the coverage diagram is very noisy due to short
-// reads ... it is just kind of obvious"). The step is real and was measured
-// against the frame, and it is still a 228 bp read of a short-read depth
-// profile, which is the width at which that band is mostly sampling noise.
-const INVDUP_DUP_SEGMENT = { start: 39660047, end: 39660275 }
-
 // hg19 main chromosomes (1..22, X, Y) in karyotype order. A plain whole-genome
 // showAllRegionsInAssembly also appends the *_hap / *_random / Un contigs, whose
 // far-right elided-block column reads as clutter in a genome-wide overview.
@@ -685,31 +671,18 @@ export const svSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: '1:39,658,200-39,661,800',
           trackLabels: 'offset',
-          // The duplicated copy, shaded. It is the half of this call that the
-          // read orientations say nothing about -- LL, RR and an inverted split
-          // read are an INVERSION signature, and a reader who takes them for the
-          // whole story never finds the "dup" in INVdup. The shading says WHERE
-          // the second copy is, which is a thing the call knows and the picture
-          // does not; nothing in the frame argues it from depth.
+          // NO HIGHLIGHT (review: "remove highlight"). The shaded band was the
+          // duplicated copy -- `DUP_chr1:39660047-39660275`, 228 bp, read off
+          // the call's own INFO.CPX_INTERVALS rather than eyeballed off the
+          // coverage step -- and it was carrying the word INVdup as its label,
+          // which is why the callout below opens with that word instead.
           //
-          // The label is also where the word INVdup now appears (review: "just
-          // put the text 'INVdup' somewhere in the figure that is unobtrusive").
-          // A highlight's label is the app's own small grey type over the band it
-          // names, so it costs no callout, sits on the thing it is about, and
-          // cannot be mistaken for one of the red teaching annotations.
-          //
-          // ONE WORD, because a highlight's label is CLIPPED TO ITS BAND and
-          // this band is 228 bp of a 3.6 kb view: "INVdup: duplicated copy" came
-          // back reading "INVdup: duplicated". What the shading is stays in the
-          // caption, which is where a sentence fits.
-          highlight: [
-            {
-              refName: '1',
-              assemblyName: 'hg38',
-              label: 'INVdup',
-              ...INVDUP_DUP_SEGMENT,
-            },
-          ],
+          // Nothing in the frame claims the dup half any more, and that is
+          // honest: it is the half the read orientations say nothing about (the
+          // record's other interval, `INV_chr1:39658980-39660275`, is the
+          // inversion and is what they ARE about), and a 228 bp step in a
+          // short-read depth profile is mostly sampling noise. The tutorial
+          // names INFO.CPX_INTERVALS as where the second copy is stated.
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
             {
@@ -785,13 +758,18 @@ export const svSpecs: ScreenshotSpec[] = [
       PARK_CURSOR,
       { type: 'delay', ms: 1000 },
     ],
-    // ONE callout, on the read evidence. There was a second, a red pill reading
-    // "Annotated as INVdup (inverted duplication)" with an arrow across to the
-    // CPX_TYPE row in the sidebar, and it is gone (review: "the red text
-    // annotation is too overwhelming now"). What it asserted is in the frame
-    // three times over without it -- the sidebar's own CPX_TYPE row, the
-    // variant's <CPX> label, and the shaded band's label -- so it was drawing a
-    // line between two things that already agreed.
+    // ONE callout, and it is a LIST (review: "please simplify the red text
+    // annotation even more, like a bulleted list, so it is immensely obvious").
+    // The paragraph form put the counterfactual and the colour key in the same
+    // run of prose, so the reader had to parse a sentence to find each of the
+    // three things the frame shows. Three bullets, one claim each, under the
+    // word the call is named for -- which is where INVdup lives now that the
+    // shaded band that carried it is gone.
+    //
+    // A newline in an annotation's `text` is a hard break and a blank line is a
+    // paragraph gap, so the list is authored directly; `maxWidth` still wraps a
+    // line that runs long, and a wrapped bullet does not hang-indent, which is
+    // why each is short enough to fit.
     annotations: [
       // The callout anchors to the pileup track's own top edge (fracY 0 + dy),
       // so it sits a fixed distance below the arc band however tall it is,
@@ -803,14 +781,20 @@ export const svSpecs: ScreenshotSpec[] = [
         // in off the track's left edge, so the pill's border clears the app
         // frame rather than being clipped by it
         anchor: { ...INVDUP_PILEUP, dx: 50, dy: 360 },
-        // The COUNTERFACTUAL, which is the thing a still frame cannot show and
-        // the reason a shape made of arcs reads as an inversion at all
-        // (reviewer): the discordant arcs overlap where concordant ones nest,
-        // and undoing the flip is what would regularise them. Naming the
-        // colours is the half a legend already does; naming what the SHAPE
-        // would become is not.
-        text: 'Green (LL) and navy (RR) arcs overlap each other instead of nesting. Flip the segment between the two junctions and every one of them becomes an ordinary, evenly spaced pair.\n\nMagenta: one read, split into two alignments that point in OPPOSITE directions.',
-        maxWidth: 560,
+        // NO ARC-SHAPE ARGUMENT (review: "this is a little too 'subtle' of an
+        // argument for someone stumbling on this for the first time: 'where
+        // ordinary pairs nest'"). Nesting is a property of the drawing, and a
+        // reader meeting a pileup for the first time has never seen the
+        // not-nested case to compare against. Each bullet is now a fact about
+        // ONE READ PAIR, which is checkable against a single arc in the frame,
+        // and the mechanism behind them is drawn in inversion_pair_orientation
+        // one figure up.
+        text: 'INVdup\n\n• Green: both ends of the pair point the SAME way (forward)\n• Navy: both ends point the same way, the other way (reverse)\n• Magenta: one read, split into two alignments facing opposite ways',
+        // Wide enough that no bullet wraps: a wrapped one does not hang-indent,
+        // so its second line starts under the bullet character and reads as a
+        // fourth item. 920 at 24px holds the longest of the three.
+        fontSize: 24,
+        maxWidth: 920,
       },
     ],
   },
