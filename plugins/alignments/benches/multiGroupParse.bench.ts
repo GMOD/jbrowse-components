@@ -35,8 +35,8 @@
 // far smaller fraction of it, and the saved sequence passes look correspondingly
 // bigger. A fixture that fits in cache prices the loop and not the workload.
 //
-// THREE ARMS:
-//   perGroup    — what ships: one sequence pass per group
+// THREE ARMS, all three carrying the same-base merge, because it ships:
+//   perGroup    — what ships: one sequence pass per DISTINCT group
 //   onePass     — one pass for all groups, htslib's shape. Groups are bucketed by
 //                 the canonical base they count, so a base is charged to the one
 //                 group that cares rather than tested against all of them
@@ -47,26 +47,50 @@
 // BENCHMARKING.md's polymorphism trap does not apply to. Only the parse differs,
 // so only the parse is written out twice.
 //
-// WHAT IT SAYS, 2026-08-14, output identical in every row:
+// **WHAT IT SAID FIRST, AND WHY THAT IS SUPERSEDED.** Measured 2026-08-14 against
+// a baseline that walked once per GROUP, this reported 1.133x on ont.6ma.chr20,
+// 0.917x on the single-group fixture and 1.431x on fiberseq, and concluded: ship
+// it branched on group count, crossover unknown. Then the same-base merge landed
+// in `getModPositions` (`sameBaseMerge.bench.ts`), the baseline stopped walking
+// twice for dorado's two C groups, and every arm here now carries that merge
+// because it is the baseline rather than a candidate.
 //
-//   fixture                       groups/read   per group   one pass          control
-//   ont.6ma.chr20 (72.8 Mbp)         3.00        2243.8 ms  1981.0 ms 1.133x  1.047
-//   ont.6ma.chr20, 10 rounds         3.00        2298.7 ms  2023.6 ms 1.136x  0.993
-//   200x.longread.mod (43.7 Mbp)     1.00         509.7 ms   555.5 ms 0.917x  1.000
-//   fiberseq.MAGEL2 (0.55 Mbp)       2.86          10.0 ms     7.0 ms 1.431x  0.991
+// WHAT IT SAYS NOW, 2026-08-14, output identical in every row:
 //
-// **~1.13x where there are groups to merge, and 0.92x where there are not.** That
-// is a trade, not a free win: the one-pass shape charges every base an array
-// index and a handful of object property loads, where the per-group loop is a
-// tight do-while over `charCodeAt` and a compare. With three groups the two saved
-// passes outweigh that; with one group there is nothing to save and only the
-// overhead is left.
+//   fixture                     groups  distinct   per group   one pass          control
+//   ont.6ma.chr20 (72.8 Mbp)     3.00     2.00     1667.7 ms  1758.2 ms 0.949x  0.980
+//   200x.longread.mod, --groups=2 2.00    2.00     1200.0 ms  1289.9 ms 0.930x  0.979
+//   200x.longread.mod (43.7 Mbp) 1.00     1.00      509.7 ms   555.5 ms 0.917x  1.000
+//   fiberseq.MAGEL2 (0.55 Mbp)   2.86     2.86       11.1 ms     8.0 ms 1.385x  0.993
 //
-// So the shape to ship is **branch on group count** — keep the tight loop at
-// N=1, take the one pass at N>1 — and the crossover between them is the thing
-// this bench has not established, because no real N=2 fixture exists. `--groups=`
-// synthesizes one on top of the big single-group file if that becomes worth
-// settling.
+// **THE CROSSOVER IS BETWEEN TWO AND THREE DISTINCT GROUPS, AND THAT KILLS THIS
+// FOR ONT DATA.** One pass loses at one distinct group (0.917x), loses at two
+// whether they are synthesized (0.930x) or real (0.949x), and wins only at the
+// 2.86 of fiberseq (1.385x). The one-pass shape charges every base an array index
+// and a handful of property loads where the per-group loop is a tight do-while
+// over `charCodeAt`; two saved passes do not cover that, three do.
+//
+// So the 1.133x this bench used to report on ont.6ma.chr20 was real, and the
+// merge took it: `A+a.;C+h?;C+m?` is three groups but only **two distinct walks**
+// once the C pair shares an array, and at two the shape is a loss. What is left
+// is Fiber-seq — `C+m;A+a;T-a`, three genuinely different bases — so this is not
+// a general parse optimization but a Fiber-seq one, and it should not be shipped
+// on a group count that counts duplicates.
+//
+// **`--groups=` FOUND A REAL BUG IN THE ONE-PASS ARM, NOT JUST A NUMBER.** Its
+// first run reported `output DIFFERS`. Two causes, both fixed here and both worth
+// knowing:
+//
+//   - The synthesis counted occurrences of `b` in fseq, but on a reverse read the
+//     walk counts the COMPLEMENT of `b`. So it declared more calls than the read
+//     had bases for, on about half the reads.
+//   - Which then ran off the end of the sequence, where **the two arms did not
+//     agree**: the per-group shape clamps and records `seqLength - 1` (forward)
+//     or `0` (reverse) for every call it cannot place, and this arm silently
+//     dropped them. Every row above ever reading "output identical" only meant no
+//     read in those fixtures overran. It is the same end-of-sequence rule TODO's
+//     `indexOf` entry singles out as the thing to get exactly right, and it is a
+//     hard constraint on ever shipping this shape.
 //
 // **The first cut of the one-pass arm was 0.890x, i.e. slower**, and the whole
 // difference was a `Map.get(seqCode)` per read base rather than an array index.
@@ -143,42 +167,72 @@ function modPositionsPerGroup(mm: string, fseq: string, fstrand: number) {
   const groups = mm.split(';')
   const result: Mod[] = []
   let mlBase = 0
+  let seenKeys: string[] | undefined
+  let seenDeltas: string[] | undefined
+  let seenPositions: number[][] | undefined
 
   for (const group of groups) {
     if (group === '') {
       continue
     }
     const split = group.split(',')
-    const { base, typestr } = parseModHeader(split[0]!, group)
+    const basemod = split[0]!
+    const { base, strand, typestr } = parseModHeader(basemod, group)
     const isSingleType = isSingleModType(typestr)
     const nTypes = isSingleType ? 1 : typestr.length
     const splitLength = split.length
     const nPositions = splitLength - 1
 
-    const baseCode = base.charCodeAt(0)
-    const targetCode = isRev
-      ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
-      : baseCode
-    const isN = base === 'N'
-    const positions: number[] = isRev ? new Array(nPositions) : []
-    let writeIndex = isRev ? nPositions - 1 : 0
-    let currPos = 0
-
-    for (let i = 1; i < splitLength; i++) {
-      let delta = +split[i]!
-      do {
-        const seqCode = isRev
-          ? fseq.charCodeAt(seqLength - 1 - currPos)
-          : fseq.charCodeAt(currPos)
-        if (isN || seqCode === targetCode) {
-          delta--
+    // The same-base merge, which SHIPS — see `getModPositions`. It is in every
+    // arm because it is the baseline now, not a candidate.
+    const deltas = group.slice(basemod.length)
+    const key = base + strand
+    let positions: number[] | undefined
+    if (seenKeys !== undefined) {
+      for (let s = 0, n = seenKeys.length; s < n; s++) {
+        if (seenKeys[s] === key && seenDeltas![s] === deltas) {
+          positions = seenPositions![s]
+          break
         }
-        currPos++
-      } while (delta >= 0 && currPos < seqLength)
-      if (isRev) {
-        positions[writeIndex--] = seqLength - currPos
+      }
+    }
+
+    if (positions === undefined) {
+      const baseCode = base.charCodeAt(0)
+      const targetCode = isRev
+        ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
+        : baseCode
+      const isN = base === 'N'
+      positions = isRev ? new Array<number>(nPositions) : []
+      let writeIndex = isRev ? nPositions - 1 : 0
+      let currPos = 0
+
+      for (let i = 1; i < splitLength; i++) {
+        let delta = +split[i]!
+        do {
+          const seqCode = isRev
+            ? fseq.charCodeAt(seqLength - 1 - currPos)
+            : fseq.charCodeAt(currPos)
+          if (isN || seqCode === targetCode) {
+            delta--
+          }
+          currPos++
+        } while (delta >= 0 && currPos < seqLength)
+        if (isRev) {
+          positions[writeIndex--] = seqLength - currPos
+        } else {
+          positions[writeIndex++] = currPos - 1
+        }
+      }
+
+      if (seenKeys === undefined) {
+        seenKeys = [key]
+        seenDeltas = [deltas]
+        seenPositions = [positions]
       } else {
-        positions[writeIndex++] = currPos - 1
+        seenKeys.push(key)
+        seenDeltas!.push(deltas)
+        seenPositions!.push(positions)
       }
     }
 
@@ -228,35 +282,66 @@ function modPositionsOnePass(mm: string, fseq: string, fstrand: number) {
   const result: Mod[] = []
   const states: GroupState[] = []
   let mlBase = 0
+  let seenKeys: string[] | undefined
+  let seenDeltas: string[] | undefined
+  let seenPositions: number[][] | undefined
 
   for (const group of groups) {
     if (group === '') {
       continue
     }
     const split = group.split(',')
-    const { base, typestr } = parseModHeader(split[0]!, group)
+    const basemod = split[0]!
+    const { base, strand, typestr } = parseModHeader(basemod, group)
     const isSingleType = isSingleModType(typestr)
     const nTypes = isSingleType ? 1 : typestr.length
     const nPositions = split.length - 1
 
-    const baseCode = base.charCodeAt(0)
-    const targetCode = isRev
-      ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
-      : baseCode
-    const positions: number[] = isRev ? new Array(nPositions) : []
-
-    const st: GroupState = {
-      targetCode,
-      isN: base === 'N',
-      positions,
-      writeIndex: isRev ? nPositions - 1 : 0,
-      step: isRev ? -1 : 1,
-      split,
-      next: 2,
-      countdown: nPositions > 0 ? +split[1]! : -1,
-      done: nPositions === 0,
+    // A duplicate group gets no state at all: one pass over N groups is only
+    // ever a pass over the DISTINCT ones, which is the whole point of measuring
+    // this against the merged baseline rather than the old one.
+    const deltas = group.slice(basemod.length)
+    const key = base + strand
+    let positions: number[] | undefined
+    if (seenKeys !== undefined) {
+      for (let s = 0, n = seenKeys.length; s < n; s++) {
+        if (seenKeys[s] === key && seenDeltas![s] === deltas) {
+          positions = seenPositions![s]
+          break
+        }
+      }
     }
-    states.push(st)
+
+    if (positions === undefined) {
+      const baseCode = base.charCodeAt(0)
+      const targetCode = isRev
+        ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
+        : baseCode
+      positions = isRev ? new Array<number>(nPositions) : []
+
+      const st: GroupState = {
+        targetCode,
+        isN: base === 'N',
+        positions,
+        writeIndex: isRev ? nPositions - 1 : 0,
+        step: isRev ? -1 : 1,
+        split,
+        next: 2,
+        countdown: nPositions > 0 ? +split[1]! : -1,
+        done: nPositions === 0,
+      }
+      states.push(st)
+
+      if (seenKeys === undefined) {
+        seenKeys = [key]
+        seenDeltas = [deltas]
+        seenPositions = [positions]
+      } else {
+        seenKeys.push(key)
+        seenDeltas!.push(deltas)
+        seenPositions!.push(positions)
+      }
+    }
 
     if (isSingleType) {
       result.push({
@@ -347,6 +432,31 @@ function modPositionsOnePass(mm: string, fseq: string, fstrand: number) {
     }
   }
 
+  // The sequence ran out before these groups placed every call they declare —
+  // an MM tag is free to ask for more of a base than remains. The per-group
+  // shape runs its inner loop to `seqLength` and records `seqLength - 1`
+  // (forward) or `0` (reverse) for each call it could not place, so this has to
+  // do the same or the two arms disagree on exactly those reads.
+  //
+  // **They did.** This arm dropped them instead, and every published row still
+  // read "output identical" because no read in those fixtures overran. What
+  // surfaced it was `--groups=2`, whose synthesized group WAS overrunning, for
+  // its own unrelated reason (fixed below). Left alone it would have made the
+  // crossover number meaningless, and it is a hard constraint on ever shipping
+  // this shape — the same end-of-sequence rule the `indexOf` probe in TODO.md is
+  // careful to reproduce.
+  const clamp = isRev ? 0 : seqLength - 1
+  for (const st of states) {
+    if (st.done) {
+      continue
+    }
+    let pending = 1 + (st.split.length - st.next)
+    while (pending-- > 0) {
+      st.positions[st.writeIndex] = clamp
+      st.writeIndex += st.step
+    }
+  }
+
   return result
 }
 
@@ -359,42 +469,70 @@ function modPositionsControl(mm: string, fseq: string, fstrand: number) {
   const groups = mm.split(';')
   const result: Mod[] = []
   let mlBase = 0
+  let seenKeys: string[] | undefined
+  let seenDeltas: string[] | undefined
+  let seenPositions: number[][] | undefined
 
   for (const group of groups) {
     if (group === '') {
       continue
     }
     const split = group.split(',')
-    const { base, typestr } = parseModHeader(split[0]!, group)
+    const basemod = split[0]!
+    const { base, strand, typestr } = parseModHeader(basemod, group)
     const isSingleType = isSingleModType(typestr)
     const nTypes = isSingleType ? 1 : typestr.length
     const splitLength = split.length
     const nPositions = splitLength - 1
 
-    const baseCode = base.charCodeAt(0)
-    const targetCode = isRev
-      ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
-      : baseCode
-    const isN = base === 'N'
-    const positions: number[] = isRev ? new Array(nPositions) : []
-    let writeIndex = isRev ? nPositions - 1 : 0
-    let currPos = 0
-
-    for (let i = 1; i < splitLength; i++) {
-      let delta = +split[i]!
-      do {
-        const seqCode = isRev
-          ? fseq.charCodeAt(seqLength - 1 - currPos)
-          : fseq.charCodeAt(currPos)
-        if (isN || seqCode === targetCode) {
-          delta--
+    const deltas = group.slice(basemod.length)
+    const key = base + strand
+    let positions: number[] | undefined
+    if (seenKeys !== undefined) {
+      for (let s = 0, n = seenKeys.length; s < n; s++) {
+        if (seenKeys[s] === key && seenDeltas![s] === deltas) {
+          positions = seenPositions![s]
+          break
         }
-        currPos++
-      } while (delta >= 0 && currPos < seqLength)
-      if (isRev) {
-        positions[writeIndex--] = seqLength - currPos
+      }
+    }
+
+    if (positions === undefined) {
+      const baseCode = base.charCodeAt(0)
+      const targetCode = isRev
+        ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
+        : baseCode
+      const isN = base === 'N'
+      positions = isRev ? new Array<number>(nPositions) : []
+      let writeIndex = isRev ? nPositions - 1 : 0
+      let currPos = 0
+
+      for (let i = 1; i < splitLength; i++) {
+        let delta = +split[i]!
+        do {
+          const seqCode = isRev
+            ? fseq.charCodeAt(seqLength - 1 - currPos)
+            : fseq.charCodeAt(currPos)
+          if (isN || seqCode === targetCode) {
+            delta--
+          }
+          currPos++
+        } while (delta >= 0 && currPos < seqLength)
+        if (isRev) {
+          positions[writeIndex--] = seqLength - currPos
+        } else {
+          positions[writeIndex++] = currPos - 1
+        }
+      }
+
+      if (seenKeys === undefined) {
+        seenKeys = [key]
+        seenDeltas = [deltas]
+        seenPositions = [positions]
       } else {
-        positions[writeIndex++] = currPos - 1
+        seenKeys.push(key)
+        seenDeltas!.push(deltas)
+        seenPositions!.push(positions)
       }
     }
 
@@ -639,9 +777,19 @@ async function main() {
       for (const b of extra) {
         // Every occurrence of `b`, as a delta list of zeroes — the densest legal
         // encoding, and the positions are wherever that base really is.
+        //
+        // On a REVERSE read the walk counts the complement of `b`, because it
+        // reads fseq from the back rather than revcom-ing it. Counting `b`
+        // itself here declared more calls than the read had bases for on about
+        // half the reads, which overran the end of the sequence — where the two
+        // arms turned out to disagree. That is what this flag first found.
+        const target =
+          r.strand === -1
+            ? String.fromCharCode(COMPLEMENT_CODE[b.charCodeAt(0)]!)
+            : b
         let n = 0
         for (let i = 0; i < r.seq.length; i++) {
-          if (r.seq.charCodeAt(i) === b.charCodeAt(0)) {
+          if (r.seq.charCodeAt(i) === target.charCodeAt(0)) {
             n++
           }
         }
@@ -664,11 +812,29 @@ async function main() {
 
   let bases = 0
   let groups = 0
+  let distinct = 0
   for (const r of reads) {
     bases += r.seq.length
-    groups += r.mm.split(';').filter(Boolean).length
+    const seen: string[] = []
+    for (const group of r.mm.split(';')) {
+      if (group === '') {
+        continue
+      }
+      groups++
+      const basemod = group.split(',')[0]!
+      const { base, strand } = parseModHeader(basemod, group)
+      const k = base + strand + group.slice(basemod.length)
+      if (!seen.includes(k)) {
+        seen.push(k)
+        distinct++
+      }
+    }
   }
   const meanGroups = groups / reads.length
+  // What the baseline actually walks, which since the same-base merge landed is
+  // the DISTINCT count, not the group count. Reporting groups/read here is how
+  // the ONT row came to claim three passes a read against a baseline making two.
+  const meanDistinct = distinct / reads.length
 
   const outPerGroup = serialize(runPerGroup(reads))
   const outOnePass = serialize(runOnePass(reads))
@@ -699,8 +865,9 @@ async function main() {
     `multi-group parse: one pass per group vs one pass total\n` +
       `${FILE} ${REFNAME}:${START}-${END}, min of ${ROUNDS} rotated rounds\n` +
       `  ${reads.length} MM reads, ${(bases / 1e6).toFixed(2)} Mbp, ` +
-      `${meanGroups.toFixed(2)} MM groups/read, ${outPerGroup.length} marks emitted\n` +
-      `  so the shipped shape makes ${(bases * meanGroups) / 1e6 > 0 ? ((bases * meanGroups) / 1e6).toFixed(2) : '0'} Mbp of sequence passes ` +
+      `${meanGroups.toFixed(2)} MM groups/read (${meanDistinct.toFixed(2)} distinct after the merge), ` +
+      `${outPerGroup.length} marks emitted\n` +
+      `  so the shipped shape makes ${((bases * meanDistinct) / 1e6).toFixed(2)} Mbp of sequence passes ` +
       `where one pass would make ${(bases / 1e6).toFixed(2)}\n\n` +
       `  per group     ${best.per.toFixed(2).padStart(8)} ms   <- ships\n` +
       `  one pass      ${best.one.toFixed(2).padStart(8)} ms   ${x(best.one)}   ` +
