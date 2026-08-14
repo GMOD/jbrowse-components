@@ -182,13 +182,6 @@ const FLOW_NUMBER = (n: number, extra?: { view: [number, number] }) =>
     },
   }) as const
 
-// Support level, as a colour, for the arcs in the amplicon figure: three
-// windows hold five arcs there, with no room for a column of numbers beside
-// them. StarFusionAdapter puts JunctionReadCount on the feature's score, and
-// three calls clear 100 against a tail in single digits.
-const FUSION_ARC_COLOR =
-  "jexl:get(feature,'score') > 100 ? '#c62828' : '#9e9e9e'"
-
 // The halves of cancer_sv/realigned_reads: the same junction, the same reads,
 // read against the reference and against the allele `derive` built from them.
 //
@@ -2424,134 +2417,38 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Where the amplified copies came from: chr22q11 beside chr9q34, one region
-  // each, with the fusion calls drawn as arcs across the pair. Both regions step
-  // up in copy number, and the arcs land on the two steps' inner edges, so the
-  // amplified unit is the piece of chr22 plus the piece of chr9 the junctions
-  // join, not either chromosome on its own.
+  // cancer_sv/k562_cn_amplicon WAS HERE and is DELETED, after four review
+  // rounds on it (final verdict: "this is not a very strong figure. the arcs
+  // from dna failed to clarify, the arcs just end up in the middle of copy
+  // number blocks, and there are not reads to orthogonally validate. we may need
+  // to delete or fix by finding better evidence"). Deleted rather than fixed
+  // because the "better evidence" is not available and the search for it is on
+  // the record, so nobody should spend a fifth round on it:
   //
-  // Two regions rather than the chr9 window alone: an arc is only drawn when
-  // both of its endpoints resolve through `view.bpToPx`, so with chr9 by itself
-  // the copy-number step has nothing pointing at it and the figure asserts the
-  // link in its caption instead of showing it.
+  //  - DepMap 24Q4, which both the copy-number lane and the fusion calls come
+  //    from, publishes 73 files and none of them is a structural-variant table
+  //    (OmicsCNSegmentsProfile and OmicsFusionFiltered, no
+  //    OmicsStructuralVariants). The natural companion to the CN lane does not
+  //    exist.
+  //  - ENCODE has four K562 WGS experiments and all four are Illumina on hg19.
+  //    There is no K562 long-read DNA there at all.
+  //  - the one thing that does exist is the 10X Chromium linked-read run
+  //    ENCSR053AXS, whose large-SV VCF this figure already drew as its blue
+  //    lane. It is calls, not reads, so it cannot be the orthogonal read
+  //    evidence the review is asking for.
+  //  - the only aligned K562 reads at this locus are the ENCODE Iso-Seq, and
+  //    they are the whole of cancer_sv/k562_bcr_abl_split above, at the zoom
+  //    where a transcript resolves. Over these three windows they are a 6.22 Mb
+  //    fetch, and even force-loaded, 1.25 Mb across ~1500 px puts an exon under
+  //    a pixel.
   //
-  // The arcs carry mate-direction ticks, now that StarFusionAdapter states
-  // which side of each breakpoint the fusion keeps: the tick runs from the
-  // breakpoint out over the retained sequence, so the pair of them says which
-  // piece of chr9 the junctions cut out. Without them an arc says two positions
-  // are joined but not how, which is what review could not read here.
+  // WHAT SURVIVES IT is the finding, in the tutorial's prose rather than in a
+  // picture, because it is two coordinates rather than a shape: the 10X DNA call
+  // puts BCR-ABL1's chr9 end at 130,731,760 and DepMap's segmentation steps up
+  // at 130,731,326, with the transcript junction 122 kb inside both. Two assays,
+  // two pipelines, one edge. The hosted K562_10x_sv track and the build script
+  // that lifts it stay, since that paragraph cites them.
   //
-  // NO RNA LANE, though review asked whether one would help, and this was
-  // measured rather than assumed. K562_isoseq over these three windows is a
-  // 6.22 Mb fetch against the default gate, so the lane renders as its
-  // too-much-data banner instead of coverage; and even force-loaded, 1.25 Mb of
-  // window across ~1500px puts an Iso-Seq exon under a pixel. The RNA reading of
-  // this junction is cancer_sv/k562_bcr_abl_split, one section up, at the zoom
-  // where a transcript is resolvable.
-  //
-  // A DNA LANE, which is the reinvestigation the review asked for ("please
-  // reinvestigate the 'skip reason' i think it might be worth getting dna
-  // still") and which reverses the previous round's answer. That round was
-  // right about the sources and wrong to stop: DepMap 24Q4 genuinely publishes
-  // no structural-variant table, and ENCODE's four K562 WGS experiments are
-  // genuinely Illumina on hg19 -- but ENCODE also has one 10X Chromium
-  // linked-read run, ENCSR053AXS, whose large-SV VCF (ENCFF863MPP, 322 BND
-  // records, hg19) carries BOTH junctions of this amplicon. Lifting it costs a
-  // chain and a hosted file, which is what the last round declined to spend.
-  //
-  // Now spent. `scripts/lift_bnd_vcf.py` moves both of a breakend's
-  // coordinates rather than just POS, drops any record whose partner did not
-  // survive, and drops loci that landed on an inverted chain block, which is
-  // 264 of 322 records; the REF base of every one of them was checked against
-  // GRCh38 and matches. It is a track in the demo config, so the live link
-  // opens what this figure shows.
-  //
-  // What it adds is the thing the RNA lane structurally cannot say, and it is
-  // checkable off the two files rather than asserted. A fusion caller only ever
-  // sees a junction that is transcribed, so the STAR-Fusion arc puts BCR-ABL1's
-  // chr9 end at 130,854,064, an exon boundary. The DNA arc puts it at
-  // 130,731,760. And `bigWigToBedGraph -chrom=chr9` over K562_cn.bw -- the
-  // OTHER lane in this figure, from DepMap's WGS rather than from ENCODE's 10X
-  // run -- says the amplification starts at 130,731,326. Two assays, two
-  // pipelines, the same edge; the transcript junction is 122 kb inside it,
-  // in ABL1's first intron, which is where this fusion's genomic break is known
-  // to sit.
-  //
-  // Hence the highlight: it is the one place in the figure where a reader can
-  // see the copy-number step, the DNA arc's terminus and the absence of an RNA
-  // arc in a single vertical stripe. In-app rather than an overlay, so it is in
-  // the live link too.
-  {
-    mode: 'url',
-    name: 'cancer_sv/k562_cn_amplicon',
-    // 1025 - 260 for the two arc lanes going from 250 to 120 (reviewer: "reduce
-    // height of the arc tracks a bunch"). Two arcs each is what they hold, and
-    // at 250 the pair was 500 px of blank with four curves in it.
-    viewportHeight: 765,
-    url: lgvSession(CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr22:16,700,000-16,950,000 chr9:130,600,000-131,350,000 chr22:23,150,000-23,400,000',
-      // wide enough to be a stripe rather than a hairline at 1.39 Mb across the
-      // frame, and centred on the pair of coordinates it marks
-      highlight: [
-        {
-          refName: 'chr9',
-          start: 130_723_000,
-          end: 130_740_000,
-          color: 'rgba(60,65,72,0.13)',
-        },
-      ],
-      tracks: [
-        { ...GENE_TRACK, height: 70 },
-        { trackId: 'K562_cn', height: 130 },
-        {
-          trackId: 'K562_star_fusion',
-          type: 'LinearPairedArcDisplay',
-          height: 120,
-          color: FUSION_ARC_COLOR,
-        },
-        // The DNA junctions, under the RNA ones so the pair is read down the
-        // page against one copy-number lane. Flat colour rather than
-        // FUSION_ARC_COLOR: that expression encodes JunctionReadCount, which
-        // this caller does not report, and two arcs need no ramp.
-        {
-          trackId: 'K562_10x_sv',
-          type: 'LinearPairedArcDisplay',
-          height: 120,
-          color: '#1565c0',
-        },
-      ],
-    }),
-    // WHAT EACH ARC LANE IS, on the lane (reviewer: "use text annotation to say
-    // what the arcs are"). The track names say which caller produced them,
-    // which is not the same question -- the figure is about the two lanes
-    // disagreeing on purpose, and that is what these say. Anchored to the track
-    // rather than to a coordinate, so they follow the lane heights above.
-    annotations: [
-      {
-        type: 'text',
-        text: 'RNA: only junctions that are transcribed',
-        fontSize: 18,
-        maxWidth: 260,
-        anchor: {
-          track: 'K562_star_fusion',
-          fracY: 0.14,
-          alignX: 'left',
-          dx: 14,
-        },
-      },
-      {
-        type: 'text',
-        text: "DNA: the amplicon's own two edges",
-        fontSize: 18,
-        maxWidth: 260,
-        anchor: {
-          track: 'K562_10x_sv',
-          fracY: 0.14,
-          alignX: 'left',
-          dx: 14,
-        },
-      },
-    ],
-  },
+  // The DNA-SV story on the site is told where there are real reads: the COLO829
+  // ONT sections above and the C-GIAB PacBio HiFi tutorial.
 ]

@@ -439,16 +439,14 @@ covers no interval over _BCR_ itself, which is why that window has an arc but no
 copy-number step under it.
 
 A fusion caller only reports junctions that are transcribed, so those arcs land
-on exon boundaries and cannot say where the amplified block begins. The lane
-under them is the DNA answer, from a different assay: ENCODE's 10X Chromium
-linked-read run on K562 (ENCSR053AXS), whose large-SV calls are on hg19 and are
-lifted to hg38 by the build script. Its chr9 breakpoint for BCR-ABL1 is at
-130,731,760, the shaded stripe in the figure, which is where the copy-number
-lane above it steps up. The transcript junction the red arc uses is 122 kb to
-the right of that, inside _ABL1_'s first intron: the amplicon boundary is a DNA
-break, and the transcript is spliced from it to the nearest exon.
-
-<Figure caption="Copy number in three windows with the calls as arcs across them. Red, the STAR-Fusion RNA junctions; blue, the same two junctions called from 10X linked-read DNA. The shaded stripe is where the DNA arc ends and copy number steps up." src="/img/cancer_sv/k562_cn_amplicon.png" />
+on exon boundaries and cannot say where the amplified block begins. The DNA
+answer comes from a different assay: ENCODE's 10X Chromium linked-read run on
+K562 (ENCSR053AXS), whose large-SV calls are on hg19 and are lifted to hg38 by
+the build script. Its chr9 breakpoint for BCR-ABL1 is at 130,731,760, and
+DepMap's copy-number segmentation steps up at 130,731,326. The transcript
+junction is 122 kb to the right of both, inside _ABL1_'s first intron: the
+amplicon boundary is a DNA break, and the transcript is spliced from it to the
+nearest exon.
 
 This is the reasoning SplitThreader applied to the _ERBB2_ amplicon in SK-BR-3:
 copy-number steps and breakpoints that describe the same interval are evidence
