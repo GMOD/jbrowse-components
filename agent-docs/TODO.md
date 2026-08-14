@@ -31,6 +31,7 @@ before anyone noticed.
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
+| [Jump the MM delta walk with `indexOf`](#jump-the-mm-delta-walk-with-indexof-instead-of-stepping-it) | alignments, perf | 1.42x probed on forward strand; measure reverse before building |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Audit the wiggle colour paths for the same split](#audit-the-wiggle-colour-paths-for-the-same-split) | wiggle | read `sourcesLogic.ts` against its legend |
@@ -69,6 +70,32 @@ before anyone noticed.
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 
 ## Ready to build: small and self-contained
+
+### Jump the MM delta walk with `indexOf` instead of stepping it
+
+`getModPositions` finds each call by stepping one base at a time until it has
+counted past `delta` occurrences of the modified base — 43.7 Mbp of `charCodeAt`
+over the full extent of `200x.longread.mod.bam`. `String.prototype.indexOf` for a
+single character is a native scan, so the same walk is `delta + 1` jumps instead
+of `distance` steps. Mean delta on this fixture is 10.8, so ~11.8 native calls
+per call placed against ~52 JS iterations.
+
+`plugins/alignments/benches/seqscan.probe.ts` measures **1.42x** on the walk in
+isolation, checksums agreeing. `modPhases.bench.ts` puts the parse phase at 46%
+of the pipeline and `mmParseShape.bench.ts` shows only a tenth of that is the
+`split(',')`, so this walk is the bulk of the largest remaining phase.
+
+Two things before building it:
+
+- **The probe is forward-strand only.** Reverse reads scan backwards for the
+  complement, which wants `lastIndexOf` and is a different access pattern —
+  measure it rather than assuming symmetry, since it is half the reads.
+- **`base === 'N'` matches every base**, so that case is `currPos += delta + 1`
+  and needs no scan at all. It is already a branch in the loop; keep it one.
+
+The end-of-sequence behaviour is the thing to get exactly right: the stepping
+form runs to `seqLength` and records `seqLength - 1` when the base runs out, and
+the probe reproduces that rather than returning -1.
 
 ### Group the methylation path's CIGAR walk, the way the marks path now is
 

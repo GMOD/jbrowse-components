@@ -33,6 +33,23 @@ from — `plugins/alignments/benches/` holds `modExtract.bench.ts`,
 | the modifications menu is answered from the MM headers | `modMenuScan.bench.ts` |
 | a combined code (`C+mh`) walks the read once per GROUP, not once per type | `modCombinedCode.bench.ts` |
 | the palette UBO's four table walks resolve once, not per frame per track | — (~0.8% of one profile; pinned by `paletteUboParity.test.ts`) |
+| `getNextRefPos` is driven by the positions, not by every read base | `cigarWalkShape.bench.ts` |
+
+**The last one came from measuring the phases instead of recognizing a shape,
+and that is the transferable part.** Three fixes here were each aimed at
+something a reader could spot, which works until the next three candidates are
+all aimed at the same phase on no evidence. `modPhases.bench.ts` splits the
+per-read pipeline (parse 46%, CIGAR walk 45%, emit 10%) and redirected the queue
+twice over: it found the walk, and it demoted the parse candidate that looked
+obvious (`mmParseShape.bench.ts`, filed as declined) in favour of the one that
+did not.
+
+**And these benches moved to the file's full extent rather than a 19 kb window**,
+which is not a detail: the small window is cache-resident, so it prices
+arithmetic and is silent about allocation. Re-measuring the combined-code fix at
+3.1x the size moved it 2.07x -> 1.86x. A window too small to hold the real
+working set does not widen the error bars, it moves the answer — and here it
+moved it in the direction that flattered the change.
 
 The end-to-end A/B for the first three is committed in jb2bench as
 `results/multibam-pan.{json,md}` (`752657f`). The number worth keeping from it is

@@ -249,6 +249,23 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   columns pay doubling copies and an intern lookup per push. Same bench, kept as
   an arm. Don't re-propose it without a fixture where the marks outlive the
   fetch.
+- **Scanning the MM delta list instead of `split(',')`** — measured 2026-08-14 at
+  **1.056x / 1.085x** against controls of 0.995 / 1.006, output identical, and
+  declined on the size of the number rather than on the risk. The premise is
+  sound and the allocation is real: a nanopore read declares ~950 calls, so the
+  split builds ~950 substrings per read — 0.84M over the full extent of
+  `200x.longread.mod.bam` — purely to run `+` over each and throw them away. It is
+  worth about a twentieth of the pipeline, against a hand-rolled integer parser
+  that reads a malformed tag differently from `+` (digits only, vs `+`'s
+  whitespace/sign/float/NaN). `plugins/alignments/benches/mmParseShape.bench.ts`,
+  both arms kept.
+
+  **The negative is what located the real cost**, which is the generalisation
+  worth keeping: `modPhases.bench.ts` puts the whole parse phase at 46% of the
+  per-read pipeline, and this says only a tenth of that is the substrings. The
+  rest is the delta walk stepping through 43.7 Mbp of read sequence one
+  `charCodeAt` at a time. `seqscan.probe.ts` prices `indexOf` jumps over that at
+  1.42x — the candidate this measurement redirected to, and it is in TODO.md.
 - **Memoizing `computeVisibleCoverageStats` to make the 500 ms coarse tick
   cheaper** — declined 2026-08-14 by reading what it costs rather than by
   measuring a variant, which is the cheaper order here. The tick was the right
