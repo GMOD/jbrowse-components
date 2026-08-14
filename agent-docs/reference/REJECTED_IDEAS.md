@@ -16,6 +16,23 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
+- **A clustering tolerance inside `arcKey`** — measured 2026-08-14 and declined,
+  after being proposed twice: once so the arc band would agree with the counted
+  sashimi overlay's 10 bp window, and once on the worry that a real fusion's
+  support splits across the microhomology jitter the aligner leaves. Run against
+  the hosted K562 Iso-Seq BAM (579 records over the figure's chr22 window, each
+  read's chain resolved the way `unpairedReadChain` + `connectionEndpointBps`
+  resolve it), the split is **26/1/1/1** — one dominant arc at the canonical
+  e14a2 acceptor with three singletons within 20 bp, i.e. inside two screen
+  pixels and under its stroke. **What was given up:** two reads of support, for
+  a change to `arcKey`'s exact-coordinate rule, which is the invariant the whole
+  coalescing story rests on. A split read knows its breakpoint to the base;
+  what it does not know is which base the aligner picked inside the
+  microhomology, and that ambiguity is smaller than the ink. The mate-pair
+  family is the opposite case and is already handled elsewhere: mates straddle a
+  breakpoint rather than landing on it, so their count is taken over a window by
+  `clusteredInterchromSupport` — a support FLOOR, not a merge, and it never
+  invents a position. Numbers in [DEMO_DATASETS.md](DEMO_DATASETS.md).
 - **A clustered read-support floor for SAME-CHROMOSOME discordant arcs** —
   measured 2026-08-13 and declined, having been proposed as the obvious twin of
   the interchromosomal one that shipped. Windowed support genuinely gathers

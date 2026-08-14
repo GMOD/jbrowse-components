@@ -300,10 +300,18 @@ which surfaces the long-range relationships behind structural variants.
 ### Read arcs
 
 _Show read arcs_ draws a bezier curve between the ends of each pair. Long-range
-and discordant pairs stand out from the short local arcs. Off-screen partners
-draw as large semicircular arcs and inter-chromosomal mates as vertical lines;
-both can be toggled off. Dragging the track taller re-fits the arcs into the
-available height.
+and discordant pairs stand out from the short local arcs. A partner the view has
+not loaded draws as a large semicircular arc reaching toward it. A mate on
+another chromosome draws as an arc too, when that chromosome is one of the
+regions on screen, and as a vertical line at the breakpoint when it is not — the
+line says the connection reaches somewhere this view is not showing. Both can be
+toggled off. Dragging the track taller re-fits the arcs into the available
+height.
+
+An arc whose two ends are in different displayed regions spans them, so opening
+a second region either side of a breakpoint shows the connection as one curve
+rather than as two marks. Interchromosomal arcs are drawn in one colour, since
+insert size and pair orientation mean nothing across chromosomes.
 
 Reads describing the same connection draw as **one arc, thickened by how many of
 them there are**, the way a sashimi arc is sized by its junction's read count,

@@ -1,517 +1,122 @@
 ---
 name: handoff-interchromosomal-read-connection-arcs
 description:
-  Reviewed proposal to let a read connection between two chromosomes draw as an
-  arc when both ends are on screen — the mechanism verdict, the four gaps the
-  review found (read-cloud axis, two settings ungated, a two-refName tooltip, a
-  refName-keyed bucket), the option that was rejected for the wrong reason, and
-  which flank the size premise actually fails on.
+  The arcs landed; what is left is the figures and the second junction producer
+  they retire. Which figure to re-aim and what it should draw, two exploratory
+  ones whose render IS the measurement, and the one measurement the cap still
+  rests on an estimate for.
 ---
 
 # Handoff: interchromosomal read-connection arcs
 
-**Nothing here has landed.** The proposal has now had the fresh reading it asked
-for (2026-08-14), against `main` and against the branch. **The direction and the
-mechanism hold.** What changed in review: one of the three rejected alternatives
-was rejected for the wrong reason, the size premise fails on the opposite flank
-from the one the proposal defended, and four gaps would each have shipped a
-silently wrong picture. Those are [Gaps found in review](#gaps-found-in-review),
-and they are the part to read.
+**The feature landed** (2026-08-14, five commits ending
+`test(browser): three region layouts over one translocation`). A read connection
+between two chromosomes now draws as one coalesced, support-weighted arc when
+both of its ends are on screen, and as the two ticks it always drew when they are
+not; an arc whose feet are in two displayed regions is drawn once across the view
+by `CrossRegionArcsOverlay` instead of being handed to both blocks and coming out
+as two dangling halves. The reasoning is in the commit messages and in
+[`LinearAlignmentsDisplay/CLAUDE.md`](../../plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md);
+`test_data/volvox/volvox-translocation.bam` and the three `arcs-display` browser
+cases are its regression test.
 
-## Where the pieces are
+**What is left is the figures**, and the second junction producer they retire.
 
-- **A prior thread's work**: branch `worktree-split-read-sashimi-arcs`, worktree
-  `.claude/worktrees/split-read-sashimi-arcs`, 7 commits ahead of an older
-  `main`. Two separable pieces on one branch — a **counted sashimi arc over the
-  coverage band** (new feature, `showSplitJunctionArcs`) and a **cross-region
-  arc fix** for the arc band (bug fix). Green in `plugins/alignments`.
-- **That thread's own handoff is stranded on that branch**:
-  `git show worktree-split-read-sashimi-arcs:agent-docs/handoffs/split-read-junction-arcs.md`.
-  It carries the measurements this doc cites and its own list of what it left
-  broken.
-- **This doc supersedes it on the question of what to do**, not on the
-  measurements.
+## 1. Re-aim `cancer_sv/k562_bcr_abl_split`, then drop piece A
 
-## The bug, stated correctly
+The two are one job. `showSplitJunctionArcs` — the counted sashimi overlay on
+branch `worktree-split-read-sashimi-arcs`, that thread's "piece A" — is a second
+coalescer for the same junctions, and the arc band can now draw what it was built
+to draw. It clusters within 10 bp and takes the modal site where `arcKey`
+coalesces on exact coordinates, so at a junction with microhomology jitter the
+two print different counts at one locus.
 
-**An arc with a foot in another displayed region is not clipped away. It is
-drawn in the wrong place, and then clipped.**
+**Turn the band on in the figure rather than dropping piece A around it.** The
+k562 figure does not enable the arc band today: `readConnections` has
+`promotedBase: 'off'`, the spec's `SPLIT_READS` is `{featureHeight: 4}`, and the
+fan in that figure is `showBezierConnections` in chain mode. So set
+`readConnections: 'arc'` on the `K562_isoseq` track in
+`website/scripts/specs/cancer_sv.ts`, keep the bezier fan, and write the caption
+and tutorial prose for the fan-plus-count reading — the fan is the evidence, one
+curve per molecule; the arc is the count they add up to, which is the argument
+the prose already makes for piece A. Then
+`pnpm figures:push --exact --filter cancer_sv/k562_bcr_abl_split` and commit
+`figures.lock`.
 
-Both renderers project bp to x through **the block they are currently drawing**:
+**Expect one thick arc of support 26, three hairlines under its stroke, and a
+tick picket at the BCR donor.** That is measured, not predicted —
+[DEMO_DATASETS.md](../reference/DEMO_DATASETS.md) has the acceptor distribution
+and the method caveat. If the band shows something else, the model of that data
+is wrong and that is worth more than the figure.
 
-- Canvas2D — `features/arcs/drawCanvas.ts:199` → `bpToScreenX(bp, block, …)`
-  (`renderers/rendererTypes.ts:436`)
-- GPU — `shaders/slang/arc.slang:251` →
-  `u.blockStartPx + bpToLinear(inst.x1, u) * u.blockWidth`, off that block's
-  `bpLo/bpHi`
+What piece A's removal loses is the printed count label and the position over the
+coverage band, nothing else. The label, if wanted, is a small later option on the
+arc band sourced from `ComputedArc.support` — one producer, one number, serving
+same-chromosome junctions too. It is not a reason to keep a second junction
+producer alive meanwhile.
 
-That formula is valid only for a bp inside that block's own region. Given a
-coordinate from another displayed region it extrapolates linearly, as though the
-bp the view skips at the seam did not exist.
+The clustering pre-pass that would have made the two agree is dead and filed:
+[REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md), "A clustering tolerance
+inside `arcKey`".
 
-Worked, on one chromosome shown as two regions `[1000,2000]` and `[2300,3300]`,
-contiguous on screen at 2 bp/px, 500 px each — an arc from bp 1500 to bp 2800,
-which should run x=250 → x=750:
+## 2. Two exploratory figures — the render is the measurement
 
-| drawn by | left foot | right foot | what survives its clip                        |
-| -------- | --------- | ---------- | --------------------------------------------- |
-| block A  | 250 ✓     | **900** ✗  | left leg from 250, climbing to an apex at 575  |
-| block B  | **100** ✗ | 750 ✓      | right leg from 750, apex at 425, off-clip      |
+Neither can be rendered before this feature exists, which is why they are here
+rather than done. Both are worth rendering **because** we do not know what they
+show.
 
-The 300 bp the view skips is 150 px of error, in opposite directions. Two
-different curves with two different apexes, neither of them the arc. That is the
-"two dangling halves".
+**The frame decides which connections are arcs.** Same chr22 window as figure 1,
+chr9 widened to the whole of ABL1 (~`chr9:130,710,000-130,890,000`). The ticks
+should become arcs fanning to the distinct acceptors, weighted by support. Paired
+with figure 1 it is the clearest statement of the semantic this change
+introduces: a tick means "reaches somewhere you cannot see", and widening the
+frame turns it into an arc. What is uncertain is what it draws — the acceptor
+distribution is solid but the chr22 feet of those out-of-frame junctions come
+from CIGARs carrying 100 kb+ `D` operations and are not. **Do not let the caption
+claim biology**: whether the 149-read site is an alternative acceptor or an
+alignment artefact is unestablished, and the figure's subject is the display
+behaviour. If it renders as noise, drop it and record that in `DEMO_DATASETS.md`.
 
-The clip itself is correct and is not the problem: it is a plain rect clip on a
-**shared, full-width canvas** (`Canvas2DAlignmentsRenderer.ts:435`) or a
-viewport+scissor over one (`GpuAlignmentsRenderer.ts:1035`). Had both blocks
-drawn the *same globally-correct curve*, each clip would keep its own half and
-the halves would join. Nothing about the clipping forbids a cross-region arc.
+**The multihop chain in one view.** COLO829's `chr3:25,357,600-25,361,000` with
+the chr12 and chr10 partner windows as further displayed regions, tumour track
+with `readConnections: 'arc'`. The hops draw as counted arcs in one LGV. The
+tutorial tells this story today with `multihop_split_view` — four panels built by
+"Reconstruct derivative allele → draw as split", and a script — so this belongs
+beside that figure rather than replacing it. ONT split junctions are exact, so
+they should coalesce into a few thick arcs whose width is the support nanomonsv
+called on, which is the best case this feature has. Partner coordinates come from
+the nanomonsv VCF / `sv_multihop.py` output; the figure only works if those
+windows are right.
 
-This is the precision missing from the rule in
-[`LinearAlignmentsDisplay/CLAUDE.md`](../../plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md)
-— "No GPU pass can join two displayed regions" — which is true of the passes we
-have, for a reason that reads as a clipping limit and is not one. See
-[the escape hatch](#the-escape-hatch-if-the-set-ever-does-get-big) for what it
-would take to make it false.
+## 3. Two things still unverified, and one number still an estimate
 
-## Why an interchromosomal arc is the same problem
+- **A dark-mode frame.** The overlay strokes from the same palette slot the
+  canvas passes resolve, so it should follow the theme, but no frame has been
+  looked at. (The SVG export IS verified — `svg-export.ts` exports the two-contig
+  view and checks the clip group and the stroke widths.)
+- **The same-chromosome cross-region count at depth**, which is the number the
+  overlay's 600-arc cap is sized from and is an estimate scaled from a 30x
+  measurement, not a measurement. It is cheap now: read `crossRegion.length` off
+  the model on the HG002 300x window split in two. Note the user-facing
+  mitigation at that depth already exists and is the one such a reader is
+  already using — `drawProperPairArcs: false` drops 9138 of 9204 arcs.
+- The prior thread's other numbers, re-read but never re-run: 52 of 381 arcs
+  (13.6%) cross-region on the HG02768 inverted duplication split into two regions
+  300 bp apart, 0 for that view as one region and for two regions 2 Mb apart, 865
+  of 9204 arcs interchromosomal at 1:2,000,000 on HG002 300x.
 
-`resolveArcs` (`features/arcs/compute.ts:1189`) short-circuits on
-`p1Ref !== p2Ref` and drops a vertical tick at each endpoint instead of ever
-building an arc. The data is already there: with two chromosomes displayed,
-`groupReadsByName` buckets both mates/segments together and
-`mateLinkArc`/`splitJunctionArc` already emit a `PendingArc` spanning them. The
-refusal is one `if`.
+## The escape hatch, if the overlay's set ever does get big
 
-But two feet on two refNames are necessarily in two different displayed
-regions — so **whatever answer is chosen for cross-region arcs is the only place
-an interchromosomal arc could ever be drawn.** The two are one issue, and the
-cross-region fix is a prerequisite rather than an adjacent cleanup.
-
-The documented rationale for the tick rule is two claims bundled: that insert
-size, long-range distance and pair orientation are meaningless across refs
-(**still true**, and it is why the arc keeps the ticks' colour rather than
-following `colorByType`), and that nothing could join the two regions anyway
-(**the half this removes**).
-
-### What the change is actually worth, stated properly
-
-The display can **already** draw an interchromosomal connection across two
-displayed regions: the per-read bezier overlay does it, and that is what the
-k562 figure shows today (`bezierArcScope` = `crossRegion` in chain mode). What
-no pass can draw is that connection **coalesced and counted** — one mark whose
-stroke width is how many molecules say so.
-
-That is the whole value, and it is worth saying in exactly those words, because
-it is also the sentence that settles [open decision 1](#open-decisions): a
-coalesced, counted, cross-chromosome junction mark is precisely what piece A was
-built to be, so once the arc band can draw one there are two producers of it.
-
-## The four ways to draw it, and which lose
-
-1. **Draw once in view space — an overlay.** The proposal, and still the answer.
-   Costs are under [Known costs](#known-costs-of-the-overlay).
-2. **Rewrite the foreign foot's bp into the drawing block's frame.** Loses, and
-   the four reasons were re-checked and all hold. `arcX1/arcX2` stop meaning
-   "where this arc is" while `arcHitAt` reads them straight back into the
-   tooltip's coordinates (`hitTest.ts:158`, `formatArcTooltip`); the rewritten
-   bp goes **negative** when the foreign region is left of a block whose region
-   starts near bp 0, and these are `Uint32Array`; the arc lands in both regions'
-   buffers so `hitTestArcBand` finds it twice at two reported coordinates; and
-   `arcIsFar` (`arc.slang:159`) branches on `u.canvasW`, which
-   `fillArcUniforms` sets to **`scissorW`** — the clipped block's width
-   (`GpuAlignmentsRenderer.ts:212`) — so a partly-scrolled-off block picks
-   circle where its neighbour picks ellipse and the halves are different marks.
-3. **Per-region offset table in the uniforms.** Option 2 in the shader instead
-   of the packer — more work for the same result, same `arcIsFar` defect.
-4. **Upload resolved screen px instead of bp.** **The proposal's reason for
-   rejecting this is wrong, and it matters for the fallback rather than for the
-   decision.** "Px means repacking every pan frame" is not true of the px that
-   would be uploaded: `view.bpToPx` returns a **layout** `offsetPx`
-   (`packages/core/src/util/Base1DUtils.ts:247` — cumulative bp / `bpPerPx`),
-   and `view.offsetPx` is subtracted only at draw time (`makeBpToScreenX`). A
-   view-space buffer is therefore **pan-invariant** and repacks on **zoom**.
-   It still loses to the overlay at the sizes measured, on cost rather than on
-   correctness — but it is the escape hatch, not a dead end.
-
-### The escape hatch, if the set ever does get big
-
-One extra **view-space GPU pass**, reusing `arc.slang` unmodified: pack the
-cross-region arcs against layout px instead of bp (they are the same axis — the
-displayed regions are laid out **contiguously**, `calculateDynamicBlocks.ts:115`
-advances by `regionWidthPx` with no inter-region padding except the two boundary
-blocks, which is also why the SVG overlay lines up with the canvas exactly), set
-`blockStartPx`/`blockWidth`/`bpLo`/`bpLen` so the "bp" axis IS layout px, and
-set `canvasW` to the **view's** width so `arcIsFar` is asked once for the whole
-mark. Scissor to the band over the full canvas rather than per block.
+Written down rather than built. One extra **view-space GPU pass**, reusing
+`arc.slang` unmodified: pack the cross-region arcs against layout px instead of
+bp (they are the same axis — displayed regions are laid out contiguously,
+`calculateDynamicBlocks.ts` advances by `regionWidthPx` with no inter-region
+padding except the two boundary blocks, which is also why the SVG overlay lines
+up with the canvas exactly), set `blockStartPx`/`blockWidth`/`bpLo`/`bpLen` so
+the "bp" axis IS layout px, and set `canvasW` to the **view's** width so
+`arcIsFar` is asked once for the whole mark. Scissor to the band over the full
+canvas rather than per block.
 
 What it costs: a repack on zoom, a second uniform-fill path, and the split of
 "drawn coordinate" from "reported coordinate" that the tooltip needs — the scar
-`arcYBp` / `arcSpanBp` already records, one axis over. Write it down rather than
-build it now.
-
-## Proposal, as revised by the review
-
-1. **Take the branch's cross-region overlay as the drawing mechanism**, and land
-   it on its own — it is a bug fix, correct on today's `main` with no
-   interchromosomal change at all. The overlay is not a novel mechanism here:
-   it is what `bezierArcScope`'s `crossRegion` and the sashimi band already are,
-   its projection already exists (`makeBpToScreenX`), and
-   `crossRegionOverlay.ts` already passes the **view's** width as
-   `screenWidthPx` so `arcIsFar` is asked once — keep that and its comment.
-2. **One decision point, not an emit-then-partition pair.** `resolveArcs` should
-   resolve each foot's region index ONCE and return three things — within-region
-   arcs, cross-region arcs, ticks — rather than emitting arcs and partitioning
-   them in a second pass with a second region lookup. That is what makes
-   "an interchromosomal arc is always in the cross-region set" structural rather
-   than incidental, which [gap 4](#4-grouparcsbyref-is-keyed-on-p1refname) shows
-   is load-bearing. It is also the answer to the prior thread's complaint that
-   "which arcs does this lane draw" stopped having one answer.
-3. **The region list is the view's DISPLAYED regions, not `loadedRegionInfos`.**
-   The criterion is "can both feet be projected", and the projector is
-   `view.bpToPx`, which reads `displayedRegions`. Keying on the loaded set does
-   not merely produce the transient the proposal accepted — it leaves the
-   original bug alive for a displayed-but-unfetched partner: foot 2 resolves to
-   no region, the arc falls into the within-region half, `arcTouchesRegion`
-   hands it to foot 1's block on a raw bp comparison, and it is extrapolated and
-   clipped exactly as before. The read scan still needs the loaded list, so
-   these become two parameters. `arcsByGroup` then depends on `displayedRegions`,
-   which changes on navigation and **not on pan** — the property
-   `loadedRegions`' own comment is written to protect — so the tier survives.
-4. **`resolveArcs` builds an interchromosomal arc when both feet land in a
-   displayed region, ticks otherwise, decided per connection** — so a breakpoint
-   reaching one displayed and one undisplayed chromosome gets an arc **and** a
-   tick, and both counts stay honest. Colour is `ARC_COLOR_INTERCHROM`, slot 3 of
-   `ARC_SLOT_CATEGORY`, already the `interchrom` legend swatch, so no palette or
-   legend plumbing. Height is the band ceiling. **Arc mode only** — see
-   [gap 1](#1-read-cloud-mode-must-keep-the-ticks-and-this-one-is-severe).
-5. **Cross-group facts become outputs of the pass that holds both halves.**
-   `arcLegendCategories` and `arcsYDomainBp` walk `arcsByGroup` today, so
-   removing arcs from it broke both; they are not two slips. Compute them inside
-   `computeArcsByGroup`, **after** regionization, not before — an arc that
-   reaches no displayed region at all is dropped by `arcTouchesRegion`, and
-   keying a legend swatch off the pre-regionization set would name a colour
-   nothing draws, which is the same failure one level up.
-6. **Cap the overlay, ordered by support descending, with the drop counted.**
-   Size it for the same-chromosome case, not the interchromosomal one — see
-   below.
-7. **Then** verify the SVG export and a dark-mode frame, which are unverified
-   for both pieces.
-
-## The size premise fails on the other flank
-
-The proposal asked for this to be attacked, on the ground that
-interchromosomal arcs break the "inherently small" premise the overlay was
-chosen on. **They do not. Multi-seam same-chromosome views at depth do.**
-
-**Interchromosomal is bounded by an enormously selective filter.** Only pairs
-joining the two *displayed windows* qualify. The 865 interchromosomal
-connections measured at 1:2,000,000 on HG002 300x have their far ends spread
-over the rest of the genome, so a second 200 kb window catches ~0.06 of them by
-chance; reaching even 60 would take a ~1000x enrichment at that exact window,
-which is a segdup pair — i.e. exactly the connection a reader wants drawn.
-The other way to get a lot is a real event, and a translocation at 300x recruits
-**~100 pairs** (`reference/DEEP_COVERAGE.md`). 100 paths is nothing.
-
-Two consequences worth carrying:
-
-- Those ~100 will **not** coalesce. 862 of 865 interchromosomal connections were
-  the sole occupant of their coordinate (`compute.ts`, `clusteredInterchrom-
-  Support`'s comment), so a deep translocation draws as a **fan of ~100
-  hairlines**, not one thick arc. That is exactly what its ticks look like
-  today, and the refusal to invent a merged position is the same refusal
-  `arcKey` already states — so this is consistent rather than a regression. It
-  does mean "one counted arc for a translocation" is true of split-read evidence
-  and not of mate-pair evidence.
-- k562 goes from 8 ticks to **4 arcs, and they are nothing like equal** — see
-  [the k562 measurement](#what-k562-actually-draws-measured), which is the input
-  to [open decision 1](#open-decisions).
-
-**The same-chromosome case is the one to bound.** Cross-region arcs at a seam
-are the fragments straddling it, so the count scales with *physical* coverage
-and with the number of seams. The measured 52 of 381 (13.6%) is one seam on a
-~30x paired-end sample; the same seam at 300x is ~10x that, and an N-region view
-multiplies it again. Unmeasured — and cheap to measure now that the partition
-exists: read `crossRegion.length` off the model on the HG002 300x window split
-in two. Note the user-facing mitigation already exists and is the one a reader at
-that depth is already using: `drawProperPairArcs: false` drops 9138 of 9204 arcs.
-
-## What k562 actually draws, measured
-
-Run against the hosted BAM rather than argued about — 579 records over
-`chr22:23,286,000-23,293,000`, each read's segment chain resolved the way
-`unpairedReadChain` + `connectionEndpointBps` resolve it, then coalesced the way
-`arcKey` coalesces:
-
-**In the figure's own two windows: 29 reads over 4 arcs — one of support 26 and
-three singletons within 20 bp of it.** The 26 is `chr22:23,290,413 ↔
-chr9:130,854,063`, which is the ABL1 exon-2 acceptor, i.e. the canonical
-BCR-ABL1 e14a2 junction the STAR-Fusion call bands the figure on. A further 195
-junctions have only one foot in a displayed window and stay ticks, clustered at
-`chr22:23,290,41x` — those are the same BCR donor splicing to ABL1 acceptors tens
-of kb outside the frame.
-
-Three things follow, and each retires an argument:
-
-- **Exact coalescing is right here, and no clustering pre-pass is needed.** The
-  worry that the support would be split four ways is wrong: it splits 26/1/1/1,
-  and the three hairlines sit under a support-26 stroke inside two screen pixels.
-  `arcKey`'s documented exact-coordinate rule holds on real fusion data.
-- **The gap to piece A is 26 vs 28** — piece A's 10 bp window absorbs two or
-  three of the singletons — **and a printed label.** That is the whole
-  difference, which is what makes open decision 1 answerable.
-- **The chr9 side of this fusion is not one site.** The acceptors are tens of kb
-  apart, so which junction is an arc and which is a tick is decided by where the
-  frame is put. That is a property of the data worth knowing before reading any
-  arc/tick count as evidence.
-
-Caveat on the method: these reads carry multi-segment chimeric alignments with
-100 kb+ `D` operations, so segment ENDS derived from a CIGAR reference span are
-unreliable for some of the tail. The windowed number above rests on SA start
-positions (217 of 222 chr9 SA entries are `+`, where the acceptor foot IS the SA
-POS), which is the robust half.
-
-## Gaps found in review
-
-### 1. Read-cloud mode must keep the ticks, and this one is severe
-
-In cloud mode `computeArcShape` returns a FLAT shape for every arc and computes
-`spanBp = |tlen| || |p2Bp - p1Bp|`. An interchromosomal pair carries TLEN 0 (SAM
-sets it so across refs), so it falls to the gap — `|chr9bp - chr22bp|`, about
-1.07e8 for the k562 junction. That number is a genuine `maxFlatArcSpanBp`, and
-`arcsYDomainBp` maxes it across every group, and `insertSizeTickSections`
-**labels the top of the axis with it**. One interchromosomal connection would
-rescale the whole read cloud to a 107 Mb "insert size" and print it on the
-ruler.
-
-The principle behind the fix rather than the fix alone: **the read cloud's Y
-axis IS insert size, and an interchromosomal connection has none.** Arc mode's
-axis is genomic radius, where the band ceiling is already where a maximally-far
-same-chromosome pair clamps, so the ceiling is not an invented position there.
-So: arcs in arc mode, ticks in cloud mode. This also removes the
-`maxFlatArcSpanBp` hazard entirely rather than guarding against it.
-
-### 2. `drawInter` and `minInterchromSupport` must gate the new arc branch
-
-Both currently sit inside the interchromosomal branch that pushes ticks. An arc
-branch added beside them inherits neither: "Show inter-chromosomal pairs" off
-would still draw arcs, and the clustered mismapping floor that protects the
-ticks would be bypassed for connections that now draw a **bigger** mark than the
-ticks it replaced. `clusteredInterchromSupport` is the right count for the
-floor for the same reason it already is — the exact-coordinate count is 1 for
-essentially every one of these.
-
-### 3. The tooltip payload has one refName and needs two
-
-`formatArcTooltip` builds `{refName, start: min(x1,x2), end: max(x1,x2)}`. For a
-same-chromosome cross-region arc that is right. For an interchromosomal one it
-prints `chr22:23,290,313-130,853,964` — a locstring naming one chromosome and a
-coordinate from another. `CrossRegionArcShape` on the branch already carries
-`endRefName`; the payload throws it away. Fix the payload before the arcs exist,
-not after.
-
-This is also the one thing the tick's hover was worth more than the arc's for
-(it is the whole content of a translocation marker), so an arc replacing ticks
-must not lose it.
-
-### 4. `groupArcsByRef` is keyed on `p1.refName`
-
-…under a comment stating that an arc's two ends always share a refName, and
-`arcTouchesRegion` compares raw bp with no refName test. Both are correct today
-because the interchromosomal branch returns before either. An interchromosomal
-arc that reaches either one is silently drawn at a garbage x in a region it does
-not belong to. Proposal step 2 (one decision point, one region lookup) is what
-makes that unreachable; the comment needs rewriting to say *why* it holds rather
-than that it does, and it wants a test.
-
-## Known costs of the overlay
-
-- **SVG is a separate z-layer**, so a cross-region arc paints above every canvas
-  arc and tick regardless of `arcPaintRank`. Defensible — nothing cross-region
-  is routine — but write it down rather than let it be discovered.
-- **The hovered-arc highlight differs**: canvas arcs go through
-  `hoveredArcHighlight`, these thicken their own stroke. Worth fixing not for
-  cosmetics but because `ArcHoverOverlay` is its own z-layer too, so two hover
-  mechanisms in one band can show a hover twice.
-- **The arc/tick decision depends on region state.** Proposal step 3 moves it
-  from fetch state to view state, which removes the transient and closes a live
-  hole; what remains is that adding or removing a displayed region can turn an
-  arc into ticks, which is the honest answer.
-
-## Already checked — do not re-litigate
-
-- **The overlay does not break the click / right-click guard**, and the reason
-  is that the handlers are on the `<canvas>` element itself
-  (`PileupComponent.tsx:384-388`), not on the `position: relative` container the
-  overlays are siblings in — so a path's events cannot bubble to
-  `handleClick` / `handleContextMenu`. Re-verified in review; had the handlers
-  been on the container this would have been `93af1f54f0` again. "Nothing on
-  click, browser menu on right-click" is what a canvas arc does by design.
-- **The colour needs no palette or legend work.** `ARC_SLOT_CATEGORY[3]` is
-  `interchrom` and every draw path already indexes through `arcColorSlot`.
-- **The overlay aligns with the canvas.** Displayed regions are laid out
-  contiguously in both `bpToPx` and the block layout; only the first and last
-  boundary padding blocks exist.
-
-## Open decisions
-
-### 1. The counted sashimi arcs (`showSplitJunctionArcs`, the branch's piece A)
-
-**Do not decide this as keep-or-drop. The defect is that there are two
-coalescers, and the fix is to have one.**
-
-The contradiction is real and disqualifying on its own: the arc band coalesces
-on exact coordinates (`arcKey`), piece A clusters within 10 bp and takes the
-modal site, so at a junction with microhomology jitter the two print **12 and
-28 at one locus**. One junction with two counts is a defect.
-
-Note first that **the k562 figure does not enable the arc band at all** —
-`readConnections` has `promotedBase: 'off'`, the k562 spec's `SPLIT_READS` is
-`{featureHeight: 4}`, and the fan in that figure is `showBezierConnections` in
-chain mode. So dropping piece A is not "same figure, better mark"; it is a
-decision to turn the band on.
-
-**Turn it on.** [The measurement](#what-k562-actually-draws-measured) is what
-makes that a small decision rather than a gamble: the band draws one support-26
-arc at the junction the figure is banded on, three hairlines under its stroke,
-and a picket of ticks at the BCR donor for the molecules splicing to acceptors
-outside the frame — which is real content the figure has no way of showing
-today. Keep the bezier fan alongside it. The two say different things and the
-tutorial prose already makes that exact argument: the fan is the evidence, one
-curve per molecule; the arc is the count those molecules add up to. Having both
-in one frame is a better figure than either, and it makes the flagship figure the
-feature's own real-data regression test.
-
-So: **land the interchromosomal arcs, re-aim the figure onto the band, then drop
-piece A.** What is lost is the printed count label and the position over the
-coverage band; nothing else.
-
-Two arguments that were live before the measurement and are now dead:
-
-- **A clustering pre-pass is not needed.** The idea was to move piece A's 10 bp
-  window into the arc path so both producers agreed. Exact coalescing already
-  gives one arc of support 26 — the split is 26/1/1/1, not four equal quarters —
-  so `arcKey` needs no tolerance and the pre-pass buys two reads of support and
-  a change to a heavily-defended invariant. Don't.
-- **The label is a separate, later feature.** If it is wanted, it is a small
-  option on the arc band sourced from `ComputedArc.support`, one producer and one
-  number, serving same-chromosome junctions too. It is not a reason to keep a
-  second junction producer alive in the meantime.
-
-### 2. Does the arc replace the ticks, or draw with them?
-
-**Replace, when and only when both feet are displayed.** The tick's whole job is
-"there is a connection to somewhere you cannot see", which is *false* in exactly
-this configuration — that, rather than aesthetics, is the argument. No position
-is lost: the arc's feet are the two tick positions. What must survive is the
-partner refName ([gap 3](#3-the-tooltip-payload-has-one-refname-and-needs-two)).
-
-### 3. Split reads vs mate pairs
-
-**Paint both `ARC_COLOR_INTERCHROM`**, and the reason is stronger than "keep the
-ticks' colour". As a tick, "crosses chromosomes" was readable from the mark
-itself. As an arc it is not — a same-chromosome cross-region arc crosses the
-same panel divider and looks the same. The colour is now the **only** channel
-carrying that fact, so spending it on `splitInversion` / `splitDeletion` would
-delete the one distinction this family exists to make.
-
-## Next, in order
-
-1. Rebase the branch onto `main` (it predates ~12 commits, and the diff shows
-   main-only work such as `overlapLegendKind` as removals).
-2. Land piece B alone: the partition reworked per proposal steps 2, 3 and 5, the
-   overlay, and the cap.
-3. Then the interchromosomal arcs: steps 4 and 6 plus gaps 1–4.
-4. SVG export + dark-mode frame.
-5. The figures — [see below](#the-figures).
-6. Then piece A goes.
-
-## The figures
-
-One certain, two exploratory, and a prose fix that is not optional. Nothing here
-can be rendered before the feature exists, and the two exploratory ones are
-worth rendering **because** we do not know what they show — the render is the
-measurement.
-
-### 1. Re-aim `cancer_sv/k562_bcr_abl_split` (certain)
-
-`readConnections: 'arc'` on the `K562_isoseq` track in
-`website/scripts/specs/cancer_sv.ts`, keeping `showBezierConnections`. Caption
-and tutorial prose for the fan-plus-count reading — the fan is the evidence, one
-curve per molecule; the arc is the count they add up to, which is the argument
-the prose already makes for piece A. Then `pnpm figures:push --exact --filter
-cancer_sv/k562_bcr_abl_split` and commit `figures.lock`.
-
-Expect one thick arc (support 26), three hairlines under its stroke, and a tick
-picket at the BCR donor. If the band shows something else, the model of this
-data is wrong and that is worth more than the figure.
-
-### 2. New: the frame decides which connections are arcs (exploratory)
-
-Same chr22 window, chr9 widened to the whole of ABL1 (~`chr9:130,710,000-130,890,000`).
-The ticks should become arcs fanning to the distinct acceptors, weighted by
-support. Paired with figure 1 it is the clearest statement of the semantic this
-change introduces: **a tick means "reaches somewhere you cannot see", and
-widening the frame turns it into an arc.**
-
-What is uncertain is what it draws. The acceptor distribution is solid — 24
-sites, 149 at `chr9:130,780,369` against 26 at the canonical exon-2 acceptor
-(`reference/DEMO_DATASETS.md`) — but the chr22 feet of those out-of-frame
-junctions come from CIGARs carrying 100 kb+ `D` operations and are not.
-
-**Do not let the caption claim biology.** Whether the 149-read site is an
-alternative acceptor or an alignment artefact is unestablished; the figure's
-subject is the display behaviour. If it renders as noise, drop it and record
-that in `DEMO_DATASETS.md` — that is a useful result either way.
-
-### 3. New: the multihop chain in one view (exploratory)
-
-COLO829's `chr3:25,357,600-25,361,000` with the chr12 and chr10 partner windows
-as further displayed regions, tumour track with `readConnections: 'arc'`. The
-hops draw as counted arcs in one LGV.
-
-The tutorial tells this story today with `multihop_split_view` — four panels
-built by "Reconstruct derivative allele → draw as split" — and with a script.
-This is the same event read directly off the arc band, so it belongs beside that
-figure rather than replacing it. ONT split junctions are exact, so they should
-coalesce into a few thick arcs whose width is the support nanomonsv called on,
-which is the best case this feature has. Partner coordinates come from the
-nanomonsv VCF / `sv_multihop.py` output; the figure only works if those windows
-are right.
-
-### 4. `website/docs/user_guides/alignments_track.md` says the old behaviour
-
-Under "Read connections": _"Off-screen partners draw as large semicircular arcs
-and **inter-chromosomal mates as vertical lines**; both can be toggled off."_
-That sentence becomes wrong, and nothing in CI catches prose. It now depends on
-whether the partner is displayed, which is the whole change — rewrite it there.
-
-A figure for it wants the volvox fixture built in the browser-test work
-(`volvox-translocation.bam`), which is the same two-regions-vs-one contrast the
-tests assert. **But the alignments figure spec points at the HOSTED volvox
-(`https://jbrowse.org/code/jb2/latest/test_data/volvox`)**, so a fixture
-committed to `test_data/volvox` is not available to the figure generator until
-it ships. Fix the prose now; the figure waits on hosting, or borrows figure 1's
-frame.
-
-## Not verified by me
-
-- [The k562 windowed counts](#what-k562-actually-draws-measured) are mine, run
-  against the hosted BAM, with the method caveat stated there. Everything else
-  below is not.
-- Every other number here — the config defaults, the worked example and the code
-  references aside — is the **prior thread's measurement**, re-read but not
-  re-run:
-  52 of 381 arcs (13.6%) cross-region on the HG02768 inverted duplication split
-  into two regions 300 bp apart; 0 for that view as one region and for two
-  regions 2 Mb apart; 0 arcs and 8 ticks in the k562 view; 865 of 9204 arcs
-  interchromosomal at 1:2,000,000 on HG002 300x.
-- The 300x same-chromosome cross-region count, which is the number the cap
-  should be sized from, is an **estimate scaled from the 30x measurement**, not
-  a measurement.
-- The k562 figure PNG on that branch is regenerated but not pushed, so the site
-  would show the old figure against a new caption until
-  `pnpm figures:push --exact --filter cancer_sv/k562_bcr_abl_split` runs and
-  `figures.lock` is committed. That regeneration is moot under open decision 1's
-  recommendation; the figure wants re-aiming instead.
+`arcYBp` / `arcSpanBp` already records, one axis over.
