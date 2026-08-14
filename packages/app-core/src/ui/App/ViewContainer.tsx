@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 import ViewHeader from './ViewHeader.tsx'
 import ViewWrapper from './ViewWrapper.tsx'
 import { useViewVisibility } from './useViewVisibility.ts'
+import { viewTitle } from './viewTitle.ts'
 
 import type {
   AbstractViewModel,
@@ -76,6 +77,19 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'clip',
     // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
     // note that contain:paint also seems to work
+
+    // `:focus-visible`, never `:focus`. The container carries tabIndex={0}, and
+    // a click on any non-focusable descendant of a tabbable node focuses that
+    // node — so on `:focus` this ring would appear around the whole view on
+    // essentially every click, which is a visible regression for every existing
+    // mouse user. `:focus-visible`'s heuristic excludes exactly that case.
+    //
+    // Inset (`outlineOffset: -2`) because `overflow: clip` above and the
+    // scroll port this sits in would clip a ring drawn outside the border box.
+    '&:focus-visible': {
+      outline: `2px solid ${theme.palette.primary.main}`,
+      outlineOffset: -2,
+    },
   },
   focusedView: {
     background: theme.palette.secondary.main,
@@ -123,11 +137,32 @@ const ViewContainer = observer(function ViewContainer({
       ? classes.focusedView
       : classes.unfocusedView
 
+  // Same title `ViewContainerTitle` shows, recomputed rather than shared through
+  // a ref or aria-labelledby: the visible one lives inside an EditableTypography
+  // whose rendered node is an <input> while it is being edited, and a label
+  // pointing at an input reads back as the input, not as the name. Both of its
+  // inputs (`displayName`, `assemblyNames`) are cold — a rename and a change of
+  // displayed region — so this adds no per-frame read.
+  const { assemblyManager } = session
+
   return (
     <Paper
       ref={ref}
       elevation={12}
       className={cx(classes.viewContainer, backgroundColorClassName)}
+      // The view's one tab stop, and the only thing that makes the ctrl/cmd +
+      // arrow shortcuts reachable without a mouse: they are gated on
+      // `session.focusedViewId`, which `useFocusOnInteraction` now assigns from
+      // `focusin`. It goes on the outermost node so there is exactly one stop
+      // per view ahead of the header's own buttons, and so every view type gets
+      // it rather than each one growing its own.
+      tabIndex={0}
+      // A tab stop with no role and no name announces as nothing. `region` is
+      // the conservative reading — it is what the session's view stack is, a set
+      // of labelled panels — and a named region shows up in a screen reader's
+      // landmark list, so "jump to the second view" stops being a Tab count.
+      role="region"
+      aria-label={viewTitle(view, r => assemblyManager.getDisplayName(r))}
       data-testid={`view-container-${view.id}`}
       // the view-level counterpart of DisplayChrome's data-display-phase: while
       // this reads `loading` the view has no displays mounted, so every

@@ -110,6 +110,84 @@ exports[`<HelpWidget /> renders 1`] = `
         </a>
       </li>
     </ul>
+    <div
+      class="css-164r41r"
+    >
+      <h6
+        class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+      >
+        Keyboard shortcuts
+      </h6>
+      <p
+        class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+      >
+        These act on the focused view. Tab moves between views, or click one; the focused view is the one with the arrow beside its title.
+      </p>
+      <table
+        class="MuiTable-root css-1xwxv7r-MuiTable-root"
+      >
+        <tbody
+          class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+        >
+          <tr
+            class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+          >
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1palown-MuiTableCell-root"
+            >
+              Ctrl/Cmd + ←
+            </td>
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+            >
+              Pan left
+            </td>
+          </tr>
+          <tr
+            class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+          >
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1palown-MuiTableCell-root"
+            >
+              Ctrl/Cmd + →
+            </td>
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+            >
+              Pan right
+            </td>
+          </tr>
+          <tr
+            class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+          >
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1palown-MuiTableCell-root"
+            >
+              Ctrl/Cmd + ↑
+            </td>
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+            >
+              Zoom in
+            </td>
+          </tr>
+          <tr
+            class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+          >
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-1palown-MuiTableCell-root"
+            >
+              Ctrl/Cmd + ↓
+            </td>
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall css-jiabcu-MuiTableCell-root"
+            >
+              Zoom out
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 `;

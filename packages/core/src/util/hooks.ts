@@ -16,14 +16,25 @@ import {
 
 import type { RefObject } from 'react'
 
-// Fires `onInteract` when a mousedown/keydown lands inside `ref`; used to set
-// the focused view on click. Listens at the document level rather than through
-// React handlers so one listener covers the whole subtree, but bubble-phase:
-// a child calling stopPropagation DOES suppress it, which is why `ResizeHandle`
-// claims its press with a `data-gesture-owner` marker instead of stopping the
-// mousedown. Registering with `{ capture: true }` would make focus survive
-// those, at the cost of focusing the view for menus and error bars that
-// currently do not — a behavior change, not a bug fix.
+// Fires `onInteract` when a mousedown/keydown/focusin lands inside `ref`; used
+// to set the focused view on click and on Tab. Listens at the document level
+// rather than through React handlers so one listener covers the whole subtree,
+// but bubble-phase: a child calling stopPropagation DOES suppress it, which is
+// why `ResizeHandle` claims its press with a `data-gesture-owner` marker instead
+// of stopping the mousedown. Registering with `{ capture: true }` would make
+// focus survive those, at the cost of focusing the view for menus and error bars
+// that currently do not — a behavior change, not a bug fix.
+//
+// **`focusin` is the one that makes keyboard entry work**, and it is not
+// redundant with `keydown`. A Tab that moves focus INTO the container fires its
+// keydown on the element being left, which is outside `ref` — so with keydown
+// alone the assignment lagged a keystroke, and the first shortcut a keyboard
+// user pressed after arriving went to whichever view they came from.
+// `focusin` (unlike `focus`) bubbles, so one document listener sees it, and its
+// target is the element that just RECEIVED focus. A mouse press on a focusable
+// node fires both; `onInteract` is idempotent for every caller (it assigns an
+// id), so the double call costs nothing.
+//
 // `onInteract` is wrapped in a stable callback so callers can pass an inline
 // closure without re-subscribing the listeners every render (we don't rely on
 // the React Compiler memoizing it, since library consumers may not run it).
@@ -40,9 +51,11 @@ export function useFocusOnInteraction(
     }
     document.addEventListener('mousedown', handleSelectView)
     document.addEventListener('keydown', handleSelectView)
+    document.addEventListener('focusin', handleSelectView)
     return () => {
       document.removeEventListener('mousedown', handleSelectView)
       document.removeEventListener('keydown', handleSelectView)
+      document.removeEventListener('focusin', handleSelectView)
     }
   }, [ref, stableOnInteract])
 }

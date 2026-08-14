@@ -9,6 +9,7 @@ import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
+import NavigationAnnouncer from './NavigationAnnouncer.tsx'
 import Scalebar from './Scalebar.tsx'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
@@ -128,6 +129,11 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           session.setHovered({ hoverPosition, hoverFeature })
         }}
       >
+        {/* Where the view says out loud that it moved. Its own observer, so a
+        settled locus re-renders a text node instead of the track stack — see
+        NavigationAnnouncer for why it reads the coarse locstring and not the
+        live one. */}
+        <NavigationAnnouncer model={model} />
         <div
           className={classes.header}
           style={{ position: stickyViewHeaders ? 'sticky' : undefined }}

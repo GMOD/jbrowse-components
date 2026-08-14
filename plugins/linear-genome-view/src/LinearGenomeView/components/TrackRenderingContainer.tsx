@@ -1,6 +1,8 @@
 import { Suspense, useCallback } from 'react'
 
 import { LoadingOverlay } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -56,6 +58,50 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
+// The box every LGV display is mounted in, and the ONLY place in the tree where
+// a track's pixels get a name and a role — one component rather than an
+// `aria-label` per display type, the same way `TrackOverlaySlot` is one paint
+// order rather than one per display.
+//
+// Its own observer for a measured reason. The "what is on screen" half of the
+// name is the settled locstring, which changes whenever navigation settles; read
+// from `TrackRenderingContainer` below, that would re-render every track's
+// container (and re-run its `useStyles`) on every settle. Here the re-render is
+// this one `<div>`: `children` is the same React element object the parent
+// already handed it, so React bails out of the display's whole subtree.
+//
+// **`role="figure"`, not `role="img"`.** `img` is the textbook role for a canvas
+// and would be right if the box held only pixels — but it makes every descendant
+// presentational, and a display's chrome does not all portal out of the sandbox:
+// alignments draws its group collapse/expand `<button>`s inline
+// (`GroupLabelsOverlay`), which under `img` would be focusable and announced as
+// nothing. `figure` names the box and keeps what is inside it reachable. Revisit
+// if inline interactive chrome ever goes away.
+const TrackDisplayRegion = observer(function TrackDisplayRegion({
+  model,
+  track,
+  children,
+  ...divProps
+}: {
+  model: LGV
+  track: BaseTrackModel
+  children: React.ReactNode
+} & React.ComponentPropsWithRef<'div'>) {
+  const trackName = getTrackName(track.configuration, getSession(track))
+  const loc = model.coarseVisibleLocStrings
+  return (
+    <div
+      {...divProps}
+      role="figure"
+      aria-label={
+        loc ? `${trackName} track, showing ${loc}` : `${trackName} track`
+      }
+    >
+      {children}
+    </div>
+  )
+})
+
 const TrackRenderingContainer = observer(function TrackRenderingContainer({
   model,
   track,
@@ -95,7 +141,9 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
     >
       {!minimized ? (
         <>
-          <div
+          <TrackDisplayRegion
+            model={model}
+            track={track}
             ref={setRef}
             className={classes.renderingComponentContainer}
             style={{ left: showTrackOutlines ? -1 : 0 }}
@@ -106,7 +154,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
                 onHorizontalScroll={model.horizontalScroll}
               />
             </Suspense>
-          </div>
+          </TrackDisplayRegion>
 
           {DisplayBlurb ? (
             <div
