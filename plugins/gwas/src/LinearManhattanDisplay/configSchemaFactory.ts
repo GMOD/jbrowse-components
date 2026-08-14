@@ -106,6 +106,23 @@ export function configSchemaFactory() {
       ...scoreAxisConfigSchemaFields,
       /**
        * #slot
+       * Draw a horizontal line across the plot at this score, for the threshold
+       * a scan is read against: genome-wide significance on a GWAS, or an
+       * empirical outlier cutoff on a differentiation scan. Unset (the default)
+       * draws none, since there is no threshold that is right for every scan.
+       *
+       * On the plot's own scale, so it is a `-log10(p)` where the points are
+       * and an Fst where `scoreColumn` names an Fst column. Nothing is drawn
+       * when the value falls outside the loaded regions' domain.
+       */
+      significanceLine: {
+        type: 'maybeNumber',
+        defaultValue: undefined,
+        description:
+          'Score to draw a horizontal threshold line at, on the same scale as the plotted points. Unset draws none',
+      },
+      /**
+       * #slot
        */
       minimalTicks: {
         type: 'boolean',

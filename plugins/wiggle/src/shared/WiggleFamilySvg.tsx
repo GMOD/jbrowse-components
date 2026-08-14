@@ -73,10 +73,12 @@ export function WiggleFamilySvgFrame({
   clipIdPrefix,
   paint,
   legend,
+  overlay,
 }: LgvSvgBodyProps<WiggleFamilySvgModel> & {
   clipIdPrefix: string
   paint: (ctx: Ctx2D, layout: WiggleFamilySvgLayout) => void
   legend?: React.ReactNode
+  overlay?: React.ReactNode
 }) {
   // the plot itself is inset by the scalebar label gutter at top and bottom, so
   // it never overlaps the axis labels drawn in those bands — the same box
@@ -108,6 +110,10 @@ export function WiggleFamilySvgFrame({
       {showCrossHatches && ticks ? (
         <CrossHatchLines ticks={ticks} width={canvasWidth} />
       ) : null}
+      {/* Annotations drawn on the plot rather than in it, in the same
+          un-translated space the cross-hatches use: a y computed from
+          `axisPlotBox` already carries the label-gutter inset. */}
+      {overlay}
       {legend}
     </>
   )

@@ -62,6 +62,9 @@ on the scale the plot draws, so only the column has to be named.
     "uri": "dog10k_size_fst.bed.gz",
     "columnNames": ["chrom", "chromStart", "chromEnd", "name", "fst", "sites"],
     "scoreColumn": "fst"
+  },
+  "displayDefaults": {
+    "significanceLine": 0.295
   }
 }
 ```
@@ -69,13 +72,20 @@ on the scale the plot draws, so only the column has to be named.
 Opening the assembly without a location shows all of its regions at once, so the
 display lays the autosomes out side by side rather than one at a time.
 
-<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled. Bottom: two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the single 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
+<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed line at the 99.9th percentile of the scan's own windows. Bottom: two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the single 200 kb window from the top half." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak names a region rather than a variant. A
 genome-wide scan has to bin wide enough to hold down twelve thousand windows'
-worth of noise, which is what makes the _IGF1_ peak a single bar up there. The
-peaks the figure labels are the check on the scan rather than its result: the
-tallest of them, on chr10, is _HMGA2_, which is one of the six variants
+worth of noise, which is what makes the _IGF1_ peak a single bar up there.
+
+Fst has no p-value, so
+[`significanceLine`](/docs/config/linearmanhattandisplay/#slot-significanceline)
+draws the threshold this scan is read against, which is a quantile of its own
+windows rather than a test: the dashed line is the 99.9th percentile, printed by
+the build script alongside the ranked windows. It is a property of these windows
+at this size, so rebinning the scan means taking it again. The peaks the figure
+labels are the check on the scan rather than its result: the tallest of them, on
+chr10, is _HMGA2_, which is one of the six variants
 [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to about half
 the size variation across breeds.
 

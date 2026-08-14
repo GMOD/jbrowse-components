@@ -5006,6 +5006,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "significanceLine",
+          "type": "(JexlString | (number | undefined))"
+        },
+        {
           "name": "minimalTicks",
           "type": "(JexlString | boolean)"
         },

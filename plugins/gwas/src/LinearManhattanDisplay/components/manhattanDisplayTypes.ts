@@ -32,6 +32,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   indexSnpMissing: boolean
   indexSnpOffscreen: boolean
   showLdLegend: boolean
+  significanceLineY: number | undefined
   setFeatureUnderMouse: (hit: ManhattanHit | undefined) => void
   selectFeature: (hit: ManhattanHit) => void
   contextMenuItems: (hit: ManhattanHit) => MenuItem[]

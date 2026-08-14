@@ -32,10 +32,13 @@ import {
   makeScoreSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
+import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun } from 'mobx'
 
+import SetSignificanceLineDialog from './components/SetSignificanceLineDialog.tsx'
+import { significanceLineY } from './components/SignificanceLine.tsx'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -250,6 +253,28 @@ export function stateModelFactory(
           })
         },
         /**
+         * #getter
+         * the configured threshold score, or undefined when the slot is unset
+         */
+        get significanceLine(): number | undefined {
+          return getConf(self, 'significanceLine')
+        },
+        /**
+         * #getter
+         * screen y of the `significanceLine` score, or undefined when the slot
+         * is unset or the score falls outside the loaded regions' domain. Both
+         * the on-screen overlay and the SVG export take the line from here, so
+         * an exported figure cannot draw it at a different height than the
+         * screen did.
+         */
+        get significanceLineY() {
+          return significanceLineY(
+            this.significanceLine,
+            self.domain,
+            self.height,
+          )
+        },
+        /**
          * #method
          * fetch inputs watched by SettingsInvalidate — any change (color, colorBy,
          * index SNP, LD adapter) triggers a refetch, since the worker bakes
@@ -414,6 +439,13 @@ export function stateModelFactory(
         },
         /**
          * #action
+         * Score to draw the threshold line at; undefined removes it.
+         */
+        setSignificanceLine(score?: number) {
+          setConf(self, 'significanceLine', score)
+        },
+        /**
+         * #action
          */
         setIndexSnp(snp?: string) {
           self.indexSnp = snp
@@ -472,6 +504,22 @@ export function stateModelFactory(
               subMenu: [
                 makeScatterPointSizeMenuItem(self, { label: 'Point size' }),
               ],
+            },
+            {
+              // The score is shown in the label when one is set, the same way
+              // the min/max row above does it: a horizontal line on a plot with
+              // no p-value is meaningless until you know what number it is at.
+              label:
+                self.significanceLine === undefined
+                  ? 'Set significance line...'
+                  : `Set significance line (${self.significanceLine})...`,
+              icon: HorizontalRuleIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetSignificanceLineDialog,
+                  { display: self, handleClose },
+                ])
+              },
             },
             ...makeShowSubMenu([
               makeCrossHatchItem(self),

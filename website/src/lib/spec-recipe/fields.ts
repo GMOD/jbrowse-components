@@ -1231,6 +1231,10 @@ export const trackFields: Record<string, FieldRecipe> = {
     path: `${TRACK_MENU} → Score → Set min/max score...`,
     note: `Sets the score-axis maximum (${n} here).`,
   })),
+  significanceLine: numberField(n => ({
+    path: `${TRACK_MENU} → Set significance line...`,
+    note: `Draws a horizontal line at this score (${n} here), on the same scale as the plotted points. Clearing the field removes it.`,
+  })),
   coverageHeight: numberField(() => ({
     path: 'Drag the bottom edge of the coverage band to resize it.',
   })),

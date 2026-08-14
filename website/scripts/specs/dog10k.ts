@@ -262,6 +262,24 @@ const CEA_LAYOUT = CEA_GROUPS.flatMap(({ label, color, ids }) =>
 // the two axes from parting company when only one of them is autoscaled.
 const FST_AXIS = { minScore: 0, maxScore: 0.8 }
 
+// The scan carries no p-value, so what counts as a peak is empirical: this is
+// the 99.9th percentile of the scan's own 11,158 scored windows, which
+// build_dog10k_size_fst.sh now prints beside its top-20 table so the number can
+// be re-derived rather than taken from here.
+//
+// The 99.9th rather than the 99th (0.13) because the 99th sits inside the top of
+// the dense band and reads as a ceiling on the noise; at 0.29 the line separates
+// the labelled loci from everything else, which is what a reader wants to know.
+//
+// ONLY THE 200 kb LANE GETS IT, and that is not an oversight. A quantile is a
+// property of the distribution it was taken from, and window size sets that
+// distribution's spread: the same panel rebinned to 20 kb scores far more
+// windows off far fewer sites each, so its noise reaches higher and this line
+// would sit somewhere arbitrary inside it. The per-site IGF1 lane is a third
+// distribution again. Each would need its own quantile off its own windows, and
+// none of the three is the axis-sharing case FST_AXIS is.
+const FST_SIGNIFICANCE = { significanceLine: 0.295 }
+
 // The IGF1 peak window, which the zoom half marks and the tutorial's next
 // figure slices. One 200 kb bin of the scan.
 const IGF1_PEAK_WINDOW = 'chr15:41,400,000-41,600,000'
@@ -909,6 +927,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           height: 380,
           scatterPointSize: 4,
           ...FST_AXIS,
+          ...FST_SIGNIFICANCE,
         },
       ],
     }),

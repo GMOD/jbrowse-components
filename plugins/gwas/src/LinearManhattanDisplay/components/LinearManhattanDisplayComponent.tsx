@@ -16,6 +16,7 @@ import { findManhattanHit } from '../findManhattanHit.ts'
 import HoverHighlight from './HoverHighlight.tsx'
 import LdColorLegend from './LdColorLegend.tsx'
 import LdIndexWarning from './LdIndexWarning.tsx'
+import SignificanceLine from './SignificanceLine.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
@@ -130,7 +131,13 @@ const ManhattanBody = observer(function ManhattanBody({
   // read here rather than beside the handlers, so a mousemove re-renders this
   // body instead of the whole DisplayChrome above it
   const mouseState = useMouseState(mouseTracker)
-  const { ticks, featureUnderMouse, showCrossHatches, ldColoringActive } = model
+  const {
+    ticks,
+    featureUnderMouse,
+    showCrossHatches,
+    ldColoringActive,
+    significanceLineY,
+  } = model
   const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
   const plotBox = axisPlotBox(height)
 
@@ -155,6 +162,9 @@ const ManhattanBody = observer(function ManhattanBody({
       {showCrossHatches && ticks ? (
         <CrossHatches ticks={ticks} width={width} height={height} />
       ) : null}
+      {significanceLineY === undefined ? null : (
+        <SignificanceLine y={significanceLineY} width={width} height={height} />
+      )}
       {featureUnderMouse ? (
         <HoverHighlight
           screenX={featureUnderMouse.screenX}

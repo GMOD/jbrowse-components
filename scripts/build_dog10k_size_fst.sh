@@ -187,6 +187,20 @@ tabix -f -p bed "$OUTBED.gz"
 # its own expectation.
 echo
 echo "windows scored: $(zcat "$OUTBED.gz" | wc -l)"
+# A scan has no p-value, so "how high is high" is empirical: these are the
+# quantiles of the scan's own windows. The 99.9th is what the published figure
+# draws as its significanceLine, and re-running this is how to re-derive it
+# rather than trust the number written into the spec.
+echo
+echo "empirical Fst quantiles over the scored windows:"
+zcat "$OUTBED.gz" | awk '{print $5}' | sort -g |
+  awk '{v[NR]=$1} END {
+    printf "  %6s %8s\n", "pct", "Fst"
+    split("95 99 99.5 99.9", q, " ")
+    for (i in q) printf "  %6s %8.4f\n", q[i], v[int(q[i]/100*NR)]
+    printf "  %6s %8.4f\n", "max", v[NR]
+  }'
+
 echo
 echo "top 20 windows by Fst:"
 # awk does the head: `| head -20` closes the pipe on sort, which dies of
