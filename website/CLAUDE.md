@@ -52,7 +52,12 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 - Size a figure from the run's `CONTENT CLIPPED BELOW THE FOLD` and
   `blank below the last content`, not off the PNG. Neither sees a display whose
   content overflows its own fixed height — that scrolls, and reads as complete
-  to both.
+  to both. **On a pileup, don't guess the height — set `heightMode: 'grow'`**
+  and let the track ask for what it needs. A fixed `height` leaves the overflow
+  scrolling inside the track, where the scrollbar thumb is the only witness and
+  a reader has to catch it by eye; grown, the same overflow becomes page height
+  that both reports above measure. The slot is `LinearAlignmentsDisplay`'s
+  alone, so elsewhere the fixed height still has to be read off the run.
 - `DISPLAYS NOT PAINTED AT CAPTURE` names a frame that may be blank. Raise
   `settleMs` or fix the display; don't accept a plausible-looking figure.
 - Every annotation `anchor`s — by locus, dotplot cell or graph node
