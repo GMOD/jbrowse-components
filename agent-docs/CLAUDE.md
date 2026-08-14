@@ -146,6 +146,15 @@ broke it".
 
     git merge-base --is-ancestor main HEAD && echo ok || git reset --hard main
 
+**`reset --hard` is only right before you have commits of your own** — once you
+do, it throws them away. `git rebase main` is the same check's answer from then
+on, and it is also what makes the landing fast-forward. Run it again before
+landing whatever it said at the start: main moves under a long session, and the
+tell is a `git diff main` that names files you never opened. Those are main's
+commits missing from your branch, not yours leaking — `git log main..HEAD -- <path>`
+distinguishes them, and it is worth the ten seconds, because the alternative
+reading is that your change altered a golden.
+
 **A validator that cannot import is not a validator that passed.** A worktree
 that arrives with an incomplete install gives `check-docs` validators
 ERR_MODULE_NOT_FOUND rather than any finding, and the run's summary counts that
