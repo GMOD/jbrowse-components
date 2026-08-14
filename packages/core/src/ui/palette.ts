@@ -454,48 +454,74 @@ export const colorShortInsert = '#f582c0'
  * #color alignments-pair-orientation | Mate unmapped | The other end of the pair aligned nowhere, so orientation and insert size say nothing
  * #color alignments-insert-size | Mate unmapped | The other end of the pair aligned nowhere, so insert size says nothing
  */
-// A NON-COLOUR, and it INVERTS between themes — the `readOverlap` pattern, for
-// the reason that note already states: "no read color is the honest answer
-// there, which is the whole reason the span is marked". An unmapped mate is the
-// same kind of fact. Nothing about the pair's geometry is answerable, so a hue
-// would claim a category where there is an absence.
+// A NON-COLOUR, at the dark end of the neutral scale on BOTH themes. It takes
+// the first half of the `readOverlap` pattern and not the second, and that split
+// is the thing to understand here.
 //
-// This slot has the loosest requirements in the palette and that is what makes
-// the extremes affordable: it is a READ FILL ONLY. It appears in neither
+// The half it takes is the reason that note gives for being a neutral at all:
+// "no read color is the honest answer there, which is the whole reason the span
+// is marked". An unmapped mate is the same kind of fact — nothing about the
+// pair's geometry is answerable, so a hue would claim a category where there is
+// an absence. This slot briefly took a teal in the last free hue region, which
+// worked on every number and was the wrong answer: rendered against a pileup a
+// hue reads as one more findable category beside the green LL and blue RR bars,
+// where a neutral reads as a mark that is deliberately not one of them.
+//
+// The half it does NOT take is the inversion, and the difference is EXTENT.
+// Overlap marks a SPAN INSIDE a read, so a charcoal span on a dark track is a
+// gap in a mark that should be continuous — the read looks cut, which is a claim
+// about the data. This fills a WHOLE read, which has its own boundary and the
+// rows above and below it, so a dark grey reads as a dim read and not as a hole.
+//
+// So the statement is the same on both themes and only the room differs:
+//
+//   on #ffffff  #000000  contrast 21.0. The extreme is free, because dE 36.1
+//                        from `readOverlap` #555555 is the only other dark
+//                        neutral a read fill sits beside. Near-black is not
+//                        free: #2e2e2e is dE 17.2 from that charcoal and
+//                        #3d3d3d is 10.4, so on this ground it is the extreme
+//                        or nothing.
+//   on #121212  #4a4a4a  contrast 2.11. Here the extreme collides with the
+//                        GROUND — black is 1.12 against it and so is #1e1e1e,
+//                        i.e. everything from black up to #1e1e1e sits inside
+//                        the ground's own noise and paints a hole. So the value
+//                        walks up the same axis exactly as far as it takes to be
+//                        a block and stops, at L* 31.5, still the darkest fill
+//                        in either scheme by 9.7 L* (`colorPairRR` is next).
+//
+// Judged as a swatch #3a3a3a also clears the ground, at 1.65. Rendered as a
+// pileup it does not: at a 4 px row height it carries the same weight as the
+// gaps between rows and cannot be found. A few px of row is what a value here
+// has to survive, not a 40 px square.
+//
+// The nearest dark-mode neighbour is the coverage histogram's grey[700] #616161
+// at dE 9.7, which is not a collision in the sense the numbers above are about:
+// coverage is a bar in a different subtrack, never a fill a read can take, so
+// nothing is ever read against it.
+//
+// White was the previous dark value, and it reads as the loudest thing in a dark
+// pileup — louder than the coloured categories it is meant to be quieter than —
+// which is the "glaring near-white blocks" failure `colorPairLRDark` already
+// exists to avoid. Going dark also drops the one real cost white carried, dE 9.4
+// to `readOverlap`'s dark #e4e4e4 — which the note that shipped it called dE 7,
+// wrongly: #e4e4e4 is L* 90.5 and white is L* 100, on a pair separated by
+// lightness alone.
+//
+// The dark end is affordable at all because this slot has the loosest
+// requirements in the palette: it is a READ FILL ONLY, in neither
 // `ARC_SLOT_CATEGORY` nor `LINKED_READ_SLOT_CATEGORY`, so it never has to
-// survive a hairline stroke, only a flat area.
+// survive a hairline stroke.
 //
-// It briefly took a teal in the last free hue region, which worked and was the
-// wrong answer: rendered against a pileup, a hue reads as one more findable
-// category beside the green LL and blue RR bars, where black reads as a mark
-// that is deliberately not one of them. That is the whole distinction the
-// category exists to make.
-//
-// IGV agrees, further than this does: `setPairOrientation` requires
+// IGV goes further than any of this: `setPairOrientation` requires
 // `mate.isMapped()`, so an unmapped mate falls through every branch and takes
 // the default read colour. Going that far loses the one thing the category is
 // for — under insert size, tlen is 0 and would otherwise paint
 // `colorShortInsert`, a false claim — so it keeps a mark, and makes the mark a
 // non-colour.
-//
-// BLACK ON LIGHT: contrast 21.0, and dE 36.1 from `readOverlap` #555555, which
-// is the only other dark neutral a read fill sits beside. Near-black does NOT
-// work — #2e2e2e is dE 17.2 from that charcoal and #3d3d3d is 10.4 — so this is
-// the extreme or nothing.
-//
-// WHITE ON DARK, where black is contrast 1.12 and reads as a hole in the pileup
-// rather than as a read. The light end of the dark neutral scale is crowded and
-// white is dE 7 from `readOverlap`'s #e4e4e4, which is the one real cost here.
-// Two things make it acceptable rather than a collision: overlap marks a SPAN
-// inside a chained read while this fills a whole one, so they differ in extent
-// as well as tone, and overlap only appears in chain layout at all. The
-// "glaring near-white blocks" that `colorPairLRDark` exists to avoid is not this
-// case — that was the concordant majority of a pileup, and this is a handful of
-// reads.
 export const colorUnmappedMate = '#000000'
-// See colorUnmappedMate: the same statement at the other end of the scale, for
-// the theme whose track background is #121212.
-export const colorUnmappedMateDark = '#ffffff'
+// See colorUnmappedMate: the same dark neutral, lifted off the #121212 ground by
+// the least that still reads as a read rather than as a hole.
+export const colorUnmappedMateDark = '#4a4a4a'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'
 export const colorLongreadInv = '#7755bb'
@@ -701,7 +727,8 @@ const lightAlignmentFill: AlignmentFill = {
 }
 
 // pairLR because the light #d3d3d3 reads as glaring near-white blocks;
-// unmappedMate because it inverts by design (see its own note)
+// unmappedMate because its black is inside the #121212 ground's own noise and
+// paints a hole (see its own note)
 const darkAlignmentFill: AlignmentFill = {
   ...lightAlignmentFill,
   pairLR: colorPairLRDark,
