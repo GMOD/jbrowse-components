@@ -478,7 +478,8 @@ across the junction, which together is what BreakpointSplitView's
 Don't "fix" either to match the other.
 
 The interchromosomal **ticks** have no feet, and that is unfinished rather than
-decided — see `agent-docs/handoffs/arc-breakend-feet.md`.
+decided — `agent-docs/TODO.md`, "Give the interchromosomal ticks breakend feet
+too".
 
 **An arc outranks the band it is painted over, and it says so as a RESULT
 VARIANT.** `runHitTest` returns `arc ?? result`, so `ArcMarkHit` is a member of

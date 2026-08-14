@@ -55,6 +55,7 @@ before anyone noticed.
 | [The follow runs away on a swapped track](#the-synteny-follow-runs-away-on-a-swapped-assembly-track) | synteny | profile the hung worker; the swap is a lead, not isolated |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
+| [Feet on the interchromosomal ticks](#give-the-interchromosomal-ticks-breakend-feet-too) | alignments | decide what a coalesced tick's direction is, then the shader |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
 | [Pangenome graph view queue](#pangenome-graph-view-the-open-queue) | pangenome | three items unblock the rest; take the LGV axis first |
 | [Collapse trivial bubbles in a file-loaded graph](#coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles) | pangenome | designed; path lanes are the open question |
@@ -629,6 +630,34 @@ wrong attribute offset shows up as garbled geometry that no unit test catches.
 Verify headed on a real GPU against both backends, since WebGL2 binds attributes
 through `vertexAttribPointer`/`vertexAttribIPointer` (int vs float matters) while
 WebGPU goes through `vertex.buffers`.
+
+### Give the interchromosomal ticks breakend feet too
+
+An interchromosomal arc draws a foot at each end — a short horizontal tick lying
+over the sequence that end keeps, so outward reads as a deletion-type junction,
+inward as a duplication-type and parallel as an inversion
+(`features/arcs/mark.ts`, `arcPath.ts`, and the section in
+`LinearAlignmentsDisplay/CLAUDE.md`). An interchromosomal connection whose
+partner is **off screen** draws as a pair of TICKS instead, and those have no
+feet.
+
+That is unfinished, not declined. A tick means "the partner is somewhere you
+cannot see", and the direction at the near foot is exactly as informative there
+— arguably more, since there is no second endpoint to read the orientation off.
+
+It was left out because the two draws are not the same kind of thing. The feet
+live in the SVG cross-region overlay, which re-traces `arc.mark` in TypeScript;
+`arcLine` is a GPU/Canvas2D pass. So this one needs a per-instance direction
+attribute, geometry in `arcLine.slang` plus `pnpm gen:shaders`, the Canvas2D
+mirror, the SVG export, and a decision about whether a foot is part of the
+tick's hit-test target. Roughly a day. Nothing in the landed arc work blocks it.
+
+The direction itself is already computed and already correct for this case:
+`readTrailingBodyDir` is a property of the junction rather than of the read, so a
+tick coalescing several reads on one coordinate has one answer — but note that a
+`ComputedLine` deliberately carries none today, and two junctions sharing a
+breakpoint would otherwise take whichever read arrived first. Decide that before
+packing a direction into the tick buffer.
 
 ### Linearize the pangenome: draw graph variation as alignment-style glyphs
 
