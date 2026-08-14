@@ -2,6 +2,7 @@ import { splitJunctionKind } from '@jbrowse/alignments-core'
 import {
   connectionEndpointBps,
   featurizeSA,
+  readLeadingBodyDir,
   readLeadingBp,
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
@@ -373,6 +374,27 @@ export interface ComputedArc {
 export interface CrossRegionArc extends ComputedArc {
   p1RegionIndex: number
   p2RegionIndex: number
+  // Which side of each foot the aligned body lies on, as a GENOMIC direction
+  // (+1 toward higher coordinates, -1 toward lower) — `connectionEndpointBps`'
+  // `dir1`/`dir2`, carried unchanged. The breakend orientation: outward feet are
+  // a deletion-type junction, inward a duplication-type, parallel an inversion,
+  // and that grammar is the only thing left saying it once
+  // `ARC_COLOR_INTERCHROM` has overwritten an interchromosomal arc's colour.
+  // `screenFeet` (crossRegionOverlay.ts) is the one consumer and says which arcs
+  // draw them.
+  //
+  // HERE rather than on `ComputedArc`, alongside the region indices and for the
+  // same reason: the two are only ever read by the overlay. Nothing per-region
+  // draws a foot — `ArcsUploadData` carries no per-foot direction and the GPU
+  // pass would have to grow one — and a `ComputedLine` cannot have one at all,
+  // since a tick coalesces on a single coordinate and two junctions sharing a
+  // breakpoint would silently take whichever read arrived first.
+  //
+  // Safe on a COALESCED arc, which an arc here always is: the direction is a
+  // property of the junction rather than of the read that crossed it — see
+  // `readTrailingBodyDir`.
+  p1Dir: number
+  p2Dir: number
 }
 
 // A connector tick. No color: every tick is ARC_COLOR_INTERCHROM (see the
@@ -399,9 +421,15 @@ interface PendingArcEndpoints {
   p1Ref: string
   p1Bp: number
   p1Strand: number
+  // Genomic direction of the aligned body at each foot — see `ArcEndpoint.dir`.
+  // Resolved by the producer that chose the bp, never re-derived from the strand
+  // downstream: which edge an endpoint IS decides it, and the three producers
+  // here choose three different edges.
+  p1Dir: number
   p2Ref: string
   p2Bp: number
   p2Strand: number
+  p2Dir: number
 }
 
 // A split-read junction between two segments of a single read: it carries no
@@ -732,7 +760,7 @@ export function computeReadChains(
 // SegAln path can't disagree with the entry path (`pendingArcFromConnection`)
 // about which edges a split junction connects.
 function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
-  const { bp1, bp2 } = connectionEndpointBps({
+  const { bp1, bp2, dir1, dir2 } = connectionEndpointBps({
     s1: a1.strand,
     start1: a1.start,
     end1: a1.end,
@@ -745,9 +773,11 @@ function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
     p1Ref: a1.refName,
     p1Bp: bp1,
     p1Strand: a1.strand,
+    p1Dir: dir1,
     p2Ref: a2.refName,
     p2Bp: bp2,
     p2Strand: a2.strand,
+    p2Dir: dir2,
     isSplit: true,
   }
 }
@@ -795,6 +825,15 @@ function pairOuterBp(entry: ReadEntry) {
   return readLeadingBp(strandOf(entry), start, end)
 }
 
+// The body direction that goes with `pairOuterBp`'s edge — the mate reads INTO
+// the fragment from its own 5' end, so this is the read's own direction. Its own
+// function beside the bp for the reason `readLeadingBodyDir` mirrors
+// `readLeadingBp`: the edge and the direction are one choice, and this path picks
+// a different edge from `connectionEndpointBps`.
+function pairOuterDir(entry: ReadEntry) {
+  return readLeadingBodyDir(strandOf(entry))
+}
+
 // The mate link between the two reads of one pair, sourcing orientation and
 // template length from a primary segment (see `pairFieldEntry`, which owns that
 // rule for this path and for the bezier overlay alike).
@@ -819,9 +858,11 @@ function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
     p1Ref: e1.refName,
     p1Bp: pairOuterBp(e1),
     p1Strand: strandOf(e1),
+    p1Dir: pairOuterDir(e1),
     p2Ref: e2.refName,
     p2Bp: pairOuterBp(e2),
     p2Strand: strandOf(e2),
+    p2Dir: pairOuterDir(e2),
     isSplit: false,
     pairOrientationNum: src.data.readPairOrientations[src.readIdx]!,
     tlen: src.data.readInsertSizes[src.readIdx]!,
@@ -868,15 +909,25 @@ function offScreenMateArcs(
     return []
   }
   const strand = strandOf(entry)
+  const mateStrand = flagsOf(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1
   const { start, end } = spanOf(entry)
   return [
     {
       p1Ref: refName,
       p1Bp: readLeadingBp(strand, start, end),
       p1Strand: strand,
+      p1Dir: readLeadingBodyDir(strand),
       p2Ref: mateCanonRef,
       p2Bp: mateBp,
-      p2Strand: flagsOf(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1,
+      p2Strand: mateStrand,
+      // The mate's own reading direction, carrying the SAME read-length
+      // approximation `p2Bp` already does: PNEXT is the mate's leftmost base, so
+      // for a reverse mate the fragment boundary this direction is measured from
+      // is one read length to the right of where the foot is placed. Negligible
+      // at arc-view zoom, for the reason above — and the alternative of reporting
+      // no direction throws away the orientation, which for an interchromosomal
+      // pair is the whole of what the mark has to say.
+      p2Dir: readLeadingBodyDir(mateStrand),
       pairOrientationNum: data.readPairOrientations[readIdx]!,
       tlen: data.readInsertSizes[readIdx]!,
       flags: flagsOf(entry),
@@ -1270,6 +1321,10 @@ function resolveArcs(
     arc: Omit<ComputedArc, 'support' | 'key'>,
     p1RegionIndex: number | undefined,
     p2RegionIndex: number | undefined,
+    // The two body directions, carried through from the producer that chose the
+    // endpoints. Taken here rather than on `arc` because they are only kept on
+    // the cross-region half — see `CrossRegionArc.p1Dir`.
+    feetDirs: { p1Dir: number; p2Dir: number },
   ) {
     const key = arcKey({
       p1Ref: arc.p1.refName,
@@ -1308,7 +1363,15 @@ function resolveArcs(
       // `Object.assign`, not a spread: the object identity has to be the one in
       // `byKey`, or a later `support++` lands on an arc nothing draws.
       crossRegion.push(
-        Object.assign(computed, { p1RegionIndex, p2RegionIndex }),
+        // Named one at a time rather than spread: the callers hand their whole
+        // `PendingArc` in, so a spread would copy `p1Ref`, `tlen`, `isSplit` and
+        // the rest onto an arc nothing reads them off.
+        Object.assign(computed, {
+          p1RegionIndex,
+          p2RegionIndex,
+          p1Dir: feetDirs.p1Dir,
+          p2Dir: feetDirs.p2Dir,
+        }),
       )
     } else {
       arcs.push(computed)
@@ -1398,6 +1461,7 @@ function resolveArcs(
             },
             p1RegionIndex,
             p2RegionIndex,
+            arc,
           )
         } else {
           // Each endpoint's tick names the OTHER endpoint's chromosome — that is
@@ -1488,6 +1552,7 @@ function resolveArcs(
       },
       p1RegionIndex,
       p2RegionIndex,
+      arc,
     )
   }
 

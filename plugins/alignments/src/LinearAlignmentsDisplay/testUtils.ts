@@ -1,4 +1,9 @@
-import { getClip, getLengthOnRef, SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
+import {
+  getClip,
+  getLengthOnRef,
+  SAM_FLAG_MATE_REVERSE,
+  SAM_FLAG_PAIRED,
+} from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -627,5 +632,40 @@ export function oneReadWithMate(mateBp?: number): PileupDataResult {
     ...nextRefsToTable(mateBp === undefined ? [''] : ['ctgA']),
     readNextPositions:
       mateBp === undefined ? undefined : new Uint32Array([mateBp]),
+  }
+}
+
+/**
+ * The same read with its mate on ANOTHER contig — the interchromosomal
+ * connection, which is the only family the cross-region overlay draws breakend
+ * feet for, and which `oneReadWithMate` cannot express because it names `ctgA`.
+ *
+ * `strand` and `mateReverse` are the two inputs those feet are derived from: the
+ * body direction at each foot is the read's own reading direction out of its
+ * outer 5' edge (`readLeadingBodyDir`), so a case that wants outward feet asks
+ * for a forward read with a reverse mate and one that wants parallel feet asks
+ * for two forward.
+ */
+export function oneReadWithInterchromMate({
+  mateRefName,
+  mateBp,
+  strand = 1,
+  mateReverse = false,
+}: {
+  mateRefName: string
+  mateBp: number
+  strand?: number
+  mateReverse?: boolean
+}): PileupDataResult {
+  return {
+    ...oneReadWithMate(mateBp),
+    readStrands: new Int8Array([strand]),
+    readFlags: new Uint16Array([
+      SAM_FLAG_PAIRED | (mateReverse ? SAM_FLAG_MATE_REVERSE : 0),
+    ]),
+    // TLEN 0, which is what SAM writes across references and what the
+    // interchromosomal branch of `resolveArcs` is built around
+    readInsertSizes: new Float32Array([0]),
+    ...nextRefsToTable([mateRefName]),
   }
 }

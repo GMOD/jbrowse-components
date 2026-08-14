@@ -83,6 +83,41 @@ export interface ArcBar extends ArcMarkBase {
   markY: number
 }
 
+// The breakend feet a dome can carry: a short horizontal tick at each foot,
+// lying over the sequence that foot's aligned body occupies. Outward feet are a
+// deletion-type junction, inward a duplication-type, parallel an inversion —
+// the standard breakend grammar, and the only channel left saying it once
+// `ARC_COLOR_INTERCHROM` has overwritten an interchromosomal arc's colour.
+//
+// LEFT/RIGHT rather than 1/2, because that is the question the path builder
+// asks: the dome's two feet are `mid - rx` and `mid + rx`, which are min and max
+// of the two projected xs. `arcMarkFrom` does the one comparison that resolves
+// it, so no consumer has to re-decide which endpoint is on which side of a
+// reversed region.
+//
+// The DIRECTION IS ALREADY SCREEN-SPACE. A body direction is genomic, and a
+// reversed displayed region (which is also how `horizontallyFlip` is
+// implemented) mirrors it; the caller applies that, because it is the caller
+// that knows which region each foot resolved through.
+//
+// Related, and the sign is opposite on purpose: `tangentSign`
+// (core/util/bezierConnector.ts) is the direction a per-read connector LEAVES
+// the same endpoint in, which is the reading direction — away from the body. A
+// foot lies over the body and the curve departs across the junction, so the two
+// together read as one mark, the way BreakpointSplitView's `buildBreakpointPath`
+// draws a tick into its breakend and a line out of it. Don't "fix" either to
+// match the other.
+export interface ArcFeet {
+  leftDir: number
+  rightDir: number
+  // How far inside the band the ticks are drawn, as an offset from the anchor —
+  // unresolved for the reason `destY` is: the mark is band-local and
+  // `offsetArcMark` moves the anchor, so a foot stored as an absolute y would
+  // need moving too. The caller sets it from the stroke width, since a tick
+  // drawn exactly ON the anchor loses its outer half to the band's clip.
+  insetPx: number
+}
+
 // The paired-read dome: a half conic from foot to foot over the anchor line.
 export interface ArcDome extends ArcMarkBase {
   kind: 'dome'
@@ -101,6 +136,12 @@ export interface ArcDome extends ArcMarkBase {
   // not cosmetic — see `hitTest.ts`, where a far pair's radius reaches millions
   // of px and the ellipse solver cancels away every significant digit.
   far: boolean
+  // Absent on every arc a per-region pass draws: `arcMark` reads
+  // `ArcsUploadData`, which carries no per-foot direction, and adding one would
+  // mean the GPU and Canvas2D passes growing the mark too. Present only on the
+  // cross-region overlay's interchromosomal arcs — the family that is ALWAYS
+  // cross-region, so no arc gains or loses feet by being panned.
+  feet?: ArcFeet
 }
 
 // A bar or a dome. Every consumer switches on `kind` and is then handed exactly
@@ -122,6 +163,10 @@ export interface ProjectedArc {
   sx2: number
   yBp: number
   shapeType: number
+  // Breakend feet, in sx1/sx2 order and already in screen direction — see
+  // `ArcFeet`, which is what this resolves into. Omitted by the per-region
+  // `arcMark` path, which has no per-foot direction to give.
+  feet?: { dir1: number; dir2: number; insetPx: number }
 }
 
 export function arcMark(
@@ -141,7 +186,7 @@ export function arcMark(
 }
 
 export function arcMarkFrom(
-  { sx1, sx2, yBp, shapeType }: ProjectedArc,
+  { sx1, sx2, yBp, shapeType, feet }: ProjectedArc,
   frame: Omit<ArcBandFrame, 'bpToScreenX'>,
 ): ArcMark {
   const {
@@ -157,6 +202,10 @@ export function arcMarkFrom(
   const destY = arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, arcAvailH(arcsH))
   // One Y rule for both kinds — the split above is the shape, not the height.
   if (isFlatArcShape(shapeType)) {
+    // No feet on a bar, and no caller passes any: a flat connector already marks
+    // its two real mates with endpoint squares, and the read cloud is the only
+    // mode that draws one — the mode interchromosomal arcs are excluded from
+    // outright (see `resolveArcs`, `INTERCHROM_ARC_YBP`).
     return {
       kind: 'bar',
       mid,
@@ -177,6 +226,18 @@ export function arcMarkFrom(
     ry,
     down: pairedArcsDown,
     far: rx === ry,
+    // THE one place the two endpoints are sorted onto the two sides of the mark.
+    // `mid - rx` is min(sx1, sx2) and `mid + rx` is max, whichever branch above
+    // set the radii — so a reversed region, which puts sx2 left of sx1, is
+    // handled here rather than by every consumer.
+    feet:
+      feet === undefined
+        ? undefined
+        : {
+            leftDir: sx1 <= sx2 ? feet.dir1 : feet.dir2,
+            rightDir: sx1 <= sx2 ? feet.dir2 : feet.dir1,
+            insetPx: feet.insetPx,
+          },
   }
 }
 

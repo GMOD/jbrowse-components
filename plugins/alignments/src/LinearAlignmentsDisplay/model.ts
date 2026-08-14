@@ -2953,6 +2953,10 @@ export default function stateModelFactory(
           }
           const byGroup = self.crossRegionArcsByGroup
           const bpToScreenX = makeBpToScreenX(view)
+          // Read once per resolve rather than per foot: the breakend feet need
+          // it for both of their endpoints and this getter re-runs on every pan
+          // frame, where `displayedRegions[i]` is a MobX array read.
+          const reversedByRegion = view.displayedRegions.map(r => !!r.reversed)
           const pxPerBp = view.bpPerPx > 0 ? 1 / view.bpPerPx : 0
           return self.renderSections.flatMap(sec => {
             const arcs = byGroup.get(sec.groupKey)
@@ -2987,6 +2991,7 @@ export default function stateModelFactory(
                     // block's.
                     screenWidthPx: view.width,
                   },
+                  regionReversed: i => reversedByRegion[i] ?? false,
                   lineWidth: self.readConnectionsLineWidth,
                   colors: self.colorPalette,
                   // Said out loud rather than dropped silently, which is this

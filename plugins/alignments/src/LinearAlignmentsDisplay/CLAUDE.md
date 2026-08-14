@@ -447,6 +447,39 @@ The endpoint squares have no hit test of their own, covered by the bar's
 tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is arithmetic,
 not design, so `hitTest.test.ts` pins it.
 
+**An interchromosomal arc draws BREAKEND FEET, and no other arc does.** A short
+horizontal tick at each foot, lying over the sequence that foot's aligned body
+occupies: outward feet are a deletion-type junction, inward a duplication-type,
+parallel an inversion. Three things about the scope are load-bearing:
+
+- **It is the family whose colour channel is spent.** Every interchromosomal
+  connection paints `ARC_COLOR_INTERCHROM` whatever `colorByType` says, so
+  orientation has nowhere else to go. A same-chromosome split junction still has
+  it — `unpairedOrientationColor` paints a strand flip magenta and a co-linear
+  join yellow — which is why those arcs get none.
+- **Interchromosomal is the one family that is ALWAYS cross-region**, so drawing
+  the feet in `CrossRegionArcsOverlay` covers all of it. Feet on the
+  same-chromosome cross-region arcs would appear and disappear as a reader
+  panned the identical junction across a seam.
+- **The direction is a property of the JUNCTION, not of the read**, which is
+  what makes it safe on a coalesced arc: reading the same molecule from the
+  other end swaps which segment is trailing and flips both strands, and the two
+  cancel (`readTrailingBodyDir`, @jbrowse/cigar-utils). A `ComputedLine` still
+  carries none, because a tick coalesces on one coordinate and two junctions
+  sharing a breakpoint would take whichever read arrived first.
+
+The feet live in the **mark** (`ArcFeet`), not in the overlay's path string, so
+the hover highlight — which re-traces `arc.mark` at its own origin — draws them
+too. Their sign is deliberately the opposite of `tangentSign`
+(`core/util/bezierConnector.ts`), which is the direction a per-read connector
+LEAVES the same endpoint in: a foot lies over the body and the curve departs
+across the junction, which together is what BreakpointSplitView's
+`buildBreakpointPath` draws as a tick into its breakend and a line out of it.
+Don't "fix" either to match the other.
+
+The interchromosomal **ticks** have no feet, and that is unfinished rather than
+decided — see `agent-docs/handoffs/arc-breakend-feet.md`.
+
 **An arc outranks the band it is painted over, and it says so as a RESULT
 VARIANT.** `runHitTest` returns `arc ?? result`, so `ArcMarkHit` is a member of
 `MarkHitResult` alongside the pileup's five — one value, one discriminant, and

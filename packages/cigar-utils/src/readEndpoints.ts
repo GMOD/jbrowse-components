@@ -17,6 +17,26 @@ export function readLeadingBp(strand: number, start: number, end: number) {
   return strand === -1 ? end : start
 }
 
+// Which way the segment's own aligned body lies from the edge above, as a
+// genomic direction: +1 toward higher coordinates, -1 toward lower. This is the
+// breakend orientation — "which side of this junction is kept" — and it is
+// exactly the choice of edge said the other way round, which is why each of
+// these mirrors its `…Bp` partner's ternary line for line rather than being
+// written as `-strand` / `strand`. A strand of 0 (a feature with no strand at
+// all) reads as forward in both, so the pair cannot disagree about it.
+//
+// The direction is a property of the JUNCTION, not of the read that crossed it:
+// sequencing the same molecule from the other end swaps which segment is
+// trailing and flips both strands, and the two flips cancel. That is what makes
+// it safe for a mark drawn from arcs several reads were coalesced into.
+export function readTrailingBodyDir(strand: number) {
+  return strand === -1 ? 1 : -1
+}
+
+export function readLeadingBodyDir(strand: number) {
+  return strand === -1 ? -1 : 1
+}
+
 // The two absolute-bp endpoints of a resolved connection, given each segment's
 // strand and genomic [start, end]. Endpoint 1 is always its segment's read-
 // trailing (3') edge. Endpoint 2 is the next segment's read-leading (5') edge
@@ -25,6 +45,12 @@ export function readLeadingBp(strand: number, start: number, end: number) {
 // pair. This is the single endpoint rule shared by every connector renderer —
 // the alignments linked-read overlay + coverage arcs and breakpoint-split-view's
 // AlignmentConnections — so it can't drift between them.
+//
+// It returns the two BODY DIRECTIONS with the two bps, and the name is older
+// than that half. They ship together because they are one decision: `dir1` is
+// trailing iff `bp1` is, so a second function asking `isSplit` again is the
+// drift this file exists to prevent. A caller wanting only the coordinates
+// ignores them.
 export function connectionEndpointBps({
   s1,
   start1,
@@ -47,5 +73,7 @@ export function connectionEndpointBps({
     bp2: isSplit
       ? readLeadingBp(s2, start2, end2)
       : readTrailingBp(s2, start2, end2),
+    dir1: readTrailingBodyDir(s1),
+    dir2: isSplit ? readLeadingBodyDir(s2) : readTrailingBodyDir(s2),
   }
 }

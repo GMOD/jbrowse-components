@@ -4,6 +4,7 @@ import { buildArcColorPalette } from '../../shaders/palettes.ts'
 // the same slot the GPU and Canvas2D passes resolve, so an arc that moves to
 // this overlay does not change colour.
 import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcMarkScreenPath } from './arcPath.ts'
 import { arcMarkFrom } from './mark.ts'
@@ -101,6 +102,12 @@ export interface ComputeCrossRegionArcsOpts {
   // this overlay IS the paint for these arcs, and the width they are drawn
   // across is the view's.
   frame: Omit<ArcBandFrame, 'bpToScreenX'>
+  // Whether a displayed region draws right-to-left, which mirrors a foot's
+  // genomic direction into a screen one. A view-level property in practice —
+  // `horizontallyFlip` sets `reversed` on every region — but asked per region,
+  // because that is what the projection above is keyed on and a session is free
+  // to reverse one region and not another.
+  regionReversed: (displayedRegionIndex: number) => boolean
   lineWidth: number
   colors: ColorPalette
   // Told how many it dropped, once per resolve, rather than dropping them
@@ -109,10 +116,42 @@ export interface ComputeCrossRegionArcsOpts {
   onCapped?: (dropped: number, kept: number) => void
 }
 
+// The genomic body direction at each foot, mirrored per region into the screen
+// direction `ArcFeet` wants, and only for the family that has no other channel
+// left: `ARC_COLOR_INTERCHROM` overwrites orientation, insert size and long-range
+// distance with one colour, so a reader of an interchromosomal arc has nothing
+// telling them which arms are joined.
+//
+// The same-chromosome cross-region arcs deliberately get none. Their colour
+// already carries it — `unpairedOrientationColor` paints a strand-flip junction
+// magenta and a co-linear one yellow, which is what a pair of feet would say —
+// and, decisively, an arc is only in this overlay while its two feet sit in
+// different displayed regions. Feet here alone would appear and disappear as the
+// view is panned across a seam, for the identical junction. Interchromosomal
+// cannot: two refNames never share a region, so every arc in that family is
+// always drawn right here.
+function screenFeet(
+  arc: CrossRegionArc,
+  regionReversed: (displayedRegionIndex: number) => boolean,
+  strokeWidth: number,
+) {
+  if (arc.colorType !== ARC_COLOR_INTERCHROM) {
+    return undefined
+  }
+  return {
+    dir1: arc.p1Dir * (regionReversed(arc.p1RegionIndex) ? -1 : 1),
+    dir2: arc.p2Dir * (regionReversed(arc.p2RegionIndex) ? -1 : 1),
+    // Half the arc's own stroke, so the tick clears the band's clip by exactly
+    // its own half-width whatever `support` made it — see `feetSubpaths`.
+    insetPx: strokeWidth / 2,
+  }
+}
+
 export function computeCrossRegionArcs({
   arcs,
   bpToScreenX,
   frame,
+  regionReversed,
   lineWidth,
   colors,
   onCapped,
@@ -155,8 +194,15 @@ export function computeCrossRegionArcs({
   }
   const palette = buildArcColorPalette(colors)
   return kept.map(({ arc, sx1, sx2 }) => {
+    const strokeWidth = arcLineWidth(arc.support, lineWidth)
     const mark = arcMarkFrom(
-      { sx1, sx2, yBp: arc.yBp, shapeType: arc.shapeType },
+      {
+        sx1,
+        sx2,
+        yBp: arc.yBp,
+        shapeType: arc.shapeType,
+        feet: screenFeet(arc, regionReversed, strokeWidth),
+      },
       frame,
     )
     return {
@@ -164,7 +210,7 @@ export function computeCrossRegionArcs({
       d: arcMarkScreenPath(mark),
       mark,
       stroke: rgb255(palette[arcColorSlot(arc.colorType)]!),
-      strokeWidth: arcLineWidth(arc.support, lineWidth),
+      strokeWidth,
       support: arc.support,
       refName: arc.p1.refName,
       endRefName: arc.p2.refName,

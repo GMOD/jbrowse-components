@@ -45,7 +45,9 @@ export { getNextRefPos } from './getNextRefPos.ts'
 export { numericCigarToString } from './numericCigarToString.ts'
 export {
   connectionEndpointBps,
+  readLeadingBodyDir,
   readLeadingBp,
+  readTrailingBodyDir,
   readTrailingBp,
 } from './readEndpoints.ts'
 export {
