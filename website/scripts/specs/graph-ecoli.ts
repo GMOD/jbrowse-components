@@ -2176,6 +2176,17 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           layoutMode: 'force',
           colorScheme: 'reference-position',
           colorDomain: PAA_RAMP_DOMAIN,
+          // The shorter graph panel review asked for, and the RIGHT lever for
+          // it: `paneHeight` replaces GraphGenomeView's built-in 600px ceiling,
+          // so the whole drawing scales down to fit. Cutting the capture's
+          // viewportHeight instead just clips the bubble off the bottom, which
+          // is what an earlier attempt at this did.
+          //
+          // NOT a layout change. Force-directed is the point of the figure --
+          // one long backbone node with the rest of the graph looping past it --
+          // and an anchored layout draws that loop flat against the backbone it
+          // replaces.
+          paneHeight: 430,
         },
       ],
     }),
@@ -2185,16 +2196,12 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportWidth: 1000,
     // the three strain rows (a gene lane each, and the segments lane on K12),
-    // the two ribbon bands and the graph pane. 1580 before the bands came down;
-    // this is that less the 110 they gave back, measured off the run's own
-    // CONTENT CLIPPED BELOW THE FOLD rather than guessed.
-    //
-    // The GRAPH PANE is the other half of what review asked to shorten and it
-    // is not the spec's to shorten: GraphGenomeView is an external plugin, its
-    // pane sizes itself to its drawing, and it takes no `height` through a
-    // session snapshot. Cutting the frame instead just clips the bubble, which
-    // is what 1310 did.
-    viewportHeight: 1468,
+    // the two ribbon bands and the graph pane, all three shorter than the 1580
+    // this started at. Measured off the run's own CONTENT CLIPPED BELOW THE
+    // FOLD rather than guessed, and it follows `paneHeight` above rather than
+    // driving it: the pane is the graph's, so shortening the capture alone
+    // clips the bubble instead of scaling it.
+    viewportHeight: 1299,
     hideTooltip: true,
     // One ring in each half, on the same segment (review: "we may want to circle
     // entries in the lineargenomeview/linearsyntenyview and the correspondence

@@ -2226,8 +2226,8 @@
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
     "status": "answered",
-    "note": "HALF DONE, and the other half is not the spec. The two ribbon bands are 95px rather than 150, and the frame is 1468 rather than 1580, sized off the run own below-the-fold report. The GRAPH PANE is GraphGenomeView, an external plugin: it sizes itself to its drawing and takes no height through a session snapshot, so cutting the frame just clips the bubble (tried at 1310, the ring came off the bottom).\n\nprevious notes:\nplease try to improve y-screen real estate with shorter synteny levels, and shorter graph panel. \n",
-    "reviewedAt": "2026-08-14T05:10:00.000Z",
+    "note": "DONE, both halves, and my first answer here was wrong about the second one. The two ribbon bands are 95px rather than 150. The GRAPH PANE takes 'paneHeight', a GraphGenomeView view prop that replaces its built-in 600px ceiling and scales the whole drawing to fit -- so it is settable from a session spec after all, and it is at 430. I had said the pane was not the spec's to shorten, which was true only of a key called 'height'; you were right that a way to compress the layout existed. Cutting the capture instead is what clips the bubble (tried at 1310, the ring came off the bottom). STILL FORCE-DIRECTED, per your follow-up: the layout is the point of the figure, and paneHeight changes the scale rather than the layout. 1580 -> 1299 overall.\n\nprevious notes:\nplease try to improve y-screen real estate with shorter synteny levels, and shorter graph panel. \n",
+    "reviewedAt": "2026-08-14T06:10:00.000Z",
     "hash": "e5394d2fec9b54452bc4c3578f81f0958eee3f94"
   },
   "pangenome/hprc_cfhr_deletion": {
