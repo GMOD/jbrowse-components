@@ -399,3 +399,79 @@ describe('computeLabelExtraWidth', () => {
     expect(result).toBeGreaterThan(labelWidth - 1)
   })
 })
+
+// The invariant `renderedLabelSet` exists to hold: the horizontal room reserved
+// for a feature's labels and the labels actually emitted are the same decision.
+//
+// It could not be asserted before, because the two answered it separately —
+// `computeLabelExtraWidth` through a `maxLabelTextWidth` over in rpcTypes.ts,
+// `forEachRenderedLabel` through three inline conditions of its own — so a test
+// over either told you nothing about the other. Drift between them is silent and
+// costs either a strip of reserved whitespace with no text in it, or a label
+// overhanging the box the packer, the hit test and the SVG export all sized for
+// it.
+describe('the reservation and the ink agree', () => {
+  const NAME = 'a-name-of-some-length'
+  const DESC = 'a-description-that-is-much-longer-than-the-name'
+  const SUB = 'sub'
+
+  const sized = (text: string) => ({
+    ...makeLabel({ text, textWidth: measureText(text, LABEL_FONT) }),
+  })
+
+  // Every subset of the three labels a feature can carry, so the subfeature
+  // label's ungated-ness is exercised against both gates being off.
+  const present = [
+    { name: false, desc: false, sub: false },
+    { name: true, desc: false, sub: false },
+    { name: false, desc: true, sub: false },
+    { name: false, desc: false, sub: true },
+    { name: true, desc: true, sub: false },
+    { name: true, desc: true, sub: true },
+  ]
+
+  test.each([
+    { showLabels: true, showDescriptions: true },
+    { showLabels: true, showDescriptions: false },
+    { showLabels: false, showDescriptions: true },
+    { showLabels: false, showDescriptions: false },
+  ])(
+    'showLabels=$showLabels showDescriptions=$showDescriptions',
+    visibility => {
+      for (const p of present) {
+        const labelData = makeLabelData('f1', {
+          nameLabel: p.name ? sized(NAME) : undefined,
+          descriptionLabel: p.desc ? sized(DESC) : undefined,
+          subfeatureLabel: p.sub
+            ? { ...sized(SUB), isOverlay: false }
+            : undefined,
+        })
+        const emitted = collect(
+          makeData({ f1: labelData }),
+          FULL_REGION,
+          visibility,
+        )
+        const labels = emitted[0]?.labels ?? []
+        // Measured against a zero-width feature, so the reservation IS the
+        // widest rendered label rather than its overhang past a box.
+        const reserved = computeLabelExtraWidth(
+          labelData,
+          0,
+          visibility.showLabels,
+          visibility.showDescriptions,
+          LABEL_FONT,
+        )
+
+        // Nothing emitted <=> nothing reserved.
+        expect(reserved > 0).toBe(labels.length > 0)
+        // ...and when something is emitted, the reservation is exactly the
+        // widest of the labels that were.
+        if (labels.length > 0) {
+          expect(reserved).toBeCloseTo(
+            Math.max(...labels.map(l => l.label.textWidth)),
+          )
+        }
+      }
+    },
+  )
+})

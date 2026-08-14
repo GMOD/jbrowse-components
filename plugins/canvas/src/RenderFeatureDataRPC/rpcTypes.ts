@@ -320,23 +320,4 @@ export interface FeatureLabelData {
   subfeatureLabel?: LabelItem & { isOverlay: boolean }
 }
 
-// Returns the max rendered width of any label that will actually display for
-// this feature. Mirrors the visibility logic in overlayElements: name is
-// gated on showLabels, description is gated on showDescriptions only (not
-// showLabels), and subfeature labels always render when present. Each textWidth
-// is the true measured width of the (already-truncated) label text, so the
-// reservation computed here always matches what is drawn.
-export function maxLabelTextWidth(
-  labelData: FeatureLabelData,
-  showLabels = true,
-  showDescriptions = true,
-) {
-  const nameWidth = showLabels ? (labelData.nameLabel?.textWidth ?? 0) : 0
-  const descWidth = showDescriptions
-    ? (labelData.descriptionLabel?.textWidth ?? 0)
-    : 0
-  const subfeatureWidth = labelData.subfeatureLabel?.textWidth ?? 0
-  return Math.max(nameWidth, descWidth, subfeatureWidth)
-}
-
 export type FloatingLabelsDataMap = Record<string, FeatureLabelData>

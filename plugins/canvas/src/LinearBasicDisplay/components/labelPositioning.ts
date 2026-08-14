@@ -5,7 +5,6 @@ import {
   LABEL_FONT_SIZE,
   renderedTextWidth,
 } from '../../RenderFeatureDataRPC/constants.ts'
-import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 import type {
   FeatureDataResult,
@@ -53,6 +52,61 @@ export function labelCullBand(
     top: bucketTop - LABEL_CULL_BUCKET_PX,
     bottom: bucketTop + viewportHeight + 2 * LABEL_CULL_BUCKET_PX,
   }
+}
+
+// Which of a feature's three labels render, and the ONE place that decides.
+//
+// The name is gated on `showLabels`. The description is gated on
+// `showDescriptions` alone — deliberately not also on `showLabels`, because
+// "descriptions without names" is a real state (the fit ladder's `labels` rung
+// reaches it, and so does a session carrying the retired
+// `showLabels: 'off'` + `showDescriptions: true` pair). A subfeature label is
+// worker-baked and so cannot be gated main-thread at all; it renders whenever it
+// is present, which is why `collapsed` mode suppresses it back in `rpcProps`
+// instead.
+//
+// Three callers, and they have to agree or the space reserved for a label
+// disagrees with the label drawn in it: `maxLabelTextWidth` reserves horizontal
+// room (which the packer spends on row placement, and the hit box, the highlight
+// overlay and the SVG export's highlight boxes all re-derive),
+// `forEachRenderedLabel` skips a feature this yields nothing for, and
+// `resolveFeatureLabels` positions what it yields. All three spelled the same
+// three conditions out separately, and the one in `maxLabelTextWidth` carried a
+// comment pointing at a fourth location that no longer had them.
+function renderedLabelSet(
+  labelData: FeatureLabelData,
+  showLabels: boolean,
+  showDescriptions: boolean,
+) {
+  return {
+    nameLabel: showLabels ? labelData.nameLabel : undefined,
+    descriptionLabel: showDescriptions ? labelData.descriptionLabel : undefined,
+    subfeatureLabel: labelData.subfeatureLabel,
+  }
+}
+
+// Max rendered width of any label that will actually display for this feature.
+// Every width is the true measured width of the (already-truncated) label text,
+// so a reservation computed here always matches what is drawn.
+//
+// Lives here rather than beside `FeatureLabelData` in rpcTypes.ts, where it was:
+// nothing in the worker calls it, and it is one of the three readings of
+// `renderedLabelSet` above.
+function maxLabelTextWidth(
+  labelData: FeatureLabelData,
+  showLabels: boolean,
+  showDescriptions: boolean,
+) {
+  const { nameLabel, descriptionLabel, subfeatureLabel } = renderedLabelSet(
+    labelData,
+    showLabels,
+    showDescriptions,
+  )
+  return Math.max(
+    nameLabel?.textWidth ?? 0,
+    descriptionLabel?.textWidth ?? 0,
+    subfeatureLabel?.textWidth ?? 0,
+  )
 }
 
 // How far a feature's widest visible label overhangs its glyph. The label is
@@ -174,7 +228,11 @@ function resolveFeatureLabels(
     featureBottomPx: labelData.topY + labelData.featureHeight,
     screenStartPx: vr.screenStartPx,
   }
-  const { nameLabel, descriptionLabel, subfeatureLabel } = labelData
+  const { nameLabel, descriptionLabel, subfeatureLabel } = renderedLabelSet(
+    labelData,
+    showLabels,
+    showDescriptions,
+  )
   const out: ResolvedLabel[] = []
   const add = (
     label: ResolvedLabel['label'],
@@ -187,15 +245,16 @@ function resolveFeatureLabels(
       kind,
     })
   }
-  if (showLabels && nameLabel) {
+  if (nameLabel) {
     add(nameLabel, LABEL_TOP_GAP_PX, 'name')
   }
-  if (showDescriptions && descriptionLabel) {
+  if (descriptionLabel) {
     // The description sits one label-line (fontSize) below the name; when the
     // name is hidden it collapses up to fill the vacated row. Derived from the
     // mode's fontSize here (not the RPC-baked relativeY) so the gap tracks the
-    // compact-shrunk text.
-    const relativeY = showLabels && nameLabel ? fontSize : 0
+    // compact-shrunk text. `nameLabel` is already gated, so the row is vacated
+    // whether the name was hidden or simply absent.
+    const relativeY = nameLabel ? fontSize : 0
     add({ ...descriptionLabel, relativeY }, LABEL_TOP_GAP_PX, 'desc')
   }
   if (subfeatureLabel) {
@@ -243,10 +302,10 @@ export function forEachRenderedLabel(
         continue
       }
     }
-    const wantName = showLabels && !!labelData.nameLabel
-    const wantDesc = showDescriptions && !!labelData.descriptionLabel
-    const wantSub = !!labelData.subfeatureLabel
-    if (!wantName && !wantDesc && !wantSub) {
+    // The same decision `resolveFeatureLabels` makes below, asked early only so
+    // the bp→px mapper stays lazy — not restated: both read `renderedLabelSet`.
+    const want = renderedLabelSet(labelData, showLabels, showDescriptions)
+    if (!want.nameLabel && !want.descriptionLabel && !want.subfeatureLabel) {
       continue
     }
     // Lazy: only build the bp→px mapper once we know we'll emit something.
