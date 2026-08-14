@@ -94,6 +94,36 @@ test('a window on another contig holds the row', () => {
   ).toBeUndefined()
 })
 
+// The anchor navigating between contigs, which is the only way the frame pass
+// gets a window whose refName its block knows nothing about — it reuses the
+// block the last settle chose, and the settle is still 500ms away. On COORDINATES
+// ALONE this window looks inside the block, and the row was flung through it to
+// the mate of a stretch of chr1 while the anchor was showing chr9.
+test('a window on another contig at coordinates inside the block still holds it', () => {
+  const elsewhere = { refName: 'chr9', start: 102_000, end: 103_000 }
+  expect(
+    followFrameSpan({ feat, data, window: elsewhere, toMate: true }),
+  ).toBeUndefined()
+  // and the cached transform is no escape hatch: it refuses on the refName and
+  // used to hand the question straight to the interpolator
+  expect(
+    followFrameSpan({
+      feat,
+      data,
+      window: elsewhere,
+      toMate: true,
+      transform: {
+        refName: 'chr1',
+        a0: 100_000,
+        a1: 110_000,
+        targetRefName: 'Pp01',
+        b0: 1_100_000,
+        b1: 1_110_000,
+      },
+    }),
+  ).toBeUndefined()
+})
+
 test('a cached transform answers for a window inside the block', () => {
   // measured over 100,000-110,000 -> 2,100,000-2,110,000 on a different contig
   // than the loaded block says, so the answer can only have come from it
