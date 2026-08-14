@@ -410,7 +410,15 @@ between the two, and with both partners displayed those curves cross from one
 region into the other. **Show... → Show only split alignments** then drops every
 read that stays on one chromosome, so the pileup is the fusion's own support.
 
-<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+A curve per molecule shows the junction is real and cannot show how many
+molecules agree on it, since near-identical curves stack into one line. **Read
+connections → Show read arcs** adds a band under the coverage where the junction
+is drawn once instead, thickened by the reads behind it, and with both partners
+displayed it reaches across the region divider rather than stopping at it. The
+vertical beside its left foot marks the molecules whose other alignment lands
+outside this window.
+
+<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked, and one arc across the divider carrying every molecule that agrees on the junction." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
 roughly seven copies, while the chr22 partners sit at one, so what is amplified

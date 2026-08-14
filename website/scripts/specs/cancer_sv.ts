@@ -2008,7 +2008,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // Off the run's own below-the-fold report, which is trustworthy again now
     // the track grows to its rows rather than scrolling them: at a fixed height
     // this number had to be read off the scrollbar thumb by eye, and was twice.
-    viewportHeight: 1725,
+    // 1760 rather than 1725 because the arc band below is a strip this stack did
+    // not reserve before, and the run reported exactly that much newly clipped.
+    viewportHeight: 1760,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr22:23,286,000-23,293,000 chr9:130,851,000-130,858,000',
@@ -2055,6 +2057,19 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // still adds here is the WITHIN-region curves (a read with two chr22
           // segments), which is a different set from the fan.
           showBezierConnections: true,
+          // The fan's TOTAL, beside the fan itself. A curve per molecule shows
+          // the junction is real and cannot show how many molecules say so --
+          // 200 near-identical curves and one curve look alike -- and the arc
+          // band coalesces them into one mark whose stroke width is the count.
+          //
+          // It draws at all only because an interchromosomal connection with
+          // both feet on screen is now an arc rather than two ticks. Measured
+          // off this BAM before it was turned on: in these two windows the band
+          // resolves 29 reads into 4 arcs, split 26/1/1/1, the 26 being the ABL1
+          // exon-2 acceptor the STAR-Fusion call bands the chr9 panel on. The
+          // other 195 junctions reach acceptors outside the frame and stay
+          // ticks at the BCR donor, which is why there is a vertical there.
+          readConnections: 'arc',
           ...SPLIT_READS,
         },
       ],
