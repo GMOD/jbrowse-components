@@ -24,6 +24,7 @@ export {
   isCsOpChar,
   isDigit,
   labelFadeOpacity,
+  minAvailPxForLabel,
   textWidthForNumber,
 } from './labelConstants.ts'
 export type {

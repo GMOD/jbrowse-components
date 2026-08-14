@@ -23,6 +23,7 @@ export {
   getInsertionType,
   insertionBarWidth,
   labelFadeOpacity,
+  minAvailPxForLabel,
   textWidthForNumber,
 } from '@jbrowse/alignments-core'
 export type { InsertionType } from '@jbrowse/alignments-core'

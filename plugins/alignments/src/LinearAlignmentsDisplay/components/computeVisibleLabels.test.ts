@@ -1,4 +1,12 @@
+import { measureText } from '@jbrowse/core/util'
+
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
+import {
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  MIN_LABEL_OPACITY,
+  computeLabelFontSize,
+  labelFadeOpacity,
+} from '../constants.ts'
 import { computeVisibleLabels } from './computeVisibleLabels.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -326,6 +334,127 @@ test('the (S<len>) summary still renders when no per-base clip data', () => {
   expect(labels.filter(l => l.type === 'softclip').map(l => l.text)).toEqual([
     '(S5)',
   ])
+})
+
+// Zoomed out, this function used to walk every gap and every interbase entry to
+// emit nothing — 1.5M array entries per frame across six open BAM tracks, ~80%
+// of the main thread's JavaScript during a pan. It now skips a walk whose
+// longest feature is too short to carry a label at the current zoom.
+//
+// That is a shortcut around `labelFadeOpacity`, so what these tests pin is that
+// it is only ever a shortcut: the two must agree about every label, at every
+// zoom, and in particular the cheap gate must not be the stricter of the pair.
+// A gate that is slightly too eager is invisible in a screenshot and deletes
+// labels at exactly the zooms they matter most.
+describe('the zoom gate agrees with the per-feature fade', () => {
+  const fontSize = computeLabelFontSize(10)
+
+  // Its own runner, with the region sized to hold the feature: the sweep
+  // compares against the unclamped span, and a deletion overhanging the region
+  // is measured against its VISIBLE part instead (covered separately above).
+  const inRegion = (rpcData: PileupDataResult, bpPerPx: number, end: number) =>
+    computeVisibleLabels({
+      view: {
+        visibleRegions: [
+          { displayedRegionIndex: 0, start: 0, end, screenStartPx: 0 },
+        ],
+        bpPerPx,
+      },
+      sections: [
+        {
+          laidOutPileupMap: { get: () => rpcData },
+          topOffset: 0,
+          pileupHeight: 1000,
+        },
+      ],
+      height: 1000,
+      featureHeight: 10,
+      featureSpacing: 2,
+      showMismatches: true,
+      mismatchAlpha: false,
+      scrollTop: 0,
+    })
+
+  const deletion = (len: number) =>
+    makeRpcData({
+      gapPositions: new Uint32Array([100, 100 + len]),
+      gapYs: new Uint16Array([0]),
+      gapLengths: new Uint32Array([len]),
+      gapTypes: new Uint8Array([0]),
+    })
+
+  // 9 is the sharp case: the gate reserves the width of a ONE-digit length, so
+  // on a one-digit deletion it is exactly the fade's own threshold rather than
+  // a conservative under-estimate of it, and an off-by-one would show here
+  // before anywhere else.
+  test.each([9, 10, 100, 5000])('deletion of %i bp, swept across zoom', len => {
+    const needed = measureText(String(len), fontSize)
+    for (let bpPerPx = 0.05; bpPerPx < len; bpPerPx *= 1.15) {
+      const expected =
+        labelFadeOpacity(len / bpPerPx, needed) >= MIN_LABEL_OPACITY
+      const labelled = inRegion(deletion(len), bpPerPx, len + 1000).some(
+        l => l.type === 'deletion',
+      )
+      expect({ bpPerPx, labelled }).toEqual({ bpPerPx, labelled: expected })
+    }
+  })
+
+  test.each([20, 300])('large insertion of %i bp, swept across zoom', len => {
+    for (let bpPerPx = 0.05; bpPerPx < len; bpPerPx *= 1.15) {
+      // An insertion is a point, so no clamping applies. Below
+      // MIN_PX_PER_BP_FOR_TEXT the only insertion label available is the count
+      // on a 'large' one, which fades against a fixed pixel threshold rather
+      // than against its own text.
+      const expected =
+        labelFadeOpacity(len / bpPerPx, LONG_INSERTION_TEXT_THRESHOLD_PX) >=
+        MIN_LABEL_OPACITY
+      const labelled = inRegion(
+        makeRpcData({
+          interbasePositions: new Uint32Array([100]),
+          interbaseYs: new Uint16Array([0]),
+          interbaseLengths: new Uint32Array([len]),
+          interbaseTypes: new Uint8Array([INTERBASE_INSERTION]),
+        }),
+        bpPerPx,
+        len + 1000,
+      ).some(l => l.type === 'insertion')
+      expect({ bpPerPx, labelled }).toEqual({ bpPerPx, labelled: expected })
+    }
+  })
+
+  // The gate is one answer for a whole array, so it has to be taken over the
+  // longest feature in it. Taking it per feature, or over the first, drops
+  // every other label in the array.
+  test('one long deletion keeps the whole array walkable', () => {
+    const labels = inRegion(
+      makeRpcData({
+        gapPositions: new Uint32Array([100, 140, 500, 5500]),
+        gapYs: new Uint16Array([0, 1]),
+        gapLengths: new Uint32Array([40, 5000]),
+        gapTypes: new Uint8Array([0, 0]),
+      }),
+      1,
+      7000,
+    ).filter(l => l.type === 'deletion')
+    expect(labels.map(l => l.text)).toEqual(['40', '5000'])
+  })
+
+  // A skip draws as a thin line with no length on it, so a long intron must not
+  // be what keeps the deletion walk alive.
+  test('a long skip does not resurrect the deletion walk', () => {
+    expect(
+      inRegion(
+        makeRpcData({
+          gapPositions: new Uint32Array([100, 102, 500, 50500]),
+          gapYs: new Uint16Array([0, 1]),
+          gapLengths: new Uint32Array([2, 50000]),
+          gapTypes: new Uint8Array([0, 1]),
+        }),
+        50,
+        60000,
+      ),
+    ).toHaveLength(0)
+  })
 })
 
 test('a grouped section near the top of its band stays visible after scrolling', () => {

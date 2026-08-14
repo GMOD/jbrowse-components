@@ -7,6 +7,7 @@ import {
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
 import {
+  LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
   MIN_LABEL_OPACITY,
@@ -15,6 +16,7 @@ import {
   getInsertionType,
   insertionBarWidth,
   labelFadeOpacity,
+  minAvailPxForLabel,
 } from '../constants.ts'
 import {
   bandScreenTop,
@@ -72,6 +74,55 @@ interface ComputeVisibleLabelsParams {
   scrollTop: number
 }
 
+/**
+ * The longest deletion and the longest interbase feature in one region's data.
+ *
+ * A size label survives only if its feature is wide enough on screen, and that
+ * width is `length / bpPerPx` — so at a fixed zoom it is a test on the
+ * feature's bp LENGTH, which no amount of panning changes. The longest feature
+ * present therefore decides whether the walk below can emit anything at all,
+ * and on a zoomed-out pileup it usually cannot.
+ *
+ * Measured on six BAM tracks at `chr22_mask:124000-143000` (jb2bench
+ * `results/multibam-pan.md`): 595k gap and 906k interbase entries walked per
+ * pan frame, producing **zero** labels, because the longest deletion in that
+ * data is 16 bp against a threshold of 81. That walk was 19.5% of the whole
+ * main-thread profile and about 80% of its JavaScript.
+ *
+ * Cached against the RPC result object itself, which is replaced wholesale on
+ * refetch — so the cache invalidates itself, and a WeakMap holds nothing once
+ * the data is dropped.
+ */
+const maxFeatureLengths = new WeakMap<
+  object,
+  { deletion: number; interbase: number }
+>()
+
+function getMaxFeatureLengths(rpcData: PileupDataResult) {
+  const hit = maxFeatureLengths.get(rpcData)
+  if (hit) {
+    return hit
+  }
+  const { gapLengths, gapTypes, interbaseLengths } = rpcData
+  let deletion = 0
+  // Skips (`gapTypes` 1) are never labelled, so a long intron must not keep the
+  // deletion walk alive.
+  for (let i = 0; i < gapLengths.length; i++) {
+    if (gapTypes[i] === 0 && gapLengths[i]! > deletion) {
+      deletion = gapLengths[i]!
+    }
+  }
+  let interbase = 0
+  for (let i = 0; i < interbaseLengths.length; i++) {
+    if (interbaseLengths[i]! > interbase) {
+      interbase = interbaseLengths[i]!
+    }
+  }
+  const val = { deletion, interbase }
+  maxFeatureLengths.set(rpcData, val)
+  return val
+}
+
 export function computeVisibleLabels(
   params: ComputeVisibleLabelsParams,
 ): VisibleLabel[] {
@@ -117,6 +168,22 @@ export function computeVisibleLabels(
     return w
   }
 
+  // The shortest deletion that could possibly carry a length label at this
+  // zoom. Every digit is one table width in `measureText`, so a one-digit
+  // string is the narrowest label any deletion can ask for, and a deletion
+  // whose WHOLE span is narrower than that cannot clear MIN_LABEL_OPACITY
+  // however it happens to be placed. Necessary rather than sufficient: a
+  // deletion that passes still runs the exact per-feature test below, against
+  // its visible span and its own digit count.
+  const minDeletionBp = minAvailPxForLabel(measureText('0', fontSize)) * bpPerPx
+  // Same bound for the count on a 'large' insertion, which has two gates —
+  // `getInsertionType` calls it 'large' only past LONG_INSERTION_MIN_LENGTH and
+  // LONG_INSERTION_TEXT_THRESHOLD_PX on screen — and then fades from there.
+  const minLargeInsertionBp = Math.max(
+    LONG_INSERTION_MIN_LENGTH,
+    minAvailPxForLabel(LONG_INSERTION_TEXT_THRESHOLD_PX) * bpPerPx,
+  )
+
   const scroll = makeScroll(sections.length, scrollTop, height)
   for (const { laidOutPileupMap, topOffset, pileupHeight } of sections) {
     // Each stacked section places its labels at its own pileup top; ungrouped is
@@ -142,6 +209,7 @@ export function computeVisibleLabels(
       const blockStart = vr.start
       const blockEnd = vr.end
       const bpToPx = makeBpToPx(vr, bpPerPx)
+      const maxLen = getMaxFeatureLengths(rpcData)
 
       // Screen-x spans of the wide purple boxes the GPU draws for large
       // insertions (insertion.slang), keyed by integer pileup row. A SNP letter
@@ -152,7 +220,7 @@ export function computeVisibleLabels(
       // Process deletions (gaps)
       const { gapPositions, gapYs, gapLengths, gapTypes } = rpcData
       const numGaps = gapPositions.length / 2
-      if (tallEnoughForText) {
+      if (tallEnoughForText && maxLen.deletion >= minDeletionBp) {
         for (let i = 0; i < numGaps; i++) {
           if (gapTypes[i] !== 0) {
             continue
@@ -223,7 +291,16 @@ export function computeVisibleLabels(
       const { softclipBasePositions, softclipBaseYs, softclipBaseBases } =
         rpcData
       const hasSoftclipBases = softclipBasePositions.length > 0
-      const numInterbases = interbasePositions.length
+      // Zoomed out, the only thing this loop can emit is the count on a 'large'
+      // insertion — small-insertion `(N)`, clip summaries and the SNP letters
+      // that read `insertionShadows` are all behind `canRenderText`. So when no
+      // insertion in the data is long enough to be 'large' AND legible, the
+      // whole walk is dead and its shadows have no reader.
+      const numInterbases =
+        canRenderText ||
+        (tallEnoughForText && maxLen.interbase >= minLargeInsertionBp)
+          ? interbasePositions.length
+          : 0
 
       for (let i = 0; i < numInterbases; i++) {
         const pos = interbasePositions[i]!

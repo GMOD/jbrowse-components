@@ -99,6 +99,26 @@ export function labelFadeOpacity(availPx: number, neededPx: number) {
   return smoothstep(neededPx, neededPx * LABEL_FADE_HI_RATIO, availPx)
 }
 
+// The smoothstep parameter at which `labelFadeOpacity` first reaches
+// MIN_LABEL_OPACITY. Closed form of the smoothstep inverse — t²(3-2t) = y
+// solves to 0.5 - sin(asin(1-2y)/3) — rather than a transcribed 0.1354, so it
+// tracks MIN_LABEL_OPACITY if that is ever retuned.
+const MIN_LABEL_FADE_T =
+  0.5 - Math.sin(Math.asin(1 - 2 * MIN_LABEL_OPACITY) / 3)
+
+// The narrowest a feature can be on screen and still carry a legible size
+// label: below this, `labelFadeOpacity` is under MIN_LABEL_OPACITY and every
+// caller drops the label.
+//
+// This is the inverse of the fade, and it exists so a caller can decide it has
+// nothing to draw WITHOUT walking its features. `labelFadeOpacity` answers per
+// feature, which on a deep pileup is hundreds of thousands of calls per frame
+// to emit nothing; this answers the same question once, in the units a
+// feature's own bp length can be tested against.
+export function minAvailPxForLabel(neededPx: number) {
+  return neededPx * (1 + MIN_LABEL_FADE_T)
+}
+
 // Width in CSS px of the GPU count-label box, for the count drawn into it.
 //
 // This IS insertion.slang's `textWidth()`, transliterated from slangc's WGSL by
