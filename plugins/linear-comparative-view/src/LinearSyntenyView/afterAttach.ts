@@ -160,7 +160,13 @@ async function applyInitViewLocsAndTracks(
           // writes it over displayedRegions, which would throw away the subset
           // buildViews just installed — the restriction would apply for one
           // frame and then silently undo itself.
-          view.showAllRegions()
+          //
+          // And fit rather than showAllRegions, which this said it did and did
+          // not: the latter targets maxBpPerPx, so a restricted row drew at
+          // 1/SHOW_ALL_REGIONS_FILL of its width with the content centered.
+          // Stacked against a row that named a locus, that is a scale
+          // difference between the two halves of the comparison.
+          view.fitAllRegions()
         } else {
           view.showAllRegionsInAssembly(viewInit.assembly)
         }

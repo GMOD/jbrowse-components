@@ -43,6 +43,43 @@ scaled to 0..1.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
 
+## getModProbabilityBytes
+
+The ML tag as its raw 0..255 bytes, without the scaling `getModProbabilities`
+applies.
+
+The byte is a LOSSLESS stand-in for the probability — every value on this path
+is exactly `(N + 0.5) / 256` — and it is monotonic in it, so anything that only
+compares probabilities (picking the most likely call at a position, testing a
+threshold) can work in bytes and divide once, at the end, for the few calls that
+survive. A caller that needs the numbers themselves still wants
+`getModProbabilities`.
+
+```js
+// type signature
+(feature: Feature) => ArrayLike<number> | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
+
+## getModTypes
+
+The modification types an MM tag declares, from its headers alone.
+
+`getModPositions` answers this too, but on the way to placing every call: it
+walks the delta list against the read sequence, which is the expensive half and
+is only needed to DRAW marks. Anything that just wants to know what is in the
+file — which types to offer in a menu, whether a track carries modifications at
+all — wants this instead, and pays neither the walk nor the sequence decode that
+feeds it.
+
+```js
+// type signature
+(mm: string) => ModTypeHeader[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModTypes.ts)
+
 ## getTag
 
 Read a single tag by name, using the feature's targeted tag accessor when it has

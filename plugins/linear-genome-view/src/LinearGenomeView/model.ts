@@ -1597,9 +1597,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * single-region path (`moveTo`, span/width) reached through the same
        * location box.
        *
-       * Clamps up to `minBpPerPx` so a handful of bases can't demand a scale
-       * past the base-level zoom; at that point the content is narrower than
-       * the view and the centering is what frames it.
+       * The scale itself is `fitBpPerPx`, so it has one definition and reads as
+       * the sibling of `showAllRegions`' `maxBpPerPx` rather than as arithmetic
+       * repeated here. Where that clamps up to `minBpPerPx` the content is
+       * narrower than the view, and the centering is what frames it.
        */
       fitAllRegions() {
         // `max(minBpPerPx, totalBp/width) * width` — the window IS the

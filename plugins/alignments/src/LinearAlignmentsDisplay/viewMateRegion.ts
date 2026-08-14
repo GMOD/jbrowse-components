@@ -53,7 +53,9 @@ export function viewMateRegionInCurrentView({
     clampRegion(refName, start - pad, end + pad),
     clampRegion(nextRef, nextPos - pad, nextPos + (end - start) + pad),
   ])
-  view.showAllRegions()
+  // fit, not showAllRegions: `pad` above is the padding this wants, and
+  // showAllRegions would add a second 10% on top of it that nothing asked for.
+  view.fitAllRegions()
   session.notify('Showing mate region', 'info', {
     name: 'Undo',
     onClick: () => {
