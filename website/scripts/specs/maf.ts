@@ -216,6 +216,79 @@ const CE11_26WAY_NON_REFERENCE = [
   'triSui1',
 ]
 
+// The rows maf_hprc_hla_drb draws, ordered by how much of
+// chr6:32,480,000-32,600,000 each haplotype aligns across, GRCh38 first.
+//
+// ORDER, because unsorted the figure does not work: the alignment's own
+// discovery order interleaves the haplotype classes, so the rows read as
+// horizontal striping and a reader sees texture rather than a proportion.
+// Sorting by a measured property is a presentation choice, the way a clustered
+// heatmap is, and the caption says so. It is not phylogenetic order.
+//
+// SAMPLED, because a session spec rides in the URL and 464 names is an HTTP 431
+// from the generator's own server. The classes are discrete -- 76, 45, 1, 189,
+// 127 and 26 haplotypes at six distinct coverages -- and this takes each in
+// proportion (8, 5, 1, 20, 14, 3), so the blocks keep the heights they have in
+// the whole cohort while every row is tall enough to carry its name.
+//
+// Both halves are derived from the published summary rather than typed:
+//
+//   tabix hprc-v2.0-mc-grch38.summary.bed.gz chr6:32480000-32600000 \
+//     | awk '{c[$4]+=$3-$2} END{for(k in c) print c[k], k}' | sort -rn
+const HPRC_DRB_ROWS = [
+  'GRCh38',
+  'HG00097.1',
+  'HG00232.1',
+  'HG00253.2',
+  'HG00321.1',
+  'HG00323.2',
+  'HG00344.1',
+  'HG00344.2',
+  'HG03139.2',
+  'HG00128.1',
+  'HG00140.1',
+  'HG00146.2',
+  'HG002.2',
+  'HG00290.1',
+  'CHM13',
+  'HG00097.2',
+  'HG00099.1',
+  'HG00099.2',
+  'HG00126.1',
+  'HG00128.2',
+  'HG00133.1',
+  'HG00140.2',
+  'HG00146.1',
+  'HG00232.2',
+  'HG00253.1',
+  'HG00280.1',
+  'HG00280.2',
+  'HG00323.1',
+  'HG00329.1',
+  'HG00408.1',
+  'HG00438.1',
+  'HG00597.1',
+  'HG00597.2',
+  'HG00621.2',
+  'HG00126.2',
+  'HG00133.2',
+  'HG002.1',
+  'HG00235.1',
+  'HG00235.2',
+  'HG00350.2',
+  'HG00423.1',
+  'HG00438.2',
+  'HG005.1',
+  'HG005.2',
+  'HG00544.1',
+  'HG00544.2',
+  'HG00558.1',
+  'HG00609.2',
+  'HG00320.1',
+  'HG00320.2',
+  'HG00321.2',
+].map(name => ({ name }))
+
 export const mafSpecs: ScreenshotSpec[] = [
   {
     // The UCSC ce11 26-way multiz alignment (real cross-species nematode data):
@@ -864,6 +937,8 @@ export const mafSpecs: ScreenshotSpec[] = [
               // are ~1.6 px each, and the block structure is the signal.
               trackId: 'hprc_v2_0_mc_grch38_summary',
               type: 'LinearMafDisplay',
+              subtreeFilter: HPRC_DRB_ROWS.map(r => r.name),
+              layout: HPRC_DRB_ROWS,
               height: 760,
               rowProportion: 1,
             },
