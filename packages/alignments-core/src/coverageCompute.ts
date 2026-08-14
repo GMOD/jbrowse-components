@@ -61,21 +61,18 @@ export function computeCoverage(
   const numBins = actualEnd - actualStart
   const binSize = 1
 
-  // strand 0 (undefined) contributes to both fwd and rev; +1 selects fwd, -1
-  // rev, 0 both. `wantStrand` picks which sweep a feature/gap lands in.
-  const depths = sweepDepths(features, gaps, numBins, actualStart, 0)
+  const { depths, fwdDepths, revDepths } = sweepDepths(
+    features,
+    gaps,
+    numBins,
+    actualStart,
+    trackStrands,
+  )
   let maxDepth = 0
   for (let i = 0; i < numBins; i++) {
     if (depths[i]! > maxDepth) {
       maxDepth = depths[i]!
     }
-  }
-
-  let fwdDepths: Float32Array | undefined
-  let revDepths: Float32Array | undefined
-  if (trackStrands) {
-    fwdDepths = sweepDepths(features, gaps, numBins, actualStart, 1)
-    revDepths = sweepDepths(features, gaps, numBins, actualStart, -1)
   }
 
   return {
@@ -88,6 +85,23 @@ export function computeCoverage(
   }
 }
 
+// One span's contribution to a difference array: +1/-1 at the edges, with the
+// right edge dropped when the span runs past the last bin so the depth stays
+// counted to the end. `lo` is pre-clamped by the caller because all three
+// arrays share it.
+function bumpSpan(
+  diff: Float32Array,
+  lo: number,
+  end: number,
+  numBins: number,
+  delta: number,
+) {
+  diff[lo]! += delta
+  if (end < numBins) {
+    diff[end]! -= delta
+  }
+}
+
 // Difference-array + prefix-sum depth pass. binSize is always 1 and positions
 // are integers, so bin index == pos - actualStart: a read is +1 at start / -1
 // at end, a gap (deletion/skip) carves depth with -1 at start / +1 at end.
@@ -96,49 +110,71 @@ export function computeCoverage(
 // into [0, numBins] the same way the sweep did — a read overhanging regionStart
 // counts from bin 0, one overhanging the right edge stays counted to the end.
 //
-// wantStrand: 0 = all reads (total depth), 1 = fwd only, -1 = rev only.
-// strand 0 (undefined) is ambiguous so it lands in every sweep.
+// All three sweeps are filled in ONE walk of the reads. They differ only in
+// which reads they skip — a read lands in the total always, in fwd when its
+// strand is +1 or 0, in rev when it is -1 or 0 (strand 0, e.g. a synteny block,
+// is ambiguous and so lands in both) — and this used to be spelled as three
+// calls with a `wantStrand` filter, i.e. the read array walked three times to
+// vary a predicate. The per-strand pair exists only to back the coverage
+// tooltip's strand breakdown, and it is on by default with the band, so that
+// was two extra full passes over every read of every fetch.
 function sweepDepths(
   features: CoverageFeature[],
   gaps: CoverageGap[],
   numBins: number,
   actualStart: number,
-  wantStrand: number,
+  trackStrands: boolean | undefined,
 ) {
   const depths = new Float32Array(numBins)
+  const fwdDepths = trackStrands ? new Float32Array(numBins) : undefined
+  const revDepths = trackStrands ? new Float32Array(numBins) : undefined
   for (const f of features) {
-    const strand = f.strand ?? 0
-    if (wantStrand === 0 || strand === 0 || strand === wantStrand) {
-      const s = f.start - actualStart
-      const e = f.end - actualStart
-      if (s < numBins && e > 0) {
-        depths[s > 0 ? s : 0]! += 1
-        if (e < numBins) {
-          depths[e]! -= 1
-        }
+    const s = f.start - actualStart
+    const e = f.end - actualStart
+    if (s < numBins && e > 0) {
+      const lo = s > 0 ? s : 0
+      const strand = f.strand ?? 0
+      bumpSpan(depths, lo, e, numBins, 1)
+      if (fwdDepths && (strand === 0 || strand === 1)) {
+        bumpSpan(fwdDepths, lo, e, numBins, 1)
+      }
+      if (revDepths && (strand === 0 || strand === -1)) {
+        bumpSpan(revDepths, lo, e, numBins, 1)
       }
     }
   }
   for (const g of gaps) {
-    const strand = g.featureStrand
-    if (wantStrand === 0 || strand === 0 || strand === wantStrand) {
-      const s = g.start - actualStart
-      const e = g.end - actualStart
-      if (s < numBins && e > 0) {
-        depths[s > 0 ? s : 0]! -= 1
-        if (e < numBins) {
-          depths[e]! += 1
-        }
+    const s = g.start - actualStart
+    const e = g.end - actualStart
+    if (s < numBins && e > 0) {
+      const lo = s > 0 ? s : 0
+      const strand = g.featureStrand
+      bumpSpan(depths, lo, e, numBins, -1)
+      if (fwdDepths && (strand === 0 || strand === 1)) {
+        bumpSpan(fwdDepths, lo, e, numBins, -1)
+      }
+      if (revDepths && (strand === 0 || strand === -1)) {
+        bumpSpan(revDepths, lo, e, numBins, -1)
       }
     }
   }
-  // Prefix-sum in place; the running total stays unclamped (a transient
-  // negative from a left-overhanging gap must still cancel later opens) while
-  // each stored bin clamps to 0, matching the old per-bin Math.max(0, depth).
+  prefixSumClamped(depths, numBins)
+  if (fwdDepths) {
+    prefixSumClamped(fwdDepths, numBins)
+  }
+  if (revDepths) {
+    prefixSumClamped(revDepths, numBins)
+  }
+  return { depths, fwdDepths, revDepths }
+}
+
+// Prefix-sum in place; the running total stays unclamped (a transient negative
+// from a left-overhanging gap must still cancel later opens) while each stored
+// bin clamps to 0, matching the old per-bin Math.max(0, depth).
+function prefixSumClamped(diff: Float32Array, numBins: number) {
   let acc = 0
   for (let i = 0; i < numBins; i++) {
-    acc += depths[i]!
-    depths[i] = acc > 0 ? acc : 0
+    acc += diff[i]!
+    diff[i] = acc > 0 ? acc : 0
   }
-  return depths
 }

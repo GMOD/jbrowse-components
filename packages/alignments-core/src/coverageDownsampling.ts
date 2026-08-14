@@ -681,31 +681,55 @@ export function computeSNPCoverage(
   // callers reach this with most positions carrying one. It costs more only for
   // mismatches scattered thinly across a wide window, and the window is already
   // dense: `coverageDepths` is one float per position of it.
+  // The output arrays are pre-sized, so the segment count has to be known
+  // before the fill — and it is derived HERE, off each lane's 0 -> 1
+  // transition at a position with depth, rather than by a second walk of the
+  // window. Same predicate ("lane non-empty, depth non-zero"), reached once per
+  // emitted segment instead of once per bp: the window is `regionWidth` and the
+  // mismatches are bounded by the data, so the counting walk was the one part
+  // of this function that cost the region's width no matter how little was in
+  // it — a MAF region or a zoomed-out pileup pays it in full to emit nothing.
+  //
+  // `minOffset`/`maxOffset` bound the fill walk to the span the mismatches
+  // actually occupy, for the same reason. They stay inclusive-exclusive around
+  // an empty set (min > max) so a window with no in-range mismatch walks
+  // nothing.
   const counts = new Uint32Array(windowLength * 5)
+  let count = 0
+  let minOffset = windowLength
+  let maxOffset = -1
   for (let i = 0; i < mismatchPositions.length; i++) {
     // A position outside the coverage window emits no segment, the same as
     // resolving to zero depth did before.
     const offset = mismatchPositions[i]! - coverageStartPos
     if (offset >= 0 && offset < windowLength) {
       const base = mismatchBases[i]
-      counts[
+      const idx =
         offset * 5 +
-          (base === 65
-            ? 0
-            : base === 67
-              ? 1
-              : base === 71
-                ? 2
-                : base === 84
-                  ? 3
-                  : 4)
-      ]! += 1
+        (base === 65
+          ? 0
+          : base === 67
+            ? 1
+            : base === 71
+              ? 2
+              : base === 84
+                ? 3
+                : 4)
+      if (counts[idx]!++ === 0 && coverageDepths[offset]! > 0) {
+        count++
+      }
+      if (offset < minOffset) {
+        minOffset = offset
+      }
+      if (offset > maxOffset) {
+        maxOffset = offset
+      }
     }
   }
 
-  // Pre-size the output typed arrays by counting emitted segments first, then
-  // fill by index — no intermediate segment-object array or filter pass (per the
-  // package's no-per-iteration-allocation rule for the coverage compute paths).
+  // Fill by index — no intermediate segment-object array or filter pass (per
+  // the package's no-per-iteration-allocation rule for the coverage compute
+  // paths).
   //
   // Walking the window rather than the mismatches means segments come out in
   // position order. That is a change only for a caller whose mismatches did not
@@ -720,18 +744,6 @@ export function computeSNPCoverage(
   // order is also the better of the two: it does not vary with read arrival, and
   // where two adjacent sub-pixel columns are widened to the 1px floor and
   // overlap, it paints them consistently left to right.
-  let count = 0
-  for (let offset = 0; offset < windowLength; offset++) {
-    if (coverageDepths[offset]! > 0) {
-      const lane = offset * 5
-      for (let i = 0; i < 5; i++) {
-        if (counts[lane + i]! > 0) {
-          count++
-        }
-      }
-    }
-  }
-
   const positions = new Uint32Array(count)
   const yOffsets = new Float32Array(count)
   const heights = new Float32Array(count)
@@ -739,7 +751,7 @@ export function computeSNPCoverage(
   const relDepths = new Float32Array(count)
 
   let idx = 0
-  for (let offset = 0; offset < windowLength; offset++) {
+  for (let offset = minOffset; offset <= maxOffset; offset++) {
     const totalDepth = coverageDepths[offset]!
     // A position at zero depth can't host SNPs, so it emits no segment.
     if (totalDepth > 0) {
