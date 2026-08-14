@@ -32,7 +32,7 @@ lane, one row per mosquito, 297 from Cameroon and 69 from Gabon. Both panels
 also carry a separate block at the low-coordinate end of the arm, which the
 paragraphs under the figure return to.
 
-<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. r² fills the published 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard one."/>
+<Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard one."/>
 
 The heatmap's block comes out at the published breakpoint coordinates, so its
 edges can be checked against them by eye, and against the karyotype lane below
@@ -47,10 +47,9 @@ recombination rather than one of none.
 Run that test on the other block in the frame, the one at the low-coordinate end
 of the arm that both panels carry: it is reddest along the diagonal and pales
 away below it, so its correlation does fall off with distance, which is the
-other case. It covers the stretch of 2L carrying _Vgsc_, the sodium channel
-whose codon-995 substitutions confer pyrethroid resistance and which this
-release was used to survey
-([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
+other case. The top lane marks what it sits on, _Vgsc_, the sodium channel whose
+codon-995 substitutions confer pyrethroid resistance and which this release was
+used to survey ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
 
 The Gabon panel is a control rather than a second example. It is not
 inversion-free: 5 of its 69 mosquitoes are heterozygous, but the other 64

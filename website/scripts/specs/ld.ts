@@ -99,6 +99,20 @@ const LCT_LOC = 'chr2:134,700,000-137,800,000'
 // a second `generate-screenshots` process before shrinking anything.
 const LCT_WIDE_LOC = LCT_LOC
 
+// The deCODE sex-averaged genetic map, as published by UCSC. See the note on
+// this track's entry in the LCT figure's track list for why it is deCODE and
+// not one of the HapMap maps beside it in the same hub.
+const DECODE_RECOMB_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'decode_recomb',
+  name: 'deCODE recombination rate (cM/Mb)',
+  assemblyNames: ['hg19'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg19/decode/SexAveraged.bw',
+  },
+}
+
 // Band the LCT/MCM6 locus so the reader sees the high-r² block sits right over
 // the lactase gene (the enhancer variant rs4988235 is in an MCM6 intron,
 // upstream of LCT).
@@ -231,6 +245,50 @@ const agLdTrack = (trackId: string, name: string, file: string) => ({
 // other a control. Neither number is restated in the prose - the script prints
 // them, and this figure shows them.
 const AG_POPGEN = 'https://jbrowse.org/demos/popgen'
+
+// What the two blocks in the heatmaps are over, as two features in one lane, so
+// each block has a labelled extent above it drawn from published coordinates
+// rather than from the LD. The same FromConfigAdapter shape the In(2L)t figure
+// uses in popgen.ts: two features need no file.
+//
+// This is NOT the highlight band review asked to remove. That was a tint across
+// both LD lanes saying "look here" while leaving the reader to work out that the
+// span filling in one panel and not the other was the result; this is a named
+// annotation on its own row, and it is here because the page now reads BOTH
+// blocks and only one of them had anything to check its position against.
+//
+// 2La: White et al. 2007, the published extent the karyotype calls are drawn at.
+// Vgsc: AGAP004707, 2L:2,358,158-2,431,617 on AgamP4 (Ensembl Metazoa). The
+// low-coordinate block is centred on it, and unlike 2La it is a decaying
+// triangle, which is the distinction the tutorial's prose turns on.
+const AG_LOCI_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'ag1000g_2l_loci',
+  name: '2L loci',
+  assemblyNames: ['anoGam3'],
+  adapter: {
+    type: 'FromConfigAdapter',
+    adapterId: 'ag1000g_2l_loci',
+    features: [
+      {
+        uniqueId: 'vgsc',
+        refName: 'chr2L',
+        start: 2358158,
+        end: 2431617,
+        name: 'Vgsc',
+        type: 'gene',
+      },
+      {
+        uniqueId: 'two_la',
+        refName: 'chr2L',
+        start: 20524058,
+        end: 42165532,
+        name: '2La',
+        type: 'inversion',
+      },
+    ],
+  },
+}
 
 // One track per population, not one track holding both. The display draws one
 // row per sample in the VCF and has no sample filter, so the file is the row set
@@ -400,6 +458,7 @@ export const ldSpecs: ScreenshotSpec[] = [
           'lct_1kg_chr2_eur_wide.vcf.gz',
         ),
         LCT_FST_TRACK,
+        DECODE_RECOMB_TRACK,
       ],
       views: [
         {
@@ -449,6 +508,35 @@ export const ldSpecs: ScreenshotSpec[] = [
               maxScore: 0.5,
               height: 170,
             },
+            // A REAL genetic map, so the block's edges are read against
+            // something that is not made of LD. The page's own recombination
+            // curve is 1 - r² between adjacent variants, which comes off the
+            // same genotypes as the triangle, so it can suggest where the block
+            // ends but cannot independently confirm it.
+            //
+            // deCODE, NOT the hub's HapMap maps sitting beside it, and the
+            // distinction is the whole point: HapMap Release 24 is estimated
+            // FROM LD (LDhat), so drawing it here would be circular. deCODE is
+            // pedigree-based, counted off crossovers in families, and knows
+            // nothing about haplotype correlation. Measured across this window
+            // in 50 kb bins, cM/Mb: 16.0 at 135.75 Mb, then 0.0 for a solid
+            // megabase (peak 0.6 over 135.80-136.70), then 2.3 / 5.2 climbing
+            // from 136.75 and 9.8 at 136.95. The block build_lct_ld.sh resolves
+            // at 135.75-136.75 is therefore a recombination desert with a
+            // hotspot on each shoulder. The HapMap CEU map also puts a 14.5
+            // spike INSIDE the block at 136.35, where deCODE reads 0.1.
+            //
+            // Spelled out rather than referenced by trackId out of the hg19 hub
+            // that carries it, only for the NAME: the hub's own shortLabel is
+            // "Sex Avg", which over an LD figure reads as a setting rather than
+            // as a genetic map. Same bigWig either way, and hgdownload is on
+            // third-party-hosts.txt already -- naming a hub track pulls from
+            // there regardless, which is what that file's own note says.
+            {
+              trackId: 'decode_recomb',
+              type: 'LinearWiggleDisplay',
+              height: 100,
+            },
             { trackId: 'kgp_lct_pooled', type: 'LDDisplay', height: 250 },
             { trackId: 'kgp_lct_panel', type: 'LDDisplay', height: 250 },
           ],
@@ -464,8 +552,9 @@ export const ldSpecs: ScreenshotSpec[] = [
     // recombination zone each) + headers + ruler/overview. The triangles came
     // down from 330 (reviewer: "reduce heights of the linkage tracks"), which
     // costs nothing legible: the block is a shape, not a height, and the room
-    // it frees is what the Fst lane takes. +60 for that lane's second growth.
-    viewportHeight: 1060,
+    // it frees is what the Fst lane takes. +60 for that lane's second growth,
+    // +100 and a header for the deCODE map.
+    viewportHeight: 1190,
     settleMs: 8000,
     // The one variant the lane exists for, named on it. With the floor raised
     // the lane is legible, but it is still ~4,000 surviving points and nothing
@@ -515,6 +604,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     name: 'ld/anopheles_2la',
     url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
+        AG_LOCI_TRACK,
         agLdTrack(
           'ag1000g_2l_cmgam',
           'Cameroon, both arrangements segregating (r²)',
@@ -569,6 +659,12 @@ export const ldSpecs: ScreenshotSpec[] = [
           // features" banner across the top; showOnlyGenes changes which
           // features are admitted, not whether they can be resolved.
           tracks: [
+            // On top, so both blocks below have their extent over them.
+            {
+              trackId: 'ag1000g_2l_loci',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
             { trackId: 'ag1000g_2l_cmgam', type: 'LDTrackDisplay' },
             {
               trackId: 'ag1000g_2la_karyotype_cmgam',
@@ -604,8 +700,9 @@ export const ldSpecs: ScreenshotSpec[] = [
     // there was none -- the run reported nothing blank below the content at
     // 1472, and an ink scan of the capture found both LD panels drawing to
     // their own bottom edge. So the 60 px the Cameroon lane took back for its
-    // legend is added here rather than found somewhere in the frame.
-    viewportHeight: 1415,
+    // legend is added here rather than found somewhere in the frame, and 70
+    // more for the 2L loci lane and its header.
+    viewportHeight: 1485,
     settleMs: 8000,
     // One callout per lane, saying what each lane shows rather than only naming
     // the span (review: "a red text annotation on both cameroon and gabon

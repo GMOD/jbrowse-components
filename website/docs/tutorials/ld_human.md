@@ -75,7 +75,7 @@ along, leaving a stretch of correlated variants. That stretch is the signal
 Two things decide whether it shows as a block: the window you cut, and which
 samples went into the file.
 
-<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: every panel pooled, then one panel. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release."/>
+<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: every panel pooled, then one panel. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release, and the deCODE genetic map, which is flat across the span the triangles fill."/>
 
 Nothing about the display changed between those two lanes.
 
@@ -83,10 +83,18 @@ The blue curve above each triangle is the recombination track
 ([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
 − r² between adjacent variants. On the single-panel lane it sits near zero
 across the block and spikes at its edges, which is where the block ends; on the
-pooled lane there is no such pair of edges to find. It comes off the same
-genotypes as the triangle rather than off a genetic map, so it is evidence of
-recombination rather than a rate: for cM/Mb, load a published map as a
-[quantitative track](/docs/user_guides/quantitative_track) beside it.
+pooled lane there is no such pair of edges to find.
+
+It comes off the same genotypes as the triangle, though, so it cannot confirm
+those edges on its own. The lane above the triangles is a genetic map that can:
+the deCODE map
+([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) counts
+crossovers in sequenced families, so it is measured in cM/Mb and has no LD in
+it, where the HapMap maps in the same hub are estimated from LD and would
+confirm the triangle with itself. It loads as an ordinary
+[quantitative track](/docs/user_guides/quantitative_track) from the hg19 hub the
+gene lane comes from. Read the three together: the block fills the span where
+that map is flat, and a hotspot stands at each end of it.
 
 The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
 haplotype is long; Fst says its variants are the ones whose frequency differs
@@ -247,3 +255,5 @@ inside the block for one panel against the pooled release.
   [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)
 - Bersaglieri et al. (2004).
   [Genetic signatures of strong recent positive selection at the lactase gene](https://doi.org/10.1086/421051)
+- Halldorsson et al. (2019).
+  [Characterizing mutagenic effects of recombination through a sequence-level genetic map](https://doi.org/10.1126/science.aau1043)
