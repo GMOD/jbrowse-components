@@ -101,6 +101,48 @@ what got copied — leaves each row in one field, so every block silently vanish
 and the track draws nothing without erroring. `mafParsing.ts` splits on `\s+` and
 says why.
 
+## What the zoom-out tier is worth
+
+Built and shipped for chr6 on 2026-08-14: `test_data/hprc/hprc_chr6.summary.bed.gz`,
+wired by `test_data/hprc_maf_summary.json`. Its README holds the command and the
+`taffy#89` check; this is what it buys, read off the live session model on whole
+chr6 rather than inferred from a picture:
+
+| | no `summaryAdapter` | with it |
+| --- | --- | --- |
+| `regionTooLarge` | true, "Requested too much data (354 Mb)" | false |
+| `estimatedFetchBytes` | 353,902,971 | 250,801 |
+| rows drawn | 0 | 464 |
+
+**1,411x**, and the whole chromosome becomes navigable rather than a prompt. The
+354 Mb agrees to the byte with what `queryBlockSpan` computes for chr6 off the
+`.tai` (353,837,435 for the chromosome's own span, 353,902,971 with the gate's
+one-block cushion), so the banner's number and the index arithmetic are the same
+measurement. The summary itself is 185 KB for 35,200 rows — a whole chromosome
+of 464 haplotypes costs less than a quarter of what one gene-sized detail read
+does.
+
+The alignment tier stays the better view where it is affordable: at C4 the
+detail read is ~1.2 MB against `LinearMafDisplay`'s 5 Mb budget.
+
+**Which is why the tier is a separate config rather than switched on for
+`hprc_maf.json`, and that is a finding rather than a preference.** `showSummary`
+swaps on **span** — `aboveForceLoadFloor`, 20 kb — while the question it is
+standing in for is **cost**. The tutorial's own figure is drawn at
+chr6:31,972,057-32,055,418, which is 83 kb, so wiring the summary onto that
+track silently replaces the per-haplotype base rows the figure exists to show
+with presence bands, for a detail read the budget would have allowed four times
+over. Verified: `showSummary: true` at that locus with the summary configured.
+
+This is the gap [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"What the LOD lesson
+actually points at" predicted — "the per-species view built for see all 470
+species at once is only available in the zoom range where fetching all 470 costs
+the most per useful pixel" — now with a concrete instance and a config that
+demonstrates both halves. Making the swap cost-based rather than span-based is
+the fix, and it is a design question rather than a one-liner: the estimate that
+would decide it is the *detail* tier's, which is exactly the measurement
+`byteGateAdapterConfig` points away from once `showSummary` is on.
+
 ## Cutting a slice: two traps that look like tool bugs
 
 **`taffy` dies on a byte-cut slice.** On a MAF whose last block is truncated it

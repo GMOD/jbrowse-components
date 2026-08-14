@@ -58,7 +58,7 @@ before anyone noticed.
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
-| [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | one streaming pass over the TAF, then an S3 write |
+| [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | chr6 shipped; the other chromosomes, then whether the swap is span or cost |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Byte-native MAF adapter path](#a-byte-native-maf-adapter-path-once-tabix-js-publishes-linebytescallback) | MAF | blocked on a tabix-js publish; measure the pack stage, not the decode |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
@@ -1141,22 +1141,30 @@ cost quantized by feature is measured rather than modelled
 
 ### Produce and host the HPRC summary tier
 
-Both MAF adapters take a `summaryAdapter` slot now (`3e25ca40ce`) and the
-producer is published (`maf2bed` v0.6.0 on crates.io). What is left is one
-streaming pass over the **5.96 GB v2.0 TAF** — `taffy view` into
-`maf2bed --summary`, not the 53 GB MAF — landing at roughly 75 MB bgzipped for
-the whole genome, then an S3 write to the jbrowse.org bucket.
+**chr6 is built, shipped and measured** — `test_data/hprc/hprc_chr6.summary.bed.gz`
+(185 KB, 35,200 rows, all 464 haplotypes), wired by
+`test_data/hprc_maf_summary.json`, worth 354 Mb refused against 250 kB drawn on
+the whole chromosome
+([reference/HPRC_RELEASE2.md](reference/HPRC_RELEASE2.md) §"What the zoom-out
+tier is worth"). Two things are left, in this order.
 
-Nothing is broken without it: the tutorial reads the TAF, which draws at gene
-scale within the default gate, so this buys whole-chromosome navigation. The
-measurements not to re-derive are in
-[reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md) §"A `.tai` is not
-a tier" — ~19 compressed bytes/bp for the v2.1 MAF and ~2.1 for the v2.0 TAF,
-flat from 100 kb up, so whole chr6 is 3.19 GB and 354 MB; the same 200 kb of chr6
-is 4.35 MB as alignment and **3.5 kB as summary**, all 464 haplotypes present.
-`~/scratch/jbrowse-pangenome` holds a real C4 slice and its summary, enough to
-wire this against a real region offline
-([reference/HPRC_RELEASE2.md](reference/HPRC_RELEASE2.md)).
+**The rest of the genome.** The same command with `-r` dropped, at ~13 min per
+chromosome measured on chr6, so roughly 5 hours; `taffy view -r` reads only the
+chromosome's own 354 MB of the 5.96 GB file, and the MAF is never materialized
+(chr6 alone is ~90 GB of it). Then an S3 write to the jbrowse.org bucket — which
+nobody has approved, and `scripts/deploy-demo.sh` is the only sanctioned writer.
+The 75 MB whole-genome estimate this entry used to carry was pessimistic by an
+order of magnitude: runs in a human pangenome are long, so chr6 came to 185 KB
+and the genome should land nearer 4 MB.
+
+**Decide whether `showSummary` swaps on span or on cost**, which is what stops
+the tier being switched on for `hprc_maf.json` itself. It swaps at 20 kb, and the
+tutorial's own figure is drawn at 83 kb, so wiring the summary there silently
+replaces the per-haplotype base rows the figure exists to show — for a detail
+read of ~1.2 MB against a 5 Mb budget. The gap is the one
+[reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md) §"What the LOD
+lesson actually points at" predicted; HPRC_RELEASE2.md says why it is a design
+question rather than a one-liner.
 
 ### A TPA reader
 

@@ -1,0 +1,31 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "refNameAliases": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "MafTrack",
+      "trackId": "hprc_v2_0_mc_grch38_summary",
+      "name": "HPRC release 2 pangenome alignment (chr6, with zoom-out tier)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BgzipTaffyAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz",
+        "summaryAdapter": {
+          "type": "BedTabixAdapter",
+          "bedGzLocation": { "uri": "hprc/hprc_chr6.summary.bed.gz" },
+          "index": {
+            "location": { "uri": "hprc/hprc_chr6.summary.bed.gz.tbi" }
+          }
+        }
+      }
+    }
+  ]
+}
