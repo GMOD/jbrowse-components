@@ -4,6 +4,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { ColorBySelector } from '@jbrowse/synteny-core'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -12,7 +13,6 @@ import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ColorBySelector from './ColorBySelector.tsx'
 import { CursorMouse, CursorMove } from './CursorIcon.tsx'
 import DotplotSettingsPopover from './DotplotSettingsPopover.tsx'
 
@@ -159,7 +159,13 @@ const DotplotControls = observer(function DotplotControls({
       >
         <MoreVert />
       </CascadingMenuButton>
-      <ColorBySelector model={model} />
+      <ColorBySelector
+        model={model}
+        pointBased
+        // the dotplot compares exactly two genomes, so there is no third
+        // assembly for 'reference' to anchor on
+        showReference={false}
+      />
 
       {model.dotplotDisplays.length > 0 ? (
         <DotplotSettingsPopover model={model} />

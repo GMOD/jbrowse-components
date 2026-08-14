@@ -1,7 +1,7 @@
+import { ColorBySelector } from '@jbrowse/synteny-core'
 import { Divider } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ColorBySelector from './ColorBySelector.tsx'
 import FollowSyntenyToggle from './FollowSyntenyToggle.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
 
@@ -21,7 +21,14 @@ const SyntenyHeaderControls = observer(function SyntenyHeaderControls({
         synteny track has nothing for it to do.
       */}
       <FollowSyntenyToggle model={model} />
-      <ColorBySelector model={model} />
+      <ColorBySelector
+        model={model}
+        pointBased={false}
+        // 'reference' coloring only carries meaning across a stack of >=2
+        // levels; for a single-level (two-genome) view it degenerates to
+        // query/target
+        showReference={model.levels.length > 1}
+      />
       <SyntenySettingsPopover model={model} />
     </>
   )
