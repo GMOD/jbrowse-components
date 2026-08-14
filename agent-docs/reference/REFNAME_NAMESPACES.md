@@ -115,6 +115,92 @@ it reads as wrong.
 Now confined to a dictionary walk rather than a per-feature one, so
 canonicalizing the dictionary fixes this site for free along with the rest.
 
+## Every synteny site, and what each one needs
+
+The audit result, filed rather than described — an earlier version of this thread
+reported a reader count and left the list in the session, so the next reader had
+to redo it.
+
+**Method, so it can be re-run rather than trusted:** grep the two channels'
+readers (`getFeatureAtIndex` / `getFeature` for the first, `ResolvedSpan` for the
+second), then read each hit and name its *two* operands. A site is a straddle only
+if one operand comes from a feature and the other from view state — that is the
+rule at the top of this file, applied one site at a time.
+
+Channel 1, `refNameDict` / `mateRefNameDict` reached through `getFeatureAtIndex`:
+
+| site | the other operand | class | symptom on an aliased file |
+| --- | --- | --- | --- |
+| `components/util.ts` `getTooltip` | none, it is printed | display text | the tooltip shows the file's spelling |
+| `LevelSyntenyCanvas` `openSyntenyFeatureWidget` | none, into the widget | display text | the feature panel shows the file's spelling |
+| `bandMoveTargets.ts` → `visibleSpanOnRefName` | `dynamicBlocks` | **straddle** | the band's "Move … to the matching region" item is not offered at all |
+| `moveMatchingPanel.ts` RPC `regions[]` | — it goes back OUT | safe — see below | none |
+| `pickFollowFeature.ts` | `window.refName` | **straddle** | the follow reports the window unaligned (the fixture) |
+| `followWindowMapping.ts` | `window.refName`, and the mate assembly | **straddle** | as above |
+| `planFollowStep.ts` `windowInsideFeat` | `window.refName` | **straddle** | as above |
+| `interpolateFollowSpan.ts` | — it EMITS one | **straddle producer** | hands an adapter name to the channel-2 consumers with no RPC in between |
+| `syntenyColors.nameColorFunction` | `nameOrder`, canonical | **straddle** | the chromosome palette degrades to the hash — see above |
+
+Channel 2, `ResolvedSpan.refName`:
+
+| site | the other operand | class |
+| --- | --- | --- |
+| `alreadyShowing.ts` | the moving view's current region | **straddle** — the one that makes a channel-1-only fix worse than none |
+| `moveMatchingPanel.ts` `navToResolvedSpan` | `navToLocString`'s parser | **straddle** |
+| `positionViewOnSpan.ts` | `bpToOffset`, core, plain `string` | **straddle, and the site branding cannot catch** |
+| `followTransform.ts` | its own `refName` is the window's | carrier — `targetRefName` is the span's and flows out through `applyFollowTransform` |
+
+Thirteen sites; nine straddle. The count differs from the "eleven" this thread
+first reported because carriers and producers can be counted either way — which is
+the reason to keep the table rather than the number.
+
+### The one that goes back OUT is safe, and safe after the fix too
+
+`moveMatchingPanel` puts `feat.refName` into `SyntenyResolveMatchingRegion`'s
+`regions[]`. That looks like a straddle and is not, in either direction, and it is
+worth knowing precisely because it can be "fixed" wrongly from both sides:
+
+- **Today** it works by accident. The method extends
+  `RpcMethodTypeWithRenameRegions`, so the outbound pass renames `regions[]`
+  canonical→adapter through a map keyed by *canonical* names. An
+  adapter-only spelling is not a key, misses, and passes through unchanged — which
+  is the spelling the worker wanted.
+- **After canonicalizing channel 1** it works by design: the name going in is
+  canonical, the outbound rename maps it, the worker gets the same string.
+
+So do not special-case this site and do not canonicalize it twice. The one input
+that breaks it is a file spelling a contig with a name that is *also* the
+canonical name of a different contig, where the pass-through miss becomes a wrong
+hit — pathological, and it is broken today for the same reason.
+
+## Potential solutions, in the order they can be taken
+
+1. **Canonicalize both channels** (the filed plan — `TODO.md` §*Canonicalize the
+   two synteny refName channels*). Fixes all nine straddles and both display-text
+   sites at once, because everything above reads through `getFeatureAtIndex` or
+   `ResolvedSpan`. First step is the smallest one that cannot go wrong: rename the
+   two dictionaries in `afterAttach`'s `run`, re-intern (above), and rename
+   `ResolvedSpan.refName` in `resolveMatchingSpan` — in the **same commit**, since
+   either alone regresses. `LinearSyntenyRefNameAlias.test.tsx`'s `test.failing`
+   is the gate, and `LinearSyntenyFollow.test.tsx`'s RPC count is the guard
+   against the half-done version.
+2. **Brand the out-of-request names** so a fourteenth site cannot appear quietly.
+   Independent of 1 and worth doing after it, not before: branding a fixed tree is
+   a type-only change, branding a broken one buys an error list to wade through.
+   Both ends have to be branded (the trap below), and `positionViewOnSpan` is
+   known to be out of reach.
+3. **A return-direction rename at the RPC layer, declared per method.** The
+   fourth-time-lucky version: it would collapse all five existing workarounds in
+   the table above into one mechanism, and synteny would need no per-site work at
+   all. Much larger, and it wants a design pass rather than a patch — but it is
+   the only option that stops the sixth plugin becoming a seventh.
+4. **Do the display-text half separately, per view.** Cheapest of all and
+   independent of every other option: resolve the name off the view's own regions
+   at the point of display rather than reading the feature's. The dotplot tooltip
+   is the worked example (~10 lines, `pxToBp`, no rename anywhere). This is the
+   whole of decision 3 in the handoff, and its cost is now measured rather than
+   guessed.
+
 ## When it is observable
 
 Only when a file spells a contig with a name the assembly knows as an **alias**.
