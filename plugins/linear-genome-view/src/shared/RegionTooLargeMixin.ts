@@ -856,6 +856,10 @@ export default function RegionTooLargeMixin() {
                 statusCallback: ctx.statusCallback,
               },
             ),
+          // makes the phase a cancellation boundary as well as a label: a fetch
+          // superseded before the measure starts skips the RPC outright, and
+          // `runFetch` swallows the abort as the ordinary end of a stale fetch
+          ctx.stopToken,
         )
         if (ctx.isStale()) {
           return true

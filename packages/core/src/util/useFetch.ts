@@ -177,7 +177,8 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       setStatus(undefined)
       // The runtime counterpart of FetcherArgs: an array key becomes one
       // argument per element, anything else a single argument, then the stop
-      // token. A conditional type over an unresolved `Key` can't be discharged
+      // token and the status callback. A conditional type over an unresolved
+      // `Key` can't be discharged
       // inside the function body, so the parameter list is erased for this one
       // call — callers still get the precise arity, and the looseness stops
       // here.
