@@ -109,17 +109,90 @@ test('getModPositions combined code mh interleaves ML offsets', () => {
   expect(positions[0]!.positions).toBe(positions[1]!.positions)
 })
 
-// The identity above must not extend ACROSS groups, however equal they look. Two
-// groups are two walks, their entries carry different probStart bases, and a
-// consumer grouping them as one would read the second group's probabilities from
-// the first group's stride.
-test('getModPositions gives each group its own positions array', () => {
+// The identity above DOES extend across groups, when the groups count the same
+// base with the same deltas — which is what dorado emits (`C+h?;C+m?`, 5mC and
+// 5hmC as two groups rather than the combined `C+mh`). The two walks would
+// produce equal arrays element for element, so the second is skipped and both
+// entries point at the first's.
+//
+// This reverses an earlier assertion here that each group must get its own
+// array. The hazard that one named — "a consumer grouping them as one would read
+// the second group's probabilities from the first group's stride" — is not in
+// the code: `forEachMaxProbMod` reads `g.probStart`/`g.probStride` per ENTRY
+// inside its group loop, never from the group's first entry. So probStart still
+// distinguishes them, which the assertions below pin.
+test('getModPositions shares one array between same-base groups', () => {
   const positions = getModPositions('C+m,1;C+h,1', 'ACGCG', 1)
   expect(positions).toHaveLength(2)
   expect(positions[0]!.positions).toEqual(positions[1]!.positions)
-  expect(positions[0]!.positions).not.toBe(positions[1]!.positions)
+  expect(positions[0]!.positions).toBe(positions[1]!.positions)
+  // shared array, separate ML windows: consecutive, not interleaved
   expect(positions[0]!.probStart).toBe(0)
+  expect(positions[0]!.probStride).toBe(1)
   expect(positions[1]!.probStart).toBe(1)
+  expect(positions[1]!.probStride).toBe(1)
+})
+
+// dorado's actual shape, and the one the merge is for: three groups, two of them
+// on C. The C pair shares; the A group cannot and must not.
+test('getModPositions shares only the same-base pair of A+a;C+h;C+m', () => {
+  const mods = getModPositions('A+a.,0;C+h?,1;C+m?,1', 'ACGCG', 1)
+  const [a, h, m] = mods
+  expect(mods).toHaveLength(3)
+  expect(h!.positions).toBe(m!.positions)
+  expect(a!.positions).not.toBe(h!.positions)
+  expect(a!.positions).toEqual([0])
+  expect(h!.positions).toEqual([3])
+  // the skip flag is per entry and survives the sharing
+  expect(a!.unknownSkip).toBe(false)
+  expect(h!.unknownSkip).toBe(true)
+})
+
+// Same base, DIFFERENT deltas: the arrays genuinely differ, so nothing is shared
+// and the second group walks for itself.
+test('getModPositions does not share when the deltas differ', () => {
+  const mods = getModPositions('C+m,0;C+h,1', 'ACGCG', 1)
+  expect(mods[0]!.positions).toEqual([1])
+  expect(mods[1]!.positions).toEqual([3])
+  expect(mods[0]!.positions).not.toBe(mods[1]!.positions)
+})
+
+// Same deltas, DIFFERENT base: equal text, different walks, different answers.
+test('getModPositions does not share across bases', () => {
+  const mods = getModPositions('C+m,0;A+a,0', 'ACGCG', 1)
+  expect(mods[0]!.positions).toEqual([1])
+  expect(mods[1]!.positions).toEqual([0])
+  expect(mods[0]!.positions).not.toBe(mods[1]!.positions)
+})
+
+// The MM strand joins the key even though the walk does not read it, so a
+// `C+m`/`C-m` pair is kept apart. Deliberately stronger than today's walk needs
+// — the point is that the test cannot go stale if the walk becomes strand-aware.
+test('getModPositions does not share across MM strands', () => {
+  const mods = getModPositions('C+m,1;C-m,1', 'ACGCG', 1)
+  expect(mods[0]!.positions).toEqual(mods[1]!.positions)
+  expect(mods[0]!.positions).not.toBe(mods[1]!.positions)
+})
+
+// Reverse strand fills its arrays backwards from a preallocated length; sharing
+// has to hand over the finished array, not one still being written.
+test('getModPositions shares same-base groups on a reverse read', () => {
+  const mods = getModPositions('C+m,0,0,0;C+h,0,0,0', 'AGTAGTAAGT', -1)
+  expect(mods[0]!.positions).toEqual([1, 4, 8])
+  expect(mods[1]!.positions).toBe(mods[0]!.positions)
+  expect(mods[1]!.probStart).toBe(3)
+})
+
+// A combined code and a single-type group on the same base and deltas share too,
+// and then carry three different ML windows into one CIGAR walk.
+test('getModPositions shares between a combined code and a plain group', () => {
+  const mods = getModPositions('C+mh,1;C+h,1', 'ACGCG', 1)
+  expect(mods).toHaveLength(3)
+  expect(mods[1]!.positions).toBe(mods[0]!.positions)
+  expect(mods[2]!.positions).toBe(mods[0]!.positions)
+  expect(mods[0]!).toMatchObject({ type: 'm', probStart: 0, probStride: 2 })
+  expect(mods[1]!).toMatchObject({ type: 'h', probStart: 1, probStride: 2 })
+  expect(mods[2]!).toMatchObject({ type: 'h', probStart: 2, probStride: 1 })
 })
 
 // a second group's ML offset starts after the first group consumes
