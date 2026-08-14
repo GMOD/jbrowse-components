@@ -1,6 +1,6 @@
 ---
 name: bam-stack-integration
-description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, and the seven seams that remain. Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
+description: The vertical audit of BamAdapter x @gmod/bam x @gmod/bgzf-filehandle — every lever the two libraries expose, whether the adapter reaches it, the four non-integrations that are deliberate, the seven seams that remain, and the profile that ranks them (inflate dominates; the per-read work every seam here is about is under a tenth of a query). Read before adding a BAM read-path optimization, so you extend the stack rather than duplicate a layer of it. CRAM_STACK_INTEGRATION.md is the companion for the other format.
 ---
 
 # The BAM stack, layer by layer
@@ -39,6 +39,43 @@ header as one-entry shared reads, and the sequence adapter's own reads at the
 bottom of the reference fetch. Nothing between them is redundant — a
 `FastaAdapterBase` comment records the one time a fifth was added and measured
 a loss.
+
+## Where a query's time actually goes, which ranks everything below
+
+Most of this document is about worker CPU spent per read, because that is what
+is easiest to measure and what successive sessions have optimized. **It is the
+minority of a query.** `benches/readPath.profile.ts` drives the shipped path —
+`getRecordsForRange` with `recordClass` wired, then `extractFeatureArrays` — so
+`--cpu-prof` can split it:
+
+| fixture | records | fetch | extract | largest single cost |
+| --- | --: | --: | --: | --- |
+| 1000x.shortread, 19 kb | 153,677 | 283ms (61%) | 181ms (39%) | BGZF inflate wasm |
+| 200x.longread, 19 kb | 335 | 425ms (**88%**) | 61ms (12%) | BGZF inflate wasm |
+
+Inflate is the largest line in both, and on long-read data the whole per-read
+pass is an eighth of the query. Two consequences worth carrying into any sizing
+argument here:
+
+- **The per-read arrays and tag walks are a few percent of a query, not of a
+  phase.** The tag lookups that seam 4 is about measure ~38ms per extract pass on
+  the 1000x fixture — real, and about a fifth of the extract phase, but under a
+  tenth of the query. Seam 7 already says this from the network side ("the four
+  per-read arrays are ~2% of one fetch"); this is the same statement for local
+  files and worker CPU.
+- **Long-read data does not have the regime seam 5 is sized for.** That seam
+  prices a kilobyte-scale MD rescan per tag walk, on a synthesised sweep of
+  50,000 spliced reads. A real long-read window has *hundreds* — 335 here — so
+  `tagValueEnd` is 9.5% of a 61ms extract inside a 447ms query, under 1.5% of the
+  whole. The sweep's shape finding stands; its weight does not transfer to an
+  interactive pileup.
+
+These numbers are the **serial floor**: `getSharedWorkerPool()` returns
+`undefined` under node, so no bench in any of the three repos sees the inflate
+pool. In a browser the pool spreads that dominant line across four workers
+(measured 1.95x end to end, `util/bgzfWorkerPool.ts`). The ranking does not
+change — it makes redundant inflate cheaper without making it less redundant,
+which is seam 2.
 
 ## What the adapter wires, and what it does not
 
@@ -214,6 +251,80 @@ incorrect and silently returns duplicated reads. Read ADR 0019 before touching
 Note what does **not** save it: `RemoteFileWithRangeCache` absorbs the
 re-download, so a pan re-reads no bytes. It re-inflates and re-parses them,
 which is 70-90% of a cold query (`@gmod/bam` ADR 0003).
+
+### Confirmed from this side, and priced in wall clock
+
+`benches/panRedundancy.probe.ts` counts every byte `@gmod/bam` reads across a
+pan and diffs it against the union of the ranges, so the waste is measured here
+rather than quoted from upstream. It needs no library patch — a `LocalFile`
+subclass counting `read()` is enough, and a read that reaches the filehandle is
+by definition a chunk the parsed cache did not have, so bytes read **are** bytes
+re-inflated and re-parsed.
+
+Ten 19 kb windows stepping 9.5 kb, `chr22_mask:124000+`:
+
+| fixture | records/window | pan wall | bytes read | distinct | redundant |
+| --- | --: | --: | --: | --: | --: |
+| 20x.shortread | ~3,100 | 49ms | 3.36 MB | 1.31 MB | **61.1%** |
+| 200x.shortread | ~30,700 | 407ms | 23.39 MB | 10.59 MB | **54.7%** |
+| 1000x.shortread | ~153,500 | 906ms | 49.64 MB | 48.52 MB | 2.3% |
+
+That reproduces ADR 0019's shape independently — its 56-68% for 200x.shortread
+and its 0% for 1000x.shortread — so the two measurements corroborate rather than
+extend each other. **Three controls make it believable**, and they are the part
+worth keeping:
+
+    one query                  6 reads   3.45 MB   0.0%    68ms
+    the SAME query x10         6 reads   3.45 MB   0.0%   117ms
+    10 windows, step 9.5 kb   13 reads  23.39 MB  54.7%   407ms
+    10 windows, step 19 kb    14 reads  22.61 MB  45.4%   381ms
+
+So the cache is **perfect for a repeated query and collapses the moment the
+window moves at all** — ten identical queries cost 3.45 MB, ten shifted ones
+6.6x that. And the step-19 kb row is the one that kills the intuitive reading:
+those windows do not overlap *at all*, and are still 45% redundant. This is not
+a pan re-reading its own overlap, it is the merged span sliding under it.
+
+**What it is worth.** `--cpu-prof` on the 200x pan puts inflate and its wasm
+buffer marshalling at 269.5ms and record parsing at ~70ms, i.e. ~77% of the
+pan's work is decompress-and-parse. Taking 54.7% off that is ~185ms of a 407ms
+pan — call it **1.8x on panning at moderate depth**, which is the first
+wall-clock figure this seam has had.
+
+**The regimes are the catch, and they are opposed.** The percentage is highest
+where the absolute cost is lowest (20x: 61% of 49ms) and near zero where the
+cost is highest (1000x: 2.3% of 906ms). Only the middle of the depth range —
+200x, i.e. exomes, panels and high-coverage WGS — has both, which is where the
+1.8x lives. Anyone sizing this should quote 200x and not 20x, however good the
+61% looks.
+
+### CRAM does not have it, and that is the argument for the fix
+
+`benches/panRedundancyCram.probe.ts` is the same instrument on the same windows.
+The comparison is as close to controlled as the two formats allow — identical
+record counts, both 308,998 over the pan:
+
+| | records | pan wall | file reads | bytes read | redundant |
+| --- | --: | --: | --: | --: | --: |
+| 200x.shortread.**bam** | 308,998 | 407ms | 13 | 23.39 MB | **54.7%** |
+| 200x.shortread.**cram** | 308,998 | 438ms | 126 | 2.48 MB | **0.1%** |
+
+`@gmod/cram` keys its cache on a **slice** — a fixed partition of the file,
+decided when the file was written — so a shifted window asks for the same slices
+and gets them. `@gmod/bam` keys on a merged span, which is a property of the
+query. Same consumer, same access pattern, same depth: the waste is the **key
+design**, not the workload.
+
+That is worth more than one more number, because ADR 0019 parks the fix partly
+on unknowns — whether raw-chunk keys explode the entry count, how the early stop
+behaves at finer granularity. CRAM is a working existence proof of the shape it
+sketches, in the same family, under the same consumer.
+
+The trade it also shows: CRAM pays 126 file reads against BAM's 13. On a local
+file that is free and on a high-latency endpoint it is seam 7's problem, so a
+BAM fix that keeps the merged **fetch** unit while making the **cache** unit raw
+— which is exactly what ADR 0019 proposes — is taking the good half of this
+comparison and leaving the bad half.
 
 ## Seam 3 — the reference fetch was serial (measured, then closed)
 

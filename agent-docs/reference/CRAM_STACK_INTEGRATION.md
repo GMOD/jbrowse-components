@@ -1,6 +1,6 @@
 ---
 name: cram-stack-integration
-description: The vertical audit of CramAdapter x @gmod/cram — every lever the library exposes, whether the adapter reaches it, the five non-integrations that are deliberate, the three seams that remain, and the two BAM optimizations that do not transfer. Read before adding a CRAM read-path optimization.
+description: The vertical audit of CramAdapter x @gmod/cram — every lever the library exposes, whether the adapter reaches it, the five non-integrations that are deliberate, the four seams that remain, and the two BAM optimizations that do not transfer. Read before adding a CRAM read-path optimization.
 ---
 
 # The CRAM stack, layer by layer
@@ -203,6 +203,37 @@ on `1000x.shortread.cram`, the same 153,677-record window as the BAM fixture:
   but is unplaced. Both collapse to the table's -1 slot; only one is a missing
   mate.
 
+## Seam 4 — the CRAM chunk carries the worker blob whether or not it starts
+
+`@gmod/cram` 13.2.0 — what is installed — imports its inlined worker bundle
+**statically** in `sliceWorkerPool.js`, and `file.ts` imports that module to
+start the pool, so anything that can reach `IndexedCramFile` pins the blob.
+esbuild, bundling and minifying `IndexedCramFile` + `CraiIndex` as
+`plugins/alignments` resolves them:
+
+| | entry raw | entry gzip | split chunk |
+| --- | --: | --: | --: |
+| `@gmod/cram` 13.2.0 (installed) | 547.0 KB | 182.5 KB | — |
+| `@gmod/cram` HEAD (`ba940cc`) | 274.1 KB | **96.1 KB** | 272.5 KB / 89.3 KB gz |
+
+So **86 KB gzipped, about half the library**, moves out of the chunk into one
+fetched when a pool actually starts. This is not a change to make here — the fix
+is already written upstream, unreleased at 13.2.0 — so the action is to take
+`@gmod/cram` 13.3.0 when it ships. It is the same trick core already applies to
+`@gmod/bgzf-filehandle`'s equivalent blob in `util/bgzfWorkerPool.ts`, whose
+comment carries the reasoning.
+
+**State the win precisely, because the obvious version of it is wrong.**
+`CramAdapter` is already behind `getAdapterClass: () => import(...)`, so this is
+*deferred* weight and never touched the initial bundle; and `useSliceWorkerPool`
+defaults to **true**, so in the ordinary case those bytes are still fetched. What
+the split actually buys is the critical path — today the whole 182.5 KB must land
+and parse before `IndexedCramFile` can be constructed and the `.crai` fetch can
+even start, where after it 96 KB does and the worker chunk loads alongside the
+index. The unconditional saving is narrower and real: a track with the pool
+turned off, and every context where the pool cannot start at all, stop carrying
+it.
+
 ## Things checked and found already integrated, or found not to transfer
 
 Stated so the next audit does not re-derive them.
@@ -229,3 +260,13 @@ Stated so the next audit does not re-derive them.
 - **The byte gate dedupes slices.** Adjacent regions routinely share a `.crai`
   slice and it is downloaded once, so `bytesForRegions` keys on
   `containerStart:sliceStart` before summing.
+- **A pan reuses the slice cache essentially perfectly, and BAM does not.**
+  `benches/panRedundancyCram.probe.ts` against `panRedundancy.probe.ts`, same ten
+  windows, same 308,998 records either way: CRAM re-reads **0.1%** of the bytes
+  it reads, BAM **54.7%**. A slice is a fixed partition of the file, so a shifted
+  window asks for the same slices; `@gmod/bam` keys on a query-dependent merged
+  span, so it does not. Nothing to do here — it is filed because it is the
+  strongest evidence for the BAM-side fix that `@gmod/bam` ADR 0019 parks, and
+  BAM_STACK_INTEGRATION seam 2 quotes it. The trade it also shows is CRAM's 126
+  file reads against BAM's 13, which is free locally and is seam 7's problem
+  remotely.
