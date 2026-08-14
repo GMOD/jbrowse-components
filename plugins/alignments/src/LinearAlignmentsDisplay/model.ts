@@ -1848,13 +1848,19 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Per-group arc upload feed: group key → (region idx → `ArcsUploadData`).
-         * The heavy connection-resolution pass runs once per group (arcs are
-         * pre-grouped by refName so each region lookup is O(1)); ungrouped is the
-         * single-group case. Empty map when read-connections are off, so the
-         * off-path skips the per-read region scan entirely. Source of truth for
-         * the per-section arc feed (`sourceSections`) and the shared cross-group
-         * `arcsYDomainBp`.
+         * ONE connection-resolution pass, and both of the things it produces:
+         * the per-region upload feed and the arcs no region can draw. They are a
+         * single getter because they are a single partition of one resolved set
+         * — computing them apart would resolve every read's connections twice
+         * and let the two halves disagree about which arc belongs to which.
+         *
+         * Read through `arcsByGroup` / `crossRegionArcsByGroup`, which name the
+         * halves; nothing else should reach for this.
+         *
+         * The heavy pass runs once per group (arcs are pre-grouped by refName so
+         * each region lookup is O(1)); ungrouped is the single-group case. Empty
+         * when read-connections are off, so the off-path skips the per-read
+         * region scan entirely.
          *
          * `computeArcsByGroup` owns the whole fan-out rather than a loop here,
          * because the arc COLOR scale (`poolArcScale`: the insert-size band, and
@@ -1908,7 +1914,7 @@ export default function stateModelFactory(
          * contain are the cross-region ones, which no per-region pass can draw
          * (`CrossRegionArc`) and which `crossRegionArcsByGroup` carries instead.
          */
-        get arcsByGroup() {
+        get arcsByGroup(): Map<string, Map<number, ArcsUploadData>> {
           return this.arcsResult.byGroup
         },
 
