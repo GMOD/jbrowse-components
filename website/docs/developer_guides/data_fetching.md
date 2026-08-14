@@ -234,9 +234,12 @@ worth keeping straight:
 
 - The **byte** axis drops out when the adapter offers no index estimate, which
   is how adapters that summarize at screen resolution (BigWig, HiC, sequence)
-  cost nothing to support. It has no span floor.
-- The **density** axis stops below `AUTO_FORCE_LOAD_BP` (20 kb), the one place
-  that span is compared.
+  cost nothing to support. It has no span floor — below `AUTO_FORCE_LOAD_BP` it
+  keeps gating against a raised budget rather than switching off, so a
+  gene-scale view of deep data loads while a pileup an order of magnitude
+  heavier still asks.
+- The **density** axis stops below `AUTO_FORCE_LOAD_BP` (20 kb) outright, since
+  its number is extrapolated rather than measured at the span it judges.
 
 "Exempt" in this mixin means force-loaded, not un-measurable — `gateExempt` is
 `configForceLoad || forceLoadTrack` and lifts **both** axes.

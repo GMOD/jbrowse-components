@@ -437,15 +437,22 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Whether the span on screen is wide enough for the **density** axis to
-       * have an opinion — the `AUTO_FORCE_LOAD_BP` floor, compared here and
-       * nowhere else. False before the view is measured.
+       * Whether the span on screen is above `AUTO_FORCE_LOAD_BP` — that constant
+       * compared here and nowhere else. False before the view is measured.
+       *
+       * Three readers, each doing something different with the same span, which
+       * is why this is one getter rather than a term inside any of them: the
+       * **density** axis stops gating below it (`densityGateActive`), MAF's
+       * `showSummary` swaps to the cheap summary adapter at it, and the **byte**
+       * axis multiplies its budget by `SUB_FLOOR_BYTE_BUDGET_FACTOR` below it
+       * (`gateByteLimit`).
        *
        * Deliberately independent of the opt-in and of force-load, so a display
        * whose *own* opt-in depends on the floor can read it without a cycle:
-       * MAF's `showSummary` swaps to the cheap summary adapter at this same span,
-       * and `byteGateAdapterConfig` is downstream of that. `densityGateActive`
-       * adds `gateActive` and the density opt-in on top.
+       * `byteGateAdapterConfig` is downstream of MAF's swap. The two gate
+       * getters add `gateActive` and their axis's own terms on top — so note
+       * this is false on an unmeasured view, and a reader that isn't already
+       * behind `gateActive` has to say what it wants that to mean.
        */
       get aboveForceLoadFloor(): boolean {
         const spanBp = self.gateViewport?.spanBp
@@ -517,8 +524,8 @@ export default function RegionTooLargeMixin() {
        * budget reaches the worker as a call-site argument rather than through
        * `rpcProps()`. In the payload it would be an RPC cache key, and crossing
        * the floor would be a full `clearAllRpcData()` refetch — the bug
-       * `maxFeatureDensity` already shipped once (REGION_TOO_LARGE.md §"Neither
-       * worker budget may be an RPC cache key").
+       * `maxFeatureDensity` already shipped once. "Neither worker budget may be
+       * an RPC cache key", in REGION_TOO_LARGE.md § How the verdict is built.
        *
        * `aboveForceLoadFloor` is also false on an unmeasured view, so read this
        * under `gateActive` — as both consumers below do — or an unmeasured
