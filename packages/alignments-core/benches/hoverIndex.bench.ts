@@ -37,12 +37,28 @@
 // (shuffled), over a window the width of a fetched block.
 //
 // ---------------------------------------------------------------------------
-// WHAT IT SAYS. --rounds=25 --hovers=200, ms per 200 hovers, control in
-// brackets:
+// WHAT IT SAYS. Three samples, --rounds=25 --hovers=200, ms per 200 hovers,
+// control in brackets:
 //
-//   longread-400k    scan 758.0   index 0.28   2670x [0.94]   build  5.7 ms
-//   shortread-40k    scan  85.8   index 0.14    621x [1.01]   build  0.8 ms
+//   longread-400k    scan  758.0  index 0.28   2670x [0.94]   build  5.7 ms
+//                    scan 2131.5  index 0.31   6889x [2.30]   build  6.4 ms
+//                    scan 1594.1  index 0.28   5646x [0.93]   build  5.8 ms
+//   shortread-40k    scan   85.8  index 0.14    621x [1.01]   build  0.8 ms
+//                    scan  100.7  index 0.17    606x [0.94]   build  1.0 ms
+//                    scan   70.8  index 0.13    563x [0.97]   build  0.7 ms
 //   deep-1m          scan 2249.9  index 0.46   4876x [0.97]   build 17.4 ms
+//                    scan 2017.2  index 0.43   4713x [0.99]   build 15.5 ms
+//                    scan 1905.9  index 0.42   4571x [1.02]   build 14.4 ms
+//
+// The long-read row's SECOND sample measured nothing — control 2.30, on a box
+// that was busy — and is kept rather than dropped, because a reader comparing
+// the three would otherwise wonder why its scan arm is 2131ms where the others
+// are 758 and 1594. The other two samples of that fixture, and all three of the
+// other fixtures, hold their controls.
+//
+// The index column is stable across every sample to two significant figures,
+// which is what a log-time answer looks like: it does not care how big the
+// array is, so the ratios vary only because the SCAN arm does.
 //
 // Per single mousemove on the deep fixture that is 11.2ms -> 0.002ms, in ONE
 // block of ONE track; the view this branch is about stacks six.
