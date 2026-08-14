@@ -45,7 +45,11 @@ import type { ModWithPositions } from '@jbrowse/modifications-utils'
  * modCombinedCode.bench.ts` prices the pair of changes at 2.07x on a `C+mh`
  * read. Two entries whose positions merely happen to be EQUAL are not grouped,
  * and must not be: the grouping is an identity test precisely so that it can
- * never be wrong about whether the walks coincide.
+ * never be wrong about whether the walks coincide. **htslib coalesces the same
+ * thing the same way** — a pointer compare into the MM string,
+ * `state->MM[j] == MMptr` in `sam_mods.c` — so this is the reference
+ * implementation's shape rather than a local trick
+ * (`agent-docs/reference/MODIFICATION_TAGS.md`).
  *
  * **That is per group, so N groups is still N walks over the same ops**, and a
  * read with several groups is the common case rather than the exotic one — a

@@ -89,11 +89,20 @@ isolation, checksums agreeing. `modPhases.bench.ts` puts the parse phase at 46%
 of the pipeline and `mmParseShape.bench.ts` shows only a tenth of that is the
 `split(',')`, so this walk is the bulk of the largest remaining phase.
 
-Two things before building it:
+Three things before building it:
 
+- **It competes with the multi-group fix above rather than composing with it.**
+  htslib deliberately keeps a per-base scan here, because one pass has to count
+  several canonical bases at once and a single-character search cannot. So
+  jumping wins on a single-group read and one shared per-base pass may win on a
+  multi-group one, and nothing in either corpus can say where the crossover is.
+  Decide which shape the path should have before optimizing either
+  ([reference/MODIFICATION_TAGS.md](reference/MODIFICATION_TAGS.md)).
 - **The probe is forward-strand only.** Reverse reads scan backwards for the
   complement, which wants `lastIndexOf` and is a different access pattern —
-  measure it rather than assuming symmetry, since it is half the reads.
+  measure it rather than assuming symmetry, since it is half the reads. htslib
+  handles the same case by parsing the delta list backwards from `MMend[]`
+  instead, which is a third option and is not obviously worse.
 - **`base === 'N'` matches every base**, so that case is `currPos += delta + 1`
   and needs no scan at all. It is already a branch in the loop; keep it one.
 
@@ -1046,6 +1055,16 @@ into O(ops + total positions). Since `cigarWalkShape.bench.ts` measures the ops
 term as the one that dominates on a noisy long read (6.25M ops against 0.84M
 positions), a two-group read is close to a halving of the walk phase, and the
 walk phase is 45% of the pipeline (`modPhases.bench.ts`).
+
+**The DELTA walk has the same doubling, and that half is the larger one.**
+`getModPositions` restarts `currPos = 0` per group, so a two-group read walks its
+read sequence twice — and the parse phase is 46% of the pipeline, slightly more
+than the CIGAR walk. htslib does not: `bam_next_basemod` takes the minimum
+countdown per canonical base across every type and makes ONE pass, decrementing
+all the counters by the frequencies it observed. That is the shape to copy, and
+[reference/MODIFICATION_TAGS.md](reference/MODIFICATION_TAGS.md) has it against
+our version line by line. Take both halves together — they are the same fact
+about multi-group reads at two layers.
 
 **This is not the exotic case.** Fiber-seq reads carry 5mC and 6mA as a matter of
 course, and `modificationsMenu` already tells users that basecallers increasingly
