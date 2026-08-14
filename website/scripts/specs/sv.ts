@@ -789,7 +789,20 @@ export const svSpecs: ScreenshotSpec[] = [
         // ONE READ PAIR, which is checkable against a single arc in the frame,
         // and the mechanism behind them is drawn in inversion_pair_orientation
         // one figure up.
-        text: 'INVdup\n\n• Green: both ends of the pair point the SAME way (forward)\n• Navy: both ends point the same way, the other way (reverse)\n• Magenta: one read, split into two alignments facing opposite ways',
+        //
+        // NAMED IN THE VOCABULARY THE PILEUP IS DOCUMENTED IN (review: "use more
+        // technical wording for the green and navy and magenta descriptions so
+        // its still understandable for a basic bioinformatician, but
+        // technical"). LL/RR are the palette's own labels for these two slots
+        // (`#color alignments-pair-orientation` on colorPairLL/colorPairRR,
+        // rendered as a table in sv_visualization.md) and the schematic above
+        // this figure carries them too, so a reader crossing from the guide to
+        // the pileup meets one name for each colour. Magenta is
+        // colorSplitReadInversion, whose condition is a supplementary segment
+        // on the opposite strand to its primary -- SA is the tag that records
+        // it, and "SA segment" is both shorter than the paraphrase and the term
+        // the track menu's Group by... row uses.
+        text: 'INVdup\n\n• Green = LL pair: both mates on the forward strand\n• Navy = RR pair: both mates on the reverse strand\n• Magenta = split read: SA segment on the opposite strand',
         // Wide enough that no bullet wraps: a wrapped one does not hang-indent,
         // so its second line starts under the bullet character and reads as a
         // fourth item. 920 at 24px holds the longest of the three.

@@ -72,7 +72,11 @@ has one end reversed and one not, so both point the same way — forward-forward
 where the pair crosses the left junction, reverse-reverse where it crosses the
 right one. That is the whole of the LL/RR signature.
 
-<Figure caption="A pair with both ends inside the inverted segment, or both outside it, is unremarkable. Only one straddling a junction has an end that moved without its mate." src="/img/inversion_pair_orientation.png" />
+Each of those pairs also has one end carried to the far side of the segment, so
+the two span most of it and overlap each other. A green LL pair and a navy RR
+pair drawn across the same stretch is the pattern to look for.
+
+<Figure caption="Only a pair straddling a junction has an end that moved without its mate; one wholly inside the inverted segment, or wholly outside it, is unremarkable. The un-inverted row is the same two pairs with the segment flipped back." src="/img/inversion_pair_orientation.png" />
 
 The two halves of an INVdup call read out of two different things. Green LL,
 navy RR and magenta split reads are the inversion — the third is one read split

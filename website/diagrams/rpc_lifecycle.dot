@@ -5,36 +5,79 @@
 // crossing is an edge, so labelling the edges puts the hooks where they act and
 // leaves the boundary as the only thing drawn.
 //
-// Colour still separates the two sides, but no legend is needed now: the box
-// says which nodes are the worker's, and the two nodes outside it are the main
-// thread's.
+// BOTH SIDES ARE BOXES NOW (review: "can add after result boxes clarifying that
+// this is the main thread"). One box and three loose nodes read as "the worker,
+// and some other stuff"; two boxes read as a boundary, which is the subject. It
+// also pays for itself twice over in label text: `statusCallback` used to have
+// to SAY "on the main thread", and the green fill used to be the only thing
+// distinguishing the caller's two nodes from the worker's.
 //
-// Two layout constraints, both of which cost a re-render to find:
+// Colour is now redundant with the boxes and is kept anyway — it is what carries
+// the distinction into the thumbnail, where the cluster labels are unreadable.
+//
+// Three layout constraints, each of which cost a re-render to find:
+//
+// The main thread's nodes must be CONTIGUOUS IN RANK for dot to give them a box
+// that does not swallow the worker's. `call` at rank 0 and `result` at rank 3
+// (the shape of the round trip, TB) cannot be boxed at all: the cluster would
+// span the worker's ranks and dot draws the two rectangles overlapping. So it is
+// one rank per side — `rankdir=LR`, main thread rank 0, worker rank 1, each side
+// a column of its own — and the return trip is a back edge between adjacent
+// columns, `constraint=false` so it adds no rank. Both sides being one rank is
+// what keeps the two crossings short; see the note on `ret` below.
 //
 // No `{ rank=same; exec; status }`. Ranking an outside node against one inside a
 // cluster EVICTS it ("exec was already in a rankset, deleted from cluster"), so
-// the boundary box loses the node it exists to enclose. The invisible
-// `call -> status` ranks it instead, and `constraint=false` on the dashed edge
-// keeps it from lengthening the chain.
+// the boundary box loses the node it exists to enclose. `status` is inside
+// cluster_main now, ordered against its siblings by the invisible edges below,
+// which is a rankset entirely within one cluster and so does not evict anything.
 //
-// The cluster's label is short and left-justified because the incoming arrow
-// enters the box at the top of execute(), which is its horizontal centre — a
-// centred label gets struck through by that arrow. Sticky-per-sessionId is the
-// paragraph under the figure rather than a second line here.
+// Each cluster's label is short and left-justified because an incoming arrow
+// enters the box at its edge midpoint, which a centred label gets struck
+// through by. Sticky-per-sessionId is the paragraph under the figure rather than
+// a second line here.
 digraph rpc_lifecycle {
-  rankdir=TB
+  rankdir=LR
   labelloc=t
   fontname="Helvetica"
   fontsize=18
   label="One RPC call, and the two things that are not a plain round trip"
-  nodesep=0.5
-  ranksep=0.55
+  nodesep=0.45
+  ranksep=1.1
 
   node [shape=box, fontname="Helvetica", fontsize=12, style=filled]
   edge [fontname="Helvetica", fontsize=10, color="#555555"]
 
-  call [label="rpcManager.call(sessionId, name, args)", fillcolor="#dcedc8"]
-  result [label="result", peripheries=2, fillcolor="#dcedc8"]
+  subgraph cluster_main {
+    label="main thread"
+    labelloc=t
+    labeljust=l
+    fontname="Helvetica"
+    fontsize=12
+    fontcolor="#33691e"
+    style="filled,rounded"
+    color="#aed581"
+    fillcolor="#f4faec"
+
+    call [label="rpcManager.call(sessionId, name, args)", fillcolor="#dcedc8"]
+    status [
+      label="statusCallback\n(loading UI)"
+      style="filled,dashed"
+      fillcolor="#fff3e0"
+      color="#ef6c00"
+    ]
+    result [label="result", peripheries=2, fillcolor="#dcedc8"]
+
+    // order down the column: the call, then what it is reported to while it
+    // runs, then what comes back. Invisible and inside the cluster, so no node
+    // is evicted from a box by a rankset.
+    //
+    // Written bottom-up because that is what dot does with it: within a rankset
+    // the edge direction sets the order along the rank, and under rankdir=LR a
+    // rank runs UP the page, so `call -> status -> result` puts the call at the
+    // bottom. Rendered both ways to be sure.
+    { rank=same; result -> status -> call [style=invis] }
+  }
 
   subgraph cluster_worker {
     label="web worker"
@@ -48,28 +91,36 @@ digraph rpc_lifecycle {
     fillcolor="#eaf4fd"
 
     exec [
-      label="execute()  ← your code\nread the args off deserializeArguments(),\nnot off the raw args"
+      label="execute()  ← your code\nread the args off\ndeserializeArguments(),\nnot off the raw args"
       fillcolor="#e1f5fe"
     ]
     ret [
       label="return value,\nor rpcResult(value, transferList)"
       fillcolor="#e3f2fd"
     ]
-    exec -> ret
+    // ONE COLUMN, like the main thread's. Left to its own rank `ret` lands a
+    // column further right, which puts the return crossing at the far side of
+    // the drawing from the node it returns to — dot drew it as a sweep under
+    // the entire figure with its label stranded in the middle. Same rank, so
+    // both crossings are between adjacent columns and the picture is the
+    // sequence diagram it wants to be.
+    { rank=same; ret -> exec [dir=back] }
   }
 
-  status [
-    label="statusCallback\non the main thread\n(loading UI)"
-    style="filled,dashed"
-    fillcolor="#fff3e0"
-    color="#ef6c00"
+  // The two hooks ride the crossings they belong to.
+  // Narrow wraps on both crossing labels. dot sizes the gap between the two
+  // columns to the widest line of the label riding it, so a two-line label is
+  // most of the figure's width; these were one and the picture came out 2.5:1,
+  // which on a doc page is 12px type.
+  call -> exec [label="  serializeArguments()\l  renames refNames into\l  the adapter's scheme,\l  replaces statusCallback\l  with a side channel\l"]
+  ret -> result [
+    label="  deserializeReturn()\l  structured clone, or\l  transferred zero-copy\l"
+    constraint=false
   ]
 
-  // The two hooks ride the crossings they belong to.
-  call -> exec [label="  serializeArguments()\l  renames refNames into the adapter's scheme,\l  replaces statusCallback with a side channel\l"]
-  ret -> result [label="  deserializeReturn()\l  structured clone, or transferred zero-copy\l"]
-
-  // The one function-shaped thing that crosses, and it never actually crosses.
+  // The one function-shaped thing that crosses, and it never actually crosses:
+  // the worker holds a side channel, the function itself is in the box it
+  // started in.
   exec -> status [
     label="  reports progress\n  while execute() runs"
     style=dashed
@@ -77,6 +128,4 @@ digraph rpc_lifecycle {
     color="#ef6c00"
     fontcolor="#ef6c00"
   ]
-
-  call -> status [style=invis]
 }
