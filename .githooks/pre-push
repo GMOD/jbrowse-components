@@ -21,6 +21,10 @@
 # `--fix` on either linter leaves whatever rule has no autofix. Those are still
 # yours to fix by hand.
 #
+# CI's `Format` job has no counterpart here and does not need one: the format
+# step below runs over the whole tree, so `pnpm check-format` is satisfied by
+# construction rather than checked.
+#
 # WHY PRE-PUSH AND NOT PRE-COMMIT. All of them read the whole tree — there is
 # no staged-paths version of "is this generated artifact current", because the
 # artifact is a function of every source that feeds it. At ~45s that is far too
@@ -33,7 +37,7 @@
 #   pnpm autogen            33.9s
 #   pnpm lint:eslint        29s
 #   pnpm lint                7s
-#   pnpm format <paths>     ~2s
+#   pnpm format              7s whole tree, 6309 files
 #   pnpm build:esm           1s incremental
 # ~115s wall measured, not the ~45s the sum of the long pole would suggest:
 # they are all CPU-bound and this machine runs several agents, so they contend
@@ -137,8 +141,8 @@ tree_state() {
 }
 tree_state >"$tmp/before" 2>/dev/null || true
 
-# Paths that have changed since $1 was taken. Used twice: to decide what to
-# format, and to report at the end.
+# Paths that have changed since $1 was taken, so the end of the run can say
+# what the fixers did.
 changed_since() {
   tree_state >"$tmp/now" 2>/dev/null || true
   diff "$1" "$tmp/now" 2>/dev/null | sed -n 's/^[<>] //p' | awk '{print $NF}' |
@@ -231,46 +235,33 @@ if [ "$estatus" != 0 ]; then
 fi
 
 # Format LAST, so it has the final say over whatever the two `--fix` passes
-# rewrote.
+# rewrote. `--fix` is repo-wide, not range-scoped, and it emits formatter-
+# hostile code: eslint's fixes to two bench files went in as `if (x) {y += z}`
+# on one line and a prefer-template fix with a line break inside the `${`.
 #
-# SCOPED, and bare `pnpm format` is not the alternative: it rewrites all ~5800
-# files, which from the shared checkout means rewriting every other agent's
-# tree.
+# WHOLE-TREE, AND UNSCOPED ON PURPOSE — which is worth stating because a scoped
+# `pnpm format <paths>` looks like the careful version and is not. Two reasons:
 #
-# THE SCOPE IS THE PUSHED PATHS **PLUS WHAT THIS RUN HAS ALREADY CHANGED**, and
-# the second half is the one that matters. `--fix` is repo-wide, not
-# range-scoped, and it emits formatter-hostile code: the first version of this
-# scoped format to the pushed paths alone and eslint's fixes to two bench files
-# outside the range went in as `if (x) {y += z}` on one line and a
-# prefer-template fix with a line break inside the `${`. Formatting only what
-# was pushed leaves exactly the files a fixer touched unformatted.
+#   - Neither formatter touches a file it would not change. Measured
+#     2026-08-14: `oxfmt` on an already-formatted file leaves its mtime alone,
+#     and so does the `postformat` prettier pass over the .astro files. So the
+#     set this rewrites IS the set that is mis-formatted — the same set a scope
+#     is trying to approximate, arrived at exactly instead of by guessing.
+#   - Any scope narrower than the tree leaves the files a fixer just touched
+#     unformatted, since `--fix` ranges over the whole repo and the push does
+#     not. The first version of this scoped to the pushed paths and shipped
+#     both bench files above.
 #
-# Then: the ones that exist, and only the extensions oxfmt parses. agent-docs is
-# dropped explicitly — it is on .prettierignore for a reason, and naming a path
-# on the command line is how you defeat an ignore file.
-fmt_list=$tmp/fmt-paths
-: >"$fmt_list"
-{ printf '%s\n' "$range_files"; changed_since "$tmp/before"; } |
-  sort -u | while IFS= read -r f; do
-  [ -n "$f" ] || continue
-  case $f in
-    agent-docs/*) continue ;;
-    *.ts | *.tsx | *.js | *.jsx | *.mjs | *.cjs | *.mts | *.cts | *.json) ;;
-    *) continue ;;
-  esac
-  [ -f "$f" ] && printf '%s\n' "$f" >>"$fmt_list"
-done
-
-if [ -s "$fmt_list" ]; then
-  fstatus=0
-  # shellcheck disable=SC2046 # deliberate word splitting: paths have no spaces
-  pnpm format $(cat "$fmt_list") >"$tmp/format.log" 2>&1 || fstatus=$?
-  if [ "$fstatus" != 0 ]; then
-    echo >&2
-    echo "pre-push: pnpm format failed" >&2
-    cat "$tmp/format.log" >&2
-    status=$fstatus
-  fi
+# It also stands in for CI's `Format` job (`pnpm check-format`, push.yml),
+# which nothing here covered before: after this runs, that job is satisfied by
+# construction rather than checked. ~7s for 6300 files.
+fstatus=0
+pnpm format >"$tmp/format.log" 2>&1 || fstatus=$?
+if [ "$fstatus" != 0 ]; then
+  echo >&2
+  echo "pre-push: pnpm format failed" >&2
+  cat "$tmp/format.log" >&2
+  status=$fstatus
 fi
 
 # --- gates, no fixer --------------------------------------------------------

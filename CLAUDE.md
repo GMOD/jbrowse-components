@@ -214,8 +214,14 @@ no worker-side exception here.
 - **`jest.config.js`'s `.claude/` ignore is load-bearing — don't re-diagnose
   it.** Without it a nested agent worktree gives jest-haste-map duplicate
   `plugins/*/package.json`, a hard throw that fails every cross-package suite.
-- **`pnpm format <paths>` — pass paths.** Bare `pnpm format` rewrites all ~5800
-  files.
+- **Bare `pnpm format` is fine — it writes only what it would change.** Measured
+  2026-08-14: `oxfmt` leaves an already-formatted file's mtime alone, and so
+  does the `postformat` prettier pass over the `.astro` files, so a whole-tree
+  run touches exactly the mis-formatted set and costs ~7s over 6309 files. This
+  used to say to pass paths, from when the script was `prettier --write`;
+  scoping now only risks missing a file a repo-wide `--fix` just rewrote, which
+  is how two bench files went out unformatted. The pre-push hook formats the
+  whole tree for that reason.
 - **`agent-docs` is on `.prettierignore`, and naming it explicitly overrides
   that.** Passing the directory as an argument formats all ~118 of them anyway —
   9k lines of rewrapped prose around whatever you actually changed. Never format
