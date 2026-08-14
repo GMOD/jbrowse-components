@@ -199,7 +199,8 @@ export async function assertRenderSettled(
         })
       }
     }
-    // error banner (ErrorBar renders a data-testid="reload_button")
+    // error banner (ErrorBar and ErrorBanner both render a
+    // data-testid="reload_button" for their retry)
     for (const el of document.querySelectorAll(
       '[data-testid="reload_button"]',
     )) {

@@ -44,7 +44,6 @@ before anyone noticed.
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
 | [Make the display-contract checks fail a test run](#make-the-display-contract-checks-fail-a-test-run) | tests, limits | five `console.error`s no run fails on; collect and assert in the shim |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | one call site passes it; nothing reads it |
-| [Make the pluggable-type getters say what is missing](#make-the-pluggable-type-getters-say-what-is-missing) | plugins, embedded | ~20 unchecked destructures of a bare `Map.get` |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -361,28 +360,6 @@ one-line version. Implementing it is the better one, and belongs with the
 per-request timeout in ARCHITECTURAL_LIMITS.md §"The fetch layer has no retry
 and no request timeout" — same question, two layers, and a timeout at only one
 of them is the confusing outcome.
-
-### Make the pluggable-type getters say what is missing
-
-`getViewType` / `getDisplayType` / `getTrackType` / `getWidgetType`
-(`PluginManager.ts`) are bare `Map.get`, and about twenty call sites destructure
-the result on the spot — `ViewWrapper.tsx`, `LinearComparativeRenderArea.tsx`,
-`WidgetHeading.tsx`, `LGVSyntenyDisplay/index.ts`, `AlignmentsTrack/index.ts`
-among them.
-
-Session load is **not** the exposure — the MST union rejects an unregistered type
-first, and that path has a good ladder already (`LoaderErrorBanner`'s "Start over
-without URL options"). The exposure is the registration-time cross-plugin
-lookups, in a build with a different plugin set: the embedded products let a
-consumer supply their own plugin array and carry their own `corePlugins.ts`, and
-`pm.getDisplayType('LinearAlignmentsDisplay')` in a build missing that plugin
-fails as `Cannot destructure property 'ReactComponent' of undefined` during
-plugin install — landing in `pluginManagerError` as a dead app whose message
-names nothing.
-
-Throw a named error from the getters, or add `…OrThrow` variants and move the
-destructuring call sites onto them. One file, and every "my custom build won't
-boot" report starts saying which type is missing.
 
 ## Ready to build: the design is settled
 

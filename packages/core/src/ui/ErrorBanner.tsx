@@ -46,6 +46,9 @@ function ErrorButtons({
       {onReset ? (
         <Tooltip title="Retry">
           <IconButton
+            // same marker ErrorBar's retry publishes, so "is a retry offered
+            // here" is one query across both error presentations
+            data-testid="reload_button"
             onClick={() => {
               onReset()
             }}

@@ -64,14 +64,34 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
     return name in this.registeredTypes
   }
 
+  // The message a build with the wrong plugin set gets, and usually the ONLY
+  // one. The lookups that reach here are mostly registration-time and
+  // cross-plugin — `pm.getDisplayType('LinearAlignmentsDisplay')` from a track's
+  // install — so in an embedded product, whose consumer supplies the plugin
+  // array, this throw is what lands in `pluginManagerError` and replaces the
+  // whole app. Naming the missing type alone still leaves "which plugin" to
+  // guess, which is what the registered list answers: a build short one plugin
+  // is visibly short that plugin's group of names.
   get(name: string) {
     const type = this.registeredTypes[name]
     if (!type) {
       throw new Error(
-        `${this.typeName} '${name}' not found, perhaps its plugin is not loaded or its plugin has not added it.`,
+        `${this.typeName} '${name}' is not registered: a plugin providing it either failed to load or is not in this build's plugin list. Registered ${this.typeName}s: ${this.registeredNames()}`,
       )
     }
     return type
+  }
+
+  registeredNames() {
+    const names = Object.keys(this.registeredTypes).sort()
+    if (names.length === 0) {
+      // distinguishable from "the plugin is missing", and a different bug: a
+      // getter called before createPluggableElements() sees every record empty
+      return 'none at all, so this ran before createPluggableElements()'
+    }
+    const shown = names.slice(0, 25)
+    const rest = names.length - shown.length
+    return rest > 0 ? `${shown.join(', ')}, and ${rest} more` : shown.join(', ')
   }
 
   all() {

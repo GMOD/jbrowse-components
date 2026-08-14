@@ -127,7 +127,16 @@ const TrackContainer = observer(function TrackContainer({
           Chrome that lives inline (LDColorLegend) or runs its own drag
           (ResizeHandle, VerticalScrollbar) still carries its own marker. */}
       <TrackOverlaySlot zIndex={100} overlayStyle={{ left: -outlineOffset }}>
-        <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
+        {/* Resets on the display, not the track: swapping a track's display
+            type (pileup to SNPCoverage, say) replaces the display node, so the
+            banner the old one left is about code that is no longer mounted.
+            Retry is the same clearing, asked for by hand. */}
+        <ErrorBoundary
+          resetKeys={[display.id]}
+          FallbackComponent={e => (
+            <ErrorBanner error={e.error} onReset={e.resetErrorBoundary} />
+          )}
+        >
           <TrackRenderingContainer model={model} track={track} />
         </ErrorBoundary>
       </TrackOverlaySlot>

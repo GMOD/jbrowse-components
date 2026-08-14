@@ -193,10 +193,11 @@ export function createBaseTrackModel(
         // config is always an object (see `adapterConfig`), so the old
         // `if (!adapterConfig) throw` could not fire; what genuinely can be
         // missing is `type`, and it is a string only by convention since the slot
-        // holds an arbitrary sub-config. Unchecked it reached
-        // `getAdapterType(undefined)`, which is a bare `Map.get` and answers
-        // `undefined` rather than throwing — so the track failed later and
-        // somewhere else.
+        // holds an arbitrary sub-config. Unchecked it reaches
+        // `getAdapterType(undefined)`, which does throw — but as
+        // `AdapterType 'undefined' is not registered`, i.e. as a missing plugin,
+        // sending the reader after a build problem instead of at the config
+        // that names no adapter type.
         const { type } = self.adapterConfig
         if (typeof type !== 'string') {
           throw new Error(

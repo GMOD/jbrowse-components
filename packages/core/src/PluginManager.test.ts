@@ -1,5 +1,8 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
 import Plugin from './Plugin.ts'
 import PluginManager from './PluginManager.ts'
+import ViewType from './pluggableElementTypes/ViewType.ts'
 
 // Two separately-built copies of one plugin: what a product that bundles a
 // plugin gets when a config also names its hosted url. They are different
@@ -66,4 +69,56 @@ test('still installs plugins that differ by name', () => {
   pluginManager.addPlugin(new Other())
 
   expect(installed).toEqual(['bundled', 'other'])
+})
+
+// A build with a different plugin set — every embedded product lets a consumer
+// supply their own array — fails at a registration-time cross-plugin lookup
+// (`pm.getDisplayType('LinearAlignmentsDisplay')` from a track's install), and
+// that throw is the entire message the user gets: jbrowse-web parks it in
+// `pluginManagerError` and renders nothing else.
+describe('a missing pluggable type says what is missing', () => {
+  function managerWithViews(names: string[]) {
+    class ViewsPlugin extends Plugin {
+      name = 'ViewsPlugin'
+      install(pluginManager: PluginManager) {
+        for (const name of names) {
+          pluginManager.addViewType(
+            () =>
+              new ViewType({
+                name,
+                stateModel: types.model(name, {
+                  id: types.optional(types.identifier, name),
+                  type: types.literal(name),
+                }),
+                ReactComponent: () => null,
+              }),
+          )
+        }
+      }
+    }
+    return new PluginManager([new ViewsPlugin()])
+      .createPluggableElements()
+      .configure()
+  }
+
+  it('names the type, its group, and what is registered', () => {
+    const pm = managerWithViews(['LinearGenomeView', 'DotplotView'])
+
+    expect(() => pm.getViewType('SpreadsheetView')).toThrow(
+      /ViewType 'SpreadsheetView' is not registered/,
+    )
+    // the half that answers "which plugin": a build short one plugin is short
+    // that plugin's group of names
+    expect(() => pm.getViewType('SpreadsheetView')).toThrow(
+      /Registered ViewTypes: DotplotView, LinearGenomeView/,
+    )
+  })
+
+  // The other way to reach an empty record, and a different bug from a missing
+  // plugin: nothing is registered until createPluggableElements() runs
+  it('distinguishes a lookup made before createPluggableElements', () => {
+    expect(() => new PluginManager([]).getViewType('LinearGenomeView')).toThrow(
+      /before createPluggableElements/,
+    )
+  })
 })
