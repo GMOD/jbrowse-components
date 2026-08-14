@@ -397,18 +397,38 @@ export async function executeSyntenyFeaturesAndPositions({
       continue
     }
     if (trim.trimmed) {
-      const qLo = Math.min(trim.a1, trim.b1)
-      const qHi = Math.max(trim.a1, trim.b1)
+      const qLoRaw = Math.min(trim.a1, trim.b1)
+      const qHiRaw = Math.max(trim.a1, trim.b1)
+      // Snap the CIGAR window to integer bp before re-trimming — INWARD, so the
+      // block stays inside the region `clampBlockToRegions` just fitted it to.
+      // (`clipLargeBlockToWindow` snaps the same problem outward, because its
+      // window is a viewport bound rather than a containment one.)
+      //
+      // The trim is proportional, so `trim.a1`/`b1` carry a sub-bp fraction, and
+      // `clipSyntenyFeature` trims its boundary ops to exactly the window it is
+      // given. A fractional window therefore did two things at once: it packed
+      // the boundary op lengths through `(cHi - cLo) << 4`, which truncates, and
+      // it re-anchored the block at a fractional `start`. The block's declared
+      // span then disagreed with the span its own CIGAR walks — measured at
+      // 1.3bp on `100M10D100M10I100M` over a window of (1050.4, 1250.7), with
+      // the clipped `10D` packed as a ZERO-length op. Since the base trapezoid
+      // is drawn from the corners while the tiles are walked from the CIGAR,
+      // transparent-indels mode left that difference as an unpainted sliver at
+      // the trailing end, and at base-level zoom 1.3bp is tens of px.
+      const qLo = Math.ceil(qLoRaw)
+      const qHi = Math.floor(qHiRaw)
       // Re-derive the trimmed span from the CIGAR where there is one: the walk
       // follows the block's real indels, where the proportional trim can only
       // assume the linear correspondence. Without a CIGAR (or when the walk
-      // keeps no op) the proportional endpoints stand and the block draws as
-      // base ribbon only, which is what an untrimmed no-CIGAR block does too.
+      // keeps no op, or when snapping leaves no whole bp) the proportional
+      // endpoints stand and the block draws as base ribbon only, which is what
+      // an untrimmed no-CIGAR block does too.
       const cig =
         clippedCigar ?? (cigarStr ? parseCigar2Typed(cigarStr) : undefined)
-      const re = cig
-        ? clipSyntenyFeature(cig, fStart, mStart, mEnd, strand, qLo, qHi)
-        : undefined
+      const re =
+        cig && qHi > qLo
+          ? clipSyntenyFeature(cig, fStart, mStart, mEnd, strand, qLo, qHi)
+          : undefined
       if (re) {
         fStart = re.start
         fEnd = re.end
@@ -416,8 +436,11 @@ export async function executeSyntenyFeaturesAndPositions({
         mEnd = re.mateEnd
         clippedCigar = re.cigar
       } else {
-        fStart = qLo
-        fEnd = qHi
+        // The RAW proportional endpoints, not the snapped ones: this arm draws
+        // a base ribbon with no CIGAR, so there is no integer grid for it to sit
+        // off, and rounding would only shorten it.
+        fStart = qLoRaw
+        fEnd = qHiRaw
         mStart = Math.min(trim.a2, trim.b2)
         mEnd = Math.max(trim.a2, trim.b2)
         clippedCigar = cig ? EMPTY_CIGAR : clippedCigar

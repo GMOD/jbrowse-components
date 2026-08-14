@@ -476,3 +476,36 @@ describe('clipLargeBlockToWindow window mapping', () => {
     expect(c?.end).toBe(1000)
   })
 })
+
+// The window contract: a fractional one makes the block's declared span
+// disagree with the span its own CIGAR walks, because the boundary op lengths
+// pack through `(cHi - cLo) << 4` (which truncates) while start/end keep the
+// fraction. Both callers snap, so this pins WHY rather than a behaviour anyone
+// should rely on.
+describe('the window must be integer bp', () => {
+  // query axis advances on M/=/X and D/N, matching the clip's own convention
+  const walkedQuerySpan = (c: Uint32Array) => {
+    let q = 0
+    for (const packed of c) {
+      const op = packed & 0xf
+      if (op === CIGAR_M || op === CIGAR_D) {
+        q += packed >>> 4
+      }
+    }
+    return q
+  }
+
+  const block = cig([100, CIGAR_M], [10, CIGAR_D], [100, CIGAR_M])
+
+  test('an integer window keeps the two in step', () => {
+    const r = clipSyntenyFeature(block, 1000, 5000, 5200, 1, 1050, 1150)!
+    expect(r.end - r.start).toBe(walkedQuerySpan(r.cigar))
+  })
+
+  test('a fractional window does not, and truncates a boundary op to zero', () => {
+    const r = clipSyntenyFeature(block, 1000, 5000, 5200, 1, 1000, 1100.6)!
+    // the 0.6bp remnant of the D op packs as a zero-length op
+    expect([...r.cigar].map(p => p >>> 4)).toContain(0)
+    expect(r.end - r.start).toBeGreaterThan(walkedQuerySpan(r.cigar))
+  })
+})

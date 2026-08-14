@@ -71,6 +71,19 @@ export interface ClippedSyntenyFeature {
 // [winStart, winEnd], returning the re-anchored coords + trimmed CIGAR, or
 // undefined if the block doesn't overlap the window.
 //
+// **`winStart`/`winEnd` MUST be integer bp**, and both callers snap them —
+// outward in `clipLargeBlockToWindow` (a viewport bound), inward in
+// `executeSyntenyFeaturesAndPositions`' trim path (a region-containment bound).
+// A fractional window breaks the output two ways at once: the boundary ops are
+// trimmed to it and then packed through `(cHi - cLo) << 4`, whose ToInt32
+// TRUNCATES the length (a 0.6bp remnant becomes a zero-length op), while
+// `start`/`end` come back carrying the fraction in full. The block's declared
+// span then exceeds what its own CIGAR walks, and since the base trapezoid is
+// drawn from the corners while the tiles are walked from the ops, the
+// difference shows in transparent-indels mode as unpainted ribbon at the
+// trailing end. Not asserted here — this runs per feature over a whole-genome
+// PAF — so it is the callers' invariant to keep.
+//
 // A single alignment block can span far beyond the viewport — a whole UCSC
 // liftOver chain is one ~20 Mb feature. Its base ribbon is drawn as one *linear*
 // trapezoid across that span, which cannot follow megabases of indels, so at

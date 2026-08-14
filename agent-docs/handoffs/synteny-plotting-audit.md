@@ -120,17 +120,6 @@ single points, so both width deltas are 0 and it is excluded from the index
 outright. Left as is deliberately — adding the argument would suggest markers
 reach that line, and they cannot. Worth knowing if the exclusion is ever relaxed.
 
-### Sub-bp drift in the trim path's window
-
-`clipLargeBlockToWindow` floors/ceils its window to integer bp, with a comment
-explaining that a fractional `winStart` shifts the whole re-anchored block off
-the integer-bp grid ("indels landing mid-basepair"). The **other** caller of
-`clipSyntenyFeature` — the `trim.trimmed` path in
-`executeSyntenyFeaturesAndPositions` — passes `qLo`/`qHi` straight off
-`clampBlockToRegions`, which is a proportional trim and so can be fractional. The
-op lengths then truncate through `(cHi - cLo) << 4`. Bounded by 1bp, so invisible
-except at base-level zoom, and not investigated further.
-
 ### Things checked and found correct — don't re-audit
 
 - `buildSyntenyGeometry`'s capacity bounds are strict. The marker budget
