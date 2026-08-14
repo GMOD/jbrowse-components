@@ -926,10 +926,13 @@ export default function stateModelFactory(pm: PluginManager) {
          * Resolved on the model rather than through the rendering backend, which
          * is where this departs from synteny's `backend.pick(...)`: dotplot
          * geometry is already here in absolute cumBp (`display.instanceData`), so
-         * the pick needs neither of the two backends — and so it keeps working on
-         * the Canvas2D fallback, during a GPU context loss, and in a test with no
-         * canvas at all. Synteny's has to live in the backend only because the
-         * projected geometry it indexes does.
+         * this answers with NO backend attached at all — before the first paint,
+         * through a context loss that has not recovered, and in a test with no
+         * canvas. (Both of synteny's backends implement `pick`, so its hover is
+         * not GPU-only either despite `gpuRenderingBackend`'s name; what it cannot
+         * do is answer while nothing is attached. It lives in the backend because
+         * the projected geometry it indexes does, which also means each backend
+         * builds its own index.)
          *
          * Nearest wins ACROSS tracks too, ties going to the later track (the one
          * drawn on top) — see `pickDotplotFeature` for why a dotplot answers

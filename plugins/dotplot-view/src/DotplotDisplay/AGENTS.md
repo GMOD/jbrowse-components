@@ -51,7 +51,11 @@
   further deliberate differences from that twin: it answers **nearest**, not
   topmost (thin lines, not opaque fills), and its exact test measures in **px**,
   because the two axes are independently scaled. Nothing calls into a rendering
-  backend, so hover survives the Canvas2D fallback and a lost GPU context.
+  backend, so it answers with none attached — before the first paint, through an
+  unrecovered context loss, and in a test with no canvas. (Synteny's hover is
+  not GPU-only either, `gpuRenderingBackend`'s name notwithstanding: that getter
+  holds whichever backend is attached and both implement `pick`. The differences
+  are that it needs one attached, and that each backend builds its own index.)
 - **Hover shading is `hoveredFeatureHighlight` + `DotplotHoverHighlight`, not a
   shader uniform.** Restroking the one hovered feature over the canvas is
   backend-agnostic by construction — it never asks which backend painted — where
