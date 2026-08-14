@@ -324,7 +324,7 @@ jb2export --hub hg38 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.d234e6996309.png)
+![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.ecb39b87baa3.png)
 
 ### Breakpoint split views
 
@@ -549,7 +549,7 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
   --loc 1:2,500,000-12,500,000 --width 1200 --out hic.png
 ```
 
-![Hi-C contact matrix as a triangular heatmap showing TAD structure along hg19 chr1](https://jbrowse.org/jb2-figures/jbrowse-img/hic.239a5c99b33e.png)
+![Hi-C contact matrix as a triangular heatmap showing TAD structure along hg19 chr1](https://jbrowse.org/jb2-figures/jbrowse-img/hic.23a60dfee199.png)
 
 ### Gene tracks and the reference sequence
 
