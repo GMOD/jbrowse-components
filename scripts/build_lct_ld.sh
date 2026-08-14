@@ -292,13 +292,16 @@ def ld_track(track_id, name, uri):
         'adapter': {
             'type': 'VcfTabixAdapter',
             'uri': uri,
-            # the display correlates the genotypes themselves, so the whole
-            # window has to be fetched rather than sampled
-            'fetchSizeLimit': 500_000_000,
         },
         'displays': [{
             'type': 'LDDisplay',
             'displayId': f'{track_id}-LDDisplay',
+            # The display correlates the genotypes themselves, so the whole
+            # window is fetched and the byte gate trips. forceLoad is the
+            # declarative half of that banner's FORCE LOAD button, scoped to
+            # this view; raising the adapter's fetchSizeLimit instead would move
+            # the ceiling for every window of the track.
+            'forceLoad': True,
             'minorAlleleFrequencyFilter': maf,
             'useGenomicPositions': True,
             'height': 330,
@@ -345,6 +348,8 @@ cfg['tracks'] += [
             'renderingMode': 'phased',
             'colorBy': 'population',
             'minorAlleleFrequencyFilter': maf,
+            # same reason as the LD lanes above
+            'forceLoad': True,
             'height': 700,
         }],
     },

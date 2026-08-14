@@ -42,14 +42,14 @@ precomputed LD file beside it:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz",
-    "fetchSizeLimit": 500000000
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz"
   },
   "displays": [
     {
       "type": "LDDisplay",
       "minorAlleleFrequencyFilter": 0.35,
       "useGenomicPositions": true,
+      "forceLoad": true,
       "height": 360
     }
   ]
@@ -62,9 +62,15 @@ thins a dense callset to the common, block-tagging variants, and
 sizes each cell by genomic distance, so the block's edges land under the
 coordinates they are at. Left off, the x axis is SNP index instead, and index
 density is not uniform across a window this wide.
-[`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) is raised
-because r² is computed from the genotypes themselves, so the window's variants
-all have to be fetched.
+
+r² is computed from the genotypes themselves, so a window this wide is more data
+than the size gate lets a track fetch unasked, and the lane arrives as a "too
+much data" banner with a FORCE LOAD button on it.
+[`forceLoad`](/docs/config/sharedlddisplay/#slot-forceload) is that button
+written down, and it belongs on a view nobody is going to click: a figure, an
+embed, a notebook. It applies to the one view that declares it, where
+[`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) is a
+ceiling for the whole track at every locus.
 
 ## A sweep leaves a long haplotype
 
@@ -175,6 +181,7 @@ lactase-persistence records.
       "renderingMode": "phased",
       "colorBy": "population",
       "minorAlleleFrequencyFilter": 0.35,
+      "forceLoad": true,
       "height": 700
     }
   ]
@@ -189,7 +196,7 @@ and
 [`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
 model properties, which is what the figure below does.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises over one window: 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The pale slab's rows are the ones carrying rs4988235-A."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises over one window: 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The pale slab is one clade, uniform across the block, and the rs4988235-A haplotypes sit inside it."/>
 
 **Ordering is what makes a block visible, not colour and not row count.** Left
 in file order the same matrix is a plaid at any size, because a block is a set

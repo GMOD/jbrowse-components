@@ -64,13 +64,20 @@ const lctTrack = (name: string, height = 510) => ({
   adapter: {
     type: 'VcfTabixAdapter',
     uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz',
-    fetchSizeLimit: 500_000_000,
   },
   displays: [
     {
       type: 'LDDisplay',
       showLDTriangle: true,
       showLegend: true,
+      // r² is computed from the genotypes themselves, so the whole window has
+      // to be fetched and the byte gate trips. `forceLoad` is the declarative
+      // half of that banner's own FORCE LOAD button, which is what it is for:
+      // a view nobody can click. A raised `fetchSizeLimit` would also get the
+      // figure drawn, and it is the worse instrument -- it moves a ceiling that
+      // protects every OTHER window of the same track, so a reader who opens
+      // the live link and pans somewhere dense downloads it with no warning.
+      forceLoad: true,
       minorAlleleFrequencyFilter: 0.35,
       // Cells sized by genomic distance, so the triangle shares the x axis of
       // the gene lane and the ruler above it (review: "consider also using
@@ -424,13 +431,15 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
   adapter: {
     type: 'VcfTabixAdapter',
     uri: `https://jbrowse.org/demos/popgen/${file}`,
-    fetchSizeLimit: 500_000_000,
   },
   displays: [
     {
       type: 'LDDisplay',
       showLDTriangle: true,
       showLegend: true,
+      // see lctTrack above: the gate is lifted for this view rather than raised
+      // for the track
+      forceLoad: true,
       minorAlleleFrequencyFilter: 0.35,
       height: 330,
       // Cells sized by genomic distance (review: "potentially use 'proportional
@@ -530,12 +539,22 @@ export const ldSpecs: ScreenshotSpec[] = [
             // FROM LD, so either one over an LD triangle confirms the triangle
             // with itself.
             //
-            // Measured across this window in 50 kb bins, max cM/Mb per bin:
-            // a hard 0.0 from 135.05 through 135.50 and under 1.5 out to
-            // 135.95, against 161 at 134.95 and 460 at 136.20. So the block
-            // build_lct_ld.sh independently resolves at 135.0-136.25 sits in a
-            // recombination desert with a hotspot on each shoulder, and the
-            // right-hand one lands exactly where the r² profile falls off.
+            // Measured in 50 kb bins off the RENDERED lane, which is what a
+            // reader is actually looking at: one continuous flat run from
+            // 135.04 to 135.95, broken only by two bins under 10 cM/Mb, with
+            // the bar clipped at the 100 ceiling at 134.99 on one shoulder and
+            // at 136.17 and 136.27 on the other. Off the bigWig itself those
+            // three read 161, 460 and 230.
+            //
+            // Read that against the two things measured independently of it.
+            // build_lct_ld.sh's r² profile against rs4988235 is above 0.6 from
+            // 135.0 to 136.0 and falls 0.32 / 0.31 / 0.06 across 136.1-136.3,
+            // i.e. its fall-off brackets the right-hand hotspot pair. And the
+            // panel triangle's own block, measured off this capture at depth
+            // 60-220 px, spans 134.70-136.00 -- so it covers the desert and
+            // runs somewhat past it on the left, where the map is low rather
+            // than zero. Don't tighten the caption to claim the two edges
+            // coincide; the right one does and the left one decays.
             //
             // maxScore 100 CLIPS those two hotspots, deliberately: autoscaled
             // to 460 the whole rest of the lane is under a tenth of the height
@@ -571,9 +590,14 @@ export const ldSpecs: ScreenshotSpec[] = [
     // triangles + headers + ruler/overview. The triangles came down from 330
     // (reviewer: "reduce heights of the linkage tracks"), which costs nothing
     // legible: the block is a shape, not a height, and the room it frees is
-    // what the Fst lane takes. 100 px came back off the top of the two LD lanes
-    // when the 1 - r² band each of them reserved was deleted.
-    viewportHeight: 1090,
+    // what the Fst lane takes.
+    //
+    // Deleting the 1 - r² band each LD lane reserved gives back 100 px, and
+    // hg38's RefSeq over this window spends about the same again: the frame
+    // holds a dozen more genes than the hg19 one did, so the gene lane stacks
+    // deeper. Sized from the run's own clipped report rather than by
+    // subtracting what was removed, which is what got this 103 px short.
+    viewportHeight: 1195,
     settleMs: 8000,
     // The one variant the lane exists for, named on it. With the floor raised
     // the lane is legible, but it is still thousands of surviving points and
@@ -920,6 +944,13 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'kgp_lct_haplotypes',
               type: 'LinearMultiSampleVariantMatrixDisplay',
               height: 700,
+              // The matrix reads every genotype in the window rather than
+              // sampling, and the 30x callset carries several times the
+              // variants the phase 3 cut did over this span, so the byte gate
+              // trips: without this the lane is a "Requested too much data ...
+              // FORCE LOAD" banner and the clustering never runs, which is what
+              // failed the first capture of this figure.
+              forceLoad: true,
               lineZoneHeight: 34,
               // one row per haplotype rather than per sample. Phased is the
               // point: a haplotype is what travels as one piece, and a diploid
@@ -968,19 +999,35 @@ export const ldSpecs: ScreenshotSpec[] = [
     // ever be a texture at this height, so it is not what the pill points at.
     //
     // The pills carry NUMBERS, not adjectives (reviewer: "the text 'one
-    // clustered haplotype' is too vague ... i need more detail"). Both come
-    // from the file this figure reads: at rs4988235 (chr2:135,851,076 on hg38)
-    // the slice carries 90 alt of 300 haplotype rows, i.e. 150 samples, 90 of
-    // them carrying the persistence allele -- checkable with
-    // `bcftools query -r chr2:135851076 -f '[%GT\n]'` on the hosted VCF. It is
-    // the same 150 samples the hg19 cut used, so the count is unchanged by the
-    // move. 90/300 is MAF 0.30, which is BELOW this figure's own 0.35 filter,
-    // so the causal variant is not one of the drawn columns and the clustering
-    // never sees it.
+    // clustered haplotype' is too vague ... i need more detail"). The one they
+    // carry comes from the file: at rs4988235 (chr2:135,851,076 on hg38) the
+    // slice is 90 alt of 300 haplotype rows -- 150 samples, 90 carrying the
+    // persistence allele -- checkable with
+    // `bcftools query -r chr2:135851076 -f '[%GT\n]'` on the hosted VCF. Same
+    // 150 samples the hg19 cut used, so that count did not move. 90/300 is MAF
+    // 0.30, BELOW this figure's own 0.35 filter, so the causal variant is not
+    // one of the drawn columns and the clustering never sees it.
+    //
+    // WHAT THE PILL MUST NOT SAY, and did on hg19: that the slab IS those 90.
+    // On this callset it is not. Measured two ways and they agree.
+    //
+    // Off the capture: one contiguous clade of ~124 of 300 rows is decided the
+    // same way across a 249-column run, and NONE of the other 176 rows matches
+    // it there -- a clean separation, just a wider clade than the carrier set.
+    //
+    // Off the VCF, over the clustering window at the same MAF floor (230
+    // columns): carrier haplotypes agree with the carrier consensus at 0.963
+    // mean against 0.301 for non-carriers, so the sweep signal is very strong.
+    // But the agreement tail is gradual rather than a cliff -- >=0.90 takes 90
+    // haplotypes of which 82 are carriers, >=0.60 takes 123 of which 89 are.
+    // So the clade holds essentially every carrier PLUS a few dozen
+    // chromosomes carrying most of the same background, which is what a young
+    // haplotype at 30% frequency should look like. Say that; don't restore the
+    // arithmetic coincidence.
     annotations: [
       {
         type: 'text',
-        text: 'One clade: the 90 of 300 haplotypes carrying rs4988235-A, unbroken across the block',
+        text: 'One clade, unbroken across the block: the 90 rs4988235-A haplotypes and a few dozen sharing their background',
         fontSize: 17,
         maxWidth: 330,
         anchor: {
@@ -992,7 +1039,7 @@ export const ldSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'The other 210: no block shared across the window',
+        text: 'The rest: no block shared across the window',
         fontSize: 17,
         maxWidth: 300,
         anchor: {
