@@ -57,20 +57,29 @@
 // control in brackets. Taken 2026-08-14 ON AC, adapter verified online, 16 cores
 // under a load average of ~4-5 from other work on the box:
 //
-//   longread-400k   scan 1283.8  index 0.21  sorted 0.17  [0.99]  build  4.26  sort  7.38
-//                   scan 1312.1  index 0.21  sorted 0.17  [1.01]  build  4.36  sort  7.48
-//                   scan  632.2  index 0.22  sorted 0.17  [0.49]  build  4.15  sort  7.34
-//   shortread-40k   scan   60.1  index 0.08  sorted 0.08  [1.00]  build  0.61  sort  0.71
-//                   scan   60.2  index 0.09  sorted 0.08  [1.00]  build  0.63  sort  0.75
-//                   scan   67.5  index 0.11  sorted 0.09  [0.99]  build  0.71  sort  0.83
-//   deep-1m         scan 1472.2  index 0.30  sorted 0.22  [1.01]  build 10.01  sort 14.66
-//                   scan 1571.6  index 0.30  sorted 0.23  [1.00]  build 10.74  sort 16.01
-//                   scan 1593.2  index 0.34  sorted 0.23  [0.98]  build 11.79  sort 16.04
+//   longread-400k   scan  626.2  index 0.21  sorted 0.17  [0.47]  build  4.53  sort 10.29
+//                   scan  647.6  index 0.22  sorted 0.17  [0.48]  build  4.48  sort 10.26
+//                   scan  694.9  index 0.22  sorted 0.17  [1.00]  build  4.40  sort 10.38
+//   shortread-40k   scan   60.4  index 0.10  sorted 0.08  [0.99]  build  0.61  sort  0.88
+//                   scan   62.2  index 0.10  sorted 0.08  [1.00]  build  0.64  sort  0.94
+//                   scan   66.2  index 0.10  sorted 0.09  [1.00]  build  0.66  sort  0.96
+//   deep-1m         scan 1487.2  index 0.32  sorted 0.22  [0.99]  build 10.12  sort 21.06
+//                   scan 1465.0  index 0.31  sorted 0.22  [1.00]  build  9.63  sort 20.26
+//                   scan 1505.1  index 0.33  sorted 0.22  [1.00]  build 10.33  sort 20.65
 //
-// EIGHT OF NINE ROWS hold their control at 0.98-1.01. The exception is
-// longread-400k's third sample at 0.49, where the scan arm got an uncontended run
-// (632ms against a 1303ms control) — that row measured nothing and is kept so a
-// reader does not wonder why its scan column is half the other two.
+// SEVEN OF NINE ROWS hold their control at 0.99-1.00. The two that don't are
+// longread-400k's first two samples at 0.47/0.48, and the third sample says which
+// arm was at fault: there both arms land at ~695ms, so the earlier pairs were the
+// CONTROL running slow (1342ms, 1347ms) rather than the scan running fast. That
+// fixture's absolute scan time swings between ~630 and ~1345ms under contention on
+// this box; the columns that matter here do not move with it.
+//
+// **`worker-sort` was corrected UPWARD here and the old figure should not be
+// quoted.** The fixture permuted two parallel arrays where `buildMismatchArrays`
+// permutes four, so the one-off was reported ~40% under what the producer pays:
+// 14.7ms became 21.1ms on deep-1m, 7.4 became 10.3 on longread. It is measured in
+// its own timed block outside the arm rotation, which is why it stays stable
+// (20.3-21.1ms across three samples) while the scan column swings.
 //
 // **The power state is the reason this block was re-measured.** An earlier run of
 // the same three samples on BATTERY put longread-400k's control at 0.60/1.83/1.44
@@ -96,13 +105,51 @@
 // Per single mousemove on the deep fixture that is 7.4ms -> 0.0011ms, in ONE block
 // of ONE track; a six-track view pays it six times.
 //
-// THE ONE-OFF MOVED AND GREW, and both halves matter. `worker-sort` is 1.2-1.7x
-// `index-build` (14.7 vs 10.0ms on deep-1m, 7.4 vs 4.3 on longread) because it
-// permutes five parallel arrays where the index only built two. But `index-build`
-// ran on the MAIN THREAD, on the first mousemove after every fetch, and
-// `worker-sort` runs in the worker beside work already O(n) — so the interaction
-// path lost a 10ms stall and gained nothing. Against the scan it replaces (1472ms
-// over 200 hovers) either is paid back within two pointer motions.
+// THE ONE-OFF MOVED AND GREW, and both halves matter. `worker-sort` is 1.4-2.3x
+// `index-build` (21.1 vs 10.1ms on deep-1m, 10.3 vs 4.4 on longread) because it
+// permutes four parallel arrays as well as sorting, where the index only built
+// `order` and `sorted`. But `index-build` ran on the MAIN THREAD, on the first
+// mousemove after every fetch, and `worker-sort` runs in the worker beside work
+// already O(n) — so the interaction path lost a 10ms stall and gained nothing.
+// Against the scan it replaces (1487ms over 200 hovers) either is paid back within
+// two pointer motions.
+//
+// ---------------------------------------------------------------------------
+// WHAT THE "SORT" ACTUALLY IS, because sorting is the expensive operation this
+// looks like and is not one here.
+//
+// Sorted: the per-mismatch EVENTS, keyed on genomic position. `n` is the mismatch
+// count in the region (400k, 1M) and the key space is the region WIDTH in bp
+// (200k, 150k). So `span/n` is **0.15 to 0.50** — there are two to seven times
+// more events than distinct keys they can take. The key space is smaller than the
+// data, which is the precondition for a counting sort, and it holds structurally
+// rather than by luck: a pileup is many reads deep over one window.
+//
+// `positionOrder` is therefore O(n + span): tally per bp, prefix-sum into starting
+// offsets, scatter. Decomposed on the deep-1m shape (15 rounds, min):
+//
+//   min/max scan          4.6 ms   21%
+//   tally (n increments)  4.8 ms   21%
+//   prefix sum (span)     0.2 ms    1%   <- span < n, so this is nearly free
+//   scatter (n writes)    9.0 ms   40%   (cumulative with the two above)
+//   ---------------------------------
+//   positionOrder        10.8 ms   48%
+//   permute 4 arrays     22.5 ms  100%   <- the permutation is over HALF the cost
+//
+// So the sort is not the expensive half; carrying the four parallel arrays through
+// it is. And the comparison sorts a reader would assume were meant are the thing
+// to avoid, measured on the same fixture:
+//
+//   comparator on indices   409 ms    38x the counting sort
+//   comparator on objects   440 ms    41x
+//
+// That 38-41x is why `positionOrder` exists rather than an `idx.sort((a, b) => …)`
+// at each call site — a per-compare JS callback over a million entries is exactly
+// the "sorting is slow" intuition, and it is correct. It is also why the SPARSE
+// fallback inside `positionOrder` matters: when `span` is large relative to `n`
+// the counting sort's advantage inverts and a bp-indexed histogram would allocate
+// hundreds of megabytes to order a handful of events, so that branch takes the
+// comparison sort deliberately, where n is small enough for it to be cheap.
 //
 // The ratios here are far larger than "one scan replaced by one binary search"
 // suggests because a hover fires BOTH readers, and the baseline's
@@ -314,10 +361,16 @@ for (const fx of FIXTURES) {
   const positions = makePositions()
   const bases = new Uint8Array(fx.mismatches)
   const strands = new Int8Array(fx.mismatches)
+  // Not read by any hover arm — these two are the rest of what the producer
+  // permutes, and exist so `worker-sort` prices the real thing.
+  const readIndices = new Uint32Array(fx.mismatches)
+  const quals = new Uint8Array(fx.mismatches)
   const codes = [65, 67, 71, 84]
   for (let i = 0; i < fx.mismatches; i++) {
     bases[i] = codes[Math.floor(rand() * 4)]!
     strands[i] = rand() < 0.5 ? 1 : -1
+    readIndices[i] = i >> 3
+    quals[i] = 30 + (i % 10)
   }
   const hoverAt = Array.from(
     { length: HOVERS },
@@ -327,15 +380,26 @@ for (const fx of FIXTURES) {
   // What the WORKER now ships: the same events, permuted into ascending position
   // order. The shipped readers take these; the two arms above take the read-order
   // arrays, which is the input they were written for.
+  // Carries ALL FOUR parallel arrays `buildMismatchArrays` permutes — bases,
+  // strands, readIndices, quals — not just the two the hover arms read. The
+  // permutation is over half of `worker-sort`, more than the sort itself, so a
+  // version carrying two arrays reported that one-off roughly 40% under what the
+  // producer actually pays. The hover arms use only `sorted`/`sBases`/`sStrands`;
+  // the other two exist so the timing is honest.
   const permute = (src: Uint32Array) => {
     const { order, sorted } = positionOrder(src)
     const sBases = new Uint8Array(src.length)
     const sStrands = new Int8Array(src.length)
+    const sReadIdx = new Uint32Array(src.length)
+    const sQuals = new Uint8Array(src.length)
     for (let i = 0; i < src.length; i++) {
-      sBases[i] = bases[order[i]!]!
-      sStrands[i] = strands[order[i]!]!
+      const j = order[i]!
+      sBases[i] = bases[j]!
+      sStrands[i] = strands[j]!
+      sReadIdx[i] = readIndices[j]!
+      sQuals[i] = quals[j]!
     }
-    return { sorted, sBases, sStrands }
+    return { sorted, sBases, sStrands, sReadIdx, sQuals }
   }
   const {
     sorted: sortedPositions,
