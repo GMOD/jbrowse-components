@@ -496,8 +496,10 @@ export function interbaseDepthAt(
  * the name was simply wrong at both call sites.
  *
  * A hover asks about ONE position out of an array holding every mismatch in the
- * region, so it goes through the shared position index rather than scanning.
- * See positionIndex.ts for why the cache hangs off the array itself.
+ * region, so it binary-searches instead of scanning. `mismatchPositions` ARRIVES
+ * ascending — `buildMismatchArrays` sorts it in the worker and MAF's writer emits
+ * it that way — so the run at `position` is contiguous and the parallel arrays
+ * are read at the same index, with no side index to build, cache or invalidate.
  */
 export function countSnpsAtPosition(
   position: number,
@@ -505,12 +507,11 @@ export function countSnpsAtPosition(
 ) {
   const { mismatchPositions, mismatchBases, mismatchStrands } = mismatches
   const snps: Record<string, { count: number; fwd: number; rev: number }> = {}
-  const { order, sorted } = positionIndexFor(mismatchPositions)
-  for (let k = lowerBound(sorted, position); k < sorted.length; k++) {
-    if (sorted[k] !== position) {
+  const n = mismatchPositions.length
+  for (let i = lowerBound(mismatchPositions, position); i < n; i++) {
+    if (mismatchPositions[i] !== position) {
       break
     }
-    const i = order[k]!
     const base = String.fromCharCode(mismatchBases[i]!)
     snps[base] ??= { count: 0, fwd: 0, rev: 0 }
     snps[base].count++
@@ -536,12 +537,13 @@ export function countSnpsAtPosition(
  * bp range with this and tooltip the significant position instead. Returns
  * undefined if nothing qualifies.
  *
- * Runs over the shared position index, so it visits the events in the BIN
- * rather than every event in the region — this is on the mousemove path, and
- * the array it was scanning holds every mismatch in the block. Two things fall
- * out of the index that the scan had to arrange for itself: equal positions are
- * adjacent, so counting a position needs no Map, and the run is walked in
- * ascending order, so the first qualifying position IS the smallest and the
+ * Visits the events in the BIN rather than every event in the region — this is on
+ * the mousemove path, and the array it was scanning holds every mismatch in the
+ * block. `positions` must be ASCENDING, which both producers guarantee
+ * (`buildMismatchArrays`, and MAF's `MismatchWriter` by construction). Two things
+ * fall out of that order which a read-order scan had to arrange for itself: equal
+ * positions are adjacent, so counting a position needs no Map, and the run is
+ * walked ascending, so the first qualifying position IS the smallest and the
  * `pos < best` comparison goes away with the loop that needed it.
  */
 export function findSignificantInBin(
@@ -552,12 +554,12 @@ export function findSignificantInBin(
   binEnd: number,
   threshold: number,
 ) {
-  const { sorted } = positionIndexFor(positions)
-  let k = lowerBound(sorted, binStart)
-  while (k < sorted.length && sorted[k]! < binEnd) {
-    const pos = sorted[k]!
+  const len = positions.length
+  let k = lowerBound(positions, binStart)
+  while (k < len && positions[k]! < binEnd) {
+    const pos = positions[k]!
     let n = 0
-    while (k < sorted.length && sorted[k] === pos) {
+    while (k < len && positions[k] === pos) {
       n++
       k++
     }

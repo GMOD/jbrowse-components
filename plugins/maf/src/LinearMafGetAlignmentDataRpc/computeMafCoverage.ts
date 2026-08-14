@@ -1,3 +1,5 @@
+import { positionOrder } from '@jbrowse/alignments-core'
+
 import { DASH, LOWER_BIT, N_UPPER, SPACE } from '../util/asciiBytes.ts'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -52,11 +54,28 @@ class MismatchWriter {
   // Right-sized copies, not subarray views: these are retained per region for
   // as long as the region is loaded, so a view would pin the doubling slack —
   // up to twice the live bytes — for the session.
+  //
+  // Emitted in ASCENDING POSITION ORDER, which `findSignificantInBin` and
+  // `countSnpsAtPosition` (alignments-core, shared with the alignments worker)
+  // require: they `lowerBound` this array rather than building a side index, so
+  // read-order input returns a plausible wrong answer instead of failing.
+  //
+  // Sorted rather than asserted, even though the walk above happens to emit
+  // ascending already — it pushes inside `for (col) { for (row) }`. That is a
+  // property of two nested loops in another function, and it silently stops
+  // holding if blocks ever arrive out of refStart order or the walk is
+  // restructured per row. `positionOrder` is the same sort the alignments
+  // producer uses, is O(n + span) on a dense span, and runs once per region in a
+  // worker.
   finish() {
-    return {
-      mismatchPositions: this.positions.slice(0, this.count),
-      mismatchBases: this.bases.slice(0, this.count),
+    const positions = this.positions.slice(0, this.count)
+    const bases = this.bases.slice(0, this.count)
+    const { order, sorted } = positionOrder(positions)
+    const mismatchBases = new Uint8Array(this.count)
+    for (let i = 0; i < this.count; i++) {
+      mismatchBases[i] = bases[order[i]!]!
     }
+    return { mismatchPositions: sorted, mismatchBases }
   }
 }
 

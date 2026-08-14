@@ -4,6 +4,7 @@ import {
   interbaseDepthAt,
   lowerBound,
   positionIndexFor,
+  positionOrder,
 } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_MATE_UNMAPPED,
@@ -428,22 +429,27 @@ function collectInterbaseStats(position: number, data: PileupDataResult) {
  * is about deletions only and because an intron is exactly the long span that
  * would keep the bound loose for every deletion beside it.
  *
- * Cached against `gapPositions`, which a refetch replaces wholesale — the same
- * invalidation-by-construction the shared position index uses, and the reason
- * neither needs a cache key.
+ * Built per call, with no cache. It used to be memoized in a `WeakMap` keyed on
+ * `gapPositions`, which was the wrong shape twice over: the array it actually
+ * indexes is `positions` below — allocated HERE, so the WeakMap entry was keyed
+ * on one array and holding an index over another, and it could never be hit again
+ * once that temporary was collected. What made it look like it worked is that
+ * `gapPositions` outlives the call, so the entry stayed reachable while being
+ * dead weight.
+ *
+ * The cost of dropping it is one pass over the gaps per hover, which is bounded
+ * by DELETIONS in the block rather than by mismatches — orders of magnitude
+ * smaller than the arrays the mismatch path cared about. If this ever shows up in
+ * a trace, the fix is to have the worker ship the three arrays beside the sorted
+ * gaps, not to reintroduce a side table keyed on an array it does not describe.
  */
 interface DeletionSpanIndex {
   starts: Uint32Array
   ends: Uint32Array
   maxEndSoFar: Uint32Array
 }
-const deletionSpans = new WeakMap<Uint32Array, DeletionSpanIndex>()
 
 function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
-  const hit = deletionSpans.get(gapPositions)
-  if (hit) {
-    return hit
-  }
   const n = Math.floor(gapPositions.length / 2)
   let deletions = 0
   for (let i = 0; i < n; i++) {
@@ -461,7 +467,9 @@ function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
       w++
     }
   }
-  const { order, sorted } = positionIndexFor(positions)
+  // `positionOrder`, not `positionIndexFor`: this owns `positions`, so there is
+  // nothing for a memo to be keyed on that would outlive the call.
+  const { order, sorted } = positionOrder(positions)
   const ends = new Uint32Array(deletions)
   const maxEndSoFar = new Uint32Array(deletions)
   let running = 0
@@ -473,9 +481,7 @@ function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
     }
     maxEndSoFar[k] = running
   }
-  const built = { starts: sorted, ends, maxEndSoFar }
-  deletionSpans.set(gapPositions, built)
-  return built
+  return { starts: sorted, ends, maxEndSoFar } satisfies DeletionSpanIndex
 }
 
 // Length stats for the deletions (gapTypes 0, as opposed to skips) spanning

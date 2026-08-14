@@ -1,4 +1,5 @@
-// What does a hover over the coverage band cost, scanning versus indexed?
+// What does a hover over the coverage band cost — scanning, side-indexed, or
+// sorted at the producer?
 //
 //   node --expose-gc packages/alignments-core/benches/hoverIndex.bench.ts
 //
@@ -8,67 +9,99 @@
 // The harness rules — interleave, min-of-rounds, run a control, check identity
 // before believing timing — are in `agent-docs/reference/BENCHMARKING.md`.
 //
-// THE QUESTION. The per-event arrays the worker ships arrive in READ order, so
-// every per-hover reader of them scanned the whole array to find the entries
-// under the cursor. A hover is a mousemove, and the coverage band fires two of
-// these readers per motion (`findSignificantInBin` from the hit test, then
-// `countSnpsAtPosition` from the tooltip) per block, per stacked BAM track.
+// THE QUESTION. The per-event arrays were built in READ order, so every per-hover
+// reader of them scanned the whole array to find the entries under the cursor. A
+// hover is a mousemove, and the coverage band fires two of these readers per
+// motion (`findSignificantInBin` from the hit test, then `countSnpsAtPosition`
+// from the tooltip) per block, per stacked BAM track.
 //
-// TWO COSTS, and the second is why this bench exists at all:
+// There were two candidate fixes and this bench now compares BOTH, because the
+// first one shipped and was then replaced:
 //
-//   hover  — the per-mousemove work, which is what the index removes
-//   build  — sorting the array once, which the index ADDS, on the first hover
-//            after each fetch
+//   a side index, memoized on the main thread against the array — log-time
+//   hovers, but 8 bytes an entry retained per region per track, an invalidation
+//   invariant nothing enforces, and an `order[k]` indirection per entry;
 //
-// A structure that turns a 3ms scan into a 200ms sort has made the thing worse
-// at the moment a user first touches the band. That is the number to look at
-// before the ratio, and it is why the build is a counting sort over the
-// position span rather than a comparison sort.
+//   sorting at the PRODUCER, so `mismatchPositions` arrives ascending — the same
+//   log-time hover with nothing retained, nothing to invalidate, and no
+//   indirection. This is what ships.
+//
+// THREE COSTS, and the third is the one a reader will want and not think to ask
+// for:
+//
+//   hover        the per-mousemove work, three ways
+//   index-build  the sort the INDEX added, on the main thread, on the first hover
+//                after each fetch — the stall the producer sort deletes
+//   worker-sort  the sort the PRODUCER adds: the same sort plus permuting the
+//                parallel arrays, so strictly more work than index-build. In the
+//                worker, once per fetch, off the interaction path.
+//
+// A structure that turns a 3ms scan into a 200ms sort has made the thing worse at
+// the moment a user first touches the band, which is why both one-offs are
+// reported in the same units as the hovers rather than assumed free.
 //
 // ARMS:
-//   scan-hover / index-hover   the per-hover work, both ways
-//   index-build                the one-off, reported in the same units so it
-//                              can be read against the scan it replaces
-//   control                    a second, separately-declared copy of
-//                              scan-hover. A row whose control is far from 1.00
-//                              measured nothing.
+//   scan-hover     the original: a full scan of the read-order array
+//   index-hover    the previous implementation, transcribed — read-order array
+//                  plus `positionIndexFor`
+//   sorted-hover   what ships: the shared readers over ascending arrays
+//   control        a second, separately-declared copy of scan-hover. A row whose
+//                  control is far from 1.00 measured nothing.
 //
 // SYNTHETIC FIXTURES: mismatch arrays the size a pileup ships, in read order
-// (shuffled), over a window the width of a fetched block.
+// (shuffled), over a window the width of a fetched block. The sorted arm gets the
+// same events permuted, which is what the worker now emits.
 //
 // ---------------------------------------------------------------------------
 // WHAT IT SAYS. Three samples, --rounds=25 --hovers=200, ms per 200 hovers,
-// control in brackets:
+// control in brackets, 2026-08-14.
 //
-//   longread-400k    scan  758.0  index 0.28   2670x [0.94]   build  5.7 ms
-//                    scan 2131.5  index 0.31   6889x [2.30]   build  6.4 ms
-//                    scan 1594.1  index 0.28   5646x [0.93]   build  5.8 ms
-//   shortread-40k    scan   85.8  index 0.14    621x [1.01]   build  0.8 ms
-//                    scan  100.7  index 0.17    606x [0.94]   build  1.0 ms
-//                    scan   70.8  index 0.13    563x [0.97]   build  0.7 ms
-//   deep-1m          scan 2249.9  index 0.46   4876x [0.97]   build 17.4 ms
-//                    scan 2017.2  index 0.43   4713x [0.99]   build 15.5 ms
-//                    scan 1905.9  index 0.42   4571x [1.02]   build 14.4 ms
+// **PROVISIONAL: taken ON BATTERY.** BENCHMARKING.md names coming off AC as a
+// harness trap by name, and this run shows it — longread-400k's control lands at
+// 0.60/1.83/1.44 where the same fixture used to hold ~0.94. The two fixtures whose
+// controls DID hold (0.98-1.03) are the ones quoted below and the sorted-vs-index
+// result is consistent across all three of their samples, so the conclusion is
+// safe; the absolute milliseconds are not. Re-run on AC before quoting a figure
+// from here in a commit message or a doc.
 //
-// The long-read row's SECOND sample measured nothing — control 2.30, on a box
-// that was busy — and is kept rather than dropped, because a reader comparing
-// the three would otherwise wonder why its scan arm is 2131ms where the others
-// are 758 and 1594. The other two samples of that fixture, and all three of the
-// other fixtures, hold their controls.
+//   longread-400k   scan  873.2  index 0.21  sorted 0.17  [0.60]  build 4.4  sort 8.0
+//                   scan 1732.9  index 0.25  sorted 0.18  [1.83]  build 4.9  sort 8.3
+//                   scan 1480.5  index 0.22  sorted 0.16  [1.44]  build 4.2  sort 7.8
+//   shortread-40k   scan   70.6  index 0.09  sorted 0.08  [0.99]  build 0.7  sort 0.9
+//                   scan   73.8  index 0.10  sorted 0.08  [0.99]  build 0.7  sort 0.9
+//                   scan  110.7  index 0.13  sorted 0.12  [0.98]  build 1.0  sort 1.2
+//   deep-1m         scan 1699.0  index 0.33  sorted 0.24  [1.01]  build 11.0 sort 17.0
+//                   scan 1776.3  index 0.33  sorted 0.24  [1.03]  build 11.1 sort 17.6
+//                   scan 1667.1  index 0.33  sorted 0.22  [1.00]  build  9.9 sort 15.2
 //
-// The index column is stable across every sample to two significant figures,
-// which is what a log-time answer looks like: it does not care how big the
-// array is, so the ratios vary only because the SCAN arm does.
+// **Read the deep-1m and shortread rows; longread-400k's control does not hold on
+// this box** (0.60, 1.83, 1.44 across the three) and its scan arm swings 873-1733ms
+// to match. That instability is not new — the previous version of this header
+// recorded a 2.30 control on the same fixture. The other two fixtures hold their
+// controls at 0.98-1.03 and are what the conclusions rest on.
 //
-// Per single mousemove on the deep fixture that is 11.2ms -> 0.002ms, in ONE
-// block of ONE track; the view this branch is about stacks six.
+// SORTED BEATS THE INDEX, which is the result worth stating plainly because the
+// motivation for the change was architectural rather than performance: on deep-1m
+// it is 0.24 vs 0.33 across all three samples (~1.4x), on shortread 0.08 vs 0.09
+// (~1.1x). Both are the same log-time answer; the difference is the `order[k]`
+// indirection the index needs to reach the parallel arrays and the sorted form
+// does not. So removing the memo cost nothing and returned something.
 //
-// Read the build column against the SCAN column, not against the index one: on
-// the 1M fixture the sort costs 17ms once and the scan it replaces cost 2250ms
-// over 200 hovers, so the index has paid for itself within the first two
-// pointer motions and every hover after that is free. The counting sort is what
-// makes that true — it is O(n + span) where the span is the block width, so the
-// first hover after a fetch does not stall.
+// The hover columns are stable to two significant figures across every sample
+// while the scan column swings, which is what a log-time answer looks like: it
+// does not care how big the array is, so the ratios vary only because the
+// BASELINE does.
+//
+// Per single mousemove on the deep fixture that is 8.5ms -> 0.0012ms, in ONE block
+// of ONE track; a six-track view pays it six times.
+//
+// THE ONE-OFF MOVED AND GREW, and both halves matter. `worker-sort` is 1.5-1.8x
+// `index-build` (17.0 vs 11.0ms on deep-1m) because it permutes five parallel
+// arrays where the index only built two. But `index-build` ran on the MAIN
+// THREAD, on the first mousemove after every fetch, and `worker-sort` runs in the
+// worker beside work already O(n) — so the interaction path lost an 11ms stall and
+// gained nothing. Against the scan it replaces (1699ms over 200 hovers) either is
+// paid back within two pointer motions.
 //
 // The ratios here are far larger than "one scan replaced by one binary search"
 // suggests because a hover fires BOTH readers, and the baseline's
@@ -78,6 +111,11 @@ import {
   countSnpsAtPosition,
   findSignificantInBin,
 } from '../src/coverageDownsampling.ts'
+import {
+  lowerBound,
+  positionIndexFor,
+  positionOrder,
+} from '../src/positionIndex.ts'
 
 const arg = (name: string, dflt: string) =>
   process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? dflt
@@ -189,6 +227,60 @@ const controlSignificant = (
   return best < 0 ? undefined : best
 }
 
+// THE PREVIOUS IMPLEMENTATION, transcribed: a READ-ORDER array plus the memoized
+// side index. It is an arm rather than history because it is exactly what the
+// sorted-producer path replaced, and reading the two against each other is the
+// whole question now — the scan is no longer anyone's candidate.
+const indexSnps = (
+  position: number,
+  mismatchPositions: Uint32Array,
+  mismatchBases: Uint8Array,
+  mismatchStrands: Int8Array,
+) => {
+  const snps: Record<string, { count: number; fwd: number; rev: number }> = {}
+  const { order, sorted } = positionIndexFor(mismatchPositions)
+  for (let k = lowerBound(sorted, position); k < sorted.length; k++) {
+    if (sorted[k] !== position) {
+      break
+    }
+    const i = order[k]!
+    const base = String.fromCharCode(mismatchBases[i]!)
+    snps[base] ??= { count: 0, fwd: 0, rev: 0 }
+    snps[base].count++
+    if (mismatchStrands[i] === 1) {
+      snps[base].fwd++
+    } else if (mismatchStrands[i] === -1) {
+      snps[base].rev++
+    }
+  }
+  return snps
+}
+
+const indexSignificant = (
+  positions: Uint32Array,
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+  binStart: number,
+  binEnd: number,
+  threshold: number,
+) => {
+  const { sorted } = positionIndexFor(positions)
+  let k = lowerBound(sorted, binStart)
+  while (k < sorted.length && sorted[k]! < binEnd) {
+    const pos = sorted[k]!
+    let n = 0
+    while (k < sorted.length && sorted[k] === pos) {
+      n++
+      k++
+    }
+    const depth = coverageDepths[Math.floor(pos - coverageStartPos)]
+    if (depth && n / depth > threshold) {
+      return pos
+    }
+  }
+  return undefined
+}
+
 declare const gc: (() => void) | undefined
 
 const FIXTURES = [
@@ -231,6 +323,25 @@ for (const fx of FIXTURES) {
     (_, h) => coverageStartPos + ((h * 7919) % fx.width),
   )
 
+  // What the WORKER now ships: the same events, permuted into ascending position
+  // order. The shipped readers take these; the two arms above take the read-order
+  // arrays, which is the input they were written for.
+  const permute = (src: Uint32Array) => {
+    const { order, sorted } = positionOrder(src)
+    const sBases = new Uint8Array(src.length)
+    const sStrands = new Int8Array(src.length)
+    for (let i = 0; i < src.length; i++) {
+      sBases[i] = bases[order[i]!]!
+      sStrands[i] = strands[order[i]!]!
+    }
+    return { sorted, sBases, sStrands }
+  }
+  const {
+    sorted: sortedPositions,
+    sBases: sortedBases,
+    sStrands: sortedStrands,
+  } = permute(positions)
+
   // Warm every arm the same way, then check the indexed answers match the scans
   // they replace — at every position this bench will hover.
   const fail = (msg: string) => {
@@ -246,14 +357,25 @@ for (const fx of FIXTURES) {
   for (const p of hoverAt.slice(0, 40)) {
     const want = scanSnps(p, positions, bases, strands)
     controlSnps(p, positions, bases, strands)
-    const got = countSnpsAtPosition(p, {
-      mismatchPositions: positions,
-      mismatchBases: bases,
-      mismatchStrands: strands,
+    const gotIdx = indexSnps(p, positions, bases, strands)
+    // The shipped reader, over the SORTED arrays it now requires. Handing it the
+    // read-order array is not a weaker test, it is a meaningless one — a
+    // `lowerBound` over unsorted input returns a plausible wrong answer, which
+    // is exactly why the producers sort.
+    const gotSorted = countSnpsAtPosition(p, {
+      mismatchPositions: sortedPositions,
+      mismatchBases: sortedBases,
+      mismatchStrands: sortedStrands,
     })
-    if (JSON.stringify(want) !== JSON.stringify(got)) {
+    if (JSON.stringify(want) !== JSON.stringify(gotIdx)) {
       fail(
-        `countSnpsAtPosition(${p}): ${JSON.stringify(want)} vs ${JSON.stringify(got)}`,
+        `indexSnps(${p}): ${JSON.stringify(want)} vs ${JSON.stringify(gotIdx)}`,
+      )
+      break
+    }
+    if (JSON.stringify(want) !== JSON.stringify(gotSorted)) {
+      fail(
+        `countSnpsAtPosition(${p}): ${JSON.stringify(want)} vs ${JSON.stringify(gotSorted)}`,
       )
       break
     }
@@ -266,7 +388,7 @@ for (const fx of FIXTURES) {
       0.05,
     )
     controlSignificant(positions, depths, coverageStartPos, p, p + 20, 0.05)
-    const gotSig = findSignificantInBin(
+    const gotSigIdx = indexSignificant(
       positions,
       depths,
       coverageStartPos,
@@ -274,22 +396,37 @@ for (const fx of FIXTURES) {
       p + 20,
       0.05,
     )
-    if (wantSig !== gotSig) {
-      fail(`findSignificantInBin(${p}): ${wantSig} vs ${gotSig}`)
+    const gotSigSorted = findSignificantInBin(
+      sortedPositions,
+      depths,
+      coverageStartPos,
+      p,
+      p + 20,
+      0.05,
+    )
+    if (wantSig !== gotSigIdx) {
+      fail(`indexSignificant(${p}): ${wantSig} vs ${gotSigIdx}`)
+      break
+    }
+    if (wantSig !== gotSigSorted) {
+      fail(`findSignificantInBin(${p}): ${wantSig} vs ${gotSigSorted}`)
       break
     }
   }
 
+  const ARMS = 4
   const best: Record<string, number> = {
     'scan-hover': Infinity,
     'index-hover': Infinity,
+    'sorted-hover': Infinity,
     control: Infinity,
     'index-build': Infinity,
+    'worker-sort': Infinity,
   }
   for (let r = 0; r < ROUNDS; r++) {
     gc?.()
-    for (let k = 0; k < 3; k++) {
-      const which = (r + k) % 3
+    for (let k = 0; k < ARMS; k++) {
+      const which = (r + k) % ARMS
       const t = performance.now()
       if (which === 0) {
         for (const p of hoverAt) {
@@ -298,13 +435,18 @@ for (const fx of FIXTURES) {
         }
       } else if (which === 1) {
         for (const p of hoverAt) {
+          indexSnps(p, positions, bases, strands)
+          indexSignificant(positions, depths, coverageStartPos, p, p + 20, 0.05)
+        }
+      } else if (which === 2) {
+        for (const p of hoverAt) {
           countSnpsAtPosition(p, {
-            mismatchPositions: positions,
-            mismatchBases: bases,
-            mismatchStrands: strands,
+            mismatchPositions: sortedPositions,
+            mismatchBases: sortedBases,
+            mismatchStrands: sortedStrands,
           })
           findSignificantInBin(
-            positions,
+            sortedPositions,
             depths,
             coverageStartPos,
             p,
@@ -327,21 +469,34 @@ for (const fx of FIXTURES) {
       }
       const ms = performance.now() - t
       const label =
-        which === 0 ? 'scan-hover' : which === 1 ? 'index-hover' : 'control'
+        which === 0
+          ? 'scan-hover'
+          : which === 1
+            ? 'index-hover'
+            : which === 2
+              ? 'sorted-hover'
+              : 'control'
       best[label] = Math.min(best[label]!, ms)
     }
 
-    // The one-off, on an array no one has indexed yet — which is the state
-    // every fetch leaves the main thread in.
+    // The two one-offs, each on an array nothing has touched yet.
+    //
+    // `index-build` is what the MAIN THREAD paid on the first hover after every
+    // fetch, and is the cost the sorted producer deletes. `worker-sort` is what
+    // replaced it, in the worker: the same sort plus permuting the parallel
+    // arrays, which is strictly more work than the index build and is why it is
+    // reported beside it rather than assumed free.
     gc?.()
     const cold = makePositions()
-    const t = performance.now()
-    countSnpsAtPosition(hoverAt[0]!, {
-      mismatchPositions: cold,
-      mismatchBases: bases,
-      mismatchStrands: strands,
-    })
+    let t = performance.now()
+    indexSnps(hoverAt[0]!, cold, bases, strands)
     best['index-build'] = Math.min(best['index-build']!, performance.now() - t)
+
+    gc?.()
+    const cold2 = makePositions()
+    t = performance.now()
+    permute(cold2)
+    best['worker-sort'] = Math.min(best['worker-sort']!, performance.now() - t)
   }
 
   console.log(`\n${fx.name}: ${fx.mismatches} mismatches over ${fx.width} bp`)
@@ -352,8 +507,12 @@ for (const fx of FIXTURES) {
   }
   row('scan-hover')
   row('index-hover')
+  row('sorted-hover')
   row('control')
   console.log(
-    `  ${'index-build'.padEnd(13)} ${best['index-build']!.toFixed(2).padStart(8)} ms  (once per fetch)`,
+    `  ${'index-build'.padEnd(13)} ${best['index-build']!.toFixed(2).padStart(8)} ms  (was: main thread, first hover after each fetch)`,
+  )
+  console.log(
+    `  ${'worker-sort'.padEnd(13)} ${best['worker-sort']!.toFixed(2).padStart(8)} ms  (now: worker, once per fetch)`,
   )
 }

@@ -3,34 +3,49 @@
  * of by scanning the array.
  *
  * The flat per-event arrays the worker ships — `mismatchPositions`,
- * `interbasePositions`, `gapPositions` — arrive in READ order, because that is
- * the order the reads were walked in. Every per-hover reader of them therefore
- * scanned the whole array to find the handful of entries under the cursor, and
- * a hover is a mousemove: `hitTestCoverage` -> `findSignificantInBin`, then
- * `getCoverageBin` -> `countSnpsAtPosition`, then the deletion and interbase
- * tallies, four full scans per pointer motion per block — times however many
- * BAM tracks are stacked in the view. On the six-track pan profile those arrays
- * hold hundreds of thousands of entries each.
+ * `interbasePositions`, `gapPositions` — were all built in READ order, because
+ * that is the order the reads are walked in. Every per-hover reader of them
+ * therefore scanned the whole array to find the handful of entries under the
+ * cursor, and a hover is a mousemove: `hitTestCoverage` -> `findSignificantInBin`,
+ * then `getCoverageBin` -> `countSnpsAtPosition`, then the deletion and interbase
+ * tallies, four full scans per pointer motion per block — times however many BAM
+ * tracks are stacked in the view. On the six-track pan profile those arrays hold
+ * hundreds of thousands of entries each.
  *
- * ## Cached against the array, not against a result object
+ * ## Prefer sorting at the PRODUCER; this memo is the fallback
  *
- * The index is memoized in a `WeakMap` keyed by the positions array ITSELF.
- * That is what makes this a drop-in: no consumer passes an index, plumbs a
- * cache or decides when to invalidate, and both the alignments and MAF readers
- * get it by calling the same functions they already called.
+ * Where the producer can emit ascending positions, it should, and then no index
+ * exists to cache: the reader `lowerBound`s the shipped array and reads the
+ * parallel arrays at the same subscript. `buildMismatchArrays` does exactly that
+ * via `positionOrder` below, so the two hottest readers — the ones quoted above —
+ * hold nothing. That is strictly better than what this file offers: no retained
+ * bytes, no lifetime question, no invalidation invariant, and one less
+ * indirection per entry on the mousemove.
  *
- * It is also exactly the right invalidation. A refetch replaces the array
- * wholesale — the worker allocates fresh transferables per reply and the old
- * one is detached — so a stale index cannot be reached by anything, and the
- * WeakMap holds nothing once the data is dropped. (`computeVisibleLabels` keys
- * its own cache on the RPC result object for the same reason. One level down is
- * better here, because MAF hands these functions bare arrays with no result
- * object to key on.)
+ * **`interbasePositions` is the case that cannot follow**, and the reason is a
+ * competing contract rather than effort: it is deliberately grouped as
+ * (insertions, softclips, hardclips) with `numInsertions` / `numSoftclips` /
+ * `numHardclips` so three GPU passes can slice subranges without re-scanning
+ * `interbaseTypes` (`insertion/packGpu.ts`, `shared/clipPass.ts`,
+ * `shared/uploadTypes.ts`). Sorting it by position breaks all three. Its two
+ * per-hover readers — `countInterbaseAtPosition` and `collectInterbaseStats` —
+ * are what keeps the memo below alive; see TODO.md for the shipped-order-array
+ * alternative that would retire it.
  *
- * It costs 8 bytes per entry, retained for as long as the array it indexes is,
- * and only from the first hover — a cold render builds none. That is against a
- * mismatch array which is already 12 bytes an entry across its own parallel
- * arrays, so the index is a fraction of what it makes usable.
+ * ## What the memo costs, when it is used
+ *
+ * 8 bytes per entry — measured exactly, `benches/hoverIndexMemory.bench.ts` —
+ * retained for as long as the array it indexes, and only from the first hover, so
+ * a cold render builds none. Read that as the absolute rather than the ratio:
+ * 7.6 MB per 1M-entry array, per region, per stacked track. It is 2.00x the
+ * positions array it indexes and 0.57x the whole parallel set it makes usable.
+ *
+ * The invalidation is by construction, and that is the part to be suspicious of:
+ * a refetch replaces the array wholesale — the worker allocates fresh
+ * transferables per reply and the old one is detached — so a stale index cannot be
+ * reached. **Nothing enforces that.** Anything that mutated a positions array in
+ * place would get a silently stale index, which is why the rule is to sort at the
+ * producer wherever a producer exists.
  *
  * ## Building it
  *
@@ -122,6 +137,20 @@ export function positionIndexFor(positions: Uint32Array, stride = 1) {
   const built = buildPositionIndex(positions, stride)
   cache.set(positions, built)
   return built
+}
+
+/**
+ * The sort with NO cache attached — `{ order, sorted }` computed and handed back.
+ *
+ * This is the primitive a PRODUCER wants: `buildMismatchArrays` calls it to emit
+ * its parallel arrays in ascending position order, which is what lets the hover
+ * readers `lowerBound` the shipped array and keep no index at all. Prefer it to
+ * `positionIndexFor` anywhere the caller owns the output, and note that the
+ * sparse fallback above is the reason to share this rather than write a counting
+ * sort at the call site.
+ */
+export function positionOrder(positions: Uint32Array, stride = 1) {
+  return buildPositionIndex(positions, stride)
 }
 
 function buildPositionIndex(
