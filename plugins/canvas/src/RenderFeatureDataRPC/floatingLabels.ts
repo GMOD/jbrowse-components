@@ -71,12 +71,19 @@ export function createTranscriptFloatingLabel({
 
   return {
     subfeatureLabel: {
-      text: truncatedName,
-      relativeY,
+      // Through `labelItem` like every other label, so the "textWidth is always
+      // the measured width of `text` at LABEL_FONT_SIZE" invariant above is one
+      // constructor rather than a claim this one also happened to honor. It was
+      // spelled out here, `measureText` and all — the only thing it adds is
+      // `isOverlay`, which is why it reads as a spread now.
+      //
       // overlay labels sit on a light backing rect, so keep them dark; inline
       // ones read against the track and follow the theme text color
-      color: isOverlay ? palette.common.black : palette.text.primary,
-      textWidth: measureText(truncatedName, LABEL_FONT_SIZE),
+      ...labelItem(
+        truncatedName,
+        isOverlay ? palette.common.black : palette.text.primary,
+        relativeY,
+      ),
       isOverlay,
     },
     parentFeatureId,
