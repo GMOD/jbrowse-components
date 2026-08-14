@@ -84,7 +84,7 @@ const PREFIXES: [string, string][] = [
   // the desktop updater's release-page base, built up with a version
   ['https://github.com/GMOD/jbrowse-components/releases/tag/v', '3.0.0'],
   ['https://jbrowse.org/demos/tcga', '/tcga_brca_clinical.tsv'],
-  ['https://jbrowse.org/demos/popgen', '/lct_1kg_chr2_6pop.vcf.gz'],
+  ['https://jbrowse.org/demos/popgen', '/lct_1kg38_chr2_6pop.vcf.gz'],
   ['https://jbrowse.org/demos/gwas', '/plink.ld.tab.gz'],
   ['https://jbrowse.org/demos/scrna_pbmc5k', '/percell.zarr/zarr.json'],
   ['https://jbrowse.org/genomes/potato/', 'config.json'],
