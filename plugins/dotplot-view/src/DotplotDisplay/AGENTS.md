@@ -49,12 +49,14 @@
   because the two axes are independently scaled. Nothing calls into a rendering
   backend, so hover survives the Canvas2D fallback and a lost GPU context.
 - **Hover shading is `hoveredFeatureHighlight` + `DotplotHoverHighlight`, not a
-  shader uniform.** Restroking the one hovered feature over the canvas covers
-  the GPU path, the Canvas2D fallback and the SVG export at once. Synteny's
-  uniform route would cost an instance lane, a uniform, a hand-written Canvas2D
-  twin of `fillShade`/`hoverDarken` (which is not importable across plugins
-  anyway, and whose fragment output is straight alpha where dotplot's is
-  premultiplied), and a broken color run in `drawDotplotInstances`' batcher.
+  shader uniform.** Restroking the one hovered feature over the canvas is
+  backend-agnostic by construction — it never asks which backend painted — where
+  synteny's uniform route costs an instance lane, a uniform, a hand-written
+  Canvas2D twin of `fillShade`/`hoverDarken` (not importable across plugins
+  anyway, and its fragment output is straight alpha where dotplot's is
+  premultiplied), and a broken color run in `drawDotplotInstances`' batcher. It
+  is on-screen only: `renderSvg` doesn't draw it, since an off-screen export has
+  no pointer.
 - **A display getter that reads `this.view` needs an explicit return type.**
   Every one of them has one, and an inferred one collapses the view/display
   mutual reference — TS7023 on the factory, TS2310 on `DotplotDisplayModel`,

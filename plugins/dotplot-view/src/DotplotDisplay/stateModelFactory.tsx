@@ -212,9 +212,11 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * a `hoveredFeatureId` uniform, which costs an instance lane, a uniform, a
        * hand-written Canvas2D twin of the same arithmetic, and a broken color
        * run in `drawDotplotInstances`' batcher. Restroking one feature — a
-       * handful of segments — over the shared canvas gets the same cue on the
-       * GPU path, the Canvas2D fallback and the SVG export at once, and needs
-       * none of that.
+       * handful of segments — over the shared canvas needs none of that, and is
+       * backend-agnostic by construction: it draws the same over the GPU canvas
+       * and the Canvas2D fallback because it never asks which one painted.
+       * `renderSvg` deliberately does not draw it — an off-screen export has no
+       * pointer, and a transient hover has no business in a figure.
        *
        * The cue is opacity + width, not hue: the plot's own `alpha` slider
        * routinely sits at 0.2, so restroking opaque and a few px wider is
