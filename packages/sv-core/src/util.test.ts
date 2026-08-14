@@ -4,6 +4,7 @@ import {
   getBreakendCoveringRegions,
   getBreakendMateLocString,
   hasBreakpointSplitView,
+  parseSvAlt,
   safeParseBreakend,
   splitRegionAtPosition,
 } from './util.ts'
@@ -124,6 +125,48 @@ describe('getBreakendMateLocString', () => {
   test('a plain allele is not a breakend', () => {
     expect(locStringOf('A')).toBeUndefined()
     expect(locStringOf('<DEL>')).toBeUndefined()
+  })
+})
+
+describe('parseSvAlt tick directions', () => {
+  // The four bracket forms of VCF 4.3 s5.4, for a record at 13:123456 REF C
+  // with mate 2:321682, written out rather than remembered: the ALT's shape
+  // says which side of each breakpoint the derivative KEEPS, and both
+  // directions are that side (1 = right, -1 = left). The ref base's position in
+  // the ALT gives this end -- leading C means the piece is joined after it, so
+  // this end keeps its left -- and the bracket gives the mate's, `[` right and
+  // `]` left.
+  const forms = [
+    { alt: 'C[2:321682[', joinDirection: -1, mateDirection: 1 },
+    { alt: 'C]2:321682]', joinDirection: -1, mateDirection: -1 },
+    { alt: ']2:321682]C', joinDirection: 1, mateDirection: -1 },
+    { alt: '[2:321682[C', joinDirection: 1, mateDirection: 1 },
+  ]
+
+  test.each(forms)('$alt', ({ alt, joinDirection, mateDirection }) => {
+    const feature = createMockFeature({
+      ALT: [alt],
+      start: 123455,
+      refName: '13',
+    })
+    expect(parseSvAlt(feature as any, alt)).toEqual({
+      mateRefName: '2',
+      matePos: 321682,
+      joinDirection,
+      mateDirection,
+    })
+  })
+
+  test('a symbolic allele states no direction', () => {
+    const feature = createMockFeature({
+      ALT: ['<DEL>'],
+      start: 100,
+      refName: 'chr1',
+      INFO: { END: [200] },
+    })
+    const parsed = parseSvAlt(feature as any, '<DEL>')
+    expect(parsed?.joinDirection).toBeUndefined()
+    expect(parsed?.mateDirection).toBeUndefined()
   })
 })
 

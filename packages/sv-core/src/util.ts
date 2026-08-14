@@ -60,8 +60,12 @@ export function parseSvAlt(
   | {
       mateRefName: string
       matePos: number // VCF 1-based coordinate
-      mateDirection?: number // for BND arrow rendering: 1=left, -1=right
-      joinDirection?: number // for BND arrow rendering: -1=left, 1=right
+      // Which way the sequence each end KEEPS runs from its breakpoint, as a
+      // tick direction (1 = right, -1 = left) — the same convention
+      // StarFusionAdapter's `tickDirection` states, since the paired-arc
+      // display draws both through one `mateDirection` field.
+      mateDirection?: number
+      joinDirection?: number
     }
   | undefined {
   const bnd = alt !== undefined ? safeParseBreakend(alt) : undefined
@@ -90,11 +94,16 @@ export function parseSvAlt(
     ) {
       return undefined
     }
+    // `Join: 'right'` means the mate piece is joined to the RIGHT of the ref
+    // base, so this end is the one that keeps the sequence to its left; the
+    // bracket direction says the same thing about the mate. Both are therefore
+    // the negation of the string they read, which is what these two used to
+    // return.
     return {
       mateRefName,
       matePos: +matePosStr,
-      mateDirection: bnd.MateDirection === 'left' ? 1 : -1,
-      joinDirection: bnd.Join === 'left' ? -1 : 1,
+      mateDirection: bnd.MateDirection === 'left' ? -1 : 1,
+      joinDirection: bnd.Join === 'left' ? 1 : -1,
     }
   }
   return undefined
