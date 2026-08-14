@@ -319,6 +319,11 @@ describe('real grape/peach/cacao blocks (chr1 subset)', () => {
     expect(fa.length).toBe(1045)
   })
 
+  // The transitive pair is where a reference-anchored table repeats a link: the
+  // two direct pairs are one row per grape gene and have no duplicate at all,
+  // while several grape genes anchoring the same peach gene to the same cacao
+  // gene name that peach/cacao link once each. 968 rows in the file join to 847
+  // distinct links here, one of them written nine times.
   test('peach vs cacao (transitive through grape)', async () => {
     const fa = await realFeats(['peach', 'cacao'], {
       refName: 'G1',
@@ -326,7 +331,14 @@ describe('real grape/peach/cacao blocks (chr1 subset)', () => {
       end: 100_000_000,
       assemblyName: 'peach',
     })
-    expect(fa.length).toBe(924)
+    expect(fa.length).toBe(804)
+    expect(
+      new Set(
+        fa.map(
+          f => `${f.get('name')}\t${(f.get('mate') as { name: string }).name}`,
+        ),
+      ).size,
+    ).toBe(804)
     expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'cacao' })
   })
 })
@@ -393,6 +405,80 @@ describe('attributeColumns', () => {
       assemblyName: 'grape',
     })
     expect(plain[0]!.get('identity')).toBeUndefined()
+  })
+})
+
+// An orthogroup table expands a duplicated gene into one row per copy, so a
+// column holding one gene repeats it once per copy beside it. That is right for
+// the duplicated pair and redundant for every other pair on the row, which gets
+// the identical two genes again. orthogroups_expand.blocks is one such
+// orthogroup (one grape gene, two peach copies, one cacao gene) plus an ordinary
+// single-copy one.
+describe('a duplicated gene expanded across rows', () => {
+  const expandFeats = (
+    assemblyNames: string[],
+    region: Record<string, unknown>,
+  ) =>
+    firstValueFrom(
+      new Adapter(
+        configSchema.create({
+          mcscanBlocksLocation: bed('orthogroups_expand.blocks'),
+          blockAssemblies: ['grape', 'peach', 'cacao'],
+          bedLocations: [bed('grape.bed'), bed('peach.bed'), bed('cacao.bed')],
+          assemblyNames,
+        }),
+      )
+        .getFeatures(region as never)
+        .pipe(toArray()),
+    )
+  const grapeRegion = {
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+    assemblyName: 'grape',
+  }
+
+  // the pair the expansion is about: two peach copies, two ribbons
+  test('the duplicated pair draws a ribbon per copy', async () => {
+    const fa = await expandFeats(['grape', 'peach'], grapeRegion)
+    expect(
+      fa.map(f => [f.get('name'), (f.get('mate') as { name: string }).name]),
+    ).toEqual([
+      ['g1', 'p1'],
+      ['g1', 'p2'],
+      ['g4', 'p4'],
+    ])
+  })
+
+  // and the pair that is not: g1/c1 is named on both rows, and the second is the
+  // same ribbon at the same coordinates. Alpha is per link, so drawing it twice
+  // darkens the band instead of showing anything.
+  test('a pair repeated by another column draws once', async () => {
+    const fa = await expandFeats(['grape', 'cacao'], grapeRegion)
+    expect(
+      fa.map(f => [f.get('name'), (f.get('mate') as { name: string }).name]),
+    ).toEqual([
+      ['g1', 'c1'],
+      ['g4', 'c4'],
+    ])
+  })
+
+  // the dedupe is per pair, not per row: the peach/cacao band still gets both
+  // copies, since p1/c1 and p2/c1 are different links
+  test('the dedupe is per column pair, not a dropped row', async () => {
+    const fa = await expandFeats(['peach', 'cacao'], {
+      refName: 'Pp1',
+      start: 0,
+      end: 2000,
+      assemblyName: 'peach',
+    })
+    expect(
+      fa.map(f => [f.get('name'), (f.get('mate') as { name: string }).name]),
+    ).toEqual([
+      ['p1', 'c1'],
+      ['p2', 'c1'],
+      ['p4', 'c4'],
+    ])
   })
 })
 

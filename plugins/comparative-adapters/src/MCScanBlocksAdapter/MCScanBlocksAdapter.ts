@@ -264,6 +264,26 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
   // built once per ordered pair and held on the shared setup. The join depends
   // on nothing but the file, so it is the same answer for every region and every
   // band that asks for that pair.
+  //
+  // One gene pair contributes one row, however many times the file names it. A
+  // repeat is the same two genes at the same two coordinates, so it draws the
+  // identical ribbon on top of itself, and alpha is a per-link constant — the
+  // band reads darker rather than showing more. An N-genome orthogroup table is
+  // full of them by construction: `orthogroups_to_blocks.py --pick expand` gives
+  // an orthogroup as many rows as its largest cell, so a single-copy column
+  // repeats its gene once per copy in the duplicated column beside it, and every
+  // pair NOT touching that duplication is written again. On the hosted wheat set
+  // that is 55% of the tauschii/urartu rows (two diploids, multiplied out by
+  // bread wheat's three homoeologs) against 3% on the donor-to-hexaploid bands
+  // the duplication is actually about — so the overplot was heaviest exactly
+  // where the picture is not.
+  //
+  // It cannot be fixed where the table is written: dropping the single-copy gene
+  // from the later rows would leave the duplicated column's second copy with
+  // nothing to link to. The first row wins, and with it whatever
+  // `attributeColumns` it carried — those describe the row, and the config
+  // schema already says only a value describing the whole orthogroup belongs on
+  // an N-genome table.
   private pairRows(
     colA: number,
     colB: number,
@@ -277,6 +297,7 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
     const key = `${colA}-${colB}`
     let rows = pairRows.get(key)
     if (!rows) {
+      const seen = new Set<string>()
       rows = blockLines
         .map((cols, rowNum): BlockRow | undefined => {
           const pair = joinBedPair(
@@ -285,14 +306,20 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
             cols[colA],
             cols[colB],
           )
-          return pair === undefined
-            ? undefined
-            : {
-                ...pair,
-                rowNum,
-                strand: pair.a.strand * pair.b.strand,
-                attrs: rowAttrs?.[rowNum],
-              }
+          if (pair === undefined) {
+            return undefined
+          }
+          const link = `${cols[colA]}\t${cols[colB]}`
+          if (seen.has(link)) {
+            return undefined
+          }
+          seen.add(link)
+          return {
+            ...pair,
+            rowNum,
+            strand: pair.a.strand * pair.b.strand,
+            attrs: rowAttrs?.[rowNum],
+          }
         })
         .filter(f => f !== undefined)
       pairRows.set(key, rows)
