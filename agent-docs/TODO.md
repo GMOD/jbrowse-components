@@ -31,7 +31,7 @@ before anyone noticed.
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
-| [Share one position array across a combined mod code](#share-one-position-array-across-a-combined-modification-codes-types) | alignments, perf | 2.21x measured; synthesize the `C+mh` tag, no fixture has one |
+| [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Audit the wiggle colour paths for the same split](#audit-the-wiggle-colour-paths-for-the-same-split) | wiggle | read `sourcesLogic.ts` against its legend |
 | [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
@@ -70,29 +70,30 @@ before anyone noticed.
 
 ## Ready to build: small and self-contained
 
-### Share one position array across a combined modification code's types
+### Group the methylation path's CIGAR walk, the way the marks path now is
 
-`getModPositions` keeps the delta walk inside `processType`, which runs once per
-character of a multi-char lowercase type string — so `C+mh` (ONT's 5mCG_5hmCG,
-the standard output of anything calling hydroxymethyl) walks the read sequence
-twice and allocates two identical position arrays, differing only in
-`probStart`. Hoist the walk to the group and share the array.
+`getModPositions` shares one positions array across the types of an MM group, and
+`forEachMaxProbMod` groups the entries holding it by identity so a `C+mh` read
+walks the CIGAR once instead of once per type. **`forEachModRefPos` is the third
+walk and still per entry** — same duplication, one layer over in the
+fill-unmarked methylation path (it is what `getMethBins` drives). A CIGAR walk is
+O(read length), so on a 50 kb read a combined code pays ~50k iterations twice for
+offsets the first pass already visited.
 
-Measured 2026-08-14, interleaved, min of 20 rounds, 285 MM reads of
-`200x.longread.mod.bam`: `C+mh` **174.86 -> 79.27 ms, 2.21x**, control 1.000,
-output identical. Single-type `C+m` is 1.18x (that residual is the per-group
-closure, not the walk). The shape is the argument — shipped nearly doubles when
-a second type joins the same tag while the hoisted form stays flat.
+Two things make this not a copy of the fix that landed:
 
-**No fixture in either repo carries a combined code**, so this is invisible to
-every benchmark unless the tag is synthesized: rewrite `C+m?,` to `C+mh?,` on
-the existing reads, which leaves every position unchanged.
-
-Take `forEachMaxProbMod` with it — it walks the CIGAR once per mod entry, and a
-combined code's entries carry identical positions, so sharing the array by
-identity is what makes grouping those walks possible.
-[handoffs/multi-track-interaction-cost.md](handoffs/multi-track-interaction-cost.md)
-has the rest of that thread.
+- **The callback order changes**, from "all of type m, then all of type h" to
+  "both types at each position, ascending". `getMethBins` is order-independent —
+  it writes `methBins[ref]` and `hydroxyMethBins[ref]`, disjoint arrays keyed on
+  position — but `forEachModRefPos` is **exported from
+  `@jbrowse/modifications-utils`**, so an external consumer accumulating
+  sequentially per type would break. Decide whether that export is a contract
+  before reordering it, or give the grouped walk its own entry point.
+- **It is unmeasured.** `modCombinedCode.bench.ts` prices the marks path; nothing
+  prices this one, and the mode is off by default (fill-unmarked). Extend that
+  bench with a `getMethBins` arm rather than reasoning from the other number — the
+  emit work per position is genuinely different here, since both channels are
+  kept rather than only the winner.
 
 ### Grey out the genomic-coordinate option instead of hiding it
 

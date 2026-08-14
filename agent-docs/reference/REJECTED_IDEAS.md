@@ -249,6 +249,22 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   columns pay doubling copies and an intern lookup per push. Same bench, kept as
   an arm. Don't re-propose it without a fixture where the marks outlive the
   fetch.
+- **Memoizing `computeVisibleCoverageStats` to make the 500 ms coarse tick
+  cheaper** — declined 2026-08-14 by reading what it costs rather than by
+  measuring a variant, which is the cheaper order here. The tick was the right
+  suspect: it is where the over-budget frames of a six-track pan land, confirmed
+  in [INTERACTION_PERF.md](INTERACTION_PERF.md). But the function is a tight
+  typed-array loop over the visible bp span — ~19k entries per track at the
+  benchmark locus, tens of microseconds — so skipping the work has nothing to
+  save, at any track count. What the tick costs is the invalidation it publishes:
+  `coverageStats` -> `coverageDomain` -> `coverageDepthDomain` ->
+  `renderState`, which is a full canvas repaint per open track, and it happens
+  even when every value is unchanged because each step builds a fresh object.
+  A **value-equality** memo would stop that chain and is a different change; it is
+  still open, gated on a count that is named in the same section. The
+  generalisation: before memoizing a getter on a hot tick, ask whether the cost is
+  the computation or the invalidation, because the two want opposite fixes — one
+  caches the result, the other has to keep the previous result's identity.
 - **The Slang-generated `getInstance<Field>` / `setInstance<Field>` accessors in
   per-instance loops** — emitted, adopted across every coverage-band packer and
   Canvas2D draw loop, measured, and reverted to inline indexing against the
