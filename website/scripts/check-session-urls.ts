@@ -1,7 +1,7 @@
 // Every ```json session fence carrying `config=<url>` gets a live link, and
 // this asserts the link opens something: that the config it names is one this
-// repo publishes, and that every trackId and assembly the session asks for
-// exists in it.
+// repo publishes AND tracks, that every trackId and assembly the session asks
+// for exists in it, and that the session opens at least one track.
 //
 // The failure this exists for is silent by design. A session naming a track
 // that is not in the config's `tracks` array opens WITHOUT it — no error, no
@@ -22,12 +22,19 @@
 //     code/jb2/main/ on every commit to main. Always this repo's. This is what
 //     the figure specs' own live links use.
 //
-// Whether the deploy actually happened is `pnpm check-live-configs --network` —
-// but only incidentally, because that one iterates the FIGURE specs' configs
-// rather than the docs'. A fence's config is covered there only while some spec
-// happens to name the same file. All three currently do; nothing keeps that so.
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+// Tracked-in-git is asked here, per fence (isTracked below), so the half of
+// "is it published" that is decidable offline is covered by construction.
+//
+// The other half — did the deploy actually happen — is `pnpm check-live-configs
+// --network`, and only incidentally, because that one iterates the FIGURE
+// specs' configs rather than the docs'. A fence's config is covered there while
+// some spec happens to name the same file; all three currently do, and nothing
+// keeps that so. It matters for the demos/ form and barely at all for
+// test_data/: one is a manual push to an unversioned bucket, the other follows
+// from being tracked. Nothing runs --network on a schedule.
+import { execFileSync } from 'node:child_process'
+import { readFileSync, realpathSync } from 'node:fs'
+import { join, relative as relativePath } from 'node:path'
 
 import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
@@ -69,6 +76,24 @@ function repoConfigPath(url: string) {
 // src/lib/code-base.ts) instead of pinning every reader to one build.
 function codeBaseRelative(url: string) {
   return /^https?:\/\/[^/]+\/code\/jb2\/[^/]+\/(test_data\/.+)$/.exec(url)?.[1]
+}
+
+// On disk is not the same question as published, and the gap is a real one that
+// has already bitten: test_data/graphgenomeview/*_local.json is a local plugin
+// build and gitignored, so it reads fine here and is served by nothing. Reading
+// the file proves the trackIds; only git proves a reader can load it. This is
+// the same test check-live-configs applies to the figure specs' configs, which
+// covers a fence's config only when some spec happens to name the same file.
+function isTracked(path: string) {
+  try {
+    execFileSync('git', ['ls-files', '--error-unmatch', '--', path], {
+      cwd: repoRoot,
+      stdio: 'ignore',
+    })
+    return true
+  } catch {
+    return false
+  }
 }
 
 interface DemoConfig {
@@ -119,6 +144,19 @@ for (const file of docFiles(docsDir)) {
       )
       return
     }
+    // realpath first: products/jbrowse-web/test_data is itself a symlink to the
+    // repo-root test_data/, and git tracks the LINK, so ls-files on a path
+    // through it matches nothing and every test_data config would read as
+    // untracked. Safe here because the read above proved the file exists.
+    if (!isTracked(relativePath(repoRoot, realpathSync(path)))) {
+      problems.push(
+        `  ${where}`,
+        `    → config=${configUrl} → ${path.slice(repoRoot.length + 1)} is not`,
+        `      tracked in git, so it exists in this checkout and on no server.`,
+        `      The link would 404 for every reader.\n`,
+      )
+      return
+    }
     let session: unknown
     try {
       session = defaultSessionObject(JSON.parse(node.value))
@@ -131,6 +169,20 @@ for (const file of docFiles(docsDir)) {
     }
     checked++
     const { trackIds, assemblies } = namesInSession(session)
+    // The names resolving is not the same as the link being worth following. A
+    // session that opens no tracks resolves perfectly and lands the reader on an
+    // empty browser, which is the "concludes the feature is broken rather than
+    // the doc" case above arriving by the other road. Nothing about the config
+    // can catch it, so it is checked against the session itself.
+    if (trackIds.length === 0) {
+      problems.push(
+        `  ${where}`,
+        `    → the session opens no tracks, so its live link would land the`,
+        `      reader on an empty view. Name the tracks it should open, or drop`,
+        `      \`config=\` and keep the Config/CLI tabs.\n`,
+      )
+      return
+    }
     const haveTracks = new Set(
       (config.tracks ?? []).map(t => t.trackId).filter(id => id !== undefined),
     )
@@ -160,5 +212,5 @@ if (problems.length) {
 }
 reportProblems(
   problems,
-  `All ${checked} session live link(s) name a config this repo publishes, with every track and assembly in it.`,
+  `All ${checked} session live link(s) open a tracked config this repo publishes, with every track and assembly they name in it.`,
 )

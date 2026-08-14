@@ -144,13 +144,19 @@ removing the skip.
   worth gating, since JBrowse opens such a session without the track and says
   nothing.
 
-  **The check passing is not the reason to add the link; what the session shows
-  is.** It only asks whether the names resolve, so a session naming _nothing_
-  sails through: the `colorByCDS` fence in `config_guides/default_session.md`
-  opens a volvox view with no tracks, and `test_data/volvox/config.json` backs
-  it. That one stays link-less on purpose — a live link onto an empty browser is
-  the "reader concludes the feature is broken" case the tab exists to avoid, and
-  it is the one case nothing can gate.
+  Two further things it refuses, both of which resolve their names perfectly and
+  would still hand the reader a broken page:
+
+  - **a config the checkout has but git does not track.** On disk is not
+    published — `test_data/graphgenomeview/*_local.json` is a local plugin build
+    and is served by nothing.
+  - **a session that opens no tracks**, whose link lands on an empty browser.
+    This is why the `colorByCDS` fence in `config_guides/default_session.md` has
+    no `config=`: `test_data/volvox/config.json` would back its assembly, and
+    the view would still show nothing.
+
+  So the question to ask of a `config=` is what the session _shows_, not whether
+  the check accepts it.
 
 - **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`.
 - **`user_guides/` drives the UI, `config_guides/` shows the JSON.** When a
