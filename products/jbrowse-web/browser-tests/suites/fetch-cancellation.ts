@@ -36,11 +36,13 @@ import type { CDPSession, HTTPRequest, Page } from 'puppeteer'
 //     used to be masked by AUTO_FORCE_LOAD_BP turning the byte axis off below
 //     20kb; the axis has no floor any more, since it measures at the span it
 //     judges rather than assuming a small span is a small fetch
-//     (REGION_TOO_LARGE.md). Zooming in is not the way out — it would cross the
-//     bp/px threshold above. The other three drivers of this fixture
-//     (cancel-bench, profile-ultradeep, profile-retained) want the fetch for the
-//     same reason, which is why the opt-in belongs in the config rather than
-//     here.
+//     (REGION_TOO_LARGE.md). Zooming in is not the way out, though it is what
+//     the banner advises: a smaller window is a smaller read, and a read these
+//     tests can still catch in flight 2.5s into a throttled download is the
+//     whole point of picking a ~2000x file. The other three drivers of this
+//     fixture (cancel-bench, profile-ultradeep, profile-retained) want the fetch
+//     for the same reason, which is why the opt-in belongs in the config rather
+//     than here.
 
 const ULTRADEEP = 'extra_test_data/volvox-ultradeep.json'
 const BOOT_LOC = 'ctgA:1000-5000'
