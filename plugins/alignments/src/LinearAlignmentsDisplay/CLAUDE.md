@@ -258,6 +258,36 @@ disagree in the under-reserving direction paint arcs over the pileup. Junction
 identity is `junctionKey` — refName included, because two chromosomes in view
 share nothing but a bp number line.
 
+**Two producers feed those sub-bands, and only one of them may go down.**
+`computeSashimiArcs` draws splice junctions (the coverage pipeline's `skip`
+gaps); `computeSplitJunctionArcs` draws split-read junctions coalesced from the
+reads' own SA segments. Both emit `SashimiArc` and share `arcGeometry.ts`, so
+the overlay, the SVG export, the label pass, the tooltip and the selection key
+handle them without knowing which produced what — the two differ in what they
+know about a junction, not in how it is drawn.
+
+The split source is pinned to `'up'` for the reason above: the down strip exists
+only where `sashimiDownKeysByGroup` reserved it, and that decision is made from
+`sashimiX1`/`sashimiX2` alone. Offering these arcs a placement is therefore a
+LAYOUT change (teach the reservation about a second junction set), not a
+geometry one, and getting it wrong under-reserves — which paints over the
+pileup. `sashimiArcsMode` accordingly governs the splice arcs alone, and the
+menu only offers it when they are on.
+
+**The merged array is re-sorted where the two are concatenated.** Each producer
+emits ascending by score, and two sorted arrays laid end to end are not one; the
+band draws them as one, and that order is both paint order and hover priority
+(`sortArcsByScore`).
+
+**Only a split junction can have two refNames**, which is why `SashimiArc`
+carries `endRefName` and every consumer tests `refName !== endRefName` rather
+than spelling a same-chromosome default. A skip gap is one CIGAR op inside one
+alignment, so a splice arc's two ends are on one contig by construction. The
+consequences are all in what a cross-contig arc must NOT claim: no length in the
+tooltip, no `start`/`end` range on the detail widget (two coordinates on
+different number lines are not a range), and no genomic span to scale its height
+from — `arcHeightFraction` takes `undefined` there and draws at the ceiling.
+
 **A band's height MINUS its reserved margin is floored at 0**, because
 `clampBandHeight` holds the drag handle and not the slot or the snapshot, so the
 subtraction goes negative (`arcAvailH`, sashimi's `effectiveHeight`, the
