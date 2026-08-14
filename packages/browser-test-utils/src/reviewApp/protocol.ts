@@ -11,6 +11,12 @@ import type { PressStatus, ReviewEntry, WriteResult } from './types.ts'
 // second copy of it is a second place for it to drift. It has had one: the same
 // note-loss bug was once fixed in both review pages in one commit, twice.
 
+// What to put in front of a reviewer when a fetch or a write throws: a dropped
+// connection arrives as an Error, a rejected promise from anywhere else can be
+// anything at all, and neither is worth a second copy of this in every caller.
+export const errorText = (err: unknown) =>
+  err instanceof Error ? err.message : String(err)
+
 // What this tab had in hand, sent with every write so the server can reject one
 // composed against state that has since moved. null means "there was none",
 // which is a precondition worth stating too: it catches a tab that would

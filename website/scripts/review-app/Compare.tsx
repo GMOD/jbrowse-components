@@ -41,6 +41,8 @@ interface Dim {
 
 const dimText = (d: Dim) => `${d.w}×${d.h}`
 
+const sameDim = (a: Dim, b: Dim) => a.w === b.w && a.h === b.h
+
 const toDim = (wh: [number, number] | undefined): Dim | undefined =>
   wh ? { w: wh[0], h: wh[1] } : undefined
 
@@ -242,7 +244,17 @@ export function Compare({ spec }: { spec: SpecEntry }) {
     base: toDim(spec.mainSize),
     top: toDim(spec.size),
   }))
+  // The baseline's bytes were never pushed, so its store URL 404s. Held here
+  // rather than in whichever half is on screen: it is a fact about the figure,
+  // not about the way it is being looked at, and both halves have to say it.
+  // Per-half state meant leaving side-by-side re-issued the failing request and
+  // made the stage rediscover it, then leaving the stage did the same again —
+  // a 404 per mode switch, and the bar's note disagreeing with the column's for
+  // as long as it took to arrive.
   const [noBaseline, setNoBaseline] = useState(false)
+  const onBaselineFailed = useCallback(() => {
+    setNoBaseline(true)
+  }, [])
 
   const onDim = useCallback((which: 'base' | 'top', d: Dim) => {
     setDims(prev => ({ ...prev, [which]: d }))
@@ -253,7 +265,7 @@ export function Compare({ spec }: { spec: SpecEntry }) {
   // at showing — everything below the change looks shifted. Say it.
   const note = noBaseline
     ? '⚠ baseline bytes are not in the store — only the current image is here'
-    : dims.base && dims.top && dimText(dims.base) !== dimText(dims.top)
+    : dims.base && dims.top && !sameDim(dims.base, dims.top)
       ? `resized ${dimText(dims.base)} → ${dimText(dims.top)} — drawn at one ` +
         'scale from the top-left, so the extra edge is the change in size'
       : ''
@@ -273,7 +285,11 @@ export function Compare({ spec }: { spec: SpecEntry }) {
         />
       ) : null}
       {mode === 'side' ? (
-        <SideBySide spec={spec} />
+        <SideBySide
+          spec={spec}
+          noBaseline={noBaseline}
+          onBaselineFailed={onBaselineFailed}
+        />
       ) : (
         <Stage
           spec={spec}
@@ -281,9 +297,7 @@ export function Compare({ spec }: { spec: SpecEntry }) {
           dims={dims}
           onDim={onDim}
           noBaseline={noBaseline}
-          onBaselineFailed={() => {
-            setNoBaseline(true)
-          }}
+          onBaselineFailed={onBaselineFailed}
         />
       )}
     </>
@@ -473,11 +487,20 @@ function ImgCol({
   )
 }
 
-function SideBySide({ spec }: { spec: SpecEntry }) {
-  // Straight at the store. The baseline URL is the figure's content hash, so it
-  // is immutable, public and cached for a year by CloudFront — nothing for this
-  // server to proxy, and the link keeps resolving from any commit's manifest.
-  const [mainFailed, setMainFailed] = useState(false)
+function SideBySide({
+  spec,
+  noBaseline,
+  onBaselineFailed,
+}: {
+  spec: SpecEntry
+  noBaseline: boolean
+  onBaselineFailed: () => void
+}) {
+  // The baseline goes straight at the store. Its URL is the figure's content
+  // hash, so it is immutable, public and cached for a year by CloudFront —
+  // nothing for this server to proxy, and the link keeps resolving from any
+  // commit's manifest.
+  //
   // width/height ATTRIBUTES, not styles: they give the browser the aspect ratio
   // to reserve the box with while the bytes are in flight, and the CSS
   // (max-width/max-height, height auto) still decides the drawn size. Without
@@ -525,7 +548,7 @@ function SideBySide({ spec }: { spec: SpecEntry }) {
       <ImgCol label="origin/main">
         {!spec.mainUrl ? (
           <div className="missing notonmain">not on origin/main</div>
-        ) : mainFailed ? (
+        ) : noBaseline ? (
           <div className="missing">⚠ baseline bytes are not in the store</div>
         ) : (
           <img
@@ -536,9 +559,7 @@ function SideBySide({ spec }: { spec: SpecEntry }) {
             onClick={e => {
               window.open(e.currentTarget.src)
             }}
-            onError={() => {
-              setMainFailed(true)
-            }}
+            onError={onBaselineFailed}
           />
         )}
       </ImgCol>

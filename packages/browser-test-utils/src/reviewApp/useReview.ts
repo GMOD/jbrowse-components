@@ -3,6 +3,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { DraftStore } from './drafts.ts'
 import {
   conflictText,
+  errorText,
   postClearVerdict,
   postVerdict,
   queueWrite,
@@ -161,9 +162,6 @@ export function useReview<E extends ReviewEntry>({
     [drafts, entryOf],
   )
 
-  const failed = (err: unknown) =>
-    err instanceof Error ? err.message : String(err)
-
   // `note` is the text in the card's own box at the moment of the click, and it
   // is the caller's to supply because the card is the only thing that knows it.
   // Reconstructing it here instead — draft, else the report's copy — was wrong
@@ -197,7 +195,7 @@ export function useReview<E extends ReviewEntry>({
             setMessage(name)
           }
         } catch (err) {
-          setMessage(name, `Not saved — ${failed(err)}`)
+          setMessage(name, `Not saved — ${errorText(err)}`)
         }
         reconcileDraft(name)
         unpress(name, status)
@@ -260,7 +258,7 @@ export function useReview<E extends ReviewEntry>({
           patch(name, { verdict: result.body, stale: false })
           setMessage(name)
         } catch (err) {
-          setMessage(name, `Note not saved — ${failed(err)}`)
+          setMessage(name, `Note not saved — ${errorText(err)}`)
         }
         reconcileDraft(name)
       })
@@ -289,7 +287,7 @@ export function useReview<E extends ReviewEntry>({
             setMessage(name)
           }
         } catch (err) {
-          setMessage(name, `Not cleared — ${failed(err)}`)
+          setMessage(name, `Not cleared — ${errorText(err)}`)
         }
         unpress(name, null)
       })

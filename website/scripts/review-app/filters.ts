@@ -35,6 +35,8 @@ export const COMPARE_MODES = [
   ],
 ] as const
 
+export const COMPARE_IDS = COMPARE_MODES.map(m => m[0])
+
 export type CompareMode = (typeof COMPARE_MODES)[number][0]
 
 export const STATUSES = ['needs', 'good', 'answered', 'bad', 'all'] as const
@@ -67,6 +69,10 @@ export interface Filters {
   live: LiveWhich
 }
 
+// The one statement of what each control starts at. readUrl falls back to these
+// and writeUrl omits them, so a changed default cannot leave a value that writes
+// itself into the URL but never restores from it — which is what three separate
+// copies of this list were one edit away from.
 export const defaultFilters: Filters = {
   q: '',
   status: 'needs',
@@ -159,17 +165,21 @@ export const matchesChanged = (s: SpecEntry, f: Filters) =>
 export const matchesRun = (s: SpecEntry, f: Filters) =>
   !f.runOnly || hasRunProblem(s)
 
+// The other half: the status tab and the two toggles, i.e. everything a badge
+// might be asked to count what switching to it would show. Named separately
+// because that is exactly how a badge asks — "the current filters, with my own
+// term replaced" — so App can hand it one overridden copy rather than spelling
+// the remaining terms out again per badge. It used to spell them out three
+// times, and the copies disagreed: 'Changed vs main' read 40 over a needs-review
+// queue that would show 3.
+export const matchesBeyondScope = (s: SpecEntry, f: Filters) =>
+  hasStatus(s, f.status) && matchesChanged(s, f) && matchesRun(s, f)
+
 // The live query. What is ON SCREEN is a capture of this taken when the reviewer
 // last asked for one (useStickyQueue), so a verdict recorded here never moves
 // the card it was recorded on — see the hook for why that matters.
-export function matchesFilters(s: SpecEntry, f: Filters) {
-  return (
-    matchesScope(s, f) &&
-    hasStatus(s, f.status) &&
-    matchesChanged(s, f) &&
-    matchesRun(s, f)
-  )
-}
+export const matchesFilters = (s: SpecEntry, f: Filters) =>
+  matchesScope(s, f) && matchesBeyondScope(s, f)
 
 // Which of a card's own properties the list is selected and ordered on: change
 // one of these and the reviewer is asking a different question, so the queue is
@@ -188,28 +198,35 @@ export const queryKey = (f: Filters) =>
     f.kind,
   ].join(' ')
 
+// Which query parameter holds each filter. One table for both directions, so a
+// renamed parameter cannot come back out of readUrl under a name writeUrl never
+// wrote — the failure of which is a bookmark that silently drops one control.
+// The names are shorter than the fields on purpose: they are what a reviewer
+// pastes into chat.
+const URL_PARAM: Record<keyof Filters, string> = {
+  q: 'q',
+  status: 'status',
+  sortBy: 'sort',
+  group: 'group',
+  kind: 'kind',
+  compare: 'compare',
+  live: 'live',
+  changedOnly: 'changed',
+  runOnly: 'problems',
+}
+
+const FILTER_KEYS = Object.keys(URL_PARAM) as (keyof Filters)[]
+
 // Persist the filter state in the URL query string so a review view can be
 // reloaded, bookmarked, or shared. Only non-default values are written, to keep
-// the URL clean.
+// the URL clean; `1` for a toggle, which is what readUrl looks for.
 export function writeUrl(f: Filters) {
   const params = new URLSearchParams()
-  const put = (key: string, value: string, dflt: string) => {
-    if (value !== dflt) {
-      params.set(key, value)
+  for (const key of FILTER_KEYS) {
+    const value = f[key]
+    if (value !== defaultFilters[key]) {
+      params.set(URL_PARAM[key], value === true ? '1' : String(value))
     }
-  }
-  put('q', f.q, '')
-  put('status', f.status, 'needs')
-  put('sort', f.sortBy, 'default')
-  put('group', f.group, '')
-  put('kind', f.kind, 'all')
-  put('compare', f.compare, 'side')
-  put('live', f.live, 'hosted')
-  if (f.changedOnly) {
-    params.set('changed', '1')
-  }
-  if (f.runOnly) {
-    params.set('problems', '1')
   }
   const qs = params.toString()
   history.replaceState(null, '', qs ? `?${qs}` : location.pathname)
@@ -228,21 +245,19 @@ function oneOf<T extends string>(
 
 export function readUrl(): Filters {
   const p = new URLSearchParams(location.search)
+  const raw = (key: keyof Filters) => p.get(URL_PARAM[key])
+  const d = defaultFilters
   return {
-    q: p.get('q') ?? '',
-    status: oneOf(STATUSES, p.get('status'), 'needs'),
-    changedOnly: p.get('changed') === '1',
-    runOnly: p.get('problems') === '1',
-    sortBy: oneOf(SORTS, p.get('sort'), 'default'),
+    q: raw('q') ?? d.q,
+    status: oneOf(STATUSES, raw('status'), d.status),
+    changedOnly: raw('changedOnly') === '1',
+    runOnly: raw('runOnly') === '1',
+    sortBy: oneOf(SORTS, raw('sortBy'), d.sortBy),
     // validated against the data once it arrives, since only that knows which
     // groups exist
-    group: p.get('group') ?? '',
-    kind: oneOf(KINDS, p.get('kind'), 'all'),
-    compare: oneOf(
-      COMPARE_MODES.map(m => m[0]),
-      p.get('compare'),
-      'side',
-    ),
-    live: oneOf(LIVE_WHICH, p.get('live'), 'hosted'),
+    group: raw('group') ?? d.group,
+    kind: oneOf(KINDS, raw('kind'), d.kind),
+    compare: oneOf(COMPARE_IDS, raw('compare'), d.compare),
+    live: oneOf(LIVE_WHICH, raw('live'), d.live),
   }
 }

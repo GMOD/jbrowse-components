@@ -43,8 +43,18 @@ export function liveHref(url: string, target: LiveTarget | undefined) {
 // are noise in a control naming two places; the path is not, since
 // `code/jb2/main` and `code/jb2/latest` are the distinction that matters on the
 // hosted side.
-export const baseLabel = (base: string) =>
+const baseLabel = (base: string) =>
   base.replace(/^https?:\/\//, '').replace(/\/$/, '')
+
+// Both of them, for the control that chooses between them. The bases arrive
+// with the figure state, which lands before the first card is drawn — until then
+// the control still has to say which option is which.
+export const liveLabelsOf = (
+  bases: LiveBases | undefined,
+): Record<LiveWhich, string> => ({
+  hosted: bases ? baseLabel(bases.hosted) : 'hosted build',
+  local: bases ? baseLabel(bases.local) : 'local dev server',
+})
 
 // Where a link actually goes, for the tooltip on one. The host alone: the rest
 // of a live URL is an encoded session, which is unreadable in a tooltip and long

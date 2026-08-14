@@ -9,7 +9,7 @@
 // reviewBundle.ts). It is deliberately not re-exported from the package index,
 // which node runs directly with type stripping and which cannot parse JSX.
 export { DraftStore, draftHint } from './drafts.ts'
-export { settledAs, shownStatus } from './protocol.ts'
+export { errorText, settledAs, shownStatus } from './protocol.ts'
 export { useNoteDraft } from './useNoteDraft.ts'
 export { useReview } from './useReview.ts'
 export { useStickyQueue } from './useStickyQueue.ts'
