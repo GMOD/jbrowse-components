@@ -126,27 +126,15 @@ async function settle() {
 }
 
 // The dev-only contract checks report through `console.error`, and this file's
-// fixture drives the violating shapes on purpose — so capture it for every suite
-// here rather than only where it is asserted, or an expected report prints with
-// a stack trace and reads as a failing suite.
+// fixture drives the violating shapes on purpose. `config/jest/console.js`
+// buffers those reports and the gate fails any test that leaves one unclaimed,
+// so every test here takes them — which is both the opt-in and how they are
+// read. Replacing `console.error` locally, which this did before, hid the
+// reports from the gate rather than excusing them.
 //
-// Direct assignment rather than `jest.spyOn`, matching
-// assertDisplayContract.test.ts: the repo's jest setup installs its own
-// `console.error` wrapper, and a spy leaves that wrapper in place to print
-// anyway. Spanning the whole test rather than one call, because these reports
-// land inside a debounced autorun rather than synchronously.
-let errors: string[]
-let originalError: typeof console.error
-beforeEach(() => {
-  errors = []
-  originalError = console.error
-  console.error = (...args: unknown[]) => {
-    errors.push(args.map(a => `${a}`).join(' '))
-  }
-})
-afterEach(() => {
-  console.error = originalError
-})
+// Taken after `settle()`, never before: these land inside a debounced autorun
+// rather than synchronously.
+const reports = () => takeDisplayContractReports()
 
 describe('installGlobalFetchAutorun', () => {
   it('fetches immediately on install, without waiting out the debounce', () => {
@@ -182,7 +170,7 @@ describe('installGlobalFetchAutorun', () => {
     display.reload()
     await settle()
     expect(gateCalls.count).toBeGreaterThan(before)
-    expect(errors.join('\n')).toMatch(/Retry is a dead button/)
+    expect(reports().join('\n')).toMatch(/Retry is a dead button/)
   })
 
   it('re-evaluates on an rpcProps() change after the gate has closed', async () => {
@@ -261,13 +249,15 @@ describe('the retry contract', () => {
     const { display } = setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
-    expect(errors).toEqual([])
+    expect(reports()).toEqual([])
 
     display.reload()
     await settle()
-    expect(errors).toHaveLength(1)
-    expect(errors[0]).toMatch(/Retry is a dead button/)
-    expect(errors[0]).toMatch(/reload\(\) has to invalidate/)
+    // one take, three assertions: taking drains the buffer
+    const reported = reports()
+    expect(reported).toHaveLength(1)
+    expect(reported[0]).toMatch(/Retry is a dead button/)
+    expect(reported[0]).toMatch(/reload\(\) has to invalidate/)
   })
 
   it('stays silent when reload() also reopens the gate', async () => {
@@ -281,7 +271,7 @@ describe('the retry contract', () => {
     display.reload()
     await settle()
     expect(fetched.count).toBe(2)
-    expect(errors).toEqual([])
+    expect(reports()).toEqual([])
   })
 
   it('stays silent for a display that is deliberately not fetching', async () => {
@@ -294,7 +284,7 @@ describe('the retry contract', () => {
 
     display.reload()
     await settle()
-    expect(errors).toEqual([])
+    expect(reports()).toEqual([])
   })
 
   // the too-large banner offers Force load, not Retry, so a run the byte gate
@@ -307,12 +297,12 @@ describe('the retry contract', () => {
     display.setTooLarge(true, /* stale */ false)
     display.reload()
     await settle()
-    expect(errors).toEqual([])
+    expect(reports()).toEqual([])
 
     display.setTooLarge(false)
     view.setBlocks(['chr1:0-400'])
     await settle()
-    expect(errors).toEqual([])
+    expect(reports()).toEqual([])
   })
 
   // a plain settings change or pan that declines to fetch is not a retry
@@ -323,7 +313,7 @@ describe('the retry contract', () => {
 
     display.setSetting('b')
     await settle()
-    expect(errors).toEqual([])
+    expect(reports()).toEqual([])
   })
 })
 

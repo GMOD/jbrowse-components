@@ -109,6 +109,12 @@ const baseConfig = {
     '<rootDir>/config/jest/requestIdleCallback.js',
     '<rootDir>/config/jest/scrollIntoView.js',
   ],
+  // In every project, not only the one that instantiates displays: the gate is
+  // two hooks over a buffer `console.js` fills, so it costs nothing where no
+  // display exists, and a project added later inherits it instead of quietly
+  // opting out. A project that overrides this key has to spread it back in —
+  // see the default project below.
+  setupFilesAfterEnv: ['<rootDir>/config/jest/displayContractGate.js'],
   testEnvironmentOptions: { url: 'http://localhost' },
 }
 
@@ -190,12 +196,16 @@ export default {
         '<rootDir>/products/aws/',
       ],
       testEnvironment: 'jsdom',
+      ...baseConfig,
+      // After the spread, and spreading baseConfig's own entry back in: this key
+      // is the one both halves define, and `...baseConfig` last would otherwise
+      // drop all three of these.
       setupFilesAfterEnv: [
+        ...baseConfig.setupFilesAfterEnv,
         '<rootDir>/config/jest/fetchMockAfterEnv.js',
         '<rootDir>/config/jest/deterministicIds.js',
         '<rootDir>/config/jest/localStorage.js',
       ],
-      ...baseConfig,
     },
   ],
 }

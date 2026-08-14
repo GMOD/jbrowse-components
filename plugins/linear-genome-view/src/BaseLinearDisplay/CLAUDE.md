@@ -43,7 +43,11 @@ re-runs the autorun and the display's own gate still declines, which is the dead
 Retry button arc shipped. Exempt yourself with `loadingSuppressed` if the
 display is deliberately not fetching — don't reach for anything else, and don't
 silence `console.error` in a test harness, which is what kept every one of these
-checks inaudible until 2026-08.
+checks inaudible until 2026-08. A jest gate now fails the run on any of them
+(`config/jest/displayContractGate.js`), and a harness that replaces or mocks
+`console.error` takes itself back out of it. A test that provokes a violation on
+purpose calls `takeDisplayContractReports()`, which both excuses the reports and
+hands them over to assert on.
 
 **A `fetchNeeded` that declines to fetch must be woken by something the autorun
 already tracks.** The coverage test short-circuits, so `isCacheValid`'s

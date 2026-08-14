@@ -42,7 +42,8 @@ before anyone noticed.
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
-| [Make the display-contract checks fail a test run](#make-the-display-contract-checks-fail-a-test-run) | tests, limits | five `console.error`s no run fails on; collect and assert in the shim |
+| [Contract checks are stripped in production](#the-display-contract-checks-are-stripped-in-production) | limits, plugins | the in-tree half is gated; decide the out-of-tree channel |
+| [The retry check calls HiC's Retry dead](#the-retry-check-calls-hics-retry-dead-and-it-isnt) | hic, limits | reported in tree today; decide whose contract bends |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | one call site passes it; nothing reads it |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
@@ -318,32 +319,47 @@ The alpha values were tuned against the old density — 0.15 on wheat and grasse
 only if the whole band reads too faint**, since the thing that just went away was
 a per-band bias and putting ink back per band would restore it.
 
-### Make the display-contract checks fail a test run
+### The display-contract checks are stripped in production
 
-There are five of them, and every one is a `console.error`:
-`assertDisplayContract` (`isCacheValid`/`rpcProps` in `.actions()`, and the
-double-install), `makeRetryContractCheck` (the dead Retry button),
-`HeightModeMixin`'s compose order, `CanvasFeatureGateMixin`'s compose order, and
-`RegionTooLargeMixin`'s renamed-hook map. `ARCHITECTURAL_LIMITS.md` §"Ordering
-is the contract" treats them as the mechanism that closed those invariants —
-they report, and nothing fails.
+In-tree they are gated now: `config/jest/console.js` buffers the
+`[jbrowse display contract]` prefix and `config/jest/displayContractGate.js`
+fails the test that collected one (ARCHITECTURAL_LIMITS.md §"Ordering is the
+contract"). Out of tree, nothing catches anything —
+`process.env.NODE_ENV === 'production'` no-ops all five, so a plugin author
+whose display declares `rpcProps` in `.actions()` gets the silent stale cache
+and no message, ever. That is the population least able to diagnose it, and the
+one nobody can write a test for.
 
-`config/jest/console.js` passes the `[jbrowse display contract]` prefix straight
-through to stdout, so a violation is audible in a run that prints thousands of
-lines, which is one notch above silent. Collect messages carrying that prefix in
-the shim and fail in an `afterEach` (`setupFilesAfterEnv`), with an explicit
-opt-in for the tests that provoke a violation on purpose —
-`assertDisplayContract.test.ts` and `TrackHeightMixin.test.ts` both do. Roughly
-fifteen lines, and it converts five advisories into five gates.
+Whether it is worth a session flag is the whole item, and the question is
+*channel*, not cost — the checks are a `getMembers` call per display at attach.
+A `console.error` surviving into a production build reaches nobody either; the
+version worth building is one a plugin author would see, which means a session
+notification behind a developer flag rather than an unstripped `console.error`.
 
-The `console.error`-not-`throw` decision stays: an error escaping `afterAttach`
-is read as an invalid track and the display is dropped, hiding the violation
-being reported. This changes who *listens*, not what the check does.
+### The retry check calls HiC's Retry dead, and it isn't
 
-Second half, separable: `process.env.NODE_ENV === 'production'` strips all five,
-so an out-of-tree display violating one is caught by nothing at all. Whether
-that is worth a session flag is a real question — it is the population with the
-least ability to diagnose it, and the one nobody can add a test for.
+Turned up by the gate above on its first full run.
+`plugins/hic/src/LinearHicDisplay/infoFetchFailure.test.ts` "retry re-reads the
+header" makes `makeRetryContractCheck` report `LinearHicDisplay: … Retry is a
+dead button`, and the app does the same whenever a user retries a HiC display
+whose `CoreGetInfo` failed.
+
+It is a false positive, and the shape is general: HiC's retry is **two-stage**.
+`reload()` bumps `reloadCounter`, which wakes both the info autorun (which
+re-reads the header) and the fetch autorun. The fetch autorun runs first and
+declines, because `effectiveResolution` is still undefined — the header it is
+waiting on lands a moment later, and `shouldFetch` read `effectiveResolution`
+inside the tracked body, so that arrival wakes it and the contacts load. The
+button works, and the test asserts that it does.
+
+The check's one exemption is `loadingSuppressed`, which is wrong here: HiC does
+want the loading scrim while the header is re-read. So the decision is whose
+contract bends. A `reload()` that answers the retry through a *prerequisite*
+fetch in another autorun is a legitimate shape the check has no name for, and
+giving it one — an opt-out passed to `installGlobalFetchAutorun` next to
+`shouldFetch`, so the display says it rather than the check guessing — is the
+candidate fix. Until then that test takes the report and asserts on it, so the
+day HiC's behaviour changes, something says so.
 
 ### Delete or implement the RPC `timeout` option
 

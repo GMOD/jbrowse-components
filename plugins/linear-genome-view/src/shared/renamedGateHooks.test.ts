@@ -24,17 +24,10 @@ function displayDeclaring(views: Record<string, () => unknown>) {
   return M.create()
 }
 
-let errors: string[]
-beforeEach(() => {
-  errors = []
-  jest.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
-    errors.push(args.map(String).join(' '))
-  })
-})
-afterEach(() => {
-  jest.restoreAllMocks()
-})
-
+// Read through the jest gate (`config/jest/displayContractGate.js`), which
+// buffers what the check reports and fails any test that leaves a report
+// unclaimed. Taking them is how this file says its violations are on purpose —
+// a `console.error` spy, which this used before, hid them from the gate instead.
 test('reports an override left on a renamed hook, naming the new name', () => {
   reportRenamedHooks(
     displayDeclaring({
@@ -42,6 +35,7 @@ test('reports an override left on a renamed hook, naming the new name', () => {
     }),
   )
 
+  const errors = takeDisplayContractReports()
   expect(errors).toHaveLength(1)
   expect(errors[0]).toContain('byteGateEnabled')
   expect(errors[0]).toContain('measuresBytesPreFlight')
@@ -55,6 +49,7 @@ test('reports every renamed name the display still declares', () => {
     }),
   )
 
+  const errors = takeDisplayContractReports()
   expect(errors).toHaveLength(2)
   expect(errors.join('\n')).toContain('measuresBytesInFetch')
   expect(errors.join('\n')).toContain('gateActive')
@@ -67,7 +62,7 @@ test('says nothing about a display using the current names', () => {
     }),
   )
 
-  expect(errors).toEqual([])
+  expect(takeDisplayContractReports()).toEqual([])
 })
 
 // The map is only useful while both halves are true: the old name is gone, and

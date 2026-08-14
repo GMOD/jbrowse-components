@@ -768,6 +768,22 @@ generalization. It
 `afterAttach` is read by the session loader as an invalid track and the display
 is dropped, which would hide the very violation being reported.
 
+**A test run fails on any of them** (2026-08). `config/jest/console.js` buffers
+every message carrying the `[jbrowse display contract]` prefix and
+`config/jest/displayContractGate.js` — in every jest project's
+`setupFilesAfterEnv` — fails the test that collected one, quoting it verbatim.
+What changed is who *listens*; the reporting channel is unchanged and stays
+that way, for the reason above. Before it, a violation printed into a run that
+prints thousands of lines and nothing failed, which is one notch above silent.
+A test that provokes a violation on purpose takes the messages with
+`takeDisplayContractReports()`, which is both the opt-in and how it reads them;
+a test that replaces or mocks `console.error` takes itself out of the gate
+entirely, which is why the display harnesses silence `console.warn` only.
+Attribution is honest in one direction only, and the failure says so: a check
+firing from a debounced autorun lands after the test body returns, so it fails
+whichever test ran next, and anything arriving after the last test fails the
+file rather than being attributed wrongly.
+
 **Now checked** (dev-only, no false positives possible):
 
 - **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**

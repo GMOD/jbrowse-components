@@ -77,29 +77,30 @@ function composeInOrder(...mixins: any[]) {
 // created (it hangs off a track), so the fixture mounts one rather than a
 // standalone root.
 function mount(...mixins: any[]) {
-  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
   const Parent = types.model('TestTrack', {
     display: composeInOrder(...mixins),
   })
   const { display } = Parent.create({
     display: { type: 'test', configuration: {} },
   })
-  return { display, spy }
+  return display
 }
 
+// Read through the jest gate (`config/jest/displayContractGate.js`) rather than
+// a `console.error` spy: a spy with a mock implementation hides the report from
+// the gate, so the wrong-order test would have been excused by accident rather
+// than on purpose. Taking the reports is the opt-in.
 test('the correct order leaves HeightModeMixin owning the height', () => {
-  const { display, spy } = mount(TrackHeightMixin(), HeightModeMixin())
+  const display = mount(TrackHeightMixin(), HeightModeMixin())
   expect(display.supportsHeightModes).toBe(true)
-  expect(spy).not.toHaveBeenCalled()
-  spy.mockRestore()
+  expect(takeDisplayContractReports()).toEqual([])
 })
 
 test('the wrong order reports itself at attach', () => {
-  const { display, spy } = mount(HeightModeMixin(), TrackHeightMixin())
+  const display = mount(HeightModeMixin(), TrackHeightMixin())
   // the base's `false` won, and with it the base's `height`/`resizeHeight`
   expect(display.supportsHeightModes).toBe(false)
-  expect(spy).toHaveBeenCalledWith(
-    expect.stringContaining('must be composed AFTER TrackHeightMixin()'),
+  expect(takeDisplayContractReports().join('\n')).toContain(
+    'must be composed AFTER TrackHeightMixin()',
   )
-  spy.mockRestore()
 })
