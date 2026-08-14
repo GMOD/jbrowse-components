@@ -1,5 +1,6 @@
 import {
   INDICATOR_TRIANGLE_H,
+  INDICATOR_TRIANGLE_HW,
   interbaseBarHeightPx,
   interbaseEdgePx,
 } from '@jbrowse/alignments-core'
@@ -15,6 +16,14 @@ const BAR_HIT_HALF_WIDTH_PX = 3
 const BAR_HIT_PAD_PX = 2
 
 // Index of the interbase position nearest genomicPos within tolerance, or -1.
+//
+// The tolerance is always a PIXEL budget converted through bpPerPx, never a bp
+// count: both marks are fixed-size on screen, so a bp tolerance means something
+// different at every zoom. The triangle's was `max(1, bpPerPx * 5)`, and that
+// floor only engages below 0.2 bp/px — where 1 bp is over 5 px and, at 100
+// px/bp, a hundred of them. It answered "indicator" for a triangle most of a
+// screen away, and not only in the tooltip: the click opens a widget titled by
+// this type and the right-click offers to sort by it.
 function nearestPositionIndex(
   positions: Uint32Array,
   genomicPos: number,
@@ -58,10 +67,12 @@ export function hitTestInterbase(
   // Indicator triangles: significant positions only, in the top strip.
   if (interbaseVisible && canvasY >= 0 && canvasY <= INDICATOR_TRIANGLE_H) {
     const { indicatorPositions, indicatorColorTypes } = rpcData
+    // The triangle's own half-width, which is what `drawIndicators` culls on —
+    // so the hover reaches exactly the pixels the mark is painted over.
     const idx = nearestPositionIndex(
       indicatorPositions,
       genomicPos,
-      Math.max(1, bpPerPx * 5),
+      bpPerPx * INDICATOR_TRIANGLE_HW,
     )
     if (idx >= 0) {
       hit = {

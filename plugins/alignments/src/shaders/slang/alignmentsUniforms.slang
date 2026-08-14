@@ -555,14 +555,21 @@ public float arcBandDestY(uint yBp, float availH, Uniforms u) {
 
 
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip
-// 3=hardclip (anything else falls through to hardclip). Uses the *Indicator
+// 3=hardclip (anything else falls through to insertion). Uses the *Indicator
 // colors — coverage-track marks sit on the dark track background, where the
 // saturated on-read colors (insertion.slang / clip.slang) would wash out.
+//
+// INSERTION is the fallback because that is what the Canvas2D twin does —
+// `colorLut[colorType - 1] ?? colorLut[0]` in drawInterbaseSegments and
+// drawIndicators, whose lut is [insertion, softclip, hardclip]. Nothing reaches
+// it today (computeInterbaseCoverage only ever emits 1..3), so the two spellings
+// disagreeing was invisible; the tested branches are checked against each other
+// and the untested one is exactly where a twin goes quietly wrong.
 public float3 clipKindColor(float ct, Uniforms u) {
   int ci = int(ct);
-  if (ci == 1) { return unpackRGBA(u.colorInsertionIndicator).xyz; }
   if (ci == 2) { return unpackRGBA(u.colorSoftclipIndicator).xyz; }
-  return unpackRGBA(u.colorHardclipIndicator).xyz;
+  if (ci == 3) { return unpackRGBA(u.colorHardclipIndicator).xyz; }
+  return unpackRGBA(u.colorInsertionIndicator).xyz;
 }
 
 // Widen a [x1,x2] clip-space span to a minimum of 1 CSS pixel, centered, so
