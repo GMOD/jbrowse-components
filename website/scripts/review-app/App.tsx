@@ -1,27 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
-  settledAs,
+  errorText,
   useReview,
   useStickyQueue,
 } from '@jbrowse/browser-test-utils/reviewApp'
 
 import { Card } from './Card.tsx'
 import { CompareViewProvider } from './Compare.tsx'
+import { Header } from './Header.tsx'
 import { StoreBanner } from './StoreBanner.tsx'
 import {
-  COMPARE_MODES,
-  KINDS,
-  KIND_LABELS,
-  SORTS,
-  SORT_LABELS,
-  hasRunProblem,
-  hasStatus,
-  isChanged,
-  isNew,
-  matchesChanged,
-  matchesFilters,
-  matchesRun,
+  matchesBeyondScope,
   matchesScope,
   nameGroup,
   queryKey,
@@ -29,46 +19,26 @@ import {
   searchText,
   writeUrl,
 } from './filters.ts'
-import { LIVE_WHICH, baseLabel, liveTargetOf } from './liveLinks.ts'
+import { liveLabelsOf, liveTargetOf } from './liveLinks.ts'
 
 import type { FigureState, SpecEntry } from '../review-payload.ts'
-import type { CompareMode, Filters, Kind, Sort, Status } from './filters.ts'
-import type { LiveWhich } from './liveLinks.ts'
+import type { CompareMode, Filters, Status } from './filters.ts'
 
-const errText = (err: unknown) =>
-  err instanceof Error ? err.message : String(err)
-
+// A response is not always JSON. A 404 from the wrong port — which this server
+// warns is a routine collision — answers in text, and parsing that first turns
+// the message the reviewer gets from "HTTP 404" into a complaint about the word
+// "not". Read the body leniently and let the status speak.
 async function getJson(url: string) {
   const res = await fetch(url)
-  const body: unknown = await res.json()
+  const body: unknown = await res.json().catch(() => null)
   if (!res.ok) {
     const err = (body as { error?: string } | null)?.error
     throw new Error(err ?? `HTTP ${res.status}`)
   }
+  if (body === null) {
+    throw new Error(`${url} answered ${res.status} with something not JSON`)
+  }
   return body
-}
-
-// Every number in the header counts something a verdict changes, so each sits in
-// a fixed-width slot and each pill is drawn even at zero. See the header rule in
-// app.css for what a header that resizes does to the figure below it.
-function Count({ n }: { n: number }) {
-  return <span className="tabcount">{n}</span>
-}
-
-function CountPill({
-  cls,
-  n,
-  label,
-}: {
-  cls: string
-  n: number
-  label: string
-}) {
-  return (
-    <span className={`pill ${cls}`}>
-      <Count n={n} /> {label}
-    </span>
-  )
 }
 
 const NOTHING: Record<Status, string> = {
@@ -95,13 +65,6 @@ function emptyText(dataEpoch: number, f: Filters) {
     f.runOnly
   return `${NOTHING[f.status]}${narrowed ? ' under these filters' : ''}.`
 }
-
-const TABS: { status: Status; label: string }[] = [
-  { status: 'needs', label: 'Needs review' },
-  { status: 'good', label: 'Approved' },
-  { status: 'answered', label: 'Answered' },
-  { status: 'bad', label: 'Denied' },
-]
 
 export function App() {
   const {
@@ -160,7 +123,7 @@ export function App() {
       // swallowing this left an empty page that looked like a review with
       // nothing left to do.
       if (current()) {
-        setLoadError(errText(err))
+        setLoadError(errorText(err))
         setLoading(false)
       }
       return
@@ -187,7 +150,7 @@ export function App() {
       }
     } catch (err) {
       if (current()) {
-        setFigureError(errText(err))
+        setFigureError(errorText(err))
       }
     }
     if (current()) {
@@ -252,20 +215,24 @@ export function App() {
     () => liveTargetOf(liveBases, filters.live),
     [liveBases, filters.live],
   )
-  const liveLabels: Record<LiveWhich, string> = {
-    hosted: liveBases ? baseLabel(liveBases.hosted) : 'hosted build',
-    local: liveBases ? baseLabel(liveBases.local) : 'local dev server',
-  }
+  const liveLabels = useMemo(() => liveLabelsOf(liveBases), [liveBases])
 
+  // Two passes, in the order the header needs them: the group/kind/search scope
+  // is what a badge counts within, and the rest of the filters narrow it to what
+  // is actually on the list.
+  const scoped = useMemo(
+    () => entries.filter(s => matchesScope(s, filters)),
+    [entries, filters],
+  )
   const matching = useMemo(() => {
-    const list = entries.filter(s => matchesFilters(s, filters))
+    const list = scoped.filter(s => matchesBeyondScope(s, filters))
     if (filters.sortBy !== 'recent') {
       return list
     }
     const at = (s: SpecEntry) =>
       s.verdict ? new Date(s.verdict.reviewedAt).getTime() : 0
     return [...list].sort((a, b) => at(b) - at(a))
-  }, [entries, filters])
+  }, [scoped, filters])
 
   // The cards on screen are a capture of that query, not the query itself, so
   // approving or denying one never moves, reorders or removes anything: it is
@@ -277,235 +244,22 @@ export function App() {
     viewKey: `${dataEpoch} ${queryKey(filters)}`,
   })
 
-  // A badge answers "how many cards do I get if I click this", so it counts
-  // within the group/kind/search scope and under every OTHER control's current
-  // setting, replacing only its own predicate. A global 42 above a filtered view
-  // showing 3 reads as a broken filter.
-  const scoped = useMemo(
-    () => entries.filter(s => matchesScope(s, filters)),
-    [entries, filters],
-  )
-  const tabCount = (status: Status) =>
-    scoped.filter(
-      s =>
-        hasStatus(s, status) &&
-        matchesChanged(s, filters) &&
-        matchesRun(s, filters),
-    ).length
-  // The two toggles count what turning them ON would leave, which means
-  // honouring the status tab and each other. They used to honour neither, so
-  // 'Changed vs main' read 40 over a needs-review queue that would show 3.
-  const changedCount = scoped.filter(
-    s =>
-      hasStatus(s, filters.status) &&
-      matchesRun(s, filters) &&
-      (isNew(s) || isChanged(s)),
-  ).length
-  const runCount = scoped.filter(
-    s =>
-      hasStatus(s, filters.status) &&
-      matchesChanged(s, filters) &&
-      hasRunProblem(s),
-  ).length
-
-  // The pill row stays global: that one is the progress reading for the whole
-  // sweep, not a preview of what a control would show.
-  const settled = (status: 'good' | 'bad' | 'answered') =>
-    entries.filter(s => settledAs(s, status)).length
-  const stale = entries.filter(s => s.stale).length
-
   return (
     <>
-      <header>
-        <h1>Screenshot review</h1>
-        <input
-          id="search"
-          type="search"
-          placeholder="filter by name…"
-          value={filters.q}
-          // deliberately does not clear justActed: typing in the search box is
-          // not leaving the view a card was acted on in
-          onChange={e => {
-            const { value } = e.target
-            setFilters(f => ({ ...f, q: value }))
-          }}
-        />
-        <label className="ctrl">
-          <span>Group</span>
-          <select
-            title="Filter by name group"
-            value={filters.group}
-            onChange={e => {
-              changeFilter('group', e.target.value)
-            }}
-          >
-            <option value="">All groups</option>
-            {groups.map(g => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="ctrl">
-          <span>Kind</span>
-          <select
-            title="Filter by how the image is produced"
-            value={filters.kind}
-            onChange={e => {
-              changeFilter('kind', e.target.value as Kind)
-            }}
-          >
-            {KINDS.map(k => (
-              <option key={k} value={k}>
-                {KIND_LABELS[k]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="ctrl">
-          <span>Compare</span>
-          <select
-            title="How each card shows the current image against origin/main"
-            value={filters.compare}
-            onChange={e => {
-              onCompareMode(e.target.value as CompareMode)
-            }}
-          >
-            {COMPARE_MODES.map(([id, , , label]) => (
-              <option key={id} value={id}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="ctrl">
-          <span>Sort</span>
-          <select
-            title="Sort order"
-            value={filters.sortBy}
-            onChange={e => {
-              changeFilter('sortBy', e.target.value as Sort)
-            }}
-          >
-            {SORTS.map(s => (
-              <option key={s} value={s}>
-                {SORT_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </label>
-        {/* A figure under review is routinely of a change the hosted build does
-            not have yet, so the link under it opens a different app from the one
-            the picture came out of. This is how it gets pointed at the app that
-            did produce it. */}
-        <label className="ctrl">
-          <span>Live links</span>
-          <select
-            title="Which app a card's Open live link opens the captured session in — the hosted build, or a jbrowse-web dev server on this machine (pnpm start in products/jbrowse-web; --app-port if it is not on 3000)"
-            value={filters.live}
-            onChange={e => {
-              changeFilter('live', e.target.value as LiveWhich)
-            }}
-          >
-            {LIVE_WHICH.map(w => (
-              <option key={w} value={w}>
-                {liveLabels[w]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="tabs">
-          {TABS.map(t => (
-            <button
-              type="button"
-              key={t.status}
-              className={filters.status === t.status ? 'tab active' : 'tab'}
-              onClick={() => {
-                changeFilter('status', t.status)
-              }}
-            >
-              {t.label}
-              <Count n={tabCount(t.status)} />
-            </button>
-          ))}
-          <button
-            type="button"
-            className={filters.status === 'all' ? 'tab active' : 'tab'}
-            onClick={() => {
-              changeFilter('status', 'all')
-            }}
-          >
-            All
-          </button>
-        </div>
-        <button
-          type="button"
-          className={filters.changedOnly ? 'tab active' : 'tab'}
-          title="only screenshots new or changed vs origin/main"
-          onClick={() => {
-            changeFilter('changedOnly', !filters.changedOnly)
-          }}
-        >
-          Changed vs main
-          <Count n={changedCount} />
-        </button>
-        <button
-          type="button"
-          className={filters.runOnly ? 'tab active' : 'tab'}
-          title="only specs the last run failed to render, rendered differently twice, or kept behind a raised diffThreshold"
-          onClick={() => {
-            changeFilter('runOnly', !filters.runOnly)
-          }}
-        >
-          Render problems
-          <Count n={runCount} />
-        </button>
-        {/* The one control that removes cards from the list, so that removing
-            them is something the reviewer does rather than something that
-            happens to them mid-note. Invisible until there is something to
-            clear, which also makes it the progress readout for the batch in
-            front of you — the pill row to its right counts the whole sweep. */}
-        <button
-          type="button"
-          className={leaving.size ? 'tab flush' : 'tab flush reserved'}
-          title="These are settled and no longer match the filters — take them off the list"
-          onClick={refresh}
-        >
-          Clear settled
-          <Count n={leaving.size} />
-        </button>
-        {/* Fixed label and no count, per the header rule above: `disabled` is
-            the whole of the in-flight state because it recolours without
-            resizing, and a spinner or a "Reloading…" would move every figure on
-            the page the moment the request went out. */}
-        <button
-          type="button"
-          className="tab"
-          disabled={loading}
-          title="Re-read the figures on disk without reloading the page — after a regen, this is the thing to press"
-          onClick={() => {
-            void load()
-          }}
-        >
-          Reload figures
-        </button>
-        <div className="counts">
-          <CountPill cls="good" n={settled('good')} label="approved" />
-          <CountPill cls="bad" n={settled('bad')} label="denied" />
-          <CountPill
-            cls="answered"
-            n={settled('answered')}
-            label="answered, awaiting you"
-          />
-          <CountPill cls="stale" n={stale} label="changed since review" />
-          <CountPill
-            cls="none"
-            n={entries.filter(s => !s.verdict).length}
-            label="unreviewed"
-          />
-        </div>
-      </header>
+      <Header
+        filters={filters}
+        onChange={changeFilter}
+        entries={entries}
+        scoped={scoped}
+        groups={groups}
+        liveLabels={liveLabels}
+        settledCount={leaving.size}
+        onClearSettled={refresh}
+        loading={loading}
+        onReload={() => {
+          void load()
+        }}
+      />
       <StoreBanner state={figureState} error={figureError} />
       <main>
         {/* Above the cards rather than instead of them. A failed RELOAD leaves
