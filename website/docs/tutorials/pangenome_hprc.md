@@ -1000,45 +1000,6 @@ The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra
 files.
 
-### Zooming out past the locus
-
-Every haplotype's sequence is packed into the same blocks, so a window wider
-than a gene downloads all 464 of them, and the track refuses rather than pull
-354 Mb for a chromosome. The `summaryAdapter` slot points at a second, much
-smaller file holding one row per haplotype per aligned run, with a score and no
-sequence; past 20 kb the track reads that instead.
-
-```json
-"summaryAdapter": {
-  "type": "BedTabixAdapter",
-  "bedGzLocation": {
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.summary.bed.gz"
-  },
-  "index": {
-    "location": {
-      "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.summary.bed.gz.tbi"
-    }
-  }
-}
-```
-
-That file is published for this alignment, and
-`scripts/build_hprc_maf_summary.sh` builds one for any taffy-indexed alignment.
-
-<Figure caption="HLA-DRB, 300 kb, from the summary tier. Rows are haplotypes ordered by how much of the DRB interval they align across, taken from each group in proportion, with GRCh38 on top. DRA to the left and DQA1/DQB1 to the right are aligned in every row; the white spans in between separate the groups." src="/img/maf_hprc_hla_drb.png" />
-
-GRCh38's own MHC haplotype is a DR51-group one, which carries _HLA-DRB5_.
-Haplotypes from the other DR groups carry a different set of _DRB_ genes and
-have nothing there to align against, so which genes a person has at this locus
-depends on which group they inherited. The flanking _HLA-DRA_ and _HLA-DQA1_ are
-aligned in every row, which is what the white in between is measured against.
-
-Ordering the rows is what makes the groups visible. In the alignment's own order
-they interleave, and the same data reads as striping; the row order and the
-sampling behind this figure are in its spec comment. The per-base rows shown
-earlier cannot be fetched at this width at all, so the tier is what makes the
-locus visible as a whole.
-
 This is the level the graph and the callset both lose. The graph collapses these
 haplotypes into segments and the callset reduces them to genotypes; here each
 one is still its own row of sequence.
