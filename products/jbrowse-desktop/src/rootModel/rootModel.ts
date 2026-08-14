@@ -40,6 +40,7 @@ import type { AppRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { DialogComponentType } from '@jbrowse/core/util/types'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 
@@ -77,6 +78,33 @@ function reportError(
 ) {
   console.error(e)
   session?.notifyError(`${e}`, e)
+}
+
+// Four of the menu items below open a dialog, and each needs the same two things
+// first: `self.session` narrowed to the type that carries queueDialog, and a
+// guard, since a root can be between sessions. The guard is what kept differing
+// between them — "Open assembly manager" asserted rather than checked, so a
+// click with no session would have thrown out of the menu handler.
+//
+// `build` returns what BaseSession.queueDialog takes, a component plus loose
+// props, rather than tying the props to the component with a generic. The
+// generic is what a helper here invites and it does not hold: these props do not
+// typecheck against their own components (the assembly manager and the web
+// export want an AbstractSessionModel where this has the narrower BaseSession,
+// and the sequence dialog's onClose is declared over AssemblyConf rather than
+// AnyConfigurationModel), so it would only move those mismatches out of the
+// session layer and into this file.
+function queueSessionDialog(
+  maybeSession: unknown,
+  build: (
+    session: BaseSession,
+    doneCallback: () => void,
+  ) => [DialogComponentType, Record<string, unknown>],
+) {
+  const session = maybeSession as BaseSession | undefined
+  if (session) {
+    session.queueDialog(doneCallback => build(session, doneCallback))
+  }
 }
 
 type SessionModelFactory = (args: {
@@ -300,26 +328,23 @@ export default function rootModelFactory({
                     label: 'Open genome...',
                     icon: DNA,
                     onClick: () => {
-                      if (self.session) {
-                        const session = self.session as BaseSession
-                        session.queueDialog(doneCallback => [
-                          OpenSequenceDialog,
-                          {
-                            onClose: (confs?: AnyConfigurationModel[]) => {
-                              try {
-                                if (confs) {
-                                  for (const conf of confs) {
-                                    self.jbrowse.addAssemblyConf(conf)
-                                  }
+                      queueSessionDialog(self.session, (_session, done) => [
+                        OpenSequenceDialog,
+                        {
+                          onClose: (confs?: AnyConfigurationModel[]) => {
+                            try {
+                              if (confs) {
+                                for (const conf of confs) {
+                                  self.jbrowse.addAssemblyConf(conf)
                                 }
-                              } catch (e) {
-                                reportError(self.session, e)
                               }
-                              doneCallback()
-                            },
+                            } catch (e) {
+                              reportError(self.session, e)
+                            }
+                            done()
                           },
-                        ])
-                      }
+                        },
+                      ])
                     },
                   },
                   openTrackMenuItem(),
@@ -358,9 +383,9 @@ export default function rootModelFactory({
                         label: 'Open JBrowse Web link...',
                         icon: LinkIcon,
                         onClick: () => {
-                          if (self.session) {
-                            const session = self.session as BaseSession
-                            session.queueDialog(handleClose => [
+                          queueSessionDialog(
+                            self.session,
+                            (_session, handleClose) => [
                               OpenLinkDialog,
                               {
                                 // not flushed here for the same reason opening
@@ -373,8 +398,8 @@ export default function rootModelFactory({
                                 },
                                 onClose: handleClose,
                               },
-                            ])
-                          }
+                            ],
+                          )
                         },
                       },
                       {
@@ -398,21 +423,16 @@ export default function rootModelFactory({
                         label: 'Export session to web...',
                         icon: PublicIcon,
                         onClick: () => {
-                          const session = self.session as
-                            | BaseSession
-                            | undefined
-                          if (session) {
-                            session.queueDialog(doneCallback => [
-                              ExportToWebDialog,
-                              {
-                                snapshot: getSaveSession(self),
-                                session,
-                                handleClose: () => {
-                                  doneCallback()
-                                },
+                          queueSessionDialog(self.session, (session, done) => [
+                            ExportToWebDialog,
+                            {
+                              snapshot: getSaveSession(self),
+                              session,
+                              handleClose: () => {
+                                done()
                               },
-                            ])
-                          }
+                            },
+                          ])
                         },
                       },
                     ],
@@ -462,11 +482,12 @@ export default function rootModelFactory({
                     label: 'Open assembly manager',
                     icon: DNA,
                     onClick: () => {
-                      ;(self.session as BaseSession).queueDialog(
-                        handleClose => [
+                      queueSessionDialog(
+                        self.session,
+                        (session, handleClose) => [
                           AssemblyManager,
                           {
-                            session: self.session,
+                            session,
                             onClose: handleClose,
                           },
                         ],
