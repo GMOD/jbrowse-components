@@ -110,6 +110,35 @@ const min = Math.min(...times)
 console.log(
   `  extract min=${min.toFixed(1)}ms over ${ROUNDS} rounds  (${((min / records.length) * 1000).toFixed(2)}us/read)`,
 )
+
+// The third phase. extractFeatureArrays is not the end of the worker's work:
+// executeRenderAlignmentData then builds the per-read arrays, the read-name
+// block and the mate-reference table off the SAME records. Timed here so the
+// split below is the whole of what a query costs rather than two thirds of it.
+const { buildBaseReadArrays } = await import(
+  join(REPO, 'plugins/alignments/src/shared/buildBaseReadArrays.ts')
+)
+const { buildReadNameBlock } = await import(
+  join(REPO, 'plugins/alignments/src/shared/readNameBlock.ts')
+)
+const { buildReadNextRefs } = await import(
+  join(REPO, 'plugins/alignments/src/shared/readNextRefs.ts')
+)
+
+const buildTimes: number[] = []
+for (let r = 0; r < ROUNDS; r++) {
+  const t = performance.now()
+  buildBaseReadArrays(records as any, readIdPrefix)
+  buildReadNameBlock(records as any)
+  buildReadNextRefs(records as any)
+  buildTimes.push(performance.now() - t)
+}
+const buildMin = Math.min(...buildTimes)
 console.log(
-  `  SPLIT: fetch ${((100 * fetchMs) / (fetchMs + min)).toFixed(0)}%  extract ${((100 * min) / (fetchMs + min)).toFixed(0)}%`,
+  `  arrays  min=${buildMin.toFixed(1)}ms over ${ROUNDS} rounds  (${((buildMin / records.length) * 1000).toFixed(2)}us/read)`,
+)
+
+const total = fetchMs + min + buildMin
+console.log(
+  `  SPLIT: fetch ${((100 * fetchMs) / total).toFixed(0)}%  extract ${((100 * min) / total).toFixed(0)}%  arrays ${((100 * buildMin) / total).toFixed(0)}%`,
 )

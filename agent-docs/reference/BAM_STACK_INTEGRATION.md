@@ -45,16 +45,23 @@ a loss.
 Most of this document is about worker CPU spent per read, because that is what
 is easiest to measure and what successive sessions have optimized. **It is the
 minority of a query.** `benches/readPath.profile.ts` drives the shipped path —
-`getRecordsForRange` with `recordClass` wired, then `extractFeatureArrays` — so
-`--cpu-prof` can split it:
+`getRecordsForRange` with `recordClass` wired, then `extractFeatureArrays`, then
+the per-read array builders `executeRenderAlignmentData` runs after it — so
+`--cpu-prof` can split all three:
 
-| fixture | records | fetch | extract | largest single cost |
-| --- | --: | --: | --: | --- |
-| 1000x.shortread, 19 kb | 153,677 | 283ms (61%) | 181ms (39%) | BGZF inflate wasm |
-| 200x.longread, 19 kb | 335 | 425ms (**88%**) | 61ms (12%) | BGZF inflate wasm |
+| fixture | records | fetch | extract | arrays | largest single cost |
+| --- | --: | --: | --: | --: | --- |
+| 1000x.shortread, 19 kb | 153,677 | 250ms (**54%**) | 175ms (37%) | 43ms (9%) | BGZF inflate wasm |
+| 200x.longread, 19 kb | 335 | 459ms (**89%**) | 58ms (11%) | 0.1ms (0%) | BGZF inflate wasm |
+
+The third column is the one to keep honest about: `extractFeatureArrays` is not
+the end of the worker's work, and an earlier version of this table omitted
+`buildBaseReadArrays` / `buildReadNameBlock` / `buildReadNextRefs` and so
+overstated the other two. Its 43ms independently corroborates the 44ms those
+builders measure on the GIAB 207k-read window (`plugins/alignments/src/CLAUDE.md`).
 
 Inflate is the largest line in both, and on long-read data the whole per-read
-pass is an eighth of the query. Two consequences worth carrying into any sizing
+pass is a ninth of the query. Two consequences worth carrying into any sizing
 argument here:
 
 - **The per-read arrays and tag walks are a few percent of a query, not of a
@@ -66,7 +73,7 @@ argument here:
 - **Long-read data does not have the regime seam 5 is sized for.** That seam
   prices a kilobyte-scale MD rescan per tag walk, on a synthesised sweep of
   50,000 spliced reads. A real long-read window has *hundreds* — 335 here — so
-  `tagValueEnd` is 9.5% of a 61ms extract inside a 447ms query, under 1.5% of the
+  `tagValueEnd` is 9.5% of the 58ms extract inside a 517ms query, about 1% of the
   whole. The sweep's shape finding stands; its weight does not transfer to an
   interactive pileup.
 
