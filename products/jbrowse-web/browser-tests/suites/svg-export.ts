@@ -388,6 +388,58 @@ const suite: TestSuite = {
       },
     },
     {
+      // The cross-region arcs are the one part of the arc band that does NOT
+      // export through `drawAlignmentBlocks`: that walks blocks, and these are
+      // precisely the arcs no block can draw. So they have an export twin of
+      // their own (`CrossRegionArcsSvg`), and a twin nothing exercises is a
+      // figure that silently loses its arcs.
+      name: 'exports SVG with cross-region read-connection arcs',
+      fn: async page => {
+        const downloadDir = await setupDownloadInterception(page)
+        // Two contigs either side of the volvox-translocation junction: 1
+        // coalesced split-read arc plus 8 mate arcs. No spliced reads here, so
+        // every <path> in the export is one of them.
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:19,000-21,000 ctgB:2,500-3,500',
+              tracks: [
+                {
+                  trackId: 'volvox_translocation',
+                  displaySnapshot: {
+                    type: 'LinearAlignmentsDisplay',
+                    readConnections: 'arc',
+                  },
+                },
+              ],
+            },
+          ],
+        })
+        await findDisplayPainted(page, 'pileup-display', 60000)
+        await waitForLoadingToComplete(page)
+
+        const svg = await exportSvgAndSave(
+          page,
+          downloadDir,
+          'svg-export-cross-region-arcs',
+        )
+        const pathCount = (svg.match(/<path/g) ?? []).length
+        console.log(`    ${pathCount} path elements (cross-region arcs)`)
+        // Its own clip rect, which is what says the arcs came from
+        // `CrossRegionArcsSvg` rather than from something else that draws paths.
+        if (!svg.includes('cross-region-arcs-')) {
+          throw new Error('SVG export has no cross-region arc clip group')
+        }
+        if (pathCount < 9) {
+          throw new Error(
+            `SVG export has ${pathCount} <path> elements, expected at least 9`,
+          )
+        }
+      },
+    },
+    {
       name: 'exports SVG from 2-way synteny view',
       fn: async page => {
         const downloadDir = await setupDownloadInterception(page)

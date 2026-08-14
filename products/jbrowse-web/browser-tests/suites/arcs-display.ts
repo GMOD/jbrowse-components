@@ -7,14 +7,128 @@ import {
   findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
+  waitForDisplayPaint,
   waitForElementCount,
 } from '../helpers.ts'
-import { pageSnapshot } from '../snapshot.ts'
+import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
-import type { TestSuite } from '../types.ts'
+import type { TestCase, TestSuite } from '../types.ts'
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
+import type { Page } from 'puppeteer'
 
 const pileup = 'pileup-display'
+
+// The live model, as `window.JBrowseSession` exposes it. The two arc feeds are
+// `Pick`ed off the real model rather than restated, so a rename is a compile
+// error here instead of an assertion that silently reads `undefined`.
+interface LiveModel {
+  JBrowseSession: {
+    views: {
+      tracks: {
+        displays: Pick<
+          LinearAlignmentsDisplayModel,
+          'arcsByGroup' | 'crossRegionArcsByGroup'
+        >[]
+      }[]
+    }[]
+  }
+}
+
+// What the arc band actually resolved to, counted three ways because the three
+// answer different questions and a pixel diff answers none of them: how many
+// paths the cross-region overlay put in the DOM, how many arcs the model put in
+// its cross-region half, and how many interchromosomal TICKS survived. The last
+// is what makes the single-region control mean something — "no cross-region
+// arcs" is also true of a display that resolved nothing at all.
+async function arcCounts(page: Page) {
+  const model = await page.evaluate(() => {
+    const { JBrowseSession } = window as unknown as LiveModel
+    const display = JBrowseSession.views[0]!.tracks[0]!.displays[0]!
+    let crossRegion = 0
+    for (const arcs of display.crossRegionArcsByGroup.values()) {
+      crossRegion += arcs.length
+    }
+    let ticks = 0
+    for (const byRegion of display.arcsByGroup.values()) {
+      for (const data of byRegion.values()) {
+        ticks += data.numArcLines
+      }
+    }
+    return { crossRegion, ticks }
+  })
+  const paths = await page.$$eval(
+    '[data-testid="cross-region-arc"]',
+    els => els.length,
+  )
+  return { ...model, paths }
+}
+
+// One region layout over `volvox_translocation`, snapshotted AND counted.
+//
+// The snapshot target is the display CONTAINER, not `${displayPainted(...)}
+// canvas`, which is what a plain `lgvSnapshotTest` would take. The cross-region
+// overlay is an SVG SIBLING of the canvas, so the default target holds not one
+// arc of what this test is about — it would pass green over a picture with
+// nothing in it. The BEDPE case in this file overrides the same field for its
+// own reason.
+function translocationArcsTest({
+  name,
+  snapshot,
+  loc,
+  expected,
+}: {
+  name: string
+  snapshot: string
+  loc: string
+  expected: { paths: number; crossRegion: number; ticks: number }
+}): TestCase {
+  return {
+    name,
+    fn: async page => {
+      await navigateWithSessionSpec(page, {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'volvox',
+            loc,
+            tracks: [
+              {
+                trackId: 'volvox_translocation',
+                displaySnapshot: {
+                  type: 'LinearAlignmentsDisplay',
+                  readConnections: 'arc',
+                },
+              },
+            ],
+          },
+        ],
+      })
+      await waitForDisplayPaint(page, `${displayPainted(pileup)} canvas`)
+      await waitForDataLoaded(page)
+      // Wait for the paths BEFORE counting them, or an expectation of zero and
+      // an overlay that has not rendered yet are the same observation.
+      if (expected.paths > 0) {
+        await waitForElementCount(
+          page,
+          '[data-testid="cross-region-arc"]',
+          expected.paths,
+        )
+      }
+      const counts = await arcCounts(page)
+      if (
+        counts.paths !== expected.paths ||
+        counts.crossRegion !== expected.crossRegion ||
+        counts.ticks !== expected.ticks
+      ) {
+        throw new Error(
+          `${loc}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(counts)}`,
+        )
+      }
+      await dualSnapshot(page, `${snapshot}-canvas`, displayPainted(pileup))
+    },
+  }
+}
 
 const suite: TestSuite = {
   name: 'Arcs and BEDPE Displays',
@@ -110,6 +224,49 @@ const suite: TestSuite = {
       loc: 'ctgA:1-10000',
       tracks: ['paired_end_stranded_rnaseq'],
       displayTestId: pileup,
+    }),
+
+    // The same data and the same track at three region layouts, differing only
+    // in how many regions are displayed. That is the point: an arc joining two
+    // displayed regions is a claim about the LAYOUT, so no one of these three
+    // says anything on its own.
+    //
+    // `volvox-translocation.bam` is built for exactly this (see
+    // test_data/volvox/README.md): 6 split-read molecules at one coordinate,
+    // 8 mate pairs over the same breakpoint, 3 decoy pairs reaching a part of
+    // ctgB no window shows, and 5 same-chromosome long-range pairs.
+    translocationArcsTest({
+      name: 'interchromosomal arcs (both feet displayed)',
+      snapshot: 'arcs-interchrom-two-contigs',
+      loc: 'ctgA:19,000-21,000 ctgB:2,500-3,500',
+      // 1 + 8: the six split molecules COALESCE to one thick arc, which is the
+      // whole value of drawing this as an arc rather than as ticks, and the
+      // eight mate pairs each keep their own coordinate, which is the whole
+      // reason `arcKey` refuses to invent a merged position for them.
+      //
+      // The 3 ticks are the decoy, whose far foot is on a part of ctgB no
+      // window shows — so this frame carries an arc AND a tick, and both
+      // counts stay honest.
+      expected: { paths: 9, crossRegion: 9, ticks: 3 },
+    }),
+    translocationArcsTest({
+      name: 'cross-region arcs on one chromosome (two ctgA windows)',
+      snapshot: 'arcs-cross-region-two-windows',
+      loc: 'ctgA:19,000-21,000 ctgA:29,000-31,000',
+      // The five long-range pairs, and NOTHING interchromosomal: with ctgB off
+      // screen every connection reaching it is a tick again — 1 coalesced
+      // split-read tick, 8 mate ticks, 3 decoy ticks. Same reads as above.
+      expected: { paths: 5, crossRegion: 5, ticks: 12 },
+    }),
+    translocationArcsTest({
+      name: 'control: one region, so nothing crosses one',
+      snapshot: 'arcs-cross-region-control',
+      loc: 'ctgA:19,000-21,000',
+      // The control the other two need. Without it both are equally satisfied
+      // by an overlay that draws unconditionally — and the tick count is what
+      // separates "the overlay correctly drew nothing" from "the arc band
+      // resolved nothing at all".
+      expected: { paths: 0, crossRegion: 0, ticks: 12 },
     }),
     {
       name: 'collapse introns view with RNA-seq sashimi arcs (EDEN gene)',
