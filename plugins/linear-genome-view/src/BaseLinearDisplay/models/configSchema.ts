@@ -87,15 +87,13 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
       type: 'stringArray',
       description:
         'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
-      // Hide the NCBI whole-sequence "source" record by default. NCBI RefSeq
-      // GFF3 emits one type=region feature per molecule spanning the entire
-      // sequence (taxon/strain/mol_type metadata); it's never biologically
-      // interesting and clutters the track. It always carries gbkey=Src (the
-      // GenBank source feature key), a far tighter marker than type=region — so
-      // this leaves other region features (CpG islands, centromeres, ...)
-      // untouched, and is a no-op on non-NCBI tracks (no gbkey → passes).
-      // Editable/removable via the "Filter by..." dialog like any other filter.
-      defaultValue: [`get(feature,'gbkey')!='Src'`],
+      // EMPTY, and the NCBI source-record rule that used to live here is now
+      // `hideSourceFeatures` on the canvas display's own schema, applied in
+      // buildFeatureAdmission. This slot seeds the "Filter by..." dialog, so a
+      // default here is a jexl expression every user meets on every track
+      // before writing one of their own, on a rule that is about one annotation
+      // source (reviewer: "it confuses people ... it is just for ncbi gff").
+      defaultValue: [],
     },
   },
   {

@@ -2128,7 +2128,14 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // was the same defect surviving in the cases where the two directions
           // chain a homology into DIFFERENT numbers of blocks, which is most of
           // this file's long alignments; the dedupe recognises those now too.
-          levelHeights: [150, 150],
+          // 95, not 150 (reviewer: "improve y-screen real estate with shorter
+          // synteny levels, and shorter graph panel"). Two 150px bands are 300
+          // of a 1580px frame spent on ribbons that neither cross nor stack:
+          // each band is a handful of wide blocks going almost straight down,
+          // and the claim they carry is where they STOP, which a shorter band
+          // states just as well. What the height buys back goes to the graph
+          // pane below, which is the half with a shape in it.
+          levelHeights: [95, 95],
           views: [
             {
               assembly: 'NCTC86',
@@ -2178,8 +2185,16 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportWidth: 1000,
     // the three strain rows (a gene lane each, and the segments lane on K12),
-    // the two ribbon bands and the graph pane
-    viewportHeight: 1580,
+    // the two ribbon bands and the graph pane. 1580 before the bands came down;
+    // this is that less the 110 they gave back, measured off the run's own
+    // CONTENT CLIPPED BELOW THE FOLD rather than guessed.
+    //
+    // The GRAPH PANE is the other half of what review asked to shorten and it
+    // is not the spec's to shorten: GraphGenomeView is an external plugin, its
+    // pane sizes itself to its drawing, and it takes no `height` through a
+    // session snapshot. Cutting the frame instead just clips the bubble, which
+    // is what 1310 did.
+    viewportHeight: 1468,
     hideTooltip: true,
     // One ring in each half, on the same segment (review: "we may want to circle
     // entries in the lineargenomeview/linearsyntenyview and the correspondence

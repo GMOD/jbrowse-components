@@ -95,6 +95,9 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
       })}
     >
       <ToggleButton
+        // The button's only stable handle: everything else about it is the
+        // tooltip, whose wording is a function of four pieces of state.
+        data-testid="follow-synteny-toggle"
         value="followSynteny"
         selected={followSynteny}
         onChange={() => {

@@ -2333,11 +2333,11 @@ export default function baseStateModelFactory(
          * - the jexl override's no-op is the CONFIG DEFAULT, not the empty list,
          *   because clearing it restores that default — so an override equal to
          *   it is one the clear could not change. The dialog is seeded from
-         *   `activeFilters()` and the slot ships a non-empty default on every
-         *   track (the NCBI `gbkey!='Src'` row), so opening "Filter by..." and
-         *   pressing Submit unchanged used to read as a filter. It counts in both
-         *   directions when it differs: narrowing further, and — emptied over a
-         *   slot that declares filters — widening past what the config asked for.
+         *   `activeFilters()`, so on a track whose config declares filters,
+         *   opening "Filter by..." and pressing Submit unchanged would otherwise
+         *   read as a filter. It counts in both directions when it differs:
+         *   narrowing further, and — emptied over a slot that declares filters —
+         *   widening past what the config asked for.
          * - `soloApplied`, not `soloFeatureIds.length`: while the user is still
          *   collecting (ctrl+click) the set only draws boxes and hides nothing.
          *   The SoloSelectionChip's × is the recovery for an unapplied one.

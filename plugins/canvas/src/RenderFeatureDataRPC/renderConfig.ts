@@ -101,6 +101,9 @@ export interface DisplayConfig {
   // omits the `jexl:` prefix (deferred-evaluation convention); the runtime
   // "Filter by..." override carries it. buildFeatureAdmission normalizes both.
   jexlFilters: string[]
+  // the built-in NCBI source-record gate in buildFeatureAdmission; not a jexl
+  // filter, so it never reaches the "Filter by..." dialog
+  hideSourceFeatures: boolean
   // `number | string`, not `number`, because the slot declares
   // `contextVariable: ['feature']` — so it may hold a `jexl:` expression, exactly
   // like `color`/`utrColor`/`mouseover` beside it. Typing it as a bare number is

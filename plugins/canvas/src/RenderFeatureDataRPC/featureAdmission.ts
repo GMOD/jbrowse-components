@@ -59,6 +59,20 @@ export function buildFeatureAdmission({
     hiddenFeatureIds && hiddenFeatureIds.length > 0
       ? new Set(hiddenFeatureIds)
       : undefined
+
+  // The GFF3 source record: NCBI RefSeq emits one type=region feature per
+  // molecule spanning the whole sequence (taxon/strain/mol_type metadata), so
+  // it draws as a bar across every window at every zoom. `gbkey=Src` is the
+  // GenBank source feature key and a far tighter marker than type=region, so
+  // this leaves other region features (CpG islands, centromeres, ...) alone,
+  // and a file with no gbkey attribute passes untouched.
+  //
+  // A GATE rather than a jexlFilters default, which is where it used to live:
+  // that slot seeds the "Filter by..." dialog, so the rule met every user of
+  // every track as a jexl expression they had not written and could not read.
+  // `hideSourceFeatures` is how to turn it off.
+  const hideSource = config.hideSourceFeatures
+
   // Gates ordered cheapest-first so the expensive jexl filterChain only runs on
   // features the membership/type gates already admit — matters at whole-genome
   // showOnlyGenes zoom, where most features are dropped by type.
@@ -67,6 +81,7 @@ export function buildFeatureAdmission({
     return (
       (soloSet === undefined || soloSet.has(id)) &&
       !hiddenSet?.has(id) &&
+      (!hideSource || feature.get('gbkey') !== 'Src') &&
       (geneLikeTypes === undefined ||
         geneLikeTypes.has(featureType(feature).toLowerCase())) &&
       filterChain.passes(feature)

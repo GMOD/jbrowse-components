@@ -98,25 +98,11 @@ const AXOLOTL_ASSEMBLY = 'GCF_040938575.1'
 
 // The gene track the site itself opens with (its defaultSession shows
 // `hg38-ncbiRefSeq`, RefSeq All), and nothing else: no height, no glyph mode, no
-// display settings at all. A figure on a page called "basic usage" has to be the
-// view a reader lands in, so RefSeq All draws its 28 TP53 transcripts here the
-// way it draws them for everyone. The page collapses them where it needs to, as
-// a step the reader takes, and shows the control that does it.
+// display settings at all. The landing frame of the search figure is this, since
+// a page called "basic usage" has to open on the view a reader lands in; every
+// frame at a locus collapses it, which is one click on the chip in the track.
 const GENE_TRACK = { trackId: 'hg38-ncbiRefSeq' }
 const PHYLOP_TRACK = { trackId: 'hg38-phyloP100way' }
-
-// RefSeq All with the track sizing set to autogrow, which is what the search
-// figure lands in. At TP53 the track holds 28 transcripts and the default
-// `fixed` mode lays all of them out inside a 100px band, so the rows past the
-// third are behind the track's own scrollbar and every transcript in frame is
-// cut off from the name drawn under it. `grow` sizes the band to its own
-// content (`growMaxHeight` is 800 and the stack is well under it), so the
-// figure shows the transcripts AND their labels.
-//
-// The menu row is Track menu -> Set feature height -> Track sizing -> "Fixed
-// feature height + autogrow track height"; `heightMode` is the config slot
-// behind it, so an inline key here is the same setting a reader clicks.
-const GENE_TRACK_GROW = { ...GENE_TRACK, heightMode: 'grow' }
 
 // By trackId rather than by name: the page's prose names this track, and a
 // trackId that stops resolving fails the capture where a stale name would
@@ -216,9 +202,10 @@ function filterCallout(text: string): Annotation {
 }
 
 // Collapsed to the longest coding transcript, which the page reaches through the
-// isoform control at the bottom right of the gene track. Used by the base-zoom
-// figure alone, because at that zoom the default is one codon row printed 28
-// times and the residue labels are what the check is read against.
+// isoform control at the bottom right of the gene track: one click, on a chip
+// that is in the frame. Every figure at a locus takes it. At base zoom the
+// default is one codon row printed 28 times, and at gene zoom it is 28 rows in
+// a 100px band with most of them behind the track's own scrollbar.
 const GENE_TRACK_COLLAPSED = {
   ...GENE_TRACK,
   geneGlyphMode: 'longestCoding',
@@ -324,11 +311,17 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // again, since every figure below works from RefSeq All alone. The declared
   // session is that same locus with that same track.
   //
-  // It also sizes the track to its content (`GENE_TRACK_GROW`). At the default
-  // `fixed` sizing this frame was 28 transcripts laid out inside a 100px band:
-  // three rows in shot, each cut off from the name drawn under it, and the rest
-  // behind the track's own scrollbar. That is a picture of a track that does not
-  // fit rather than of a search that worked.
+  // It also COLLAPSES the stack to the longest coding transcript, which is one
+  // click on the chip the frame already shows. Two other states have been in
+  // this frame and each was denied: the default `fixed` sizing laid 28
+  // transcripts inside a 100px band, so three rows were in shot, each cut off
+  // from the name drawn under it and the rest behind the track's own scrollbar
+  // -- a picture of a track that does not fit rather than of a search that
+  // worked. `heightMode: 'grow'` fixed that by showing all 28, which is a
+  // three-level menu path to reach and 28 isoforms to read (reviewer: "requires
+  // multiple steps ... looks chaotic having so many isoforms"). The collapse is
+  // the control on the track itself, and it leaves one transcript with the gene
+  // name under it.
   {
     mode: 'url',
     name: 'genomes_basics/search_tp53',
@@ -359,13 +352,13 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
               type: 'LinearGenomeView',
               assembly: 'hg38',
               loc: TP53_TRANSCRIPT_WINDOW,
-              tracks: [GENE_TRACK_GROW],
+              tracks: [GENE_TRACK_COLLAPSED],
             },
           ],
         }),
-        // the grown stack is 28 rows with the gene's one label under it; sized
-        // off the run's own report rather than off the PNG
-        viewportHeight: 565,
+        // one transcript row, its label and the isoform chip under it; sized off
+        // the run's own report rather than off the PNG
+        viewportHeight: 340,
         actions: [PARK_CURSOR],
       },
     ],
@@ -392,7 +385,12 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           // gene track first, phyloP second: a track opened from the selector
           // is appended below what is already there, so this is the order the
           // click-path above ends in rather than a tidier one
-          tracks: [GENE_TRACK, PHYLOP_TRACK],
+          //
+          // Collapsed, following the search figure above. Left at RefSeq All's
+          // default this lane was 28 transcripts inside a 100px band, most of
+          // them behind its own scrollbar, and the exon structure the peaks are
+          // read against was the thing that got scrolled away.
+          tracks: [GENE_TRACK_COLLAPSED, PHYLOP_TRACK],
         },
       ],
     }),

@@ -170,13 +170,13 @@ describe('samplePreFetchDensity', () => {
     ).toBeUndefined()
   })
 
-  it("still runs under the jexlFilters slot's NCBI gbkey=Src default", async () => {
+  it('still runs under the NCBI gbkey=Src source-record gate', async () => {
     // Regression guard for a gate that was inert in production: this stage used
-    // to be skipped whenever any admission filter was active, and the
-    // `jexlFilters` slot ships a non-empty default (hide the NCBI whole-molecule
-    // gbkey=Src source record), so every default-configured track skipped it and
-    // no track ever sampled. That default drops at most one feature per molecule,
-    // so a dense region must still be rejected pre-fetch under it.
+    // to be skipped whenever any admission filter was active, and the source
+    // record rule shipped as the `jexlFilters` slot's default, so every
+    // default-configured track skipped it and no track ever sampled. The rule
+    // drops at most one feature per molecule, so a dense region must still be
+    // rejected pre-fetch under it.
     const result = await samplePreFetchDensity({
       dataAdapter: fakeAdapter(100),
       region,

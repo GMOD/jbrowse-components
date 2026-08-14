@@ -53,9 +53,7 @@ in the track menu.
 The colored, packed form and the lane form are the same track and the same
 fetch:
 
-<Figure caption="UCSC RepeatMasker over a 17q21 window, colored by repClass through a jexl lookup table. The key over the track is the display's legend slot. Every class shares one packed lane, so a class's blocks are interleaved with five others." src="/img/cookbook_color_by_type.png"/>
-
-<Figure caption="The same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters. The LTR? and Unknown lanes are values in the file that the lookup table above does not name." src="/img/cookbook_color_by_type_rows.png"/>
+<Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass through a jexl lookup table, with the display's legend slot as the key. Every class shares one packed lane. Bottom: the same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters, and the LTR? and Unknown lanes are values in the file that the lookup table does not name." src="/img/cookbook_color_by_type_two_ways.png"/>
 
 ## Pinning it in a config
 

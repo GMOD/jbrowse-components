@@ -238,6 +238,25 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     viewportHeight: 465,
   },
 
+  // The two forms as ONE picture (reviewer, on the colored figure: "this might
+  // want to show the multirow canvas version of this also, either as two part
+  // figure or nearby"). Both parts are the same track, the same window and the
+  // same 1200x465 capture, so the difference between the frames is the display
+  // and nothing else -- which is the claim, and is not something a reader can
+  // check when the two sit a config block apart.
+  //
+  // Stacked rather than side by side: the parts share a width, and the
+  // comparison is per-column (where a class's blocks are in the packed lane,
+  // against which lane they land in), which reads down.
+  //
+  // The cookbook keeps the two parts SEPARATE, each under the config that
+  // produces it; this composed one is for the pages that show them together.
+  {
+    mode: 'compose',
+    name: 'cookbook_color_by_type_two_ways',
+    parts: ['cookbook_color_by_type', 'cookbook_color_by_type_rows'],
+  },
+
   // "Multiple signals on one track, each its own color" recipe: the eight-sample
   // colored MultiQuantitativeTrack above, over the AMY1 amylase copy-number
   // locus, with the NCBI RefSeq genes for context. Rendered multirowline (one

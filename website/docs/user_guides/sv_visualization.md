@@ -71,11 +71,14 @@ navy RR and magenta split reads are the inversion: the first two are mate pairs
 whose ends face the same way, the third is one read split into alignments that
 point in opposite directions, and all three are reads that cross a junction
 where the strand flips. They are a minority of an otherwise concordant grey
-pileup, so they cluster at the breakpoints. The duplication has no orientation
-signature at all and shows up as depth, over the segment the call names in
-`INFO.CPX_INTERVALS`.
+pileup, so they cluster at the breakpoints, and drawn as arcs they overlap each
+other where the grey pairs around them nest — flip the segment between the two
+junctions and each one becomes an ordinary pair at an ordinary insert size,
+which is the same statement as the call. The duplication carries no orientation
+signature at all; where the second copy went is the segment the call names in
+`INFO.CPX_INTERVALS`, shaded here.
 
-<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the duplicated copy shaded, the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
+<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the duplicated segment shaded, the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
 
 ### Short reads vs long reads
 

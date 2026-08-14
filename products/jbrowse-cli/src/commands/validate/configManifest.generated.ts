@@ -2867,6 +2867,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "hideSourceFeatures",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "labels",
           "type": "CanvasFeatureLabelsConfigurationSchema",
           "subSlots": [
@@ -3700,6 +3704,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "impliedUTRs",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "hideSourceFeatures",
           "type": "(JexlString | boolean)"
         },
         {

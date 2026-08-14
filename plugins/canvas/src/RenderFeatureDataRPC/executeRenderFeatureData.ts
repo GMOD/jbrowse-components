@@ -101,9 +101,9 @@ export async function executeRenderFeatureData({
   // This deliberately runs even when a filter is active. It used to be skipped
   // whenever one was, because the sample counted the raw population and would
   // false-reject a filtered view that renders fine (showOnlyGenes at
-  // whole-chromosome zoom over a dense GFF). That skip was inert anyway — the
-  // `jexlFilters` slot ships a non-empty default (the NCBI gbkey=Src
-  // source-record filter), so every default-configured track took it and no
+  // whole-chromosome zoom over a dense GFF). That skip was inert anyway — back
+  // then the `jexlFilters` slot shipped the NCBI gbkey=Src source-record filter
+  // as its default, so every default-configured track took the skip and no
   // track ever sampled. Passing `admit` removes the reason for the skip instead
   // of the skip's trigger: the estimate now measures the admitted population.
   if (maxFeatureDensity !== undefined) {

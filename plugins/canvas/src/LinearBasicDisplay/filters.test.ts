@@ -132,13 +132,13 @@ describe('canvas display runtime filters', () => {
     ])
   })
 
-  it("defaults to hiding the NCBI whole-sequence source record (gbkey=='Src')", () => {
-    // With the slot left unset, activeFilters() surfaces the schema default so
-    // the "Filter by..." dialog shows it pre-populated and removable.
+  it('a track that declares no filters opens the dialog empty', () => {
+    // The slot's default is []. It used to ship the NCBI gbkey=Src source
+    // record rule, which meant every user of every track met the "Filter by..."
+    // dialog pre-populated with a jexl expression they had not written; that
+    // rule is `hideSourceFeatures`, a gate in buildFeatureAdmission, now.
     const display = createDisplay()
-    expect(display.activeFilters()).toEqual([
-      `jexl:get(feature,'gbkey')!='Src'`,
-    ])
+    expect(display.activeFilters()).toEqual([])
   })
 
   it('the runtime override replaces (shadows) the config jexlFilters slot', () => {

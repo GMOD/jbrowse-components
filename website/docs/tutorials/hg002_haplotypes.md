@@ -144,16 +144,17 @@ Then, on each gene lane:
 
 Zoomed in, the same coordinate stops being the same sequence: an indel anywhere
 upstream offsets one haplotype against the other, and the offset accumulates.
-Right-click a chain block and choose **Move other panel to the matching
-region**, which walks that panel's visible window through the alignment's CIGAR
-and sends its neighbor there.
+The follow button in the view's header walks the top panel's visible window
+through the alignment's CIGAR and sends the panel below it there, again every
+time you pan. Right-click on a chain block offers **Move other panel to the
+matching region**, which does the same walk once.
 
 To check the alignment inside a ribbon rather than at its edges, turn on **View
 options → Show... → Show location markers**. It draws lines through the ribbon
 at regularly spaced positions, each joining a point on the top row to the point
 it maps to on the bottom.
 
-<Figure caption="Four numbered frames, read left to right. Each holds a maternal panel over a paternal one, both carrying the Q100 chain blocks on their own haplotype's coordinates: the right-click that moves one panel onto the sequence the other matches, then the location markers drawn through the ribbon." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Four numbered frames, read left to right. Each holds a maternal panel over a paternal one, both carrying the Q100 chain blocks on their own haplotype's coordinates: the follow button that moves one panel onto the sequence the other matches, then the location markers drawn through the ribbon." src="/img/hg002_haplotypes_follow_panel.png" />
 
 ## See also
 

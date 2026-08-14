@@ -23,6 +23,7 @@ export function mockDisplayConfig(
     displayDirectionalChevrons: true,
     mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
     jexlFilters: [],
+    hideSourceFeatures: true,
     // the `maybeColor` slots default to unset, as a real config does
     color: undefined,
     connectorColor: undefined,

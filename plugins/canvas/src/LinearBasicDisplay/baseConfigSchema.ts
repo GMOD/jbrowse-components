@@ -287,6 +287,15 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures',
         defaultValue: true,
       },
+      /**
+       * #slot
+       */
+      hideSourceFeatures: {
+        type: 'boolean',
+        description:
+          'hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute',
+        defaultValue: true,
+      },
       labels: ConfigurationSchema('CanvasFeatureLabels', {
         /**
          * #slot labels.name

@@ -530,8 +530,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       // the comparison a reader would make and get wrong. (It is the same
       // naming that sank hg002_haplotypes_hetsites, noted above.)
       //
-      // What records the move without inviting that is the chain lane, on both
-      // panels, which is also what is being right-clicked. Before: the
+      // What records the move is the chain lane, on both panels. Before: the
       // maternal panel carries the block and the paternal panel's lane is
       // EMPTY, because those coordinates land in the gap past this block's
       // end. After: both lanes carry it and the ribbon closes between them.
@@ -540,46 +539,29 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       [CHAIN_BLOCKS],
       [CHAIN_BLOCKS],
     ),
-    // The context menu opens below the chain lane, near the top of the maternal
-    // panel, so it hangs over the band rather than off the frame. 640 until the
-    // two gene lanes came out, then measured back to where the app frame ends.
+    // 640 until the two gene lanes came out, then measured back to where the
+    // app frame ends. The right-click that used to open a context menu into
+    // this height is gone; the header toggle needs none.
     viewportHeight: 445,
     // 2x2 rather than a column of four (review). Four 445px frames stacked is
     // most of a page of the same app chrome four times, and the pairs that want
     // comparing are adjacent either way: (1) beside (2) is before and after the
-    // menu item, (3) beside (4) the same for the markers. No stage sets its own
+    // toggle, (3) beside (4) the same for the markers. No stage sets its own
     // viewportHeight, so both rows share one and the `+append` has nothing to
     // reconcile.
     stageColumns: 2,
     hideTooltip: true,
     stages: [
       {
-        actions: [
-          // Mid-window, on the chain lane's block row (fracY 0 is the top of the
-          // display and the blocks are its first ~10px). The maternal panel is
-          // views[0].views[0]: a path, because both panels carry the same
-          // trackId and naming the track alone would resolve in whichever one
-          // the walk reached first.
-          {
-            type: 'rightclick',
-            anchor: {
-              view: [0, 0],
-              track: 'hg002v1.2_mat_vs_pat',
-              locus: 'chr8_MATERNAL:7,735,000',
-              fracY: 0,
-              dy: 6,
-            },
-          },
-          // The item waits on the feature fetch (the mate's assembly is what
-          // decides whether any panel can be moved), so gate on the item itself
-          // rather than on the menu opening.
-          {
-            type: 'waitForText',
-            text: 'Move other panel to the matching region',
-          },
-          { type: 'hover', text: 'Move other panel to the matching region' },
-          { type: 'delay', ms: 500 },
-        ],
+        // Nothing to do: this is the state the reader arrives in, and what the
+        // toggle is about to change. It used to right-click a chain block for
+        // "Move other panel to the matching region", which is the one-shot form
+        // of the same thing (reviewer: "we have created a fully new 'follow'
+        // toggle button that should be used instead of this manual right click
+        // thing"). The menu item is still there and still correct; the toggle
+        // is a control in the header rather than two levels down a context
+        // menu, and it keeps holding after the first move.
+        actions: [{ type: 'delay', ms: 500 }],
         // STAGE TITLES ANCHOR TO THE APP BAR, which is the one element whose
         // rect is the frame's own top-left corner (0,0). A stage title belongs
         // to the picture rather than to any track, so there is no locus for it
@@ -594,6 +576,11 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
         // the two panels hold the same numbers, frame two says one of them
         // changed. The app bar's left half is empty in this session, so the
         // title fits there over nothing.
+        //
+        // TWO LINES, WHICH IS WHAT `maxWidth` BUYS: at the 420 default this
+        // title wrapped to three, and the third line reached down into the
+        // toolbar row and covered the top of the ring below it. Frames 3 and 4
+        // never hit this because their titles are shorter.
         annotations: [
           {
             type: 'text',
@@ -604,54 +591,39 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               dx: 24,
               dy: 30,
             },
+            maxWidth: 640,
             fontSize: 22,
-            // THE STATE THE MENU ITEM EXISTS FOR: the two panels have drifted
+            // THE STATE THE TOGGLE EXISTS FOR: the two panels have drifted
             // apart, so the paternal lane shows nothing that lines up with the
             // maternal one (review: "it is unclear 'why' we are doing this").
             // Do NOT phrase this as the two rulers sharing coordinates -- a
             // reader reads that as the regions matching, which is exactly the
             // thing that is not true here. The message is only "you are lost,
-            // and the right-click gets you back".
+            // and this button gets you back".
             text: '(1) The panels have drifted apart -- synteny ribbons are not matching here',
           },
-          // WHERE THE CURSOR WAS (review: "it is unclear what is being right
-          // clicked in the first image"). A context menu opens at the pointer,
-          // so the menu's own top-left corner is the click -- true, and not
-          // something a reader knows to read. The ring is on the SAME anchor
-          // the rightclick action takes, so it cannot drift from it, and it
-          // lands on the chain block the menu came out of.
-          //
-          // A ring rather than a box: the block being right-clicked spans the
-          // whole window (one alignment covers it), so a box around "the
-          // block" is a box around the lane, which marks nothing.
+          // The control, ringed, in the state it is about to leave. It is a
+          // 44px icon among the view's other header icons, so nothing in the
+          // frame would otherwise say which one moved the panel below.
           {
             type: 'circle',
-            anchor: {
-              view: [0, 0],
-              track: 'hg002v1.2_mat_vs_pat',
-              locus: 'chr8_MATERNAL:7,735,000',
-              fracY: 0,
-              dy: 6,
-            },
-            radius: 14,
+            anchor: { selector: '[data-testid="follow-synteny-toggle"]' },
             strokeWidth: 4,
-          },
-          {
-            type: 'box',
-            anchor: { text: 'Move other panel to the matching region' },
-            strokeWidth: 3,
           },
         ],
       },
       {
         actions: [
-          { type: 'click', text: 'Move other panel to the matching region' },
-          // the paternal panel re-navigates and the level refetches at its new
-          // window; the canvas is already painted, so there is no new selector
-          // to wait on
-          { type: 'delay', ms: 8000 },
+          {
+            type: 'click',
+            selector: '[data-testid="follow-synteny-toggle"]',
+          },
+          // The follow's exact pass is an RPC per level off the anchor's
+          // SETTLED window, so this waits on a worker round trip and then on
+          // the moved panel refetching at its new window. The canvas is already
+          // painted, so there is no new selector to wait on.
+          { type: 'delay', ms: 10000 },
         ],
-        closeMenusAfter: true,
         annotations: [
           {
             type: 'text',
@@ -662,11 +634,16 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               dx: 24,
               dy: 30,
             },
+            maxWidth: 640,
             fontSize: 22,
-            // The recovery, stated as the thing that changed: the paternal
-            // panel re-navigates and its chain lane now carries the block the
-            // maternal one does.
-            text: '(2) Right-click puts you back on track -- the paternal panel jumps to the matching region',
+            // The recovery, stated as the thing that changed, plus the half
+            // that a one-shot move does not have: the panel keeps tracking.
+            text: '(2) Follow moves the paternal panel to the matching sequence, and holds it there as you pan',
+          },
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="follow-synteny-toggle"]' },
+            strokeWidth: 4,
           },
         ],
       },

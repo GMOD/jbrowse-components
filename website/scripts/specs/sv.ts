@@ -289,9 +289,9 @@ const CLINVAR_CNV_TRACK = {
   },
 }
 
-// The pileup band `inverted_duplication`'s three callouts sit in, as an origin:
-// the track's own top edge (`fracY: 0`) at the view's left edge, with each
-// callout a dx/dy into it. The band is 2000px of arcs and reads in a 2010px
+// The pileup band `inverted_duplication`'s callouts sit in, as an origin: the
+// track's own top edge (`fracY: 0`) at the view's left edge, with each callout a
+// dx/dy into it. The band is 2000px of arcs and reads in a 2010px
 // capture, so a fraction of the track's height means nothing here and a viewport
 // y means whatever the arc band happened to be that day.
 const INVDUP_PILEUP = {
@@ -304,10 +304,15 @@ const INVDUP_PILEUP = {
 // INFO.CPX_INTERVALS (`DUP_chr1:39660047-39660275`) rather than eyeballed off
 // the coverage step. The record's other interval is the inversion
 // (`INV_chr1:39658980-39660275`), which is half the view and is what the read
-// orientations are about; this one is 228 bp and is the only part of the call
-// that has a coverage answer, so it is the part the figure shades.
+// orientations are about; this 228 bp one is where the second copy went, and
+// shading it is all the figure claims about it.
+//
+// The figure once pointed a callout at the coverage step over this shading and
+// no longer does (reviewer: "the coverage diagram is very noisy due to short
+// reads ... it is just kind of obvious"). The step is real and was measured
+// against the frame, and it is still a 228 bp read of a short-read depth
+// profile, which is the width at which that band is mostly sampling noise.
 const INVDUP_DUP_SEGMENT = { start: 39660047, end: 39660275 }
-const INVDUP_DUP_LOCUS = '1:39,660,048-39,660,275'
 
 // hg19 main chromosomes (1..22, X, Y) in karyotype order. A plain whole-genome
 // showAllRegionsInAssembly also appends the *_hap / *_random / Un contigs, whose
@@ -685,10 +690,9 @@ export const svSpecs: ScreenshotSpec[] = [
           // The duplicated copy, shaded. It is the half of this call that the
           // read orientations say nothing about -- LL, RR and an inverted split
           // read are an INVERSION signature, and a reader who takes them for the
-          // whole story never finds the "dup" in INVdup. What answers for the
-          // duplication is depth, and depth is only legible against a boundary:
-          // the step is 228 bp in a 2.7 kb window, so unshaded the frame shows a
-          // coverage band that goes up somewhere.
+          // whole story never finds the "dup" in INVdup. The shading says WHERE
+          // the second copy is, which is a thing the call knows and the picture
+          // does not; nothing in the frame argues it from depth.
           highlight: [
             {
               refName: '1',
@@ -792,7 +796,7 @@ export const svSpecs: ScreenshotSpec[] = [
         fromAnchor: { ...INVDUP_PILEUP, dx: 1007, dy: 521 },
         anchor: { text: 'CPX_TYPE' },
       },
-      // All three callouts anchor to the pileup track's own top edge (fracY 0 +
+      // Every callout anchors to the pileup track's own top edge (fracY 0 +
       // dy), so they sit a fixed distance below the arc band however tall it is,
       // instead of encoding the whole layout in a viewport y. The locus is the
       // view's left edge, which puts a pill at the track's left margin.
@@ -802,35 +806,14 @@ export const svSpecs: ScreenshotSpec[] = [
         // in off the track's left edge, so the pill's border clears the app
         // frame rather than being clipped by it
         anchor: { ...INVDUP_PILEUP, dx: 50, dy: 360 },
-        // Names what each colour IS, which is the half the old wording left to
-        // the legend: "magenta split reads" is a colour and a read class, and a
-        // reader who does not already know that a split read's two alignments
-        // can disagree about strand has been told nothing. The two mate classes
-        // get the same treatment, since LL and RR are the legend's words rather
-        // than an explanation.
-        text: 'Magenta: one read, split into two alignments that point in OPPOSITE directions.\nGreen (LL) and navy (RR): mate pairs whose two ends face the same way.\n\nBoth are reads that cross an inversion junction.',
-        maxWidth: 520,
-      },
-      {
-        // duplication evidence, stacked below with a gap, pointing at the shaded
-        // segment rather than describing it: "elevated coverage" in a 2.7 kb
-        // frame is a claim about ~90 px of one band
-        type: 'text',
-        anchor: { ...INVDUP_PILEUP, dx: 50, dy: 590 },
-        text: 'Coverage steps up over the shaded segment. That is the second copy, and the reads above say it went in backwards.',
-        maxWidth: 520,
-      },
-      {
-        type: 'arrow',
-        fromAnchor: { ...INVDUP_PILEUP, dx: 570, dy: 570 },
-        // 60px into the 120px coverage band, so the head lands in the step
-        // itself rather than on the ruler above it
-        anchor: {
-          track: 'HG02768.final',
-          locus: INVDUP_DUP_LOCUS,
-          fracY: 0,
-          dy: 60,
-        },
+        // The COUNTERFACTUAL, which is the thing a still frame cannot show and
+        // the reason a shape made of arcs reads as an inversion at all
+        // (reviewer): the discordant arcs overlap where concordant ones nest,
+        // and undoing the flip is what would regularise them. Naming the
+        // colours is the half a legend already does; naming what the SHAPE
+        // would become is not.
+        text: 'Green (LL) and navy (RR) arcs overlap each other instead of nesting. Flip the segment between the two junctions and every one of them becomes an ordinary, evenly spaced pair.\n\nMagenta: one read, split into two alignments that point in OPPOSITE directions.',
+        maxWidth: 560,
       },
     ],
   },

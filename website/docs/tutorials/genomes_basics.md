@@ -49,15 +49,14 @@ starts. Type `TP53` into the location box and press Enter. The hosted config
 ships a name index, so gene symbols resolve with no setup, and coordinates like
 `chr17:7,668,400-7,687,550` work anywhere a symbol does.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view at TP53, with RefSeq All sized to its own content, so the whole transcript stack and the gene name under it are in the track." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view at TP53, with the gene track collapsed to one transcript." />
 
 RefSeq All draws each transcript of a gene on its own row and writes the gene
 name under the stack, and TP53 has more transcripts than a track opens tall
-enough to show, so both the last rows and the name are behind its scrollbar.
-**Track menu → Set feature height → Fixed feature height + autogrow track
-height** <!-- menu-path-ok --> sizes the track to whatever it is holding, which
-is what the lower panel above is set to; the isoform control at the bottom right
-collapses the stack instead.
+enough to show, so both the last rows and the name end up behind its scrollbar.
+The isoform control at the bottom right of the track collapses the stack to one
+transcript, which is what the lower panel is set to and what the rest of this
+page uses.
 
 ## Finding a track
 
@@ -75,7 +74,7 @@ phyloP scores each base against the neutral rate the alignment implies. The
 score is signed, so the track has a pivot rather than a floor: blue above the
 line changes more slowly than neutral, red below it faster.
 
-<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The RefSeq transcripts over the TP53 body with phyloP under them, both as they open." />
+<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The TP53 transcript over the gene body with phyloP under it, as the track opens." />
 
 The peaks are the width of the coding exons rather than of the gene: the introns
 between them drop to the pivot, and the 3' UTR block at the left end is an exon
@@ -89,9 +88,9 @@ covers G245, R248 and R249, three of the codons most often mutated in human
 cancer: Arg248 reaches into the DNA itself, and the other two hold the loop that
 carries it.
 
-Two more clicks make it readable: tick **Reference sequence**, which is off by
-default, and set the gene track's isoform control to **Longest coding
-transcript**, so the codon row is drawn once.
+One more click makes it readable: tick **Reference sequence**, which is off by
+default. The isoform control is the same one the search figure used, and at this
+zoom it matters more, since the default draws the codon row once per transcript.
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Longest coding transcript options as the track menu's Gene glyph radio." />
 

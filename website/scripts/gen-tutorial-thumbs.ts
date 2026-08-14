@@ -425,10 +425,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   // The partitioned track, which is the page's whole result, from its track
   // header down. Anchored left because the class names down the gutter are the
   // half that says what happened — the same window packed into one lane is the
-  // figure just above it on the page.
+  // top part of the same figure.
+  //
+  // The band is into the COMPOSED figure, whose two equal-height parts are the
+  // colored form over the partitioned one, so the lower part starts at 0.5 and
+  // the 0.42 that used to skip the app header is 0.71 here.
   repeatmasker_classes: {
-    src: 'cookbook_color_by_type_rows.png',
-    band: [0.42, 1],
+    src: 'cookbook_color_by_type_two_ways.png',
+    band: [0.71, 1],
     position: 'left',
   },
 }
