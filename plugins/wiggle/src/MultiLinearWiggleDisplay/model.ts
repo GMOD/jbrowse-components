@@ -620,10 +620,10 @@ export default function stateModelFactory(
                 ...self.rpcProps(),
                 stopToken: ctx.stopToken,
                 bpPerPx,
-                // One batched call for every region, so there is nothing to
-                // aggregate: the plain status callback, not the per-region one
-                // the fan-out displays use to merge N concurrent bars.
-                statusCallback: self.makeStatusCallback(),
+                // One batched call for every region, so `ctx.statusCallback`
+                // here is the whole fetch's rather than a fan-out slot — same
+                // field either way, which is the point of it living on the ctx.
+                statusCallback: ctx.statusCallback,
               }),
             onResult: (idx, result) => {
               self.setRpcData(idx, result)

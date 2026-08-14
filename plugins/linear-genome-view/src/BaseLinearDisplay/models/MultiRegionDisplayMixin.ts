@@ -1,4 +1,5 @@
 import {
+  createStatusFanOut,
   getContainingTrack,
   getContainingView,
   getSession,
@@ -725,12 +726,36 @@ export function callEachRegion<R>(
     displayedRegionIndex: number,
   ) => Promise<R>,
 ): Promise<{ displayedRegionIndex: number; result: R }[]> {
+  const perRegion = fanOutStatus(ctx, needed.length)
   return Promise.all(
-    needed.map(async ({ region, displayedRegionIndex }) => ({
+    needed.map(async ({ region, displayedRegionIndex }, i) => ({
       displayedRegionIndex,
-      result: await call(region, ctx, displayedRegionIndex),
+      result: await call(region, perRegion[i]!, displayedRegionIndex),
     })),
   )
+}
+
+/**
+ * One context per concurrent region, each carrying its own status slot, so the
+ * N of them aggregate into a single Σcurrent/Σtotal bar rather than
+ * last-writer-wins on the display's one status field.
+ *
+ * A copy of the ctx rather than a separate `slot()` on it because a display
+ * should not have to know which kind of context it holds: the field is called
+ * `statusCallback` in both, and `statusCallback: ctx.statusCallback` at the RPC
+ * call site is correct in the fan-out and in the batched case alike. Displays
+ * used to reach back to the model for `makeRegionStatusCallback(index)`, and
+ * the whole hazard was that forgetting to looked exactly like remembering to.
+ *
+ * The fan-out's lifetime is this batch's: slots are never reclaimed, and the
+ * batch is the thing that ends.
+ */
+function fanOutStatus(ctx: FetchContext, count: number) {
+  const slot = createStatusFanOut(ctx.statusCallback)
+  return Array.from({ length: count }, () => ({
+    ...ctx,
+    statusCallback: slot(),
+  }))
 }
 
 /**
@@ -744,10 +769,10 @@ export function callEachRegion<R>(
  * `call` keeps the literal RPC method name at the call site, so its typed args
  * (`RpcCallArgs<M>`) and return (`RpcCallReturn<M>`) survive — `R` is inferred
  * from `call` and flows into `onResult` with no cast. The helper owns the
- * control flow; the display still owns its typed payload (and the structural
- * args + `statusCallback: self.makeRegionStatusCallback(displayedRegionIndex)`
- * it injects there — the index is the third `call` argument, so the parallel
- * per-region fetches aggregate into one bar instead of clobbering each other).
+ * control flow; the display still owns its typed payload, into which it injects
+ * `statusCallback: ctx.statusCallback` — the ctx `call` is handed, which is that
+ * region's own status slot, so the parallel per-region fetches aggregate into
+ * one bar instead of clobbering each other.
  * A display whose fetch genuinely diverges — canvas (prune + fold a too-large
  * result), MAF (a concurrent annotation fetch + a cross-region sample pick),
  * alignments (chain payload) — keeps its own `fetchNeeded` and calls
@@ -775,9 +800,14 @@ export async function fetchEachRegion<R>(
   await self.fetchRegions(needed, async ctx => {
     // per-region guard, not one around the batch: a region that arrives before
     // the user moves on still commits
+    const perRegion = fanOutStatus(ctx, needed.length)
     await Promise.all(
-      needed.map(async ({ region, displayedRegionIndex }) => {
-        const result = await opts.call(region, ctx, displayedRegionIndex)
+      needed.map(async ({ region, displayedRegionIndex }, i) => {
+        const result = await opts.call(
+          region,
+          perRegion[i]!,
+          displayedRegionIndex,
+        )
         if (!ctx.isStale()) {
           opts.onResult(displayedRegionIndex, result)
         }

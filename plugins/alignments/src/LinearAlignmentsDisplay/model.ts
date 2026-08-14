@@ -170,7 +170,6 @@ import type { SectionsLayout } from './sectionLayout.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -4040,8 +4039,7 @@ export default function stateModelFactory(
         function fetchFeaturesForRegion(
           adapterConfig: Record<string, unknown>,
           region: Region,
-          displayedRegionIndex: number,
-          stopToken: StopToken,
+          ctx: FetchContext,
         ) {
           const session = getSession(self)
           const sequenceAdapter = getSequenceAdapter(session, region)
@@ -4051,11 +4049,11 @@ export default function stateModelFactory(
             sequenceAdapter,
             regions: [region],
             ...self.rpcProps(),
-            stopToken,
-            // per-region status so the N parallel collapsed-intron fetches
-            // aggregate into one bar instead of clobbering each other's
-            // progress text (matches every other multi-region display)
-            statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
+            stopToken: ctx.stopToken,
+            // this region's slot on the fetch's fan-out, so the N parallel
+            // collapsed-intron fetches aggregate into one bar instead of
+            // clobbering each other's progress text
+            statusCallback: ctx.statusCallback,
           })
         }
 
@@ -4070,16 +4068,8 @@ export default function stateModelFactory(
               // `callEachRegion` rather than `fetchEachRegion`: the tag-map
               // union below is a cross-region decision, so this guards once
               // around the whole batch instead of per region.
-              const results = await callEachRegion(
-                needed,
-                ctx,
-                (region, c, displayedRegionIndex) =>
-                  fetchFeaturesForRegion(
-                    self.adapterConfig,
-                    region,
-                    displayedRegionIndex,
-                    c.stopToken,
-                  ),
+              const results = await callEachRegion(needed, ctx, (region, c) =>
+                fetchFeaturesForRegion(self.adapterConfig, region, c),
               )
               if (ctx.isStale()) {
                 return

@@ -745,20 +745,14 @@ export default function sharedModelFactory(
             return
           }
 
-          const result = await rpcManager.call(
-            sessionId,
-            'RenderLDData',
-            {
-              adapterConfig,
-              regions: [...regions],
-              bpPerPx,
-              ...self.rpcProps(),
-              stopToken: ctx.stopToken,
-            },
-            {
-              statusCallback: self.makeStatusCallback(),
-            },
-          )
+          const result = await rpcManager.call(sessionId, 'RenderLDData', {
+            adapterConfig,
+            regions: [...regions],
+            bpPerPx,
+            ...self.rpcProps(),
+            stopToken: ctx.stopToken,
+            statusCallback: ctx.statusCallback,
+          })
           if (ctx.isStale()) {
             return
           }

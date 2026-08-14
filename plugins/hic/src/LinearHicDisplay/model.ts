@@ -652,22 +652,16 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         await self.runFetch(async ctx => {
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
-          const result = await rpcManager.call(
-            sessionId,
-            'RenderHicData',
-            {
-              adapterConfig,
-              regions: [...contentBlocks],
-              viewBlocks,
-              bpPerPx,
-              resolution,
-              ...self.rpcProps(),
-              stopToken: ctx.stopToken,
-            },
-            {
-              statusCallback: self.makeStatusCallback(),
-            },
-          )
+          const result = await rpcManager.call(sessionId, 'RenderHicData', {
+            adapterConfig,
+            regions: [...contentBlocks],
+            viewBlocks,
+            bpPerPx,
+            resolution,
+            ...self.rpcProps(),
+            stopToken: ctx.stopToken,
+            statusCallback: ctx.statusCallback,
+          })
           if (ctx.isStale()) {
             return
           }

@@ -1,4 +1,8 @@
-import { createGuardedStatusSink, isAbortException } from '@jbrowse/core/util'
+import {
+  createGuardedStatusSink,
+  createStatusThrottle,
+  isAbortException,
+} from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -42,6 +46,8 @@ export async function withDiagonalizeProgress(
         sink: status => {
           model.setDiagonalizeStatus(status)
         },
+        // this run is the only stream on this model's status field
+        throttle: createStatusThrottle(),
       }),
     })
   } catch (e) {

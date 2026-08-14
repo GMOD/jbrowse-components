@@ -61,9 +61,20 @@ export type RpcStatus = string | StatusWithProgress
  */
 export type StatusCallback = (status: RpcStatus) => void
 
-/** Extract the human-readable text from any status value. */
+/**
+ * Extract the human-readable text from any status value, or `undefined` when
+ * there is none.
+ *
+ * `''` is none: it is the phase-over sentinel, not a label. Passing it through
+ * as an empty string gave every model that stores a `statusMessage` two spellings
+ * of "nothing to show" — `undefined` from a reset, `''` from the last phase
+ * ending — which read the same on screen (`message || 'Loading'`) and differently
+ * to everything else. Normalizing here covers all three writers, which are the
+ * same line of code (`assembly`, `BaseDisplayModel`, `FetchMixin`).
+ */
 export function statusMessageText(status: RpcStatus | undefined) {
-  return typeof status === 'string' ? status : status?.message
+  const text = typeof status === 'string' ? status : status?.message
+  return text === '' ? undefined : text
 }
 
 /**
@@ -147,14 +158,22 @@ export function createStatusThrottle() {
       }
     },
     /**
-     * Write now, dropping anything queued behind it. For a write that must land
-     * AND that supersedes what it was queued behind — the `''` closing a phase
-     * is both. Without this the trailing timer restores a percentage after the
-     * work it measured has ended.
+     * Write now, dropping anything queued behind it, and reopen the window. For
+     * a write that must land AND that supersedes what it was queued behind —
+     * the `''` closing a phase is both. Without this the trailing timer restores
+     * a percentage after the work it measured has ended.
+     *
+     * Reopening is the half that is easy to leave out, and closing the window
+     * here is worse than not throttling the clear at all: a phase boundary is
+     * immediately followed by the *next* phase's label, so charging the clear a
+     * full window delays every label by up to one, and drops outright the label
+     * of any phase shorter than one (its own clear cancels the queued label
+     * behind it). Same reasoning as {@link reset}, which reopens for the same
+     * reason at a fetch boundary.
      */
     runNow(apply: () => void) {
       clearPending()
-      lastMs = Date.now()
+      lastMs = 0
       apply()
     },
     /**
@@ -186,22 +205,25 @@ export function createStatusThrottle() {
  * queued behind it — otherwise the trailing timer puts a percentage back on
  * screen after the work it measured has ended.
  *
- * `throttle` defaults to a fresh window. Pass one to share it across an owner's
- * several callbacks, which is what makes N concurrent per-region fetches thin to
- * one stream between them rather than N (`FetchMixin` passes its model-wide one
- * through `throttleStatus`). A throttle with no `runNow` just writes the clear
- * straight through, which lands it but cannot cancel that owner's pending write.
+ * `throttle` is required, with no default, because whose window this is is the
+ * decision the caller has to make and a default makes it silently. One window
+ * per *owner*, shared across that owner's several callbacks, is what makes N
+ * concurrent per-region fetches thin to one stream between them rather than N —
+ * a per-sink default would quietly give you N, which is the thing
+ * {@link createStatusThrottle} exists to prevent. An owner with a single stream
+ * writes `createStatusThrottle()` at the call site and has said so;
+ * `FetchMixin` passes its model-wide one through `throttleStatus`.
  */
 export function createGuardedStatusSink({
   isCurrent,
   sink,
-  throttle = createStatusThrottle(),
+  throttle,
 }: {
   isCurrent: () => boolean
   sink: (status: RpcStatus) => void
-  throttle?: {
+  throttle: {
     run: (apply: () => void) => void
-    runNow?: (apply: () => void) => void
+    runNow: (apply: () => void) => void
   }
 }): StatusCallback {
   return status => {
@@ -214,12 +236,7 @@ export function createGuardedStatusSink({
         }
       }
       if (status === '') {
-        ;(
-          throttle.runNow ??
-          (apply => {
-            apply()
-          })
-        )(write)
+        throttle.runNow(write)
       } else {
         throttle.run(write)
       }
@@ -313,11 +330,21 @@ export async function downloadStatus<T>(
  * charged the mean of the totals we do know, with nothing completed against it.
  * Dropping those outright is what let a fan-out where one region's response
  * carried no Content-Length read 100% with that region still downloading.
+ *
+ * `''` is not one of those. It is how every phase helper says "this phase is
+ * over", so an operation reporting it is not in flight and must not be charged
+ * anything — charging it is a bar that runs *backwards* as regions finish
+ * (three done and one at half of its 1000 read 500/4000 rather than 500/1000),
+ * and it can win the `present[0]` fallback below, blanking the label of a region
+ * still working. Callers that retire a slot on `''` never send one; this is here
+ * so the function is right on its own rather than only in company.
  */
 export function aggregateStatus(
   statuses: (RpcStatus | undefined)[],
 ): RpcStatus | undefined {
-  const present = statuses.filter((s): s is RpcStatus => s !== undefined)
+  const present = statuses.filter(
+    (s): s is RpcStatus => s !== undefined && s !== '',
+  )
   const determinate = present.filter(
     (s): s is StatusWithProgress => typeof s === 'object',
   )
@@ -330,8 +357,7 @@ export function aggregateStatus(
     }
     const indeterminate = present.length - determinate.length
     const total = measured + (indeterminate * measured) / determinate.length
-    const [first] = determinate
-    return { message: first ? first.message : '', current, total }
+    return { message: determinate[0]!.message, current, total }
   } else {
     return present[0]
   }
@@ -346,9 +372,15 @@ export function aggregateStatus(
  * the first one to finish (which writes the `''` every phase helper clears
  * with) can't blank the label while the others are still running.
  *
- * The worker-side counterpart to `FetchMixin.setRegionStatus`, which does the
- * same keyed by region on the main thread. Use it wherever a `Promise.all` or
- * an rxjs `merge` hands one `statusCallback` to several operations at once.
+ * Use it wherever several operations are handed one `statusCallback` at once —
+ * a `Promise.all`, an rxjs `merge`, or the per-region fan-out `FetchMixin`'s
+ * `runFetch` puts on every {@link FetchContext}. One fan-out per batch: slots
+ * are taken for the batch's lifetime and it is the batch that ends, so a
+ * long-lived one accumulates slots for work that is over.
+ *
+ * A slot holding `''` needs no special handling here — {@link aggregateStatus}
+ * reads it as the "phase over" it is. Retiring it to `undefined` on the way in
+ * was a second statement of the same rule, and the two drifted.
  */
 export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
   const slots: (RpcStatus | undefined)[] = []
@@ -356,9 +388,7 @@ export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
     const index = slots.length
     slots.push(undefined)
     return status => {
-      // '' is how updateStatus/downloadStatus signal "this phase is done", so
-      // it retires the slot rather than contributing an empty message.
-      slots[index] = status === '' ? undefined : status
+      slots[index] = status
       statusCallback?.(aggregateStatus(slots) ?? '')
     }
   }

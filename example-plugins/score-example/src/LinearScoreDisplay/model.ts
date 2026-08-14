@@ -87,16 +87,17 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           // rpcManager.call injects sessionId from its first argument, so it
           // does not go in the args object — a registered method's args are
           // Omit<…, 'sessionId'>, and passing it again is a type error
-          call: (region, ctx, displayedRegionIndex) =>
+          call: (region, ctx) =>
             rpcManager.call(sessionId, 'GetScoreData', {
               adapterConfig,
               region,
               ...self.rpcProps(),
               stopToken: ctx.stopToken,
               // the RPC layer replaces this function with a side-channel and
-              // calls it on the main thread as the worker reports progress
-              statusCallback:
-                self.makeRegionStatusCallback(displayedRegionIndex),
+              // calls it on the main thread as the worker reports progress.
+              // It is this region's slot in the fetch's fan-out, so the N
+              // parallel calls aggregate into one bar
+              statusCallback: ctx.statusCallback,
             }),
           onResult: (idx, result) => {
             self.setRpcData(idx, result)

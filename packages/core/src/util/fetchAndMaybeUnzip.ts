@@ -38,10 +38,17 @@ export async function fetchAndMaybeUnzip(
   // (~180KB) on the startup path of every page load; only an actually-gzipped
   // file needs them
   return isGzip(buf)
-    ? await updateStatus('Unzipping', statusCallback, async () => {
-        const { unzip } = await import('@gmod/bgzf-filehandle')
-        return unzip(buf)
-      })
+    ? await updateStatus(
+        'Unzipping',
+        statusCallback,
+        async () => {
+          const { unzip } = await import('@gmod/bgzf-filehandle')
+          return unzip(buf)
+        },
+        // a cancel landing here is otherwise discovered only by whatever parses
+        // the result, after a whole-file inflate has run to completion
+        stopToken,
+      )
     : buf
 }
 

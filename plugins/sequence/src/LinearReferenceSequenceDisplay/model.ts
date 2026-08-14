@@ -401,7 +401,7 @@ export function modelFactory(
         const sessionId = getRpcSessionId(self)
         const adapterConfig = self.adapterConfig
         await fetchEachRegion(self, needed, {
-          call: async (region, ctx, displayedRegionIndex) => {
+          call: async (region, ctx) => {
             const features = await rpcManager.call(
               sessionId,
               'CoreGetFeatures',
@@ -409,8 +409,7 @@ export function modelFactory(
                 regions: [region],
                 adapterConfig,
                 stopToken: ctx.stopToken,
-                statusCallback:
-                  self.makeRegionStatusCallback(displayedRegionIndex),
+                statusCallback: ctx.statusCallback,
               },
             )
             const geneticCodeId =

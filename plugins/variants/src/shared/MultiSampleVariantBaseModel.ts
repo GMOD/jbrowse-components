@@ -1569,7 +1569,7 @@ export default function MultiSampleVariantBaseModelF(
                 // bound at factory call time, per subclass
                 mode: cellDataMode,
                 stopToken: ctx.stopToken,
-                statusCallback: self.makeStatusCallback(),
+                statusCallback: ctx.statusCallback,
               },
             )
             if (!ctx.isStale() && isAlive(self)) {

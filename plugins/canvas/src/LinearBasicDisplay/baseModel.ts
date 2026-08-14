@@ -14,6 +14,7 @@ import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
   canonicalizeViewRefName,
   clamp,
+  createStatusFanOut,
   getContainingTrack,
   getContainingView,
   getSession,
@@ -2483,6 +2484,7 @@ export default function baseStateModelFactory(
           byteLimit: number | undefined,
           maxFeatureDensity: number | undefined,
           stopToken: StopToken,
+          statusCallback: StatusCallback,
         ): Promise<RegionFetch> {
           const sessionId = getRpcSessionId(self)
           const session = getSession(self)
@@ -2503,11 +2505,7 @@ export default function baseStateModelFactory(
               byteLimit,
               maxFeatureDensity,
               stopToken,
-              // keyed by region so concurrent per-region fetches aggregate
-              // into one bar (FetchMixin.setRegionStatus) instead of each
-              // overwriting the shared statusMessage/statusProgress
-              statusCallback:
-                self.makeRegionStatusCallback(displayedRegionIndex),
+              statusCallback,
             },
           )
           return { displayedRegionIndex, region, bpPerPx, result }
@@ -2577,6 +2575,12 @@ export default function baseStateModelFactory(
               ),
             )
             void self.fetchRegions(needed, async (ctx: FetchContext) => {
+              // `createStatusFanOut` by hand rather than through
+              // `callEachRegion`, which is what hands the other multi-region
+              // displays their slots — this one keeps its own `Promise.all` for
+              // the reason `fetchEachRegion`'s docs give, and the slot is the
+              // only thing it was getting from the helper
+              const slot = createStatusFanOut(ctx.statusCallback)
               const promises = needed.map(({ region, displayedRegionIndex }) =>
                 fetchFeaturesForRegion(
                   region,
@@ -2585,6 +2589,7 @@ export default function baseStateModelFactory(
                   byteLimit,
                   maxFeatureDensity,
                   ctx.stopToken,
+                  slot(),
                 ),
               )
               const results = await Promise.all(promises)

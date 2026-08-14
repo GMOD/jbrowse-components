@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { createGuardedStatusSink } from './progress.ts'
+import { createGuardedStatusSink, createStatusThrottle } from './progress.ts'
 import { createStopToken, stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus, StatusCallback } from './progress.ts'
@@ -147,6 +147,10 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       // than the prior fetch's result
       fetchedKeyRef.current = null
       setState({ data: undefined, error: undefined, isLoading: false })
+      // and the same for the progress, which otherwise sticks: a key going nil
+      // *during* a fetch runs this branch's cleanup first, so the `alive` guard
+      // on the settle below has already closed and nothing else clears it
+      setStatus(undefined)
       return undefined
     } else {
       let alive = true
@@ -189,6 +193,8 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       const statusCallback = createGuardedStatusSink({
         isCurrent: () => alive && !settled,
         sink: setStatus,
+        // one fetch is one stream, so the window is this effect run's
+        throttle: createStatusThrottle(),
       })
       const args = [...keyArgs, stopToken, statusCallback]
       const call = fetcher as (...args: unknown[]) => Promise<Data>

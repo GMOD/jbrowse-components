@@ -2,8 +2,17 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'
+import { callEachRegion } from './MultiRegionDisplayMixin.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
+import type { Region } from '@jbrowse/core/util'
+
+const REGION = {
+  refName: 'ctgA',
+  start: 0,
+  end: 100,
+  assemblyName: 'volvox',
+} as Region
 
 // FetchMixin logs console.error on non-abort failures; silence it here since
 // error-path tests deliberately trigger these
@@ -254,11 +263,16 @@ describe('FetchMixin: status message', () => {
   })
 })
 
+// Driven through the per-region contexts a real fetch hands out
+// (`callEachRegion`), not through a keyed setter called by hand — the retirement
+// value a region actually sends is `''`, the `updateStatus`/`downloadStatus`
+// phase clear, and nothing in production ever passed `undefined`. Tests written
+// against the setter agreed with themselves and with nothing else.
 describe('FetchMixin: progress reporting', () => {
-  // `setRegionStatus` throttles its bar write, so these aggregation tests step
-  // the clock past the window before each call; otherwise a synchronous burst
-  // is thinned and the assertions read a deliberately-skipped value. Starts well
-  // past the window so the first write in each test always lands.
+  // the bar write is throttled, so these aggregation tests step the clock past
+  // the window before each status; otherwise a synchronous burst is thinned and
+  // the assertions read a deliberately-skipped value. Starts well past the
+  // window so the first write in each test always lands.
   let clock = 1_000_000
   beforeEach(() => {
     clock = 1_000_000
@@ -269,6 +283,31 @@ describe('FetchMixin: progress reporting', () => {
   })
   function step() {
     clock += 1000
+  }
+
+  // Two regions' worth of contexts from one fetch, as `callEachRegion` builds
+  // them. Left in flight deliberately: these are about what the bar reads while
+  // the fetch is running.
+  function twoRegions() {
+    const m = makeModel()
+    const ctxs: FetchContext[] = []
+    m.runFetch(ctx => {
+      // `call` runs synchronously inside `callEachRegion`'s map, so the slots
+      // exist by the time runFetch's first yield returns here
+      void callEachRegion(
+        [
+          { region: REGION, displayedRegionIndex: 0 },
+          { region: REGION, displayedRegionIndex: 1 },
+        ],
+        ctx,
+        (_region, regionCtx) => {
+          ctxs.push(regionCtx)
+          return new Promise<void>(() => {})
+        },
+      )
+      return new Promise<void>(() => {})
+    })
+    return { m, ctxs }
   }
 
   it('setStatusMessage splits a determinate status into message + fraction', () => {
@@ -285,69 +324,94 @@ describe('FetchMixin: progress reporting', () => {
     expect(m.statusProgress).toBeUndefined()
   })
 
-  it('setRegionStatus aggregates concurrent regions into one bar', () => {
-    const m = makeModel()
+  it('aggregates concurrent regions into one bar', () => {
+    const { m, ctxs } = twoRegions()
+    const [a, b] = ctxs
     // two regions downloading in parallel: the bar reflects Σcurrent/Σtotal,
     // not whichever region reported last
-    m.setRegionStatus(0, { message: 'Downloading', current: 30, total: 100 })
+    a!.statusCallback({ message: 'Downloading', current: 30, total: 100 })
     step()
-    m.setRegionStatus(1, { message: 'Downloading', current: 10, total: 100 })
+    b!.statusCallback({ message: 'Downloading', current: 10, total: 100 })
     expect(m.statusMessage).toBe('Downloading')
     expect(m.statusProgress).toBeCloseTo(0.2)
   })
 
-  it('setRegionStatus(key, undefined) drops a region from the aggregate', () => {
-    const m = makeModel()
-    m.setRegionStatus(0, { message: 'Downloading', current: 50, total: 100 })
+  // The regression this replaces a hand-called setter to catch: a finished
+  // region charged as still in flight made the bar run *backwards* as regions
+  // completed, 50/200 where the one region still working was at 50/100.
+  it("a region's phase clear drops it from the aggregate", async () => {
+    const { m, ctxs } = twoRegions()
+    const [a, b] = ctxs
+    a!.statusCallback({ message: 'Downloading', current: 50, total: 100 })
     step()
-    m.setRegionStatus(1, { message: 'Downloading', current: 0, total: 100 })
+    b!.statusCallback({ message: 'Downloading', current: 0, total: 100 })
     expect(m.statusProgress).toBeCloseTo(0.25)
     step()
-    m.setRegionStatus(1, undefined)
+    b!.statusCallback('')
     expect(m.statusProgress).toBeCloseTo(0.5)
   })
 
-  // The throttle gates only the bar write, never the per-region map: a region
-  // whose update is thinned out must still be recorded, or a finished region
-  // would sit in the aggregate for the rest of the fetch.
-  it('a throttled-out region update still lands in the bookkeeping', () => {
-    const m = makeModel()
-    m.setRegionStatus(0, { message: 'Downloading', current: 50, total: 100 })
-    // same tick, so both bar writes below are thinned out
-    m.setRegionStatus(1, { message: 'Downloading', current: 25, total: 100 })
-    m.setRegionStatus(0, undefined)
+  // A region reporting no total is still a region in flight, so it is charged
+  // the mean of the totals we know — a fan-out where one response carried no
+  // Content-Length otherwise read 100% with that region still downloading.
+  it('charges an indeterminate region rather than dropping it', () => {
+    const { m, ctxs } = twoRegions()
+    const [a, b] = ctxs
+    a!.statusCallback({ message: 'Downloading', current: 100, total: 100 })
     step()
-    m.setRegionStatus(1, { message: 'Downloading', current: 30, total: 100 })
-    // 0.3 (region 1 alone), not 0.4 ((50 + 30) / 200) — region 0's thinned-out
-    // delete still took effect
-    expect(m.statusProgress).toBeCloseTo(0.3)
+    b!.statusCallback('Downloading')
+    expect(m.statusProgress).toBeCloseTo(0.5)
   })
 
-  it('clears the aggregate when the last region finishes', () => {
-    const m = makeModel()
-    m.setRegionStatus(0, { message: 'Downloading', current: 1, total: 2 })
-    m.setRegionStatus(0, undefined)
+  it('clears the bar when the last region finishes', () => {
+    const { m, ctxs } = twoRegions()
+    const [a, b] = ctxs
+    a!.statusCallback({ message: 'Downloading', current: 1, total: 2 })
+    step()
+    a!.statusCallback('')
+    b!.statusCallback('')
     expect(m.statusMessage).toBeUndefined()
     expect(m.statusProgress).toBeUndefined()
   })
 
-  it('cancelFetch clears statusProgress and the per-region bookkeeping', () => {
-    const m = makeModel()
-    m.runFetch(() => new Promise<void>(() => {}))
-    m.setRegionStatus(0, { message: 'Downloading', current: 1, total: 2 })
+  // A phase clear must land whatever the window says — it is how every phase
+  // helper ends — and must cancel the progress value queued behind it, or the
+  // trailing timer puts a percentage back after the work it measured has ended.
+  it('a phase clear lands unthrottled and cancels what was queued', () => {
+    const { m, ctxs } = twoRegions()
+    const [a] = ctxs
+    a!.statusCallback({ message: 'Downloading', current: 1, total: 2 })
+    // same tick, so this one is queued rather than written
+    a!.statusCallback({ message: 'Downloading', current: 9, total: 10 })
+    a!.statusCallback('')
+    expect(m.statusMessage).toBeUndefined()
+    expect(m.statusProgress).toBeUndefined()
+  })
+
+  it('a superseded fetch cannot repaint the bar', () => {
+    const { m, ctxs } = twoRegions()
+    const [a] = ctxs
+    m.cancelFetch()
+    step()
+    a!.statusCallback({ message: 'Downloading', current: 1, total: 2 })
+    expect(m.statusMessage).toBeUndefined()
+    expect(m.statusProgress).toBeUndefined()
+  })
+
+  it('cancelFetch clears statusProgress', () => {
+    const { m, ctxs } = twoRegions()
+    const [a] = ctxs
+    a!.statusCallback({ message: 'Downloading', current: 1, total: 2 })
     expect(m.statusProgress).toBeCloseTo(0.5)
     m.cancelFetch()
     expect(m.statusProgress).toBeUndefined()
-    // a fresh fetch must not inherit the stale region entry
-    m.setRegionStatus(1, { message: 'Downloading', current: 1, total: 4 })
-    expect(m.statusProgress).toBeCloseTo(0.25)
   })
 })
 
 describe('FetchMixin: status callback throttle', () => {
   it('drops rapid callback updates within the 100ms window, applies the first', () => {
     const m = makeModel()
-    const cb = m.makeStatusCallback()
+    const cb = m.makeStatusCallback(() => true)
     const now = jest.spyOn(Date, 'now')
 
     now.mockReturnValue(1000)
@@ -367,7 +431,7 @@ describe('FetchMixin: status callback throttle', () => {
 
   it('passes updates spaced beyond the window through unthrottled', () => {
     const m = makeModel()
-    const cb = m.makeStatusCallback()
+    const cb = m.makeStatusCallback(() => true)
     const now = jest.spyOn(Date, 'now')
 
     now.mockReturnValue(5000)
@@ -381,7 +445,7 @@ describe('FetchMixin: status callback throttle', () => {
 
   it('resetStatus reopens the window so the next fetch reports immediately', () => {
     const m = makeModel()
-    const cb = m.makeStatusCallback()
+    const cb = m.makeStatusCallback(() => true)
     const now = jest.spyOn(Date, 'now')
 
     now.mockReturnValue(2000)

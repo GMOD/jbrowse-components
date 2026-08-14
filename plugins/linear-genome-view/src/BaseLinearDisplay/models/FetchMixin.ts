@@ -1,5 +1,4 @@
 import {
-  aggregateStatus,
   createGuardedStatusSink,
   createStatusThrottle,
   isAbortException,
@@ -16,10 +15,19 @@ export interface FetchContext {
   stopToken: StopToken
   isStale: () => boolean
   /**
-   * This display's RPC `statusCallback`, guarded and throttled — the same thing
-   * `makeStatusCallback()` returns, carried on the context so a helper that
-   * only ever receives a `ctx` (`byteGateBlocksFetch`, `fetchEachRegion`) can
-   * report progress without reaching back into the model for it.
+   * The RPC `statusCallback` for the work this context describes: guarded to
+   * this fetch (a superseded one cannot repaint the overlay of the fetch that
+   * replaced it) and throttled through the display-wide window. Pass it as the
+   * `statusCallback` RPC arg — there is no per-display variant to choose
+   * between, which is the point.
+   *
+   * The fan-out helpers hand each region a context whose callback is that
+   * region's own slot (`callEachRegion`, and `fetchEachRegion` through it), so
+   * `statusCallback: ctx.statusCallback` aggregates N parallel regions into one
+   * bar in the fan-out case and reports the whole fetch in the batched one.
+   * Reading it off the model instead — or reusing the *outer* ctx's inside a
+   * fan-out — is what made parallel regions clobber each other's progress, and
+   * is now the thing you would have to go out of your way to do.
    */
   statusCallback: StatusCallback
 }
@@ -110,16 +118,6 @@ export default function FetchMixin() {
        * Any new fetch clears it (`runFetch` resets it at the start).
        */
       fetchCanceled: false,
-
-      /**
-       * #volatile
-       * latest status of each concurrent in-flight operation, keyed by an
-       * arbitrary id (the canvas display uses displayedRegionIndex). Plain
-       * bookkeeping — not read reactively; setRegionStatus derives the
-       * observable statusMessage/statusProgress from it on every update so N
-       * parallel region fetches aggregate into one bar instead of clobbering.
-       */
-      regionStatuses: new Map<number, RpcStatus>(),
     }))
     .views(self => ({
       /**
@@ -222,7 +220,6 @@ export default function FetchMixin() {
           self.activeStopToken = undefined
           self.statusMessage = undefined
           self.statusProgress = undefined
-          self.regionStatuses.clear()
         },
       }
     })
@@ -248,17 +245,19 @@ export default function FetchMixin() {
        * the `statusCallback` RPC arg instead of re-inlining the guard at every
        * call site.
        *
-       * `isCurrent` narrows that guard. It defaults to "the node is alive",
-       * which is all a caller holding only the model can check; `runFetch`
-       * passes `!isStale()` so the context's callback is scoped to its own
-       * fetch and a superseded one cannot repaint the overlay of the fetch that
-       * replaced it.
+       * `isCurrent` is required and has no "node is alive" default, because
+       * alive is not the interesting question: a *superseded* fetch is on a live
+       * node, and its late status repainting the overlay of the fetch that
+       * replaced it is the failure this guards. `runFetch` passes `!isStale()`,
+       * which is what every display gets for free through `ctx.statusCallback`;
+       * a caller outside a fetch (the clustering autorun) passes its own run's
+       * flag. Defaulting to `isAlive` made the loose answer the easy one and
+       * five displays took it.
        *
        * Declared this early only so `runFetch` can put one on every
-       * `FetchContext`; its sibling `makeRegionStatusCallback` needs
-       * `setRegionStatus` and so stays below.
+       * `FetchContext`.
        */
-      makeStatusCallback(isCurrent: () => boolean = () => isAlive(self)) {
+      makeStatusCallback(isCurrent: () => boolean) {
         return createGuardedStatusSink({
           isCurrent,
           sink: status => {
@@ -277,34 +276,6 @@ export default function FetchMixin() {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       * Record one concurrent operation's latest status (keyed) and recompute
-       * the shared statusMessage/statusProgress as the aggregate across all
-       * in-flight keys. Pass undefined to drop a key. Used by displays that fan
-       * a single fetch out into parallel per-region RPCs.
-       */
-      setRegionStatus(key: number, status?: RpcStatus) {
-        if (status === undefined) {
-          self.regionStatuses.delete(key)
-        } else {
-          self.regionStatuses.set(key, status)
-        }
-        // The map update above is unconditional and only this derived write is
-        // thinned. Throttling the whole call — as the caller used to — dropped
-        // `undefined` deletes too, stranding a finished region in the aggregate
-        // for the rest of the fetch. A cleared aggregate (every region done)
-        // also bypasses the throttle, or a finished fetch's message would stay
-        // on screen.
-        const aggregate = aggregateStatus([...self.regionStatuses.values()])
-        if (aggregate === undefined) {
-          self.setStatusMessage(undefined)
-        } else {
-          self.throttleStatus(() => {
-            self.setStatusMessage(aggregate)
-          })
-        }
-      },
       /**
        * #action
        * cancel any in-flight fetch and bump fetchGeneration (always bumps, so
@@ -350,13 +321,6 @@ export default function FetchMixin() {
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
-          // Drop the superseded fetch's per-region status entries with it.
-          // `regionStatuses` is keyed by displayedRegionIndex, so a supersede
-          // that needs fewer regions than the one it replaced would otherwise
-          // leave the extra keys in the aggregate for its whole duration and
-          // report a progress fraction mixed from two fetches. Every caller
-          // that reaches here via `cancelFetch` already cleared them; this
-          // covers a direct `runFetch` over a live one.
           self.resetStatus()
         }
         const stopToken = createStopToken()
@@ -400,23 +364,6 @@ export default function FetchMixin() {
           }
         }
       }),
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * Per-region variant of `makeStatusCallback`: routes progress through
-       * `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate
-       * into one status bar instead of clobbering each other. Same `isAlive`
-       * guard; `setRegionStatus` owns the throttling (it has to thin only the
-       * bar write, not the per-region bookkeeping).
-       */
-      makeRegionStatusCallback(key: number) {
-        return (status: RpcStatus) => {
-          if (isAlive(self)) {
-            self.setRegionStatus(key, status)
-          }
-        }
-      },
     }))
 }
 

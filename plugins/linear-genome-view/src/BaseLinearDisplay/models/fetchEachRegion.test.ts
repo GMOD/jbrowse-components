@@ -119,26 +119,32 @@ test('a region that arrived before the move still commits; a later one does not'
   expect(completed).toBe(0)
 })
 
-// The index is the third argument because a display injects
-// `statusCallback: self.makeRegionStatusCallback(displayedRegionIndex)` there —
-// getting it from the enclosing scope instead is what makes parallel per-region
-// fetches clobber each other's progress instead of aggregating.
-test('call receives the region, the ctx and the displayed region index', async () => {
+// The ctx `call` receives is this region's, not the fetch's: same stop token
+// (one cancel takes the fan-out down) but its own `statusCallback` slot, so
+// `statusCallback: ctx.statusCallback` at the call site aggregates the parallel
+// regions into one bar instead of clobbering. The index is still the third
+// argument for the displays that key their own bookkeeping off it.
+test('call receives the region, its own ctx and the displayed region index', async () => {
   const ctx: FetchContext = {
     stopToken: 'tok',
     isStale: () => false,
     statusCallback: () => {},
   }
-  const seen: [string, boolean, number][] = []
+  const seen: [string, boolean, boolean, number][] = []
   await fetchEachRegion(selfWith(ctx), NEEDED, {
     call: (region, callCtx, displayedRegionIndex) => {
-      seen.push([region.refName, callCtx === ctx, displayedRegionIndex])
+      seen.push([
+        region.refName,
+        callCtx.stopToken === ctx.stopToken,
+        callCtx.statusCallback === ctx.statusCallback,
+        displayedRegionIndex,
+      ])
       return Promise.resolve(region.refName)
     },
     onResult: () => {},
   })
   expect(seen).toEqual([
-    ['ctgA', true, 2],
-    ['ctgB', true, 5],
+    ['ctgA', true, false, 2],
+    ['ctgB', true, false, 5],
   ])
 })

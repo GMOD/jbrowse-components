@@ -247,6 +247,7 @@ describe('createGuardedStatusSink', () => {
         sink: s => {
           seen.push(s)
         },
+        throttle: createStatusThrottle(),
       })
       report({ message: 'Downloading', current: 1, total: 10 })
       report({ message: 'Downloading', current: 9, total: 10 })
@@ -278,6 +279,7 @@ describe('createGuardedStatusSink', () => {
         sink: s => {
           seen.push(s)
         },
+        throttle: createStatusThrottle(),
       })
       report('Downloading')
       report('Parsing')

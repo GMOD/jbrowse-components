@@ -2,7 +2,7 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { LDDataResult } from './types.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface RenderLDDataArgs {
@@ -19,6 +19,7 @@ export interface RenderLDDataArgs {
   signedLD: boolean
   useGenomicPositions: boolean
   stopToken?: StopToken
+  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

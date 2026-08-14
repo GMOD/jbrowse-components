@@ -78,6 +78,11 @@ export function createStopTokenRotation(self: IStateTreeNode & StatusReporter) {
       if (currentStopToken) {
         stopStopToken(currentStopToken)
       }
+      // the throttle outlives the token: a trailing write is queued on a timer,
+      // and while the sink's `isCurrent` makes it a no-op rather than a write to
+      // a dead node, the timer itself still stands for up to a window past
+      // teardown. `FetchMixin.resetStatus` resets for the same reason.
+      throttle.reset()
     },
   }
 }

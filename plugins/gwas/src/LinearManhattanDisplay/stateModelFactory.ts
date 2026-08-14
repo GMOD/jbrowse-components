@@ -615,14 +615,13 @@ export function stateModelFactory(
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
           return fetchEachRegion(self, needed, {
-            call: (region, ctx, displayedRegionIndex) =>
+            call: (region, ctx) =>
               rpcManager.call(sessionId, 'GetManhattanData', {
                 adapterConfig,
                 region,
                 ...self.rpcProps(),
                 stopToken: ctx.stopToken,
-                statusCallback:
-                  self.makeRegionStatusCallback(displayedRegionIndex),
+                statusCallback: ctx.statusCallback,
               }),
             onResult: (idx, result) => {
               self.setRpcData(idx, result)

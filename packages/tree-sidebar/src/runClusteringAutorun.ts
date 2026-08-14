@@ -1,5 +1,4 @@
 import {
-  createGuardedStatusSink,
   getContainingView,
   getSession,
   locStringsToRegions,
@@ -50,7 +49,9 @@ export function setupRunClusteringAutorun(
     setRunClustering: (arg?: boolean) => void
     setClusterRegion?: (arg?: string) => void
     setStatusMessage: (status?: RpcStatus) => void
-    makeStatusCallback: () => (status: RpcStatus) => void
+    makeStatusCallback: (
+      isCurrent: () => boolean,
+    ) => (status: RpcStatus) => void
   },
   opts: {
     name: string
@@ -94,7 +95,6 @@ export function setupRunClusteringAutorun(
         }
         applying = true
         const stopToken = createStopToken()
-        const report = self.makeStatusCallback()
         try {
           const regions = await clusterRegions(self, view)
           await opts.run({
@@ -102,13 +102,14 @@ export function setupRunClusteringAutorun(
             sessionId: getRpcSessionId(self),
             regions,
             stopToken,
-            // `report` is already alive-guarded and throttled by FetchMixin;
-            // what this adds is the run's own `applying` guard, so a status
-            // arriving after the run settles can't repaint the chip
-            statusCallback: createGuardedStatusSink({
-              isCurrent: () => applying,
-              sink: report,
-            }),
+            // narrowed to this run rather than merely to the node being alive,
+            // so a status arriving after the run settles can't repaint the
+            // chip. Wrapping `makeStatusCallback()` in a second guarded sink
+            // said the same thing and also stacked a second throttle window on
+            // the model-wide one, delaying every status by up to two.
+            statusCallback: self.makeStatusCallback(
+              () => applying && isAlive(self),
+            ),
           })
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {

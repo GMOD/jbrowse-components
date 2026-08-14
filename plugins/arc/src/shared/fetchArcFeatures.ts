@@ -42,6 +42,7 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
       regions,
       adapterConfig,
       stopToken: ctx.stopToken,
+      statusCallback: ctx.statusCallback,
     })
     if (ctx.isStale()) {
       return

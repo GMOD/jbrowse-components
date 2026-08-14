@@ -1,10 +1,10 @@
-import { getSession } from '@jbrowse/core/util'
+import { createStatusFanOut, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { callEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
-import type { Region, RpcStatus } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
@@ -29,7 +29,6 @@ interface MafFetchSelf extends IStateTreeNode {
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
   ) => Promise<void>
-  makeRegionStatusCallback: (key: number) => (status: RpcStatus) => void
   setRpcData: (regionIndex: number, data: MafWireRegionData) => void
   setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
   setFramesData: (regionIndex: number, records: MafFrameRecord[]) => void
@@ -94,9 +93,9 @@ export function unionSampleSets(
  * data-dependent and the main thread encodes from it plus `gpuProps()`, so
  * toggling colors/theme never refetches.
  *
- * `call` receives the region's `displayedRegionIndex` so it can key its
- * `statusCallback` off it — the parallel per-region fetches then aggregate into
- * one progress bar instead of clobbering each other.
+ * `call` receives that region's own `ctx`, whose `statusCallback` is its slot in
+ * the fetch's fan-out, so the parallel per-region calls aggregate into one
+ * progress bar instead of clobbering each other.
  */
 async function fetchMafRegions<R extends SampleSet>(
   self: MafFetchSelf,
@@ -113,9 +112,15 @@ async function fetchMafRegions<R extends SampleSet>(
     // The CDS-frame annotation overlay (when configured) fetches in the same
     // stop-token-guarded pass as the main data so the two share staleness +
     // loadedRegions book-keeping; the two RPCs run concurrently.
+    //
+    // Concurrently, and each is itself a per-region fan-out, so they get a slot
+    // apiece rather than the shared callback: two fan-outs writing one status
+    // field directly is last-writer-wins between them, and the annotation
+    // branch's rows are a small fraction of the alignment's.
+    const slot = createStatusFanOut(ctx.statusCallback)
     const [results] = await Promise.all([
-      callEachRegion(needed, ctx, call),
-      fetchAnnotationData(self, needed, ctx),
+      callEachRegion(needed, { ...ctx, statusCallback: slot() }, call),
+      fetchAnnotationData(self, needed, { ...ctx, statusCallback: slot() }),
     ])
     // One guard around the whole batch, not per region as in `fetchEachRegion`:
     // `setSamples` is a cross-region decision over `results`, so a partial
@@ -207,11 +212,12 @@ async function fetchAnnotationData(
       }
       return
     }
-    const results = await callEachRegion(needed, ctx, region =>
+    const results = await callEachRegion(needed, ctx, (region, regionCtx) =>
       rpcManager.call(sessionId, 'LinearMafGetAnnotationData', {
         adapterConfig,
         regions: [region],
-        stopToken: ctx.stopToken,
+        stopToken: regionCtx.stopToken,
+        statusCallback: regionCtx.statusCallback,
       }),
     )
     if (!ctx.isStale()) {
@@ -233,7 +239,7 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
   return fetchMafRegions(
     self,
     needed,
-    (region, ctx, displayedRegionIndex) =>
+    (region, ctx) =>
       rpcManager.call(sessionId, 'LinearMafGetAlignmentData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
@@ -242,7 +248,7 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
         // `placeMafRegionData`), so nothing order-dependent is sent.
         subtreeFilter: self.subtreeFilterSet,
         stopToken: ctx.stopToken,
-        statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
+        statusCallback: ctx.statusCallback,
       }),
     results => {
       for (const { displayedRegionIndex, result } of results) {
@@ -263,7 +269,7 @@ export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
   return fetchMafRegions(
     self,
     needed,
-    (region, ctx, displayedRegionIndex) =>
+    (region, ctx) =>
       rpcManager.call(sessionId, 'LinearMafGetSummaryData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
@@ -274,7 +280,7 @@ export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
         // and then drop the same ones client-side.
         subtreeFilter: self.subtreeFilterSet,
         stopToken: ctx.stopToken,
-        statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
+        statusCallback: ctx.statusCallback,
       }),
     results => {
       self.clearAlignmentData()
