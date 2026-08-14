@@ -123,3 +123,92 @@ export interface DisplayConfig {
     description: string
   }
 }
+
+// One `true` per slot the worker reads — the runtime spelling of the interface
+// above, so `rpcProps()` can build its payload by PICKING what the worker reads
+// instead of dropping what it doesn't.
+//
+// A `Record<keyof DisplayConfig, true>` is exhaustive in BOTH directions with no
+// helper: tsc errors on a key this omits, naming it, and on a name that is not a
+// `DisplayConfig` key. So the list cannot drift from the interface, which is the
+// only reason it is safe for it to exist at all.
+const WORKER_READS: Record<keyof DisplayConfig, true> = {
+  geneGlyphMode: true,
+  subfeatureLabels: true,
+  transcriptTypes: true,
+  containerTypes: true,
+  subParts: true,
+  impliedUTRs: true,
+  displayDirectionalChevrons: true,
+  mouseover: true,
+  jexlFilters: true,
+  hideSourceFeatures: true,
+  featureHeight: true,
+  color: true,
+  connectorColor: true,
+  utrColor: true,
+  outlineColor: true,
+  labels: true,
+}
+
+const DISPLAY_CONFIG_KEYS = Object.keys(WORKER_READS) as (keyof DisplayConfig)[]
+
+/**
+ * The worker's half of a display config snapshot: exactly the slots
+ * `DisplayConfig` declares, dropped out of the everything-snapshot
+ * `getConfigSnapshotWithPromotables` returns.
+ *
+ * **Additive on purpose, and that is the whole point.** The snapshot carries
+ * every slot the display's schema and its inherited bases declare, and the
+ * payload it feeds is the RPC cache key (`rpcPropsCacheKey` = `JSON.stringify`
+ * of it) — so under the subtractive spelling this replaced, a slot named neither
+ * in `DisplayConfig` nor in a hand-kept exclusion list became a silent refetch
+ * trigger. `height` did: the resize handle writes it on every drag frame
+ * (TrackContainer -> resizeHeight -> setConf), so dragging a track taller re-ran
+ * the whole worker pipeline. Ten names had accumulated in that list, and the
+ * ones that mattered most were inherited from `BaseLinearDisplay`'s schema
+ * rather than written in this plugin, where nobody adding one would think to
+ * look.
+ *
+ * Picking inverts the failure: a new slot is invisible to the worker until it
+ * joins `DisplayConfig`, and forgetting means the feature does not work — which
+ * someone notices — rather than every unrelated config write refetching the
+ * track, which nobody does.
+ *
+ * The assertion is the mirror of `readConfigValue`'s at the top of this file —
+ * the same `Record<string, unknown>` round trip, in the other direction — and
+ * what it stands on is different from what the `as DisplayConfig` it replaced
+ * stood on: there, an unchecked superset; here, a key list the compiler proved
+ * complete.
+ */
+export function pickDisplayConfig(snapshot: Record<string, unknown>) {
+  const picked: Record<string, unknown> = {}
+  for (const key of DISPLAY_CONFIG_KEYS) {
+    picked[key] = snapshot[key]
+  }
+  return picked as unknown as DisplayConfig
+}
+
+/**
+ * The region-too-large gate's raw config slots, which no worker code reads.
+ *
+ * They ride in the payload for one reason: to keep editing a budget a cache-key
+ * change. The *resolved* budgets (`resolvedByteLimit()`, `maxFeatureDensity`) are
+ * deliberately passed at the RPC call site instead, because they swing on the
+ * viewport — as cache keys, `maxFeatureDensity` made zooming across
+ * `AUTO_FORCE_LOAD_BP` a full `clearAllRpcData()` for data identical on both
+ * sides of the floor. The raw slots don't move with the viewport, so they carry
+ * the invalidation the resolved values can't.
+ *
+ * Named as their own field rather than left in the config snapshot, where they
+ * were three of the residue the exclusion list happened not to name and read as
+ * slots the worker might use. Declared on `BaseLinearDisplay`'s schema, not this
+ * plugin's.
+ */
+export function pickGateSlots(snapshot: Record<string, unknown>) {
+  return {
+    fetchSizeLimit: snapshot.fetchSizeLimit,
+    forceLoad: snapshot.forceLoad,
+    maxFeatureScreenDensity: snapshot.maxFeatureScreenDensity,
+  }
+}

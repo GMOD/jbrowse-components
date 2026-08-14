@@ -48,7 +48,11 @@ import {
   HEIGHT_MULTIPLIERS,
   labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
+import {
+  THEME_DERIVED_COLOR,
+  pickDisplayConfig,
+  pickGateSlots,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
@@ -103,10 +107,7 @@ import {
   rowGeometrySignature,
 } from './yMorph.ts'
 
-import type {
-  DisplayConfig,
-  DisplayMode,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
 import type {
@@ -918,85 +919,52 @@ export default function baseStateModelFactory(
           // their raw inherit sentinels — so a new promotable worker-slot needs
           // no rpcProps change here.
           //
-          // The cost of that convenience is that it snapshots EVERY slot,
-          // including main-thread-only ones, and this payload is the RPC cache
-          // key (see rpcPropsCacheKey) — so a slot listed neither in
-          // `DisplayConfig` nor below is a silent refetch trigger. `height` was
-          // the expensive one: the resize handle writes it on every drag frame
-          // (TrackContainer -> resizeHeight -> setConf), so dragging a track
-          // taller re-ran the whole worker pipeline. Every name here is absent
-          // from `DisplayConfig` and unread by the worker:
-          //   showLabels                   main-thread label visibility
-          //   displayMode                  compact height scaling + collapsed
-          //                                single-row packing, applied in layout
-          //   heightMode/height/maxHeight/growMaxHeight
-          //                                track-height strategy and its bounds
-          //   maxLabelFeatureDensity/maxDescriptionFeatureDensity
-          //                                the two rungs of the main-thread
-          //                                `showLabels` auto gate
-          //   legend                       the declared color key, drawn by the
-          //                                `colorLegend` chrome hook — editing a
-          //                                color key used to clear and refetch
-          //                                every region to redraw a floating box
-          //   showOnlyGenes                a real worker input, but one that
-          //                                travels as its own top-level RPC arg
-          //                                (what buildFeatureAdmission reads);
-          //                                here it was a second copy that
-          //                                `DisplayConfig` doesn't declare
-          // The last two are `LinearBasicDisplay`'s slots rather than this base's,
-          // so they are absent from the variant display's snapshot and destructure
-          // to undefined there — harmless, and worth keeping the whole list in one
-          // place. `DisplayConfig` has no index signature, so a subclass doing its
-          // own removal downstream would need a cast to reach them.
-          // Both gate budgets — `resolvedByteLimit()` and `maxFeatureDensity` —
-          // are added at the CALL SITE, not here, so neither is a cache key. Both
-          // are resolved values that go undefined the moment their axis stops
-          // gating, and `densityGateActive` still folds in `AUTO_FORCE_LOAD_BP`:
+          // It snapshots EVERY slot the schema and its inherited bases declare,
+          // though, and this payload is the RPC cache key (see
+          // rpcPropsCacheKey) — so what reaches the worker is PICKED here rather
+          // than filtered. `pickDisplayConfig` is that pick and carries why;
+          // the short version is that the subtractive spelling made every slot
+          // nobody had thought to exclude a silent refetch trigger, and the
+          // expensive ones came from `BaseLinearDisplay`'s schema rather than
+          // from this plugin.
+          //
+          // Both RESOLVED gate budgets — `resolvedByteLimit()` and
+          // `maxFeatureDensity` — are added at the CALL SITE, not here, so
+          // neither is a cache key. Both go undefined the moment their axis
+          // stops gating, and `densityGateActive` folds in `AUTO_FORCE_LOAD_BP`:
           // as a cache key `maxFeatureDensity` made zooming across the 20 kb
           // floor a full `clearAllRpcData()` + refetch, blanking the display at
           // exactly the zoom people settle a gene at, for data identical on both
           // sides of it. The byte budget no longer moves at that span at all —
-          // `gateActive` has no floor term — but it swings on force-load, so
-          // the same rule holds for the same reason. The slots they
-          // resolve from — fetchSizeLimit/forceLoad/maxFeatureScreenDensity —
-          // deliberately STAY in the snapshot, so a config change to either
-          // budget still refetches. Losing the floor as a trigger loses nothing:
-          // a region the worker rejected stores no data, so `isCacheValid` is
-          // already false for it, and zooming back OUT re-gates from the live
-          // main-thread verdict (`densityStatsPerRegion` is committed on every
-          // successful fetch regardless of budget, and the byte estimate
-          // survives) with the worker re-gating whenever a fetch actually
-          // happens — which is the moment a download would occur, and so the
-          // moment the gate is for.
-          const {
-            showLabels: _l,
-            displayMode: _dm,
-            heightMode: _hm,
-            height: _h,
-            maxHeight: _mh,
-            growMaxHeight: _gmh,
-            maxLabelFeatureDensity: _mlfd,
-            maxDescriptionFeatureDensity: _mdfd,
-            legend: _lg,
-            showOnlyGenes: _sog,
-            ...rest
-          } = getConfigSnapshotWithPromotables(self)
+          // `gateActive` has no floor term — but it swings on force-load, so the
+          // same rule holds for the same reason. Losing the floor as a trigger
+          // loses nothing: a region the worker rejected stores no data, so
+          // `isCacheValid` is already false for it, and zooming back OUT re-gates
+          // from the live main-thread verdict (`densityStatsPerRegion` is
+          // committed on every successful fetch regardless of budget, and the
+          // byte estimate survives) with the worker re-gating whenever a fetch
+          // actually happens — which is the moment a download would occur, and
+          // so the moment the gate is for. `gateSlots` below is what keeps a
+          // user's EDIT to one of those budgets a refetch.
+          const snapshot = getConfigSnapshotWithPromotables(self)
+          const workerConfig = pickDisplayConfig(snapshot)
           return {
             // jexlFilters carries the effective runtime filters (mirrors the
             // effectiveGeneGlyphMode substitution in the concrete model); reading
             // activeFilters() here makes it an RPC cache key so toggling filters
             // refetches. buildFeatureAdmission normalizes the prefix either way.
             displayConfig: {
-              ...rest,
+              ...workerConfig,
               // Subfeature labels are worker-baked, so unlike name/description
               // labels they can't be gated on the main thread — force them off
               // here so collapsed mode suppresses every label.
               subfeatureLabels:
                 self.displayMode === 'collapsed'
                   ? 'none'
-                  : rest.subfeatureLabels,
+                  : workerConfig.subfeatureLabels,
               jexlFilters: self.activeFilters(),
-            } as DisplayConfig,
+            },
+            gateSlots: pickGateSlots(snapshot),
             colorByCDS: self.colorByCDS,
             showAminoAcids: self.showAminoAcids,
             // Only isolate once the collection is applied; collecting (ctrl+

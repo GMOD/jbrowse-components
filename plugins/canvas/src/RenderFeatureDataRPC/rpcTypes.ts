@@ -28,6 +28,12 @@ export interface RenderFeatureDataArgs {
     // used to fetch reference sequence for peptide translation
     originalRefName?: string
   }
+  // The region-too-large gate's raw config slots. NOTHING HERE IS READ. They
+  // ride along so that editing a budget still changes `rpcPropsCacheKey` and so
+  // refetches, which the resolved budgets (`byteLimit`, `maxFeatureDensity`
+  // below) cannot do — those are viewport-dependent and deliberately excluded
+  // from the cache key. See `pickGateSlots`.
+  gateSlots?: Record<string, unknown>
   bpPerPx: number
   // recolor CDS segments by reading frame. Purely a color choice — the codon
   // shading and amino acid letters are showAminoAcids' doing, so a track can
@@ -192,7 +198,7 @@ export interface FeatureDataResult {
  * file, twenty more in packRenderArrays) had to be edited in step, and a missed
  * one is a field the renderer's type simply doesn't have.
  */
-export type PrimitiveArrayKey = Extract<
+type PrimitiveArrayKey = Extract<
   keyof FeatureDataResult,
   `rect${string}` | `line${string}` | `arrow${string}`
 >

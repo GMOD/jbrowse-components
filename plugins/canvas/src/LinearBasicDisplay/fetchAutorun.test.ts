@@ -1343,6 +1343,54 @@ describe('regionKeys/reversedRegions derive from rpcDataMap', () => {
   })
 })
 
+// The payload is a PICK of what the worker reads (`pickDisplayConfig`), so this
+// list is the whole of what a config edit can send it. Asserted as an exact set,
+// which is what makes it the guard the per-slot table below used to be: under the
+// subtractive spelling this replaced, a slot named in neither `DisplayConfig` nor
+// a hand-kept exclusion list joined the payload silently, and the rows below
+// could only catch the ones someone had thought to write down.
+//
+// Adding a worker slot means editing `DisplayConfig` and this list together —
+// which is the whole of the additive contract, and cheap. Adding a MAIN-THREAD
+// slot, to this display or to any schema it inherits, means editing neither.
+test('the worker payload is exactly the slots DisplayConfig declares', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  expect(Object.keys(display.rpcProps().displayConfig).sort()).toEqual([
+    'color',
+    'connectorColor',
+    'containerTypes',
+    'displayDirectionalChevrons',
+    'featureHeight',
+    'geneGlyphMode',
+    'hideSourceFeatures',
+    'impliedUTRs',
+    'jexlFilters',
+    'labels',
+    'mouseover',
+    'outlineColor',
+    'subParts',
+    'subfeatureLabels',
+    'transcriptTypes',
+    'utrColor',
+  ])
+})
+
+// The gate's raw slots ride in their own field, and the reason they ride at all
+// is invalidation: the resolved budgets go at the call site, so without these an
+// edit to one would not change the cache key. Pinned as an exact set for the same
+// reason as above — a fourth name appearing here is a slot someone made a cache
+// key without deciding to.
+test('gateSlots carries the three raw budget slots and nothing else', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  expect(Object.keys(display.rpcProps().gateSlots).sort()).toEqual([
+    'fetchSizeLimit',
+    'forceLoad',
+    'maxFeatureScreenDensity',
+  ])
+})
+
 // The SettingsInvalidate cache key is what rpcProps() *returns*, not what it
 // reads. rpcProps builds its payload from a whole config snapshot
 // (getConfigSnapshotWithPromotables), which touches every slot on the display
