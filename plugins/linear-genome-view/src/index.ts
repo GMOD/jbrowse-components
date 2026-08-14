@@ -181,6 +181,7 @@ export {
   linearGenomeViewPropKeys,
   partitionLaunchKeys,
 } from './LinearGenomeView/initKeys.ts'
+export { applyInitHighlights } from './LinearGenomeView/afterAttach.ts'
 export { MultiLevelRubberband } from './MultiLevelRubberband/index.ts'
 export { fetchResults, SearchResultsNotFoundError } from './searchUtils.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'

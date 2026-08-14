@@ -64,6 +64,7 @@ interface ScaleModel extends ScoreLegendModel {
   ticks?: YScaleTicks
   numSources: number
   numRows: number
+  showRowLabels: boolean
 }
 
 export default observer(function MultiWiggleSvgScales({
@@ -91,6 +92,7 @@ export default observer(function MultiWiggleSvgScales({
     numSources,
     numRows,
     scoreRamp,
+    showRowLabels,
   } = model
 
   const scalebarsShown = !!domain && !scoreLegendShown(model)
@@ -100,7 +102,7 @@ export default observer(function MultiWiggleSvgScales({
   // under it: a sample name can be arbitrarily long, so the axis takes the
   // fixed-width side and the labels keep growing rightward over the plot.
   const labels =
-    numSources > 1 && !isOverlay ? (
+    numSources > 1 && !isOverlay && showRowLabels ? (
       <SvgRowLabels
         sources={sources}
         rowHeight={effectiveRowHeight}

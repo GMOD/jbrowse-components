@@ -973,6 +973,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // two templated inserts -- the whole point of the figure --
               // pointing at nothing.
               loc: 'chr3:25325000-25367000 chr10:58716500-58718500 chr12:72272000-72274500',
+              // WHERE THE JUNCTIONS ARE, shaded (review: "the small breaks on
+              // the right are hard to see ... potentially zooming in on the
+              // breakpoints"). They cannot be made wider HERE and it is worth
+              // saying why: a LinearSyntenyView allots each region its share of
+              // the panel in proportion to its bp, so a 199 bp insert beside a
+              // 32.7 kb arm gets 199/46,500 of the width whatever window is
+              // asked for around it -- widening the chr10 and chr12 windows
+              // makes the inserts RELATIVELY smaller, and narrowing them shrinks
+              // their panels by the same factor. Zooming in is the answer and it
+              // is the next figure, which opens exactly this span.
+              //
+              // So this frame's job is the architecture -- one long arm, two
+              // slivers, an inverted return -- and the shading is what stops a
+              // reader hunting the slivers for detail that is one figure away.
+              highlight: [
+                {
+                  refName: 'chr3',
+                  assemblyName: 'hg38',
+                  label: 'junctions',
+                  start: 25358000,
+                  end: 25360600,
+                },
+              ],
               // the annotation this figure's bottom row is the projection of,
               // in its original coordinates, so the two rows can be read
               // against each other one ribbon at a time. The somatic SV calls
@@ -1065,6 +1088,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             {
               assembly: 'der3_RARB_BICC1_TRHDE',
               loc: 'der3_RARB_BICC1_TRHDE:1-39,549',
+              // the same span in the allele's own coordinates, so the two
+              // shadings are one object seen from both sides -- and it is the
+              // window the next figure opens
+              highlight: [
+                {
+                  refName: 'der3_RARB_BICC1_TRHDE',
+                  assemblyName: 'der3_RARB_BICC1_TRHDE',
+                  label: 'junctions',
+                  start: 32000,
+                  end: 33700,
+                },
+              ],
               // the provenance track says which reference interval each stretch
               // came from; the projected genes say what that stretch is -- the
               // allele carries RARB's first coding exon at 14 kb and comes back

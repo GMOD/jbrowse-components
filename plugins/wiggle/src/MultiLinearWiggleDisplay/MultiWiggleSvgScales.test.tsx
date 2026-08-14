@@ -14,7 +14,11 @@ const ticks = {
   ],
 }
 
-function makeModel(args?: { rowHeight?: number; isDensityMode?: boolean }) {
+function makeModel(args?: {
+  rowHeight?: number
+  isDensityMode?: boolean
+  showRowLabels?: boolean
+}) {
   const rowHeight = args?.rowHeight ?? 100
   return {
     sources: [{ name: 'a_very_long_sample_name' }, { name: 'sample2' }],
@@ -28,6 +32,7 @@ function makeModel(args?: { rowHeight?: number; isDensityMode?: boolean }) {
     numSources: 2,
     numRows: 2,
     scoreRamp: undefined,
+    showRowLabels: args?.showRowLabels ?? true,
   }
 }
 
@@ -98,4 +103,16 @@ test('no axis drawn (score legend only) leaves the labels at the offset', () => 
     labelOffset: 0,
   })
   expect(rowLabelX(svg)).toBe(0)
+})
+
+// The one thing "Show row labels" off has to do: at a row height too short for
+// text the labels are a bare column of swatches, and a track whose colors are
+// per-row identity rather than a grouping is better off without it.
+test('row labels can be turned off entirely', () => {
+  const svg = render({
+    model: makeModel({ rowHeight: 2, showRowLabels: false }),
+    scalebarLeft: 50,
+    labelOffset: 0,
+  })
+  expect(rowLabelX(svg)).toBeNaN()
 })

@@ -86,6 +86,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
 
   // read by MultiWiggleOverlayLines
   showRowSeparators: boolean
+  showRowLabels: boolean
   showCrossHatches: boolean
 
   // the overlay color key, which reads `hasOverlayLegend` so a dismissed legend

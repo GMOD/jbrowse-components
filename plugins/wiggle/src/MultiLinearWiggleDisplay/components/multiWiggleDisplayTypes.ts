@@ -40,6 +40,7 @@ export interface MultiWiggleDisplayModel
   treeAreaWidth: number
   showTree: boolean
   showRowSeparators: boolean
+  showRowLabels: boolean
   hasOverlayLegend: boolean
   scoreRamp: ScoreRamp | undefined
   setShowLegend: (arg: boolean) => void

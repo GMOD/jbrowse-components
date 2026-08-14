@@ -18,15 +18,21 @@ const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
 
 // The same locus with room around it, for the whole-cohort figure (review:
 // "consider zooming out farther to show bigger window, that this is an abnormal
-// thing essentially"). At the ladder's width every column of the 2504-row
-// heatmap carries a gain or a loss, so the frame has nothing in it that is
-// ordinary and the block reads as the background rather than as the finding.
-// Eight times wider puts flat diploid white on both sides of it.
+// thing essentially", then "zoom in a bit more"). At the ladder's 190 kb every
+// column of the 2504-row heatmap carries a gain or a loss, so the frame has
+// nothing in it that is ordinary and the block reads as the background rather
+// than as the finding. 1.5 Mb overshot the other way: the block was a fifth of
+// the frame with four times its own width of white on either side.
+//
+// 700 kb is measured off the frame rather than picked -- the coloured columns
+// run chr17:36,193,000-36,457,000, so the block is a bit over a third of this
+// window and the flat diploid flanks are the rest. Centred on the block, which
+// the 1.5 Mb window was not.
 //
 // Bounded by the store rather than by taste: build_signal_zarr.ts was run with
 // `--region chr17:35000000-37500000`, so a window past that renders empty
 // flanks that look like ordinary two-copy sequence and are actually no data.
-const CCL3L1_CONTEXT_WINDOW = 'chr17:35,520,000-37,020,000'
+const CCL3L1_CONTEXT_WINDOW = 'chr17:35,975,000-36,675,000'
 
 // The 1000 Genomes phase 3 integrated SV map, lifted to GRCh38, already in
 // config_demo. It is the comparison the tutorial is built on, not a second data
@@ -235,6 +241,19 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           height: 880,
           runClustering: true,
           showTree: false,
+          // NO ROW-LABEL COLUMN (review: "the row labels are just a 'mishmash'
+          // of colors. unclear if it is helpful to show them ... might consider
+          // removing color sidebar"). At 0.35 px a row the labels carry no text
+          // and `SvgRowLabels` falls back to a column of swatches; the store's
+          // per-sample colour is the individual's population, and clustering
+          // reorders the rows by copy-number profile, so the column is 26 hues
+          // interleaved at random -- a grouping the picture is not sorted by.
+          //
+          // It would be worth keeping if the rows were ORDERED by that trait,
+          // which is the figure the review was reaching for. They are not, and
+          // ordering them that way costs the clustering that makes the block
+          // legible, so the column comes off instead.
+          showRowLabels: false,
         },
       ],
     }),

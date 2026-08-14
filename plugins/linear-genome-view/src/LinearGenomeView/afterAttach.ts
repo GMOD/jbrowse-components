@@ -189,10 +189,20 @@ function backfillHighlightAssemblies(self: LinearGenomeViewModel) {
   }
 }
 
-function applyInitHighlights(
+/**
+ * Apply an init blob's `highlight` entries to a view, coercing each locstring
+ * or wire-format object and reporting a bad one without taking out its
+ * siblings.
+ *
+ * Exported because a LinearSyntenyView row is a LinearGenomeView that does NOT
+ * go through this file's init autorun — the synteny view builds each row's
+ * snapshot and navigates it itself — so the row's own `highlight` had nowhere
+ * to be applied and was dropped in silence.
+ */
+export function applyInitHighlights(
   self: LinearGenomeViewModel,
   session: AbstractSessionModel,
-  init: InitState,
+  init: Pick<InitState, 'highlight' | 'assembly'>,
 ) {
   for (const h of asArray(init.highlight)) {
     // parseLocString throws on an unknown refName or a malformed locstring, and

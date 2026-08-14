@@ -359,6 +359,10 @@ export default function stateModelFactory(
         return getConf(self, 'showRowSeparators')
       },
 
+      get showRowLabels(): boolean {
+        return getConf(self, 'showRowLabels')
+      },
+
       // Resolved through the promotable-slot tiers (resolveConf): an explicit
       // track value customizes the key on or off; otherwise it follows the
       // session-wide default, falling back to on.
@@ -389,7 +393,10 @@ export default function stateModelFactory(
        *    the only identification there has ever been. A multi-row track names
        *    its rows beside them — but only while they carry text
        *    (`rowLabelsCarryText`, asked of the drawing side rather than
-       *    restated). Below that `SvgRowLabels` drops to an unlabelled swatch,
+       *    restated) AND is drawing them at all — `showRowLabels` off means
+       *    nothing beside the rows names anything, so the key is once again the
+       *    only identification there is. Below that `SvgRowLabels` drops to an
+       *    unlabelled swatch,
        *    and a per-cell density track at 0.14 px a row is then a stripe of
        *    nine colors with nothing saying what any of them is; that is the case
        *    this was widened for ("we need to make it so density can show legend
@@ -410,7 +417,7 @@ export default function stateModelFactory(
         if (self.isOverlay) {
           return true
         }
-        if (rowLabelsCarryText(self.effectiveRowHeight)) {
+        if (this.showRowLabels && rowLabelsCarryText(self.effectiveRowHeight)) {
           return false
         }
         return legendIsReadable(self.legendItems)
@@ -513,6 +520,10 @@ export default function stateModelFactory(
 
         setShowRowSeparators(arg: boolean) {
           setConf(self, 'showRowSeparators', arg)
+        },
+
+        setShowRowLabels(arg: boolean) {
+          setConf(self, 'showRowLabels', arg)
         },
 
         setShowLegend(arg: boolean) {
@@ -675,7 +686,8 @@ export default function stateModelFactory(
     .views(self => ({
       trackMenuItems() {
         const showItems: MenuItem[] = [
-          // row separators only render in multi-row modes, not overlays
+          // row separators and row labels only render in multi-row modes, not
+          // overlays — an overlay is one row and names itself by the track name
           ...(self.isOverlay
             ? []
             : [
@@ -684,6 +696,17 @@ export default function stateModelFactory(
                   self.showRowSeparators,
                   () => {
                     self.setShowRowSeparators(!self.showRowSeparators)
+                  },
+                ),
+                checkboxItem(
+                  'Show row labels',
+                  self.showRowLabels,
+                  () => {
+                    self.setShowRowLabels(!self.showRowLabels)
+                  },
+                  {
+                    subLabel:
+                      'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
                   },
                 ),
               ]),

@@ -179,10 +179,10 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "answered",
-    "note": "DONE, both halves. The coverage callout and the arrow into the band are gone. The remaining callout makes the point you asked for -- that the green (LL) and navy (RR) arcs OVERLAP where concordant pairs nest, and that flipping the segment between the two junctions turns every one of them into an ordinary evenly spaced pair -- plus magenta as one read split-aligned in two directions. The shading stays: it says WHERE the second copy is, which the call knows from INFO.CPX_INTERVALS and the picture does not, and nothing in the frame argues it from depth any more. The guide paragraph splits along the same seam.\n\nprevious notes:\nremove the note 'elevated coverage and arcs mark the duplicated copy'. for one thing, the coverage diagram is very noisy dueto short reads. for the other, it is just kind of obvious. one more subtle point that could be worth making is that the \"overlapping' green and blue arcs, are a clear signature of inversion (e.g. if you \"flipped it around\" the arcs would become normally oriented and spaced) and the purple is also a clear signature of inversion. single short read split aligned in two directions. \nprevious notes;\nBOTH, and the second one needed a shading rather than a word. (1) The callout now says what each colour IS instead of naming it: magenta is one read split into two alignments that point in OPPOSITE directions, green (LL) and navy (RR) are mate pairs whose two ends face the same way, and all three are reads crossing a junction where the strand flips. (2) The dup was unreadable because the read orientations say nothing about it -- they are an inversion signature, and a reader who takes them for the whole story never finds the \"dup\" in INVdup. What answers is depth, and the step is 228 bp in a 2.7 kb window, so the segment the call's own INFO.CPX_INTERVALS names (DUP_chr1:39660047-39660275) is shaded and the callout points into it. The coverage step over that shading is real and was measured against the frame before the shading went in. The guide's paragraph splits along the same seam.",
-    "reviewedAt": "2026-08-14T05:10:00.000Z",
-    "hash": "2e571464b93e5c661dcf4a695b287729b0888eb7"
+    "status": "bad",
+    "note": "the red text annotation is too overwhelming now. remove the 'annotated as INVdup' just put the text \"INVdup\" somewhere in the figure that is unobtrusive. i also dont want the variant feature to have mouseover shading on it.\n\nDONE, both halves. The coverage callout and the arrow into the band are gone. The remaining callout makes the point you asked for -- that the green (LL) and navy (RR) arcs OVERLAP where concordant pairs nest, and that flipping the segment between the two junctions turns every one of them into an ordinary evenly spaced pair -- plus magenta as one read split-aligned in two directions. The shading stays: it says WHERE the second copy is, which the call knows from INFO.CPX_INTERVALS and the picture does not, and nothing in the frame argues it from depth any more. The guide paragraph splits along the same seam.\n\nprevious notes:\nremove the note 'elevated coverage and arcs mark the duplicated copy'. for one thing, the coverage diagram is very noisy dueto short reads. for the other, it is just kind of obvious. one more subtle point that could be worth making is that the \"overlapping' green and blue arcs, are a clear signature of inversion (e.g. if you \"flipped it around\" the arcs would become normally oriented and spaced) and the purple is also a clear signature of inversion. single short read split aligned in two directions. \nprevious notes;\nBOTH, and the second one needed a shading rather than a word. (1) The callout now says what each colour IS instead of naming it: magenta is one read split into two alignments that point in OPPOSITE directions, green (LL) and navy (RR) are mate pairs whose two ends face the same way, and all three are reads crossing a junction where the strand flips. (2) The dup was unreadable because the read orientations say nothing about it -- they are an inversion signature, and a reader who takes them for the whole story never finds the \"dup\" in INVdup. What answers is depth, and the step is 228 bp in a 2.7 kb window, so the segment the call's own INFO.CPX_INTERVALS names (DUP_chr1:39660047-39660275) is shaded and the callout points into it. The coverage step over that shading is real and was measured against the frame before the shading went in. The guide's paragraph splits along the same seam.",
+    "reviewedAt": "2026-08-14T04:50:14.219Z",
+    "hash": "d5426fcc220ad2b18cffe136d0e34ab072b75ccf"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -877,10 +877,10 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "answered",
-    "note": "sorry i dont understand the logic here, why does a somatic sv require common germline sv to 'survive'\n\nprevious notes:\nwhy do i care about common germline svs here? consider remove\n\nKEPT, AND MADE TO SAY SOMETHING, because the honest answer turned out to be the opposite of the obvious one. The lanes came in a round earlier on \"i want tracks that confirm; prose is tl;dr 99% of the time\", and then said nothing: ClinVar is empty and DGV draws two bars whose relationship to the call is the whole point and is not legible from the drawing. So I measured both bigBeds rather than reading the picture (api.genome.ucsc.edu, 2026-08-13). ClinVar: 15 records span this window and the SMALLEST is 2.2 Mb, whole-arm losses, every one filtered out by the size cut -- so the empty lane IS the reading, no submitted pathogenic CNV at anything like this event's scale. DGV: the two records that survive the cut BOTH overlap SV_85 (nsv1159779, a 12.9 kb deletion, over its first kilobase; nsv975804, a 3.0 kb duplication, over most of it). So the lane is not a clearance -- it says this deletion sits in ordinary germline copy-number territory, which is where a somatic caller most often emits something that was never somatic. That is why you care, and a pill in the frame now says it. The page's prose already said exactly this; the figure did not. (My first draft of the callout said the DGV records \"stop short of it\", which the measurement disproved before it was published.)\n\nDGV IS OUT, which is what the first note asked for. The keep argument was that a locus sitting in ordinary germline CNV territory is where a somatic caller most often emits something that was never somatic -- a claim about callers' false-positive behaviour that nothing in the frame shows, so a reader has to be argued into the lane. A lane like that is not confirming anything, which is the thing the lanes were added for.\n\nClinVar STAYS and is now the whole of it: 'is this a known pathogenic CNV' has a public answer, and the answer here is no at anything like this event's scale (15 records span the window and the smallest is 2.2 Mb, all cut by the size filter). What it contributes is an ABSENCE, and an empty track and a track that failed to load draw the same thing, so the callout says which one it is instead of asserting the germline argument. The frame is 274px shorter for it.",
-    "reviewedAt": "2026-08-14T03:08:00.188Z",
-    "hash": "a3a98c21458dd4912b4e1203bca12752aee749e5"
+    "status": "bad",
+    "note": "the \"this lane is empty on purpose\" should be removed. dont make weird 'arguments' with the reader or with yourself.\n",
+    "reviewedAt": "2026-08-14T04:51:45.009Z",
+    "hash": "ac9772e38cd737144bf0acc1e1db78c83298e066"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -1555,9 +1555,9 @@
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
-    "status": "answered",
+    "status": "good",
     "note": "DONE as a two-part figure. Both frames are the same track, the same window and the same capture size, so the only difference between them is the display; that composite is what repeatmasker_classes.md shows now, in place of the two Figures that sat next to each other. The cookbook keeps them separate on purpose, since each sits under the config block that produces it. The tutorial card crop moved to the composite with it.\n\nprevious notes:\nthis might want to show the multirow canvas version of this also, either as two part figure or nearby",
-    "reviewedAt": "2026-08-14T05:10:00.000Z",
+    "reviewedAt": "2026-08-14T04:23:30.172Z",
     "hash": "a69c9a03a7edeff2c8cb326fd24492bdd4ff7a39"
   },
   "cookbook_multiwig": {
@@ -1947,10 +1947,10 @@
   },
   "cnv1000g/zarr_cohort": {
     "name": "cnv1000g/zarr_cohort",
-    "status": "answered",
-    "note": "consider zooming out farther to show bigger window, that this is an abnormal thing essentially\n\nZOOMED OUT EIGHT TIMES, and it is the difference between a figure of a block and a figure of an anomaly. The old window was the ladder's, 190 kb, and at that width every column of the heatmap carries a gain or a loss -- so the frame had nothing ordinary in it and the block read as the background rather than as the finding. At 1.5 Mb the CCL3L1/CCL4L1 stripe sits in flat diploid white on both sides, and the sparse speckle in those flanks is the rare private CNV you would expect over 2504 people.\n\nBounded by the store rather than by taste: build_signal_zarr.ts was run over chr17:35,000,000-37,500,000, so a wider window would have drawn empty flanks that look exactly like ordinary two-copy sequence and are actually no data. The window is centred on the block, which took a second capture -- the first was 400 kb left-heavy.\n\nOne prose consequence, since the figure was carrying a measured claim: the paragraph under it said this frame cost the three requests in the table above. It does not any more, because a chunk is 256 bins wide and the window is now 1500 of them. The paragraph says what is actually true and is the better point anyway -- what a view costs follows the width of the window, not the size of the cohort. The table itself is unchanged; it is measured on the narrow window, which is still what ccl3l1_ladder shows.",
-    "reviewedAt": "2026-08-14T02:32:17.993Z",
-    "hash": "00f3b1c2558466dec96a2c7d0753f589ae3378ad"
+    "status": "bad",
+    "note": "zoom in a bit more. also, the row labels are just a 'mishmash' of colors. unclear if it is helpful to show them. if there was another 'trait' to color by here, like...drug metabolizing or whatnot...maybe that would be interesting. but not sure we can get that so might consider removing color sidebar.\n\nprevious notes:\nconsider zooming out farther to show bigger window, that this is an abnormal thing essentially\n\nZOOMED OUT EIGHT TIMES, and it is the difference between a figure of a block and a figure of an anomaly. The old window was the ladder's, 190 kb, and at that width every column of the heatmap carries a gain or a loss -- so the frame had nothing ordinary in it and the block read as the background rather than as the finding. At 1.5 Mb the CCL3L1/CCL4L1 stripe sits in flat diploid white on both sides, and the sparse speckle in those flanks is the rare private CNV you would expect over 2504 people.\n\nBounded by the store rather than by taste: build_signal_zarr.ts was run over chr17:35,000,000-37,500,000, so a wider window would have drawn empty flanks that look exactly like ordinary two-copy sequence and are actually no data. The window is centred on the block, which took a second capture -- the first was 400 kb left-heavy.\n\nOne prose consequence, since the figure was carrying a measured claim: the paragraph under it said this frame cost the three requests in the table above. It does not any more, because a chunk is 256 bins wide and the window is now 1500 of them. The paragraph says what is actually true and is the better point anyway -- what a view costs follows the width of the window, not the size of the cohort. The table itself is unchanged; it is measured on the narrow window, which is still what ccl3l1_ladder shows.",
+    "reviewedAt": "2026-08-14T04:23:15.962Z",
+    "hash": "f5b14bebab36c730efe299496cd7d200cb055f59"
   },
   "desktop-cli-config": {
     "name": "desktop-cli-config",
@@ -2225,10 +2225,10 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "answered",
-    "note": "DONE, both halves, and my first answer here was wrong about the second one. The two ribbon bands are 95px rather than 150. The GRAPH PANE takes 'paneHeight', a GraphGenomeView view prop that replaces its built-in 600px ceiling and scales the whole drawing to fit -- so it is settable from a session spec after all, and it is at 430. I had said the pane was not the spec's to shorten, which was true only of a key called 'height'; you were right that a way to compress the layout existed. Cutting the capture instead is what clips the bubble (tried at 1310, the ring came off the bottom). STILL FORCE-DIRECTED, per your follow-up: the layout is the point of the figure, and paneHeight changes the scale rather than the layout. 1580 -> 1299 overall.\n\nprevious notes:\nplease try to improve y-screen real estate with shorter synteny levels, and shorter graph panel. \n",
-    "reviewedAt": "2026-08-14T06:10:00.000Z",
-    "hash": "e5394d2fec9b54452bc4c3578f81f0958eee3f94"
+    "status": "bad",
+    "note": "try to reduce screenshot height even further\n\nprevious notes:\nDONE, both halves, and my first answer here was wrong about the second one. The two ribbon bands are 95px rather than 150. The GRAPH PANE takes 'paneHeight', a GraphGenomeView view prop that replaces its built-in 600px ceiling and scales the whole drawing to fit -- so it is settable from a session spec after all, and it is at 430. I had said the pane was not the spec's to shorten, which was true only of a key called 'height'; you were right that a way to compress the layout existed. Cutting the capture instead is what clips the bubble (tried at 1310, the ring came off the bottom). STILL FORCE-DIRECTED, per your follow-up: the layout is the point of the figure, and paneHeight changes the scale rather than the layout. 1580 -> 1299 overall.\n\nprevious notes:\nplease try to improve y-screen real estate with shorter synteny levels, and shorter graph panel.",
+    "reviewedAt": "2026-08-14T04:50:32.134Z",
+    "hash": "4d09868804d5b300f2fa307a3e3c8ccd75d0ec24"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
@@ -2350,10 +2350,10 @@
   },
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
-    "status": "answered",
-    "note": "please use showCurves:true\n\nON, and worth saying what the key is called, because the one in the note does not exist. There is no showCurves anywhere in the codebase; it is drawCurves, and it is a property of the SYNTENY VIEW rather than of a track. Spelled the other way inside tracks[] it would have been one of the inline keys the spec loader drops in silence -- the figure regenerates identical and reads as fixed.\n\nThe round before turned it off deliberately (five ribbons crossing in a 220px band, straight edges easier to follow through the crossings) and that is overruled rather than re-argued.",
-    "reviewedAt": "2026-08-14T03:08:00.188Z",
-    "hash": "0dbdfe70199d5bf5366122c4f3bc04500e5c4cba"
+    "status": "bad",
+    "note": "this is not longer using the color by 'predominant strand' anymore?",
+    "reviewedAt": "2026-08-14T04:44:37.264Z",
+    "hash": "d7be22cad3ab0bb5f4d5bc53fa05850896802948"
   },
   "cancer_sv/k562_cn_amplicon": {
     "name": "cancer_sv/k562_cn_amplicon",
@@ -2378,10 +2378,10 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "answered",
-    "note": "Nothing to do here: this entry pointed at derivative_inserts, and what that one asked for (curves) this figure already had. Re-review it against the current PNG.\n\nprevious notes:\nsee notes in cancer_sv/derivative_inserts",
-    "reviewedAt": "2026-08-14T05:10:00.000Z",
-    "hash": "174eb37a6554c7ae732b7a9262f09f3e08974ab5"
+    "status": "bad",
+    "note": "its hard to see what is going on here. the small breaks on the right are hard to see. not sure this is a good example to use, unless we can substantially improve this screenshot, potentially zooming in on the breakpoints",
+    "reviewedAt": "2026-08-14T04:45:36.451Z",
+    "hash": "51ee344b657ee41819f43faac9ec6cc3f15bb395"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
@@ -2644,10 +2644,10 @@
   },
   "mcscan_synteny/gene_level": {
     "name": "mcscan_synteny/gene_level",
-    "status": "answered",
-    "note": "we should just use default 0.2\n\nprevious notes:\nthe red synteny lines are quite dark. i am imagining it is plotting the many multiple transcripts each having synteny alignments over each other, reducing in alpha overplotting.  consider trying to only align one isoform per gene? or some other way to decimate this?\n\nDARK YES, OVERPLOTTED NO -- and that is measured off the capture rather than argued. Every ribbon pixel in the band was exactly srgb(255,64,64), which is one layer of pure red at the configured alpha 0.75 over white and nothing else; two stacked layers would have been (255,16,16), and the band held no other value but white and the antialiased edges between. So the isoform guess has the right shape and there is nothing here to decimate: the anchors this window draws are 12 collinear pairs, one ribbon each. The alpha was simply high, and it is 0.5 now. (It stays over the 0.2 default on purpose -- that is tuned for whole-genome bands where thousands of ribbons pile up, and twelve of them over a 220px band went to a pale wash.)\n\nDEFAULT 0.2, and the override is gone rather than set to 0.2, so the figure follows the default if it ever moves.\n\nOne measurement from the round that raised it is kept in the spec comment because it answers the original question and would otherwise be re-asked: nothing in that band is overplotted. Every ribbon pixel was exactly one layer of red over white, with no doubled value anywhere -- so the darkness was the alpha alone and never multiple isoform pairs stacking.",
-    "reviewedAt": "2026-08-14T03:08:00.188Z",
-    "hash": "e9894fe82c88f6bd21072e1eadbe8d6d91758342"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-14T04:50:18.667Z",
+    "hash": "73df41e237426d9aa21ea2b16b5668ddab9f3eb4"
   },
   "orthofinder_synteny/wheat_4a_urartu": {
     "name": "orthofinder_synteny/wheat_4a_urartu",
@@ -2809,10 +2809,10 @@
   },
   "genomes_basics/phylop_tp53": {
     "name": "genomes_basics/phylop_tp53",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:33:52.048Z",
-    "hash": "f38a695136296c8aa73fc17aab40d5b0aed6e812"
+    "status": "bad",
+    "note": "is this an 'interesting' figure in any way or is it just eye candy? i want to create an interesting story for the document",
+    "reviewedAt": "2026-08-14T04:48:08.215Z",
+    "hash": "d0750b6d37a7d0c8438cedb5eb78dd6db95ea451"
   },
   "pangenome/pggb_spur_linear": {
     "name": "pangenome/pggb_spur_linear",
@@ -3049,10 +3049,10 @@
   },
   "genomes_basics/gnomad_filter_menu": {
     "name": "genomes_basics/gnomad_filter_menu",
-    "status": "answered",
-    "note": "DONE, IN THE APP. gbkey!=Src shipped as the jexlFilters slot default, and that slot seeds the Filter by... dialog -- so every user of every track met a jexl expression they had not written, about one annotation source, before writing one of their own. It is hideSourceFeatures now, a gate in buildFeatureAdmission that never reaches the dialog, defeatable by config for anyone who wants the whole-molecule region record drawn. The dialog opens empty on a track that declares no filters of its own. AND THE FIGURE IS RE-SHOT, which was not optional the way an earlier note here said: this spec typed its expression onto a NEW LINE precisely because the dialog arrived prefilled, so with the default gone the leading newline drew a blank first line, and both the frame and the prose beside it (\"each on its own line under the default already in the box\") described a dialog the app no longer opens.\n\nprevious notes:\nwe may want to find a way to remove the gbkey Src from the default list. i think it confuses people. i dunno. it is just for ncbi gff. ",
-    "reviewedAt": "2026-08-14T05:40:00.000Z",
-    "hash": "de2df6ca332388024d2ec8a3bb26eb0fd7f8a0a1"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-14T04:46:21.361Z",
+    "hash": "fc6720af3e0eaff8843eae9b29516fc3963d57d4"
   },
   "genomes_basics/gnomad_filters": {
     "name": "genomes_basics/gnomad_filters",
@@ -3063,10 +3063,10 @@
   },
   "genomes_basics/isoform_control": {
     "name": "genomes_basics/isoform_control",
-    "status": "answered",
-    "note": "need red circle around the box that opened the popover\n\nDONE: a red ring on the \"Longest isoform\" chip, anchored to the chip's own text. The frame is 40px taller than its content needs because the ring's radius comes off the chip's diagonal and a wide short pill rings wider than it is tall.",
-    "reviewedAt": "2026-08-13T17:30:20.542Z",
-    "hash": "d1126d3ef9b86c12ac4d147f69acde7c74f31d85"
+    "status": "bad",
+    "note": "no i want the circle on the small icon that launches the popover. also, i dont want it to be showing the 'longest isoform' chip in this screenshot\n\nprevious notes: need red circle around the box that opened the popover\n\nDONE: a red ring on the \"Longest isoform\" chip, anchored to the chip's own text. The frame is 40px taller than its content needs because the ring's radius comes off the chip's diagonal and a wide short pill rings wider than it is tall.",
+    "reviewedAt": "2026-08-14T04:47:37.977Z",
+    "hash": "792a787c130e4bb341e9d187016405ad9ec25c22"
   },
   "genomes_basics/p53_element_sequence": {
     "name": "genomes_basics/p53_element_sequence",
@@ -3098,10 +3098,10 @@
   },
   "genomes_basics/search_tp53": {
     "name": "genomes_basics/search_tp53",
-    "status": "answered",
-    "note": "DONE, and it costs one click now instead of a three-level menu path. The lower panel collapses the gene track with the isoform chip that is in the frame, so it shows one transcript with the gene name under it rather than 28 rows autogrown out of Track menu -> Set feature height. phylop_tp53 follows it, which is a knock-on rather than a denial: at RefSeq All defaults that lane was 28 rows in a 100px band, and the exon structure the peaks are read against was what its scrollbar was hiding.\n\nprevious notes:\ni still dont like that this requires multiple steps from the user necessarily, and it just looks chaotic having so many isoforms generally. \n\nprevious notes:\nthis is a bad figure that shows our weakness in fact, because the gene glyph goes below the scroll display height and we cant even see gene label. i need recommendations of how to fix\n\nANSWERED, and the weakness is real but it has a setting: RefSeq All writes the GENE name under the whole transcript stack rather than one per row, so 28 transcripts laid out in a fixed 100px band put the last rows AND the name behind the track's own scrollbar. Track menu -> Set feature height -> Track sizing -> \"Fixed feature height + autogrow track height\" (heightMode 'grow') sizes the band to its content; 28 rows is well under the 800px growMaxHeight ceiling, so the whole stack and its label are in frame. That is what the lower panel is set to now, and the prose names the menu row. The other two answers, for the record: the isoform control collapses the stack instead (the next figure), and 'fit' would squeeze the rows to the current height, which at 28 transcripts is sub-pixel.",
-    "reviewedAt": "2026-08-14T05:10:00.000Z",
-    "hash": "3bc93f82ed4ed4a99a2c85261a46b53cb68cc355"
+    "status": "bad",
+    "note": "Is this something the user will experience by default? recall, this is supposed to be a step-by-step walkthrough with the user on our genomes.jbrowse.org. if it is skipping steps, that is bad.\n\nprevious notes:\nDONE, and it costs one click now instead of a three-level menu path. The lower panel collapses the gene track with the isoform chip that is in the frame, so it shows one transcript with the gene name under it rather than 28 rows autogrown out of Track menu -> Set feature height. phylop_tp53 follows it, which is a knock-on rather than a denial: at RefSeq All defaults that lane was 28 rows in a 100px band, and the exon structure the peaks are read against was what its scrollbar was hiding.\n\nprevious notes:\ni still dont like that this requires multiple steps from the user necessarily, and it just looks chaotic having so many isoforms generally. \n\nprevious notes:\nthis is a bad figure that shows our weakness in fact, because the gene glyph goes below the scroll display height and we cant even see gene label. i need recommendations of how to fix\n\nANSWERED, and the weakness is real but it has a setting: RefSeq All writes the GENE name under the whole transcript stack rather than one per row, so 28 transcripts laid out in a fixed 100px band put the last rows AND the name behind the track's own scrollbar. Track menu -> Set feature height -> Track sizing -> \"Fixed feature height + autogrow track height\" (heightMode 'grow') sizes the band to its content; 28 rows is well under the 800px growMaxHeight ceiling, so the whole stack and its label are in frame. That is what the lower panel is set to now, and the prose names the menu row. The other two answers, for the record: the isoform control collapses the stack instead (the next figure), and 'fit' would squeeze the rows to the current height, which at 28 transcripts is sub-pixel.",
+    "reviewedAt": "2026-08-14T04:48:55.676Z",
+    "hash": "a75da2cb787f5589b133ce54c8ddec2d5c976834"
   },
   "genomes_basics/site_home": {
     "name": "genomes_basics/site_home",
@@ -3147,16 +3147,16 @@
   },
   "fetch_chain": {
     "name": "fetch_chain",
-    "status": "answered",
-    "note": "any way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this\n\nSIMPLIFIED, and it is one edge fewer rather than one state fewer. The two dashed feedback edges both returned to the same debounced check and both said the same thing, and drawn separately they were two long sweeps up the whole right side of the frame -- most of what the eye lands on before it finds the chain at all. They meet at a junction now and travel back as ONE labelled edge. Nothing is lost by merging them: what differs between the two is only what re-fires the autorun (a fetchGeneration bump, or the next settled viewport), and the caption is where that belongs, so it says it. No state was cut, because none of the eight repeats another.",
-    "reviewedAt": "2026-08-14T02:23:06.709Z",
+    "status": "bad",
+    "note": "Try to simplify it even more\n\nprevious notes:\nany way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this\n\nSIMPLIFIED, and it is one edge fewer rather than one state fewer. The two dashed feedback edges both returned to the same debounced check and both said the same thing, and drawn separately they were two long sweeps up the whole right side of the frame -- most of what the eye lands on before it finds the chain at all. They meet at a junction now and travel back as ONE labelled edge. Nothing is lost by merging them: what differs between the two is only what re-fires the autorun (a fetchGeneration bump, or the next settled viewport), and the caption is where that belongs, so it says it. No state was cut, because none of the eight repeats another.",
+    "reviewedAt": "2026-08-14T04:45:50.800Z",
     "hash": "e8a3fe0000f5648c35f1c0248be4f33991556ac1"
   },
   "rpc_lifecycle": {
     "name": "rpc_lifecycle",
-    "status": "answered",
-    "note": "any way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this\n\nNOT THE SAME FIGURE as fetch_chain, though the note landed on both twenty seconds apart. Eight nodes in one straight line with a single side branch has nothing in it to cut, so a simplified-and-full pair would be two copies of one picture. What was actually wrong is the legend, and it was saying the opposite of its job: ranked beside the chain, the BLUE worker note sat level with serializeArguments(), which is a GREEN main-thread node, so the key read as a label for that row. It is a bordered key at the top right now, ranked against nothing, which is also what stopped it competing with the flow for the reader's eye.",
-    "reviewedAt": "2026-08-14T02:23:06.709Z",
+    "status": "bad",
+    "note": "if possible show the worker boundary using a box and try to simplify this even further, there are too many boxes for the serializing and deserializing that obscure what is going on. \n\nprevious notes: any way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this\n\nNOT THE SAME FIGURE as fetch_chain, though the note landed on both twenty seconds apart. Eight nodes in one straight line with a single side branch has nothing in it to cut, so a simplified-and-full pair would be two copies of one picture. What was actually wrong is the legend, and it was saying the opposite of its job: ranked beside the chain, the BLUE worker note sat level with serializeArguments(), which is a GREEN main-thread node, so the key read as a label for that row. It is a bordered key at the top right now, ranked against nothing, which is also what stopped it competing with the flow for the reader's eye.",
+    "reviewedAt": "2026-08-14T04:51:10.445Z",
     "hash": "e0f7a31f663836018de6af7464a890840991a1db"
   },
   "jbrowse-img/ecoli_ava_synteny": {
@@ -3165,5 +3165,12 @@
     "note": "",
     "reviewedAt": "2026-08-14T02:34:23.676Z",
     "hash": "6c2e15e1afbd91d7a7cb351f8fa5d2bd18f777bf"
+  },
+  "cookbook_color_by_type_two_ways": {
+    "name": "cookbook_color_by_type_two_ways",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-14T04:23:27.203Z",
+    "hash": "8266d7d3b5044c8c68e5e53fad7e0c2ea540acd0"
   }
 }

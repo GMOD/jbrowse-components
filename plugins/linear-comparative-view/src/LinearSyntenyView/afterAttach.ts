@@ -2,6 +2,7 @@ import { getSession, resolveNamedRegions } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
 import {
+  applyInitHighlights,
   linearGenomeViewPropKeys,
   normalizeTrackInit,
   partitionLaunchKeys,
@@ -172,6 +173,18 @@ async function applyInitViewLocsAndTracks(
             view.showTrack(trackId, trackSnapshot, displaySnapshot)
           }
         }
+        // AFTER navigation, and applied here rather than by the row's own LGV
+        // init: a row is built from a snapshot and navigated by this file, so
+        // nothing on the row ever runs `applyInit` and every init key that is
+        // not `loc`, `tracks` or `displayedRegionNames` had nowhere to land.
+        // `highlight` is the one a spec actually reaches for -- marking the
+        // same span on two rows is how a synteny figure says "this object,
+        // seen twice" -- and it was being dropped in silence, which is the
+        // failure mode `partitionLaunchKeys` exists to end everywhere else.
+        applyInitHighlights(view, getSession(self), {
+          highlight: viewInit.highlight,
+          assembly: viewInit.assembly,
+        })
       }
     }),
   )

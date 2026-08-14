@@ -146,6 +146,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     numRows: 2,
     scoreRamp: undefined,
     showRowSeparators: false,
+    showRowLabels: true,
     showCrossHatches: false,
     hasOverlayLegend: false,
     ...overrides,

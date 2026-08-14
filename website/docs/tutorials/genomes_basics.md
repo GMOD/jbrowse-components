@@ -49,14 +49,15 @@ starts. Type `TP53` into the location box and press Enter. The hosted config
 ships a name index, so gene symbols resolve with no setup, and coordinates like
 `chr17:7,668,400-7,687,550` work anywhere a symbol does.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: the hg38 instance as it opens. Bottom: the view at TP53, with the gene track collapsed to one transcript." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens, with the isoform control circled. Bottom: the same view after picking Longest coding transcript from it." />
 
 RefSeq All draws each transcript of a gene on its own row and writes the gene
 name under the stack, and TP53 has more transcripts than a track opens tall
 enough to show, so both the last rows and the name end up behind its scrollbar.
-The isoform control at the bottom right of the track collapses the stack to one
-transcript, which is what the lower panel is set to and what the rest of this
-page uses.
+That is the middle panel. The circled control at the bottom right of the track
+opens **Auto / All transcripts / Longest coding transcript**; picking the last
+collapses the stack to one transcript with the gene name under it, which is the
+bottom panel and what the rest of this page uses.
 
 ## Finding a track
 
@@ -74,11 +75,13 @@ phyloP scores each base against the neutral rate the alignment implies. The
 score is signed, so the track has a pivot rather than a floor: blue above the
 line changes more slowly than neutral, red below it faster.
 
-<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The TP53 transcript over the gene body with phyloP under it, as the track opens." />
+<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The TP53 transcript over the gene body with phyloP under it, as the track opens. The shaded block is the 3' UTR." />
 
-The peaks are the width of the coding exons rather than of the gene: the introns
-between them drop to the pivot, and the 3' UTR block at the left end is an exon
-carrying none of them.
+The peaks are the width of the coding exons rather than of the gene. The introns
+between them drop to the pivot, and so does the shaded block — the 3' UTR, an
+exon as wide as any coding one and present in every transcript. What the track
+is following is the protein rather than the transcript, and the shading is where
+the two come apart.
 
 ## Checking it against the raw data
 

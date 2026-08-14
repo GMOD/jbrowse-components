@@ -311,17 +311,37 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // again, since every figure below works from RefSeq All alone. The declared
   // session is that same locus with that same track.
   //
-  // It also COLLAPSES the stack to the longest coding transcript, which is one
-  // click on the chip the frame already shows. Two other states have been in
-  // this frame and each was denied: the default `fixed` sizing laid 28
-  // transcripts inside a 100px band, so three rows were in shot, each cut off
-  // from the name drawn under it and the rest behind the track's own scrollbar
-  // -- a picture of a track that does not fit rather than of a search that
-  // worked. `heightMode: 'grow'` fixed that by showing all 28, which is a
-  // three-level menu path to reach and 28 isoforms to read (reviewer: "requires
-  // multiple steps ... looks chaotic having so many isoforms"). The collapse is
-  // the control on the track itself, and it leaves one transcript with the gene
-  // name under it.
+  // THREE FRAMES, AND THE MIDDLE ONE IS THE POINT (review: "Is this something
+  // the user will experience by default? ... this is supposed to be a
+  // step-by-step walkthrough with the user on our genomes.jbrowse.org. if it is
+  // skipping steps, that is bad").
+  //
+  // It was two, and the second was the COLLAPSED stack -- a state no reader
+  // reaches by pressing Enter. The collapse is a click on a control, and the
+  // figure was showing its result as though it were the result of the search.
+  //
+  // So the frames are now type -> Enter -> collapse. The middle one is the
+  // default and it does not fit: at this zoom `auto` resolves to `all` (below
+  // 100 bp/px), so RefSeq All lays 28 transcripts inside a 100px band and both
+  // the last rows and the gene name drawn under the stack are behind the
+  // track's own scrollbar. That frame has been denied twice as an END state
+  // ("looks chaotic having so many isoforms") and it is not one here: it is why
+  // the reader clicks, and the ring says what to click.
+  //
+  // The control is the QUIET ICON in that frame, not the chip. The chip is the
+  // collapsed-only look, so at the default there is no chip to point at --
+  // which is also the reason `auto` cannot be the third frame's mode either.
+  // Frame three clicks the icon and picks from its menu, so the collapse is
+  // performed rather than declared, and the chip it leaves is what the later
+  // isoform_control figure calls "the same one the search figure used".
+  //
+  // The second frame DECLARES the destination rather than pressing Enter on the
+  // first. Pressing it is honest and was tried: the hit that answers `TP53`
+  // comes out of the RefSeq All (GFF) index, so the app opens that track to
+  // show it, and the frame is then two gene tracks with a highlighted
+  // "biological region" bar across the second -- a second annotation set the
+  // page never mentions again, since every figure below works from RefSeq All
+  // alone. The declared session is that same locus with that same track.
   {
     mode: 'url',
     name: 'genomes_basics/search_tp53',
@@ -346,20 +366,37 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         ],
       },
       {
+        // GENE_TRACK, not GENE_TRACK_COLLAPSED: no glyph mode, no height, no
+        // display settings at all, so this is what Enter opens
         url: sessionSpec(UCSC_HG38_CONFIG, {
           views: [
             {
               type: 'LinearGenomeView',
               assembly: 'hg38',
               loc: TP53_TRANSCRIPT_WINDOW,
-              tracks: [GENE_TRACK_COLLAPSED],
+              tracks: [GENE_TRACK],
             },
           ],
         }),
-        // one transcript row, its label and the isoform chip under it; sized off
-        // the run's own report rather than off the PNG
         viewportHeight: 340,
         actions: [PARK_CURSOR],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="track-control-isoform"]' },
+          },
+        ],
+      },
+      {
+        // continues from the frame above rather than declaring the result: the
+        // click IS the step this figure was skipping
+        viewportHeight: 340,
+        actions: [
+          { type: 'click', selector: '[data-testid="track-control-isoform"]' },
+          { type: 'click', text: 'Longest coding transcript' },
+          { type: 'delay', ms: 1500 },
+          PARK_CURSOR,
+        ],
       },
     ],
   },
@@ -373,6 +410,17 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // was cut both times: a filter box with a word typed in it and a ticked
   // checkbox are what the sentence beside it already says, so the frames carried
   // the app's chrome and no result.
+  //
+  // THE 3' UTR IS SHADED, and that is what turns this frame from a nice picture
+  // into a reading (review: "is this an 'interesting' figure in any way or is it
+  // just eye candy? i want to create an interesting story"). Everything the
+  // frame showed was positive -- exons, peaks, more exons -- and a reader cannot
+  // see "conserved" without seeing what unconserved looks like in the same
+  // window. The shaded block is the negative case and it is the strongest one
+  // available here: an exon as wide as any coding one, present in every
+  // transcript, transcribed in full, and carrying no signal at all. The introns
+  // say the same thing more weakly, since a reader can put their flatness down
+  // to not being exons.
   {
     mode: 'url',
     name: 'genomes_basics/phylop_tp53',
@@ -382,6 +430,26 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: TP53_TRANSCRIPT_WINDOW,
+          // TP53 is on the minus strand, so its 3' end is the LOW coordinate and
+          // this is the leftmost block in the gene lane. Bounds are the
+          // transcript's own, off api.genome.ucsc.edu's ncbiRefSeqCurated rather
+          // than eyeballed: every one of the 26 TP53 transcripts starts at
+          // 7,668,420 and all six tying at the longest CDS start coding at
+          // 7,669,608, so this span is the 3' UTR whichever of them the collapse
+          // picks.
+          //
+          // NO LABEL. A highlight writes its label at the band's top-left, and
+          // this band starts 20 bp into the window, so the text landed on the
+          // gene track's own drag handle and menu. The caption names the block
+          // instead, which is where a sentence fits.
+          highlight: [
+            {
+              refName: 'chr17',
+              assemblyName: 'hg38',
+              start: 7668420,
+              end: 7669608,
+            },
+          ],
           // gene track first, phyloP second: a track opened from the selector
           // is appended below what is already there, so this is the order the
           // click-path above ends in rather than a tidier one
