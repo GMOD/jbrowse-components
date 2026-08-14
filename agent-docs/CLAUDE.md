@@ -47,6 +47,24 @@ a session. Don't add a fifth folder — a `guides/` split alongside `reference/`
 was tried and collapsed, because nothing landed cleanly on the line. If
 `reference/` gets hard to scan, the fix is better `description:` lines.
 
+## Third parties: say what we chose, not how they rank
+
+**A note here can record a choice between two upstreams without characterizing
+either one.** These files are committed to a public repo and are mostly about
+projects that give their data away, so a judgement on someone's reliability,
+quality or maintenance reads as this project's position on them — and it is
+almost never something the note measured. `DEMO_DATASETS.md` carried "the less
+reliable of the two" about a genome database, which came from a passing remark
+rather than any check.
+
+The fix is not hedging, it is picking the reason that is ours: a default is
+justified by what it does for us (one accession pins one assembly, one call
+brings both files) rather than by a claim about the alternative. A real
+limitation stays — "NCBI carries gene models for no oat assembly" is a fact
+about coverage that a reader needs and can verify — and so does an outage we
+actually hit, with the date and what broke. What goes is the unmeasured
+comparative.
+
 ## Generated tables
 
 `pnpm autogen` sweeps this tree for `<!-- NAME START -->` / `<!-- NAME END -->`

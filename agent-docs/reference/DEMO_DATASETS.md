@@ -294,14 +294,19 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 **Default to `datasets download genome accession <acc> --include gff3,protein`.**
 Seven build scripts already take that route and
 `build_grape_peach_cacao_synteny.sh` is the worked multi-genome version, a short
-name/accession table looped over. Ensembl's FTP is the less reliable of the two
-and it is the only upstream these scripts routinely fail a re-run on.
+name/accession table looped over. What makes it the default is that a set is
+then pinned by accession: one identifier names one assembly, one call brings
+both files, and the same CLI emits the `seq-report` an INSDC-accession assembly
+needs for its aliases (see Format gotchas below). An FTP route composes a path
+out of species name, release number and assembly-version string instead, so a
+set is pinned by three moving parts rather than one.
 
-**No figure fetches Ensembl, so an outage costs a rebuild and nothing else.**
-It is a build-time host only: `website/scripts/third-party-hosts.txt` — the
-gated list of what a figure spec may fetch from — has no Ensembl entry, so the
-figures, the weekly sweep and the tutorials all read from jbrowse.org. That is
-the reason the demos below have not been migrated on uptime grounds alone.
+**Either way it is a build-time host, which bounds what an upstream change can
+break.** `website/scripts/third-party-hosts.txt` — the gated list of what a
+figure spec may fetch from — carries neither, so the figures, the weekly sweep
+and the tutorials all read from jbrowse.org. Availability upstream affects
+someone re-running a build script and nothing a reader sees, which is why the
+scripts below have not been rewritten for their own sake.
 
 **Six scripts do fetch from it, and three of them cannot switch.** Checked
 against the assemblies each one pins, so these are worth not re-checking:
