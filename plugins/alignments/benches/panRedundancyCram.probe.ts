@@ -67,7 +67,7 @@ const fh = new CountingFile(path)
 const cram = new IndexedCramFile({
   cramFilehandle: fh,
   index: new CraiIndex({ path: `${path}.crai` }),
-  seqFetch: async () => '',
+  fetchReferenceSequence: async () => '',
   checkSequenceMD5: false,
 })
 
