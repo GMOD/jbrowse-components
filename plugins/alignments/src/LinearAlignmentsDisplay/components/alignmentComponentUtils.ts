@@ -9,7 +9,6 @@ import {
   colorShortInsert,
   colorSplitReadInversion,
   colorSupplementary,
-  colorUnmappedMate,
 } from '@jbrowse/core/ui/palette'
 
 import { toRgb } from '../../shaders/colors.ts'
@@ -94,7 +93,10 @@ export function buildColorPaletteFromPalette(
     colorShortInsert: toRgb(colorShortInsert),
     colorSupplementary: toRgb(colorSupplementary),
     colorSplitInversion: toRgb(colorSplitReadInversion),
-    colorUnmappedMate: toRgb(colorUnmappedMate),
+    // themed, not the bare constant: this slot inverts between themes the way
+    // pairLR does, so reading the light value here would leave a dark-mode
+    // pileup with a black fill on a #121212 ground
+    colorUnmappedMate: toRgb(palette.alignmentFill.unmappedMate),
     colorInterchrom: toRgb(colorInterchrom),
     colorOverlap: toRgb(palette.readOverlap),
     // The same token `ArcHoverOverlay` strokes its highlight in, which is the

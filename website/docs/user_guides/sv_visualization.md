@@ -62,7 +62,7 @@ pair orientations are not supported. The table below assumes `fr`:
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#4d9a4d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#4d9a4d"></span> | LL (→ →, both mates forward strand) | `#4d9a4d` | Abnormal orientation |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#5555bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#5555bb"></span> | RR (← ←, both mates reverse strand) | `#5555bb` | Abnormal orientation |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#af4d19;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#af4d19"></span> | Inter-chromosomal | `#af4d19` | Mate maps to a different chromosome; colored distinctly rather than by orientation |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#008171;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#008171"></span> | Mate unmapped | `#008171` | The other end of the pair aligned nowhere, so orientation and insert size say nothing |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#000000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#000000"></span> | Mate unmapped | `#000000` | The other end of the pair aligned nowhere, so orientation and insert size say nothing |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#9b30b0;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#9b30b0"></span> | Split paired-end read (inverted) | `#9b30b0` | A paired read's supplementary segment maps opposite-strand to its primary, so the junction is inverted — an inversion or an inverted duplication |
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
@@ -133,7 +133,7 @@ menu), the Insert size option uses threshold-based coloring:
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#af4d19;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#af4d19"></span> | Mate on a different chromosome | `#af4d19` | Suggests an inter-chromosomal event |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | Insert larger than expected | `#ff0000` | Suggests a deletion spanning the pair |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f582c0;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f582c0"></span> | Insert smaller than expected | `#f582c0` | Suggests an insertion between the pair |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#008171;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#008171"></span> | Mate unmapped | `#008171` | The other end of the pair aligned nowhere, so insert size says nothing |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#000000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#000000"></span> | Mate unmapped | `#000000` | The other end of the pair aligned nowhere, so insert size says nothing |
 
 <!-- COLOR_TABLE alignments-insert-size END -->
 
@@ -149,7 +149,7 @@ that the strongest cue wins:
 - Short insert always paints pink, even if the pair orientation is abnormal. At
   a short insert the useful signal is simply "an insertion is here", so
   distinguishing orientation adds little and pink takes priority.
-- Otherwise an abnormal pair orientation wins (cyan RL → tandem duplication;
+- Otherwise an abnormal pair orientation wins (teal RL → tandem duplication;
   green LL / dark blue RR → inversion).
 - A large insert with normal orientation paints red, the classic deletion
   signature.
@@ -202,13 +202,13 @@ in the [pair orientation section](#pair-orientation-color-scheme) above.
 
 ### Tandem duplication
 
-- RL (cyan) read pairs suggest a tandem duplication: reads appear to point away
+- RL (teal) read pairs suggest a tandem duplication: reads appear to point away
   from each other when the duplicated segment is joined back to its origin
 - Elevated coverage over the duplicated region is another supporting signal
 - With read arcs enabled, arcs pointing backward (upstream) across a junction
   point to a tandem duplication
 
-The cyan RL signature also appears in the inverted-duplication figure in the
+The teal RL signature also appears in the inverted-duplication figure in the
 [pair orientation section](#pair-orientation-color-scheme) above.
 
 ### Translocation / inter-chromosomal fusion

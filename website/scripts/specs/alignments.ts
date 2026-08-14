@@ -304,7 +304,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   //   ctgA — a normal FR band (~450 bp insert) plus a cluster of long-insert
   //     (~32 kb TLEN) deletion pairs and short-insert pairs, so its cloud spreads
   //     from the y=0 baseline up to the deletion signal — the rich read-cloud story.
-  //   ctgB — ALL pairs are RL/outward-facing (mates point outward, the cyan
+  //   ctgB — ALL pairs are RL/outward-facing (mates point outward, the teal
   //     "RL" class) at a narrow 300-550 bp insert, an inversion-style signature.
   //     There are zero normal small-insert pairs, so the ctgB cloud is one flat
   //     RL band with nothing at the y=0 baseline — that empty baseline is the

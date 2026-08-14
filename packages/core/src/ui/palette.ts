@@ -72,6 +72,8 @@ export interface AlignmentFill {
   pairLL: string
   /** RR (← ←): both mates on the reverse strand */
   pairRR: string
+  /** The other end of the pair aligned nowhere, so no orientation is honest */
+  unmappedMate: string
 }
 
 // ---------------------------------------------------------------------------
@@ -452,28 +454,48 @@ export const colorShortInsert = '#f582c0'
  * #color alignments-pair-orientation | Mate unmapped | The other end of the pair aligned nowhere, so orientation and insert size say nothing
  * #color alignments-insert-size | Mate unmapped | The other end of the pair aligned nowhere, so insert size says nothing
  */
-// TEAL, AND IT MOVED OUT OF THE WARM FAMILY so `colorInterchrom` could have it.
-// The two were 4.5 degrees apart and the pair is what boxed that slot in; this
-// is the half that gives, for three reasons.
+// A NON-COLOUR, and it INVERTS between themes — the `readOverlap` pattern, for
+// the reason that note already states: "no read color is the honest answer
+// there, which is the whole reason the span is marked". An unmapped mate is the
+// same kind of fact. Nothing about the pair's geometry is answerable, so a hue
+// would claim a category where there is an absence.
 //
-// Nothing is ever read AGAINST this category. A reader compares LL to RR to see
-// an inversion, and long insert to short; nobody compares "mate unmapped" to
-// anything, so it is the slot that can afford a tighter neighbour — dE 31.7 to
-// `colorPairRL`, which is the closest anything here comes and is a comparison
-// no figure asks for.
+// This slot has the loosest requirements in the palette and that is what makes
+// the extremes affordable: it is a READ FILL ONLY. It appears in neither
+// `ARC_SLOT_CATEGORY` nor `LINKED_READ_SLOT_CATEGORY`, so it never has to
+// survive a hairline stroke, only a flat area.
 //
-// It is also the rarer of the two by figure count, which is what a move costs:
-// two committed figures paint it against six for interchrom.
+// It briefly took a teal in the last free hue region, which worked and was the
+// wrong answer: rendered against a pileup, a hue reads as one more findable
+// category beside the green LL and blue RR bars, where black reads as a mark
+// that is deliberately not one of them. That is the whole distinction the
+// category exists to make.
 //
-// And it is the one whose meaning sits least comfortably in the warm family it
-// was in. Red, brown and tan there all say something about the pair's geometry;
-// this says the geometry is unanswerable. Being visibly not-of-that-family is
-// the point rather than a side effect.
+// IGV agrees, further than this does: `setPairOrientation` requires
+// `mate.isMapped()`, so an unmapped mate falls through every branch and takes
+// the default read colour. Going that far loses the one thing the category is
+// for — under insert size, tlen is 0 and would otherwise paint
+// `colorShortInsert`, a false claim — so it keeps a mark, and makes the mark a
+// non-colour.
 //
-// L* 48.1 / C* 34.0 / h 179.7: contrast 4.80 on paper and 3.91 on #121212, so
-// it holds on both grounds without a dark variant. Do not lighten it toward
-// `colorPairRL`'s cyan — 31.7 is the whole margin.
-export const colorUnmappedMate = '#008171'
+// BLACK ON LIGHT: contrast 21.0, and dE 36.1 from `readOverlap` #555555, which
+// is the only other dark neutral a read fill sits beside. Near-black does NOT
+// work — #2e2e2e is dE 17.2 from that charcoal and #3d3d3d is 10.4 — so this is
+// the extreme or nothing.
+//
+// WHITE ON DARK, where black is contrast 1.12 and reads as a hole in the pileup
+// rather than as a read. The light end of the dark neutral scale is crowded and
+// white is dE 7 from `readOverlap`'s #e4e4e4, which is the one real cost here.
+// Two things make it acceptable rather than a collision: overlap marks a SPAN
+// inside a chained read while this fills a whole one, so they differ in extent
+// as well as tone, and overlap only appears in chain layout at all. The
+// "glaring near-white blocks" that `colorPairLRDark` exists to avoid is not this
+// case — that was the concordant majority of a pileup, and this is a handful of
+// reads.
+export const colorUnmappedMate = '#000000'
+// See colorUnmappedMate: the same statement at the other end of the scale, for
+// the theme whose track background is #121212.
+export const colorUnmappedMateDark = '#ffffff'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'
 export const colorLongreadInv = '#7755bb'
@@ -675,12 +697,15 @@ const lightAlignmentFill: AlignmentFill = {
   pairRL: colorPairRL,
   pairLL: colorPairLL,
   pairRR: colorPairRR,
+  unmappedMate: colorUnmappedMate,
 }
 
-// only pairLR changes: the light #d3d3d3 reads as glaring near-white blocks
+// pairLR because the light #d3d3d3 reads as glaring near-white blocks;
+// unmappedMate because it inverts by design (see its own note)
 const darkAlignmentFill: AlignmentFill = {
   ...lightAlignmentFill,
   pairLR: colorPairLRDark,
+  unmappedMate: colorUnmappedMateDark,
 }
 
 // ---------------------------------------------------------------------------

@@ -25,6 +25,7 @@ export {
   colorSupplementary,
   colorUnknown,
   colorUnmappedMate,
+  colorUnmappedMateDark,
   createJBrowseBaseTheme,
   createJBrowseTheme,
   createJBrowseThemeFromArgs,

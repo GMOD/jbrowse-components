@@ -110,6 +110,7 @@ export {
   colorSupplementary,
   colorUnknown,
   colorUnmappedMate,
+  colorUnmappedMateDark,
   methylated5hmC,
   methylated5mC,
   tagColorPalette,
