@@ -252,9 +252,10 @@ at the edge of the 17q amplicon the HER2+ group is gained and lost at nearly the
 same rate, and a net value would draw that as roughly nothing right beside
 ERBB2.
 
-Small groups are dropped, below the `--min-group` size, since a percentage over
-a handful of tumors moves in visible steps and reads as signal. The script names
-each group it skipped and how big it was.
+A subtype is plotted only once it holds enough tumors to be worth a percentage,
+which `--min-group` sets: over a handful of tumors the value moves in visible
+steps and reads as signal. The script names each group it dropped and how big it
+was.
 
 Point `--groups` at any other column for a different split; `histology` and
 `stage` come from harmonized GDC fields and so work for any TCGA project, while
