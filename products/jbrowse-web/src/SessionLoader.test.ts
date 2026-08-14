@@ -18,6 +18,7 @@ import {
   writeSessionToIDB,
 } from './sessionLoaderHelpers.ts'
 import { forgetTrustedPlugins, rememberPlugins } from './trustedPlugins.ts'
+import { checkPlugins } from './util.ts'
 
 import type { SessionSource } from './types.ts'
 
@@ -293,6 +294,47 @@ describe('SessionLoader', () => {
       expect(loader.configError).toBeUndefined()
       expect(loader.configSnapshot).toBeDefined()
       expect(loader.pluginLoadFailures).toEqual([{ definition, error }])
+    })
+
+    // react-app and desktop both dedupe where their two plugin sources meet;
+    // web merged the loaded records without doing so. PluginManager.addPlugin
+    // refuses the second copy by name, so nothing extra ever ran — but web
+    // fetched and evaluated the duplicate bundle, and put it through the trust
+    // gate, to find that out. A config and a session naming the same plugin at
+    // different pinned versions is the case: the config's version runs, before
+    // and after this.
+    it('does not load a session plugin the config already loaded', async () => {
+      const fromConfig = {
+        name: 'GWAS',
+        umdUrl: 'https://jbrowse.org/plugins/jbrowse-plugin-gwas/1.0.0/g.js',
+      }
+      const sameAtAnotherVersion = {
+        name: 'GWAS',
+        umdUrl: 'https://jbrowse.org/plugins/jbrowse-plugin-gwas/2.0.0/g.js',
+      }
+      const sessionOnly = {
+        name: 'MsaView',
+        umdUrl: 'https://jbrowse.org/plugins/jbrowse-plugin-msaview/1.0.0/m.js',
+      }
+      jest.mocked(loadPluginRecords).mockResolvedValueOnce({
+        records: [{ plugin: class {}, definition: fromConfig }] as never,
+        failures: [],
+      })
+
+      const loader = SessionLoader.create({ initialTimestamp: Date.now() })
+      await loader.loadConfigAndPlugins({ plugins: [fromConfig] })
+      await loader.loadSession({
+        id: 'test',
+        sessionPlugins: [sameAtAnotherVersion, sessionOnly],
+      })
+
+      expect(jest.mocked(loadPluginRecords).mock.calls.at(-1)?.[0]).toEqual([
+        sessionOnly,
+      ])
+      // and the duplicate never reaches the trust gate either
+      expect(jest.mocked(checkPlugins).mock.calls.at(-1)?.[0]).toEqual([
+        sessionOnly,
+      ])
     })
   })
 

@@ -1,6 +1,6 @@
 import { lazy, useState } from 'react'
 
-import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { isPluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
   getEnv,
   getPluginUpdate,
@@ -161,8 +161,8 @@ const InstalledPlugin = observer(function InstalledPlugin({
   // the install url is recorded in the plugin metadata at load time; the matching
   // runtime definition is the concrete, version-pinned thing we remove/replace
   const installedUrl = pluginManager.pluginMetadata[plugin.name]?.url
-  const definition = pluginManager.runtimePluginDefinitions.find(
-    d => pluginUrl(d) === installedUrl,
+  const definition = pluginManager.runtimePluginDefinitions.find(d =>
+    isPluginUrl(d, installedUrl),
   )
   // read the installed version from the store-minted, version-pinned url rather
   // than the plugin's self-declared version, which is optional and often unset

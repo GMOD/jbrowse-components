@@ -1,4 +1,4 @@
-import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
   localStorageGetStringArray,
   localStorageRemoveItem,
@@ -27,19 +27,33 @@ function readTrusted() {
 
 // Records the user's approval of a set of plugins so the warning dialog doesn't
 // reappear for them on this origin after a refresh.
+//
+// maybePluginUrl, so a definition naming no loader records nothing: pluginUrl's
+// miss value is the display string 'unknown url', and writing that into the trust
+// set marked every *other* unloadable definition — a different plugin, from a
+// different origin's link — as already approved. It also cannot be matched back,
+// since nothing loads from it.
 export function rememberPlugins(defs: PluginDefinition[]) {
   const trusted = readTrusted()
   for (const d of defs) {
-    trusted.add(pluginUrl(d))
+    const url = maybePluginUrl(d)
+    if (url !== undefined) {
+      trusted.add(url)
+    }
   }
   localStorageSetJSON(STORAGE_KEY, [...trusted])
 }
 
 // True when every plugin has already been vouched for on this origin. An empty
-// list is trivially remembered, matching checkPlugins treating [] as safe.
+// list is trivially remembered, matching checkPlugins treating [] as safe. A
+// definition with no url is never remembered — rememberPlugins stores none, and
+// this is the gate that decides whether to skip the prompt.
 export function arePluginsRemembered(defs: PluginDefinition[]) {
   const trusted = readTrusted()
-  return defs.every(d => trusted.has(pluginUrl(d)))
+  return defs.every(d => {
+    const url = maybePluginUrl(d)
+    return url !== undefined && trusted.has(url)
+  })
 }
 
 // The plugin URLs currently trusted on this origin, for the UI that revokes

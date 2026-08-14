@@ -1,5 +1,6 @@
 import {
   getPluginUpdate,
+  installablePlugins,
   installedVersionFromUrl,
   resolvePlugin,
 } from './pluginStore.ts'
@@ -114,6 +115,61 @@ describe('resolvePlugin', () => {
       url: 'https://x/p.js',
       integrity: 'sha384-z',
     })
+  })
+})
+
+// The two store surfaces share this, so what one offers is what the other's
+// loader will accept. Every miss here is silent: an entry that vanishes with no
+// diagnostic, or one that installs and does nothing.
+describe('installablePlugins', () => {
+  const names = (plugins: JBrowsePlugin[], isElectron: boolean) =>
+    installablePlugins(plugins, isElectron).map(p => p.name)
+
+  it('keeps an entry whose only web build is per-version', () => {
+    // resolvePlugin installs from versions[] and treats the top-level url as the
+    // fallback, so an entry published this way is a shape it expects — the filter
+    // used to read only the top level and drop it from web's list entirely
+    const p = plugin({
+      name: 'PerVersion',
+      versions: [
+        {
+          pluginVersion: '1.0.0',
+          jbrowseRange: '*',
+          esmUrl: 'https://x/1.0.0/p.js',
+        },
+      ],
+    })
+    expect(names([p], false)).toEqual(['PerVersion'])
+  })
+
+  it('drops an entry with no web build anywhere, and keeps it on desktop', () => {
+    const p = plugin({
+      name: 'CjsOnly',
+      cjsUrl: 'https://x/p.cjs',
+      versions: [
+        {
+          pluginVersion: '1.0.0',
+          jbrowseRange: '*',
+          cjsUrl: 'https://x/1.0.0/p.cjs',
+        },
+      ],
+    })
+    expect(names([p], false)).toEqual([])
+    expect(names([p], true)).toEqual(['CjsOnly'])
+  })
+
+  it('drops the plugins both products vendor', () => {
+    const shared = [plugin({ name: 'MafViewer' }), plugin({ name: 'GWAS' })]
+    expect(names(shared, false)).toEqual([])
+    expect(names(shared, true)).toEqual([])
+  })
+
+  // the half that was missing from both surfaces: desktop bundles Blat, so
+  // installing it there writes an entry dropVendoredPlugins then drops at load
+  it('drops Blat on desktop only, since web has to load it to have BLAT', () => {
+    const blat = [plugin({ name: 'Blat', umdUrl: 'https://x/blat.js' })]
+    expect(names(blat, true)).toEqual([])
+    expect(names(blat, false)).toEqual(['Blat'])
   })
 })
 

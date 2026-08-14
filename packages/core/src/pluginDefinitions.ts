@@ -91,16 +91,36 @@ export function isCJSPluginDefinition(
 // class name. Apply only in products whose core bundle actually vendors these —
 // not globally — so CLI indexing, @jbrowse/img, and react-circular (which don't
 // bundle them) still load the external plugin. Also drives the plugin store,
-// which hides these so a user can't install a colliding second copy.
+// which hides these so a user can't install a colliding second copy
+// (`installablePlugins`, util/pluginStore.ts).
 export const vendoredPluginNames = new Set(['MafViewer', 'GWAS'])
 
 /**
- * `alsoVendored` is for a plugin one product bundles and another does not, which
- * the shared set above cannot express: Desktop vendors Blat (so a hub config
- * naming it must be dropped, or its menu items are appended twice — once by the
- * core copy, once by the downloaded one), while Web does not and has to load
- * exactly that entry to have BLAT at all.
+ * Desktop's half of the same list — a plugin one product bundles and another does
+ * not, which the shared set above cannot express.
+ *
+ * Blat is in Desktop's corePlugins but deliberately not Web's: Web is where
+ * cold-load bundle size is paid, and BLAT is niche. So Desktop's bundled copy is
+ * the only one that ships. It is what gives BLAT on a genome the user opened
+ * from their own disk, where no config names any plugin, and it is the copy that
+ * reaches UCSC through the main-process `blatFetch` bridge and the CAPTCHA-solve
+ * window. Web has to load the external entry to have BLAT at all.
+ *
+ * Naming it drops a config's `plugins[]` entry for Blat before Desktop's loader
+ * sees it, so a config that carries one does not install a second copy beside
+ * the bundled one and append its Tools menu items twice. Nothing carries one
+ * today: jb2hubs stamps `sequence.metadata.blatDb`, which names the UCSC db an
+ * assembly is searchable under and says nothing about loading a plugin. The
+ * entry is a guard for the UMD build (`plugins/blat/scripts/build-umd.ts`),
+ * which a config can name and which is how Web would pick BLAT up.
+ *
+ * It lives here beside the shared set rather than in jbrowse-desktop because the
+ * two are read together — a surface consulting one and not the other offers an
+ * install the loader then drops, which is what Desktop's plugin store and global
+ * plugins dialog both did.
  */
+export const desktopVendoredPluginNames = ['Blat']
+
 export function dropVendoredPlugins(
   defs: PluginDefinition[],
   alsoVendored: Iterable<string> = [],
@@ -152,6 +172,24 @@ export function pluginUrl(d: PluginDefinition) {
   return maybePluginUrl(d) ?? 'unknown url'
 }
 
+/**
+ * Whether a definition loads from exactly `url` — the question behind "which
+ * definition is this loaded plugin", "is this one in the session's list", "which
+ * entry does an uninstall remove".
+ *
+ * The two undefined guards are the whole point, and both were live as
+ * `pluginUrl(d) === url` comparisons. A definition naming no loader reads back as
+ * the literal `'unknown url'`, so any two of them compared equal: approving one
+ * marked every other unloadable definition trusted, and removing one filtered
+ * every other unloadable one out of the config. And the url side is absent for a
+ * core or global plugin (no install url was recorded), which must match no
+ * definition rather than the first url-less one.
+ */
+export function isPluginUrl(d: PluginDefinition, url: string | undefined) {
+  const actual = maybePluginUrl(d)
+  return actual !== undefined && actual === url
+}
+
 export function pluginName(definition: PluginDefinition) {
   return 'name' in definition ? definition.name : undefined
 }
@@ -187,6 +225,18 @@ export function samePlugin(a: PluginDefinition, b: PluginDefinition) {
     (nameA !== undefined && nameA === nameB) ||
     (urlA !== undefined && urlA === urlB)
   )
+}
+
+/**
+ * The candidates no definition in `existing` already describes — `dedupePlugins`
+ * across two lists whose first one is already settled, for a source loaded after
+ * another rather than merged with it.
+ */
+export function pluginsNotIn(
+  candidates: PluginDefinition[],
+  existing: PluginDefinition[],
+) {
+  return candidates.filter(c => !existing.some(e => samePlugin(e, c)))
 }
 
 /**

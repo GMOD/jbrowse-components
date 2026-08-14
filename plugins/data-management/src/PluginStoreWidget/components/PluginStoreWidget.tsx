@@ -1,8 +1,7 @@
 import { lazy } from 'react'
 
-import { vendoredPluginNames } from '@jbrowse/core/pluginDefinitions'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getSession, isElectron } from '@jbrowse/core/util'
+import { getSession, installablePlugins, isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetchPlugins } from '@jbrowse/core/util/useFetchPlugins'
 import { getEnv } from '@jbrowse/mobx-state-tree'
@@ -22,7 +21,6 @@ import InstalledPluginsList from './InstalledPluginsList.tsx'
 import PluginCard from './PluginCard.tsx'
 
 import type { PluginStoreModel } from '../model.ts'
-import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 
 // lazies
 const AddCustomPluginDialog = lazy(() => import('./AddCustomPluginDialog.tsx'))
@@ -59,17 +57,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Entries this product could install at all, before any user filter. A plugin
-// with only a cjsUrl (no web build) can't load on web, and one since vendored
-// into core (e.g. MafViewer) is dropped at load so installing it does nothing.
-function installableHere(plugins: JBrowsePlugin[]) {
-  return plugins.filter(
-    plugin =>
-      !vendoredPluginNames.has(plugin.name) &&
-      (isElectron || Boolean(plugin.esmUrl || plugin.url || plugin.umdUrl)),
-  )
-}
-
 const PluginStoreWidget = observer(function PluginStoreWidget({
   model,
 }: {
@@ -82,8 +69,8 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
   const { adminMode } = session
   const { pluginManager } = getEnv(model)
 
-  const textMatched = installableHere(plugins ?? []).filter(plugin =>
-    plugin.name.toLowerCase().includes(filterText.toLowerCase()),
+  const textMatched = installablePlugins(plugins ?? [], isElectron).filter(
+    plugin => plugin.name.toLowerCase().includes(filterText.toLowerCase()),
   )
   // Offer a tag if something surviving the text filter carries it, plus any tag
   // already selected — otherwise the last chip in a narrow result set vanishes

@@ -1,4 +1,4 @@
-import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { isPluginUrl } from '@jbrowse/core/pluginDefinitions'
 import { getEnv, isSessionWithSessionPlugins } from '@jbrowse/core/util'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
@@ -19,6 +19,14 @@ function configPlugins(session: AbstractSessionModel) {
   }
 }
 
+/**
+ * Whether the loaded plugin came from the session's own list, matched on the
+ * install url recorded in its metadata.
+ *
+ * `isPluginUrl`, because both sides of that comparison have a miss value: a core
+ * or global plugin recorded no install url, and a definition naming no loader
+ * reads back as the display string 'unknown url'. Neither may match anything.
+ */
 export function isSessionPlugin(
   plugin: BasePlugin,
   session: AbstractSessionModel,
@@ -26,7 +34,7 @@ export function isSessionPlugin(
   const { pluginManager } = getEnv(session)
   const installedUrl = pluginManager.pluginMetadata[plugin.name]?.url
   return isSessionWithSessionPlugins(session)
-    ? session.sessionPlugins.some(p => pluginUrl(p) === installedUrl)
+    ? session.sessionPlugins.some(p => isPluginUrl(p, installedUrl))
     : false
 }
 

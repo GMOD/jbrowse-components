@@ -114,6 +114,7 @@ export {
   type PluginUpdate,
   type ResolvedPlugin,
   getPluginUpdate,
+  installablePlugins,
   installedVersionFromUrl,
   isPluginInstalled,
   resolvePlugin,

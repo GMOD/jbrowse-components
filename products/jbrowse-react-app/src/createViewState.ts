@@ -3,7 +3,7 @@ import {
   dedupePlugins,
   dropVendoredPlugins,
   pluginLabel,
-  samePlugin,
+  pluginsNotIn,
 } from '@jbrowse/core/pluginDefinitions'
 import {
   normalizeAdapterSnapshots,
@@ -142,12 +142,15 @@ export default function createViewState(
   // same problem for the third, and used to hear nothing. Vendored names go
   // first, since core already bundles those and `loadPlugins` drops them, so
   // they are never among the loaded definitions.
-  const missing = dropVendoredPlugins(
-    dedupePlugins([
-      ...(config.plugins ?? []),
-      ...stateTree.session.sessionPlugins,
-    ]),
-  ).filter(named => !loaded.some(l => samePlugin(l, named)))
+  const missing = pluginsNotIn(
+    dropVendoredPlugins(
+      dedupePlugins([
+        ...(config.plugins ?? []),
+        ...stateTree.session.sessionPlugins,
+      ]),
+    ),
+    loaded,
+  )
   if (missing.length > 0) {
     console.warn(
       `This config/session names ${missing.length} plugin(s) that were not passed in, and createViewState does not fetch them: ${missing.map(d => pluginLabel(d)).join(', ')}. Load them yourself: const plugins = await loadPlugins(defs); createViewState({ config, plugins })`,

@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { pluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { isPluginUrl, maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { migrateConfigSnapshot } from '@jbrowse/product-core'
 import { toJS } from 'mobx'
@@ -164,11 +164,21 @@ export function JBrowseModelF({
       },
       /**
        * #action
+       * Removes the entry that loads from the same url — the version-pinned
+       * definition, not every entry sharing a name, so the update flow's
+       * remove-then-add swaps one version for another.
+       *
+       * A definition naming no loader matches nothing (`isPluginUrl`) rather than
+       * every other url-less entry: `pluginUrl`'s miss value is the display string
+       * 'unknown url', so removing one hand-written broken entry used to filter out
+       * all of them. Such an entry has no InstalledPlugin row to remove it from
+       * either — it never loads, so it is never in `runtimePluginDefinitions` — so
+       * matching nothing costs nothing the UI could reach.
        */
       removePlugin(pluginDefinition: PluginDefinition) {
-        const targetUrl = pluginUrl(pluginDefinition)
+        const targetUrl = maybePluginUrl(pluginDefinition)
         self.plugins = cast(
-          self.plugins.filter(plugin => pluginUrl(plugin) !== targetUrl),
+          self.plugins.filter(plugin => !isPluginUrl(plugin, targetUrl)),
         )
         getParent<JBrowseModelParent>(self).setPluginsUpdated()
       },

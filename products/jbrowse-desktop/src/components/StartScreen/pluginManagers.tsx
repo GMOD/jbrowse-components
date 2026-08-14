@@ -2,6 +2,7 @@ import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   dedupePlugins,
+  desktopVendoredPluginNames,
   dropVendoredPlugins,
   pluginDefinitionMetadata,
   pluginDescriptionString,
@@ -17,7 +18,6 @@ import { invokeIpc } from '../../ipc.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
-import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
 import { fetchConfig } from './fetchConfig.ts'
 import {
   getGlobalPlugins,
@@ -58,10 +58,13 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 // is deferring the graph from start-screen-mount to session-open, not bytes.
 
 function makePluginLoader(definitions: PluginDefinition[]) {
-  return new PluginLoader(dropVendoredPlugins(definitions, DESKTOP_VENDORED), {
-    fetchESM: url => import(/* webpackIgnore:true */ url),
-    fetchCJS,
-  }).installGlobalReExports(window)
+  return new PluginLoader(
+    dropVendoredPlugins(definitions, desktopVendoredPluginNames),
+    {
+      fetchESM: url => import(/* webpackIgnore:true */ url),
+      fetchCJS,
+    },
+  ).installGlobalReExports(window)
 }
 
 function pluginRecords(

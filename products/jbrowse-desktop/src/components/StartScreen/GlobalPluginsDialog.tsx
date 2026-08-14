@@ -4,7 +4,11 @@ import { pluginLabel } from '@jbrowse/core/pluginDefinitions'
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import AddCustomPluginDialog from '@jbrowse/core/ui/AddCustomPluginDialog'
 import PluginStoreCard from '@jbrowse/core/ui/PluginStoreCard'
-import { isPluginInstalled, resolvePlugin } from '@jbrowse/core/util'
+import {
+  installablePlugins,
+  isPluginInstalled,
+  resolvePlugin,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetchPlugins } from '@jbrowse/core/util/useFetchPlugins'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -133,7 +137,12 @@ function AvailablePlugins({
       <ErrorMessage error={error} />
     </div>
   ) : plugins ? (
-    plugins
+    // installablePlugins, not a bare filter: this dialog is a second install
+    // surface for the same manifest, and it used to offer the plugins Desktop's
+    // own core bundle already vendors — Blat, plus the shared MafViewer/GWAS.
+    // The loader drops those definitions, but the global list keeps them, so the
+    // card then read "Installed" for a plugin that never loaded.
+    installablePlugins(plugins, true)
       .filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
       .map(plugin => {
         // resolved against the running JBrowse the same way the in-session

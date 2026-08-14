@@ -1,5 +1,8 @@
 import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
-import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
+import {
+  dropVendoredPlugins,
+  pluginsNotIn,
+} from '@jbrowse/core/pluginDefinitions'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { scheduleDetachedDestroy } from '@jbrowse/product-core'
@@ -480,7 +483,23 @@ const SessionLoader = types
       userAcceptedConfirmation?: boolean,
     ) {
       try {
-        const sessionPlugins = dropVendoredPlugins(snap.sessionPlugins ?? [])
+        // Two sets are dropped before anything is fetched. The vendored ones,
+        // because core already registers what they provide; and the ones the
+        // config's own list already loaded, because PluginManager.addPlugin
+        // refuses a second copy by name anyway — so web was fetching and
+        // evaluating a duplicate bundle, and putting it through the trust gate,
+        // to arrive where it already was. react-app and desktop both dedupe at
+        // the equivalent seam and web was the one product that did not.
+        //
+        // The config's entry is the one kept, matching those two products and the
+        // merge order in createPluginManager: a config and a session naming the
+        // same plugin at different pinned versions run the config's version, as
+        // they did before this dedupe. `initialize` awaits loadConfig before any
+        // route reaches here, so runtimePlugins is settled.
+        const sessionPlugins = pluginsNotIn(
+          dropVendoredPlugins(snap.sessionPlugins ?? []),
+          (self.runtimePlugins ?? []).map(r => r.definition),
+        )
         // cheap local checks first: checkPlugins hits the plugin store over the
         // network for any plugin not on a trusted host, and it throws when the
         // store is unreachable. That throw lands in the catch below and replaces

@@ -1,10 +1,9 @@
 import {
+  desktopVendoredPluginNames,
   dropVendoredPlugins,
   pluginDescriptionString,
   pluginUrl,
 } from '@jbrowse/core/pluginDefinitions'
-
-import { DESKTOP_VENDORED } from '../../vendoredPlugins.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
@@ -41,7 +40,10 @@ export async function assertPluginsTrusted(
 ) {
   // vendored plugins are dropped before PluginLoader ever sees them, so they
   // must not trip the prompt either — jbrowse.org demo configs still list some
-  const untrusted = dropVendoredPlugins(plugins ?? [], DESKTOP_VENDORED)
+  const untrusted = dropVendoredPlugins(
+    plugins ?? [],
+    desktopVendoredPluginNames,
+  )
   if (untrusted.length > 0 && !(await checkPlugins(untrusted))) {
     const accepted = await confirm(
       untrusted.map(p => ({
