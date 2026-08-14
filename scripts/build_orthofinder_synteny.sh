@@ -141,19 +141,35 @@ APP=jbrowse2
 MAXSEQ=30
 mkdir -p proteomes
 
+# Every file lands under a .part name and is renamed only once its producer
+# returns clean, which is what makes the `[ -f ]` guards below sound. A `>`
+# redirect CREATES its output before the producer has written a byte, and
+# `wget -O` creates its file before the first response header, so an interrupted
+# step otherwise leaves something the next run treats as finished. Each of these
+# then fails somewhere other than where it went wrong: a 0-byte chrom.sizes is
+# an assembly with no sequences, a truncated proteome is an OrthoFinder run on a
+# genome missing half its genes, and a half-written .gff3.gz kills the step that
+# reads it rather than the download that produced it.
+fetch() {
+  local dest=$1 url=$2
+  if [ ! -f "$dest" ]; then
+    wget -c -O "$dest.part" "$url"
+    mv "$dest.part" "$dest"
+  fi
+}
+
 # ── Per species: proteome + annotation, then chrom.sizes and a gene BED ──────
 echo "$SPECIES" | while read -r name prefix asm; do
   species=$(echo "$prefix" | tr '[:upper:]' '[:lower:]')
-  [ -f "$name.pep.fa.gz" ] || wget -O "$name.pep.fa.gz" \
-    "$BASE/fasta/$species/pep/$prefix.$asm.pep.all.fa.gz"
-  [ -f "$name.gff3.gz" ] || wget -O "$name.gff3.gz" \
-    "$BASE/gff3/$species/$prefix.$asm.$REL.gff3.gz"
+  fetch "$name.pep.fa.gz" "$BASE/fasta/$species/pep/$prefix.$asm.pep.all.fa.gz"
+  fetch "$name.gff3.gz" "$BASE/gff3/$species/$prefix.$asm.$REL.gff3.gz"
 
   # chrom.sizes from the GFF3's own header, so no genome FASTA is needed. Read
   # in python rather than piped through awk: stopping at the first feature line
   # closes the pipe on gunzip, and under `set -o pipefail` that SIGPIPE fails
   # the script.
-  [ -f "$name.chrom.sizes" ] || python3 - "$name.gff3.gz" "$MAXSEQ" <<'PY' > "$name.chrom.sizes"
+  if [ ! -f "$name.chrom.sizes" ]; then
+    python3 - "$name.gff3.gz" "$MAXSEQ" <<'PY' > "$name.chrom.sizes.part"
 import gzip
 import sys
 
@@ -177,6 +193,8 @@ for name, length in regions:
     if name in biggest:
         print(f"{name}\t{length}")
 PY
+    mv "$name.chrom.sizes.part" "$name.chrom.sizes"
+  fi
 
   # One BED row per gene, named by the bare Ensembl gene id, the same id the
   # proteome step below writes into the FASTA headers, which is what makes the
@@ -186,19 +204,31 @@ PY
   # no-op there, but some (Triticum urartu's IGDB annotation) suffix every gene
   # ID with a constant .01 that isn't a version and isn't on the FASTA side,
   # which otherwise resolves every id in the column to nothing.
-  [ -f "$name.bed" ] || gunzip -c "$name.gff3.gz" \
-    | awk -F'\t' -v OFS='\t' '$3 == "gene" {
-        match($9, /ID=gene:[^;]+/)
-        id = substr($9, RSTART + 8, RLENGTH - 8)
-        sub(/\.[0-9]+$/, "", id)
-        print $1, $4 - 1, $5, id, 0, $7
-      }' > "$name.bed"
+  #
+  # `match` in the pattern rather than the body: it returns 0 on a gene line
+  # carrying no ID=gene:, where substr($9, 0, -1) is the empty string and the row
+  # would go out with an empty name column for the table to resolve against.
+  if [ ! -f "$name.bed" ]; then
+    gunzip -c "$name.gff3.gz" \
+      | awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=gene:[^;]+/) {
+          id = substr($9, RSTART + 8, RLENGTH - 8)
+          sub(/\.[0-9]+$/, "", id)
+          print $1, $4 - 1, $5, id, 0, $7
+        }' > "$name.bed.part"
+    mv "$name.bed.part" "$name.bed"
+  fi
 
   # OrthoFinder wants one protein per gene, and takes a sequence's id from the
   # first token of its header. Keeping the longest isoform and renaming it to
   # the gene id does both, and makes the ids match the BED above.
+  #
+  # The .part rename is python's here rather than the shell's, so the report on
+  # stderr still names the file it wrote. A leftover part file is not a proteome
+  # to OrthoFinder either way (it scans for fa/faa/fasta/fas/pep), and the loop
+  # runs to completion before the OrthoFinder step regardless.
   [ -f "proteomes/$name.fa" ] || python3 - "$name.pep.fa.gz" "proteomes/$name.fa" <<'PY'
 import gzip
+import os
 import re
 import sys
 
@@ -219,20 +249,25 @@ with gzip.open(src, "rt") as fh:
             seq.append(line.strip())
 if gene and len("".join(seq)) > len(best.get(gene, "")):
     best[gene] = "".join(seq)
-with open(dest, "w") as out:
+with open(f"{dest}.part", "w") as out:
     for name, protein in best.items():
         out.write(f">{name}\n{protein}\n")
+os.replace(f"{dest}.part", dest)
 print(f"{dest}: {len(best)} genes", file=sys.stderr)
 PY
 done
 
 # ── OrthoFinder: orthogroups only (-og), which is all the table needs ────────
 # Its results directory is named for the day it ran, so the glob picks it up on
-# a re-run instead of running the whole thing again.
+# a re-run instead of running the whole thing again. Newest by MTIME rather than
+# by name: those names are Results_Aug14, Results_Sep05, Results_Dec01, which
+# sort Aug < Dec < Sep, so a set whose proteomes changed and were re-run in
+# another month would otherwise read the older run's table.
 if ! ls proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv >/dev/null 2>&1; then
   orthofinder -f proteomes -og -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
 fi
-ORTHOGROUPS=$(ls -d proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv | tail -1)
+# shellcheck disable=SC2012  # these are OrthoFinder's own names, not user paths
+ORTHOGROUPS=$(ls -1dt proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv | sed -n 1p)
 
 # ── Orthogroups.tsv -> .blocks table ─────────────────────────────────────────
 # One --bed per column, so the script reports how many ids each one resolves
@@ -242,7 +277,7 @@ ORTHOGROUPS=$(ls -d proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv 
 # .blocks file this table has no reference column: an orthogroup is a set of
 # genes, so any two columns present on a row are a direct statement about that
 # pair and no column anchors the others.
-TABLE=$(echo "$NAMES" | head -1).blocks
+TABLE="${NAMES%%$'\n'*}.blocks"
 BEDARGS=$(echo "$NAMES" | awk '{printf " --bed %s=%s.bed", $1, $1}')
 # shellcheck disable=SC2086  # BEDARGS is a built argument list, not one word
 # The column order in Orthogroups.tsv follows OrthoFinder's own proteome
@@ -344,12 +379,17 @@ done
 # lengths this has no use for).
 if [ -n "$ALIASES" ]; then
   echo "$ALIASES" | while read -r name accession; do
-    datasets download genome accession "$accession" --include seq-report \
-      --filename "$name.seq-report.zip"
-    dataformat tsv genome-seq --package "$name.seq-report.zip" \
-      --inputfile "$accession/sequence_report.jsonl" \
-      --fields genbank-seq-acc,refseq-seq-acc,sequence-name,ucsc-style-name \
-      > "$name.sequence_report.tsv"
+    # guarded and .part-renamed like every other download above; this was the one
+    # step that re-fetched on a re-run
+    if [ ! -f "$name.sequence_report.tsv" ]; then
+      datasets download genome accession "$accession" --include seq-report \
+        --filename "$name.seq-report.zip"
+      dataformat tsv genome-seq --package "$name.seq-report.zip" \
+        --inputfile "$accession/sequence_report.jsonl" \
+        --fields genbank-seq-acc,refseq-seq-acc,sequence-name,ucsc-style-name \
+        > "$name.sequence_report.tsv.part"
+      mv "$name.sequence_report.tsv.part" "$name.sequence_report.tsv"
+    fi
     cp "$name.sequence_report.tsv" "$APP"/
     python3 - "$APP/config.json" "$name" <<'PY'
 import json
