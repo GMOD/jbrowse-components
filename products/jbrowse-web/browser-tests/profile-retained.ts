@@ -30,6 +30,7 @@ import {
 import { launch } from 'puppeteer'
 
 import { createFrameResolver } from './frameResolver.ts'
+import { waitForDisplayPaint } from './helpers.ts'
 import { startServer } from './server.ts'
 
 import type { Frame } from './frameResolver.ts'
@@ -146,14 +147,17 @@ async function main() {
     waitUntil: 'domcontentloaded',
     timeout: 120000,
   })
+  // See profile-ultradeep.ts: a gated display never publishes the paint-complete
+  // test-id, so a bare wait burns its full timeout and then hands you a heap
+  // profile of a page that fetched nothing — which is indistinguishable from a
+  // real one except for `pileup-done -1 ms`.
   let doneMs = -1
-  await page
-    .waitForSelector(displayPainted('pileup-display'), { timeout: 180000 })
+  await waitForDisplayPaint(page, displayPainted('pileup-display'), 180000)
     .then(() => {
       doneMs = Date.now() - t0
     })
-    .catch(() => {
-      console.log('WARN: pileup-display-done not seen')
+    .catch((e: unknown) => {
+      console.log(`WARN: pileup-display-done not seen — ${String(e)}`)
     })
 
   const results: { label: string; head: HeapNode }[] = []

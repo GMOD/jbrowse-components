@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
+import { waitForDisplayPaint } from './helpers.ts'
 import { startServer } from './server.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -61,14 +62,20 @@ async function main() {
     waitUntil: 'domcontentloaded',
     timeout: 120000,
   })
+  // `waitForDisplayPaint`, not a plain `waitForSelector`: a gated display mounts
+  // TooLargeMessage instead of its canvas body, so the paint-complete test-id
+  // never appears and the bare wait burns all 180s before printing a warning
+  // that doesn't say why. This profiles a deliberately pathological fixture
+  // against a real budget, which is exactly the pairing that gets gated — and a
+  // trace of a page that fetched nothing looks like a trace, with `pileup-done
+  // -1 ms` the only tell.
   let doneMs = -1
-  await page
-    .waitForSelector(displayPainted('pileup-display'), { timeout: 180000 })
+  await waitForDisplayPaint(page, displayPainted('pileup-display'), 180000)
     .then(() => {
       doneMs = Date.now() - t0
     })
-    .catch(() => {
-      console.log('WARN: pileup-display-done not seen')
+    .catch((e: unknown) => {
+      console.log(`WARN: pileup-display-done not seen — ${String(e)}`)
     })
   await new Promise(r => setTimeout(r, 1500))
 

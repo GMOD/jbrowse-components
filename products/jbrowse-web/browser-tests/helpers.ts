@@ -326,6 +326,12 @@ interface GatedDisplay {
 // `regionTooLarge` is terminal by construction (the fetch autoruns hold off
 // while it is true, so the display has stopped, not slowed), which makes "this
 // will never paint" a fact to read rather than an interval to guess at.
+//
+// `assertNothingGated` in website/scripts/cancel-bench.ts is the post-hoc
+// version, for a driver whose waits are all best-effort. The session walk is
+// duplicated there rather than shared because both run inside the page:
+// `waitForFunction`/`evaluate` serialize the callback, so it cannot close over
+// an import.
 export async function waitForDisplayPaint(
   page: Page,
   selector: string,
