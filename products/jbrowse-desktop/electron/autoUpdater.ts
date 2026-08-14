@@ -68,15 +68,14 @@ export function checkForUpdatesManually(autoUpdater: AppUpdater) {
   autoUpdater.checkForUpdates().catch(logError)
 }
 
-export function setupAutoUpdater(
-  autoUpdater: AppUpdater,
-  getMainWindow: () => Electron.BrowserWindow | null,
-) {
+export function setupAutoUpdater(autoUpdater: AppUpdater) {
   autoUpdater.autoDownload = false
 
   autoUpdater.on('checking-for-update', () => {
+    // console only: this used to also push a 'message' to the window, on a
+    // channel that is not in IpcPushChannels and that no renderer has ever
+    // listened for. The dialogs below are how a check reports itself.
     console.log('Checking for update...')
-    getMainWindow()?.webContents.send('message', 'Checking for update...')
   })
 
   autoUpdater.on('error', async (error: Error) => {
