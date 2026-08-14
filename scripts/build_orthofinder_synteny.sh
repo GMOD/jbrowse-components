@@ -136,8 +136,9 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 APP=jbrowse2
-# Sequence regions to keep per genome, largest first. Ensembl lists every
-# unplaced scaffold, and a synteny row with 30,000 of them is unreadable.
+# Sequence regions to keep per genome, the ones carrying the most genes. Ensembl
+# lists every unplaced scaffold, and a synteny row with 30,000 of them is
+# unreadable.
 MAXSEQ=30
 mkdir -p proteomes
 
@@ -158,43 +159,11 @@ fetch() {
   fi
 }
 
-# ── Per species: proteome + annotation, then chrom.sizes and a gene BED ──────
+# ── Per species: proteome + annotation, then a gene BED and chrom.sizes ──────
 echo "$SPECIES" | while read -r name prefix asm; do
   species=$(echo "$prefix" | tr '[:upper:]' '[:lower:]')
   fetch "$name.pep.fa.gz" "$BASE/fasta/$species/pep/$prefix.$asm.pep.all.fa.gz"
   fetch "$name.gff3.gz" "$BASE/gff3/$species/$prefix.$asm.$REL.gff3.gz"
-
-  # chrom.sizes from the GFF3's own header, so no genome FASTA is needed. Read
-  # in python rather than piped through awk: stopping at the first feature line
-  # closes the pipe on gunzip, and under `set -o pipefail` that SIGPIPE fails
-  # the script.
-  if [ ! -f "$name.chrom.sizes" ]; then
-    python3 - "$name.gff3.gz" "$MAXSEQ" <<'PY' > "$name.chrom.sizes.part"
-import gzip
-import sys
-
-src, keep = sys.argv[1], int(sys.argv[2])
-regions = []
-with gzip.open(src, "rt") as fh:
-    for line in fh:
-        if line.startswith("##sequence-region"):
-            fields = line.split()
-            regions.append((fields[1], int(fields[3])))
-        elif not line.startswith("#"):
-            break
-# Select the largest `keep`, but write them in the GFF3's own order rather than
-# in the order the size sort produced. This file's line order is the assembly's
-# region order in JBrowse, so it is what a row is drawn in wherever nothing
-# overrides it, and Ensembl lists chromosomes naturally (1D 2D 3D ...) where
-# descending length does not (2D 7D 3D 5D 4D 1D 6D). Sorted by size, a
-# whole-assembly row interleaves the chromosomes a reader is comparing.
-biggest = {name for name, _ in sorted(regions, key=lambda r: -r[1])[:keep]}
-for name, length in regions:
-    if name in biggest:
-        print(f"{name}\t{length}")
-PY
-    mv "$name.chrom.sizes.part" "$name.chrom.sizes"
-  fi
 
   # One BED row per gene, named by the bare Ensembl gene id, the same id the
   # proteome step below writes into the FASTA headers, which is what makes the
@@ -208,6 +177,8 @@ PY
   # `match` in the pattern rather than the body: it returns 0 on a gene line
   # carrying no ID=gene:, where substr($9, 0, -1) is the empty string and the row
   # would go out with an empty name column for the table to resolve against.
+  #
+  # Before chrom.sizes, which selects on this file's gene counts.
   if [ ! -f "$name.bed" ]; then
     gunzip -c "$name.gff3.gz" \
       | awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=gene:[^;]+/) {
@@ -216,6 +187,64 @@ PY
           print $1, $4 - 1, $5, id, 0, $7
         }' > "$name.bed.part"
     mv "$name.bed.part" "$name.bed"
+  fi
+
+  # chrom.sizes from the GFF3's own header, so no genome FASTA is needed. Read
+  # in python rather than piped through awk: stopping at the first feature line
+  # closes the pipe on gunzip, and under `set -o pipefail` that SIGPIPE fails
+  # the script.
+  #
+  # The line this prints is the one to read before deciding a row looks thin. A
+  # gene on a sequence that did not make the cut resolves through the BED, joins
+  # normally and draws nothing, and it is the one mismatch MCScanBlocksAdapter
+  # says it cannot report - by the time the track loads, the assembly simply has
+  # no such refName. Triticum urartu's IGDB assembly is the case that needs
+  # watching: its genes are spread over thousands of contigs, so a tenth of the
+  # column is undrawable however the cut is made.
+  if [ ! -f "$name.chrom.sizes" ]; then
+    python3 - "$name.gff3.gz" "$name.bed" "$MAXSEQ" <<'PY' > "$name.chrom.sizes.part"
+import gzip
+import sys
+
+src, bed, keep = sys.argv[1], sys.argv[2], int(sys.argv[3])
+regions = []
+with gzip.open(src, "rt") as fh:
+    for line in fh:
+        if line.startswith("##sequence-region"):
+            fields = line.split()
+            regions.append((fields[1], int(fields[3])))
+        elif not line.startswith("#"):
+            break
+genes = {}
+with open(bed) as fh:
+    for line in fh:
+        seq = line.split("\t")[0]
+        genes[seq] = genes.get(seq, 0) + 1
+# Select by GENE COUNT, not by length. The row is drawn to carry orthologs, so a
+# long scaffold holding none spends a slot and a tick label on nothing while a
+# short gene-dense chromosome loses one: on the vertebrates set, selecting by
+# length dropped nine real chicken microchromosomes (16, 25, 30, 31, 35, 36, 38,
+# 39 among them) while keeping 33 and 34, and left 14 of frog's 30 sequences
+# carrying no ortholog at all. A sequence with no genes is never worth a slot,
+# hence `withgenes` - unless the annotation has none anywhere, where falling back
+# to length beats writing an assembly with no sequences in it.
+withgenes = [r for r in regions if genes.get(r[0])]
+ranked = sorted(withgenes or regions, key=lambda r: (-genes.get(r[0], 0), -r[1]))
+kept = {name for name, _ in ranked[:keep]}
+# ...but written in the GFF3's own order rather than the ranking's. This file's
+# line order is the assembly's region order in JBrowse, so it is what a row is
+# drawn in wherever nothing overrides it, and Ensembl lists chromosomes naturally
+# (1D 2D 3D ...) where a ranking does not. Ranked, a whole-assembly row
+# interleaves the chromosomes a reader is comparing.
+for name, length in regions:
+    if name in kept:
+        print(f"{name}\t{length}")
+total = sum(genes.values())
+drawable = sum(genes.get(n, 0) for n in kept)
+print(f"{bed}: {len(kept)}/{len(regions)} sequences kept, holding "
+      f"{100 * drawable // max(1, total)}% of {total} genes", file=sys.stderr)
+PY
+    mv "$name.chrom.sizes.part" "$name.chrom.sizes"
   fi
 
   # OrthoFinder wants one protein per gene, and takes a sequence's id from the

@@ -92,17 +92,23 @@ def column_names(header, assemblies):
 
 
 def cell_genes(cell, known, max_copies):
-    """The gene ids a cell offers: those its BED resolves, unless there are so
-    many that the orthogroup is a family rather than a set of copies."""
+    """The gene ids a cell offers, and whether --max-copies is what emptied it.
+
+    A cell whose BED resolves none of its genes and a cell dropped as a family
+    both come back empty, and only the second is worth counting: the first is
+    already the per-column placement share below."""
     genes = [g.strip() for g in cell.split(",") if g.strip()]
     if known is not None:
         genes = [g for g in genes if g in known]
-    return [] if len(genes) > max_copies else genes
+    return ([], True) if len(genes) > max_copies else (genes, False)
 
 
-def orthogroup_rows(cells, pick, max_copies, beds):
+def orthogroup_rows(cells, pick, max_copies, beds, counts=None):
     """The table rows one orthogroup contributes."""
-    copies = [cell_genes(c, beds[i], max_copies) for i, c in enumerate(cells)]
+    picked = [cell_genes(c, beds[i], max_copies) for i, c in enumerate(cells)]
+    copies = [genes for genes, _ in picked]
+    if counts is not None:
+        counts["families"] += sum(1 for _, family in picked if family)
     if pick == "first":
         copies = [g[:1] for g in copies]
     elif pick == "single":
@@ -125,7 +131,7 @@ def build_rows(lines, columns, pick, beds, max_copies):
     rows = []
     seen = [set() for _ in columns]
     resolved = [set() for _ in columns]
-    counts = {"orthogroups": 0, "expanded": 0}
+    counts = {"orthogroups": 0, "expanded": 0, "families": 0}
     for line in lines:
         # padded AND truncated to the header's width, once. A row wider than the
         # header used to reach orthogroup_rows whole while the report below saw
@@ -141,7 +147,7 @@ def build_rows(lines, columns, pick, beds, max_copies):
                     seen[i].add(gene)
                     if beds[i] is None or gene in beds[i]:
                         resolved[i].add(gene)
-        new = orthogroup_rows(cells, pick, max_copies, beds)
+        new = orthogroup_rows(cells, pick, max_copies, beds, counts)
         counts["expanded"] += len(new) > 1
         rows += new
     return rows, seen, resolved, counts
@@ -215,9 +221,16 @@ def main():
     with open(args.out, "w") as fh:
         fh.writelines("\t".join(r) + "\n" for r in rows)
 
+    # named rather than left implicit, the same as compara_to_blocks.py: a cell
+    # over --max-copies contributes nothing, so a threshold set too low for the
+    # ploidy in the set empties the very cells the table exists to show and looks
+    # exactly like a genome with fewer orthologs
+    families = (f", {counts['families']} dropped as a gene family (a cell with "
+                f"more than {args.max_copies} copies)" if counts["families"]
+                else "")
     print(f"wrote {args.out}: {len(rows)} rows from {counts['orthogroups']} "
           f"orthogroups, {counts['expanded']} of which hold a duplicated gene "
-          f"and became several rows\ngenes placed per column:\n{placed}\n"
+          f"and became several rows{families}\ngenes placed per column:\n{placed}\n"
           f"blockAssemblies: {columns}", file=sys.stderr)
     # The one line on stdout: the resolved column order, for a caller building a
     # blockAssemblies/bedLocations list to capture instead of assuming its own

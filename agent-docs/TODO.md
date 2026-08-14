@@ -298,6 +298,19 @@ is the point of the change.
 grape/peach/cacao ones off `grape.blocks` (its transitive peach/cacao pair is
 ~12.5% repeats; the two direct pairs have none).
 
+**The three OrthoFinder ones want their `chrom.sizes` rebuilt first**, which is
+cheap — one pass over each GFF3 and BED, no OrthoFinder run — and has to reach
+`demos/orthofinder_*/` for the figures to see it. The script now picks the 30
+sequences carrying the most genes rather than the longest 30, which is a
+different 30 on most of these genomes: 14 of frog's 30 held no ortholog at all,
+18 of urartu's and 12 of tauschii's, while nine real chicken microchromosomes
+(16, 25, 30, 31, 35, 36, 38, 39 among them) had fallen off the length cut with
+33 and 34 kept. The rows lose their dead tick labels and chicken gets its
+chromosomes back. Urartu is the one that stays awkward whatever the rule: its
+IGDB assembly spreads ~8.6% of its genes over thousands of contigs, so the
+`loc: '1 2 3 4 5 6 7'` in `orthofinder_synteny/wheat_4a_urartu` is still doing
+work.
+
 The alpha values were tuned against the old density — 0.15 on wheat and grasses,
 0.3 on vertebrates, 0.5 on the two 4A figures. **Raise them only uniformly and
 only if the whole band reads too faint**, since the thing that just went away was

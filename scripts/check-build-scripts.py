@@ -1580,6 +1580,17 @@ check("expand pairs copies by index instead of multiplying them out",
 check("a cell past --max-copies is a gene family and contributes nothing",
       og.orthogroup_rows(["Os1", "Z1, Z2, Z3", "Sb1"], "expand", 2, [None] * 3),
       [["Os1", ".", "Sb1"]])
+# ...and is COUNTED, the same as compara_to_blocks.py counts its own. A threshold
+# below the ploidy in the set empties the cells the table exists to show, and an
+# emptied cell reads exactly like a genome with fewer orthologs. The BED filter
+# empties a cell too and must not be counted here, since the per-column placement
+# share already reports that one.
+fam = {"orthogroups": 0, "expanded": 0, "families": 0}
+og.orthogroup_rows(["Os1", "Z1, Z2, Z3", "Sb1"], "expand", 2, [None] * 3, fam)
+og.orthogroup_rows(["Os1", "Z1", "Sb1"], "expand", 2, [None] * 3, fam)
+og.orthogroup_rows(["Os1", "Z1, Z2", "Sb1"], "expand", 2, [None, set(), None], fam)
+check("a cell --max-copies emptied is counted, one the BED emptied is not",
+      fam["families"], 1)
 # a row with one gene names no link, and would draw nothing while inflating the
 # table
 check("an orthogroup present in one genome only is dropped",

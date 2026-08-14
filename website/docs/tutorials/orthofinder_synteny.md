@@ -281,9 +281,13 @@ kilobytes, and the view is the same.
 jbrowse add-assembly wheat.chrom.sizes --name wheat --load copy
 ```
 
-Ensembl lists every unplaced scaffold in that header, so the script keeps the
-largest 30 sequences per genome. A row carrying thousands of scaffolds is not
-readable, and the orthologs on them draw nothing rather than erroring.
+Ensembl lists every unplaced scaffold in that header, so the script keeps 30
+sequences per genome: the ones carrying the most genes, which is what the row is
+drawn to show. A row of thousands of scaffolds is not readable, and an ortholog
+on a sequence the assembly leaves out draws nothing rather than erroring, so the
+build prints what share of each genome's genes the kept sequences hold. Read it
+for a fragmented assembly, where the share is the part of that genome the stack
+cannot draw.
 
 ## Reproduce it end to end
 
