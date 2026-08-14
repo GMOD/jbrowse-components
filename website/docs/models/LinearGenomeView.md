@@ -142,7 +142,6 @@ the whole surface.
 | <span id="getter-height">**height**</span><br><code>number</code> |  |
 | <span id="getter-totalbp">**totalBp**</span><br><code>number</code> |  |
 | <span id="getter-maxbpperpx">**maxBpPerPx**</span><br><code>number</code> |  |
-| <span id="getter-fitbpperpx">**fitBpPerPx**</span><br><code>number</code> | The scale at which the displayed regions exactly fill the width, which is what a caller that NAMED its regions means by showing them.<br><br>Sibling of `maxBpPerPx`, and the two differ by exactly `SHOW_ALL_REGIONS_FILL`: that one is the zoom-out LIMIT, where the margin is a deliberate framing so a whole genome doesn't sit flush against both edges. Read this one wherever the regions were asked for by name rather than by "show me everything". |
 | <span id="getter-minbpperpx">**minBpPerPx**</span><br><code>number</code> |  |
 | <span id="getter-error">**error**</span><br><code>unknown</code> |  |
 | <span id="getter-maxoffset">**maxOffset**</span><br><code>number</code> |  |
