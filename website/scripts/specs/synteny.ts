@@ -1566,23 +1566,45 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // duplication - so the top band is one ribbon per gene and the bottom is two.
   //
   // The window was picked by measurement, over the demo's own rice.blocks.gz,
-  // maize.bed.gz and sorghum.bed.gz. Of the 24 rice genes in rice 3:31.60-31.76
-  // Mb, 12 have exactly two maize orthologs and every one of those pairs lands
-  // one copy on maize 1 and the other on maize 5; 4 have a single maize
-  // ortholog (three of them keeping the chr1 copy, one the chr5 copy, which is
-  // fractionation); 8 have none. Sorghum answers x1 for all of them but two.
-  // The 8 zero-ortholog genes leave gaps in the fan and are kept: trimming the
-  // window until it was solid would be picking the frame to flatter the result.
+  // maize.bed.gz and sorghum.bed.gz, and every count here is what the three
+  // drawn windows contain rather than what the blocks file holds anywhere. Of
+  // the 27 rice genes in the frame, 12 have exactly two maize ribbons and every
+  // one of those pairs lands one copy on maize 1 and the other on maize 5; one
+  // has three (a tandem pair on maize 1 plus the maize 5 copy); 5 have a single
+  // maize ortholog, four keeping the chr1 copy and one the chr5 copy, which is
+  // fractionation; 9 draw none. Sorghum answers exactly once for 19 of them and
+  // not at all for 8. One gene (Os03g0765400) has its only maize and sorghum
+  // orthologs on other chromosomes entirely, so it is a blank in both bands.
+  // The genes that draw nothing leave gaps in the fan and are kept: trimming
+  // the window until it was solid would be picking the frame to flatter the
+  // result.
   //
-  // Maize spans two regions because that is the finding, and they are drawn at
-  // their own lengths (908 kb on chr1, 481 kb on chr5) against rice's 160 kb -
-  // maize's genome is ~6x rice's and its syntenic blocks are correspondingly
-  // stretched. No sameScale, so each row fits the pane and the gene glyphs stay
-  // readable.
+  // Maize spans two regions because that is the finding. Each row is framed to
+  // its own copy of the block plus ~4%, and the copies are not the same length:
+  // 170 kb of rice, 178 kb of sorghum, 950 kb on maize 1 and 489 kb on maize 5.
+  // So the maize row is drawn at ~9x rice's bp/px and every ribbon in the lower
+  // band is a wedge, wide at the rice end and narrow at the maize end. Most of
+  // that ratio is the block lengths, not a framing artifact - maize's genome is
+  // ~5x rice's and its syntenic blocks are stretched to match, and each row's
+  // span is stated in the header above it. Both ways out are worse, and both
+  // were rendered: sameScale puts the stack on maize's scale and leaves rice
+  // and sorghum a sliver at the left edge, while widening rice to close the gap
+  // (tried at 290 kb and 410 kb) does flatten the wedges but fills the top band
+  // with ribbons from genes the maize windows do not reach, so the two bands
+  // stop counting the same genes - which is the entire comparison.
+  //
+  // The last ~11% of that 9x is not in the loc strings and cannot be tuned out
+  // of them. navToLocations fits a ONE-region row exactly to the width and
+  // sends a multi-region one through showAllRegions, which targets
+  // SHOW_ALL_REGIONS_FILL (0.9) and centers - so maize, alone in this stack,
+  // draws at 1/0.9 of its fit-to-width scale with a ~5% margin either side. It
+  // is scale-invariant, so padding the windows only moves the same margin
+  // further out. Worth knowing before measuring a stacked figure's scales off
+  // its loc strings and finding they don't agree with the picture.
   {
     mode: 'url',
     name: 'orthofinder_synteny/grasses_maize_wgd',
-    viewportHeight: 1000,
+    viewportHeight: 1200,
     url: sessionSpec(
       encodeURIComponent(
         'https://jbrowse.org/demos/orthofinder_grasses/config.json',
@@ -1595,7 +1617,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               {
                 // [rev], and so is maize 5 below. Measured over the demo's own
                 // files against rice's ascent, the blocks correlate -0.995
-                // (sorghum), +0.982 (maize 1) and -0.945 (maize 5): all three
+                // (sorghum), +0.981 (maize 1) and -0.943 (maize 5): all three
                 // are near-perfectly collinear and two of them run backwards.
                 // Unflipped, each inverted one draws as an hourglass through a
                 // single crossing point, and two hourglasses read as chaos
@@ -1605,7 +1627,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 // wheat 4A figures, where the order along the chromosome IS the
                 // finding and nothing is flipped.
                 assembly: 'sorghum',
-                loc: '1:5,920,000-6,125,000[rev]',
+                loc: '1:5,934,000-6,126,000[rev]',
                 tracks: [
                   {
                     trackId: 'sorghum_genes',
@@ -1619,7 +1641,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'rice',
-                loc: '3:31,595,000-31,765,000',
+                loc: '3:31,590,000-31,775,000',
                 tracks: [
                   {
                     trackId: 'rice_genes',
@@ -1635,7 +1657,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 // the two copies, side by side on one row, chr5 reversed for
                 // the reason given on the sorghum row
                 assembly: 'maize',
-                loc: '1:286,650,000-287,680,000 5:6,250,000-6,810,000[rev]',
+                loc: '1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]',
                 tracks: [
                   {
                     trackId: 'maize_genes',
@@ -1659,15 +1681,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // straight chords, for the reason the whole-genome grasses figure
             // gives: a curve leaves its row vertically and only bends toward its
             // partner mid-band, so where two fans overlap they braid instead of
-            // pointing anywhere. Rendered both. That costs nothing on the top
-            // band, which is parallel either way, and is what makes the bottom
-            // one readable as two fans rather than one tangle.
+            // pointing anywhere. Rendered both, and re-rendered once the alpha
+            // below came down, since transparency is what would have rescued
+            // the curved version: it does not - the curves still bunch into a
+            // knot where the two fans meet on maize 5's side. Straight costs
+            // nothing on the top band, which is parallel either way, and is what
+            // makes the bottom one readable as two fans rather than one tangle.
             drawCurves: false,
-            // full strength. This is ~50 ribbons rather than the ~30k of the
-            // whole-genome figure, so nothing accumulates and a hairline at 0.15
-            // would be invisible.
-            alpha: 1,
-            levelHeights: [220, 300],
+            // Under 1, which is what this had when it was two near-solid fans.
+            // The reasoning for full strength was about density and is right as
+            // far as it goes - ~50 ribbons never accumulate the way the
+            // whole-genome figure's ~30k do, so nothing here needs holding back
+            // - but the lower band's ribbons CROSS, and at alpha 1 a crossing is
+            // just whichever ribbon painted last, so the band read as collision
+            // rather than as one fan over another. At 0.65 a crossing shows both
+            // ribbons through each other and a lone one is still solid color;
+            // 0.35 was also rendered and washes the top band out.
+            alpha: 0.65,
+            // The lower band takes most of the height, because it is the one
+            // with crossings and they are unavoidable: one rice interval into
+            // two maize regions drawn side by side means every blue/purple pair
+            // whose left-to-right order differs at the two ends has to swap
+            // somewhere, and no choice of region order or orientation removes
+            // them - only vertical room does. Same argument the whole-genome
+            // grasses spec makes for its bands. The top band is parallel and
+            // needs none of it.
+            levelHeights: [190, 500],
           },
         ],
       },
