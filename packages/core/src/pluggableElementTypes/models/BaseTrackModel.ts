@@ -19,6 +19,7 @@ import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
 import { stringifyGFF3 } from './saveTrackFileTypes/gff3.ts'
 
 import type PluginManager from '../../PluginManager.ts'
+import type { RefNameMismatch } from '../../assemblyManager/refNameMismatch.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -185,6 +186,49 @@ export function createBaseTrackModel(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Set when this track's file and one of its assemblies share no reference
+       * name at all — the `1/2/3` file loaded against a `chr1/chr2/chr3`
+       * assembly, which otherwise draws an empty track and says nothing.
+       *
+       * The verdict is reached in `loadRefNameMap`, which is the only place both
+       * name sets are in scope, and recorded on the *assembly* because nothing
+       * in the assembly manager can reach a track (the session is a sibling
+       * subtree, so `getSession` from there finds only the root). The lookup
+       * inverts that: the record is keyed by adapter cache key, which is exactly
+       * what `rpcSessionId` already is, so a track finds its own with no
+       * plumbing in between.
+       *
+       * `assemblyNames` is read as a raw slot rather than through
+       * `getConfAssemblyNames`, which throws for a config carrying neither the
+       * slot nor an assembly parent — this is read during render, where an
+       * unanswerable question must not become a thrown getter. A
+       * ReferenceSequenceTrack is the config that lacks the slot, and it is also
+       * the one track that cannot have this problem: its names are what the
+       * assembly's names *are*.
+       *
+       * Diagnostic only. It gates nothing, and a track carrying one still loads,
+       * still fetches and still draws whatever it can.
+       */
+      get refNameMismatch(): RefNameMismatch | undefined {
+        const { assemblyManager } = getSession(self)
+        const names = (getConf(self, 'assemblyNames') ?? []) as string[]
+        for (const name of names) {
+          // screened with `has` first: `get` reports a name the session lacks
+          // to Core-handleUnrecognizedAssembly, and this getter runs on every
+          // render of every track label. A track config is free to name an
+          // assembly the session has no configuration for, and asking about it
+          // must not tell every installed plugin to go resolve it.
+          const mismatch = assemblyManager.has(name)
+            ? assemblyManager.get(name)?.getRefNameMismatch(self.rpcSessionId)
+            : undefined
+          if (mismatch) {
+            return mismatch
+          }
+        }
+        return undefined
+      },
       /**
        * #getter
        */

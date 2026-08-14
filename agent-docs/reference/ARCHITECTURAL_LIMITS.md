@@ -599,29 +599,6 @@ apply), or a test that mounts a view, removes it and undoes shows the reconciler
 is not the hazard it looks like. Either way the general form stands: every future
 whole-tree apply re-opens this until the discipline moves to the boundary.
 
-### A refName mismatch is silent at the one place that can see it
-
-**Status:** Open.
-
-`loadRefNameMap` (`packages/core/src/assemblyManager/`) holds both name sets in
-one scope — the file's, from `CoreGetRefNames`, and the assembly's
-canonicalization — and writes
-`result[assembly.getCanonicalRefName(name) ?? name] = name`. When **nothing**
-canonicalizes, which is the `1/2/3` file against a `chr1/chr2/chr3` assembly, the
-`?? name` fallback yields an identity map that matches no region: the track draws
-nothing, raises nothing, and is indistinguishable from one that genuinely has no
-features in view.
-
-The comparison already exists one package over — `detectSwappedAssemblies`
-(`@jbrowse/synteny-core`) does exactly this for the comparative case. Only the
-**empty intersection** is a verdict; partial overlap is ordinary (a track
-covering some contigs), which is why this is a check on the intersection rather
-than on any individual missing name.
-
-**Retire when** an empty intersection records a diagnostic the track chrome
-shows, naming the first few names from each side. The partial case belongs in
-`RefNameInfoDialog`, which already exists and which nobody opens unprompted.
-
 ---
 
 ## Accessibility

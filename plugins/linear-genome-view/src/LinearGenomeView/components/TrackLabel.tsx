@@ -11,6 +11,7 @@ import {
 } from './TrackLabelButtons.tsx'
 import TrackLabelDragHandle from './TrackLabelDragHandle.tsx'
 import TrackLabelMenu from './TrackLabelMenu.tsx'
+import TrackLabelRefNameWarning from './TrackLabelRefNameWarning.tsx'
 
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -49,6 +50,7 @@ const TrackLabel = observer(function TrackLabel({
       >
         <SanitizedHTML html={trackName} />
       </Typography>
+      <TrackLabelRefNameWarning track={track} />
       <TrackLabelMenu track={track} />
     </Paper>
   )

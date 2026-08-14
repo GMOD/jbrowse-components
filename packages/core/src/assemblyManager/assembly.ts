@@ -26,6 +26,7 @@ import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
 import type { RpcStatus } from '../util/progress.ts'
 import type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
+import type { RefNameMismatch } from './refNameMismatch.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 // re-exported so `@jbrowse/core/assemblyManager/assembly` stays the public entry
@@ -33,7 +34,9 @@ import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 export { getSequenceAdapterConfig } from './getSequenceAdapterConfig.ts'
 export { buildRefNameMaps } from './refNameMaps.ts'
 export { lookupGeneticCodeId } from './geneticCodes.ts'
+export { refNameMismatchMessage } from './refNameMismatch.ts'
 export type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
+export type { RefNameMismatch } from './refNameMismatch.ts'
 
 type AdapterConf = Record<string, unknown>
 
@@ -128,6 +131,19 @@ export default function assemblyFactory(
          * Fraction in [0,1] when the load reports determinate progress
          */
         statusProgress: undefined as number | undefined,
+        /**
+         * #volatile
+         * adapter cache key -> the empty-intersection verdict `loadRefNameMap`
+         * reached for that adapter under this assembly. Sits beside
+         * `adapterLoads` and is keyed the same way, so it inherits that cache's
+         * once-per-(assembly, adapter config) property: the diagnostic is
+         * recorded exactly as often as the map is built, which is once.
+         *
+         * Written by replacing the Map rather than mutating it — a Map inside a
+         * volatile is one observable, not a deeply observable collection, so a
+         * `.set()` would leave every reader stale.
+         */
+        refNameMismatches: new Map<string, RefNameMismatch>(),
       }
     })
     .views(self => ({
@@ -193,6 +209,19 @@ export default function assemblyFactory(
       setStatus(status?: RpcStatus) {
         self.statusMessage = statusMessageText(status)
         self.statusProgress = statusFraction(status)
+      },
+      /**
+       * #action
+       * Record that an adapter's reference names and this assembly's have
+       * nothing in common. Diagnostic only: `loadRefNameMap` still returns its
+       * map and the track still loads, because a wrong guess here must not take
+       * a working track away from anyone.
+       */
+      setRefNameMismatch(adapterCacheKey: string, mismatch: RefNameMismatch) {
+        self.refNameMismatches = new Map(self.refNameMismatches).set(
+          adapterCacheKey,
+          mismatch,
+        )
       },
     }))
     .actions(self => ({
@@ -548,6 +577,18 @@ export default function assemblyFactory(
           self.adapterLoads.set(key, entry)
         }
         return entry
+      },
+      /**
+       * #method
+       * The empty-intersection verdict for an adapter under this assembly, if
+       * the map load reached one. Keyed by `adapterConfigCacheKey`, which is
+       * what a track already computes as its `rpcSessionId` — so a track looks
+       * up its own diagnostic with no plumbing between here and it. Undefined
+       * until the map has loaded, which is the same instant the track's first
+       * fetch resolves.
+       */
+      getRefNameMismatch(adapterCacheKey: string) {
+        return self.refNameMismatches.get(adapterCacheKey)
       },
     }))
 }

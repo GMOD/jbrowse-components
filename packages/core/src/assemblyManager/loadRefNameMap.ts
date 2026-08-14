@@ -1,5 +1,7 @@
+import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import { getSequenceAdapterConfig } from './getSequenceAdapterConfig.ts'
 import { checkRefName } from './refNameMaps.ts'
+import { detectRefNameMismatch } from './refNameMismatch.ts'
 
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type { Assembly } from './assembly.ts'
@@ -14,10 +16,12 @@ export type RefNameMapAssembly = Pick<
   | 'load'
   | 'error'
   | 'regions'
+  | 'refNames'
   | 'refNameAliases'
   | 'rpcManager'
   | 'configuration'
   | 'getCanonicalRefName'
+  | 'setRefNameMismatch'
 >
 
 export async function loadRefNameMap(
@@ -76,7 +80,32 @@ export async function loadRefNameMap(
   const result: RefNameAliases = {}
   for (const name of refNames) {
     checkRefName(name)
+    // `?? name` keeps a name the assembly does not know, so the map is total.
+    // For ONE unknown name that is right — the region it would have renamed
+    // simply never comes up. For ALL of them it is an identity map that matches
+    // no region, and the track then draws nothing and says nothing, which is
+    // what the check below is for.
     result[assembly.getCanonicalRefName(name) ?? name] = name
+  }
+
+  // This function is the only place both name sets are in scope at once, so it
+  // is the only place the disagreement is visible. Recorded rather than thrown:
+  // a track whose file genuinely has no features in view looks identical from
+  // here, and failing on a guess would take a working track away from someone.
+  // The record is keyed by adapter cache key and the map load is memoized under
+  // the same key, so this runs once per (assembly, adapter config) — a track
+  // reads it back through `BaseTrackModel.refNameMismatch`.
+  const mismatch = detectRefNameMismatch({
+    assemblyName: assembly.name,
+    adapterRefNames: refNames,
+    assemblyRefNames: assembly.refNames ?? [],
+    getCanonicalRefName: name => assembly.getCanonicalRefName(name),
+  })
+  if (mismatch) {
+    assembly.setRefNameMismatch(
+      adapterConfigCacheKey(adapterConfig as Record<string, unknown>),
+      mismatch,
+    )
   }
   return result
 }
