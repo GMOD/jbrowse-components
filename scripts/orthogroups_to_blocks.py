@@ -20,6 +20,12 @@ costs rows equal to its largest cell, not their product. A cell with more than
 `--max-copies` genes is a gene family rather than a duplication and is left
 empty.
 
+Each expanded row carries the un-duplicated columns' genes too, since the
+duplicated column's later copies would otherwise have nothing to link to, so a
+pair not touching the duplication is named once per row. The format has no way
+to say it once, and `MCScanBlocksAdapter` draws a gene pair once however many
+rows name it, which is where that is settled.
+
 `--pick single` empties any multi-gene cell instead, for a strictly one-to-one
 table; `--pick first` is the arbitrary choice, if you want the coverage.
 
@@ -121,10 +127,15 @@ def build_rows(lines, columns, pick, beds, max_copies):
     resolved = [set() for _ in columns]
     counts = {"orthogroups": 0, "expanded": 0}
     for line in lines:
+        # padded AND truncated to the header's width, once. A row wider than the
+        # header used to reach orthogroup_rows whole while the report below saw
+        # only the first len(columns) cells, so the stray cell was indexed
+        # against a `beds` list that has one entry per column: IndexError, on a
+        # file that had already been read.
         cells = line.rstrip("\n").split("\t")[1:]
-        cells += [""] * (len(columns) - len(cells))
+        cells = (cells + [""] * len(columns))[: len(columns)]
         counts["orthogroups"] += 1
-        for i, cell in enumerate(cells[: len(columns)]):
+        for i, cell in enumerate(cells):
             for gene in (g.strip() for g in cell.split(",")):
                 if gene:
                     seen[i].add(gene)

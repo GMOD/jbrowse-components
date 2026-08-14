@@ -1428,8 +1428,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // every gar linkage group's orthologs land somewhere other than its
             // best zebrafish partner. No left-to-right ordering can make that
             // diagonal, and no filter rescues it either (dropping every
-            // multi-copy expansion would still leave ~13k of the band's ~17.8k
-            // links). The band is dense because the answer is.
+            // multi-copy expansion would still leave ~13k of the band's ~16.9k
+            // links). The band is dense because the answer is. Those three
+            // shares are computed over distinct gene pairs, which is what the
+            // band draws since MCScanBlocksAdapter deduplicates a link the
+            // table names on several rows; the row counts are ~5% higher.
             autoDiagonalize: true,
             // and one bp/px down the stack, see the wheat spec below. Row
             // length is genome size here too: human's 3.1 Gb against the
@@ -1618,9 +1621,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // The heaviest figure in the set, and the only one of the three OrthoFinder
     // specs that does not finish in 120s on a CI runner — it was the sole
     // synteny failure on the first sweeps of .github/workflows/figures.yml,
-    // while grasses and vertebrates passed at the same 120000. Six assemblies
-    // against one 106,156-row orthogroup table is ~500k ribbons, and a GitHub
-    // runner has no GPU to draw them with. The wait itself is declarative
+    // while grasses and vertebrates passed at the same 120000. The five bands
+    // hold 269,656 distinct gene links out of a 106,156-row orthogroup table
+    // (327,824 rows before MCScanBlocksAdapter drops the ones the expansion
+    // repeated), drawn from both sides, and a GitHub runner has no GPU to draw
+    // them with. The wait itself is declarative
     // (`synteny_canvas_done`), so this only raises the ceiling; it does not
     // sleep, and a render that never completes still fails, just later.
     readyTimeout: 300000,

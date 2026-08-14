@@ -1628,6 +1628,19 @@ _, seen, resolved, _ = og.build_rows(
     ["OG1\tOs01g1\tZm01a, Zm01b\n"], ["rice", "maize"], "expand", [None] * 2, 4)
 check("the placed count is distinct ids, not the rows expansion wrote",
       [len(seen[0]), len(resolved[0])], [1, 1])
+# A row wider than the header reached orthogroup_rows whole while the per-column
+# report saw only the header's width, so the stray cell indexed a `beds` list
+# with one entry per column: IndexError, after the file had already been read.
+wide, _, _, _ = og.build_rows(
+    ["OG1\tOs1\tZm1\tSTRAY\n"], ["rice", "maize"], "expand", [None] * 2, 4)
+check("a row wider than the header is cut to the columns, not indexed past them",
+      wide, [["Os1", "Zm1"]])
+# and a row SHORTER than the header still pads, which is the ordinary case: a
+# trailing empty column is written as nothing at all
+short, _, _, _ = og.build_rows(
+    ["OG1\tOs1\tZm1\n"], ["rice", "maize", "sorghum"], "expand", [None] * 3, 4)
+check("a row shorter than the header pads to it",
+      short, [["Os1", "Zm1", "."]])
 
 # compara_to_blocks.py: Compara is the one ortholog source that publishes what
 # the inference measured, and those numbers are the whole reason for the

@@ -67,6 +67,13 @@ view or the "Linear synteny view" launcher asking what a locus aligns to, gets
 every pair the track declares at once, one set of links per other genome. Group
 the display by mate assembly to read them as a lane apiece.
 
+A gene pair the table names on several rows draws once. Both of the ordinary
+table shapes repeat one: a reference-anchored table names a transitive pair
+again through each reference gene anchoring it, and an orthogroup table expanded
+a copy at a time names every pair not touching that duplication once per row.
+The repeat is the same two genes at the same two coordinates, so drawing it
+darkens the band rather than adding anything to it.
+
 See the
 [ortholog tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao),
 which covers building the table from jcvi, OrthoFinder, reciprocal best hits or

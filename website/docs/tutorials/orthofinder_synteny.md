@@ -149,8 +149,8 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
   --bed emmer=emmer.bed --bed urartu=urartu.bed --bed timopheevii=timopheevii.bed
 ```
 
-The table is named after one genome by convention only. Unlike a jcvi `.blocks`
-file no column anchors it, so which one it is carries no meaning.
+The table is named after one genome by convention only, and nothing in the file
+makes that column special.
 
 The script prints the column order it read off the header row, which is what
 `blockAssemblies` has to be. A column is named after the proteome file
@@ -183,6 +183,11 @@ across columns rather than multiplying them out, so an orthogroup costs rows
 equal to its largest cell and a gene family cannot blow the table up. A cell
 with more genes than `--max-copies` is a family rather than a set of copies, and
 contributes nothing.
+
+Each of those rows carries the other genomes' genes too, so a pair that is not
+duplicated is named on every one of them. The track draws a gene pair once,
+however many rows name it, which keeps the extra ribbons on the band the
+duplication is about.
 
 ### Making the ids resolve
 

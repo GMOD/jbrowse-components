@@ -315,22 +315,22 @@ table = sys.argv[2]
 names = sys.argv[3:]
 beds = {}
 for n in names:
-    d = {}
-    for line in open(f'{n}.bed'):
-        p = line.split('\t')
-        d[p[3].strip()] = p[0]
-    beds[n] = d
-rows = [l.rstrip('\n').split('\t') for l in open(table)]
+    with open(f'{n}.bed') as fh:
+        beds[n] = {p[3].strip(): p[0] for p in (l.split('\t') for l in fh)}
+with open(table) as fh:
+    rows = [l.rstrip('\n').split('\t') for l in fh]
 
 
 def share(a, b):
     ia, ib = cols.index(a), cols.index(b)
+    # DISTINCT gene pairs, not rows. --pick expand gives an orthogroup a row per
+    # copy, so a pair not touching that duplication is named on every one of
+    # them, and counting rows would weight this by how duplicated some THIRD
+    # genome is. The view draws each pair once, which is what this describes.
+    links = {(p[ia], p[ib]) for p in rows if p[ia] != '.' and p[ib] != '.'}
     pair = collections.Counter()
     tot = collections.Counter()
-    for p in rows:
-        ga, gb = p[ia], p[ib]
-        if ga == '.' or gb == '.':
-            continue
+    for ga, gb in links:
         ca, cb = beds[a].get(ga), beds[b].get(gb)
         if ca and cb:
             pair[(ca, cb)] += 1
@@ -338,8 +338,10 @@ def share(a, b):
     kept = {c: n for c, n in tot.items() if n >= 100}
     if not kept:
         return None
-    num = sum(max(v for (x, _), v in pair.items() if x == c) for c in kept)
-    return num / sum(kept.values()), len(kept)
+    best = collections.Counter()
+    for (ca, _), n in pair.items():
+        best[ca] = max(best[ca], n)
+    return sum(best[c] for c in kept) / sum(kept.values()), len(kept)
 
 
 print()
