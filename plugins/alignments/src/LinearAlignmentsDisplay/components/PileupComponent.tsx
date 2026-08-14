@@ -22,6 +22,7 @@ import {
 } from '../coverageAxisStyle.ts'
 import ArcDebugOverlay from './ArcDebugOverlay.tsx'
 import ArcHoverOverlay from './ArcHoverOverlay.tsx'
+import CrossRegionArcsOverlay from './CrossRegionArcsOverlay.tsx'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import HighlightOverlay from './HighlightOverlay.tsx'
 import { InsertSizeAxisStack } from './InsertSizeAxis.tsx'
@@ -140,6 +141,7 @@ const PileupBody = observer(function PileupBody({
       <PileupTruncationRule model={model} />
 
       <SashimiArcsOverlay model={model} />
+      <CrossRegionArcsOverlay model={model} />
       <PileupBezierOverlay model={model} />
       <ArcHoverOverlay model={model} />
       <ArcDebugOverlay model={model} />

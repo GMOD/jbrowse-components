@@ -108,13 +108,43 @@ export interface ArcDome extends ArcMarkBase {
 // belongs to the other shape.
 export type ArcMark = ArcBar | ArcDome
 
+// One arc, already projected. The bp→x step is the caller's because the two
+// callers resolve it differently and cannot share a `(bp) => x`: a per-region
+// pass maps both feet through the block it is drawing, while the cross-region
+// overlay resolves each foot through ITS OWN displayed region — which is the
+// whole difference between the two and the reason `CrossRegionArc` exists.
+//
+// Everything below this point is identical for both, which is the point of
+// splitting it out: the overlay's arc is the same shape the GPU would have
+// drawn, not a second approximation of it.
+export interface ProjectedArc {
+  sx1: number
+  sx2: number
+  yBp: number
+  shapeType: number
+}
+
 export function arcMark(
   data: ArcsUploadData,
   i: number,
   frame: ArcBandFrame,
 ): ArcMark {
+  return arcMarkFrom(
+    {
+      sx1: frame.bpToScreenX(data.arcX1[i]!),
+      sx2: frame.bpToScreenX(data.arcX2[i]!),
+      yBp: data.arcYBp[i]!,
+      shapeType: data.arcShapeTypes[i]!,
+    },
+    frame,
+  )
+}
+
+export function arcMarkFrom(
+  { sx1, sx2, yBp, shapeType }: ProjectedArc,
+  frame: Omit<ArcBandFrame, 'bpToScreenX'>,
+): ArcMark {
   const {
-    bpToScreenX,
     arcsYDomainBp,
     arcsYLog,
     arcsTop,
@@ -122,18 +152,11 @@ export function arcMark(
     pairedArcsDown,
     screenWidthPx,
   } = frame
-  const sx1 = bpToScreenX(data.arcX1[i]!)
-  const sx2 = bpToScreenX(data.arcX2[i]!)
   const mid = (sx1 + sx2) / 2
   const anchorY = arcAnchorY(arcsTop, arcsH, pairedArcsDown)
-  const destY = arcYOffsetPx(
-    data.arcYBp[i]!,
-    arcsYDomainBp,
-    arcsYLog,
-    arcAvailH(arcsH),
-  )
+  const destY = arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, arcAvailH(arcsH))
   // One Y rule for both kinds — the split above is the shape, not the height.
-  if (isFlatArcShape(data.arcShapeTypes[i]!)) {
+  if (isFlatArcShape(shapeType)) {
     return {
       kind: 'bar',
       mid,

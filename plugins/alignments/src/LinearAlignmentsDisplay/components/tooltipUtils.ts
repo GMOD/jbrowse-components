@@ -540,7 +540,12 @@ export function formatSashimiTooltip(arc: {
 // backwards otherwise, and the arc itself is symmetric — `arcKey` already
 // treats the pair as ordered, so nothing downstream distinguishes them.
 export function formatArcTooltip(
-  hit: ArcHitResult,
+  // The fields an arc's hover actually reports, rather than the whole
+  // `ArcHitResult`: the cross-region overlay has no `ArcsUploadData` to have
+  // been indexed into, so it can supply every number below and neither `kind`
+  // nor `index`. Narrowing the parameter is what lets a seam-crossing arc read
+  // identically to one inside a region instead of getting a second formatter.
+  hit: Pick<ArcHitResult, 'x1' | 'x2' | 'support' | 'shapeType' | 'spanBp'>,
   refName: string,
   category: string | undefined,
 ): ArcTooltipPayload {

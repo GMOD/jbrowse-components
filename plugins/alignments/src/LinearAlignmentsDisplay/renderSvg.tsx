@@ -17,6 +17,7 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { getAlignmentsLegendSections } from '../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
+import CrossRegionArcsSvg from './components/CrossRegionArcsSvg.tsx'
 import { InsertSizeAxisStack } from './components/InsertSizeAxis.tsx'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
@@ -149,6 +150,7 @@ function AlignmentsSvgBody({
           }}
         />
         <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
+        <CrossRegionArcsSvg model={model} width={canvasWidth} />
         <PileupBezierArcsSvg model={model} view={view} />
       </SvgClipRect>
       {model.showCoverage && coverageTicks ? (

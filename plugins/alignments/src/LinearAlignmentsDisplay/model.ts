@@ -44,11 +44,13 @@ import {
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, observable } from 'mobx'
 
+import { arcAvailH, arcYScale } from '../features/arcs/arcYScale.ts'
 import {
   arcColorLegendCategory,
   computeArcsByGroup,
   computeReadChains,
 } from '../features/arcs/compute.ts'
+import { computeCrossRegionArcs } from '../features/arcs/crossRegionOverlay.ts'
 import { anyArcsDrawn } from '../features/arcs/types.ts'
 import { computeDerivativePaths } from '../features/derivativePaths/computePaths.ts'
 import {
@@ -2922,6 +2924,68 @@ export default function stateModelFactory(
                   })
                 : undefined
             return ticks ? [{ groupKey: sec.groupKey, ticks }] : []
+          })
+        },
+
+        /**
+         * #getter
+         * Per-section geometry for the arcs no per-region pass can draw — the
+         * ones whose two feet are in different displayed regions
+         * (`CrossRegionArc`). Band-local, like sashimi's: the overlay and the
+         * SVG export each place the box at `bandScreenTop(bandTop, …)`, so this
+         * does not depend on `scrollTop` and MobX replays it while a grouped
+         * track scrolls.
+         *
+         * Empty in the single-region view, which is almost every view — the
+         * partition upstream returns nothing there, so this costs one Map lookup
+         * per section.
+         */
+        get crossRegionArcSections() {
+          const view = self.lgv
+          if (self.readConnections === 'off' || !view.initialized) {
+            return []
+          }
+          const byGroup = self.crossRegionArcsByGroup
+          const bpToScreenX = makeBpToScreenX(view)
+          const pxPerBp = view.bpPerPx > 0 ? 1 / view.bpPerPx : 0
+          return self.renderSections.flatMap(sec => {
+            const arcs = byGroup.get(sec.groupKey)
+            // A lane with no cross-region arcs reserves nothing and renders
+            // nothing — the same gate the per-region passes use to skip.
+            if (!arcs?.length || sec.arcBandHeight <= 0) {
+              return []
+            }
+            const { domainBp, log } = arcYScale(
+              this.arcsYDomainBp,
+              arcAvailH(sec.arcBandHeight),
+              pxPerBp,
+            )
+            return [
+              {
+                groupKey: sec.groupKey,
+                bandTop: sec.arcBandTop,
+                bandHeight: sec.arcBandHeight,
+                arcs: computeCrossRegionArcs({
+                  arcs,
+                  bpToScreenX,
+                  frame: {
+                    arcsYDomainBp: domainBp,
+                    arcsYLog: log,
+                    // Band-local, so the host places the box rather than the
+                    // path carrying the section's offset.
+                    arcsTop: 0,
+                    arcsH: sec.arcBandHeight,
+                    pairedArcsDown: sec.arcDown,
+                    // The VIEW's width — see `ComputeCrossRegionArcsOpts`, which
+                    // says why this is the one consumer that must not use a
+                    // block's.
+                    screenWidthPx: view.width,
+                  },
+                  lineWidth: self.readConnectionsLineWidth,
+                  colors: self.colorPalette,
+                }),
+              },
+            ]
           })
         },
       }))

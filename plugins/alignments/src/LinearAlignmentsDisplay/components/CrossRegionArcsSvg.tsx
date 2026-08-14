@@ -1,0 +1,51 @@
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import { observer } from 'mobx-react'
+
+import { bandScreenTop } from './sectionScreen.ts'
+
+import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+
+// The export twin of `CrossRegionArcsOverlay`, off the very same
+// `crossRegionArcSections` geometry, minus the hover handlers.
+//
+// It has to exist separately from `drawAlignmentBlocks`, which is what the rest
+// of the arc band exports through: that walks BLOCKS, and these are precisely
+// the arcs no block can draw. Clipped to the band rect, the same box the live
+// overlay applies as `overflow: hidden` and the same one both renderers scissor
+// their arc passes to — an export that drew them unclipped would show a figure
+// the screen never did.
+const CrossRegionArcsSvg = observer(function CrossRegionArcsSvg({
+  model,
+  width,
+}: {
+  model: LinearAlignmentsDisplayModel
+  width: number
+}) {
+  const scroll = model.scrollModel
+  const nodeId = svgNodeId(model)
+  return model.crossRegionArcSections.map(section => (
+    <g
+      key={section.groupKey}
+      transform={`translate(0,${bandScreenTop(section.bandTop, scroll)})`}
+    >
+      <SvgClipRect
+        id={`cross-region-arcs-${section.groupKey}-${nodeId}`}
+        width={width}
+        height={section.bandHeight}
+      >
+        {section.arcs.map(arc => (
+          <path
+            key={arc.key}
+            d={arc.d}
+            stroke={arc.stroke}
+            strokeWidth={arc.strokeWidth}
+            fill="none"
+          />
+        ))}
+      </SvgClipRect>
+    </g>
+  ))
+})
+
+export default CrossRegionArcsSvg
