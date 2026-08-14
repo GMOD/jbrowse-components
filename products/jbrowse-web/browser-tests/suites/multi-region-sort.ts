@@ -15,7 +15,14 @@ const pileup = 'pileup-display'
 // is exposed by JBrowse.tsx.
 interface Display {
   setColorScheme: (colorBy: { type: string }) => void
-  setSortedByAtPosition: (type: string, pos: number, refName: string) => void
+  // One object, not three positionals — these shapes are hand-written against a
+  // model `tsc` never checks them against, so a signature change reaches them
+  // only as a runtime failure.
+  setSortedByAtPosition: (arg: {
+    type: string
+    pos: number
+    refName: string
+  }) => void
   // One entry per stacked group; ungrouped (this suite) is the single section.
   sourceSections: {
     laidOutPileupMap: ReadonlyMap<
@@ -53,7 +60,11 @@ async function reshapeToTwoRegions(page: Page, sort: boolean) {
     const display = view.tracks[0]!.displays[0]!
     display.setColorScheme({ type: 'strand' })
     if (doSort) {
-      display.setSortedByAtPosition('strand', 34600, 'ctgA')
+      display.setSortedByAtPosition({
+        type: 'strand',
+        pos: 34600,
+        refName: 'ctgA',
+      })
     }
   }, sort)
   await delay(500)

@@ -24,6 +24,19 @@ show.
   (`findDisplayPainted` in `browser-tests/helpers.ts`).
 - `runner.ts` reaps orphaned test browsers at startup; SIGKILLed prior runs
   otherwise accumulate until the kernel OOM-kills a live renderer mid-run.
+- **A suite driving the live model declares its own shape, and `tsc` never
+  checks that shape against the model.** Seven do (`window.JBrowseSession`,
+  through `page.evaluate`), so a signature change reaches them as a runtime
+  failure inside the browser and nothing before it. `multi-region-sort.ts` went
+  on calling `setSortedByAtPosition(type, pos, refName)` for six weeks after it
+  became one object — the destructure yielded three `undefined`s, the sort it
+  set named no column, and the suite stayed **green** until an unrelated commit
+  made the malformed slot throw. A vacuous pass is the normal outcome here: this
+  is a paired suite whose whole point is that the sorted capture differs from
+  the unsorted one, and both goldens were refreshed while identical. So when a
+  suite asserts a setting _did_ something, assert the difference and not just
+  the absence of an error — and if a golden pair that should differ doesn't,
+  that is the bug, not a saving.
 - **`pnpm review-snapshots-web` rebuilds its page on every load**, so editing
   `browser-tests/review-app/` needs a reload, not a restart. It shares its write
   protocol, note drafts, card list and repaint properties with the website's
