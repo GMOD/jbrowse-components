@@ -190,11 +190,12 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       // guarded and throttled for the same reason every other owner of a
       // progress stream is: an RPC emits ~40 of these a second, and each one
       // re-renders the dialog holding this hook
+      // one fetch is one stream, so the window is this effect run's
+      const throttle = createStatusThrottle()
       const statusCallback = createGuardedStatusSink({
         isCurrent: () => alive && !settled,
         sink: setStatus,
-        // one fetch is one stream, so the window is this effect run's
-        throttle: createStatusThrottle(),
+        throttle,
       })
       const args = [...keyArgs, stopToken, statusCallback]
       const call = fetcher as (...args: unknown[]) => Promise<Data>
@@ -225,6 +226,10 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
         // the token's lifetime is this fetch's. An abort rejection lands in the
         // catch above with alive already false, so it never surfaces as an error
         stopStopToken(stopToken)
+        // and the window's lifetime is too: `alive` already makes a queued
+        // trailing write a no-op, but the timer behind it would otherwise stand
+        // for up to a window past unmount
+        throttle.reset()
       }
     }
   }, [serialized, hasFetcher, nonce])
