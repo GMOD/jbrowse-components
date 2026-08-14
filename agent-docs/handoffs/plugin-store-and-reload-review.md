@@ -160,7 +160,7 @@ plugin at different pinned versions is the case to think about.
 
 `node node_modules/typescript7/bin/tsc --noEmit --checkers 1` clean;
 `pnpm test plugins/data-management/src/PluginStoreWidget` (9 passed),
-`pnpm test products/jbrowse-web/src/rootModel packages/core/src/checkPlugins`
+`pnpm test products/jbrowse-web/src/rootModel packages/core/src/checkPlugins.test.ts`
 (66 passed) plus the new suite. No browser-test run — the plugin-reload e2e
 suite (`browser-tests/suites/plugin-reload.ts`) needs a build and was not
 exercised.
