@@ -78,15 +78,19 @@
 // per-base work. Quoting "52 bases per call" as if it were the speedup would be
 // wrong.
 //
-// **So read 1.17x as close to this change's FLOOR, not its typical value.** The
-// op term is what caps it, and it is the term that varies most between
-// technologies: an op every 7 bases is a noisy long read, while PacBio HiFi —
-// which is what Fiber-seq is — carries orders of magnitude fewer ops for the
-// same length, leaving almost nothing but the positions the cursor walk is
-// O(of). Fiber-seq also calls two groups per read (`C+m` and `A+a`), and the
-// walk runs once per GROUP, so it pays this phase twice before the ratio starts.
-// Both directions favour the cursor walk; neither is measurable here, because no
-// fixture in either corpus is HiFi or multi-group.
+// This header used to argue from there that 1.17x was near a FLOOR — that the op
+// term caps it, and a technology with fewer ops (PacBio HiFi, which is what
+// Fiber-seq is) would show much more. **That was reasoning, and it was wrong.**
+// `cigarOpDensity.bench.ts` synthesizes the op density directly, holding the
+// reads, tags and positions fixed, and the ratio is flat across a 5,000x range:
+// 1.179x at one op per read, 1.127x at the real 7,081. At one op per read the
+// iteration difference is 52x — the theoretical maximum for this change — and it
+// buys 1.18x.
+//
+// The reason is that the walk phase is **per-call bound, not scan bound**: both
+// shapes invoke the callback 0.84M times and do identical work inside it, so the
+// scan is the minority of what they cost. Read 1.17x as this change's value, full
+// stop, and see that bench before predicting more from a different fixture.
 //
 // Written out longhand, three times, deliberately.
 import { readFileSync } from 'node:fs'

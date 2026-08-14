@@ -1079,12 +1079,19 @@ two groups therefore walks the same `ops` array twice.
 
 Both walks are ascending, so they merge: hold one cursor per group, take the
 minimum each step, walk the ops once. That turns O(N x ops + total positions)
-into O(ops + total positions). Since `cigarWalkShape.bench.ts` measures the ops
-term as the one that dominates on a noisy long read (6.25M ops against 0.84M
-positions), a two-group read is close to a halving of the walk phase, and the
-walk phase is 45% of the pipeline (`modPhases.bench.ts`).
+into O(ops + total positions).
 
-**The DELTA walk has the same doubling, and that half is the larger one.**
+**Do not expect much from that half, and this entry used to.** It claimed close
+to a halving of the walk phase, reasoning that the ops term dominates (6.25M ops
+against 0.84M positions). `cigarOpDensity.bench.ts` refutes it: sweeping op
+density across a 5,000x range moves the walk's ratio between 1.10x and 1.18x,
+because the phase is bound by per-CALL work — the 0.84M callbacks and the byte
+lookups, comparisons and writes inside them — rather than by traversal. Merging
+removes one ops traversal and none of the per-call work, so on this fixture it is
+worth about the 5-10% that removing all the ops was, and on a low-op-density read
+close to nothing.
+
+**The DELTA walk is the half that is worth doing.**
 `getModPositions` restarts `currPos = 0` per group, so a two-group read walks its
 read sequence twice — and the parse phase is 46% of the pipeline, slightly more
 than the CIGAR walk. htslib does not: `bam_next_basemod` takes the minimum
@@ -1105,12 +1112,12 @@ The first move is a fixture, not code:
   `modCombinedCode.bench.ts` shows how to synthesize a second group (walk the
   read for `A`, emit an `A+a` group beside the existing `C+m`), which is honest
   for counting walks.
-- **A real Fiber-seq BAM would be worth more than the synthesis**, because the
-  two things that decide the ratio are the ones synthesis cannot fake: HiFi's op
-  density (far lower than this corpus's one-op-per-7-bases, which is what caps
-  the cursor walk at 1.17x) and Fiber-seq's m6A call density. Getting one into
-  the bench corpus unblocks this item and re-prices `cigarWalkShape` at the same
-  time.
+- **A real Fiber-seq BAM is still worth getting, but for one reason rather than
+  two.** Op density turned out to be synthesizable and to not matter
+  (`cigarOpDensity.bench.ts`), so what a real file adds is m6A CALL density —
+  which is the term that does matter, since the per-call work is what these
+  phases are bound by, and Fiber-seq marks accessible adenines densely enough
+  that its calls-per-read is nothing this corpus can imitate.
 
 Keep the identity grouping when doing this — it answers a different question
 (which entries are the same walk) and the merge is a layer above it.
