@@ -163,9 +163,11 @@ export function createTestEnvironment() {
                 // identity for a canonical name, plus one alias: user-authored
                 // refName text is normalized through this, and a stub that only
                 // ever answered identity could not tell a reader that
-                // normalizes from one that doesn't
+                // normalizes from one that doesn't. It lower-cases its argument
+                // because the real one does, so a stub tolerating a non-string
+                // would be green over a spec that takes the display down.
                 getCanonicalRefName: (refName: string) =>
-                  refName === 'chrA' ? 'ctgA' : refName,
+                  refName.toLowerCase() === 'chra' ? 'ctgA' : refName,
                 configuration: { sequence: undefined },
               }
             : undefined,

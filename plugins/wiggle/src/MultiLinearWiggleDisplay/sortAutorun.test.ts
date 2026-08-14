@@ -71,6 +71,36 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
     expect(display.sortRowsBy).toBeUndefined()
   })
 
+  // The slot is `frozen`, so the typed shape describes what a session author is
+  // meant to write rather than checking what they did. A spec naming a position
+  // and no refName names no column, and the normalization it reaches
+  // lower-cases what it is handed — so the missing half threw out of the
+  // autorun instead of declining to sort.
+  //
+  // Asserted on `console.error`, because that is the only place the difference
+  // shows: mobx catches what a reaction throws and reports it there, so the
+  // rows come out unsorted either way and every assertion about the display
+  // passes over the throw. Which is how it would have shipped.
+  it('declines a spec that names no refName, rather than throwing', async () => {
+    const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const { createDisplay } = environmentWith({ a: 1, b: 5 })
+      const { display } = createDisplay({
+        sortRowsBy: { pos: 600 } as unknown as { refName: string; pos: number },
+      })
+
+      jest.advanceTimersByTime(700)
+      await waitFor(() => {
+        expect(display.sourcesVolatile.length).toBe(2)
+      })
+
+      expect(display.layout).toEqual([])
+      expect(reported).not.toHaveBeenCalled()
+    } finally {
+      reported.mockRestore()
+    }
+  })
+
   it('holds the trigger rather than spending it on a region that never loads', async () => {
     // sorting against no data ranks every row equally — it would clear the flag
     // and leave a figure showing unsorted rows with nothing to say why

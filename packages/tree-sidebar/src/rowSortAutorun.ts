@@ -49,7 +49,13 @@ export function setupRowSortAutorun(
     autorun(
       () => {
         const spec = self.sortRowsBy
-        if (!spec) {
+        // The slot is `frozen` on both displays that hold one, so the typed
+        // shape is a description of what a session author is meant to write and
+        // not a check on what they did. A spec naming a position and no refName
+        // names no column to sort at, and reaches `canonicalizeViewRefName`,
+        // which lower-cases what it is handed — so the missing half threw a
+        // TypeError out of the autorun rather than declining to sort.
+        if (!spec || typeof spec.refName !== 'string') {
           return
         }
         // Normalize before both the gate and the dispatch. The right-click

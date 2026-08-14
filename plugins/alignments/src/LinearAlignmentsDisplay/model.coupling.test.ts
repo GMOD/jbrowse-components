@@ -30,14 +30,17 @@ function createDisplay({ withRegions = false } = {}) {
     // `getCanonicalRefName` carries one alias because user-authored refName
     // text (the `sortedBy` slot) is normalized through it, and a stub that
     // only ever answered identity could not tell a reader that normalizes
-    // from one that doesn't.
+    // from one that doesn't. It reads `.toLowerCase()` off its argument for the
+    // same kind of reason: the real one does, so anything but a string throws
+    // out of it, and a stub that tolerated one would be green over a malformed
+    // slot taking the display down.
     assemblyManager: {
       get: (name: string) =>
         name === 'volvox'
           ? {
               initialized: true,
               getCanonicalRefName: (refName: string) =>
-                refName === 'chrA' ? 'ctgA' : refName,
+                refName.toLowerCase() === 'chra' ? 'ctgA' : refName,
               configuration: { sequence: undefined },
             }
           : undefined,
@@ -370,6 +373,23 @@ describe('sortedBy refName normalization', () => {
     // everything else on the slot rides through untouched
     expect(display.sortedBy?.pos).toBe(100)
     expect(display.sortedBy?.type).toBe('base')
+  })
+
+  // The slot is `frozen`, so a config or session spec can write a sort with no
+  // refName on it at all. A sort names a column, so that is no sort — and it
+  // has to be answered here, because normalizing it instead threw a TypeError
+  // out of a getter the fetch autorun and the render both read, replacing the
+  // whole track with an error over a typo in a spec.
+  test('a slot naming no refName is no sort, not a throw', () => {
+    const display = createDisplay({ withRegions: true })
+    display.setSortSlot({
+      type: 'base',
+      pos: 100,
+      refName: undefined as unknown as string,
+      assemblyName: 'volvox',
+    })
+
+    expect(display.sortedBy).toBeUndefined()
   })
 
   test('a canonical refName is left alone, and no sort stays undefined', () => {
