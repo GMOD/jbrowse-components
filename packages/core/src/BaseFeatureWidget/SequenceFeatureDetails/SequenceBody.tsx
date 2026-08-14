@@ -4,8 +4,7 @@ import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
 import { statusProgressLabel } from '../../util/progress.ts'
 import SequencePanel from './SequencePanel.tsx'
 
-import type { RpcStatus } from '../../util/index.ts'
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { RpcStatus, SimpleFeatureSerialized } from '../../util/index.ts'
 import type { ErrorState, SeqState } from '../util.tsx'
 import type {
   SequenceDisplayMode,
