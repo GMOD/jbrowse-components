@@ -65,6 +65,24 @@ interface RegionInfo {
   displayedRegionIndex: number
 }
 
+// The two region lists this pass needs, which are NOT the same list and are not
+// interchangeable — hence one named object rather than two adjacent
+// `RegionInfo[]` parameters nothing could tell apart.
+//
+// `loaded` is the fetch: `collectArcInputs` walks it to find the reads, and a
+// region whose fetch has not landed has none. `displayed` is the VIEW's, and it
+// is what a foot's region is resolved against, because the question
+// `CrossRegionArc` asks is "can `view.bpToPx` project both feet" and that
+// projector reads `displayedRegions`. Keying the partition on the loaded list
+// instead leaves the original bug alive for a displayed-but-unfetched partner:
+// the far foot resolves to no region, the arc falls into the within-region half,
+// and `arcTouchesRegion` hands it to the near foot's block on a raw bp
+// comparison — where it is extrapolated and clipped exactly as before.
+export interface ArcRegions {
+  loaded: RegionInfo[]
+  displayed: RegionInfo[]
+}
+
 interface ArcSettings {
   colorByType: ArcColorByType
   // read cloud mode: flat lines at Y=|tlen|, concordant FR pairs
@@ -321,6 +339,38 @@ export interface ComputedArc {
   // Only `resolveArcs`' sort reads it, as the tie-break that makes paint order
   // independent of the order the reads arrived in.
   key: string
+}
+
+/**
+ * An arc whose two feet are in DIFFERENT displayed regions, carrying the region
+ * each foot resolved to.
+ *
+ * These are separated out because **no per-region pass can draw them**, and the
+ * failure is not that they go missing. Both renderers map bp to x through the
+ * block's own range — `bpToClipX` off `u.bpHi/bpLo/bpLen` on the GPU,
+ * `bpToScreenX(bp, block, …)` on Canvas2D — and the GPU additionally draws into
+ * a viewport that IS the block. So an arc with one foot outside gets its far
+ * foot extrapolated at the block's own scale, which lands nowhere near where the
+ * other block actually sits, and the scissor cuts what is left. Handed to both
+ * regions, as it used to be, the reader gets TWO half-curves pointing at
+ * nothing.
+ *
+ * Measured on the HG02768 inverted duplication with its window split into two
+ * regions 300 bp apart: 52 of 381 arcs (13.6%) were cross-region, i.e. 104
+ * dangling halves. The same view as one region, and the same two regions 2 Mb
+ * apart, have none — a fragment can only straddle a seam, so this set is
+ * inherently small and an overlay drawn once across the whole view can afford
+ * to be SVG. That overlay is the same answer `bezierArcScope`'s `crossRegion`
+ * already gives for the per-read connectors, and for the same reason.
+ *
+ * An interchromosomal arc is necessarily one of these — two refNames cannot
+ * share a displayed region — and that is structural rather than incidental
+ * because `resolveArcs` decides both from the SAME pair of region lookups. See
+ * `groupArcsByRef`, which depends on it.
+ */
+export interface CrossRegionArc extends ComputedArc {
+  p1RegionIndex: number
+  p2RegionIndex: number
 }
 
 // A connector tick. No color: every tick is ARC_COLOR_INTERCHROM (see the
@@ -1108,10 +1158,19 @@ function clusteredInterchromSupport(
 // the same two bp to the same offset (`pairJitter01`), so arcs agreeing on the
 // endpoints agree on it. What it does NOT make agree is the span the offset
 // scales — see `arcKey`, which is why `yBp` is keyed on.
+//
+// THREE outputs, from ONE region lookup per connection. The alternative — emit
+// arcs, then partition them in a second pass — was written first and is worse
+// for a reason that is not style: the second pass has to ask "which region is
+// this foot in" all over again, so "an interchromosomal arc is always in the
+// cross-region set" holds only as long as the two lookups agree. Deciding it
+// here, off `p1RegionIndex`/`p2RegionIndex` resolved once, makes it structural,
+// which is what `groupArcsByRef` and `arcTouchesRegion` both rely on.
 function resolveArcs(
   pendingArcs: PendingArc[],
   { hasPaired, stats }: ArcScale,
   settings: ArcSettings,
+  displayedRegions: RegionInfo[],
 ) {
   const {
     colorByType,
@@ -1121,6 +1180,10 @@ function resolveArcs(
     minInterchromSupport = 1,
   } = settings
   const arcs: ComputedArc[] = []
+  const crossRegion: CrossRegionArc[] = []
+  // ONE map over both arrays. An arc is pushed to exactly one of them on first
+  // sight and the later `support++` mutates that same object, so the count
+  // cannot end up on a copy in the other half.
   const byKey = new Map<string, ComputedArc>()
   const lines: ComputedLine[] = []
   const byLineKey = new Map<string, ComputedLine>()
@@ -1178,6 +1241,17 @@ function resolveArcs(
   for (let i = 0; i < pendingArcs.length; i++) {
     const arc = pendingArcs[i]!
     const { p1Ref, p1Bp, p2Ref, p2Bp } = arc
+    // THE region lookup for this connection, and the only one. Every decision
+    // below about where the arc can be drawn is taken from these two.
+    //
+    // Above every filter rather than beside the one caller that needs it today:
+    // the interchromosomal branch asks the same question (commit 3's arc-or-tick
+    // decision), and two lookup sites is how the invariant `groupArcsByRef`
+    // depends on stops being structural. The cost is a scan of a 1-2 element
+    // list, which is nothing next to the `arcKey` string this loop builds for
+    // every connection that survives.
+    const p1RegionIndex = regionIndexOf(displayedRegions, p1Ref, p1Bp)
+    const p2RegionIndex = regionIndexOf(displayedRegions, p2Ref, p2Bp)
     // Interchromosomal: never an arc — drop a tick on each endpoint, always
     // painted the single dedicated interchromosomal color. Insert size,
     // long-range distance, and pair orientation are all meaningless across refs
@@ -1282,7 +1356,7 @@ function resolveArcs(
       seen.support++
       continue
     }
-    const computed = {
+    const computed: ComputedArc = {
       p1: { refName: p1Ref, bp: p1Bp },
       p2: { refName: p2Ref, bp: p2Bp },
       colorType,
@@ -1297,7 +1371,24 @@ function resolveArcs(
     byKey.set(key, computed)
     // pushed in first-seen order, so the feed's order is still the reads' —
     // a later support bump mutates the entry already in the array
-    arcs.push(computed)
+    //
+    // An arc with EITHER foot in no displayed region is not cross-region: that
+    // is the off-screen-partner case, which has no second pixel to draw to and
+    // keeps `arcTouchesRegion`'s existing handling, where the leg rising toward
+    // the screen edge is the correct picture.
+    if (
+      p1RegionIndex !== undefined &&
+      p2RegionIndex !== undefined &&
+      p1RegionIndex !== p2RegionIndex
+    ) {
+      // `Object.assign`, not a spread: the object identity has to be the one in
+      // `byKey`, or a later `support++` lands on an arc nothing draws.
+      crossRegion.push(
+        Object.assign(computed, { p1RegionIndex, p2RegionIndex }),
+      )
+    } else {
+      arcs.push(computed)
+    }
   }
 
   // CATEGORY FIRST, then ASCENDING SUPPORT, because array order is paint order
@@ -1328,12 +1419,15 @@ function resolveArcs(
   // had changed. `key` is what arcs are deduped by, so no two share it and this
   // is a strict weak ordering; which arc wins a tie does not matter, only that
   // the same one wins it every time.
-  arcs.sort(
-    (a, b) =>
-      arcPaintRank(a.colorType) - arcPaintRank(b.colorType) ||
-      a.support - b.support ||
-      (a.key < b.key ? -1 : 1),
-  )
+  const paintOrder = (a: ComputedArc, b: ComputedArc) =>
+    arcPaintRank(a.colorType) - arcPaintRank(b.colorType) ||
+    a.support - b.support ||
+    (a.key < b.key ? -1 : 1)
+  arcs.sort(paintOrder)
+  // The same TOTAL order over the overlay's half, for the same reason one level
+  // down: SVG document order is paint order, and equal-support arcs left in the
+  // reads' arrival order are not in the same order twice.
+  crossRegion.sort(paintOrder)
 
   // The same ordering, for the same reason, over the ticks. They are opaque
   // full-band verticals, so two within a stroke width of each other resolve by
@@ -1348,7 +1442,22 @@ function resolveArcs(
     line.partnerRefNames.sort()
   }
 
-  return { arcs, lines }
+  return { arcs, crossRegion, lines }
+}
+
+// Which displayed region a genomic point falls in, or undefined for a point no
+// region shows. First match wins: two displayed regions may overlap in bp (the
+// same locus shown twice, a foldback laid out in derivative order), and an
+// arbitrary-but-consistent answer beats none — `makeBpToScreenX` breaks the same
+// tie the same way, by preferring the index it is given and falling back to the
+// first match.
+function regionIndexOf(regions: RegionInfo[], refName: string, bp: number) {
+  for (const r of regions) {
+    if (r.refName === refName && bp >= r.start && bp <= r.end) {
+      return r.displayedRegionIndex
+    }
+  }
+  return undefined
 }
 
 function bucketByRef<T>(items: T[], refOf: (item: T) => string) {
@@ -1363,9 +1472,17 @@ function bucketByRef<T>(items: T[], refOf: (item: T) => string) {
 // can look up the per-region subset in O(1) instead of filtering the full
 // array once per displayed region.
 //
-// Keyed on `p1` alone because an arc's two ends always share a refName: the
-// interchromosomal branch of `resolveArcs` turns those into a pair of ticks and
-// never reaches here.
+// Keyed on `p1` alone, and `arcTouchesRegion` below compares raw bp with no
+// refName test at all. Both are safe because of WHERE the arcs reaching here
+// come from, not because an arc cannot span two chromosomes: `resolveArcs` sends
+// every arc whose feet resolve to two different displayed regions to
+// `crossRegion` instead, and two refNames cannot share a displayed region. So a
+// two-refName arc is excluded by the region partition, one decision earlier and
+// from the same two lookups the interchromosomal arc/tick choice is made from —
+// which is why that partition has to stay a single decision point. An
+// interchromosomal arc that did reach here would be bucketed under one
+// chromosome and then projected at a garbage x inside it, silently.
+// `compute.test.ts` pins the invariant rather than the reasoning.
 export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
   return {
     arcsByRef: bucketByRef(arcs, arc => arc.p1.refName),
@@ -1500,17 +1617,28 @@ function arcsToRegionMap(
 }
 
 /**
- * Arcs + connector ticks for one group's raw pileup data, scaled to that group
- * alone. The single-group entry point; grouped rendering goes through
- * `computeArcsByGroup` instead, which pools the color scale across every lane.
+ * Arcs + cross-region arcs + connector ticks for one group's raw pileup data,
+ * scaled to that group alone. The single-group entry point; grouped rendering
+ * goes through `computeArcsByGroup` instead, which pools the color scale across
+ * every lane.
+ *
+ * `displayedRegions` defaults to the fetched list, which is the truth in the
+ * single-region view this entry point describes — see `ArcRegions` for when the
+ * two genuinely differ and why the difference matters.
  */
 export function computeArcsFromPileupData(
   rpcDataMap: ReadonlyMap<number, PileupDataResult>,
   regions: RegionInfo[],
   settings: ArcSettings,
+  displayedRegions: RegionInfo[] = regions,
 ) {
   const inputs = collectArcInputs(rpcDataMap, regions, settings)
-  return resolveArcs(inputs.pendingArcs, poolArcScale([inputs]), settings)
+  return resolveArcs(
+    inputs.pendingArcs,
+    poolArcScale([inputs]),
+    settings,
+    displayedRegions,
+  )
 }
 
 /**
@@ -1530,22 +1658,38 @@ export function computeArcsFromPileupData(
  */
 export function computeArcsByGroup(
   rawDataByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>,
-  regions: RegionInfo[],
+  regions: ArcRegions,
   settings: ArcSettings,
-): Map<string, Map<number, ArcsUploadData>> {
+): {
+  byGroup: Map<string, Map<number, ArcsUploadData>>
+  // The arcs no per-region buffer can draw, per group — see `CrossRegionArc`.
+  // Empty in the single-region view, which is why the overlay that draws them
+  // costs nothing there.
+  crossRegionByGroup: Map<string, CrossRegionArc[]>
+} {
   // Each group carries its own collected input rather than sitting in a second
   // array indexed in step with this one: the pooling in between is the whole
   // reason collection and resolution are separate passes, and two parallel
   // arrays make "same index" an invariant to hold rather than one to read.
   const groups = [...rawDataByGroup].map(([key, rawMap]) => ({
     key,
-    input: collectArcInputs(rawMap, regions, settings),
+    input: collectArcInputs(rawMap, regions.loaded, settings),
   }))
   const scale = poolArcScale(groups.map(g => g.input))
-  return new Map(
-    groups.map(({ key, input }) => [
-      key,
-      arcsToRegionMap(resolveArcs(input.pendingArcs, scale, settings), regions),
-    ]),
-  )
+  const byGroup = new Map<string, Map<number, ArcsUploadData>>()
+  const crossRegionByGroup = new Map<string, CrossRegionArc[]>()
+  for (const { key, input } of groups) {
+    const { arcs, crossRegion, lines } = resolveArcs(
+      input.pendingArcs,
+      scale,
+      settings,
+      regions.displayed,
+    )
+    // The per-region feed is keyed on the LOADED list, unchanged: it is what a
+    // block draws from, and a displayed region whose fetch has not landed has
+    // no block to draw.
+    byGroup.set(key, arcsToRegionMap({ arcs, lines }, regions.loaded))
+    crossRegionByGroup.set(key, crossRegion)
+  }
+  return { byGroup, crossRegionByGroup }
 }

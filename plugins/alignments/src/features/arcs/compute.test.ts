@@ -857,10 +857,16 @@ describe('computeArcsFromPileupData', () => {
       drawLongRange: false,
     })
 
-    expect(result.arcs.length).toBe(1)
+    // The pair is found across the two regions — which is what this test is
+    // about — and lands in the CROSS-REGION half, since its feet resolve to two
+    // different displayed regions and no per-region pass can join them.
+    expect(result.arcs).toHaveLength(0)
+    expect(result.crossRegion.length).toBe(1)
     // Each mate's own outer (5') edge (1000, 5000), not its inner 3' edge.
-    expect(result.arcs[0]!.p1.bp).toBe(1000)
-    expect(result.arcs[0]!.p2.bp).toBe(5000)
+    expect(result.crossRegion[0]!.p1.bp).toBe(1000)
+    expect(result.crossRegion[0]!.p2.bp).toBe(5000)
+    expect(result.crossRegion[0]!.p1RegionIndex).toBe(0)
+    expect(result.crossRegion[0]!.p2RegionIndex).toBe(1)
   })
 
   test('orientation coloring: RL gives colorType 6', () => {
@@ -1954,9 +1960,9 @@ describe('computeArcsByGroup', () => {
 
   test('one visible lane matches the single-group entry point exactly', () => {
     const data = lrPairs(1000, CLUSTER, 'a')
-    const byGroup = computeArcsByGroup(
+    const { byGroup } = computeArcsByGroup(
       new Map([['only', new Map([[0, data]])]]),
-      regions,
+      { loaded: regions, displayed: regions },
       settings,
     )
     const { arcs, lines } = computeArcsFromPileupData(
@@ -2008,7 +2014,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
   }
 
   test('each region gets its own arc and not the other region’s', () => {
-    const byGroup = computeArcsByGroup(
+    const { byGroup } = computeArcsByGroup(
       new Map([
         [
           '',
@@ -2018,7 +2024,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
           ]),
         ],
       ]),
-      regions,
+      { loaded: regions, displayed: regions },
       settings,
     )
     const regionMap = byGroup.get('')!
@@ -2026,9 +2032,13 @@ describe('an arc is uploaded only to the regions it reaches', () => {
     expect([...regionMap.get(1)!.arcX1]).toEqual([900000])
   })
 
-  test('an arc straddling both still reaches both, since it draws in each', () => {
-    // One pair with a mate in each window: the two blocks each paint the foot
-    // they hold and the leg leaving toward the other, so both need the arc.
+  test('an arc straddling both leaves both buffers for the overlay', () => {
+    // One pair with a mate in each window. This used to go to BOTH regions, on
+    // the reasoning that each block paints the foot it holds and the leg leaving
+    // toward the other. They do not join: each block maps bp to x through its
+    // own range, so the far foot is extrapolated to a place the other block is
+    // not, and the reader gets two half-curves pointing at nothing. It is now
+    // held out of both and drawn once across the view — see `CrossRegionArc`.
     const near = makePileupData({
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR]),
@@ -2048,7 +2058,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
     })
     far.readKeys[0] = 'c2'
 
-    const regionMap = computeArcsByGroup(
+    const { byGroup, crossRegionByGroup } = computeArcsByGroup(
       new Map([
         [
           '',
@@ -2058,11 +2068,45 @@ describe('an arc is uploaded only to the regions it reaches', () => {
           ]),
         ],
       ]),
-      regions,
+      { loaded: regions, displayed: regions },
       settings,
-    ).get('')!
-    expect([...regionMap.get(0)!.arcX1]).toEqual([1000])
-    expect([...regionMap.get(1)!.arcX1]).toEqual([1000])
+    )
+    const regionMap = byGroup.get('')!
+    expect(regionMap.get(0)!.numArcs).toBe(0)
+    expect(regionMap.get(1)!.numArcs).toBe(0)
+    // …and it is in the overlay's half, carrying the region each foot resolved
+    // to, which is the whole thing a per-block pass cannot know.
+    const cross = crossRegionByGroup.get('')!
+    expect(cross).toHaveLength(1)
+    expect(cross[0]!.p1.bp).toBe(1000)
+    expect(cross[0]!.p2.bp).toBe(900000)
+    expect(cross[0]!.p1RegionIndex).toBe(0)
+    expect(cross[0]!.p2RegionIndex).toBe(1)
+  })
+
+  // The off-screen-partner case, which looks like the one above and is not: one
+  // foot is in no displayed region at all, so there is no second pixel to draw
+  // to and the leg rising toward the screen edge is the correct picture. It
+  // must stay in the per-region feed, or the fix for the seam deletes it.
+  test('a foot in no displayed region is not cross-region', () => {
+    const data = makePileupData({
+      readPositions: new Uint32Array([1000, 1100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([400000]),
+      readPairOrientations: new Uint8Array([1]),
+      ...namesToBlock(['readE']),
+      ...nextRefsToTable(['chr1']),
+      // 400kb away — between the two windows, so displayed by neither
+      readNextPositions: new Uint32Array([400000]),
+    })
+    const { byGroup, crossRegionByGroup } = computeArcsByGroup(
+      new Map([['', new Map([[0, data]])]]),
+      { loaded: regions, displayed: regions },
+      { ...settings, drawLongRange: true },
+    )
+    expect(crossRegionByGroup.get('')).toHaveLength(0)
+    expect([...byGroup.get('')!.get(0)!.arcX1]).toEqual([1000])
   })
 
   test('a connector tick goes to the region holding it, and to no other', () => {
@@ -2080,9 +2124,9 @@ describe('an arc is uploaded only to the regions it reaches', () => {
     })
     const regionMap = computeArcsByGroup(
       new Map([['', new Map([[0, data]])]]),
-      regions,
+      { loaded: regions, displayed: regions },
       { ...settings, drawInter: true, drawLongRange: true },
-    ).get('')!
+    ).byGroup.get('')!
     expect([...regionMap.get(0)!.arcLinePositions]).toEqual([1000])
     expect(regionMap.get(1)!.numArcLines).toBe(0)
   })
@@ -2119,6 +2163,41 @@ describe('groupArcsByRef', () => {
     expect(linesByRef.get('chr1')?.length).toBe(1)
     expect(linesByRef.get('chr2')?.length).toBe(1)
     expect(arcsByRef.get('chr3')).toBeUndefined()
+  })
+
+  // The invariant this function is keyed on, pinned at its source rather than
+  // argued in a comment. Bucketing on `p1.refName` alone and `arcTouchesRegion`
+  // comparing raw bp are both safe only while nothing two-refName reaches the
+  // per-region feed — such an arc would be filed under one chromosome and then
+  // projected at a garbage x inside it, with nothing to see but a wrong picture.
+  //
+  // What keeps it out is the REGION partition (two refNames cannot share a
+  // displayed region), not the interchromosomal branch, and the difference
+  // matters because that branch is exactly what an interchromosomal arc has to
+  // change. Two contigs displayed, one connection between them.
+  test('no two-refName arc reaches the per-region feed', () => {
+    const data = makePileupData({
+      readPositions: new Uint32Array([1000, 1100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([1]),
+      ...namesToBlock(['readX']),
+      ...nextRefsToTable(['chr2']),
+      readNextPositions: new Uint32Array([5000]),
+    })
+    const both = [
+      { refName: 'chr1', start: 0, end: 2000, displayedRegionIndex: 0 },
+      { refName: 'chr2', start: 4000, end: 6000, displayedRegionIndex: 1 },
+    ]
+    const result = computeArcsFromPileupData(new Map([[0, data]]), both, {
+      colorByType: 'insertSize',
+      drawInter: true,
+      drawLongRange: true,
+    })
+    expect(result.arcs.filter(a => a.p1.refName !== a.p2.refName)).toHaveLength(
+      0,
+    )
   })
 })
 

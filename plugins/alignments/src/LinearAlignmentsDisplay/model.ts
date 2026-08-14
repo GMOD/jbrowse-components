@@ -138,6 +138,7 @@ import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types'
+import type { CrossRegionArc } from '../features/arcs/compute.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
@@ -1847,6 +1848,35 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The VIEW's displayed regions in the same shape, which is a different
+         * list from `loadedRegionInfos` and answers a different question: not
+         * "where did reads come from" but "where can a coordinate be drawn".
+         *
+         * The arc partition (`CrossRegionArc`) keys on this one, because its
+         * criterion is whether `view.bpToPx` can project both feet and that
+         * projector reads `displayedRegions`. Keying it on the fetched list
+         * leaves the original bug alive for a displayed-but-unfetched partner —
+         * see `ArcRegions`.
+         *
+         * `displayedRegions` changes on NAVIGATION and not on pan, so
+         * `arcsByGroup` keeps the invalidation tier `loadedRegions`' own comment
+         * exists to protect: panning within the fetched window still replays the
+         * memo.
+         */
+        get displayedRegionInfos() {
+          const view = self.lgv
+          return view.initialized
+            ? view.displayedRegions.map((r, displayedRegionIndex) => ({
+                refName: r.refName,
+                start: r.start,
+                end: r.end,
+                displayedRegionIndex,
+              }))
+            : []
+        },
+
+        /**
+         * #getter
          * Normalizer for a refName that arrives in the BAM's own spelling (an SA
          * tag's or RNEXT's `chr1`) rather than the assembly-canonical one a
          * fetched read carries (`1`). Undefined when no assembly is resolved,
@@ -1871,13 +1901,21 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Per-group arc upload feed: group key → (region idx → `ArcsUploadData`).
+         * THE arc resolution, whole: both halves of what this fetch's reads say,
+         * from one pass. Read it through `arcsByGroup` (what a per-region pass
+         * draws) or `crossRegionArcsByGroup` (what only the overlay can), which
+         * are its two faces and are documented there.
+         *
+         * One getter rather than two, because the split between them is a single
+         * decision taken per connection inside `resolveArcs` — see
+         * `CrossRegionArc`. Two getters resolving independently would each have
+         * to re-derive it, and "which half is this arc in" would stop having one
+         * answer.
+         *
          * The heavy connection-resolution pass runs once per group (arcs are
          * pre-grouped by refName so each region lookup is O(1)); ungrouped is the
-         * single-group case. Empty map when read-connections are off, so the
-         * off-path skips the per-read region scan entirely. Source of truth for
-         * the per-section arc feed (`sourceSections`) and the shared cross-group
-         * `arcsYDomainBp`.
+         * single-group case. Empty when read-connections are off, so the off-path
+         * skips the per-read region scan entirely.
          *
          * `computeArcsByGroup` owns the whole fan-out rather than a loop here,
          * because the arc COLOR scale (`poolArcScale`: the insert-size band, and
@@ -1895,9 +1933,12 @@ export default function stateModelFactory(
          * draws, and its reads would shift `poolArcScale` for everyone. Skipping
          * also saves the whole per-read arc pass over a lane no section renders.
          */
-        get arcsByGroup() {
+        get arcsResult(): {
+          byGroup: Map<string, Map<number, ArcsUploadData>>
+          crossRegionByGroup: Map<string, CrossRegionArc[]>
+        } {
           if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
-            return new Map<string, Map<number, ArcsUploadData>>()
+            return { byGroup: new Map(), crossRegionByGroup: new Map() }
           }
           const settings = {
             colorByType: self.arcColorByType,
@@ -1913,9 +1954,35 @@ export default function stateModelFactory(
           }
           return computeArcsByGroup(
             this.rawDataByGroup,
-            this.loadedRegionInfos,
+            {
+              loaded: this.loadedRegionInfos,
+              displayed: this.displayedRegionInfos,
+            },
             settings,
           )
+        },
+
+        /**
+         * #getter
+         * The per-region GPU/Canvas2D upload feed. Every consumer that packs,
+         * draws or hit-tests a region's arcs reads this; the arcs it does NOT
+         * contain are the cross-region ones, which no per-region pass can draw
+         * (`CrossRegionArc`) and which `crossRegionArcsByGroup` carries instead.
+         */
+        get arcsByGroup() {
+          return this.arcsResult.byGroup
+        },
+
+        /**
+         * #getter
+         * Arcs whose two feet are in different displayed regions, per group.
+         * Drawn by an SVG overlay across the whole view, because the per-region
+         * passes map bp to x through the block's own range and would each
+         * extrapolate the far foot to a place the other block is not — see
+         * `CrossRegionArc` for the measurement. Empty in a single-region view.
+         */
+        get crossRegionArcsByGroup() {
+          return this.arcsResult.crossRegionByGroup
         },
 
         /**
