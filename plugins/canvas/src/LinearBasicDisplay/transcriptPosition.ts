@@ -19,7 +19,7 @@ interface ExonicPosition {
 // two calls because the hover wants both off one walk — it names the exon and,
 // at base zoom, the c./n. coordinate of the same base — and because a coordinate
 // paired with an exon number resolved separately is a pair that can disagree.
-export interface TranscriptPosition extends ExonicPosition {
+interface TranscriptPosition extends ExonicPosition {
   // `c.` when the transcript codes, `n.` when it doesn't, and absent when it
   // codes but can't be numbered; see hgvsCoordinate
   hgvs?: string

@@ -102,7 +102,7 @@ export function solveLabelRoomFactor(
 // (names kept), `decimated` keeps names only on features wide enough to host
 // them (plus pinned/highlighted) and drops the rest, `bodies` drops all names
 // and packs boxes edge-to-edge. See `resolveFitLadder`.
-export type FitLevel = 'full' | 'labels' | 'decimated' | 'bodies'
+type FitLevel = 'full' | 'labels' | 'decimated' | 'bodies'
 
 // One rung: a reservation level and a thunk producing its laid-out stack. Lazy so
 // a rung tighter than the one that fits is never laid out — in the common

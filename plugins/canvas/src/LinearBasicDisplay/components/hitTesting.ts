@@ -71,7 +71,7 @@ export interface HitFeatureResult {
   displayedRegionIndex: number
 }
 
-export type HitResult = HitFeatureResult | { feature: null; subfeature: null }
+type HitResult = HitFeatureResult | { feature: null; subfeature: null }
 
 export function isHitFeature(r: HitResult): r is HitFeatureResult {
   return r.feature !== null

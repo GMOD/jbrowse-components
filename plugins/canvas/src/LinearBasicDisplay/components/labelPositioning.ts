@@ -151,7 +151,7 @@ export interface ResolvedLabel {
 // show, plus the display mode's resolved font size. fontSize is the single knob
 // that keeps the reserved row height, the name→description gap, and the drawn
 // text in agreement as compact modes shrink the text.
-export interface LabelRenderContext {
+interface LabelRenderContext {
   showLabels: boolean
   showDescriptions: boolean
   fontSize: number

@@ -185,7 +185,7 @@ export function featureIdsTouchingBlocks(
 // non-fit modes); `fitWidth` keeps a name only where the feature's box is wide
 // enough to host it (plus pinned/highlighted features), dropping the rest — the
 // `decimated` fit rung's genuine intermediate between "every name" and "no name".
-export type LabelDecimation = 'all' | 'fitWidth'
+type LabelDecimation = 'all' | 'fitWidth'
 
 export interface LayoutInputs {
   bpPerPx: number

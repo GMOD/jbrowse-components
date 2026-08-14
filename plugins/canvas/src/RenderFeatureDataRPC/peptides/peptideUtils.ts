@@ -24,7 +24,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { GeneticCode } from '@jbrowse/core/util/geneticCodes'
 
-export interface PeptideFetchProps {
+interface PeptideFetchProps {
   sessionId: string
   sequenceAdapter: Record<string, unknown>
   regions: (Region & { originalRefName?: string })[]

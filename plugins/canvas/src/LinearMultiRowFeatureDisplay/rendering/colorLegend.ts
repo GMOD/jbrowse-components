@@ -11,7 +11,7 @@ export interface LegendEntry {
 }
 
 // An admin-declared legend entry from the `legend` config slot: a CSS color.
-export interface ConfiguredLegendEntry {
+interface ConfiguredLegendEntry {
   label: string
   color: string
 }

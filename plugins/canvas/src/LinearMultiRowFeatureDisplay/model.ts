@@ -1224,7 +1224,7 @@ export default function stateModelFactory(
     })
 }
 
-export type LinearMultiRowFeatureDisplayStateModel = ReturnType<
+type LinearMultiRowFeatureDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
 export type LinearMultiRowFeatureDisplayModel =

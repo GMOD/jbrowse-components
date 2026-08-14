@@ -256,7 +256,7 @@ export type TestDisplay = ReturnType<
 // the copy entries each earn a submenu — but a test names the ROW it wants, not
 // the path to it. So flatten before matching, and let a row that moves into or
 // out of a submenu stay one test.
-export function flattenMenuItems(items: MenuItem[]): MenuItem[] {
+function flattenMenuItems(items: MenuItem[]): MenuItem[] {
   return items.flatMap(m =>
     'subMenu' in m ? flattenMenuItems(m.subMenu) : [m],
   )

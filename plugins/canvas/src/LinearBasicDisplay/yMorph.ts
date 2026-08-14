@@ -14,7 +14,7 @@ const MORPH_MAX_RECTS = 20000
 // featureId -> row top (px) for the layout being animated away from. Keyed by
 // id (not array index) so the transition survives a re-fetch: a zoom rebuilds
 // the primitive arrays, but the same features keep their ids.
-export type FeatureTops = Map<string, number>
+type FeatureTops = Map<string, number>
 
 export function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2

@@ -147,7 +147,7 @@ export interface ResolvedHighlights {
 
 // The loaded genomic span of one fetched region, the evidence that a highlight
 // SHOULD have resolved (see warnUnresolvedHighlights).
-export interface LoadedSpan {
+interface LoadedSpan {
   refName: string
   start: number
   end: number
