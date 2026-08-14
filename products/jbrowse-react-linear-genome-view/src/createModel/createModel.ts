@@ -49,4 +49,10 @@ export default function createModel(
 }
 
 type ViewStateModel = ReturnType<typeof createModel>['model']
-export type ViewModel = Instance<ViewStateModel>
+// `interface … extends`, not `type … =`, and this one is load-bearing for the
+// BUILD rather than for the usual mutual-reference reason: as an alias the
+// declaration emitter inlines the whole root-model type at every use, and both
+// `createViewState` and `useCreateViewState` then fail `build:esm` with TS7056
+// — the inferred type is too long to serialize. The interface gives it a name
+// to emit instead. Annotate anything returning it with `ViewModel` explicitly.
+export interface ViewModel extends Instance<ViewStateModel> {}

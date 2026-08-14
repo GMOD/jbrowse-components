@@ -8,6 +8,7 @@ import {
 
 import createModel from './createModel/index.ts'
 
+import type { ViewModel } from './createModel/createModel.ts'
 import type {
   createConfigModel,
   createSessionModel,
@@ -96,7 +97,7 @@ export interface ViewStateOptions extends CreateViewStateBaseOptions {
   session?: RestoredSessionSnapshot
 }
 
-export default function createViewState(opts: ViewStateOptions) {
+export default function createViewState(opts: ViewStateOptions): ViewModel {
   const {
     assembly,
     tracks,
