@@ -1690,6 +1690,30 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "bamLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox-translocation.bam",
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox-translocation.bam.bai",
+          },
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Alignments",
+      ],
+      "name": "volvox-translocation",
+      "trackId": "volvox_translocation",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
         "gffGzLocation": {
           "locationType": "UriLocation",
           "uri": "volvox.sort.gff3.gz",

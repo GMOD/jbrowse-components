@@ -1311,6 +1311,26 @@
       }
     },
     {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_translocation",
+      "name": "volvox-translocation",
+      "assemblyNames": ["volvox"],
+      "category": ["Alignments"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-translocation.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-translocation.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "gff3tabix_genes",
       "assemblyNames": ["volvox"],
