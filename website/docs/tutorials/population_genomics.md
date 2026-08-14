@@ -318,11 +318,11 @@ column order, and the split only reads as two blocks by luck.
 The genotypes here are the arrangement karyotypes themselves, so the lane is a
 direct record of which lines carry the inversion. That ordinary SNPs across the
 region co-segregate with it, which is why the arrangement behaves as one
-recombination-suppressed block, is what the Fst scan above quantifies. Reading
-the arrangement's extent off that scan would overshoot it in both directions,
-and by about the margin
+recombination-suppressed block, is what the Fst scan above quantifies. The
+plateau carries a few megabases past each breakpoint, which is the margin
 [Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056) report for
-the common _Drosophila_ inversions.
+the common _Drosophila_ inversions; the extent comes from the lane at the top,
+which is published coordinates.
 
 ## Reproduce it end to end
 

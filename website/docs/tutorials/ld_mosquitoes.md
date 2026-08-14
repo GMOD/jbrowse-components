@@ -46,9 +46,10 @@ recombination rather than one of none.
 
 Run that test on the other block in the frame, the one at the low-coordinate end
 of the arm that both panels carry: it is reddest along the diagonal and pales
-away below it, which is the other case. It covers the stretch of 2L carrying
-_Vgsc_, the sodium channel whose codon-995 substitutions confer pyrethroid
-resistance and which this release was used to survey
+away below it, so its correlation does fall off with distance, which is the
+other case. It covers the stretch of 2L carrying _Vgsc_, the sodium channel
+whose codon-995 substitutions confer pyrethroid resistance and which this
+release was used to survey
 ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
 
 The Gabon panel is a control rather than a second example. It is not

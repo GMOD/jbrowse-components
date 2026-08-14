@@ -80,8 +80,9 @@ tallest of them, on chr10, is _HMGA2_, which is one of the six variants
 the size variation across breeds.
 
 Each group is a set of closed populations rather than a sample of animals, so
-drift inside one large breed scores like differentiation across the contrast,
-and it is the breed count that bounds how much a peak can rest on.
+drift inside one large breed scores the same way differentiation across the
+contrast does. What a window has behind it is fourteen breeds against eleven,
+not eighty-odd dogs against as many.
 
 The lower half is the same panel and the same estimator rebinned to 20 kb over
 two megabases, where the peak turns out to have a shape. Rerunning the build

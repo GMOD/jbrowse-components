@@ -71,9 +71,9 @@ all have to be fetched.
 
 Selection driving one haplotype to high frequency carries every variant on it
 along, leaving a stretch of correlated variants. That stretch is the signal
-[Bersaglieri et al. 2004](https://doi.org/10.1086/421051) read at this locus off
-a region about as wide as the window below. Two things decide whether it reads
-as a block: the window you cut, and which samples went into the file.
+[Bersaglieri et al. 2004](https://doi.org/10.1086/421051) read at this locus.
+Two things decide whether it shows as a block: the window you cut, and which
+samples went into the file.
 
 <Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: every panel pooled, then one panel. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release."/>
 

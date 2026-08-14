@@ -43,10 +43,18 @@ const PI_TRACK = {
   },
 }
 
-// The In(2L)t inversion extent as a single annotation feature (published dm6
-// breakpoints 2L:2,225,744–13,154,180), so the reader can see the elevated-Fst
-// plateau lines up with the inverted region. An inline FromConfigAdapter rather
-// than a hosted BED — one feature needs no file.
+// The In(2L)t inversion extent as a single annotation feature (published
+// breakpoints 2L:2,225,744–13,154,180), so the reader can see where the
+// elevated-Fst plateau sits relative to the inverted region. An inline
+// FromConfigAdapter rather than a hosted BED — one feature needs no file.
+//
+// THOSE NUMBERS ARE RELEASE 5 AND THAT IS FINE HERE; CHECKED, DON'T RE-CHECK.
+// Corbett-Detig & Hartl aligned to "reference genome v5.31", so by the usual
+// rule they would need converting before being drawn on dm6. They don't: the
+// aertslab liftover carries its input coordinate in INFO/OriginalStart, and
+// POS - OriginalStart is 0 at every 2L position sampled from 5 kb to 22 Mb, so
+// r5 and r6 coincide on this arm. r6's added 2L sequence is past where any of
+// this sits.
 const IN2LT_INVERSION_TRACK = {
   type: 'FeatureTrack',
   trackId: 'in2lt_inversion',
