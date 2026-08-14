@@ -38,7 +38,11 @@
   implicit-any errors in a dozen unrelated files, which is what the failure
   looks like from the outside. Don't "fix" that by duck-typing the view. See
   ADR-055.
-- **The hover pick is on the model, and its index needs no invalidation.**
+- **Payload and geometry fixtures live in `testUtils.ts`.** Nine suites used to
+  hand-roll all fifteen fields of the fetch payload to vary one of them, so
+  every new lane was a nine-file mechanical edit. Vary what your test is about
+  and let the factory say the rest.
+- **The hover pick is on the model, and its Flatbush needs no invalidation.**
   `dotplotPickEngine` indexes FEATURE hulls in absolute cumBp, keyed in a
   WeakMap on `instanceData.x1` — the same geometry token
   `DOTPLOT_INSTANCE_CACHE` uses. A pan doesn't rebuild dotplot geometry and a
@@ -57,6 +61,24 @@
   premultiplied), and a broken color run in `drawDotplotInstances`' batcher. It
   is on-screen only: `renderSvg` doesn't draw it, since an off-screen export has
   no pointer.
+- **The hover stores a SEGMENT index; the feature is derived from it.** The
+  operator under the cursor derives from nothing else, and one alignment's CIGAR
+  staircase is a dozen segments the pointer can be on different steps of. That
+  makes `instanceData` — not `rpcData` — what the stored index addresses, so
+  **both** of its writers drop the hover: `setRpcData` and `setInstanceData`.
+  The second is the one that gets missed, because a zoom, a `drawCigar` toggle
+  and a `minAlignmentLength` change all renumber every segment WITHOUT a
+  refetch, which a feature index would have survived.
+- **A coordinate read back out of a cumBp round trip is `Math.round`ed off
+  `pxToBp`'s `offset`, never `coord0`.** `coord0` floors, which is right for
+  what it is for (naming the base under a pixel, including pixels past the end
+  of a region) and wrong here: a feature endpoint is an exact integer, the trip
+  out to px and back cancels `offsetPx` against itself and lands a hair either
+  side of it, and the floor turns half of those into an off-by-one — with WHICH
+  half depending on the current zoom, so the same alignment reported two
+  different lengths at two zoom levels. `dotplotTooltip.test.ts` carries the
+  four zoom/pan pairs that reproduce it; note that `offsetPx: 0` never does,
+  which is why the first spelling of that test passed on the broken code.
 - **A display getter that reads `this.view` needs an explicit return type.**
   Every one of them has one, and an inferred one collapses the view/display
   mutual reference — TS7023 on the factory, TS2310 on `DotplotDisplayModel`,
