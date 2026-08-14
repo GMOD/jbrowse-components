@@ -369,6 +369,18 @@ which is why it survives casual testing. Neither guard calls `preventDefault`: a
 mark with nothing to offer falls through to the browser's menu here, same as
 coverage.
 
+`arcGestureGuard.test.ts` is what holds the three gestures together, and it
+works the one pixel where an arc's ink lies over an interbase bar — the mark
+that answers a click with a widget AND a right-click with a menu, so one pixel
+states both halves. It finds that pixel by asking the hover rather than by
+projecting the dome, since a fourth placement of the arc written into the test
+would be free to disagree with the three it is checking. Every case is stated
+against its own control: the SAME pixel with `readConnections` off, which is the
+only thing separating "the guard suppressed this" from "there was nothing here
+anyway". `createTestAlignmentsDisplay` (`testUtils.ts`) is the harness — a real
+display in a measured LGV, for the cases that have to run through the model's
+own chain rather than through a hand-built argument.
+
 **`isFlatArcShape` answers "does this draw as a bar", never "does this have an
 insert size".** Both flat variants draw as a bar, and only `ARC_SHAPE_FLAT` —
 the mate link — has a TLEN. `computeArcShape` gives `ARC_SHAPE_FLAT_SPLIT`
