@@ -95,6 +95,15 @@ removing the skip.
 
 - **Don't restate a config slot's default** — link
   `/docs/config/<type>/#slot-<name>`.
+- **Don't restate a value a build script owns, either.** The same rule, one
+  directory over, and easier to miss because a `scripts/build_*.sh` has no page
+  to link to. The OrthoFinder tutorial stated `MAXSEQ`'s default, its DIAMOND
+  count and the size of each species set in prose, with nothing connecting the
+  page to the script — so a number that survives the "few numbers in prose" cut
+  (`docs/tutorials/CLAUDE.md`) is a number that has to come from a marker block
+  rather than from typing. `ORTHOFINDER_SETS`/`ORTHOFINDER_CUTS` are the worked
+  example, and the generator reading a shell script rather than TypeScript is
+  the only thing about them that is unusual.
 - **Don't hand-list a directory's pages** — use `<!-- doclist:<dir> -->`.
 - **Prefer an `include:` marker over a copied code fence**, pointed at compiled
   tested source. `sync-doc-snippets --check` ratchets the count of un-included

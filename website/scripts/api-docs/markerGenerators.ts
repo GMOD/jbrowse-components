@@ -12,6 +12,7 @@ import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { writeLaunchViewDocs } from './generateLaunchViewDocs.ts'
 import { writeMenuDocs } from './generateMenuDocs.ts'
+import { writeOrthofinderSetDocs } from './generateOrthofinderSetDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
 import { writeSearchResultDocs } from './generateSearchResultDocs.ts'
@@ -120,5 +121,12 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'Slot type table',
     write: (_corpus, opts) => writeSlotTypeDocs(opts),
+  },
+  {
+    // The one generator whose source is a build script rather than TypeScript.
+    // Same reason as the rest: the tutorial was restating values the script
+    // owns, and nothing connected the two.
+    label: 'OrthoFinder set tables',
+    write: (_corpus, opts) => writeOrthofinderSetDocs(opts),
   },
 ]

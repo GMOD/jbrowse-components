@@ -284,22 +284,22 @@ pair of the six opens as a two-row view.
 
 A gene-level synteny view never reads a base, so these assemblies are
 [`ChromSizesAdapter`](/docs/config/chromsizesadapter) rather than a FASTA, built
-from the `##sequence-region` header of each GFF3. Six wheat-lineage genomes as
-sequence is tens of gigabytes to host; as names and lengths it is a few
-kilobytes, and the view is the same.
+from the `##sequence-region` header of each GFF3. The wheat lineage as sequence
+is tens of gigabytes to host; as names and lengths it is a few kilobytes, and
+the view is the same.
 
 ```bash
 jbrowse add-assembly wheat.chrom.sizes --name wheat --load copy
 ```
 
-Ensembl lists every unplaced scaffold in that header, so the script keeps 30
-sequences per genome: the ones carrying the most genes, which is what the row is
-drawn to show. A row of thousands of scaffolds is not readable, and an ortholog
-on a sequence the assembly leaves out draws nothing rather than erroring, so the
-build prints what share of each genome's genes the kept sequences hold. Read it
-for a fragmented assembly, where the share is the part of that genome the stack
-cannot draw, and raise `MAXSEQ` where the sequences it would add are chromosomes
-rather than contigs.
+Ensembl lists every unplaced scaffold in that header, so the script keeps only
+the sequences carrying the most genes, which is what the row is drawn to show. A
+row of thousands of scaffolds is not readable, and an ortholog on a sequence the
+assembly leaves out draws nothing rather than erroring, so the build prints what
+share of each genome's genes the kept sequences hold. Read it for a fragmented
+assembly, where the share is the part of that genome the stack cannot draw, and
+raise `MAXSEQ` where the sequences it would add are chromosomes rather than
+contigs.
 
 ## Reproduce it end to end
 
@@ -315,19 +315,40 @@ bash build_orthofinder_synteny.sh wheat   # or: vertebrates, grasses
 npx --yes serve orthofinder_wheat_build/jbrowse2  # then open the printed URL
 ```
 
+The sets it knows, and what each costs to build:
+
+<!-- ORTHOFINDER_SETS START -->
+
+<!-- prettier-ignore -->
+| Set | Genomes | DIAMOND runs | Annotation source |
+| --- | --- | --- | --- |
+| <code>vertebrates</code> | human, chicken, frog, gar, zebrafish | 25 | Ensembl 113 |
+| <code>grasses</code> | rice, sorghum, maize, brachypodium, setaria | 25 | Ensembl Plants 63 |
+| <code>wheat</code> | tauschii, wheat, durum, emmer, urartu, timopheevii | 36 | Ensembl Plants 63 |
+
+<!-- ORTHOFINDER_SETS END -->
+
 The two cuts it makes are environment variables, so a set with a different
-karyotype or ploidy needs no edit: `MAXSEQ` for the sequences kept per genome,
-`MAXCOPIES` for the point at which a cell is a gene family rather than a set of
-copies.
+karyotype or ploidy needs no edit.
+
+<!-- ORTHOFINDER_CUTS START -->
+
+<!-- prettier-ignore -->
+| Variable | Default | What it cuts |
+| --- | --- | --- |
+| <code>MAXSEQ</code> | 30 | sequence regions kept per genome, the ones carrying the most genes |
+| <code>MAXCOPIES</code> | 4 | genes in one orthogroup cell past which it is a gene family rather than a set of copies |
+
+<!-- ORTHOFINDER_CUTS END -->
 
 ```bash
 MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
 ```
 
 The OrthoFinder step is the long one: it searches every proteome against every
-other, so a five-genome set is 25 DIAMOND runs and wheat's six is 36. Everything
-is guarded on its output file, so a re-run picks up where it stopped. The
-`wheat` set is the one that needs the NCBI datasets CLI, to name T.
+other, so the DIAMOND count in the table above is the square of the set's size.
+Everything is guarded on its output file, so a re-run picks up where it stopped.
+The `wheat` set is the one that needs the NCBI datasets CLI, to name T.
 timopheevii's chromosomes from its
 [sequence report](/docs/config/ncbisequencereportaliasadapter).
 

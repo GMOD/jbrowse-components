@@ -1565,9 +1565,20 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // Sorghum on top is the control - it did not have maize's whole-genome
   // duplication - so the top band is one ribbon per gene and the bottom is two.
   //
-  // The window was picked by measurement, over the demo's own rice.blocks.gz,
-  // maize.bed.gz and sorghum.bed.gz, and every count here is what the three
-  // drawn windows contain rather than what the blocks file holds anywhere. Of
+  // The window was picked by measurement, and every number below is printed by
+  // `scripts/orthofinder_window_stats.py` from the demo's own files, so it can
+  // be re-derived rather than believed. Run it with this spec's own loc
+  // strings, which is what it takes:
+  //
+  //   python3 scripts/orthofinder_window_stats.py grasses \
+  //     --row 'sorghum 1:5,934,000-6,126,000[rev]' \
+  //     --row 'rice 3:31,590,000-31,775,000' \
+  //     --row 'maize 1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]' \
+  //     --query rice
+  //
+  // The counts are what the three drawn windows contain rather than what the
+  // blocks file holds anywhere - a partner outside the window its row displays
+  // is not a ribbon. Of
   // the 27 rice genes in the frame, 12 have exactly two maize ribbons and every
   // one of those pairs lands one copy on maize 1 and the other on maize 5; one
   // has three (a tandem pair on maize 1 plus the maize 5 copy); 5 have a single
