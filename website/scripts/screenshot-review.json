@@ -180,9 +180,9 @@
   "inverted_duplication": {
     "name": "inverted_duplication",
     "status": "answered",
-    "note": "BOTH. The highlight is gone, and the callout is three bullets under the word INVdup -- which is where that word lives now that the shaded band that carried it is off.\n\nThen your follow-up landed and one bullet was rewritten again: \"OVERLAP where ordinary pairs nest\" was a property of the DRAWING, and a reader meeting a pileup for the first time has never seen the not-nested case to compare against. Each bullet is now a fact about one read pair, checkable against a single arc in the frame.\n\nThe argument that bullet was making is a SCHEMATIC now, one figure up in sv_visualization.md (inversion_pair_orientation). Three rows: a proper pair, the same locus with the segment inverted so a pair straddling a junction has one end flipped and one not, and the segment flipped back so both are ordinary again. The third row is geometrically exact rather than suggestive -- a read at [600,660] inside a [430,700] segment maps to [470,530], which is where it is drawn.\n\nHand-authored SVG rather than graphviz, and `pnpm diagrams` renders both kinds now: a schematic laid out along one axis has nothing for a layout solver to decide. Same lock, same store, same drift gate.",
-    "reviewedAt": "2026-08-14T06:55:53.176Z",
-    "hash": "6a211426814718ad04a7e6d4511d8cfcc99df50f"
+    "note": "TECHNICAL, in the vocabulary the pileup is documented in. LL and RR are the palette's own labels for those two slots (the #color alignments-pair-orientation tags on colorPairLL/colorPairRR, which render as the table in sv_visualization.md) and the schematic one figure up carries them too, so a reader crossing from the guide to the pileup meets one name per colour. Magenta is colorSplitReadInversion, whose condition is a supplementary segment on the opposite strand to its primary; SA is the tag that records it and is shorter than the paraphrase.\n\nGreen = LL pair: both mates on the forward strand\nNavy = RR pair: both mates on the reverse strand\nMagenta = split read: SA segment on the opposite strand",
+    "reviewedAt": "2026-08-14T17:04:45.604Z",
+    "hash": "47348874a76b5c7516f40770d0f4bda197db8c04"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -216,8 +216,8 @@
     "name": "sv_cgiab/synteny_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-09T16:04:01.571Z",
-    "hash": "b8b7933e8f9f1115cc899aeae40241d0e10b70a7"
+    "reviewedAt": "2026-08-14T14:49:53.688Z",
+    "hash": "4e809880177946bdc7ebe5800f37c8c47ad74c9e"
   },
   "linear_synteny": {
     "name": "linear_synteny",
@@ -877,10 +877,10 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "answered",
-    "note": "REMOVED. The callout is gone, and the tutorial states the fact once in prose instead, which is where something about what a catalogue does NOT contain belongs.\n\nOne thing found while in there: that paragraph still described a DGV lane removed a while back, and the caption still named it. Both fixed -- the figure has had one catalogue lane for some time.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "ac9772e38cd737144bf0acc1e1db78c83298e066"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-14T14:49:52.523Z",
+    "hash": "a83773c3b2c4baaaf5ad090cd8503af4134dd54d"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -1480,10 +1480,10 @@
   },
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-13T17:48:30.872Z",
-    "hash": "2d012bd5866d325a0b5cc000cd1a7ead7753eb49"
+    "status": "answered",
+    "note": "BOTH. 135 px off the four lanes and two callouts.\n\nThe height came off ALL FOUR, not one, because none had a blank band to cut: Tajima's D 200->150 (the excursion runs +3 to -2 across a lane autoscaled to those extremes, so a quarter off the height is a quarter off both halves of a shape), pi 150->120, sites 120->100, genes 150->115. The gene lane is where the slack was: Cyp6g1 and Cyp6g2 are pinned to the top row by featureHighlights, so the rows a taller lane buys are the ~120 neighbouring CG-number genes. 115 rather than 100 because a gene lane only cuts cleanly at a multiple of its ~28.6 px row pitch, and 100 cut the fourth row through its glyphs.\n\nThe callouts are placed off each lane's own empty region rather than into a corner, because this frame has no corner. Tajima's D is signed and autoscaled, so its zero line sits three fifths down and the flanks BELOW it are nearly white -- that is where the sweep's callout goes, beside the red bars it describes. The sites lane fills from the bottom, so its slack is at the top and takes one line rather than two.\n\nThe second callout is the one that keeps the reading honest and nothing said it: a diversity trough has two explanations, and the sites lane is in the frame to decide between them. No numbers in either, and one in particular stays out -- the excursion is against the LOCAL background rather than against zero.",
+    "reviewedAt": "2026-08-14T17:05:52.833Z",
+    "hash": "142a9c59381ee20340b42fe79fce8572f01c875f"
   },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
@@ -1746,9 +1746,9 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "good",
-    "note": "RIGHT, AND THEY DO NOW. The two halves of the frame were on different color schemes: arcColorByType defaults to insertSizeAndOrientation while the reads were set to pairOrientation, so a pair spanning the duplication drew a red arc over a grey read and the same pair was keyed two ways in one picture. Moved the READS to match rather than the arcs, because insertSizeAndOrientation is a superset of what they were on: short insert wins outright, then abnormal orientation, then insert size. So LL green, RR navy and the magenta split reads all still paint (the subject of the card is untouched) and the long-insert pairs now carry the red their arcs already had, which you can see under the red arcs on the right. Reconciling the other way would have meant coloring the arcs by orientation, i.e. deleting the long-insert signal to make the two agree. The legend is data-driven and now lists Long insert and Short insert alongside the orientation rows.",
-    "reviewedAt": "2026-08-11T22:33:59.258Z",
-    "hash": "c2e0e0e6a1566630b5bd9f073f2a01c9b05f676f"
+    "note": "",
+    "reviewedAt": "2026-08-14T14:41:00.907Z",
+    "hash": "17ce270c1a3621ae7ca8ceddee51d600f4309c7f"
   },
   "genomes_synteny/launch_dialog": {
     "name": "genomes_synteny/launch_dialog",
@@ -1947,10 +1947,10 @@
   },
   "cnv1000g/zarr_cohort": {
     "name": "cnv1000g/zarr_cohort",
-    "status": "answered",
-    "note": "BOTH. The display is 880 -> 640 and the frame 1200 -> 960. Nothing is lost by it: a row was 0.35 px and is now 0.26, which is the same reading either way -- a density map whose unit is the stack. What a taller lane would buy is a legible individual ROW, and that needs ~2 px a row, or 5,000 px of track; this is not the figure where a row is read, the ladder above it is.\n\nThe callout names the locus and says the two things the picture cannot: that CCL3L1/CCL4L1 is one of the most copy-number-variable loci in the human genome, and that both genes encode chemokines binding CCR5. No copy-number range in it -- the ladder shows the range and this frame's own colour bar carries the scale.\n\nPlacing it took three goes and the reason is worth knowing for the next callout on a full-width heatmap: the pill is wider than either flat flank. From the left edge it covered about a sixth of the cohort's rows in the reddest columns. Right-ALIGNED against the track's right edge it fits, but `textAlign: 'end'` right-aligns every line INSIDE the pill too, which turns a list into a ragged-left block. It is anchored to a locus just past the block's right edge now, hard-wrapped, and covers nothing.",
-    "reviewedAt": "2026-08-14T06:55:53.176Z",
-    "hash": "d71fb05020af9d490b1b5be23f8d40eee39d9f58"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-14T13:13:02.641Z",
+    "hash": "16339cf75ce44f00529a1c3258199a5a192ca49f"
   },
   "desktop-cli-config": {
     "name": "desktop-cli-config",
@@ -2176,17 +2176,17 @@
   },
   "ld/anopheles_2la": {
     "name": "ld/anopheles_2la",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T22:57:34.735Z",
-    "hash": "4b122b82c6bf48a75bdbbb7af33ab84c66f7a02c"
+    "status": "answered",
+    "note": "100 px, and SQUASHING IS WORSE -- rendered this time rather than reasoned about, which is what you asked for.\n\nSquashed to 240 on both panels, the 2La block came back a pale hatched wedge where unsquashed it is a solid mass: scaling y compresses each cell as well as the wedge, and the figure's whole claim is one panel having a block in it. The empty corner is not reclaimed either, because what squashing brings into frame is the white long-range half. Both arguments are now in agLdTrack's comment with the capture behind them.\n\nSo the height comes off the GABON panel instead, 340->250, which has no deep signal to lose -- a small shallow triangle at the telomeric end and faint speckle under it. Neither panel is squashed, so both draw at the same px-per-bp of separation and the shorter one simply shows less of it; the callout on that panel already accounts for the blank ('so this span recombines freely'), so there is no reason to read it as cropped. 30 more off the Gabon karyotype lane, whose legend was holding it at 200 and is the same key as the one directly above it minus a class.\n\nTHE OTHER 200 px ARE NOT AVAILABLE and the spec says why. Depth is half the drawn width, so a 1250 px capture would put 2La's apex at 272 and buy ~50 px a panel -- and it walks each panel's r2 ramp under the callout beside it, which currently misses it by 3 px. Worth doing only together with re-anchoring both callouts.",
+    "reviewedAt": "2026-08-14T17:05:53.167Z",
+    "hash": "2cb963e5971eebf2f63eb94b06084f469f74702a"
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
-    "status": "good",
-    "note": "it might be useful to have a 'tens-of-megabases' view of the Fst, so it more clearly looks like a peak at large scale. at the large scale the ld tracks do not need to be shown. also, the 'recombination' track has a thing where the line track 'skips'. we added this feature awhile back but i dont think i like it now. might consider going back to not skipping, for both the ld recombination and plugins/wiggle line mode  THE SKIPPING IS GONE, everywhere you named it. Both defaults are now 0, which is 'never break, one connected polyline': DEFAULT_GAP_BREAK_MULTIPLE (the wiggle maxGapMultiple slot, i.e. every interpolated line-mode wiggle track) and RECOMBINATION_GAP_MULTIPLE (the LD recombination curve). The mechanism and its calibration are kept intact in both places, because setting maxGapMultiple to 20 on a track is the only way to get the other behavior back and 20 is the measured value; the unit tests that pinned the breaking now pin the bridging and carry the same arithmetic. Verified on this figure: the gap that used to sit in the one-population recombination lane is drawn through. THE TENS-OF-MEGABASES Fst VIEW IS NOT BUILT, and it is a data question rather than a spec one: lct_1kg_chr2_fst_eur_vs_rest.bw covers 93,782 bases inside 2:134.6-137.9 Mb (build_lct_ld.sh's REGION), and this figure is already at the file's full extent. Tens of Mb means re-running that script over e.g. 2:110-160 Mb -- a vcftools Fst pass over ~15x the variants -- and hosting a new bigWig under demos/popgen, which I have not done. Say the word and it is a build plus an upload.",
-    "reviewedAt": "2026-08-09T14:12:25.173921Z",
-    "hash": "bc35ba867fe4e99f102a69f5115f89f473bc0f6e"
+    "status": "answered",
+    "note": "NAMED. Both lanes and the Fst lane say which samples they are: 'All 1000 Genomes populations pooled', 'European panel only, where the sweep happened', and 'Fst, European panel vs the other 1000 Genomes samples'.\n\nNot naming a SECOND population is what keeps this figure's subject panel-versus-pooled, and that is still the rule. Not naming the FIRST one was the same reticence applied one step too far: three track headers each about a set of samples the frame never identified. The tutorial now says why the panel is the one that matters -- lactase persistence swept in Europe, so pooling it with populations the haplotype never reached mixes in their backgrounds and the correlations average down.\n\nNOT MERGED with ld/lct_haploblock, and the two asks pull against each other: that figure was 1518 px and this one 1195, and the same review round asked for the haploblock one to get SHORTER. They are also on different pages doing different jobs -- this one is about how r2 is computed, that one about the thing r2 summarises.",
+    "reviewedAt": "2026-08-14T17:05:53.486Z",
+    "hash": "80a390b0f1d09257da0baed7208ef2cb3be14cec"
   },
   "mcscan_synteny/anchors_vs_simple": {
     "name": "mcscan_synteny/anchors_vs_simple",
@@ -2226,16 +2226,16 @@
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
     "status": "answered",
-    "note": "1299 -> 1160. Ribbon bands 95 -> 70 (below that the top band's unbroken run and the bottom band's left edge stop being separable at a glance), graph paneHeight 430 -> 340. No trailing blank rows, measured off the PNG rather than guessed.\n\nThe graph is at 80.5% now; what stops it going lower is the per-node bp labels, which do not scale with the drawing and start colliding as the nodes close up.\n\nAlso: the paa island highlight this spec has always asked for is actually DRAWN now. See derivative_synteny for the bug behind that.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "4d09868804d5b300f2fa307a3e3c8ccd75d0ec24"
+    "note": "THE STORY IS IN THE FRAME NOW, and it corrects the question.\n\nSakai's alignment to K-12 ends at K12 1,419,704 and resumes at 1,474,096, so 54,392 bp of K12 has no Sakai block. If Sakai simply LACKED that sequence its two blocks would meet and its window over the same flanks would be 54 kb shorter than K12's; it is 15 kb LONGER, so this is a substitution rather than an absence.\n\n'Completely distinct genes' is not right, though, and the spec says so. Off the hosted GFFs: K12's span holds 48 genes -- the whole paa operon, feaB/feaR/tynA, the Rac prophage (racR, rzoR, stfR, tfaR, pinR, ydaS-ydaY, ynaA/E/K) and four IS elements. Sakai's holds 77 -- 58 ECs_ locus tags plus nleG2-2, nleG5-1, nleG6-1 (O157 non-LEE effectors), pfo, recE/recT/racC, argO4, ileZ4. SEVEN symbols are shared (hslJ, ldhA, uspF, ydbH, ydbJ, ydbL, ynbE). So it is an island per strain with the shared backbone genes interrupted on both sides, which is why no chain spans it.\n\nA callout sits in the band's white gap, which is the only genuinely empty region of the frame and also where the question is: 'No ribbon: each strain carries its own island here. K-12 the paa operon, Sakai nleG effector genes.'",
+    "reviewedAt": "2026-08-14T17:06:54.744Z",
+    "hash": "7beab709539854cfc019abe371732f76d0e301ce"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:38:56.784Z",
-    "hash": "e6b610866b6cd4226d35dd433f48509f381e4c81"
+    "status": "answered",
+    "note": "FIXED IN THE PLUGIN AND PUBLISHED (4bcef24fbaa7), and the dash was not the problem.\n\nFour deletions in that frame were drawn as four different kinds of mark, because the bow is sized off the run the arc bypasses: the 84.7 kb CFHR3/CFHR1 arc bowed 148 px and its apex landed 111 px -- 5.5 rows -- into the rank rows, so it read as a loop enclosing a dozen unrelated nodes and edges, while its 28.6 kb and 11.2 kb neighbours sat just under the reference row and read correctly.\n\nScaling the bow with the event is what is wrong, and only in a ROW layout. There the arc's own SPAN already states how much reference is skipped -- its two feet are the deletion's two coordinates on the backbone -- and the label prints it in bp, so the bow carries no information. Capped at three rows, which clears the reference row's own tube and still reads as an arc across several hundred px of backbone without reaching the second rank row. The isotropic layout is deliberately NOT capped: there the bypassed run is scattered rather than collinear, so the bow is what makes the bubble's two arms comparable.\n\nAll four are the same mark now, in the same lane, and the caption says so.\n\nTwo things came with the publish and are worth knowing. It ships every plugin commit since the last one (c240770fe175, 2026-07-30), so a bandage <cmath> fix from two weeks earlier went out too and pangenome/rgfa_hover_sync's force drawing moved -- correctly, since it was drawn against a bundle nobody was serving. And betabuild's typecheck gate failed first on 19 errors across seven untouched files, which was the plugin's @jbrowse/mobx-state-tree at 6.2.0 against core's 6.3.0; types-only, and bumped.",
+    "reviewedAt": "2026-08-14T17:08:03.045Z",
+    "hash": "f61a92c7dcccad56bb889a5409940624ac7463bf"
   },
   "dog10k-fgf4-retrogene": {
     "name": "dog10k-fgf4-retrogene",
@@ -2254,8 +2254,8 @@
     "name": "dog10k-size-fst-scan",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:32:39.782Z",
-    "hash": "c2e6a7593501f7042a249e3c7791b23e3b699153"
+    "reviewedAt": "2026-08-14T14:40:34.405Z",
+    "hash": "25bbed118114cd26d78a56eef4459b5358c6deb1"
   },
   "dog10k-fgf4-retrogene-synteny": {
     "name": "dog10k-fgf4-retrogene-synteny",
@@ -2302,9 +2302,9 @@
   "cancer_sv/k562_bcr_abl_split": {
     "name": "cancer_sv/k562_bcr_abl_split",
     "status": "answered",
-    "note": "potentially stop using 'supercompact' to more clearly see lines. not sure if you can filter out reads with split alignment with groupBy SA tag\n\nBOTH POINTS. The rows were 2px, not super-compact, but your reading of it is right: a 2px row with a 1px gap is a hairline and the figure's claim is that each line is one molecule, which a reader has to be able to follow across the join. 4px now. The height went with it, and that is the part worth knowing: the lane was a fixed 700px, and a fixed-height pileup scrolls its overflow INSIDE the track, where both of the run's size reports are blind to it -- they measure the page. The scrollbar thumb was the only witness and this spec had been read by eye for it twice. It is `heightMode: 'grow'` now, so the track sizes to its own rows and the page height the run reports is the real one. On the SA idea: that is what `showOnlySplitAlignments` on the next line already does, and it is why the set is ~250 rows rather than 600x of coverage.",
-    "reviewedAt": "2026-08-13T17:46:42.653Z",
-    "hash": "947db92afd758335b0b7fe2cc53549d69dd5810f"
+    "note": "LEGEND ON, and the middle panel is a FINDING rather than a drawing problem -- your isoform hypothesis is checkable and comes out negative, so it is written down.\n\napi.genome.ucsc.edu's ncbiRefSeq over chr9:130,775,000-130,790,000 returns three transcripts. Both ABL1 curated ones (NM_007313.3 from 130,713,042 and NM_005157.6 from 130,835,253) put exon 2 at 130,854,063-130,854,237, so intron 1 spans 130,714,455-130,854,063 in BOTH and that window is 7 kb of it. The only annotated exon inside the window at all is 127 bp of the ncRNA LOC124902288, against a coverage block several kb wide. So longestCoding is hiding nothing, and switching the lane to all isoforms would draw two flat lines instead of one.\n\nA callout says it at the strength DEMO_DATASETS.md licenses: the frame's biggest cluster of chr9 ends lands there, under no annotated exon, and the canonical exon-2 junction is the banded panel on the right. It stops short of calling it a splice site, which that file says is not established.\n\nThe legend is data-driven, so the inter-chromosomal row appears because this frame's arcs are inter-chromosomal, and that is the row that needed a name.\n\nTHE ARC COLOUR IS NOT CHANGED, and it is a palette decision rather than a spec one. The brown is colorInterchrom #6e4b3a, and it is shared with the READ FILLS of both the pair-orientation and insert-size schemes -- a read whose mate is on another chromosome is that colour too, so changing it sweeps every alignments figure. It is also 6.6:1 on white, so the complaint is that dark brown reads as a smudge rather than that it is invisible, and the free hues around it are taken (cyan by RL, orange by supplementary). Say the word and I will do it as its own change with the before/afters.",
+    "reviewedAt": "2026-08-14T17:06:53.051Z",
+    "hash": "c592f9483396ffa968fcd497da0fe90fa3e9e115"
   },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
@@ -2331,8 +2331,8 @@
     "name": "pangenome/hprc_inversion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-11T01:14:52.378Z",
-    "hash": "df7802f52677dffafc305b9ec2729ff479f6c7eb"
+    "reviewedAt": "2026-08-14T14:46:23.151Z",
+    "hash": "003e27fd8a4f5ff03f6f4a16542dbaa89b7d86ff"
   },
   "tcga/cohort_cnv_recurrence_subtype": {
     "name": "tcga/cohort_cnv_recurrence_subtype",
@@ -2351,16 +2351,9 @@
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
     "status": "answered",
-    "note": "IT STILL IS, and the committed PNG was stale. The figure predated the app change that made the legend say what the colouring is; regenerated, its key reads \"Split segment (same strand)\" / \"(inverted)\" rather than \"Forward strand\" / \"Reverse strand\". That wording IS the consensus-strand framing being live -- colorType === 'strand' && !chainFramed is the only case that prints the plain wording -- so what you were reading as gone was the old bytes.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "d7be22cad3ab0bb5f4d5bc53fa05850896802948"
-  },
-  "cancer_sv/k562_cn_amplicon": {
-    "name": "cancer_sv/k562_cn_amplicon",
-    "status": "good",
-    "note": "are there bam reads to plot? reduce height of the arc tracks a bunch, and use read text annotation to say what the arcs are. previous notes: FIXED, and you were right to push. Last round was right about the sources and wrong to stop at them: DepMap 24Q4 really has no SV table and ENCODE's four K562 WGS runs really are Illumina on hg19, but ENCODE also has one 10X Chromium linked-read run (ENCSR053AXS) whose large-SV VCF carries both junctions of this amplicon. It is now lifted and hosted. scripts/lift_bnd_vcf.py moves BOTH of a breakend's coordinates rather than just POS, drops any record whose partner did not survive, and drops loci landing on an inverted chain block: 264 of 322 records, and the REF base of every one was checked against GRCh38 and matches. The figure has a second arc lane under the RNA one. What it buys is checkable off the two files: STAR-Fusion puts BCR-ABL1's chr9 end at 130,854,064, an exon boundary; the DNA arc puts it at 130,731,760; and bigWigToBedGraph over K562_cn.bw, the other lane in the same figure and a different assay, says the amplification starts at 130,731,326. Two pipelines, the same edge, with the transcript junction 122kb inside it in ABL1 intron 1. A highlight stripe marks the place.  previous notes: please reinvestigate the 'skip reason' i think it might be worth getting dna still. previous notes: DNA EXISTS FOR K562 AND WE ARE SKIPPING IT, per your call, with what was checked written down. DepMap is not the source: the 24Q4 release the CN track and the fusion calls both come from publishes 73 files and none of them is a structural-variant table (there is OmicsCNSegmentsProfile and OmicsFusionFiltered, no OmicsStructuralVariants), so the natural companion to the CN lane does not exist. ENCODE has four K562 WGS experiments and they are all Illumina on hg19; there is no K562 long-read DNA there at all. What DOES exist is the 10X Chromium linked-read run ENCSR053AXS, whose large-SV VCF (ENCFF863MPP, 322 BND records, hg19) carries both junctions this figure is about: chr22:23,632,743 <-> chr9:133,607,147 is BCR-ABL1, and lifting it lands inside the 200 bp band the STAR-Fusion breakpoint already draws, and chr9:134,074,585 <-> chr22:17,300,240 is the amplicon's OTHER junction, which the RNA calls do not have because no fusion transcript crosses it. So the note's reading is right: the arcs miss the amplicon boundaries because a fusion callset only sees junctions that are transcribed. Using it costs an hg19->hg38 breakpoint liftOver and a new hosted file, which is where this stops for now. The DNA-SV story on the site is told where there is real DNA: the COLO829 ONT sections above this one and the CGIAB PacBio HiFi tutorial.  FIXED the two actionable asks. ARC LANES 250 -> 120 EACH: two arcs apiece is what they hold, and at 250 the pair was 500px of blank with four curves in it; the figure is 1025 -> 765. TEXT ON EACH LANE: 'RNA: only junctions that are transcribed' and 'DNA: the amplicon's own two edges', anchored to the track rather than to a coordinate so they follow the lane heights. The track names say which caller produced each lane, which is not the same question -- the figure is about the two lanes disagreeing on purpose, and that is what the pills say. ON BAM READS: no new lane. The only aligned reads that exist for K562 at this locus are the ENCODE Iso-Seq (already the whole of k562_bcr_abl_split, at the zoom where a transcript resolves) and ENCODE's 10X linked-read run, whose large-SV VCF is the blue lane here; over these three windows the Iso-Seq is a 6.22 Mb fetch and even force-loaded 1.25 Mb across ~1500px puts an exon under a pixel.",
-    "reviewedAt": "2026-08-09T14:12:25.173921Z",
-    "hash": "d7204ad32c9b2a2c5a9699d53f15bea097042763"
+    "note": "ARCS ADDED, all three junctions of the allele. It could not have them before: an inter-chromosomal connection drew as two ticks until both-feet-on-screen arcs landed, and all three of this allele's junctions have both feet in these three panels -- chr3 into chr10, chr10 into chr12, chr12 back into the inverted chr3 arm.\n\nWhat the band adds beside the bezier fan is weight. A curve per molecule shows each junction is real and cannot weigh them against each other, because 28 near-identical curves and 3 look alike; the band coalesces each junction into one mark whose stroke width is its support, so the three junctions of one allele are comparable at a glance. The per-molecule fan stays, since it is what says a single read runs through all three. The legend gained an Arc colors section with it, so the brown is named.",
+    "reviewedAt": "2026-08-14T17:05:55.112Z",
+    "hash": "72b732537ba50729ebcfb9ea1f5201d7c77b30c2"
   },
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
@@ -2379,16 +2372,16 @@
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
     "status": "answered",
-    "note": "-110px, and the event has a name in the frame.\n\nProfiled the PNG for runs of uniform rows before cutting anything, because the obvious guess at \"very tall\" is one big empty band: there is no such band. 52 css px of uniform rows in the whole 921. So the height is all content, and the thousand cuts are mostly TRACK LABEL ROWS -- `trackLabels: 'overlapping'` floats a track's name over its own data instead of taking a line above it, and there are five tracks.\n\nTwo of the five take it and the other three cannot, which is worth having on the record: `trackLabels` is a property of the VIEW, so it is all three of the der3 row's tracks or none, and floating the names puts \"Where each segment came from\" exactly where that lane draws `chr3:25,326,821-25,359,568 (32.7 kb)` -- the provenance of the largest segment in the allele, which is the thing the lane exists to say. The hg38 row has nothing in its left margin and pays nothing. The rest is the ribbon band 110 -> 88 and both coverage bands 40 -> 30. 921 -> 811, no blank below the content.\n\nAND IT IS BOTH, which is what the frame now says: the allele's last segment is chr3:25,352,683-25,359,111 inverted, and that interval sits INSIDE the 32.7 kb chr3 arm it opened with. So the derivative turns around and re-reads sequence it has already carried -- a fold-back -- and the re-read stretch is therefore in the allele twice in opposite orientations, which is the duplication. The two templated inserts are what sits at the turn. Three bullets in the frame; the tutorial adds that fold-backs are the canonical opening move of a breakage-fusion-bridge cycle, which is why a reconstruction is worth building for one.",
-    "reviewedAt": "2026-08-14T06:55:53.176Z",
-    "hash": "3c87fceabd0583a9c1e3ec868137266e7968a1cc"
+    "note": "(a) and (c) done, (b) PARTLY -- the part that does not exist is named.\n\n(a) The answer to 'what happens after the inversion' is NOTHING, and nothing is not something a wider window can draw: an empty reference row past the last ribbon reads as margin at any width, which is what the previous round's widening already tried. It is a labelled band now -- 'left behind: no ribbon, not in the allele' -- over chr3:25,360,600-25,372,000, with the window 5 kb wider so the band has room.\n\n(b) The segments lane goes COMPACT rather than collapsed, and the difference is the whole reason: collapsed packs every feature onto one row AND HIDES EVERY LABEL, and this lane's labels are what it exists for (chr3:25,326,821-25,359,568 (32.7 kb) is the provenance of the allele's largest segment). The design that makes collapsed work is the one you name next -- force-directed label placement -- and there is no such thing on a linear feature display; the graph view's force layout is a different pane in a different plugin. Compact keeps the labels and scales the glyphs and the label font, which is the saving available without deleting the lane's content. As a side effect the FOURTH segment's label is now in frame, where it used to be cut.\n\nNOT recoloured per source chromosome, and this one looks free and is not. The RIBBONS already carry that colouring (colorBy: 'reference') and each lands on the block it describes, so the association is in the frame. Matching it in the lane would mean hard-coding what paletteColorAt returns for each chromosome's index in hg38's refName order -- and two of the three collide: chr3 is position 2 and chr12 is position 11, the same category10 slot one lightness lap apart, so a three-colour key would be two greens and a blue.\n\n(c) Two bullets instead of three. The out-and-back is one sentence now that the frame bands and names the stretch the allele leaves behind.",
+    "reviewedAt": "2026-08-14T17:06:54.070Z",
+    "hash": "576752b89b48ed7ca350d64763b717a31d003935"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:32:41.314Z",
-    "hash": "46e2f78612b43ff73c20a1878983858c331830de"
+    "reviewedAt": "2026-08-14T14:40:36.113Z",
+    "hash": "4ac37687720161d7fc650402b92d74083e2876c8"
   },
   "ld/anopheles_2la_karyotype": {
     "name": "ld/anopheles_2la_karyotype",
@@ -2470,9 +2463,9 @@
   "scatac/pbmc5k_marker_swap": {
     "name": "scatac/pbmc5k_marker_swap",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:43:54.159Z",
-    "hash": "8b4dc6fece2a2c7ff528a993040c6cbe1e66edee"
+    "note": "reduce height of the multiwiggledisplay.",
+    "reviewedAt": "2026-08-14T14:49:42.096Z",
+    "hash": "9b52ebf31918bc06008f0a4d551c2b68acd117df"
   },
   "tcga/mutations_tp53_subtype": {
     "name": "tcga/mutations_tp53_subtype",
@@ -2623,10 +2616,10 @@
   },
   "ld/lct_haploblock": {
     "name": "ld/lct_haploblock",
-    "status": "good",
-    "note": "reduce wordiness of the red text annotations. also reduce height of the multisamplevariantdisplay. previous notes: does this figure somewhat 'clearly' show the clustering? please analyze. if needed add red text annotation to figure showing groupings in the multi-sample variant view. previous notes: COMBINED, and the standalone LD figure deleted, as asked. The triangle is now the top data lane of this view, directly over the matrix, so a column and a corner are the same variant. Two things had to move with it: the LD band is 360 rather than 510 (its subject is the block shape and its two edges, both of which survive a shorter band), and the window widened from 1.5 Mb to 2.4 Mb (chr2:135.0-137.4) — at the matrix window the triangle filled the frame corner to corner, the failure the tutorial warns about, since r2 against rs4988235 is still 0.72 at 135.8 Mb and 0.37 at 136.8 Mb. Clustering still runs on the measured 135.5-137.0 core. variant_track.md and ld_human.md now share this figure.  ANALYSED AND ANNOTATED. Yes, it shows the clustering, and the thing to look at is a shape rather than the dendrogram (550 rows in ~40px of gutter can only be a texture): the rows resolve into one band uniform straight across the block while everything outside it is speckled. Two pills now carry the numbers instead of an adjective -- at rs4988235 the slice is AC=90 / AN=300 (150 samples, 300 haplotype rows, 90 carrying the persistence allele; `bcftools view -H -r 2:136608646-136608646` on the hosted VCF), and the uniform band is ~31% of the matrix height, i.e. ~92 of 300 rows, which is that carrier count. So the recorded 'all carriers in one clade' measurement and the picture agree. Captions in both pages carry the numbers too.",
-    "reviewedAt": "2026-08-09T13:07:10.604Z",
-    "hash": "0e0d46aa068085d4d04ffbdfe24382552dbb4fe6"
+    "status": "answered",
+    "note": "280 PX, BIGGER PILLS, AND THE HIGHLIGHT NOW SAYS WHAT IT IS -- which is the answer to the last question.\n\nThe LD band is CUT rather than squashed, as asked: the block draws 685 px wide over this window so its apex is 343 px down, and 260 cuts the apex while leaving both EDGES. That is what the figure reads the triangle for, since an edge is where the block stops and the matrix below has to stop at the same coordinate. Squashing would have kept the apex and blurred the slope instead. The matrix is 520 from 700: 300 rows at 1.73 px, and the readout is a horizontal texture rather than an individual row, so the clade is still a 215 px slab.\n\nThree pills, 22 px, one claim each. The counts left them for the caption, and the first pill is new because it answers 'why only small region highlighted': the stripe is LCT/MCM6, 89 kb, the locus selection acted on, and the block it left is more than a megabase. That ratio IS the story of a sweep, and nothing in the frame said the stripe was a gene at all -- a highlight writes its label at its own top-left, which here lands on the LCT gene's label in the lane above.\n\nIS IT A GOOD FIGURE: yes, and the reason is the pairing rather than the triangle. It is the one place on the site where the statistic and the thing it summarises share an x axis, so a corner of the triangle and a column of the matrix are the same variant. What was wrong was that the reader had no way to connect a narrow shaded stripe to a wide red triangle, and that is now one line of the frame.\n\nOne thing found while in there: variant_track.md's caption said the slab IS the 90 rs4988235-A rows. The spec's own measurement says otherwise -- the clade is ~124 of 300, holding essentially every carrier plus a few dozen chromosomes sharing the background -- and the caption now says that.",
+    "reviewedAt": "2026-08-14T17:05:53.817Z",
+    "hash": "2076d1d733560b97edf91989471c86965982f7e0"
   },
   "rnaseq/strand_split_coverage": {
     "name": "rnaseq/strand_split_coverage",
@@ -2810,9 +2803,9 @@
   "genomes_basics/phylop_tp53": {
     "name": "genomes_basics/phylop_tp53",
     "status": "answered",
-    "note": "GIVEN THE STORY IT WAS MISSING, by shading the 3' UTR.\n\nEverything in the frame was positive -- exons, peaks, more exons -- and a reader cannot see \"conserved\" without seeing what unconserved looks like in the same window. The shaded block is the strongest negative available here: an exon as wide as any coding one, present in all 26 TP53 transcripts, transcribed in full, and carrying no signal at all. The introns say the same thing more weakly, since their flatness can be put down to their not being exons. So the reading is that the track follows the PROTEIN rather than the transcript, and the shading is where the two come apart.\n\nBounds are the transcript's own, off api.genome.ucsc.edu's ncbiRefSeqCurated: every TP53 transcript starts at 7,668,420 and all six tying at the longest CDS start coding at 7,669,608, so the span is right whichever one the collapse picks. No label on the band -- it lands on the gene track's drag handle -- so the caption names it.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "d0750b6d37a7d0c8438cedb5eb78dd6db95ea451"
+    "note": "ANNOTATED, and the shading was only doing half the work. A reader can see the band is flat and cannot see that it is an EXON, which is the only reason its flatness says anything.\n\nTwo lines: TP53's 3' UTR is an exon in every transcript, transcribed in full, and flat; the peaks are coding exons, because phyloP scores codons rather than transcripts. The second is the sentence a reader takes off the page -- a variant in a transcribed, universally-included exon can sit under no signal at all, which is what a conservation track is and is not for.\n\nIn the GENE lane rather than the phyloP one. Collapsed to a single transcript that lane is a glyph across its top and empty below, so a pill there covers nothing; the same pill on phyloP covers both its y axis and the first of the peaks it is about, because the shaded band is ~190 css px wide and the pill is wider than that at any legible size.",
+    "reviewedAt": "2026-08-14T17:05:54.137Z",
+    "hash": "0e582a6a2dd4c97d86baf5e5e39b6693b4424688"
   },
   "pangenome/pggb_spur_linear": {
     "name": "pangenome/pggb_spur_linear",
@@ -2911,8 +2904,8 @@
     "name": "sv_cgiab/three_ways",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-13T17:49:22.360Z",
-    "hash": "33cfc000c8daffed005e84e3e6012da335734c57"
+    "reviewedAt": "2026-08-14T14:49:56.022Z",
+    "hash": "eaa0bf16f3d408e2d5b8f7b72dd94f365bf13aa1"
   },
   "cancer_sv/k562_fusion_inspector_all": {
     "name": "cancer_sv/k562_fusion_inspector_all",
@@ -2930,10 +2923,10 @@
   },
   "hg002_haplotypes_follow_panel": {
     "name": "hg002_haplotypes_follow_panel",
-    "status": "answered",
+    "status": "good",
     "note": "SPLIT, exactly as you described. This figure is frames 1 and 2 alone, side by side -- the drifted state and the followed one.\n\nThe markers are hg002_haplotypes_location_markers, and it is ONE frame with the menu still open rather than two: a checkbox row keeps CascadingMenu open, so the state right after the click IS both of the old frames at once, with the path on screen and ticked and what it drew underneath. The menu opens at the top right and the markers are drawn across the ribbon, so unlike the old frame 3 they do not fight for the same pixels.\n\nIt follows first, and that is not optional -- markers pair a point on one panel with the point it maps to on the other, which says nothing while the two panels are still on the drifted windows the session opens at.",
-    "reviewedAt": "2026-08-14T06:55:53.176Z",
-    "hash": "ea74571b7475be923fcb65a8bf272f108a4cd909"
+    "reviewedAt": "2026-08-14T14:41:56.836Z",
+    "hash": "cb11ad7565ad5307004c1e37c9b6a5f4309b70b4"
   },
   "jbrowse-img/sv_review_pair": {
     "name": "jbrowse-img/sv_review_pair",
@@ -2993,10 +2986,10 @@
   },
   "cancer_sv/k562_fusion_inspector_reads": {
     "name": "cancer_sv/k562_fusion_inspector_reads",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T02:38:25.405Z",
-    "hash": "3ff3cc50874cb763aa16eae98fe7842324e6cb29"
+    "status": "answered",
+    "note": "ALL THREE.\n\nARCS: the junction coalesces into one weighted arc now, both feet being on screen is what the two displayed regions are for, and the legend gained an Arc colors section naming the inter-chromosomal one.\n\nFLIPPED, SAID IN THE FRAME: 'chr22 is flipped: its coordinates run right to left'. The app does say it twice and neither place is where a reader looks -- [rev] inside the location box, and a chr22 ruler whose labels descend left to right. The pill is in the gene lane, which on the chr22 side holds one glyph at the seam and is empty across the rest of its width.\n\nZOOMED OUT 1.35x on the outer sides only, 18.1 kb to 26 kb, and the windows are equal now where they were 9.5 and 8.6 -- with one bp/px, unequal windows put the seam off-centre for no reason a reader could recover. A bit rather than more because the two panels share that bp/px and the read-by-read fan at the seam is drawn at it, so every kb added to an outer edge is resolution taken off the fan.\n\nOne thing the zoom broke and this fixes: the two STAR-Fusion records are the same call from its two sides, both labelled NUP214--XKR3, and both sit at a breakpoint against the seam. Wider windows moved them close enough in px that the labels overprinted into one unreadable string. The lane is displayMode 'collapsed' now, which drops labels; the track's own name says which caller and the callout names the fusion.",
+    "reviewedAt": "2026-08-14T17:06:53.664Z",
+    "hash": "ad26973edb6111e5e3c62033291678ce3effa774"
   },
   "jbrowse-img/sv_review_derivative": {
     "name": "jbrowse-img/sv_review_derivative",
@@ -3147,17 +3140,17 @@
   },
   "fetch_chain": {
     "name": "fetch_chain",
-    "status": "answered",
-    "note": "DRY. Plain and dry turn out to be two different passes, and the plain draft was conversational where it should only have been unspecialized: \"do we already have data\" -> \"is this region already covered by loaded data\", \"ask a background worker\" -> \"request the data from a worker\", \"throw it away\" -> \"discard the result\", \"is that too much data?\" -> \"over the byte budget?\", which is also the actual test. No first or second person left anywhere in it. The identifier still sits under each line, which is where the precision lives.\n\nThe caption went too, and for a different reason you named on it: it opened by describing what the picture already shows. What replaces it is the too-large gate being self-releasing -- nothing clears the banner, a blocked display re-measures at each settled viewport -- which is the one thing in the drawing a reader cannot get from the drawing.",
-    "reviewedAt": "2026-08-14T06:55:53.176Z",
-    "hash": "5efe33c601baff8cc7f343581701f2f253b6c8e2"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-14T14:40:52.766Z",
+    "hash": "40861732c60863a4814265f40a60f580a31c2ca7"
   },
   "rpc_lifecycle": {
     "name": "rpc_lifecycle",
     "status": "answered",
-    "note": "DONE, both halves. The worker is a CLUSTER BOX now, and the three serialize/deserialize boxes are gone -- each of those hooks belongs to a boundary CROSSING, and a crossing is an edge, so they are edge labels where they act. That also retired the green/blue legend: the box says which nodes are the worker's. 7 boxes + a 2-note key -> 4 boxes + the boundary. 1228x1225 -> 1242x850.\n\nTwo layout facts cost a re-render each and are in the source comments: a rankset EJECTS a node from its cluster (\"exec was already in a rankset, deleted from cluster\"), so statusCallback is ranked by an invisible edge instead; and the cluster's label is short and left-justified because the incoming arrow enters at the box's horizontal centre and strikes a centred one through.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "e0f7a31f663836018de6af7464a890840991a1db"
+    "note": "ONE BOX PER SIDE, which is your 'boxes clarifying that this is the main thread' as the boundary rather than as a note. One box and three loose nodes read as 'the worker, and some other stuff'; two read as a boundary, which is the subject. It pays for itself twice in label text -- statusCallback no longer has to SAY 'on the main thread', and colour is no longer the only thing separating the caller's nodes from the worker's.\n\nTwo layout facts, both in the source. The main thread's nodes cannot be boxed at all in the TB round trip: call at rank 0 and result at rank 3 span the worker's ranks and dot draws the two rectangles overlapping. So it is one rank per side, rankdir=LR, with the return trip a back edge between adjacent columns. And ret has to SHARE exec's rank -- left to its own it lands a column further right, which put the return crossing at the far side of the drawing from the node it returns to, and dot drew it as a sweep under the whole figure with its label stranded in the middle.\n\n1242x850 -> 1453x731. Both crossing labels are wrapped narrow, because dot sizes the gap between the columns to the widest line of the label riding it and one-line labels came out 2.5:1.",
+    "reviewedAt": "2026-08-14T17:05:54.446Z",
+    "hash": "0f74c1edcc6682c3a6c63e931ba901899b1b9ee6"
   },
   "jbrowse-img/ecoli_ava_synteny": {
     "name": "jbrowse-img/ecoli_ava_synteny",
@@ -3172,5 +3165,33 @@
     "note": "",
     "reviewedAt": "2026-08-14T04:23:27.203Z",
     "hash": "8266d7d3b5044c8c68e5e53fad7e0c2ea540acd0"
+  },
+  "hg002_haplotypes_location_markers": {
+    "name": "hg002_haplotypes_location_markers",
+    "status": "answered",
+    "note": "DIAGNOSED, NOT CHANGED, because what it asks for is the reverse of a rule the code took on purpose. Your call on the proposal at the end; the figure is untouched.\n\nWHAT THE MARK IS, off the data rather than the picture: the chain file has exactly ONE chain over that window, chr8_MATERNAL:7,618,894-7,822,846 against chr8_PATERNAL:7,475,532-7,681,207, 204 kb forward. The frame is 70 kb, so both of that chain's corners are off screen -- 81 kb left and 53 kb right. The mark is one of emitGridMarkers' location ticks, a line from a point in the top view to the point it maps to in the bottom one, and at that geometry it enters the band on one side and leaves on the other, which draws flat instead of steep. Not a ribbon edge, and not a second statement of one homology, which were the two cheaper guesses.\n\nWHY IT SURVIVES: ticks are culled by the HULL of their two ends, and buildSyntenyGeometry says what that protects -- the per-end rule deleted exactly the ticks the two renderers were fixed to keep, since on an inversion the ends are pulled apart by up to the ribbon's whole horizontal travel and a tick well inside the frame can have both endpoints outside the band. Restoring the per-end rule brings that back.\n\nTHE PROPOSAL, also written into scripts/screenshot-review-plan.md: cull a tick whose two ends are farther apart HORIZONTALLY than the view is wide. That separates the cases instead of trading them -- an on-screen inversion travels about a view width, this chain travels three. It changes every synteny figure's marker set, so it wants its own review and its own before/afters rather than riding a figure pass. Re-mark this bad and I will do it.",
+    "reviewedAt": "2026-08-14T17:08:31.043Z",
+    "hash": "66b6f9a6f213288521f6f82565f771bd9a828395"
+  },
+  "inversion_pair_orientation": {
+    "name": "inversion_pair_orientation",
+    "status": "answered",
+    "note": "TWO ROWS, AND THE TITLE IS YOURS: 'Overlapping green and navy pairs often mean an inversion'.\n\nThe dropped row was a proper pair on the reference, and it was redundant the moment the bottom row existed: that row flips the SAME two pairs back, so the ordinary case is shown with the reader's own pairs rather than with a third one. What went with it was the word 'overlapping' having somewhere to point, which is now a ticked span marker under the carrier's reads -- navy's left end sits between green's two ends, where the flipped-back pairs sit side by side.\n\nThe guide's prose and caption carry the same claim, so the figure and the page agree on what to look for: a green LL pair and a navy RR pair drawn across the same stretch. 1000x560 -> 1000x410.",
+    "reviewedAt": "2026-08-14T17:05:54.786Z",
+    "hash": "8f9c48ed0158b244eae123bc8b8e484da1415474"
+  },
+  "orthofinder_synteny/grasses_maize_wgd": {
+    "name": "orthofinder_synteny/grasses_maize_wgd",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-14T14:45:55.665Z",
+    "hash": "3bec24b65a58f5e69e5b6cbc8b1b61241e78980c"
+  },
+  "popgen/in2lt_inversion": {
+    "name": "popgen/in2lt_inversion",
+    "status": "answered",
+    "note": "BOTH, and the trapezoid needed a capability the pipeline did not have.\n\nA compose spec's two parts are stacked flush, so a wedge between them has no height. There is a gutter option now (opt-in, so no existing stacked figure moves) and a trapezoid annotation type that joins the two anchors' facing edges -- which pair face each other is read off the rects rather than declared, and only the two slanted sides are stroked, because the other two belong to the panels. Five jsdom cases pin the geometry.\n\nThe narrow end is chr2L's panel in the top row, and it is SOLVED FOR rather than assumed. chr2L is 23,513,712 of the 133,880,608 bp that row lays out, but a genomic fraction is not an image fraction -- the data area is whatever the app's margins leave. The row's five region dividers are five equations for it, and least squares on x = L + f*W predicts every one to within 0.1 px.\n\nThat mattered twice. Solved against the app this branch started on it gave L = 160.6 and W = 2678.3, a 160 px gutter each side, because displayedRegionNames fitted through showAllRegions and its 10% margin is framing for 'show me everything' and dead frame for a named subset. fitBpPerPx landed on main mid-flight, so it was re-solved: L = 12.3, W = 2976.0, and the fraction went from 0.0535-0.2103 to 0.0041-0.1783. Nothing warns about that -- the wedge just stops landing on the chr2L/chr2R divider -- so the re-derivation recipe is in the spec.\n\nCOMPRESSED with it: the two Fst lanes pay for the gutter (340->240 on the six-arm part, 160->130 on the one-arm part), so the figure is 100 px shorter than it was AND carries the wedge. The genotype lane is the one height that cannot move -- rowHeight is pinned at 2 and the lane is 180 rows of it, so a shorter lane scrolls carriers out of the capture.",
+    "reviewedAt": "2026-08-14T17:08:04.660Z",
+    "hash": "7f23f105efe2744834be11f42cda4015887d2a25"
   }
 }
