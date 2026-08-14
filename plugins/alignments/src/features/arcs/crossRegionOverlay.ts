@@ -70,7 +70,10 @@ export interface CrossRegionArcShape {
 // deep seams' worth, which is already past the point where the picture is a
 // wash of ink rather than a set of junctions; the reader's own lever at that
 // depth (`drawProperPairArcs: false`, which drops 9138 of 9204 arcs) is the
-// real answer and this is only a floor under the DOM.
+// real answer and this is a floor under the frame rather than a filter.
+//
+// It bounds the WORK as well as the DOM, which is why the projection below runs
+// before the build rather than after — see `computeCrossRegionArcs`.
 //
 // Interchromosomal is bounded by a far more selective filter and does not need
 // this: only pairs joining the two displayed windows qualify at all, and a
@@ -114,19 +117,49 @@ export function computeCrossRegionArcs({
   colors,
   onCapped,
 }: ComputeCrossRegionArcsOpts): CrossRegionArcShape[] {
-  const palette = buildArcColorPalette(colors)
-  const out: CrossRegionArcShape[] = []
+  // PROJECT FIRST, BUILD LAST, with the cap in between — because this runs on
+  // every pan frame and the cap can throw most of its input away. Projecting is
+  // two `bpToPx` calls over a list of displayed regions; BUILDING is a mark, a
+  // radii solve and a path string per arc, and the string is what dominates. Cap
+  // after building and a lane 5000 arcs deep pays for 5000 path strings a frame
+  // to draw 600, which is the one regime the cap exists for.
+  //
+  // An arc that projects nowhere is dropped rather than clamped to an edge it
+  // does not reach, and it is dropped HERE so the reported count below is what
+  // was really left out for want of room.
+  const projected: { arc: CrossRegionArc; sx1: number; sx2: number }[] = []
   for (const arc of arcs) {
     const sx1 = bpToScreenX(arc.p1.refName, arc.p1.bp, arc.p1RegionIndex)
     const sx2 = bpToScreenX(arc.p2.refName, arc.p2.bp, arc.p2RegionIndex)
-    if (sx1 === undefined || sx2 === undefined) {
-      continue
+    if (sx1 !== undefined && sx2 !== undefined) {
+      projected.push({ arc, sx1, sx2 })
     }
+  }
+  // ASCENDING SUPPORT, the same order `resolveArcs` sorts the per-region feed
+  // into and for the same two reasons: array order is document order, so the
+  // last path drawn keeps the pixels it shares, and `pointerEvents: 'stroke'`
+  // gives the topmost path the tooltip. `resolveArcs` sorts on paint rank first,
+  // but every arc here is one the reader is looking for — nothing cross-region
+  // is routine — so support alone is the ranking, tie-broken on the dedup key so
+  // the order is the same twice.
+  projected.sort(
+    (a, b) => a.arc.support - b.arc.support || (a.arc.key < b.arc.key ? -1 : 1),
+  )
+  // The cap takes the TAIL, which is the heaviest-supported end of that sort —
+  // so what survives is the junctions the most reads agree on, and what goes is
+  // the singletons that were about to be painted over anyway.
+  let kept = projected
+  if (projected.length > CROSS_REGION_ARC_CAP) {
+    kept = projected.slice(projected.length - CROSS_REGION_ARC_CAP)
+    onCapped?.(projected.length - CROSS_REGION_ARC_CAP, kept.length)
+  }
+  const palette = buildArcColorPalette(colors)
+  return kept.map(({ arc, sx1, sx2 }) => {
     const mark = arcMarkFrom(
       { sx1, sx2, yBp: arc.yBp, shapeType: arc.shapeType },
       frame,
     )
-    out.push({
+    return {
       key: arc.key,
       d: arcMarkScreenPath(mark),
       mark,
@@ -140,23 +173,6 @@ export function computeCrossRegionArcs({
       colorType: arc.colorType,
       shapeType: arc.shapeType,
       spanBp: arc.spanBp,
-    })
-  }
-  // ASCENDING SUPPORT, the same order `resolveArcs` sorts the per-region feed
-  // into and for the same two reasons: array order is document order, so the
-  // last path drawn keeps the pixels it shares, and `pointerEvents: 'stroke'`
-  // gives the topmost path the tooltip. `resolveArcs` sorts on paint rank first,
-  // but every arc here is one the reader is looking for — nothing cross-region
-  // is routine — so support alone is the ranking, tie-broken on the dedup key so
-  // the order is the same twice.
-  out.sort((a, b) => a.support - b.support || (a.key < b.key ? -1 : 1))
-  if (out.length <= CROSS_REGION_ARC_CAP) {
-    return out
-  }
-  // The cap takes the TAIL, which is the heaviest-supported end of the sort
-  // above — so what survives is the junctions the most reads agree on, and what
-  // goes is the singletons that were about to be painted over anyway.
-  const kept = out.slice(out.length - CROSS_REGION_ARC_CAP)
-  onCapped?.(out.length - CROSS_REGION_ARC_CAP, kept.length)
-  return kept
+    }
+  })
 }
