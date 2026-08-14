@@ -48,7 +48,7 @@ estimate is what stops the banner flickering on an ordinary clear.
 
 ## The whole chain
 
-<Figure caption="The dashed edge closes the loop for both ends of the chain. A fetch ends by bumping fetchGeneration, which re-fires the autorun to ask whether anything is still missing; a blocked display releases itself the same way, by re-measuring once per settled viewport rather than waiting for something to clear the banner." src="/img/fetch_chain.png" />
+<Figure caption="The green box is the display's own code; everything outside it belongs to the mixin. The dashed edge closes the loop for both ends of the chain — and the second end is the one worth reading twice: a blocked display releases itself by re-measuring once per settled viewport, rather than waiting for something to clear the banner." src="/img/fetch_chain.png" />
 
 `boundsValid` compares the block against the loaded bounds, and those are
 buffered wider than the viewport, so a small pan finds them still covering and

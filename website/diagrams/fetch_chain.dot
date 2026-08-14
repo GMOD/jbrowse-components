@@ -1,3 +1,21 @@
+// Two nodes and a cluster came out by the same rule: a step whose whole job is
+// to hand off to the next one is an EDGE, not a box.
+//
+//   collect into `needed`    -> the check's "no" branch label
+//   rotate stop token /      -> the second line of the cluster's own label,
+//     capture fetchGeneration   since it is what entering fetchRegions does
+//   FetchVisibleRegions      -> the edge from the viewport change to the check.
+//                               It was a cluster drawn around that single
+//                               diamond, which is a label with a border.
+//
+// That leaves ONE cluster, and it now means something a fill colour could not
+// say on its own: everything inside it is the display's to write.
+//
+// `increment fetchGeneration` looks like the same case and is not. Dropping it
+// turns two SOLID in-cluster edges into two more dashed ones leaving the box, so
+// the picture pays a crossing and a label sitting on the cluster border to save
+// one node. Keeping it holds the whole rule "dashed means re-entry" to two
+// places, both below the chain.
 digraph fetch_chain {
   rankdir=TB
   labelloc=t
@@ -5,34 +23,21 @@ digraph fetch_chain {
   fontsize=18
   label="The fetch chain: viewport change to loaded data, and back to rest"
   nodesep=0.35
-  ranksep=0.45
+  ranksep=0.5
 
   node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
   edge [fontname="Helvetica", fontsize=10, color="#555555"]
 
   viewport [label="view.visibleRegions changes", fillcolor="#e1f5fe"]
-
-  // ── What the autorun decides ─────────────────────────────────────
-  subgraph cluster_trigger {
-    label="FetchVisibleRegions (debounced 600 ms)"
-    labelloc=t
-    fontname="Helvetica"
-    fontsize=13
-    style=filled
+  check [
+    shape=diamond
+    label="per visible block:\nboundsValid && isCacheValid()?"
     fillcolor="#e3f2fd"
-    color="#90caf9"
-
-    check [
-      shape=diamond
-      label="per visible block:\nboundsValid && isCacheValid()?"
-      fillcolor="#ffffff"
-    ]
-    needed [label="collect into `needed`", fillcolor="#e1f5fe"]
-  }
+  ]
 
   // ── What the display owns ────────────────────────────────────────
   subgraph cluster_fetch {
-    label="fetchNeeded → fetchRegions(needed, work)"
+    label="fetchNeeded → fetchRegions(needed, work)\nrotates the stop token, captures fetchGeneration"
     labelloc=t
     fontname="Helvetica"
     fontsize=13
@@ -40,7 +45,6 @@ digraph fetch_chain {
     fillcolor="#f1f8e9"
     color="#aed581"
 
-    rotate [label="rotate stop token\ncapture fetchGeneration", fillcolor="#dcedc8"]
     bytes [shape=diamond, label="byte estimate\nover budget?", fillcolor="#ffffff"]
     work [label="work(ctx)\nrpcManager.call(…, rpcProps(), stopToken)"]
     stale [shape=diamond, label="ctx.isStale()?", fillcolor="#ffffff"]
@@ -55,24 +59,21 @@ digraph fetch_chain {
   ]
   done [label="nothing needed — at rest", peripheries=2, fillcolor="#e1f5fe"]
 
-  viewport -> check
-  check -> done [label="yes, already loaded"]
-  check -> needed [label="no"]
-  needed -> rotate
-  rotate -> bytes
-  bytes -> toolarge [label="yes, stop here"]
-  bytes -> work [label="no"]
+  viewport -> check [label="  FetchVisibleRegions\l  debounced 600 ms\l"]
+  check -> done [label="  yes, already loaded"]
+  check -> bytes [label="  no — collect into `needed`"]
+  bytes -> toolarge [label="  yes, stop here"]
+  bytes -> work [label="  no"]
   work -> stale
-  stale -> commit [label="no"]
-  stale -> bump [label="yes — drop results"]
+  stale -> commit [label="  no"]
+  stale -> bump [label="  yes — drop results"]
   commit -> bump
 
   // Both loose ends re-enter the same debounced check, so they meet at a
-  // junction and travel back as ONE edge. Drawn as two they were two long
-  // dashed sweeps up the whole right side, which is most of what a reader sees
-  // before they see the chain — and both said the same thing anyway. What
-  // differs is only what re-fires the autorun (a fetchGeneration bump, or the
-  // next settled viewport), and the caption is where that belongs.
+  // junction and travel back as ONE edge. Drawn as two they were two long dashed
+  // sweeps up the whole right side, which is most of what a reader sees before
+  // they see the chain — and both said the same thing anyway. What differs is
+  // only what re-fires the autorun, which the edge's own label now names.
   reenter [shape=point, width=0.06, color="#555555"]
   // The junction's rank comes from this one edge keeping its constraint, which
   // puts it just below the last node of the chain. `{ rank=same; bump; reenter }`
@@ -84,5 +85,9 @@ digraph fetch_chain {
   // their targets back up a rank, which is what left the entry node stranded
   // mid-graph and crossed every edge around it.
   toolarge -> reenter [style=dashed, constraint=false, arrowhead=none]
-  reenter -> check [label="re-enters the check", style=dashed, constraint=false]
+  reenter -> check [
+    label="  re-enters the check:\l  a fetchGeneration bump,\l  or the next settled viewport\l"
+    style=dashed
+    constraint=false
+  ]
 }

@@ -1,27 +1,62 @@
-// A there-and-back trip does not lay out as two clusters: main-thread nodes sit
-// at BOTH ends of the flow, so graphviz packs the worker cluster to one side and
-// the arrows read backwards. Side is carried by fill colour instead, with the
-// flow running straight down.
+// The boundary is a cluster box, and the serialize/deserialize hooks are edge
+// labels rather than nodes. As nodes there were four of them around one
+// execute(), so the picture read as a six-step pipeline whose middle step
+// happened to be the reader's code. Each hook belongs to a crossing, and a
+// crossing is an edge, so labelling the edges puts the hooks where they act and
+// leaves the boundary as the only thing drawn.
+//
+// Colour still separates the two sides, but no legend is needed now: the box
+// says which nodes are the worker's, and the two nodes outside it are the main
+// thread's.
+//
+// Two layout constraints, both of which cost a re-render to find:
+//
+// No `{ rank=same; exec; status }`. Ranking an outside node against one inside a
+// cluster EVICTS it ("exec was already in a rankset, deleted from cluster"), so
+// the boundary box loses the node it exists to enclose. The invisible
+// `call -> status` ranks it instead, and `constraint=false` on the dashed edge
+// keeps it from lengthening the chain.
+//
+// The cluster's label is short and left-justified because the incoming arrow
+// enters the box at the top of execute(), which is its horizontal centre — a
+// centred label gets struck through by that arrow. Sticky-per-sessionId is the
+// paragraph under the figure rather than a second line here.
 digraph rpc_lifecycle {
   rankdir=TB
   labelloc=t
   fontname="Helvetica"
   fontsize=18
-  label="One RPC call, and the two steps that are not a plain round trip"
-  nodesep=0.4
-  ranksep=0.4
+  label="One RPC call, and the two things that are not a plain round trip"
+  nodesep=0.5
+  ranksep=0.55
 
   node [shape=box, fontname="Helvetica", fontsize=12, style=filled]
   edge [fontname="Helvetica", fontsize=10, color="#555555"]
 
-  // green = main thread, blue = worker
   call [label="rpcManager.call(sessionId, name, args)", fillcolor="#dcedc8"]
-  ser [label="serializeArguments()\nrenames refNames into the adapter's scheme,\nreplaces statusCallback with a side channel", fillcolor="#f1f8e9"]
-  wdeser [label="deserializeArguments()\nread your args off this, not off the raw args", fillcolor="#e3f2fd"]
-  exec [label="execute()  ← your code", fillcolor="#e1f5fe"]
-  ret [label="return value,\nor rpcResult(value, transferList)", fillcolor="#e3f2fd"]
-  deser [label="deserializeReturn()", fillcolor="#f1f8e9"]
   result [label="result", peripheries=2, fillcolor="#dcedc8"]
+
+  subgraph cluster_worker {
+    label="web worker"
+    labelloc=t
+    labeljust=l
+    fontname="Helvetica"
+    fontsize=12
+    fontcolor="#0d47a1"
+    style="filled,rounded"
+    color="#90caf9"
+    fillcolor="#eaf4fd"
+
+    exec [
+      label="execute()  ← your code\nread the args off deserializeArguments(),\nnot off the raw args"
+      fillcolor="#e1f5fe"
+    ]
+    ret [
+      label="return value,\nor rpcResult(value, transferList)"
+      fillcolor="#e3f2fd"
+    ]
+    exec -> ret
+  }
 
   status [
     label="statusCallback\non the main thread\n(loading UI)"
@@ -30,30 +65,9 @@ digraph rpc_lifecycle {
     color="#ef6c00"
   ]
 
-  // A bordered key rather than two loose notes ranked beside the chain. Ranked,
-  // the BLUE worker note sat level with serializeArguments(), which is a GREEN
-  // main-thread node — so the key read as a label for that row and said the
-  // opposite of the colour it was there to explain. Nothing in the cluster is
-  // ranked against the chain, which is what keeps it a key.
-  subgraph cluster_legend {
-    label="which side runs it"
-    labelloc=t
-    fontname="Helvetica"
-    fontsize=11
-    style=dashed
-    color="#bdbdbd"
-
-    legend_main [label="main thread", fillcolor="#dcedc8", shape=note, fontsize=10]
-    legend_worker [label="worker\n(sticky per sessionId)", fillcolor="#e3f2fd", shape=note, fontsize=10]
-    legend_main -> legend_worker [style=invis]
-  }
-
-  call -> ser
-  ser -> wdeser [label="  structured clone"]
-  wdeser -> exec
-  exec -> ret
-  ret -> deser [label="  structured clone,\n  or transferred zero-copy"]
-  deser -> result
+  // The two hooks ride the crossings they belong to.
+  call -> exec [label="  serializeArguments()\l  renames refNames into the adapter's scheme,\l  replaces statusCallback with a side channel\l"]
+  ret -> result [label="  deserializeReturn()\l  structured clone, or transferred zero-copy\l"]
 
   // The one function-shaped thing that crosses, and it never actually crosses.
   exec -> status [
@@ -64,5 +78,5 @@ digraph rpc_lifecycle {
     fontcolor="#ef6c00"
   ]
 
-  { rank=same; exec; status }
+  call -> status [style=invis]
 }
