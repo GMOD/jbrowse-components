@@ -1947,9 +1947,9 @@
   },
   "cnv1000g/zarr_cohort": {
     "name": "cnv1000g/zarr_cohort",
-    "status": "bad",
-    "note": "consider zooming out farther to show bigger window, that this is an abnormal thing essentially",
-    "reviewedAt": "2026-08-13T19:59:06.944Z",
+    "status": "answered",
+    "note": "consider zooming out farther to show bigger window, that this is an abnormal thing essentially\n\nZOOMED OUT EIGHT TIMES, and it is the difference between a figure of a block and a figure of an anomaly. The old window was the ladder's, 190 kb, and at that width every column of the heatmap carries a gain or a loss -- so the frame had nothing ordinary in it and the block read as the background rather than as the finding. At 1.5 Mb the CCL3L1/CCL4L1 stripe sits in flat diploid white on both sides, and the sparse speckle in those flanks is the rare private CNV you would expect over 2504 people.\n\nBounded by the store rather than by taste: build_signal_zarr.ts was run over chr17:35,000,000-37,500,000, so a wider window would have drawn empty flanks that look exactly like ordinary two-copy sequence and are actually no data. The window is centred on the block, which took a second capture -- the first was 400 kb left-heavy.\n\nOne prose consequence, since the figure was carrying a measured claim: the paragraph under it said this frame cost the three requests in the table above. It does not any more, because a chunk is 256 bins wide and the window is now 1500 of them. The paragraph says what is actually true and is the better point anyway -- what a view costs follows the width of the window, not the size of the cohort. The table itself is unchanged; it is measured on the narrow window, which is still what ccl3l1_ladder shows.",
+    "reviewedAt": "2026-08-14T02:32:17.993Z",
     "hash": "00f3b1c2558466dec96a2c7d0753f589ae3378ad"
   },
   "desktop-cli-config": {
@@ -3147,16 +3147,16 @@
   },
   "fetch_chain": {
     "name": "fetch_chain",
-    "status": "bad",
-    "note": "any way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this",
-    "reviewedAt": "2026-08-13T17:48:25.439Z",
+    "status": "answered",
+    "note": "any way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this\n\nSIMPLIFIED, and it is one edge fewer rather than one state fewer. The two dashed feedback edges both returned to the same debounced check and both said the same thing, and drawn separately they were two long sweeps up the whole right side of the frame -- most of what the eye lands on before it finds the chain at all. They meet at a junction now and travel back as ONE labelled edge. Nothing is lost by merging them: what differs between the two is only what re-fires the autorun (a fetchGeneration bump, or the next settled viewport), and the caption is where that belongs, so it says it. No state was cut, because none of the eight repeats another.",
+    "reviewedAt": "2026-08-14T02:23:06.709Z",
     "hash": "e8a3fe0000f5648c35f1c0248be4f33991556ac1"
   },
   "rpc_lifecycle": {
     "name": "rpc_lifecycle",
-    "status": "bad",
-    "note": "any way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this",
-    "reviewedAt": "2026-08-13T17:48:45.157Z",
+    "status": "answered",
+    "note": "any way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this\n\nNOT THE SAME FIGURE as fetch_chain, though the note landed on both twenty seconds apart. Eight nodes in one straight line with a single side branch has nothing in it to cut, so a simplified-and-full pair would be two copies of one picture. What was actually wrong is the legend, and it was saying the opposite of its job: ranked beside the chain, the BLUE worker note sat level with serializeArguments(), which is a GREEN main-thread node, so the key read as a label for that row. It is a bordered key at the top right now, ranked against nothing, which is also what stopped it competing with the flow for the reader's eye.",
+    "reviewedAt": "2026-08-14T02:23:06.709Z",
     "hash": "e0f7a31f663836018de6af7464a890840991a1db"
   },
   "jbrowse-img/ecoli_ava_synteny": {

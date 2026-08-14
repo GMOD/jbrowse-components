@@ -217,11 +217,14 @@ the bin size and the resolution levels are attributes of the store, written by
 the converter. A relative `uri` resolves against the config that holds it, so a
 store sitting beside `config.json` needs no absolute URL.
 
-<Figure caption="All 2504 individuals of the 1000 Genomes panel over the CCL3L1 window, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies." src="/img/cnv1000g/zarr_cohort.png" />
+<Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies: the CCL3L1/CCL4L1 block stands in flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
-That figure is the whole panel, and it cost the three requests measured above:
-the group metadata, the array metadata, and one chunk. The three do not grow
-with the cohort, because the sample axis is inside the chunk.
+That figure is the whole panel, and the panel is not what it cost. Two of the
+requests are metadata and happen once per store; the rest are chunks, and a
+chunk carries every sample across a range of bins. So what a view costs follows
+the width of the window rather than the size of the cohort — this frame is wider
+than the one measured above and spans a few more chunks, where 2504 BigWigs
+would still have been six reads each.
 
 ## Build the store
 

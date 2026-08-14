@@ -16,6 +16,18 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // LPA 2-8, HP 2-7, UGT2B17 0-2). Do not re-pick it by reputation.
 const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
 
+// The same locus with room around it, for the whole-cohort figure (review:
+// "consider zooming out farther to show bigger window, that this is an abnormal
+// thing essentially"). At the ladder's width every column of the 2504-row
+// heatmap carries a gain or a loss, so the frame has nothing in it that is
+// ordinary and the block reads as the background rather than as the finding.
+// Eight times wider puts flat diploid white on both sides of it.
+//
+// Bounded by the store rather than by taste: build_signal_zarr.ts was run with
+// `--region chr17:35000000-37500000`, so a window past that renders empty
+// flanks that look like ordinary two-copy sequence and are actually no data.
+const CCL3L1_CONTEXT_WINDOW = 'chr17:35,520,000-37,020,000'
+
 // The 1000 Genomes phase 3 integrated SV map, lifted to GRCh38, already in
 // config_demo. It is the comparison the tutorial is built on, not a second data
 // source: over this window it holds one multiallelic CNV record with three
@@ -205,7 +217,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     name: 'cnv1000g/zarr_cohort',
     url: lgvSession(CNV_CONFIG, {
       assembly: 'hg38',
-      loc: CCL3L1_WINDOW,
+      loc: CCL3L1_CONTEXT_WINDOW,
       tracks: [
         {
           trackId: 'ncbi_refseq_hg38',
