@@ -4,6 +4,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
+  createStatusFanOut,
   createStopTokenRotation,
   getContainingView,
   getEnv,
@@ -260,6 +261,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
 
                 const { stopToken, isCurrent, statusCallback } =
                   rotation.begin()
+                // the two below run concurrently and would otherwise fight over
+                // the one status field, so each gets its own slot
+                const slot = createStatusFanOut(statusCallback)
 
                 // the old map named the old assembly's refs; keeping it while
                 // the new one loads would let `ready` wave through a render
@@ -269,20 +273,16 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
 
                 try {
                   const [feats, refNameMap] = await Promise.all([
-                    rpcManager.call(
-                      sessionId,
-                      'CoreGetFeatures',
-                      {
-                        adapterConfig,
-                        regions,
-                        stopToken,
-                      },
-                      { statusCallback },
-                    ),
+                    rpcManager.call(sessionId, 'CoreGetFeatures', {
+                      adapterConfig,
+                      regions,
+                      stopToken,
+                      statusCallback: slot(),
+                    }),
                     assemblyManager.getRefNameMapForAdapter(
                       adapter,
                       assemblyNames[0],
-                      { stopToken, sessionId, statusCallback },
+                      { stopToken, sessionId, statusCallback: slot() },
                     ),
                   ])
                   if (isCurrent()) {
