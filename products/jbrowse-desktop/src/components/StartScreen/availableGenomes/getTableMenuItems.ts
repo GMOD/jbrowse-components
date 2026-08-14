@@ -1,3 +1,5 @@
+import { ncbiFilterApplies } from './useGenomesData.ts'
+
 import type { FilterOption } from './useGenomesData.ts'
 import type { GenomesTableState } from './useGenomesTableState.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -66,12 +68,10 @@ export function getTableMenuItems({
         setShowAllColumns(!showAllColumns)
       },
     },
-    // the NCBI status fields this filters on exist only on GenArk/NCBI rows, so
-    // it is meaningless on the UCSC main genomes — unless the search spans every
-    // group, whose hits are mostly GenArk
-    ...(typeOption === 'ucsc' && !allGroups
-      ? []
-      : ([
+    // offered exactly where it applies, which is also exactly where it is
+    // applied — see ncbiFilterApplies
+    ...(ncbiFilterApplies(typeOption, allGroups)
+      ? ([
           {
             label: 'Filter by NCBI status',
             type: 'subMenu',
@@ -84,7 +84,8 @@ export function getTableMenuItems({
               },
             })),
           },
-        ] satisfies MenuItem[])),
+        ] satisfies MenuItem[])
+      : []),
     {
       label: 'Reset favorites list to defaults',
       onClick: () => {

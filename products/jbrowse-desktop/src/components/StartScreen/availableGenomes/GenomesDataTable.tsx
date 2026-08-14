@@ -15,6 +15,7 @@ import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
 import { sortAndPaginate } from './sortAndPaginate.ts'
 import useCategories from './useCategories.ts'
+import { ncbiFilterApplies } from './useGenomesData.ts'
 import { useGenomesTableState } from './useGenomesTableState.ts'
 import { useResultSet } from './useResultSet.ts'
 import { useSearchHighlight } from './useSearchHighlight.ts'
@@ -103,7 +104,11 @@ export default function GenomesDataTable({
     url,
     categoriesLoading,
     searchQuery,
-    filterOption,
+    // The remembered choice is only applied where its fields exist, so a filter
+    // whose menu item is not on screen cannot be silently emptying the table.
+    filterOption: ncbiFilterApplies(activeTypeOption, allGroups)
+      ? filterOption
+      : 'all',
     showOnlyFavs,
     favoriteIds: favs,
     allGroups,
