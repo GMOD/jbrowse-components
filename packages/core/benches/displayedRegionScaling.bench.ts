@@ -66,8 +66,6 @@ import { intersection2 } from '../src/util/range.ts'
 import type { BaseBlock } from '../src/util/blockTypes.ts'
 import type { Base1DViewModel } from '../src/util/calculateStaticBlocks.ts'
 
-export {}
-
 const rounds =
   Number(
     process.argv
@@ -582,8 +580,9 @@ for (const [label, viewport] of [
     console.log(
       `${n.toLocaleString().padStart(8)}  ${cur.toFixed(3).padStart(9)}  ${idx.toFixed(3).padStart(9)}  ` +
         `${(cur / idx).toFixed(1).padStart(7)}  ${prior.toFixed(3).padStart(9)}  ` +
-        `${(prior / cur).toFixed(1).padStart(7)}  ${(ctl / cur).toFixed(2).padStart(7)}  ` +
-        bld.toFixed(3).padStart(9),
+        `${(prior / cur).toFixed(1).padStart(7)}  ${(ctl / cur).toFixed(2).padStart(7)}  ${bld
+          .toFixed(3)
+          .padStart(9)}`,
     )
   }
 }

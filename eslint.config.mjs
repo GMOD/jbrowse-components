@@ -443,7 +443,9 @@ export default defineConfig(
       'products/jbrowse-cli/**/*',
       'products/jbrowse-desktop/sign.cjs',
       'plugins/*/scripts/**/*',
-      'plugins/*/benches/**/*',
+      // Both, not just plugins/: packages/core/benches was outside this glob
+      // and its four console.logs sat red on main until a push found them.
+      '{packages,plugins}/*/benches/**/*',
       // Puppeteer drivers: they print the measurement they were run to take.
       'products/jbrowse-web/browser-tests/**/*',
       // The capture CLI's entry point, and the shared examples-site doc-link

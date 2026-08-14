@@ -57,14 +57,18 @@ function uniqueBytes(ranges: [number, number][]) {
   let curEnd = -1
   for (const [s, e] of sorted) {
     if (curEnd < s) {
-      if (curEnd > curStart) total += curEnd - curStart
+      if (curEnd > curStart) {
+        total += curEnd - curStart
+      }
       curStart = s
       curEnd = e
     } else if (e > curEnd) {
       curEnd = e
     }
   }
-  if (curEnd > curStart) total += curEnd - curStart
+  if (curEnd > curStart) {
+    total += curEnd - curStart
+  }
   return total
 }
 
