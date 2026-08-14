@@ -3,6 +3,8 @@
 //   pnpm autogen           rewrite everything
 //   pnpm autogen --check   verify everything (what CI runs)
 //   pnpm autogen gallery   limit to generators whose name contains 'gallery'
+//   pnpm autogen --skip-figure-dependent   drop the three that read the figure
+//                          corpus or figures.lock (see `figureDependent` below)
 //
 // CI used to list each generator as its own `run:` step, which meant a run
 // reported only the FIRST stale artifact — fix it, push, discover the next.
@@ -21,6 +23,7 @@ import { fileURLToPath } from 'node:url'
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
 const check = args.includes('--check')
+const skipFigureDependent = args.includes('--skip-figure-dependent')
 const filters = args.filter(a => !a.startsWith('--'))
 
 interface Generator {
@@ -30,6 +33,13 @@ interface Generator {
   // Set when the generator has no `--check`: run it, then diff these git
   // pathspecs. Globs are passed to git verbatim, not expanded by the shell.
   diffPaths?: string[]
+  // Reads the figure corpus or figures.lock, so its answer is only CI's answer
+  // when the two agree. `--skip-figure-dependent` drops these; the pre-push
+  // hook passes it when `pnpm figures:check` says they don't, so it can still
+  // REGENERATE the other fifteen instead of degrading the whole run to a
+  // report. Nothing DERIVED from a figure belongs in this list — those left
+  // autogen entirely (see the tutorial-card note below).
+  figureDependent?: boolean
 }
 
 const web = (script: string) => ['node', `website/scripts/${script}`]
@@ -106,8 +116,16 @@ const GENERATORS: Generator[] = [
     argv: web('generate-display-chrome-adoption.ts'),
   },
   // Before the README is mirrored into the docs site, since this rewrites it.
-  { name: 'jbrowse-img README commands', argv: web('sync-img-readme.ts') },
-  { name: 'jbrowse-img doc', argv: web('generate-img-doc.ts') },
+  {
+    name: 'jbrowse-img README commands',
+    argv: web('sync-img-readme.ts'),
+    figureDependent: true,
+  },
+  {
+    name: 'jbrowse-img doc',
+    argv: web('generate-img-doc.ts'),
+    figureDependent: true,
+  },
   { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
   { name: 'gallery links', argv: web('gen-gallery-links.ts') },
   // The tutorial cards and homepage images used to be gated here. They are
@@ -124,8 +142,12 @@ const GENERATORS: Generator[] = [
     // renderer in every website build. It had no script entry, no autogen entry
     // and no CI step before this — a by-hand `node
     // website/scripts/generate-og-image.ts` and the honour system.
+    // It is figureDependent all the same: it writes a png into the corpus and
+    // checks it against figures.lock, so it is stale exactly when the corpus is
+    // ahead of the lock, which is the case the flag exists for.
     name: 'social card image',
     argv: web('generate-og-image.ts'),
+    figureDependent: true,
   },
   { name: 'doc snippets', argv: web('sync-doc-snippets.ts') },
   {
@@ -267,14 +289,28 @@ function restore(paths: string[]) {
 // is broken" when the generator was fine and the tree it reads was mid-edit.
 const stale: string[] = []
 const crashed: { name: string; status: number | null }[] = []
+const eligible = skipFigureDependent
+  ? GENERATORS.filter(g => !g.figureDependent)
+  : GENERATORS
 const selected =
   filters.length > 0
-    ? GENERATORS.filter(g => filters.some(f => g.name.includes(f)))
-    : GENERATORS
+    ? eligible.filter(g => filters.some(f => g.name.includes(f)))
+    : eligible
 
 if (selected.length === 0) {
   console.error(`No generator matches ${filters.join(', ')}`)
   process.exit(1)
+}
+
+// Named, not counted: a silent skip reads as "everything is current".
+if (skipFigureDependent) {
+  console.log(
+    `Skipping the figure-dependent generators: ${GENERATORS.filter(
+      g => g.figureDependent,
+    )
+      .map(g => g.name)
+      .join(', ')}`,
+  )
 }
 
 for (const { name, argv, diffPaths } of selected) {

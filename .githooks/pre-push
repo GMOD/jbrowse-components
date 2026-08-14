@@ -1,8 +1,25 @@
 #!/bin/sh
 # Runs the CI gates that nothing else here runs — docs, generated artifacts,
-# lint and the ESM build — over what you are about to push, so main does not go
-# red on something a local check would have caught. `pnpm install` points
+# lint, format and the ESM build — over what you are about to push, so main does
+# not go red on something a local check would have caught. `pnpm install` points
 # core.hooksPath here; skip with SKIP_DOCS_CHECK=1 or `git push --no-verify`.
+#
+# IT FIXES RATHER THAN REPORTS. Three of the five gates have an autofixer, so
+# this runs the fixer: `pnpm autogen` (not `--check`), both linters with
+# `--fix`, and `pnpm format` over the pushed paths. Reporting "regenerate and
+# commit" only to have the person run the exact command the hook already knew
+# was ~2min of waiting to be told to wait ~2min more.
+#
+# WHICH MEANS IT BLOCKS THE PUSH WHEN IT FIXES SOMETHING. The fixes land in the
+# working tree, not in the commits on their way out, so a push that went ahead
+# would push exactly the state that just failed. When the tree changes the hook
+# says which files and exits nonzero; commit them and push again, and the second
+# run is clean. Nothing is auto-committed — what to commit, and in which of the
+# several commits being pushed it belongs, is not the hook's call.
+#
+# WHAT STILL ONLY REPORTS: `check-docs` and `build:esm` have no fixer, and
+# `--fix` on either linter leaves whatever rule has no autofix. Those are still
+# yours to fix by hand.
 #
 # WHY PRE-PUSH AND NOT PRE-COMMIT. All of them read the whole tree — there is
 # no staged-paths version of "is this generated artifact current", because the
@@ -13,13 +30,20 @@
 # WHAT IT COSTS. Measured warm on this tree (docs/autogen 2026-08-10, the rest
 # 2026-08-13):
 #   pnpm check-docs         43.1s
-#   pnpm autogen --check    33.9s
+#   pnpm autogen            33.9s
 #   pnpm lint:eslint        29s
 #   pnpm lint                7s
+#   pnpm format <paths>     ~2s
 #   pnpm build:esm           1s incremental
-# Run in parallel below. That is ~115s wall measured, not the ~45s the sum of
-# the long pole would suggest: they are all CPU-bound and this machine runs
-# several agents, so they contend rather than overlap. Budget two minutes.
+# ~115s wall measured, not the ~45s the sum of the long pole would suggest:
+# they are all CPU-bound and this machine runs several agents, so they contend
+# rather than overlap. Budget two minutes.
+#
+# THE FIXERS RUN IN SEQUENCE, unlike the old all-parallel version, because they
+# write to the same files: autogen emits sources the linters then lint, and both
+# linters rewrite the same `.ts`. Only the two read-only gates still overlap.
+# That costs nothing in wall time — contention was eating the parallelism
+# anyway.
 #
 # A COLD `build:esm` is worse and happens once per checkout — tsc has no
 # .tsbuildinfo to reuse and takes minutes. Every run after that is the 1s above.
@@ -42,6 +66,11 @@
 # anything in the push. Push from your own worktree and the question is about
 # your work. There is no cheap fix: checking the pushed commits instead means
 # materialising them somewhere clean, which costs more than the check.
+#
+# NOW THAT IT WRITES, that same property has teeth: from the shared checkout the
+# fixers rewrite whatever else is uncommitted there, and the "these files
+# changed" list at the end will name another agent's work alongside yours. One
+# more reason to push from your own worktree.
 set -eu
 
 if [ "${SKIP_DOCS_CHECK:-}" = 1 ]; then
@@ -93,16 +122,32 @@ if ! printf '%s' "$range_files" | grep -Eq \
   exit 0
 fi
 
-echo "pre-push: checking docs, generated artifacts, lint and the esm build (~2min, SKIP_DOCS_CHECK=1 to skip)" >&2
+echo "pre-push: regenerating docs and artifacts, fixing lint and format, building esm (~2min, SKIP_DOCS_CHECK=1 to skip)" >&2
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-# In parallel: they share no state and each is single-digit-percent CPU-bound on
-# the other's work. Output is buffered to files and replayed in a fixed order so
-# two interleaved streams do not land on top of each other.
-pnpm check-docs >"$tmp/docs.log" 2>&1 &
-docs_pid=$!
+# What the tree looks like before the fixers touch it, so the end of the run can
+# say what they changed. Names alone are not enough — a file already dirty stays
+# one `M` line however much a fixer rewrites it — so pair the status with the
+# per-file line counts, which do move.
+tree_state() {
+  git status --porcelain -uall
+  git diff HEAD --numstat
+}
+tree_state >"$tmp/before" 2>/dev/null || true
+
+# Paths that have changed since $1 was taken. Used twice: to decide what to
+# format, and to report at the end.
+changed_since() {
+  tree_state >"$tmp/now" 2>/dev/null || true
+  diff "$1" "$tmp/now" 2>/dev/null | sed -n 's/^[<>] //p' | awk '{print $NF}' |
+    sort -u || true
+}
+
+status=0
+
+# --- fixers, in sequence: each writes files the next one reads ---------------
 
 # autogen only answers CI's question when this checkout's figures are the ones
 # CI will have, and there are two ways for that to be false. Both produce a
@@ -122,92 +167,150 @@ docs_pid=$!
 # `pnpm figures:check` settles the second in ~2s, which is worth it to keep the
 # 34s answer trustworthy.
 #
-# When it is NOT trustworthy the check still runs, and reports without blocking.
-# Skipping it outright was the first version of this and it was wrong: the very
-# next push went out with gallery links and the model docs stale, neither of
-# which reads a figure, because a corpus two thumbnails ahead of the lock had
-# switched the whole 34s check off. An advisory report costs a push nothing and
-# would have named both.
-autogen_pid=
-autogen_advisory=
+# When it is NOT trustworthy, drop the three generators that read a figure and
+# regenerate the other fifteen — `--skip-figure-dependent`, which names what it
+# skipped. Running them anyway would be worse than not running them: they would
+# derive from the corpus on disk and write artifacts CI, deriving from the lock,
+# disagrees with, and the hook would then ask for a commit that makes the drift
+# permanent instead of local.
+#
+# The earlier version of this degraded the WHOLE run to an advisory `--check` in
+# that case, and on a machine that shoots figures that is the normal state — so
+# the regeneration this hook exists for almost never happened. Before that it
+# skipped the check outright, and the very next push went out with gallery links
+# and the model docs stale, neither of which reads a figure.
+autogen_flags=
+autogen_skipped=
 if [ ! -d website/static/img ] || [ ! -d products/jbrowse-img/img ]; then
-  autogen_advisory="no figure corpora on disk ('pnpm figures:pull' installs them)"
+  autogen_skipped="no figure corpora on disk ('pnpm figures:pull' installs them)"
 elif ! pnpm figures:check >"$tmp/figures.log" 2>&1; then
-  autogen_advisory="figures on disk differ from figures.lock ('pnpm figures:check' says which)"
+  autogen_skipped="figures on disk differ from figures.lock ('pnpm figures:check' says which)"
 fi
-pnpm autogen --check >"$tmp/autogen.log" 2>&1 &
-autogen_pid=$!
+if [ -n "$autogen_skipped" ]; then
+  autogen_flags=--skip-figure-dependent
+  echo "pre-push: skipping the figure-dependent generators, because $autogen_skipped" >&2
+fi
+
+astatus=0
+pnpm autogen $autogen_flags >"$tmp/autogen.log" 2>&1 || astatus=$?
+if [ "$astatus" != 0 ]; then
+  echo >&2
+  echo "pre-push: pnpm autogen failed" >&2
+  cat "$tmp/autogen.log" >&2
+  status=$astatus
+fi
+
+# check-docs has no fixer and reads only what autogen has now finished writing,
+# so it is the one thing that can overlap the linters.
+pnpm check-docs >"$tmp/docs.log" 2>&1 &
+docs_pid=$!
 
 # Both linters, because they catch different things and CI runs both: oxlint is
 # the fast pass, `lint:eslint` the backstop for the react-compiler and
 # import/unicorn rules oxlint has no equivalent for. The 2026-08-13 batch was
 # entirely eslint-only rules, so oxlint alone would have caught none of it.
-pnpm lint >"$tmp/lint.log" 2>&1 &
-lint_pid=$!
-pnpm lint:eslint >"$tmp/eslint.log" 2>&1 &
-eslint_pid=$!
-
-# `tsc --noEmit` (what `pnpm typecheck` runs) does NOT stand in for this. That
-# reads the root tsconfig, where node types are present and every file is in
-# scope; the ESM build reads each package's own config, which has neither. A
-# file can typecheck cleanly and still fail the build — a node-only helper
-# compiled as browser source is exactly how main broke on 2026-08-13.
-pnpm build:esm >"$tmp/build.log" 2>&1 &
-build_pid=$!
-
-status=0
-wait "$docs_pid" || status=$?
-if [ "$status" != 0 ]; then
-  echo >&2
-  echo "pre-push: pnpm check-docs failed" >&2
-  cat "$tmp/docs.log" >&2
-fi
-
-astatus=0
-wait "$autogen_pid" || astatus=$?
-if [ "$astatus" != 0 ]; then
-  echo >&2
-  if [ -n "$autogen_advisory" ]; then
-    # Advisory: this run cannot tell a genuinely stale artifact from one the
-    # figure state faked, so it names both rather than blocking on either. The
-    # figure-derived generators (jbrowse-img doc, tutorial card thumbnails,
-    # homepage images) are the ones to discount; anything else in the list is
-    # real and CI will fail on it.
-    echo "pre-push: 'pnpm autogen --check' reported the following, NOT blocking" >&2
-    echo "  because $autogen_advisory." >&2
-    echo "  Discount the figure-derived generators; the rest are real." >&2
-  else
-    echo "pre-push: pnpm autogen --check failed — run 'pnpm autogen' and commit" >&2
-    status=$astatus
-  fi
-  cat "$tmp/autogen.log" >&2
-fi
-
+#
+# `--fix` still exits nonzero for anything it could not fix, so this is one pass
+# and not a fix-then-verify pair.
 lstatus=0
-wait "$lint_pid" || lstatus=$?
+pnpm lint --fix >"$tmp/lint.log" 2>&1 || lstatus=$?
 if [ "$lstatus" != 0 ]; then
   echo >&2
-  echo "pre-push: pnpm lint failed — 'pnpm lint --fix' fixes most" >&2
+  echo "pre-push: pnpm lint --fix left errors it cannot fix" >&2
   cat "$tmp/lint.log" >&2
   status=$lstatus
 fi
 
 estatus=0
-wait "$eslint_pid" || estatus=$?
+pnpm lint:eslint --fix >"$tmp/eslint.log" 2>&1 || estatus=$?
 if [ "$estatus" != 0 ]; then
   echo >&2
-  echo "pre-push: pnpm lint:eslint failed — 'pnpm lint:eslint --fix' fixes most" >&2
+  echo "pre-push: pnpm lint:eslint --fix left errors it cannot fix" >&2
   cat "$tmp/eslint.log" >&2
   status=$estatus
 fi
 
+# Format LAST, so it has the final say over whatever the two `--fix` passes
+# rewrote.
+#
+# SCOPED, and bare `pnpm format` is not the alternative: it rewrites all ~5800
+# files, which from the shared checkout means rewriting every other agent's
+# tree.
+#
+# THE SCOPE IS THE PUSHED PATHS **PLUS WHAT THIS RUN HAS ALREADY CHANGED**, and
+# the second half is the one that matters. `--fix` is repo-wide, not
+# range-scoped, and it emits formatter-hostile code: the first version of this
+# scoped format to the pushed paths alone and eslint's fixes to two bench files
+# outside the range went in as `if (x) {y += z}` on one line and a
+# prefer-template fix with a line break inside the `${`. Formatting only what
+# was pushed leaves exactly the files a fixer touched unformatted.
+#
+# Then: the ones that exist, and only the extensions oxfmt parses. agent-docs is
+# dropped explicitly — it is on .prettierignore for a reason, and naming a path
+# on the command line is how you defeat an ignore file.
+fmt_list=$tmp/fmt-paths
+: >"$fmt_list"
+{ printf '%s\n' "$range_files"; changed_since "$tmp/before"; } |
+  sort -u | while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  case $f in
+    agent-docs/*) continue ;;
+    *.ts | *.tsx | *.js | *.jsx | *.mjs | *.cjs | *.mts | *.cts | *.json) ;;
+    *) continue ;;
+  esac
+  [ -f "$f" ] && printf '%s\n' "$f" >>"$fmt_list"
+done
+
+if [ -s "$fmt_list" ]; then
+  fstatus=0
+  # shellcheck disable=SC2046 # deliberate word splitting: paths have no spaces
+  pnpm format $(cat "$fmt_list") >"$tmp/format.log" 2>&1 || fstatus=$?
+  if [ "$fstatus" != 0 ]; then
+    echo >&2
+    echo "pre-push: pnpm format failed" >&2
+    cat "$tmp/format.log" >&2
+    status=$fstatus
+  fi
+fi
+
+# --- gates, no fixer --------------------------------------------------------
+
+dstatus=0
+wait "$docs_pid" || dstatus=$?
+if [ "$dstatus" != 0 ]; then
+  echo >&2
+  echo "pre-push: pnpm check-docs failed" >&2
+  cat "$tmp/docs.log" >&2
+  status=$dstatus
+fi
+
+# `tsc --noEmit` (what `pnpm typecheck` runs) does NOT stand in for this. That
+# reads the root tsconfig, where node types are present and every file is in
+# scope; the ESM build reads each package's own config, which has neither. A
+# file can typecheck cleanly and still fail the build — a node-only helper
+# compiled as browser source is exactly how main broke on 2026-08-13. It runs
+# last because it compiles what the fixers have just rewritten.
 bstatus=0
-wait "$build_pid" || bstatus=$?
+pnpm build:esm >"$tmp/build.log" 2>&1 || bstatus=$?
 if [ "$bstatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm build:esm failed" >&2
   cat "$tmp/build.log" >&2
   status=$bstatus
+fi
+
+# --- did the fixers change anything? ----------------------------------------
+
+changed=$(changed_since "$tmp/before")
+
+if [ -n "$changed" ]; then
+  echo >&2
+  echo "pre-push: the fixers changed these files:" >&2
+  printf '%s\n' "$changed" | sed 's/^/  /' >&2
+  echo >&2
+  echo "Push blocked — the fixes are in the working tree, not in the commits" >&2
+  echo "being pushed. Commit them and push again." >&2
+  exit 1
 fi
 
 if [ "$status" != 0 ]; then
