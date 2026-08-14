@@ -1,4 +1,11 @@
-import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
+import {
+  CIGAR_D,
+  CIGAR_H,
+  CIGAR_I,
+  CIGAR_M,
+  CIGAR_S,
+  visitCigarRenderedSegments,
+} from '@jbrowse/cigar-utils'
 import { buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import {
@@ -6,6 +13,7 @@ import {
   clipSyntenyFeature,
 } from './clipSyntenyFeature.ts'
 
+import type { ClippedSyntenyFeature } from './clipSyntenyFeature.ts'
 import type { Region } from '@jbrowse/core/util'
 
 const pack = (len: number, op: number) => (len << 4) | op
@@ -87,6 +95,109 @@ test('block entirely outside the window returns undefined', () => {
   expect(
     clipSyntenyFeature(cig([100, CIGAR_M]), 0, 0, 100, 1, 500, 600),
   ).toBeUndefined()
+})
+
+// Where the two ends of the clipped block ACTUALLY land once the renderer walks
+// the CIGAR this returned. That is the only consumer of the output, so it is the
+// only thing that says whether the clip is self-consistent — an expected-CIGAR
+// assertion restates the walk instead of checking it, which is how a clip whose
+// ops disagree with `visitCigarRenderedSegments` about H/S/P passed for as long
+// as it did.
+function walkedSpans(c: ClippedSyntenyFeature, strand: number) {
+  let q1 = Infinity
+  let q2 = -Infinity
+  let t1 = Infinity
+  let t2 = -Infinity
+  visitCigarRenderedSegments(
+    c.cigar,
+    c.start,
+    strand === -1 ? c.mateEnd : c.mateStart,
+    1,
+    1,
+    1,
+    strand,
+    (_op, qs, qe, ts, te) => {
+      q1 = Math.min(q1, qs, qe)
+      q2 = Math.max(q2, qs, qe)
+      t1 = Math.min(t1, ts, te)
+      t2 = Math.max(t2, ts, te)
+    },
+  )
+  return { query: [q1, q2], target: [t1, t2] }
+}
+
+// A BAM CIGAR reaches here through "Linear read vs ref", which hands the read's
+// raw CIGAR over verbatim while putting the mate in read coordinates that
+// already exclude the clip. So a clip op advances NEITHER axis, and treating it
+// as advancing both walked the block 100bp along each past its own corners.
+test('a leading soft clip advances neither axis', () => {
+  const c = clipSyntenyFeature(
+    cig([100, CIGAR_S], [1000, CIGAR_M]),
+    5000, // start (v1 / ref axis)
+    100, // mateStart — clip-exclusive read coords, per buildReadVsRefFeatures
+    1100, // mateEnd
+    1,
+    5000, // winStart
+    5500, // winEnd
+  )!
+  expect(c).toEqual({
+    start: 5000,
+    end: 5500,
+    mateStart: 100,
+    mateEnd: 600,
+    cigar: cig([500, CIGAR_M]),
+  })
+  // ...and the walk agrees with the corners it reports, on both axes. Before the
+  // fix the clip kept a 100S and only 400M, so this said [5000, 5400] / [100,
+  // 500] — a 100bp shortfall at the trailing end of every tile and marker.
+  expect(walkedSpans(c, 1)).toEqual({
+    query: [5000, 5500],
+    target: [100, 600],
+  })
+})
+
+test('a trailing hard clip is not a block of its own', () => {
+  // The match trims to nothing (the window starts exactly at its end), so the
+  // clip is the only op that could be collected. Counting it as query-consuming
+  // returned a 200bp-wide block with a zero-width target — a spike, drawn in
+  // place of the real one, since the caller overwrites the block's coords with
+  // whatever this answers.
+  expect(
+    clipSyntenyFeature(
+      cig([1000, CIGAR_M], [200, CIGAR_H]),
+      5000,
+      0,
+      1000,
+      1,
+      6000,
+      6500,
+    ),
+  ).toBeUndefined()
+})
+
+test('- strand: a leading soft clip advances neither axis', () => {
+  // Same block reversed: the query still walks forward, the target counts down
+  // from mateEnd, and the clip must move neither.
+  const c = clipSyntenyFeature(
+    cig([100, CIGAR_S], [1000, CIGAR_M]),
+    5000,
+    100,
+    1100,
+    -1,
+    5000,
+    5500,
+  )!
+  expect(c).toEqual({
+    start: 5000,
+    end: 5500,
+    mateStart: 600,
+    mateEnd: 1100,
+    cigar: cig([500, CIGAR_M]),
+  })
+  expect(walkedSpans(c, -1)).toEqual({
+    query: [5000, 5500],
+    target: [600, 1100],
+  })
 })
 
 // A CIGAR that reports how many ops the walk actually touched. The whole point

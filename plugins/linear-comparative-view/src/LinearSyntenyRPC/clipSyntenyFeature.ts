@@ -15,14 +15,48 @@ import type { BpRegionIndex } from '@jbrowse/synteny-core'
 // advances on M/=/X and I. The D<->I asymmetry is the pre-swap the PIF t-line
 // carries, so a clip produced here stays consistent when it feeds back through
 // the same convention.
+//
+// Spelled as ENUMERATED op sets, so H/S/P advance NEITHER axis. That is the
+// convention every other walk in the tree uses — `visitCigarRenderedSegments`
+// (the walk this clip's own output is re-walked by, which has no branch for them
+// at all) and `findPosInCigar`, whose header says so explicitly. Written as
+// `op !== CIGAR_I` / `op !== CIGAR_D && op !== CIGAR_N` these advanced BOTH axes
+// on a clip, which stays invisible only because a PAF/PIF CIGAR carries none. A
+// BAM-sourced one does: "Linear read vs ref" hands the read's raw CIGAR through
+// verbatim while putting the mate in read coordinates that already EXCLUDE the
+// clip (`buildReadVsRefFeatures`, `clipLengthAtStartOfRead`). So a leading
+// `100S` walked the re-anchored block 100bp along both axes past where the block
+// says it starts, and since `clipLargeBlockToWindow` fires once a block exceeds
+// 4x the window — ~1bp/px on a 20kb read segment, an ordinary inspection zoom —
+// every CIGAR tile and marker on it landed 100bp short of the ribbon it sits in,
+// which in transparent-indels mode is a hole at the trailing end.
+//
+// Bitmasks in `((1 << op) & MASK)` form, the idiom `CIGAR_INDEL_MASK` already
+// carries in this directory (buildSyntenyGeometry's `cigarSegmentKind`), so
+// membership is one test rather than a chain of five. Built from the op
+// constants rather than written as literals: the point of the fix is that the
+// SET is the thing to read, and `0b110001101` hides it. Deliberately local —
+// `visitCigarRenderedSegments` is the authority here and it branches per op to
+// decide WHICH axis, so a mask does not fit it, and a shared one it could not
+// use would just be a second statement of the same convention.
+const V1_OPS =
+  (1 << CIGAR_M) |
+  (1 << CIGAR_EQ) |
+  (1 << CIGAR_X) |
+  (1 << CIGAR_D) |
+  (1 << CIGAR_N)
+const V2_OPS =
+  (1 << CIGAR_M) | (1 << CIGAR_EQ) | (1 << CIGAR_X) | (1 << CIGAR_I)
+const MATCH_OPS = (1 << CIGAR_M) | (1 << CIGAR_EQ) | (1 << CIGAR_X)
+
 function consumesQuery(op: number) {
-  return op !== CIGAR_I
+  return ((1 << op) & V1_OPS) !== 0
 }
 function consumesTarget(op: number) {
-  return op !== CIGAR_D && op !== CIGAR_N
+  return ((1 << op) & V2_OPS) !== 0
 }
 function isMatchOp(op: number) {
-  return op === CIGAR_M || op === CIGAR_EQ || op === CIGAR_X
+  return ((1 << op) & MATCH_OPS) !== 0
 }
 
 export interface ClippedSyntenyFeature {
@@ -108,13 +142,20 @@ export function clipSyntenyFeature(
             extendTarget(bp2, bp2)
           }
         }
-      } else if (bp1 >= winStart && bp1 <= winEnd) {
+      } else if (tAdv > 0 && bp1 >= winStart && bp1 <= winEnd) {
         // I: target-consuming gap at a single query position; keep it whole
         out.push(packed)
         qLo = Math.min(qLo, bp1)
         qHi = Math.max(qHi, bp1)
         extendTarget(bp2, bp2Next)
       }
+      // An op consuming NEITHER axis (H/S/P) is dropped rather than falling into
+      // the arm above. It carries no coordinate on either axis, so keeping it
+      // would extend qLo/qHi to a position the alignment does not occupy — and
+      // on a hard clip sitting exactly at winEnd, with the preceding match
+      // trimmed to nothing, that arm is the ONLY thing that collects, so the
+      // clip alone would come back as a zero-width block. The walk this output
+      // feeds (visitCigarRenderedSegments) has no branch for these ops either.
     }
     bp1 = bp1Next
     bp2 = bp2Next
