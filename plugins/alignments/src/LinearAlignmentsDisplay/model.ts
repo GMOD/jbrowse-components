@@ -2122,6 +2122,7 @@ export default function stateModelFactory(
           // `arcsByGroup` is empty when read-connections are off, so this costs
           // nothing on that path.
           const arcsByGroup = self.arcsByGroup
+          const crossRegionArcsByGroup = self.crossRegionArcsByGroup
           const sashimiLanes = self.sashimiDownArcLanes
           const groups =
             order.length === 0
@@ -2141,7 +2142,19 @@ export default function stateModelFactory(
                   key,
                   label,
                   maxY: groupMaxYFor(key),
-                  hasArcs: anyArcsDrawn(arcsByGroup.get(key)),
+                  // BOTH feeds, because the band is reserved for INK and this
+                  // lane's ink can live entirely in the overlay: an arc whose
+                  // two feet are in different displayed regions is held out of
+                  // `arcsByGroup` on purpose (`CrossRegionArc`), so a lane whose
+                  // every arc crosses a seam — two windows either side of a
+                  // breakpoint, which is the view read connections exist for —
+                  // would reserve nothing and then have nowhere to draw. This is
+                  // the `hasArcBandInk`-not-`numArcs` rule in this directory's
+                  // CLAUDE.md, met from the other side: the band is empty only
+                  // when neither feed has anything.
+                  hasArcs:
+                    anyArcsDrawn(arcsByGroup.get(key)) ||
+                    (crossRegionArcsByGroup.get(key)?.length ?? 0) > 0,
                   hasSashimiDownArcs: sashimiLanes.has(key),
                 }))
           return computeStackedSections(groups, {

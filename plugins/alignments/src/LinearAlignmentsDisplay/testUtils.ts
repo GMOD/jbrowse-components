@@ -567,6 +567,11 @@ export function createTestAlignmentsDisplay() {
         get: (name: string) => (name === 'volvox' ? asm : undefined),
         isValidRefName: () => true,
       },
+      // `colorPalette` derives from the session's, and it is read by every
+      // getter that resolves a colour — so without this the harness boots a
+      // display that throws the moment a test asks one of them, which reads as
+      // a fault in the getter rather than a hole in the fixture.
+      palette: resolvePalette(),
       widgets: new Map<string, unknown>(),
       selection: undefined as unknown,
     }))
