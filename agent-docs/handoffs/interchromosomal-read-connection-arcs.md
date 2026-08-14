@@ -1,10 +1,10 @@
 ---
 name: handoff-interchromosomal-read-connection-arcs
 description:
-  The arcs landed; what is left is the figures and the second junction producer
-  they retire. Which figure to re-aim and what it should draw, two exploratory
-  ones whose render IS the measurement, and the one measurement the cap still
-  rests on an estimate for.
+  The arcs and the k562 figure landed; what is left is the second junction
+  producer that figure retires, two exploratory figures whose render IS the
+  measurement, and the one number the overlay's cap still rests on an estimate
+  for.
 ---
 
 # Handoff: interchromosomal read-connection arcs
@@ -20,36 +20,28 @@ as two dangling halves. The reasoning is in the commit messages and in
 `test_data/volvox/volvox-translocation.bam` and the three `arcs-display` browser
 cases are its regression test.
 
-**What is left is the figures**, and the second junction producer they retire.
+**`cancer_sv/k562_bcr_abl_split` has been re-aimed onto the band and published.**
+What is left is the second junction producer that retires, two exploratory
+figures, and one unverified frame.
 
-## 1. Re-aim `cancer_sv/k562_bcr_abl_split`, then drop piece A
+## 1. Drop piece A — the figure it was built for no longer needs it
 
-The two are one job. `showSplitJunctionArcs` — the counted sashimi overlay on
-branch `worktree-split-read-sashimi-arcs`, that thread's "piece A" — is a second
-coalescer for the same junctions, and the arc band can now draw what it was built
-to draw. It clusters within 10 bp and takes the modal site where `arcKey`
-coalesces on exact coordinates, so at a junction with microhomology jitter the
-two print different counts at one locus.
-
-**Turn the band on in the figure rather than dropping piece A around it.** The
-k562 figure does not enable the arc band today: `readConnections` has
-`promotedBase: 'off'`, the spec's `SPLIT_READS` is `{featureHeight: 4}`, and the
-fan in that figure is `showBezierConnections` in chain mode. So set
-`readConnections: 'arc'` on the `K562_isoseq` track in
-`website/scripts/specs/cancer_sv.ts`, keep the bezier fan, and write the caption
-and tutorial prose for the fan-plus-count reading — the fan is the evidence, one
-curve per molecule; the arc is the count they add up to, which is the argument
-the prose already makes for piece A. Then
-`pnpm figures:push --exact --filter cancer_sv/k562_bcr_abl_split` and commit
-`figures.lock`.
-
-**Expect one thick arc of support 26, three hairlines under its stroke, and a
-tick picket at the BCR donor.** That is measured, not predicted —
+**`cancer_sv/k562_bcr_abl_split` is done and published** (`020ea68664`,
+`01307eeead`): the band is on beside the bezier fan, and it renders as the
+measurement said it would — one arc of support 26 across the region divider at
+the ABL1 exon-2 acceptor, three hairlines under its stroke, and a tick at the BCR
+donor for the molecules reaching acceptors outside the frame.
 [DEMO_DATASETS.md](../reference/DEMO_DATASETS.md) has the acceptor distribution
-and the method caveat. If the band shows something else, the model of that data
-is wrong and that is worth more than the figure.
+behind those numbers and the method caveat.
 
-What piece A's removal loses is the printed count label and the position over the
+So the case for `showSplitJunctionArcs` — the counted sashimi overlay on branch
+`worktree-split-read-sashimi-arcs`, that thread's "piece A" — is spent. It is a
+second coalescer for the same junctions, clustering within 10 bp and taking the
+modal site where `arcKey` coalesces on exact coordinates, so at a junction with
+microhomology jitter the two print different counts at one locus. The arc band
+now draws what it was built to draw, in the figure it was built for.
+
+What its removal loses is the printed count label and the position over the
 coverage band, nothing else. The label, if wanted, is a small later option on the
 arc band sourced from `ComputedArc.support` — one producer, one number, serving
 same-chromosome junctions too. It is not a reason to keep a second junction
