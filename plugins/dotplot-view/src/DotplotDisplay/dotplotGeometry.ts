@@ -1,4 +1,4 @@
-import { visitCigarRenderedSegments } from '@jbrowse/cigar-utils'
+import { CIGAR_M, visitCigarRenderedSegments } from '@jbrowse/cigar-utils'
 
 import { MIN_CIGAR_PX_WIDTH } from './dotplotCigarDetail.ts'
 
@@ -17,6 +17,11 @@ function allocBuffers(capacity: number): GeometryBuffers {
     x2: new Float64Array(capacity),
     y2: new Float64Array(capacity),
     instanceFeatureIdx: new Uint32Array(capacity),
+    // Zero is CIGAR_M, which is what a segment carrying no CIGAR detail is: the
+    // whole-feature line the else-branch below writes. Only indel ops are ever
+    // reported (see `segmentCigarOp`), so the default needs no sentinel and the
+    // non-CIGAR path needs no write.
+    segmentOps: new Uint8Array(capacity),
   }
 }
 
@@ -28,12 +33,14 @@ function writeSegment(
   x2: number,
   y2: number,
   featureIdx: number,
+  op = CIGAR_M,
 ) {
   b.x1[n] = x1
   b.y1[n] = y1
   b.x2[n] = x2
   b.y2[n] = y2
   b.instanceFeatureIdx[n] = featureIdx
+  b.segmentOps[n] = op
 }
 
 // `subarray` is a view, so it pins the WHOLE allocation for as long as the
@@ -61,6 +68,7 @@ function trimToCount(
     x2: b.x2[trim](0, n),
     y2: b.y2[trim](0, n),
     instanceFeatureIdx: b.instanceFeatureIdx[trim](0, n),
+    segmentOps: b.segmentOps[trim](0, n),
     instanceCount: n,
     baseH,
     baseV,
@@ -124,8 +132,8 @@ export function buildLineSegments(
         bpPerPxV,
         rev1,
         rev2,
-        (_op, seg1Start, seg1End, seg2Start, seg2End) => {
-          writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, i)
+        (op, seg1Start, seg1End, seg2Start, seg2End) => {
+          writeSegment(buf, n, seg1Start, seg2Start, seg1End, seg2End, i, op)
           n++
         },
       )

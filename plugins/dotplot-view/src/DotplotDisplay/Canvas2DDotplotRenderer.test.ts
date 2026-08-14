@@ -1,4 +1,5 @@
 import { Canvas2DDotplotRenderer } from './Canvas2DDotplotRenderer.ts'
+import { fakeDotplotInstanceData } from './testUtils.ts'
 
 import type {
   DotplotGeometryData,
@@ -30,26 +31,32 @@ function createMockCanvas() {
 
 // Build geometry with cumBp values (bpPerPx=1 → cumBp = pixel offset for simple cases).
 function makeGeometry(count: number): DotplotGeometryData {
-  const x1 = new Float64Array(count)
-  const y1 = new Float64Array(count)
-  const x2 = new Float64Array(count)
-  const y2 = new Float64Array(count)
-  for (let i = 0; i < count; i++) {
-    x1[i] = i * 10
-    y1[i] = i * 10
-    x2[i] = i * 10 + 5
-    y2[i] = i * 10 + 5
-  }
-  return {
-    x1,
-    y1,
-    x2,
-    y2,
+  const geometry = {
+    ...fakeDotplotInstanceData(count),
     colors: new Uint32Array(count).fill(0xff0000ff),
-    instanceFeatureIdx: new Uint32Array(count),
-    instanceCount: count,
-    baseH: 0,
-    baseV: 0,
+  }
+  for (let i = 0; i < count; i++) {
+    geometry.x1[i] = i * 10
+    geometry.y1[i] = i * 10
+    geometry.x2[i] = i * 10 + 5
+    geometry.y2[i] = i * 10 + 5
+  }
+  return geometry
+}
+
+// One segment between two cumBp corners, in whatever color the test is about.
+function oneSegment(
+  [x1, y1, x2, y2]: [number, number, number, number],
+  color: number,
+): DotplotGeometryData {
+  return {
+    ...fakeDotplotInstanceData(1, {
+      x1: new Float64Array([x1]),
+      y1: new Float64Array([y1]),
+      x2: new Float64Array([x2]),
+      y2: new Float64Array([y2]),
+    }),
+    colors: new Uint32Array([color]),
   }
 }
 
@@ -116,17 +123,7 @@ describe('Canvas2DDotplotRenderer', () => {
     // cumBp=100 for x1, cumBp=200 for y1.
     // With bpPerPxHInv=2 and viewBpH=5: sx1 = (100 - 5) * 2 = 190.
     // With bpPerPxVInv=3 and viewBpV=20/3: sy1 = 600 - (200 - 20/3) * 3 = 600 - 580 = 20.
-    renderer.uploadGeometry(0, {
-      x1: new Float64Array([100]),
-      y1: new Float64Array([200]),
-      x2: new Float64Array([150]),
-      y2: new Float64Array([250]),
-      colors: new Uint32Array([0xff0000ff]),
-      instanceFeatureIdx: new Uint32Array([0]),
-      instanceCount: 1,
-      baseH: 0,
-      baseV: 0,
-    })
+    renderer.uploadGeometry(0, oneSegment([100, 200, 150, 250], 0xff0000ff))
 
     renderer.render({
       viewBpH: 5,
@@ -146,17 +143,7 @@ describe('Canvas2DDotplotRenderer', () => {
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
 
-    renderer.uploadGeometry(0, {
-      x1: new Float64Array([0]),
-      y1: new Float64Array([0]),
-      x2: new Float64Array([1]),
-      y2: new Float64Array([1]),
-      colors: new Uint32Array([0xccbf4080]),
-      instanceFeatureIdx: new Uint32Array([0]),
-      instanceCount: 1,
-      baseH: 0,
-      baseV: 0,
-    })
+    renderer.uploadGeometry(0, oneSegment([0, 0, 1, 1], 0xccbf4080))
 
     renderer.render(DEFAULT_STATE)
     expect(ctx.strokeStyle).toMatch(/^rgba\(128,64,191,0\.8/)
@@ -171,18 +158,8 @@ describe('Canvas2DDotplotRenderer', () => {
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
 
-    renderer.uploadGeometry(0, {
-      x1: new Float64Array([0]),
-      y1: new Float64Array([0]),
-      x2: new Float64Array([1]),
-      y2: new Float64Array([1]),
-      // opaque, as every packed dotplot color now is
-      colors: new Uint32Array([0xffbf4080]),
-      instanceFeatureIdx: new Uint32Array([0]),
-      instanceCount: 1,
-      baseH: 0,
-      baseV: 0,
-    })
+    // opaque, as every packed dotplot color now is
+    renderer.uploadGeometry(0, oneSegment([0, 0, 1, 1], 0xffbf4080))
 
     renderer.render({ ...DEFAULT_STATE, alpha: 0.25 })
     expect(ctx.strokeStyle).toBe('rgba(128,64,191,0.25)')

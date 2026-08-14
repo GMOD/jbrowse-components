@@ -17,6 +17,13 @@ export interface DotplotInstanceData {
   x2: Float64Array
   y2: Float64Array
   instanceFeatureIdx: Uint32Array
+  // The CIGAR operator each segment was drawn as, for the hover tooltip to name
+  // — the one thing about a segment that its geometry cannot answer, since a
+  // deletion and a skip both advance the h axis alone and look identical. Not a
+  // render input: no backend reads it, and it is not packed into the instance
+  // buffer. CIGAR_M (0) for a segment with no CIGAR detail behind it. See
+  // `segmentCigarOp`.
+  segmentOps: Uint8Array
   instanceCount: number
   // Fetch-time viewport-start cumBp per axis; the GPU precision anchor. The
   // CPU/SVG paths ignore these (they render from absolute cumBp).

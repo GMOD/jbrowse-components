@@ -2,9 +2,12 @@ import { exportMargin } from '@jbrowse/core/svg/constants'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
+import {
+  fakeDotplotInstanceData,
+  fakeDotplotRpcData,
+} from '../../DotplotDisplay/testUtils.ts'
 import { renderToSvg } from './SVGDotplotView.tsx'
 
-import type { DotplotRpcData } from '../../DotplotDisplay/types.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -191,42 +194,19 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
   // Committed directly rather than fetched, the way the errored-tracks test
   // above sets its terminal state: what matters here is that a display holding
   // a range gets it into the exported legend.
-  const f64 = new Float64Array(1)
-  const rpcData: DotplotRpcData = {
-    p11: f64,
-    p12: f64,
-    p21: f64,
-    p22: f64,
-    strands: new Int8Array([1]),
-    alignmentLengths: new Uint32Array([100]),
-    cigarData: new Uint32Array(0),
-    cigarOffsets: new Uint32Array([0, 0]),
+  const rpcData = fakeDotplotRpcData({
     attributes: { goc: new Float32Array([75]) },
     attributeRanges: { goc: { min: 0, max: 75 } },
     refNameDict: ['ctgA'],
-    refNameIds: new Uint32Array([0]),
     mateRefNameDict: ['ctgA'],
-    mateRefNameIds: new Uint32Array([0]),
-    totalFeatureCount: 1,
-    skippedFeatureCount: 0,
-  }
-  const f64empty = new Float64Array(0)
+  })
   for (const display of view.dotplotDisplays) {
     // `currentFetchKey`, so `dataCurrent` holds and the export's svgReady gate
     // opens instead of waiting out the whole test on a key that never matches
     display.setRpcData(rpcData, display.currentFetchKey, [])
     // svgReady also wants instance geometry; nothing needs to be IN it, the
     // legend is drawn outside the plot rect
-    display.setInstanceData({
-      x1: f64empty,
-      y1: f64empty,
-      x2: f64empty,
-      y2: f64empty,
-      instanceFeatureIdx: new Uint32Array(0),
-      instanceCount: 0,
-      baseH: 0,
-      baseV: 0,
-    })
+    display.setInstanceData(fakeDotplotInstanceData(0))
   }
   view.setColorBy('attribute:goc')
   view.setShowColorLegend(true)

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
+import { fakeDotplotInstanceData } from './testUtils.ts'
 
 import type {
   DotplotGeometryData,
@@ -46,15 +47,14 @@ function geometry(
   segments: [number, number, number, number][],
 ): DotplotGeometryData {
   return {
-    x1: new Float64Array(segments.map(s => s[0])),
-    y1: new Float64Array(segments.map(s => s[1])),
-    x2: new Float64Array(segments.map(s => s[2])),
-    y2: new Float64Array(segments.map(s => s[3])),
+    ...fakeDotplotInstanceData(segments.length, {
+      x1: new Float64Array(segments.map(s => s[0])),
+      y1: new Float64Array(segments.map(s => s[1])),
+      x2: new Float64Array(segments.map(s => s[2])),
+      y2: new Float64Array(segments.map(s => s[3])),
+      instanceFeatureIdx: new Uint32Array(segments.map((_s, i) => i)),
+    }),
     colors: new Uint32Array(segments.map(() => 0xff_00_00_ff)),
-    instanceFeatureIdx: new Uint32Array(segments.map((_s, i) => i)),
-    instanceCount: segments.length,
-    baseH: 0,
-    baseV: 0,
   }
 }
 

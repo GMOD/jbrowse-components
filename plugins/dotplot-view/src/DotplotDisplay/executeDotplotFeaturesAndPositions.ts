@@ -54,6 +54,16 @@ export interface DotplotFeaturesAndPositionsResult {
   refNameIds: Uint32Array
   mateRefNameDict: string[]
   mateRefNameIds: Uint32Array
+  // Per-feature names, dictionary-encoded like the refNames above and for the
+  // same reason. Only the hover tooltip reads them, and the dictionary is what
+  // makes shipping them nearly free on the tracks that have none: a PAF sets no
+  // `name` on any feature, so the dictionary is one empty string and the ids are
+  // a zero-filled transfer. Where names DO exist (ortholog tables, MCScan
+  // blocks) they are typically a gene symbol per block, so distinct — the
+  // dictionary buys nothing there and costs one Uint32Array, which is the right
+  // way round for the common case.
+  nameDict: string[]
+  nameIds: Uint32Array
   // Every feature's packed CIGAR ops concatenated into one transferable buffer,
   // with cigarOffsets[i]..cigarOffsets[i+1] delimiting feature i (length n+1).
   // An array-of-arrays would be structured-cloned per feature — the one thing on
@@ -87,10 +97,10 @@ interface FeatureMate {
   assemblyName?: string
 }
 
-// Growable string dictionary: interns a name to a stable index. One per axis,
-// since the two axes are different assemblies and sharing would only make the
-// ids less local.
-function makeRefNameDict() {
+// Growable string dictionary: interns a string to a stable index. One per axis
+// for refNames (the two axes are different assemblies, and sharing would only
+// make the ids less local), plus one for feature names.
+function makeStringDict() {
   const ids = new Map<string, number>()
   const dict: string[] = []
   return {
@@ -189,8 +199,10 @@ export async function executeDotplotFeaturesAndPositions({
   const channelNames = Object.keys(channels.arrays)
   const refNameIds = new Uint32Array(count)
   const mateRefNameIds = new Uint32Array(count)
-  const hDict = makeRefNameDict()
-  const vDict = makeRefNameDict()
+  const nameIds = new Uint32Array(count)
+  const hDict = makeStringDict()
+  const vDict = makeStringDict()
+  const nameDict = makeStringDict()
   const cigarChunks: Uint32Array[] = []
   let cigarTotal = 0
 
@@ -296,6 +308,10 @@ export async function executeDotplotFeaturesAndPositions({
     }
     refNameIds[n] = hDict.idFor(refName)
     mateRefNameIds[n] = vDict.idFor(mateRefName)
+    // '' rather than a missing-value sentinel: an absent name and an empty one
+    // read the same to the only consumer (the tooltip omits its line either
+    // way), and it keeps the dictionary a plain string list.
+    nameIds[n] = nameDict.idFor(f.get('name') ?? '')
     // Parse only what the geometry builder could actually walk at this zoom. A
     // whole-genome PAF is mostly sub-pixel alignments whose parsed ops would be
     // built, shipped, and then ignored.
@@ -347,6 +363,8 @@ export async function executeDotplotFeaturesAndPositions({
     refNameIds: refNameIds.subarray(0, n),
     mateRefNameDict: vDict.dict,
     mateRefNameIds: mateRefNameIds.subarray(0, n),
+    nameDict: nameDict.dict,
+    nameIds: nameIds.subarray(0, n),
     cigarData,
     cigarOffsets,
     totalFeatureCount: count,
@@ -364,6 +382,7 @@ export async function executeDotplotFeaturesAndPositions({
     result.alignmentLengths.buffer,
     result.refNameIds.buffer,
     result.mateRefNameIds.buffer,
+    result.nameIds.buffer,
     ...Object.values(result.attributes).map(a => a.buffer),
     result.cigarData.buffer,
     result.cigarOffsets.buffer,

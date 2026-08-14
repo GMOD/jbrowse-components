@@ -31,6 +31,11 @@ export interface DotplotPickIndex {
 }
 
 export interface DotplotPickHit {
+  // The winning SEGMENT — which of the feature's lines the cursor is nearest.
+  // The one piece of hover state stored, because the feature index derives from
+  // it (`instanceFeatureIdx`) and the CIGAR operator under the cursor does not
+  // derive from anything else.
+  segmentIdx: number
   featureIdx: number
   // px from the cursor to the nearest point of the feature, for the
   // nearest-wins comparison the view makes across displays
@@ -244,7 +249,11 @@ export function pickDotplotFeature({
       const distSq = pointSegmentDistSq(x, y, sx1, sy1, sx2, sy2)
       if (distSq <= toleranceSq && distSq <= bestDistSq) {
         bestDistSq = distSq
-        best = { featureIdx: feature, distancePx: Math.sqrt(distSq) }
+        best = {
+          segmentIdx: s,
+          featureIdx: feature,
+          distancePx: Math.sqrt(distSq),
+        }
       }
     }
   }

@@ -5,6 +5,7 @@ import {
   interleaveInstances,
 } from './instanceInterleave.ts'
 import { INSTANCE_OFFSET_F32 as F_F32 } from './shaders/dotplot.iface.generated.ts'
+import { fakeDotplotInstanceData } from './testUtils.ts'
 
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 
@@ -15,15 +16,14 @@ function makeData(colors: Uint32Array): DotplotGeometryData {
   const seq = (base: number) =>
     Float64Array.from({ length: n }, (_, i) => base + i)
   return {
-    x1: seq(1000),
-    y1: seq(2000),
-    x2: seq(3000),
-    y2: seq(4000),
+    ...fakeDotplotInstanceData(n, {
+      x1: seq(1000),
+      y1: seq(2000),
+      x2: seq(3000),
+      y2: seq(4000),
+      instanceFeatureIdx: Uint32Array.from({ length: n }, (_, i) => i),
+    }),
     colors,
-    instanceFeatureIdx: Uint32Array.from({ length: n }, (_, i) => i),
-    instanceCount: n,
-    baseH: 0,
-    baseV: 0,
   }
 }
 

@@ -1,36 +1,13 @@
 import { buildLineSegments } from './dotplotGeometry.ts'
+import { fakeDotplotRpcData } from './testUtils.ts'
 
-import type { DotplotRpcData } from './types.ts'
-
-function makeRpcData(
-  p11: number,
-  p12: number,
-  p21: number,
-  p22: number,
-): DotplotRpcData {
-  return {
+function makeRpcData(p11: number, p12: number, p21: number, p22: number) {
+  return fakeDotplotRpcData({
     p11: new Float64Array([p11]),
     p12: new Float64Array([p12]),
     p21: new Float64Array([p21]),
     p22: new Float64Array([p22]),
-    strands: new Int8Array([1]),
-    alignmentLengths: new Uint32Array([100]),
-    attributes: {
-      identity: new Float32Array([-1]),
-      meanIdentity: new Float32Array([-1]),
-      mappingQual: new Float32Array([-1]),
-      dnds: new Float32Array(0),
-    },
-    attributeRanges: {},
-    refNameDict: ['chr1'],
-    refNameIds: new Uint32Array([0]),
-    mateRefNameDict: ['chr2'],
-    mateRefNameIds: new Uint32Array([0]),
-    cigarData: new Uint32Array(0),
-    cigarOffsets: new Uint32Array([0, 0]),
-    totalFeatureCount: 1,
-    skippedFeatureCount: 0,
-  }
+  })
 }
 
 describe('buildLineSegments cumBp precision', () => {
@@ -73,29 +50,15 @@ describe('buildLineSegments cumBp precision', () => {
     // from y2. Ref span 250 (100M 50D 100M), query span 200, V decreasing.
     const M = (len: number) => (len << 4) | 0 // CIGAR_M
     const D = (len: number) => (len << 4) | 2 // CIGAR_D
-    const data: DotplotRpcData = {
+    const data = fakeDotplotRpcData({
       p11: new Float64Array([1_000]),
       p12: new Float64Array([1_250]),
       p21: new Float64Array([5_000]),
       p22: new Float64Array([4_800]),
-      strands: new Int8Array([1]),
       alignmentLengths: new Uint32Array([250]),
-      attributes: {
-        identity: new Float32Array([-1]),
-        meanIdentity: new Float32Array([-1]),
-        mappingQual: new Float32Array([-1]),
-        dnds: new Float32Array(0),
-      },
-      attributeRanges: {},
-      refNameDict: ['chr1'],
-      refNameIds: new Uint32Array([0]),
-      mateRefNameDict: ['chr2'],
-      mateRefNameIds: new Uint32Array([0]),
       cigarData: new Uint32Array([M(100), D(50), M(100)]),
       cigarOffsets: new Uint32Array([0, 3]),
-      totalFeatureCount: 1,
-      skippedFeatureCount: 0,
-    }
+    })
     const segs = buildLineSegments(data, true, 0, 1, 1, 0, 0)
     const last = segs.instanceCount - 1
     // final sub-segment lands exactly on the feature's (x2,y2) endpoint
@@ -116,7 +79,7 @@ describe('buildLineSegments cumBp precision', () => {
   test('a mostly-unused geometry allocation is not retained', () => {
     const M = (len: number) => (len << 4) | 0 // CIGAR_M
     const cigarData = new Uint32Array(Array.from({ length: 64 }, () => M(1)))
-    const data: DotplotRpcData = {
+    const data = {
       ...makeRpcData(0, 64, 0, 64),
       cigarData,
       cigarOffsets: new Uint32Array([0, cigarData.length]),

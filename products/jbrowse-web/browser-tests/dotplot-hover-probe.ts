@@ -147,20 +147,106 @@ try {
     { timeout: 10000 },
   )
   console.log('tooltip rendered: true')
+  // ...and the whole plot, for the tooltip in place over it.
+  const wholePlot = {
+    x: box.x,
+    y: box.y,
+    width: box.width,
+    height: box.height + 40,
+  }
+  await shoot('plot.png', wholePlot)
   const strokes = await page.$$eval('svg path[stroke-linecap="round"]', els =>
     els.map(e => e.getAttribute('stroke-width')),
   )
   console.log(`restroke widths:  ${JSON.stringify(strokes)}`)
 
+  // Phase two: zoom onto the alignment just hovered, so its CIGAR detail is wide
+  // enough to draw, and hover a step of the staircase. This is the only way to
+  // see `segmentOps` come through the real worker — the op is the one thing a
+  // segment's geometry cannot answer, since a deletion and a skip both advance
+  // the h axis alone and look identical on screen.
+  //
+  // Framed from the feature's own cumBp rather than a locstring: those are
+  // already in the axis' coordinate space, so it needs no refName lookup and
+  // cannot drift with the fixture.
   await shoot('hovered.png', crop)
-  // ...and the whole plot, for the tooltip in place.
-  await shoot('plot.png', {
-    x: box.x,
-    y: box.y,
-    width: box.width,
-    height: box.height + 40,
+  const zoomed = await page.evaluate((displayKey: number) => {
+    const view = (window as any).JBrowseSession.views[0]
+    const display = view.dotplotDisplays.find(
+      (d: any) => d.displayKey === displayKey,
+    )
+    const { p11, p12, p21, p22 } = display.rpcData
+    const i = display.hoveredFeatureIdx
+    const frame = (axis: any, lo: number, hi: number) => {
+      // 1.5x the feature's span across the axis, then centered on it
+      axis.zoomTo(Math.abs(hi - lo) / axis.width / 1.5)
+      axis.scrollTo((lo + hi) / 2 / axis.bpPerPx - axis.width / 2)
+    }
+    frame(view.hview, p11[i], p12[i])
+    frame(view.vview, p21[i], p22[i])
+    return { bpPerPxH: view.hview.bpPerPx, bpPerPxV: view.vview.bpPerPx }
+  }, target.hit.displayKey)
+  console.log(
+    `\nzoomed to ${zoomed.bpPerPxH.toFixed(2)} / ${zoomed.bpPerPxV.toFixed(2)} bp/px`,
+  )
+  // `dataCurrent`, not the loading overlay: the fetch is debounced a second, so
+  // for that second nothing is loading and the overlay-based wait returns
+  // immediately — on geometry rebuilt at the new zoom from the OLD whole-genome
+  // fetch, which carries no CIGAR by design. `dataCurrent` goes false the
+  // instant the zoom changes the fetch key and true again only when the matching
+  // fetch has landed, which is the question being asked here.
+  await page.waitForFunction(
+    () =>
+      (window as any).JBrowseSession.views[0].dotplotDisplays.every(
+        (d: any) => d.dataCurrent && !d.fetching,
+      ),
+    { timeout: 90000, polling: 250 },
+  )
+  await waitForDataLoaded(page, 90000)
+
+  // What the zoomed fetch actually produced, so "no indel found" below can be
+  // told apart from "no CIGAR was shipped" and from "no segments at all".
+  const geom = await page.evaluate(() => {
+    const view = (window as any).JBrowseSession.views[0]
+    return view.dotplotDisplays.map((d: any) => ({
+      segments: d.instanceData?.instanceCount ?? 0,
+      cigarWords: d.rpcData?.cigarData.length ?? 0,
+      ops: [...new Set<number>(d.instanceData?.segmentOps ?? [])].sort(),
+      drawCigar: view.drawCigar,
+    }))
   })
-  console.log(`\nwrote plain.png, hovered.png, plot.png in ${outDir}`)
+  console.log(`geometry after zoom: ${JSON.stringify(geom)}`)
+
+  // Walk the plot for a hovered segment that IS an indel. Most steps of a
+  // staircase are matches, so this scans rather than assuming.
+  const op = await page.evaluate(() => {
+    const view = (window as any).JBrowseSession.views[0]
+    const { viewWidth, viewHeight } = view
+    for (let y = 2; y < viewHeight; y += 2) {
+      for (let x = 2; x < viewWidth; x += 2) {
+        const hit = view.pickFeatureAt(x, y)
+        if (hit) {
+          view.setHoveredFeature(hit)
+          const line = view.hoveredTooltipLines?.find((l: string) =>
+            l.startsWith('CIGAR operator:'),
+          )
+          if (line) {
+            return { line, x, y, segmentIdx: hit.segmentIdx }
+          }
+        }
+      }
+    }
+    return undefined
+  })
+  console.log(
+    op
+      ? `hovered segment ${op.segmentIdx} at (${op.x}, ${op.y}): ${op.line}`
+      : 'no indel segment found on the zoomed plot (this fixture may have none)',
+  )
+  await shoot('zoomed.png', wholePlot)
+  console.log(
+    `\nwrote plain.png, hovered.png, plot.png, zoomed.png in ${outDir}`,
+  )
 } finally {
   await browser.close()
   server.close()

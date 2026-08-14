@@ -3,6 +3,7 @@ import {
   featureSegmentRange,
   pickDotplotFeature,
 } from './dotplotPickEngine.ts'
+import { fakeDotplotInstanceData } from './testUtils.ts'
 
 import type { DotplotPickTransform } from './dotplotPickEngine.ts'
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
@@ -12,17 +13,7 @@ import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 function makeData(
   segments: [number, number, number, number, number][],
 ): DotplotInstanceData {
-  const n = segments.length
-  const data: DotplotInstanceData = {
-    x1: new Float64Array(n),
-    y1: new Float64Array(n),
-    x2: new Float64Array(n),
-    y2: new Float64Array(n),
-    instanceFeatureIdx: new Uint32Array(n),
-    instanceCount: n,
-    baseH: 0,
-    baseV: 0,
-  }
+  const data = fakeDotplotInstanceData(segments.length)
   segments.forEach(([x1, y1, x2, y2, f], i) => {
     data.x1[i] = x1
     data.y1[i] = y1
@@ -160,6 +151,20 @@ describe('pickDotplotFeature', () => {
     expect(pick(data, 20, 80)?.featureIdx).toBe(0)
     expect(pick(data, 20, 80, { ...UNIT, viewBpH: 10 })).toBeUndefined()
     expect(pick(data, 10, 80, { ...UNIT, viewBpH: 10 })?.featureIdx).toBe(0)
+  })
+
+  // The segment, not just the feature: it is what the tooltip resolves the CIGAR
+  // operator under the cursor from, and one alignment's staircase can hold a
+  // dozen of them.
+  test('answers which segment of a feature the cursor is nearest', () => {
+    const staircase = makeData([
+      [10, 10, 20, 10, 0],
+      [20, 10, 20, 20, 0],
+      [20, 20, 30, 20, 0],
+    ])
+    expect(pick(staircase, 15, 90)?.segmentIdx).toBe(0)
+    expect(pick(staircase, 20, 85)?.segmentIdx).toBe(1)
+    expect(pick(staircase, 25, 80)?.segmentIdx).toBe(2)
   })
 
   test('every segment of a CIGAR-detailed feature is hittable', () => {

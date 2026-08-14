@@ -2,6 +2,7 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
 import { buildLineSegments } from '../DotplotDisplay/dotplotGeometry.ts'
+import { fakeDotplotRpcData } from '../DotplotDisplay/testUtils.ts'
 
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type { DotplotRpcData } from '../DotplotDisplay/types.ts'
@@ -13,24 +14,16 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // the SVG export tests set up a display holding data. What is under test is the
 // pick and the hover state the view derives from it, not the fetch.
 function fakeRpcData(h: [number, number], v: [number, number]): DotplotRpcData {
-  return {
+  return fakeDotplotRpcData({
     p11: new Float64Array([h[0]]),
     p12: new Float64Array([h[1]]),
     p21: new Float64Array([v[0]]),
     p22: new Float64Array([v[1]]),
-    strands: new Int8Array([1]),
     alignmentLengths: new Uint32Array([h[1] - h[0]]),
-    cigarData: new Uint32Array(0),
-    cigarOffsets: new Uint32Array([0, 0]),
     attributes: {},
-    attributeRanges: {},
     refNameDict: ['ctgA'],
-    refNameIds: new Uint32Array([0]),
     mateRefNameDict: ['ctgA'],
-    mateRefNameIds: new Uint32Array([0]),
-    totalFeatureCount: 1,
-    skippedFeatureCount: 0,
-  }
+  })
 }
 
 function commit(
@@ -127,6 +120,8 @@ test('picks the alignment under the pointer, on the track that owns it', async (
   expect(pickAtBp(view, 1500, 1500)).toEqual({
     displayKey: a.displayKey,
     featureIdx: 0,
+    // the feature's only segment, since no CIGAR detail is drawn here
+    segmentIdx: 0,
     distancePx: expect.any(Number),
   })
   expect(pickAtBp(view, 9500, 3500)?.displayKey).toBe(b.displayKey)
@@ -165,16 +160,37 @@ test('the view resolves the tooltip and the highlight off the hovered track', as
   expect(highlight?.color).toMatch(/^rgba\(/)
 }, 20000)
 
-// The index addresses the outgoing rpcData, so it cannot outlive it — a
-// surviving one describes an unrelated alignment.
-test('a refetch drops the hover', async () => {
-  const { view, a } = await setup()
-  view.setHoveredFeature(pickAtBp(view, 1500, 1500))
-  expect(a.hoveredFeatureIdx).toBe(0)
+// The stored index addresses the geometry, so it cannot outlive it — a surviving
+// one points at an unrelated alignment. Both writers of that geometry drop it,
+// and the second is the one that would be missed: a zoom rebuilds the segments
+// without a refetch.
+test.each([
+  [
+    'a refetch',
+    (a: DotplotDisplayModel) => {
+      a.setRpcData(fakeRpcData([5000, 6000], [5000, 6000]), 'next', [])
+    },
+  ],
+  [
+    'a geometry rebuild',
+    (a: DotplotDisplayModel) => {
+      a.setInstanceData(undefined)
+    },
+  ],
+])(
+  '%s drops the hover',
+  async (_name, invalidate) => {
+    const { view, a } = await setup()
+    view.setHoveredFeature(pickAtBp(view, 1500, 1500))
+    expect(a.hoveredSegmentIdx).toBe(0)
+    expect(a.hoveredFeatureIdx).toBe(0)
 
-  a.setRpcData(fakeRpcData([5000, 6000], [5000, 6000]), 'next', [])
-  expect(a.hoveredFeatureIdx).toBe(-1)
-}, 20000)
+    invalidate(a)
+    expect(a.hoveredSegmentIdx).toBe(-1)
+    expect(a.hoveredFeatureIdx).toBe(-1)
+  },
+  20000,
+)
 
 function round(n: number) {
   return Math.round(n * 10) / 10

@@ -1019,8 +1019,8 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setHoveredFeature(hit: DotplotPlotPickHit | undefined) {
           for (const display of self.dotplotDisplays) {
-            display.setHoveredFeatureIdx(
-              display.displayKey === hit?.displayKey ? hit.featureIdx : -1,
+            display.setHoveredSegmentIdx(
+              display.displayKey === hit?.displayKey ? hit.segmentIdx : -1,
             )
           }
         },

@@ -1,5 +1,10 @@
-import { MIN_CIGAR_PX_WIDTH, cigarWorthParsing } from './dotplotCigarDetail.ts'
+import {
+  MIN_CIGAR_PX_WIDTH,
+  cigarWorthParsing,
+  segmentCigarOp,
+} from './dotplotCigarDetail.ts'
 import { buildLineSegments } from './dotplotGeometry.ts'
+import { fakeDotplotRpcData } from './testUtils.ts'
 
 import type { DotplotRpcData } from './types.ts'
 
@@ -40,29 +45,17 @@ describe('buildLineSegments over flat cigar buffers', () => {
     // middle one carries none
     const first = [M(50), D(20), M(30)]
     const last = [M(60), M(40)]
-    return {
+    return fakeDotplotRpcData({
       p11: new Float64Array([0, 10_000, 20_000]),
       p12: new Float64Array([100, 10_100, 20_100]),
       p21: new Float64Array([0, 10_000, 20_000]),
       p22: new Float64Array([100, 10_100, 20_100]),
       strands: new Int8Array([1, 1, 1]),
       alignmentLengths: new Uint32Array([100, 100, 100]),
-      attributes: {
-        identity: new Float32Array([-1, -1, -1]),
-        meanIdentity: new Float32Array([-1, -1, -1]),
-        mappingQual: new Float32Array([-1, -1, -1]),
-        dnds: new Float32Array(0),
-      },
-      attributeRanges: {},
-      refNameDict: ['chr1'],
-      refNameIds: new Uint32Array([0, 0, 0]),
-      mateRefNameDict: ['chr2'],
-      mateRefNameIds: new Uint32Array([0, 0, 0]),
       cigarData: new Uint32Array([...first, ...last]),
       cigarOffsets: new Uint32Array([0, first.length, first.length, 5]),
       totalFeatureCount: 3,
-      skippedFeatureCount: 0,
-    }
+    })
   }
 
   it('walks each feature only over its own slice', () => {
@@ -83,5 +76,49 @@ describe('buildLineSegments over flat cigar buffers', () => {
   it('emits one flat segment per feature when drawCigar is off', () => {
     const segs = buildLineSegments(makeData(), false, 0, 1, 1, 0, 0)
     expect(segs.instanceCount).toBe(3)
+  })
+
+  // The op per segment is the one thing about a hovered segment its geometry
+  // cannot answer — a deletion and a skip both advance the h axis alone.
+  it('records the operator each segment was drawn as', () => {
+    const segs = buildLineSegments(makeData(), true, 0, 1, 1, 0, 0)
+    // feature 0 is M, D(20), M; the flat middle feature and feature 1's two Ms
+    // are all CIGAR_M
+    expect([...segs.segmentOps]).toEqual([0, 2, 0, 0, 0, 0])
+  })
+
+  it('leaves a flat feature as CIGAR_M, which reports no operator', () => {
+    const segs = buildLineSegments(makeData(), false, 0, 1, 1, 0, 0)
+    expect([...segs.segmentOps]).toEqual([0, 0, 0])
+    expect(segmentCigarOp(segs, 0)).toBeUndefined()
+  })
+})
+
+describe('segmentCigarOp', () => {
+  // 20bp deletion: the h axis advanced, the v axis stayed put
+  const data = {
+    segmentOps: new Uint8Array([0, 2, 1]),
+    x1: new Float64Array([0, 100, 200]),
+    x2: new Float64Array([100, 120, 200]),
+    y1: new Float64Array([0, 100, 200]),
+    y2: new Float64Array([100, 100, 235]),
+  }
+
+  it('names a deletion and measures it on the axis that advanced', () => {
+    expect(segmentCigarOp(data, 1)).toEqual({ op: 'D', length: 20 })
+  })
+
+  it('measures an insertion on the other axis', () => {
+    expect(segmentCigarOp(data, 2)).toEqual({ op: 'I', length: 35 })
+  })
+
+  // A match is the un-newsworthy default and would put a line saying nothing on
+  // every tooltip — the same three kinds synteny reports, and no more.
+  it('reports nothing for a match', () => {
+    expect(segmentCigarOp(data, 0)).toBeUndefined()
+  })
+
+  it('reports nothing for a segment index past the end', () => {
+    expect(segmentCigarOp(data, 9)).toBeUndefined()
   })
 })

@@ -14,6 +14,7 @@ import {
   syntenyFetchRegions,
 } from '@jbrowse/synteny-core'
 
+import { segmentCigarOp } from './dotplotCigarDetail.ts'
 import { computeDotplotColors } from './dotplotColors.ts'
 import { featureSegmentRange } from './dotplotPickEngine.ts'
 import { getDotplotTooltipLines } from './dotplotTooltip.ts'
@@ -85,14 +86,21 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           fetchWarnings: [] as ComparativeWarning[],
           /**
            * #volatile
-           * Index into `rpcData`'s per-FEATURE arrays of whatever the pointer is
-           * over, or -1. A feature index, not the segment index the pick walked:
-           * a CIGAR-detailed alignment is many segments of one feature, and
-           * everything downstream (tooltip, highlight) is about the feature.
-           * `dotplotPickEngine` answers in this space directly, which is where
-           * this differs from `LinearSyntenyDisplay.hoveredFeatureIdx`.
+           * Index into `instanceData`'s per-SEGMENT arrays of the line the
+           * pointer is nearest, or -1.
+           *
+           * The segment rather than the feature, even though the tooltip and the
+           * highlight are both about the feature: the feature index derives from
+           * this one (`hoveredFeatureIdx` below), and the CIGAR operator under
+           * the cursor derives from nothing else — a CIGAR-detailed alignment is
+           * a staircase of segments and the pointer is on one step of it. Same
+           * choice `LinearSyntenyDisplay` makes, where the stored index is
+           * likewise the instance and `getFeature` translates.
+           *
+           * It addresses `instanceData`, so it is dropped by BOTH writers of
+           * that — a zoom rebuilds the geometry without refetching.
            */
-          hoveredFeatureIdx: -1,
+          hoveredSegmentIdx: -1,
         })),
     )
     .views(self => ({
@@ -187,19 +195,43 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       },
       /**
        * #getter
+       * Index into `rpcData`'s per-FEATURE arrays of the alignment the pointer is
+       * over, or -1. Derived rather than stored, so it cannot disagree with
+       * `hoveredSegmentIdx` about which alignment that is.
+       *
+       * Not `instanceFeatureIdx[i] ?? i`: an out-of-range segment index reads
+       * `undefined` there, and falling back to the raw index would answer with a
+       * different feature rather than with nothing. Same reasoning as
+       * `LinearSyntenyDisplay.getFeature`.
+       */
+      get hoveredFeatureIdx(): number {
+        const { hoveredSegmentIdx, instanceData } = self
+        return hoveredSegmentIdx < 0
+          ? -1
+          : (instanceData?.instanceFeatureIdx[hoveredSegmentIdx] ?? -1)
+      },
+      /**
+       * #getter
        * The hovered feature's tooltip, as lines, or undefined when nothing is
        * hovered. The dotplot twin of `LinearSyntenyDisplay.tooltipText`, in
        * lines rather than an HTML string — see `getDotplotTooltipLines`.
        */
       get tooltipLines(): string[] | undefined {
-        const { hoveredFeatureIdx, rpcData } = self
-        return hoveredFeatureIdx < 0 || !rpcData
+        const { hoveredSegmentIdx, instanceData, rpcData } = self
+        const featureIdx = this.hoveredFeatureIdx
+        return featureIdx < 0 || !rpcData
           ? undefined
           : getDotplotTooltipLines({
               rpcData,
-              featureIdx: hoveredFeatureIdx,
+              featureIdx,
               hview: this.view.hview,
               vview: this.view.vview,
+              // The operator under the CURSOR, so it comes off the hovered
+              // segment rather than the feature — one alignment's staircase can
+              // hold a dozen of them.
+              cigarOp: instanceData
+                ? segmentCigarOp(instanceData, hoveredSegmentIdx)
+                : undefined,
             })
       },
       /**
@@ -230,7 +262,8 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * something is hovered.
        */
       get hoveredFeatureHighlight(): DotplotHoverHighlight | undefined {
-        const { hoveredFeatureIdx, instanceData } = self
+        const { instanceData } = self
+        const hoveredFeatureIdx = this.hoveredFeatureIdx
         const colors = this.computedColors
         if (hoveredFeatureIdx < 0 || !instanceData || !colors) {
           return undefined
@@ -430,17 +463,22 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         self.rpcData = data
         self.loadedFetchKey = fetchKey
         self.fetchWarnings = warnings
-        // The hover index addresses the OUTGOING rpcData, so it is meaningless
-        // against the incoming arrays: a surviving index describes an unrelated
-        // alignment. Same reason, same place, as
+        // The hover index describes the geometry built from the OUTGOING
+        // rpcData, so it is meaningless against what replaces it: a surviving
+        // index points at an unrelated alignment. Same reason, same place, as
         // `LinearSyntenyDisplay.setRpcData` clearing its own. The next
-        // pointermove re-picks against the new data anyway — a refetch is a
-        // zoom/pan/mode change, after which the pointer is no longer over
-        // whatever it was hovering.
-        self.hoveredFeatureIdx = -1
+        // pointermove re-picks anyway — a refetch is a zoom/pan/mode change,
+        // after which the pointer is no longer over whatever it was hovering.
+        self.hoveredSegmentIdx = -1
       },
       setInstanceData(data: DotplotInstanceData | undefined) {
         self.instanceData = data
+        // ...and the other writer of the arrays the index addresses. This one is
+        // the reason the hover is stored as a segment index rather than a
+        // feature index: a zoom, a `drawCigar` toggle or a `minAlignmentLength`
+        // change rebuilds the geometry WITHOUT a refetch, which renumbers every
+        // segment while leaving the feature numbering alone.
+        self.hoveredSegmentIdx = -1
       },
       /**
        * #action
@@ -448,8 +486,8 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * hover at one hit — never per display from a component, so the N writes
        * land in one MobX batch.
        */
-      setHoveredFeatureIdx(idx: number) {
-        self.hoveredFeatureIdx = idx
+      setHoveredSegmentIdx(idx: number) {
+        self.hoveredSegmentIdx = idx
       },
     }))
     .actions(self => ({

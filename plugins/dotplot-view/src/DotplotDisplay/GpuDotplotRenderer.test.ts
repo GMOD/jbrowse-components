@@ -7,6 +7,7 @@ import {
   INSTANCE_STRIDE_WORDS,
   UNIFORM_OFFSET_F32 as U,
 } from './shaders/dotplot.generated.ts'
+import { fakeDotplotInstanceData } from './testUtils.ts'
 
 import type {
   DotplotGeometryData,
@@ -17,15 +18,13 @@ function makeGeometry(
   overrides: Partial<DotplotGeometryData> = {},
 ): DotplotGeometryData {
   return {
-    x1: new Float64Array([100]),
-    y1: new Float64Array([200]),
-    x2: new Float64Array([150]),
-    y2: new Float64Array([250]),
+    ...fakeDotplotInstanceData(1, {
+      x1: new Float64Array([100]),
+      y1: new Float64Array([200]),
+      x2: new Float64Array([150]),
+      y2: new Float64Array([250]),
+    }),
     colors: new Uint32Array([0xff0000ff]),
-    instanceFeatureIdx: new Uint32Array([0]),
-    instanceCount: 1,
-    baseH: 0,
-    baseV: 0,
     ...overrides,
   }
 }

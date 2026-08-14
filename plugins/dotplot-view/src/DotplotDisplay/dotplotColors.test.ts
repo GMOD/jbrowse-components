@@ -5,35 +5,22 @@ import {
   createDotplotColorFunction,
 } from './dotplotColors.ts'
 import { buildLineSegments } from './dotplotGeometry.ts'
+import { fakeDotplotRpcData } from './testUtils.ts'
 
 import type { DotplotRpcData } from './types.ts'
 
+// The shared payload with values in every continuous channel, since what is
+// under test here is what the ramps do with them.
 function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
-  const f64 = new Float64Array(1)
-  return {
-    p11: f64,
-    p12: f64,
-    p21: f64,
-    p22: f64,
-    strands: new Int8Array([1]),
-    alignmentLengths: new Uint32Array([100]),
-    cigarData: new Uint32Array(0),
-    cigarOffsets: new Uint32Array([0, 0]),
+  return fakeDotplotRpcData({
     attributes: {
       identity: new Float32Array([0.5]),
       meanIdentity: new Float32Array([0.5]),
       mappingQual: new Float32Array([30]),
       dnds: new Float32Array([-1]),
     },
-    attributeRanges: {},
-    refNameDict: ['chr1'],
-    refNameIds: new Uint32Array([0]),
-    mateRefNameDict: ['chr2'],
-    mateRefNameIds: new Uint32Array([0]),
-    totalFeatureCount: 1,
-    skippedFeatureCount: 0,
     ...overrides,
-  }
+  })
 }
 
 function unpack(packed: number) {
