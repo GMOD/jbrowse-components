@@ -35,8 +35,16 @@
 // far smaller fraction of it, and the saved sequence passes look correspondingly
 // bigger. A fixture that fits in cache prices the loop and not the workload.
 //
+// **A NOTE ON THE BASELINE, WHICH HAS NOW BEEN SUPERSEDED TWICE.** These arms
+// carry the same-base merge, which ships, but they all step the sequence one base
+// at a time — and `getModPositions` now finds each FORWARD call with `indexOf`
+// instead (`mmDeltaJump.bench.ts`, 1.247x-1.560x on that half). That makes the
+// baseline here slower than what ships on about half the reads, so the one-pass
+// arm is flattered by it and still loses. The conclusion below is therefore safe
+// in the direction that matters; the absolute ms are not the shipped path's.
+//
 // THREE ARMS, all three carrying the same-base merge, because it ships:
-//   perGroup    — what ships: one sequence pass per DISTINCT group
+//   perGroup    — the stepping baseline: one sequence pass per DISTINCT group
 //   onePass     — one pass for all groups, htslib's shape. Groups are bucketed by
 //                 the canonical base they count, so a base is charged to the one
 //                 group that cares rather than tested against all of them
@@ -85,12 +93,14 @@
 //     walk counts the COMPLEMENT of `b`. So it declared more calls than the read
 //     had bases for, on about half the reads.
 //   - Which then ran off the end of the sequence, where **the two arms did not
-//     agree**: the per-group shape clamps and records `seqLength - 1` (forward)
-//     or `0` (reverse) for every call it cannot place, and this arm silently
-//     dropped them. Every row above ever reading "output identical" only meant no
-//     read in those fixtures overran. It is the same end-of-sequence rule TODO's
-//     `indexOf` entry singles out as the thing to get exactly right, and it is a
-//     hard constraint on ever shipping this shape.
+//     agree**: this one silently dropped the calls it could not place, and the
+//     per-group shape walked past the end and emitted positions OUTSIDE the read.
+//     Neither was right, and the rule now is that both clamp to the nearest valid
+//     index for that call and every one after it. Every row above ever reading
+//     "output identical" only meant no read in those fixtures overran. It is a
+//     hard constraint on ever shipping this shape, and it is stated once in
+//     `agent-docs/reference/MODIFICATION_TAGS.md` because it has been written
+//     down wrong more than once.
 //
 // **The first cut of the one-pass arm was 0.890x, i.e. slower**, and the whole
 // difference was a `Map.get(seqCode)` per read base rather than an array index.
@@ -208,6 +218,18 @@ function modPositionsPerGroup(mm: string, fseq: string, fstrand: number) {
       let currPos = 0
 
       for (let i = 1; i < splitLength; i++) {
+        // Clamp once the read is exhausted, matching `getModPositions`. Without
+        // it the do-while below still runs its body per call and emits positions
+        // outside the read, which is what these arms used to do and what made the
+        // one-pass arm's disagreement invisible.
+        if (currPos >= seqLength) {
+          if (isRev) {
+            positions[writeIndex--] = 0
+          } else {
+            positions[writeIndex++] = Math.max(0, seqLength - 1)
+          }
+          continue
+        }
         let delta = +split[i]!
         do {
           const seqCode = isRev
@@ -433,19 +455,21 @@ function modPositionsOnePass(mm: string, fseq: string, fstrand: number) {
   }
 
   // The sequence ran out before these groups placed every call they declare —
-  // an MM tag is free to ask for more of a base than remains. The per-group
-  // shape runs its inner loop to `seqLength` and records `seqLength - 1`
-  // (forward) or `0` (reverse) for each call it could not place, so this has to
-  // do the same or the two arms disagree on exactly those reads.
+  // an MM tag is free to ask for more of a base than remains. `getModPositions`
+  // clamps to the nearest valid index for that call and every one after it, so
+  // this has to do the same or the two arms disagree on exactly those reads.
   //
   // **They did.** This arm dropped them instead, and every published row still
   // read "output identical" because no read in those fixtures overran. What
   // surfaced it was `--groups=2`, whose synthesized group WAS overrunning, for
-  // its own unrelated reason (fixed below). Left alone it would have made the
-  // crossover number meaningless, and it is a hard constraint on ever shipping
-  // this shape — the same end-of-sequence rule the `indexOf` probe in TODO.md is
-  // careful to reproduce.
-  const clamp = isRev ? 0 : seqLength - 1
+  // its own unrelated reason (fixed below).
+  //
+  // The baseline was wrong here too, and in a third way — it walked PAST the end
+  // and emitted positions outside the read, so the rule this comment used to
+  // state was not what either arm did. That is fixed in `getModPositions` and in
+  // the stepping arms above; `mmDeltaJump.bench.ts --overrun` is the flag that
+  // exercises it, and this bench still has no equivalent.
+  const clamp = isRev ? 0 : Math.max(0, seqLength - 1)
   for (const st of states) {
     if (st.done) {
       continue
@@ -508,6 +532,18 @@ function modPositionsControl(mm: string, fseq: string, fstrand: number) {
       let currPos = 0
 
       for (let i = 1; i < splitLength; i++) {
+        // Clamp once the read is exhausted, matching `getModPositions`. Without
+        // it the do-while below still runs its body per call and emits positions
+        // outside the read, which is what these arms used to do and what made the
+        // one-pass arm's disagreement invisible.
+        if (currPos >= seqLength) {
+          if (isRev) {
+            positions[writeIndex--] = 0
+          } else {
+            positions[writeIndex++] = Math.max(0, seqLength - 1)
+          }
+          continue
+        }
         let delta = +split[i]!
         do {
           const seqCode = isRev
@@ -869,7 +905,7 @@ async function main() {
       `${outPerGroup.length} marks emitted\n` +
       `  so the shipped shape makes ${((bases * meanDistinct) / 1e6).toFixed(2)} Mbp of sequence passes ` +
       `where one pass would make ${(bases / 1e6).toFixed(2)}\n\n` +
-      `  per group     ${best.per.toFixed(2).padStart(8)} ms   <- ships\n` +
+      `  per group     ${best.per.toFixed(2).padStart(8)} ms   <- baseline (steps; shipped forward path jumps)\n` +
       `  one pass      ${best.one.toFixed(2).padStart(8)} ms   ${x(best.one)}   ` +
       `output ${diffOnePass ? `DIFFERS — ${diffOnePass}` : 'identical'}\n` +
       `  control       ${best.ctl.toFixed(2).padStart(8)} ms   ${x(best.ctl)}   <- noise floor\n`,

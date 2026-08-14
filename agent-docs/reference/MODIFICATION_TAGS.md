@@ -122,21 +122,58 @@ property loads where the per-group loop is a tight `charCodeAt` do-while; two
 saved passes do not cover that. Anything built here must branch on the
 **distinct** count, not the group count.
 
-**The one hard constraint if it is ever built**: an MM tag may ask for more of a
-base than the read has left, and the two shapes did not agree there. The
-per-group walk clamps, recording `seqLength - 1` (forward) or `0` (reverse) for
-every call it cannot place; the one-pass arm silently dropped them until this was
-fixed, and its "output identical" rows had only meant that no read in those
-fixtures overran. It is the same end-of-sequence rule the `indexOf` idea has to
-reproduce.
+**The one hard constraint if it is ever built** is the end-of-sequence rule
+below, which every shape of this walk has to reproduce and which two of them got
+wrong.
 
-**And it settles what to do about `indexOf`.** Replacing the per-base delta walk
-with `indexOf` jumps measures 1.42x in isolation (`seqscan.probe.ts`, forward
-strand only). That was recorded here as *competing* with the one-pass shape,
-since a single-character search cannot count several canonical bases at once. It
-no longer competes on ONT data: one pass is a loss at two distinct groups, so
-there is nothing there for jumping to be an alternative to. The two are only
-alternatives on Fiber-seq-shaped tags.
+## When an MM tag asks for more of a base than the read has left
+
+The tag is free to declare it, and the walk has nowhere to put those calls.
+`getModPositions` clamps to the nearest valid index — `seqLength - 1` forward,
+`0` reverse — for that call and every call after it, so **every position it
+emits is a valid index into the read.** That matters because the positions are
+used as indices (`getMethBins` reads the sequence at them) and have to be
+ascending for the CIGAR walk, so an out-of-range one is resolved to a real
+reference position somewhere wrong rather than being dropped.
+
+**It did not always do that, and the way it failed is the thing to recognize.**
+The stepping loop is a do-while, so its body ran once per call regardless of
+`currPos`; once one call had exhausted the sequence, each one after it advanced
+`currPos` past the end and emitted `seqLength`, `seqLength + 1`, … forward and
+negatives reverse. Only the FIRST unplaceable call landed in range. A comment
+asserting `currPos <= seqLength by loop invariant` sat directly above the line
+that broke it — the invariant holds until the first overrun and not after.
+
+No read in any fixture overruns, so nothing exercised it: the one-pass arm in
+`multiGroupParse.bench.ts` disagreed with its baseline here for as long as it
+existed while reporting "output identical", and this repo twice wrote the clamp
+rule down as "records `seqLength - 1` for every call it cannot place" — which is
+what it does now and is not what it did then. `mmDeltaJump.bench.ts --overrun`
+forces the case, and inflates the SECOND-to-last delta rather than the last,
+because the first unplaceable call is the one that already behaved.
+
+## Forward reads jump; reverse reads step
+
+`getModPositions` finds each forward call with a single-character `indexOf` —
+`delta + 1` native searches instead of one step per intervening base — and keeps
+the `charCodeAt` loop on reverse reads. `mmDeltaJump.bench.ts`, parse phase:
+
+| | sparse (call every ~52 bases) | dense (every ~3.3) |
+| --- | --- | --- |
+| forward `indexOf` | 1.560x | 1.247x |
+| reverse `lastIndexOf` | 0.786x | — |
+| what ships (branch on strand) | 1.263x | 1.187x |
+
+**`lastIndexOf` is not the mirror of `indexOf`**, which is the whole reason for
+the branch: applying the change to both strands keeps only 1.094x of a 1.560x
+win, because reverse is half the reads and loses outright. A mechanism argument
+covering both ("a native scan beats a JS loop") predicts the wrong sign for one
+of them. htslib's own answer for the reverse case is different again — it parses
+the delta list backwards from `MMend[]` — and is untried here.
+
+The regime matters much less than the strand: 52 bases between calls against 3.3
+moves the forward ratio 1.560x to 1.247x, where the strand inverts it. So there
+is no fixture-shape branch to make, only a strand one.
 
 ## What htslib validates that we do not do at all
 

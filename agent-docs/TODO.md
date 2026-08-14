@@ -33,7 +33,6 @@ before anyone noticed.
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
-| [Jump the MM delta walk with `indexOf`](#jump-the-mm-delta-walk-with-indexof-instead-of-stepping-it) | alignments, perf | 1.42x probed on forward strand; measure reverse before building |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
@@ -138,43 +137,6 @@ Worth doing with it: the pointer handler currently clears a selection on any
 click (`useDotplotInteraction`'s `onPointerUp`), so the new behaviour has to
 distinguish "clicked an alignment" from "clicked empty plot to cancel", which the
 hit already answers.
-
-### Jump the MM delta walk with `indexOf` instead of stepping it
-
-`getModPositions` finds each call by stepping one base at a time until it has
-counted past `delta` occurrences of the modified base — 43.7 Mbp of `charCodeAt`
-over the full extent of `200x.longread.mod.bam`. `String.prototype.indexOf` for a
-single character is a native scan, so the same walk is `delta + 1` jumps instead
-of `distance` steps. Mean delta on this fixture is 10.8, so ~11.8 native calls
-per call placed against ~52 JS iterations.
-
-`plugins/alignments/benches/seqscan.probe.ts` measures **1.42x** on the walk in
-isolation, checksums agreeing. `modPhases.bench.ts` puts the parse phase at 46%
-of the pipeline and `mmParseShape.bench.ts` shows only a tenth of that is the
-`split(',')`, so this walk is the bulk of the largest remaining phase.
-
-Three things before building it:
-
-- **It no longer competes with the multi-group fix below, and it used to.** The
-  argument was that htslib deliberately keeps a per-base scan because one pass
-  has to count several canonical bases at once and a single-character search
-  cannot — so the two are alternatives, and nothing in the corpus could say where
-  the crossover was. It can now: one pass is a **loss** below three distinct
-  groups, and real dorado output is two. So on ONT data there is no one-pass
-  shape for jumping to be an alternative to, and this can be taken on its own
-  merits. They only compete on Fiber-seq-shaped tags
-  ([reference/MODIFICATION_TAGS.md](reference/MODIFICATION_TAGS.md)).
-- **The probe is forward-strand only.** Reverse reads scan backwards for the
-  complement, which wants `lastIndexOf` and is a different access pattern —
-  measure it rather than assuming symmetry, since it is half the reads. htslib
-  handles the same case by parsing the delta list backwards from `MMend[]`
-  instead, which is a third option and is not obviously worse.
-- **`base === 'N'` matches every base**, so that case is `currPos += delta + 1`
-  and needs no scan at all. It is already a branch in the loop; keep it one.
-
-The end-of-sequence behaviour is the thing to get exactly right: the stepping
-form runs to `seqLength` and records `seqLength - 1` when the base runs out, and
-the probe reproduces that rather than returning -1.
 
 ### Group the methylation path's CIGAR walk, the way the marks path now is
 
@@ -1182,10 +1144,14 @@ than left on the table. If it is built anyway, for `C+m;A+a;T-a`-shaped data:
 - **Branch on the DISTINCT count, never the group count.** Counting duplicates
   puts the ONT case on the losing side of the branch.
 - **An MM tag may ask for more of a base than the read has left, and the two
-  shapes disagreed there.** The per-group walk clamps, recording `seqLength - 1`
-  forward or `0` reverse for each call it cannot place; the one-pass arm dropped
-  them, and its "output identical" rows only ever meant that no read in those
-  fixtures overran. Same rule the `indexOf` entry above singles out.
+  shapes disagreed there.** `getModPositions` clamps to the nearest valid index
+  for that call and every one after it; the one-pass arm dropped them, and its
+  "output identical" rows only ever meant that no read in those fixtures
+  overran. Get this from
+  [reference/MODIFICATION_TAGS.md](reference/MODIFICATION_TAGS.md) rather than
+  from memory — the clamp rule was written down wrong twice, including in this
+  entry, because until it was fixed only the FIRST unplaceable call landed in
+  range.
 
 **The CIGAR half across DIFFERENT bases is what is genuinely still open**, and it
 is the part with no fixture argument against it: `A+a` and `C+m` have different

@@ -122,7 +122,8 @@ restored. Recorded so the next person recognises it and moves on.
 It started as lead 1 here and is now its own body of work, held in three places
 rather than in this file: the benches in `plugins/alignments/benches/`
 (`modPhases` for the phase split, then `cigarWalkShape`, `cigarOpDensity`,
-`mmParseShape`, `modCombinedCode`, `multiGroupParse`, `sameBaseMerge`), the
+`mmParseShape`, `modCombinedCode`, `multiGroupParse`, `sameBaseMerge`,
+`mmDeltaJump`), the
 [MM/ML vs htslib cross-reference](../reference/MODIFICATION_TAGS.md), and two
 TODO entries under "Measure first".
 
@@ -152,6 +153,13 @@ run, because no read in any fixture had ever asked for more of a base than it ha
 left — so two arms that disagree on the end of the sequence had been reporting
 "output identical" for as long as the bench existed. What caught it was a
 synthesis flag written and left unrun.
+
+Pulling that thread found a real one: `getModPositions` was emitting positions
+**outside the read** after such a call — `seqLength + 1`, `seqLength + 2` forward
+and negatives reverse — under a comment asserting the invariant that made it
+impossible. Fixed, pinned, and written up in
+[MODIFICATION_TAGS.md](../reference/MODIFICATION_TAGS.md), which is now the one
+statement of that rule because this repo has written it down wrong twice.
 
 ## One thing about the machine
 
