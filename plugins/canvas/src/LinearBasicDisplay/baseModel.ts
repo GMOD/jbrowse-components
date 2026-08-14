@@ -131,7 +131,11 @@ import type {
 } from './featureHighlight.ts'
 import type { FitStage } from './fitLadder.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
-import type { IncrementalLayout, LayoutInputs } from './layout.ts'
+import type {
+  IncrementalLayout,
+  LabelRoomFactorFreeInputs,
+  LayoutInputs,
+} from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -707,17 +711,6 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        get regionKeys() {
-          const map = new Map<number, string>()
-          for (const [num, data] of self.rpcDataMap) {
-            map.set(num, data.regionKey)
-          }
-          return map
-        },
-
-        /**
-         * #getter
-         */
         get reversedRegions() {
           const set = new Set<number>()
           for (const [num, data] of self.rpcDataMap) {
@@ -1011,7 +1004,6 @@ export default function baseStateModelFactory(
           const view = getView(self)
           return {
             bpPerPx: view.coarseBpPerPx,
-            regionKeys: self.regionKeys,
             reversedRegions: self.reversedRegions,
             displayMode: self.displayMode,
             pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
@@ -1081,7 +1073,7 @@ export default function baseStateModelFactory(
          * without `labelRoomFactor` so the solve's shared preparation provably can't
          * depend on it (see createContentHeightProbe).
          */
-        get decimatedBaseInputs(): Omit<LayoutInputs, 'labelRoomFactor'> {
+        get decimatedBaseInputs(): LabelRoomFactorFreeInputs {
           return {
             ...self.layoutInputs,
             showLabels: self.showLabels,

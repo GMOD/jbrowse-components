@@ -17,6 +17,7 @@ import type {
   FeatureDataResult,
   FloatingLabelsDataMap,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LayoutRegionData } from './layout.ts'
 
 function makeFeatureData(opts: {
   features: {
@@ -27,36 +28,44 @@ function makeFeatureData(opts: {
     strand?: number
     densityFade?: boolean
   }[]
-}): FeatureDataResult {
+  // `assembly:refName`. The layout groups by it, so a test needs two only when
+  // it is about two chromosomes; every other test wants one and does not care
+  // which, which is why it defaults rather than being threaded through.
+  regionKey?: string
+}): LayoutRegionData {
   const { features } = opts
-  return makeBaseFeatureData({
-    flatbushItems: features.map(f =>
-      makeFlatbushItem({
-        featureId: f.featureId,
-        type: 'feature',
-        startBp: f.startBp,
-        endBp: f.endBp,
-        bottomPx: f.height,
-        featureHeightPx: f.height,
-        strand: f.strand,
-        densityFade: !!f.densityFade,
-      }),
-    ),
-    rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
-    rectYs: new Float32Array(features.length),
-    rectHeights: new Float32Array(features.map(f => f.height)),
-    rectColors: new Uint32Array(features.length),
-    rectStrands: new Float32Array(features.length),
-    rectDensityFade: new Uint32Array(
-      features.map(f => (f.densityFade ? 1 : 0)),
-    ),
-    rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
-  })
+  return {
+    regionKey: opts.regionKey ?? 'v:ctgA',
+    ...makeBaseFeatureData({
+      flatbushItems: features.map(f =>
+        makeFlatbushItem({
+          featureId: f.featureId,
+          type: 'feature',
+          startBp: f.startBp,
+          endBp: f.endBp,
+          bottomPx: f.height,
+          featureHeightPx: f.height,
+          strand: f.strand,
+          densityFade: !!f.densityFade,
+        }),
+      ),
+      rectPositions: new Uint32Array(
+        features.flatMap(f => [f.startBp, f.endBp]),
+      ),
+      rectYs: new Float32Array(features.length),
+      rectHeights: new Float32Array(features.map(f => f.height)),
+      rectColors: new Uint32Array(features.length),
+      rectStrands: new Float32Array(features.length),
+      rectDensityFade: new Uint32Array(
+        features.map(f => (f.densityFade ? 1 : 0)),
+      ),
+      rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
+    }),
+  }
 }
 
 function layout(
-  raw: Map<number, FeatureDataResult>,
-  regionKeys: Map<number, string>,
+  raw: Map<number, LayoutRegionData>,
   bpPerPx: number,
   showLabels = true,
   showDescriptions = true,
@@ -65,7 +74,6 @@ function layout(
 ) {
   return computeLaidOutData(raw, {
     bpPerPx,
-    regionKeys,
     showLabels,
     showDescriptions,
     reversedRegions,
@@ -85,7 +93,7 @@ function labeledFeatureData(
     height: number
   }[],
   nameWidthPx = 40,
-): FeatureDataResult {
+): LayoutRegionData {
   const base = makeFeatureData({ features })
   const floatingLabelsData: FeatureDataResult['floatingLabelsData'] = {}
   for (const f of features) {
@@ -112,14 +120,12 @@ function labeledFeatureData(
 // plus that gap (>= 46px here) can host it and drops it only where a neighbor
 // crowds it out.
 describe('fitWidth label decimation', () => {
-  const keys = new Map([[0, 'volvox:ctgA']])
   function decimate(
-    data: FeatureDataResult,
+    data: LayoutRegionData,
     pinnedFeatureIds = new Set<string>(),
   ) {
     return computeLaidOutData(new Map([[0, data]]), {
       bpPerPx: 1,
-      regionKeys: keys,
       showLabels: true,
       showDescriptions: false,
       reversedRegions: new Set<number>(),
@@ -169,7 +175,7 @@ describe('fitWidth label decimation', () => {
   })
 
   it('keeps every name under the default `all` policy', () => {
-    const out = layout(new Map([[0, mixed()]]), keys, 1, true, false).get(0)!
+    const out = layout(new Map([[0, mixed()]]), 1, true, false).get(0)!
     expect(out.floatingLabelsData.crowded).toBeDefined()
     expect(out.floatingLabelsData.blocker).toBeDefined()
   })
@@ -189,10 +195,7 @@ describe('fitWidth label decimation', () => {
       )
     const allH = maxBottom(
       new Map([
-        [
-          0,
-          layout(new Map([[0, narrowStack()]]), keys, 1, true, false).get(0)!,
-        ],
+        [0, layout(new Map([[0, narrowStack()]]), 1, true, false).get(0)!],
       ]),
     )
     const decimatedH = maxBottom(new Map([[0, decimate(narrowStack())]]))
@@ -273,7 +276,6 @@ describe('fitWidth label decimation', () => {
           ]),
           {
             bpPerPx: 1,
-            regionKeys: keys,
             showLabels: true,
             showDescriptions: false,
             reversedRegions: new Set<number>(),
@@ -300,7 +302,6 @@ describe('fitWidth label decimation', () => {
   it('keeps a pinned name at any labelRoomFactor', () => {
     const labels = computeLaidOutData(new Map([[0, mixed()]]), {
       bpPerPx: 1,
-      regionKeys: keys,
       showLabels: true,
       showDescriptions: false,
       reversedRegions: new Set<number>(),
@@ -328,7 +329,6 @@ describe('fitWidth label decimation', () => {
       ]),
       {
         bpPerPx: 1,
-        regionKeys: keys,
         showLabels: true,
         showDescriptions: false,
         reversedRegions: new Set([0]),
@@ -350,9 +350,8 @@ test('layout is pure: raw data is not mutated', () => {
     ],
   })
   const raw = new Map([[0, data]])
-  const regionKeys = new Map([[0, 'volvox:ctgA']])
 
-  const out = layout(raw, regionKeys, 1)
+  const out = layout(raw, 1)
 
   expect(out).not.toBe(raw)
   expect(out.get(0)).not.toBe(data)
@@ -369,7 +368,7 @@ test('overlapping features on same chromosome get different rows', () => {
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
     ],
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'volvox:ctgA']]), 1)
+  const out = layout(new Map([[0, data]]), 1)
 
   const r = out.get(0)!
   expect(r.flatbushItems[0]!.topPx).toBe(0)
@@ -388,7 +387,6 @@ test('collapsed mode stacks overlapping features onto a single row', () => {
   // collapsed mode, so pass showLabels/showDescriptions false.
   const out = layout(
     new Map([[0, data]]),
-    new Map([[0, 'volvox:ctgA']]),
     1,
     false,
     false,
@@ -404,10 +402,9 @@ test('collapsed mode stacks overlapping features onto a single row', () => {
 // Collapsed mode is where row 0 is the only row, so marks sharing a pixel column
 // are guaranteed to be drawn over each other — the case the pileup fade exists
 // for, and the one this mode used to draw as a single opaque bar.
-const collapsedModeLayout = (data: FeatureDataResult, bpPerPx: number) =>
+const collapsedModeLayout = (data: LayoutRegionData, bpPerPx: number) =>
   layout(
     new Map([[0, data]]),
-    new Map([[0, 'volvox:ctgA']]),
     bpPerPx,
     false,
     false,
@@ -532,15 +529,12 @@ test('different chromosomes get independent layouts', () => {
       { featureId: 'f3', startBp: 100, endBp: 500, height: 20 },
       { featureId: 'f4', startBp: 200, endBp: 600, height: 20 },
     ],
+    regionKey: 'v:ctgB',
   })
   const out = layout(
     new Map([
       [0, a],
       [1, b],
-    ]),
-    new Map([
-      [0, 'v:ctgA'],
-      [1, 'v:ctgB'],
     ]),
     1,
   )
@@ -567,10 +561,6 @@ test('same-chromosome discontiguous regions share spanning feature Y', () => {
       [0, r1],
       [1, r2],
     ]),
-    new Map([
-      [0, 'hg38:chr1'],
-      [1, 'hg38:chr1'],
-    ]),
     1,
   )
 
@@ -586,7 +576,7 @@ test('non-overlapping features on same chromosome share the first row', () => {
       { featureId: 'f2', startBp: 300, endBp: 400, height: 20 },
     ],
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
+  const out = layout(new Map([[0, data]]), 1)
   const r = out.get(0)!
   expect(r.flatbushItems[0]!.topPx).toBe(0)
   expect(r.flatbushItems[1]!.topPx).toBe(0)
@@ -600,9 +590,8 @@ test('same inputs produce identical output (deterministic)', () => {
         { featureId: 'f2', startBp: 200, endBp: 600, height: 25 },
       ],
     })
-  const keys = new Map([[0, 'v:ctgA']])
-  const a = layout(new Map([[0, mk()]]), keys, 1)
-  const b = layout(new Map([[0, mk()]]), keys, 1)
+  const a = layout(new Map([[0, mk()]]), 1)
+  const b = layout(new Map([[0, mk()]]), 1)
 
   for (let i = 0; i < 2; i++) {
     expect(a.get(0)!.flatbushItems[i]!.topPx).toBe(
@@ -618,7 +607,7 @@ test('rectYs are offset by the layout top for each feature', () => {
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
     ],
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
+  const out = layout(new Map([[0, data]]), 1)
   const r = out.get(0)!
   for (let i = 0; i < r.rectYs.length; i++) {
     expect(r.rectYs[i]).toBe(r.flatbushItems[r.rectFeatureIndices[i]!]!.topPx)
@@ -650,14 +639,13 @@ test('bpPerPx changes label-driven packing', () => {
       nameLabel: { text: 'L2', relativeY: 0, color: 'black', textWidth: 300 },
     },
   }
-  const keys = new Map([[0, 'v:ctgA']])
   // Zoomed out: labels are 300bp wide → features overlap → different rows
-  const zoomedOut = layout(new Map([[0, data]]), keys, 1)
+  const zoomedOut = layout(new Map([[0, data]]), 1)
   const zo = zoomedOut.get(0)!
   expect(zo.flatbushItems[0]!.topPx).not.toBe(zo.flatbushItems[1]!.topPx)
 
   // Zoomed in: labels are 30bp wide → no overlap → same row
-  const zoomedIn = layout(new Map([[0, data]]), keys, 0.1)
+  const zoomedIn = layout(new Map([[0, data]]), 0.1)
   const zi = zoomedIn.get(0)!
   expect(zi.flatbushItems[0]!.topPx).toBe(0)
   expect(zi.flatbushItems[1]!.topPx).toBe(0)
@@ -698,7 +686,7 @@ test('subfeatures and floating labels inherit their parent feature offset', () =
     },
   }
 
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
+  const out = layout(new Map([[0, data]]), 1)
   const r = out.get(0)!
   const gene2Top = r.flatbushItems[1]!.topPx
   expect(gene2Top).toBeGreaterThan(0)
@@ -727,7 +715,7 @@ test('lines and arrows are offset by parent feature top', () => {
   data.arrowColors = new Uint32Array([0xff000000])
   data.arrowFeatureIndices = new Uint32Array([1])
 
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
+  const out = layout(new Map([[0, data]]), 1)
   const r = out.get(0)!
   const f2Top = r.flatbushItems[1]!.topPx
   expect(f2Top).toBeGreaterThan(0)
@@ -767,14 +755,13 @@ test('showLabels adds label height to the feature row', () => {
     return data
   }
 
-  const keys = new Map([[0, 'v:ctgA']])
   const featureHeight = 10
-  const withLabels = layout(new Map([[0, mk()]]), keys, 1, true, true)
+  const withLabels = layout(new Map([[0, mk()]]), 1, true, true)
   expect(withLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(
     featureHeight + ROW_PADDING.normal + LABEL_FONT_SIZE * 2,
   )
 
-  const withoutLabels = layout(new Map([[0, mk()]]), keys, 1, false, false)
+  const withoutLabels = layout(new Map([[0, mk()]]), 1, false, false)
   expect(withoutLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(
     featureHeight + ROW_PADDING.normal,
   )
@@ -782,7 +769,7 @@ test('showLabels adds label height to the feature row', () => {
   // showLabels=false but showDescriptions=true: description is collapsed up
   // into the vacated name row at relativeY=0 (see overlayElements), so it
   // still occupies one row of height below the feature.
-  const descOnly = layout(new Map([[0, mk()]]), keys, 1, false, true)
+  const descOnly = layout(new Map([[0, mk()]]), 1, false, true)
   expect(descOnly.get(0)!.flatbushItems[0]!.bottomPx).toBe(
     featureHeight + ROW_PADDING.normal + LABEL_FONT_SIZE,
   )
@@ -796,7 +783,7 @@ test("forward feature's right arrow overhang pushes a feature in its gap to anot
       { featureId: 'f2', startBp: 204, endBp: 300, height: 20, strand: 1 },
     ],
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
+  const out = layout(new Map([[0, data]]), 1)
   expect(out.get(0)!.flatbushItems[1]!.topPx).toBeGreaterThan(0)
 })
 
@@ -808,7 +795,7 @@ test('arrow padding is directional: forward features just past the arrow share a
       { featureId: 'f2', startBp: 220, endBp: 300, height: 20, strand: 1 },
     ],
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
+  const out = layout(new Map([[0, data]]), 1)
   expect(out.get(0)!.flatbushItems[0]!.topPx).toBe(0)
   expect(out.get(0)!.flatbushItems[1]!.topPx).toBe(0)
 })
@@ -845,7 +832,6 @@ test('a feature too narrow to draw its arrow reserves no room for one', () => {
           }),
         ],
       ]),
-      new Map([[0, 'v:ctgA']]),
       1,
     )
       .get(0)!
@@ -862,7 +848,7 @@ test('unstranded features without arrow padding can share a row when close', () 
       { featureId: 'f2', startBp: 220, endBp: 300, height: 20 },
     ],
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
+  const out = layout(new Map([[0, data]]), 1)
   const r = out.get(0)!
   expect(r.flatbushItems[0]!.topPx).toBe(0)
   expect(r.flatbushItems[1]!.topPx).toBe(0)
@@ -890,15 +876,13 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
     return data
   }
 
-  const keys = new Map([[0, 'v:ctgA']])
-
   // Forward: label extends toward higher bp; fLeft (bp 50-100) doesn't collide.
-  const fwd = layout(new Map([[0, mk()]]), keys, 1, true, true)
+  const fwd = layout(new Map([[0, mk()]]), 1, true, true)
   expect(fwd.get(0)!.flatbushItems[0]!.topPx).toBe(0)
   expect(fwd.get(0)!.flatbushItems[1]!.topPx).toBe(0)
 
   // Reversed: label extends toward lower bp; collides with fLeft → different rows.
-  const rev = layout(new Map([[0, mk()]]), keys, 1, true, true, new Set([0]))
+  const rev = layout(new Map([[0, mk()]]), 1, true, true, new Set([0]))
   const rLeft = rev.get(0)!.flatbushItems[0]!
   const rLabel = rev.get(0)!.flatbushItems[1]!
   expect(rLeft.topPx).not.toBe(rLabel.topPx)
@@ -946,13 +930,12 @@ describe('subfeature-label overhang is reserved even with no name line', () => {
     }
     return { ...base, floatingLabelsData }
   }
-  const keys = new Map([[0, 'v:ctgA']])
 
   it.each([
     ['names on', true],
     ['names off (fit bodies rung)', false],
   ])('%s', (_name, showLabels) => {
-    const out = layout(new Map([[0, data()]]), keys, 1, showLabels, false)
+    const out = layout(new Map([[0, data()]]), 1, showLabels, false)
     const [a, b] = out.get(0)!.flatbushItems
     expect(a!.topPx).toBe(0)
     expect(b!.topPx).toBeGreaterThan(0)
@@ -965,14 +948,12 @@ describe('subfeature-label overhang is reserved even with no name line', () => {
 const NO_PINNED: ReadonlySet<string> = new Set<string>()
 
 function incInputs(
-  regionKeys: Map<number, string>,
   bpPerPx = 1,
   reversedRegions = new Set<number>(),
   pinnedFeatureIds: ReadonlySet<string> = NO_PINNED,
 ) {
   return {
     bpPerPx,
-    regionKeys,
     showLabels: true,
     showDescriptions: true,
     reversedRegions,
@@ -990,17 +971,14 @@ test('incremental memo matches the pure layout values', () => {
   })
   const b = makeFeatureData({
     features: [{ featureId: 'f3', startBp: 100, endBp: 500, height: 20 }],
+    regionKey: 'v:ctgB',
   })
   const raw = new Map([
     [0, a],
     [1, b],
   ])
-  const keys = new Map([
-    [0, 'v:ctgA'],
-    [1, 'v:ctgB'],
-  ])
-  const pure = computeLaidOutData(raw, incInputs(keys))
-  const inc = createIncrementalLayout()(raw, incInputs(keys))
+  const pure = computeLaidOutData(raw, incInputs())
+  const inc = createIncrementalLayout()(raw, incInputs())
 
   for (const idx of [0, 1]) {
     expect(inc.get(idx)!.flatbushItems.map(f => f.topPx)).toEqual(
@@ -1017,20 +995,19 @@ test('incremental memo: a new chromosome leaves existing groups reference-stable
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
     ],
   })
-  const keys = new Map([[0, 'v:ctgA']])
-  const first = memo(new Map([[0, a]]), incInputs(keys))
+  const first = memo(new Map([[0, a]]), incInputs())
   const aOut = first.get(0)
 
   const b = makeFeatureData({
     features: [{ featureId: 'f3', startBp: 100, endBp: 500, height: 20 }],
+    regionKey: 'v:ctgB',
   })
-  keys.set(1, 'v:ctgB')
   const second = memo(
     new Map([
       [0, a],
       [1, b],
     ]),
-    incInputs(keys),
+    incInputs(),
   )
 
   // ctgA's data did not change → its output object is reused by reference, so
@@ -1045,9 +1022,8 @@ test('incremental memo: changing a region recomputes its group', () => {
     makeFeatureData({
       features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
     })
-  const keys = new Map([[0, 'v:ctgA']])
-  const first = memo(new Map([[0, mk()]]), incInputs(keys))
-  const second = memo(new Map([[0, mk()]]), incInputs(keys))
+  const first = memo(new Map([[0, mk()]]), incInputs())
+  const second = memo(new Map([[0, mk()]]), incInputs())
   expect(second.get(0)).not.toBe(first.get(0))
 })
 
@@ -1056,9 +1032,8 @@ test('incremental memo: bpPerPx change recomputes every group', () => {
   const a = makeFeatureData({
     features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
   })
-  const keys = new Map([[0, 'v:ctgA']])
-  const first = memo(new Map([[0, a]]), incInputs(keys, 1))
-  const second = memo(new Map([[0, a]]), incInputs(keys, 2))
+  const first = memo(new Map([[0, a]]), incInputs(1))
+  const second = memo(new Map([[0, a]]), incInputs(2))
   expect(second.get(0)).not.toBe(first.get(0))
 })
 
@@ -1067,21 +1042,19 @@ test('incremental memo: a region added to an existing ref-group recomputes that 
   const a = makeFeatureData({
     features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
   })
-  const keys = new Map([[0, 'v:ctgA']])
-  const first = memo(new Map([[0, a]]), incInputs(keys))
+  const first = memo(new Map([[0, a]]), incInputs())
 
+  // same key (the fixture default) → same ref-group; a spanning feature could
+  // shift rows, so the whole group must relay out (its references change).
   const b = makeFeatureData({
     features: [{ featureId: 'f2', startBp: 600, endBp: 900, height: 20 }],
   })
-  // same key → same ref-group; a spanning feature could shift rows, so the
-  // whole group must relay out (its references change).
-  keys.set(1, 'v:ctgA')
   const second = memo(
     new Map([
       [0, a],
       [1, b],
     ]),
-    incInputs(keys),
+    incInputs(),
   )
   expect(second.get(0)).not.toBe(first.get(0))
 })
@@ -1091,9 +1064,8 @@ test('incremental memo: flipping a region reversed recomputes its group', () => 
   const a = makeFeatureData({
     features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
   })
-  const keys = new Map([[0, 'v:ctgA']])
-  const first = memo(new Map([[0, a]]), incInputs(keys, 1, new Set()))
-  const second = memo(new Map([[0, a]]), incInputs(keys, 1, new Set([0])))
+  const first = memo(new Map([[0, a]]), incInputs(1, new Set()))
+  const second = memo(new Map([[0, a]]), incInputs(1, new Set([0])))
   expect(second.get(0)).not.toBe(first.get(0))
 })
 
@@ -1104,22 +1076,20 @@ test('incremental: adding a new region does not move features in existing region
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
     ],
   })
-  const keys = new Map([[0, 'v:ctgA']])
-  const first = layout(new Map([[0, a]]), keys, 1)
+  const first = layout(new Map([[0, a]]), 1)
   const aFirst = first.get(0)!
   const f1Top = aFirst.flatbushItems[0]!.topPx
   const f2Top = aFirst.flatbushItems[1]!.topPx
 
   const b = makeFeatureData({
     features: [{ featureId: 'f3', startBp: 100, endBp: 500, height: 20 }],
+    regionKey: 'v:ctgB',
   })
-  keys.set(1, 'v:ctgB')
   const second = layout(
     new Map([
       [0, a],
       [1, b],
     ]),
-    keys,
     1,
   )
 
@@ -1133,11 +1103,7 @@ test('a feature compacts up to a freed row on zoom-in (no downward hold)', () =>
   // bpPerPx=1 (300 < 400/1), so zooming in frees row 0 under B. Through the
   // incremental memo (which once seeded from the prior layout) B must now rise
   // to row 0 rather than being held on its old lower row.
-  const withNameLabel = (
-    data: FeatureDataResult,
-    id: string,
-    width: number,
-  ) => {
+  const withNameLabel = (data: LayoutRegionData, id: string, width: number) => {
     data.floatingLabelsData[id] = {
       featureId: id,
       minX: 0,
@@ -1165,13 +1131,10 @@ test('a feature compacts up to a freed row on zoom-in (no downward hold)', () =>
     )
   const bTop = (r: Map<number, FeatureDataResult>) =>
     r.get(0)!.flatbushItems.find(it => it.featureId === 'B')!.topPx
-  const keys = new Map([[0, 'v:ctgA']])
   const memo = createIncrementalLayout()
 
-  expect(bTop(memo(new Map([[0, mk()]]), incInputs(keys, 2)))).toBeGreaterThan(
-    0,
-  )
-  expect(bTop(memo(new Map([[0, mk()]]), incInputs(keys, 1)))).toBe(0)
+  expect(bTop(memo(new Map([[0, mk()]]), incInputs(2)))).toBeGreaterThan(0)
+  expect(bTop(memo(new Map([[0, mk()]]), incInputs(1)))).toBe(0)
 })
 
 test('re-pack orders by prior y so a top feature keeps its low row', () => {
@@ -1186,17 +1149,16 @@ test('re-pack orders by prior y so a top feature keeps its low row', () => {
         { featureId: 'B', startBp: 1500, endBp: 2500, height: 20 },
       ],
     })
-  const keys = new Map([[0, 'v:ctgA']])
   const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
     r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
 
-  const fresh = computeLaidOutData(new Map([[0, mk()]]), incInputs(keys, 1))
+  const fresh = computeLaidOutData(new Map([[0, mk()]]), incInputs(1))
   expect(topOf(fresh, 'A')).toBe(0)
   expect(topOf(fresh, 'B')).toBeGreaterThan(0)
 
   const primed = computeLaidOutData(
     new Map([[0, mk()]]),
-    incInputs(keys, 1),
+    incInputs(1),
     new Map([
       ['B', 0],
       ['A', 100],
@@ -1217,17 +1179,16 @@ test('a pinned feature claims the top row over its overlappers', () => {
         { featureId: 'B', startBp: 1500, endBp: 2500, height: 20 },
       ],
     })
-  const keys = new Map([[0, 'v:ctgA']])
   const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
     r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
 
-  const unpinned = computeLaidOutData(new Map([[0, mk()]]), incInputs(keys, 1))
+  const unpinned = computeLaidOutData(new Map([[0, mk()]]), incInputs(1))
   expect(topOf(unpinned, 'A')).toBe(0)
   expect(topOf(unpinned, 'B')).toBeGreaterThan(0)
 
   const pinnedB = computeLaidOutData(
     new Map([[0, mk()]]),
-    incInputs(keys, 1, new Set<number>(), new Set(['B'])),
+    incInputs(1, new Set<number>(), new Set(['B'])),
   )
   expect(topOf(pinnedB, 'B')).toBe(0)
   expect(topOf(pinnedB, 'A')).toBeGreaterThan(0)
@@ -1241,12 +1202,11 @@ test('incremental memo busts when the pinned set reference changes', () => {
         { featureId: 'B', startBp: 1500, endBp: 2500, height: 20 },
       ],
     })
-  const keys = new Map([[0, 'v:ctgA']])
   const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
     r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
   const memo = createIncrementalLayout()
 
-  const before = memo(new Map([[0, mk()]]), incInputs(keys, 1))
+  const before = memo(new Map([[0, mk()]]), incInputs(1))
   const beforeOut = before.get(0)
   expect(topOf(before, 'A')).toBe(0)
 
@@ -1254,7 +1214,7 @@ test('incremental memo busts when the pinned set reference changes', () => {
   // is not reused) and B takes the top row.
   const after = memo(
     new Map([[0, mk()]]),
-    incInputs(keys, 1, new Set<number>(), new Set(['B'])),
+    incInputs(1, new Set<number>(), new Set(['B'])),
   )
   expect(after.get(0)).not.toBe(beforeOut)
   expect(topOf(after, 'B')).toBe(0)
@@ -1282,7 +1242,6 @@ test('a collapsed mark does not outrank an arriving gene for the top row', () =>
     height: 10,
     densityFade: false,
   }
-  const keys = new Map([[0, 'v:ctgA']])
   const memo = createIncrementalLayout()
   const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
     r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
@@ -1290,14 +1249,14 @@ test('a collapsed mark does not outrank an arriving gene for the top row', () =>
   // zoomed out, nothing else on screen: the mark collapses to row 0
   const before = memo(
     new Map([[0, makeFeatureData({ features: [mark] })]]),
-    incInputs(keys, 100),
+    incInputs(100),
   )
   expect(topOf(before, 'snp')).toBe(0)
 
   // the gene's fetch lands
   const after = memo(
     new Map([[0, makeFeatureData({ features: [gene, mark] })]]),
-    incInputs(keys, 100),
+    incInputs(100),
   )
   expect(topOf(after, 'gene')).toBe(0)
   expect(topOf(after, 'snp')).toBeGreaterThan(0)
@@ -1325,7 +1284,7 @@ test('density-fade boxes collapse onto row 0 only when sub-pixel', () => {
         },
       ],
     })
-    const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+    const out = layout(new Map([[0, data]]), 1, false)
     const top = (id: string) =>
       out.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
     return [top('a'), top('b')]
@@ -1392,9 +1351,8 @@ test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () =
       },
     },
   }
-  const keys = new Map([[0, 'v:ctgA']])
   // showLabels off: no label to protect, so the sub-pixel boxes still collapse
-  const noLabels = layout(new Map([[0, data]]), keys, 26, false)
+  const noLabels = layout(new Map([[0, data]]), 26, false)
   const topNo = (id: string) =>
     noLabels.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
   expect(topNo('mir1')).toBe(0)
@@ -1402,7 +1360,7 @@ test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () =
 
   // showLabels on: labels are ~60px wide (~1560bp at bpPerPx=26) and overlap, so
   // the two features must land on different rows
-  const withLabels = layout(new Map([[0, data]]), keys, 26, true)
+  const withLabels = layout(new Map([[0, data]]), 26, true)
   const topYes = (id: string) =>
     withLabels.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
   expect(topYes('mir1')).toBe(0)
@@ -1438,9 +1396,8 @@ test('a compact mode reserves label overhang at its own smaller font size', () =
     g1: label('g1', 1000, 1070, 60),
     g2: label('g2', 2470, 2540, 55),
   }
-  const keys = new Map([[0, 'v:ctgA']])
   const topIn = (mode: 'normal' | 'superCompact', id: string) =>
-    layout(new Map([[0, data]]), keys, 26, true, false, new Set(), mode)
+    layout(new Map([[0, data]]), 26, true, false, new Set(), mode)
       .get(0)!
       .flatbushItems.find(f => f.featureId === id)!.topPx
 
@@ -1486,7 +1443,7 @@ test('an unlabeled sub-pixel box does not collapse onto a labeled one', () => {
       nameLabel: { text: 'rs123', relativeY: 0, color: 'black', textWidth: 40 },
     },
   }
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 26, true)
+  const out = layout(new Map([[0, data]]), 26, true)
   const top = (id: string) =>
     out.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
   expect(top('rs123')).toBe(0)
@@ -1516,12 +1473,7 @@ test('a sub-pixel fade box overlapping a visible feature stacks, not overprints'
       },
     ],
   })
-  const out = layout(
-    new Map([[0, data]]),
-    new Map([[0, 'volvox:ctgA']]),
-    26,
-    false,
-  )
+  const out = layout(new Map([[0, data]]), 26, false)
   const top = (id: string) =>
     out.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
   expect(top('wideGene')).toBe(0)
@@ -1555,8 +1507,8 @@ test('an interbase mark measures its collapse span centered, as it paints', () =
         },
       ],
     })
-  const top = (data: FeatureDataResult) =>
-    layout(new Map([[0, data]]), new Map([[0, 'volvox:ctgA']]), 1, false)
+  const top = (data: LayoutRegionData) =>
+    layout(new Map([[0, data]]), 1, false)
       .get(0)!
       .flatbushItems.find(f => f.featureId === 'ins')!.topPx
 
@@ -1580,7 +1532,7 @@ test('collapsed marks with clear space around them render opaque, not faded', ()
       densityFade: true,
     })),
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  const out = layout(new Map([[0, data]]), 1, false)
   expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
 })
 
@@ -1599,7 +1551,7 @@ test('a handful of collapsed marks on one pixel fade rather than hide each other
       densityFade: true,
     })),
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 26, false)
+  const out = layout(new Map([[0, data]]), 26, false)
   expect([...out.get(0)!.rectDensityFade].every(v => v === 1)).toBe(true)
 })
 
@@ -1616,7 +1568,7 @@ test('marks in a pile fade without fading an isolated neighbour', () => {
       { featureId: 'lone', startBp: 600, endBp: 601, height: 10 },
     ].map(f => ({ ...f, densityFade: true })),
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  const out = layout(new Map([[0, data]]), 1, false)
   const items = out.get(0)!.flatbushItems
   const fadeOf = (id: string) =>
     out.get(0)!.rectDensityFade[items.findIndex(f => f.featureId === id)]
@@ -1642,7 +1594,7 @@ test('two abutting marks stay opaque, so a coverage read survives', () => {
       { featureId: 'right', startBp: 101, endBp: 102, height: 10 },
     ].map(f => ({ ...f, densityFade: true })),
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  const out = layout(new Map([[0, data]]), 1, false)
   expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
 })
 
@@ -1660,7 +1612,7 @@ test('a mark ending where another begins does not stack coverage with it', () =>
       { featureId: 'right', startBp: 102, endBp: 103, height: 10 },
     ].map(f => ({ ...f, densityFade: true })),
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  const out = layout(new Map([[0, data]]), 1, false)
   expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
 })
 
@@ -1678,7 +1630,7 @@ test('a dense pileup of thousands of collapsed marks fades', () => {
       densityFade: true,
     })),
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 100, false)
+  const out = layout(new Map([[0, data]]), 100, false)
   const fade = out.get(0)!.rectDensityFade
   expect(fade).toHaveLength(N)
   expect([...fade].every(v => v === 1)).toBe(true)
@@ -1725,7 +1677,7 @@ test('a collapsed mark clears a solid neighbour at exactly the min-width clamp',
       },
     ],
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  const out = layout(new Map([[0, data]]), 1, false)
   const items = out.get(0)!.flatbushItems
   expect(items.slice(0, N).every(it => it.topPx === 0)).toBe(true)
   // the probe clears the gene by 2px, so it collapses like the rest
@@ -1755,7 +1707,7 @@ test('thousands of sub-pixel variants collapse onto one row, not thousands', () 
   // bpPerPx=100: each 1bp variant is 0.01px, and neighbors are 0.03px apart, so
   // every mark is deeply sub-pixel and heavily overlaps its neighbors once the
   // renderer widens it to the 2px min-width clamp.
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 100, false)
+  const out = layout(new Map([[0, data]]), 100, false)
   const items = out.get(0)!.flatbushItems
   expect(items).toHaveLength(N)
   expect(items.every(it => it.topPx === 0)).toBe(true)
@@ -1767,41 +1719,43 @@ test('compact mode scales aminoAcidOverlay height alongside its top', () => {
   // The codon rect height is scaled via rectHeights in compact mode; the
   // overlay item that annotates it (font size + vertical centering + hit box)
   // must scale in lockstep so letters stay sized to and centered on the row.
-  const data = makeBaseFeatureData({
-    flatbushItems: [
-      makeFlatbushItem({
-        featureId: 'cds',
-        type: 'CDS',
-        startBp: 100,
-        endBp: 400,
-        bottomPx: 20,
-        featureHeightPx: 20,
-      }),
-    ],
-    rectPositions: new Uint32Array([100, 400]),
-    rectYs: new Float32Array([0]),
-    rectHeights: new Float32Array([20]),
-    rectColors: new Uint32Array([0]),
-    rectStrands: new Float32Array([0]),
-    rectDensityFade: new Uint32Array([0]),
-    rectFeatureIndices: new Uint32Array([0]),
-    aminoAcidOverlay: [
-      {
-        startBp: 100,
-        endBp: 103,
-        aminoAcid: 'M',
-        proteinIndex: 0,
-        topPx: 5,
-        heightPx: 20,
-        isStopOrNonTriplet: false,
-        isTranslExcept: false,
-        flatbushIdx: 0,
-      },
-    ],
-  })
+  const data = {
+    regionKey: 'v:ctgA',
+    ...makeBaseFeatureData({
+      flatbushItems: [
+        makeFlatbushItem({
+          featureId: 'cds',
+          type: 'CDS',
+          startBp: 100,
+          endBp: 400,
+          bottomPx: 20,
+          featureHeightPx: 20,
+        }),
+      ],
+      rectPositions: new Uint32Array([100, 400]),
+      rectYs: new Float32Array([0]),
+      rectHeights: new Float32Array([20]),
+      rectColors: new Uint32Array([0]),
+      rectStrands: new Float32Array([0]),
+      rectDensityFade: new Uint32Array([0]),
+      rectFeatureIndices: new Uint32Array([0]),
+      aminoAcidOverlay: [
+        {
+          startBp: 100,
+          endBp: 103,
+          aminoAcid: 'M',
+          proteinIndex: 0,
+          topPx: 5,
+          heightPx: 20,
+          isStopOrNonTriplet: false,
+          isTranslExcept: false,
+          flatbushIdx: 0,
+        },
+      ],
+    }),
+  }
   const out = layout(
     new Map([[0, data]]),
-    new Map([[0, 'volvox:ctgA']]),
     0.02,
     false,
     false,
@@ -1822,13 +1776,7 @@ test('scaleLaidOutData scales every Y and height by the fit factor', () => {
     ],
   })
   // no labels so the row height is just body + padding, keeping the math simple
-  const laid = layout(
-    new Map([[0, data]]),
-    new Map([[0, 'volvox:ctgA']]),
-    1,
-    false,
-    false,
-  )
+  const laid = layout(new Map([[0, data]]), 1, false, false)
   const before = maxBottom(laid)
   const scaled = scaleLaidOutData(laid, 0.5)
 
@@ -1882,7 +1830,6 @@ describe('packedContentHeight matches the committed layout', () => {
     it(`agrees for ${displayMode}${reversed ? ' reversed' : ''}`, () => {
       const inputs = {
         bpPerPx: 1,
-        regionKeys: new Map([[0, 'volvox:ctgA']]),
         showLabels: true,
         showDescriptions: false,
         reversedRegions: reversed ? new Set([0]) : new Set<number>(),
@@ -1902,7 +1849,6 @@ describe('packedContentHeight matches the committed layout', () => {
   it('stacks overlapping features onto distinct rows, compact tighter', () => {
     const base = {
       bpPerPx: 1,
-      regionKeys: new Map([[0, 'volvox:ctgA']]),
       showLabels: true,
       showDescriptions: false,
       reversedRegions: new Set<number>(),

@@ -10,6 +10,7 @@ import { computeLaidOutData } from './layout.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LayoutRegionData } from './layout.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const jexl = createJexlInstance()
@@ -105,10 +106,13 @@ function layoutAt(
     colorByCDS: false,
     jexl,
   })
-  const raw = { ...packed, featureCount: 1 } as unknown as FeatureDataResult
+  const raw = {
+    ...packed,
+    featureCount: 1,
+    regionKey: 'volvox:ctgA',
+  } as unknown as LayoutRegionData
   return computeLaidOutData(new Map([[0, raw]]), {
     bpPerPx: 1,
-    regionKeys: new Map([[0, 'volvox:ctgA']]),
     showLabels: true,
     showDescriptions: false,
     reversedRegions: new Set<number>(),

@@ -187,9 +187,25 @@ export function featureIdsTouchingBlocks(
 // `decimated` fit rung's genuine intermediate between "every name" and "no name".
 type LabelDecimation = 'all' | 'fitWidth'
 
+// One fetched region as layout sees it: the worker's result plus the region
+// identity the model staples on at fetch time (`LoadedFeatureData` in
+// baseModel.ts). Structural rather than an import of that type, so layout stays a
+// pure function decoupled from the model — the same idiom as
+// `BlockMeasurableRegion` above.
+//
+// `regionKey` rides on the region, not in a parallel `Map<number, string>` beside
+// it, and that is load-bearing. Grouping is BY this key, so a region whose key
+// went missing would land in one group with every other keyless region and
+// mis-stack against it — precisely the failure the grouping exists to prevent
+// (see baseModel's note on why the identity is stored with the data at all). The
+// parallel map made that state expressible and forced a `?? ''` fallback to
+// swallow it; measured over ~14k lookups the fallback never fired, because
+// `regionKeys` was built by walking this very map. Reading the key off the region
+// makes the missing case a type error instead of a silent mis-stack.
+export type LayoutRegionData = FeatureDataResult & { regionKey: string }
+
 export interface LayoutInputs {
   bpPerPx: number
-  regionKeys: Map<number, string>
   showLabels: boolean
   showDescriptions: boolean
   reversedRegions: ReadonlySet<number>
@@ -479,7 +495,7 @@ function displayModeMetrics(displayMode: DisplayMode): DisplayModeMetrics {
 // Regions sharing the same `assembly:refName` key share one layout so spanning
 // features get the same Y in every region they appear in.
 export function computeLaidOutData(
-  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LayoutInputs,
   // Feature id -> y (px) from the previous layout, used only to order insertion
   // so top features keep their rows across a re-pack (see packRef).
@@ -494,14 +510,14 @@ export function computeLaidOutData(
 // body rather than widening `computeLaidOutData`'s return, so the pure entry
 // point every test and probe uses still answers with just the layout.
 function layoutRefGroups(
-  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LayoutInputs,
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   const metrics = displayModeMetrics(inputs.displayMode)
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
-  for (const [, regions] of groupRawByRef(rpcDataMap, inputs.regionKeys)) {
+  for (const [, regions] of groupRawByRef(rpcDataMap)) {
     const { layoutMap, layoutHeights, droppedLabelIds, collapsed } =
       packPreparedRef(
         prepareRefPack(regions, inputs, metrics),
@@ -569,7 +585,7 @@ function packedRowsHeight(
 // takes this type so the compiler enforces what the solve depends on: the
 // prepared half of a pack cannot read `labelRoomFactor`, therefore one prep is
 // valid for every factor probed against it.
-type LabelRoomFactorFreeInputs = Omit<LayoutInputs, 'labelRoomFactor'>
+export type LabelRoomFactorFreeInputs = Omit<LayoutInputs, 'labelRoomFactor'>
 
 // Measure the content height of many `labelRoomFactor` candidates against ONE
 // preparation. Returns the probe; each call packs the prepared groups at that
@@ -583,7 +599,7 @@ type LabelRoomFactorFreeInputs = Omit<LayoutInputs, 'labelRoomFactor'>
 // values, the height measured here IS the height the committed layout reports, by
 // construction rather than by two code paths agreeing.
 export function createContentHeightProbe(
-  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LabelRoomFactorFreeInputs,
   prevYByFeatureId?: ReadonlyMap<string, number>,
   // Features the height is measured over (see `maxBottom`). It narrows only the
@@ -592,8 +608,8 @@ export function createContentHeightProbe(
   measureIds?: ReadonlySet<string>,
 ) {
   const metrics = displayModeMetrics(inputs.displayMode)
-  const preps = [...groupRawByRef(rpcDataMap, inputs.regionKeys).values()].map(
-    regions => prepareRefPack(regions, inputs, metrics),
+  const preps = [...groupRawByRef(rpcDataMap).values()].map(regions =>
+    prepareRefPack(regions, inputs, metrics),
   )
   return (labelRoomFactor: number) => {
     let max = 0
@@ -616,7 +632,7 @@ export function createContentHeightProbe(
 // One-shot height for fully-formed inputs — `createContentHeightProbe` for a
 // single factor. Same pack, so the same guarantee.
 export function packedContentHeight(
-  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LayoutInputs,
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
@@ -631,18 +647,14 @@ export function packedContentHeight(
 // out (regions on different chromosomes never affect each other's rows). Shared
 // by the committed layout and the height probe so both pack exactly the same
 // groups from exactly the same objects.
-function groupRawByRef(
-  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
-  regionKeys: Map<number, string>,
-) {
-  const refGroups = new Map<string, [number, FeatureDataResult][]>()
+function groupRawByRef(rpcDataMap: ReadonlyMap<number, LayoutRegionData>) {
+  const refGroups = new Map<string, [number, LayoutRegionData][]>()
   for (const [n, raw] of rpcDataMap) {
     if (raw.flatbushItems.length > 0) {
-      const key = regionKeys.get(n) ?? ''
-      let group = refGroups.get(key)
+      let group = refGroups.get(raw.regionKey)
       if (!group) {
         group = []
-        refGroups.set(key, group)
+        refGroups.set(raw.regionKey, group)
       }
       group.push([n, raw])
     }
@@ -661,7 +673,7 @@ interface GroupCache {
   // reference compare in groupUnchanged detects a pin toggle.
   pinnedFeatureIds: ReadonlySet<string>
   // idx -> raw fetch object, by reference. A new fetch swaps the reference.
-  members: Map<number, FeatureDataResult>
+  members: Map<number, LayoutRegionData>
   // members currently rendered reversed (affects label-overhang packing)
   reversed: Set<number>
   // idx -> laid-out result, reused verbatim when the group is unchanged
@@ -673,7 +685,7 @@ interface GroupCache {
 
 function groupUnchanged(
   prev: GroupCache,
-  members: Map<number, FeatureDataResult>,
+  members: Map<number, LayoutRegionData>,
   inputs: LayoutInputs,
 ) {
   const {
@@ -763,18 +775,20 @@ export function createIncrementalLayout({
   let cache = new Map<string, GroupCache>()
 
   return function computeLaidOutDataIncremental(
-    rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+    rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
     inputs: LayoutInputs,
   ): Map<number, FeatureDataResult> {
-    const { regionKeys, reversedRegions } = inputs
+    const { reversedRegions } = inputs
 
-    const groups = new Map<string, Map<number, FeatureDataResult>>()
+    // Grouped as `groupRawByRef` groups, minus its empty-region skip: a region
+    // that fetched no features still needs a cache entry, or its group re-packs
+    // every time it is present.
+    const groups = new Map<string, Map<number, LayoutRegionData>>()
     for (const [idx, raw] of rpcDataMap) {
-      const key = regionKeys.get(idx) ?? ''
-      let group = groups.get(key)
+      let group = groups.get(raw.regionKey)
       if (!group) {
         group = new Map()
-        groups.set(key, group)
+        groups.set(raw.regionKey, group)
       }
       group.set(idx, raw)
     }
@@ -790,8 +804,8 @@ export function createIncrementalLayout({
         nextCache.set(key, prev)
       } else {
         // `members` all share one key, so the pure pass lays out exactly this
-        // group; passing the full `regionKeys`/`reversedRegions` is fine since
-        // it only reads the keys of regions present in `members`.
+        // group; passing the full `reversedRegions` is fine since it only reads
+        // the entries for regions present in `members`.
         // Order this group's re-pack by each feature's row in the prior output
         // so top features keep their rows across a zoom (see packRef), unless
         // this instance packs measured candidates (see seedPriorRows).

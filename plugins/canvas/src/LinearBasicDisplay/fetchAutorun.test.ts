@@ -1305,12 +1305,13 @@ describe('geneGlyphMode auto collapse', () => {
   })
 })
 
-describe('regionKeys/reversedRegions derive from rpcDataMap', () => {
-  // Layout groups regions by `assembly:refName`. These keys must follow
-  // rpcDataMap (the data actually on screen) rather than loadedRegions, which
-  // is cleared on every settings change while canvas preserves rpcDataMap
-  // through the refetch window. Deriving from loadedRegions would leave the
-  // keys empty in that window, collapsing every region into one layout group.
+describe('region identity is stored with the data it describes', () => {
+  // Layout groups regions by `assembly:refName`, and reads that key off the
+  // stored region (see `LayoutRegionData`). It must follow rpcDataMap — the data
+  // actually on screen — rather than loadedRegions, which is cleared on every
+  // settings change while canvas preserves rpcDataMap through the refetch
+  // window. Deriving it from loadedRegions would leave it empty in that window,
+  // collapsing every region into one layout group.
   it('reports per-region keys while loadedRegions is empty', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -1335,7 +1336,9 @@ describe('regionKeys/reversedRegions derive from rpcDataMap', () => {
     // No setLoadedRegion was called — this is exactly the post-clear refetch
     // window where rpcDataMap holds data but loadedRegions is empty.
     expect(display.loadedRegions.size).toBe(0)
-    expect([...display.regionKeys.entries()]).toEqual([
+    expect(
+      [...display.rpcDataMap.entries()].map(([idx, d]) => [idx, d.regionKey]),
+    ).toEqual([
       [0, 'volvox:ctgA'],
       [1, 'volvox:ctgB'],
     ])
