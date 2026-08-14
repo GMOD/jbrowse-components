@@ -19,6 +19,7 @@ import {
   getModPositions,
   getModProbabilities,
   getModProbabilityBytes,
+  getModTypes,
   matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
 
@@ -85,12 +86,37 @@ export function extractModifications(
   if (!mmTag) {
     return
   }
+
+  // Which types this read declares, from the MM tag's HEADERS — no delta walk,
+  // no read sequence, no CIGAR. Two things want this and neither wants a
+  // position:
+  // - detectedModifications lists every type so the menu can offer all of them
+  //   (isolation filters what is *rendered*, not what is detected).
+  // - seenModTypes collects (strand, type) pairs; the caller resolves simplex
+  //   globally once all reads are parsed (see detectSimplexModifications).
+  for (const { strand: modStrand, type, base: modBase } of getModTypes(mmTag)) {
+    detectedModifications.add(type)
+    const key = modStrand + type
+    if (!seenModTypes.has(key)) {
+      seenModTypes.set(key, { type, base: modBase, strand: modStrand })
+    }
+  }
+
+  // Everything below places or scores marks, and only the modifications colour
+  // schemes draw any — so a modBAM opened in normal, strand, insert-size or
+  // tag colouring stops here. It used to run the whole per-read pipeline
+  // regardless (`getModPositions` walks the delta list against the read
+  // sequence, which makes BAM decode SEQ for the read), to populate the menu
+  // above. That is the ungated cost the old comment on `packedCigarOps`
+  // describes, and it is now gated.
+  if (colorBy?.type !== 'modifications') {
+    return
+  }
+
   // packedCigarOps, not parseCigar2(feature.get('CIGAR')): parseCigar2 emits
   // `(len << 4) | opIndex`, which is exactly what NUMERIC_CIGAR already holds,
   // so the string form made BAM/CRAM build a CIGAR string out of their packed
-  // ops purely for this to parse straight back. This function runs per read on
-  // every render for anything carrying MM — not gated on colorBy — so that round
-  // trip was paid across a whole nanopore pileup. Text-only features still get
+  // ops purely for this to parse straight back. Text-only features still get
   // the parse, inside the helper.
   const cigarOps = packedCigarOps(feature)
   if (!cigarOps?.length) {
@@ -108,28 +134,12 @@ export function extractModifications(
   // scaled `number[]` unconditionally meant allocating one per read — thousands
   // of entries on a nanopore read — and discarding it in every mode but
   // fill-unmarked.
-  const fillUnmarked =
-    colorBy?.type === 'modifications' && !!colorBy.modifications?.fillUnmarked
-
-  // One pass over the parsed MM types:
-  // - detectedModifications lists every type so the menu can offer all of them
-  //   (isolation filters what is *rendered*, not what is detected).
-  // - seenModTypes collects (strand, type) pairs; the caller resolves simplex
-  //   globally once all reads are parsed (see detectSimplexModifications).
-  // The per-refPos max-prob walk further down only paints marks, so it stays
-  // gated to modifications mode — methylation/bisulfite/normal never pay for it.
-  for (const { strand: modStrand, type, base: modBase } of modifications) {
-    detectedModifications.add(type)
-    const key = modStrand + type
-    if (!seenModTypes.has(key)) {
-      seenModTypes.set(key, { type, base: modBase, strand: modStrand })
-    }
-  }
+  const fillUnmarked = !!colorBy.modifications?.fillUnmarked
 
   // fillUnmarked hands cytosine painting to extractMethylation (the getMethBins
   // context walk paints every cytosine, called or not), so skip the MM-tag paint
   // here to avoid double marks — matching the old standalone methylation scheme.
-  if (colorBy?.type === 'modifications' && !fillUnmarked) {
+  if (!fillUnmarked) {
     const modStrand = strand === -1 ? -1 : 1
     const modThreshold =
       (colorBy.modifications?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100

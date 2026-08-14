@@ -31,8 +31,20 @@
 // out of both arms. Those are gated on modifications mode now too, so the real
 // saving on this path is larger than what is measured here.
 //
-// WHAT IT SAYS on `200x.longread.mod.bam`, `--rounds=20`: see the header of
-// modExtract.bench.ts for the sibling number on the drawing path.
+// WHAT IT SAYS on `200x.longread.mod.bam` (285 MM reads), `--rounds=20`:
+//
+//   full parse    127.31 ms
+//   MM headers      0.22 ms   584x   output identical
+//   control       124.11 ms   1.026x
+//
+// 584x is not a close call, and the reason it is that large rather than merely
+// large is that the two arms are not doing the same amount of work in different
+// ways — one walks every delta in the tag against the read sequence and the
+// other reads a handful of characters per group. The right comparison for
+// "should this be gated" is the absolute 127 ms, per render, for a menu.
+//
+// See modExtract.bench.ts for the sibling number on the drawing path, which is
+// what still runs when the track IS coloured by modifications.
 //
 // Written out longhand. Do NOT refactor the arms into one driver parameterized
 // by a flag — see BENCHMARKING.md's polymorphism trap.
@@ -53,12 +65,6 @@ const REFNAME = arg('refName', 'chr22_mask')
 const START = Number(arg('start', '124000'))
 const END = Number(arg('end', '143000'))
 const ONLY = arg('only', '')
-
-interface Read {
-  strand: -1 | 1
-  seq: string
-  mm: string
-}
 
 // ARM 1: full — the parse as it ran before, including the read sequence it
 // walks against. `seq` is read INSIDE the timed region on purpose: on a BAM
