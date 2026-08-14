@@ -120,6 +120,40 @@ cache per rep.
 fixture is an empty tree at whole-genome zoom and a full one two steps in. Any
 statement about picking cost has to name the zoom.
 
+## The per-candidate loop, and two ideas parked against it
+
+What survives the index is walked with `projectCorners` + `isRibbonCulled` +
+`ribbonPerpWidth` (which takes a `sqrt`) per candidate, after an
+`Int32Array(...).sort()`. Two changes have been considered and not made:
+
+- **Push `minAlignmentLength` and `isInstanceInvisible` into `flatbush.search`'s
+  `filterFn`** (the API takes one, and `_collectContained` honours it), so
+  rejects never enter the array to be copied and sorted. Parked because
+  `minAlignmentLength` defaults to 0 and nothing in `computeSyntenyColors` ever
+  produces alpha < 3, so by default the filter rejects nothing and the closure
+  call per leaf is pure overhead. Worth revisiting **gated on
+  `minAlignmentLength > 0`**, which is the case a whole-genome PAF is actually
+  viewed in.
+- **Drop the sort**, tracking `best = -1` and skipping any candidate with
+  `i < best`, since the answer is the max-index candidate that passes. Correct
+  (the predicates are per-candidate and order-independent) and removes an
+  O(n log n), but it converts the descending walk's early exit into "test every
+  candidate that could improve the answer", so the worst case (candidates
+  arriving in ascending index order) builds many more paths. Do not attempt
+  without measuring how many candidates reach `buildFeaturePath` on a real
+  fragmented alignment.
+
+Neither is the answer to the wide-hull case below — there the candidates are not
+arriving through slop either could remove.
+
+## `pickFeatureAtPoint` omits the `isMarker` arm of `isRibbonCulled`
+
+The draw loop passes it (`Canvas2DSyntenyRenderer`), the pick loop does not.
+**Harmless by construction**: a marker's two edges are single points, so both
+width deltas are 0 and the pickable-width exclusion keeps it out of the index
+entirely. Left as is deliberately — adding the argument would suggest markers
+reach that line, and they cannot. Worth knowing if the exclusion is ever relaxed.
+
 ## What is NOT worth trying against the wide-hull case
 
 A tighter cap, a bigger `flatbush` node size, or pushing `minAlignmentLength`
