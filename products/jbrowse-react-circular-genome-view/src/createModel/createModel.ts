@@ -40,4 +40,10 @@ export default function createModel(
 }
 
 type ViewStateModel = ReturnType<typeof createModel>['model']
-export type ViewModel = Instance<ViewStateModel>
+// `interface … extends`, not `type … =`, for the same build reason as the LGV
+// product's: as an alias the declaration emitter inlines the whole root-model
+// type at every use, and the two entry points below then fail `build:esm` with
+// TS7056. This root model is smaller and had not reached that limit yet — one
+// more plugin and it would have, as a failure looking like it came from
+// somewhere else. Annotate anything returning it with `ViewModel` explicitly.
+export interface ViewModel extends Instance<ViewStateModel> {}

@@ -2,6 +2,7 @@ import { useCreateOnce, useDestroyOnUnmount } from '@jbrowse/product-core'
 
 import createViewState from './createViewState.ts'
 
+import type { ViewModel } from './createModel/createModel.ts'
 import type { ViewStateOptions } from './createViewState.ts'
 
 /**
@@ -25,7 +26,7 @@ import type { ViewStateOptions } from './createViewState.ts'
  * `destroyViewState` cleanup by hand: both halves are StrictMode traps, and
  * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
  */
-export function useCreateViewState(opts: ViewStateOptions) {
+export function useCreateViewState(opts: ViewStateOptions): ViewModel {
   const state = useCreateOnce(() => createViewState(opts))
   useDestroyOnUnmount(state)
   return state
