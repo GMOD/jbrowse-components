@@ -8,9 +8,12 @@
 // The English is plain rather than merely spelt out, which is a second pass and
 // not the same one: "is this block already covered?" is a sentence made of our
 // vocabulary, and a block, a fetch and a region are all things the reader is
-// here to learn. So it asks whether we already have this PART OF THE VIEW, the
-// worker is a BACKGROUND worker, and fetchGeneration++ is DONE LOADING. Nothing
-// in the top line of a box is a word this page has to define first.
+// here to learn. So it asks whether we already have DATA FOR this part of the
+// view, the worker is a BACKGROUND worker, and fetchGeneration++ is DONE
+// LOADING. Nothing in the top line of a box is a word this page has to define
+// first. "do we already have this part of the view?" was the first draft and it
+// reads as a question about the VIEW rather than about the data — the noun a
+// plain sentence drops is the one to check.
 //
 // That needs HTML-like labels (`label=<…>` rather than `label="…"`), so `&` is
 // `&amp;` inside them, and a malformed one renders as literal angle brackets
@@ -63,7 +66,7 @@ digraph fetch_chain {
   ]
   check [
     shape=box, style="filled,rounded"
-    label=<do we already have<br/>this part of the view?<br/><font point-size="9" face="Courier" color="#6b6b6b">boundsValid &amp;&amp; isCacheValid()</font>>
+    label=<do we already have data<br/>for this part of the view?<br/><font point-size="9" face="Courier" color="#6b6b6b">boundsValid &amp;&amp; isCacheValid()</font>>
     fillcolor="#e3f2fd"
   ]
 
