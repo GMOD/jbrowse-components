@@ -81,6 +81,33 @@
 // before it can convert an index-from-the-end into an index-from-the-start, and
 // counting is itself a full scan — so it pays two where `hits` pays one. Correct,
 // elegant, and 0.95x.
+//
+// **NONE OF IT SHIPS, AND `--cluster` IS WHY.** Every row above is measured on
+// tags whose calls span the whole read, which is what both fixtures have. The
+// forward-scanning arms cross the ENTIRE read no matter where the calls sit,
+// because the ones they need are at the far end; the stepping walk stops as soon
+// as it has placed the last call. So a tag clustered at the read's 3' end — the
+// start of the reverse scan — is the regime where collecting every occurrence
+// pays for a whole read to use a corner of it. `--cluster=<fraction>` truncates
+// each delta list to make exactly that shape, and on 200x.longread.mod:
+//
+//   coverage    step      hitsArena          control
+//   1.00      110.7 ms    62.9 ms  1.758x    0.996
+//   0.50       67.8 ms    63.3 ms  1.070x    1.069   <- break-even
+//   0.10       14.0 ms    63.1 ms  0.223x    1.035   <- 4.5x REGRESSION
+//
+// The crossover is around half the read, and the cliff below it is steep: the
+// arms that win by 1.76x when a tag covers its read lose by 4.5x when it covers a
+// tenth. Deciding between them needs to know what fraction the calls span, which
+// is `sum(deltas) + nPositions` against the read's occurrence COUNT — and the
+// count is exactly what the scan was going to compute. Any gate is therefore a
+// guess at base composition with a magic constant in it.
+//
+// A 1.4-1.8x on half the reads of one phase is not worth a heuristic whose wrong
+// answer is 4.5x slower, on a function that took three optimizations the same
+// day. Filed in REJECTED_IDEAS.md. What would revive it is a cheap exact bound on
+// occurrence count — the adapter knows the read's base composition if anything
+// does, and 4-bit packed BAM sequence could be popcounted for it.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -105,6 +132,13 @@ const REFNAME = arg('refName', 'chr20')
 const START = Number(arg('start', '1'))
 const END = Number(arg('end', '100000000'))
 const STRAND = arg('strand', 'rev')
+// Keep only this fraction of each group's delta list. In MM order a reverse
+// read's calls start at its 3' end, which is where the reverse scan STARTS — so
+// truncating clusters every call into the first slice the stepping walk touches,
+// letting it stop early while the forward-scanning arms still cross the whole
+// read. That is the regime where collecting every occurrence should lose, and no
+// fixture in the corpus has it: both cover their reads end to end.
+const CLUSTER = Number(arg('cluster', '1'))
 
 const COMPLEMENT_CODE: Record<number, number> = {
   65: 84,
@@ -1260,6 +1294,22 @@ async function main() {
       if (group !== '') {
         calls += group.split(',').length - 1
       }
+    }
+  }
+
+  if (CLUSTER < 1) {
+    for (const r of reads) {
+      r.mm = r.mm
+        .split(';')
+        .map(group => {
+          if (group === '') {
+            return group
+          }
+          const split = group.split(',')
+          const keep = Math.max(1, Math.floor((split.length - 1) * CLUSTER))
+          return split.slice(0, keep + 1).join(',')
+        })
+        .join(';')
     }
   }
 
