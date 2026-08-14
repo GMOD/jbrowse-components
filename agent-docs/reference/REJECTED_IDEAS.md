@@ -222,11 +222,36 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   bench and measured **0.43x**, i.e. no better than the index-taking one. Don't
   re-propose either shape for a loop that runs per instance.
 
+  **The obvious next move — generate the whole LOOP instead of the field access
+  — is only half right, and the half that works already existed.** Three
+  generated forms were measured against the same baseline, and what separates
+  them is calls-per-record, not how much of the loop is generated:
+
+  - `packInstances` (struct-of-arrays in, **zero** calls per record) — **0.99
+    to 1.15x, free.** It is what `packSnpSegmentsForGpu` and
+    `packModCovSegmentsForGpu` run.
+  - `InstanceWriter.push` (**one** call per record) — **0.20-0.36x**, i.e.
+    worse than the four bare accessors, because the method also reloads four
+    `this.` views and tests capacity on every record.
+  - a generated `forEachInstance` (**one** callback per record, the read-side
+    counterpart to `packInstances`) — **0.14-0.52x**. Written, measured,
+    and not emitted.
+
+  So a caller that cannot hand `packInstances` one array per field — because it
+  scales on the way in, computes a field, or emits a variable number of records
+  — should write the loop over the generated offset maps, NOT reach for a
+  generated per-record form. `packCoverageBinsForGpu` (scales and computes) and
+  `computeInterbaseCoverage` (one to three records per bucket) are both that
+  case, and both are hand-written on purpose. The codegen's own header already says
+  this for `packInstances`; the addition is that no other generated shape is an
+  escape from it.
+
   What survives is the emission: `//! layout-out` now writes the full typed
   surface — `INSTANCE_STRIDE_*`, the per-view offset maps, `InstanceArrays`,
   `packInstances` and the accessors — into packages that cannot import the
-  plugin owning the `.slang`, and the cold readers use it (the interbase hit
-  test resolves one position per mousemove; fixtures encode a record through
+  plugin owning the `.slang`, and the callers that are not per-record loops use
+  it (the two straight-interleave packers; the interbase hit test, which
+  resolves one position per mousemove; fixtures, which encode a record through
   `packInstances` rather than by hand). The rule is the loop's iteration count,
   not the module.
 

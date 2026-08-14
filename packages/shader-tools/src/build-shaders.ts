@@ -766,7 +766,15 @@ async function compileOne(log: Log, slangPath: string, source: string) {
 
     const layoutOut = parseOutPath(source, 'layout')
     if (layoutOut) {
-      writeOut(log, layoutOut, emitLayoutOnly({ baseName: base, reflection }))
+      writeOut(
+        log,
+        layoutOut,
+        emitLayoutOnly({
+          baseName: base,
+          reflection,
+          instanceWriter: parseInstanceWriter(source),
+        }),
+      )
     }
     writeConstsOut(log, source, base, codegenInputs.exportedConsts)
     await writeJsExports(log, slangPath, source, base, wgsl)

@@ -1141,9 +1141,9 @@ export function emitConsts(baseName: string, consts: Record<string, number>) {
  * the shader fails to compile at the call site instead of reinterpreting bits.
  */
 export function emitLayoutOnly(
-  inputs: Pick<CodegenInputs, 'baseName' | 'reflection'>,
+  inputs: Pick<CodegenInputs, 'baseName' | 'reflection' | 'instanceWriter'>,
 ) {
-  const { baseName, reflection } = inputs
+  const { baseName, reflection, instanceWriter } = inputs
   const vs = findInstanceStruct(reflection)
   if (!vs) {
     return header(baseName).join('\n')
@@ -1155,5 +1155,6 @@ export function emitLayoutOnly(
     ...instanceLayoutLines(attrs),
     ...instancePackerLines(attrs),
     ...instanceAccessorLines(attrs),
+    ...(instanceWriter ? instanceWriterLines(attrs) : []),
   ].join('\n')
 }

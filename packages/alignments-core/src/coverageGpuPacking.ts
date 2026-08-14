@@ -12,12 +12,23 @@
 // (A deliberate `f32[o + SNP_U32.position]` still type-checks; the split ends
 // the drift, it doesn't prove the pairing.)
 //
-// The codegen also emits `setInstance<Field>` accessors that WOULD prove it,
-// and these loops deliberately do not use them: they measured 0.43-0.47x here
-// (`plugins/alignments/benches/instanceAccessors.bench.ts`, controls 0.98-1.06
-// across three runs). The cost is the call rather than the arithmetic, so there
-// is no accessor shape that recovers it — an offset-taking variant measured no
-// better. Cold readers use them; per-instance loops don't.
+// The generated `packInstances` DOES prove it, and where a packer is a straight
+// interleave — one input array per field, no scaling on the way in — it is what
+// runs: the whole loop is generated, its body is this file's own inline form,
+// and it measured 0.99-1.15x (`benches/instanceAccessors.bench.ts`, controls
+// 0.93-1.05 across three runs). That is the shape to reach for first.
+//
+// `packCoverageBinsForGpu` cannot use it and stays hand-written, for the reason
+// the codegen's own header gives: it SCALES on the way in (`depths[i] /
+// maxDepth`) and COMPUTES a field (`startOffset + i * binSize`), so feeding
+// `packInstances` would mean materializing two arrays it does not otherwise
+// need. It writes its own loop over the offset maps instead.
+//
+// What it must not reach for is the generated per-field `setInstance<Field>`
+// accessors, which measured 0.43-0.47x. The cost is the call rather than the
+// arithmetic, so no accessor shape recovers it — an offset-taking variant
+// measured no better, and neither did the two generated forms that call once
+// per RECORD. Generate the loop, not the field access.
 //
 // Every packer here used to head a prose restatement of the struct
 // ("[position(u32), yOffset(f32), …] = 20 bytes"). That is the hand-kept
@@ -34,18 +45,8 @@ import {
   INSTANCE_STRIDE_BYTES as COVERAGE_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as COVERAGE_STRIDE,
 } from './coverageLayout.generated.ts'
-import {
-  INSTANCE_OFFSET_F32 as MOD_COV_F32,
-  INSTANCE_OFFSET_U32 as MOD_COV_U32,
-  INSTANCE_STRIDE_BYTES as MOD_COV_STRIDE_BYTES,
-  INSTANCE_STRIDE_WORDS as MOD_COV_STRIDE,
-} from './modCoverageLayout.generated.ts'
-import {
-  INSTANCE_OFFSET_F32 as SNP_F32,
-  INSTANCE_OFFSET_U32 as SNP_U32,
-  INSTANCE_STRIDE_BYTES as SNP_STRIDE_BYTES,
-  INSTANCE_STRIDE_WORDS as SNP_STRIDE,
-} from './snpCoverageLayout.generated.ts'
+import { packInstances as packModCovInstances } from './modCoverageLayout.generated.ts'
+import { packInstances as packSnpInstances } from './snpCoverageLayout.generated.ts'
 
 import type { SNPCoverageResult } from './coverageDownsampling.ts'
 import type { computeInterbaseCoverage } from './interbaseCoverage.ts'
@@ -86,6 +87,13 @@ export function packCoverageBinsForGpu(
 
 // relDepth = totalDepthAtPos / regionMaxDepth lets the shader draw segments as
 // a linear fraction of a possibly-log-scaled coverage bar at this position.
+//
+// This and `packModCovSegmentsForGpu` below each used to spell `relDepths[i] ??
+// 1`. That default was unreachable — both producers allocate `relDepths` at
+// exactly `count`, and an in-range read of a Float32Array is a number — and it
+// was worse than unreachable: had `count` ever exceeded the array (the crossed
+// (array, count) pairing `packCoverageArea.test.ts` guards), it would have
+// packed a plausible 1 instead of the NaN that shows.
 export function packSnpSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
@@ -94,18 +102,16 @@ export function packSnpSegmentsForGpu(
   relDepths: Float32Array,
   count: number,
 ) {
-  const buffer = new ArrayBuffer(count * SNP_STRIDE_BYTES)
-  const f32 = new Float32Array(buffer)
-  const u32 = new Uint32Array(buffer)
-  for (let i = 0; i < count; i++) {
-    const o = i * SNP_STRIDE
-    u32[o + SNP_U32.position] = positions[i]!
-    f32[o + SNP_F32.yOffset] = yOffsets[i]!
-    f32[o + SNP_F32.segHeight] = heights[i]!
-    f32[o + SNP_F32.colorType] = colorTypes[i]!
-    f32[o + SNP_F32.relDepth] = relDepths[i] ?? 1
-  }
-  return buffer
+  return packSnpInstances(
+    {
+      position: positions,
+      yOffset: yOffsets,
+      segHeight: heights,
+      colorType: colorTypes,
+      relDepth: relDepths,
+    },
+    count,
+  )
 }
 
 // Position is absolute uint32; `colors` is pre-packed ABGR u32. relDepth =
@@ -118,18 +124,16 @@ export function packModCovSegmentsForGpu(
   relDepths: Float32Array,
   count: number,
 ) {
-  const buffer = new ArrayBuffer(count * MOD_COV_STRIDE_BYTES)
-  const f32 = new Float32Array(buffer)
-  const u32 = new Uint32Array(buffer)
-  for (let i = 0; i < count; i++) {
-    const o = i * MOD_COV_STRIDE
-    u32[o + MOD_COV_U32.position] = positions[i]!
-    f32[o + MOD_COV_F32.yOffset] = yOffsets[i]!
-    f32[o + MOD_COV_F32.segHeight] = heights[i]!
-    u32[o + MOD_COV_U32.packedColor] = colors[i]!
-    f32[o + MOD_COV_F32.relDepth] = relDepths[i] ?? 1
-  }
-  return buffer
+  return packModCovInstances(
+    {
+      position: positions,
+      yOffset: yOffsets,
+      segHeight: heights,
+      packedColor: colors,
+      relDepth: relDepths,
+    },
+    count,
+  )
 }
 
 // The SNP + interbase-histogram + indicator GPU segment buffers are the coverage
