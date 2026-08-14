@@ -466,26 +466,40 @@ tolerance ball for "did this figure move".
 - **That sort right-click is flaky even with one lane.** The same spec succeeded
   at `height: 400` / `y: 450` and failed at `height: 340` / `y: 400`. Re-run
   before re-designing a sort spec.
-- **A `compose` has no annotation layer.** `ComposeSpec` extends
-  `BaseSpecFields`, which carries no `annotations`, and the parts are separate
-  captures `+append`ed afterwards — so nothing can draw across the seam. An
-  arrow from one half to the other is not available; number the two halves'
-  anchors instead, as `pangenome/hprc_mhc_anchored` does with `circle` badges.
+- **A `compose` HAS an annotation layer, anchored per part.** It was built after
+  the note here said it did not exist; `annotateComposition` opens a page that
+  is nothing but the composed PNG plus one absolutely-positioned div per part,
+  and runs the same `drawAnnotationOverlay` every other figure's callouts go
+  through. So `anchor: { selector: '[data-part="1"]' }` plus the usual
+  alignX/alignY/dx/dy is a real anchor, an arrow CAN cross the seam, and a
+  `jb2export` part can carry a callout at all — which is the only way one ever
+  will, since those render through React SSR with no page in them.
 
-  **This has now been asked for directly** ("add red text annotation boxes", on
-  `jbrowse-img/sv_review_pair`, whose halves are two `jb2export` renders and so
-  carry no annotations either — `CliSpec` extends `BaseSpecFields` too). Where
-  the parts are browser captures the workaround above holds; where they are CLI
-  renders there is no workaround at all, and the only in-frame labelling
-  available is jb2export's own track names. Building it is a contained change
-  and worth writing down so the next round does not re-derive it:
-  `captureComposeSpec` already knows each part's exact pixel offset because it
-  did the `+append`, so an anchor of the form
-  `{ part: N, alignX, alignY, dx, dy }` resolves node-side with nothing measured
-  off a picture. The drawing itself is the existing `drawAnnotationOverlay`, run
-  over a blank page holding the composed PNG as an `<img>` at its own CSS size,
-  captured at `deviceScaleFactor` 2. Do not reach for `convert -draw` instead:
-  the pill style would then exist in two places and drift.
+  Two things it still cannot do. **Anchoring INSIDE a part** is not available:
+  the composition is a flat image with no view model and no track elements, so
+  anything pointing at a locus belongs on the part's own spec. And **a part's
+  DATA AREA is not its box** — the app draws a left gutter for a wiggle y axis
+  and a right one for its scrollbar, ~5% and ~5% of a 1500 px capture, so a
+  fraction of the part is not a fraction of the genome it lays out. `fracX`
+  takes a sub-span of the anchored rect for the one shape that needs it (below);
+  the fractions have to be solved for against landmarks in the part, not
+  assumed.
+
+- **`trapezoid` is the lineage wedge**, joining `fromAnchor`'s facing edge to
+  `anchor`'s: the idiom for "that span of the panel above opens into this one".
+  `popgen/in2lt_inversion` is the worked example and carries the arithmetic. Two
+  things to know before authoring one:
+
+  - **it needs a gutter to exist in.** Stacked parts are flush, so the wedge's
+    two horizontal edges are the same line and it has no height. `gutter: N` on
+    the compose spec splices white space above each part after the first —
+    opt-in, so no existing stacked figure moves.
+  - **`fracX` is solved for, not measured.** Fit `x = L + f*W` over several
+    landmarks whose genomic fractions are known (region dividers are ideal,
+    since a multi-region row hands you one per boundary). Five of them agreeing
+    to a tenth of a pixel is what makes the pair safe to commit, and a layout
+    change that moved the gutter would miss all five at once — visibly, since
+    the wedge's edge sits on a divider.
 
 - **A callout anchored to a node can land under another callout.** Render and
   look before believing an offset — the MHC pair's two landmarks are an allele

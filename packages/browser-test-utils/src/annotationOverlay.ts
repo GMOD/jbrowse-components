@@ -81,6 +81,17 @@ export interface AnnotationAnchor {
   // nudge the tail.
   dx?: number
   dy?: number
+  // a HORIZONTAL SUB-SPAN of the resolved rect, as two fractions of its width.
+  // Only 'trapezoid' reads it, and it exists for the one case that rect has no
+  // finer handle in: a compose part, which is a flat image with no elements
+  // inside it, where the thing a lineage indicator has to point at is a
+  // FRACTION of a wider figure (one chromosome of six, one window of a genome).
+  //
+  // A fraction, not a pixel, so it is derived rather than measured — the caller
+  // computes it from the same region lengths the part's own spec lays out, and
+  // the ~0.5% the app frame's own margin costs is under a pixel of slant at any
+  // real figure width.
+  fracX?: [number, number]
 }
 
 // A callout drawn over the captured page (SVG overlay) before the screenshot,
@@ -94,8 +105,10 @@ export interface Annotation {
   // arrow: tail -> head; box/highlight: x/y/width/height (ring around a region);
   // text: x/y baseline; circle: filled numbered badge (with text) or an outline
   // ring around the anchored element (without text); legend: a color key pill,
-  // one swatch-and-label row per `entries` item
-  type: 'arrow' | 'box' | 'text' | 'circle' | 'legend'
+  // one swatch-and-label row per `entries` item; trapezoid: a lineage wedge
+  // joining `fromAnchor`'s facing edge to `anchor`'s, which is how a zoomed
+  // panel is shown to come FROM a span of a wider one
+  type: 'arrow' | 'box' | 'text' | 'circle' | 'legend' | 'trapezoid'
   // for 'legend': the color key itself. A display that identifies its rows by a
   // color the figure never names (thousands of sub-pixel rows, an overlay whose
   // in-app legend is off screen) needs the mapping in the frame; authoring it
@@ -388,7 +401,14 @@ export function drawAnnotationOverlay(
       : a.from
     const r = anchorRect(a.anchor)
     if (!r) {
-      return { ...a, from: tail, x: (a.x ?? 0) + dx, y: (a.y ?? 0) + dy }
+      return {
+        ...a,
+        from: tail,
+        x: (a.x ?? 0) + dx,
+        y: (a.y ?? 0) + dy,
+        fromRect: from,
+        toRect: undefined as Rect | undefined,
+      }
     }
     const pad = a.pad ?? 6
     // a numbered badge stays a fixed small disc; a hollow ring grows to wrap
@@ -416,6 +436,11 @@ export function drawAnnotationOverlay(
       width: a.width ?? r.width + pad * 2,
       height: a.height ?? r.height + pad * 2,
       radius: a.radius ?? (a.text ? 16 : ringRadius),
+      // A trapezoid is the one shape that needs both anchors as RECTS rather
+      // than as points: its two horizontal edges are the two elements' facing
+      // edges, so the widths are the geometry and not a decoration on it.
+      fromRect: from,
+      toRect: r,
     }
   })
 
@@ -496,6 +521,63 @@ export function drawAnnotationOverlay(
       line.setAttribute('stroke-width', String(strokeWidth))
       line.setAttribute('marker-end', `url(#${arrowMarker(color)})`)
       svg.append(line)
+    } else if (a.type === 'trapezoid' && a.fromRect && a.toRect) {
+      // The lineage wedge: `fromAnchor` is the span the zoom came FROM,
+      // `anchor` the panel it opened into, and the two horizontal edges are
+      // those two elements' own facing edges. Which pair of edges face each
+      // other is read off the rects rather than declared, so the same
+      // annotation works whichever way round the composition stacks its parts.
+      const A = a.fromRect
+      const B = a.toRect
+      const span = (
+        r: Rect,
+        anchor?: { fracX?: [number, number] },
+      ): [number, number] => {
+        const [f0, f1] = anchor?.fracX ?? [0, 1]
+        return [r.left + r.width * f0, r.left + r.width * f1]
+      }
+      const [aLeft, aRight] = span(A, a.fromAnchor)
+      const [bLeft, bRight] = span(B, a.anchor)
+      const aAbove = A.top + A.height / 2 < B.top + B.height / 2
+      const aY = aAbove ? A.top + A.height : A.top
+      const bY = aAbove ? B.top : B.top + B.height
+      const poly = document.createElementNS(NS, 'polygon')
+      poly.setAttribute(
+        'points',
+        `${aLeft},${aY} ${aRight},${aY} ${bRight},${bY} ${bLeft},${bY}`,
+      )
+      poly.setAttribute('fill', color)
+      poly.setAttribute('fill-opacity', String(a.fillOpacity ?? 0.14))
+      poly.setAttribute('stroke', 'none')
+      svg.append(poly)
+      // Only the SLANTED sides are stroked. The other two are the panels' own
+      // edges, and a line drawn along one of them reads as a border the figure
+      // grew rather than as part of the wedge.
+      for (const [x1, x2] of [
+        [aLeft, bLeft],
+        [aRight, bRight],
+      ]) {
+        const side = document.createElementNS(NS, 'line')
+        side.setAttribute('x1', String(x1))
+        side.setAttribute('y1', String(aY))
+        side.setAttribute('x2', String(x2))
+        side.setAttribute('y2', String(bY))
+        side.setAttribute('stroke', color)
+        side.setAttribute('stroke-width', String(a.strokeWidth ?? 3))
+        svg.append(side)
+      }
+    } else if (a.type === 'trapezoid') {
+      // A trapezoid with only one end is not a shape. Reported rather than
+      // skipped, because the caller turns misses into a thrown error and a
+      // silently-undrawn lineage wedge is exactly the kind of thing that gets
+      // committed.
+      misses.push(
+        JSON.stringify({
+          trapezoid: 'needs both anchor and fromAnchor to resolve',
+          anchor: a.anchor,
+          fromAnchor: a.fromAnchor,
+        }),
+      )
     } else if (a.type === 'box') {
       const rect = document.createElementNS(NS, 'rect')
       rect.setAttribute('x', String(cx))

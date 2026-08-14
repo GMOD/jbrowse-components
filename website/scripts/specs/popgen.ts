@@ -235,10 +235,16 @@ export const popgenSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 40,
             },
+            // 240, from 340 (review, on the composed figure: "also make figure
+            // more compressed to use y-screen real estate better"). What this
+            // lane is read for is a RATIO -- one arm's plateau against five arms
+            // of background -- and the ratio is about 3.5:1 here, so it survives
+            // a third off the height. The 100 px is most of what pays for the
+            // gutter the lineage trapezoid is drawn in.
             {
               trackId: 'fst_in2lt',
               type: 'LinearWiggleDisplay',
-              height: 340,
+              height: 240,
             },
           ],
         },
@@ -247,8 +253,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('wiggle-display'),
     readyText: 'Fst',
     readyTimeout: 90000,
-    // inversion(40) + fst(340) + 2 track headers + ruler/overview + app bar
-    viewportHeight: 660,
+    // inversion(40) + fst(240) + 2 track headers + ruler/overview + app bar
+    viewportHeight: 560,
     settleMs: 14000,
   },
 
@@ -433,10 +439,16 @@ export const popgenSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 40,
             },
+            // 130, from 160, same review note as the sibling part's lane. This
+            // one is context rather than the claim -- the plateau's shape over
+            // one arm, read against the genotype block under it -- and the
+            // genotype lane below is the one height in this figure that cannot
+            // move (see IN2LT_SV_TRACK: rowHeight is pinned at 2 and the lane is
+            // 180 * 2, so a shorter lane scrolls carriers out of the capture).
             {
               trackId: 'fst_in2lt',
               type: 'LinearWiggleDisplay',
-              height: 160,
+              height: 130,
             },
             {
               trackId: 'dgrp_In2Lt_sv',
@@ -480,11 +492,11 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('variant-display'),
     readyText: 'In(2L)t genotyped',
     readyTimeout: 120000,
-    // inversion(40) + fst(160) + genotypes(360) + 3 track headers + ruler and
+    // inversion(40) + fst(130) + genotypes(360) + 3 track headers + ruler and
     // overview + app bar. Undersize this and the rows below the fold are simply
     // cropped away, silently: the genotype canvas still reports first paint, so
     // the capture succeeds with the informative rows missing.
-    viewportHeight: 860,
+    viewportHeight: 830,
     settleMs: 12000,
   },
 
@@ -513,5 +525,57 @@ export const popgenSpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'popgen/in2lt_inversion',
     parts: ['popgen/fst_in2lt_2L', 'popgen/in2lt_per_sample'],
+    // THE LINEAGE, DRAWN (review: "ideally, show that figure two 'comes from'
+    // figure 1 using a 'trapezoid' to show that lineage"). A gutter is what a
+    // trapezoid needs to exist in: stacked flush, the two parts' facing edges
+    // are the same line and the wedge has no height. 160 in the composition's
+    // own px, which is 80 css px of either capture -- paid for out of the two
+    // Fst lanes above, so the whole figure comes out shorter than it was.
+    gutter: 160,
+    // THE NARROW END IS chr2L'S PANEL IN THE TOP ROW, and getting there took two
+    // goes, the first of which is the instructive one.
+    //
+    // The genomic fraction alone is NOT the image fraction. chr2L is 23,513,712
+    // of the 133,880,608 bp the top row lays out (chr2L/2R/3L/3R/4/X, off
+    // api.genome.ucsc.edu's chromosome list), so its share of the DATA AREA is
+    // 0.17563 — and drawn as a share of the whole part it landed well inside the
+    // chr2L panel, because that row's Fst lane takes a ~160 px left gutter for
+    // its y axis. So the data area has to be solved for, and the row's five
+    // region dividers are five equations for it:
+    //
+    //   x = L + f * W, least squares over
+    //   f = .17563 .36451 .57447 .81409 .82415  (cumulative arm shares)
+    //   x = 631    1137   1699   2341   2368    (divider columns, 3000 px wide)
+    //   -> L = 160.6, W = 2678.3, and every divider predicted to within 0.1 px
+    //
+    // i.e. the data area is [0.05354, 0.94630] of the image, and chr2L's panel
+    // inside it is [0.0535, 0.2103]. Re-derive by dumping a row of the part PNG
+    // through the Fst band and taking the columns that are dark across it:
+    //
+    //   convert static/img/popgen/fst_in2lt_2L.png -crop 3000x40+0+700 \
+    //     +repage -colorspace gray txt:- | ...
+    //
+    // The fit is what makes this safe to publish rather than a hand-tuned pair:
+    // five landmarks agreeing to a tenth of a pixel is not something an eyeballed
+    // offset does, and a layout change that moved the gutter would miss all five
+    // at once — visibly, since the wedge's right edge sits on the chr2L/chr2R
+    // divider.
+    //
+    // The wide end is the whole of the bottom part, deliberately: the wedge says
+    // "that slice of the row above opens into this panel", and the panel is the
+    // thing, not its data area. Its own frame border is 4 px of 3000.
+    //
+    // No label on it. A trapezoid between a span and a panel is the idiom for
+    // "this is that, opened up", and the review's other half was to say less.
+    annotations: [
+      {
+        type: 'trapezoid',
+        fromAnchor: {
+          selector: '[data-part="0"]',
+          fracX: [0.0535, 0.2103],
+        },
+        anchor: { selector: '[data-part="1"]' },
+      },
+    ],
   },
 ]

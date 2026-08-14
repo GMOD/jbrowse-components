@@ -203,15 +203,42 @@ async function renderSpecToTemp(
 // and is left abutting, as every stacked figure in the set already is.
 const GRID_GUTTER_PX = 24
 
+// One reading of a compose spec's gutter, because two places need it to agree:
+// the ImageMagick pass that inserts it and the overlay pass that computes each
+// part's box in the finished image. They disagreeing is a callout anchored a
+// gutter's worth away from the part it names, which nothing would report.
+function composeGutter(spec: ComposeSpec) {
+  return spec.gutter ?? (spec.direction === 'horizontal' ? GRID_GUTTER_PX : 0)
+}
+
 // White border on each panel, so the pair is separated by a full gutter.
-function padPanels(files: string[]) {
+function padPanels(files: string[], gutter = GRID_GUTTER_PX) {
   for (const f of files) {
     execFileSync(IM, [
       f,
       '-bordercolor',
       'white',
       '-border',
-      `${GRID_GUTTER_PX / 2}`,
+      `${gutter / 2}`,
+      ...IM_REPRODUCIBLE,
+      f,
+    ])
+  }
+}
+
+// A gutter ABOVE each of these files, and nothing below: `-splice` inserts rows
+// rather than framing the image, so a stack gains space between its parts
+// without gaining a margin at its own top and bottom. `-border` cannot express
+// that — it is symmetric by construction — which is why the two directions do
+// not share one call.
+function spliceGutterAbove(files: string[], gutter: number) {
+  for (const f of files) {
+    execFileSync(IM, [
+      f,
+      '-background',
+      'white',
+      '-splice',
+      `0x${gutter}+0+0`,
       ...IM_REPRODUCIBLE,
       f,
     ])
@@ -552,16 +579,20 @@ async function annotateComposition(spec: ComposeSpec, renderPath: string) {
     return
   }
   const { width, height } = await imageSize(renderPath)
-  const gutter = spec.direction === 'horizontal' ? GRID_GUTTER_PX : 0
+  const gutter = composeGutter(spec)
   const sizes = await Promise.all(
     spec.parts.map(part => imageSize(path.join(outDir, `${part}.png`))),
   )
   let offset = 0
-  const boxes = sizes.map(size => {
+  // The two directions pad differently, so the box math differs with them:
+  // side by side each part is BORDERED (half a gutter on all four sides, which
+  // is what padPanels does), stacked each part after the first is SPLICED (a
+  // whole gutter above it, and nothing at the figure's own top or bottom).
+  const boxes = sizes.map((size, i) => {
     const box =
       spec.direction === 'horizontal'
         ? { left: offset + gutter / 2, top: gutter / 2, ...size }
-        : { left: 0, top: offset, ...size }
+        : { left: 0, top: offset + i * gutter, ...size }
     offset +=
       spec.direction === 'horizontal' ? size.width + gutter : size.height
     return box
@@ -630,18 +661,25 @@ async function captureComposeSpec(spec: ComposeSpec) {
   }
   const renderPath = tempPath('jb-compose', spec.name)
   const horizontal = spec.direction === 'horizontal'
-  // side by side, the parts get the grid's gutter — but they are the COMMITTED
-  // part PNGs, so the border has to go on a copy or every part figure grows a
-  // white frame of its own each time the compose runs
+  const gutter = composeGutter(spec)
+  // Any padding at all goes on a COPY of the part. They are the committed part
+  // PNGs, so padding them in place makes every part figure grow a white frame
+  // of its own each time the compose runs.
+  const padded = horizontal || gutter > 0
   const partPaths = spec.parts.map((part, i) =>
-    horizontal ? tempPath('jb-part', spec.name, `-${i}`) : partPath(part),
+    padded ? tempPath('jb-part', spec.name, `-${i}`) : partPath(part),
   )
   try {
-    if (horizontal) {
+    if (padded) {
       for (const [i, part] of spec.parts.entries()) {
         fs.copyFileSync(partPath(part), partPaths[i]!)
       }
-      padPanels(partPaths)
+      if (horizontal) {
+        padPanels(partPaths, gutter)
+      } else {
+        // every part but the first, so the gutters land between them
+        spliceGutterAbove(partPaths.slice(1), gutter)
+      }
     }
     execFileSync(IM, [
       ...partPaths,
@@ -653,7 +691,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
     optimizePng(renderPath)
     return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
   } finally {
-    if (horizontal) {
+    if (padded) {
       for (const f of partPaths) {
         fs.rmSync(f, { force: true })
       }

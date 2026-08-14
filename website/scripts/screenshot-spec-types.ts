@@ -296,6 +296,16 @@ export interface ComposeSpec extends BaseSpecFields {
   // stacking makes the second look like the next step rather than the
   // alternative. The parts then have to share a HEIGHT rather than a width.
   direction?: 'vertical' | 'horizontal'
+  // white space BETWEEN the parts, in the composition's own px. Defaults to 24
+  // side by side and to 0 stacked, which is what every existing figure of each
+  // kind was composed at.
+  //
+  // Stacked, it is opt-in because it is only ever wanted for one reason: a
+  // `trapezoid` annotation joining the two parts needs somewhere to be drawn,
+  // and with the parts flush its two horizontal edges are the same line. It is
+  // inserted above each part after the first rather than as a border round each
+  // one, so the figure gains no margin at its top or bottom.
+  gutter?: number
   // callouts drawn over the composed image, anchored per part (see above)
   annotations?: Annotation[]
 }
