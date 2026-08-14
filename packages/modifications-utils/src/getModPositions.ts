@@ -8,6 +8,11 @@ export interface ModWithPositions {
   // true when the MM tag used the '?' flag: the modification status of bases
   // not listed in the tag is unknown (vs '.'/absent = assumed unmodified).
   unknownSkip: boolean
+  // **Shared by identity across the types of one MM group.** A combined code
+  // like 'C+mh' calls both types at the same positions, so it yields one array
+  // and two entries pointing at it — which is what lets a CIGAR walk recognize
+  // that two entries are the same walk (`forEachMaxProbMod` does). Treat as
+  // read-only: mutating one entry's positions mutates its siblings'.
   positions: number[]
   // Index into the flat ML probabilities array for this type's first
   // MM-order position, and the stride to the next one. For a combined code
@@ -65,63 +70,80 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
     const isSingleType = isSingleModType(typestr)
     const nTypes = isSingleType ? 1 : typestr.length
 
+    // ONE walk per GROUP, not per type. Every type in a combined code is called
+    // at the same positions — only probStart differs — so the walk below and the
+    // array it fills are shared, and the entries pushed after it point at the
+    // same array. `C+mh` used to walk the read sequence twice and allocate two
+    // identical arrays; `benches/modCombinedCode.bench.ts` (in the alignments
+    // plugin, where the fixture lives) prices that at **2.07x** on a synthesized
+    // `C+mh`, and at **1.16x** even on a single-type tag, where nothing is
+    // deduplicated and the win is the per-group closure this loop replaced.
+    //
     // this logic based on parse_mm.pl from hts-specs
-    const processType = (type: string, groupIndex: number) => {
-      const splitLength = split.length
-      let currPos = 0
+    const splitLength = split.length
+    const nPositions = splitLength - 1
+    let currPos = 0
 
-      // Avoid revcom(fseq) by reading fseq from the back and complementing the
-      // expected char-code on reverse strand.
-      const baseCode = base.charCodeAt(0)
-      const targetCode = isRev
-        ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
-        : baseCode
-      const isN = base === 'N'
+    // Avoid revcom(fseq) by reading fseq from the back and complementing the
+    // expected char-code on reverse strand.
+    const baseCode = base.charCodeAt(0)
+    const targetCode = isRev
+      ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
+      : baseCode
+    const isN = base === 'N'
 
-      // Pre-allocate and fill backwards on reverse strand to avoid a final reverse()
-      const positions = isRev ? new Array(splitLength - 1) : []
-      let writeIndex = isRev ? splitLength - 2 : 0
+    // Pre-allocate and fill backwards on reverse strand to avoid a final
+    // reverse(). Forward stays a growing literal on purpose: filling
+    // `new Array(n)` leaves holey elements, and this array is read in the CIGAR
+    // walk's inner loop.
+    const positions: number[] = isRev ? new Array(nPositions) : []
+    let writeIndex = isRev ? nPositions - 1 : 0
 
-      for (let i = 1; i < splitLength; i++) {
-        let delta = +split[i]!
-        do {
-          const seqCode = isRev
-            ? fseq.charCodeAt(seqLength - 1 - currPos)
-            : fseq.charCodeAt(currPos)
-          if (isN || seqCode === targetCode) {
-            delta--
-          }
-          currPos++
-        } while (delta >= 0 && currPos < seqLength)
-
-        // currPos <= seqLength by loop invariant, so seqLength - currPos >= 0
-        if (isRev) {
-          positions[writeIndex--] = seqLength - currPos
-        } else {
-          positions[writeIndex++] = currPos - 1
+    for (let i = 1; i < splitLength; i++) {
+      let delta = +split[i]!
+      do {
+        const seqCode = isRev
+          ? fseq.charCodeAt(seqLength - 1 - currPos)
+          : fseq.charCodeAt(currPos)
+        if (isN || seqCode === targetCode) {
+          delta--
         }
-      }
+        currPos++
+      } while (delta >= 0 && currPos < seqLength)
 
+      // currPos <= seqLength by loop invariant, so seqLength - currPos >= 0
+      if (isRev) {
+        positions[writeIndex--] = seqLength - currPos
+      } else {
+        positions[writeIndex++] = currPos - 1
+      }
+    }
+
+    if (isSingleType) {
       result.push({
-        type,
+        type: typestr,
         base,
         strand,
         unknownSkip,
         positions,
-        probStart: mlBase + groupIndex,
-        probStride: nTypes,
+        probStart: mlBase,
+        probStride: 1,
       })
-    }
-
-    if (isSingleType) {
-      processType(typestr, 0)
     } else {
       // Multi-char lowercase: each character is a separate type
       for (let j = 0, len = typestr.length; j < len; j++) {
-        processType(typestr[j]!, j)
+        result.push({
+          type: typestr[j]!,
+          base,
+          strand,
+          unknownSkip,
+          positions,
+          probStart: mlBase + j,
+          probStride: nTypes,
+        })
       }
     }
-    mlBase += (split.length - 1) * nTypes
+    mlBase += nPositions * nTypes
   }
 
   return result

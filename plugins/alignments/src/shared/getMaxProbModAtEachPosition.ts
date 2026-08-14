@@ -36,6 +36,16 @@ import type { ModWithPositions } from '@jbrowse/modifications-utils'
  *   stored. 0 means "nothing called here", so the index is offset by one —
  *   which is also why a read with more than 255 distinct modification codes
  *   would need a wider array, and there is no such read.
+ *
+ * **The CIGAR is walked once per MM GROUP, not once per entry.** The types of a
+ * combined code are called at identical positions, so `getModPositions` hands
+ * them one positions array and this function groups the entries that share it by
+ * identity — picking the winner across the group inside the one walk instead of
+ * re-walking to the same offsets per type. `plugins/alignments/benches/
+ * modCombinedCode.bench.ts` prices the pair of changes at 2.07x on a `C+mh`
+ * read. Two entries whose positions merely happen to be EQUAL are not grouped,
+ * and must not be: the grouping is an identity test precisely so that it can
+ * never be wrong about whether the walks coincide.
  */
 export function forEachMaxProbMod(
   modifications: readonly ModWithPositions[],
@@ -72,25 +82,70 @@ export function forEachMaxProbMod(
   let firstRef = -1
   let lastRef = -1
 
-  for (let m = 0, ml = modifications.length; m < ml; m++) {
+  const nMods = modifications.length
+  for (let m = 0; m < nMods;) {
     const mod = modifications[m]!
-    const { positions, probStart, probStride } = mod
+    const positions = mod.positions
     const posLen = positions.length
-    const tag = (m + 1) << 8
-    getNextRefPos(ops, positions, (ref, idx) => {
-      const mmOrder = isReverse ? posLen - 1 - idx : idx
-      const byte = mlBytes?.[probStart + mmOrder * probStride] ?? 0
-      const prev = best[ref]!
-      if (prev === 0 || (prev & 0xff) < byte) {
-        best[ref] = tag | byte
-        if (firstRef < 0 || ref < firstRef) {
-          firstRef = ref
+
+    // `getModPositions` shares one positions array across the types of one MM
+    // group and emits them consecutively, so a run of entries holding the same
+    // array by identity is one group — and one walk. A combined code's second
+    // type would otherwise re-walk the CIGAR to arrive at exactly the reference
+    // offsets the first type just visited.
+    let end = m + 1
+    while (end < nMods && modifications[end]!.positions === positions) {
+      end++
+    }
+
+    if (end - m === 1) {
+      const { probStart, probStride } = mod
+      const tag = (m + 1) << 8
+      getNextRefPos(ops, positions, (ref, idx) => {
+        const mmOrder = isReverse ? posLen - 1 - idx : idx
+        const byte = mlBytes?.[probStart + mmOrder * probStride] ?? 0
+        const prev = best[ref]!
+        if (prev === 0 || (prev & 0xff) < byte) {
+          best[ref] = tag | byte
+          if (firstRef < 0 || ref < firstRef) {
+            firstRef = ref
+          }
+          if (ref > lastRef) {
+            lastRef = ref
+          }
         }
-        if (ref > lastRef) {
-          lastRef = ref
+      })
+    } else {
+      const groupStart = m
+      const groupEnd = end
+      getNextRefPos(ops, positions, (ref, idx) => {
+        const mmOrder = isReverse ? posLen - 1 - idx : idx
+        // First maximum wins, which is how the per-entry walks resolved a tie
+        // between two types of the same group: the later one needed a strictly
+        // greater byte to displace the earlier.
+        let bestByte = -1
+        let bestIdx = groupStart
+        for (let k = groupStart; k < groupEnd; k++) {
+          const g = modifications[k]!
+          const byte = mlBytes?.[g.probStart + mmOrder * g.probStride] ?? 0
+          if (byte > bestByte) {
+            bestByte = byte
+            bestIdx = k
+          }
         }
-      }
-    })
+        const prev = best[ref]!
+        if (prev === 0 || (prev & 0xff) < bestByte) {
+          best[ref] = ((bestIdx + 1) << 8) | bestByte
+          if (firstRef < 0 || ref < firstRef) {
+            firstRef = ref
+          }
+          if (ref > lastRef) {
+            lastRef = ref
+          }
+        }
+      })
+    }
+    m = end
   }
 
   if (firstRef < 0) {
