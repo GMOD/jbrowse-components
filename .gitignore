@@ -90,11 +90,9 @@ test_data/hprc/*.paf.gz.tbi
 # committed (580KB) so the chr20 pangenome smoke test runs without remote data
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz
 !test_data/hprc/hprc-v1.1-mc-grch38-chr20.synteny.paf.gz.tbi
-# committed (185KB) because it is the whole point of hprc_maf_summary.json: the
-# MAF zoom-out tier, which cannot be regenerated without the 5.96 GB TAF and 13
-# minutes. test_data/hprc/README.md has the command and what it is worth.
-!test_data/hprc/hprc_chr6.summary.bed.gz
-!test_data/hprc/hprc_chr6.summary.bed.gz.tbi
+# The MAF zoom-out tier is NOT here: it is whole-genome now and hosted at
+# jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.summary.bed.gz, which
+# hprc_maf_summary.json points at. scripts/build_hprc_maf_summary.sh rebuilds it.
 test_data/volvox/*.og
 # Hand-assembled link to the jb2bench alignment corpus (hundreds of MB of BAM /
 # CRAM, generated not downloaded). memsticky.ts and rangecache-probe.ts both

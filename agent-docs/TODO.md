@@ -58,7 +58,7 @@ before anyone noticed.
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
-| [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | chr6 shipped; the other chromosomes, then whether the swap is span or cost |
+| [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Byte-native MAF adapter path](#a-byte-native-maf-adapter-path-once-tabix-js-publishes-linebytescallback) | MAF | blocked on a tabix-js publish; measure the pack stage, not the decode |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
@@ -1169,21 +1169,20 @@ cost quantized by feature is measured rather than modelled
 
 ### Produce and host the HPRC summary tier
 
-**chr6 is built, shipped and measured** — `test_data/hprc/hprc_chr6.summary.bed.gz`
-(185 KB, 35,200 rows, all 464 haplotypes), wired by
-`test_data/hprc_maf_summary.json`, worth 354 Mb refused against 250 kB drawn on
-the whole chromosome
-([reference/HPRC_RELEASE2.md](reference/HPRC_RELEASE2.md) §"What the zoom-out
-tier is worth"). Two things are left, in this order.
+**Done, whole genome, hosted** —
+`jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.summary.bed.gz` (1.63 MB, 375,888
+rows, 464 haplotypes, 152 of 195 contigs, every primary present), wired by
+`test_data/hprc_maf_summary.json` and rebuilt by
+`scripts/build_hprc_maf_summary.sh`. Worth 354 Mb refused against 250 kB drawn on
+whole chr6, and a whole-chromosome read costs 828 bytes to 127 kB against a 5 MB
+budget ([reference/HPRC_RELEASE2.md](reference/HPRC_RELEASE2.md) §"What the
+zoom-out tier is worth"). What is left is one decision and one upstream report.
 
-**The rest of the genome.** The same command with `-r` dropped, at ~13 min per
-chromosome measured on chr6, so roughly 5 hours; `taffy view -r` reads only the
-chromosome's own 354 MB of the 5.96 GB file, and the MAF is never materialized
-(chr6 alone is ~90 GB of it). Then an S3 write to the jbrowse.org bucket — which
-nobody has approved, and `scripts/deploy-demo.sh` is the only sanctioned writer.
-The 75 MB whole-genome estimate this entry used to carry was pessimistic by an
-order of magnitude: runs in a human pangenome are long, so chr6 came to 185 KB
-and the genome should land nearer 4 MB.
+**Report the overlap collapse to `maf2bed`.** `--summary` emits a haplotype's
+overlapping runs separately, and `--merge-gap` structurally cannot reach them —
+measured, 500 to 50,000 removes 0.04% of the rows. Collapsing them into their
+union is a 13x reduction genome-wide and 69x on chr14, losslessly for what the
+slot feeds. The build script carries the workaround; the producer should do it.
 
 **Decide whether `showSummary` swaps on span or on cost**, which is what stops
 the tier being switched on for `hprc_maf.json` itself. It swaps at 20 kb, and the

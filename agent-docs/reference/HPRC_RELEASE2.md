@@ -103,10 +103,15 @@ says why.
 
 ## What the zoom-out tier is worth
 
-Built and shipped for chr6 on 2026-08-14: `test_data/hprc/hprc_chr6.summary.bed.gz`,
-wired by `test_data/hprc_maf_summary.json`. Its README holds the command and the
-`taffy#89` check; this is what it buys, read off the live session model on whole
-chr6 rather than inferred from a picture:
+Built whole-genome and hosted on 2026-08-14 at
+`jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.summary.bed.gz` — 1.63 MB, 375,888
+rows, 464 haplotypes, 152 of the index's 195 contigs — wired by
+`test_data/hprc_maf_summary.json` and rebuilt by
+`scripts/build_hprc_maf_summary.sh`, whose header carries the three failure modes.
+A whole-chromosome read costs **828 bytes (chrM) to 127 kB (chr1)** against a
+5 MB budget, so the tier has two to three orders of magnitude of headroom
+everywhere. This is what it buys, read off the live session model on whole chr6
+rather than inferred from a picture:
 
 | | no `summaryAdapter` | with it |
 | --- | --- | --- |
@@ -118,12 +123,38 @@ chr6 rather than inferred from a picture:
 354 Mb agrees to the byte with what `queryBlockSpan` computes for chr6 off the
 `.tai` (353,837,435 for the chromosome's own span, 353,902,971 with the gate's
 one-block cushion), so the banner's number and the index arithmetic are the same
-measurement. The summary itself is 185 KB for 35,200 rows — a whole chromosome
-of 464 haplotypes costs less than a quarter of what one gene-sized detail read
-does.
+measurement. A whole chromosome of 464 haplotypes costs less than a quarter of
+what one gene-sized detail read does.
 
 The alignment tier stays the better view where it is affordable: at C4 the
 detail read is ~1.2 MB against `LinearMafDisplay`'s 5 Mb budget.
+
+### Three things the build has to get right, all found the hard way
+
+Written up at length in `scripts/build_hprc_maf_summary.sh`; the shape of each is
+worth carrying here because none is specific to HPRC.
+
+- **`taffy view -r` fails silently on a range past the contig's end** — stderr
+  message, empty MAF, exit 0. A first pass ended every range at
+  last-index-entry + 10 Mb and lost **93 of 195 contigs, including chr1, chr2 and
+  chrY**, while logging all 93 as "ok": the harness discarded stderr and tested
+  `[ -s file ]`, which is true for a summary holding only its header. The
+  per-chromosome table above is what caught it, because chr1 and chr2 were
+  visibly missing from it — a single genome-wide total would have hidden 93
+  absent contigs behind a plausible number.
+- **`--merge-gap` is not the lever for row count.** In segmental-duplication
+  territory a haplotype aligns to the same reference interval more than once, so
+  the runs *overlap* and there is no gap to close: on chr14:18-20 Mb, raising the
+  gap from 500 to 50,000 removed 0.04% of 854,467 rows. Collapsing each
+  haplotype's overlapping runs into their union is what works — chr14 900,414
+  rows / 2.9 MB becomes 9,089 / 43 kB, genome-wide 4,824,912 becomes 375,888, and
+  GRCh38's own covered bases come out identical to the byte. That belongs
+  upstream in `maf2bed`, since overlapping presence rows are redundant by
+  construction for what the slot feeds.
+- **A contig with a single `.tai` entry cannot be extracted by region at all**,
+  even over 500 bp. That is what leaves 43 contigs out, all `chrUn_*` scaffolds
+  of 970 bp - 15 kb. It is a taffy extraction limit, *not* evidence the alignment
+  lacks them.
 
 **Which is why the tier is a separate config rather than switched on for
 `hprc_maf.json`, and that is a finding rather than a preference.** `showSummary`
