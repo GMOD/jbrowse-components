@@ -2053,23 +2053,33 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // the whole chromosome first to find where the ancestry changes hands:
   //
   //   python3 scripts/orthofinder_window_stats.py wheat \
-  //     --row 'tauschii 4D:840,000-1,070,000 5D:574,290,000-574,760,000' \
-  //     --row 'wheat 4A:603,300,000-604,950,000' --query wheat
+  //     --row 'tauschii 4D:820,000-2,150,000 5D:574,250,000-574,780,000 \
+  //            5D:568,200,000-569,700,000' \
+  //     --row 'wheat 4A:602,000,000-606,500,000' --query wheat
   //
-  // Of the 41 wheat genes in the frame, 14 answer to 4D and 5 to 5D, and the
+  // Of the 82 wheat genes in the frame, 17 answer to 4D and 18 to 5D, and the
   // switch is clean: every 4D partner is left of 4A 603.64 Mb and every 5D one
   // right of 603.98 Mb, so the junction is bracketed to ~350 kb with one 6D
-  // singleton (TraesCS4A02G313100) inside it, which is the only gene in the
-  // frame whose partner the windows do not reach. The 22 that draw nothing have
-  // no tauschii ortholog in the table at all rather than one out of frame.
+  // singleton (TraesCS4A02G313100) inside it. Four genes have a partner the
+  // windows do not reach, all of them on a chromosome this figure does not
+  // draw (2D, 3D x2, 6D); the rest of the 47 that draw nothing have no
+  // tauschii ortholog in the table at all.
   //
-  // The two donor segments are each other's mirror: 4D runs out at 856 kb and
-  // 5D at 574.73 Mb, both of them the DISTAL end of their chromosome, which is
-  // what a reciprocal translocation between two long arms looks like from the
-  // D genome. Both are also inverted against 4A (r = -0.88 and -0.79), so both
-  // carry [rev] - the same call as the maize WGD figure, and for the same
-  // reason: two hourglasses either side of a junction read as chaos where the
-  // finding is WHICH chromosome, not which way round. The rulers count down.
+  // WIDE ENOUGH TO CARRY BOTH SIDES. A first cut framed 4A 603.3-604.9 Mb, the
+  // junction and little else, and it was 14 ribbons against 5: the 5D side had
+  // barely enough to read as a block and one 67.6 kb tauschii gene
+  // (AET5Gv21235900, a real long-intron annotation) drew as a wedge wide enough
+  // to look like one. Widening to 4.5 Mb balances it 17 against 18, and takes
+  // 4D's collinearity from -0.878 to -0.995, because the tighter frame had been
+  // cutting the block off mid-slope.
+  //
+  // THREE REGIONS ON THE TOP ROW, not two: 5D reaches 4A in two pieces, a short
+  // distal one (574.3-574.7 Mb, inverted, [rev] with 4D) and a longer proximal
+  // one (568.3-569.7 Mb, running with 4A, so no [rev]). Both are 5D and both
+  // take the same color, so the row still reads as two donors rather than
+  // three. The [rev] calls are the maize WGD figure's, for the same reason:
+  // hourglasses either side of a junction read as chaos where the finding is
+  // WHICH chromosome, not which way round. The rulers count down where flipped.
   {
     mode: 'url',
     name: 'orthofinder_synteny/wheat_4a_breakpoint',
@@ -2084,7 +2094,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'tauschii',
-                loc: '4D:840,000-1,070,000[rev] 5D:574,290,000-574,760,000[rev]',
+                loc: '4D:820,000-2,150,000[rev] 5D:574,250,000-574,780,000[rev] 5D:568,200,000-569,700,000',
                 tracks: [
                   {
                     trackId: 'tauschii_genes',
@@ -2098,7 +2108,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'wheat',
-                loc: '4A:603,300,000-604,950,000',
+                loc: '4A:602,000,000-606,500,000',
                 // The bracket itself, shaded rather than described: the gap
                 // between the last 4D partner and the first 5D one. Where a
                 // junction starts and stops is exactly what a reader cannot
