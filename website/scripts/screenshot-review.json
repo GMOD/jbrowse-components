@@ -179,9 +179,9 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "bad",
-    "note": "please simplify the red text annotation even more, like a bulleted list, so it is immensely obvious. remove highlight. ",
-    "reviewedAt": "2026-08-14T05:35:20.612Z",
+    "status": "answered",
+    "note": "BOTH. The highlight is gone, and the callout is three bullets under the word INVdup -- which is where that word lives now that the shaded band that carried it is off.\n\nThen your follow-up landed and one bullet was rewritten again: \"OVERLAP where ordinary pairs nest\" was a property of the DRAWING, and a reader meeting a pileup for the first time has never seen the not-nested case to compare against. Each bullet is now a fact about one read pair, checkable against a single arc in the frame.\n\nThe argument that bullet was making is a SCHEMATIC now, one figure up in sv_visualization.md (inversion_pair_orientation). Three rows: a proper pair, the same locus with the segment inverted so a pair straddling a junction has one end flipped and one not, and the segment flipped back so both are ordinary again. The third row is geometrically exact rather than suggestive -- a read at [600,660] inside a [430,700] segment maps to [470,530], which is where it is drawn.\n\nHand-authored SVG rather than graphviz, and `pnpm diagrams` renders both kinds now: a schematic laid out along one axis has nothing for a layout solver to decide. Same lock, same store, same drift gate.",
+    "reviewedAt": "2026-08-14T06:55:53.176Z",
     "hash": "6a211426814718ad04a7e6d4511d8cfcc99df50f"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
@@ -1948,9 +1948,9 @@
   "cnv1000g/zarr_cohort": {
     "name": "cnv1000g/zarr_cohort",
     "status": "answered",
-    "note": "BOTH. 1.5 Mb -> 700 kb, centred on the block and measured off the frame rather than picked: the coloured columns run chr17:36,193,000-36,457,000, so the block is a bit over a third of the window and flat diploid white is the rest.\n\nThe colour sidebar is off, and you had it right about what it was: at 0.35 px a row the labels carry no text and fall back to swatches, the store's per-sample colour is that individual's population, and clustering reorders the rows by copy-number profile -- so the column is 26 hues interleaved at random, a grouping the picture is not sorted by. The trait you were reaching for is that same one WITH the rows ordered by it, which costs the clustering that makes the block legible; not taken, and the spec records why.\n\nThat needed a new setting, showRowLabels on MultiLinearWiggleDisplay (config slot + menu checkbox), plus a term in overlayLegendApplies -- labels off means nothing beside the rows names anything, so the colour key is once again the only identification there is.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "f5b14bebab36c730efe299496cd7d200cb055f59"
+    "note": "BOTH. The display is 880 -> 640 and the frame 1200 -> 960. Nothing is lost by it: a row was 0.35 px and is now 0.26, which is the same reading either way -- a density map whose unit is the stack. What a taller lane would buy is a legible individual ROW, and that needs ~2 px a row, or 5,000 px of track; this is not the figure where a row is read, the ladder above it is.\n\nThe callout names the locus and says the two things the picture cannot: that CCL3L1/CCL4L1 is one of the most copy-number-variable loci in the human genome, and that both genes encode chemokines binding CCR5. No copy-number range in it -- the ladder shows the range and this frame's own colour bar carries the scale.\n\nPlacing it took three goes and the reason is worth knowing for the next callout on a full-width heatmap: the pill is wider than either flat flank. From the left edge it covered about a sixth of the cohort's rows in the reddest columns. Right-ALIGNED against the track's right edge it fits, but `textAlign: 'end'` right-aligns every line INSIDE the pill too, which turns a list into a ragged-left block. It is anchored to a locus just past the block's right edge now, hard-wrapped, and covers nothing.",
+    "reviewedAt": "2026-08-14T06:55:53.176Z",
+    "hash": "d71fb05020af9d490b1b5be23f8d40eee39d9f58"
   },
   "desktop-cli-config": {
     "name": "desktop-cli-config",
@@ -2378,9 +2378,9 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "bad",
-    "note": "are there any galaxy brain ideas to try to improve y-coord real estate usage? the figure is just very tall but its a bit of a death by 1000 cuts thing. also, we should try to explain more about this sort of inverted dup (thats what this is right? or foldback?), using red text annotations\n\nprevious notes:\nits hard to see what is going on here. the small breaks on the right are hard to see. not sure this is a good example to use, unless we can substantially improve this screenshot, potentially zooming in on the breakpoints",
-    "reviewedAt": "2026-08-14T05:48:17.633Z",
+    "status": "answered",
+    "note": "-110px, and the event has a name in the frame.\n\nProfiled the PNG for runs of uniform rows before cutting anything, because the obvious guess at \"very tall\" is one big empty band: there is no such band. 52 css px of uniform rows in the whole 921. So the height is all content, and the thousand cuts are mostly TRACK LABEL ROWS -- `trackLabels: 'overlapping'` floats a track's name over its own data instead of taking a line above it, and there are five tracks.\n\nTwo of the five take it and the other three cannot, which is worth having on the record: `trackLabels` is a property of the VIEW, so it is all three of the der3 row's tracks or none, and floating the names puts \"Where each segment came from\" exactly where that lane draws `chr3:25,326,821-25,359,568 (32.7 kb)` -- the provenance of the largest segment in the allele, which is the thing the lane exists to say. The hg38 row has nothing in its left margin and pays nothing. The rest is the ribbon band 110 -> 88 and both coverage bands 40 -> 30. 921 -> 811, no blank below the content.\n\nAND IT IS BOTH, which is what the frame now says: the allele's last segment is chr3:25,352,683-25,359,111 inverted, and that interval sits INSIDE the 32.7 kb chr3 arm it opened with. So the derivative turns around and re-reads sequence it has already carried -- a fold-back -- and the re-read stretch is therefore in the allele twice in opposite orientations, which is the duplication. The two templated inserts are what sits at the turn. Three bullets in the frame; the tutorial adds that fold-backs are the canonical opening move of a breakage-fusion-bridge cycle, which is why a reconstruction is worth building for one.",
+    "reviewedAt": "2026-08-14T06:55:53.176Z",
     "hash": "3c87fceabd0583a9c1e3ec868137266e7968a1cc"
   },
   "dog10k-size-fst-scan-genome": {
@@ -2930,9 +2930,9 @@
   },
   "hg002_haplotypes_follow_panel": {
     "name": "hg002_haplotypes_follow_panel",
-    "status": "bad",
-    "note": "this should reduce to just panels 1 and 2. then a secondary screenshot can add 3 and 4 as a sepate figure, but ideally just show fig 4 with the menu from fig 3 open",
-    "reviewedAt": "2026-08-14T05:00:18.878Z",
+    "status": "answered",
+    "note": "SPLIT, exactly as you described. This figure is frames 1 and 2 alone, side by side -- the drifted state and the followed one.\n\nThe markers are hg002_haplotypes_location_markers, and it is ONE frame with the menu still open rather than two: a checkbox row keeps CascadingMenu open, so the state right after the click IS both of the old frames at once, with the path on screen and ticked and what it drew underneath. The menu opens at the top right and the markers are drawn across the ribbon, so unlike the old frame 3 they do not fight for the same pixels.\n\nIt follows first, and that is not optional -- markers pair a point on one panel with the point it maps to on the other, which says nothing while the two panels are still on the drifted windows the session opens at.",
+    "reviewedAt": "2026-08-14T06:55:53.176Z",
     "hash": "ea74571b7475be923fcb65a8bf272f108a4cd909"
   },
   "jbrowse-img/sv_review_pair": {
@@ -3056,9 +3056,9 @@
   },
   "genomes_basics/gnomad_filters": {
     "name": "genomes_basics/gnomad_filters",
-    "status": "bad",
-    "note": "i might suggest deleting this figure. its just almost too detailed. we have the one filter screenshot.\n\nprevious notes:\nneed to say in big red text box what the filter was in each case\n\nDONE: each frame carries its own expression as a red pill under the gnomAD track -- \"no filter\", \"jexl:feature.AF >= 0.001\", \"jexl:feature.annot == 'pLoF'\". Under the track rather than over it, since what is left painted is the whole point of each frame, and anchored to the track's own band at fracY 1 so it follows the track rather than a measured y.",
-    "reviewedAt": "2026-08-14T05:33:52.033Z",
+    "status": "answered",
+    "note": "DELETED, and the section keeps gnomad_filter_menu, which is the one it is actually about -- where the dialog is and what goes in it.\n\nRetired properly rather than just unreferenced: lock line dropped first, PNG deleted second, `figures status` clean afterwards. Hand-edited rather than `push --allow-deletions`, which is unfiltered by construction and would have published six figures belonging to other worktrees.\n\nThe measurements it carried are kept as a comment where the spec was, because they are what a replacement would have to be built against -- over this window, coding bases are 12.8% of it, the raw callset is 22.5% coding, the AF >= 0.001 half is 4.2% coding, and pLoF is 93 records. The paragraph that read those three frames went with the figure; nothing in the prose now asserts a result the page cannot show.",
+    "reviewedAt": "2026-08-14T06:55:53.176Z",
     "hash": "147e536be1d72f844e0e60a2716939b16032df6f"
   },
   "genomes_basics/isoform_control": {
@@ -3147,9 +3147,9 @@
   },
   "fetch_chain": {
     "name": "fetch_chain",
-    "status": "bad",
-    "note": "Try to use somewhat 'dry' language, so that this could be included in a scientific paper\n\nprevious notes:\nany way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this\n\nSIMPLIFIED, and it is one edge fewer rather than one state fewer. The two dashed feedback edges both returned to the same debounced check and both said the same thing, and drawn separately they were two long sweeps up the whole right side of the frame -- most of what the eye lands on before it finds the chain at all. They meet at a junction now and travel back as ONE labelled edge. Nothing is lost by merging them: what differs between the two is only what re-fires the autorun (a fetchGeneration bump, or the next settled viewport), and the caption is where that belongs, so it says it. No state was cut, because none of the eight repeats another.",
-    "reviewedAt": "2026-08-14T05:48:45.766Z",
+    "status": "answered",
+    "note": "DRY. Plain and dry turn out to be two different passes, and the plain draft was conversational where it should only have been unspecialized: \"do we already have data\" -> \"is this region already covered by loaded data\", \"ask a background worker\" -> \"request the data from a worker\", \"throw it away\" -> \"discard the result\", \"is that too much data?\" -> \"over the byte budget?\", which is also the actual test. No first or second person left anywhere in it. The identifier still sits under each line, which is where the precision lives.\n\nThe caption went too, and for a different reason you named on it: it opened by describing what the picture already shows. What replaces it is the too-large gate being self-releasing -- nothing clears the banner, a blocked display re-measures at each settled viewport -- which is the one thing in the drawing a reader cannot get from the drawing.",
+    "reviewedAt": "2026-08-14T06:55:53.176Z",
     "hash": "5efe33c601baff8cc7f343581701f2f253b6c8e2"
   },
   "rpc_lifecycle": {

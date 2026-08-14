@@ -236,9 +236,16 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           trackId: 'cnv_1000g_zarr',
           // 2504 rows, so every individual is a sub-pixel line and the pattern
           // lives in the stack rather than in any one row (as in the TCGA
-          // cohort figure). Below about this height the display warns that the
-          // rows have collapsed.
-          height: 880,
+          // cohort figure).
+          //
+          // 880 -> 640 (review: "please reduce height of the
+          // multiwiggledisplay"). Nothing is lost by it: at 880 a row was 0.35
+          // px and at 640 it is 0.26, so both are the same reading -- a density
+          // map whose unit is the stack. What a taller lane WOULD buy is a
+          // legible individual row, and that needs ~2 px a row, which is 5,000
+          // px of track. This figure is not the one where a row is read; the
+          // ladder above it is.
+          height: 640,
           runClustering: true,
           showTree: false,
           // NO ROW-LABEL COLUMN (review: "the row labels are just a 'mishmash'
@@ -259,10 +266,58 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     }),
     readySelector: CLUSTERED_READY,
     readyTimeout: 300000,
-    viewportHeight: 1200,
+    viewportHeight: 960,
     settleMs: 10000,
     // 2504 rows floored to 1px: sub-pixel row-boundary jitter between runs
     diffThreshold: 0.02,
+    // WHAT THE BLOCK IS (review: "add red text annotation box about what this
+    // 'locus' is called or why it matters"). The gene lane above names CCL3L1
+    // and CCL4L1 among two dozen others at 6 px of label, and nothing in the
+    // frame says that the block under them is a textbook multiallelic CNV
+    // rather than an artefact of this callset -- which is the reading the whole
+    // figure rests on.
+    //
+    // Neither line is checkable against the picture and both are the reason it
+    // is worth drawing, which is exactly what a callout is for. No copy-number
+    // range in it: the ladder figure above shows the range, and the colour bar
+    // in this frame's own top right carries the scale.
+    //
+    // In the RIGHT FLANK, anchored to a LOCUS just past the block's right edge
+    // rather than to the track's corner, so it stays in the flank if the window
+    // moves. The flanks are the flat diploid white the block is read against and
+    // so the only part of the heatmap a pill costs nothing to cover; the right
+    // one is the wider of the two, ~200 kb of the 700 kb window. `dy` clears the
+    // score ramp, which pins to that same corner.
+    //
+    // Two placements were tried and both failed for the same reason -- the pill
+    // is wider than either flank unless it is short. From the LEFT edge it
+    // covered about a sixth of the cohort's rows in the block's reddest columns.
+    // Right-ALIGNED against the track's right edge fits, but `textAlign: 'end'`
+    // right-aligns every line inside the pill too, which turns a list into a
+    // ragged-left block. So the text is hard-wrapped to lines that fit and is
+    // prose rather than bullets.
+    //
+    // Neither line is checkable against the picture and both are the reason it
+    // is worth drawing, which is what a callout is for. No copy-number range in
+    // it: the ladder figure above shows the range, and this frame's own colour
+    // bar carries the scale.
+    annotations: [
+      {
+        type: 'text',
+        anchor: {
+          track: 'cnv_1000g_zarr',
+          locus: 'chr17:36,470,000',
+          fracY: 0,
+          alignX: 'left',
+          dx: 12,
+          dy: 96,
+        },
+        textAlign: 'start',
+        text: 'CCL3L1 / CCL4L1\n\nOne of the most copy-number-\nvariable loci in the human\ngenome. Both encode chemokines\nthat bind CCR5.',
+        fontSize: 19,
+        maxWidth: 420,
+      },
+    ],
   },
 
   // cnv1000g/genome_summary_bins and its two halves (genome_avg, genome_max)
