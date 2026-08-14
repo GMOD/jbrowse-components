@@ -129,6 +129,25 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **Published (not home-rolled) tracks**, answering "use a production-grade
   pipeline": the NYGC somatic pipeline's bicseq2 log2 copy ratio for
   HG008-T/HG008-N (196 segments), plus per-site LCT Fst.
+- **K562's BCR-ABL1 is ONE donor and 24 acceptors, not one junction.** Over the
+  579 records `K562_isoseq.bam` returns for `chr22:23,286,000-23,293,000`, the
+  BCR donor is essentially exact (23,290,412–23,290,415) while the chr9 side
+  spreads over **24 distinct SA start positions across ~170 kb of ABL1**:
+  130,780,369 carries **149** reads, 130,854,064 carries 26, then 130,763,193
+  (13), 130,781,804 (10) and a tail. 130,854,064 is the ABL1 exon-2 acceptor —
+  the canonical e14a2 junction, the one the DepMap STAR-Fusion call reports and
+  the one `cancer_sv/k562_bcr_abl_split` bands its chr9 panel on. **So the
+  figure's window frames the 26-read junction and not the 149-read one**, and
+  any arc/tick count read off that figure is a statement about the framing as
+  much as about the data. Whether the 149 are an alternative acceptor or an
+  alignment artefact is **not established**: those records carry multi-segment
+  chimeric alignments with 100 kb+ `D` operations, so anything derived from a
+  CIGAR reference span there is unreliable. The site distribution above is not —
+  it is SA start positions, and 217 of 222 chr9 SA entries are `+`, where the
+  acceptor foot IS the SA POS.
+
+  Reproduce with `samtools view <url> chr22:23,286,000-23,293,000` and count
+  `chr9,<pos>,` occurrences; no index-free download and no CIGAR walk needed.
 - **Querying the tumour CRAM without downloading it** — its header `UR` is an
   absolute path on the submitter's cluster and `-T` against our hg38 fails, so
   use `required_fields` to skip SEQ, the only field CRAM needs the reference for:

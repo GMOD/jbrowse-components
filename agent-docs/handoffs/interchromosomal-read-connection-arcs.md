@@ -424,15 +424,76 @@ delete the one distinction this family exists to make.
    overlay, and the cap.
 3. Then the interchromosomal arcs: steps 4 and 6 plus gaps 1–4.
 4. SVG export + dark-mode frame.
-5. Re-aim the k562 figure: `readConnections: 'arc'` on the `K562_isoseq` track
-   in `website/scripts/specs/cancer_sv.ts`, keeping `showBezierConnections`;
-   caption and tutorial prose for the fan-plus-count reading; then
-   `pnpm figures:push --exact --filter cancer_sv/k562_bcr_abl_split` and commit
-   `figures.lock`. Expect one thick arc, three hairlines under it and a tick
-   picket at the BCR donor — if the band shows something else, the model of this
-   data in [the measurement](#what-k562-actually-draws-measured) is wrong and
-   that is worth more than the figure.
+5. The figures — [see below](#the-figures).
 6. Then piece A goes.
+
+## The figures
+
+One certain, two exploratory, and a prose fix that is not optional. Nothing here
+can be rendered before the feature exists, and the two exploratory ones are
+worth rendering **because** we do not know what they show — the render is the
+measurement.
+
+### 1. Re-aim `cancer_sv/k562_bcr_abl_split` (certain)
+
+`readConnections: 'arc'` on the `K562_isoseq` track in
+`website/scripts/specs/cancer_sv.ts`, keeping `showBezierConnections`. Caption
+and tutorial prose for the fan-plus-count reading — the fan is the evidence, one
+curve per molecule; the arc is the count they add up to, which is the argument
+the prose already makes for piece A. Then `pnpm figures:push --exact --filter
+cancer_sv/k562_bcr_abl_split` and commit `figures.lock`.
+
+Expect one thick arc (support 26), three hairlines under its stroke, and a tick
+picket at the BCR donor. If the band shows something else, the model of this
+data is wrong and that is worth more than the figure.
+
+### 2. New: the frame decides which connections are arcs (exploratory)
+
+Same chr22 window, chr9 widened to the whole of ABL1 (~`chr9:130,710,000-130,890,000`).
+The ticks should become arcs fanning to the distinct acceptors, weighted by
+support. Paired with figure 1 it is the clearest statement of the semantic this
+change introduces: **a tick means "reaches somewhere you cannot see", and
+widening the frame turns it into an arc.**
+
+What is uncertain is what it draws. The acceptor distribution is solid — 24
+sites, 149 at `chr9:130,780,369` against 26 at the canonical exon-2 acceptor
+(`reference/DEMO_DATASETS.md`) — but the chr22 feet of those out-of-frame
+junctions come from CIGARs carrying 100 kb+ `D` operations and are not.
+
+**Do not let the caption claim biology.** Whether the 149-read site is an
+alternative acceptor or an alignment artefact is unestablished; the figure's
+subject is the display behaviour. If it renders as noise, drop it and record
+that in `DEMO_DATASETS.md` — that is a useful result either way.
+
+### 3. New: the multihop chain in one view (exploratory)
+
+COLO829's `chr3:25,357,600-25,361,000` with the chr12 and chr10 partner windows
+as further displayed regions, tumour track with `readConnections: 'arc'`. The
+hops draw as counted arcs in one LGV.
+
+The tutorial tells this story today with `multihop_split_view` — four panels
+built by "Reconstruct derivative allele → draw as split" — and with a script.
+This is the same event read directly off the arc band, so it belongs beside that
+figure rather than replacing it. ONT split junctions are exact, so they should
+coalesce into a few thick arcs whose width is the support nanomonsv called on,
+which is the best case this feature has. Partner coordinates come from the
+nanomonsv VCF / `sv_multihop.py` output; the figure only works if those windows
+are right.
+
+### 4. `website/docs/user_guides/alignments_track.md` says the old behaviour
+
+Under "Read connections": _"Off-screen partners draw as large semicircular arcs
+and **inter-chromosomal mates as vertical lines**; both can be toggled off."_
+That sentence becomes wrong, and nothing in CI catches prose. It now depends on
+whether the partner is displayed, which is the whole change — rewrite it there.
+
+A figure for it wants the volvox fixture built in the browser-test work
+(`volvox-translocation.bam`), which is the same two-regions-vs-one contrast the
+tests assert. **But the alignments figure spec points at the HOSTED volvox
+(`https://jbrowse.org/code/jb2/latest/test_data/volvox`)**, so a fixture
+committed to `test_data/volvox` is not available to the figure generator until
+it ships. Fix the prose now; the figure waits on hosting, or borrows figure 1's
+frame.
 
 ## Not verified by me
 
