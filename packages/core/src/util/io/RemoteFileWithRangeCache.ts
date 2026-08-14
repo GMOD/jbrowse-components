@@ -262,6 +262,195 @@ async function limitConcurrency<T>(fn: () => Promise<T>) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Failing legibly.
+//
+// The status path was already the good example here — the 416, the "server
+// ignored the Range header" hint, the Content-Range note stat() throws — and
+// the two gaps it left were the request that gets no status at all and the
+// request that gets no answer at all. Everything down to parseByteRange is
+// about those two.
+//
+// Deliberately no retry: a failed range read surfaces as an error and the
+// reader decides, using the Retry the display's error chrome already offers.
+// ---------------------------------------------------------------------------
+
+// How long a range request may go without the server beginning to answer.
+//
+// This bounds the wait for a RESPONSE, not for the bytes: `fetch` resolves when
+// the response headers arrive, and the deadline is cleared there, before a byte
+// of the body is read. That distinction is load-bearing rather than fussy,
+// because this layer makes range requests unusually large — a contiguous run of
+// missing chunks becomes one request, measured at 6.5 MiB for a single 4 kb
+// viewport over a 2000x BAM (agent-docs/reference/NETWORK_ABORT.md). A deadline
+// over the whole transfer would cut that read off on any link slower than about
+// 2 Mbps, turning a slow session into a broken one.
+//
+// What it does catch is the one failure that produces no error at all: a
+// connection that is open and silent. Nothing is wrong from the display's point
+// of view — `loading` is true and a fetch really is in flight — so the reader
+// gets a spinner that never resolves and never the error bar whose Retry button
+// is the way out. Thirty seconds is deliberately generous; a server that has not
+// begun to answer by then is not about to.
+//
+// Only the HTTP path carries one. `CachedFilehandle` wraps a local file or a
+// Blob, which return or throw; there is no socket there to sit open on.
+const RESPONSE_TIMEOUT_MS = 30_000
+
+/**
+ * One signal that aborts when either of two do.
+ *
+ * `AbortSignal.any` where it exists — Chrome 116, Firefox 124, Safari 17.4, so
+ * comfortably inside the `last 1 chrome version` browserslist both products
+ * build against, and present in the jsdom the tests run under. The manual
+ * composition stays behind a feature test rather than being deleted because
+ * `@jbrowse/core` is published for embedders who set their own targets, where a
+ * missing static would be a TypeError on every range request.
+ */
+function anySignal(a: AbortSignal, b: AbortSignal) {
+  if (typeof AbortSignal.any === 'function') {
+    return AbortSignal.any([a, b])
+  }
+  const composed = new AbortController()
+  for (const source of [a, b]) {
+    if (source.aborted) {
+      composed.abort(source.reason)
+    } else {
+      source.addEventListener(
+        'abort',
+        () => {
+          composed.abort(source.reason)
+        },
+        { once: true },
+      )
+    }
+  }
+  return composed.signal
+}
+
+interface ResponseDeadline {
+  /** what to hand `fetch`: the caller's signal and this deadline, composed */
+  signal: AbortSignal
+  /** the error to report, set once the deadline has fired */
+  expired?: Error
+  /** stop the clock; call as soon as a response arrives */
+  dispose: () => void
+}
+
+/**
+ * `signal`, plus a {@link RESPONSE_TIMEOUT_MS} deadline on the server beginning
+ * to answer, and the disposer that stops that clock.
+ *
+ * **The caller's signal is composed, never replaced.** It is what carries the
+ * stop token down to the socket (agent-docs/reference/NETWORK_ABORT.md) and what
+ * the run's reference count aborts once every reader has given up; handing
+ * `fetch` a deadline signal in its place would silently take cancellation back
+ * off the socket, which is worth ~6.5 MiB per cancelled navigation.
+ *
+ * `describe` is a thunk so nothing builds the message unless the deadline fires.
+ */
+function withResponseDeadline(
+  signal: AbortSignal | null | undefined,
+  describe: () => string,
+) {
+  const timeout = new AbortController()
+  const deadline: ResponseDeadline = {
+    signal: signal ? anySignal(signal, timeout.signal) : timeout.signal,
+    dispose: () => {},
+  }
+  const timer = setTimeout(() => {
+    deadline.expired = new Error(describe())
+    timeout.abort(deadline.expired)
+  }, RESPONSE_TIMEOUT_MS)
+  // a deadline still pending must not hold a node process (or a jest worker)
+  // open, same reasoning as the sweep interval above
+  unrefIfPossible(timer)
+  deadline.dispose = () => {
+    clearTimeout(timer)
+  }
+  return deadline
+}
+
+/**
+ * Whether a rejection is a network-level one — the request never reached a
+ * response, so there is no status and no headers, only a `TypeError`.
+ *
+ * Checked down the `cause` chain rather than on the rejection itself, because
+ * `RemoteFile.fetch` catches that TypeError first and rethrows
+ * `new Error(`${message} fetching ${url}`, { cause: e })` (and, on Chrome's
+ * exact "Failed to fetch" wording, retries once through the cache to work around
+ * a Chrome CORS-cache bug). By the time it gets here the class is gone and the
+ * chain is the only thing that still says what it was. Depth-bounded because a
+ * cause chain is not guaranteed acyclic.
+ */
+function isNetworkRejection(e: unknown) {
+  let cause = e
+  for (let depth = 0; depth < 5 && cause instanceof Error; depth++) {
+    if (cause instanceof TypeError) {
+      return true
+    }
+    cause = cause.cause
+  }
+  return false
+}
+
+/**
+ * A https page may not load a http file, and the browser blocks it before it is
+ * sent — one of the two causes of a bare network rejection that is checkable
+ * from inside the page.
+ */
+function isMixedContent(url: string) {
+  if (typeof location === 'undefined' || location.protocol !== 'https:') {
+    return false
+  }
+  try {
+    return new URL(url, location.href).protocol === 'http:'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * What to tell someone whose request never reached a response.
+ *
+ * A CORS denial, a mixed-content block, a DNS failure, a refused connection and
+ * an offline browser all arrive as the same bare TypeError — `Failed to fetch`
+ * in Chrome, `Load failed` in Safari, `NetworkError when attempting to fetch
+ * resource` in Firefox — with no status, no headers and no URL. The browser
+ * withholds the difference deliberately, since an error that named the cause
+ * would itself be a cross-origin read. So this names the two that are checkable
+ * from here and then the one that is left, which is also the one that is nearly
+ * always right for a genome file on someone else's server.
+ */
+function networkFailureHint(url: string) {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    return ' (the browser reports no network connection)'
+  } else if (isMixedContent(url)) {
+    return ' (a page served over https may not load a file served over http, and the browser blocked this before it left; the file has to be served over https too)'
+  } else {
+    return ' (no response at all, so there is no status to report — most often CORS: the server must send Access-Control-Allow-Origin, and Access-Control-Expose-Headers: Content-Range as well or the size of the file cannot be read either. A host that is down, a DNS failure and a blocked port look identical from here)'
+  }
+}
+
+/**
+ * What a reader can do about a status, appended to the message carrying it.
+ * Only for the statuses where there is something to say; anything else gets the
+ * number, the URL and the byte range, which is already more than `fetch` gives.
+ */
+function statusHint(status: number) {
+  if (status === 200) {
+    return ' (the server ignored the Range header and returned the whole file; byte-range support is required for BAM/CRAM/tabix/bigwig files)'
+  } else if (status === 401 || status === 403) {
+    return ' (the file is there and the request was refused; a signed URL may have expired, or a bucket policy may not grant read to the page origin)'
+  } else if (status === 404) {
+    return ' (no such file; check the URL, and that the index file sits where the adapter expects it alongside the data file)'
+  } else if (status === 429 || status >= 500) {
+    return ' (the server is failing or declining to serve this file just now; nothing is retried automatically, so try again once it recovers)'
+  } else {
+    return ''
+  }
+}
+
 /**
  * Parse a `bytes=start-end` header into inclusive absolute offsets. Anything
  * else — an open-ended `bytes=100-`, a multi-range `bytes=0-9,20-29`, a
@@ -284,10 +473,10 @@ function parseByteRange(range: string | null) {
  * more: both enter the chunk cache below that method. A NaN length arrives from
  * a corrupt index and would otherwise become a `bytes=NaN-NaN` request.
  */
-function assertReadArgs(length: number, position: number) {
+function assertReadArgs(key: string, length: number, position: number) {
   if (Number.isNaN(length) || Number.isNaN(position)) {
     throw new TypeError(
-      `read() called with NaN length or position (length=${length}, position=${position}). The index file may be corrupt.`,
+      `read() of ${key} called with NaN length or position (length=${length}, position=${position}); the index the offset came from is probably corrupt or truncated`,
     )
   }
 }
@@ -385,8 +574,12 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       // Throw rather than silently returning size: 0 — that lie tends to cause
       // downstream callers to issue zero-byte reads or treat the file as empty.
       // Callers that can degrade gracefully should wrap stat() in try/catch.
+      //
+      // The request itself succeeded, so this is the one CORS misconfiguration
+      // that is invisible from the network tab: the header is on the wire and
+      // the browser will not let the page read it. Name the header to add.
       throw new Error(
-        `Could not determine size of ${this.url} (Content-Range header not observable; likely a CORS configuration issue)`,
+        `Could not determine size of ${this.url} (the server answered but the Content-Range header was not readable; a cross-origin server has to send Access-Control-Expose-Headers: Content-Range before the browser will show it to the page)`,
       )
     } else {
       return { size }
@@ -404,7 +597,43 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     // buildRequest overrides — and replace only the range.
     const headers = new Headers(init?.headers)
     headers.set('range', `bytes=${start}-${end}`)
-    const res = await super.fetch(url, { ...init, headers })
+    // Deliberately here rather than a layer up: this call is the shared one.
+    // fetchRun coalesces every reader of these chunks onto it, so the deadline
+    // belongs to the request and fails all of them together — one stalled
+    // reader with a deadline of its own would strand the rest on a fetch nobody
+    // is watching any more.
+    const deadline = withResponseDeadline(
+      init?.signal,
+      () =>
+        `No response from ${url} for bytes ${start}-${end} after ${RESPONSE_TIMEOUT_MS / 1000}s (the connection was open and the server sent nothing; a transfer already under way is not subject to this limit, so this is a stalled request rather than a slow one)`,
+    )
+    let res: Response
+    try {
+      res = await super.fetch(url, {
+        ...init,
+        headers,
+        signal: deadline.signal,
+      })
+    } catch (e) {
+      if (deadline.expired) {
+        throw deadline.expired
+      } else if (isNetworkRejection(e) && !deadline.signal.aborted) {
+        // `!aborted` because an implementation that reports a cancellation as a
+        // TypeError rather than as the signal's reason would otherwise have a
+        // cancelled pan explained as a CORS misconfiguration, which is the worst
+        // place to be confidently wrong.
+        throw new Error(
+          `Network error fetching ${url} bytes ${start}-${end}${networkFailureHint(url)}`,
+          { cause: e },
+        )
+      } else {
+        throw e
+      }
+    } finally {
+      // either the response is here or the request is over; from here the body
+      // may take as long as it takes
+      deadline.dispose()
+    }
     if (res.status === 416) {
       // Range Not Satisfiable: requested range starts past end of file. RFC 9110
       // has the server report the real length here, as `bytes * /12345`, and
@@ -426,11 +655,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     // generic-filehandle2's RemoteFile.read, whose equivalent check this class
     // bypasses by synthesizing its own 206 Response in fetch() below.
     if (!res.ok || (res.status !== 206 && start !== 0)) {
-      const hint =
-        res.status === 200
-          ? ' (the server ignored the Range header and returned the whole file; byte-range support is required for BAM/CRAM/tabix/bigwig files)'
-          : ''
-      const msg = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${hint}`
+      const msg = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${statusHint(res.status)}`
       throw Object.assign(new Error(msg), { status: res.status })
     }
     const buffer = new Uint8Array(await res.arrayBuffer())
@@ -483,7 +708,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     if (length === 0) {
       return new Uint8Array(0)
     }
-    assertReadArgs(length, position)
+    assertReadArgs(this.url, length, position)
     return this.cachedRange(this.url, position, length, {
       ...(opts.signal ? { signal: opts.signal } : {}),
       headers: opts.headers,
@@ -552,7 +777,7 @@ export class CachedFilehandle implements GenericFilehandle {
     if (length === 0) {
       return new Uint8Array(0)
     }
-    assertReadArgs(length, position)
+    assertReadArgs(this.key, length, position)
     return getCachedRange(
       this.key,
       position,

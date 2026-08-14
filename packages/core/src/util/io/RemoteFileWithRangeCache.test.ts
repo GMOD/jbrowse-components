@@ -13,6 +13,8 @@ const CHUNK = 256 * 1024
 // interval guarantees at least one sweep has seen an entry as idle
 const IDLE_TIMEOUT = 15 * 60 * 1000
 const SWEEP_INTERVAL = IDLE_TIMEOUT / 4
+// mirrors RESPONSE_TIMEOUT_MS
+const RESPONSE_TIMEOUT = 30 * 1000
 
 // Deterministic 1MB "file" where each byte equals its position mod 256
 const FILE_SIZE = 2 * 1024 * 1024
@@ -456,6 +458,12 @@ describe('RemoteFileWithRangeCache', () => {
     // Throws loudly rather than silently lying with size:0 — callers that can
     // degrade gracefully (e.g. ImportWizard size check) wrap stat in try/catch.
     await expect(file.stat()).rejects.toThrow(/Could not determine size/)
+    // and names the header to add, since this is the CORS misconfiguration that
+    // is invisible from the network tab — the request succeeded and the header
+    // is on the wire, the browser just will not show it to the page
+    await expect(file.stat()).rejects.toThrow(
+      /Access-Control-Expose-Headers: Content-Range/,
+    )
   })
 
   // RFC 9110 has a 416 carry the real length as `bytes * /N`. It is the only
@@ -992,6 +1000,237 @@ describe('RemoteFileWithRangeCache aborted-chunk sharing', () => {
     await expect(second).rejects.toThrow(/HTTP 500/)
     // no retry: the failure is real, and each read would have gotten it alone
     expect(calls).toHaveLength(1)
+  })
+})
+
+// A connection that stalls rather than failing used to produce no error at all:
+// the display's `loading` was correct — a fetch really was in flight — so a
+// reader got a spinner that never resolved and never the error bar whose Retry
+// button is the way out. The deadline turns that into an error someone can act
+// on, and its one hard constraint is that it must not touch a transfer that is
+// making progress.
+describe('RemoteFileWithRangeCache response deadline', () => {
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  async function flush() {
+    for (let i = 0; i < 20; i++) {
+      await Promise.resolve()
+    }
+  }
+
+  // open, silent, and only the signal gets out of it — what a black-holed
+  // connection looks like from here
+  function stalledFetch() {
+    const calls: string[] = []
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      calls.push(new Headers(init?.headers).get('range')!)
+      return new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          // what a real fetch does: reject with the signal's reason, so
+          // whichever of the caller and the deadline aborted says so
+          reject(init.signal!.reason as Error)
+        })
+      })
+    }
+    return { calls, mockFetch }
+  }
+
+  test('a stalled request fails with the URL, the range and the elapsed time', async () => {
+    jest.useFakeTimers()
+    const { calls, mockFetch } = stalledFetch()
+    const file = makeFile(mockFetch)
+
+    const read = fetchRange(file, 0, 99)
+    await flush()
+    expect(calls).toEqual([`bytes=0-${CHUNK - 1}`])
+
+    jest.advanceTimersByTime(RESPONSE_TIMEOUT)
+    const error = await read.then(
+      () => undefined,
+      (e: unknown) => `${e}`,
+    )
+    expect(error).toMatch(
+      new RegExp(
+        `No response from https://example.com/data.bin for bytes 0-${CHUNK - 1} after 30s`,
+      ),
+    )
+    // says which of slow and stalled it is, because the two are what a reader
+    // will be trying to tell apart
+    expect(error).toMatch(/stalled request rather than a slow one/)
+  })
+
+  // The reason the deadline is on the wait for a response and not on the read.
+  // This layer coalesces a run of missing chunks into one request, measured at
+  // 6.5 MiB for a single viewport over a 2000x BAM, and a wall-clock deadline
+  // over the whole transfer would cut that off on any slow link.
+  test('a response that arrived stops the clock, however slow the body is', async () => {
+    jest.useFakeTimers()
+    let releaseBody = () => {}
+    const body = new Promise<void>(resolve => {
+      releaseBody = resolve
+    })
+    // duck-typed rather than a real Response: the point is a body that arrives
+    // long after the headers did, which a fully-buffered Response cannot model
+    const slowBodyFetch = async () => ({
+      status: 206,
+      ok: true,
+      headers: new Headers(),
+      arrayBuffer: async () => {
+        await body
+        return slice(0, CHUNK - 1).buffer
+      },
+    })
+    const file = makeFile(slowBodyFetch as unknown as typeof globalThis.fetch)
+
+    const read = fetchRange(file, 0, 99)
+    await flush()
+    // the headers are in, so there is no longer a timer that could cut this off
+    expect(jest.getTimerCount()).toBe(0)
+
+    // an hour of downloading, 120x the deadline
+    jest.advanceTimersByTime(RESPONSE_TIMEOUT * 120)
+    releaseBody()
+    expect(await read).toEqual(slice(0, 99))
+  })
+
+  test("a caller's abort wins over a deadline still pending", async () => {
+    jest.useFakeTimers()
+    const { calls, mockFetch } = stalledFetch()
+    const file = makeFile(mockFetch)
+    const controller = new AbortController()
+
+    const read = file.fetch('https://example.com/data.bin', {
+      headers: { range: 'bytes=0-99' },
+      signal: controller.signal,
+    })
+    await flush()
+    jest.advanceTimersByTime(RESPONSE_TIMEOUT - 1000)
+
+    // The caller's signal is composed with the deadline, not replaced by it —
+    // so it still reaches the socket, and what surfaces is the cancellation
+    // rather than a timeout that had not happened.
+    controller.abort()
+    const error = await read.then(
+      () => undefined,
+      (e: unknown) => `${e}`,
+    )
+    expect(error).toMatch(/abort/i)
+    expect(error).not.toMatch(/No response/)
+
+    // and the deadline was disposed rather than left to fire into a request
+    // nobody is waiting on
+    expect(jest.getTimerCount()).toBe(0)
+    expect(calls).toHaveLength(1)
+  })
+})
+
+// A CORS denial, a mixed-content block, a DNS failure, a refused connection and
+// an offline browser all reject `fetch` with the same bare TypeError. That is
+// the most common deployment error this project sees, and it used to reach a
+// reader as `Failed to fetch` — no status, no headers, and not even the URL.
+describe('RemoteFileWithRangeCache network-level failures', () => {
+  function rejectingFetch(e: unknown) {
+    return async () => {
+      throw e
+    }
+  }
+
+  test('a bare TypeError becomes the URL, the range and the triage', async () => {
+    // Chrome's exact wording, which generic-filehandle2 also re-fetches once
+    // through the cache to dodge a Chrome CORS-cache bug — so this arrives here
+    // already wrapped in an Error, and is still recognized down the cause chain
+    const file = makeFile(rejectingFetch(new TypeError('Failed to fetch')))
+    const error = await fetchRange(file, 0, 99).then(
+      () => undefined,
+      (e: unknown) => `${e}`,
+    )
+    expect(error).toMatch(
+      new RegExp(
+        `Network error fetching https://example.com/data.bin bytes 0-${CHUNK - 1}`,
+      ),
+    )
+    expect(error).toMatch(/Access-Control-Allow-Origin/)
+    // the range case needs the second header too, or stat() fails separately
+    // with a message about a file whose bytes read fine
+    expect(error).toMatch(/Access-Control-Expose-Headers: Content-Range/)
+  })
+
+  test('recognized by class rather than by message', async () => {
+    // Safari says "Load failed" and Firefox "NetworkError when attempting to
+    // fetch resource"; matching Chrome's string would cover one browser
+    const file = makeFile(rejectingFetch(new TypeError('Load failed')))
+    await expect(fetchRange(file, 0, 99)).rejects.toThrow(/Network error/)
+  })
+
+  test('the original rejection survives as the cause', async () => {
+    const original = new TypeError('Load failed')
+    const file = makeFile(rejectingFetch(original))
+    const error = await fetchRange(file, 0, 99).then(
+      () => undefined,
+      (e: unknown) => e,
+    )
+    expect(`${(error as Error).cause}`).toMatch(/Load failed/)
+  })
+
+  test('an offline browser is told so instead of being told about CORS', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(
+      Navigator.prototype,
+      'onLine',
+    )!
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      get: () => false,
+    })
+    try {
+      const file = makeFile(rejectingFetch(new TypeError('Load failed')))
+      const error = await fetchRange(file, 0, 99).then(
+        () => undefined,
+        (e: unknown) => `${e}`,
+      )
+      expect(error).toMatch(/no network connection/)
+      expect(error).not.toMatch(/Access-Control-Allow-Origin/)
+    } finally {
+      Object.defineProperty(Navigator.prototype, 'onLine', descriptor)
+      // @ts-expect-error the shadowing own property, put back on the prototype
+      delete navigator.onLine
+    }
+  })
+
+  // A rejection that is not network-level is somebody else's error and must
+  // reach the caller as itself — a mis-wired adapter or a bug in a subclass'
+  // fetch override should not be reported as a CORS problem.
+  test('a non-network rejection passes through untouched', async () => {
+    const file = makeFile(rejectingFetch(new Error('adapter is confused')))
+    await expect(fetchRange(file, 0, 99)).rejects.toThrow(/adapter is confused/)
+    await expect(fetchRange(file, 0, 99)).rejects.not.toThrow(/Network error/)
+  })
+})
+
+// The status path was already the well-diagnosed one here. These pin the two
+// statuses a reader most often has to act on, and the fact that a 5xx says
+// nothing is retried behind their back.
+describe('RemoteFileWithRangeCache status hints', () => {
+  function statusFetch(status: number) {
+    return async () => new Response('', { status })
+  }
+
+  test('a 403 points at the credential rather than the file', async () => {
+    const file = makeFile(statusFetch(403))
+    await expect(fetchRange(file, 0, 99)).rejects.toThrow(
+      /HTTP 403 fetching https:\/\/example\.com\/data\.bin bytes 0-\d+ \(the file is there/,
+    )
+  })
+
+  test('a 503 says it is the server, and that nothing retries on its own', async () => {
+    const file = makeFile(statusFetch(503))
+    await expect(fetchRange(file, 0, 99)).rejects.toThrow(
+      /nothing is retried automatically/,
+    )
   })
 })
 
