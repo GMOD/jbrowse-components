@@ -997,8 +997,11 @@ export default function baseStateModelFactory(
          * #getter
          * Layout inputs shared by the base layout and every fit-escalation
          * layout, minus the per-config label/description reservation flags. One
-         * source so the candidate layouts can't drift on bpPerPx / region keys /
+         * source so the candidate layouts can't drift on bpPerPx / orientation /
          * display mode / pins.
+         *
+         * Each region's ref key is NOT here: it rides on the region itself, which
+         * is what the layout groups by (see `LayoutRegionData`).
          */
         get layoutInputs() {
           const view = getView(self)
