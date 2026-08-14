@@ -297,6 +297,28 @@ below. Reserve hand-written tests for what jsdom (the jest unit suite) can't do:
 real GPU/shader output, devicePixelRatio, WebGL context loss, and the web-worker
 RPC boundary — see `suites/gpu-quirks.ts`.
 
+### Driving the live model
+
+A suite reaching `window.JBrowseSession` inside `page.evaluate` needs a type for
+it. **`Pick` the actions off the real model rather than restating them** — `tsc`
+covers this directory, and a restated signature is the only reason it can't
+catch a changed one. `suites/multi-region-sort.ts` is the worked example, and
+the reason for the rule: it called `setSortedByAtPosition` positionally for six
+weeks after it took one object, staying green because the sort it set named no
+column and so sorted nothing.
+
+```typescript
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
+
+interface Display extends Pick<
+  LinearAlignmentsDisplayModel,
+  'setSortedByAtPosition'
+> {
+  // read-back shapes stay hand-written and narrow — it is the calls that rot
+  sourceSections: { laidOutPileupMap: ReadonlyMap<number, /* … */ unknown> }[]
+}
+```
+
 ## Available Helpers
 
 `helpers.ts`:
