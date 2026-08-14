@@ -73,21 +73,37 @@ const EMPTY: PositionIndex = {
   sorted: new Uint32Array(0),
 }
 
-const cache = new WeakMap<Uint32Array, PositionIndex>()
+// Keyed by array AND stride: one array can be read at two strides, and the two
+// readings are different indexes. `gapPositions` is the case — stride 2 over its
+// starts, stride 1 if anything ever wants every entry — and keying on the array
+// alone handed the second caller the first one's index, silently and with a
+// plausible answer (`[10, 20, 30, 50, 60, 90]` where the starts are
+// `[10, 30, 50]`). Nothing distinguished that from a region whose gaps really do
+// sit at those positions.
+//
+// A small dense array per stride rather than a nested Map: strides are tiny
+// positive ints, so this is one allocation per indexed array and no allocation
+// per lookup.
+const cache = new WeakMap<Uint32Array, (PositionIndex | undefined)[]>()
 
 /**
  * The position index for `positions`, built on first use and cached against the
- * array. `stride`/`offset` read every stride'th entry starting at offset, for
- * an array that interleaves something else — `gapPositions` holds [start, end]
- * pairs, so its starts are stride 2.
+ * array and stride. `stride` reads every stride'th entry from the start of the
+ * array, for one that interleaves something else — `gapPositions` holds
+ * [start, end] pairs, so its starts are stride 2.
  */
 export function positionIndexFor(positions: Uint32Array, stride = 1) {
-  const hit = cache.get(positions)
+  let byStride = cache.get(positions)
+  if (!byStride) {
+    byStride = []
+    cache.set(positions, byStride)
+  }
+  const hit = byStride[stride]
   if (hit) {
     return hit
   }
   const built = buildPositionIndex(positions, stride)
-  cache.set(positions, built)
+  byStride[stride] = built
   return built
 }
 

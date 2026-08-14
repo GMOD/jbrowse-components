@@ -53,6 +53,24 @@ describe('positionIndexFor', () => {
     )
   })
 
+  it('caches per stride, not per array', () => {
+    // One array read two ways is two different indexes. Keying the memo on the
+    // array alone returned the stride-1 index here — a plausible answer (every
+    // entry, in order) for a caller that asked about the starts.
+    const gaps = new Uint32Array([50, 60, 10, 20, 30, 90])
+    expect([...positionIndexFor(gaps).sorted]).toEqual([10, 20, 30, 50, 60, 90])
+    expect([...positionIndexFor(gaps, 2).sorted]).toEqual([10, 30, 50])
+    // Either order, since whichever ran first is the one that populated the memo.
+    const other = new Uint32Array([50, 60, 10, 20, 30, 90])
+    expect([...positionIndexFor(other, 2).sorted]).toEqual([10, 30, 50])
+    expect([...positionIndexFor(other).sorted]).toEqual([
+      10, 20, 30, 50, 60, 90,
+    ])
+    // And each stride still memoizes.
+    expect(positionIndexFor(gaps, 2)).toBe(positionIndexFor(gaps, 2))
+    expect(positionIndexFor(gaps, 2)).not.toBe(positionIndexFor(gaps))
+  })
+
   it('agrees with a plain sort on a large mixed input', () => {
     const n = 5000
     const positions = new Uint32Array(n)
