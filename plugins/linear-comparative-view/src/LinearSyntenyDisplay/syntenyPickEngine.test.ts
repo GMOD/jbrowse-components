@@ -154,9 +154,12 @@ describe('pick index reuse', () => {
     pickAt(150, 50, makeParams(), pickIndices)
     const first = pickIndices.get(0)
 
-    // 400px of skew between the axes exceeds MAX_PAN_SKEW_PX, past which the
-    // widened query would return too many candidates to reject cheaply
-    pickAt(150, 50, makeParams({ offsetPx0: 400 }), pickIndices)
+    // 3000px of skew between the axes exceeds MAX_PAN_SKEW_PX, past which the
+    // widened query would return too many candidates to reject cheaply. The
+    // threshold is a measured balance point rather than a round number — see
+    // agent-docs/reference/SYNTENY_PICKING.md — so this only pins that SOME
+    // skew rebuilds, not where the line sits.
+    pickAt(150, 50, makeParams({ offsetPx0: 3000 }), pickIndices)
     expect(pickIndices.get(0)).not.toBe(first)
   })
 

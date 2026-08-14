@@ -47,12 +47,33 @@ export interface PickIndex {
 // trips when one view is panned on its own.
 //
 // The ceiling exists because the widening is what a stale index costs: the query
-// interval grows by the skew, and on a dense whole-genome view candidate counts
-// grow with it — measured at 500k instances, a 100px skew returns ~10k
-// candidates (0.5ms/query) while 2000px returns ~125k (6ms/query, which would
-// read as sluggish hover). Rebuilding instead costs ~90ms once. 250px keeps the
-// worst query near 1ms while still making the common case free.
-const MAX_PAN_SKEW_PX = 250
+// interval grows by the skew, so candidates grow with it, and the widened query
+// is paid PER MOUSEMOVE where the rebuild it avoids is paid once.
+//
+// Re-measured 2026-08-14 (300k instances, 1400px, viewport mid-genome; the
+// earlier figures here predated excluding unpickable instances and no longer
+// described either side). What the skew costs depends entirely on hull width,
+// so it has to be read off the COLLINEAR arm — two related genomes, narrow
+// hulls — which is the shape where widening genuinely admits new candidates:
+//
+//   skew    250px ->    287 candidates, 0.39ms/query
+//   skew   1000px ->   1052 candidates, 1.1ms/query
+//   skew   5000px ->   5084 candidates, 8.9ms/query
+//   rebuild                             ~200ms, once
+//
+// Growth is ~1 candidate per px of skew (instance density along x), NOT the
+// order-of-magnitude jump the old note described. Against a ~200ms rebuild,
+// 250px was an order of magnitude too tight: it spent 200ms to avoid 0.39ms.
+// 2000px holds the worst query near 2ms — inside a frame, and still amortizing
+// against the rebuild over ~100 hovers — while making ordinary single-axis
+// panning free.
+//
+// The wide-hull (all-vs-all) arm cannot inform this number, because there the
+// skew is not what costs: nearly every hull spans the canvas, so a stab returns
+// ~71k candidates AT ZERO SKEW and 500,000px of skew only takes it to ~108k.
+// That case is slow for a reason this cap cannot fix — see
+// agent-docs/reference/SYNTENY_PICKING.md.
+const MAX_PAN_SKEW_PX = 2000
 
 // Boxes are projected at the build-time pan and reused across later pans (the
 // query shifts instead — see pickFeatureAtPoint). This used to rebuild on ANY

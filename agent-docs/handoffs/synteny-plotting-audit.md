@@ -36,6 +36,13 @@ almost every ribbon a canvas-spanning x-hull, which is an all-vs-all PAF rather
 than two related genomes. It is not pessimistic about instance count; 300k is
 ordinary.
 
+**Both pick rows are whole-genome-zoom figures and do not generalize** — at that
+zoom every ribbon is sub-pixel, so the tree is EMPTY and the hover is answering
+"nothing here". One zoom step in it holds ~half the instances, and on wide-hull
+data a hover costs ~64ms at zero skew. Re-measured across zooms and both hull
+shapes in [reference/SYNTENY_PICKING.md](../reference/SYNTENY_PICKING.md); read
+that before quoting either number.
+
 **`buildSyntenyGeometry`'s 105ms is now the largest single item** and nobody has
 looked at it. It is two O(n) passes plus a capacity pre-pass, all in the worker,
 so it costs a fetch's latency rather than a frame — which is why it was left
@@ -60,17 +67,13 @@ match.
 
 ## Not done, with what is known
 
-### `MAX_PAN_SKEW_PX`'s comment now describes a tree that no longer exists
-
-`syntenyPickEngine.ts`'s 250px cap is justified by candidate counts measured
-against the old index ("a 100px skew returns ~10k candidates ... 2000px returns
-~125k ... rebuilding instead costs ~90ms once"). Every number in that paragraph
-was taken before unpickable instances were excluded, so both sides of the
-trade-off it is balancing have moved by more than an order of magnitude, and the
-250px is now carrying a justification that does not support it either way. Re-measure
-and either restate the reasoning or move the cap; do not simply delete the note.
-
 ### The pick loop's remaining O(candidates) work
+
+Still open, but re-read [reference/SYNTENY_PICKING.md](../reference/SYNTENY_PICKING.md)
+first: on the data where this loop is actually slow, candidates are not arriving
+through slop that a `filterFn` or a dropped sort could remove — they genuinely
+cover the stab point. Both ideas below are worth what they were worth before;
+neither is the answer to the 64–134ms case.
 
 What survives the index is walked with `projectCorners` + `isRibbonCulled` +
 `ribbonPerpWidth` (which takes a `sqrt`) per candidate, after an
