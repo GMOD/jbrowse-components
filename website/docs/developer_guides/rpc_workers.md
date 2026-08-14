@@ -12,7 +12,12 @@ Only structured-clone-safe values cross the boundary.
 
 ## The RPC lifecycle
 
-<Figure caption="Only what is inside the box runs in the worker. Serialize and deserialize are hooks rather than plumbing, and they ride the two crossings: the serialize step is where refNames are renamed and functions are stripped, which is why a method taking regions extends a rename base rather than overriding it. The dashed edge is the one function-shaped thing that crosses, and it does not actually cross — a side channel reports progress while execute() is still running." src="/img/rpc_lifecycle.png" />
+<Figure caption="Only what is inside the box runs in the worker, and the serialize/deserialize hooks ride the two crossings rather than sitting between them. The dashed edge is the one function-shaped thing that crosses, and it does not actually cross — a side channel reports progress while execute() is still running." src="/img/rpc_lifecycle.png" />
+
+Both hooks are yours to override. The serialize step is where refNames are
+renamed and functions are stripped, which is why a method taking regions extends
+a rename base rather than overriding it — see
+[Renaming regions](#renaming-regions) below.
 
 Sessions are sticky: a `sessionId` is pinned to one worker, so adapter caches
 stay warm across calls from the same session.

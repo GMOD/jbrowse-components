@@ -816,6 +816,15 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show... → Show row separators (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
+  showRowLabels: (value, { displayType }) =>
+    typeof value === 'boolean' && displayType === 'MultiLinearWiggleDisplay'
+      ? {
+          path: `${TRACK_MENU} → Show... → Show row labels (${value ? 'checked' : 'unchecked'})`,
+          note: value
+            ? undefined
+            : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of colour swatches.',
+        }
+      : undefined,
   featureHighlights: (value, { displayType, noun }) =>
     Array.isArray(value) &&
     displayType &&
