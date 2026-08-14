@@ -105,11 +105,14 @@ test('the follow places the row through a canonically-spelled file', async () =>
 // a window with genuinely nothing under it.
 //
 // Two channels carry the adapter's spelling to the main thread and BOTH have to
-// be canonicalized for this to pass: `featureData.refNames`/`mateRefNames` from
-// the fetch, and `ResolvedSpan.refName` from `SyntenyResolveMatchingRegion`,
-// which `alreadyShowing`, `followTransform` and `positionViewOnSpan` all then
-// compare against view state. `getAdapterToCanonicalRefNameMap`
-// (@jbrowse/synteny-core) is the map for both.
+// be canonicalized for this to pass: `featureData`'s
+// `refNameDict`/`mateRefNameDict` from the fetch (the dictionaries the
+// per-feature ids index), and `ResolvedSpan.refName` from
+// `SyntenyResolveMatchingRegion`, which `alreadyShowing`, `followTransform` and
+// `positionViewOnSpan` all then compare against view state.
+// `getAdapterToCanonicalRefNameMap` (@jbrowse/synteny-core) is the map for both;
+// renaming a dictionary means re-interning it, for the reason
+// `agent-docs/reference/REFNAME_NAMESPACES.md` gives.
 test.failing(
   'the follow places the row through an alias-spelled file too',
   async () => {

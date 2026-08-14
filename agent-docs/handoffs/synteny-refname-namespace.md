@@ -31,8 +31,19 @@ ten; `LinearDerivativeVsRef/buildDerivativeVsRefSpec.ts` was not finished —
 which of those needs canonical was not settled. Branding would answer it, which
 is one reason to do the branding before believing the site list is complete.
 
-**Not audited at all.** The dotplot's own fetch. It does not read the synteny
-packed arrays, but it is the same shape and nobody has looked.
+**Audited since, and clean.** The dotplot's own fetch. One main-thread reader of
+its adapter-space dictionaries (`nameColorFn`, which hashes a name to a color and
+has no canonical operand to disagree with); every other comparison on that path is
+adapter-space on both sides deliberately, and its hover tooltip resolves names
+through `pxToBp` instead of reading the dictionary at all. Needs no part of this
+fix. The reference doc has the enumeration.
+
+**One reader classified differently since.** `syntenyColors.nameColorFunction`'s
+`nameOrder` lookup is a straddle, but its symptom is not a missed match — it is
+the chromosome-painting palette silently degrading to the hash fallback that
+`nameOrder` was added to replace. Also in the reference doc; it matters because a
+site whose failure looks like a legitimate state is the kind that survives an
+audit.
 
 ## The decisions waiting
 

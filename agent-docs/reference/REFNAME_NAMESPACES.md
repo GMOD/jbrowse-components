@@ -56,7 +56,9 @@ reader, and the readers grew without anyone noticing the class.
 
 Two channels carry adapter-space names into synteny's main thread:
 
-- `SyntenyFeatureData.refNames` / `mateRefNames`, from the fetch. The worker
+- `SyntenyFeatureData`'s `refNameDict` / `mateRefNameDict`, from the fetch —
+  dictionary-encoded since the payload optimization below, so these are the
+  DICTIONARIES the per-feature `refNameIds` / `mateRefNameIds` index. The worker
   comment at the head of `executeSyntenyFeaturesAndPositions.ts` says why they
   are adapter-space: the RPC worker has no assemblyManager, so reconciliation
   happens on the main thread *before* the call
@@ -71,6 +73,47 @@ invariant `LinearSyntenyFollow.test.tsx` pins.
 
 `getAdapterToCanonicalRefNameMap` (`@jbrowse/synteny-core`) is the inverse map
 for both, and already exists because the diagonalize RPCs needed exactly this.
+
+### The first channel is now a dictionary, which changes the fix twice
+
+Cheaper, and with one new requirement.
+
+**Cheaper:** the rename is a pass over a few dozen dictionary entries, once per
+fetch, not over a string per feature. The "skip the walk when the map is empty"
+guard the plan carried was there to keep a per-feature pass off the common path;
+against a dictionary the walk is negligible either way, so the guard is optional
+rather than load-bearing.
+
+**New requirement: RE-INTERN after renaming.** The dictionary's entries are
+distinct by construction while they are adapter-space, because the worker
+interned them. Renaming can collapse two of them onto one canonical name — a file
+that spells the same contig `chr1` on some rows and `1` on others, against an
+assembly aliasing both, which is precisely the mixed-provenance case this whole
+class is about. Duplicate entries break the readers that resolve a name to an id
+ONCE and then compare integers (`pickFollowFeature`, `followWindowMapping`, both
+via `dict.indexOf`): `indexOf` finds the first of the duplicates, and every
+feature carrying the second id silently stops matching. So the rename is
+`makeStringDict` again over the renamed values, remapping the ids — not a
+`.map()` in place.
+
+### One straddle whose symptom is a wrong palette, not a missed match
+
+Worth calling out separately because it does not look like the others. Chromosome
+painting takes `nameOrder` — `paintedChromosomeOrder`, which is
+`assemblyManager.get(name)?.refNames`, so **canonical** — and looks each feature's
+refName up in it (`orderOf.get(name)` in `syntenyColors.nameColorFunction`).
+Adapter-space against canonical, one operand from each side.
+
+On an aliased file every lookup misses and the function falls through to its hash
+fallback, which is the collision-prone palette `nameOrder` was added to replace:
+nine slots for twelve chromosomes, "some unexpected color re-use" as a figure
+review put it. So the failure is not nothing-happens, it is a figure that is
+quietly painted with the palette that was rejected — and the fallback is a
+legitimate state for other reasons (an assembly still loading), so nothing about
+it reads as wrong.
+
+Now confined to a dictionary walk rather than a per-feature one, so
+canonicalizing the dictionary fixes this site for free along with the rest.
 
 ## When it is observable
 
@@ -94,6 +137,33 @@ through the aliases to an assembly refName. It fires when aliases are **missing*
 — loudly, with `TrackLabelRefNameWarning` — and is deliberately blind when they
 are present and working, which is this case. That is correct behaviour for what
 it is for, and it means it will never report this.
+
+## The dotplot fetch: same shape, no straddle
+
+Audited by enumerating the readers, since it is the same payload shape and was
+listed as unexamined. It has **one** main-thread reader of its adapter-space
+`refNameDict` / `mateRefNameDict`: `dotplotColors.nameColorFn`, which hashes the
+name to a color and takes no `nameOrder`, so there is nothing canonical for it to
+disagree with. Cosmetically the color a contig gets depends on the file's spelling
+of its name; nothing is compared, nothing is missed.
+
+Everything else on that path is adapter-space on both sides on purpose:
+
+- the worker's `hIndex`/`vIndex` are built from `hViewSnap`/`vViewSnap` regions
+  that `afterAttach` renamed before the call, so `entries.has(refName)` matches
+  like against like;
+- `skippedHRefNames` comes back adapter-space and `hasUnknownRefNames` renames
+  the assembly's own regions INTO adapter space before comparing, with a comment
+  saying why;
+- the hover tooltip deliberately does **not** read the dictionary. It resolves
+  both axes through `pxToBp`, i.e. off the view's regions, so it prints canonical
+  names (`dotplotTooltip.ts` says so at the top). That is the display-text half
+  below, solved in one view for ~10 lines and with no rename — which is the
+  cheapest evidence available on whether that case is worth opening.
+
+So the dotplot needs no part of the synteny fix. It is not that it was overlooked;
+its answers are about regions it asked for, which is the rule at the top of this
+file.
 
 ## The repo-wide half nobody notices
 

@@ -150,16 +150,24 @@ inverse rename applied to the fetch's result, and the helper already exists —
 diagonalize RPCs use for exactly this. Until then, read a follow that does
 nothing on an aliased file as this rather than as the mode being broken.
 
-That fix got much cheaper than this paragraph was written for. The lane is now
+That fix got cheaper than this paragraph was written for, but **not smaller**,
+and an earlier version of this note had that wrong. The lane is now
 dictionary-encoded, so the rename is a pass over `refNameDict` /
 `mateRefNameDict` — a few dozen entries, once per fetch — rather than over a
-`string[]` of every feature. It would also fix two things beyond the follow,
-both of which read the same dictionary: the hover tooltip and the feature widget
-print the FILE's contig name on an aliased track, where the dotplot's tooltip
-deliberately prints the assembly's (see `dotplotTooltip.ts`, which goes through
-`pxToBp` for exactly this reason). Renaming on receipt is the one edit that
-settles all three — but it moves a namespace boundary, so check every
-main-thread reader is on the canonical side of it before doing it.
+`string[]` of every feature. What has not changed is that **this is one of two
+channels and doing it alone is worse than doing neither**:
+`ResolvedSpan.refName` comes back from `SyntenyResolveMatchingRegion` in the
+same namespace, and canonicalizing only the fetch would leave `alreadyShowing`
+comparing canonical against adapter-space, never matching, renavigating on every
+wake — which breaks the one-RPC-per-settle count `LinearSyntenyFollow.test.tsx`
+asserts. `agent-docs/TODO.md` §_Canonicalize the two synteny refName channels_
+is the plan, and `agent-docs/reference/REFNAME_NAMESPACES.md` is why; the
+dictionary also adds a re-interning requirement, which is written down there.
+
+Two things beyond the follow ride on the same dictionary and would come with it:
+the hover tooltip and the feature widget print the FILE's contig name on an
+aliased track, where the dotplot's tooltip deliberately prints the assembly's
+(`dotplotTooltip.ts` goes through `pxToBp` for exactly this reason).
 
 ## Approximate is a state the UI reports, not a failure
 

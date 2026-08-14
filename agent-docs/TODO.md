@@ -482,8 +482,8 @@ differently. This entry is only the synteny half.
 `LinearSyntenyRefNameAlias.test.tsx` already fails on it, as `test.failing`, so
 fixing this breaks that file rather than leaving a dead skip.
 
-Both channels move together or neither does. `featureData.refNames` /
-`mateRefNames` at the fetch boundary (`LinearSyntenyDisplay/afterAttach.ts`'s
+Both channels move together or neither does. `featureData.refNameDict` /
+`mateRefNameDict` at the fetch boundary (`LinearSyntenyDisplay/afterAttach.ts`'s
 `run`, after the RPC returns, where the forward `rename` already lives), and
 `ResolvedSpan.refName` on receipt in `resolveMatchingSpan`. Doing only the first
 is **worse than doing neither**: `alreadyShowing` then compares canonical against
@@ -491,9 +491,19 @@ adapter-space, never matches, and renavigates on every wake, which breaks the
 one-RPC-per-settle count `LinearSyntenyFollow.test.tsx` asserts.
 
 `getAdapterToCanonicalRefNameMap` (`@jbrowse/synteny-core`) is the map, built
-per axis — query assembly for `refNames`, target for `mateRefNames` — not one
-merged map, so two contigs spelled alike on the two assemblies cannot collide.
-Skip the walk when the map is empty, which is every config we ship.
+per axis — query assembly for the `refName` lane, target for the `mate` one — not
+one merged map, so two contigs spelled alike on the two assemblies cannot
+collide.
+
+Those lanes are dictionary-encoded now, which makes the first channel a walk over
+a few dozen entries rather than one per feature — so the "skip when the map is
+empty" guard is optional, and one site gets fixed for free (`nameColorFunction`'s
+`nameOrder` lookup, see the reference doc). It also adds one requirement:
+**re-intern the dictionary**, because renaming can collapse two adapter spellings
+of one contig onto a single canonical name, and the readers that resolve a name to
+an id once via `dict.indexOf` would then match only the first of the duplicates.
+`makeStringDict` over the renamed values, remapping the ids — not a `.map()` in
+place.
 
 Then brand the out-of-request names, which is what stops site twelve appearing
 quietly. The reference doc has the verified error codes and the one trap: both
