@@ -70,9 +70,10 @@ all have to be fetched.
 ## A sweep leaves a long haplotype
 
 Selection driving one haplotype to high frequency carries every variant on it
-along, leaving a stretch of correlated variants. Two things decide whether that
-stretch reads as a block: the window you cut, and which samples went into the
-file.
+along, leaving a stretch of correlated variants. That stretch is the signal
+[Bersaglieri et al. 2004](https://doi.org/10.1086/421051) read at this locus off
+a region about as wide as the window below. Two things decide whether it reads
+as a block: the window you cut, and which samples went into the file.
 
 <Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: every panel pooled, then one panel. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release."/>
 
@@ -82,7 +83,10 @@ The blue curve above each triangle is the recombination track
 ([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
 − r² between adjacent variants. On the single-panel lane it sits near zero
 across the block and spikes at its edges, which is where the block ends; on the
-pooled lane there is no such pair of edges to find.
+pooled lane there is no such pair of edges to find. It comes off the same
+genotypes as the triangle rather than off a genetic map, so it is evidence of
+recombination rather than a rate: for cM/Mb, load a published map as a
+[quantitative track](/docs/user_guides/quantitative_track) beside it.
 
 The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
 haplotype is long; Fst says its variants are the ones whose frequency differs
@@ -103,13 +107,20 @@ adds white.
 
 ### Subset the VCF to one panel
 
-r² is computed across every sample in the file, so a whole callset correlates
-across panels that have no shared history, which is the upper lane above.
+r² is computed across every sample in the file, so pooling panels that carry the
+haplotype at different frequencies averages the correlation down, which is the
+upper lane above. The reproduce script prints mean pairwise r² inside the block
+both ways.
 
 ```bash
 bcftools view -S panel.samples --force-samples -Oz -o panel.vcf.gz all.vcf.gz
 tabix -p vcf panel.vcf.gz
 ```
+
+The two lanes also end up drawing different variants, because
+`minorAlleleFrequencyFilter` is a frequency in whatever samples the file holds:
+a variant common in one panel and rare elsewhere clears the floor in the panel
+file and falls below it in the pooled one.
 
 The same applies to species, and more sharply: a panel mixing two species
 invents LD that neither species has.
@@ -234,3 +245,5 @@ inside the block for one panel against the pooled release.
 
 - 1000 Genomes Project Consortium (2015).
   [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)
+- Bersaglieri et al. (2004).
+  [Genetic signatures of strong recent positive selection at the lactase gene](https://doi.org/10.1086/421051)

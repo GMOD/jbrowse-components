@@ -130,15 +130,21 @@ for line in run(['cat', 'dog10k_igf1_samples.tsv']).splitlines()[1:]:
     meta[sample] = size
 
 ids = run(['bcftools', 'query', '-l', 'dog10k_igf1.vcf.gz']).split()
+# Biallelic only, matching igf1_site_fst.py, which skips a multiallelic site
+# rather than scoring one alt of it. dose() below splits on the separator and
+# compares whole allele indices, so it would read 0|2 as no alt and 1|10 as two;
+# excluding those sites here is what keeps the printed check and the drawn Fst
+# lane about the same set of records.
 rows = [l.split('\t') for l in
-        run(['bcftools', 'query', '-f', '%POS[\t%GT]\n',
+        run(['bcftools', 'query', '-f', '%POS[\t%GT]\n', '-i', 'N_ALT=1',
              'dog10k_igf1.vcf.gz']).splitlines()]
 
 
 def dose(gt):
-    if '.' in gt:
+    alleles = gt.replace('|', '/').split('/')
+    if '.' in alleles:
         return None
-    return gt.count('1')
+    return sum(1 for a in alleles if a == '1')
 
 
 gene = [r for r in rows if GENE_START <= int(r[0]) <= GENE_END]

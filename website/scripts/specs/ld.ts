@@ -144,6 +144,15 @@ const LCT_HIGHLIGHT = [
 // population so there is something there to correlate. Don't caption it as a
 // blank track.
 //
+// THAT BLOCK IS THE FIGURE'S SECOND SHAPE AND THE PAGE NOW READS IT. Both
+// panels have it, and it is a decaying triangle where 2La is a solid one, which
+// is the difference the prose calls the diagnostic. Measured off the capture,
+// mean cell intensity against depth: the low-coordinate block runs 42 / 19 / 9 /
+// 3.5 over the first four samples and is at background thereafter, while 2La
+// runs 15 / 18 / 41 / 37 and is still at 25 near the bottom of its triangle. So
+// don't reframe or crop this figure to the inversion: the second block is the
+// negative control for the block-shape claim, in the same frame.
+//
 // WHY r² AND NOT D'. D' is brighter inside the span but also tints the region
 // outside it, while r² collapses to near zero there, so r² draws much the
 // sharper boundary despite dimmer cells. Contrast against background, not cell
@@ -517,11 +526,19 @@ export const ldSpecs: ScreenshotSpec[] = [
         // be 297 px so that one mosquito was one pixel, which is a pleasing
         // property and not one the figure is read for: the rows are GROUPED by
         // karyotype, so what a reader takes from the lane is three contiguous
-        // bands and where their edges fall, and 140 px still draws them 77, 32
-        // and 31 px deep. Per-row resolution would matter if the readout were
-        // density -- it is the trap the Dog10K cohort lane documents -- but
-        // inside a solid band aliasing has nothing to alias.
-        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 140),
+        // bands and where their edges fall, and 200 px still draws them well
+        // clear of each other. Per-row resolution would matter if the readout
+        // were density -- it is the trap the Dog10K cohort lane documents --
+        // but inside a solid band aliasing has nothing to alias.
+        //
+        // 140 -> 200, AND THE FLOOR IS THE LEGEND, not the bands. The floating
+        // legend is clipped to its own display's bounds, and this is the only
+        // lane of the four with all three karyotype classes in it, so at 140 it
+        // rendered 2L+a/2L+a and 2La/2L+a and cut 2La/2La off the bottom --
+        // while the prose says the legend names three. The Gabon lane is
+        // already at 200 for the same reason and legitimately shows two, since
+        // that population has no inverted homozygote.
+        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 200),
         // "almost every mosquito", not "fixed": 5 of the 69 are heterozygous
         // for the inverted arrangement, and they are visible two lanes down
         agLdTrack(
@@ -576,7 +593,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     // chrom.sizes off hgdownload.soe.ucsc.edu, which times out and refetches
     // often enough to blow through 120s on a bad day.
     readyTimeout: 180000,
-    // two LD tracks (340 each) + the 140 and 200 karyotype lanes + 4 headers +
+    // two LD tracks (340 each) + the two 200 px karyotype lanes + 4 headers +
     // ruler/overview. Undersize this and the rows past the fold are cropped away
     // silently: first paint still fires, so the capture succeeds with the
     // informative rows missing.
@@ -586,8 +603,9 @@ export const ldSpecs: ScreenshotSpec[] = [
     // the two comments above; what it does NOT include is any slack, because
     // there was none -- the run reported nothing blank below the content at
     // 1472, and an ink scan of the capture found both LD panels drawing to
-    // their own bottom edge.
-    viewportHeight: 1355,
+    // their own bottom edge. So the 60 px the Cameroon lane took back for its
+    // legend is added here rather than found somewhere in the frame.
+    viewportHeight: 1415,
     settleMs: 8000,
     // One callout per lane, saying what each lane shows rather than only naming
     // the span (review: "a red text annotation on both cameroon and gabon

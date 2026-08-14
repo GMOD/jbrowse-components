@@ -29,8 +29,8 @@ through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
 
 Four lanes stack below: each population's r² heatmap over its own karyotype
 lane, one row per mosquito, 297 from Cameroon and 69 from Gabon. Both panels
-also carry a separate block at the low-coordinate end of the arm, which the next
-section returns to.
+also carry a separate block at the low-coordinate end of the arm, which the
+paragraphs under the figure return to.
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. r² fills the published 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard one."/>
 
@@ -44,11 +44,18 @@ it: markers at opposite ends of the block are about as correlated as
 neighbouring ones. A block that faded with distance would be a region of low
 recombination rather than one of none.
 
+Run that test on the other block in the frame, the one at the low-coordinate end
+of the arm that both panels carry: it is reddest along the diagonal and pales
+away below it, which is the other case. It covers the stretch of 2L carrying
+_Vgsc_, the sodium channel whose codon-995 substitutions confer pyrethroid
+resistance and which this release was used to survey
+([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
+
 The Gabon panel is a control rather than a second example. It is not
 inversion-free: 5 of its 69 mosquitoes are heterozygous, but the other 64
-recombine across the span freely, so there is nothing to correlate over it. It
-still carries a block at the low-coordinate end of the arm, which says the span
-is genuinely uncorrelated rather than unread.
+recombine across the span freely, so there is nothing to correlate over it. The
+low-coordinate block is still there, which says the 2La span is genuinely
+uncorrelated rather than unread.
 
 Both files were built with a minor allele frequency floor, and in Gabon the
 inverted arrangement sits far below it, so the variants tagging those five
@@ -238,6 +245,8 @@ karyotyping tag SNPs from the Ag3 method.
 
 - Anopheles gambiae 1000 Genomes Consortium (2020).
   [Genome variation and population structure among 1142 mosquitoes of the African malaria vector species Anopheles gambiae and Anopheles coluzzii](https://doi.org/10.1101/gr.262790.120)
+- Clarkson et al. (2021).
+  [The genetic architecture of target-site resistance to pyrethroid insecticides in the African malaria vectors Anopheles gambiae and Anopheles coluzzii](https://doi.org/10.1111/mec.15845)
 - Love et al. (2019).
   [In silico karyotyping of chromosomally polymorphic malaria mosquitoes in the Anopheles gambiae complex](https://doi.org/10.1534/g3.119.400445)
 - Sharakhov et al. (2006).

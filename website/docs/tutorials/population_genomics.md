@@ -161,13 +161,10 @@ and reports π, dxy and Fst per window without that bias, one row per window, so
 its output packs into a bigWig the same way.
 
 Tajima's D is read as an excursion against the panel's own background rather
-than against zero, for two reasons that both push it up. The same
-variant-sites-only filtering takes rare alleles first, and D rises as
-segregating sites are removed. And these are inbred lines whose calls are
-homozygous diploid, so vcftools counts two chromosomes where a line contributes
-one: the header's `AN` is twice its `NS`, and Watterson's estimator is scaled by
-the harmonic number of that doubled count. Neither moves a trough relative to
-its flanks, which is what the figure below is read for.
+than against zero. A variant-sites-only callset of inbred lines lifts the whole
+baseline, since filtering takes the rare alleles D is most sensitive to and
+vcftools counts two chromosomes where a line contributes one. Neither moves a
+trough relative to its flanks.
 
 ## Loading it in JBrowse
 
@@ -237,23 +234,15 @@ six arms lay out side by side and the block has the rest of the genome to be
 measured against. The `In(2L)t` Fst track rises over the inverted region of
 chromosome 2L, while every other arm sits at low background Fst.
 
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms. Top: the In(2L)t inversion extent. Bottom: Fst between In(2L)t and standard-arrangement lines, a tall block over the inverted region and past both of its breakpoints, against low background on every other arm."/>
-
-The elevated band is wider than the inversion drawn above it: it runs to the end
-of the arm past the proximal breakpoint, and falls back to background beyond the
-distal one, leaving the rest of 2L where the other arms are. Differentiation
-carrying several megabases outside the breakpoints is what Corbett-Detig & Hartl
-report for the common _Drosophila_ inversions, so the width of the Fst block is
-not a reading of the arrangement's extent. The lane above it is, and it is drawn
-from published coordinates rather than from this scan.
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms. Top: the In(2L)t inversion extent. Bottom: Fst between In(2L)t and standard-arrangement lines, a tall block over the inverted region of chromosome 2 against low background on every other arm."/>
 
 Then search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
 alongside π. Both dip together over the swept window, where either statistic
-alone would be ambiguous. A duplication of `Cyp6g1` segregates in this panel
-alongside the resistance allele
+alone would be ambiguous. A duplication of `Cyp6g1` segregates alongside the
+resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
-number costs a window called sites, so the trough here is read against its own
-flanks rather than as a diversity figure.
+number costs a window called sites, which is the other reason to read this
+trough against its flanks.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). Both dip over the highlighted window against their background either side: the joint trough is the hard-sweep signature."/>
 
@@ -324,12 +313,16 @@ darker block beneath it, with the karyotype strip down the sidebar. `groupBy` is
 what keeps those two blocks contiguous. Without it the rows keep the VCF's
 column order, and the split only reads as two blocks by luck.
 
-<Figure src="/img/popgen/in2lt_per_sample.png" caption="Whole chr2L. Top: the In(2L)t extent. Middle: Fst between arrangements. Bottom: one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint, directly under the Fst plateau."/>
+<Figure src="/img/popgen/in2lt_per_sample.png" caption="Whole chr2L. Top: the In(2L)t extent. Middle: Fst between arrangements. Bottom: one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau above it runs past both."/>
 
 The genotypes here are the arrangement karyotypes themselves, so the lane is a
 direct record of which lines carry the inversion. That ordinary SNPs across the
 region co-segregate with it, which is why the arrangement behaves as one
-recombination-suppressed block, is what the Fst scan above quantifies.
+recombination-suppressed block, is what the Fst scan above quantifies. Reading
+the arrangement's extent off that scan would overshoot it in both directions,
+and by about the margin
+[Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056) report for
+the common _Drosophila_ inversions.
 
 ## Reproduce it end to end
 

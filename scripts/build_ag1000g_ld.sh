@@ -92,7 +92,6 @@ cd "$OUTDIR"
 fetch() { [ -f "$2" ] || curl -fsSL --retry 3 -o "$2" "$1"; }
 
 fetch "$AR1/samples/samples.meta.txt" samples.meta.txt
-fetch "$AR1/samples/samples.kdr.txt" samples.kdr.txt
 fetch "$AR1/haplotypes/main/shapeit/ag1000g.phase2.ar1.samples.$CHROM.gz" "samples.$CHROM.gz"
 echo "fetching phased haplotypes for $CHROM (~470 MB, one time)..."
 fetch "$AR1/haplotypes/main/shapeit/ag1000g.phase2.ar1.haplotypes.$CHROM.gz" "haplotypes.$CHROM.gz"

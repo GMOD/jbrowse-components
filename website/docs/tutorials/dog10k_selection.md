@@ -34,8 +34,11 @@ server, and on JBrowse Web the same files go in through **Add track** or a
 
 Body size is the trait, so the two groups are the breeds at its extremes: every
 animal of fourteen toy or small breeds against every animal of eleven giant
-breeds. Hudson Fst per window over the Dog10K phased imputation panel scores how
-far apart their allele frequencies sit, and
+breeds. Hudson Fst
+([Hudson et al. 1992](https://doi.org/10.1093/genetics/132.2.583)) per window
+over the Dog10K phased imputation panel scores how far apart their allele
+frequencies sit, summed as a ratio of averages rather than averaged over sites
+([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113)), and
 [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
 writes one BED line per window.
 
@@ -71,9 +74,18 @@ display lays the autosomes out side by side rather than one at a time.
 Each point is a window, so a peak names a region rather than a variant. A
 genome-wide scan has to bin wide enough to hold down twelve thousand windows'
 worth of noise, which is what makes the _IGF1_ peak a single bar up there. The
-lower half is the same panel and the same estimator rebinned to 20 kb over two
-megabases, where the peak turns out to have a shape. Rerunning the build script
-over one region is all that takes:
+peaks the figure labels are the check on the scan rather than its result: the
+tallest of them, on chr10, is _HMGA2_, which is one of the six variants
+[Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to about half
+the size variation across breeds.
+
+Each group is a set of closed populations rather than a sample of animals, so
+drift inside one large breed scores like differentiation across the contrast,
+and it is the breed count that bounds how much a peak can rest on.
+
+The lower half is the same panel and the same estimator rebinned to 20 kb over
+two megabases, where the peak turns out to have a shape. Rerunning the build
+script over one region is all that takes:
 
 ```bash
 WINDOW=20000 REGIONS=chr15:40600000-42600000 \
@@ -201,8 +213,10 @@ where one class is enriched rather than a solid slab.
 The lane between them says which columns are doing the work. It is the same
 Hudson Fst as the genome scan, between the same two panels, but computed one
 site at a time over this VCF rather than in 200 kb windows, so each point is one
-column of the matrix below. The differentiated sites are a run rather than a
-scatter, and the run is the block the clustering found.
+column of the matrix below. The scan reads the phased imputation panel and this
+lane reads the SNV callset, so the peak is recovered twice off different files
+rather than redrawn. The differentiated sites are a run rather than a scatter,
+and the run is the block the clustering found.
 
 Rows depart from their swatch in both directions: single orange rows sit within
 the giant cluster and single blue rows within the small one. The build script
@@ -260,6 +274,12 @@ read from the figure.
 
 ## References
 
+- Bhatia et al. (2013).
+  [Estimating and interpreting FST: the impact of rare variants](https://doi.org/10.1101/gr.154831.113)
+- Hudson et al. (1992).
+  [Estimation of levels of gene flow from DNA sequence data](https://doi.org/10.1093/genetics/132.2.583)
+- Rimbault et al. (2013).
+  [Derived variants at six genes explain nearly half of size reduction in dog breeds](https://doi.org/10.1101/gr.157339.113)
 - Sutter et al. (2007).
   [A single IGF1 allele is a major determinant of small size in dogs](https://doi.org/10.1126/science.1137045)
 - Meadows et al. (2023).
