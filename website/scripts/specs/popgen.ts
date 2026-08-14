@@ -532,34 +532,36 @@ export const popgenSpecs: ScreenshotSpec[] = [
     // own px, which is 80 css px of either capture -- paid for out of the two
     // Fst lanes above, so the whole figure comes out shorter than it was.
     gutter: 160,
-    // THE NARROW END IS chr2L'S PANEL IN THE TOP ROW, and getting there took two
-    // goes, the first of which is the instructive one.
+    // THE NARROW END IS chr2L'S PANEL IN THE TOP ROW, and it is SOLVED FOR
+    // rather than assumed, which is the part worth keeping even though the answer
+    // has since become almost the obvious one.
     //
-    // The genomic fraction alone is NOT the image fraction. chr2L is 23,513,712
-    // of the 133,880,608 bp the top row lays out (chr2L/2R/3L/3R/4/X, off
-    // api.genome.ucsc.edu's chromosome list), so its share of the DATA AREA is
-    // 0.17563 — and drawn as a share of the whole part it landed well inside the
-    // chr2L panel, because that row's Fst lane takes a ~160 px left gutter for
-    // its y axis. So the data area has to be solved for, and the row's five
-    // region dividers are five equations for it:
+    // The genomic fraction is not automatically the image fraction: chr2L is
+    // 23,513,712 of the 133,880,608 bp the top row lays out (chr2L/2R/3L/3R/4/X,
+    // off api.genome.ucsc.edu's chromosome list), which is 0.17563 of the DATA
+    // AREA, and the data area is whatever the app's own margins leave. The row's
+    // five region dividers are five equations for it, and the residuals are what
+    // make the pair publishable rather than eyeballed:
     //
     //   x = L + f * W, least squares over
     //   f = .17563 .36451 .57447 .81409 .82415  (cumulative arm shares)
-    //   x = 631    1137   1699   2341   2368    (divider columns, 3000 px wide)
-    //   -> L = 160.6, W = 2678.3, and every divider predicted to within 0.1 px
+    //   x = 535    1097   1722   2435   2465    (divider columns, 3000 px wide)
+    //   -> L = 12.3, W = 2976.0, every divider predicted to within 0.1 px
     //
-    // i.e. the data area is [0.05354, 0.94630] of the image, and chr2L's panel
-    // inside it is [0.0535, 0.2103]. Re-derive by dumping a row of the part PNG
-    // through the Fst band and taking the columns that are dark across it:
+    // Re-derive by dumping a row of the part PNG through the Fst band and taking
+    // the columns dark across it:
     //
-    //   convert static/img/popgen/fst_in2lt_2L.png -crop 3000x40+0+700 \
+    //   convert static/img/popgen/fst_in2lt_2L.png -crop 3000x40+0+600 \
     //     +repage -colorspace gray txt:- | ...
     //
-    // The fit is what makes this safe to publish rather than a hand-tuned pair:
-    // five landmarks agreeing to a tenth of a pixel is not something an eyeballed
-    // offset does, and a layout change that moved the gutter would miss all five
-    // at once — visibly, since the wedge's right edge sits on the chr2L/chr2R
-    // divider.
+    // AND IT HAS ALREADY MOVED ONCE, which is why the recipe is here. Solved
+    // against the previous app this came out L = 160.6, W = 2678.3 — a 160 px
+    // left gutter and a matching one on the right — because `displayedRegionNames`
+    // fitted through `showAllRegions`, whose 10% margin is framing for "show me
+    // everything" and dead frame for a named subset. `fitBpPerPx` fixed that and
+    // the data area now fills the frame, so a fraction that was 0.0535-0.2103 is
+    // 0.0041-0.1783. Nothing warns about it: the wedge just stops landing on the
+    // chr2L/chr2R divider, which is visible in the figure and in nothing else.
     //
     // The wide end is the whole of the bottom part, deliberately: the wedge says
     // "that slice of the row above opens into this panel", and the panel is the
@@ -572,7 +574,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
         type: 'trapezoid',
         fromAnchor: {
           selector: '[data-part="0"]',
-          fracX: [0.0535, 0.2103],
+          fracX: [0.0041, 0.1783],
         },
         anchor: { selector: '[data-part="1"]' },
       },
