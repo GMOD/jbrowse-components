@@ -522,6 +522,15 @@ test('navToLocations with multiple locations writes clean, in-bounds regions', a
       reversed: undefined,
     },
   ])
+
+  // Named regions fit the width exactly, edge to edge, the same as the
+  // single-location path. showAllRegions would land on maxBpPerPx instead,
+  // which is 1/SHOW_ALL_REGIONS_FILL larger and leaves the row centered with a
+  // 5% margin either side — invisible on its own and an 11% scale difference
+  // from a one-region row beside it in a stacked synteny view.
+  expect(model.bpPerPx).toBeCloseTo(model.totalBp / 800)
+  expect(model.bpPerPx).toBeLessThan(model.maxBpPerPx)
+  expect(model.offsetPx).toBe(0)
 })
 
 test('can instantiate a model that has multiple displayed regions', () => {

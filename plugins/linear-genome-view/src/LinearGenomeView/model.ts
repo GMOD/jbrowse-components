@@ -1472,6 +1472,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Fit the displayed regions to the width exactly, edge to edge.
+       *
+       * Not the same as `showAllRegions`, which goes to `maxBpPerPx` — the
+       * zoom-out LIMIT, where `SHOW_ALL_REGIONS_FILL` deliberately keeps a 10%
+       * margin so the whole genome doesn't sit flush against both edges. That
+       * margin is right for "show me everything" and wrong for a caller that
+       * named the regions it wants: it draws them at 1/0.9 of fit-to-width,
+       * centered, which is a silent 11% scale difference from the
+       * single-region path (`moveTo`, span/width) reached through the same
+       * location box.
+       *
+       * Clamps up to `minBpPerPx` so a handful of bases can't demand a scale
+       * past the base-level zoom; at that point the content is narrower than
+       * the view and the centering is what frames it.
+       */
+      fitAllRegions() {
+        self.bpPerPx = Math.max(
+          self.minBpPerPx,
+          self.width ? self.totalBp / self.width : self.maxBpPerPx,
+        )
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
+      },
+
+      /**
+       * #action
        * showAllRegions at a scale the caller supplies rather than this view's
        * own fit-to-width one, so several views can share one bp/px and their
        * genomes compare by drawn length. Deliberately assigns past maxBpPerPx
@@ -2422,7 +2449,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   },
             ),
           )
-          self.showAllRegions()
+          // Fit, not showAllRegions: the caller named these regions, the same
+          // way the single-location branch above named its one, and that branch
+          // fits exactly through moveTo. See fitAllRegions for what the
+          // difference costs a stacked view.
+          self.fitAllRegions()
         }
       },
 
