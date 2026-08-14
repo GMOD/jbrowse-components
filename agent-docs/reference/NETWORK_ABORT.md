@@ -50,6 +50,13 @@ the race between a stop notification and the call it means to cancel.
 — it releases the signal however the read settles. Wired through every adapter
 whose reader accepts a signal:
 
+**The signal `fetch` receives is not the one the caller passed.**
+`RemoteFileWithRangeCache.fetchRange` composes it with a response deadline
+(`RESPONSE_TIMEOUT_MS`, the thing that makes a stalled connection an error
+instead of a permanent spinner), so identity with the caller's signal is not an
+invariant on that path. Composing is the whole point: a deadline that *replaced*
+the signal would take cancellation back off the socket, undoing everything below.
+
 | Reader | Adapters |
 | --- | --- |
 | `@gmod/bam` | BAM |

@@ -325,38 +325,30 @@ recovering from — a server rate-limiting the page, a CORS header nobody notice
 was missing, a file half-uploaded — behind a delay, and the person who could
 have fixed it never learns it happened.
 
-That puts the whole weight on the message, which is where the work goes instead:
-see ["A CORS or mixed-content failure surfaces as `Failed to
-fetch`"](#a-cors-or-mixed-content-failure-surfaces-as-failed-to-fetch) and the
-next entry, which is about a failure that never produces a message at all.
+That puts the whole weight on the message, and that is where the work went
+instead. Both halves of it have landed in `RemoteFileWithRangeCache`:
+
+- **A network-level rejection is rewritten.** A CORS denial, a mixed-content
+  block, a DNS failure and an offline browser all reject `fetch` with the same
+  bare `TypeError`, and it now becomes the URL, the byte range, and the triage —
+  offline and mixed content where the page can tell them apart, otherwise the
+  two CORS headers to add. The other messages the class throws carry the same
+  treatment: the 416, the "server ignored the Range header" hint, 401/403 at the
+  credential, 404 at the index beside the data file, `stat`'s CORS error naming
+  `Access-Control-Expose-Headers: Content-Range`.
+- **A stalled connection becomes an error at all.** It used to produce none
+  ever, and every readiness signal downstream was *correct* to keep waiting,
+  because a fetch really was in flight — so the user got a spinner that never
+  resolved and no Retry to press, since the chrome raises one from an error and
+  there was none. `RESPONSE_TIMEOUT_MS` bounds the wait for a **response**, not
+  for the bytes: it is cleared when the headers arrive, so a 6.5 MiB coalesced
+  read over a slow link is never cut off mid-download. It sits on the shared
+  request inside the chunk de-duplication and composes with the caller's signal
+  rather than replacing it, or cancellation would stop reaching the socket.
 
 **Retire when** never. Document, don't fix — and if it comes up again, the
 question to ask first is whether the error the user saw told them what to do,
 because that is the thing retry was standing in for.
-
-### A stalled request never becomes an error, so there is nothing to retry
-
-**Status:** Open.
-
-There is no timeout anywhere: no `AbortSignal.timeout` in core, and none of the
-eight `fetch(` call sites passes a deadline of its own. A connection that
-**stalls** rather than failing therefore produces no error ever — and every
-readiness signal downstream is *correct* to keep waiting, because a fetch really
-is in flight. The user gets a spinner that never resolves, no message, and no
-Retry button to press, since the chrome raises one from an error and there is
-none.
-
-That is what makes this the other half of the entry above rather than a
-consolation prize for it. Retry was declined in favour of surfacing an error the
-user acts on; this is the case where no error is ever surfaced, so there is
-nothing for them to act on.
-
-**Retire when** a per-request timeout exists and says what happened ("no
-response from `<url>` after Ns"), generous enough that a large file over a slow
-link is never cut off mid-download. It belongs **inside** `getCached`'s
-in-flight de-duplication, so one stalled reader does not strand the readers
-coalesced onto it, and it must compose with — never replace — the caller's own
-abort signal, or cancellation stops reaching the socket.
 
 ### Per-JS-context scoping multiplies by the RPC pool
 
@@ -629,26 +621,6 @@ than on any individual missing name.
 **Retire when** an empty intersection records a diagnostic the track chrome
 shows, naming the first few names from each side. The partial case belongs in
 `RefNameInfoDialog`, which already exists and which nobody opens unprompted.
-
-### A CORS or mixed-content failure surfaces as `Failed to fetch`
-
-**Status:** Open.
-
-`fetchRange` wraps status failures with the URL, the byte range and a hint when a
-server ignored `Range`, and the size probe names CORS when `Content-Range` is
-unobservable. A **network-level** rejection is not wrapped at all, so the most
-common deployment error the project sees reaches the user as
-`TypeError: Failed to fetch` — without even the URL that failed.
-
-**Retire when** `fetchRange` catches the `TypeError` and rethrows with the URL
-and the triage: CORS (`Access-Control-Allow-Origin`, plus
-`Access-Control-Expose-Headers: Content-Range`), mixed content, or offline.
-
-This entry carries more weight than it looks like it does, because automatic
-retry was declined in favour of it — see ["A failed fetch is not retried
-automatically"](#a-failed-fetch-is-not-retried-automatically-and-will-not-be).
-The user is the retry mechanism, so the message is the only thing that tells
-them whether pressing the button can possibly help.
 
 ---
 

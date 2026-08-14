@@ -356,10 +356,12 @@ option is inert.
 Low stakes on its own; it earns a line because it sits next to a carefully
 argued comment about deliberately *not* passing a stop token, which makes the
 surrounding code read as though a bound exists. Deleting it is the honest
-one-line version. Implementing it is the better one, and belongs with the
-per-request timeout in ARCHITECTURAL_LIMITS.md §"The fetch layer has no retry
-and no request timeout" — same question, two layers, and a timeout at only one
-of them is the confusing outcome.
+one-line version. Implementing it is the better one, and is now the sharper of
+the two: `RemoteFileWithRangeCache` has a per-request deadline
+(`RESPONSE_TIMEOUT_MS`) and the RPC layer has none, so the same question is
+answered two ways at two layers. Copy the shape rather than inventing one — it
+bounds the wait for a *response*, not the transfer, and composes with the
+caller's signal instead of replacing it.
 
 ## Ready to build: the design is settled
 
