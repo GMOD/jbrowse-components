@@ -54,54 +54,55 @@
 //
 // ---------------------------------------------------------------------------
 // WHAT IT SAYS. Three samples, --rounds=25 --hovers=200, ms per 200 hovers,
-// control in brackets, 2026-08-14.
+// control in brackets. Taken 2026-08-14 ON AC, adapter verified online, 16 cores
+// under a load average of ~4-5 from other work on the box:
 //
-// **PROVISIONAL: taken ON BATTERY.** BENCHMARKING.md names coming off AC as a
-// harness trap by name, and this run shows it — longread-400k's control lands at
-// 0.60/1.83/1.44 where the same fixture used to hold ~0.94. The two fixtures whose
-// controls DID hold (0.98-1.03) are the ones quoted below and the sorted-vs-index
-// result is consistent across all three of their samples, so the conclusion is
-// safe; the absolute milliseconds are not. Re-run on AC before quoting a figure
-// from here in a commit message or a doc.
+//   longread-400k   scan 1283.8  index 0.21  sorted 0.17  [0.99]  build  4.26  sort  7.38
+//                   scan 1312.1  index 0.21  sorted 0.17  [1.01]  build  4.36  sort  7.48
+//                   scan  632.2  index 0.22  sorted 0.17  [0.49]  build  4.15  sort  7.34
+//   shortread-40k   scan   60.1  index 0.08  sorted 0.08  [1.00]  build  0.61  sort  0.71
+//                   scan   60.2  index 0.09  sorted 0.08  [1.00]  build  0.63  sort  0.75
+//                   scan   67.5  index 0.11  sorted 0.09  [0.99]  build  0.71  sort  0.83
+//   deep-1m         scan 1472.2  index 0.30  sorted 0.22  [1.01]  build 10.01  sort 14.66
+//                   scan 1571.6  index 0.30  sorted 0.23  [1.00]  build 10.74  sort 16.01
+//                   scan 1593.2  index 0.34  sorted 0.23  [0.98]  build 11.79  sort 16.04
 //
-//   longread-400k   scan  873.2  index 0.21  sorted 0.17  [0.60]  build 4.4  sort 8.0
-//                   scan 1732.9  index 0.25  sorted 0.18  [1.83]  build 4.9  sort 8.3
-//                   scan 1480.5  index 0.22  sorted 0.16  [1.44]  build 4.2  sort 7.8
-//   shortread-40k   scan   70.6  index 0.09  sorted 0.08  [0.99]  build 0.7  sort 0.9
-//                   scan   73.8  index 0.10  sorted 0.08  [0.99]  build 0.7  sort 0.9
-//                   scan  110.7  index 0.13  sorted 0.12  [0.98]  build 1.0  sort 1.2
-//   deep-1m         scan 1699.0  index 0.33  sorted 0.24  [1.01]  build 11.0 sort 17.0
-//                   scan 1776.3  index 0.33  sorted 0.24  [1.03]  build 11.1 sort 17.6
-//                   scan 1667.1  index 0.33  sorted 0.22  [1.00]  build  9.9 sort 15.2
+// EIGHT OF NINE ROWS hold their control at 0.98-1.01. The exception is
+// longread-400k's third sample at 0.49, where the scan arm got an uncontended run
+// (632ms against a 1303ms control) — that row measured nothing and is kept so a
+// reader does not wonder why its scan column is half the other two.
 //
-// **Read the deep-1m and shortread rows; longread-400k's control does not hold on
-// this box** (0.60, 1.83, 1.44 across the three) and its scan arm swings 873-1733ms
-// to match. That instability is not new — the previous version of this header
-// recorded a 2.30 control on the same fixture. The other two fixtures hold their
-// controls at 0.98-1.03 and are what the conclusions rest on.
+// **The power state is the reason this block was re-measured.** An earlier run of
+// the same three samples on BATTERY put longread-400k's control at 0.60/1.83/1.44
+// and its scan arm anywhere between 873 and 1733ms. On AC the same fixture holds
+// twice out of three. BENCHMARKING.md names coming off AC as a trap; this is the
+// worked instance, and the lesson is that it corrupted the arm ORDERING (whichever
+// ran as the clock ramped) rather than adding symmetric noise — which is exactly
+// why a control catches it and a standard deviation would not.
 //
-// SORTED BEATS THE INDEX, which is the result worth stating plainly because the
-// motivation for the change was architectural rather than performance: on deep-1m
-// it is 0.24 vs 0.33 across all three samples (~1.4x), on shortread 0.08 vs 0.09
-// (~1.1x). Both are the same log-time answer; the difference is the `order[k]`
-// indirection the index needs to reach the parallel arrays and the sorted form
-// does not. So removing the memo cost nothing and returned something.
+// SORTED BEATS THE INDEX, which is worth stating plainly because the motivation
+// for the change was architectural rather than performance: 0.22-0.23 vs 0.30-0.34
+// on deep-1m (1.30-1.48x), 0.17 vs 0.21 on longread (1.24x), and a wash to 1.22x
+// on shortread where both are near the timer's resolution. Both are the same
+// log-time answer; the difference is the `order[k]` indirection the index needs to
+// reach the parallel arrays and the sorted form does not. So removing the memo
+// cost nothing and returned something.
 //
 // The hover columns are stable to two significant figures across every sample
 // while the scan column swings, which is what a log-time answer looks like: it
 // does not care how big the array is, so the ratios vary only because the
 // BASELINE does.
 //
-// Per single mousemove on the deep fixture that is 8.5ms -> 0.0012ms, in ONE block
+// Per single mousemove on the deep fixture that is 7.4ms -> 0.0011ms, in ONE block
 // of ONE track; a six-track view pays it six times.
 //
-// THE ONE-OFF MOVED AND GREW, and both halves matter. `worker-sort` is 1.5-1.8x
-// `index-build` (17.0 vs 11.0ms on deep-1m) because it permutes five parallel
-// arrays where the index only built two. But `index-build` ran on the MAIN
-// THREAD, on the first mousemove after every fetch, and `worker-sort` runs in the
-// worker beside work already O(n) — so the interaction path lost an 11ms stall and
-// gained nothing. Against the scan it replaces (1699ms over 200 hovers) either is
-// paid back within two pointer motions.
+// THE ONE-OFF MOVED AND GREW, and both halves matter. `worker-sort` is 1.2-1.7x
+// `index-build` (14.7 vs 10.0ms on deep-1m, 7.4 vs 4.3 on longread) because it
+// permutes five parallel arrays where the index only built two. But `index-build`
+// ran on the MAIN THREAD, on the first mousemove after every fetch, and
+// `worker-sort` runs in the worker beside work already O(n) — so the interaction
+// path lost a 10ms stall and gained nothing. Against the scan it replaces (1472ms
+// over 200 hovers) either is paid back within two pointer motions.
 //
 // The ratios here are far larger than "one scan replaced by one binary search"
 // suggests because a hover fires BOTH readers, and the baseline's

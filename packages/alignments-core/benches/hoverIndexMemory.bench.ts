@@ -22,40 +22,60 @@
 // and gc on both sides of every measurement.
 //
 // ---------------------------------------------------------------------------
-// WHAT IT SAYS. 40 arrays, 2026-08-14:
+// WHAT IT SAYS. Array count scaled per fixture (see `arraysFor`), 2026-08-14, on
+// AC — though unlike the timing bench beside it these numbers are allocation
+// counts across a gc barrier and came back byte-identical on battery, so the power
+// state is recorded rather than load-bearing:
 //
-//   longread-400k   index 3.05 MB/array  8.00 B/entry  2.00x source  0.57x parallel
-//   shortread-40k   index 0.19 MB/array  5.00 B/entry  1.25x source  0.36x parallel
-//   deep-1m         index 7.62 MB/array  7.99 B/entry  2.00x source  0.57x parallel
+//   longread-400k    42 arrays   index 3.05 MB/array  8.00 B/entry  2.00x src  0.57x parallel
+//   shortread-40k   420 arrays   index 0.29 MB/array  7.71 B/entry  1.93x src  0.55x parallel
+//   deep-1m          17 arrays   index 7.60 MB/array  7.97 B/entry  1.99x src  0.57x parallel
 //
 // Theory is 8 B/entry exactly — `order` and `sorted` are both `Uint32Array(n)` —
-// and the two large fixtures land on it. **The 40k row is below this method's
-// floor**, not a real 5 B/entry: at 320 KB expected per array the deltas are
-// comparable to what the previous measurement left collectable. Read the two
-// large rows; size the fixture up rather than trusting a small one.
+// and all three fixtures now land within 4% of it. They did not before: at a flat
+// 40 arrays `shortread-40k` read **5.00 B/entry**, which is this method's floor
+// rather than a result, and is what `arraysFor` exists to keep out of the table.
 //
 // So the index is 2x the positions array it indexes and 0.57x the whole parallel
 // mismatch set it makes usable (14 B/entry — positions u32, Ys u16, bases u8,
 // strands i8, readIndices u32, frequencies u8, quals u8). `positionIndex.ts`
-// claims "a fraction of what it makes usable" and that is right, but only
-// against the full set: against `mismatchPositions` alone it DOUBLES it.
+// claims "a fraction of what it makes usable" and that is right, but only against
+// the full set: against `mismatchPositions` alone it DOUBLES it.
 //
 // The number that matters for a decision is neither ratio, it is the absolute:
 // 7.6 MB per 1M-entry array, retained per region, per stacked track, invisibly.
-// Read it against hoverIndex.bench.ts's 3099x/5988x on long reads before
-// concluding either way.
+//
+// **What this bench now measures is the interbase memo only.** The mismatch
+// readers stopped using the index — their producers sort, so there is nothing to
+// retain — and that is the answer this measurement argued for. It is kept pointed
+// at `positionIndexFor` because one caller remains (`interbasePositions`, whose
+// type-grouping contract blocks the same fix; TODO.md has it), and because the
+// per-entry cost is the figure that decides whether shipping an order array for it
+// is worth 4 bytes an entry.
 //
 // The `index JS heap (objects)` line is what a per-stride COLLECTION beside the
 // index would cost, and is why the stride is carried on the index instead: ~24
 // bytes/array either way, i.e. under the noise, so the version that allocates
-// nothing extra wins by default rather than by measurement.
+// nothing extra wins by default rather than by measurement. Negative values on
+// that line are gc artifacts, not savings.
 
 import { positionIndexFor } from '../src/positionIndex.ts'
 
-const ARRAYS = Number(
-  process.argv.find(a => a.startsWith('--arrays='))?.slice(9) ?? 40,
-)
+const ARRAYS_OVERRIDE = process.argv.find(a => a.startsWith('--arrays='))
+  ? Number(process.argv.find(a => a.startsWith('--arrays='))!.slice(9))
+  : undefined
 const ONLY = process.argv.find(a => a.startsWith('--only='))?.slice(7)
+
+// Array count is SCALED PER FIXTURE, to a fixed total index budget, because a
+// fixed count puts small fixtures under the measurement floor. `shortread-40k`
+// at 40 arrays is only 12 MB of index and read **5.00 B/entry**; at 400 arrays
+// the same fixture reads 8.00, which is theory. The deltas here are page-granular
+// and compete with whatever the previous fixture left collectable, so the fix is
+// to make every fixture allocate a comparable total rather than to quote a low
+// row. `--arrays=<n>` overrides for a one-off.
+const TARGET_INDEX_BYTES = 128 * 1024 * 1024
+const arraysFor = (entries: number) =>
+  ARRAYS_OVERRIDE ?? Math.max(8, Math.ceil(TARGET_INDEX_BYTES / (entries * 8)))
 
 // Same fixtures as hoverIndex.bench.ts, so the memory numbers can be read
 // against that file's timing numbers for the same shapes.
@@ -90,6 +110,7 @@ for (const fx of FIXTURES) {
   if (ONLY && !fx.name.includes(ONLY)) {
     continue
   }
+  const ARRAYS = arraysFor(fx.mismatches)
   const coverageStartPos = 1_000_000
   // Positions in READ order (shuffled), over a window the width of a block —
   // the shape the worker actually ships.
