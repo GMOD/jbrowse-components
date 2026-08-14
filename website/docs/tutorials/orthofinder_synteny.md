@@ -190,6 +190,16 @@ duplicated is named on every one of them. The track draws a gene pair once,
 however many rows name it, which keeps the extra ribbons on the band the
 duplication is about.
 
+At one locus the default's two ribbons are countable. Sorghum sits over rice
+here as the control, since it shares the grasses' ancestry without maize's
+duplication, and the maize row carries both of the regions the duplication left.
+
+<Figure caption="One rice locus between sorghum and maize, off the same grasses_orthogroups track, with each genome's gene track under its row. Sorghum answers a rice gene with one ortholog and maize with two, one into each of the two maize regions, and the genes that kept only one maize copy sit among them." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
+
+The genes with a single maize ribbon lost a copy after the duplication, and the
+rice genes with none are the third case the conversion has to have an answer
+for.
+
 ### Making the ids resolve
 
 The table is coordinate-free. The BEDs are what place each gene, and column 4

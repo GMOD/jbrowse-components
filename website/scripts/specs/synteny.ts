@@ -1560,6 +1560,123 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
+  // orthofinder_synteny.md: the --pick expand decision at gene resolution,
+  // which the whole-genome grasses figure above can only show as density.
+  // Sorghum on top is the control - it did not have maize's whole-genome
+  // duplication - so the top band is one ribbon per gene and the bottom is two.
+  //
+  // The window was picked by measurement, over the demo's own rice.blocks.gz,
+  // maize.bed.gz and sorghum.bed.gz. Of the 24 rice genes in rice 3:31.60-31.76
+  // Mb, 12 have exactly two maize orthologs and every one of those pairs lands
+  // one copy on maize 1 and the other on maize 5; 4 have a single maize
+  // ortholog (three of them keeping the chr1 copy, one the chr5 copy, which is
+  // fractionation); 8 have none. Sorghum answers x1 for all of them but two.
+  // The 8 zero-ortholog genes leave gaps in the fan and are kept: trimming the
+  // window until it was solid would be picking the frame to flatter the result.
+  //
+  // Maize spans two regions because that is the finding, and they are drawn at
+  // their own lengths (908 kb on chr1, 481 kb on chr5) against rice's 160 kb -
+  // maize's genome is ~6x rice's and its syntenic blocks are correspondingly
+  // stretched. No sameScale, so each row fits the pane and the gene glyphs stay
+  // readable.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/grasses_maize_wgd',
+    viewportHeight: 1000,
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_grasses/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              {
+                // [rev], and so is maize 5 below. Measured over the demo's own
+                // files against rice's ascent, the blocks correlate -0.995
+                // (sorghum), +0.982 (maize 1) and -0.945 (maize 5): all three
+                // are near-perfectly collinear and two of them run backwards.
+                // Unflipped, each inverted one draws as an hourglass through a
+                // single crossing point, and two hourglasses read as chaos
+                // rather than as one ribbon against two. The orientations are
+                // incidental to a figure about COUNT, they stay visible in the
+                // rulers, which count down on a reversed region - unlike the
+                // wheat 4A figures, where the order along the chromosome IS the
+                // finding and nothing is flipped.
+                assembly: 'sorghum',
+                loc: '1:5,920,000-6,125,000[rev]',
+                tracks: [
+                  {
+                    trackId: 'sorghum_genes',
+                    type: 'LinearBasicDisplay',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                    showLabels: 'none',
+                    height: 40,
+                  },
+                ],
+              },
+              {
+                assembly: 'rice',
+                loc: '3:31,595,000-31,765,000',
+                tracks: [
+                  {
+                    trackId: 'rice_genes',
+                    type: 'LinearBasicDisplay',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                    showLabels: 'none',
+                    height: 40,
+                  },
+                ],
+              },
+              {
+                // the two copies, side by side on one row, chr5 reversed for
+                // the reason given on the sorghum row
+                assembly: 'maize',
+                loc: '1:286,650,000-287,680,000 5:6,250,000-6,810,000[rev]',
+                tracks: [
+                  {
+                    trackId: 'maize_genes',
+                    type: 'LinearBasicDisplay',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                    showLabels: 'none',
+                    height: 40,
+                  },
+                ],
+              },
+            ],
+            tracks: [['grasses_orthogroups'], ['grasses_orthogroups']],
+            // by the row BELOW each band (colorBy 'query' paints views[level],
+            // 'target' views[level+1]). That is what splits the bottom band into
+            // two colors, one per maize chromosome, while the top band stays one
+            // - the single-vs-double reading, in color as well as in count.
+            // 'reference', which the three whole-genome figures use, degenerates
+            // here: every row is one or two chromosomes.
+            colorBy: 'target',
+            // straight chords, for the reason the whole-genome grasses figure
+            // gives: a curve leaves its row vertically and only bends toward its
+            // partner mid-band, so where two fans overlap they braid instead of
+            // pointing anywhere. Rendered both. That costs nothing on the top
+            // band, which is parallel either way, and is what makes the bottom
+            // one readable as two fans rather than one tangle.
+            drawCurves: false,
+            // full strength. This is ~50 ribbons rather than the ~30k of the
+            // whole-genome figure, so nothing accumulates and a hairline at 0.15
+            // would be invisible.
+            alpha: 1,
+            levelHeights: [220, 300],
+          },
+        ],
+      },
+    ),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+  },
+
   // orthofinder_synteny.md: wheat's own polyploidy/domestication history, not
   // an abstract duplication. Stack order is the evolutionary chain: Aegilops
   // tauschii (diploid D-genome donor) - bread wheat (hexaploid ABD) - durum
