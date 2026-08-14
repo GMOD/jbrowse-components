@@ -28,8 +28,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 148 unchecked in source, 179 in tests,
-# of 893 total config accessor calls. The gate counts source only.
+# 149 unchecked in source, 181 in tests,
+# of 904 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/Assemblies/AssembliesMixin.ts  (1)
   166	readConfObject('name')
@@ -131,11 +131,12 @@ packages/core/src/pluggableElementTypes/models/adapterSlotAlwaysMaterializes.tes
 packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx  (2)
   129	getConf('adapter')
   155	getConf('rpcDriverName')
-packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (4)
-  138	getConf('name')
-  144	getConf('textSearchAdapter')
-  162	getConf('adapter')
-  310	getConf('rpcDriverName')
+packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (5)
+  139	getConf('name')
+  145	getConf('textSearchAdapter')
+  163	getConf('adapter')
+  216	getConf('assemblyNames')
+  355	getConf('rpcDriverName')
 packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.test.ts  (9)  [test]
   67	readConfObject('type')
   80	readConfObject('color')
@@ -203,17 +204,17 @@ packages/wiggle-core/src/ScoreScaleMixin.ts  (7)
 plugins/alignments/src/consensus/index.ts  (1)
   42	getConf('name')
 plugins/alignments/src/LinearAlignmentsDisplay/growHeight.test.ts  (4)  [test]
-  203	readConfObject('height')
-  207	readConfObject('height')
-  226	readConfObject('height')
-  233	readConfObject('height')
+  104	readConfObject('height')
+  108	readConfObject('height')
+  127	readConfObject('height')
+  134	readConfObject('height')
 plugins/alignments/src/LinearAlignmentsDisplay/model.ts  (6)
-  820	resolveConf('colorBy')
-  827	getConf('filterBy')
-  1020	getConf('sortedBy')
-  1049	getConf('groupBy')
-  2373	getConf('name')
-  2382	getConf('showOutline')
+  857	resolveConf('colorBy')
+  864	getConf('filterBy')
+  1068	getConf('sortedBy')
+  1099	getConf('groupBy')
+  2553	getConf('name')
+  2562	getConf('showOutline')
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (2)
   45	getConf('adapter')
   47	getConf('assemblyNames')
@@ -224,7 +225,7 @@ plugins/breakpoint-split-view/src/BreakpointSplitView/components/importFormUtils
 plugins/breakpoint-split-view/src/BreakpointSplitView/components/importFormUtils.ts  (1)
   28	readConfObject('assemblyNames')
 plugins/canvas/src/LinearBasicDisplay/baseModel.ts  (1)
-  696	readConfObject('assemblyNames')
+  701	readConfObject('assemblyNames')
 plugins/canvas/src/LinearBasicDisplay/CollapseIntronsDialog/util.ts  (1)
   122	readConfObject('trackId')
 plugins/canvas/src/LinearBasicDisplay/fitToDisplayHeight.test.ts  (5)  [test]
@@ -305,6 +306,9 @@ plugins/gwas/src/LinearManhattanDisplay/configSurface.test.ts  (1)  [test]
   32	getConf('minimalTicks')
 plugins/gwas/src/LinearManhattanDisplay/showLdLegend.test.ts  (1)  [test]
   39	getConf('showLdLegend')
+plugins/gwas/src/LinearManhattanDisplay/significanceLine.test.ts  (2)  [test]
+  53	getConf('significanceLine')
+  60	getConf('significanceLine')
 plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/JBrowse1TextSearchAdapter.ts  (1)
   38	readConfObject('namesIndexLocation')
 plugins/linear-comparative-view/src/LaunchSyntenyView/anchorPanelTracks.ts  (1)
@@ -321,12 +325,12 @@ plugins/linear-comparative-view/src/LGVSyntenyDisplay/contextMenuItems.ts  (2)
 plugins/linear-comparative-view/src/LinearDerivativeVsRef/LinearDerivativeVsRef.tsx  (3)
   265	getConf('assemblyNames')
   307	getConf('assemblyNames')
-  319	getConf('sequence')
+  318	getConf('sequence')
 plugins/linear-comparative-view/src/LinearReadVsRef/launchLinearReadVsRef.ts  (2)
-  23	getConf('assemblyNames')
-  31	getConf('sequence')
+  18	getConf('assemblyNames')
+  26	getConf('sequence')
 plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts  (1)
-  302	getConf('adapter')
+  315	getConf('adapter')
 plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (1)  [test]
   70	readConfObject('trackId')
 plugins/linear-comparative-view/src/LinearSyntenyView/util/syntenyTracks.ts  (1)
@@ -401,7 +405,7 @@ products/jbrowse-web/src/rootModel/rootModel.test.ts  (3)  [test]
   148	readConfObject('name')
   255	readConfObject('name')
 products/jbrowse-web/src/rootModel/rootModel.ts  (1)
-  478	readConfObject('preConfiguredSessions')
+  468	readConfObject('preConfiguredSessions')
 products/jbrowse-web/src/tests/assemblyConfigShorthand.test.ts  (2)  [test]
   36	readConfObject('type')
   37	readConfObject('trackId')
