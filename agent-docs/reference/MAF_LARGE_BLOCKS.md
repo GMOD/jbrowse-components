@@ -50,30 +50,43 @@ strings, encodes it to `Uint8Array`s, and ships it to the main thread.
 
 Zooming in does not help. The cost is quantized by block, not by view.
 
-## The byte gate actively lies here
+## The byte gate used to lie here, and no longer does
 
 This is the part worth internalizing, and it is not MAF-specific.
 
-`RegionTooLargeMixin` caches **one** measurement plus the span it covered, then
-rescales linearly — `bytes * visibleBp / measuredSpanBp`
-(`regionTooLargeUtils.ts:109`). That assumes bytes are proportional to span.
-With block-quantized formats they are not: zooming 100x into a megabase block
-divides the *estimate* by 100 while the real cost is unchanged.
+The gate used to keep **one** measurement plus the span it covered and rescale it
+linearly (`bytes * visibleBp / measuredSpanBp`), which assumes bytes are
+proportional to span. Block-quantized formats are exactly where that breaks:
+zooming 100x into a megabase block divided the *estimate* by 100 while the real
+cost was unchanged. On top of that the byte axis stopped at a 20kb span floor
+whose premise — "a small span is a small fetch" — a long block violates by
+construction. Net: the gate reported "tiny" precisely when the fetch was
+catastrophic, and it wasn't consulted anyway.
 
-On top of that, `gateActive` (`RegionTooLargeMixin.ts`) required
-`aboveForceLoadFloor` — `visibleBp >= AUTO_FORCE_LOAD_BP` (20kb,
-`regionTooLargeUtils.ts:9`). The floor's premise is "a small span is a small
-fetch," which is exactly what a long block violates.
+**Both halves are fixed, and the fix was general rather than MAF-specific.** The
+rate model is retired: the estimate is a measurement taken at the viewport being
+judged, the fetch autoruns skip on `regionTooLarge && !gateMeasurementStale`, and
+a blocked display takes one real measurement per settled viewport. The floor left
+the byte axis in the same pass, replaced below 20kb by a raised budget rather
+than an off-switch, so the gate is now on duty at every zoom. The measurements
+and the two obvious fixes that were wrong are in
+[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) §"Measurement follows the viewport"
+and §"The sub-floor budget tier"; the closed story is in
+[HISTORICAL.md](HISTORICAL.md) §"The byte estimate was a rate".
 
-Net: the gate reported "tiny" precisely when the fetch was catastrophic, and it
-wasn't consulted anyway.
+**Block-quantized files are now the case the gate handles best**, which is worth
+saying because this doc spent its first version arguing the opposite. A megabase
+block's estimate is both correct and *flat across zoom*, and flatness is exactly
+what `ByteEstimate.zoomIneffective` detects from two consecutive measurements —
+so the banner stops advising "zoom in to see features", which on such a file is
+advice that cannot work, and offers only force-load. Nothing here had to know
+about MAF.
 
-**The second half of that is fixed** — `LinearMafDisplay` sets
-`gateBelowForceLoadFloor`, so the gate is now on duty at every zoom (option 3
-below). The first half is not: the number it compares down there is still a
-linear rescale, so on a block-quantized file it can still be an under-report.
-The fix helps the common case regardless, because for a deep alignment the
-rescale is roughly right and the estimate is genuinely large.
+What stays MAF-specific: the ce11 26-way never gates at all — 92,757 bytes
+against `LinearMafDisplay`'s 5 Mb (10 Mb below the force-load floor) is ~54x of
+headroom at every zoom — so the gate is not what stands between that file and a
+megabase block. Only a file whose blocks are genuinely large reaches the premise
+this doc opens with.
 
 ## Rejected: clip blocks to the visible region
 
@@ -139,53 +152,32 @@ reference-coordinate space across features, so it is already block-count
 agnostic.
 
 The systemic payoff is larger than the cost reduction: once blocks are bounded,
-bytes really are proportional to span, **so the gate's linear model becomes
-correct**. Splitting restores the assumption the whole gating system is built on.
+**zooming in gets cheaper again**, at every layer and not only at the gate. That
+was written here as "the gate's linear model becomes correct", which no longer
+names anything — the gate measures rather than models. The real payoff outlasted
+its original argument: on a bounded-block file a smaller window is a smaller
+read, so the banner's "zoom in to see features" is advice that works, where on a
+megabase-block file the same bytes come down however far the user goes.
 
 ### 3. Make the gate honest, for files that already exist
 
-Two contained changes, both worth doing on their own merits since the rescaling
-bug applies to any format with unbounded feature size:
+~~Two contained changes.~~ **Done, and not by anything MAF-specific** — see
+§"The byte gate used to lie here" above. Both halves were fixed in the gate
+itself: the rescale is retired in favour of a measurement at the viewport being
+judged, and the span floor left the byte axis. Neither needed the display-side
+opt-out this section proposed, and the two that briefly existed
+(`gateBelowForceLoadFloor`, on MAF and alignments) are gone with it — there is
+nothing left to opt out of.
 
-- **Opt out of rescaling.** **Still unbuilt, and the sketch that used to sit here
-  — "invalidate the cached `byteEstimate` on view change so the pre-flight
-  re-runs" — does not work.** See the next section before building anything.
-- ~~**Let the gate fire below `AUTO_FORCE_LOAD_BP`** when the estimate is over
-  budget.~~ **Done** — `gateBelowForceLoadFloor` on `RegionTooLargeMixin`, an
-  opt-in defaulting false that removes the floor term from `gateActive` and
-  nothing else; `LinearMafDisplay` sets it. Note this landed for the **row-count**
-  reason rather than the block-size one (see "Fetch dominates at 470-way" below):
-  a 470-way is several MB inside a gene-sized window whatever its block size, and
-  that is the common case. It does not fix the rescaling half above — the gate is
-  now on duty below the floor, but the number it compares is still a rescale of a
-  measurement taken at another zoom, so a megabase-block tabix MAF can still be
-  under-reported down there.
+Worth keeping from the original sketch, because it is the half the gate does not
+cover: the adapter has no cheap safety valve. The gate refuses a *region* on an
+index estimate; it says nothing about a **single line** whose payload is
+enormous, which is the failure this doc opens with. If one line's payload exceeds
+a budget, failing with a message that names the block and points at the splitter
+would beat OOMing. Still unbuilt, and still gated on confirming the premise.
 
-Must be an **opt-in**, not a change to the shared verdict — canvas and LD compose
-`RegionTooLargeMixin` too. (`LinearAlignmentsDisplay` has since taken the same
-opt-in for the depth version of the same premise break; see
-REGION_TOO_LARGE.md § `gateBelowForceLoadFloor`.)
-
-Result: zooming into a megabase block shows "Requested too much data (47 Mb)"
-and the user chooses, instead of a 30-second freeze. Pair it with a cheap safety
-valve in the adapter: if a single line's payload exceeds a budget, fail with a
-message naming the block and pointing at the splitter rather than OOMing.
-
-### The rescale is gone
-
-The rate model this section was written against is retired. The byte estimate is
-a step function whose steps are a property of the file, the fetch autoruns now
-skip on `regionTooLarge && !gateMeasurementStale`, and a blocked display runs one
-real measurement per settled viewport. The measurements, the two obvious fixes
-that were wrong, and the costed-and-declined curve are in
-[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) § "Measurement follows the viewport";
-the closed story is in [HISTORICAL.md](HISTORICAL.md) § "The byte estimate was a
-rate".
-
-What stays MAF-specific: the ce11 26-way never gates at all — 92,757 bytes
-against a 1 Mb cap is two orders of magnitude of headroom at every zoom — so the
-gate is not what stands between that file and a megabase block. Only a file whose
-blocks are genuinely large reaches the premise this doc opens with.
+Result today: zooming into a megabase block shows "Requested too much data
+(47 Mb)" and the user chooses, instead of a 30-second freeze.
 
 ## Recommendation
 
@@ -263,10 +255,14 @@ tables further down are the reason.
 
 | | before | after run-length fill |
 | --- | --- | --- |
-| 470-way at the byte gate's 20kb ceiling, 30% row density | 94ms | 72ms |
+| 470-way at 20kb, 30% row density | 94ms | 72ms |
 | same, adversarial per-pixel noise | 93ms | 88ms |
-| 30-way at the 20kb ceiling | 34ms | 29ms |
+| 30-way at 20kb | 34ms | 29ms |
 | 470-way force-loaded to 150kb | 387ms | 335ms |
+
+20kb was "the byte gate's ceiling" when these were taken, because the gate
+stopped at that span. It no longer does; the window is still the right one to
+compare against, since a 470-way at 20kb is over budget either way.
 
 The fill loop emitted a 1px rect **per pixel per row** and assigned `fillStyle`
 on each — 211k rects and 211k CSS-color assignments a frame at 470 rows. It is
