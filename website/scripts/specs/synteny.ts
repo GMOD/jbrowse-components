@@ -1593,25 +1593,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // Maize spans two regions because that is the finding. Each row is framed to
   // its own copy of the block plus ~4%, and the copies are not the same length:
   // 170 kb of rice, 178 kb of sorghum, 950 kb on maize 1 and 489 kb on maize 5.
-  // So the maize row is drawn at ~9x rice's bp/px and every ribbon in the lower
-  // band is a wedge, wide at the rice end and narrow at the maize end. Most of
-  // that ratio is the block lengths, not a framing artifact - maize's genome is
-  // ~5x rice's and its syntenic blocks are stretched to match, and each row's
-  // span is stated in the header above it. Both ways out are worse, and both
+  // So the maize row is drawn at ~8x rice's bp/px and every ribbon in the lower
+  // band is a wedge, wide at the rice end and narrow at the maize end. That
+  // ratio is the block lengths and nothing else - maize's genome is ~5x rice's
+  // and its syntenic blocks are stretched to match, and each row's span is
+  // stated in the header above it. Both ways out are worse, and both
   // were rendered: sameScale puts the stack on maize's scale and leaves rice
   // and sorghum a sliver at the left edge, while widening rice to close the gap
   // (tried at 290 kb and 410 kb) does flatten the wedges but fills the top band
   // with ribbons from genes the maize windows do not reach, so the two bands
   // stop counting the same genes - which is the entire comparison.
   //
-  // The last ~11% of that 9x is not in the loc strings and cannot be tuned out
-  // of them. navToLocations fits a ONE-region row exactly to the width and
-  // sends a multi-region one through showAllRegions, which targets
-  // SHOW_ALL_REGIONS_FILL (0.9) and centers - so maize, alone in this stack,
-  // draws at 1/0.9 of its fit-to-width scale with a ~5% margin either side. It
-  // is scale-invariant, so padding the windows only moves the same margin
-  // further out. Worth knowing before measuring a stacked figure's scales off
-  // its loc strings and finding they don't agree with the picture.
   {
     mode: 'url',
     name: 'orthofinder_synteny/grasses_maize_wgd',
@@ -2050,6 +2042,114 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // orthofinder_synteny.md: the 4AL/5AL junction at gene resolution. The two
+  // whole-chromosome figures above place it to within a few Mb of 4A and cannot
+  // do better - at 745 Mb across a frame, the gap between the 4D bundle and the
+  // 5D one is a few pixels of white. This is that gap, and the top row names
+  // the two donor segments it joins rather than the whole D genome, because at
+  // this zoom the other five contribute nothing to place.
+  //
+  // The window came out of the same script the maize WGD figure's did, run over
+  // the whole chromosome first to find where the ancestry changes hands:
+  //
+  //   python3 scripts/orthofinder_window_stats.py wheat \
+  //     --row 'tauschii 4D:840,000-1,070,000 5D:574,290,000-574,760,000' \
+  //     --row 'wheat 4A:603,300,000-604,950,000' --query wheat
+  //
+  // Of the 41 wheat genes in the frame, 14 answer to 4D and 5 to 5D, and the
+  // switch is clean: every 4D partner is left of 4A 603.64 Mb and every 5D one
+  // right of 603.98 Mb, so the junction is bracketed to ~350 kb with one 6D
+  // singleton (TraesCS4A02G313100) inside it, which is the only gene in the
+  // frame whose partner the windows do not reach. The 22 that draw nothing have
+  // no tauschii ortholog in the table at all rather than one out of frame.
+  //
+  // The two donor segments are each other's mirror: 4D runs out at 856 kb and
+  // 5D at 574.73 Mb, both of them the DISTAL end of their chromosome, which is
+  // what a reciprocal translocation between two long arms looks like from the
+  // D genome. Both are also inverted against 4A (r = -0.88 and -0.79), so both
+  // carry [rev] - the same call as the maize WGD figure, and for the same
+  // reason: two hourglasses either side of a junction read as chaos where the
+  // finding is WHICH chromosome, not which way round. The rulers count down.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/wheat_4a_breakpoint',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_wheat/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              {
+                assembly: 'tauschii',
+                loc: '4D:840,000-1,070,000[rev] 5D:574,290,000-574,760,000[rev]',
+                tracks: [
+                  {
+                    trackId: 'tauschii_genes',
+                    type: 'LinearBasicDisplay',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                    showLabels: 'none',
+                    height: 40,
+                  },
+                ],
+              },
+              {
+                assembly: 'wheat',
+                loc: '4A:603,300,000-604,950,000',
+                // The bracket itself, shaded rather than described: the gap
+                // between the last 4D partner and the first 5D one. Where a
+                // junction starts and stops is exactly what a reader cannot
+                // read off a fan of ribbons, and the label names the published
+                // result the two figures above annotate the same way. A
+                // sub-view highlight survives the synteny init (afterAttach
+                // applies it after navigation); a `{view, locus}` text anchor
+                // does not, which is why the whole-chromosome figures use tick
+                // labels instead.
+                highlight: [
+                  {
+                    refName: '4A',
+                    start: 603_640_000,
+                    end: 603_980_000,
+                    label: '4AL/5AL',
+                    color: 'rgba(0,0,0,0.10)',
+                  },
+                ],
+                tracks: [
+                  {
+                    trackId: 'wheat_genes',
+                    type: 'LinearBasicDisplay',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                    showLabels: 'none',
+                    height: 40,
+                  },
+                ],
+              },
+            ],
+            tracks: [['wheat_orthogroups']],
+            // by the TOP row, same as the two figures above, so 4D and 5D keep
+            // the colors they carry there and the junction is a color change
+            // as well as a gap.
+            colorBy: 'query',
+            autoDiagonalize: false,
+            drawCurves: false,
+            // ~19 ribbons, so nothing accumulates; under 1 only so the few
+            // crossings at the junction read as crossings.
+            alpha: 0.65,
+            levelHeights: [420],
+          },
+        ],
+      },
+    ),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 760,
+  },
+
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_pangenome',

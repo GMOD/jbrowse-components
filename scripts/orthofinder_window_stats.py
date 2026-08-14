@@ -27,11 +27,12 @@ Rows are given exactly as the spec's `loc` strings, so a window can be pasted
 between the two without retyping it. `[rev]` is accepted and ignored: reversing
 a row changes where a ribbon is drawn and not which ribbons exist.
 
-Also reports the bp/px each row is drawn at, which is not the ratio of the loc
-strings. A multi-region row goes through `showAllRegions` rather than an exact
-fit (`SHOW_ALL_REGIONS_FILL`, see LinearGenomeView's model), so it draws at
-1/0.9 of fit-to-width with the content centered — enough to make a figure's
-apparent scales disagree with arithmetic done on its spec.
+Also reports the bp/px each row is drawn at, which is the ratio of the loc
+strings: every row, however many regions it names, is fitted to the width
+exactly (`fitAllRegions`, LinearGenomeView). A multi-region row used to go
+through `showAllRegions` and draw at 1/SHOW_ALL_REGIONS_FILL of that instead,
+which is why a figure's apparent scales could disagree with arithmetic done on
+its spec.
 
 Requires: python3 only. Reads the demo's own config.json to find the blocks
 table and the BEDs, so it needs no argument naming them.
@@ -53,10 +54,6 @@ import urllib.request
 from collections import Counter, defaultdict
 
 DEMO_BASE = 'https://jbrowse.org/demos/orthofinder_{set}/'
-# LinearGenomeView SHOW_ALL_REGIONS_FILL: showAllRegions targets 90% of the
-# width and centers, and navToLocations only takes that path when a row names
-# more than one region.
-SHOW_ALL_REGIONS_FILL = 0.9
 # Off-window partners named individually before the rest are summarized.
 OFFWINDOW_LISTED = 6
 
@@ -399,13 +396,8 @@ def main():
     scales = {}
     for name, regions in rows:
         span = sum(e - s for _, s, e in regions)
-        fill = SHOW_ALL_REGIONS_FILL if len(regions) > 1 else 1.0
-        scales[name] = span / fill
-        note = (
-            f'  [{len(regions)} regions, so /{fill} for showAllRegions]'
-            if fill != 1.0
-            else ''
-        )
+        scales[name] = span
+        note = f'  [{len(regions)} regions]' if len(regions) > 1 else ''
         print(f'  {name}: {span / 1e3:.0f} kb{note}')
     for name, _ in rows:
         if name != query:
