@@ -130,10 +130,10 @@ proving nothing.
 ## `featureData` refNames are in the ADAPTER's namespace, the view's are canonical
 
 Every refName comparison here has one operand from each side, and on an aliased
-assembly they do not meet. `featureData.refNames`/`mateRefNames` come off the
-features, and the fetch renames the view regions INTO the adapter's namespace
-before the RPC rather than renaming the features back
-(`renameRegionsForAdapter`, and the comment at the head of
+assembly they do not meet. `featureData`'s `refNameDict`/`mateRefNameDict` (the
+dictionaries the ids index) come off the features, and the fetch renames the
+view regions INTO the adapter's namespace before the RPC rather than renaming
+the features back (`renameRegionsForAdapter`, and the comment at the head of
 `executeSyntenyFeaturesAndPositions` saying so) — because the worker has no
 assemblyManager. The window, meanwhile, is read off `dynamicBlocks`, which is
 canonical. So on a PAF naming a contig `1` against an assembly canonicalized
@@ -149,6 +149,17 @@ inverse rename applied to the fetch's result, and the helper already exists —
 `getAdapterToCanonicalRefNameMap` in `@jbrowse/synteny-core`, which the
 diagonalize RPCs use for exactly this. Until then, read a follow that does
 nothing on an aliased file as this rather than as the mode being broken.
+
+That fix got much cheaper than this paragraph was written for. The lane is now
+dictionary-encoded, so the rename is a pass over `refNameDict` /
+`mateRefNameDict` — a few dozen entries, once per fetch — rather than over a
+`string[]` of every feature. It would also fix two things beyond the follow,
+both of which read the same dictionary: the hover tooltip and the feature widget
+print the FILE's contig name on an aliased track, where the dotplot's tooltip
+deliberately prints the assembly's (see `dotplotTooltip.ts`, which goes through
+`pxToBp` for exactly this reason). Renaming on receipt is the one edit that
+settles all three — but it moves a namespace boundary, so check every
+main-thread reader is on the canonical side of it before doing it.
 
 ## Approximate is a state the UI reports, not a failure
 
