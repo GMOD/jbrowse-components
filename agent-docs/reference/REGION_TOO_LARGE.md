@@ -235,8 +235,29 @@ Canvas passes them as call-site arguments to
 floor a full `SettingsInvalidate` → `clearAllRpcData()` → refetch, blanking the
 display at exactly the zoom people settle a gene at, for data identical on both
 sides of it. The *slots* the budgets resolve from — `fetchSizeLimit`,
-`forceLoad`, `maxFeatureScreenDensity` — stay in the payload, so a real settings
-change still invalidates.
+`forceLoad`, `maxFeatureScreenDensity` — travel instead, as
+`LinearBasicDisplay`'s `gateSlots` field, so a real settings change still
+invalidates. Read the field rather than looking for them in `displayConfig`:
+nothing in the worker reads them, so the pick that builds the worker's config
+leaves them out and they are named separately (see ARCHITECTURE.md
+"[Pick the payload out of the snapshot](../ARCHITECTURE.md#pick-the-payload-out-of-the-snapshot-never-subtract-from-it)").
+
+**The multi-row display carries none of them, and nothing yet says which of the
+two is right.** Its `rpcProps()` returns `partitionField` / `lengthField` /
+`colorConfig` only, so editing a budget there does not move its cache key. By the
+argument in the next paragraph that costs nothing — a blocked region stored no
+data, so it refetches on its own the moment the derived banner releases, and the
+banner itself is a live main-thread config read that never needed a refetch. On
+that reading the basic display's extra invalidation is redundant, and worse than
+redundant for a region that is loaded and fine, where it re-downloads to arrive
+at the same features. Against that, the basic display's behavior is deliberate
+and pinned twice ("still invalidates when the slot a budget resolves from
+changes", and the refetch half in "a density-budget change still refetches while
+the gate is active"), on the stated worry that a track would otherwise strand at
+a budget the user just raised. Resolving it means deciding whether
+`FetchVisibleRegions` re-running off the released `regionTooLarge` is enough on
+its own; until someone does, don't "unify" these by copying either onto the
+other.
 
 Losing a budget swing as an invalidation trigger loses no protection. A region
 the worker rejected stores nothing, so `isCacheValid` is already false for it and

@@ -750,8 +750,14 @@ export function callEachRegion<R>(
  * per-region fetches aggregate into one bar instead of clobbering each other).
  * A display whose fetch genuinely diverges — canvas (prune + fold a too-large
  * result), MAF (a concurrent annotation fetch + a cross-region sample pick),
- * alignments (chain payload) — keeps its own `fetchNeeded`, calls `fetchRegions`
- * directly, and reaches for {@link callEachRegion} for the fan-out.
+ * alignments (chain payload) — keeps its own `fetchNeeded` and calls
+ * `fetchRegions` directly. MAF and alignments then reach for
+ * {@link callEachRegion} for the fan-out; `LinearBasicDisplay` does not, and
+ * should not — its per-region call already returns the `displayedRegionIndex`
+ * inside its own result shape, so the pairing `callEachRegion` exists to provide
+ * would be a second wrapper to unwrap. Its plain `Promise.all` is the right
+ * answer there, and the single `ctx.isStale()` around the batch is deliberate:
+ * it commits the batch's gate measurements atomically.
  */
 export async function fetchEachRegion<R>(
   self: FetchEachRegionModel,

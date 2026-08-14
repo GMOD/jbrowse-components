@@ -10,6 +10,16 @@ the same reference sequence (same assemblyName + refName) must share a layout.
 Regions on different reference sequences should use independent layouts so that
 unrelated absolute bp coordinates do not cause false overlaps.
 
+The mechanism is `LayoutRegionData.regionKey` (`assembly:refName`), which the
+model staples onto each region at fetch time and `groupRawByRef` groups by. The
+key rides **on the region**, deliberately, rather than in a parallel
+`Map<number, string>`: a region missing from a parallel map would fall into one
+group with every other missing region and mis-stack against it, which is exactly
+the failure above. On the region it is a type error instead. `baseModel`'s
+`LoadedFeatureData` note says why the identity is stored with the data rather
+than derived from `loadedRegions` — that map is empty during the refetch window
+canvas paints through, which would collapse every region into one group.
+
 ## The space reserved for a label and the label drawn are one decision
 
 A label here is not an overlay on top of the layout — it is _part of_ it.

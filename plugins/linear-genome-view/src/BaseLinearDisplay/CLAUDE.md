@@ -56,6 +56,14 @@ breaks the wake chain and must supply its own.
 
 Every field `rpcProps()` **returns** becomes a cache key, and only those.
 
+Which is why a display that builds the payload out of a whole-config snapshot
+(`getConfigSnapshotWithPromotables`) must **pick the slots the worker reads**
+rather than drop the ones it doesn't: the snapshot carries every slot this base
+schema declares too, so a subtractive payload turns a main-thread-only slot
+added _here_ into a cache key in _that_ plugin, where nobody adding it would
+look. See ARCHITECTURE.md
+"[Pick the payload out of the snapshot](../../../../agent-docs/ARCHITECTURE.md#pick-the-payload-out-of-the-snapshot-never-subtract-from-it)".
+
 ## Scroll and height are hooks, not per-display policy
 
 A display that scrolls its own canvas overrides `scrollableHeight`

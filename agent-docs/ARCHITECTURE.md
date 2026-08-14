@@ -957,14 +957,22 @@ Picking inverts all three. A new worker slot means editing the interface and the
 key list together, and forgetting means the feature does not work — which someone
 notices. A new main-thread slot means editing neither.
 
-**Slots that are in the payload only to invalidate it get their own field.**
-Canvas sends `gateSlots` — the raw `fetchSizeLimit` / `forceLoad` /
-`maxFeatureScreenDensity` the region-too-large budgets resolve from — because the
-*resolved* budgets deliberately ride at the call site instead (as cache keys they
-blanked the display on every zoom across `AUTO_FORCE_LOAD_BP`; see [the gate
-summary](#the-region-too-large-gate-summary)). Naming that field is the difference
-between a stated invalidation channel and three slots the exclusion list happened
-not to mention, which read as config the worker might use.
+**A slot that is in the payload only to invalidate it gets its own field.** Once
+the config half is a pick of what the worker reads, anything riding along for the
+cache key alone has nowhere left to hide in it. `LinearBasicDisplay` sends
+`gateSlots` — the raw `fetchSizeLimit` / `forceLoad` / `maxFeatureScreenDensity`
+the region-too-large budgets resolve from — because the *resolved* budgets
+deliberately ride at the call site instead (as cache keys they blanked the display
+on every zoom across `AUTO_FORCE_LOAD_BP`; see [the gate
+summary](#the-region-too-large-gate-summary)).
+
+That is a rule about *naming* such a field, not a ruling that canvas needs one:
+the sibling multi-row display composes the same gate and carries no budget slot at
+all, and which of the two is right is open —
+[REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md) states both sides and says not
+to unify them until someone settles it. What the pick did settle is that the
+question is *askable*, because the slots now sit somewhere a reader can see them
+instead of being residue an exclusion list happened not to mention.
 
 ### `gpuProps()` and derived region maps — re-upload without refetch
 
