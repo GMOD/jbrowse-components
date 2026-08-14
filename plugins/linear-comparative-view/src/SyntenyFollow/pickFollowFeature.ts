@@ -52,18 +52,26 @@ export function pickFollowFeature({
   mateAssembly?: string
   incumbentId?: string
 }): FollowCandidate | undefined {
-  const refNames = toMate ? data.refNames : data.mateRefNames
+  const refNameIds = toMate ? data.refNameIds : data.mateRefNameIds
+  const refNameDict = toMate ? data.refNameDict : data.mateRefNameDict
   const starts = toMate ? data.starts : data.mateStarts
   const ends = toMate ? data.ends : data.mateEnds
+  // Resolved once so the scan compares integers; a name the dictionary does not
+  // hold gives -1, which matches no block. Same in followWindowMapping.
+  const windowRefNameId = refNameDict.indexOf(window.refName)
+  const mateAssemblyId =
+    mateAssembly === undefined
+      ? undefined
+      : data.mateAssemblyNameDict.indexOf(mateAssembly)
   let best: FollowCandidate | undefined
   let incumbent: FollowCandidate | undefined
-  for (let i = 0; i < refNames.length; i++) {
-    if (refNames[i] !== window.refName) {
+  for (let i = 0; i < refNameIds.length; i++) {
+    if (refNameIds[i] !== windowRefNameId) {
       continue
     }
     if (
-      mateAssembly !== undefined &&
-      data.mateAssemblyNames[i] !== mateAssembly
+      mateAssemblyId !== undefined &&
+      data.mateAssemblyNameIds[i] !== mateAssemblyId
     ) {
       continue
     }

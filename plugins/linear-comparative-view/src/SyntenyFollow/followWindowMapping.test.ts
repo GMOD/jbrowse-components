@@ -1,36 +1,21 @@
+import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import { followWindowMapping } from './followWindowMapping.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
+import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
-interface Block {
-  refName?: string
-  start: number
-  end: number
-  mateRefName?: string
-  mateStart: number
-  mateEnd: number
-  strand?: number
-  mateAssembly?: string
-}
-
-function data(blocks: Block[]): SyntenyFeatureData {
-  return {
-    strands: Int8Array.from(blocks.map(b => b.strand ?? 1)),
-    starts: Uint32Array.from(blocks.map(b => b.start)),
-    ends: Uint32Array.from(blocks.map(b => b.end)),
-    attributes: {},
-    attributeRanges: {},
-    featureIds: blocks.map((_, i) => `f${i}`),
-    names: blocks.map((_, i) => `f${i}`),
-    refNames: blocks.map(b => b.refName ?? 'chr1'),
-    assemblyNames: blocks.map(() => 'grape'),
-    mateStarts: Uint32Array.from(blocks.map(b => b.mateStart)),
-    mateEnds: Uint32Array.from(blocks.map(b => b.mateEnd)),
-    mateRefNames: blocks.map(b => b.mateRefName ?? 'Pp01'),
-    mateAssemblyNames: blocks.map(b => b.mateAssembly ?? 'peach'),
-    hasCigar: false,
-  }
+// A grape window mapping onto peach, so the defaults name the right pair.
+function data(blocks: (FeatureBlock & { mateStart: number })[]) {
+  return packSyntenyFeatureData(
+    blocks.map(b => ({
+      ...b,
+      assembly: 'grape',
+      mateRefName: b.mateRefName ?? 'Pp01',
+      mateAssembly: b.mateAssembly ?? 'peach',
+    })),
+    { hasCigar: false },
+  )
 }
 
 const win = (start: number, end: number, refName = 'chr1'): FollowWindow => ({

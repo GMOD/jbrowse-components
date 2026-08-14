@@ -60,17 +60,30 @@ export interface SyntenyFeatureData {
   // `attribute:<name>` mode scales to, and the numbers its legend is labelled
   // with; the presets have fixed domains and ignore this.
   attributeRanges: Record<string, AttributeRange>
+  // Genuinely distinct per feature, so this one stays a `string[]`: a dictionary
+  // of 500k distinct strings costs the same clone plus an index array. See
+  // `makeStringDict`, which is also where the measurement lives.
   featureIds: string[]
-  names: string[]
-  refNames: string[]
-  assemblyNames: string[]
+  // The five per-feature string lanes that ARE worth dictionary-encoding, each
+  // bounded by something other than the feature count — a gene symbol or nothing
+  // (a PAF names no features), a scaffold count, and twice over the single
+  // assembly this level draws. `getFeatureAtIndex` is the one place that reads
+  // them, so the encoding stops there rather than spreading.
+  nameDict: string[]
+  nameIds: Uint32Array
+  refNameDict: string[]
+  refNameIds: Uint32Array
+  assemblyNameDict: string[]
+  assemblyNameIds: Uint32Array
   // Mate fields packed as parallel arrays. Uint32 buffers are RPC-transferable
   // and match the bp coord convention used elsewhere in the codebase.
   // mate.name was always undefined (no adapter sets it) so it's dropped.
   mateStarts: Uint32Array
   mateEnds: Uint32Array
-  mateRefNames: string[]
-  mateAssemblyNames: string[]
+  mateRefNameDict: string[]
+  mateRefNameIds: Uint32Array
+  mateAssemblyNameDict: string[]
+  mateAssemblyNameIds: Uint32Array
   // True when at least one feature in this RPC response carried a CIGAR
   // string. Used to gate CIGAR-related menu items so they don't appear when
   // the resolved tier (coarse PIF, or a CIGAR-less PAF) has no per-row ops.
@@ -117,16 +130,16 @@ export function getFeatureAtIndex(
   return {
     id: data.featureIds[i]!,
     strand: data.strands[i]!,
-    name: data.names[i]!,
-    refName: data.refNames[i]!,
+    name: data.nameDict[data.nameIds[i]!]!,
+    refName: data.refNameDict[data.refNameIds[i]!]!,
     start: data.starts[i]!,
     end: data.ends[i]!,
-    assemblyName: data.assemblyNames[i]!,
+    assemblyName: data.assemblyNameDict[data.assemblyNameIds[i]!]!,
     mate: {
       start: data.mateStarts[i]!,
       end: data.mateEnds[i]!,
-      refName: data.mateRefNames[i]!,
-      assemblyName: data.mateAssemblyNames[i]!,
+      refName: data.mateRefNameDict[data.mateRefNameIds[i]!]!,
+      assemblyName: data.mateAssemblyNameDict[data.mateAssemblyNameIds[i]!]!,
     },
     identity: identity === -1 ? undefined : identity,
   }

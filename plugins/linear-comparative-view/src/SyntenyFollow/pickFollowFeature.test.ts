@@ -1,40 +1,11 @@
+import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import { pickFollowFeature } from './pickFollowFeature.ts'
 
-import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
-interface Block {
-  id: string
-  refName: string
-  start: number
-  end: number
-  mateRefName?: string
-  mateStart?: number
-  mateEnd?: number
-  mateAssembly?: string
-}
-
-// Packs blocks the way the RPC hands them over: parallel typed arrays, not
-// objects. Mate coords default to the feature's own, which is enough for the
-// tests that only exercise one axis.
-function data(blocks: Block[]): SyntenyFeatureData {
-  return {
-    strands: Int8Array.from(blocks.map(() => 1)),
-    starts: Uint32Array.from(blocks.map(b => b.start)),
-    ends: Uint32Array.from(blocks.map(b => b.end)),
-    attributes: {},
-    attributeRanges: {},
-    featureIds: blocks.map(b => b.id),
-    names: blocks.map(b => b.id),
-    refNames: blocks.map(b => b.refName),
-    assemblyNames: blocks.map(() => 'hg002mat'),
-    mateStarts: Uint32Array.from(blocks.map(b => b.mateStart ?? b.start)),
-    mateEnds: Uint32Array.from(blocks.map(b => b.mateEnd ?? b.end)),
-    mateRefNames: blocks.map(b => b.mateRefName ?? b.refName),
-    mateAssemblyNames: blocks.map(b => b.mateAssembly ?? 'hg002pat'),
-    hasCigar: true,
-  }
-}
+// Mate coordinates default to the feature's own, which is enough for the tests
+// here — they only exercise one axis.
+const data = packSyntenyFeatureData
 
 const WINDOW: FollowWindow = {
   refName: 'chr1',

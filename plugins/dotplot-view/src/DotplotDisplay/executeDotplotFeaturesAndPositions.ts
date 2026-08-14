@@ -11,6 +11,7 @@ import {
   declaredAttributes,
   dnDsRatio,
   findRegionEntry,
+  makeStringDict,
 } from '@jbrowse/synteny-core'
 
 import { cigarWorthParsing } from './dotplotCigarDetail.ts'
@@ -40,12 +41,9 @@ export interface DotplotFeaturesAndPositionsResult {
   attributes: Record<string, Float32Array>
   attributeRanges: Record<string, AttributeRange>
   // Per-feature refNames, dictionary-encoded: `refNameIds[i]` indexes
-  // `refNameDict`. Two `string[]` of length n were the ONLY part of this
-  // payload that wasn't a zero-copy transfer — everything else is an
-  // ArrayBuffer in the transfer list — so a whole-genome PAF structured-cloned
-  // millions of short strings twice, per fetch. An axis holds at most a
-  // scaffold count's worth of distinct names, so the dictionary is negligible
-  // and the ids transfer with the rest.
+  // `refNameDict`. An axis holds at most a scaffold count's worth of distinct
+  // names, so the dictionary is negligible and the ids transfer with everything
+  // else — see `makeStringDict` for the measurement and where the line is.
   //
   // It is also what the only reader wanted: `nameColorFn` hashed each name and
   // memoized the result in a Map, i.e. it was rebuilding this dictionary per
@@ -54,14 +52,10 @@ export interface DotplotFeaturesAndPositionsResult {
   refNameIds: Uint32Array
   mateRefNameDict: string[]
   mateRefNameIds: Uint32Array
-  // Per-feature names, dictionary-encoded like the refNames above and for the
-  // same reason. Only the hover tooltip reads them, and the dictionary is what
-  // makes shipping them nearly free on the tracks that have none: a PAF sets no
-  // `name` on any feature, so the dictionary is one empty string and the ids are
-  // a zero-filled transfer. Where names DO exist (ortholog tables, MCScan
-  // blocks) they are typically a gene symbol per block, so distinct — the
-  // dictionary buys nothing there and costs one Uint32Array, which is the right
-  // way round for the common case.
+  // Per-feature names, the same way. Only the hover tooltip reads them, and the
+  // dictionary is what makes shipping them nearly free on the tracks that have
+  // none: a PAF sets no `name` on any feature, so the dictionary is one empty
+  // string and the ids are a zero-filled transfer.
   nameDict: string[]
   nameIds: Uint32Array
   // Every feature's packed CIGAR ops concatenated into one transferable buffer,
@@ -95,26 +89,6 @@ interface FeatureMate {
   end: number
   refName: string
   assemblyName?: string
-}
-
-// Growable string dictionary: interns a string to a stable index. One per axis
-// for refNames (the two axes are different assemblies, and sharing would only
-// make the ids less local), plus one for feature names.
-function makeStringDict() {
-  const ids = new Map<string, number>()
-  const dict: string[] = []
-  return {
-    dict,
-    idFor(name: string) {
-      let id = ids.get(name)
-      if (id === undefined) {
-        id = dict.length
-        dict.push(name)
-        ids.set(name, id)
-      }
-      return id
-    },
-  }
 }
 
 export async function executeDotplotFeaturesAndPositions({

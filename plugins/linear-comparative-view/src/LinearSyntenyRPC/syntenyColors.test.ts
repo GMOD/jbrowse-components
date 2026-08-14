@@ -1,6 +1,7 @@
 import { category10 } from '@jbrowse/core/ui/colors'
 import { colorSchemes } from '@jbrowse/synteny-core'
 
+import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import {
   KIND_BASE,
   KIND_CIGAR_D,
@@ -11,19 +12,33 @@ import {
 
 const TRACK_COLOR = '#4e79a7'
 
+// One feature per refName, with the attribute channels this suite is about
+// substituted over the packer's empty ones.
+function features(
+  blocks: { refName: string; mateRefName: string; strand?: number }[],
+  attributes: Record<string, Float32Array> = {},
+) {
+  return {
+    ...packSyntenyFeatureData(
+      blocks.map(b => ({ ...b, start: 0, end: 1, mateStart: 0, mateEnd: 1 })),
+    ),
+    attributes,
+  }
+}
+
 // two features, then one instance of each kind pointing at feature 0
-const featureData = {
-  strands: new Int8Array([1, -1]),
-  refNames: ['chr1', 'chr2'],
-  mateRefNames: ['chrA', 'chrB'],
-  attributes: {
+const featureData = features(
+  [
+    { refName: 'chr1', mateRefName: 'chrA', strand: 1 },
+    { refName: 'chr2', mateRefName: 'chrB', strand: -1 },
+  ],
+  {
     identity: new Float32Array([0.9, 0.5]),
     mappingQual: new Float32Array([60, 10]),
     meanIdentity: new Float32Array([0.9, 0.5]),
     dnds: new Float32Array([-1]),
   },
-  attributeRanges: {},
-}
+)
 
 const instanceData = {
   kinds: new Uint8Array([KIND_BASE, KIND_CIGAR_I, KIND_CIGAR_D, KIND_CIGAR_N]),
@@ -103,18 +118,7 @@ describe('chromosome painting', () => {
             instanceFeatureIdx: new Uint32Array([0]),
             instanceCount: 1,
           },
-          featureData: {
-            strands: new Int8Array([1]),
-            refNames: [name],
-            mateRefNames: [name],
-            attributes: {
-              identity: new Float32Array([-1]),
-              mappingQual: new Float32Array([-1]),
-              meanIdentity: new Float32Array([-1]),
-              dnds: new Float32Array([-1]),
-            },
-            attributeRanges: {},
-          },
+          featureData: features([{ refName: name, mateRefName: name }]),
           colorBy: 'query',
           trackColor: '#000',
           nameOrder,
@@ -179,18 +183,7 @@ test('scaffolds after the chromosomes do not compress the palette', () => {
           instanceFeatureIdx: new Uint32Array([0]),
           instanceCount: 1,
         },
-        featureData: {
-          strands: new Int8Array([1]),
-          refNames: [name],
-          mateRefNames: [name],
-          attributes: {
-            identity: new Float32Array([-1]),
-            mappingQual: new Float32Array([-1]),
-            meanIdentity: new Float32Array([-1]),
-            dnds: new Float32Array([-1]),
-          },
-          attributeRanges: {},
-        },
+        featureData: features([{ refName: name, mateRefName: name }]),
         colorBy: 'query',
         trackColor: '#000',
         nameOrder: withScaffolds,

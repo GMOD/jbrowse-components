@@ -18,6 +18,7 @@ import {
   declaredAttributes,
   dnDsRatio,
   findRegionEntry,
+  makeStringDict,
   syntenyPanBufferPx,
 } from '@jbrowse/synteny-core'
 
@@ -244,12 +245,23 @@ export async function executeSyntenyFeaturesAndPositions({
     count,
   )
 
+  // Distinct values per feature, so a dictionary would cost the same clone plus
+  // an index array — see `makeStringDict` for where the line is.
   const featureIds: string[] = []
-  const names: string[] = []
-  const refNames: string[] = []
-  const assemblyNames: string[] = []
-  const mateRefNames: string[] = []
-  const mateAssemblyNames: string[] = []
+  // The five lanes whose cardinality is bounded by something other than the
+  // feature count: a gene symbol or nothing at all, a scaffold count, and (twice)
+  // the one assembly this level draws. Ids are written into arrays sized `count`
+  // and transferred; the dictionaries ride along as a few dozen strings.
+  const nameIds = new Uint32Array(count)
+  const refNameIds = new Uint32Array(count)
+  const assemblyNameIds = new Uint32Array(count)
+  const mateRefNameIds = new Uint32Array(count)
+  const mateAssemblyNameIds = new Uint32Array(count)
+  const nameDict = makeStringDict()
+  const refNameDict = makeStringDict()
+  const assemblyNameDict = makeStringDict()
+  const mateRefNameDict = makeStringDict()
+  const mateAssemblyNameDict = makeStringDict()
   const parsedCigars: Uint32Array[] = []
   let hasCigar = false
   // Viewport culling: skip features entirely outside the visible area in
@@ -438,11 +450,15 @@ export async function executeSyntenyFeaturesAndPositions({
     mateEndsArray[validCount] = mate.end
 
     featureIds.push(id)
-    names.push(f.get('name') ?? '')
-    refNames.push(refName)
-    assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
-    mateRefNames.push(mateRefName)
-    mateAssemblyNames.push(mate.assemblyName)
+    nameIds[validCount] = nameDict.idFor(f.get('name') ?? '')
+    refNameIds[validCount] = refNameDict.idFor(refName)
+    assemblyNameIds[validCount] = assemblyNameDict.idFor(
+      (f.get('assemblyName') as string | undefined) ?? '',
+    )
+    mateRefNameIds[validCount] = mateRefNameDict.idFor(mateRefName)
+    mateAssemblyNameIds[validCount] = mateAssemblyNameDict.idFor(
+      mate.assemblyName,
+    )
     // Only parse the CIGAR when it will actually be visited. Chromosome-scale
     // alignments can carry multi-megabyte CIGAR strings (~4 bytes/op in the
     // parsed Uint32Array, so tens of MB per feature). Gate matches the
@@ -480,13 +496,18 @@ export async function executeSyntenyFeaturesAndPositions({
     ends: endsArray.subarray(0, validCount),
     ...channels.finish(validCount),
     featureIds,
-    names,
-    refNames,
-    assemblyNames,
+    nameDict: nameDict.dict,
+    nameIds: nameIds.subarray(0, validCount),
+    refNameDict: refNameDict.dict,
+    refNameIds: refNameIds.subarray(0, validCount),
+    assemblyNameDict: assemblyNameDict.dict,
+    assemblyNameIds: assemblyNameIds.subarray(0, validCount),
     mateStarts: mateStartsArray.subarray(0, validCount),
     mateEnds: mateEndsArray.subarray(0, validCount),
-    mateRefNames,
-    mateAssemblyNames,
+    mateRefNameDict: mateRefNameDict.dict,
+    mateRefNameIds: mateRefNameIds.subarray(0, validCount),
+    mateAssemblyNameDict: mateAssemblyNameDict.dict,
+    mateAssemblyNameIds: mateAssemblyNameIds.subarray(0, validCount),
     hasCigar,
   }
 
@@ -524,8 +545,13 @@ export async function executeSyntenyFeaturesAndPositions({
     featureData.starts.buffer,
     featureData.ends.buffer,
     ...Object.values(featureData.attributes).map(a => a.buffer),
+    featureData.nameIds.buffer,
+    featureData.refNameIds.buffer,
+    featureData.assemblyNameIds.buffer,
     featureData.mateStarts.buffer,
     featureData.mateEnds.buffer,
+    featureData.mateRefNameIds.buffer,
+    featureData.mateAssemblyNameIds.buffer,
     instanceData.bp1.buffer,
     instanceData.bp2.buffer,
     instanceData.bp3.buffer,

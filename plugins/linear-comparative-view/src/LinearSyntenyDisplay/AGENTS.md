@@ -72,3 +72,20 @@
   `spanOutsideBand`, `//! js-export`ed from syntenyTypes.slang, so both sides
   run the shader's function and choose only what they pass it — the pads, and
   where the `minAlignmentLength` cull is applied.
+- **Per-feature string lanes are dictionary-encoded, and `getFeatureAtIndex` is
+  where the encoding stops.** `nameDict`/`nameIds` and the four refName/assembly
+  pairs replace what were five `string[]` of length n — the only part of the
+  payload that was not a zero-copy transfer, measured at ~44ms of structured
+  clone per lane at 500k features, so ~220ms per whole-genome fetch. Two rules
+  come with it: `featureIds` stays a `string[]` (genuinely distinct per feature,
+  so a dictionary costs the same clone plus an index array — see
+  `makeStringDict` in synteny-core for where the line is), and a consumer
+  FILTERING on a name resolves it to an id ONCE with `dict.indexOf` and then
+  compares integers, which is what `pickFollowFeature` and `followWindowMapping`
+  do per block, per frame. `dict.indexOf` answering -1 for an absent name is not
+  a special case to guard: -1 is not a valid id, so it matches nothing, which is
+  the answer the string compare gave.
+- Payload fixtures are `testUtils.ts`'s `packSyntenyFeatureData`. Four suites
+  each had their own `data(blocks)` spelling out all fourteen fields, so the
+  string lanes going encoded would have been a four-file edit that said nothing
+  about any of the four tests.

@@ -1,9 +1,7 @@
+import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
 
-import type {
-  FeatPos,
-  SyntenyFeatureData,
-} from '../LinearSyntenyDisplay/model.ts'
+import type { FeatPos } from '../LinearSyntenyDisplay/model.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
 // One 10kb block, query chr1:100,000-110,000 against target Pp01:1,100,000+,
@@ -25,22 +23,20 @@ const feat: FeatPos = {
   },
 }
 
-const data: SyntenyFeatureData = {
-  strands: Int8Array.from([1]),
-  starts: Uint32Array.from([feat.start]),
-  ends: Uint32Array.from([feat.end]),
-  attributes: {},
-  attributeRanges: {},
-  featureIds: [feat.id],
-  names: [feat.name],
-  refNames: [feat.refName],
-  assemblyNames: [feat.assemblyName],
-  mateStarts: Uint32Array.from([feat.mate.start]),
-  mateEnds: Uint32Array.from([feat.mate.end]),
-  mateRefNames: [feat.mate.refName],
-  mateAssemblyNames: [feat.mate.assemblyName],
-  hasCigar: true,
-}
+const data = packSyntenyFeatureData([
+  {
+    id: feat.id,
+    name: feat.name,
+    refName: feat.refName,
+    start: feat.start,
+    end: feat.end,
+    assembly: feat.assemblyName,
+    mateRefName: feat.mate.refName,
+    mateStart: feat.mate.start,
+    mateEnd: feat.mate.end,
+    mateAssembly: feat.mate.assemblyName,
+  },
+])
 
 const win = (start: number, end: number): FollowWindow => ({
   refName: 'chr1',

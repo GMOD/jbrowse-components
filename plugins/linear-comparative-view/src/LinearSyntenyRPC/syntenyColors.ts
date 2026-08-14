@@ -105,8 +105,10 @@ function continuousColorFunction(mode: ContinuousMode, d: ColorInputs) {
 
 interface ColorInputs {
   strands: Int8Array
-  refNames: readonly string[]
-  mateRefNames: readonly string[]
+  refNameDict: readonly string[]
+  refNameIds: Uint32Array
+  mateRefNameDict: readonly string[]
+  mateRefNameIds: Uint32Array
   // every numeric per-feature channel by name, which is what a continuous mode
   // indexes. The named presets are aliases into this, not separate arrays.
   attributes: Record<string, Float32Array>
@@ -134,14 +136,14 @@ function createColorFunction(
     case 'strand':
       return index => (d.strands[index] === -1 ? STRAND_NEG : STRAND_POS)
     case 'query':
-      return nameColorFunction(d.refNames, nameOrder)
+      return nameColorFunction(d.refNameDict, d.refNameIds, nameOrder)
     case 'target':
-      return nameColorFunction(d.mateRefNames, nameOrder)
+      return nameColorFunction(d.mateRefNameDict, d.mateRefNameIds, nameOrder)
     // 'reference' is resolved to 'query'/'target' per-level in the display
     // before it reaches here (see LinearSyntenyDisplay effectiveColorBy); this
     // arm only guards the type union and colors by query as a safe fallback.
     case 'reference':
-      return nameColorFunction(d.refNames, nameOrder)
+      return nameColorFunction(d.refNameDict, d.refNameIds, nameOrder)
     default:
       return () => DEFAULT_COLOR
   }
@@ -204,27 +206,28 @@ function paletteColorAt(position: number) {
   )
 }
 
+// Chromosome painting against a dictionary-encoded refName lane. The dictionary
+// is at most a scaffold count long, so its colors resolve once into a LUT and the
+// per-feature path is a double array index — no hash and no Map probe.
+//
+// It used to hash each name and memoize in a `Map<string, number>`, i.e. rebuild
+// the dictionary the worker now ships, once per colorBy pass. Same change, same
+// shape, as `dotplotColors.nameColorFn`.
 function nameColorFunction(
-  names: readonly string[],
+  dict: readonly string[],
+  ids: Uint32Array,
   nameOrder?: readonly string[],
 ) {
   const orderOf = nameOrder?.length
     ? new Map(nameOrder.map((n, i) => [n, i]))
     : undefined
-  const colorCache = new Map<string, number>()
-  return (index: number) => {
-    const name = names[index]!
-    let c = colorCache.get(name)
-    if (c === undefined) {
-      const position = orderOf?.get(name)
-      c =
-        position === undefined
-          ? nameColorPalette[hashString(name) % nameColorPalette.length]!
-          : paletteColorAt(position)
-      colorCache.set(name, c)
-    }
-    return c
-  }
+  const lut = Uint32Array.from(dict, name => {
+    const position = orderOf?.get(name)
+    return position === undefined
+      ? nameColorPalette[hashString(name) % nameColorPalette.length]!
+      : paletteColorAt(position)
+  })
+  return (index: number) => lut[ids[index]!]!
 }
 
 // I/D/N indel colors for the active scheme (strand recolors N/D purple). Both

@@ -16,9 +16,11 @@ interface Accumulator {
 }
 
 // One candidate contig on the other axis: how much of the window aligns to it,
-// and where the window's two edges land on it.
+// and where the window's two edges land on it. Carries its dictionary id as well
+// as its name so the per-block lookup below is an integer compare.
 interface Target {
   name: string
+  nameId: number
   total: number
   startAt: Accumulator
   endAt: Accumulator
@@ -97,20 +99,30 @@ export function followWindowMapping({
   toMate: boolean
   mateAssembly?: string
 }): ResolvedSpan | undefined {
-  const refNames = toMate ? data.refNames : data.mateRefNames
+  const refNameIds = toMate ? data.refNameIds : data.mateRefNameIds
+  const refNameDict = toMate ? data.refNameDict : data.mateRefNameDict
   const starts = toMate ? data.starts : data.mateStarts
   const ends = toMate ? data.ends : data.mateEnds
-  const otherRefNames = toMate ? data.mateRefNames : data.refNames
+  const otherRefNameIds = toMate ? data.mateRefNameIds : data.refNameIds
+  const otherRefNameDict = toMate ? data.mateRefNameDict : data.refNameDict
   const otherStarts = toMate ? data.mateStarts : data.starts
   const otherEnds = toMate ? data.mateEnds : data.ends
 
-  const mateAssemblyNames = data.mateAssemblyNames
   const {
     refName: windowRefName,
     start: windowStartBp,
     end: windowEndBp,
   } = window
-  const n = refNames.length
+  const n = refNameIds.length
+  // Both filters resolved to dictionary ids ONCE, so the hot loop compares
+  // integers where it used to compare strings. A name the dictionary does not
+  // hold gives -1, which is not a valid id and so matches no block — the same
+  // answer the string compare gave, reached without a special case.
+  const windowRefNameId = refNameDict.indexOf(windowRefName)
+  const mateAssemblyId =
+    mateAssembly === undefined
+      ? undefined
+      : data.mateAssemblyNameDict.indexOf(mateAssembly)
 
   // One pass, and NOTHING ALLOCATED PER BLOCK — that is the measurement, not
   // "no objects": this runs per frame over hundreds of thousands of blocks on a
@@ -119,23 +131,25 @@ export function followWindowMapping({
   // whole-genome window reaches a few dozen, so the loop below allocates once
   // per contig and then only reads.
   const targets: Target[] = []
-  let lastName: string | undefined
+  let lastNameId = -1
   let target: Target | undefined
   for (let i = 0; i < n; i++) {
     if (
-      refNames[i] !== windowRefName ||
-      (mateAssembly !== undefined && mateAssemblyNames[i] !== mateAssembly)
+      refNameIds[i] !== windowRefNameId ||
+      (mateAssemblyId !== undefined &&
+        data.mateAssemblyNameIds[i] !== mateAssemblyId)
     ) {
       continue
     }
     // blocks arrive grouped by refName, so this resolves once per contig
-    const name = otherRefNames[i]!
-    if (name !== lastName || !target) {
-      lastName = name
-      target = targets.find(t => t.name === name)
+    const nameId = otherRefNameIds[i]!
+    if (nameId !== lastNameId || !target) {
+      lastNameId = nameId
+      target = targets.find(t => t.nameId === nameId)
       if (!target) {
         target = {
-          name,
+          name: otherRefNameDict[nameId]!,
+          nameId,
           total: 0,
           startAt: newAccumulator(windowStartBp),
           endAt: newAccumulator(windowEndBp),

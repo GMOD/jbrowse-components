@@ -1,40 +1,18 @@
+import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
 import { planFollowStep, windowInsideFeat } from './planFollowStep.ts'
 
 import type {
   FeatPos,
   LinearSyntenyDisplayModel,
-  SyntenyFeatureData,
 } from '../LinearSyntenyDisplay/model.ts'
+import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
-interface Block {
-  id: string
-  start: number
-  end: number
-  mateStart?: number
-  mateEnd?: number
-}
-
-// Packs blocks the way the RPC hands them over. `featureData` is the only
-// member of the display this reads.
-function display(blocks: Block[], hasCigar = true) {
-  const data: SyntenyFeatureData = {
-    strands: Int8Array.from(blocks.map(() => 1)),
-    starts: Uint32Array.from(blocks.map(b => b.start)),
-    ends: Uint32Array.from(blocks.map(b => b.end)),
-    attributes: {},
-    attributeRanges: {},
-    featureIds: blocks.map(b => b.id),
-    names: blocks.map(b => b.id),
-    refNames: blocks.map(() => 'chr1'),
-    assemblyNames: blocks.map(() => 'hg002mat'),
-    mateStarts: Uint32Array.from(blocks.map(b => b.mateStart ?? b.start)),
-    mateEnds: Uint32Array.from(blocks.map(b => b.mateEnd ?? b.end)),
-    mateRefNames: blocks.map(() => 'chr1'),
-    mateAssemblyNames: blocks.map(() => 'hg002pat'),
-    hasCigar,
-  }
-  return { featureData: data } as unknown as LinearSyntenyDisplayModel
+// `featureData` is the only member of the display this reads.
+function display(blocks: FeatureBlock[], hasCigar = true) {
+  return {
+    featureData: packSyntenyFeatureData(blocks, { hasCigar }),
+  } as unknown as LinearSyntenyDisplayModel
 }
 
 const WINDOW: FollowWindow = {
