@@ -86,6 +86,42 @@ describe('formatArcTooltip', () => {
     const jittered = hit(1, { spanBp: 10000, shapeType: ARC_SHAPE_FLAT })
     expect(formatArcTooltip(jittered, 'chr1', undefined).insertSize).toBe(10000)
   })
+
+  // The two feet of an interchromosomal arc are not on one number line, so the
+  // ordering the first test pins is exactly wrong here: `min`/`max` over the two
+  // bp is a locstring naming one chromosome and a coordinate from the other. It
+  // only became reachable when such a connection started drawing as an arc
+  // rather than as two ticks, and a tick's hover carried the partner refName as
+  // the one fact it was worth more than an arc's for.
+  test('an interchromosomal arc reports two positions, in their own order', () => {
+    const payload = formatArcTooltip(
+      hit(26, { x1: 23290313, x2: 130853964 }),
+      'chr22',
+      'Interchromosomal',
+      'chr9',
+    )
+    expect(payload.endRefName).toBe('chr9')
+    // NOT swapped to ascending: `start` belongs to chr22 and `end` to chr9, so
+    // ordering them would file each coordinate under the other's chromosome.
+    expect([payload.start, payload.end]).toEqual([23290313, 130853964])
+    // And no distance, which across two chromosomes is a subtraction of two
+    // unrelated number lines.
+    expect(payload.insertSize).toBeUndefined()
+  })
+
+  test('a same-chromosome arc is unaffected by an equal endRefName', () => {
+    // The overlay hands the far foot's refName through for every cross-region
+    // arc, most of which are on ONE chromosome — two windows either side of a
+    // breakpoint. Those must keep reading as a range.
+    const payload = formatArcTooltip(
+      hit(3, { x1: 2000, x2: 1000 }),
+      'chr1',
+      undefined,
+      'chr1',
+    )
+    expect(payload.endRefName).toBeUndefined()
+    expect([payload.start, payload.end]).toEqual([1000, 2000])
+  })
 })
 
 describe('supportLabel', () => {
