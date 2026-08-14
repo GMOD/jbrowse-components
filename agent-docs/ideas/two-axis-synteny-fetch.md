@@ -1,6 +1,6 @@
 ---
 name: two-axis-synteny-fetch
-description: Restoring the original both-rows synteny fetch joined on `syntenyId`, which the single-axis fetch replaced. Recovers the alignments a single-axis fetch structurally drops, and would retire synteny's two return-direction refName renames — the second of which is no longer an argument for it, since those renames are now written and cheap. Blocked on one thing, a perspective-stable id for PIF. Read before proposing either half.
+description: Restoring the original both-rows synteny fetch joined on `syntenyId`, which the single-axis fetch replaced. Recovers alignments anchored on the target axis, which are never requested today. Blocked on a perspective-stable id for two adapters, PIF and all-vs-all — now verified rather than inferred. Read offscreen-synteny-mates.md FIRST: the larger, cheaper half of the same user-visible problem needs no fetch change and this doc used to be the only home for it.
 ---
 
 # Fetch both synteny axes again, joined on `syntenyId`
@@ -41,28 +41,75 @@ their own. Justify this change by the alignments it recovers, below.
 the class: "an alignment whose query coords sit outside this window but whose
 mate is on-screen in v2." Today those are simply absent.
 
-## The blocker, narrower than the comment says
+**But that is the smaller half, and it is no longer this doc's to claim.** The
+user-visible complaint — "my locus is syntenic to something and the view says
+nothing" — has two causes, and the *other* one costs nothing to fix:
 
-`executeSyntenyFeaturesAndPositions.ts` says a two-axis fetch "can't dedupe q-
-against t-perspective rows (PIF gives them distinct file offsets, hence distinct
-feature ids)." True of **ids** — but ids are distinct on purpose, and `syntenyId`
-is the key that joins them.
+- anchored on the **query** axis, mate on a contig the target view is not
+  displaying → **already fetched**, discarded in the worker's decorate loop.
+  This is [offscreen-synteny-mates](offscreen-synteny-mates.md), and on
+  `demos/grape_peach_cacao` it is 73% of peach chr1's anchors.
+- anchored on the **target** axis, mate outside the query window → never
+  requested. This doc.
 
-The real blocker is PIF alone: its two perspectives are separate indexed
-records, so `fileOffset` — and therefore `syntenyId` — genuinely differs there,
-where for MCScan (`rowNum`) and BLAST (`i`) one source row generates both
-perspectives from one index and the join works today. Fixing PIF means giving
-both of its rows a perspective-stable key: the query-perspective offset carried
-on both, or a hash of the alignment tuple.
+Read that one first. If it lands, the remaining case for a second fetch is
+narrower and better defined than "the fetch is incomplete", which is how this was
+pitched and is no longer specific enough to justify it.
 
-*Unverified:* the PIF specifics above are inferred from `syntenyId: fileOffset`
-and the shape of the format, not from reading
-`PairwiseIndexedPAFAdapter`'s record generation. Check that first — it is the
-whole feasibility question.
+## The blocker — verified, and it is two adapters, not one
 
-That comment should be narrowed regardless of whether this is built. As written
-it reads as "cross-perspective dedupe is impossible", which is not what the
-codebase does.
+`executeSyntenyFeaturesAndPositions.ts` used to say a two-axis fetch "can't
+dedupe q- against t-perspective rows (PIF gives them distinct file offsets, hence
+distinct feature ids)." True of **ids** — but ids are distinct on purpose, and
+`syntenyId` is the key that joins them. That comment has been narrowed to the
+below.
+
+Checked 2026-08-14, against `make-pif/pif-generator.ts` and
+`AllVsAllPAFAdapter.ts`. Three adapters join today; two do not, for reasons that
+have nothing to do with each other:
+
+| adapter | `syntenyId` | joinable across perspectives? |
+| --- | --- | --- |
+| MCScan | `rowNum` | yes |
+| BLAST | `i` | yes |
+| in-memory PAF | record index | yes |
+| **PIF** | `fileOffset` | **no** — see below |
+| **all-vs-all PAF** | `record * 2 + (flip ? 0 : 1)` | **no**, deliberately |
+
+**PIF.** Confirmed, not inferred. `pif-generator.ts` emits both perspectives as
+two separate text lines per PAF record (`` pifRow([`t${c2}`, …]) +
+pifRow([`q${c1}`, …]) ``), and then the whole file goes through
+`sort -k1,1 -k3,3n` before bgzip. So the two rows are not merely at different
+offsets, they are sorted arbitrarily far apart, and `fileOffset` carries no
+recoverable relationship between them. Fixing it means writing a
+perspective-stable key into the rows themselves — a tag holding the
+query-perspective offset on both, or a hash of the alignment tuple — which is a
+**file-format change**: existing `.pif.gz` files would not carry it, so the join
+has to degrade gracefully or the feature has to require regeneration. That is the
+real cost, and it is larger than "give PIF a better id" suggested.
+
+**All-vs-all.** Numbers the two sides apart on purpose, because there they are
+not two views of one alignment — they are separate drawables, and
+`markReciprocalDuplicates` has already decided which genuine restatements to
+collapse. A join key here would fight that pass rather than help it. Whatever
+this doc becomes, all-vs-all wants the two-axis dedupe to be a no-op, not a
+join.
+
+## How much it would actually recover
+
+Measured on `demos/grape_peach_cacao` (method and caveats in
+[offscreen-synteny-mates](offscreen-synteny-mates.md)), whole chromosome each
+axis, peach chr1 on top against grape chr1:
+
+- class this doc recovers (anchored on grape chr1, peach mate off peach chr1):
+  **74 anchors**
+- class the cheap fix recovers (anchored on peach chr1, grape mate off grape
+  chr1): **2767 anchors**
+
+Stack them the other way and the two numbers swap, because the fetch follows the
+top row. So this doc's class is not inherently the smaller one — but on any given
+stacking it is the one you did **not** get for free, and a session proposing this
+should measure its own case rather than reuse either number.
 
 ## Justify it on the dropped alignments, not on refNames
 
@@ -80,7 +127,13 @@ bug that has a cheaper fix.
 
 - Two fetches per level instead of one, against a whole-genome PAF.
 - The dedupe moves from `f.id()` to `syntenyId`, which has to hold across
-  every adapter, not just the three that emit a joinable one today.
+  every adapter, not just the three that emit a joinable one today — and for PIF
+  that means a format change old files won't have.
+- **A wrong join is worse than no join**, and it fails silently in the direction
+  that looks fine. Two rows that should have merged draw one ribbon twice, which
+  is exactly the doubled-alpha artifact `markReciprocalDuplicates` exists to
+  remove ("the polygons are oddly darker than expected"); nothing errors, the
+  band just composites at 0.36 where every other figure sits at 0.2.
 - Feature ids are already not comparable across a tiered PIF's two tiers
   (`setRpcData`'s comment, and `lodMode` on the resolve RPC). A cross-perspective
   key has to survive that too, or it reintroduces the same trap one level down.

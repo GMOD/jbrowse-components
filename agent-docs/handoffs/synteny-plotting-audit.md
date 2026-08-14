@@ -41,6 +41,23 @@ looked at it. It is two O(n) passes plus a capacity pre-pass, all in the worker,
 so it costs a fetch's latency rather than a frame — which is why it was left
 alone here, not because it is known to be tight.
 
+## Fetch completeness — moved out of this thread
+
+A follow-up pass split the "the view silently omits alignments" problem in two
+and filed both. Nothing here is left to decide:
+
+- [ideas/offscreen-synteny-mates.md](../ideas/offscreen-synteny-mates.md) — the
+  half that is already fetched and thrown away in the decorate loop, measured at
+  73% of peach chr1's anchors on `demos/grape_peach_cacao`, plus the staging for
+  drawing it as a stub/box.
+- [ideas/two-axis-synteny-fetch.md](../ideas/two-axis-synteny-fetch.md) — the
+  half that needs a second fetch. Its blocker is now **verified** rather than
+  inferred, and it is two adapters (PIF, all-vs-all), with PIF's fix being a
+  file-format change.
+
+Both source comments in `executeSyntenyFeaturesAndPositions.ts` were narrowed to
+match.
+
 ## Not done, with what is known
 
 ### `MAX_PAN_SKEW_PX`'s comment now describes a tree that no longer exists

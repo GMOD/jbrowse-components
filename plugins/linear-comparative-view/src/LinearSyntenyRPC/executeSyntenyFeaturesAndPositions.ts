@@ -140,8 +140,22 @@ export async function executeSyntenyFeaturesAndPositions({
   // spanned the whole genome. Scoping it therefore drops one class the old
   // whole-genome fetch happened to include: an alignment whose query coords sit
   // outside this window but whose mate is on-screen in v2. That is inherent to a
-  // single-axis fetch; a two-axis fetch can't dedupe q- against t-perspective
-  // rows (PIF gives them distinct file offsets, hence distinct feature ids).
+  // single-axis fetch.
+  //
+  // Restoring the second fetch is blocked on a join key, not on dedupe being
+  // impossible — `syntenyId` exists for exactly this and MCScan (`rowNum`),
+  // BLAST (`i`) and in-memory PAF (record index) all give one record's two
+  // perspectives the SAME one. Two adapters do not, for unrelated reasons:
+  // make-pif writes the q- and t-rows as separate lines and then sorts the whole
+  // file, so PIF's `syntenyId: fileOffset` is unrelated across perspectives; and
+  // AllVsAllPAFAdapter numbers them apart on purpose (`record * 2 + flip`)
+  // because there the two sides are separate drawables that
+  // `markReciprocalDuplicates` has already reconciled. See
+  // agent-docs/ideas/two-axis-synteny-fetch.md.
+  //
+  // Note this class is only HALF of what the view fails to draw, and the cheaper
+  // half is dropped further down rather than here — see the decorate loop's
+  // `v2RefNames.has` and agent-docs/ideas/offscreen-synteny-mates.md.
   const allFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(
     v1.fetchRegions,
     {
@@ -161,6 +175,16 @@ export async function executeSyntenyFeaturesAndPositions({
   // shrinks the sort input to the visible subset. Behavior-preserving — the
   // projection loop skipped these anyway (never incremented validCount), so the
   // featureId→index mapping is unchanged.
+  //
+  // The v2 half of that test is also where the view's largest silent omission
+  // happens, and unlike the fetch-scoping class above these features are ALREADY
+  // IN HAND: an alignment anchored in the visible v1 window whose mate lands on a
+  // contig v2 is not displaying is fetched, decoded, and dropped right here with
+  // nothing said. It is not a rare edge — on demos/grape_peach_cacao, peach chr1
+  // against grape chr1 draws 1029 of its 3796 anchors and discards the other 2767
+  // (73%), which run to nine other grape contigs in clean paleopolyploid blocks.
+  // Surfacing them needs no fetch change; see
+  // agent-docs/ideas/offscreen-synteny-mates.md.
   const v1Index = buildBpRegionIndex(v1)
   const v2Index = buildBpRegionIndex(v2)
   const v1RefNames = v1Index.entries
