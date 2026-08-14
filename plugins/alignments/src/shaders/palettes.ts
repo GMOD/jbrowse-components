@@ -65,17 +65,34 @@ export const LINKED_READ_SLOT_CATEGORY = [
   'interchrom',
 ] as const satisfies readonly SwatchCategory[]
 
-function resolve(
-  slots: readonly SwatchCategory[],
-  c: ColorPalette,
-): RGBColor[] {
-  return slots.map(category => c[swatchPaletteKeys[category] as PaletteKey])
+// Slot → palette KEY, resolved through `swatchPaletteKeys` once at module load.
+// Both readers take these arrays, so the derivation still happens in exactly one
+// place — which is the whole point of the tables above:
+//
+// - `buildArcColorPalette` / `buildLinkedReadColorPalette` below, for the
+//   Canvas2D and SVG arc renderers and the linked-read overlays, which want the
+//   resolved colours as an array.
+// - `GpuAlignmentsRenderer`'s per-frame UBO write, which walks these keys
+//   straight into the uniform buffer rather than building an array it discards.
+//   That writer runs once per region, per track, per frame.
+const ARC_SLOT_KEYS: readonly PaletteKey[] = ARC_SLOT_CATEGORY.map(
+  category => swatchPaletteKeys[category] as PaletteKey,
+)
+const LINKED_READ_SLOT_KEYS: readonly PaletteKey[] =
+  LINKED_READ_SLOT_CATEGORY.map(
+    category => swatchPaletteKeys[category] as PaletteKey,
+  )
+
+export { ARC_SLOT_KEYS, LINKED_READ_SLOT_KEYS }
+
+function resolve(keys: readonly PaletteKey[], c: ColorPalette): RGBColor[] {
+  return keys.map(key => c[key])
 }
 
 export function buildArcColorPalette(c: ColorPalette) {
-  return resolve(ARC_SLOT_CATEGORY, c)
+  return resolve(ARC_SLOT_KEYS, c)
 }
 
 export function buildLinkedReadColorPalette(c: ColorPalette) {
-  return resolve(LINKED_READ_SLOT_CATEGORY, c)
+  return resolve(LINKED_READ_SLOT_KEYS, c)
 }

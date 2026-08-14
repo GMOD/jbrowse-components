@@ -32,7 +32,6 @@ before anyone noticed.
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
 | [Share one position array across a combined mod code](#share-one-position-array-across-a-combined-modification-codes-types) | alignments, perf | 2.21x measured; synthesize the `C+mh` tag, no fixture has one |
-| [Hoist the palette UBO field list](#hoist-the-palette-ubo-field-list-out-of-the-per-frame-write) | alignments, perf | mechanical; read the base-slot comment before widening it |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Audit the wiggle colour paths for the same split](#audit-the-wiggle-colour-paths-for-the-same-split) | wiggle | read `sourcesLogic.ts` against its legend |
 | [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
@@ -94,21 +93,6 @@ combined code's entries carry identical positions, so sharing the array by
 identity is what makes grouping those walks possible.
 [handoffs/multi-track-interaction-cost.md](handoffs/multi-track-interaction-cost.md)
 has the rest of that thread.
-
-### Hoist the palette UBO field list out of the per-frame write
-
-`GpuAlignmentsRenderer`'s `writePaletteToUbo` has
-`Object.entries(PALETTE_UNIFORM_FIELDS)` as its loop header, and `writeUniforms`
-calls it per block frame — so once per region, per track, per frame. A
-module-level pre-resolved array of `[uboIndex, paletteKey]` removes both the
-allocation and the `UU[...]` lookup. Worth ~0.8% of one six-track pan profile;
-mechanical.
-
-Do **not** reach for the larger version (memoize the palette block on
-`state.colors` identity) without reading the comment above `writeUniforms`
-first: the five base slots are overwritten afterwards from
-`effectiveBaseColors(state)`, and a uniform slot left unwritten keeps whatever
-the last block render put there.
 
 ### Grey out the genomic-coordinate option instead of hiding it
 

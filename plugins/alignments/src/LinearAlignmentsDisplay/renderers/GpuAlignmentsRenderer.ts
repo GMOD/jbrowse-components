@@ -39,10 +39,7 @@ import { PER_BASE_QUALITY_PASS } from '../../features/perBaseQuality/packGpu.ts'
 import { READ_PASS } from '../../features/read/packGpu.ts'
 import { SNP_COVERAGE_PASS } from '../../features/snpCoverage/packGpu.ts'
 import { SOFTCLIP_BASES_PASS } from '../../features/softclip/packBases.ts'
-import {
-  buildArcColorPalette,
-  buildLinkedReadColorPalette,
-} from '../../shaders/palettes.ts'
+import { ARC_SLOT_KEYS, LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
 import { CLIP_PASS } from '../../shared/clipPass.ts'
@@ -300,30 +297,60 @@ function packRgb(rgb: RGBColor) {
   return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
 }
 
-function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
-  for (const [uniform, key] of Object.entries(PALETTE_UNIFORM_FIELDS)) {
-    u[UU[uniform as keyof typeof UU]] = packRgb(c[key])
+// The two tables above resolved to `[uboWordIndex, paletteKey]` once at module
+// load, because `writeUniforms` calls the writer below per BLOCK FRAME — once
+// per region, per track, per frame. As `Object.entries` loop headers they
+// allocated a pair array per field on every one of those calls, and each field
+// then cost a string-keyed lookup (`UU[...]`, `READ_COLOR_CATEGORY[...]`) to
+// reach a word index that never changes.
+//
+// The palette VALUES are still read per frame, from the live `ColorPalette`: it
+// is themed and the modifications-mode mute rewrites five slots afterwards, so
+// only the indices are constant. See `writeUniforms` before reaching for the
+// larger version that memoizes the block.
+type PaletteKey = keyof ColorPalette
+
+const PALETTE_UBO_SLOTS: readonly (readonly [number, PaletteKey])[] =
+  Object.entries(PALETTE_UNIFORM_FIELDS).map(
+    ([uniform, key]) => [UU[uniform as keyof typeof UU], key] as const,
+  )
+
+const READ_CATEGORY_UBO_SLOTS: readonly (readonly [number, PaletteKey])[] =
+  Object.entries(readCategoryPaletteKeys).map(
+    ([category, key]) =>
+      [READ_COLOR_CATEGORY[category as ReadColorCategory], key] as const,
+  )
+
+// Takes the shader's own generated setter, which writes every component of an
+// element — so the alpha lane cannot be left out here. The shaders read `.xyz`
+// and set their own, which is what made the fourth store look optional, and a
+// uniform slot left unwritten keeps whatever the last block render put there.
+//
+// Module-level rather than a closure inside the writer, for the reason the slot
+// tables are: it was rebuilt per block frame.
+function writePaletteSlots(
+  f: Float32Array,
+  c: ColorPalette,
+  set: (
+    f32: Float32Array,
+    i: number,
+    v0: number,
+    v1: number,
+    v2: number,
+    v3: number,
+  ) => void,
+  slotCount: number,
+  keys: readonly PaletteKey[],
+) {
+  for (let i = 0; i < slotCount; i++) {
+    const rgb = c[keys[i]!]
+    set(f, i, rgb[0], rgb[1], rgb[2], 1)
   }
-  // Takes the shader's own generated setter, which writes every component of an
-  // element — so the alpha lane cannot be left out here. The shaders read `.xyz`
-  // and set their own, which is what made the fourth store look optional, and a
-  // uniform slot left unwritten keeps whatever the last block render put there.
-  const writeSlots = (
-    set: (
-      f32: Float32Array,
-      i: number,
-      v0: number,
-      v1: number,
-      v2: number,
-      v3: number,
-    ) => void,
-    slotCount: number,
-    palette: readonly RGBColor[],
-  ) => {
-    for (let i = 0; i < slotCount; i++) {
-      const rgb = palette[i]!
-      set(f, i, rgb[0], rgb[1], rgb[2], 1)
-    }
+}
+
+function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
+  for (const [slot, key] of PALETTE_UBO_SLOTS) {
+    u[slot] = packRgb(c[key])
   }
   // Driven by the SHADER's slot count, not the palette's, so a palette that
   // fell out of step leaves an undefined behind here rather than silently
@@ -336,30 +363,32 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   // read-cloud endpoint squares alike. The squares had a `arcMarkerColor` copy
   // of their own for a substitution that no longer exists (a pale short-insert
   // fill against the saturated stroke; both are pale now).
-  writeSlots(
+  //
+  // `ARC_SLOT_KEYS` / `LINKED_READ_SLOT_KEYS` are the slot tables' own
+  // resolution through `swatchPaletteKeys`, which is what `buildArcColorPalette`
+  // (the Canvas2D, SVG and overlay path) also reads — so this writes the same
+  // colours without materializing the array that function returns.
+  writePaletteSlots(
+    f,
+    c,
     readShader.setUniformArcColor,
     USLOTS.arcColor.length,
-    buildArcColorPalette(c),
+    ARC_SLOT_KEYS,
   )
-  writeSlots(
+  writePaletteSlots(
+    f,
+    c,
     readShader.setUniformLinkedReadColor,
     USLOTS.linkedReadColor.length,
-    buildLinkedReadColorPalette(c),
+    LINKED_READ_SLOT_KEYS,
   )
   // One color per read category, indexed by the RC_* the CPU classifier baked
   // into each instance. read.slang used to branch through 17 `cat == RC_X` arms
   // to reach the same named colors; this is that mapping, from the one table
   // the legend also reads.
-  for (const [category, key] of Object.entries(readCategoryPaletteKeys)) {
+  for (const [slot, key] of READ_CATEGORY_UBO_SLOTS) {
     const rgb = c[key]
-    readShader.setUniformReadCategoryColor(
-      f,
-      READ_COLOR_CATEGORY[category as ReadColorCategory],
-      rgb[0],
-      rgb[1],
-      rgb[2],
-      1,
-    )
+    readShader.setUniformReadCategoryColor(f, slot, rgb[0], rgb[1], rgb[2], 1)
   }
 }
 
