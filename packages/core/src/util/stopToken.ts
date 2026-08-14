@@ -23,7 +23,11 @@ import type { TimeGate } from './timeGate.ts'
  * - an atomic flag in a `SharedArrayBuffer` token, where the page happens to be
  *   cross-origin isolated. Cheap, but never assume it: SAB needs COOP/COEP on
  *   the top-level document, which an embeddable library cannot require of its
- *   host page.
+ *   host page. **In practice our deployments do not set those headers, so the
+ *   string path below is not the fallback — it is the path.** Judge any
+ *   cancellation bug by what it does to a string token, and don't spend
+ *   complexity optimizing the SAB branch: a lost cancellation that "only"
+ *   affects string tokens affects everybody.
  * - otherwise a revocable blob URL probed by synchronous XHR, throttled because
  *   it is expensive (https://yoyo-code.com/how-to-stop-synchronous-web-worker/,
  *   (c) 2022 Matyáš Racek, MIT).
