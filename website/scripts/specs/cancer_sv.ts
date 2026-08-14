@@ -956,8 +956,19 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // the der3 lane unchaining into its own rows, then -350 for the compact
     // pass (read lanes at the Compact pitch, both gene lanes and the ribbon
     // band down), then -179 for the super-compact pass, which is what the run
-    // reported blank below the content once both read lanes went to a 1px pitch
-    viewportHeight: 921,
+    // reported blank below the content once both read lanes went to a 1px pitch.
+    //
+    // THEN -110 FOR THE LABEL ROWS AND THE BANDS (review: "are there any galaxy
+    // brain ideas to try to improve y-coord real estate usage? the figure is
+    // just very tall but its a bit of a death by 1000 cuts thing"). Profiled the
+    // PNG for runs of uniform rows first, because the obvious guess is one big
+    // empty band: there is no such band, 52 css px of uniform rows in the whole
+    // 921. The height is all content, and the thousand cuts are mostly TRACK
+    // LABEL ROWS -- `trackLabels: 'overlapping'` floats a track's name over its
+    // own data instead of giving it a line above, and there are five tracks
+    // here. Two of them take it; see the der3 row for why the other three
+    // cannot. The rest is the ribbon band and the two coverage bands, trimmed.
+    viewportHeight: 811,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -968,6 +979,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           views: [
             {
               assembly: 'hg38',
+              // The name over its own data rather than on a line above it, on
+              // both rows: five tracks x ~22 px is the single biggest thing in
+              // this frame's height, and no display here sets `prefersOffset`
+              // (which is what would refuse it -- an alignments display only
+              // does so while GROUPING, and neither lane groups).
+              trackLabels: 'overlapping',
               // space-separated locstrings put all three loci in one panel, so
               // every ribbon has a target. A single chr3 window would leave the
               // two templated inserts -- the whole point of the figure --
@@ -1079,7 +1096,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // run's own size checks cannot see.
                   heightMode: 'grow',
                   height: 200,
-                  coverageHeight: 40,
+                  coverageHeight: 30,
                   featureHeight: 1,
                   colorBy: { type: 'strand' },
                 },
@@ -1088,6 +1105,16 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             {
               assembly: 'der3_RARB_BICC1_TRHDE',
               loc: 'der3_RARB_BICC1_TRHDE:1-39,549',
+              // NOT overlapping on this row, unlike the one above, and the
+              // difference is the segments lane: `trackLabels` is a property of
+              // the VIEW, so it is all three tracks or none, and floating the
+              // names over the data puts "Where each segment came from" exactly
+              // where that lane draws its first feature's own label. Which is
+              // `chr3:25,326,821-25,359,568 (32.7 kb)` -- the provenance of the
+              // largest segment in the allele, and the thing the lane exists to
+              // say. The row above has no label under anything in its left
+              // margin, so it pays nothing for the same setting.
+              trackLabels: 'offset',
               // the same span in the allele's own coordinates, so the two
               // shadings are one object seen from both sides -- and it is the
               // window the next figure opens
@@ -1116,9 +1143,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   trackId: DER3_GENES_TRACK.trackId,
                   type: 'LinearBasicDisplay',
                   displayMode: 'compact',
-                  // 120 -> 90: three compact rows and their labels, which is
-                  // what the 32 kb arm plus the six genes beside it packs into
-                  height: 90,
+                  // 120 -> 90 -> 74: three compact rows and their labels,
+                  // which is what the 32 kb arm plus the six genes beside it
+                  // packs into. 74 is that content and nothing over.
+                  height: 74,
                 },
                 // THE READS ARE BACK, AS CHAINS (reviewer: "also show the reads.
                 // consider using view as pairs/link supplementary reads ... that
@@ -1172,7 +1200,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // what a reader follows and the overlaps are off-screen.
                 {
                   trackId: 'reads_vs_der3',
-                  coverageHeight: 40,
+                  coverageHeight: 30,
                   // super-compact, same reviewer note as the lane above. 53
                   // non-secondary records pack into ~41 rows (a few of the
                   // short ones share); at a 1px pitch that is 41px of reads
@@ -1204,12 +1232,45 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // own panel — the flat colour costs nothing there, and it is a figure
           // review already passed.
           colorBy: 'reference',
-          // 160 -> 110: four ribbons that do not cross need only enough band
-          // to leave one row and arrive at the other
-          levelHeights: [110],
+          // 160 -> 110 -> 88: four ribbons that do not cross need only enough
+          // band to leave one row and arrive at the other, and the two that DO
+          // cross (the inserts) cross near the right edge where the band is
+          // widest in bp terms rather than in px.
+          levelHeights: [88],
         },
       ],
     }),
+    // WHAT KIND OF EVENT THIS IS, said in the frame (review: "we should try to
+    // explain more about this sort of inverted dup (thats what this is right? or
+    // foldback?), using red text annotations"). Both, and the segments lane
+    // right under this callout is where it is legible: the allele's last stretch
+    // is chr3:25,352,683-25,359,111 INVERTED, and that interval sits inside the
+    // 32.7 kb chr3 arm the allele opened with. So the derivative turns around
+    // and re-reads sequence it has already carried, on the other strand -- a
+    // fold-back -- and the re-read stretch is therefore present twice, which is
+    // the duplication. The two templated inserts are what sits at the turn.
+    //
+    // Anchored to the der3 gene lane's own top edge rather than to a viewport y,
+    // and placed over its LEFT half, which is empty: the allele's seven
+    // projected genes all sit in the right third, and the 32 kb arm carries one
+    // label.
+    annotations: [
+      {
+        type: 'text',
+        anchor: {
+          view: [0, 1],
+          track: DER3_GENES_TRACK.trackId,
+          fracY: 0,
+          alignX: 'left',
+          dx: 40,
+          dy: 18,
+        },
+        textAlign: 'start',
+        text: 'Fold-back inversion\n\n• Out along chr3, then two short templated inserts\n• Back into chr3, inverted, over sequence already carried\n• So that stretch is in the allele twice, in opposite orientations',
+        fontSize: 20,
+        maxWidth: 700,
+      },
+    ],
   },
 
   // The same reconstruction at the scale of the stitching, and the check on it

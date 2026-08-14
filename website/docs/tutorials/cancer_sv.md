@@ -327,6 +327,14 @@ Ribbons below are colored by the reference chromosome they come from, so the
 wide green one is the chr3 arm and the crossing ribbons at right are the chr10
 and chr12 inserts with chr3 returning inverted.
 
+That last segment is what names the event. It is an interval the allele has
+already carried, read back on the other strand, so the derivative turns around
+on itself — a fold-back. The turn leaves that stretch in the allele twice in
+opposite orientations, which is the same thing as an inverted duplication, and
+the two templated inserts are what sits at the turn. Fold-backs are the
+canonical opening move of a breakage-fusion-bridge cycle, which is why a
+reconstruction is worth building for one.
+
 A read lane sits under each row. Against hg38 it draws split alignments only, so
 the band over it counts the molecules carrying a junction; on the allele it
 draws every read realigned there.
