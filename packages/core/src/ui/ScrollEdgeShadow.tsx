@@ -1,11 +1,10 @@
-import { colord } from '../util/colord.ts'
 import { clamp } from '../util/numericUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 
 /**
- * How tall each edge fade is. Deep enough that content dissolving into it reads
- * as a fade rather than as a crop, shallow enough that it never swallows a whole
- * row (the shortest row a display draws is ~7px in its most compact mode).
+ * How deep each edge fade is. Enough to read as a soft edge under the content
+ * rather than as a rule, not so deep that it dims a whole row (the shortest row
+ * a display draws is ~7px in its most compact mode).
  */
 const SHADOW_HEIGHT = 16
 
@@ -18,47 +17,31 @@ const SHADOW_HEIGHT = 16
 const EPSILON = 0.5
 
 const useStyles = makeStyles()(theme => {
-  // Fades content toward the track's OWN background, rather than shadowing it
-  // with ink. That is what makes one rule work in both themes: a black shadow
-  // is invisible on the dark theme's #121212 canvas, and the white shadow that
-  // replaces it brightens the last row of a dense pileup, which reads as a
-  // highlight rather than as an edge. Dissolving is the same statement in both
-  // — the content runs out of room — and it is *self-masking*: over empty
-  // background it is background-over-background, so a sparse track is marked
-  // only where something is actually being cut.
-  const bg = colord(theme.palette.background.paper)
-  const solid = bg.alpha(0.95).toRgbString()
-  // NOT the `transparent` keyword: that is transparent BLACK, and interpolating
-  // to it puts a grey cast through the middle of the ramp on a light theme.
-  const clear = bg.alpha(0).toRgbString()
-  // The boundary itself, for the case the dissolve cannot speak to: a strip of
-  // blank background at the edge with rows below it dissolves nothing and would
-  // otherwise say nothing. Dashed, in `text.disabled` — the language
-  // PileupTruncationRule already uses for "the content stops here".
-  const rule = `1px dashed ${theme.palette.text.disabled}`
+  // The ink flips with the theme, and has to: a black shadow is invisible on
+  // the dark theme's #121212 canvas, which is the same trap the scrollbar thumb
+  // hit before it became theme-aware.
+  const ink = theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
+  const from = `rgba(${ink},0.3)`
+  // NOT the `transparent` keyword, which is transparent BLACK: interpolating to
+  // it puts a grey cast through the middle of the ramp, and on the dark theme's
+  // white ink that is the whole ramp.
+  const to = `rgba(${ink},0)`
   return {
     edge: {
       position: 'absolute',
       left: 0,
       height: SHADOW_HEIGHT,
-      boxSizing: 'border-box',
       pointerEvents: 'none',
     },
-    top: {
-      background: `linear-gradient(to bottom, ${solid}, ${clear})`,
-      borderTop: rule,
-    },
-    bottom: {
-      background: `linear-gradient(to top, ${solid}, ${clear})`,
-      borderBottom: rule,
-    },
+    top: { background: `linear-gradient(to bottom, ${from}, ${to})` },
+    bottom: { background: `linear-gradient(to top, ${from}, ${to})` },
   }
 })
 
 /**
- * The "there is more content this way" edge fade for a display that scrolls its
- * content virtually — the same displays that mount `VerticalScrollbar`, drawn
- * from the same three numbers.
+ * The "there is more content this way" edge shadow for a display that scrolls
+ * its content virtually — the same displays that mount `VerticalScrollbar`,
+ * drawn from the same three numbers.
  *
  * It answers a question the scrollbar technically also answers and in practice
  * does not: **is this track showing me all of its features?** A 6px thumb on a
@@ -76,6 +59,15 @@ const useStyles = makeStyles()(theme => {
  *   off, to have a border to recolour).
  * - **It says which way.** Scrolled to the bottom, the bottom fade goes and the
  *   top one appears, so "am I at the end" is answerable without scrolling.
+ *
+ * Shadowing with ink rather than dissolving the content into the track's own
+ * background is a decision, not the obvious default, and the reason is the
+ * sparse case: a dissolve over empty background is background-over-background,
+ * so a track whose last visible strip happens to be blank — with rows below it —
+ * is marked by nothing at all. Ink marks the edge whatever is under it. The cost
+ * is that the dark theme's white ink brightens the last row of a dense pileup
+ * rather than darkening it; both were drawn and compared, and covering the
+ * sparse case won.
  *
  * The actionable half lives in the bottom-right corner (`TrackHeightIndicator`
  * — autogrow/fit, and the truncation warning for features that were dropped
