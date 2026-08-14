@@ -637,21 +637,22 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           { type: 'click', text: 'Filter by...' },
           { type: 'waitForText', text: 'Add track filters' },
           // The visible textarea, not the autosize shadow MUI renders beside
-          // it, and appended on a NEW LINE. `BaseLinearDisplay`'s `jexlFilters`
-          // slot has a non-empty default (the NCBI gbkey=Src cut), so
-          // `activeFilters()` prefills this dialog on every feature track and a
-          // bare type runs on to the end of that line, into a parse error. It
-          // is also the truer picture of the dialog: a list, one expression per
-          // line, that the reader adds to.
+          // it. Typed from column one, because the dialog opens EMPTY on a
+          // track that declares no filters of its own -- which is what this
+          // one does.
           //
-          // That default finds nothing in a bigBed with no gbkey field, which
-          // is why the figure below can set `jexlFiltersSetting` -- which
-          // REPLACES the configured list rather than extending it -- and still
-          // draw what a reader clicking along would get.
+          // It used to be typed onto a new line, and that was not a style
+          // choice: `BaseLinearDisplay`'s `jexlFilters` slot shipped the NCBI
+          // gbkey=Src cut as its default, `activeFilters()` seeded every
+          // feature track's dialog with it, and a bare type ran on to the end
+          // of that line into a parse error. The rule moved to
+          // `hideSourceFeatures` (a gate in buildFeatureAdmission, never in
+          // this dialog), so the leading newline now buys a blank first line
+          // and a picture of a list with a hole in it.
           {
             type: 'type',
             selector: '.MuiDialog-container textarea:not([aria-hidden="true"])',
-            value: `\n${GNOMAD_PLOF_FILTER}`,
+            value: GNOMAD_PLOF_FILTER,
           },
           { type: 'delay', ms: 500 },
         ],

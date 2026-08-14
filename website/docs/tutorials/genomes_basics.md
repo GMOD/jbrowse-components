@@ -153,10 +153,10 @@ into a shape, and **Track menu → Filter by...** takes either: `feature.AF` is
 the allele frequency, `feature.annot` gnomAD's own consequence class (pLoF,
 missense, synonymous or other).
 
-The dialog takes one jexl expression per line, each on its own line under the
-default already in the box, and the track redraws with the records that pass all
-of them: `jexl:feature.AF >= 0.001` keeps the variants standing in the
-population, `jexl:feature.annot == 'pLoF'` the predicted loss-of-function set.
+The dialog takes one jexl expression per line, and the track redraws with the
+records that pass all of them: `jexl:feature.AF >= 0.001` keeps the variants
+standing in the population, `jexl:feature.annot == 'pLoF'` the predicted
+loss-of-function set.
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu, and the dialog Filter by... opens over it, with a consequence-class expression typed in." />
 

@@ -3050,8 +3050,8 @@
   "genomes_basics/gnomad_filter_menu": {
     "name": "genomes_basics/gnomad_filter_menu",
     "status": "answered",
-    "note": "DONE, IN THE APP. gbkey!=Src shipped as the jexlFilters slot default, and that slot seeds the Filter by... dialog -- so every user of every track met a jexl expression they had not written, about one annotation source, before writing one of their own. It is hideSourceFeatures now, a gate in buildFeatureAdmission that never reaches the dialog, defeatable by config for anyone who wants the whole-molecule region record drawn. The dialog opens empty on a track that declares no filters of its own. The figure itself is unchanged and needs a re-shoot only if you want the empty box in it.\n\nprevious notes:\nwe may want to find a way to remove the gbkey Src from the default list. i think it confuses people. i dunno. it is just for ncbi gff. ",
-    "reviewedAt": "2026-08-14T05:10:00.000Z",
+    "note": "DONE, IN THE APP. gbkey!=Src shipped as the jexlFilters slot default, and that slot seeds the Filter by... dialog -- so every user of every track met a jexl expression they had not written, about one annotation source, before writing one of their own. It is hideSourceFeatures now, a gate in buildFeatureAdmission that never reaches the dialog, defeatable by config for anyone who wants the whole-molecule region record drawn. The dialog opens empty on a track that declares no filters of its own. AND THE FIGURE IS RE-SHOT, which was not optional the way an earlier note here said: this spec typed its expression onto a NEW LINE precisely because the dialog arrived prefilled, so with the default gone the leading newline drew a blank first line, and both the frame and the prose beside it (\"each on its own line under the default already in the box\") described a dialog the app no longer opens.\n\nprevious notes:\nwe may want to find a way to remove the gbkey Src from the default list. i think it confuses people. i dunno. it is just for ncbi gff. ",
+    "reviewedAt": "2026-08-14T05:40:00.000Z",
     "hash": "de2df6ca332388024d2ec8a3bb26eb0fd7f8a0a1"
   },
   "genomes_basics/gnomad_filters": {

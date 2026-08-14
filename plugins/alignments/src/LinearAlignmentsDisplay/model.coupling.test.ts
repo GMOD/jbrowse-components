@@ -388,7 +388,7 @@ describe('sortedBy refName normalization', () => {
     display.setSortSlot({
       ...slot,
       assemblyName: 'volvox',
-    } as unknown)
+    })
 
     expect(display.sortedBy).toBeUndefined()
   })
