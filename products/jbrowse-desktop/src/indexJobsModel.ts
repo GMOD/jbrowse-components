@@ -41,6 +41,18 @@ interface JobsManagerParent {
 // assertion, so without this the shadow could silently drift from the root
 // (e.g. a renamed rpcManager) and only surface at runtime. If this errors, the
 // shadow above claims something rootModel no longer provides.
+//
+// It covers `jbrowse` and `textSearchManager` and NOT `session`, which it
+// cannot check at all: BaseRootModel declares `session` against the erased
+// `IAnyType` to avoid a root<->session cycle, so `DesktopRootModel['session']`
+// is `any` and any shape whatsoever satisfies this assert. Two things follow.
+// The declared `SessionWithDrawerWidgets` is a statement of what this file uses
+// rather than a checked fact — verify it against sessionModel.ts by hand. And
+// it hides that the real prop is `types.maybe`: every other desktop reader of
+// `rootModel.session` handles undefined, and this file is the one that does
+// not. That is deliberate, not an oversight — no action here is reachable
+// before pluginManagers.tsx sets the session, because `jobsQueue` is volatile
+// and so never arrives pre-populated from a snapshot.
 export type _JobsManagerParentCheck = AssertExtends<
   DesktopRootModel,
   JobsManagerParent
