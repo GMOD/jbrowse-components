@@ -63,7 +63,6 @@ export function applyDisplayOrder(
   data: {
     snps: LDSnp[]
     ldValues: Float32Array
-    recombination: { values: Float32Array; positions: number[] }
   },
   order: Uint32Array,
 ) {
@@ -76,22 +75,5 @@ export function applyDisplayOrder(
       ldValues[rowBase + j] = data.ldValues[ldPairIndex(order[i]!, order[j]!)]!
     }
   }
-
-  // Recombination is 1-r² between axis-adjacent SNPs. Within a reversed region
-  // the pairs are the same ones in the opposite order; the one pair that
-  // straddles a region boundary now joins two SNPs that aren't neighbors in the
-  // genome, so it is marked unmeasured (NaN) and the plot bridges it, rather
-  // than reporting LD between an arbitrary pair.
-  const values = new Float32Array(Math.max(0, n - 1))
-  const positions: number[] = []
-  for (let k = 0; k < n - 1; k++) {
-    const a = order[k]!
-    const b = order[k + 1]!
-    values[k] =
-      Math.abs(a - b) === 1
-        ? data.recombination.values[Math.min(a, b)]!
-        : Number.NaN
-    positions.push((snps[k]!.start + snps[k + 1]!.start) / 2)
-  }
-  return { snps, ldValues, recombination: { values, positions } }
+  return { snps, ldValues }
 }

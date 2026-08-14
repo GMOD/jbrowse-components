@@ -17,7 +17,6 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     focalSnpIndex: -1,
     signedLD: false,
     showLDTriangle: true,
-    showRecombination: false,
     showLegend: false,
     showLegendDisplayTypeDefault: {
       slot: 'showLegend',
@@ -36,7 +35,6 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     setLDMetric: jest.fn(),
     setSignedLD: jest.fn(),
     setShowLDTriangle: jest.fn(),
-    setShowRecombination: jest.fn(),
     setShowLegend: jest.fn(),
     setShowLabels: jest.fn(),
     setShowVerticalGuides: jest.fn(),
@@ -178,7 +176,6 @@ test('the Show menu carries every visibility and layout toggle', () => {
     labels(subMenuOf(buildLDTrackMenuItems(makeSelf()), 'Show...')!),
   ).toEqual([
     'Show LD triangle',
-    'Show recombination track',
     'Show legend',
     'Show variant labels',
     'Show vertical guides on hover',

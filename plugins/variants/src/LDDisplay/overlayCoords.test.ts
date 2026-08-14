@@ -31,12 +31,6 @@ function ldData(
     hasDprime: true,
     method: 'phased',
     signedLD: false,
-    recombination: {
-      values: new Float32Array(n - 1).fill(0.5),
-      positions: snps
-        .slice(0, -1)
-        .map((s, i) => (s.start + snps[i + 1]!.start) / 2),
-    },
     ...overrides,
   }
 }
@@ -50,67 +44,6 @@ function loadedDisplay({ scrollTo = 0, data = {} } = {}) {
   display.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
   return { display, view, width }
 }
-
-// The recombination curve labels the boundary between two columns, so every
-// point belongs exactly halfway between the two connector lines it sits over.
-// Laying it out across the live viewport width instead — what the plot
-// component used to do — put it there only while the content happened to fill
-// the viewport at the zoom the data was fetched at.
-describe('recombinationCoords rides the matrix frame', () => {
-  it('lands each point between the two columns it measures', () => {
-    const { display } = loadedDisplay()
-    const mx = display.connectorLineCoords.map(c => c.mx)
-    const xs = display.recombinationCoords.map(c => c.x)
-
-    expect(xs.length).toBe(3)
-    for (const [k, x] of xs.entries()) {
-      expect(x).toBeCloseTo((mx[k]! + mx[k + 1]!) / 2, 6)
-    }
-  })
-
-  it('carries the left gap when the view is scrolled past genome start', () => {
-    const { display } = loadedDisplay({ scrollTo: -100 })
-    const { viewOffsetX } = display.renderTransform
-    const mx = display.connectorLineCoords.map(c => c.mx)
-
-    expect(viewOffsetX).toBe(100)
-    expect(display.recombinationCoords[0]!.x).toBeCloseTo(
-      (mx[0]! + mx[1]!) / 2,
-      6,
-    )
-    // and that is right of the viewport edge by the gap, not pinned to it
-    expect(display.recombinationCoords[0]!.x).toBeGreaterThan(100)
-  })
-
-  it('rescales with the triangle while a zoom refetch is in flight', () => {
-    const { display, view } = loadedDisplay()
-    const before = display.recombinationCoords.map(c => c.x)
-
-    view.zoomTo(view.bpPerPx / 2)
-    const { scale, viewOffsetX } = display.renderTransform
-    expect(scale).toBe(2)
-    expect(display.recombinationCoords.map(c => c.x)).toEqual(
-      before.map(x => x * scale + viewOffsetX),
-    )
-  })
-
-  it('reports one max for the curve and its scale bar, ignoring unmeasured pairs', () => {
-    const { display } = loadedDisplay({
-      data: {
-        recombination: {
-          values: Float32Array.from([0.25, Number.NaN, 0.75]),
-          positions: [500, 1500, 2500],
-        },
-      },
-    })
-    expect(display.recombinationMax).toBe(0.75)
-    expect(display.recombinationCoords.map(c => c.value)).toEqual([
-      0.25,
-      Number.NaN,
-      0.75,
-    ])
-  })
-})
 
 // The worker drops back to uniform cells when the viewport holds more than one
 // region, so the slot alone doesn't say what is on screen. Everything that
@@ -221,9 +154,9 @@ describe('cellToScreen and screenToCell are inverses', () => {
 
 // `columnX` is the x half of `cellToScreen` written a second time — the point on
 // the diagonal at a fractional column index. It stays a separate expression on
-// purpose: routing it through `cellToScreen` would make every connector line and
-// recombination point track `yScalar` and `effectiveLineZoneHeight`, which they
-// genuinely do not depend on. What that costs is a way for the two to drift, and
+// purpose: routing it through `cellToScreen` would make every connector line
+// track `yScalar` and `effectiveLineZoneHeight`, which they genuinely do not
+// depend on. What that costs is a way for the two to drift, and
 // `columnX`'s own comment names the symptom — everything anchored through it
 // slides off the triangle. So the agreement is asserted instead.
 test('columnX agrees with the x half of cellToScreen', () => {

@@ -56,11 +56,10 @@ test('LD reserves the genomic-positions zone for whatever is switched on', () =>
   display.setLineZoneHeight(140)
   expect(display.effectiveLineZoneHeight).toBe(140)
 
-  // the recombination plot wants the same band at its own configured height —
-  // whichever is taller wins, so neither ends up drawn over the triangle
-  display.setShowRecombination(true)
-  display.setLineZoneHeight(10)
-  expect(display.effectiveLineZoneHeight).toBe(display.recombinationZoneHeight)
+  // off again spends 0 px, so switching labels on and back off leaves the
+  // triangle exactly the size it was
+  display.setShowLabels(false)
+  expect(display.effectiveLineZoneHeight).toBe(0)
 })
 
 test('a resize lands on the config, so it outlives the display instance', () => {

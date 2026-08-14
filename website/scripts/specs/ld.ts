@@ -64,7 +64,6 @@ const lctTrack = (name: string, height = 510) => ({
       type: 'LDDisplay',
       showLDTriangle: true,
       showLegend: true,
-      showRecombination: true,
       minorAlleleFrequencyFilter: 0.35,
       // Cells sized by genomic distance, so the triangle shares the x axis of
       // the gene lane and the ruler above it (review: "consider also using
@@ -74,9 +73,8 @@ const lctTrack = (name: string, height = 510) => ({
       // read as running off the left edge no matter how far the window zoomed
       // out. On, its edges land under the coordinates they are at.
       useGenomicPositions: true,
-      // 460 for the triangle + 50 for the recombination zone showRecombination
-      // adds above it, when the triangle is the whole figure. The haploblock
-      // figure stacks it over an 800px matrix and passes less.
+      // The triangle is the whole figure here. The haploblock figure stacks it
+      // over an 800px matrix and passes less.
       height,
     },
   ],
@@ -424,9 +422,6 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
       type: 'LDDisplay',
       showLDTriangle: true,
       showLegend: true,
-      // the recombination curve is half the evidence: its dip over the block
-      // exists in the panel lane and not in the pooled one
-      showRecombination: true,
       minorAlleleFrequencyFilter: 0.35,
       height: 330,
       // Cells sized by genomic distance (review: "potentially use 'proportional

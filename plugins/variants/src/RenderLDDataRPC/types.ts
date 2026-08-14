@@ -3,7 +3,6 @@ import type {
   LDMethod,
   LDMetric,
   LDSnp,
-  RecombinationData,
 } from '../VariantRPC/getLDMatrix.ts'
 
 const PRECOMPUTED_LD_ADAPTERS = [
@@ -62,7 +61,6 @@ export interface LDDataResult {
   signedLD: boolean
   snps: LDSnp[]
   filterStats?: FilterStats
-  recombination?: RecombinationData
   // Only present for genomic positions mode (pre-computed per-cell positions
   // for the GPU interleaved buffer).
   positions?: Float32Array

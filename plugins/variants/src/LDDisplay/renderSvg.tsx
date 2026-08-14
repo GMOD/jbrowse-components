@@ -6,8 +6,6 @@ import {
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
-import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
 import LDColumnZone from './components/LDColumnZone.tsx'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
@@ -40,7 +38,6 @@ function LdSvgBody({
     effectiveLdMetric,
     effectiveSignedLD,
     showLegend,
-    showRecombination,
     effectiveLineZoneHeight,
   } = self
 
@@ -52,15 +49,11 @@ function LdSvgBody({
   }
 
   // The live canvas's own box (`canvasWidth`), not the raw viewport width —
-  // otherwise the export's recombination plot and legend drift from the matrix
-  // when the genome doesn't fill the viewport or spans multiple regions.
+  // otherwise the export's legend drifts from the matrix when the genome
+  // doesn't fill the viewport or spans multiple regions.
   const visibleWidth = self.canvasWidth
   const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
   const triangleHeight = height - effectiveLineZoneHeight
-
-  // The live overlay's own layout, off the model, so the export can't place the
-  // plot somewhere the screen doesn't.
-  const { top: recombTop, height: recombHeight } = self.recombinationZone
 
   return (
     <>
@@ -91,22 +84,6 @@ function LdSvgBody({
           />
         </g>
         <LDColumnZone model={self} exportSVG />
-        {showRecombination && rpcData.recombination ? (
-          <g transform={`translate(0 ${recombTop})`}>
-            <RecombinationTrack
-              points={self.recombinationCoords}
-              maxValue={self.recombinationMax}
-              width={visibleWidth}
-              height={recombHeight}
-              exportSVG
-            />
-            <RecombinationYScaleBar
-              height={recombHeight}
-              maxValue={self.recombinationMax}
-              exportSVG
-            />
-          </g>
-        ) : null}
       </SvgClipRect>
       {showLegend ? (
         <LDSVGColorLegend

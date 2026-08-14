@@ -39,7 +39,6 @@ function noSurvivors(snps: LDSnp[]): LDMatrixResult {
       filteredByCallRate: 0,
       filteredByJexl: 0,
     },
-    recombination: { values: new Float32Array(0), positions: [] },
   }
 }
 

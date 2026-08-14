@@ -4040,14 +4040,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
-          "name": "showRecombination",
-          "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "recombinationZoneHeight",
-          "type": "(JexlString | number)"
-        },
-        {
           "name": "squashToHeight",
           "type": "(JexlString | boolean)"
         },
@@ -4144,14 +4136,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLDTriangle",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "showRecombination",
-          "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "recombinationZoneHeight",
-          "type": "(JexlString | number)"
         },
         {
           "name": "squashToHeight",

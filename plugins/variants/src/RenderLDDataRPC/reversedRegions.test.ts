@@ -41,12 +41,6 @@ function matrix(snps: LDSnp[]): LDMatrixResult {
       ldValues[ldPairIndex(i, j)] = pairValue(snps[i]!, snps[j]!)
     }
   }
-  const values = new Float32Array(Math.max(0, n - 1))
-  const positions: number[] = []
-  for (let i = 0; i < n - 1; i++) {
-    values[i] = 1 - pairValue(snps[i]!, snps[i + 1]!)
-    positions.push((snps[i]!.start + snps[i + 1]!.start) / 2)
-  }
   return {
     snps,
     ldValues,
@@ -63,7 +57,6 @@ function matrix(snps: LDSnp[]): LDMatrixResult {
       filteredByCallRate: 0,
       filteredByJexl: 0,
     },
-    recombination: { values, positions },
   }
 }
 
@@ -151,18 +144,6 @@ describe('reversed LD regions', () => {
     expect([...rev.boundaries]).toEqual([...fwd.boundaries])
   })
 
-  test('recombination follows the axis, and drops the pair that straddles', async () => {
-    const fwd = await run([region('a', false)], SNPS, true)
-    const rev = await run([region('a', true)], SNPS, true)
-
-    expect([...rev.recombination!.values]).toEqual(
-      [...fwd.recombination!.values].reverse(),
-    )
-    expect(rev.recombination!.positions).toEqual(
-      [...fwd.recombination!.positions].reverse(),
-    )
-  })
-
   // The shape that broke the variant matrix, in LD's terms. Collapsing the
   // introns of a minus-strand gene lists the regions descending and marks every
   // one reversed, while `getFeaturesInMultipleRegions` merges the per-region
@@ -222,8 +203,5 @@ describe('reversed LD regions', () => {
         .map(s => s.start)
         .reverse(),
     )
-    // the boundary pair now joins two SNPs that aren't genomic neighbors
-    expect(rev.recombination!.values[3]).toBeNaN()
-    expect(fwd.recombination!.values[3]).not.toBeNaN()
   })
 })

@@ -9,10 +9,9 @@ import { YSCALEBAR_LABEL_OFFSET } from './constants.ts'
 // reads as the data being wrong, and the crosshatch guide lines drawn at the
 // same `y` are what they'd align against to check.
 //
-// Four producers feed this — `computeYTicks` (the wiggle family),
-// `computeCoverageTicks`, `computeInsertSizeTicks`, and the recombination
-// axis's own inline math — against three different renderers, so the agreement
-// is per producer and each one owns it. `computeInsertSizeTicks` states the
+// Three producers feed this — `computeYTicks` (the wiggle family),
+// `computeCoverageTicks` and `computeInsertSizeTicks` — against three different
+// renderers, so the agreement is per producer and each one owns it. `computeInsertSizeTicks` states the
 // same rule in its own words, and derives its geometry from the very functions
 // the arcs are drawn with.
 //
@@ -76,9 +75,8 @@ export function scoreToAxisY(
  * neither.
  *
  * An axis drawn over its own plot rather than in reserved space may narrow the
- * gutter — every px of it is a px of data hidden — and the recombination axis
- * does. It still places its spine at `width - 1`, the same rule stated against
- * its own width.
+ * gutter — every px of it is a px of data hidden. Such an axis still places its
+ * spine at `width - 1`, the same rule stated against its own width.
  */
 export const AXIS_GUTTER_WIDTH_PX = 50
 

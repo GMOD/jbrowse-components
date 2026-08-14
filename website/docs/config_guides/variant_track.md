@@ -321,9 +321,9 @@ The `.ld` file is PLINK's `--r2` report. The
 `plink`/`bgzip`/`tabix` commands; the same file also drives LD coloring on a
 GWAS track.
 
-Both displays share the same track-menu controls (LD metric, recombination
-overlay, legend, fit-to-height). Only the VCF-computed one offers filtering and
-signed LD, since PLINK data carries only the final r²/D' values.
+Both displays share the same track-menu controls (LD metric, legend,
+fit-to-height). Only the VCF-computed one offers filtering and signed LD, since
+PLINK data carries only the final r²/D' values.
 
 ## See also
 

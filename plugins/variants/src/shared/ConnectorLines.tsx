@@ -212,8 +212,8 @@ export const ConnectorZoneResizeHandle = observer(
       <ResizeHandle
         style={{ position: 'absolute', top: top - 4 }}
         // from where the handle is drawn, not from the slot: in LD's genomic
-        // mode the zone can be the taller recombination plot, and dragging the
-        // slot up from under it would eat the first N pixels doing nothing
+        // mode the zone is only as tall as what is switched on, and dragging
+        // the slot up from under it would eat the first N pixels doing nothing
         onDrag={d => {
           model.setLineZoneHeight(top + d)
         }}

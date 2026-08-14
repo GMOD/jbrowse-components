@@ -9,9 +9,8 @@
  * absolute distance, which is what makes one number work across zoom levels and
  * data types: reduced BigWig bins get wider as you zoom out, so any fixed bp
  * threshold would be either useless at one end or destructive at the other. It
- * also lets the same rule serve a bp axis (wiggle's linecenter) and a px one
- * (the LD recombination curve) — the caller picks the space, this only cares
- * that the units are consistent.
+ * also lets the same rule serve a bp axis (wiggle's linecenter) and a px one —
+ * the caller picks the space, this only cares that the units are consistent.
  *
  * Mean, not median: it is O(1) from the endpoints, and it errs the safe way. A
  * series' holes inflate their own mean, which raises the limit and so breaks
@@ -61,8 +60,8 @@ export function gapBreakLimit({
  * three zooms: 500 bins, every gap exactly 1.0x the mean, no break at any
  * threshold). What changed is the call about whether a reader wants the break at
  * all: "we added this feature awhile back but i dont think i like it now. might
- * consider going back to not skipping, for both the ld recombination and
- * plugins/wiggle line mode". A broken line reads as missing data whether or not
+ * consider going back to not skipping". A broken line reads as missing data
+ * whether or not
  * data is missing there, and the chord across a hole is at least continuous with
  * what the neighbouring points say.
  *
@@ -70,11 +69,5 @@ export function gapBreakLimit({
  * behavior back: set `maxGapMultiple` on the track, 20 being the calibrated
  * value. Nothing about `gapBreakLimit` itself changes — a caller passing a
  * positive multiple gets exactly what it always got.
- *
- * Not shared with the LD recombination curve, which carries its own constant —
- * see RECOMBINATION_GAP_MULTIPLE there, now 0 for the same reason. The two
- * callers plot different kinds of series (tiled bins vs an irregular point
- * process), so one number serving both meant retuning for one silently retuned
- * the other.
  */
 export const DEFAULT_GAP_BREAK_MULTIPLE = 0

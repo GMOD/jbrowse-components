@@ -32,8 +32,8 @@ export interface LDRenderingBackend extends GlobalRenderingBackend<
   uploadColorRamp(colors: Uint8Array): void
 }
 
-// The fetch blob carries more than the backends draw from (recombination track,
-// hover metadata, …), so upload and render share this one narrowing instead of
+// The fetch blob carries more than the backends draw from (hover metadata, the
+// filter stats, …), so upload and render share this one narrowing instead of
 // each spelling out the field list. The parameter must stay the WIDE type: typed
 // `LDUploadData` this was an identity function, and tsc checked nothing — a field
 // added to `LDUploadData` and forgotten here would fail at neither end.

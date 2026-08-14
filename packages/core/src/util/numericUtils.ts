@@ -24,8 +24,8 @@ export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
 }
 
 // Like max() but skips NaN/Infinity entries rather than propagating them (a
-// single NaN poisons Math.max). Used where an array can legitimately carry gaps,
-// e.g. unmeasured recombination pairs from a thresholded pre-computed LD file.
+// single NaN poisons Math.max). Used where an array can legitimately carry
+// gaps, e.g. a score series with unmeasured bins in it.
 export function maxFinite(
   arr: ArrayLike<number>,
   init = Number.NEGATIVE_INFINITY,

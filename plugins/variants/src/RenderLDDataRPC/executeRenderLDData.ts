@@ -130,7 +130,7 @@ export async function executeRenderLDData({
   // so every consumer of `snps`/`boundaries` (both renderers, hitTest,
   // connector lines, labels, SVG export) stays forward-only.
   const displayOrder = getDisplayOrder(ldData.snps, regions)
-  const { snps, ldValues, recombination } = displayOrder
+  const { snps, ldValues } = displayOrder
     ? applyDisplayOrder(ldData, displayOrder)
     : ldData
   const n = snps.length
@@ -163,7 +163,6 @@ export async function executeRenderLDData({
     signedLD: signedResult,
     snps,
     filterStats: ldData.filterStats,
-    recombination,
     ...cellBuffers,
   }
 }

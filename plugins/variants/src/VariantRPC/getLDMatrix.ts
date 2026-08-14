@@ -176,14 +176,6 @@ export interface FilterStats {
   filteredByJexl: number
 }
 
-export interface RecombinationData {
-  // Recombination evidence between adjacent SNPs (1 - r²)
-  // Length = n-1 for n SNPs
-  values: Float32Array
-  // Positions (midpoint between adjacent SNPs) for plotting
-  positions: number[]
-}
-
 export interface LDSnp {
   // The VCF ID column (e.g. an rsID), absent when the file has none ('.').
   // Never falls back to feature.id(), which is a synthetic adapter-internal
@@ -223,7 +215,6 @@ export interface LDMatrixResult {
   // the UI can label the precision honestly.
   method: LDMethod
   filterStats: FilterStats
-  recombination: RecombinationData
 }
 
 function emptyLDResult(metric: LDMetric, method: LDMethod): LDMatrixResult {
@@ -242,10 +233,6 @@ function emptyLDResult(metric: LDMetric, method: LDMethod): LDMatrixResult {
       filteredByHwe: 0,
       filteredByCallRate: 0,
       filteredByJexl: 0,
-    },
-    recombination: {
-      values: new Float32Array(0),
-      positions: [],
     },
   }
 }
@@ -286,40 +273,6 @@ function computeLDMatrixCPU(
     report(i)
   }
   return vals
-}
-
-// Recombination evidence (1 - r²) between adjacent SNPs. When ldMetric is 'r2'
-// the values already live in ldValues (the pair (i+1, i)), so they're reused
-// rather than recomputed.
-function computeRecombination(
-  snps: LDSnp[],
-  ldValues: Float32Array,
-  ldMetric: LDMetric,
-  signedLD: boolean,
-  dataIsPhased: boolean,
-  packedHaplotypes: PackedHaplotypes[],
-  encodedGenotypes: Int8Array[],
-): RecombinationData {
-  const n = snps.length
-  const values = new Float32Array(Math.max(0, n - 1))
-  const positions: number[] = []
-  for (let i = 0; i < n - 1; i++) {
-    let r2: number
-    if (ldMetric === 'r2') {
-      const v = ldValues[ldPairIndex(i + 1, i)]!
-      r2 = signedLD ? v * v : v
-    } else if (dataIsPhased) {
-      r2 = calculateLDStatsPhasedBits(
-        packedHaplotypes[i]!,
-        packedHaplotypes[i + 1]!,
-      ).r2
-    } else {
-      r2 = calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[i + 1]!).r2
-    }
-    values[i] = 1 - r2
-    positions.push((snps[i]!.start + snps[i + 1]!.start) / 2)
-  }
-  return { values, positions }
 }
 
 export async function getLDMatrix({
@@ -547,16 +500,6 @@ export async function getLDMatrix({
     filteredByJexl,
   }
 
-  const recombination = computeRecombination(
-    snps,
-    ldValues,
-    ldMetric,
-    signedLD,
-    dataIsPhased,
-    packedHaplotypes,
-    encodedGenotypes,
-  )
-
   return {
     snps,
     ldValues,
@@ -564,6 +507,5 @@ export async function getLDMatrix({
     hasDprime: true,
     method: dataIsPhased ? 'phased' : 'composite',
     filterStats,
-    recombination,
   }
 }

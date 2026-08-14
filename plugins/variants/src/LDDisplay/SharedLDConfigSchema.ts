@@ -79,23 +79,6 @@ export default function sharedLDConfigFactory() {
       },
       /**
        * #slot
-       * Whether to show the recombination rate track
-       */
-      showRecombination: {
-        type: 'boolean',
-        defaultValue: false,
-      },
-      /**
-       * #slot
-       * Height of the recombination track zone at the top
-       */
-      recombinationZoneHeight: {
-        type: 'number',
-        defaultValue: 50,
-        advanced: true,
-      },
-      /**
-       * #slot
        * When true, squash the LD triangle to fit the display height
        */
       squashToHeight: {

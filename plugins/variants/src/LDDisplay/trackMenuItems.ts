@@ -38,7 +38,6 @@ export interface LDMenuSelf extends IStateTreeNode, LDFilterModel {
   focalSnpIndex: number
   signedLD: boolean
   showLDTriangle: boolean
-  showRecombination: boolean
   showLegend: boolean
   showLegendDisplayTypeDefault: Pin
   showLabels: boolean
@@ -50,7 +49,6 @@ export interface LDMenuSelf extends IStateTreeNode, LDFilterModel {
   setLDMetric: (metric: LDMetric) => void
   setSignedLD: (arg: boolean) => void
   setShowLDTriangle: (arg: boolean) => void
-  setShowRecombination: (arg: boolean) => void
   setShowLegend: (arg: boolean) => void
   setShowLabels: (arg: boolean) => void
   setShowVerticalGuides: (arg: boolean) => void
@@ -125,17 +123,6 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
     checkboxItem('Show LD triangle', self.showLDTriangle, () => {
       self.setShowLDTriangle(!self.showLDTriangle)
     }),
-    checkboxItem(
-      'Show recombination track',
-      self.showRecombination,
-      () => {
-        self.setShowRecombination(!self.showRecombination)
-      },
-      {
-        helpText:
-          'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
-      },
-    ),
     showLegendCheckboxItem(
       self.showLegend,
       () => {

@@ -139,7 +139,7 @@ export function parsePlinkLDLine(
     snpB,
     // parseFloat of a malformed/"nan" cell yields NaN, which `?? 0` does NOT
     // catch (only null/undefined) — guard on finiteness so callers never see a
-    // NaN r² leak into the matrix or recombination math.
+    // NaN r² leak into the matrix.
     r2: r2 !== undefined && Number.isFinite(r2) ? r2 : 0,
     dprime,
     mafA,

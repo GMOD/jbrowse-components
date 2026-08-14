@@ -237,7 +237,6 @@ def ld_track(track_id, name, uri):
         'displays': [{
             'type': 'LDDisplay',
             'displayId': f'{track_id}-LDDisplay',
-            'showRecombination': True,
             'minorAlleleFrequencyFilter': maf,
             'useGenomicPositions': True,
             'height': 330,

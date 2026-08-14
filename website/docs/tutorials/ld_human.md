@@ -48,7 +48,6 @@ precomputed LD file beside it:
   "displays": [
     {
       "type": "LDDisplay",
-      "showRecombination": true,
       "minorAlleleFrequencyFilter": 0.35,
       "useGenomicPositions": true,
       "height": 360
@@ -79,22 +78,23 @@ samples went into the file.
 
 Nothing about the display changed between those two lanes.
 
-The blue curve above each triangle is the recombination track
-([`showRecombination`](/docs/config/sharedlddisplay/#slot-showrecombination)), 1
-− r² between adjacent variants. On the single-panel lane it sits near zero
-across the block and spikes at its edges, which is where the block ends; on the
-pooled lane there is no such pair of edges to find.
-
-It comes off the same genotypes as the triangle, though, so it cannot confirm
-those edges on its own. The lane above the triangles is a genetic map that can:
-the deCODE map
-([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) counts
-crossovers in sequenced families, so it is measured in cM/Mb and has no LD in
-it, where the HapMap maps in the same hub are estimated from LD and would
-confirm the triangle with itself. It loads as an ordinary
+Where the block ends is a question the triangle cannot answer about itself, so
+the lane above it is a genetic map: the deCODE map
+([Kong et al. 2010](https://doi.org/10.1038/nature09525)) counts crossovers in
+genotyped families, so it is measured in cM/Mb and has no LD in it, where the
+HapMap maps beside it in the same hub are estimated from LD and would confirm
+the triangle with itself. It loads as an ordinary
 [quantitative track](/docs/user_guides/quantitative_track) from the hg19 hub the
-gene lane comes from. Read the three together: the block fills the span where
-that map is flat, and a hotspot stands at each end of it.
+gene lane comes from. Read the two together: the block fills the span where that
+map is flat, and a hotspot stands at each end of it.
+
+The map is built from Icelandic meioses, which is worth knowing rather than
+working around. Broad-scale recombination rates are close to identical between
+human populations; what varies between them is the fine-scale hotspots, whose
+positions follow PRDM9 allele frequencies
+([Hinch et al. 2011](https://doi.org/10.1038/nature10336)). The panel in the
+lane below is European, so the map and the samples are matched, which is what
+makes reading one against the other fair.
 
 The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
 haplotype is long; Fst says its variants are the ones whose frequency differs

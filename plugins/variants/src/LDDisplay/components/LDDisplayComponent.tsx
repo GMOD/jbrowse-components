@@ -8,8 +8,6 @@ import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
-import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
-import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 import Crosshairs from './Crosshairs.tsx'
 import FocalSnpHighlight from './FocalSnpHighlight.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
@@ -67,39 +65,6 @@ function LDTooltip({
     </BaseTooltip>
   )
 }
-
-const RecombinationOverlay = observer(function RecombinationOverlay({
-  model,
-  width,
-}: {
-  model: SharedLDModel
-  width: number
-}) {
-  const { top, height } = model.recombinationZone
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left: 0,
-        top,
-        width,
-        height,
-        pointerEvents: 'none',
-      }}
-    >
-      <RecombinationTrack
-        points={model.recombinationCoords}
-        maxValue={model.recombinationMax}
-        width={width}
-        height={height}
-      />
-      <RecombinationYScaleBar
-        height={height}
-        maxValue={model.recombinationMax}
-      />
-    </div>
-  )
-})
 
 const LDCanvas = observer(function LDCanvas({
   model,
@@ -233,9 +198,6 @@ const LDCanvas = observer(function LDCanvas({
       ) : null}
       <LDStatusBar model={model} />
       <LDColumnZone model={model} />
-      {model.showRecombination && model.recombination ? (
-        <RecombinationOverlay model={model} width={width} />
-      ) : null}
     </>
   )
 })
