@@ -3080,3 +3080,80 @@ describe('staticBlocksTranslateX', () => {
     )
   })
 })
+
+// A resize keeps the genomic window and rescales, rather than keeping bpPerPx
+// and revealing/hiding sequence at the right edge. Keeping the scale was a
+// block-cache optimization — block boundaries are a function of bpPerPx and
+// their keys embed start/end, so holding bpPerPx across a resize repriced
+// nothing — at the cost of a resize not meaning what a reader means by one.
+describe('resize preserves the genomic window', () => {
+  function edges(model: LGV) {
+    return {
+      start: Math.round(model.pxToBp(0).coord),
+      end: Math.round(model.pxToBp(model.width).coord),
+    }
+  }
+
+  function navigatedView(width: number) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: `resize-${width}`,
+        type: 'LinearGenomeView',
+      }),
+    )
+    model.setWidth(width)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
+    ])
+    model.navTo({ refName: 'ctgA', start: 10000, end: 20000 })
+    return model
+  }
+
+  test('narrowing rescales instead of truncating', () => {
+    const model = navigatedView(1000)
+    const before = edges(model)
+    model.setWidth(500)
+    expect(edges(model)).toEqual(before)
+    expect(model.bpPerPx).toBeCloseTo(20)
+  })
+
+  test('widening rescales instead of revealing', () => {
+    const model = navigatedView(500)
+    const before = edges(model)
+    model.setWidth(1000)
+    expect(edges(model)).toEqual(before)
+    expect(model.bpPerPx).toBeCloseTo(10)
+  })
+
+  test('the first measure has no window to preserve', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    // a restored snapshot: regions and viewport arrive together, before any
+    // width has been measured
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: 'resize-first',
+        type: 'LinearGenomeView',
+        bpPerPx: 10,
+        offsetPx: 1000,
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
+        ],
+      }),
+    )
+    model.setWidth(500)
+    // honors the constructed pixels, which is why a restored snapshot still
+    // shows a narrower window than the one it was authored at
+    expect(model.bpPerPx).toBe(10)
+    expect(model.offsetPx).toBe(1000)
+  })
+
+  test('a resize round-trip returns to the original scale', () => {
+    const model = navigatedView(1000)
+    const before = { ...edges(model), bpPerPx: model.bpPerPx }
+    model.setWidth(377)
+    model.setWidth(1000)
+    expect(edges(model)).toEqual({ start: before.start, end: before.end })
+    expect(model.bpPerPx).toBeCloseTo(before.bpPerPx)
+  })
+})

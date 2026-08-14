@@ -1112,8 +1112,51 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      // A resize keeps the genomic WINDOW, rescaling bpPerPx to the new width,
+      // rather than keeping bpPerPx and revealing/hiding sequence at the right
+      // edge. Keeping the scale was a block-cache optimization: block
+      // boundaries are `blockNum * ceil(800 * bpPerPx)` and their keys embed
+      // start/end, so holding bpPerPx across a resize kept every block key —
+      // and so every fetched region — identical. That made a resize free at the
+      // cost of it not meaning what a reader means by one.
+      //
+      // Rescaling makes a resize a zoom, and a zoom is already a solved case:
+      // FetchVisibleRegions' 300ms debounce coalesces the gesture into one
+      // refetch, its in-flight guard caps concurrent batches at one, and
+      // rpcDataMap is overwritten in place rather than cleared, so nothing
+      // blanks (ADR-008, ADR-006).
+      //
+      // The first measure has no previous width and so no window to preserve —
+      // it honors whatever offsetPx/bpPerPx it was constructed with, which is
+      // where a restored snapshot still loses the authored window.
       setWidth(newWidth: number) {
+        const oldWidth = self.volatileWidth
         self.volatileWidth = newWidth
+        if (
+          oldWidth === undefined ||
+          oldWidth === newWidth ||
+          oldWidth <= 0 ||
+          newWidth <= 0 ||
+          self.bpPerPx <= 0
+        ) {
+          return
+        }
+        // the window in linearized bp: offsetPx space carries no inter-region
+        // padding, so it is exactly offsetPx*bpPerPx wide by width*bpPerPx
+        const windowStartBp = self.offsetPx * self.bpPerPx
+        const windowWidthBp = oldWidth * self.bpPerPx
+        // clamps read the width, so they are correct only now that it is set
+        const bpPerPx = clamp(
+          windowWidthBp / newWidth,
+          self.minBpPerPx,
+          self.maxBpPerPx,
+        )
+        self.bpPerPx = bpPerPx
+        self.offsetPx = clamp(
+          windowStartBp / bpPerPx,
+          self.minOffset,
+          self.maxOffset,
+        )
       },
       /**
        * #action
