@@ -205,6 +205,15 @@ export default function FetchMixin() {
         },
         /**
          * #action
+         * Run `apply` now, dropping any write queued behind it. The escape from
+         * `throttleStatus` for a write that must land and that supersedes what
+         * it was queued behind — the `''` closing a phase is both.
+         */
+        flushStatus(apply: () => void) {
+          throttle.runNow(apply)
+        },
+        /**
+         * #action
          * Drop the active stop token and clear all status bookkeeping. Shared by
          * both cancel paths and runFetch's cleanup.
          */
@@ -259,6 +268,9 @@ export default function FetchMixin() {
           throttle: {
             run: apply => {
               self.throttleStatus(apply)
+            },
+            runNow: apply => {
+              self.flushStatus(apply)
             },
           },
         })

@@ -2,6 +2,7 @@ import {
   aggregateStatus,
   createProgressReporter,
   createStatusFanOut,
+  createGuardedStatusSink,
   createStatusThrottle,
   downloadStatus,
   progressLabel,
@@ -181,6 +182,113 @@ describe('createStatusThrottle', () => {
     a.run(() => applied.push('a'))
     b.run(() => applied.push('b'))
     expect(applied).toEqual(['a', 'b'])
+  })
+
+  // The last write of a phase is the one that matters most and is exactly the
+  // one a leading-edge-only gate drops, which froze a determinate bar at
+  // whatever percentage happened to land on a window boundary.
+  it('delivers the last dropped write of a burst on the trailing edge', () => {
+    jest.useFakeTimers()
+    try {
+      const throttle = createStatusThrottle()
+      const applied: number[] = []
+      for (const n of [1, 2, 3]) {
+        throttle.run(() => applied.push(n))
+      }
+      expect(applied).toEqual([1])
+      clock += 100
+      jest.advanceTimersByTime(100)
+      // 3, not 2: an older progress value is never what the user wants to see
+      expect(applied).toEqual([1, 3])
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  it('runNow lands immediately and cancels what was queued', () => {
+    jest.useFakeTimers()
+    try {
+      const throttle = createStatusThrottle()
+      const applied: (number | string)[] = []
+      throttle.run(() => applied.push(1))
+      throttle.run(() => applied.push(2))
+      throttle.runNow(() => applied.push('clear'))
+      expect(applied).toEqual([1, 'clear'])
+      clock += 100
+      jest.advanceTimersByTime(100)
+      // the queued 2 is gone rather than landing after the clear
+      expect(applied).toEqual([1, 'clear'])
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+})
+
+// `''` is how every phase helper says "this phase is over". It has to land, and
+// it has to cancel the progress value queued behind it — a trailing timer that
+// put a percentage back on screen after the work ended is the regression the
+// trailing edge would otherwise have introduced.
+describe('createGuardedStatusSink', () => {
+  let clock = 1_000_000
+  beforeEach(() => {
+    clock = 1_000_000
+    jest.spyOn(Date, 'now').mockImplementation(() => clock)
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('does not restore a queued progress value after the clear', () => {
+    jest.useFakeTimers()
+    try {
+      const seen: RpcStatus[] = []
+      const report = createGuardedStatusSink({
+        isCurrent: () => true,
+        sink: s => {
+          seen.push(s)
+        },
+      })
+      report({ message: 'Downloading', current: 1, total: 10 })
+      report({ message: 'Downloading', current: 9, total: 10 })
+      report('')
+      expect(seen).toEqual([
+        { message: 'Downloading', current: 1, total: 10 },
+        '',
+      ])
+      clock += 100
+      jest.advanceTimersByTime(100)
+      expect(seen).toEqual([
+        { message: 'Downloading', current: 1, total: 10 },
+        '',
+      ])
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  // the guard is re-read inside the throttled body, because a trailing write
+  // fires on a timer and the operation it belongs to can be gone by then
+  it('drops a trailing write whose operation ended', () => {
+    jest.useFakeTimers()
+    try {
+      let current = true
+      const seen: RpcStatus[] = []
+      const report = createGuardedStatusSink({
+        isCurrent: () => current,
+        sink: s => {
+          seen.push(s)
+        },
+      })
+      report('Downloading')
+      report('Parsing')
+      expect(seen).toEqual(['Downloading'])
+      current = false
+      clock += 100
+      jest.advanceTimersByTime(100)
+      expect(seen).toEqual(['Downloading'])
+    } finally {
+      jest.useRealTimers()
+    }
   })
 })
 

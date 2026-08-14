@@ -147,6 +147,17 @@ export function createStatusThrottle() {
       }
     },
     /**
+     * Write now, dropping anything queued behind it. For a write that must land
+     * AND that supersedes what it was queued behind — the `''` closing a phase
+     * is both. Without this the trailing timer restores a percentage after the
+     * work it measured has ended.
+     */
+    runNow(apply: () => void) {
+      clearPending()
+      lastMs = Date.now()
+      apply()
+    },
+    /**
      * Reopen the window, so the next fetch reports its first status at once, and
      * drop any queued trailing write — a reset accompanies clearing the status,
      * which a late write from the fetch being reset would undo.
@@ -170,10 +181,16 @@ export function createStatusThrottle() {
  * it belongs to can be gone by then. That second read is the load-bearing one —
  * without it a trailing status lands on a destroyed MST node.
  *
+ * A `''` is not throttled. It is how every phase helper says "this phase is
+ * over", so it has to land, and it has to cancel whatever progress value was
+ * queued behind it — otherwise the trailing timer puts a percentage back on
+ * screen after the work it measured has ended.
+ *
  * `throttle` defaults to a fresh window. Pass one to share it across an owner's
  * several callbacks, which is what makes N concurrent per-region fetches thin to
  * one stream between them rather than N (`FetchMixin` passes its model-wide one
- * through `throttleStatus`).
+ * through `throttleStatus`). A throttle with no `runNow` just writes the clear
+ * straight through, which lands it but cannot cancel that owner's pending write.
  */
 export function createGuardedStatusSink({
   isCurrent,
@@ -182,15 +199,30 @@ export function createGuardedStatusSink({
 }: {
   isCurrent: () => boolean
   sink: (status: RpcStatus) => void
-  throttle?: { run: (apply: () => void) => void }
+  throttle?: {
+    run: (apply: () => void) => void
+    runNow?: (apply: () => void) => void
+  }
 }): StatusCallback {
   return status => {
     if (isCurrent()) {
-      throttle.run(() => {
+      // re-read inside, because a trailing write fires on a timer and the
+      // operation it belongs to can be gone by then
+      const write = () => {
         if (isCurrent()) {
           sink(status)
         }
-      })
+      }
+      if (status === '') {
+        ;(
+          throttle.runNow ??
+          (apply => {
+            apply()
+          })
+        )(write)
+      } else {
+        throttle.run(write)
+      }
     }
   }
 }
