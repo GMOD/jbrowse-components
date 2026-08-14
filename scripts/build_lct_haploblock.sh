@@ -4,13 +4,12 @@
 # figure at LCT needs: one row per haplotype, columns of variants, the swept
 # haplotype a solid slab.
 #
-# THE OUTPUT IS ALREADY HOSTED at jbrowse.org/demos/popgen/, and verified driving
-# the figure from there: 300 haplotype rows, 50 per population, dendrogram
-# positioned. Re-running this script reproduces that file byte for byte, so it is
-# for re-deriving or re-cutting rather than for the upload. What is still missing
-# is the spec in website/scripts/specs/ld.ts and its captured figure, which needs
-# the UCSC hg19 hub (hgdownload.soe.ucsc.edu) reachable — the two LCT figures
-# already in that file need it too.
+# THE OUTPUT IS HOSTED at jbrowse.org/demos/popgen/, and drives the
+# ld/lct_haploblock figure from there: 300 haplotype rows, 50 per population,
+# dendrogram positioned. Re-running this script reproduces that file, so it is
+# for re-deriving or re-cutting rather than for the upload. Capturing the figure
+# needs the UCSC hg38 hub (hgdownload.soe.ucsc.edu) reachable, as both LCT
+# figures in website/scripts/specs/ld.ts do.
 #
 # WHY A SUBSAMPLE EXISTS AT ALL. The figure was first attempted against the
 # hosted full-release slices and never rendered (removed in 7dd1e36ece). The
@@ -60,13 +59,15 @@
 # error on 50 haplotypes). The figure's claim is the ordering of the bands, not
 # the exact heights, and the script prints both so the gap is visible.
 #
-# Data: 1000 Genomes phase 3 (20130502) phased integrated callset, hg19. Cut
+# Data: the 1000 Genomes 30x high-coverage release (NYGC), GRCh38. Cut
 # from the pooled LCT slice that scripts/build_lct_ld.sh already built and
 # uploaded, not from the EBI release, so this is a seconds-long run against an
 # asset whose provenance that script documents.
 #
 #   1000 Genomes Project Consortium. A global reference for human genetic
 #   variation. Nature 2015;526:68-74.
+#   Byrska-Bishop et al. High-coverage whole-genome sequencing of the expanded
+#   1000 Genomes Project cohort including 602 trios. Cell 2022;185:3426-3440.
 #
 # THE SETTINGS THE PICTURE NEEDS are `renderingMode: 'phased'` (two-tone, one row
 # per chromosome, so a het is not averaged into one row) and `runClustering: true`
@@ -81,33 +82,41 @@
 set -euo pipefail
 
 OUTDIR="${1:-lct_haploblock_build}"
-POOLED=https://jbrowse.org/demos/popgen/lct_1kg_chr2_pooled_wide.vcf.gz
-PANEL=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel
+POOLED=https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled_wide.vcf.gz
+PED=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
 
 POPS="CEU FIN TSI PJL YRI CHB"
 PER_POP=25
-# rs4988235, the lactase-persistence enhancer variant, hg19. Named chr:pos
-# because the release carries no rs IDs here.
-CAUSAL=2:136608646
-OUT=lct_1kg_chr2_6pop.vcf.gz
+# rs4988235, the lactase-persistence enhancer variant, chr2:135,851,076 on hg38.
+CAUSAL=chr2:135851076
+OUT=lct_1kg38_chr2_6pop.vcf.gz
 
 # The figure's own geometry, so the arithmetic below is against the real lane
 # rather than a guess. Keep in step with the spec in website/scripts/specs/ld.ts.
 LANE_H=800
 LANE_W=1080
 MAF=0.35
-WINDOW=2:135500000-137000000
+# The clustering core, which is the block itself as build_lct_ld.sh's r2 profile
+# resolves it. The figure DRAWS wider than this (see the spec): clustering on a
+# narrower core than is drawn is the dog10k-igf1-haplotype pattern.
+WINDOW=chr2:135000000-136150000
 
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
-[ -f panel.txt ] || curl -fsSL -o panel.txt "$PANEL"
+[ -f ped.txt ] || curl -fsSL -o ped.txt "$PED"
 
 # ── Samples ──────────────────────────────────────────────────────────────────
 : > sub.samples
+# Column 2 is the sample and column 6 the population in the 3202-row pedigree
+# table. The pooled slice this cuts from already holds only the 2504 unrelated,
+# so intersecting against its sample list is what keeps relatives out.
+bcftools query -l "$POOLED" | sort > available.samples
 for p in $POPS; do
-  n=$(awk -v p="$p" 'NR>1 && $2==p{print $1}' panel.txt | sort | tee >(head -"$PER_POP" >> sub.samples) | wc -l)
-  echo "  $p: $n in the release, taking first $PER_POP"
+  n=$(awk -v p="$p" 'NR>1 && $6==p{print $2}' ped.txt | sort |
+      comm -12 - available.samples |
+      tee >(head -"$PER_POP" >> sub.samples) | wc -l)
+  echo "  $p: $n unrelated in the release, taking first $PER_POP"
 done
 echo "subsample: $(wc -l < sub.samples) samples, $(( $(wc -l < sub.samples) * 2 )) haplotype rows"
 
@@ -143,7 +152,6 @@ echo
 echo "rs4988235-A frequency, release vs this subsample:"
 for src in ALL SUB; do
   if [ "$src" = ALL ]; then
-    curl -fsSL "https://jbrowse.org/demos/popgen/lct_1kg_chr2_pooled_wide.vcf.gz" -o /dev/null 2>/dev/null || true
     bcftools query -r "$CAUSAL" -f '[%SAMPLE=%GT\n]' "$POOLED" > gt.$src
   else
     bcftools query -r "$CAUSAL" -f '[%SAMPLE=%GT\n]' "$OUT" > gt.$src
@@ -159,7 +167,7 @@ awk -v pops="$POPS" '
     printf "  %-5s %10s %12s\n", "pop", "release", "subsample"
     for (j=1;j<=6;j++) { p=P[j]
       printf "  %-5s %9.1f%% %11.1f%%\n", p, 100*c["gt.ALL"][p]/d["gt.ALL"][p], 100*c["gt.SUB"][p]/d["gt.SUB"][p] }
-  }' <(awk 'NR>1{print $1"\t"$2}' panel.txt) gt.ALL gt.SUB
+  }' <(awk 'NR>1{print $2"\t"$6}' ped.txt) gt.ALL gt.SUB
 
 cat <<EOF
 

@@ -39,10 +39,10 @@ precomputed LD file beside it:
   "type": "VariantTrack",
   "trackId": "kgp_lct_ld",
   "name": "LCT lactase-persistence LD, 1000G European panel (r²)",
-  "assemblyNames": ["hg19"],
+  "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/lct_1kg_chr2_eur_wide.vcf.gz",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz",
     "fetchSizeLimit": 500000000
   },
   "displays": [
@@ -74,19 +74,25 @@ along, leaving a stretch of correlated variants. That stretch is the signal
 Two things decide whether it shows as a block: the window you cut, and which
 samples went into the file.
 
-<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: every panel pooled, then one panel. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release, and the deCODE genetic map, which is flat across the span the triangles fill."/>
+<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: every panel pooled, then one panel. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release, and the deCODE genetic map, which reads flat across the span the triangles fill and spikes at each end of it."/>
 
 Nothing about the display changed between those two lanes.
 
 Where the block ends is a question the triangle cannot answer about itself, so
-the lane above it is a genetic map: the deCODE map
-([Kong et al. 2010](https://doi.org/10.1038/nature09525)) counts crossovers in
-genotyped families, so it is measured in cM/Mb and has no LD in it, where the
-HapMap maps beside it in the same hub are estimated from LD and would confirm
-the triangle with itself. It loads as an ordinary
-[quantitative track](/docs/user_guides/quantitative_track) from the hg19 hub the
-gene lane comes from. Read the two together: the block fills the span where that
-map is flat, and a hotspot stands at each end of it.
+the lane above it is a genetic map. The deCODE map
+([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) counts
+crossovers in sequenced families, so it is measured in cM/Mb and has no LD in
+it, where a map estimated from LD would confirm the triangle with itself. It
+loads as an ordinary [quantitative track](/docs/user_guides/quantitative_track)
+from the hg38 hub the gene lane comes from. Read the two together: the block
+fills the span where that map reads flat, and a hotspot stands at each end of
+it.
+
+Which deCODE map matters, and it is the reason this page is on hg38 rather than
+hg19. The sequence-level 2019 map was built natively on GRCh38 and resolves to
+under a kilobase; what hg19 carries is the earlier map in 10 kb bins. Neither is
+the same thing as the HapMap or 1000 Genomes maps sitting beside them in either
+hub, which are estimated from LD.
 
 The map is built from Icelandic meioses, which is worth knowing rather than
 working around. Broad-scale recombination rates are close to identical between
@@ -94,16 +100,18 @@ human populations; what varies between them is the fine-scale hotspots, whose
 positions follow PRDM9 allele frequencies
 ([Hinch et al. 2011](https://doi.org/10.1038/nature10336)). The panel in the
 lane below is European, so the map and the samples are matched, which is what
-makes reading one against the other fair.
+makes reading one against the other fair. On an African or East Asian panel the
+same lane would still place the desert and would be a weaker guide to where
+exactly each shoulder sits.
 
 The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
 haplotype is long; Fst says its variants are the ones whose frequency differs
 between this panel and everyone else, which is what a sweep leaves behind. The
 reproduce script computes it with
 [vcftools](https://vcftools.github.io/man_latest.html) over the same slice, per
-variant rather than in windows: `rs4988235` comes out the single most
-differentiated variant in the frame, and a windowed version loses that, because
-a window mixes the swept haplotype with every rare variant sharing it.
+variant rather than in windows, and prints where `rs4988235` ranks: it comes out
+first of every site in the frame. A windowed version loses that, because a
+window mixes the swept haplotype with every rare variant sharing it.
 
 ### Cut the slice wider than the block
 
@@ -153,10 +161,10 @@ lactase-persistence records.
   "type": "VariantTrack",
   "trackId": "kgp_lct_haplotypes",
   "name": "1000 Genomes haplotypes across LCT (one row per haplotype)",
-  "assemblyNames": ["hg19"],
+  "assemblyNames": ["hg38"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/lct_1kg_chr2_6pop.vcf.gz",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz",
     "samplesTsvLocation": {
       "uri": "https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz"
     }
@@ -223,9 +231,9 @@ which panel the r² came from. See [](/docs/user_guides/gwas_track).
 ## Reproduce it end to end
 
 [`build_lct_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_ld.sh)
-cuts the region out of the 1000 Genomes phase 3 callset without downloading it,
-then writes a ready-to-serve config carrying both LD lanes, the Fst lane and the
-haplotype matrix:
+cuts the region out of the 1000 Genomes 30x callset without downloading it, then
+writes a ready-to-serve config carrying both LD lanes, the Fst lane, the genetic
+map and the haplotype matrix:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_ld.sh
@@ -233,12 +241,16 @@ bash build_lct_ld.sh                  # builds ./lct_ld_build/jbrowse2
 npx --yes serve lct_ld_build/jbrowse2 # then open the printed URL
 ```
 
-The assembly is the hosted UCSC hg19 hub's own entry copied in, so the reference
-is never downloaded and the hub's chromAlias reconciles the callset's `2` with
-the `chr2` the view asks for. The files the script writes are genotypes; the
-display does the r². What it prints is the two choices behind the figure, as
-`plink --r2` tables: r² against rs4988235 along the slice, and mean pairwise r²
-inside the block for one panel against the pooled release.
+The assembly is the hosted UCSC hg38 hub's own entry copied in, so the reference
+is never downloaded. The files the script writes are genotypes; the display does
+the r². What it prints is every measurement this page would otherwise assert: r²
+against rs4988235 in bins along the slice, which is where the block's edges come
+from, mean pairwise r² inside the block for one panel against the pooled
+release, and where rs4988235 ranks on per-site Fst.
+
+It reads the 2504 unrelated samples rather than the release's full 3202.
+Relatives share long haplotypes for reasons that have nothing to do with a
+sweep, which is the one quantity every lane here draws.
 
 ## See also
 
@@ -255,5 +267,9 @@ inside the block for one panel against the pooled release.
   [A global reference for human genetic variation](https://doi.org/10.1038/nature15393)
 - Bersaglieri et al. (2004).
   [Genetic signatures of strong recent positive selection at the lactase gene](https://doi.org/10.1086/421051)
+- Byrska-Bishop et al. (2022).
+  [High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios](https://doi.org/10.1016/j.cell.2022.08.004)
 - Halldorsson et al. (2019).
   [Characterizing mutagenic effects of recombination through a sequence-level genetic map](https://doi.org/10.1126/science.aau1043)
+- Hinch et al. (2011).
+  [The landscape of recombination in African Americans](https://doi.org/10.1038/nature10336)

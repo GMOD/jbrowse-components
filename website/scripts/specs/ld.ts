@@ -4,8 +4,13 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The LD heatmap display's home-run result: the lactase-persistence sweep at
 // LCT/MCM6, computed live from phased 1000 Genomes genotypes (exact haplotypic
-// r², not the composite estimate), so no precomputed LD file is needed. hg19
-// (the phase3 20130502 release coordinates).
+// r², not the composite estimate), so no precomputed LD file is needed.
+//
+// hg38, on the 1000 Genomes 30x high-coverage release (NYGC), which is called
+// natively on GRCh38 rather than lifted. Both halves of that matter: the
+// figure's genetic-map lane is deCODE's 2019 sequence-level map, which UCSC
+// also built natively on hg38 at 682 bp average resolution, and hg19 carries
+// only the 2010 map in 10 kb bins. The pair is the reason this moved.
 //
 // A companion MAPT 17q21.31 inversion figure was dropped in 969c44cc21: no
 // accessible callset has usable per-sample genotypes for that inversion, so it
@@ -14,37 +19,39 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // genotypes, in a mosquito rather than a proxy human callset — the standing
 // rule is unchanged, don't add an inversion figure without genotypes behind it.
 //
-// Data is a region slice of the phase3 1000 Genomes VCF re-hosted on jbrowse.org
-// S3 so the figure and its live "Open in JBrowse" link load fast and don't depend
-// on the EBI FTP being up. The VCF names the contig "2"; the hosted UCSC hg19
-// hub's chromAlias reconciles "chr2" at query time.
+// Data is a region slice re-hosted on jbrowse.org S3 so the figure and its live
+// "Open in JBrowse" link load fast and don't depend on the EBI FTP being up.
+// Contigs are chr-named on both sides, so nothing depends on a chromAlias here.
 //
-// BOTH LCT FIGURES READ THE 3.3 Mb SLICES (chr2:134.6-137.9 Mb, built by
-// scripts/build_lct_ld.sh: `_eur_wide` 4.5 MB, `_pooled_wide` 16.6 MB). The
-// original 1.65 Mb pair began at 135.75 Mb, which is also where the swept block
-// begins, so a figure on them was cut at the edge it was claiming and nothing in
-// it distinguished "the LD ends here" from "the file ends here" (review: "the
-// recombination triangle covers whole screen. what is user supposed to take
-// away?"). The pooled-vs-panel figure was left narrow for one round, on the
-// grounds that its point is which SAMPLES went in; that made the page teach "cut
-// the window wider than the block" above a figure that doesn't, so it moved too.
-// The pooled lane's live link now fetches 16.6 MB, which is the cost of the
-// wider window on 2504 samples.
+// THE HOSTED NAMES CARRY `1kg38`, and the hg19/phase 3 files they replace are
+// still up under the old `1kg` names. The bucket has no versioning, so reusing
+// a name would have been an unrecoverable silent swap of one assembly's
+// coordinates for another's. Don't "tidy up" by deleting the old ones either;
+// their URLs are in released docs.
+//
+// BOTH LCT FIGURES READ THE 3.4 Mb SLICES (chr2:133.8-137.2 Mb, built by
+// scripts/build_lct_ld.sh: `_eur_wide` 13 MB, `_pooled_wide` 29 MB). An earlier
+// hg19 pair began at the swept block's own left edge, so a figure on them was
+// cut at the edge it was claiming and nothing in it distinguished "the LD ends
+// here" from "the file ends here" (review: "the recombination triangle covers
+// whole screen. what is user supposed to take away?").
+//
+// THE 2504 UNRELATED SAMPLES, not the release's full 3202. Relatives share long
+// haplotypes for reasons that have nothing to do with a sweep, so including
+// them inflates exactly the quantity these lanes draw.
 //
 // LD IS PER-POPULATION, SO THE SLICE IS TOO. The figure used to run on the
-// pooled 2504-sample file and the block came out pink and fragmented, because
-// pooling panels that carry different haplotypes at different frequencies
-// averages the correlation away: over chr2:136.4–136.7 Mb the mean pairwise r²
-// is 0.83 within the 503-sample European panel and 0.48 pooled, and the
-// recombination curve's dip over the block only exists in the former. The
-// panel was cut with `bcftools view -S` and uploaded beside the pooled file.
-// Don't put two *human* population panels side by side to make this point — a
-// figure comparing human groups is not what this page is for, and the point is
-// about how r² is computed rather than about the groups. Stacked panels are
-// fine where the populations aren't human: the Anopheles figure below is two
+// pooled file alone and the block came out pink and fragmented, because pooling
+// panels that carry different haplotypes at different frequencies averages the
+// correlation away. build_lct_ld.sh prints the pair it is chosen on: mean
+// pairwise r² over the block, one panel against the pooled release. Don't put
+// two *human* population panels side by side to make this point — a figure
+// comparing human groups is not what this page is for, and the point is about
+// how r² is computed rather than about the groups. Stacked panels are fine
+// where the populations aren't human: the Anopheles figure below is two
 // mosquito panels, because there the presence and absence of the arrangement
 // *is* the result.
-const HG19_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg19/config.json')}`
+const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/config.json')}`
 
 // LCT / MCM6 lactase-persistence locus. Recent positive selection swept a long
 // haplotype to high frequency in dairying populations, so a large block of SNPs
@@ -53,10 +60,10 @@ const lctTrack = (name: string, height = 510) => ({
   type: 'VariantTrack',
   trackId: 'kgp_lct_ld',
   name,
-  assemblyNames: ['hg19'],
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'VcfTabixAdapter',
-    uri: 'https://jbrowse.org/demos/popgen/lct_1kg_chr2_eur_wide.vcf.gz',
+    uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz',
     fetchSizeLimit: 500_000_000,
   },
   displays: [
@@ -81,33 +88,31 @@ const lctTrack = (name: string, height = 510) => ({
 })
 
 // Wider than the block, so it reads as a block rather than a wall of red.
-// 800 kb -> 2.2 Mb -> 3.1 Mb, and the last step needed a wider FILE (see above).
-// Against rs4988235, scripts/build_lct_ld.sh measures r² of 0.72 at 135.8 Mb and
-// 0.06 by 135.0 Mb on the left, 0.37 at 136.8 Mb and 0.02 by 137.4 Mb on the
-// right, so this carries the block plus about a megabase either side of it.
-const LCT_LOC = 'chr2:134,700,000-137,800,000'
+// build_lct_ld.sh prints mean r² against rs4988235 in 100 kb bins along the
+// slice, and this window is read off it: the block runs about 135.0-136.25 Mb,
+// and the bins at both ends of THIS frame are down in the noise, so the frame
+// carries the block plus roughly a megabase of unlinked sequence on each side.
+const LCT_LOC = 'chr2:134,000,000-137,150,000'
 
 // Both LCT figures take the same window. This one is the expensive render of the
 // two: r² is computed live, and the pooled lane correlates 5008 haplotypes
-// against the panel's 1006. It still lands in about 100 s, so the readyTimeout
-// below is headroom rather than a measured need. Two intermediate windows (1.4
-// and 2.1 Mb) were rendered while narrowing this down after the full window
-// appeared to hang twice; that turned out to be CPU contention with another
-// generator run on the same machine, not the window. If it hangs again, check for
-// a second `generate-screenshots` process before shrinking anything.
+// against the panel's 1006. The readyTimeout below is headroom rather than a
+// measured need. If it appears to hang, check for a second
+// `generate-screenshots` process on the machine before shrinking anything —
+// that was the cause last time, not the window.
 const LCT_WIDE_LOC = LCT_LOC
 
-// The deCODE sex-averaged genetic map, as published by UCSC. See the note on
-// this track's entry in the LCT figure's track list for why it is deCODE and
-// not one of the HapMap maps beside it in the same hub.
+// The deCODE genetic map, as published by UCSC. See the note on this track's
+// entry in the LCT figure's track list for which deCODE map this is and why it
+// is not one of the LD-derived maps.
 const DECODE_RECOMB_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'decode_recomb',
-  name: 'deCODE recombination rate (cM/Mb)',
-  assemblyNames: ['hg19'],
+  name: 'deCODE recombination rate (cM/Mb, pedigree)',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
-    uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg19/decode/SexAveraged.bw',
+    uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/recombRate/recombAvg.bw',
   },
 }
 
@@ -117,9 +122,9 @@ const DECODE_RECOMB_TRACK = {
 const LCT_HIGHLIGHT = [
   {
     refName: 'chr2',
-    start: 136_545_410,
-    end: 136_634_000,
-    assemblyName: 'hg19',
+    start: 135_787_850,
+    end: 135_876_467,
+    assemblyName: 'hg38',
   },
 ]
 
@@ -175,7 +180,8 @@ const LCT_HIGHLIGHT = [
 // byte-identical between the two releases (verified by sequence comparison at
 // both 2La breakpoints and at Vgsc; AgamP4's changes were to unplaced
 // scaffolds). The hub names the arm chr2L and the .ld.gz names it 2L, which its
-// chromAlias reconciles at query time, exactly as the hg19 case above does.
+// chromAlias reconciles at query time. The LCT figures above need no such
+// reconciliation -- their callset and their hub are both chr-named.
 const ANOGAM3_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/anoGam3/config.json')}`
 
 const agLdTrack = (trackId: string, name: string, file: string) => ({
@@ -374,15 +380,18 @@ const TWO_LA_LOCUS = 'chr2L:20,524,058-42,165,532'
 // rather than as a blank. The reason not to draw it is the editorial one above,
 // not legibility.
 // Weir and Cockerham Fst per variant, the European panel against the other 2001
-// samples of the same release, over the same window the LD lanes draw. Computed
-// by vcftools from the 1000 Genomes phase 3 chr2 callset (scripts/build_lct_ld.sh),
-// so the estimator is a published one and the panels are the release's own.
+// unrelated samples of the same release, over the same window the LD lanes
+// draw. Computed by vcftools from the 30x chr2 callset
+// (scripts/build_lct_ld.sh), so the estimator is a published one and the panels
+// are the release's own.
 //
-// Per site, not windowed, and that is the finding: rs4988235 is the single most
-// differentiated variant of the 93,876 in the frame, and the sites just below it
-// are its neighbours inside the block. A 10 kb windowed version was built first
-// and says much less -- the block's windows average barely above the flanks,
-// because a window mixes the swept haplotype with every rare variant sharing it.
+// Per site, not windowed, and that is the finding: rs4988235 comes out the most
+// differentiated site in the frame, and the sites just below it are its
+// neighbours inside the block. The script prints its RANK rather than its value,
+// because the rank is the claim and a run that stopped putting it first is the
+// thing to notice. A 10 kb windowed version was built first and says much less
+// -- the block's windows average barely above the flanks, because a window mixes
+// the swept haplotype with every rare variant sharing it.
 //
 // The contrast is one panel against the pooled remainder rather than against a
 // named second population: the figure's own subject is panel-versus-pooled, and
@@ -392,14 +401,14 @@ const LCT_FST_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'kgp_lct_fst',
   name: 'Fst, this panel vs the other 1000 Genomes samples (Weir & Cockerham)',
-  assemblyNames: ['hg19'],
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
     bigWigLocation: {
-      uri: 'https://jbrowse.org/demos/popgen/lct_1kg_chr2_fst_eur_vs_rest.bw',
+      uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest.bw',
       locationType: 'UriLocation',
     },
-    // raw per-site values out to well past this window's 3.1 kb/px: a bigWig
+    // raw per-site values out to well past this window's ~2.2 kb/px: a bigWig
     // zoom bin carries min/avg/max, and the average of ninety variants is the
     // background, so the summarized lane draws the haze and drops the peak that
     // is the whole point. Same reason the C-GIAB BAF track takes one.
@@ -411,7 +420,7 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
   type: 'VariantTrack',
   trackId,
   name,
-  assemblyNames: ['hg19'],
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'VcfTabixAdapter',
     uri: `https://jbrowse.org/demos/popgen/${file}`,
@@ -428,9 +437,8 @@ const lctPanelTrack = (trackId: string, name: string, file: string) => ({
       // sizing' for the ld blocks with useGenomicPositions:true"). This also
       // retires the connector zone the previous round was tuning: the fan of
       // lines existed to say which column each SNP was, which is only a question
-      // when x is SNP index. On genomic positions the SNP IS its column, the fan
-      // is gone, and the space above the triangle is the recombination curve's
-      // (`effectiveLineZoneHeight` switches to `recombinationZoneHeight` here).
+      // when x is SNP index. On genomic positions the SNP IS its column, so the
+      // fan is gone and nothing is reserved above the triangle.
       useGenomicPositions: true,
     },
   ],
@@ -440,17 +448,17 @@ export const ldSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'ld/lct_pooled_vs_panel',
-    url: `${HG19_HUB}&session=${encodeSessionSpec({
+    url: `${HG38_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
         lctPanelTrack(
           'kgp_lct_pooled',
           'All panels pooled (r²)',
-          'lct_1kg_chr2_pooled_wide.vcf.gz',
+          'lct_1kg38_chr2_pooled_wide.vcf.gz',
         ),
         lctPanelTrack(
           'kgp_lct_panel',
           'One population panel (r²)',
-          'lct_1kg_chr2_eur_wide.vcf.gz',
+          'lct_1kg38_chr2_eur_wide.vcf.gz',
         ),
         LCT_FST_TRACK,
         DECODE_RECOMB_TRACK,
@@ -458,16 +466,16 @@ export const ldSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'hg19',
+          assembly: 'hg38',
           loc: LCT_WIDE_LOC,
           highlight: LCT_HIGHLIGHT,
           tracks: [
             // The genes, so the band has something to be over (review: "we need
             // to add the gene track ... we need to see why this is important").
-            // showOnlyGenes because 2 Mb of hg19 RefSeq is otherwise a wall of
+            // showOnlyGenes because 3 Mb of RefSeq is otherwise a wall of
             // transcripts and the point is which gene the block sits on.
             {
-              trackId: 'hg19-ncbiRefSeqCurated',
+              trackId: 'hg38-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
               height: 60,
               showOnlyGenes: true,
@@ -480,14 +488,15 @@ export const ldSpecs: ScreenshotSpec[] = [
             // THE AXIS STARTS AT 0.1, NOT 0 (reviewer: "i can't see the Fst
             // pattern. need to zoom out way more if we want to see this i
             // think? either that or the Fst data is bad"). Zooming out is the
-            // wrong lever and would make it worse: 93,876 variants across
-            // 1400 px is 67 a pixel, and almost all of them sit under 0.05, so
-            // a 0-0.5 axis spent its bottom fifth on a saturated blue bar and
-            // drew the one differentiated variant as an indistinguishable speck
-            // above it. Nothing about the data changed -- the floor is a
-            // display window, and every point that survives it is a variant
-            // more differentiated than 95% of the frame. rs4988235 at 0.472 is
-            // then a point near the top of an otherwise sparse lane.
+            // wrong lever and would make it worse: the frame holds ~81,000
+            // scored sites across ~1400 px, and almost all of them sit under
+            // 0.05, so a 0-0.5 axis spent its bottom fifth on a saturated blue
+            // bar and drew the one differentiated variant as an
+            // indistinguishable speck above it. Nothing about the data changed
+            // -- the floor is a display window, and every point that survives
+            // it is a variant more differentiated than most of the frame.
+            // rs4988235 is then a point near the top of an otherwise sparse
+            // lane, and build_lct_ld.sh prints that it is rank 1.
             //
             // Taller too (110 -> 170): with the haze gone the lane has to
             // resolve the spread between 0.1 and 0.5 rather than just show that
@@ -503,33 +512,48 @@ export const ldSpecs: ScreenshotSpec[] = [
               maxScore: 0.5,
               height: 170,
             },
-            // A REAL genetic map, so the block's edges are read against
-            // something that is not made of LD. The page's own recombination
-            // curve is 1 - r² between adjacent variants, which comes off the
-            // same genotypes as the triangle, so it can suggest where the block
-            // ends but cannot independently confirm it.
+            // A MEASURED genetic map, which is the only honest way to say
+            // where the block ends: it is counted off crossovers, in cM/Mb, and
+            // has no LD in it, so reading it against the triangles below is not
+            // circular. This is the lane that replaced a "recombination track"
+            // the display used to compute as 1 - r² between adjacent variants
+            // -- the triangle's own first off-diagonal, which could only ever
+            // agree with the triangle.
             //
-            // deCODE, NOT the hub's HapMap maps sitting beside it, and the
-            // distinction is the whole point: HapMap Release 24 is estimated
-            // FROM LD (LDhat), so drawing it here would be circular. deCODE is
-            // pedigree-based, counted off crossovers in families, and knows
-            // nothing about haplotype correlation. Measured across this window
-            // in 50 kb bins, cM/Mb: 16.0 at 135.75 Mb, then 0.0 for a solid
-            // megabase (peak 0.6 over 135.80-136.70), then 2.3 / 5.2 climbing
-            // from 136.75 and 9.8 at 136.95. The block build_lct_ld.sh resolves
-            // at 135.75-136.75 is therefore a recombination desert with a
-            // hotspot on each shoulder. The HapMap CEU map also puts a 14.5
-            // spike INSIDE the block at 136.35, where deCODE reads 0.1.
+            // WHICH deCODE MAP, because there are two and hg19 has the wrong
+            // one. This is `recombRate/recombAvg.bw`, the 2019 sequence-level
+            // map (Halldorsson et al.), built natively on hg38 at 682 bp
+            // average resolution. hg19's `decodeRmap` is Kong et al. 2010 in
+            // 10 kb bins; the page cited the 2019 paper over that file for a
+            // while, which is what moving the figure fixed. NOT the HapMap
+            // maps, and NOT hg38's own `recomb1000GAvg`: both are estimated
+            // FROM LD, so either one over an LD triangle confirms the triangle
+            // with itself.
             //
-            // Spelled out rather than referenced by trackId out of the hg19 hub
-            // that carries it, only for the NAME: the hub's own shortLabel is
-            // "Sex Avg", which over an LD figure reads as a setting rather than
-            // as a genetic map. Same bigWig either way, and hgdownload is on
-            // third-party-hosts.txt already -- naming a hub track pulls from
-            // there regardless, which is what that file's own note says.
+            // Measured across this window in 50 kb bins, max cM/Mb per bin:
+            // a hard 0.0 from 135.05 through 135.50 and under 1.5 out to
+            // 135.95, against 161 at 134.95 and 460 at 136.20. So the block
+            // build_lct_ld.sh independently resolves at 135.0-136.25 sits in a
+            // recombination desert with a hotspot on each shoulder, and the
+            // right-hand one lands exactly where the r² profile falls off.
+            //
+            // maxScore 100 CLIPS those two hotspots, deliberately: autoscaled
+            // to 460 the whole rest of the lane is under a tenth of the height
+            // and the desert cannot be told from the merely-quiet flanks. Same
+            // argument as the Fst lane's floor one entry up -- it is a display
+            // window, and the numbers behind it are here.
+            //
+            // Spelled out rather than referenced by trackId out of the hub that
+            // carries it, only for the NAME: the hub's own shortLabel is
+            // "Recomb. deCODE Avg", which over an LD figure reads as a setting
+            // rather than as a genetic map. Same bigWig either way, and
+            // hgdownload is on third-party-hosts.txt already -- naming a hub
+            // track pulls from there regardless.
             {
               trackId: 'decode_recomb',
               type: 'LinearWiggleDisplay',
+              minScore: 0,
+              maxScore: 100,
               height: 100,
             },
             { trackId: 'kgp_lct_pooled', type: 'LDDisplay', height: 250 },
@@ -541,21 +565,21 @@ export const ldSpecs: ScreenshotSpec[] = [
     // same real signal as the Anopheles figure: an LD panel exists to settle on,
     // and the generator's settle takes it from there
     readySelector: displayPainted('ld-display'),
-    // 21 MB of genotypes across the two lanes, the pooled one on 2504 samples
+    // 42 MB of genotypes across the two lanes, the pooled one on 2504 samples
     readyTimeout: 600000,
-    // the gene lane, the Fst scatter, then two LD tracks (250 triangle + 50
-    // recombination zone each) + headers + ruler/overview. The triangles came
-    // down from 330 (reviewer: "reduce heights of the linkage tracks"), which
-    // costs nothing legible: the block is a shape, not a height, and the room
-    // it frees is what the Fst lane takes. +60 for that lane's second growth,
-    // +100 and a header for the deCODE map.
-    viewportHeight: 1190,
+    // the gene lane, the Fst scatter, the deCODE map, then two 250 px LD
+    // triangles + headers + ruler/overview. The triangles came down from 330
+    // (reviewer: "reduce heights of the linkage tracks"), which costs nothing
+    // legible: the block is a shape, not a height, and the room it frees is
+    // what the Fst lane takes. 100 px came back off the top of the two LD lanes
+    // when the 1 - r² band each of them reserved was deleted.
+    viewportHeight: 1090,
     settleMs: 8000,
     // The one variant the lane exists for, named on it. With the floor raised
-    // the lane is legible, but it is still ~4,000 surviving points and nothing
-    // in it says which one is the lactase-persistence allele; a reader would
-    // have to take the caption's word and count pixels off the highlight band.
-    // rs4988235 is chr2:136,608,646 in hg19, so the pill anchors to the
+    // the lane is legible, but it is still thousands of surviving points and
+    // nothing in it says which one is the lactase-persistence allele; a reader
+    // would have to take the caption's word and count pixels off the highlight
+    // band. rs4988235 is chr2:135,851,076 on hg38, so the pill anchors to the
     // coordinate rather than to a measured x.
     annotations: [
       {
@@ -564,7 +588,7 @@ export const ldSpecs: ScreenshotSpec[] = [
         fontSize: 16,
         anchor: {
           track: 'kgp_lct_fst',
-          locus: 'chr2:136,608,646',
+          locus: 'chr2:135,851,076',
           fracY: 0.42,
           alignX: 'left',
           dx: -150,
@@ -574,14 +598,14 @@ export const ldSpecs: ScreenshotSpec[] = [
         type: 'arrow',
         fromAnchor: {
           track: 'kgp_lct_fst',
-          locus: 'chr2:136,608,646',
+          locus: 'chr2:135,851,076',
           fracY: 0.38,
           alignX: 'left',
           dx: -80,
         },
         anchor: {
           track: 'kgp_lct_fst',
-          locus: 'chr2:136,608,646',
+          locus: 'chr2:135,851,076',
           fracY: 0.09,
         },
       },
@@ -819,15 +843,17 @@ export const ldSpecs: ScreenshotSpec[] = [
   // matrix is therefore an independent marker of where the causal variant is,
   // not a column the clustering was steered by.
   //
-  // 150 SAMPLES, NOT 2504, from scripts/build_lct_haploblock.sh: six populations
-  // at 25 each, spanning rs4988235-A from 73.7% (CEU) to 0% (YRI, CHB). The full
-  // release is 5008 haplotype rows, which is 0.18 px a row in this lane and
-  // averages to a flat wash; 300 rows is 2.7 px. That script prints the
-  // arithmetic and the per-population frequencies rather than asserting them.
+  // 150 SAMPLES, NOT 2504, from scripts/build_lct_haploblock.sh: six
+  // populations at 25 each, chosen to span the range of rs4988235-A frequency
+  // rather than to sample it evenly. The full release is 5008 haplotype rows,
+  // which is 0.18 px a row in this lane and averages to a flat wash; 300 rows
+  // is 2.7 px. That script prints the arithmetic and the per-population
+  // frequencies rather than asserting them, and re-prints them against the
+  // subsample so the sampling error is visible.
   {
     mode: 'url',
     name: 'ld/lct_haploblock',
-    url: `${HG19_HUB}&session=${encodeSessionSpec({
+    url: `${HG38_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
         // The statistic, over the haplotypes it is computed from. 360 rather
         // than the standalone figure's 510: the triangle's subject is the shape
@@ -838,13 +864,14 @@ export const ldSpecs: ScreenshotSpec[] = [
           type: 'VariantTrack',
           trackId: 'kgp_lct_haplotypes',
           name: '1000 Genomes haplotypes across LCT (one row per haplotype)',
-          assemblyNames: ['hg19'],
+          assemblyNames: ['hg38'],
           adapter: {
             type: 'VcfTabixAdapter',
-            uri: `${AG_POPGEN}/lct_1kg_chr2_6pop.vcf.gz`,
-            // the release's own sample table, already hosted for the
-            // config_demo chr1 track. Sample ids are the same across
-            // chromosomes, so it applies to this chr2 slice unchanged.
+            uri: `${AG_POPGEN}/lct_1kg38_chr2_6pop.vcf.gz`,
+            // sample id -> population. It is hosted under genomes/hg19/ only
+            // because that is where it was first needed; the table is a sample
+            // attribute list and carries no coordinates, so the assembly it
+            // sits beside is irrelevant.
             samplesTsvLocation: {
               uri: 'https://jbrowse.org/genomes/hg19/1000g.sorted.csv.gz',
             },
@@ -854,31 +881,31 @@ export const ldSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'hg19',
-          // 2.4 Mb: the block plus enough flank on both sides that the slab has
-          // somewhere to stop, AND that the triangle now stacked over it has
-          // two visible edges. At the matrix's own 1.5 Mb the triangle filled
-          // the frame corner to corner — the exact failure the tutorial warns
-          // about one section up, since r² against rs4988235 is still 0.72 at
-          // 135.8 Mb and 0.37 at 136.8 Mb (build_lct_ld.sh) and only reaches
-          // 0.06 / 0.02 at 135.0 / 137.4 Mb. Matrix mode gives every variant an
-          // equal-width column regardless of how the variants bunch
-          // genomically, so the cost is columns: ~1140 here against ~710, still
-          // about a pixel apiece and the slab is a horizontal band either way.
-          loc: 'chr2:135,000,000-137,400,000',
+          assembly: 'hg38',
+          // 2.5 Mb: the block (135.0-136.25, from build_lct_ld.sh's r² profile)
+          // plus enough flank on both sides that the slab has somewhere to
+          // stop, AND that the triangle stacked over it has two visible edges.
+          // Cut to the block itself the triangle fills the frame corner to
+          // corner — the exact failure the tutorial warns about one section up.
+          // Matrix mode gives every variant an equal-width column regardless of
+          // how the variants bunch genomically, so the cost of a wider frame is
+          // columns rather than legibility, and the slab is a horizontal band
+          // either way.
+          loc: 'chr2:134,400,000-136,900,000',
           highlight: LCT_HIGHLIGHT,
           tracks: [
             {
-              trackId: 'hg19-ncbiRefSeqCurated',
+              trackId: 'hg38-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
               height: 60,
               showOnlyGenes: true,
             },
-            // Same filtered ClinVar lane as ld/lct_lactase above, so a reader
-            // moving between the two figures sees the causal variant marked the
-            // same way in both.
+            // The causal variant marked independently of the rows it lands on.
+            // The filter is an exact phenotypeList match, and it survives the
+            // move to hg38: the hg38 ClinVar table carries the same
+            // 'LACTASE PERSISTENCE' string, on rs4988235 itself among others.
             {
-              trackId: 'hg19-clinvarMain',
+              trackId: 'hg38-clinvarMain',
               type: 'LinearBasicDisplay',
               height: 70,
               jexlFiltersSetting: [
@@ -899,15 +926,12 @@ export const ldSpecs: ScreenshotSpec[] = [
               // row would average a carrier chromosome with a non-carrier one.
               renderingMode: 'phased',
               runClustering: true,
-              // 135.5-137.0, the window this figure used to draw as well as
-              // cluster on, kept as the clustering core when the drawn window
-              // widened to 2.4 Mb: it is the region the 100%-of-carriers-in-one-
-              // clade result was measured on. Clustering on a narrower core than
-              // is drawn is the dog10k-igf1-haplotype pattern; what does not
-              // work here is going narrower still — the 135.7-136.15 Mb
-              // sub-window where per-site agreement separates carriers best puts
-              // only 48% of carriers in the top clade.
-              clusterRegion: 'chr2:135,500,000-137,000,000',
+              // The block itself, as build_lct_ld.sh's r² profile resolves it,
+              // and narrower than what is drawn — the dog10k-igf1-haplotype
+              // pattern. Clustering over the whole drawn window instead mixes
+              // in a megabase of unlinked sequence on each side, which is
+              // exactly the variation that does NOT travel with the haplotype.
+              clusterRegion: 'chr2:135,000,000-136,150,000',
               colorBy: 'population',
               // the common, block-tagging variants. Unfiltered, this window is
               // mostly rare variation and the slab is buried in speckle.
@@ -928,6 +952,8 @@ export const ldSpecs: ScreenshotSpec[] = [
     // gene(60) + clinvar(70) + the 360px LD band + the 700px matrix, their
     // headers and the ruler. Sized from the run's own clipped/blank report;
     // +20 for the 4 px of extra clearance every offset track label now takes.
+    // The LD band lost nothing in the move: it never reserved a 1 - r² zone,
+    // since that band only appeared when `showRecombination` was on.
     viewportHeight: 1518,
     // WHAT THE CLUSTERING PRODUCED, marked (reviewer: "does this figure
     // somewhat 'clearly' show the clustering? please analyze. if needed add red
@@ -943,14 +969,14 @@ export const ldSpecs: ScreenshotSpec[] = [
     //
     // The pills carry NUMBERS, not adjectives (reviewer: "the text 'one
     // clustered haplotype' is too vague ... i need more detail"). Both come
-    // from the file this figure reads: at rs4988235 (2:136,608,646) the slice
-    // carries AC=90 / AN=300, i.e. 150 samples, 300 haplotype rows, 90 of them
-    // carrying the persistence allele -- checkable with
-    // `bcftools view -H -r 2:136608646-136608646` on the hosted VCF. That the
-    // clustering puts all 90 in one clade is the measurement recorded on
-    // clusterRegion above, and the render agrees with it: the uniform band the
-    // first pill sits beside is ~31% of the matrix's height, i.e. ~92 of 300
-    // rows, which is the carrier count and not a coincidence.
+    // from the file this figure reads: at rs4988235 (chr2:135,851,076 on hg38)
+    // the slice carries 90 alt of 300 haplotype rows, i.e. 150 samples, 90 of
+    // them carrying the persistence allele -- checkable with
+    // `bcftools query -r chr2:135851076 -f '[%GT\n]'` on the hosted VCF. It is
+    // the same 150 samples the hg19 cut used, so the count is unchanged by the
+    // move. 90/300 is MAF 0.30, which is BELOW this figure's own 0.35 filter,
+    // so the causal variant is not one of the drawn columns and the clustering
+    // never sees it.
     annotations: [
       {
         type: 'text',
@@ -959,7 +985,7 @@ export const ldSpecs: ScreenshotSpec[] = [
         maxWidth: 330,
         anchor: {
           track: 'kgp_lct_haplotypes',
-          locus: 'chr2:135,120,000',
+          locus: 'chr2:134,520,000',
           fracY: 0.3,
           alignX: 'left',
         },
@@ -971,7 +997,7 @@ export const ldSpecs: ScreenshotSpec[] = [
         maxWidth: 300,
         anchor: {
           track: 'kgp_lct_haplotypes',
-          locus: 'chr2:135,120,000',
+          locus: 'chr2:134,520,000',
           fracY: 0.72,
           alignX: 'left',
         },
