@@ -131,14 +131,26 @@ removing the skip.
   - ` ```json session config=https://jbrowse.org/demos/<name>/config.json ` ←
     `demos/<name>/config.json`, a manual `deploy-demo.sh` push.
   - ` ```json session config=test_data/<name>/config.json ` ←
-    `products/jbrowse-web/test_data/<name>/`, which `push.yml` syncs to
-    `code/jb2/ main/` on every commit to main. Relative, resolved against
-    `CODE_BASE`, and what the figure specs' own live links already use.
+    `products/jbrowse-web/test_data/<name>/`, which `push.yml` builds and syncs
+    to `code/jb2/main/` on every commit to main. Relative, resolved against
+    `CODE_BASE`, and what the figure specs' own live links already use. **Keep
+    it relative** — a figure's "Open this view in JBrowse" shows the absolute
+    `.../code/jb2/main/test_data/…`, and pasting that pins every reader to one
+    build instead of retargeting with `JBROWSE_CODE_BASE`. The check refuses it
+    and says which relative form to write.
 
   `check-session-urls` resolves either back to its source **in this repo** and
   fails if the session names a track or assembly the config lacks — the failure
   worth gating, since JBrowse opens such a session without the track and says
   nothing.
+
+  **The check passing is not the reason to add the link; what the session shows
+  is.** It only asks whether the names resolve, so a session naming _nothing_
+  sails through: the `colorByCDS` fence in `config_guides/default_session.md`
+  opens a volvox view with no tracks, and `test_data/volvox/config.json` backs
+  it. That one stays link-less on purpose — a live link onto an empty browser is
+  the "reader concludes the feature is broken" case the tab exists to avoid, and
+  it is the one case nothing can gate.
 
 - **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`.
 - **`user_guides/` drives the UI, `config_guides/` shows the JSON.** When a

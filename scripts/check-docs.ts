@@ -44,9 +44,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-config-blocks.ts'),
   },
   {
-    // Offline: the demos/ configs these links open are deployed from this repo,
-    // so the trackIds are checkable against their source. check-live-configs
-    // --network is the one that asks whether the deploy happened.
+    // Offline: both forms a fence may name — a demos/ URL and a relative
+    // test_data/ path — are published out of this repo, so the trackIds are
+    // checkable against their source. Nothing here asks whether the deploy
+    // happened; check-session-urls.ts says what does and how far it reaches.
     name: 'session live links open what they name',
     argv: web('check-session-urls.ts'),
   },

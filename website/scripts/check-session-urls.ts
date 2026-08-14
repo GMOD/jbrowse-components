@@ -17,12 +17,15 @@
 //     pushed by scripts/deploy-demo.sh. A manual deploy to a bucket with no
 //     versioning, so the hosted bytes can lag the repo.
 //   * a relative `test_data/<name>/config.json`, resolved against CODE_BASE ←
-//     products/jbrowse-web/test_data/<name>/, which push.yml `aws s3 sync
-//     --delete`s to code/jb2/main/ on every commit to main. Always this repo's.
-//     This is what the figure specs' own live links use.
+//     products/jbrowse-web/test_data/<name>/ (a symlink to the repo-root
+//     test_data/), which push.yml builds and then `aws s3 sync --delete`s to
+//     code/jb2/main/ on every commit to main. Always this repo's. This is what
+//     the figure specs' own live links use.
 //
-// `pnpm check-live-configs --network` is the counterpart that asks whether the
-// deploy actually happened.
+// Whether the deploy actually happened is `pnpm check-live-configs --network` —
+// but only incidentally, because that one iterates the FIGURE specs' configs
+// rather than the docs'. A fence's config is covered there only while some spec
+// happens to name the same file. All three currently do; nothing keeps that so.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -58,6 +61,16 @@ function repoConfigPath(url: string) {
     : undefined
 }
 
+// The relative form of an absolute `<code base>/test_data/<name>/config.json`,
+// which is what a figure's "Open this view in JBrowse" link shows and so the
+// natural thing for an author to paste. It is a config this repo publishes, so
+// "not one we publish" would be a lie; it is still the wrong spelling, because
+// only the relative form retargets with JBROWSE_CODE_BASE (see
+// src/lib/code-base.ts) instead of pinning every reader to one build.
+function codeBaseRelative(url: string) {
+  return /^https?:\/\/[^/]+\/code\/jb2\/[^/]+\/(test_data\/.+)$/.exec(url)?.[1]
+}
+
 interface DemoConfig {
   assemblies?: { name?: unknown }[]
   tracks?: { trackId?: unknown }[]
@@ -77,13 +90,22 @@ for (const file of docFiles(docsDir)) {
     const where = `${rel}:${node.position?.start.line ?? 0}`
     const path = repoConfigPath(configUrl)
     if (path === undefined) {
+      const relative = codeBaseRelative(configUrl)
       problems.push(
         `  ${where}`,
-        `    → config=${configUrl} is not a config this repo publishes, so`,
-        `      nothing here can say the link opens. Use a`,
-        `      https://jbrowse.org/demos/<name>/config.json or a relative`,
-        `      test_data/<name>/config.json, or drop \`config=\` and keep the`,
-        `      Config/CLI tabs.\n`,
+        ...(relative
+          ? [
+              `    → config=${configUrl} pins one build. Write it relative —`,
+              `      config=${relative} — so the link retargets with`,
+              `      JBROWSE_CODE_BASE the way the figures' links do.\n`,
+            ]
+          : [
+              `    → config=${configUrl} is not a config this repo publishes, so`,
+              `      nothing here can say the link opens. Use a`,
+              `      https://jbrowse.org/demos/<name>/config.json or a relative`,
+              `      test_data/<name>/config.json, or drop \`config=\` and keep the`,
+              `      Config/CLI tabs.\n`,
+            ]),
       )
       return
     }
