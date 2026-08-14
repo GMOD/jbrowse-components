@@ -83,6 +83,9 @@ const END = Number(arg('end', '400000'))
 // One tag per process — the two tags are two fixtures as far as V8 is
 // concerned. BENCHMARKING.md's dataset-contamination entry.
 const TAG = arg('tag', 'mh')
+// Which modBAM. The corpus default is single-group ONT-ish; the Fiber-seq slice
+// is the only multi-group file here (`HG002_WGS_fiberseq.MAGEL2.bam`, chr15).
+const FILE = arg('file', '200x.longread.mod.bam')
 
 const THRESHOLD = 0.5
 
@@ -916,7 +919,7 @@ async function main() {
   if (!globalThis.gc) {
     console.error('run with --expose-gc\n')
   }
-  const path = join(BAM, '200x.longread.mod.bam')
+  const path = join(BAM, FILE)
   try {
     readFileSync(path, { flag: 'r' })
   } catch {
@@ -973,7 +976,7 @@ async function main() {
   const pct = (v: number) => `${((100 * v) / best.emit).toFixed(0)}%`
   console.log(
     `where the modification time goes, C+${TAG}\n` +
-      `200x.longread.mod.bam ${REFNAME}:${START}-${END}, ` +
+      `${FILE} ${REFNAME}:${START}-${END}, ` +
       `min of ${ROUNDS} rotated rounds\n` +
       `  ${reads.length} MM reads, ${(bp / 1e6).toFixed(1)} Mbp of sequence, ` +
       `${(calls / 1e6).toFixed(2)}M calls, ${outEmit.length} marks emitted\n\n` +

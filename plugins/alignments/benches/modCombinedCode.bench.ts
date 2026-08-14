@@ -22,8 +22,7 @@
 //
 // THE QUESTION. `getModPositions` keeps the whole delta walk inside
 // `processType`, which is called once per character of a multi-char lowercase
-// type string. `C+mh` — ONT's 5mCG_5hmCG model, and the standard output of
-// anything calling hydroxymethyl — therefore walks the read sequence TWICE and
+// type string. `C+mh` therefore walks the read sequence TWICE and
 // allocates two identical position arrays. Only `probStart` differs between the
 // two entries it produces. `forEachMaxProbMod` has the same duplication one
 // layer down: it walks the CIGAR once per mod entry, and a combined code's
@@ -48,6 +47,27 @@
 // position. The delta list is untouched, so **every position is unchanged** and
 // the only thing added is the second type at those same positions — which is
 // exactly what a real `C+mh` read is.
+//
+// **AND REAL DORADO OUTPUT DOES NOT USE ONE.** This header used to call `C+mh`
+// "ONT's 5mCG_5hmCG model, and the standard output of anything calling
+// hydroxymethyl". Checked against ONT's public chromatin-accessibility run for
+// HG002 (`ont.6ma.chr20.bam`, whose header names
+// `modbase_models=..._5mCG_5hmCG@v1,..._6mA@v1`): **all 8,166 reads are
+// `A+a.;C+h?;C+m?` and not one carries a combined code.** Dorado emits 5mC and
+// 5hmC as two SEPARATE MM groups on C.
+//
+// So the dedup this bench prices does not fire on that data at all, and what the
+// commit actually bought there is the single-type row — the per-group closure,
+// which applies once per group and so three times per read. The combined form is
+// still legal, still what the spec describes, and still what some producers emit;
+// it is just not the ONT default it was described as.
+//
+// It also leaves a bigger opportunity that this shape cannot reach: `C+h?` and
+// `C+m?` are two groups on the SAME base, so their delta lists are equal and
+// their positions identical — but as separate groups they get separate arrays and
+// separate CIGAR walks, which the identity test in `forEachMaxProbMod` correctly
+// declines to merge. Sharing them has to be decided at PARSE time, by comparing
+// the delta strings. That is in TODO.md.
 //
 // **A combined code is not the same thing as a file with several modification
 // types, and the difference decides whether this fix applies.** A combined code

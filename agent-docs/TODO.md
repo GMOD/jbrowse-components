@@ -1105,19 +1105,25 @@ about multi-group reads at two layers.
 course, and `modificationsMenu` already tells users that basecallers increasingly
 emit several types per read. A combined code is the *rarer* of the two shapes.
 
-The first move is a fixture, not code:
+**The fixture now exists and the parse half is measured.** `ont.6ma.chr20.bam`
+(jb2bench `shell/fetch_ont_6ma.sh`) is 8,166 reads / 72.8 Mbp / 21.81M MM deltas,
+every read `A+a.;C+h?;C+m?`. `multiGroupParse.bench.ts` prices the one-pass parse
+at **1.13x** there and **0.917x** on the single-group fixture — a trade, because
+the one-pass shape charges every base an array index and several property loads
+where the per-group loop is a tight `charCodeAt` do-while. Ship it **branched on
+group count**, tight loop at N=1 and one pass above it. The N=2 crossover is not
+established; `--groups=` synthesizes one if it matters.
 
-- **No modBAM in either corpus has more than one MM group**, so nothing here can
-  measure this and nothing has ever exercised the multi-group path under load.
-  `modCombinedCode.bench.ts` shows how to synthesize a second group (walk the
-  read for `A`, emit an `A+a` group beside the existing `C+m`), which is honest
-  for counting walks.
-- **A real Fiber-seq BAM is still worth getting, but for one reason rather than
-  two.** Op density turned out to be synthesizable and to not matter
-  (`cigarOpDensity.bench.ts`), so what a real file adds is m6A CALL density —
-  which is the term that does matter, since the per-call work is what these
-  phases are bound by, and Fiber-seq marks accessible adenines densely enough
-  that its calls-per-read is nothing this corpus can imitate.
+**Take the same-base case first — it is bigger and this fixture is what revealed
+it.** `C+h?` and `C+m?` are two groups on the SAME canonical base, so their delta
+lists are equal and their positions identical, and dorado emits exactly this. Two
+of the read's three sequence walks are therefore redundant in the strongest sense
+— same base, same answers — as are two of its three CIGAR walks. `forEachMaxProbMod`
+correctly declines to merge them, because its test is array identity and these are
+separate arrays; the merge has to be decided at PARSE time by comparing the delta
+substrings, which is cheap and exact. Do that and the same-base groups share one
+positions array, at which point the existing identity grouping picks up the CIGAR
+walk for free.
 
 Keep the identity grouping when doing this — it answers a different question
 (which entries are the same walk) and the merge is a layer above it.

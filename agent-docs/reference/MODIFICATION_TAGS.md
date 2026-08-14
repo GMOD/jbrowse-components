@@ -19,13 +19,23 @@ session's framing wrong before it was caught:
   positions: `C+mh` is 5mC and 5hmC at every listed cytosine. One delta list, one
   set of positions, ML values **interleaved** per position. htslib's grammar
   calls this `<simple-mod-list>`.
+
+  **Legal, specified, and not what dorado emits.** ONT's public
+  chromatin-accessibility run for HG002 declares
+  `modbase_models=..._5mCG_5hmCG@v1,..._6mA@v1` in its header, and all 8,166
+  reads of the `ont.6ma.chr20.bam` slice are `A+a.;C+h?;C+m?` — 5mC and 5hmC as
+  two SEPARATE groups on C, no combined code anywhere. Do not reason about "the
+  5mCG_5hmCG model" as though it produced `C+mh`; this repo did, in a landed
+  commit message, and the corpus that would have caught it did not exist yet.
 - **Several MM groups** is `C+m,…;A+a,…` — 5mC on cytosine and 6mA on adenine.
   Different canonical bases, therefore necessarily different positions, separate
   delta lists, separate ML spans. This is what a Fiber-seq read carries, and it
   is the commoner of the two shapes.
 
-A tag can be both at once (`C+mh,…;A+a,…`), and newer basecallers emit exactly
-that.
+A tag can be both at once (`C+mh,…;A+a,…`). What the ONT fixture shows is the
+third combination and the commonest one: **several groups, two of them on the
+same canonical base**, which is neither a combined code nor the different-base
+case, and which nothing in this repo was shaped for.
 
 ## Two things we do the same way as htslib
 
