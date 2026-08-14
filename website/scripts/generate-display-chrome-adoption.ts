@@ -337,15 +337,18 @@ function collectRegistrations(): Registration[] {
   // install creates, so walking into it re-reads the whole workspace through
   // symlinks — and finds the same registrations twice, under other paths.
   const skip = new Set(['node_modules', 'dist', 'esm', '__snapshots__'])
-  // Test support registers display types too, and those are not adoption: ten
-  // plugins carry a `testEnv.ts` that registers a stub with
-  // `ReactComponent: () => null`. `testEnv.ts` is this repo's convention for
-  // that file, so excluding it by name follows the convention rather than
-  // guessing — and a stub would otherwise fail the run as an unresolvable
-  // inline component, which is the loud failure working correctly on a file
-  // that should never have been scanned.
+  // Test support registers display types too, and those are not adoption: a
+  // dozen plugins carry a harness that registers a stub with
+  // `ReactComponent: () => null`. Excluded by name, because the names are a
+  // convention rather than a guess — `testEnv.ts` in 13 places and
+  // `testUtils.ts` in 4. Both, not one: the list was `testEnv.ts` alone until
+  // an alignments harness picked the other name and failed the whole run as an
+  // unresolvable inline component. That is the loud failure working correctly
+  // on a file that should never have been scanned, so widen the names here
+  // rather than teaching the resolver a stub idiom — resolving it would put a
+  // test harness in the adoption map as though it shipped.
   const isTestSupport = (n: string) =>
-    n === 'testEnv.ts' || /\.test\.tsx?$/.test(n)
+    /^(testEnv|testUtils)\.tsx?$/.test(n) || /\.test\.tsx?$/.test(n)
   for (const file of walkFiles(
     join(repoRoot, 'plugins'),
     n => /\.tsx?$/.test(n) && !isTestSupport(n),
