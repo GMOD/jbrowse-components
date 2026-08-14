@@ -1,5 +1,6 @@
 import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { getAdapterToCanonicalRefNameMap } from '@jbrowse/synteny-core'
 
 import type {
   ResolvedSpan,
@@ -81,14 +82,22 @@ export async function resolveMatchingSpan({
   window: SpanOfInterest
   toMate: boolean
 }) {
-  return getSession(model).rpcManager.call(
-    getRpcSessionId(model),
+  const { assemblyManager, rpcManager } = getSession(model)
+  const sessionId = getRpcSessionId(model)
+  const { adapterConfig } = model
+  const span = await rpcManager.call(
+    sessionId,
     'SyntenyResolveMatchingRegion',
     {
-      adapterConfig: model.adapterConfig,
+      adapterConfig,
       // the block's own extent on the QUERY axis, which is the axis the band's
       // fetch queries -- so the lookup finds the feature whichever panel is
       // being moved
+      //
+      // Canonical since the fetch canonicalizes `refNameDict`, and this is the
+      // one refName on this path that goes back OUT: the method extends
+      // `RpcMethodTypeWithRenameRegions`, so the outbound pass maps it into the
+      // adapter's namespace again. Do not rename it here as well.
       regions: [
         {
           refName: feat.refName,
@@ -105,6 +114,26 @@ export async function resolveMatchingSpan({
       lodMode: model.lodTier,
     },
   )
+  if (!span) {
+    return undefined
+  }
+  // The second of the two adapter->canonical channels, and the reason this one
+  // is not optional: `alreadyShowing` compares this refName against where the
+  // moving row actually is, which is canonical, so canonicalizing only the
+  // fetch would leave it never matching and renavigating on every wake. The
+  // axis is whichever one the span landed on -- `toMate` moves the mate axis
+  // (v1), otherwise the feature axis (v0).
+  const axis = toMate ? model.connectedViews?.v1 : model.connectedViews?.v0
+  if (!axis) {
+    return span
+  }
+  const map = await getAdapterToCanonicalRefNameMap({
+    assemblyManager,
+    sessionId,
+    adapterConfig,
+    regions: axis.displayedRegions,
+  })
+  return { ...span, refName: map[span.refName] ?? span.refName }
 }
 
 /**

@@ -11,9 +11,6 @@ beforeEach(() => {
 })
 
 const timeout = { timeout: 30000 }
-// the known-failing case below only has to prove the row does NOT move, so it
-// waits long enough to cover the coarse-blocks debounce and no longer
-const shortTimeout = { timeout: 4000 }
 
 // THE SAME ALIGNMENT, SPELLED TWO WAYS. Both files are one 50001-vs-45141 block
 // (28498M 4860I 16643M) between volvox and volvox_del, differing only in the
@@ -96,37 +93,39 @@ test('the follow places the row through a canonically-spelled file', async () =>
   }, timeout)
 })
 
-// The bug, and `test.failing` rather than a skip so that fixing it breaks this
-// line instead of leaving a dead test behind. Same alignment, same navigation,
-// only the file's spelling of the anchor row's contig differs — and
-// `pickFollowFeature` compares that spelling against a window read off
-// `dynamicBlocks`, which is canonical. Nothing matches, so the follow reports
-// the window as unaligned and every row holds, which is indistinguishable from
-// a window with genuinely nothing under it.
+// THE CASE THE FIX IS FOR, and the one that regresses if either half of it is
+// backed out. Same alignment, same navigation; only the file's spelling of the
+// anchor row's contig differs. Before the fix `pickFollowFeature` compared that
+// spelling against a window read off `dynamicBlocks`, which is canonical,
+// nothing matched, and the follow reported the window unaligned and held every
+// row — indistinguishable from a window with genuinely nothing under it.
 //
 // Two channels carry the adapter's spelling to the main thread and BOTH have to
 // be canonicalized for this to pass: `featureData`'s
 // `refNameDict`/`mateRefNameDict` from the fetch (the dictionaries the
-// per-feature ids index), and `ResolvedSpan.refName` from
-// `SyntenyResolveMatchingRegion`, which `alreadyShowing`, `followTransform` and
+// per-feature ids index, renamed in `LinearSyntenyDisplay/afterAttach`), and
+// `ResolvedSpan.refName` from `SyntenyResolveMatchingRegion` (renamed in
+// `resolveMatchingSpan`), which `alreadyShowing`, `followTransform` and
 // `positionViewOnSpan` all then compare against view state.
 // `getAdapterToCanonicalRefNameMap` (@jbrowse/synteny-core) is the map for both;
 // renaming a dictionary means re-interning it, for the reason
 // `agent-docs/reference/REFNAME_NAMESPACES.md` gives.
-test.failing(
-  'the follow places the row through an alias-spelled file too',
-  async () => {
-    const view = await openWith(ALIASED)
-    const [volvox, del] = view.views
-    view.setRowSyncMode('follow')
-    await volvox!.navToLocString(LOCUS, 'volvox')
+//
+// Doing only the first half is worse than doing neither, and it fails LOUDER in
+// `LinearSyntenyFollow.test.tsx` than here: `alreadyShowing` then compares
+// canonical against adapter-space, never matches, and renavigates on every
+// wake, which breaks that file's one-RPC-per-settle count.
+test('the follow places the row through an alias-spelled file too', async () => {
+  const view = await openWith(ALIASED)
+  const [volvox, del] = view.views
+  view.setRowSyncMode('follow')
+  await volvox!.navToLocString(LOCUS, 'volvox')
 
-    await waitFor(() => {
-      const win = windowOf(del!)
-      expect(win.refName).toBe('ctgA')
-      expect(win.start).toBeGreaterThan(9500)
-      expect(win.end).toBeLessThan(11500)
-    }, shortTimeout)
-    expect(view.followUnaligned).toBe(false)
-  },
-)
+  await waitFor(() => {
+    const win = windowOf(del!)
+    expect(win.refName).toBe('ctgA')
+    expect(win.start).toBeGreaterThan(9500)
+    expect(win.end).toBeLessThan(11500)
+  }, timeout)
+  expect(view.followUnaligned).toBe(false)
+})

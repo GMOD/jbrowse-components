@@ -1,7 +1,9 @@
 import { getSession } from '@jbrowse/core/util'
 import {
+  getAdapterToCanonicalRefNameMap,
   installAssemblySwapCheck,
   installComparativeFetchAutorun,
+  renameRefNameDict,
 } from '@jbrowse/synteny-core'
 import { untracked } from 'mobx'
 
@@ -76,7 +78,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         drawLocationMarkers,
         lodTier,
       },
-      { adapterConfig, sessionId, stopToken, statusCallback, rename },
+      {
+        adapterConfig,
+        sessionId,
+        stopToken,
+        statusCallback,
+        rename,
+        assemblyManager,
+      },
     ) => {
       // Query axis renames both its displayed regions and its scoped fetch
       // window; the target axis has no fetch window (single-axis fetch), so
@@ -90,7 +99,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         ...rawTarget,
         displayedRegions: await rename(rawTarget.displayedRegions),
       }
-      return getSession(self).rpcManager.call(
+      const result = await getSession(self).rpcManager.call(
         sessionId,
         'SyntenyGetFeaturesAndPositions',
         {
@@ -105,6 +114,51 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           statusCallback,
         },
       )
+
+      // AND BACK AGAIN, which the inbound rename above does not do for us. A
+      // synteny feature names a contig on the OTHER axis — that is what a
+      // synteny feature IS — so the answer is about a region nobody requested
+      // and arrives in the file's spelling, while every main-thread reader
+      // compares it against canonical view state. See
+      // `agent-docs/reference/REFNAME_NAMESPACES.md`, and note the second
+      // channel: `ResolvedSpan.refName` is renamed in `resolveMatchingSpan`,
+      // and doing either alone is worse than doing neither.
+      //
+      // ONE MAP PER AXIS, not one merged map, so two contigs spelled alike on
+      // the two assemblies cannot collide. Both are memoized per adapter config
+      // by `getRefNameMapForAdapter`, and `rename` above just loaded them, so
+      // this costs no fetch.
+      const [queryMap, targetMap] = await Promise.all([
+        getAdapterToCanonicalRefNameMap({
+          assemblyManager,
+          sessionId,
+          adapterConfig,
+          regions: rawQuery.displayedRegions,
+        }),
+        getAdapterToCanonicalRefNameMap({
+          assemblyManager,
+          sessionId,
+          adapterConfig,
+          regions: rawTarget.displayedRegions,
+        }),
+      ])
+      const query = renameRefNameDict({
+        dict: result.refNameDict,
+        ids: result.refNameIds,
+        map: queryMap,
+      })
+      const target = renameRefNameDict({
+        dict: result.mateRefNameDict,
+        ids: result.mateRefNameIds,
+        map: targetMap,
+      })
+      return {
+        ...result,
+        refNameDict: query.dict,
+        refNameIds: query.ids,
+        mateRefNameDict: target.dict,
+        mateRefNameIds: target.ids,
+      }
     },
     commit: ({ instanceData, ...featureData }, { fetchKey }) => {
       self.setRpcData(featureData, instanceData, fetchKey)
