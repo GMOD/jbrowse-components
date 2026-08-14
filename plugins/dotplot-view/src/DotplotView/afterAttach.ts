@@ -1,6 +1,7 @@
 import {
   getSession,
   localStorageSetItem,
+  minmax,
   parseLocString,
   resolveNamedRegions,
 } from '@jbrowse/core/util'
@@ -35,6 +36,13 @@ type AssemblyManager = ReturnType<typeof getSession>['assemblyManager']
 // malformed locstring, and one typo must take out neither its siblings nor the
 // init steps that run after highlights. Bad entries come back as `errors` for
 // the caller to report rather than being swallowed.
+//
+// `defaultAssembly` is the horizontal axis, and is only a DEFAULT: unlike every
+// other view that takes highlights, this one has a second assembly, and an entry
+// naming it — `{mm10}chr1:1-100`, or a JSON object with its own assemblyName —
+// is validated and stamped against the one it named. Validating everything
+// against the h axis rejected any refName unique to the v axis outright, and
+// accepted a shared name like `chr1` only to band the wrong axis with it.
 export function parseInitHighlights(
   entries: string[],
   assemblyManager: AssemblyManager,
@@ -47,8 +55,14 @@ export function parseInitHighlights(
   const errors: { entry: string; error: unknown }[] = []
   for (const entry of entries) {
     try {
-      const highlight = coerceHighlight(entry, defaultAssembly, refName =>
-        assemblyManager.isValidRefName(refName, defaultAssembly),
+      const highlight = coerceHighlight(
+        entry,
+        defaultAssembly,
+        (refName, assemblyName) =>
+          assemblyManager.isValidRefName(
+            refName,
+            assemblyName ?? defaultAssembly,
+          ),
       )
       if (highlight) {
         highlights.push(highlight)
@@ -63,6 +77,13 @@ export function parseInitHighlights(
 // Navigate one dotplot axis (hview/vview) to a loc string for region-based
 // linking. Resolves the canonical refName, finds the matching displayed region,
 // and moveTo's the bp offsets (handling reversed regions). Exported for tests.
+//
+// Whichever end the locstring leaves unsaid is the region's own: a bare refName
+// ("ctgA") and an open-ended range ("ctgA:5000..") are both legal parses that
+// carry no start/end pair, and requiring one meant the commonest form an axis
+// `loc` takes — name a chromosome, show that chromosome — navigated nowhere and
+// said nothing, which is indistinguishable from the whole-genome default it was
+// written to override.
 export function navAxisToLoc(
   view: Base1DViewModel,
   loc: string,
@@ -70,27 +91,21 @@ export function navAxisToLoc(
   assemblyManager: AssemblyManager,
 ) {
   const asm = assemblyManager.get(assemblyName)
-  const {
-    refName: parsedRef,
-    start,
-    end,
-  } = parseLocString(loc, refName =>
+  const parsed = parseLocString(loc, refName =>
     assemblyManager.isValidRefName(refName, assemblyName),
   )
-  if (start !== undefined && end !== undefined) {
-    const refName = asm?.getCanonicalRefName(parsedRef) ?? parsedRef
-    const index = view.displayedRegions.findIndex(r => r.refName === refName)
-    if (index !== -1) {
-      const region = view.displayedRegions[index]!
-      const o1 = region.reversed ? region.end - start : start - region.start
-      const o2 = region.reversed ? region.end - end : end - region.start
-      const [lo, hi] = o1 < o2 ? [o1, o2] : [o2, o1]
-      view.moveTo(
-        { refName, index, offset: lo },
-        { refName, index, offset: hi },
-      )
-    }
+  const refName = asm?.getCanonicalRefName(parsed.refName) ?? parsed.refName
+  const index = view.displayedRegions.findIndex(r => r.refName === refName)
+  if (index === -1) {
+    return
   }
+  const region = view.displayedRegions[index]!
+  const start = parsed.start ?? region.start
+  const end = parsed.end ?? region.end
+  const offsetOf = (coord: number) =>
+    region.reversed ? region.end - coord : coord - region.start
+  const [lo, hi] = minmax(offsetOf(start), offsetOf(end))
+  view.moveTo({ refName, index, offset: lo }, { refName, index, offset: hi })
 }
 
 // Wait for `cond`, giving up on the two things that mean it will never come:

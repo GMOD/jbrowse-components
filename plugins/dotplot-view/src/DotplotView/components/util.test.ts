@@ -21,6 +21,20 @@ function region(refName: string, end: number, start = 0) {
   return { refName, start, end }
 }
 
+// the model hands axisBorderPx the same label map its axis component draws from
+// (h/vRefNameLabels); pair the two here so a test can't measure the margin
+// against a string the axis would never print
+function border(
+  regions: { refName: string; start: number; end: number }[],
+  bpPerPx: number,
+) {
+  return axisBorderPx(
+    regions,
+    bpPerPx,
+    truncateRefNames(regions.map(r => r.refName)),
+  )
+}
+
 // a static block, which is 1000 CSS px of the region rather than the whole of it
 function staticBlock(
   start: number,
@@ -173,12 +187,12 @@ describe('locstr', () => {
 
 describe('axisBorderPx', () => {
   test('empty regions fall back to the minimum border', () => {
-    expect(axisBorderPx([], 1)).toBe(50)
+    expect(border([], 1)).toBe(50)
   })
 
   test('the widest region label drives the border', () => {
-    const short = axisBorderPx([region('chr1', 1_000)], 1)
-    const long = axisBorderPx(
+    const short = border([region('chr1', 1_000)], 1)
+    const long = border(
       [region('chr1', 1_000), region('a_long_scaffold_name', 1_000)],
       1,
     )
@@ -187,30 +201,45 @@ describe('axisBorderPx', () => {
 
   test('a truncated long name does not grow the border without bound', () => {
     // both names truncate to the same 9-char display, so the border matches
-    expect(axisBorderPx([region('scaffold_1234', 1_000)], 1)).toBe(
-      axisBorderPx([region('scaffold_9999', 1_000)], 1),
+    expect(border([region('scaffold_1234', 1_000)], 1)).toBe(
+      border([region('scaffold_9999', 1_000)], 1),
     )
   })
 
   test('a region too small to show a label does not inflate the border', () => {
     const bpPerPx = 1_000_000 // chr1 spans 20px; the contig spans 0.5px
-    const withContig = axisBorderPx(
+    const withContig = border(
       [
         region('chr1', 20_000_000),
         region('chr1_random_unplaced', 20_500_000, 20_000_000),
       ],
       bpPerPx,
     )
-    const chr1Only = axisBorderPx([region('chr1', 20_000_000)], bpPerPx)
+    const chr1Only = border([region('chr1', 20_000_000)], bpPerPx)
     expect(withContig).toBe(chr1Only)
   })
 
   test('bpPerPx changes tick-label precision and so the border', () => {
     // "1,234,567" (bpPerPx=1) is a wider tick than "1.23M" (bpPerPx=1000);
     // both spans stay above LABEL_PX so the filter keeps them
-    const fine = axisBorderPx([region('chr1', 1_234_567)], 1)
-    const coarse = axisBorderPx([region('chr1', 1_234_567)], 1_000)
+    const fine = border([region('chr1', 1_234_567)], 1)
+    const coarse = border([region('chr1', 1_234_567)], 1_000)
     expect(fine).toBeGreaterThan(coarse)
+  })
+
+  // the elide is off when it would collide, so the margin has to grow with it:
+  // sized off `chr1…RNAL` while the axis prints `chr10_MATERNAL`, every label on
+  // a haplotype-resolved assembly is clipped
+  test('a colliding elide set widens the border to the full names', () => {
+    const haplotype = [
+      region('chr1_MATERNAL', 1_000),
+      region('chr10_MATERNAL', 1_000),
+    ]
+    const distinct = [
+      region('scaffold_1234', 1_000),
+      region('scaffold_5678', 1_000),
+    ]
+    expect(border(haplotype, 1)).toBeGreaterThan(border(distinct, 1))
   })
 })
 

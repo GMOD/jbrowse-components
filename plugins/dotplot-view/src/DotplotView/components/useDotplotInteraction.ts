@@ -49,6 +49,7 @@ export interface DotplotInteraction {
     onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => void
     onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => void
     onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => void
+    onPointerCancel: () => void
     onPointerEnter: () => void
     onPointerLeave: () => void
   }
@@ -210,6 +211,15 @@ export function useDotplotInteraction(
         } else {
           clear()
         }
+      },
+      // A cancelled pointer never delivers its `up`, so without this the drag
+      // anchor outlives the gesture: the browser takes the pointer over (a touch
+      // that turns into a page scroll, a system gesture), releases capture, and
+      // every later pointermove over the plot still reads as `down && !up` and
+      // pans it. Dropping the anchor is the same thing a click does.
+      onPointerCancel: () => {
+        lastRef.current = undefined
+        clear()
       },
       onPointerEnter: () => {
         setHovering(true)

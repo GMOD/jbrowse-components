@@ -115,14 +115,23 @@ function parseJsonHighlight(
     : undefined
 }
 
+// The `{assembly}` prefix a locstring may carry is kept, not overwritten with
+// the default: on a dotplot the two axes are two different assemblies, so
+// `{mm10}chr1:1-100` stamped with the horizontal axis' assembly drew the band on
+// the wrong axis (see DotplotView's axisHighlightRegion, which routes by exactly
+// this field) with nothing said. Single-assembly views are unaffected — their
+// only prefix is the default anyway.
 function parseLocHighlight(
   s: string,
   defaultAssembly: string,
-  isValidRefName: (refName: string) => boolean,
+  isValidRefName: (refName: string, assemblyName?: string) => boolean,
 ): HighlightType | undefined {
-  const { refName, start, end } = parseLocString(s, isValidRefName)
+  const { assemblyName, refName, start, end } = parseLocString(
+    s,
+    isValidRefName,
+  )
   return start !== undefined && end !== undefined
-    ? { refName, start, end, assemblyName: defaultAssembly }
+    ? { refName, start, end, assemblyName: assemblyName ?? defaultAssembly }
     : undefined
 }
 
@@ -134,7 +143,9 @@ function parseLocHighlight(
 export function coerceHighlight(
   h: string | HighlightType,
   defaultAssembly: string,
-  isValidRefName: (refName: string) => boolean,
+  // takes the assembly a `{...}` prefix named, so a caller with more than one
+  // assembly in play validates the refName against the one the entry asked for
+  isValidRefName: (refName: string, assemblyName?: string) => boolean,
 ): HighlightType | undefined {
   return typeof h === 'object'
     ? { ...h, assemblyName: h.assemblyName ?? defaultAssembly }

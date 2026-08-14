@@ -5,6 +5,13 @@ const assemblyManager = {
   isValidRefName: (r: string) => validRefNames.has(r),
 } as any
 
+// A dotplot is the one view with two assemblies, so which one a refName is
+// validated against is a real question. `volvox` has ctgA; `other` has ctgB.
+const twoAssemblies = {
+  isValidRefName: (r: string, asm: string) =>
+    asm === 'other' ? r === 'ctgB' : r === 'ctgA',
+} as any
+
 test('parses a loc string and stamps the default assembly', () => {
   const { highlights, errors } = parseInitHighlights(
     ['ctgA:100-200'],
@@ -59,6 +66,36 @@ test('mixes loc strings and JSON objects in one call', () => {
     parseInitHighlights(['ctgA:100-200', json], assemblyManager, 'volvox')
       .highlights,
   ).toHaveLength(2)
+})
+
+// The band is routed to an axis by assemblyName (see axisHighlightRegion), so
+// overwriting the one the locstring named put it on the wrong axis silently — at
+// the other assembly's coordinates.
+test('a {assembly}-prefixed loc string keeps the assembly it named', () => {
+  const { highlights, errors } = parseInitHighlights(
+    ['{other}ctgB:100-200'],
+    twoAssemblies,
+    'volvox',
+  )
+  expect(errors).toEqual([])
+  expect(highlights[0]).toMatchObject({
+    refName: 'ctgB',
+    start: 99,
+    end: 200,
+    assemblyName: 'other',
+  })
+})
+
+// and the refName is validated against that assembly, not the default: ctgB is
+// unknown to volvox, so checking it there rejected the entry outright
+test('a prefixed loc string validates against the assembly it named', () => {
+  expect(
+    parseInitHighlights(['{volvox}ctgA:1-2'], twoAssemblies, 'volvox')
+      .highlights[0],
+  ).toMatchObject({ refName: 'ctgA', assemblyName: 'volvox' })
+  expect(
+    parseInitHighlights(['{other}ctgA:1-2'], twoAssemblies, 'volvox').errors,
+  ).toHaveLength(1)
 })
 
 // a typo'd refName used to throw out of the whole init autorun, skipping the

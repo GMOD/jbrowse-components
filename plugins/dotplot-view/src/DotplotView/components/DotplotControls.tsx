@@ -142,12 +142,13 @@ const DotplotControls = observer(function DotplotControls({
                 type: 'checkbox',
                 label: 'Lock aspect ratio (same bp/px)',
                 checked: model.lockAspectRatio,
+                // no squareView() call: the aspect-lock autorun observes this
+                // flag and squares the axes the moment it goes on. Doing it here
+                // too ran applySquare a second time over already-equal axes,
+                // whose centerAt rounds offsetPx — so turning the lock on could
+                // nudge the plot by a pixel for no reason.
                 onClick: () => {
-                  const next = !model.lockAspectRatio
-                  model.setLockAspectRatio(next)
-                  if (next) {
-                    model.squareView()
-                  }
+                  model.setLockAspectRatio(!model.lockAspectRatio)
                 },
                 helpText:
                   'When enabled, both axes are kept at the same bp/px so the dotplot stays square as you zoom and pan.',

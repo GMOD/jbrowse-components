@@ -62,3 +62,29 @@ test('does nothing when the refName is not displayed on the axis', () => {
   navAxisToLoc(view, 'ctgZ:5000-15000', 'volvox', assemblyManager)
   expect(moveTo).not.toHaveBeenCalled()
 })
+
+// "show me this chromosome" is the commonest thing an axis `loc` says, and it
+// used to navigate nowhere at all — parseLocString hands back no start/end pair
+// for a bare refName, which was read as "nothing to do"
+test('a bare refName navigates to the whole region', () => {
+  const { view, moveTo } = fakeView({
+    refName: 'ctgA',
+    start: 1000,
+    end: 50000,
+  })
+  navAxisToLoc(view, 'ctgA', 'volvox', assemblyManager)
+  expect(moveTo).toHaveBeenCalledWith(
+    { refName: 'ctgA', index: 0, offset: 0 },
+    { refName: 'ctgA', index: 0, offset: 49000 },
+  )
+})
+
+// same for a range that only pins one end down ("ctgA:5000..")
+test('an open-ended range runs to the region end', () => {
+  const { view, moveTo } = fakeView({ refName: 'ctgA', start: 0, end: 50000 })
+  navAxisToLoc(view, 'ctgA:5000..', 'volvox', assemblyManager)
+  expect(moveTo).toHaveBeenCalledWith(
+    { refName: 'ctgA', index: 0, offset: 4999 },
+    { refName: 'ctgA', index: 0, offset: 50000 },
+  )
+})

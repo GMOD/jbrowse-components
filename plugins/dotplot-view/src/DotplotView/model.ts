@@ -105,8 +105,9 @@ function axisTicks(view: Dotplot1DViewModel) {
 //   `chr1` on the horizontal axis. Aliases go through the axis assembly's
 //   `hasName`, so a highlight naming `GRCh38` still lands on an `hg38` axis.
 //   A region with no assemblyName is drawn on both axes: hand-authored session
-//   JSON and `init.highlight` locstrings omit it, and on a self-vs-self plot
-//   both bands are wanted regardless.
+//   JSON and grid bookmarks may omit it, and on a self-vs-self plot both bands
+//   are wanted regardless. (An `init.highlight` entry always carries one —
+//   whichever assembly its `{...}` prefix named, else the horizontal axis'.)
 // - The refName alias, resolved against the AXIS assembly rather than the
 //   region's own. Having passed the check above they name the same assembly,
 //   and the axis's is the one the view has already waited on — `initialized`
@@ -398,6 +399,24 @@ export default function stateModelFactory(pm: PluginManager) {
           }
           return self.volatileWidth
         },
+        // refName -> the string the axis actually prints for it. Off
+        // displayedRegions rather than off the visible blocks so panning and
+        // zooming can't change a label, and declared here — ahead of the borders
+        // — so `axisBorderPx` is HANDED the map it sizes the margin against
+        // instead of deriving its own copy from the same input. The two agreeing
+        // is what keeps a label from being clipped by a margin measured off a
+        // different string, and it is now one computation rather than an
+        // invariant between two.
+        get hRefNameLabels() {
+          return truncateRefNames(
+            self.hview.displayedRegions.map(r => r.refName),
+          )
+        },
+        get vRefNameLabels() {
+          return truncateRefNames(
+            self.vview.displayedRegions.map(r => r.refName),
+          )
+        },
         /**
          * #getter
          * Left margin: fits the vertical (vview) axis labels. Derived purely
@@ -405,14 +424,22 @@ export default function stateModelFactory(pm: PluginManager) {
          * feed back through viewWidth = width - borderX into a render loop.
          */
         get borderX() {
-          return axisBorderPx(self.vview.displayedRegions, self.vview.bpPerPx)
+          return axisBorderPx(
+            self.vview.displayedRegions,
+            self.vview.bpPerPx,
+            this.vRefNameLabels,
+          )
         },
         /**
          * #getter
          * Bottom margin: fits the horizontal (hview) axis labels. See borderX.
          */
         get borderY() {
-          return axisBorderPx(self.hview.displayedRegions, self.hview.bpPerPx)
+          return axisBorderPx(
+            self.hview.displayedRegions,
+            self.hview.bpPerPx,
+            this.hRefNameLabels,
+          )
         },
       }))
       .views(self => ({
@@ -594,21 +621,6 @@ export default function stateModelFactory(pm: PluginManager) {
             self.vview.offsetPx,
           )
         },
-        // refName -> the string the axis actually prints for it. Off
-        // displayedRegions rather than off the visible blocks so panning and
-        // zooming can't change a label, and cached here so the axis component
-        // and borderX/borderY (which sizes the margin to fit these very
-        // strings) cannot disagree about what is drawn.
-        get hRefNameLabels() {
-          return truncateRefNames(
-            self.hview.displayedRegions.map(r => r.refName),
-          )
-        },
-        get vRefNameLabels() {
-          return truncateRefNames(
-            self.vview.displayedRegions.map(r => r.refName),
-          )
-        },
         /**
          * #getter
          * The h ticks that land on the drawn axis, thinned to what can be read
@@ -686,9 +698,9 @@ export default function stateModelFactory(pm: PluginManager) {
          * builds one view-compatible display, but a hand-written or legacy
          * session snapshot is hydrated verbatim, and an empty or foreign
          * `displays` array put an `undefined` into this list that every
-         * consumer below dereferences — `settled`, `displayError` and
-         * `geometryByDisplayKey` all crash the view on it. Same spelling as
-         * the synteny level's `linearSyntenyDisplays`.
+         * consumer below dereferences — `settled` and `geometryByDisplayKey`
+         * both crash the view on it. Same spelling as the synteny level's
+         * `linearSyntenyDisplays`.
          *
          * Not index-aligned with `tracks`, so a consumer that wants a display's
          * track reads `display.parentTrack` rather than `tracks[i]`.
@@ -715,21 +727,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         get trackWarnings() {
           return collectTrackWarnings(this.dotplotDisplays)
-        },
-        /**
-         * #getter
-         * Every failed track's error, combined into the one value the plot has
-         * room to report — resolved here rather than per display because they
-         * all paint the same plot rect, so a box per errored display would bury
-         * its siblings' dots. On-screen only: SVG export has no banner to float
-         * over a figure, so a failed track fails the export from that display's
-         * own `awaitSvgReady`.
-         */
-        get displayError() {
-          const errors = this.dotplotDisplays
-            .map(d => d.error)
-            .filter(e => e != null)
-          return errors.length > 0 ? errors.join('\n') : undefined
         },
         /**
          * #method

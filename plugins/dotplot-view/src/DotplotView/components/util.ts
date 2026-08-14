@@ -151,17 +151,18 @@ const LABEL_PX = 12
 // contig you zoom into grows past LABEL_PX and reclaims its space. Depends only
 // on regions + zoom, never viewport width, so it stays acyclic (viewWidth =
 // width - border).
+//
+// `labels` is the very map the axis component draws from
+// (model.h/vRefNameLabels), passed in rather than rebuilt here: a margin sized
+// off a different string than the one drawn is a clipped label, and the elide
+// decision is taken over EVERY displayed region — not just the ones wide enough
+// to be measured below — because it is a property of the axis, so a zoom that
+// hides a small contig must not silently re-elide the labels that stay.
 export function axisBorderPx(
   regions: { refName: string; start: number; end: number }[],
   bpPerPx: number,
+  labels: Map<string, string>,
 ) {
-  // The elide decision is taken over EVERY displayed region, not just the ones
-  // wide enough to be measured below: it is a property of the axis, so a zoom
-  // that hides a small contig must not silently re-elide the labels that stay.
-  // Same map the axis component draws from (model.h/vRefNameLabels), for the
-  // usual reason — a margin sized off a different string than the one drawn is
-  // a clipped label.
-  const labels = truncateRefNames(regions.map(r => r.refName))
   const labelWidth = max(
     regions.flatMap(r =>
       (r.end - r.start) / bpPerPx >= LABEL_PX
