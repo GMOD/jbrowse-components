@@ -98,7 +98,7 @@ pileup. Long reads span the whole event, so a single read crosses both
 breakpoints and splits into forward and reverse-strand alignments. With View as
 pairs / link supplementary alignments on, those segments chain onto one row: the
 inverted middle paints the reverse-strand color between the forward-strand
-segments on either side, and the split junctions are joined by a magenta
+segments on either side, and the split alignments are joined by a magenta
 inversion arc.
 
 **Group by... → Split read (SA tag)** in the track menu puts the reads carrying

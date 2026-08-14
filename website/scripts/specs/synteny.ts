@@ -1032,7 +1032,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // self-alignment on right"). A `displayName` is the label that
             // cannot land on the data, and in the compose it is the one piece
             // of text at the same place in both halves.
-            displayName: 'Bread wheat aligned against itself',
+            displayName: 'Bread wheat self-alignment',
             showColorLegend: true,
             views: [
               {
@@ -1084,7 +1084,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // across the join.
       {
         type: 'text',
-        text: 'Bread wheat vs itself',
+        text: 'Bread wheat self-alignment',
         fontSize: 26,
         // on the app bar, anchored to it rather than to an x/y: check-specs
         // ratchets hand-placed coordinates and this is chrome, so it has an
@@ -1153,7 +1153,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // Same reason as the wheat plot's: `oat,oat` in the header is two
             // assembly names, and in the composed pair the two headers are the
             // one place a label can sit at the same height in both halves.
-            displayName: 'Oat aligned against itself',
+            displayName: 'Oat self-alignment',
             showColorLegend: true,
             views: [
               { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
@@ -1181,7 +1181,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // the wheat one so they sit level across the join
       {
         type: 'text',
-        text: 'Oat vs itself',
+        text: 'Oat self-alignment',
         fontSize: 26,
         // same anchor as the wheat half, so the two titles sit level across the
         // join of the compose

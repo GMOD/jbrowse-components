@@ -2194,6 +2194,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // saying how many molecules the fan is: 40-odd near-identical curves
           // and four look alike.
           readConnections: 'arc',
+          // over the 35 default (review: "increase height of the read
+          // connections arcs"). The slot buys apex separation and nothing else,
+          // so on a single junction it is purely about the arc being readable
+          // as a dome rather than as a bump on the coverage floor -- and this
+          // one carries the figure's headline number in its stroke width.
+          readConnectionsHeight: 90,
           ...SPLIT_READS,
         },
       ],
@@ -2310,7 +2316,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // molecules already stacked for their chr22 alignment and they cost no new
     // row. Measured by rendering at 2600, where the run reported 813 css px
     // blank below the content.
-    viewportHeight: 1790,
+    //
+    // 1816 once the arc band went from 35 to 90: the run reported 25.3 css px
+    // newly below the fold, which is the 55 the band grew minus the slack 1790
+    // was carrying.
+    viewportHeight: 1816,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       // donor, then the two acceptors in genomic order. Each 7 kb, so the three
@@ -2394,6 +2404,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // the honest remainder instead of the majority of the data hidden in a
           // mark with no way to say so.
           readConnections: 'arc',
+          // over the 35 default (review: "increase height of the read
+          // connections arcs"). Two arcs and a tick share this band, and at 35
+          // the two domes were close enough in height to read as one mark
+          // stepping over the middle panel. The slot buys apex separation only,
+          // which is exactly what a frame comparing two junctions wants.
+          readConnectionsHeight: 90,
           // The key for the arcs and the read fills alike (review: "also need
           // legend"). It is data-driven -- the display lists the colour slots
           // actually present -- so the inter-chromosomal row appears here

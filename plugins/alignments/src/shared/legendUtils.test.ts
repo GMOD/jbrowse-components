@@ -494,7 +494,7 @@ describe('getArcLegendItems', () => {
       // …and in the overlay's own words, not the read fills': a curve is drawn
       // for a split junction whether or not the read is paired, so it must not
       // inherit "paired-end read" from CATEGORY_LEGEND.
-    ).toEqual(['Long insert', 'Split junction (inverted)'])
+    ).toEqual(['Long insert', 'Split alignment (inverted)'])
     expect(getArcLegendItems(new Set(), makeTestPalette(), 'arc')).toEqual([])
   })
 
@@ -680,7 +680,7 @@ describe('getAlignmentsLegendSections', () => {
         // same color, but the curves call it something the fills don't
         {
           color: '#9b30b0',
-          label: 'Split junction (inverted)',
+          label: 'Split alignment (inverted)',
           mark: 'curve' as const,
         },
       ],
@@ -690,7 +690,7 @@ describe('getAlignmentsLegendSections', () => {
         'Read colors',
         ['RR - Both mates reverse strand', 'LR - Normal pair orientation'],
       ],
-      ['Read connections', ['Split junction (inverted)']],
+      ['Read connections', ['Split alignment (inverted)']],
     ])
   })
 

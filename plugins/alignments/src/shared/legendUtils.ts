@@ -154,7 +154,7 @@ function legendKey(i: { color?: string; label?: string }) {
  * outward" twice in the same teal, once per section, and likewise RR and LL:
  * three verbatim repeats out of four rows, which reads as a bug rather than as a
  * key. Only an exact color-and-label match is dropped, so a connection color the
- * fills never paint, or one the curves call something else ("Split junction
+ * fills never paint, or one the curves call something else ("Split alignment
  * (inverted)" against the fill's "Split paired-end read (inverted)"), still
  * earns its row.
  */
@@ -534,18 +534,25 @@ function arcMark(mode: ReadConnectionsMode): LegendMark {
   return mode === 'cloud' ? 'line' : 'curve'
 }
 
-// The overlay's wording for the two split buckets. It cannot use
-// CATEGORY_LEGEND's, which says "paired-end read": a connector is drawn between
-// the segments of ANY split read (`readGroupConnections` partitions split
-// junctions from mate links without consulting the pair flag), so the paired
-// claim would be false for every long read on screen. What a curve marks is the
-// junction itself. `connectionLabel` derives its wording from THIS table rather
+// The overlay's wording for the split buckets, "split alignment" throughout
+// (reviewer, on both cancer_sv figures: "using the term split alignment might
+// help. i like it better than split junction"). It cannot use CATEGORY_LEGEND's,
+// which says "paired-end read": a connector is drawn between the segments of ANY
+// split read (`readGroupConnections` partitions split alignments from mate links
+// without consulting the pair flag), so the paired claim would be false for
+// every long read on screen. What a curve marks is the split alignment itself.
+// `connectionLabel` derives its wording from THIS table rather
 // than restating it, which is what makes "the two overlays agree word for word"
 // true by construction — it has to be, because one legend box can show both and
 // `getAlignmentsLegendSections` de-dupes them on `${color} ${label}`.
 export const SPLIT_JUNCTION_LABELS: Partial<Record<SwatchCategory, string>> = {
-  splitInversion: 'Split junction (inverted)',
-  splitDeletion: 'Split junction (same strand)',
+  splitInversion: 'Split alignment (inverted)',
+  splitDeletion: 'Split alignment (same strand)',
+  // The one category CATEGORY_LEGEND names for reads and arcs alike, and the
+  // bare "Inter-chromosomal" it carries there is a property of the pair rather
+  // than of the mark. On a curve the mark IS the split alignment, so it takes
+  // the same noun as the two above and the parenthetical carries the finding.
+  interchrom: 'Split alignment (interchromosomal)',
 }
 
 /**
