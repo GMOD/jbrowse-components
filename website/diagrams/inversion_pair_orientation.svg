@@ -20,19 +20,55 @@
   carrier's reads now is — the pairs interleave (navy's left end sits between
   green's two ends) where the flipped-back pairs sit side by side.
 
+  THE SECOND ROW IS AN OPERATION, AND FOUR TIE LINES SAY SO (review: "the 'not
+  inverted' should be more like 'But imagine if you flipped around the
+  inversion, then it would straighten out the reads'. you can even draw lines
+  from part 1 of the figure to part 2 if it helps"). One line per read, from
+  where it sits on the carrier to where it sits once the segment is turned back.
+  Two of them run straight down — those reads are outside the segment and the
+  flip does not touch them — and the two inside it CROSS, which is the whole
+  mechanism in one mark: the green pair's right end and the navy pair's left end
+  trade places and turn around, and that is what leaves each pair pointing at
+  its own mate.
+
+  The lines are drawn before either row, so the genome bars occlude them and
+  each one reads as passing behind the sequence. Two things were moved to keep
+  the corridor clear rather than routed around: the overlap label sits left of
+  its marker, and "inverted" sits at the block's left edge. The crossing pair's
+  control points hold them vertical out of row 1 for the same reason — a curve
+  that starts leaning immediately crosses the "inverted" label at x 540-590.
+
   Colours are the app's own pair-orientation palette (COLOR_TABLE
   alignments-pair-orientation in sv_visualization.md), so a reader can carry them
   straight from here into the pileup: LL green, RR navy, ordinary pair grey. The
   grey is drawn a shade darker than #d3d3d3, which is invisible on white at this
-  stroke width.
+  stroke width. The tie lines take their pair's colour, which is what makes the
+  crossing legible; the reads they land on stay grey, because grey is what the
+  palette means by an ordinary pair and that is the row's whole claim.
 
   Hand-authored SVG rather than graphviz: this is a picture of geometry along one
   axis, and a layout engine has nothing to decide.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="410" viewBox="0 0 1000 410" font-family="Helvetica, Arial, sans-serif">
-  <rect x="0" y="0" width="1000" height="410" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
 
   <text x="500" y="34" text-anchor="middle" font-size="20" fill="#222222">Overlapping green and navy pairs often mean an inversion</text>
+
+  <!-- ── the tie lines, first so both rows paint over them ─────────────── -->
+  <g fill="none" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.55">
+    <!-- outside the segment: unmoved -->
+    <path d="M330 140 L330 366" stroke="#33682f"/>
+    <path d="M850 140 L850 366" stroke="#3a3a8c"/>
+    <!-- inside it: the two that trade places -->
+    <path d="M630 140 C630 270 500 280 500 366" stroke="#33682f"/>
+    <path d="M490 140 C490 270 640 280 640 366" stroke="#3a3a8c"/>
+  </g>
+  <g stroke="none">
+    <path d="M330 372 L325 362 L335 362 Z" fill="#33682f" opacity="0.55"/>
+    <path d="M500 372 L495 362 L505 362 Z" fill="#33682f" opacity="0.55"/>
+    <path d="M850 372 L845 362 L855 362 Z" fill="#3a3a8c" opacity="0.55"/>
+    <path d="M640 372 L635 362 L645 362 Z" fill="#3a3a8c" opacity="0.55"/>
+  </g>
 
   <!-- ── row 1: the carrier ───────────────────────────────────────────── -->
   <g transform="translate(0 66)">
@@ -74,13 +110,14 @@
          and ends outside it, so the two pairs interleave. Ticked at both ends so
          it reads as a measured span rather than as another read. -->
     <path d="M460 84 L460 96 M660 84 L660 96 M460 90 L660 90" fill="none" stroke="#8a8a8a" stroke-width="1.2"/>
-    <text x="560" y="112" text-anchor="middle" font-size="11.5" fill="#666666">the two pairs overlap here</text>
+    <text x="450" y="94" text-anchor="end" font-size="11.5" fill="#666666">the two pairs overlap here</text>
   </g>
 
-  <!-- ── row 2: the counterfactual ────────────────────────────────────── -->
-  <g transform="translate(0 256)">
-    <text x="14" y="60" font-size="14" font-weight="bold" fill="#222222">Not inverted</text>
-    <text x="14" y="80" font-size="12.5" fill="#555555">the same two pairs</text>
+  <!-- ── row 2: the same two pairs, with the segment turned back ───────── -->
+  <g transform="translate(0 316)">
+    <text x="14" y="60" font-size="14" font-weight="bold" fill="#222222">Flip the segment back</text>
+    <text x="14" y="80" font-size="12.5" fill="#555555">and the same two pairs</text>
+    <text x="14" y="97" font-size="12.5" fill="#555555">straighten out</text>
 
     <rect x="200" y="96" width="230" height="12" fill="#d9dde1"/>
     <rect x="430" y="94" width="270" height="16" fill="#e9edf2" stroke="#9fb0c0"/>

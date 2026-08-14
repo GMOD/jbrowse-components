@@ -12,7 +12,7 @@ Only structured-clone-safe values cross the boundary.
 
 ## The RPC lifecycle
 
-<Figure caption="One box per side of the boundary, and the serialize/deserialize hooks ride the two crossings rather than sitting between them. The dashed edge is the one function-shaped thing that crosses, and it does not actually cross — statusCallback stays on the main thread and a side channel reports progress to it while execute() is still running." src="/img/rpc_lifecycle.png" />
+<Figure caption="One box per side of the boundary, with serializeArguments() and deserializeReturn() on the two crossings they act at. statusCallback stays on the main thread, and a side channel reports progress to it while execute() is still running." src="/img/rpc_lifecycle.png" />
 
 Both hooks are yours to override. The serialize step is where refNames are
 renamed and functions are stripped, which is why a method taking regions extends

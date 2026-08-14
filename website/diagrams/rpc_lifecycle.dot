@@ -15,6 +15,19 @@
 // Colour is now redundant with the boxes and is kept anyway — it is what carries
 // the distinction into the thumbnail, where the cluster labels are unreadable.
 //
+// EVERY LABEL IS A NAME (review: "this looks a bit chaotic. wordiness needs to
+// be substantially reduced. the serializeArguments has too much detail for
+// example"). Each node and edge carries what the thing is CALLED and stops
+// there, so the figure answers "what runs, where, in what order" and the page
+// answers everything else. What came off it is all on the page under the
+// figure: which hooks are yours to override, what the serialize step does to
+// refNames and functions, where execute() should read its arguments from, and
+// the transferList form of a return.
+//
+// The review offered a simplified figure beside an extended one as a fallback,
+// and one short figure turned out to be enough — a second diagram of the same
+// five nodes would need the reader to work out what changed between them.
+//
 // Three layout constraints, each of which cost a re-render to find:
 //
 // The main thread's nodes must be CONTIGUOUS IN RANK for dot to give them a box
@@ -23,8 +36,7 @@
 // span the worker's ranks and dot draws the two rectangles overlapping. So it is
 // one rank per side — `rankdir=LR`, main thread rank 0, worker rank 1, each side
 // a column of its own — and the return trip is a back edge between adjacent
-// columns, `constraint=false` so it adds no rank. Both sides being one rank is
-// what keeps the two crossings short; see the note on `ret` below.
+// columns, `constraint=false` so it adds no rank.
 //
 // No `{ rank=same; exec; status }`. Ranking an outside node against one inside a
 // cluster EVICTS it ("exec was already in a rankset, deleted from cluster"), so
@@ -41,9 +53,11 @@ digraph rpc_lifecycle {
   labelloc=t
   fontname="Helvetica"
   fontsize=18
-  label="One RPC call, and the two things that are not a plain round trip"
+  label="One RPC call across the worker boundary"
   nodesep=0.45
-  ranksep=1.1
+  // 1.1 was sized for four-line crossing labels. At one line each, that much
+  // gap leaves the two columns floating; the labels still fit at 0.8.
+  ranksep=0.8
 
   node [shape=box, fontname="Helvetica", fontsize=12, style=filled]
   edge [fontname="Helvetica", fontsize=10, color="#555555"]
@@ -61,7 +75,7 @@ digraph rpc_lifecycle {
 
     call [label="rpcManager.call(sessionId, name, args)", fillcolor="#dcedc8"]
     status [
-      label="statusCallback\n(loading UI)"
+      label="statusCallback"
       style="filled,dashed"
       fillcolor="#fff3e0"
       color="#ef6c00"
@@ -90,14 +104,8 @@ digraph rpc_lifecycle {
     color="#90caf9"
     fillcolor="#eaf4fd"
 
-    exec [
-      label="execute()  ← your code\nread the args off\ndeserializeArguments(),\nnot off the raw args"
-      fillcolor="#e1f5fe"
-    ]
-    ret [
-      label="return value,\nor rpcResult(value, transferList)"
-      fillcolor="#e3f2fd"
-    ]
+    exec [label="execute()  ← your code", fillcolor="#e1f5fe"]
+    ret [label="return value", fillcolor="#e3f2fd"]
     // ONE COLUMN, like the main thread's. Left to its own rank `ret` lands a
     // column further right, which puts the return crossing at the far side of
     // the drawing from the node it returns to — dot drew it as a sweep under
@@ -108,21 +116,14 @@ digraph rpc_lifecycle {
   }
 
   // The two hooks ride the crossings they belong to.
-  // Narrow wraps on both crossing labels. dot sizes the gap between the two
-  // columns to the widest line of the label riding it, so a two-line label is
-  // most of the figure's width; these were one and the picture came out 2.5:1,
-  // which on a doc page is 12px type.
-  call -> exec [label="  serializeArguments()\l  renames refNames into\l  the adapter's scheme,\l  replaces statusCallback\l  with a side channel\l"]
-  ret -> result [
-    label="  deserializeReturn()\l  structured clone, or\l  transferred zero-copy\l"
-    constraint=false
-  ]
+  call -> exec [label="  serializeArguments()  "]
+  ret -> result [label="  deserializeReturn()  ", constraint=false]
 
   // The one function-shaped thing that crosses, and it never actually crosses:
   // the worker holds a side channel, the function itself is in the box it
   // started in.
   exec -> status [
-    label="  reports progress\n  while execute() runs"
+    label="  progress  "
     style=dashed
     constraint=false
     color="#ef6c00"

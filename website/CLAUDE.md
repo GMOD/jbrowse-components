@@ -131,6 +131,24 @@ actually reaches.
   cannot see "dense" or "high" without seeing what sparse looks like in the same
   picture, and the window is nearly always the lever: an exon becomes an exon
   EDGE, a promoter becomes a promoter and the gene body under it.
+- **Say the thing; don't set it against the thing it isn't.** "X rather than Y",
+  "not a Z, a W", "it does not actually cross" — the contrastive frame is the
+  single strongest tell of text written here, and it turns a label into a small
+  argument with a reader who never held the other position. It is not the same
+  rule as `docs/CLAUDE.md`'s "don't argue with the previous version of the
+  page", which is about corrections: this one fires on first drafts, in titles,
+  node labels, captions and callouts alike, and it fires hardest exactly where
+  there is least room. The reviewer's words for it, on `rpc_lifecycle`: "many
+  phrases sound like mini arguments ... not everything has to be an argument."
+  The rewrite is nearly always shorter — a diagram title went from "One RPC
+  call, and the two things that are not a plain round trip" to "One RPC call
+  across the worker boundary". Where the contrast is a real instruction ("read
+  the args off its result, not off the raw args") it stays; the test is whether
+  the sentence is telling someone what to do or defending a choice.
+- **A diagram's labels are names.** What each node and edge is CALLED, and
+  nothing else — the page under it has room and the box does not.
+  `rpc_lifecycle` was denied as "chaotic" with a four-line label on one edge,
+  and every line of it turned out to be already on the page in its own section.
 - Captions name the tracks and the one visual takeaway. If a caption needs a
   paragraph of background, fix the figure.
 - Card titles: dataset first, then the pipeline that produced the picture. No
