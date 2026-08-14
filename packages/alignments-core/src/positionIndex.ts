@@ -66,44 +66,61 @@ export interface PositionIndex {
    * indirection at every step.
    */
   sorted: Uint32Array
+  /**
+   * The stride this index was built at. Read by the memo, not by consumers —
+   * see the cache comment below for why it is stored rather than keyed on.
+   */
+  stride: number
 }
 
+// An empty array has no entries at ANY stride, so this singleton is the right
+// answer whatever was asked for — its `stride: 1` only means a stride-2 caller
+// re-derives it, and `buildPositionIndex` returns before allocating anything.
 const EMPTY: PositionIndex = {
   order: new Uint32Array(0),
   sorted: new Uint32Array(0),
+  stride: 1,
 }
 
-// Keyed by array AND stride: one array can be read at two strides, and the two
-// readings are different indexes. `gapPositions` is the case — stride 2 over its
-// starts, stride 1 if anything ever wants every entry — and keying on the array
-// alone handed the second caller the first one's index, silently and with a
-// plausible answer (`[10, 20, 30, 50, 60, 90]` where the starts are
-// `[10, 30, 50]`). Nothing distinguished that from a region whose gaps really do
-// sit at those positions.
+// One index per array, and it CARRIES the stride it was built at rather than
+// being keyed by it.
 //
-// A small dense array per stride rather than a nested Map: strides are tiny
-// positive ints, so this is one allocation per indexed array and no allocation
-// per lookup.
-const cache = new WeakMap<Uint32Array, (PositionIndex | undefined)[]>()
+// The stride has to be checked somehow: one array can be read at two strides,
+// and those are different indexes. `gapPositions` is the case — stride 2 over
+// its starts, stride 1 if anything ever wants every entry — and a memo that
+// ignored the stride handed the second caller the first one's index, silently
+// and with a plausible answer (`[10, 20, 30, 50, 60, 90]` where the starts are
+// `[10, 30, 50]`), indistinguishable from a region whose gaps really do sit
+// there.
+//
+// Checking it on the index costs NO memory, which a per-stride collection does:
+// this index is 8 bytes an entry, so on the 1M-entry fixture it is 7.6 MB per
+// array, per region, per stacked track, and the rule on this path is that
+// nothing gets added beside it without a reason. A stride mismatch REPLACES the
+// entry instead of holding both.
+//
+// That trade is only right because production is entirely stride 1 —
+// `coverageDownsampling` and `tooltipUtils` between them are every caller, and
+// `deletionSpanIndex` copies gap starts into an array of their own rather than
+// striding. A future path that alternates two strides over ONE array on the
+// mousemove would rebuild per hover, which is worse than the array this
+// replaces; if that ever appears, hold both and pay the bytes deliberately.
+const cache = new WeakMap<Uint32Array, PositionIndex>()
 
 /**
  * The position index for `positions`, built on first use and cached against the
- * array and stride. `stride` reads every stride'th entry from the start of the
- * array, for one that interleaves something else — `gapPositions` holds
- * [start, end] pairs, so its starts are stride 2.
+ * array. `stride` reads every stride'th entry from the start of the array, for
+ * one that interleaves something else — `gapPositions` holds [start, end] pairs,
+ * so its starts are stride 2. Asking for a stride the cached index was not built
+ * at rebuilds it.
  */
 export function positionIndexFor(positions: Uint32Array, stride = 1) {
-  let byStride = cache.get(positions)
-  if (!byStride) {
-    byStride = []
-    cache.set(positions, byStride)
-  }
-  const hit = byStride[stride]
-  if (hit) {
+  const hit = cache.get(positions)
+  if (hit?.stride === stride) {
     return hit
   }
   const built = buildPositionIndex(positions, stride)
-  byStride[stride] = built
+  cache.set(positions, built)
   return built
 }
 
@@ -154,7 +171,7 @@ function buildPositionIndex(
   for (let i = 0; i < n; i++) {
     sorted[i] = positions[order[i]! * stride]!
   }
-  return { order, sorted }
+  return { order, sorted, stride }
 }
 
 /**

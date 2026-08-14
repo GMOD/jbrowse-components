@@ -53,10 +53,10 @@ describe('positionIndexFor', () => {
     )
   })
 
-  it('caches per stride, not per array', () => {
-    // One array read two ways is two different indexes. Keying the memo on the
-    // array alone returned the stride-1 index here — a plausible answer (every
-    // entry, in order) for a caller that asked about the starts.
+  it('answers the stride asked for, not the one cached', () => {
+    // One array read two ways is two different indexes. A memo that ignored the
+    // stride returned the stride-1 index here — a plausible answer (every entry,
+    // in order) for a caller that asked about the starts.
     const gaps = new Uint32Array([50, 60, 10, 20, 30, 90])
     expect([...positionIndexFor(gaps).sorted]).toEqual([10, 20, 30, 50, 60, 90])
     expect([...positionIndexFor(gaps, 2).sorted]).toEqual([10, 30, 50])
@@ -66,9 +66,22 @@ describe('positionIndexFor', () => {
     expect([...positionIndexFor(other).sorted]).toEqual([
       10, 20, 30, 50, 60, 90,
     ])
-    // And each stride still memoizes.
-    expect(positionIndexFor(gaps, 2)).toBe(positionIndexFor(gaps, 2))
-    expect(positionIndexFor(gaps, 2)).not.toBe(positionIndexFor(gaps))
+  })
+
+  it('holds ONE index per array, replacing it when the stride changes', () => {
+    // The stride is carried on the index rather than keyed on, so a mismatch
+    // rebuilds and evicts instead of retaining both. That is deliberate: the
+    // index is 8 bytes an entry, and nothing on this path may quietly hold two.
+    const gaps = new Uint32Array([50, 60, 10, 20, 30, 90])
+    const a = positionIndexFor(gaps, 2)
+    expect(positionIndexFor(gaps, 2)).toBe(a)
+    expect(a.stride).toBe(2)
+
+    const b = positionIndexFor(gaps)
+    expect(b).not.toBe(a)
+    expect(b.stride).toBe(1)
+    // Asking for stride 2 again rebuilds — the stride-1 index replaced it.
+    expect(positionIndexFor(gaps, 2)).not.toBe(a)
   })
 
   it('agrees with a plain sort on a large mixed input', () => {
