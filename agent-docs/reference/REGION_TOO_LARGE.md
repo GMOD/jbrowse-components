@@ -748,6 +748,7 @@ paths can't drift apart.
 | adapter slot | 5 Mb | `BamAdapter`, `CramAdapter`, `SplitVcfTabixAdapter`, `VcfTabixAdapter` — whatever display they are under |
 | display slot | 5 Mb | `LinearBasicDisplay` — every inheriting adapter under this display |
 | display slot | 5 Mb | `LinearMultiRowFeatureDisplay` — every inheriting adapter under this display |
+| display slot | 5 Mb | `LinearMafDisplay` — every MAF adapter, none of which declares its own, so this is the whole budget |
 | display slot | 1 Mb | `baseLinearDisplayConfigSchema` — every inheriting adapter under every other display |
 
 Adapters with no `fetchSizeLimit` of their own, which therefore take whichever display row applies: `BedTabixAdapter`, `BgzipMafAdapter`, `BgzipTaffyAdapter`, `BigBedAdapter`, `BigMafAdapter`, `Gff3TabixAdapter`, `GtfTabixAdapter`, `MafTabixAdapter`.
@@ -763,15 +764,28 @@ Adapters with no `fetchSizeLimit` of their own, which therefore take whichever d
   `SUB_FLOOR_BYTE_BUDGET_FACTOR` (§ The sub-floor budget tier).
 
   **An adapter that implements `getRegionByteSize` and declares no
-  `fetchSizeLimit` inherits whichever display it lands under**, which is how two
-  gaps got in and both are closed: `SplitVcfTabixAdapter` gated five times
-  tighter than the single-file VCF beside it, and `LinearMultiRowFeatureDisplay`
+  `fetchSizeLimit` inherits whichever display it lands under**, which is how
+  three gaps got in and all three are closed: `SplitVcfTabixAdapter` gated five
+  times tighter than the single-file VCF beside it, `LinearMultiRowFeatureDisplay`
   sat on the base 1 Mb while `LinearBasicDisplay` read the same BED/BigBed/tabix
-  files at 5 Mb. That second one bites hardest, because multi-row turns the
-  density axis off — the byte budget is the only gate it has, with no backstop to
-  fall through to. The reasoning for 5 Mb is the same in both places and worth
-  restating: the index estimate is block-granular, so a single gene still pulls
-  whole BGZF blocks and a tighter gate banners a view that isn't large.
+  files at 5 Mb, and `LinearMafDisplay` sat there too. The reasoning for 5 Mb is
+  the same in all three and worth restating: the index estimate is
+  block-granular, so a single gene still pulls whole BGZF blocks and a tighter
+  gate banners a view that isn't large.
+
+  The last two bite hardest, because **neither has a second axis**: multi-row
+  turns the density axis off, and MAF never had one — `densityTooLarge` is
+  canvas's override and MAF is not a canvas display — so the byte budget is the
+  only gate either has, with no backstop to fall through to. MAF is also the
+  case where the display value is the *whole* budget rather than a fallback,
+  since no MAF adapter declares one. On the base 1 Mb that bannered an hg38
+  100-way at a gene-sized window: `MAF_LARGE_BLOCKS.md` § "Fetch dominates at
+  470-way" measures a 40 kb buffered window at 5.3 MB uncompressed for 100 rows
+  against a 2.9–4.0x compression ratio, so ~1.3–1.8 MB on the wire — a view the
+  same doc measures at 38–55fps, refused for size. A 470-way is ~6–8 MB and so
+  still asks above the floor, which is where `summaryAdapter` is the answer;
+  below it the span tier lets it through, on the same reasoning as any other
+  deep data at a locus someone navigated to.
 
   **You no longer have to remember that.** `scripts/check-gated-adapter-budgets.ts`
   scans for `getRegionByteSize` implementations, resolves each one's budget from
@@ -781,6 +795,23 @@ Adapters with no `fetchSizeLimit` of their own, which therefore take whichever d
   which budget it gets; `--write` regenerates the baseline once the decision is
   made. Inheriting the display's is a fine answer, and the check only insists it
   be an answer.
+
+  **It covers the display tier too, and did not until 2026-08-14** — which is
+  exactly how `LinearMafDisplay` got in. "Inherits the display's" was accepted as
+  an answer without anything asking *which* display, so the question stopped one
+  level short of the number that actually binds. The second half diffs the files
+  that override `measuresBytesPreFlight` / `measuresBytesInFetch` to true against
+  `GATE_OPT_IN_SITES`, and a new one fails until its display's budget is
+  recorded.
+
+  It pins **sites rather than display names**, and that is the design rather than
+  a shortcut. An adapter can be named from its path because adapters live in a
+  directory called after them; a display's opt-in routinely does not. Two of the
+  six are shared mixins serving several displays each, and canvas's covers three
+  displays from a file named for none of them — so the obvious directory-name
+  heuristic emits a row called `shared` and silently omits `LinearBasicDisplay`,
+  which is the looks-complete-and-is-short failure a check like this exists to
+  prevent. `DISPLAY_TIERS` carries the names, its values read from the schemas.
 
   Deliberately **not** a `scripts/autogen.ts` generator, though it looks like
   one: autogen would silently write the new adapter into the baseline, which is

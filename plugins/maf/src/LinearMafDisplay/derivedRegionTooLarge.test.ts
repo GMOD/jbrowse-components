@@ -2,6 +2,16 @@ import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { createMafTestEnvironment } from './testEnv.ts'
 
+// Byte figures here are "comfortably over" the display's own budget rather than
+// literals. Thirteen assertions in this file were written against the base 1 Mb
+// LinearMafDisplay used to inherit and all thirteen had to move when it declared
+// its own 5 Mb — none of them was ever about a particular number of bytes.
+//
+// The x4 clears the sub-floor tier too (`SUB_FLOOR_BYTE_BUDGET_FACTOR` doubles
+// the budget under `AUTO_FORCE_LOAD_BP`), so a test may cross 20kb without the
+// value having to be re-chosen for whichever side it lands on.
+const over = (display: { gateByteLimit: number }) => display.gateByteLimit * 4
+
 // Derived regionTooLarge: a pure function of the cached byte estimate, which the
 // fetch autoruns keep describing the current viewport by re-measuring while the
 // banner holds. These lock in the behaviors around that — a banner that doesn't
@@ -83,12 +93,14 @@ describe('MAF gating below the force-load floor', () => {
 
     // what the floor used to hide: a deep alignment is still megabytes here
     display.setByteEstimate({
-      bytes: 3_000_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(true)
-    expect(display.regionTooLargeReason).toBe('Requested too much data (3 Mb)')
+    expect(display.regionTooLargeReason).toBe(
+      `Requested too much data (${over(display) / 1_000_000} Mb)`,
+    )
   })
 
   // The verdict is the measurement, so zooming alone does not move it — what
@@ -101,20 +113,20 @@ describe('MAF gating below the force-load floor', () => {
 
     view.zoomTo(20)
     display.setByteEstimate({
-      bytes: 3_000_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(5)
     expect(display.gateActive).toBe(true)
-    expect(display.estimatedFetchBytes).toBe(3_000_000)
+    expect(display.estimatedFetchBytes).toBe(over(display))
     expect(display.regionTooLarge).toBe(true)
 
     // the re-measure lands: the index really does quote the same blocks down
     // here, so the banner stays — and now it also stops advertising zoom
     display.setByteEstimate({
-      bytes: 3_000_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
@@ -128,7 +140,7 @@ describe('MAF gating below the force-load floor', () => {
 
     view.zoomTo(100)
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
@@ -137,6 +149,59 @@ describe('MAF gating below the force-load floor', () => {
     display.setByteEstimate({ bytes: 700_000, viewport: display.gateViewport! })
     expect(display.regionTooLarge).toBe(false)
     expect(display.zoomCanReleaseGate).toBe(true)
+  })
+
+  // The budget itself, since MAF's is the whole gate: no MAF adapter declares a
+  // `fetchSizeLimit`, and `densityTooLarge` is canvas's override so there is no
+  // second axis behind it. Sizes from MAF_LARGE_BLOCKS.md § "Fetch dominates at
+  // 470-way" — a 40kb buffered window is 5.3 MB uncompressed at 100 rows and
+  // 25.1 MB at 470, against a measured 2.9–4.0x compression, so ~1.3–1.8 MB and
+  // ~6–8 MB on the wire. On the base 1 Mb this display used to inherit, the
+  // 100-way bannered a window it renders at 38–55fps.
+  const HUNDRED_WAY_BYTES = Math.round(5_300_000 / 2.9)
+  const FOUR_SEVENTY_WAY_BYTES = Math.round(25_100_000 / 4)
+
+  it('lets both an ordinary multiz and a 470-way through at gene scale', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    view.zoomTo(20)
+    expect(display.aboveForceLoadFloor).toBe(false)
+
+    display.setByteEstimate({
+      bytes: HUNDRED_WAY_BYTES,
+      viewport: display.gateViewport!,
+    })
+    expect(display.regionTooLarge).toBe(false)
+
+    // The 470-way too, and deliberately: sub-floor it is the same category as
+    // any other deep data at a locus the user navigated to on purpose, and the
+    // ~6–8 MB is comparable to the ultradeep BAM the tier was sized against.
+    display.setByteEstimate({
+      bytes: FOUR_SEVENTY_WAY_BYTES,
+      viewport: display.gateViewport!,
+    })
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  // Above the floor the 470-way is stopped, which is where stopping it helps:
+  // that is the zoom range `summaryAdapter` covers, and MAF_LARGE_BLOCKS.md's
+  // answer for that row count is the summary tier rather than a raised budget.
+  it('still stops a 470-way once the view is wide enough for the summary tier', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    expect(display.aboveForceLoadFloor).toBe(true)
+
+    display.setByteEstimate({
+      bytes: FOUR_SEVENTY_WAY_BYTES,
+      viewport: display.gateViewport!,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    // and the ordinary multiz is still nowhere near it
+    display.setByteEstimate({
+      bytes: HUNDRED_WAY_BYTES,
+      viewport: display.gateViewport!,
+    })
+    expect(display.regionTooLarge).toBe(false)
   })
 
   it('is the estimate that decides, so a shallow alignment never gates down here', () => {
@@ -171,7 +236,7 @@ describe('MAF gating below the force-load floor', () => {
 
     view.zoomTo(20)
     display.setByteEstimate({
-      bytes: 3_000_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
@@ -263,7 +328,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     expect(display.showSummary).toBe(false)
     // a 470-way over a gene-sized window, captured against the MAF adapter
     display.setByteEstimate({
-      bytes: 3_000_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
@@ -299,7 +364,7 @@ describe('MAF measures the tier it is about to fetch', () => {
 
     view.zoomTo(20)
     display.setByteEstimate({
-      bytes: 3_000_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
 
@@ -332,7 +397,7 @@ describe('MAF derived regionTooLarge', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(view.visibleBp).toBeGreaterThan(20_000)
@@ -347,14 +412,14 @@ describe('MAF derived regionTooLarge', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(50)
     expect(view.visibleBp).toBeGreaterThan(20_000)
-    expect(display.estimatedFetchBytes).toBe(1_500_000)
+    expect(display.estimatedFetchBytes).toBe(over(display))
     expect(display.regionTooLarge).toBe(true)
   })
 
@@ -362,7 +427,7 @@ describe('MAF derived regionTooLarge', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
@@ -377,7 +442,7 @@ describe('MAF derived regionTooLarge', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
@@ -390,7 +455,7 @@ describe('MAF derived regionTooLarge', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
@@ -409,14 +474,14 @@ describe('MAF derived regionTooLarge', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(400)
     display.setByteEstimate({
-      bytes: 6_000_000,
+      bytes: over(display) * 2,
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
@@ -434,7 +499,7 @@ describe('MAF derived regionTooLarge', () => {
 
     view.zoomTo(100)
     display.setByteEstimate({
-      bytes: 1_500_000,
+      bytes: over(display),
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)

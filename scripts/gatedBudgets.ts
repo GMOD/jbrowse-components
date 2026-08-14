@@ -33,6 +33,15 @@ const baseDefault = join(
   'BaseFeatureDataAdapter.ts',
 )
 
+// Where the two opt-in getters are declared, as opposed to overridden.
+const gateMixin = join(
+  'plugins',
+  'linear-genome-view',
+  'src',
+  'shared',
+  'RegionTooLargeMixin.ts',
+)
+
 function* sourceFiles(dir: string): Generator<string> {
   let entries: string[]
   try {
@@ -86,13 +95,68 @@ export function collectGatedAdapterBudgets(): Record<string, string> {
   return Object.fromEntries(Object.entries(found).sort())
 }
 
+// A display opts into the byte gate by overriding one of these to true. Matched
+// as a getter body rather than a mention, so the mixin's own defaults and the
+// dozens of prose references to them don't count.
+const displayOptIn =
+  /get (?:measuresBytesPreFlight|measuresBytesInFetch)\s*\([^)]*\)\s*(?::[^{]+)?\{\s*return true\b/s
+
+/**
+ * Every file that opts a display into the byte gate, as repo-relative paths.
+ *
+ * **Sites, not display names, and that is the whole design.** The adapter scan
+ * above can name its subject because an adapter lives in a directory called
+ * after it; a display's opt-in routinely does not. Two of these are shared
+ * mixins serving several displays each (`arc/shared`, `variants/shared`), and
+ * canvas's covers three displays from a file named for none of them — so a
+ * directory-name heuristic yields a row called `shared` and silently omits
+ * `LinearBasicDisplay`. That is the "looks complete and is short" failure a
+ * generated table is supposed to make impossible, so this reports what it can
+ * actually see and {@link DISPLAY_TIERS} carries the names.
+ *
+ * The check diffs this against a recorded list, so a **new** gating display
+ * fails until someone adds its budget to that table. The adapter half forces a
+ * decision per gated adapter and accepts `display` as an answer, but nothing
+ * then asked *which* display — which is how `LinearMafDisplay` sat on the base
+ * 1 Mb, with no adapter declaring one and no density axis behind it, bannering
+ * an ordinary hg38 100-way at a gene-sized window. Found by hand, not by this.
+ */
+export function collectGateOptInSites(): string[] {
+  const found: string[] = []
+  for (const workspaceDir of workspaceDirs) {
+    for (const file of sourceFiles(join(root, workspaceDir))) {
+      const rel = relative(root, file)
+      // The mixin's own defaults are `return false`, so they don't match — but
+      // exclude it outright rather than relying on that, since it is the one
+      // file where these names are declared rather than overridden.
+      if (rel === gateMixin) {
+        continue
+      }
+      if (displayOptIn.test(readFileSync(file, 'utf8'))) {
+        found.push(rel)
+      }
+    }
+  }
+  return found.sort()
+}
+
 /**
  * The display tier an inheriting adapter falls through to. Hard-coded as a list
  * of schema *files* rather than discovered, because "which displays gate" is not
  * something a `fetchSizeLimit` slot answers — every display schema extends the
- * base one and so has the slot, gating or not. The three here are the ones
- * REGION_TOO_LARGE.md's table is about: the two that raise the budget, and the
- * base every other display inherits. Their *values* still come from the source.
+ * base one and so has the slot, gating or not. Their *values* come from the
+ * source, so the numbers cannot drift; only membership is written down.
+ *
+ * Every display named by a `collectGateOptInSites` entry belongs here, plus the
+ * base every other display inherits. That pairing is what the check enforces: a
+ * new opt-in site fails until its display's budget is recorded, which is the
+ * question nobody asked of `LinearMafDisplay`.
+ *
+ * Only displays whose budget can actually bind need a row. Alignments, LD and
+ * the two multi-sample-variant displays read adapters that declare their own
+ * (BAM/CRAM/VcfTabix/SplitVcfTabix, all 5 Mb), and an adapter limit outranks the
+ * display, so theirs is unreachable — noted in `applies` rather than omitted,
+ * since "it can't bind" is itself the decision.
  */
 export const DISPLAY_TIERS = [
   {
@@ -106,11 +170,37 @@ export const DISPLAY_TIERS = [
     applies: 'every inheriting adapter under this display',
   },
   {
+    name: 'LinearMafDisplay',
+    file: 'plugins/maf/src/LinearMafDisplay/configSchema.ts',
+    applies:
+      'every MAF adapter, none of which declares its own, so this is the whole budget',
+  },
+  {
     name: 'baseLinearDisplayConfigSchema',
     file: 'plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts',
     applies: 'every inheriting adapter under every other display',
   },
 ]
+
+/**
+ * Gate opt-in sites paired with the display budget that governs them. The check
+ * diffs `collectGateOptInSites()` against the keys, so a new gating display
+ * cannot land without a row here — and a row naming a `DISPLAY_TIERS` entry
+ * cannot name one that doesn't exist.
+ */
+export const GATE_OPT_IN_SITES: Record<string, string> = {
+  'plugins/alignments/src/LinearAlignmentsDisplay/model.ts':
+    'BamAdapter/CramAdapter declare 5 Mb, which outranks any display value',
+  'plugins/arc/src/shared/ArcFetchModel.ts':
+    'baseLinearDisplayConfigSchema: arc reads paired-feature adapters, which report no estimate, so the byte axis is inert unless pointed at a gated one',
+  'plugins/canvas/src/shared/CanvasFeatureGateMixin.ts':
+    'LinearBasicDisplay and LinearMultiRowFeatureDisplay',
+  'plugins/maf/src/LinearMafDisplay/stateModel.ts': 'LinearMafDisplay',
+  'plugins/variants/src/LDDisplay/shared.ts':
+    'VcfTabixAdapter declares 5 Mb; the PlinkLD adapters report no estimate',
+  'plugins/variants/src/shared/MultiSampleVariantBaseModel.ts':
+    'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
+}
 
 export function collectDisplayBudgets() {
   return DISPLAY_TIERS.map(tier => {
