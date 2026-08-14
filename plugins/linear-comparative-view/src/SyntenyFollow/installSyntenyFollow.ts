@@ -15,10 +15,10 @@ import type {
   FeatPos,
   LinearSyntenyDisplayModel,
 } from '../LinearSyntenyDisplay/model.ts'
-import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 import type { FollowTransform } from './followTransform.ts'
 import type { FollowStep } from './planFollowStep.ts'
+import type { FollowAnswer } from './resolveFollowSpan.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -39,6 +39,15 @@ export interface SyntenyFollowHost extends IStateTreeNode {
   followPairs: FollowPair[]
   setFollowUnaligned: (arg: boolean) => void
   setFollowApproximate: (arg: boolean) => void
+}
+
+// One level's placement, with the observables the async half needs already read
+// off the tree. `movingWindow` is `alreadyShowing`'s operand — where the row
+// ACTUALLY is, which the exact pass reads on purpose.
+interface FollowWork {
+  pair: FollowPair
+  step: FollowStep
+  movingWindow: FollowWindow | undefined
 }
 
 // What one settle decided: which block places this level, which axis it was
@@ -64,8 +73,9 @@ interface LevelState {
   // latest-wins: the RPC is not ordered, so a slow earlier resolve can land
   // after a fast later one and park the row at a window already left
   seq: number
-  answerKey?: string
-  answer?: Promise<ResolvedSpan>
+  // One object for the same reason as LevelPick: a promise matched against the
+  // wrong key is an answer to a different question.
+  answer?: { key: string; pending: Promise<FollowAnswer> }
 }
 
 // undefined for the envelope, which is a union of every loaded block and so can
@@ -82,28 +92,22 @@ function stepKey(step: FollowStep) {
 // applying an answer flushes the moved row's coarse blocks and refetches it.
 // The promise rather than the span so the wakes arriving first share the
 // request; each pass still runs its own alreadyShowing against its own window.
-function answerFor(
-  state: LevelState,
-  key: string | undefined,
-  step: FollowStep,
-) {
-  const shared =
-    key !== undefined && key === state.answerKey ? state.answer : undefined
-  if (shared) {
-    return shared
+function answerFor(state: LevelState, step: FollowStep) {
+  const key = stepKey(step)
+  if (key !== undefined && key === state.answer?.key) {
+    return state.answer.pending
   }
-  const request = resolveFollowSpan(step)
+  const pending = resolveFollowSpan(step)
   if (key !== undefined) {
-    state.answerKey = key
-    state.answer = request
-    request.catch(() => {
-      if (state.answer === request) {
-        state.answerKey = undefined
+    const entry = { key, pending }
+    state.answer = entry
+    pending.catch(() => {
+      if (state.answer === entry) {
         state.answer = undefined
       }
     })
   }
-  return request
+  return pending
 }
 
 /**
@@ -135,15 +139,11 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     return state
   }
 
-  async function execute(
-    pair: FollowPair,
-    step: FollowStep,
-    movingWindow: FollowWindow | undefined,
-  ) {
+  async function execute({ pair, step, movingWindow }: FollowWork) {
     const { movingView } = pair
     const state = stateFor(pair.level)
     const seq = ++state.seq
-    const span = await answerFor(state, stepKey(step), step)
+    const { span, approximate } = await answerFor(state, step)
     // switching the mode off bumps no seq, so it needs its own check
     if (
       seq !== state.seq ||
@@ -154,6 +154,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       return
     }
     lastErrorMessage = undefined
+    // The plan below already raised this for the two cases it can see. The
+    // third is only visible here: `hasCigar` is per-FETCH, so a mixed file
+    // reaches the walk with a block that carries none and comes back empty.
+    // Raised, never lowered — the plan's own pass owns the reset.
+    if (approximate) {
+      self.setFollowApproximate(true)
+    }
     state.pick = {
       feat: step.feat,
       display: step.display,
@@ -196,7 +203,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         }
         // every observable read happens in this synchronous pass; `execute` is
         // async and its reads would not be tracked
-        const work: [FollowPair, FollowStep, FollowWindow | undefined][] = []
+        const work: FollowWork[] = []
         let unaligned = false
         let approximate = false
         for (const pair of self.followPairs) {
@@ -218,7 +225,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             incumbentId: stateFor(level).pick?.feat.id,
           })
           if (step) {
-            work.push([pair, step, movingWindow])
+            work.push({ pair, step, movingWindow })
             if (!step.windowInsideFeat || !step.hasCigar) {
               approximate = true
             }
@@ -231,8 +238,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // dependency of its own write
         self.setFollowUnaligned(unaligned)
         self.setFollowApproximate(approximate)
-        for (const [pair, step, movingWindow] of work) {
-          execute(pair, step, movingWindow).catch(reportError)
+        for (const item of work) {
+          execute(item).catch(reportError)
         }
       },
       { name: 'SyntenyFollow' },

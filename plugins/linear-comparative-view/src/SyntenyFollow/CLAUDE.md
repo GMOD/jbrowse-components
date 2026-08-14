@@ -143,6 +143,13 @@ close rather than base-exact. `interpolateFollowSpan` is the one place synteny
 code navigates on an interpolation, and that asymmetry with `moveMatchingPanel`
 is deliberate.
 
+The flag is written from **both halves of the exact pass**, and it has to be.
+The plan sees the first two cases and the synchronous prefix raises it there;
+the third is only knowable once the walk has come back empty, so
+`resolveFollowSpan` returns it alongside the span and `execute` raises it after
+its staleness guards. Only the prefix lowers it — a promotion that could also
+lower would race the plan's own reset and flicker.
+
 `followUnaligned` is the different answer: nothing covers the window at all, so
 the rows hold position. Without the flag that is indistinguishable from a broken
 follow, since a held row and a dead follow look identical.
