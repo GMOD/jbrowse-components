@@ -25,7 +25,6 @@ before anyone noticed.
 
 | Item | Area | First move |
 | --- | --- | --- |
-| [Take `@gmod/cram` 13.3.0](#take-gmodcram-1330-for-the-worker-blob-split) | alignments, bundle | wait for the release, then bump; 86 KB gz off the CRAM chunk |
 | [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
 | [Validate the react-app site's volvox config](#run-jbrowse-validate-over-the-react-app-sites-volvox-configjson) | embedded, config | 8 errors already reported; fix the file, then ask why it is a copy |
 | [Pool the coordinate ruler's tick divs](#pool-the-coordinate-rulers-tick-divs-so-a-zoom-stops-rebuilding-them) | LGV, perf | measured; a fixed pool is the low-risk version |
@@ -68,24 +67,6 @@ before anyone noticed.
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 
 ## Ready to build: small and self-contained
-
-### Take `@gmod/cram` 13.3.0 for the worker-blob split
-
-`@gmod/cram` 13.2.0, which is what is installed, imports its ~400 KB inlined
-slice-worker bundle **statically** in `sliceWorkerPool.js`, and `file.ts` imports
-that module to start the pool — so everything that can reach `IndexedCramFile`
-pins the blob. Measured with esbuild as `plugins/alignments` resolves it: the
-CramAdapter chunk is **182.5 KB gzipped**, against **96.1 KB** plus a separately
-fetched 89.3 KB chunk once cram-js's `ba940cc` is released.
-
-Nothing to build here — the fix is written upstream and unreleased. Bump when
-13.3.0 ships, and expect the win to be the **critical path** rather than the
-byte count: `CramAdapter` is already behind a dynamic `getAdapterClass`, and
-`useSliceWorkerPool` defaults to true, so in the ordinary case those bytes are
-still fetched — just no longer ahead of constructing the file and starting the
-`.crai` read. The unconditional saving is for a track with the pool off, and for
-any context that cannot start one. CRAM_STACK_INTEGRATION.md seam 4 has the
-table and the caveat.
 
 ### Grey out the genomic-coordinate option instead of hiding it
 
