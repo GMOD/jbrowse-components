@@ -12,10 +12,17 @@ import type { JBrowsePlugin } from './util/types/index.ts'
 
 export const TRUSTED_PLUGIN_URL_PREFIXES = ['https://jbrowse.org/plugins/']
 
+// v2 adds per-version JBrowse compatibility ranges + integrity hashes; the v1
+// plugins.json is still served for older clients. One constant, shared with the
+// hook every install surface reads (util/useFetchPlugins.ts), because the gate
+// and the list have to be looking at the same manifest — a second copy is how
+// one of them silently ends up on the unhashed v1 list, and then the gate
+// rejects a plugin the store just offered.
+export const PLUGIN_STORE_URL =
+  'https://jbrowse.org/plugin-store/v2/plugins.json'
+
 export async function fetchPlugins() {
-  const response = await fetch(
-    'https://jbrowse.org/plugin-store/v2/plugins.json',
-  )
+  const response = await fetch(PLUGIN_STORE_URL)
   if (!response.ok) {
     throw new Error(
       `HTTP ${response.status} ${response.statusText} fetching plugins`,

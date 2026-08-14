@@ -23,36 +23,43 @@ const InstalledPluginsList = observer(function InstalledPluginsList({
   const externalPlugins = plugins.filter(
     p => !pluginManager.pluginMetadata[p.name]?.isCore,
   )
+  // filter before the empty check, so a filter that matches nothing says so
+  // rather than rendering a blank region under the heading
+  const shown = externalPlugins.filter(p =>
+    p.name.toLowerCase().includes(filterText.toLowerCase()),
+  )
 
   return (
     <List>
-      {externalPlugins.length > 0 ? (
-        externalPlugins
-          .filter(p => p.name.toLowerCase().includes(filterText.toLowerCase()))
-          .map(p => {
-            // match the store entry by the v2 identity (packageName embedded in
-            // the version-pinned install url), not by display name: a plugin's
-            // runtime name is its Plugin class name (e.g. "GWASPlugin") while
-            // the store name is the UMD global (e.g. "GWAS"), so a name compare
-            // misses for almost every plugin and no update is ever offered.
-            const installedUrl = pluginManager.pluginMetadata[p.name]?.url
-            const storeEntry = storePlugins?.find(
-              s =>
-                s.packageName !== undefined &&
-                installedVersionFromUrl(installedUrl, s.packageName) !==
-                  undefined,
-            )
-            return (
-              <InstalledPlugin
-                key={p.name}
-                plugin={p}
-                model={model}
-                storeEntry={storeEntry}
-              />
-            )
-          })
+      {shown.length > 0 ? (
+        shown.map(p => {
+          // match the store entry by the v2 identity (packageName embedded in
+          // the version-pinned install url), not by display name: a plugin's
+          // runtime name is its Plugin class name (e.g. "GWASPlugin") while
+          // the store name is the UMD global (e.g. "GWAS"), so a name compare
+          // misses for almost every plugin and no update is ever offered.
+          const installedUrl = pluginManager.pluginMetadata[p.name]?.url
+          const storeEntry = storePlugins?.find(
+            s =>
+              s.packageName !== undefined &&
+              installedVersionFromUrl(installedUrl, s.packageName) !==
+                undefined,
+          )
+          return (
+            <InstalledPlugin
+              key={p.name}
+              plugin={p}
+              model={model}
+              storeEntry={storeEntry}
+            />
+          )
+        })
       ) : (
-        <Typography>No plugins currently installed</Typography>
+        <Typography>
+          {externalPlugins.length > 0
+            ? 'No installed plugins match this filter.'
+            : 'No plugins currently installed'}
+        </Typography>
       )}
     </List>
   )

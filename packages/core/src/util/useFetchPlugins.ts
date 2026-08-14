@@ -1,11 +1,8 @@
+import { PLUGIN_STORE_URL } from '../checkPlugins.ts'
 import { fetchJson } from './index.ts'
 import { useFetch } from './useFetch.ts'
 
 import type { JBrowsePlugin } from './types/index.ts'
-
-// v2 manifest adds per-version JBrowse compatibility ranges + integrity hashes;
-// the v1 plugins.json remains served for older clients that predate this.
-const PLUGIN_STORE_URL = 'https://jbrowse.org/plugin-store/v2/plugins.json'
 
 /**
  * The plugin store listing. Shared by every surface that installs plugins (the

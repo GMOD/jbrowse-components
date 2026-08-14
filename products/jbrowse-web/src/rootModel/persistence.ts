@@ -267,8 +267,14 @@ function configSnapshotForReload(self: WebRootModel) {
 
 // Mirrors the current session into sessionStorage on every change so a tab
 // reload restores it. Also triggers reloadPluginManager when pluginsUpdated
-// flips — the snapshot must be written FIRST so the new plugin manager can
-// restore it.
+// flips.
+//
+// The reload is requested whether or not that write worked, and deliberately:
+// what the replacement app restores from is the snapshot handed to the callback
+// (reloadSessionLoader presets it as the new loader's sessionSource), not the
+// sessionStorage copy. Requesting it inside the same try meant an exceeded
+// quota — the failure the catch below exists for — silently ate the reload, so
+// the plugin the user just installed never loaded and nothing said why.
 export function setupSessionStorageAutosave(self: WebRootModel) {
   setupUnloadFlush(self)
   let savingFailed = false
@@ -294,13 +300,6 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
               savingFailed = false
               s.notify('Auto-saving restored', 'info')
             }
-            if (self.pluginsUpdated && !reloadRequested) {
-              reloadRequested = true
-              self.reloadPluginManagerCallback(
-                configSnapshotForReload(self),
-                structuredClone(sessionSnap),
-              )
-            }
           } catch (e) {
             console.error(e)
             const msg = `${e}`
@@ -315,6 +314,13 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
                 s.notifyError(msg, e)
               }
             }
+          }
+          if (self.pluginsUpdated && !reloadRequested) {
+            reloadRequested = true
+            self.reloadPluginManagerCallback(
+              configSnapshotForReload(self),
+              structuredClone(sessionSnap),
+            )
           }
         }
       },

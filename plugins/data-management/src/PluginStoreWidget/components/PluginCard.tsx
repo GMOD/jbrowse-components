@@ -7,8 +7,9 @@ import {
   isPluginInstalled,
   resolvePlugin,
 } from '@jbrowse/core/util'
-import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
+
+import { addPluginTo, newPluginHome } from './util.ts'
 
 import type { PluginStoreModel } from '../model.ts'
 import type { JBrowsePlugin } from '@jbrowse/core/util/types'
@@ -36,7 +37,6 @@ const PluginCard = observer(function PluginCard({
     runtimePluginDefinitions,
   )
   const [tempDisabled, setTempDisabled] = useState(false)
-  const { adminMode, jbrowse } = session
   return (
     <PluginStoreCard
       plugin={plugin}
@@ -46,14 +46,10 @@ const PluginCard = observer(function PluginCard({
       onInstall={definition => {
         // the store's name (the UMD global) is what the definition must be
         // installed under, not the runtime Plugin class name
-        const installDef = { ...definition, name: plugin.name }
-        if (adminMode) {
-          jbrowse.addPlugin(installDef)
-        } else if (isSessionWithSessionPlugins(session)) {
-          session.addSessionPlugin(installDef)
-        } else {
-          session.notify('No way to install plugin')
-        }
+        addPluginTo(session, newPluginHome(session), {
+          ...definition,
+          name: plugin.name,
+        })
         setTempDisabled(true)
       }}
     />

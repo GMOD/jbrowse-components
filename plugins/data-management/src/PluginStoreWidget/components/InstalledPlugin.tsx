@@ -8,7 +8,6 @@ import {
   installedVersionFromUrl,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import DeleteIcon from '@mui/icons-material/Delete'
 import LockIcon from '@mui/icons-material/Lock'
 import UpgradeIcon from '@mui/icons-material/Upgrade'
@@ -21,9 +20,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isSessionPlugin } from './util.ts'
+import { addPluginTo, pluginHome, removePluginFrom } from './util.ts'
 
 import type { PluginStoreModel } from '../model.ts'
+import type { PluginHome } from './util.ts'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { PluginUpdate } from '@jbrowse/core/util'
 import type { BasePlugin, JBrowsePlugin } from '@jbrowse/core/util/types'
@@ -57,14 +57,15 @@ const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
   plugin,
   model,
   definition,
+  home,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
   definition: PluginDefinition
+  home: PluginHome
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const { jbrowse, adminMode } = session
   return (
     <Tooltip className={classes.iconMargin} title="Uninstall plugin">
       <IconButton
@@ -76,11 +77,7 @@ const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
               plugin: plugin.name,
               onClose: (name?: string) => {
                 if (name) {
-                  if (adminMode) {
-                    jbrowse.removePlugin(definition)
-                  } else if (isSessionWithSessionPlugins(session)) {
-                    session.removeSessionPlugin(definition)
-                  }
+                  removePluginFrom(session, home, definition)
                 }
                 onClose()
               },
@@ -100,15 +97,16 @@ const UpdatePluginButton = observer(function UpdatePluginButton({
   update,
   current,
   fromVersion,
+  home,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
   update: PluginUpdate
   current: PluginDefinition
   fromVersion?: string
+  home: PluginHome
 }) {
   const session = getSession(model)
-  const { jbrowse, adminMode } = session
   const [queued, setQueued] = useState(false)
   return (
     <Tooltip title={`Update from v${fromVersion} to v${update.pluginVersion}`}>
@@ -120,20 +118,16 @@ const UpdatePluginButton = observer(function UpdatePluginButton({
         data-testid={`updatePlugin-${plugin.name}`}
         onClick={() => {
           // swap the version-pinned definition: remove the current url, add the
-          // newer one. Both actions flag pluginsUpdated, prompting a reload that
-          // loads the new build. Install under the store's name (the UMD global,
-          // e.g. "GWAS") — not the runtime class name (e.g. "GWASPlugin"), which
-          // would make the UMD bundle fail to load.
-          const next = { ...update.definition, name: update.name }
-          if (adminMode) {
-            jbrowse.removePlugin(current)
-            jbrowse.addPlugin(next)
-          } else if (isSessionWithSessionPlugins(session)) {
-            session.removeSessionPlugin(current)
-            session.addSessionPlugin(next)
-          } else {
-            session.notify('No way to update plugin')
-          }
+          // newer one, both in the list the plugin actually lives in. Both
+          // actions flag pluginsUpdated, prompting a reload that loads the new
+          // build. Install under the store's name (the UMD global, e.g. "GWAS")
+          // — not the runtime class name (e.g. "GWASPlugin"), which would make
+          // the UMD bundle fail to load.
+          removePluginFrom(session, home, current)
+          addPluginTo(session, home, {
+            ...update.definition,
+            name: update.name,
+          })
           setQueued(true)
         }}
       >
@@ -155,12 +149,14 @@ const InstalledPlugin = observer(function InstalledPlugin({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const session = getSession(model)
-  const { adminMode } = session
   // a global plugin (Desktop) is in every session's plugin list but in no
   // session's config, so removing it here would filter a list it isn't in and
   // then ask for a reload that brings it straight back
   const isGlobal = pluginManager.pluginMetadata[plugin.name]?.isGlobal
-  const updatable = !isGlobal && (adminMode || isSessionPlugin(plugin, session))
+  // which list to edit, rather than whether this user is an admin: an admin
+  // looking at a session that brought its own plugins has to edit that session,
+  // not the config those plugins were never in (see pluginHome)
+  const home = isGlobal ? undefined : pluginHome(plugin, session)
 
   // the install url is recorded in the plugin metadata at load time; the matching
   // runtime definition is the concrete, version-pinned thing we remove/replace
@@ -177,14 +173,18 @@ const InstalledPlugin = observer(function InstalledPlugin({
   const update = storeEntry
     ? getPluginUpdate(storeEntry, session.version, installedVersion)
     : undefined
+  // the pinned url is authoritative about which build is loaded; the plugin's
+  // self-declared version is the fallback for a custom or pre-versioning url
+  const shownVersion = installedVersion ?? plugin.version
 
   return (
     <ListItem key={plugin.name}>
-      {updatable && definition ? (
+      {home && definition ? (
         <UninstallPluginIconButton
           plugin={plugin}
           model={model}
           definition={definition}
+          home={home}
         />
       ) : (
         <LockedPluginIconButton
@@ -200,15 +200,16 @@ const InstalledPlugin = observer(function InstalledPlugin({
         the runtime Plugin class name (e.g. "GWASPlugin") so it matches the
         available-plugins list */}
         {storeEntry?.name ?? plugin.name}
-        {plugin.version ? ` (v${plugin.version})` : ''}
+        {shownVersion ? ` (v${shownVersion})` : ''}
       </Typography>
-      {update && updatable && definition ? (
+      {update && home && definition ? (
         <UpdatePluginButton
           plugin={plugin}
           model={model}
           update={update}
           current={definition}
           fromVersion={installedVersion}
+          home={home}
         />
       ) : null}
     </ListItem>
