@@ -215,6 +215,38 @@ is filed separately: mobx-react `observer()` reactions from renders React
 discarded are never disposed, and go on observing the tree. See
 [TODO.md](../TODO.md).
 
+### `isSessionModel*` cannot stand in for `isAlive`
+
+The `isX(thing)` predicates in `core/util/types` are **capability** checks, and
+they answer `true` for a destroyed node. Each is a chain of `in` tests
+(`isSessionModel` is `'rpcManager' in thing && 'configuration' in thing`), and
+`in` does not invoke the getter, so MST's `assertAlive` never runs. Measured
+against the fork:
+
+```
+live:  'rpcManager' in s = true
+destroy(root); isAlive(s) = false
+dead:  'rpcManager' in s = true      <- the guard still passes
+```
+
+This is worth stating because the wrong version is the intuitive one. A guard
+written as "the session might be gone by the time this async continuation runs"
+reads as defending exactly the window this ADR is about, and does nothing of the
+kind: it passes, and the very next line reads a property off the dead node.
+`d40eae3cab` added one to `indexJobsModel.setWidgetStatus` on that reasoning,
+and `8936c9f763` removed it and five others.
+
+Two further things make such a guard worse than useless there. Reaching the
+session at all is usually a `getParent` hop, and `getParent` on a dead node
+**throws** (`Failed to find the parent of X [dead] at depth 1`) — before the
+guard it was meant to sit behind can run. And reads of a dead node are not
+uniformly loud: a view returns its value silently, and only a property read
+warns, so a fake guard can look like it is working for a long time.
+
+If liveness is genuinely the question, `isAlive` is the answer. Usually it is
+not the question — as above, the right fix is that the tree does not outlive its
+teardown, not that every caller re-checks.
+
 ## Tests
 
 Each fails without its fix and is scoped to what is deterministic:
