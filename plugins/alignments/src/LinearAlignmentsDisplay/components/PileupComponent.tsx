@@ -1,6 +1,10 @@
 import { Fragment, useId } from 'react'
 
-import { ResizeHandle, VerticalScrollbar } from '@jbrowse/core/ui'
+import {
+  ResizeHandle,
+  ScrollEdgeShadow,
+  VerticalScrollbar,
+} from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -162,6 +166,15 @@ const PileupBody = observer(function PileupBody({
       <ConnectionBandResizeHandles model={model} />
 
       <GroupResizeHandles model={model} />
+
+      {/* the pileup's own viewport, so in ungrouped mode it starts below the
+          pinned coverage band rather than fading the band itself */}
+      <ScrollEdgeShadow
+        scrollTop={model.scrollTop}
+        viewportHeight={model.pileupViewportHeight}
+        contentHeight={model.pileupContentHeight}
+        top={topOffset}
+      />
 
       <VerticalScrollbar
         scrollTop={model.scrollTop}

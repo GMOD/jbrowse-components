@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useId } from 'react'
 
-import { ContextMenu, VerticalScrollbar, useMouseState } from '@jbrowse/core/ui'
+import {
+  ContextMenu,
+  ScrollEdgeShadow,
+  VerticalScrollbar,
+  useMouseState,
+} from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
 import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -404,6 +409,15 @@ const FeatureBody = observer(function FeatureBody({
           onLabelMouseLeave={handleMouseLeave}
         />
       </OverlayScrollLayer>
+
+      {/* after the overlay layer, so a label clipped at the bottom edge fades
+          with the features it names; before the scrollbar, whose z-index keeps
+          the thumb crisp over it either way */}
+      <ScrollEdgeShadow
+        scrollTop={model.scrollTop}
+        viewportHeight={model.height}
+        contentHeight={model.contentHeight}
+      />
 
       <VerticalScrollbar
         scrollTop={model.scrollTop}

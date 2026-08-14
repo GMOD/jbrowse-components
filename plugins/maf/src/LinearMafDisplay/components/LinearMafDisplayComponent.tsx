@@ -1,6 +1,10 @@
 import { useId, useRef, useState } from 'react'
 
-import { VerticalScrollbar, useMouseState } from '@jbrowse/core/ui'
+import {
+  ScrollEdgeShadow,
+  VerticalScrollbar,
+  useMouseState,
+} from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
@@ -271,7 +275,13 @@ const MafBody = observer(function MafBody({
         <TreeSidebar model={model} top={rowsTopOffset} />
       </div>
       {/* Offset below the stacked bands, which are pinned: only the rows
-          scroll. Renders nothing while the rows fit. */}
+          scroll. Both render nothing while the rows fit. */}
+      <ScrollEdgeShadow
+        scrollTop={scrollTop}
+        viewportHeight={rowsHeight}
+        contentHeight={rowsContentHeight}
+        top={rowsTopOffset}
+      />
       <VerticalScrollbar
         scrollTop={scrollTop}
         setScrollTop={n => {
