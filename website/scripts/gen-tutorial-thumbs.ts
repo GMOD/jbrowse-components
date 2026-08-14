@@ -181,7 +181,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   },
   population_genomics: {
     // the Fst plot only, left half of the genome: a centered crop lands on
-    // 2R/3L and drops the 2L plateau that is the whole point of the figure
+    // 2R/3L and drops the 2L plateau that is the whole point of the figure.
+    //
+    // This is a compose PART now (of popgen/in2lt_inversion) rather than a
+    // figure the page embeds directly, which is fine and deliberate: a part is
+    // still rendered and still carries a figures.lock line, and cropping the
+    // composite instead would mean re-deriving `band` against a frame twice as
+    // tall for the same picture.
     src: 'popgen/fst_in2lt_2L.png',
     band: [0.36, 0.93],
     xband: [0, 0.5],

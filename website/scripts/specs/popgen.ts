@@ -410,4 +410,31 @@ export const popgenSpecs: ScreenshotSpec[] = [
     viewportHeight: 860,
     settleMs: 12000,
   },
+
+  // The two halves of the inversion, stacked, because neither reads without the
+  // other. The arm-level half alone cannot say who carries the arrangement --
+  // Fst is one number per window, and a window has no samples in it. The
+  // per-line half alone cannot say the block is unusual, because a single arm
+  // drawn on its own has no background: the whole point of the plateau is that
+  // every OTHER arm sits at the bottom of the same axis.
+  //
+  // WHY THE MOSTLY-GREY GENOTYPE LANE IS THE RESULT rather than a layout
+  // problem to trim, since it looks like one and was once filed as one. The
+  // panel is 161 standard lines to 19 In(2L)t carriers, so ~89% of the rows
+  // ARE homozygous reference, and `referenceDrawingMode: 'skip'` paints them as
+  // the grey field the carriers' block sits on. Shrinking the lane changes the
+  // pixel count and not the ratio; the ratio is what says how rare the
+  // arrangement is. The block sits at the lane's bottom edge for the same kind
+  // of reason: `groupBy: 'karyotype'` orders in dosage order, so the carriers
+  // are the last rows there are.
+  //
+  // The parts stay separate specs rather than becoming one taller session,
+  // because they are different VIEWS of the same tracks -- six arms side by
+  // side against one arm end to end -- and no single LGV shows both. Each also
+  // stays an openable live link through `<Figure links=...>`.
+  {
+    mode: 'compose',
+    name: 'popgen/in2lt_inversion',
+    parts: ['popgen/fst_in2lt_2L', 'popgen/in2lt_per_sample'],
+  },
 ]

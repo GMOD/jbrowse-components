@@ -237,18 +237,12 @@ out.
 
 ## Reading the signals
 
-Opening the assembly with no location shows all of its regions at once, so the
-six arms lay out side by side and the block has the rest of the genome to be
-measured against. The `In(2L)t` Fst track rises over the inverted region of
-chromosome 2L, while every other arm sits at low background Fst.
-
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms. Top: the In(2L)t inversion extent. Bottom: Fst between In(2L)t and standard-arrangement lines, a tall block over the inverted region of chromosome 2 against low background on every other arm."/>
-
-Then search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
-alongside π. Both dip together over the swept window, where either statistic
-alone would be ambiguous. Add the called-variant count under them, which is
-column 4 of the table π comes from, so it counts the same windows over the same
-calls. A duplication of `Cyp6g1` segregates alongside the resistance allele
+The three scans are read against each other rather than one at a time. Search
+`Cyp6g1` (on `2R`) in the location box and add the Tajima's D track alongside π.
+Both dip together over the swept window, where either statistic alone would be
+ambiguous. Add the called-variant count under them, which is column 4 of the
+table π comes from, so it counts the same windows over the same calls. A
+duplication of `Cyp6g1` segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
 number costs a window called sites, so how far the count falls beside π is worth
 seeing rather than assuming.
@@ -269,10 +263,16 @@ under clinal selection, is typed in the same DGRPool table set, so repeating the
 grouping step with its phenotype scans `3R` exactly as the steps above scan
 `2L`.
 
-## Per-sample view: the inversion genotyped across the panel
+## The inversion, genome-wide and per line
 
-The windowed Fst scan summarizes the inversion into one number per window. To
-see which lines carry it, represent the whole arrangement as a single
+Opening the assembly with no location shows all of its regions at once, so the
+six arms lay out side by side and the block has the rest of the genome to be
+measured against. The `In(2L)t` Fst track rises over the inverted region of
+chromosome 2L, while every other arm sits at low background Fst.
+
+That view summarizes the inversion into one number per window, which is a
+statement about the arrangement and not about any line that carries it. To see
+which lines those are, represent the whole arrangement as a single
 structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
 (`2L:2,225,744-13,154,180`), genotyped across every karyotyped line, and load it
 in the
@@ -322,12 +322,12 @@ darker block beneath it, with the karyotype strip down the sidebar. `groupBy` is
 what keeps those two blocks contiguous. Without it the rows keep the VCF's
 column order, and the split only reads as two blocks by luck.
 
-<Figure src="/img/popgen/in2lt_per_sample.png" caption="Whole chr2L. Top: the In(2L)t extent. Middle: Fst between arrangements. Bottom: one row per DGRP line, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau above it runs past both."/>
+<Figure src="/img/popgen/in2lt_inversion.png" caption="Top: all six dm6 arms, with the In(2L)t extent over Fst between the two arrangements, the block on 2L standing against low background everywhere else. Bottom: the same two tracks across chr2L alone, with one row per DGRP line under them, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau above it runs past both." links="Six arms=popgen/fst_in2lt_2L,Chromosome 2L=popgen/in2lt_per_sample"/>
 
 The genotypes here are the arrangement karyotypes themselves, so the lane is a
 direct record of which lines carry the inversion. That ordinary SNPs across the
 region co-segregate with it, which is why the arrangement behaves as one
-recombination-suppressed block, is what the Fst scan above quantifies. The
+recombination-suppressed block, is what the two Fst lanes above it quantify. The
 plateau carries a few megabases past each breakpoint, which is the margin
 [Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056) report for
 the common _Drosophila_ inversions; the extent comes from the lane at the top,
