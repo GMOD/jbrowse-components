@@ -75,9 +75,18 @@
 // between them — 7,081 per read, an op every 7 bases — so the cursor walk still
 // pays 6.25M op iterations plus 0.84M position iterations against the per-base
 // walk's 43.7M. A 6x cut in iterations, not 52x, and per-op work is heavier than
-// per-base work. A cleaner alignment (fewer, longer ops) would show more; a
-// noisier one, less. Neither is a reason to prefer the old shape, but quoting
-// "52 bases per call" as if it were the speedup would be wrong.
+// per-base work. Quoting "52 bases per call" as if it were the speedup would be
+// wrong.
+//
+// **So read 1.17x as close to this change's FLOOR, not its typical value.** The
+// op term is what caps it, and it is the term that varies most between
+// technologies: an op every 7 bases is a noisy long read, while PacBio HiFi —
+// which is what Fiber-seq is — carries orders of magnitude fewer ops for the
+// same length, leaving almost nothing but the positions the cursor walk is
+// O(of). Fiber-seq also calls two groups per read (`C+m` and `A+a`), and the
+// walk runs once per GROUP, so it pays this phase twice before the ratio starts.
+// Both directions favour the cursor walk; neither is measurable here, because no
+// fixture in either corpus is HiFi or multi-group.
 //
 // Written out longhand, three times, deliberately.
 import { readFileSync } from 'node:fs'

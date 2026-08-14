@@ -41,13 +41,24 @@
 //              walk per group with the winner picked across the group's types
 //   control  — a second, separately-declared copy of `shipped`
 //
-// WHY THE FIXTURE HAS TO BE DOCTORED. Every modBAM in either repo is
-// single-type (`200x.longread.mod.bam` is 285 reads, all `C+m?`), so no
+// WHY THE FIXTURE HAS TO BE DOCTORED. Every modBAM in either repo is one MM
+// group of one type (`200x.longread.mod.bam` is 285 reads, all `C+m?`), so no
 // benchmark here has ever seen a combined code. The `mh` arm synthesizes one by
 // rewriting the `C+m?` header to `C+mh?` and interleaving a second ML byte per
 // position. The delta list is untouched, so **every position is unchanged** and
 // the only thing added is the second type at those same positions — which is
 // exactly what a real `C+mh` read is.
+//
+// **A combined code is not the same thing as a file with several modification
+// types, and the difference decides whether this fix applies.** A combined code
+// is several types on the SAME canonical base at the SAME positions, with ML
+// interleaved — `C+mh` is 5mC and 5hmC at every cytosine. A Fiber-seq read
+// carries `C+m,…;A+a,…`: 5mC on cytosine and 6mA on adenine, necessarily
+// different positions, necessarily separate groups, and correctly NOT
+// deduplicated by anything here. Multi-group is the commoner shape of the two
+// and neither this bench nor any fixture in either corpus has one; see TODO's
+// "Walk the CIGAR once for a read's whole MM tag" for what it costs and for the
+// corpus gap.
 //
 // The synthetic h byte is the m byte's complement, so the winner alternates with
 // the call rather than sitting on one branch. That is a statement about this

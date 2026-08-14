@@ -66,6 +66,7 @@ before anyone noticed.
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Byte-native MAF adapter path](#a-byte-native-maf-adapter-path-once-tabix-js-publishes-linebytescallback) | MAF | blocked on a tabix-js publish; measure the pack stage, not the decode |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
+| [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | get a Fiber-seq BAM into the corpus — no fixture is multi-group |
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
@@ -1030,6 +1031,42 @@ implementer's call, hence here rather than in the small-items section.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
+
+### Walk the CIGAR once for a read's whole MM tag, not once per group
+
+`forEachMaxProbMod` groups mod entries by positions-array identity, so the types
+of a combined code (`C+mh`) share one CIGAR walk. **Entries from different MM
+groups never share one, and cannot** — `C+m,…;A+a,…` is 5mC on cytosine and 6mA
+on adenine, so the two groups genuinely have different positions. A read with
+two groups therefore walks the same `ops` array twice.
+
+Both walks are ascending, so they merge: hold one cursor per group, take the
+minimum each step, walk the ops once. That turns O(N x ops + total positions)
+into O(ops + total positions). Since `cigarWalkShape.bench.ts` measures the ops
+term as the one that dominates on a noisy long read (6.25M ops against 0.84M
+positions), a two-group read is close to a halving of the walk phase, and the
+walk phase is 45% of the pipeline (`modPhases.bench.ts`).
+
+**This is not the exotic case.** Fiber-seq reads carry 5mC and 6mA as a matter of
+course, and `modificationsMenu` already tells users that basecallers increasingly
+emit several types per read. A combined code is the *rarer* of the two shapes.
+
+The first move is a fixture, not code:
+
+- **No modBAM in either corpus has more than one MM group**, so nothing here can
+  measure this and nothing has ever exercised the multi-group path under load.
+  `modCombinedCode.bench.ts` shows how to synthesize a second group (walk the
+  read for `A`, emit an `A+a` group beside the existing `C+m`), which is honest
+  for counting walks.
+- **A real Fiber-seq BAM would be worth more than the synthesis**, because the
+  two things that decide the ratio are the ones synthesis cannot fake: HiFi's op
+  density (far lower than this corpus's one-op-per-7-bases, which is what caps
+  the cursor walk at 1.17x) and Fiber-seq's m6A call density. Getting one into
+  the bench corpus unblocks this item and re-prices `cigarWalkShape` at the same
+  time.
+
+Keep the identity grouping when doing this — it answers a different question
+(which entries are the same walk) and the merge is a layer above it.
 
 ### The synteny follow runs away on a swapped-assembly track
 

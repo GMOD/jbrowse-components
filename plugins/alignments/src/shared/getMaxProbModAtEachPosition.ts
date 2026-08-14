@@ -46,6 +46,14 @@ import type { ModWithPositions } from '@jbrowse/modifications-utils'
  * read. Two entries whose positions merely happen to be EQUAL are not grouped,
  * and must not be: the grouping is an identity test precisely so that it can
  * never be wrong about whether the walks coincide.
+ *
+ * **That is per group, so N groups is still N walks over the same ops**, and a
+ * read with several groups is the common case rather than the exotic one — a
+ * Fiber-seq read carries `C+m` and `A+a`, and those are on different canonical
+ * bases, so they are necessarily different positions and cannot be folded here.
+ * Merging the ascending streams to walk once is a real optimization and is
+ * `agent-docs/TODO.md`'s "Walk the CIGAR once for a read's whole MM tag"; don't
+ * mistake it for something this grouping already does.
  */
 export function forEachMaxProbMod(
   modifications: readonly ModWithPositions[],
