@@ -1,6 +1,6 @@
 ---
 name: refname-namespaces
-description: Why `refName` means two different things either side of the RPC boundary, the one-sentence rule that says when that is safe (an answer about a region you asked for) and when it is not (an answer naming a location you did not), the six plugins that hit it and the five different workarounds they each invented, and why synteny is the one that never got one. Read before comparing a fetched refName against anything, or before adding an RPC that returns a refName.
+description: Why `refName` means two different things either side of the RPC boundary, the one-sentence rule that says when that is safe (an answer about a region you asked for) and when it is not (an answer naming a location you did not), and the six plugins that hit it and invented six different workarounds — including synteny's, which is two renames covering thirteen readers and where the per-site audit table now lives. Read before comparing a fetched refName against anything, or before adding an RPC that returns a refName.
 ---
 
 # The two refName namespaces
@@ -11,7 +11,10 @@ canonical name before the RPC boundary and the file's name after it — in the
 same field of the same type. `util/renameRegions.ts` is the statement of this
 and its header says it out loud.
 
-The rename is **one-way**. Nothing renames a result on the way back.
+The rename is **one-way**: nothing in the RPC layer renames a result on the way
+back. Every plugin that needs the return direction has built its own, six times
+over — see the table below, which is the argument for the layer-level version
+rather than a description of a solved problem.
 
 ## The rule: is the answer about a region you asked for?
 
@@ -32,7 +35,7 @@ from the same fetch, so they agree. `features/derivativePaths/computePaths.ts`
 and `features/arcs/compute.ts` compare `a.refName !== b.refName` and are
 correct. Only feature-against-view-state straddles.
 
-## Six plugins hit it; five invented a different fix
+## Six plugins hit it; six invented a different fix
 
 | plugin | the un-requested refName | what it does about it |
 | --- | --- | --- |
@@ -41,10 +44,13 @@ correct. Only feature-against-view-state straddles.
 | gwas | `indexSnp` | bundled into `regions` so it rides the inbound pass |
 | hic | `viewBlocks[].refName` | the view's own names carried in a parallel array |
 | `GetConsensusSequence` | — | returns no refName at all |
-| **synteny** | **the entire mate axis** | **nothing** |
+| synteny | the entire mate axis | `getAdapterToCanonicalRefNameMap` on receipt, on both channels (below) |
 
-Five ad-hoc solutions to one missing primitive is the cost already paid for not
-having a return-direction rename.
+**Six ad-hoc solutions to one missing primitive** is the cost already paid for
+not having a return-direction rename, and synteny joining the list is the reason
+that number is now the argument rather than the fix being the argument. Each
+plugin's workaround is correct and none of them is reusable by the next one; the
+seventh will invent a seventh.
 
 ## Why synteny is the worst case rather than a special case
 
@@ -54,47 +60,64 @@ names a contig on the other axis, because that is what a synteny feature is. So
 where alignments has one cross-boundary read to get right, synteny has one per
 reader, and the readers grew without anyone noticing the class.
 
-Two channels carry adapter-space names into synteny's main thread:
+That is also why the fix is at the two channels rather than at the thirteen
+readers, and why it stays there: a fourteenth reader is written by adding one
+line to a file that already reads `getFeatureAtIndex`, and nothing about writing
+it would prompt anyone to think about namespaces.
+
+Two channels carry names off the wire into synteny's main thread, and **both are
+renamed on receipt** — `refNameDict` / `mateRefNameDict` in the fetch's `run`
+(`LinearSyntenyDisplay/afterAttach`), `ResolvedSpan.refName` in
+`resolveMatchingSpan`:
 
 - `SyntenyFeatureData`'s `refNameDict` / `mateRefNameDict`, from the fetch —
   dictionary-encoded since the payload optimization below, so these are the
   DICTIONARIES the per-feature `refNameIds` / `mateRefNameIds` index. The worker
   comment at the head of `executeSyntenyFeaturesAndPositions.ts` says why they
-  are adapter-space: the RPC worker has no assemblyManager, so reconciliation
-  happens on the main thread *before* the call
+  leave the worker adapter-space: the RPC worker has no assemblyManager, so
+  reconciliation happens on the main thread *before* the call
   (`renameRegionsForAdapter`), and the features are handed back unmodified.
 - `ResolvedSpan.refName`, from `SyntenyResolveMatchingRegion`. Read off the
-  feature in `resolveAlignmentSpan.ts`.
+  feature in `resolveAlignmentSpan.ts`, so it is the file's spelling in the
+  worker and canonical from `resolveMatchingSpan` outward.
 
-Both have to be canonicalized together. Doing only the first is worse than
-doing neither: `alreadyShowing` would compare canonical against adapter-space,
-never match, and renavigate on every wake — breaking the one-RPC-per-settle
-invariant `LinearSyntenyFollow.test.tsx` pins.
+**They are canonicalized together, and a change that separates them is a
+regression even though both halves look like improvements.** Doing only the
+first is worse than doing neither: `alreadyShowing` then compares canonical
+against adapter-space, never matches, and renavigates on every wake — breaking
+the one-RPC-per-settle invariant `LinearSyntenyFollow.test.tsx` pins. That
+failure is louder than the one the fix is for, which is the useful property
+here: the guard against a half-revert is a test that already exists.
 
 `getAdapterToCanonicalRefNameMap` (`@jbrowse/synteny-core`) is the inverse map
-for both, and already exists because the diagonalize RPCs needed exactly this.
+for both, built **per axis** — the query assembly for the `refName` lane, the
+target for the `mate` one — rather than one merged map, so two contigs spelled
+alike on the two assemblies cannot collide. It predates this fix; the
+diagonalize RPCs needed exactly the same thing.
 
-### The first channel is now a dictionary, which changes the fix twice
+### The first channel is a dictionary, which makes the rename cheap and adds one requirement
 
-Cheaper, and with one new requirement.
+**Cheap:** it is a pass over a few dozen dictionary entries once per fetch, not
+over a string per feature. An earlier plan carried a "skip the walk when the map
+is empty" guard to keep a per-feature pass off the common path; against a
+dictionary the walk is negligible either way, and the guard was dropped.
 
-**Cheaper:** the rename is a pass over a few dozen dictionary entries, once per
-fetch, not over a string per feature. The "skip the walk when the map is empty"
-guard the plan carried was there to keep a per-feature pass off the common path;
-against a dictionary the walk is negligible either way, so the guard is optional
-rather than load-bearing.
+**The requirement: RE-INTERN after renaming**, which is what
+`renameRefNameDict` exists to do and why it is not a `.map()` in place. The
+dictionary's entries are distinct by construction while they are adapter-space,
+because the worker interned them there. Renaming can collapse two of them onto
+one canonical name — a file that spells the same contig `chr1` on some rows and
+`1` on others, against an assembly aliasing both, which is precisely the
+mixed-provenance case this whole class is about. Duplicates break the readers
+that resolve a name to an id ONCE and then compare integers
+(`pickFollowFeature`, `followWindowMapping`, both via `dict.indexOf`): `indexOf`
+finds the first of the duplicates, and every feature carrying the second id
+silently stops matching.
 
-**New requirement: RE-INTERN after renaming.** The dictionary's entries are
-distinct by construction while they are adapter-space, because the worker
-interned them. Renaming can collapse two of them onto one canonical name — a file
-that spells the same contig `chr1` on some rows and `1` on others, against an
-assembly aliasing both, which is precisely the mixed-provenance case this whole
-class is about. Duplicate entries break the readers that resolve a name to an id
-ONCE and then compare integers (`pickFollowFeature`, `followWindowMapping`, both
-via `dict.indexOf`): `indexOf` finds the first of the duplicates, and every
-feature carrying the second id silently stops matching. So the rename is
-`makeStringDict` again over the renamed values, remapping the ids — not a
-`.map()` in place.
+The per-feature id array comes back **untouched** unless a collapse actually
+happened, because the interner hands out ids in first-seen order — so the
+ordinary file pays the dictionary walk and nothing else, and only the file that
+needs the remap pays for it.
 
 ### One straddle whose symptom is a wrong palette, not a missed match
 
@@ -112,24 +135,32 @@ quietly painted with the palette that was rejected — and the fallback is a
 legitimate state for other reasons (an assembly still loading), so nothing about
 it reads as wrong.
 
-Now confined to a dictionary walk rather than a per-feature one, so
-canonicalizing the dictionary fixes this site for free along with the rest.
+Fixed, for free, by the dictionary rename — the lookup's operand is now
+canonical like `nameOrder`. Kept here because it is the shape to recognize
+rather than the bug: a straddle whose failure mode is a *legitimate state*
+reached wrongly survives an audit, and this one survived several.
 
-## Every synteny site, and what each one needs
+## Every synteny site, and what each one was doing wrong
 
 The audit result, filed rather than described — an earlier version of this thread
 reported a reader count and left the list in the session, so the next reader had
 to redo it.
 
+Every one of these is fixed by the two renames above; the table is kept because
+it is what says *why the fix is at the channels* and what a fourteenth site would
+cost. The symptom column is the behaviour before the fix, and it is also what a
+half-revert reintroduces.
+
 **Method, so it can be re-run rather than trusted:** grep the two channels'
 readers (`getFeatureAtIndex` / `getFeature` for the first, `ResolvedSpan` for the
 second), then read each hit and name its *two* operands. A site is a straddle only
 if one operand comes from a feature and the other from view state — that is the
-rule at the top of this file, applied one site at a time.
+rule at the top of this file, applied one site at a time. Run it again before
+adding a channel; it is cheap and it is how this list stopped being a number.
 
 Channel 1, `refNameDict` / `mateRefNameDict` reached through `getFeatureAtIndex`:
 
-| site | the other operand | class | symptom on an aliased file |
+| site | the other operand | class | symptom, on an aliased file, before the fix |
 | --- | --- | --- | --- |
 | `components/util.ts` `getTooltip` | none, it is printed | display text | the tooltip shows the file's spelling |
 | `LevelSyntenyCanvas` `openSyntenyFeatureWidget` | none, into the widget | display text | the feature panel shows the file's spelling |
@@ -154,54 +185,55 @@ Thirteen sites; nine straddle. The count differs from the "eleven" this thread
 first reported because carriers and producers can be counted either way — which is
 the reason to keep the table rather than the number.
 
-### The one that goes back OUT is safe, and safe after the fix too
+### The one that goes back OUT is safe, and was safe before the fix too
 
 `moveMatchingPanel` puts `feat.refName` into `SyntenyResolveMatchingRegion`'s
 `regions[]`. That looks like a straddle and is not, in either direction, and it is
 worth knowing precisely because it can be "fixed" wrongly from both sides:
 
-- **Today** it works by accident. The method extends
+- **Before** it worked by accident. The method extends
   `RpcMethodTypeWithRenameRegions`, so the outbound pass renames `regions[]`
   canonical→adapter through a map keyed by *canonical* names. An
   adapter-only spelling is not a key, misses, and passes through unchanged — which
   is the spelling the worker wanted.
-- **After canonicalizing channel 1** it works by design: the name going in is
-  canonical, the outbound rename maps it, the worker gets the same string.
+- **Now** it works by design: the name going in is canonical, the outbound rename
+  maps it, the worker gets the same string.
 
-So do not special-case this site and do not canonicalize it twice. The one input
-that breaks it is a file spelling a contig with a name that is *also* the
-canonical name of a different contig, where the pass-through miss becomes a wrong
-hit — pathological, and it is broken today for the same reason.
+So do not special-case this site and do not canonicalize it twice — the source
+says as much at the call. The one input that breaks it is a file spelling a
+contig with a name that is *also* the canonical name of a different contig, where
+the pass-through miss becomes a wrong hit; pathological, and it was broken before
+for the same reason.
 
-## Potential solutions, in the order they can be taken
+## What is done, and what is still open
 
-1. **Canonicalize both channels** (the filed plan — `TODO.md` §*Canonicalize the
-   two synteny refName channels*). Fixes all nine straddles and both display-text
-   sites at once, because everything above reads through `getFeatureAtIndex` or
-   `ResolvedSpan`. First step is the smallest one that cannot go wrong: rename the
-   two dictionaries in `afterAttach`'s `run`, re-intern (above), and rename
-   `ResolvedSpan.refName` in `resolveMatchingSpan` — in the **same commit**, since
-   either alone regresses. `LinearSyntenyRefNameAlias.test.tsx`'s `test.failing`
-   is the gate, and `LinearSyntenyFollow.test.tsx`'s RPC count is the guard
-   against the half-done version.
-2. **Brand the out-of-request names** so a fourteenth site cannot appear quietly.
-   Independent of 1 and worth doing after it, not before: branding a fixed tree is
-   a type-only change, branding a broken one buys an error list to wade through.
-   Both ends have to be branded (the trap below), and `positionViewOnSpan` is
-   known to be out of reach.
-3. **A return-direction rename at the RPC layer, declared per method.** The
-   fourth-time-lucky version: it would collapse all five existing workarounds in
-   the table above into one mechanism, and synteny would need no per-site work at
-   all. Much larger, and it wants a design pass rather than a patch — but it is
-   the only option that stops the sixth plugin becoming a seventh.
-4. **Do the display-text half separately, per view.** Cheapest of all and
-   independent of every other option: resolve the name off the view's own regions
-   at the point of display rather than reading the feature's. The dotplot tooltip
-   is the worked example (~10 lines, `pxToBp`, no rename anywhere). This is the
-   whole of decision 3 in the handoff, and its cost is now measured rather than
-   guessed.
+**Done: canonicalize both synteny channels.** All nine straddles and both
+display-text sites at once, because everything in the tables reads through
+`getFeatureAtIndex` or `ResolvedSpan`. `LinearSyntenyRefNameAlias.test.tsx` is
+the gate and `LinearSyntenyFollow.test.tsx`'s RPC count is the guard against the
+half-done version. It is one plugin's answer, not the class's, which is the whole
+of what remains:
 
-## When it is observable
+1. **Brand the out-of-request names** so a fourteenth site cannot appear quietly.
+   Now the cheap moment to do it, and that ordering was the point: branding a
+   fixed tree is a type-only change, branding a broken one buys an error list to
+   wade through. Both ends have to be branded (the trap below), and
+   `positionViewOnSpan` is known to be out of reach.
+2. **A return-direction rename at the RPC layer, declared per method.** It would
+   collapse all six workarounds in the table above into one mechanism, and no
+   plugin would need per-site work. Much larger, and it wants a design pass rather
+   than a patch — but it is the only option that stops the seventh plugin
+   inventing a seventh answer, and synteny's fix did nothing to make that less
+   likely. If anything it made it likelier: the class now looks handled.
+3. **The display-text half, repo-wide.** Independent of both of the above, and
+   the one still unopened because nobody has decided it is work. A refName used as
+   tooltip or feature-detail text shows the file's spelling in every plugin. The
+   per-view fix is cheap and needs none of the machinery here — the dotplot
+   tooltip is the worked example, ~10 lines resolving both axes through `pxToBp`
+   instead of reading the fetched name. What that does not answer is whether it is
+   worth doing twenty times.
+
+## When it was observable, and what still is
 
 Only when a file spells a contig with a name the assembly knows as an **alias**.
 The map `loadRefNameMap` builds is `result[getCanonicalRefName(fileName)] =
@@ -213,8 +245,9 @@ Ensembl downloads against a UCSC assembly.
 `products/jbrowse-web/src/tests/LinearSyntenyRefNameAlias.test.tsx` is the
 fixture — two PAFs describing one alignment, differing only in whether the query
 contig is spelled `ctgA` or `A`, which `test_data/volvox/config.json` already
-declared as an alias. Both load and draw; only the canonically-spelled one
-follows.
+declared as an alias. Both load, both draw, and both follow; the file's first
+test is that an aliased file is not a broken file, which is the premise the other
+two rest on.
 
 ## Nothing catches it, by construction
 
@@ -251,12 +284,41 @@ So the dotplot needs no part of the synteny fix. It is not that it was overlooke
 its answers are about regions it asked for, which is the rule at the top of this
 file.
 
+## One site outside both channels, reasoned rather than probed
+
+`LinearDerivativeVsRef/buildDerivativeVsRefSpec.ts` has two `refName` uses and
+only one of them is a refName at all. `derivativeName(candidate)` is a name this
+function MINTS for the derivative contig (`der_9_9`); it belongs to neither
+namespace and needs nothing. `seg.refName` is the reference contig a segment came
+from, it reaches here off BAM features through `plugin-alignments`'
+`computePaths`, and it becomes both the reference panel's **displayed regions**
+(`lgvRegions`) and the positions of the `FromConfigAdapter` features drawn on
+them.
+
+It is the one site in this whole audit that is a *requested* refName being read
+rather than an un-requested one, which is why it did not look like the others and
+why the rule at the top of this file does not settle it: the two operands agree
+with each other, and the question is instead whether an adapter-spelled name can
+be a view's `displayedRegions` at all.
+
+**Treat this as unverified.** Nothing here has been run — it is reasoned from the
+shape of the code, and this thread's own record is that reasoning about it was
+wrong three times out of four. The probe that settles it: a BAM whose header
+spells a contig as an assembly alias, then read the reference panel's
+`displayedRegions` after building a derivative.
+
 ## The repo-wide half nobody notices
 
 A refName used as **display text** is wrong everywhere, not just in synteny: a
 feature detail panel or tooltip on any aliased file shows the file's spelling
 rather than the assembly's. It is cosmetic, universally unnoticed, and the same
-defect. Worth knowing before describing this as a synteny bug.
+defect.
+
+Synteny's two display-text sites came along with the channel rename, and the
+dotplot's tooltip was already doing the canonical thing, so the two comparative
+views no longer demonstrate it. **Every other plugin still does** — which is
+worth knowing before reading this doc as closed, and before describing the
+underlying thing as a synteny bug.
 
 ## Branding catches most of it, and only if both ends are branded
 

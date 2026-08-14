@@ -1,6 +1,6 @@
 ---
 name: two-axis-synteny-fetch
-description: Restoring the original both-rows synteny fetch joined on `syntenyId`, which the single-axis fetch replaced. Makes every returned refName one the caller asked for (dissolving a whole bug class rather than patching it) and recovers the alignments a single-axis fetch structurally drops — blocked on one thing, a perspective-stable id for PIF. Read before proposing either half.
+description: Restoring the original both-rows synteny fetch joined on `syntenyId`, which the single-axis fetch replaced. Recovers the alignments a single-axis fetch structurally drops, and would retire synteny's two return-direction refName renames — the second of which is no longer an argument for it, since those renames are now written and cheap. Blocked on one thing, a perspective-stable id for PIF. Read before proposing either half.
 ---
 
 # Fetch both synteny axes again, joined on `syntenyId`
@@ -24,13 +24,18 @@ used it, not the mechanism.
 
 ## Two things it buys
 
-**It dissolves the refName-namespace bug class.** See
+**It removes synteny's need for a return-direction rename.** See
 [REFNAME_NAMESPACES.md](../reference/REFNAME_NAMESPACES.md): a one-way rename is
 sufficient exactly while an answer describes a region the caller asked for, and a
 single-axis fetch returns answers about two locations having requested one. With
 both axes requested, each side positions features inside blocks it asked for —
 structurally identical to an ordinary LGV display — and the mate refName stops
-being information at all. Synteny stops being the exception.
+being information at all.
+
+Not a reason to do this, and it was never the strongest one: the two renames
+synteny needs now exist and are a few dozen dictionary entries per fetch. What
+this would buy is deleting them, and the other five plugins would still have
+their own. Justify this change by the alignments it recovers, below.
 
 **It recovers alignments the current fetch drops.** The same code comment admits
 the class: "an alignment whose query coords sit outside this window but whose

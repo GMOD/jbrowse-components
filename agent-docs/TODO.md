@@ -50,7 +50,8 @@ before anyone noticed.
 | [Contract checks are stripped in production](#the-display-contract-checks-are-stripped-in-production) | limits, plugins | the in-tree half is gated; decide the out-of-tree channel |
 | [The retry check calls HiC's Retry dead](#the-retry-check-calls-hics-retry-dead-and-it-isnt) | hic, limits | reported in tree today; decide whose contract bends |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | one call site passes it; nothing reads it |
-| [Canonicalize the synteny refName channels](#canonicalize-the-two-synteny-refname-channels) | synteny, RPC | read REFNAME_NAMESPACES.md; both channels or neither |
+| [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
+| [Rename RPC results, once, for all six plugins](#rename-rpc-results-once-for-all-six-plugins) | RPC | read REFNAME_NAMESPACES.md; a design pass, not a patch |
 | [The follow runs away on a swapped track](#the-synteny-follow-runs-away-on-a-swapped-assembly-track) | synteny | profile the hung worker; the swap is a lead, not isolated |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
@@ -511,45 +512,49 @@ replacing it.
 Each of these carries a design that already survived a rejected alternative.
 Read the linked ADR or reference doc before re-proposing the thing it rejected.
 
-### Canonicalize the two synteny refName channels
+### Brand the out-of-request refNames
 
 Read [reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md) first —
-it holds the rule, the six plugins that hit it, and why five of them solved it
-differently. This entry is only the synteny half.
+it holds the rule, the six plugins that hit it, and the six different answers
+they each invented. This entry is what is left after synteny's.
 
-`LinearSyntenyRefNameAlias.test.tsx` already fails on it, as `test.failing`, so
-fixing this breaks that file rather than leaving a dead skip.
+`type AdapterRefName = string & { readonly __ns: 'adapter' }`, on the
+**out-of-request** names only — mate, partner, target — not on refName
+generally. Compile-time only: the property never exists, values stay plain
+strings, nothing changes over the wire. The reference doc has the error codes,
+verified against TS7 `--strict` rather than derived: TS2367 comparing two
+brands, TS2345 into a `Map<Canonical,_>.get`, TS7053 into a
+`Record<Canonical,_>[…]` — which are the three shapes the broken sites took.
 
-Both channels move together or neither does. `featureData.refNameDict` /
-`mateRefNameDict` at the fetch boundary (`LinearSyntenyDisplay/afterAttach.ts`'s
-`run`, after the RPC returns, where the forward `rename` already lives), and
-`ResolvedSpan.refName` on receipt in `resolveMatchingSpan`. Doing only the first
-is **worse than doing neither**: `alreadyShowing` then compares canonical against
-adapter-space, never matches, and renavigates on every wake, which breaks the
-one-RPC-per-settle count `LinearSyntenyFollow.test.tsx` asserts.
+**The trap, and it is the whole difficulty:** `plain === branded` does **not**
+error, because `string` and `string & {…}` overlap. Branding one end buys
+nothing. It also cannot catch a site that hands the name to a core function
+taking a plain `string` — `positionViewOnSpan` → `bpToOffset` is the known one,
+so this is a narrowing rather than a proof.
 
-`getAdapterToCanonicalRefNameMap` (`@jbrowse/synteny-core`) is the map, built
-per axis — query assembly for the `refName` lane, target for the `mate` one — not
-one merged map, so two contigs spelled alike on the two assemblies cannot
-collide.
+Now is the cheap moment, and that ordering is the point: branding a tree whose
+comparisons already agree is a type-only change, where branding a broken one
+buys an error list to wade through.
 
-Those lanes are dictionary-encoded now, which makes the first channel a walk over
-a few dozen entries rather than one per feature — so the "skip when the map is
-empty" guard is optional, and one site gets fixed for free (`nameColorFunction`'s
-`nameOrder` lookup, see the reference doc). It also adds one requirement:
-**re-intern the dictionary**, because renaming can collapse two adapter spellings
-of one contig onto a single canonical name, and the readers that resolve a name to
-an id once via `dict.indexOf` would then match only the first of the duplicates.
-`makeStringDict` over the renamed values, remapping the ids — not a `.map()` in
-place.
+### Rename RPC results, once, for all six plugins
 
-Then brand the out-of-request names, which is what stops site twelve appearing
-quietly. The reference doc has the verified error codes and the one trap: both
-ends have to be branded or the comparison still compiles.
+The layer-level version of the whole class, and the only option that stops the
+seventh plugin inventing a seventh answer. Read
+[reference/REFNAME_NAMESPACES.md](reference/REFNAME_NAMESPACES.md), whose table
+of six workarounds is the argument for it.
 
-Not in scope here, and worth keeping separate: the fourth-time-lucky version is
-a return-direction rename at the RPC layer, declared per method, which would
-collapse all five existing workarounds into one mechanism.
+A return-direction rename **declared per method**, mirroring
+`RpcMethodTypeWithRenameRegions` on the way out. Per-method rather than blanket
+because most RPC returns carry no refName at all and a few carry one that must
+stay adapter-space — `renameRegionsIfNeeded`'s own outbound contract is the
+model, and the synteny site that deliberately passes a name back OUT
+(`resolveMatchingSpan`'s `regions[]`) is the worked example of a return that
+would break under a blanket pass.
+
+**Wants a design pass rather than a patch**, and it is not urgent, because every
+plugin that needs it now has a working answer. That is also the hazard worth
+naming: the class now looks handled, so the case for doing this rests on the
+seventh plugin, which by definition has not been written yet.
 
 ### Give the comparative displays a cancel and a retry
 

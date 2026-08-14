@@ -127,47 +127,37 @@ several contigs. `browser-tests/suites/synteny-follow.ts` says the same thing at
 the point where it matters; it passed against a row pinned to one contig while
 proving nothing.
 
-## `featureData` refNames are in the ADAPTER's namespace, the view's are canonical
+## Every refName the follow reads is canonical, and it is made so in two places
 
-Every refName comparison here has one operand from each side, and on an aliased
-assembly they do not meet. `featureData`'s `refNameDict`/`mateRefNameDict` (the
-dictionaries the ids index) come off the features, and the fetch renames the
-view regions INTO the adapter's namespace before the RPC rather than renaming
-the features back (`renameRegionsForAdapter`, and the comment at the head of
-`executeSyntenyFeaturesAndPositions` saying so) — because the worker has no
-assemblyManager. The window, meanwhile, is read off `dynamicBlocks`, which is
-canonical. So on a PAF naming a contig `1` against an assembly canonicalized
-`chr1`, `pickFollowFeature` matches nothing, the follow reports
-`followUnaligned` and holds every row, and nothing distinguishes that from a
-genuinely unaligned window.
+Nothing here canonicalizes anything, and that is the point: this file compares
+refNames constantly — the window against a feature, a resolved span against
+where a row actually is — and every one of those comparisons assumes both
+operands already agree. They do, because both channels are renamed before the
+follow ever sees them:
 
-NOT a follow bug and not fixable here: `moveMatchingPanel`'s
-`visibleSpanOnRefName` compares the same two namespaces, so the click-driven
-move is out by the same amount, and the geometry is fine either way because it
-is computed worker-side where both sides are adapter-space. The fix is one
-inverse rename applied to the fetch's result, and the helper already exists —
-`getAdapterToCanonicalRefNameMap` in `@jbrowse/synteny-core`, which the
-diagonalize RPCs use for exactly this. Until then, read a follow that does
-nothing on an aliased file as this rather than as the mode being broken.
+- `featureData`'s `refNameDict` / `mateRefNameDict` are renamed in the fetch's
+  `run` (`LinearSyntenyDisplay/afterAttach`), one adapter→canonical map per
+  axis.
+- `ResolvedSpan.refName` is renamed on receipt in `resolveMatchingSpan`.
 
-That fix got cheaper than this paragraph was written for, but **not smaller**,
-and an earlier version of this note had that wrong. The lane is now
-dictionary-encoded, so the rename is a pass over `refNameDict` /
-`mateRefNameDict` — a few dozen entries, once per fetch — rather than over a
-`string[]` of every feature. What has not changed is that **this is one of two
-channels and doing it alone is worse than doing neither**:
-`ResolvedSpan.refName` comes back from `SyntenyResolveMatchingRegion` in the
-same namespace, and canonicalizing only the fetch would leave `alreadyShowing`
-comparing canonical against adapter-space, never matching, renavigating on every
-wake — which breaks the one-RPC-per-settle count `LinearSyntenyFollow.test.tsx`
-asserts. `agent-docs/TODO.md` §_Canonicalize the two synteny refName channels_
-is the plan, and `agent-docs/reference/REFNAME_NAMESPACES.md` is why; the
-dictionary also adds a re-interning requirement, which is written down there.
+**A change that canonicalizes only one of them is worse than one that
+canonicalizes neither**, which is the thing to know before touching either.
+`alreadyShowing` would then compare canonical against adapter-space, never
+match, and renavigate on every wake — breaking the one-RPC-per-settle count
+`LinearSyntenyFollow.test.tsx` asserts. `LinearSyntenyRefNameAlias.test.tsx` is
+the fixture that fails if either half goes: two PAFs describing one alignment,
+differing only in whether the query contig is spelled `ctgA` or the alias `A`.
 
-Two things beyond the follow ride on the same dictionary and would come with it:
-the hover tooltip and the feature widget print the FILE's contig name on an
-aliased track, where the dotplot's tooltip deliberately prints the assembly's
-(`dotplotTooltip.ts` goes through `pxToBp` for exactly this reason).
+Both directions are live, which is why neither rename can be dropped as
+redundant. The request goes canonical→adapter (`renameRegionsForAdapter`, and
+the comment at the head of `executeSyntenyFeaturesAndPositions`), because the
+worker has no assemblyManager and its cumBp index has to match the file's own
+names; the answer comes back adapter→canonical, because a synteny feature names
+a contig on the OTHER axis and so is never an echo of what was asked for.
+`agent-docs/reference/REFNAME_NAMESPACES.md` is the rule and the per-site table,
+including the one refName on this path that deliberately stays un-renamed
+(`resolveMatchingSpan`'s outbound `regions[]`, which the RPC's own rename pass
+maps back).
 
 ## Approximate is a state the UI reports, not a failure
 
