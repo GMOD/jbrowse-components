@@ -126,15 +126,17 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
     }
 
     if (positions === undefined) {
+      const isN = base === 'N'
       let currPos = 0
 
-      // Avoid revcom(fseq) by reading fseq from the back and complementing the
-      // expected char-code on reverse strand.
-      const baseCode = base.charCodeAt(0)
-      const targetCode = isRev
-        ? (COMPLEMENT_CODE[baseCode] ?? baseCode)
-        : baseCode
-      const isN = base === 'N'
+      // An MM tag may declare more calls of a base than the read has left. When
+      // that happens the walk has nowhere to put them, and every emitted value
+      // still has to be a valid index into the read — `getMethBins` indexes the
+      // sequence with these, and the CIGAR walk requires them ascending, so a
+      // position outside the read is read as a real one somewhere wrong rather
+      // than dropped. So the exhausted case clamps to the nearest valid index
+      // and stays there.
+      const endClamp = isRev ? 0 : Math.max(0, seqLength - 1)
 
       // Pre-allocate and fill backwards on reverse strand to avoid a final
       // reverse(). Forward stays a growing literal on purpose: filling
@@ -143,23 +145,66 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
       positions = isRev ? new Array<number>(nPositions) : []
       let writeIndex = isRev ? nPositions - 1 : 0
 
-      for (let i = 1; i < splitLength; i++) {
-        let delta = +split[i]!
-        do {
-          const seqCode = isRev
-            ? fseq.charCodeAt(seqLength - 1 - currPos)
-            : fseq.charCodeAt(currPos)
-          if (isN || seqCode === targetCode) {
-            delta--
-          }
-          currPos++
-        } while (delta >= 0 && currPos < seqLength)
+      if (isRev) {
+        // Avoid revcom(fseq) by reading fseq from the back and complementing the
+        // expected char-code.
+        const baseCode = base.charCodeAt(0)
+        const targetCode = COMPLEMENT_CODE[baseCode] ?? baseCode
 
-        // currPos <= seqLength by loop invariant, so seqLength - currPos >= 0
-        if (isRev) {
+        for (let i = 1; i < splitLength; i++) {
+          if (currPos >= seqLength) {
+            positions[writeIndex--] = endClamp
+            continue
+          }
+          let delta = +split[i]!
+          do {
+            if (
+              isN ||
+              fseq.charCodeAt(seqLength - 1 - currPos) === targetCode
+            ) {
+              delta--
+            }
+            currPos++
+          } while (delta >= 0 && currPos < seqLength)
           positions[writeIndex--] = seqLength - currPos
-        } else {
-          positions[writeIndex++] = currPos - 1
+        }
+      } else {
+        // **Forward jumps, reverse steps, and the asymmetry is measured rather
+        // than assumed.** `indexOf` for a single character is a native scan, so
+        // finding the (delta+1)-th occurrence is delta+1 searches instead of one
+        // step per base — 1.560x on the sparse fixture and 1.247x on the dense
+        // one, parse phase, in `benches/mmDeltaJump.bench.ts`.
+        //
+        // `lastIndexOf` is NOT the mirror image: the same change on reverse
+        // reads measures **0.786x**, i.e. materially slower than stepping, so
+        // reverse keeps the loop above. Applying it to both, which is the
+        // obvious version, nets 1.054x where branching on strand nets 1.263x.
+        for (let i = 1; i < splitLength; i++) {
+          const delta = +split[i]!
+          let at = -1
+          if (isN) {
+            // 'N' matches every base, so the (delta+1)-th is delta ahead and
+            // there is nothing to search for.
+            at = currPos + delta
+            if (at >= seqLength) {
+              at = -1
+            }
+          } else {
+            for (let k = 0; k <= delta; k++) {
+              at = fseq.indexOf(base, currPos)
+              if (at < 0) {
+                break
+              }
+              currPos = at + 1
+            }
+          }
+          if (at < 0) {
+            currPos = seqLength
+            positions[writeIndex++] = endClamp
+          } else {
+            currPos = at + 1
+            positions[writeIndex++] = at
+          }
         }
       }
 

@@ -203,3 +203,40 @@ test('getModPositions second group ML offset accounts for combined first group',
   expect(a.probStart).toBe(4)
   expect(a.probStride).toBe(1)
 })
+
+// An MM tag may declare more calls of a base than the read has left. Every value
+// emitted still has to be a valid index into the read: `getMethBins` indexes the
+// sequence with these, and the CIGAR walk needs them ascending, so an
+// out-of-range position is resolved to some real reference position rather than
+// being dropped.
+//
+// This used to walk off the end. The do-while ran its body once per remaining
+// call whatever currPos was, so a forward read emitted seqLength, seqLength + 1,
+// … and a reverse read emitted negatives — only the FIRST unplaceable call
+// landed in range. Found by `benches/mmDeltaJump.bench.ts --overrun`, because no
+// read in any fixture overruns and nothing else exercised it.
+test('getModPositions clamps every call past the end of a forward read', () => {
+  // 'C' appears twice; the first delta asks for the 100th.
+  const mods = getModPositions('C+m,99,0,0', 'ACGTACGT', 1)
+  expect(mods[0]!.positions).toEqual([7, 7, 7])
+})
+
+test('getModPositions clamps every call past the end of a reverse read', () => {
+  const mods = getModPositions('C+m,99,0,0', 'ACGTACGT', -1)
+  expect(mods[0]!.positions).toEqual([0, 0, 0])
+})
+
+test('getModPositions keeps a clamped position inside a one-base read', () => {
+  expect(getModPositions('C+m,5', 'A', 1)[0]!.positions).toEqual([0])
+  expect(getModPositions('C+m,5', 'A', -1)[0]!.positions).toEqual([0])
+})
+
+// 'N' matches every base, so the forward walk resolves it by arithmetic instead
+// of searching. It has to agree with the stepping form it replaced, including
+// when it runs off the end.
+test('getModPositions treats N as matching every base', () => {
+  expect(getModPositions('N+m,0,1,0', 'ACGT', 1)[0]!.positions).toEqual([
+    0, 2, 3,
+  ])
+  expect(getModPositions('N+m,9', 'ACGT', 1)[0]!.positions).toEqual([3])
+})
