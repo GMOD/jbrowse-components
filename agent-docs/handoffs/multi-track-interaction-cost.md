@@ -117,6 +117,30 @@ restored. Recorded so the next person recognises it and moves on.
   MM delta list instead of splitting it, and both memos on `coverageStats` — the
   compute one and the value-equality one.
 
+## The modification path outgrew this thread
+
+It started as lead 1 here and is now its own body of work, held in three places
+rather than in this file: the benches in `plugins/alignments/benches/`
+(`modPhases` for the phase split, then `cigarWalkShape`, `cigarOpDensity`,
+`mmParseShape`, `modCombinedCode`, `multiGroupParse`), the
+[MM/ML vs htslib cross-reference](../reference/MODIFICATION_TAGS.md), and two
+TODO entries under "Measure first".
+
+**What a reader needs from here is the corpus fact.** Every modification number
+this repo had came from one single-group ONT-ish fixture, and when a real
+multi-group one arrived (`jb2bench/shell/fetch_ont_6ma.sh`, ONT 6mA, 8,166 reads
+/ 72.8 Mbp / 21.81M MM deltas) it moved three conclusions at once: the pipeline's
+phase split (parse 46% -> 71%), the value of the change measured against it, and
+— the one worth knowing — **what the data looks like at all.** Dorado emits 5mC
+and 5hmC as two separate MM groups on C, not the combined `C+mh` a landed commit
+message here called "the standard output of anything calling hydroxymethyl".
+
+Three claims from this thread were retracted by later measurement, each recorded
+beside the thing it corrected: that a 19 kb window was representative, that the
+cursor walk's ratio was capped by op density, and that combined codes are what
+multi-type basecallers emit. The pattern in all three is a plausible mechanism
+quoted with the confidence of a measurement.
+
 ## One thing about the machine
 
 Every browser timing in this thread was taken on a box shared with ~10 agent
