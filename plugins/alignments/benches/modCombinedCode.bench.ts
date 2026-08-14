@@ -75,6 +75,25 @@
 // group and called through the variable holding it, and hoisting its body into
 // the loop lets V8 keep the walk in the enclosing frame.
 //
+// AND THE SAME THING AT 3.1x THE SIZE, `--start=1 --end=400000` (the file's whole
+// extent: 883 reads, 43.7 Mbp, 0.84M calls), `--rounds=40`, load 3.6:
+//
+//   tag             shipped    hoisted            control
+//   C+m  (1 type)    632.04     534.98   1.181x   1.014
+//   C+mh (2 types)  1027.77     552.07   1.862x   0.997
+//
+// **The ratio moves and the shape does not.** C+mh falls from 2.07x to 1.86x
+// while C+m is 1.16x/1.18x at both sizes — so a bigger fixture did not turn this
+// into a bigger win, and quoting the 19 kb window's 2.07x as the number would
+// have overstated it by a tenth. What survives the size change is the argument:
+// shipped costs 1.63x for a second type here (1.91x on the small window), hoisted
+// 1.03x (1.07x). The flat row stays flat.
+//
+// The full extent is the better default for anything on this path, and the
+// sibling benches (`modPhases`, `cigarWalkShape`, `mmParseShape`) use it. This
+// one keeps the 19 kb window because its numbers were taken there and the two
+// sizes are printed together above.
+//
 // Written out longhand, three times. Do NOT refactor the arms into one driver
 // parameterized by a flag — a shared driver makes the call site polymorphic and
 // hands every arm one set of inline caches, which has scored a byte-identical
