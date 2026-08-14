@@ -157,7 +157,7 @@ describe('the lines a track may not have', () => {
   // A PAF sets no name on any feature, so the dictionary the worker ships holds
   // one empty string — which is not a name and gets no line.
   test('says nothing when the name is empty', () => {
-    expect(lines().join()).not.toContain('Name:')
+    expect(lines().join(',')).not.toContain('Name:')
   })
 
   test('names the CIGAR operator under the cursor', () => {
@@ -172,7 +172,7 @@ describe('the lines a track may not have', () => {
   })
 
   test('says nothing about CIGAR when the segment is not an indel', () => {
-    expect(lines().join()).not.toContain('CIGAR')
+    expect(lines().join(',')).not.toContain('CIGAR')
   })
 })
 
@@ -184,8 +184,8 @@ describe('attributes', () => {
   // -1 is the worker's missing sentinel, so meanIdentity and dnds above are
   // absent rather than reported as -1.
   test('omits the missing sentinel', () => {
-    expect(lines().join()).not.toContain('meanIdentity')
-    expect(lines().join()).not.toContain('dnds')
+    expect(lines().join(',')).not.toContain('meanIdentity')
+    expect(lines().join(',')).not.toContain('dnds')
   })
 
   test('keeps a declared column under its own name', () => {

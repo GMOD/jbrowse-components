@@ -22,7 +22,7 @@ function rect(left: number, top: number, width: number, height: number) {
 }
 
 function draw(items: PayloadAnnotation[]) {
-  document.body.innerHTML = ''
+  document.body.replaceChildren()
   const misses = drawAnnotationOverlay(items, ANNOTATION_OVERLAY_ID)
   const poly = document.querySelector('polygon')
   const sides = [...document.querySelectorAll('line')].map(l =>

@@ -53,10 +53,7 @@ export function arcMarkScreenPath(mark: ArcMark) {
   // direction changes: with y pointing down, 1 bulges up and 0 bulges down,
   // which is `strokeArcMark`'s [PI, 2PI] / [0, PI] choice said in path terms.
   const { mid, rx, ry, anchorY, down } = mark
-  return (
-    `M ${mid - rx} ${anchorY} A ${rx} ${ry} 0 0 ${down ? 0 : 1} ${mid + rx} ${anchorY}` +
-    feetSubpaths(mark)
-  )
+  return `M ${mid - rx} ${anchorY} A ${rx} ${ry} 0 0 ${down ? 0 : 1} ${mid + rx} ${anchorY}${feetSubpaths(mark)}`
 }
 
 // The breakend ticks, as subpaths of the arc's own `d` rather than paths of their

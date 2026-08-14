@@ -29,6 +29,7 @@ const DotplotTooltip = observer(function DotplotTooltip({
       clientPoint={{ x: point.clientX, y: point.clientY }}
     >
       {lines.map((line, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- the caller rebuilds the whole list per hover; a line has no identity of its own and can repeat
         <Fragment key={`${i}-${line}`}>
           {i > 0 ? <br /> : null}
           {line}

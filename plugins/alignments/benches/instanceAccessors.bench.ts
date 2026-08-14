@@ -437,15 +437,13 @@ for (const fx of FIXTURES) {
     ['read', READ],
   ] as const) {
     const base = best[`${dir} inline`]!
-    console.log(
-      `  ${dir.padEnd(5)} inline ${fmt(base)} ms   ` +
-        arms
-          .filter(a => a !== 'inline')
-          .map(
-            a =>
-              `${a} ${fmt(best[`${dir} ${a}`]!)} ms (${(base / best[`${dir} ${a}`]!).toFixed(3)}x)`,
-          )
-          .join('   '),
-    )
+    const rest = arms
+      .filter(a => a !== 'inline')
+      .map(
+        a =>
+          `${a} ${fmt(best[`${dir} ${a}`]!)} ms (${(base / best[`${dir} ${a}`]!).toFixed(3)}x)`,
+      )
+      .join('   ')
+    console.log(`  ${dir.padEnd(5)} inline ${fmt(base)} ms   ${rest}`)
   }
 }

@@ -698,8 +698,7 @@ function serialize(out: Entry[]) {
   const lines: string[] = []
   for (const e of out) {
     lines.push(
-      `${e.readIndex} ${e.position} ${e.modType} ${e.base} ${e.strand} ` +
-        e.prob.toFixed(6),
+      `${e.readIndex} ${e.position} ${e.modType} ${e.base} ${e.strand} ${e.prob.toFixed(6)}`,
     )
   }
   return lines
