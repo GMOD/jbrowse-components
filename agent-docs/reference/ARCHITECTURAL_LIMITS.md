@@ -481,8 +481,11 @@ floor. Reach for the scan above before either.
 
 ### The region walk is linear, and costs two different ways at the two ends of the zoom
 
-**Status:** Open. Measured 2026-08-14,
-[`packages/core/benches/displayedRegionScaling.bench.ts`](../../packages/core/benches/displayedRegionScaling.bench.ts).
+**Status:** Open at the zoomed-in end. The whole-genome end is fixed — the
+elided-run fast path landed in `calculateDynamicBlocks`. Measured 2026-08-14,
+[`packages/core/benches/displayedRegionScaling.bench.ts`](../../packages/core/benches/displayedRegionScaling.bench.ts),
+whose `prior` arm holds the pre-fix walk so the ratio stays re-measurable
+interleaved rather than quoted from this table.
 
 `calculateDynamicBlocks` walks `displayedRegions` from index 0 accumulating the
 left edge, and breaks once past the window's right edge — bounded on the right,
@@ -499,28 +502,35 @@ thousands, so the range that matters is wide. ms per call, min of interleaved
 rounds; trust the ratios, not the absolutes, which drift on a shared box:
 
 <!-- prettier-ignore -->
-| regions | whole genome | + elided-run fast path | zoomed to last contig | + cumulative index |
+| regions | whole genome, before | whole genome, now | zoomed to last contig | + cumulative index |
 | --- | --- | --- | --- | --- |
-| 640 | 0.125 | 0.020 (6.2x) | 0.016 | 0.001 (27x) |
-| 2,500 | 0.603 | 0.076 (7.9x) | 0.058 | 0.001 (104x) |
-| 10,000 | 2.327 | 0.362 (6.4x) | 0.306 | 0.001 (506x) |
-| 50,000 | 14.958 | 2.639 (5.7x) | 1.617 | 0.001 (1368x) |
-| 200,000 | 58.828 | 10.029 (5.9x) | 6.019 | 0.001 (5347x) |
+| 640 | 0.120 | 0.027 (4.5x) | 0.027 | 0.001 (39x) |
+| 2,500 | 0.467 | 0.096 (4.9x) | 0.062 | 0.001 (89x) |
+| 10,000 | 1.868 | 0.375 (5.0x) | 0.251 | 0.001 (309x) |
+| 50,000 | 11.112 | 1.983 (5.6x) | 1.314 | 0.001 (1247x) |
+| 200,000 | 45.412 | 8.396 (5.4x) | 5.364 | 0.002 (2913x) |
 
 **The two ends want different fixes, and each does nothing for the other.**
 
-- **Zoomed in** — a 100 kb window on the last scaffold — the walk is the whole
-  cost, and a cumulative-bp prefix array rebuilt per `displayedRegions` change
-  (0.005 ms at 640, 1.0 ms at 200k, once, not per frame) plus a binary search
-  removes it entirely. This is the case that looks like it should already be
-  cheap.
 - **Whole genome** every region intersects the window, so there is nothing to
-  skip and the index measures 1.0x. The cost is per touched region, and it is
+  skip and the index measures 1.0x. The cost was per touched region, and it was
   work thrown away: below `minimumBlockWidth` a region becomes an `ElidedBlock`,
   and `BlockSet.push` merges it into its predecessor keeping only the *first*
   sub-block's identity — so the template-literal key and the two object literals
-  are built and discarded for every region in an elided run but its first.
-  Skipping their construction in that case is 5.7-8.1x.
+  were built and discarded for every region in an elided run but its first.
+  `BlockSet.growElidedRun` now widens the run from a width the loop already has,
+  and `calculateDynamicBlocks` calls it instead of building a block `push` would
+  throw away. Output-identical, and 4.5-5.6x. Two edges keep it that way and are
+  the ones to preserve: the first region can never take the skip, because
+  nothing has been pushed for the run to merge into, so its leading padding
+  block survives; the last region is held out of it, because it may still owe a
+  trailing padding block keyed off its own key.
+- **Zoomed in** — a 100 kb window on the last scaffold — the walk is the whole
+  cost, and a cumulative-bp prefix array rebuilt per `displayedRegions` change
+  (0.003 ms at 640, 1.1 ms at 200k, once, not per frame) plus a binary search
+  removes it entirely. This is the case that looks like it should already be
+  cheap, and the fast path above does nothing for it: at that zoom the regions
+  are wide, so nothing elides.
 
 **The linear accumulation also drifts.** At 10,000 equal contigs summing one
 pixel width per region reaches 1000.0000000001588 px against an exact 1000, so
@@ -531,10 +541,11 @@ worth knowing before someone diffs a snapshot after the swap and reads it as a
 regression. The bench's identity check reports this and needs `--allow-diff` to
 proceed past it.
 
-**Retire when** both levers land, or a profile says neither is on the critical
-path at the contig counts users actually open. Take the index first: it is the
-one whose absence is invisible (a viewport that looks cheap and is not), and its
-storage shape is already precedented on the synteny axis
+**Retire when** the index lands too, or a profile says the remaining walk is not
+on the critical path at the contig counts users actually open. The index is the
+lever whose absence is invisible (a viewport that looks cheap and is not), it is
+the one that changes output, and its storage shape is already precedented on the
+synteny axis
 ([ADR-067](../architecture-decision-records/adr-067-synteny-dotplot-window-relative-float32.md)).
 
 ---

@@ -33,6 +33,18 @@ export type BaseBlock = ContentBlock | ElidedBlock | InterRegionPaddingBlock
 
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
+// A merged elided run can span several displayed regions, so its per-region
+// identity is meaningless: refName/start/end are cleared and only widthPx stays
+// valid. The leftover key, assemblyName, displayedRegionIndex,
+// isRightEndOfDisplayedRegion belong to the FIRST sub-block — don't key off them
+// for an ElidedBlock.
+function mergeElided(run: ElidedBlock, widthPx: number) {
+  run.refName = ''
+  run.start = 0
+  run.end = 0
+  run.widthPx += widthPx
+}
+
 export class BlockSet {
   blocks: BaseBlock[]
 
@@ -43,18 +55,26 @@ export class BlockSet {
   push(block: BaseBlock) {
     const last = this.blocks.at(-1)
     if (block.type === 'ElidedBlock' && last?.type === 'ElidedBlock') {
-      // A merged elided run can span several displayed regions, so its
-      // per-region identity is meaningless: refName/start/end are cleared and
-      // only widthPx stays valid. The leftover key, assemblyName,
-      // displayedRegionIndex, isRightEndOfDisplayedRegion belong to the FIRST
-      // sub-block — don't key off them for an ElidedBlock.
-      last.refName = ''
-      last.start = 0
-      last.end = 0
-      last.widthPx += block.widthPx
+      mergeElided(last, block.widthPx)
     } else {
       this.blocks.push(block)
     }
+  }
+
+  /**
+   * Widen a trailing elided run by widthPx, reporting whether there was one to
+   * widen. `push` keeps nothing but the width off an ElidedBlock it merges, so
+   * a caller holding the width can skip building the block that would have
+   * carried it — which at whole-genome zoom is nearly every region, see
+   * calculateDynamicBlocks.
+   */
+  growElidedRun(widthPx: number) {
+    const last = this.blocks.at(-1)
+    if (last?.type !== 'ElidedBlock') {
+      return false
+    }
+    mergeElided(last, widthPx)
+    return true
   }
 
   map<T, U = this>(func: Func<T>, thisarg?: U) {

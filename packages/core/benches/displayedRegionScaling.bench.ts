@@ -25,12 +25,18 @@
 // a second walk (with a memo fast path this one cannot have — see below). So a
 // row here is a FLOOR on what a frame pays for the region count, not the total.
 //
-// The `indexed` arm is the remedy the register entry proposes: a cumulative-bp
-// prefix array, rebuilt only when `displayedRegions` changes, binary-searched
-// for the first region whose right edge is inside the window. The array is
-// built OUTSIDE the timed region on purpose — that is where it would live, as a
-// computed on the view keyed by the regions array — and the bench reports its
-// build cost separately so nobody has to take that on faith.
+// The `indexed` arm is the remedy the register entry still proposes: a
+// cumulative-bp prefix array, rebuilt only when `displayedRegions` changes,
+// binary-searched for the first region whose right edge is inside the window.
+// The array is built OUTSIDE the timed region on purpose — that is where it
+// would live, as a computed on the view keyed by the regions array — and the
+// bench reports its build cost separately so nobody has to take that on faith.
+//
+// The `prior` arm is the register's OTHER remedy, from the far side: the walk
+// as it stood before the elided-run fast path landed in the baseline. Keeping
+// it is what lets the fast path's ratio be re-measured interleaved and
+// in-process rather than quoted from a table, which is the only kind of
+// before/after this file's own rules trust.
 //
 // THE ARMS DISAGREE ABOVE ~10k REGIONS, and the identity check reports it
 // rather than tolerating it, so the run needs `--allow-diff` to get past that
@@ -79,7 +85,9 @@ interface Region {
   refName: string
   start: number
   end: number
-  reversed: boolean
+  // optional, like core's Region — the arms hand `emitRegionBlock` elements off
+  // the model, and a required boolean here makes that argument unassignable
+  reversed?: boolean
 }
 
 const CONTIG_BP = 50_000
@@ -101,7 +109,7 @@ function makeModel(regions: Region[], bpPerPx: number, offsetPx: number) {
     bpPerPx,
     width: 1000,
     minimumBlockWidth: 3,
-  } as unknown as Base1DViewModel
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +126,7 @@ function controlBlocks(model: Base1DViewModel) {
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
+  const last = displayedRegions.length - 1
   for (let idx = 0; idx < displayedRegions.length; idx++) {
     if (displayedRegionLeftPx > windowRightPx) {
       break
@@ -137,22 +146,38 @@ function controlBlocks(model: Base1DViewModel) {
       displayedRegionRightPx,
     )
     if (leftPx !== undefined && rightPx !== undefined) {
-      emitRegionBlock(
-        blocks,
-        r,
-        idx,
-        displayedRegionLeftPx,
-        displayedRegionRightPx,
-        regionWidthPx,
-        leftPx,
-        rightPx,
-        bpPerPx,
-        invBpPerPx,
-        offsetPx,
-        width,
-        minimumBlockWidth,
-        displayedRegions.length,
-      )
+      const leftBp = (leftPx - displayedRegionLeftPx) * bpPerPx
+      const rightBp = (rightPx - displayedRegionLeftPx) * bpPerPx
+      const start = r.reversed
+        ? Math.max(r.start, r.end - rightBp)
+        : r.start + leftBp
+      const end = r.reversed
+        ? r.end - leftBp
+        : Math.min(r.end, r.start + rightBp)
+      const widthPx = (end - start) * invBpPerPx
+      const merged =
+        regionWidthPx < minimumBlockWidth &&
+        idx !== last &&
+        blocks.growElidedRun(widthPx)
+      if (!merged) {
+        emitRegionBlock(
+          blocks,
+          r,
+          idx,
+          displayedRegionLeftPx,
+          displayedRegionRightPx,
+          regionWidthPx,
+          leftPx,
+          rightPx,
+          start,
+          end,
+          widthPx,
+          offsetPx,
+          width,
+          minimumBlockWidth,
+          displayedRegions.length,
+        )
+      }
     }
     displayedRegionLeftPx += regionWidthPx
   }
@@ -160,7 +185,11 @@ function controlBlocks(model: Base1DViewModel) {
 }
 
 // ---------------------------------------------------------------------------
-// arm: indexed. Same walk, entered at the first region the window can touch.
+// arm: indexed. The same walk the baseline does, elided-run fast path and all,
+// entered at the first region the window can touch instead of at index 0. It
+// carries the fast path so the column answers what the index would buy ON TOP
+// of what the function already does, rather than against a version of it that
+// no longer exists.
 // ---------------------------------------------------------------------------
 
 /**
@@ -202,8 +231,9 @@ function indexedBlocks(model: Base1DViewModel, cum: Float64Array) {
   const blocks = new BlockSet()
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  const start = firstRegionAfter(cum, Math.max(0, windowLeftPx) * bpPerPx)
-  for (let idx = start; idx < displayedRegions.length; idx++) {
+  const last = displayedRegions.length - 1
+  const first = firstRegionAfter(cum, Math.max(0, windowLeftPx) * bpPerPx)
+  for (let idx = first; idx < displayedRegions.length; idx++) {
     const displayedRegionLeftPx = cum[idx]! * invBpPerPx
     if (displayedRegionLeftPx > windowRightPx) {
       break
@@ -218,33 +248,52 @@ function indexedBlocks(model: Base1DViewModel, cum: Float64Array) {
       displayedRegionRightPx,
     )
     if (leftPx !== undefined && rightPx !== undefined) {
-      emitRegionBlock(
-        blocks,
-        r,
-        idx,
-        displayedRegionLeftPx,
-        displayedRegionRightPx,
-        regionWidthPx,
-        leftPx,
-        rightPx,
-        bpPerPx,
-        invBpPerPx,
-        offsetPx,
-        width,
-        minimumBlockWidth,
-        displayedRegions.length,
-      )
+      const leftBp = (leftPx - displayedRegionLeftPx) * bpPerPx
+      const rightBp = (rightPx - displayedRegionLeftPx) * bpPerPx
+      const start = r.reversed
+        ? Math.max(r.start, r.end - rightBp)
+        : r.start + leftBp
+      const end = r.reversed
+        ? r.end - leftBp
+        : Math.min(r.end, r.start + rightBp)
+      const widthPx = (end - start) * invBpPerPx
+      if (
+        !(
+          regionWidthPx < minimumBlockWidth &&
+          idx !== last &&
+          blocks.growElidedRun(widthPx)
+        )
+      ) {
+        emitRegionBlock(
+          blocks,
+          r,
+          idx,
+          displayedRegionLeftPx,
+          displayedRegionRightPx,
+          regionWidthPx,
+          leftPx,
+          rightPx,
+          start,
+          end,
+          widthPx,
+          offsetPx,
+          width,
+          minimumBlockWidth,
+          displayedRegions.length,
+        )
+      }
     }
   }
   return blocks
 }
 
-// The emit half, called only for a region that intersects the window. Both
-// local arms share it because it is not what they differ in: what is being
-// compared is how the loop REACHES a region, and every arm that reaches one
-// does the same thing with it. The intersection test stays inlined in each
-// loop, because that one runs per region rather than per hit and a call there
-// is what made the control unreadable.
+// The build half — the key and the block objects — called only for a region
+// that gets one. Every arm shares it because it is not what they differ in:
+// what is being compared is how the loop REACHES a region and whether it
+// bothers to build a block for it, and every arm that does build one builds the
+// same thing. The intersection test and the clipped start/end stay inlined in
+// each loop, because those run per region rather than per built block, and a
+// call there is what made the control unreadable.
 function emitRegionBlock(
   blocks: BlockSet,
   r: Region,
@@ -254,27 +303,18 @@ function emitRegionBlock(
   regionWidthPx: number,
   leftPx: number,
   rightPx: number,
-  bpPerPx: number,
-  invBpPerPx: number,
+  start: number,
+  end: number,
+  widthPx: number,
   offsetPx: number,
   width: number,
   minimumBlockWidth: number,
   regionCount: number,
 ) {
-  const { assemblyName, refName, start: regionStart, end: regionEnd } = r
-  const reversed = r.reversed
+  const { assemblyName, refName, reversed } = r
   const isLeftEndOfDisplayedRegion = leftPx <= displayedRegionLeftPx
   const isRightEndOfDisplayedRegion = rightPx >= displayedRegionRightPx
-  const leftBp = (leftPx - displayedRegionLeftPx) * bpPerPx
-  const rightBp = (rightPx - displayedRegionLeftPx) * bpPerPx
-  const start = reversed
-    ? Math.max(regionStart, regionEnd - rightBp)
-    : regionStart + leftBp
-  const end = reversed
-    ? regionEnd - leftBp
-    : Math.min(regionEnd, regionStart + rightBp)
   const blockOffsetPx = leftPx
-  const widthPx = (end - start) * invBpPerPx
   const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
 
   if (displayedRegionIndex === 0 && isLeftEndOfDisplayedRegion) {
@@ -317,19 +357,20 @@ function emitRegionBlock(
 }
 
 // ---------------------------------------------------------------------------
-// arm: elideFast. The index does nothing at whole-genome zoom, because every
-// region intersects the window and the walk is not what costs — so this arm
-// asks what does. At that zoom nearly every region is narrower than
-// `minimumBlockWidth`, becomes an ElidedBlock, and `BlockSet.push` merges it
-// straight into its predecessor, keeping only the FIRST sub-block's key and
-// identity. So the template-literal key and the two object literals are built
-// and thrown away for every region in an elided run but its first.
+// arm: prior. The walk as it stood before the elided-run fast path, kept as an
+// arm rather than left to git because that is the only honest way to state what
+// the fast path bought: by BENCHMARKING.md's own rule, a before/after taken
+// from two runs on a shared box measures the box as much as the change, and
+// only an interleaved in-process arm does not.
 //
-// This skips building them in exactly that case. Output is identical by
-// construction: the merge branch reads only `widthPx` off the block it is
-// handed, and clears refName/start/end on the survivor.
+// What it does that the baseline no longer does: at whole-genome zoom nearly
+// every region is narrower than `minimumBlockWidth`, becomes an ElidedBlock,
+// and `BlockSet.push` merges it straight into its predecessor keeping only the
+// FIRST sub-block's key and identity — so the template-literal key and the two
+// object literals were built and thrown away for every region in an elided run
+// but its first.
 // ---------------------------------------------------------------------------
-function elideFastBlocks(model: Base1DViewModel) {
+function priorBlocks(model: Base1DViewModel) {
   const { offsetPx, displayedRegions, bpPerPx, width, minimumBlockWidth } =
     model
   const invBpPerPx = 1 / bpPerPx
@@ -337,7 +378,6 @@ function elideFastBlocks(model: Base1DViewModel) {
   let displayedRegionLeftPx = 0
   const windowLeftPx = offsetPx
   const windowRightPx = windowLeftPx + width
-  const last = displayedRegions.length - 1
   for (let idx = 0; idx < displayedRegions.length; idx++) {
     if (displayedRegionLeftPx > windowRightPx) {
       break
@@ -352,44 +392,31 @@ function elideFastBlocks(model: Base1DViewModel) {
       displayedRegionRightPx,
     )
     if (leftPx !== undefined && rightPx !== undefined) {
-      const prev = blocks.blocks.at(-1)
-      // not the last region: that one may still owe a trailing padding block,
-      // whose key is derived from this region's, so it needs the full path
-      if (
-        regionWidthPx < minimumBlockWidth &&
-        prev?.type === 'ElidedBlock' &&
-        idx !== last
-      ) {
-        const leftBp = (leftPx - displayedRegionLeftPx) * bpPerPx
-        const rightBp = (rightPx - displayedRegionLeftPx) * bpPerPx
-        const start = r.reversed
-          ? Math.max(r.start, r.end - rightBp)
-          : r.start + leftBp
-        const end = r.reversed
-          ? r.end - leftBp
-          : Math.min(r.end, r.start + rightBp)
-        prev.refName = ''
-        prev.start = 0
-        prev.end = 0
-        prev.widthPx += (end - start) * invBpPerPx
-      } else {
-        emitRegionBlock(
-          blocks,
-          r,
-          idx,
-          displayedRegionLeftPx,
-          displayedRegionRightPx,
-          regionWidthPx,
-          leftPx,
-          rightPx,
-          bpPerPx,
-          invBpPerPx,
-          offsetPx,
-          width,
-          minimumBlockWidth,
-          displayedRegions.length,
-        )
-      }
+      const leftBp = (leftPx - displayedRegionLeftPx) * bpPerPx
+      const rightBp = (rightPx - displayedRegionLeftPx) * bpPerPx
+      const start = r.reversed
+        ? Math.max(r.start, r.end - rightBp)
+        : r.start + leftBp
+      const end = r.reversed
+        ? r.end - leftBp
+        : Math.min(r.end, r.start + rightBp)
+      emitRegionBlock(
+        blocks,
+        r,
+        idx,
+        displayedRegionLeftPx,
+        displayedRegionRightPx,
+        regionWidthPx,
+        leftPx,
+        rightPx,
+        start,
+        end,
+        (end - start) * invBpPerPx,
+        offsetPx,
+        width,
+        minimumBlockWidth,
+        displayedRegions.length,
+      )
     }
     displayedRegionLeftPx += regionWidthPx
   }
@@ -422,10 +449,10 @@ function timeIndexed(model: Base1DViewModel, cum: Float64Array, reps: number) {
   return (performance.now() - t) / reps
 }
 
-function timeElideFast(model: Base1DViewModel, reps: number) {
+function timePrior(model: Base1DViewModel, reps: number) {
   const t = performance.now()
   for (let i = 0; i < reps; i++) {
-    elideFastBlocks(model)
+    priorBlocks(model)
   }
   return (performance.now() - t) / reps
 }
@@ -466,11 +493,11 @@ function checkIdentity(
   const a = calculateDynamicBlocks(model).blocks
   const b = controlBlocks(model).blocks
   const c = indexedBlocks(model, cum).blocks
-  const d = elideFastBlocks(model).blocks
+  const d = priorBlocks(model).blocks
   for (const [name, other] of [
     ['control', b],
     ['indexed', c],
-    ['elideFast', d],
+    ['prior', d],
   ] as const) {
     const n = Math.min(a.length, other.length)
     for (let i = 0; i < n; i++) {
@@ -520,7 +547,7 @@ for (const [label, viewport] of [
 ] as const) {
   console.log(
     `\n${label}\n${'regions'.padStart(8)}  ${'current'.padStart(9)}  ${'indexed'.padStart(9)}  ` +
-      `${'idx x'.padStart(7)}  ${'elideFast'.padStart(9)}  ${'elide x'.padStart(7)}  ` +
+      `${'idx x'.padStart(7)}  ${'prior'.padStart(9)}  ${'prior x'.padStart(7)}  ` +
       `${'control'.padStart(7)}  ${'build idx'.padStart(9)}`,
   )
   for (const n of SIZES) {
@@ -537,38 +564,40 @@ for (const [label, viewport] of [
     for (let r = 0; r < 5; r++) {
       timeCurrent(model, 1)
       timeIndexed(model, cum, 1)
-      timeElideFast(model, 1)
+      timePrior(model, 1)
       timeControl(model, 1)
     }
     let cur = Infinity
     let idx = Infinity
-    let elide = Infinity
+    let prior = Infinity
     let ctl = Infinity
     let bld = Infinity
     for (let round = 0; round < rounds; round++) {
       cur = Math.min(cur, timeCurrent(model, reps))
       idx = Math.min(idx, timeIndexed(model, cum, reps))
-      elide = Math.min(elide, timeElideFast(model, reps))
+      prior = Math.min(prior, timePrior(model, reps))
       ctl = Math.min(ctl, timeControl(model, reps))
       bld = Math.min(bld, timeBuildIndex(regions, 3))
     }
     console.log(
       `${n.toLocaleString().padStart(8)}  ${cur.toFixed(3).padStart(9)}  ${idx.toFixed(3).padStart(9)}  ` +
-        `${(cur / idx).toFixed(1).padStart(7)}  ${elide.toFixed(3).padStart(9)}  ` +
-        `${(cur / elide).toFixed(1).padStart(7)}  ${(ctl / cur).toFixed(2).padStart(7)}  ` +
+        `${(cur / idx).toFixed(1).padStart(7)}  ${prior.toFixed(3).padStart(9)}  ` +
+        `${(prior / cur).toFixed(1).padStart(7)}  ${(ctl / cur).toFixed(2).padStart(7)}  ` +
         bld.toFixed(3).padStart(9),
     )
   }
 }
 
 console.log(
-  '\nms per call, min of interleaved rounds. `idx x` and `elide x` are\n' +
-    'current/arm. The two arms answer different viewports and neither\n' +
-    'subsumes the other: the index skips regions the window never touches, so\n' +
-    'it does nothing at whole-genome zoom where every region is touched, and\n' +
-    'elideFast skips work per touched region, so it does nothing when few are.\n' +
-    '`control` is the baseline transcribed a second time — far from 1.00 means\n' +
-    'the row measured nothing. `build idx` is one rebuild of the prefix array,\n' +
-    'which happens per displayedRegions change, not per frame; compare it\n' +
-    'against `current` times the frames in a drag, not against one call.',
+  '\nms per call, min of interleaved rounds. `idx x` is current/indexed — what\n' +
+    'the unlanded prefix index would still buy. `prior x` is prior/current —\n' +
+    'what the landed elided-run fast path already bought. The two answer\n' +
+    'different viewports and neither subsumes the other: the index skips\n' +
+    'regions the window never touches, so it does nothing at whole-genome zoom\n' +
+    'where every region is touched, and the fast path skips work per touched\n' +
+    'region, so it does nothing when few are. `control` is the baseline\n' +
+    'transcribed a second time — far from 1.00 means the row measured nothing.\n' +
+    '`build idx` is one rebuild of the prefix array, which happens per\n' +
+    'displayedRegions change, not per frame; compare it against `current`\n' +
+    'times the frames in a drag, not against one call.',
 )
