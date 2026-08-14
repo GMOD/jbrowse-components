@@ -17,6 +17,7 @@ import {
   compareToBaseline,
   diffManifests,
   figureName,
+  figureNames,
   figurePath,
   formatManifest,
   formatTextReport,
@@ -440,6 +441,19 @@ describe('a card against its baseline', () => {
       expect(figurePath(figureName(p))).toBe(p)
       expect(base.has(figurePath(figureName(p)))).toBe(base.has(p))
     }
+  })
+
+  test('a report over paths counts a mirrored figure once', () => {
+    // What the status and end-of-run reports print. Both say "N <state>" over N
+    // lines, and both read a path list, so per path a mirrored pair was two
+    // rows and two units of the count — a header a reader counting the lines
+    // under it cannot reproduce.
+    const paths = [
+      'products/jbrowse-img/img/hic.png',
+      'website/static/img/jbrowse-img/hic.png',
+      'website/static/img/insertion.png',
+    ]
+    expect(figureNames(paths)).toStrictEqual(['jbrowse-img/hic', 'insertion'])
   })
 
   test('a mirrored jb2export figure is NOT reachable by name', () => {

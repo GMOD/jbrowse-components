@@ -18,7 +18,7 @@ import {
   repoRoot as figureRepoRoot,
   unpublishedFigures,
 } from './figure-paths.ts'
-import { figureName } from './figure-store.ts'
+import { figureName, figureNames } from './figure-store.ts'
 import {
   CLIP_WARN_PX,
   DEVICE_SCALE_FACTOR,
@@ -329,9 +329,10 @@ function writeRunReport(totals: RunTotals) {
 // injective, and it is worth knowing WHY, because the surface reading says the
 // opposite. products/jbrowse-img/img/x.png and website/static/img/jbrowse-img/x.png
 // normalize to the SAME name, `jbrowse-img/x` — that is what the normalization
-// is for — so one exact token selects both halves and they move together. The
-// names are deduped because both halves being outstanding would otherwise print
-// that one token twice.
+// is for — so one exact token selects both halves and they move together. That
+// is also why everything below is keyed on the NAME rather than the path: both
+// halves are outstanding together, and per-path the pair printed its one name
+// twice and was counted twice in the header over it.
 function printUnpublished(writtenThisRun: string[]) {
   const outstanding = unpublishedFigures()
   if (outstanding.length === 0) {
@@ -341,13 +342,19 @@ function printUnpublished(writtenThisRun: string[]) {
   const mine = new Set(
     writtenThisRun.map(p => relative(figureRepoRoot, p).replaceAll('\\', '/')),
   )
-  const ours = [
-    ...new Set(outstanding.filter(p => mine.has(p)).map(figureName)),
-  ]
+  // Collapsed to names for the same reason the tokens are (figureNames): the
+  // header is a count of FIGURES and the body is a list of them, so a mirrored
+  // pair printed per path said one figure twice and counted it twice. `this
+  // run` is per name too — writing either half is writing the figure.
+  const outstandingNames = figureNames(outstanding)
+  const mineNames = new Set(
+    outstanding.filter(p => mine.has(p)).map(figureName),
+  )
+  const ours = outstandingNames.filter(name => mineNames.has(name))
   printReport(
-    `NOT IN THE FIGURE STORE (${outstanding.length}) — these exist only on this machine; push them and commit figures.lock, or they are silently dropped`,
-    outstanding.map(
-      p => `• ${figureName(p)}${mine.has(p) ? '  (this run)' : ''}`,
+    `NOT IN THE FIGURE STORE (${outstandingNames.length}) — these exist only on this machine; push them and commit figures.lock, or they are silently dropped`,
+    outstandingNames.map(
+      name => `• ${name}${mineNames.has(name) ? '  (this run)' : ''}`,
     ),
   )
   console.log(

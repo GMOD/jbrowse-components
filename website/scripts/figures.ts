@@ -40,6 +40,7 @@ import {
   diffManifests,
   figureContentTypes,
   figureName,
+  figureNames,
   formatManifest,
   formatMarkdownReport,
   formatTextReport,
@@ -127,16 +128,20 @@ async function mapLimit<T, R>(
 // what the worktree and the manifest disagree about
 // ---------------------------------------------------------------------------
 
+// Every number and every line here is a FIGURE and the state it reads holds
+// PATHS, so all four go through `figureNames` — see it for why those are not
+// the same count.
 function reportWorktree(state: WorktreeState) {
   const list = (label: string, paths: string[], hint: string) => {
-    if (paths.length) {
-      console.log(`\n${paths.length} ${label} (${hint}):`)
-      for (const p of paths) {
-        console.log(`  ${figureName(p)}`)
+    const names = figureNames(paths)
+    if (names.length) {
+      console.log(`\n${names.length} ${label} (${hint}):`)
+      for (const name of names) {
+        console.log(`  ${name}`)
       }
     }
   }
-  console.log(`${state.ok.length} figure(s) match figures.lock`)
+  console.log(`${figureNames(state.ok).length} figure(s) match figures.lock`)
   list('modified', state.modified, 'regenerated locally — `pnpm figures:push`')
   list('new', state.untracked, 'not in the manifest — `pnpm figures:push`')
   list('missing', state.missing, 'not on disk — `pnpm figures:pull`')

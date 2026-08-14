@@ -12,7 +12,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 
 import { readManifest, unpublishedFigures } from './figure-paths.ts'
-import { figureContentTypes, figureName, figurePath } from './figure-store.ts'
+import { figureContentTypes, figureNames, figurePath } from './figure-store.ts'
 import {
   collectScreenshots,
   getBaselineState,
@@ -159,17 +159,22 @@ function buildSpecPayload(): SpecEntry[] {
 function buildFigureStatePayload(): FigureState {
   const state = getWorktreeState()
   const run = loadRunReport()
-  // Deduplicated, because figureName is not injective: the 26 jb2export figures
-  // exist as two files each (the render under products/jbrowse-img/img and the
-  // website's byte copy of it), and they move together — so one regen produced
-  // "2 figure(s) exist only on this machine" over the same name printed twice.
-  // The cards next door stay keyed on the path for the same reason; here the
-  // question is genuinely about the figure, so collapsing is the right answer.
-  const names = (paths: string[]) => [...new Set(paths.map(figureName))].sort()
+  // Deduplicated by `figureNames`, because figureName is not injective: the
+  // jb2export figures exist as two files each (the render under
+  // products/jbrowse-img/img and the website's byte copy of it), and they move
+  // together — so one regen produced "2 figure(s) exist only on this machine"
+  // over the same name printed twice. The cards next door stay keyed on the
+  // path for the same reason; here the question is genuinely about the figure,
+  // so collapsing is the right answer.
+  const names = (paths: string[]) => figureNames(paths).sort()
   return {
     unpublished: names(unpublishedFigures(state)),
     unpulled: names(state.missing),
-    total: readManifest().size,
+    // "All N figures are published" sits opposite `unpublished.length` in the
+    // same banner, so it has to be the same unit. The manifest is keyed by
+    // PATH, so its size counted every mirrored figure twice and the two numbers
+    // could not be read against each other.
+    total: names([...readManifest().keys()]).length,
     // which origin/main the whole "new"/"changed" column is against. Reads off
     // the same memoized baseline /api/specs just used, so it costs a `git log -1`
     // and not a second parse of the manifest.

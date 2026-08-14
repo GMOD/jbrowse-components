@@ -427,6 +427,18 @@ export function figureName(path: string): string {
     .replace(figureExtRe, '')
 }
 
+// The names a list of paths is ABOUT, in the order they first appear. What the
+// reports print and count: a header saying "N modified" and N lines under it
+// are both read as figures, and mapping paths one for one made each mirrored
+// pair its own row and its own unit — a report that says 401 where a reader
+// counting the lines gets 372, and repeats two names verbatim on the way there.
+// That reads as the scan having gone wrong rather than as one figure kept in
+// two places. Anything ranging over paths to say something about figures wants
+// this; anything acting on the files themselves wants the paths.
+export function figureNames(paths: string[]): string[] {
+  return [...new Set(paths.map(figureName))]
+}
+
 // The manifest key for the figure a review card is about: the exact file the
 // review server serves at /img/<name>.png. This is the join between a card and
 // the store, so it has to produce a key the manifest actually has — a lookup
