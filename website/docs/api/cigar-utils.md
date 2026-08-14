@@ -94,9 +94,14 @@ walked once: O(positions + ops).
 `plugins/alignments/benches/cigarWalkShape.bench.ts` prices it at **1.17x on the
 whole per-read modification pipeline**, of which this walk is 45%.
 
-The iteration count does not fall as far as that ratio suggests, and the bench
-header says why: these reads carry 7,000 cigar ops apiece, so the op loop —
-which neither shape avoids — is most of what is left.
+**1.17x is the whole of it, and does not grow on a cleaner alignment.** The
+first reading of that gap was that the op loop caps it — these reads carry 7,000
+ops apiece, and neither shape avoids the op loop. `cigarOpDensity.bench.ts`
+sweeps op density over a 5,000x range and the ratio stays between 1.10x and
+1.18x, so that reading was wrong: what this phase is bound by is the per-CALL
+work both shapes share — the callback, the ML lookup, the compare, the write —
+not the traversal that differs. Changing how the scan is shaped therefore has a
+low ceiling here, however lopsided the iteration counts look.
 
 `positions` must be ASCENDING, which every caller's producer guarantees. The one
 behaviour that changed with the shape: a REPEATED position used to be dropped
