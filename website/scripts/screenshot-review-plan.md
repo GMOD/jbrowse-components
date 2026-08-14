@@ -549,6 +549,46 @@ To add an out-of-config track, switch the spec from `lgvSession` to
 thinning, use `jexlFiltersSetting: ["jexl:...", ...]` on its display snapshot
 (ANDed).
 
+## `hg002_haplotypes_location_markers`: the flat line is a location marker, and it is kept on purpose
+
+Diagnosed but NOT fixed, because the fix asked for is the reverse of a rule that
+exists for a reason. Review: "there is a weird very flat almost horizontal line
+in the linearsyntenyview ribbons area. why is this? ideally things crossing the
+view offscreen to the left and right so drastically are filtered out."
+
+**What the mark is.** Not a ribbon edge and not a second statement of the same
+homology: the chain file has exactly ONE chain over that window, and it is
+answerable without the app —
+
+```bash
+curl -s .../hg002v1.2_to_other_haplotype.chain.gz | gunzip -c | awk '/^chain/ ...'
+#   T chr8_MATERNAL:7,618,894-7,822,846 (203,952 bp)
+#   Q chr8_PATERNAL:7,475,532-7,681,207 (205,675 bp)  strand +
+```
+
+204 kb against the figure's 70 kb frame, so both of that chain's corners are off
+screen — 81 kb to the left and 53 kb to the right. The mark is one of
+`emitGridMarkers`' ticks, a line from a point in the top view to the point it
+maps to in the bottom one, and at that geometry it enters the band on one side
+and leaves on the other, which is a near-horizontal line rather than a
+near-vertical one.
+
+**Why it is not culled.** `buildSyntenyGeometry` culls a tick by the HULL of its
+two ends and says why in the source: testing the ends individually and dropping
+the tick when both fail is the per-edge rule for a ribbon, and it deleted
+exactly the ticks the two renderers were fixed to keep — on an inversion the
+ends are pulled apart by up to the ribbon's whole horizontal travel, so a tick
+well inside the frame at mid-height can have both endpoints outside the band.
+The review is asking for that rule back.
+
+**So it needs a third rule, not the old one.** The candidate: cull a tick whose
+two ends are farther apart HORIZONTALLY than the view is wide. That separates
+the two cases rather than trading them — an inversion drawn on screen travels at
+most about a view width, while this chain travels about three, and a tick at a
+shallower angle than any correspondence a reader could follow has nothing
+anchoring it either. It is a change to every synteny figure's marker set, so it
+wants its own review and its own before/after rather than riding a figure pass.
+
 ## Known blockers (check `screenshot-review.json` for current status first)
 
 - ~~`hgdownload.soe.ucsc.edu` is unreachable~~ — **resolved 2026-08-05**, and
