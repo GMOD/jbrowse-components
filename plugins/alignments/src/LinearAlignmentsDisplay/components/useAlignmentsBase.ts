@@ -40,7 +40,8 @@ import {
 
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
-import type { HitTestResult } from './hitTestPipeline.ts'
+import type { ArcMarkHit } from './arcHitTest.ts'
+import type { MarkHitResult } from './hitTestPipeline.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
@@ -92,7 +93,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // No section under the cursor, or no fetched block at that x, is a miss.
     // Answering it here is what lets performHitTest take a definite block and
     // read the section's real offsets rather than standing in for a missing one.
-    const result: HitTestResult =
+    const result: MarkHitResult =
       picked && resolved
         ? performHitTest(canvasX, canvasY, resolved, {
             showCoverage,
@@ -110,17 +111,18 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             pileupVisible: picked.section.pileupHeight > 0,
           })
         : { type: 'none' }
-    // The arc band, asked here rather than by each gesture, so that HAVING a
-    // pileup hit and knowing whether an arc outranks it are one answer. All
-    // three gestures need it — the hover to name the arc, the click and the
-    // right-click to decline to act through it — and when each asked for
-    // itself, one of them didn't: `93af1f54f0` guarded the click and left the
-    // right-click building the interbase menu for whatever the arc crossed.
-    // A fourth gesture now gets the answer whether or not it thinks to ask.
+    // The arc band OUTRANKS the pileup, so it answers as the result rather than
+    // beside it — one value with one discriminant, which is what makes every
+    // gesture's switch state what it does about an arc (see `ArcMarkHit`).
+    // Arcs are painted after coverage by both backends, so in up mode an arc is
+    // the ink on top of the histogram it overlays, and the ink under the cursor
+    // is what a gesture should be about. Safe to let it win because the arc test
+    // is a STROKE test, not a band test: it only answers within a few px of a
+    // curve, so the rest of the coverage band still reaches `hitTestCoverage`.
     const arc = picked
       ? resolveArcHover(canvasX, canvasY, picked.section)
       : undefined
-    return { resolved, picked, result, arc }
+    return { resolved, picked, result: arc ?? result }
   }
 
   function resolveSectionForCanvasY(canvasY: number) {
@@ -163,10 +165,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       : undefined
   }
 
-  // What the cursor is on in the hovered section's arc band, as the two fields
-  // `setHoverState` takes for it: the tooltip to show and the ink to mark it
-  // with. Both come from one `resolveArcBandHover`, so the mark is on the arc
-  // the tooltip describes by construction rather than by agreement.
+  // What the cursor is on in the hovered section's arc band, as the `ArcMarkHit`
+  // every gesture switches over.
   //
   // Kept OUT of `performHitTest`: that pipeline is the pileup's, and takes a
   // resolved block of laid-out reads. Arcs are a different feed (per group, per
@@ -203,7 +203,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       return undefined
     }
     const { hit, highlight } = hover
-    return {
+    const arc: ArcMarkHit = {
+      type: 'arc',
       // A tick reports what it points AT; an arc reports its span and colour
       // bucket. The two payloads are disjoint (see `ArcLineTooltipPayload`), so
       // the discriminant the hit already carries picks the formatter rather
@@ -220,6 +221,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             ),
       highlight,
     }
+    return arc
   }
 
   // Maps a canvas mouse event to canvas coordinates and runs the full hit-test
@@ -270,24 +272,16 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    const { resolved, result, arc } = hitTestEvent(e)
+    const { resolved, result } = hitTestEvent(e)
 
-    // The same guard `handleClick` carries, for the same reason and with the
-    // same reach: an arc outranks the band it is painted over, so a right-click
-    // on one must not build a menu for whatever it overlays. In up mode the arc
-    // band IS the coverage band (`computeArcBand` gives it top 0), and
-    // `hitTestInterbase` answers over the indicator strip and the bar stack
-    // inside it — so right-clicking an arc that crossed an indicator column
-    // opened the interbase menu for that column while the tooltip said "Read
-    // connection".
-    //
-    // Falls through to the browser's own menu rather than calling
-    // `preventDefault`, which is what every other mark with nothing to offer
-    // does here (`contextMenuFieldsForHit` returns `show: false` for coverage).
-    if (arc) {
-      return
-    }
-
+    // An arc arrives here as `show: false`, the same answer coverage gets, so
+    // it falls through to the BROWSER's menu rather than calling
+    // `preventDefault` — which is what a mark with nothing to offer should do.
+    // Before that was true, right-clicking an arc that crossed an indicator
+    // column opened the interbase menu for that column while the tooltip said
+    // "Read connection": in up mode the arc band IS the coverage band
+    // (`computeArcBand` gives it top 0), and `hitTestInterbase` answers over
+    // the indicator strip and the bar stack inside it.
     const { show, cigarHit, indicatorHit, modHit, featureId } =
       contextMenuFieldsForHit(result)
     if (show) {
@@ -391,8 +385,22 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     'hoverCoverageBand'
   >
 
-  function hoverStateForResult(result: HitTestResult): HoverState {
+  function hoverStateForResult(result: MarkHitResult): HoverState {
     switch (result.type) {
+      case 'arc':
+        return {
+          // FALSE, unlike every other tooltip branch: `overCigarItem` is the
+          // pointer cursor, and the pointer is a promise that clicking does
+          // something. An arc carries no read id — the feed is junctions, not
+          // features — so there is nothing to select or open, and `handleClick`
+          // deliberately swallows the click rather than acting on whatever is
+          // under the arc.
+          overCigarItem: false,
+          featureIdUnderMouse: undefined,
+          mouseoverExtraInformation: result.tooltip,
+          hoveredArcHighlight: result.highlight,
+          highlightedChainReadIds: [],
+        }
       case 'indicator':
       case 'coverage': {
         // Both bands are hit-tested by position alone, so the cursor can land on
@@ -474,31 +482,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function resolveHoverAt(canvasX: number, canvasY: number) {
-    // Arcs are painted AFTER coverage by both backends (see the pass order in
-    // drawAlignmentBlocks), so in up mode an arc is the ink on top of the
-    // histogram it overlays — and the ink under the cursor is what a hover
-    // should name. Outranking the pileup result is safe because the arc test is
-    // a STROKE test, not a band test: it only answers within a few px of a
-    // curve, so the rest of the coverage band still reaches `hitTestCoverage`
-    // untouched.
-    const { result, picked, arc } = runHitTest(canvasX, canvasY)
+    const { result, picked } = runHitTest(canvasX, canvasY)
 
     model.setHoverState({
-      ...(arc
-        ? {
-            // FALSE, unlike every other tooltip branch: `overCigarItem` is the
-            // pointer cursor, and the pointer is a promise that clicking does
-            // something. An arc carries no read id — the feed is junctions, not
-            // features — so there is nothing to select or open, and
-            // `handleClick` deliberately swallows the click rather than acting
-            // on whatever is under the arc.
-            overCigarItem: false,
-            featureIdUnderMouse: undefined,
-            mouseoverExtraInformation: arc.tooltip,
-            hoveredArcHighlight: arc.highlight,
-            highlightedChainReadIds: [],
-          }
-        : hoverStateForResult(result)),
+      ...hoverStateForResult(result),
       // Screen-px coverage band of the hovered section, so the tooltip's
       // vertical bar lands on the hovered group's coverage band rather than
       // always the top one. Written once, for every branch at once.
@@ -517,22 +504,18 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       dragMovedRef.current = false
       return
     }
-    const { result, arc } = hitTestEvent(e)
-
-    // The click has to agree with the hover, which names the arc over the band
-    // it is painted on (see `resolveHoverAt`). An arc has nothing to open, so
-    // this is a no-op — but it has to be an explicit one: falling through named
-    // whatever the arc happens to overlay. In down mode that is nothing, and
-    // `case 'none'` CLEARED THE SELECTION, so clicking the arc you were
-    // hovering threw away the read you had selected. In up mode the arc band IS
-    // the coverage band (`computeArcBand` gives it top 0), so the click opened
-    // the coverage bin widget for the column while the tooltip said "Read
-    // connection".
-    if (arc) {
-      return
-    }
+    const { result } = hitTestEvent(e)
 
     switch (result.type) {
+      // An arc has nothing to open, so this is a no-op — but an EXPLICIT one:
+      // falling through to the pileup's answer named whatever the arc happens
+      // to overlay. In down mode that is nothing, and `case 'none'` CLEARS THE
+      // SELECTION, so clicking the arc you were hovering threw away the read
+      // you had selected. In up mode the arc band IS the coverage band
+      // (`computeArcBand` gives it top 0), so the click opened the coverage bin
+      // widget for the column while the tooltip said "Read connection".
+      case 'arc':
+        return
       case 'indicator':
         openIndicatorWidget(
           model,

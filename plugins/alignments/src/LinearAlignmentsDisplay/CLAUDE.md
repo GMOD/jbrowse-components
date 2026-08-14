@@ -356,30 +356,53 @@ The endpoint squares have no hit test of their own, covered by the bar's
 tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is arithmetic,
 not design, so `hitTest.test.ts` pins it.
 
-**An arc resolves ahead of the band it is painted over, and `runHitTest` answers
-for both at once.** It returns `arc` beside `result`, so having a pileup hit and
-knowing whether an arc outranks it are one answer that all three gestures read —
-the hover to name the arc, the click and the right-click to decline to act
-through it. An arc carries no read id, so there is nothing to select or open and
-the pointer cursor stays off. When each gesture asked for itself, one of them
-didn't: `93af1f54f0` guarded the click and left the right-click, which was the
-sharper half: in up mode `computeArcBand` gives the band `top: 0`, which IS the
-coverage band, and `hitTestInterbase` answers over the indicator strip and the
-bar stack inside it — so a right-click on an arc built the interbase menu for
-the column underneath while the tooltip said "Read connection". Down mode never
-showed it (own band, `type: 'none'`), which is why it survives casual testing.
-Neither guard calls `preventDefault`: a mark with nothing to offer falls through
-to the browser's menu here, same as coverage.
+**An arc outranks the band it is painted over, and it says so as a RESULT
+VARIANT.** `runHitTest` returns `arc ?? result`, so `ArcMarkHit` is a member of
+`MarkHitResult` alongside the pileup's five — one value, one discriminant, and
+one place (`arc ?? result`) where the ranking is stated.
 
-`arcGestureGuard.test.ts` is what holds the three gestures together, and it
-works the one pixel where an arc's ink lies over an interbase bar — the mark
-that answers a click with a widget AND a right-click with a menu, so one pixel
-states both halves. It finds that pixel by asking the hover rather than by
-projecting the dome, since a fourth placement of the arc written into the test
-would be free to disagree with the three it is checking. Every case is stated
-against its own control: the SAME pixel with `readConnections` off, which is the
-only thing separating "the guard suppressed this" from "there was nothing here
-anyway". `createTestAlignmentsDisplay` (`testUtils.ts`) is the harness — a real
+That shape is the fix for how this went wrong. The guard used to be an `if` in
+each gesture, and when each asked for itself one of them forgot: `93af1f54f0`
+guarded the click and left the right-click. In up mode `computeArcBand` gives
+the band `top: 0`, which IS the coverage band, and `hitTestInterbase` answers
+over the indicator strip and the bar stack inside it — so a right-click on an
+arc built the interbase menu for the column underneath while the tooltip said
+"Read connection". Down mode never showed it (own band, `type: 'none'`), which
+is why it survived casual testing.
+
+As a variant, each gesture is right by default instead of by remembering:
+
+- `hoverStateForResult` **does not compile** without `case 'arc'` (TS2366 — a
+  declared return type it can now fall off the end of). That is the enforcement,
+  and it is worth knowing it is the only one; the others below are structural.
+- `handleClick`'s switch matches no pileup case, so it does nothing. The old bug
+  was `case 'none'` catching the arc and CLEARING THE SELECTION; an arc is now
+  never `'none'`, so that is unreachable rather than guarded. The explicit
+  `case 'arc': return` is there against a future `default:`.
+- `contextMenuFieldsForHit` answers `show: false` from its `default`, the same
+  answer coverage gets, so an arc falls through to the BROWSER's menu — which is
+  what a mark with nothing to offer should do. No `preventDefault`.
+
+`arcGestureGuard.test.ts` holds the behaviour, and it works the one pixel where
+an arc's ink lies over an interbase bar — the mark that answers a click with a
+widget AND a right-click with a menu, so one pixel states both halves. It finds
+that pixel by asking the hover rather than by projecting the dome, since a
+fourth placement of the arc written into the test would be free to disagree with
+the three it is checking. Every case is stated against its own control: the SAME
+pixel with `readConnections` off, which is the only thing separating "the guard
+suppressed this" from "there was nothing here anyway". Both cases fail if
+`arc ?? result` stops preferring the arc, which is now the single point.
+
+`mouseGestures.test.ts` covers the two handlers that are pure guard —
+`handleMouseDown`, which decides between this display's pan, the LGV's
+shift+drag rubberband and the browser's own menu by DECLINING two of them, and
+`handleMouseLeave`. Each of the five guards there was checked by deleting it;
+each is caught by exactly one case. Note that its `cancelAnimationFrame` stub is
+load-bearing rather than tidiness: stubbing only `requestAnimationFrame` leaves
+the real cancel with no id of ours to cancel, the held callback runs anyway, and
+the queued-hover case reads as the leave failing when the harness never let it.
+
+`createTestAlignmentsDisplay` (`testUtils.ts`) is the harness both use — a real
 display in a measured LGV, for the cases that have to run through the model's
 own chain rather than through a hand-built argument.
 

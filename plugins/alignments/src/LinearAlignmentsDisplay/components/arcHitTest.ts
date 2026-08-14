@@ -19,6 +19,7 @@ import type {
 import type { ArcMark } from '../../features/arcs/mark.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ScrollModel } from './sectionScreen.ts'
+import type { TooltipPayload } from './tooltipUtils.ts'
 
 // One visible region's screen extent — the slice `view.visibleRegions` reports.
 // The renderer maps bp through the whole (possibly off-screen) block instead,
@@ -90,6 +91,25 @@ function arcBandClip(scale: ArcBandScale): ArcBandClip {
     width: scale.screenWidthPx,
     height: scale.arcsH,
   }
+}
+
+// The arc band's answer, in the shape a GESTURE consumes — a variant of the
+// same union the pileup's hit test answers with, so that "an arc is here" and
+// "a read/coverage/interbase mark is here" are one value with one discriminant.
+//
+// That is the whole point of it being a variant rather than a second return
+// field. Every gesture has to decline to act through an arc, and when each
+// asked separately one of them forgot: `93af1f54f0` guarded the click and left
+// the right-click building the interbase menu for whatever the arc crossed.
+// As a variant, `hoverStateForResult`'s switch does not compile without a case
+// for it, so the next gesture is told at build time rather than in a bug report.
+//
+// `tooltip` and `highlight` come from one `resolveArcBandHover`, so the mark is
+// on the arc the tooltip describes by construction rather than by agreement.
+export interface ArcMarkHit {
+  type: 'arc'
+  tooltip: TooltipPayload
+  highlight: ArcHighlight
 }
 
 // Everything an arc hover produces: the arc, and the ink to draw over it.

@@ -25,6 +25,7 @@ import type {
   CigarHitResult,
   ResolvedBlock,
 } from '../../shared/hitTestTypes.ts'
+import type { ArcMarkHit } from './arcHitTest.ts'
 
 export type HitTestResult =
   | { type: 'indicator'; hit: IndicatorHitResult; resolved: ResolvedBlock }
@@ -49,6 +50,13 @@ export type HitTestResult =
     }
   | { type: 'none' }
 
+// What a GESTURE resolves to: the pileup's answer, or the arc band's, which
+// outranks it (see `ArcMarkHit`). `performHitTest` never returns the arc
+// variant — arcs are a different feed and deliberately not in this pipeline —
+// but every consumer of a gesture's result switches over both, which is what
+// makes declining to act through an arc a thing the compiler asks for.
+export type MarkHitResult = HitTestResult | ArcMarkHit
+
 // Above ~50kbp visible region (2000px / 50000bp = 25), per-base detail is
 // too zoomed out to be meaningful.
 export const SNP_HIT_MAX_BP_PER_PX = 25
@@ -68,7 +76,7 @@ export interface ContextMenuFields {
 // A modification hit also carries the underlying cigarHit (its mismatch, if the
 // modified base is also a SNP), so the SNP submenu appears next to the mod item.
 export function contextMenuFieldsForHit(
-  result: HitTestResult,
+  result: MarkHitResult,
 ): ContextMenuFields {
   switch (result.type) {
     case 'cigar':
