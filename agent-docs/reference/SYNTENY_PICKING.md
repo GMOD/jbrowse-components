@@ -26,6 +26,13 @@ as the alignment) and not at all when they are not.
 **viewport parked mid-genome**, min of N. One arm each — these locate a
 mechanism and are not speedups; see [BENCHMARKING.md](BENCHMARKING.md).
 
+**Times are Chrome**, via an esbuild bundle driven by the puppeteer resolved from
+`packages/browser-test-utils/`, with node as a cross-check (the two agree to
+within ~30%). They are NOT jest numbers: jest inflates this code 6-30x
+non-uniformly, and the first version of this page was written on jest numbers and
+was wrong in every row. Chrome clamps `performance.now()` to ~0.1ms, so anything
+below that reads as 0.0 and the node arm is quoted where the resolution matters.
+
 Two fixtures, differing only in how query and target are paired:
 
 - **collinear** — target within ±100 kb of query. Two related genomes.
@@ -38,10 +45,9 @@ either axis) and therefore enter the tree.
 
 | zoom | kept | candidates @0 skew | warm pick | rebuild |
 | --- | --- | --- | --- | --- |
-| whole-genome | **0** / 300k | — (no tree) | — | 77ms |
-| 1/100 | 143k | 16 | 0.03ms | 201ms |
-| 1/10k | 299k | 19 | 0.03ms | 396ms |
-| 1/1M | 300k | 17 | 0.03ms | 347ms |
+| whole-genome | **0** / 300k | — (no tree) | — | 1.0ms |
+| 1/100 | 143k | 16 | <0.1ms | 33ms |
+| 1/10k | 299k | 19 | <0.1ms | 58ms |
 
 Candidate counts stay in the tens at every zoom, because a hull is about as wide
 as its alignment and only a handful cover any given pixel.
@@ -50,14 +56,15 @@ as its alignment and only a handful cover any given pixel.
 
 | zoom | kept | candidates @0 skew | warm pick | rebuild |
 | --- | --- | --- | --- | --- |
-| whole-genome | **0** / 300k | — (no tree) | — | 70ms |
-| 1/100 | 143k | **71,342** | **64ms** | 278ms |
-| 1/10k | 299k | **149,307** | **134ms** | 496ms |
-| 1/1M | 300k | **149,583** | **135ms** | 504ms |
+| whole-genome | **0** / 300k | — (no tree) | — | 1.2ms |
+| 1/100 | 143k | **71,342** | **5.8ms** | 42ms |
+| 1/10k | 299k | **149,307** | **12.5ms** | 77ms |
 
 **At zero skew.** Roughly half of everything in the tree covers any given x,
 because half the hulls span the canvas. The stab returns them, and each one then
-pays `projectCorners` + `isRibbonCulled` (which rejects it) at ~0.9µs.
+pays `projectCorners` + `isRibbonCulled` (which rejects it) at ~80ns. 12.5ms is
+inside a 16ms frame but leaves nothing for anything else, so a hover over an
+all-vs-all PAF reads as sluggish rather than broken.
 
 ## Two things this corrects
 
@@ -80,14 +87,15 @@ per px of skew:
 
 | skew | candidates | warm pick |
 | --- | --- | --- |
-| 250px | 287 | 0.39ms |
-| 1000px | 1052 | 1.1ms |
-| 5000px | 5084 | 8.9ms |
-| 20000px | 20250 | 22ms |
+| 250px | 287 | <0.1ms |
+| 1000px | 1052 | 0.1ms |
+| 5000px | 5084 | 0.3ms |
+| 20000px | 20250 | 1.2ms |
 
-Against a ~200ms rebuild paid once versus a widened query paid per mousemove,
-2000px is the balance point: ~2ms/query, inside a frame, amortizing over ~100
-hovers before the rebuild would have been cheaper.
+Against a ~33ms rebuild paid once versus a widened query paid per mousemove,
+2000px is a deliberately conservative balance point: ~0.1ms/query, about 330
+hovers before the rebuild would have been the cheaper trade. 20000px would still
+amortize over ~28 hovers, so there is room if the cap ever needs to move again.
 
 ## Probing this yourself, and the trap in it
 
@@ -96,6 +104,11 @@ interval run off the left edge of the data, which caps candidate growth for a
 reason that has nothing to do with the index — the first run of this measurement
 reported candidates saturating at 718 regardless of skew, and that number is an
 artifact of the probe, not a property of the tree.
+
+**Do not measure it under jest.** It inflates this code 6-30x and not uniformly,
+so ratios do not survive either — the table above was published once on jest
+numbers and every row was wrong by a different factor. Bundle with `esbuild
+--bundle` and run under node or Chrome. See BENCHMARKING.md.
 
 **Do not take min-of-N over a loop that reuses the pick cache.** The first rep
 rebuilds and stores the index *at the skewed pan*; every later rep then finds it

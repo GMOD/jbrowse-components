@@ -18,6 +18,17 @@ pick it up cold. Baseline: all 619 pre-existing tests passed before and after,
 
 ## Where the time actually goes
 
+> **⚠ EVERY NUMBER IN THIS TABLE IS A JEST ARTIFACT — inflated 6-30x, and not
+> uniformly, so the ranking is wrong too.** Kept only because the *shape* of the
+> finding (which stage dominates, and why) survived re-measurement. For real
+> figures use [reference/SYNTENY_PICKING.md](../reference/SYNTENY_PICKING.md),
+> and read the jest entry in [reference/BENCHMARKING.md](../reference/BENCHMARKING.md)
+> before writing another probe.
+>
+> The correction that matters most: **`buildSyntenyGeometry` is 12.9ms in Chrome,
+> not 105ms.** It was never the largest single item and there is nothing in it to
+> optimize.
+
 Measured with a throwaway jest probe (deleted; the fixture is easy to rebuild —
 300k blocks, lengths `200 * exp(rnd * 9)`, random query/target pairing across
 3.1Gbp, 1400px, whole-genome bpPerPx). **Min of 5, one arm each, so these locate
@@ -39,14 +50,18 @@ ordinary.
 **Both pick rows are whole-genome-zoom figures and do not generalize** — at that
 zoom every ribbon is sub-pixel, so the tree is EMPTY and the hover is answering
 "nothing here". One zoom step in it holds ~half the instances, and on wide-hull
-data a hover costs ~64ms at zero skew. Re-measured across zooms and both hull
-shapes in [reference/SYNTENY_PICKING.md](../reference/SYNTENY_PICKING.md); read
-that before quoting either number.
+data a hover costs ~12.5ms in Chrome at zero skew. Re-measured across zooms and
+both hull shapes in [reference/SYNTENY_PICKING.md](../reference/SYNTENY_PICKING.md);
+read that before quoting either number.
 
-**`buildSyntenyGeometry`'s 105ms is now the largest single item** and nobody has
-looked at it. It is two O(n) passes plus a capacity pre-pass, all in the worker,
-so it costs a fetch's latency rather than a frame — which is why it was left
-alone here, not because it is known to be tight.
+**`buildSyntenyGeometry` was looked at, and it is not a problem — 12.9ms in
+Chrome for 300k features, not 105ms.** The 105ms was the jest inflation above.
+Within it the capacity pre-pass is ~90% of the time, which is itself only an
+artifact: that loop is trivial arithmetic and is fast everywhere except jest.
+Two things were tried against it and neither helped, so don't re-try them —
+hoisting the closure-captured `capacity`/arrays into plain locals (no change),
+and suspecting the `parsedCigars` JS array (removing it entirely: no change).
+Closed.
 
 ## Fetch completeness — moved out of this thread
 
@@ -73,7 +88,7 @@ Still open, but re-read [reference/SYNTENY_PICKING.md](../reference/SYNTENY_PICK
 first: on the data where this loop is actually slow, candidates are not arriving
 through slop that a `filterFn` or a dropped sort could remove — they genuinely
 cover the stab point. Both ideas below are worth what they were worth before;
-neither is the answer to the 64–134ms case.
+neither is the answer to the ~12.5ms wide-hull hover.
 
 What survives the index is walked with `projectCorners` + `isRibbonCulled` +
 `ribbonPerpWidth` (which takes a `sqrt`) per candidate, after an

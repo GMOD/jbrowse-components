@@ -50,23 +50,24 @@ export interface PickIndex {
 // interval grows by the skew, so candidates grow with it, and the widened query
 // is paid PER MOUSEMOVE where the rebuild it avoids is paid once.
 //
-// Re-measured 2026-08-14 (300k instances, 1400px, viewport mid-genome; the
-// earlier figures here predated excluding unpickable instances and no longer
-// described either side). What the skew costs depends entirely on hull width,
-// so it has to be read off the COLLINEAR arm — two related genomes, narrow
-// hulls — which is the shape where widening genuinely admits new candidates:
+// Re-measured 2026-08-14 in Chrome (300k instances, 1400px, viewport mid-genome;
+// the earlier figures here predated excluding unpickable instances and no longer
+// described either side). What the skew costs depends entirely on hull width, so
+// it has to be read off the COLLINEAR arm — two related genomes, narrow hulls —
+// which is the shape where widening genuinely admits new candidates:
 //
-//   skew    250px ->    287 candidates, 0.39ms/query
-//   skew   1000px ->   1052 candidates, 1.1ms/query
-//   skew   5000px ->   5084 candidates, 8.9ms/query
-//   rebuild                             ~200ms, once
+//   skew    250px ->    287 candidates, <0.1ms/query
+//   skew   1000px ->   1052 candidates,  0.1ms/query
+//   skew   5000px ->   5084 candidates,  0.3ms/query
+//   skew  20000px ->  20250 candidates,  1.2ms/query
+//   rebuild                             ~33ms, once
 //
 // Growth is ~1 candidate per px of skew (instance density along x), NOT the
-// order-of-magnitude jump the old note described. Against a ~200ms rebuild,
-// 250px was an order of magnitude too tight: it spent 200ms to avoid 0.39ms.
-// 2000px holds the worst query near 2ms — inside a frame, and still amortizing
-// against the rebuild over ~100 hovers — while making ordinary single-axis
-// panning free.
+// order-of-magnitude jump the old note described. Against a ~33ms rebuild, 250px
+// was orders of magnitude too tight. 2000px holds the worst query at ~0.1ms —
+// about 330 hovers before the rebuild would have been the cheaper trade — while
+// making ordinary single-axis panning free. Deliberately conservative: 20000px
+// would still amortize over ~28 hovers.
 //
 // The wide-hull (all-vs-all) arm cannot inform this number, because there the
 // skew is not what costs: nearly every hull spans the canvas, so a stab returns

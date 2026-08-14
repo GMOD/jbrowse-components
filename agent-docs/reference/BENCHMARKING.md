@@ -131,6 +131,43 @@ identity check is for.
 
 ### Tools that cannot see what you are asking
 
+**A jest probe is not a timing harness for typed-array code — it inflates by
+6-30x, and NOT uniformly.** Measured 2026-08-14 on the synteny geometry and pick
+paths, running the *same esbuild bundle* in each host so nothing but the harness
+differed:
+
+| | jest | node | Chrome |
+| --- | --- | --- | --- |
+| `buildSyntenyGeometry`, 300k features | ~105ms | 10.6ms | 12.9ms |
+| synteny pick rebuild (collinear, 1/100) | 201ms | 24.4ms | 33.4ms |
+| synteny pick warm query @5000px skew | 8.9ms | 0.39ms | 0.3ms |
+| synteny hover, wide hulls, zero skew | 134ms | 15.5ms | 12.5ms |
+
+**Node and Chrome agree to within ~30%; jest agrees with neither.** So node is a
+fine proxy for a worker-side question and jest is not, for anything that touches
+typed arrays in a loop.
+
+The cost is in typed-array **element access**, which is why it does not divide
+out. In the same jest file an empty 300k loop runs in 0.17ms — the JIT is
+working — while a 300k loop doing four `Float64Array` reads takes 58ms, about
+60x below memory bandwidth. Both jest environments do it (`node` measured worse
+than `jsdom`, so switching `testEnvironment` is not the fix); the arrays are
+realm-local to jest's vm context, and element access falls off V8's fast path.
+
+**What this cost:** a handoff reported `buildSyntenyGeometry` as "the largest
+single item, 105ms, and nobody has looked at it". It is 12.9ms in a browser and
+there is nothing there to find. A whole profile table was built on jest numbers
+and every row of it was wrong by a different factor, which is worse than being
+uniformly wrong — the *ranking* changed too.
+
+**The fix is cheap.** `esbuild --bundle` the module under test and run the bundle
+under `node`, or under Chrome via the puppeteer resolved from
+`packages/browser-test-utils/`. Both take minutes. Note Chrome clamps
+`performance.now()` to ~0.1ms for Spectre, so anything faster than that reads as
+`0.000` there and wants the node arm for resolution.
+
+
+
 **V8's sampling heap profiler reports only survivors.** 500k objects allocated
 and dropped sample as **0.0 MB**; the same loop retaining them samples 27 MB.
 Nursery-dead objects never appear at all, so the profiler cannot answer "how
