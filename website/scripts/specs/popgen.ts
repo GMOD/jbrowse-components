@@ -102,6 +102,29 @@ const TAJD_TRACK = {
   },
 }
 
+// Called variants per window, column 4 of the same vcftools table pi comes from,
+// so it is the same windows over the same calls rather than a second pipeline.
+//
+// This is the lane that decides between the two readings of a diversity trough,
+// and at Cyp6g1 it comes out the informative way. Measured off the pipeline
+// table in 20 kb bins across chr2R:12.0-12.4 Mb, per 2 kb window: outside the
+// swept span the panel carries 70-100 sites at pi 0.006-0.008, and over
+// 12.14-12.18 it carries 18-20 sites at pi 0.0004-0.001. So the site count falls
+// about fivefold while pi falls about fifteenfold: the window is still being
+// called, and what collapsed is the FREQUENCY of what is called, which is the
+// same fact Tajima's D reports as a negative excursion. A window that had simply
+// lost calls would take both down together.
+const SITES_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'sites_all',
+  name: 'Called variants per window',
+  assemblyNames: ['dm6'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://jbrowse.org/demos/popgen/sites_all.bw',
+  },
+}
+
 // No per-group-pi figure, deliberately. The tutorial documents the
 // MultiQuantitativeTrack config for pi_INV.bw + pi_STD.bw, but there is no view
 // of it worth publishing: across the inverted region pi_INV/pi_STD sits at
@@ -240,7 +263,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'popgen/tajimad_cyp6g1',
     url: `${DM6_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [TAJD_TRACK, PI_TRACK],
+      sessionTracks: [TAJD_TRACK, PI_TRACK, SITES_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -272,7 +295,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pi_all',
               type: 'LinearWiggleDisplay',
-              height: 180,
+              height: 150,
+            },
+            // Under pi rather than over it, so the two are read as a pair and
+            // the eye compares how far each falls.
+            {
+              trackId: 'sites_all',
+              type: 'LinearWiggleDisplay',
+              height: 120,
             },
             {
               trackId: 'dm6-ncbiRefSeqCurated',
@@ -297,8 +327,9 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('wiggle-display'),
     readyText: 'Tajima',
     readyTimeout: 90000,
-    // tajd(200) + pi(180) + genes(150) + 3 headers + ruler/overview + app bar
-    viewportHeight: 800,
+    // tajd(200) + pi(150) + sites(120) + genes(150) + 4 headers + ruler/overview
+    // + app bar
+    viewportHeight: 945,
     settleMs: 12000,
   },
 

@@ -96,15 +96,24 @@ vcftools --gzvcf dgrp2.vcf.gz \
 # $5 is WEIGHTED_FST, the window's summed variance components divided; $6 beside
 # it is MEAN_FST, the average of the per-site ratios, which any window with a
 # few uninformative sites in it pulls around.
-awk 'NR>1 && $5!="nan" && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
-  fst_In2Lt.windowed.weir.fst | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
+# BIN_END is the NOMINAL window end, so a contig's last window is reported past
+# the end of it. Clamp, or bedGraphToBigWig refuses the whole file.
+awk -F'\t' 'NR==FNR{len[$1]=$2; next}
+     FNR>1 && $5!="nan" && $5!="-nan" {
+       v=$5+0; if (v<0) v=0
+       end=$3; if (end>len[$1]) end=len[$1]
+       if (end>$2-1) print $1"\t"($2-1)"\t"end"\t"v
+     }' dm6.chrom.sizes fst_In2Lt.windowed.weir.fst |
+  sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
 ```
 
 Taking `chrom.sizes` from the VCF header rather than from the assembly is what
-keeps the naming consistent, since the scans carry the header's contig names.
-Diversity is the same three steps with `--window-pi 2000`, reading `$5` of
-`pi_all.windowed.pi`, and `--keep` restricts it to one arrangement.
+keeps the naming consistent, since the scans carry the header's contig names,
+and it is also what the clamp reads window ends against. Diversity is the same
+three steps with `--window-pi 2000`, reading `$5` of `pi_all.windowed.pi`, and
+`--keep` restricts it to one arrangement. Reading `$4` of the same table instead
+gives the called-variant count the figure below stacks under π.
 
 The two groups here are very unequal, since the inverted arrangement is the
 rarer one. Weir & Cockerham corrects for sample size, and Hudson's estimator
@@ -112,11 +121,10 @@ summed as a ratio of averages is the usual recommendation where the groups
 differ this much ([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113));
 [](/docs/tutorials/dog10k_selection) scans with that one.
 
-Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) needs two
-adjustments the other two do not. `--TajimaD` reports `BIN_START` 0-based, so it
-takes no `-1` shift, and reports no `BIN_END`, so the window end is constructed
-here and clamped to the contig length: bedGraphToBigWig rejects an interval
-running past the end of its chromosome.
+Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reads its
+table differently from the other two. `--TajimaD` reports `BIN_START` 0-based,
+so it takes no `-1` shift, and reports no `BIN_END` at all, so the window end is
+constructed here before the same clamp applies to it.
 
 <!-- from: scripts/build_dgrp_popgen.sh -->
 
@@ -238,13 +246,14 @@ chromosome 2L, while every other arm sits at low background Fst.
 
 Then search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
 alongside π. Both dip together over the swept window, where either statistic
-alone would be ambiguous. A duplication of `Cyp6g1` segregates alongside the
-resistance allele
+alone would be ambiguous. Add the called-variant count under them, which is
+column 4 of the table π comes from, so it counts the same windows over the same
+calls. A duplication of `Cyp6g1` segregates alongside the resistance allele
 ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
-number costs a window called sites, which is the other reason to read this
-trough against its flanks.
+number costs a window called sites, so how far the count falls beside π is worth
+seeing rather than assuming.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). Both dip over the highlighted window against their background either side: the joint trough is the hard-sweep signature."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip over the highlighted window against their background either side, the joint trough being the hard-sweep signature. The count under them falls too, but nothing like as far."/>
 
 Each pair of values reads differently, which is what the stack is for:
 
@@ -337,10 +346,10 @@ bash build_dgrp_popgen.sh                  # builds ./dgrp_popgen_build/jbrowse2
 npx --yes serve dgrp_popgen_build/jbrowse2 # then open the printed URL
 ```
 
-The config carries the dm6 assembly (from UCSC) plus the Fst, π, and Tajima's D
-scan tracks and the inversion genotypes, opening on the In(2L)t inversion across
-arm 2L. The `.bw` and `.vcf.gz` files are written next to it, so you can host
-them elsewhere or
+The config carries the dm6 assembly (from UCSC) plus the Fst, π, Tajima's D and
+called-variant scan tracks and the inversion genotypes, opening on the In(2L)t
+inversion across arm 2L. The `.bw` and `.vcf.gz` files are written next to it,
+so you can host them elsewhere or
 [open them as local track files](/docs/user_guides/basic_usage#opening-tracks)
 in JBrowse Desktop.
 

@@ -59,6 +59,28 @@ if [ "$n_std" -lt 50 ] || [ "$n_inv" -lt 5 ]; then
   exit 1
 fi
 
+# ── vcftools window table -> bedGraph ────────────────────────────────────────
+# BIN_START is 1-based in these tables, hence the -1.
+#
+# BIN_END IS THE NOMINAL WINDOW END, so a contig whose last window runs off the
+# end is reported past its own length: 3 of this callset's ~58,300 windows are,
+# in both the Fst and the pi tables, all on short scaffolds. bedGraphToBigWig
+# refuses the whole FILE on the first one, so an unclamped step does not lose
+# three windows, it loses the track and stops the build. Clamping here is what
+# keeps every step past this point from having to remember.
+#
+# floor0 exists for Fst alone: the Weir & Cockerham estimator goes slightly
+# negative at low-differentiation sites, which is an artifact rather than a
+# value to draw.
+clamped_bedgraph() { # column window-file [floor0] -> stdout
+  awk -F'\t' -v C="$1" -v FLOOR="${3:-}" 'NR==FNR{len[$1]=$2; next}
+       FNR>1 && $C!="nan" && $C!="-nan" {
+         v=$C+0; if (FLOOR!="" && v<0) v=0
+         end=$3; if (end>len[$1]) end=len[$1]
+         if (end>$2-1) print $1"\t"($2-1)"\t"end"\t"v
+       }' dm6.chrom.sizes "$2" | sort -k1,1 -k2,2n
+}
+
 # ── Windowed Fst (In(2L)t vs standard) -> bigWig ─────────────────────────────
 # $5 is WEIGHTED_FST, the window's summed variance components divided, NOT the
 # $6 beside it: that is MEAN_FST, the average of the per-site ratios, which a
@@ -67,8 +89,7 @@ fi
 vcftools --gzvcf "$VCF" \
   --weir-fst-pop In2Lt_INV.txt --weir-fst-pop In2Lt_STD.txt \
   --fst-window-size 2000 --fst-window-step 2000 --out fst_In2Lt
-awk 'NR>1 && $5!="nan" && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
-  fst_In2Lt.windowed.weir.fst | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
+clamped_bedgraph 5 fst_In2Lt.windowed.weir.fst floor0 > fst_In2Lt.bedgraph
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
 
 # ── Windowed diversity (pi): whole panel + each arrangement -> bigWig ─────────
@@ -76,10 +97,17 @@ vcftools --gzvcf "$VCF" --window-pi 2000 --out pi_all
 vcftools --gzvcf "$VCF" --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
 vcftools --gzvcf "$VCF" --keep In2Lt_STD.txt --window-pi 2000 --out pi_STD
 for g in all INV STD; do
-  awk 'NR>1 && $5!="nan" {print $1"\t"($2-1)"\t"$3"\t"$5}' \
-    pi_$g.windowed.pi | sort -k1,1 -k2,2n > pi_$g.bedgraph
+  clamped_bedgraph 5 pi_$g.windowed.pi > pi_$g.bedgraph
   bedGraphToBigWig pi_$g.bedgraph dm6.chrom.sizes pi_$g.bw
 done
+
+# ── Called variants per window -> bigWig ─────────────────────────────────────
+# Column 4 of the same table vcftools already wrote, so this costs no extra run.
+# It is what separates the two readings of a diversity trough: pi falling with
+# the site count is a window that lost calls, pi falling much further than the
+# site count is a window whose remaining variants are rare, which is the sweep.
+clamped_bedgraph 4 pi_all.windowed.pi > sites_all.bedgraph
+bedGraphToBigWig sites_all.bedgraph dm6.chrom.sizes sites_all.bw
 
 # ── Windowed Tajima's D (whole panel) -> bigWig ──────────────────────────────
 # --TajimaD reports BIN_START 0-based, so no -1 shift (unlike --window-pi above),
@@ -123,7 +151,7 @@ else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
 [ -f "$APP/index.html" ] || jb create "$APP"
-cp fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw tajimad_all.bw \
+cp fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw tajimad_all.bw sites_all.bw \
    dgrp_In2Lt_sv.vcf.gz dgrp_In2Lt_sv.vcf.gz.tbi dgrp_In2Lt_samples.tsv "$APP"/
 
 # ── config.json: dm6 from UCSC + the scan tracks ─────────────────────────────
@@ -197,6 +225,14 @@ cat > "$APP"/config.json <<'JSON'
       "assemblyNames": ["dm6"],
       "category": ["DGRP scans"],
       "adapter": { "type": "BigWigAdapter", "uri": "pi_all.bw" }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "sites_all",
+      "name": "Called variants per 2kb window (whole panel)",
+      "assemblyNames": ["dm6"],
+      "category": ["DGRP scans"],
+      "adapter": { "type": "BigWigAdapter", "uri": "sites_all.bw" }
     },
     {
       "type": "QuantitativeTrack",
