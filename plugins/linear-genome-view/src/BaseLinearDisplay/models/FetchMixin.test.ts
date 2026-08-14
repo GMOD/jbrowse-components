@@ -440,3 +440,32 @@ describe('FetchMixin: isStale contract for work callbacks', () => {
     expect(staleSnapshot).toBe(true)
   })
 })
+
+// Every fetch's context carries this display's status callback, so a helper
+// holding only a ctx -- `byteGateBlocksFetch`, `fetchEachRegion` -- can report
+// progress without reaching back into the model for it. It is a REQUIRED field
+// on FetchContext for that reason: `runFetch` is the only producer, and a
+// helper narrowing its parameter to a subset of the context is what dropped the
+// byte-gate pre-flight's token and status in the first place.
+describe('FetchMixin: the context status callback', () => {
+  it('writes the display status through the ctx callback', async () => {
+    const m = makeModel()
+    await m.runFetch(async ctx => {
+      ctx.statusCallback({ message: 'Downloading', current: 1, total: 4 })
+      expect(m.statusMessage).toBe('Downloading')
+      expect(m.statusProgress).toBe(0.25)
+    })
+  })
+
+  it('is inert once the fetch that owns it is torn down', async () => {
+    const m = makeModel()
+    let captured!: FetchContext
+    await m.runFetch(async ctx => {
+      captured = ctx
+    })
+    // resetStatus already ran in runFetch's finally, so a late status from the
+    // finished fetch must not put a label back on an idle display
+    captured.statusCallback('Downloading')
+    expect(m.statusMessage).toBeUndefined()
+  })
+})

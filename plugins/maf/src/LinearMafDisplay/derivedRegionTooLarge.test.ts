@@ -511,3 +511,58 @@ describe('MAF derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 })
+
+// The pre-flight is a real download — index chunks, re-read on every viewport
+// change for BAM/CRAM/tabix — so it is exactly as worth cancelling as the fetch
+// it precedes, and exactly as worth naming while the user waits on it. It went
+// unwired because `byteGateBlocksFetch` narrowed its parameter to
+// `{ isStale }`, which silently dropped the rest of the FetchContext both
+// callers were already handing it. Pinned here rather than left to the type:
+// re-narrowing that parameter still compiles at every call site.
+describe('byte-estimate pre-flight forwarding', () => {
+  it('forwards the fetch stop token and status callback to the RPC', async () => {
+    const { display, view, mockRpcCall } = createMafTestEnvironment(
+      {},
+    ).createDisplay()
+    view.zoomTo(100)
+    mockRpcCall.mockResolvedValue(1000)
+    const statusCallback = jest.fn()
+
+    await display.byteGateBlocksFetch(
+      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
+      { stopToken: 'tok', isStale: () => false, statusCallback },
+    )
+
+    const call = mockRpcCall.mock.calls.find(
+      c => c[1] === 'CoreGetRegionByteEstimate',
+    )
+    expect(call).toBeDefined()
+    expect(call![2]).toMatchObject({
+      stopToken: 'tok',
+      statusCallback,
+    })
+  })
+
+  it('names the phase it is making the user wait through', async () => {
+    const { display, view, mockRpcCall } = createMafTestEnvironment(
+      {},
+    ).createDisplay()
+    view.zoomTo(100)
+    mockRpcCall.mockResolvedValue(1000)
+    const seen: unknown[] = []
+
+    await display.byteGateBlocksFetch(
+      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
+      {
+        stopToken: 'tok',
+        isStale: () => false,
+        statusCallback: s => {
+          seen.push(s)
+        },
+      },
+    )
+
+    // the label while it runs, then the clear that every phase helper ends with
+    expect(seen).toEqual(['Estimating size', ''])
+  })
+})

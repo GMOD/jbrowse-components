@@ -22,7 +22,12 @@ function withMockRootModel(manager: RpcManager) {
 class StubDriver extends BaseRpcDriver {
   name = 'StubDriver'
   freedSessions: string[] = []
-  callLog: { sessionId: string; functionName: string }[] = []
+  callLog: {
+    sessionId: string
+    functionName: string
+    args?: Record<string, unknown>
+    options?: Record<string, unknown>
+  }[] = []
   destroyed = false
 
   destroy() {
@@ -45,8 +50,10 @@ class StubDriver extends BaseRpcDriver {
     _pm: PluginManager,
     sessionId: string,
     functionName: string,
+    args?: Record<string, unknown>,
+    options?: Record<string, unknown>,
   ): Promise<unknown> {
-    this.callLog.push({ sessionId, functionName })
+    this.callLog.push({ sessionId, functionName, args, options })
     return undefined
   }
 }
@@ -181,5 +188,51 @@ describe('RpcManager.destroy', () => {
     expect(built).toBe(2)
     expect(rebuilt).not.toBe(driver)
     expect(rebuilt.destroyed).toBe(false)
+  })
+})
+
+// Several displays pass `statusCallback` in `opts` rather than in `args`. Only
+// WorkerPoolRpcDriver ever honored it there (it spreads options over its own
+// arguments); MainThreadRpcDriver ignores `opts` entirely, so those progress
+// bars were silent under the driver every embedded component defaults to.
+// Normalizing here is what makes `args` the one place a driver has to read.
+describe('RpcManager statusCallback normalization', () => {
+  test('hoists a statusCallback passed in opts into args', async () => {
+    const { manager, driver } = makeManager()
+    const statusCallback = () => {}
+    await manager.call(
+      's',
+      'CoreGetRegions',
+      { adapterConfig: {} },
+      { statusCallback },
+    )
+    const [entry] = driver.callLog
+    expect(entry?.args?.statusCallback).toBe(statusCallback)
+    // and it does not travel twice, so the two positions can never disagree
+    expect(entry?.options?.statusCallback).toBeUndefined()
+  })
+
+  test('args wins when both positions carry one', async () => {
+    const { manager, driver } = makeManager()
+    const fromArgs = () => {}
+    const fromOpts = () => {}
+    await manager.call(
+      's',
+      'CoreGetRegions',
+      { adapterConfig: {}, statusCallback: fromArgs } as any,
+      { statusCallback: fromOpts },
+    )
+    expect(driver.callLog[0]?.args?.statusCallback).toBe(fromArgs)
+  })
+
+  test('leaves other opts alone', async () => {
+    const { manager, driver } = makeManager()
+    await manager.call(
+      's',
+      'CoreGetRegions',
+      { adapterConfig: {} },
+      { rpcDriverName: 'StubDriver' },
+    )
+    expect(driver.callLog[0]?.options).toEqual({ rpcDriverName: 'StubDriver' })
   })
 })

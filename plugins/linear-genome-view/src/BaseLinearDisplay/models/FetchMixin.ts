@@ -239,13 +239,19 @@ export default function FetchMixin() {
        * the `statusCallback` RPC arg instead of re-inlining the guard at every
        * call site.
        *
+       * `isCurrent` narrows that guard. It defaults to "the node is alive",
+       * which is all a caller holding only the model can check; `runFetch`
+       * passes `!isStale()` so the context's callback is scoped to its own
+       * fetch and a superseded one cannot repaint the overlay of the fetch that
+       * replaced it.
+       *
        * Declared this early only so `runFetch` can put one on every
        * `FetchContext`; its sibling `makeRegionStatusCallback` needs
        * `setRegionStatus` and so stays below.
        */
-      makeStatusCallback() {
+      makeStatusCallback(isCurrent: () => boolean = () => isAlive(self)) {
         return createGuardedStatusSink({
-          isCurrent: () => isAlive(self),
+          isCurrent,
           sink: status => {
             self.setStatusMessage(status)
           },
@@ -359,7 +365,7 @@ export default function FetchMixin() {
           yield work({
             stopToken,
             isStale,
-            statusCallback: self.makeStatusCallback(),
+            statusCallback: self.makeStatusCallback(() => !isStale()),
           })
         } catch (e) {
           if (!isAbortException(e)) {
