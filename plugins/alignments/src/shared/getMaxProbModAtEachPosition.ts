@@ -37,27 +37,31 @@ import type { ModWithPositions } from '@jbrowse/modifications-utils'
  *   which is also why a read with more than 255 distinct modification codes
  *   would need a wider array, and there is no such read.
  *
- * **The CIGAR is walked once per MM GROUP, not once per entry.** The types of a
- * combined code are called at identical positions, so `getModPositions` hands
- * them one positions array and this function groups the entries that share it by
- * identity — picking the winner across the group inside the one walk instead of
- * re-walking to the same offsets per type. `plugins/alignments/benches/
- * modCombinedCode.bench.ts` prices the pair of changes at 2.07x on a `C+mh`
- * read. Two entries whose positions merely happen to be EQUAL are not grouped,
- * and must not be: the grouping is an identity test precisely so that it can
- * never be wrong about whether the walks coincide. **htslib coalesces the same
- * thing the same way** — a pointer compare into the MM string,
- * `state->MM[j] == MMptr` in `sam_mods.c` — so this is the reference
- * implementation's shape rather than a local trick
+ * **The CIGAR is walked once per positions ARRAY, not once per entry.** Entries
+ * called at identical positions are handed one array by `getModPositions`, and
+ * this function groups the ones that share it by identity — picking the winner
+ * across the group inside the one walk instead of re-walking to the same offsets.
+ * That covers the types of a combined code (`C+mh`), and since the same-base
+ * merge it covers two separate groups on one base as well (dorado's
+ * `C+h?;C+m?`). `plugins/alignments/benches/modCombinedCode.bench.ts` prices the
+ * first at 2.07x on a `C+mh` read.
+ *
+ * Two entries whose positions merely happen to be EQUAL are not grouped, and
+ * must not be: the grouping is an identity test precisely so that it can never
+ * be wrong about whether the walks coincide. Deciding that two groups DO
+ * coincide is `getModPositions`' job, one layer up, where the delta lists are
+ * still in hand. **htslib splits the responsibility the same way** — a pointer
+ * compare into the MM string, `state->MM[j] == MMptr` in `sam_mods.c` — so this
+ * is the reference implementation's shape rather than a local trick
  * (`agent-docs/reference/MODIFICATION_TAGS.md`).
  *
- * **That is per group, so N groups is still N walks over the same ops**, and a
- * read with several groups is the common case rather than the exotic one — a
- * Fiber-seq read carries `C+m` and `A+a`, and those are on different canonical
- * bases, so they are necessarily different positions and cannot be folded here.
- * Merging the ascending streams to walk once is a real optimization and is
+ * **Groups on DIFFERENT canonical bases are still N walks over the same ops**,
+ * and no parse-time merge can fold them: a Fiber-seq read's `C+m` and `A+a` have
+ * genuinely different positions. Merging those ascending streams to walk once is
  * `agent-docs/TODO.md`'s "Walk the CIGAR once for a read's whole MM tag"; don't
- * mistake it for something this grouping already does.
+ * mistake it for something this grouping already does. Expect ~1.1x from it —
+ * `cigarOpDensity.bench.ts` and the same-base merge's split both say the walk
+ * phase is bound by per-call work rather than by traversal.
  */
 export function forEachMaxProbMod(
   modifications: readonly ModWithPositions[],

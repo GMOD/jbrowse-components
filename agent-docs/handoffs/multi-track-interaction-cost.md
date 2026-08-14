@@ -122,7 +122,7 @@ restored. Recorded so the next person recognises it and moves on.
 It started as lead 1 here and is now its own body of work, held in three places
 rather than in this file: the benches in `plugins/alignments/benches/`
 (`modPhases` for the phase split, then `cigarWalkShape`, `cigarOpDensity`,
-`mmParseShape`, `modCombinedCode`, `multiGroupParse`), the
+`mmParseShape`, `modCombinedCode`, `multiGroupParse`, `sameBaseMerge`), the
 [MM/ML vs htslib cross-reference](../reference/MODIFICATION_TAGS.md), and two
 TODO entries under "Measure first".
 
@@ -135,11 +135,23 @@ phase split (parse 46% -> 71%), the value of the change measured against it, and
 and 5hmC as two separate MM groups on C, not the combined `C+mh` a landed commit
 message here called "the standard output of anything calling hydroxymethyl".
 
-Three claims from this thread were retracted by later measurement, each recorded
-beside the thing it corrected: that a 19 kb window was representative, that the
-cursor walk's ratio was capped by op density, and that combined codes are what
-multi-type basecallers emit. The pattern in all three is a plausible mechanism
-quoted with the confidence of a measurement.
+Five claims from this thread have now been retracted by later measurement, each
+recorded beside the thing it corrected: that a 19 kb window was representative,
+that the cursor walk's ratio was capped by op density, that combined codes are
+what multi-type basecallers emit, that one sequence pass for all groups is a
+general win (it is Fiber-seq only — the same-base merge consumed the 1.13x that
+justified it), and that merging the CIGAR walk comes along "for free" in any
+sense that means valuable (1.08x, against 1.27x for the sequence walk). The
+pattern in all five is a plausible mechanism quoted with the confidence of a
+measurement.
+
+**The corpus fact has a second half now.** A fixture can be big enough, real
+enough and still leave a whole behaviour unexercised: every `--groups=` run of
+`multiGroupParse.bench.ts` failed its own output check the first time it was
+run, because no read in any fixture had ever asked for more of a base than it had
+left — so two arms that disagree on the end of the sequence had been reporting
+"output identical" for as long as the bench existed. What caught it was a
+synthesis flag written and left unrun.
 
 ## One thing about the machine
 

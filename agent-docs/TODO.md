@@ -70,7 +70,7 @@ before anyone noticed.
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Byte-native MAF adapter path](#a-byte-native-maf-adapter-path-once-tabix-js-publishes-linebytescallback) | MAF | blocked on a tabix-js publish; measure the pack stage, not the decode |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
-| [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | get a Fiber-seq BAM into the corpus — no fixture is multi-group |
+| [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
@@ -155,12 +155,14 @@ of the pipeline and `mmParseShape.bench.ts` shows only a tenth of that is the
 
 Three things before building it:
 
-- **It competes with the multi-group fix above rather than composing with it.**
-  htslib deliberately keeps a per-base scan here, because one pass has to count
-  several canonical bases at once and a single-character search cannot. So
-  jumping wins on a single-group read and one shared per-base pass may win on a
-  multi-group one, and nothing in either corpus can say where the crossover is.
-  Decide which shape the path should have before optimizing either
+- **It no longer competes with the multi-group fix below, and it used to.** The
+  argument was that htslib deliberately keeps a per-base scan because one pass
+  has to count several canonical bases at once and a single-character search
+  cannot — so the two are alternatives, and nothing in the corpus could say where
+  the crossover was. It can now: one pass is a **loss** below three distinct
+  groups, and real dorado output is two. So on ONT data there is no one-pass
+  shape for jumping to be an alternative to, and this can be taken on its own
+  merits. They only compete on Fiber-seq-shaped tags
   ([reference/MODIFICATION_TAGS.md](reference/MODIFICATION_TAGS.md)).
 - **The probe is forward-strand only.** Reverse reads scan backwards for the
   complement, which wants `lastIndexOf` and is a different access pattern —
@@ -1130,18 +1132,19 @@ guessing. The instrumentation pattern for the render-path ones is
 
 ### Walk the CIGAR once for a read's whole MM tag, not once per group
 
-`forEachMaxProbMod` groups mod entries by positions-array identity, so the types
-of a combined code (`C+mh`) share one CIGAR walk. **Entries from different MM
-groups never share one, and cannot** — `C+m,…;A+a,…` is 5mC on cytosine and 6mA
-on adenine, so the two groups genuinely have different positions. A read with
-two groups therefore walks the same `ops` array twice.
+`forEachMaxProbMod` groups mod entries by positions-array identity, so entries
+holding the same array share one CIGAR walk — the types of a combined code
+(`C+mh`), and since the same-base merge, two groups like `C+h?;C+m?` as well.
+**Entries from groups on DIFFERENT canonical bases never share one, and cannot**
+— `C+m,…;A+a,…` is 5mC on cytosine and 6mA on adenine, so the two groups
+genuinely have different positions. Such a read walks the same `ops` array twice.
 
 Both walks are ascending, so they merge: hold one cursor per group, take the
 minimum each step, walk the ops once. That turns O(N x ops + total positions)
 into O(ops + total positions).
 
-**Do not expect much from that half, and this entry used to.** It claimed close
-to a halving of the walk phase, reasoning that the ops term dominates (6.25M ops
+**Do not expect much from it, and this entry used to.** It claimed close to a
+halving of the walk phase, reasoning that the ops term dominates (6.25M ops
 against 0.84M positions). `cigarOpDensity.bench.ts` refutes it: sweeping op
 density across a 5,000x range moves the walk's ratio between 1.10x and 1.18x,
 because the phase is bound by per-CALL work — the 0.84M callbacks and the byte
@@ -1150,42 +1153,52 @@ removes one ops traversal and none of the per-call work, so on this fixture it i
 worth about the 5-10% that removing all the ops was, and on a low-op-density read
 close to nothing.
 
-**The DELTA walk is the half that is worth doing.**
-`getModPositions` restarts `currPos = 0` per group, so a two-group read walks its
-read sequence twice — and the parse phase is 46% of the pipeline, slightly more
-than the CIGAR walk. htslib does not: `bam_next_basemod` takes the minimum
-countdown per canonical base across every type and makes ONE pass, decrementing
-all the counters by the frequencies it observed. That is the shape to copy, and
-[reference/MODIFICATION_TAGS.md](reference/MODIFICATION_TAGS.md) has it against
-our version line by line. Take both halves together — they are the same fact
-about multi-group reads at two layers.
+**Two measurements have now said that from opposite directions**, which is worth
+trusting more than either alone: the same-base merge shares a CIGAR walk and a
+sequence walk in the same change, and splitting its number gives 1.08x for the
+CIGAR half against 1.27x for the sequence half.
 
 **This is not the exotic case.** Fiber-seq reads carry 5mC and 6mA as a matter of
 course, and `modificationsMenu` already tells users that basecallers increasingly
-emit several types per read. A combined code is the *rarer* of the two shapes.
+emit several types per read. A combined code is the *rarer* shape; two groups on
+one base is what dorado actually emits.
 
-**The fixture now exists and the parse half is measured.** `ont.6ma.chr20.bam`
-(jb2bench `shell/fetch_ont_6ma.sh`) is 8,166 reads / 72.8 Mbp / 21.81M MM deltas,
-every read `A+a.;C+h?;C+m?`. `multiGroupParse.bench.ts` prices the one-pass parse
-at **1.13x** there and **0.917x** on the single-group fixture — a trade, because
-the one-pass shape charges every base an array index and several property loads
-where the per-group loop is a tight `charCodeAt` do-while. Ship it **branched on
-group count**, tight loop at N=1 and one pass above it. The N=2 crossover is not
-established; `--groups=` synthesizes one if it matters.
+**The same-base half of this SHIPPED, and it took most of the entry with it.**
+`C+h?` and `C+m?` are two groups on the same canonical base with equal delta
+lists, which is what dorado emits, so `getModPositions` now compares the delta
+text at parse time and hands both groups one positions array —
+`sameBaseMerge.bench.ts`, 1.268x on the parse and 1.222x on the per-read
+pipeline, free on every fixture where it cannot fire. What is below is what
+survived that.
 
-**Take the same-base case first — it is bigger and this fixture is what revealed
-it.** `C+h?` and `C+m?` are two groups on the SAME canonical base, so their delta
-lists are equal and their positions identical, and dorado emits exactly this. Two
-of the read's three sequence walks are therefore redundant in the strongest sense
-— same base, same answers — as are two of its three CIGAR walks. `forEachMaxProbMod`
-correctly declines to merge them, because its test is array identity and these are
-separate arrays; the merge has to be decided at PARSE time by comparing the delta
-substrings, which is cheap and exact. Do that and the same-base groups share one
-positions array, at which point the existing identity grouping picks up the CIGAR
-walk for free.
+**The one-pass sequence walk is now a Fiber-seq optimization, and only that.**
+Remeasured against the merged baseline, `multiGroupParse.bench.ts` makes htslib's
+shape a **loss** below three DISTINCT groups: 0.917x at one, 0.930x at two
+synthesized (`--groups=2`), 0.949x at the two real ones of the ONT fixture, and
+1.385x only at fiberseq's 2.86. `A+a.;C+h?;C+m?` is three groups but two distinct
+walks, so the 1.13x this entry used to quote was consumed by the merge rather
+than left on the table. If it is built anyway, for `C+m;A+a;T-a`-shaped data:
+
+- **Branch on the DISTINCT count, never the group count.** Counting duplicates
+  puts the ONT case on the losing side of the branch.
+- **An MM tag may ask for more of a base than the read has left, and the two
+  shapes disagreed there.** The per-group walk clamps, recording `seqLength - 1`
+  forward or `0` reverse for each call it cannot place; the one-pass arm dropped
+  them, and its "output identical" rows only ever meant that no read in those
+  fixtures overran. Same rule the `indexOf` entry above singles out.
+
+**The CIGAR half across DIFFERENT bases is what is genuinely still open**, and it
+is the part with no fixture argument against it: `A+a` and `C+m` have different
+positions by construction, so no parse-time merge can fold them and
+`forEachMaxProbMod` walks the ops twice. Hold one cursor per group, take the
+minimum each step. Expect **~1.1x on that phase and no more** — `cigarOpDensity`
+puts it at 1.10-1.18x across a 5,000x op-density sweep because the phase is bound
+by per-call work, and the same-base merge just measured the same thing from the
+other side: sharing a CIGAR walk was 1.08x where sharing the sequence walk was
+1.27x.
 
 Keep the identity grouping when doing this — it answers a different question
-(which entries are the same walk) and the merge is a layer above it.
+(which entries are the same walk) and any merge is a layer above it.
 
 ### The synteny follow runs away on a swapped-assembly track
 

@@ -81,34 +81,62 @@ So this is a real difference in shape, not an oversight, and "htslib doesn't
 allocate" is not on its own an argument for changing it. What it *is* good for is
 the next section.
 
-## The structural difference that gates two open items
+## The structural difference, and how much of it is left
 
 **htslib walks the read sequence ONCE for every type at once. We walk it once per
-group.**
+DISTINCT group.**
 
 `bam_next_basemod` takes the minimum countdown per canonical base across all
 types, then makes a single pass counting base frequencies until one of them
 reaches its threshold, then decrements every type's countdown by the frequencies
 observed. One pass over the sequence, however many groups the tag has.
 
-`getModPositions` restarts `currPos = 0` for each group and walks the sequence
-again, because each group counts occurrences of its own canonical base. A
-Fiber-seq read with `C+m` and `A+a` therefore walks its sequence **twice** where
-htslib walks it once — and `modPhases.bench.ts` puts that walk's phase at 46% of
-the per-read pipeline.
+`getModPositions` restarts `currPos = 0` for each group it has to walk, because
+each group counts occurrences of its own canonical base. Two things reduce how
+often that happens, and they are different mechanisms:
 
-The same doubling applies one layer down: `forEachMaxProbMod` runs one CIGAR walk
-per group, so a two-group read walks the CIGAR twice as well. Both are in
-[TODO.md](../TODO.md) under "Walk the CIGAR once for a read's whole MM tag".
+- **The types of one group share a walk.** `C+mh` calls both types at the same
+  positions, so it yields one array and two entries pointing at it.
+- **Two groups with the same base, strand and delta list share a walk too**,
+  decided by comparing the delta text at parse time. This is dorado's
+  `C+h?;C+m?`, and it is the common case rather than the exotic one:
+  `sameBaseMerge.bench.ts` prices it at **1.268x on the parse** and 1.222x on the
+  per-read pipeline at 72.8 Mbp.
 
-**And it is the reason to be careful with the `indexOf` idea.** Replacing the
-per-base delta walk with `indexOf` jumps measures 1.42x on this corpus
-(`seqscan.probe.ts`) — but this corpus is single-group. htslib's per-base scan is
-a deliberate choice for the multi-type case: a single-character search cannot
-count several canonical bases at once, so the two optimizations are alternatives
-rather than complements. With one group, jumping wins. With several, one shared
-per-base pass may beat N jumping passes. Nothing here can say where the crossover
-is, because no fixture in either corpus has more than one group.
+So `A+a.;C+h?;C+m?` is three groups and **two** sequence walks. A Fiber-seq read
+with `C+m;A+a;T-a` is three groups and three walks, because those are three
+different canonical bases.
+
+The same sharing applies one layer down for free: `forEachMaxProbMod` groups
+entries by positions-array identity, so entries that share an array share a CIGAR
+walk. That half is worth much less than it looks — 1.08x against the parse's
+1.27x — because the phase is bound by per-call work rather than traversal, which
+`cigarOpDensity.bench.ts` established independently.
+
+**What is left of the difference is a Fiber-seq optimization, not a general
+one.** `multiGroupParse.bench.ts` implements htslib's shape against the baseline
+above and it is a **loss** below three distinct groups: 0.917x at one, 0.930x at
+two synthesized, 0.949x at the two real ones of the ONT fixture, and 1.385x only
+at fiberseq's 2.86. One pass charges every read base an array index and several
+property loads where the per-group loop is a tight `charCodeAt` do-while; two
+saved passes do not cover that. Anything built here must branch on the
+**distinct** count, not the group count.
+
+**The one hard constraint if it is ever built**: an MM tag may ask for more of a
+base than the read has left, and the two shapes did not agree there. The
+per-group walk clamps, recording `seqLength - 1` (forward) or `0` (reverse) for
+every call it cannot place; the one-pass arm silently dropped them until this was
+fixed, and its "output identical" rows had only meant that no read in those
+fixtures overran. It is the same end-of-sequence rule the `indexOf` idea has to
+reproduce.
+
+**And it settles what to do about `indexOf`.** Replacing the per-base delta walk
+with `indexOf` jumps measures 1.42x in isolation (`seqscan.probe.ts`, forward
+strand only). That was recorded here as *competing* with the one-pass shape,
+since a single-character search cannot count several canonical bases at once. It
+no longer competes on ONT data: one pass is a loss at two distinct groups, so
+there is nothing there for jumping to be an alternative to. The two are only
+alternatives on Fiber-seq-shaped tags.
 
 ## What htslib validates that we do not do at all
 
