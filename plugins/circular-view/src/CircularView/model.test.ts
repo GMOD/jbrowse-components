@@ -123,24 +123,57 @@ test('a figure bigger than its box still overflows evenly', () => {
 //
 // 0.35 is the case the old ring-only compensation got wrong — it moved the pan
 // by the whole radius change no matter where the cursor was, so zooming over a
-// chord shoved the figure across the box instead of holding it still
-test.each([1, 0.35])('zoomToPoint holds a point at %fx the radius still', f => {
-  const view = createView({ regions: [region('chr1', 1_000_000)] })
-  const angle = 0.7
-  const cursorX = view.radiusPx * f * Math.cos(angle)
-  const cursorY = view.radiusPx * f * Math.sin(angle)
-  const screenXY = (scale: number) => {
-    const [originX, originY] = view.figureOriginXY
-    const [cx, cy] = view.centerXY
-    return [originX + cx + cursorX * scale, originY + cy + cursorY * scale]
-  }
-  const [beforeX, beforeY] = screenXY(1)
-  const oldRadiusPx = view.radiusPx
-  view.zoomToPoint(view.bpPerPx / 2, cursorX, cursorY)
-  expect(view.radiusPx).toBeGreaterThan(oldRadiusPx)
-  const [afterX, afterY] = screenXY(view.radiusPx / oldRadiusPx)
-  expect(afterX).toBeCloseTo(beforeX!)
-  expect(afterY).toBeCloseTo(beforeY!)
+// chord shoved the figure across the box instead of holding it still.
+//
+// The tall box is the other one, and the default 800x400 hides it: there the
+// figure exactly fills the height, so it is bigger than the box the moment you
+// zoom in and the middle stays put. In a box TALLER than the figure the figure
+// hangs from the top, so growing it slides the circle's middle down by half the
+// growth — compensating only the cursor offset dragged the drawing down with it,
+// in exactly the SV inspector pane the top-hang was added for.
+test.each([
+  { f: 1, width: 800, height: 400 },
+  { f: 0.35, width: 800, height: 400 },
+  { f: 1, width: 300, height: 900 },
+  { f: 0.35, width: 300, height: 900 },
+])(
+  'zoomToPoint holds a point at $f of the radius still in $width×$height',
+  ({ f, width, height }) => {
+    const view = createView({
+      regions: [region('chr1', 1_000_000)],
+      width,
+      height,
+    })
+    const angle = 0.7
+    const cursorX = view.radiusPx * f * Math.cos(angle)
+    const cursorY = view.radiusPx * f * Math.sin(angle)
+    const screenXY = (scale: number) => {
+      const [originX, originY] = view.figureOriginXY
+      const [cx, cy] = view.centerXY
+      return [originX + cx + cursorX * scale, originY + cy + cursorY * scale]
+    }
+    const [beforeX, beforeY] = screenXY(1)
+    const oldRadiusPx = view.radiusPx
+    view.zoomToPoint(view.bpPerPx / 2, cursorX, cursorY)
+    expect(view.radiusPx).toBeGreaterThan(oldRadiusPx)
+    const [afterX, afterY] = screenXY(view.radiusPx / oldRadiusPx)
+    expect(afterX).toBeCloseTo(beforeX!)
+    expect(afterY).toBeCloseTo(beforeY!)
+  },
+)
+
+// and the tall case is only a test of anything while the grown figure is STILL
+// inside its box — once it overflows, the middle is pinned again and the bug
+// this covers cannot show
+test('the tall-box zoom above stays inside the box', () => {
+  const view = createView({
+    regions: [region('chr1', 1_000_000)],
+    width: 300,
+    height: 900,
+  })
+  view.zoomToPoint(view.bpPerPx / 2, 0, 0)
+  expect(view.figureSize).toBeGreaterThan(300)
+  expect(view.figureSize).toBeLessThan(900)
 })
 
 test('resetView refits and clears the zoom-to-cursor pan', () => {

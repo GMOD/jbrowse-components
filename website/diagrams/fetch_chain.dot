@@ -67,13 +67,22 @@ digraph fetch_chain {
   stale -> bump [label="yes — drop results"]
   commit -> bump
 
-  // Both feedback edges are constraint=false: they close the loop but must not
-  // pull their targets back up a rank, which is what left the entry node
-  // stranded mid-graph and crossed every edge around it.
-  bump -> check [label="re-fires", style=dashed, constraint=false]
-  toolarge -> check [
-    label="re-measures once\nper settled viewport"
-    style=dashed
-    constraint=false
-  ]
+  // Both loose ends re-enter the same debounced check, so they meet at a
+  // junction and travel back as ONE edge. Drawn as two they were two long
+  // dashed sweeps up the whole right side, which is most of what a reader sees
+  // before they see the chain — and both said the same thing anyway. What
+  // differs is only what re-fires the autorun (a fetchGeneration bump, or the
+  // next settled viewport), and the caption is where that belongs.
+  reenter [shape=point, width=0.06, color="#555555"]
+  // The junction's rank comes from this one edge keeping its constraint, which
+  // puts it just below the last node of the chain. `{ rank=same; bump; reenter }`
+  // is the obvious alternative and is wrong: a rankset EJECTS its members from
+  // their cluster ("bump was already in a rankset, deleted from cluster"), which
+  // drops `increment fetchGeneration` out of the green box it belongs to.
+  bump -> reenter [style=dashed, arrowhead=none]
+  // The other two are constraint=false: they close the loop but must not pull
+  // their targets back up a rank, which is what left the entry node stranded
+  // mid-graph and crossed every edge around it.
+  toolarge -> reenter [style=dashed, constraint=false, arrowhead=none]
+  reenter -> check [label="re-enters the check", style=dashed, constraint=false]
 }

@@ -30,8 +30,23 @@ digraph rpc_lifecycle {
     color="#ef6c00"
   ]
 
-  legend_main [label="main thread", fillcolor="#dcedc8", shape=note, fontsize=10]
-  legend_worker [label="worker\n(sticky per sessionId)", fillcolor="#e3f2fd", shape=note, fontsize=10]
+  // A bordered key rather than two loose notes ranked beside the chain. Ranked,
+  // the BLUE worker note sat level with serializeArguments(), which is a GREEN
+  // main-thread node — so the key read as a label for that row and said the
+  // opposite of the colour it was there to explain. Nothing in the cluster is
+  // ranked against the chain, which is what keeps it a key.
+  subgraph cluster_legend {
+    label="which side runs it"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=11
+    style=dashed
+    color="#bdbdbd"
+
+    legend_main [label="main thread", fillcolor="#dcedc8", shape=note, fontsize=10]
+    legend_worker [label="worker\n(sticky per sessionId)", fillcolor="#e3f2fd", shape=note, fontsize=10]
+    legend_main -> legend_worker [style=invis]
+  }
 
   call -> ser
   ser -> wdeser [label="  structured clone"]
@@ -50,6 +65,4 @@ digraph rpc_lifecycle {
   ]
 
   { rank=same; exec; status }
-  { rank=same; call; legend_main }
-  { rank=same; ser; legend_worker }
 }

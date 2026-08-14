@@ -36,6 +36,27 @@ const twoPi = 2 * Math.PI
 // browser can lay out
 const maximumRadiusPx = 5000
 
+// Where the middle of the circle lands vertically in a box of this height,
+// before the zoom-to-cursor pan.
+//
+// The figure hangs from the TOP whenever the box is taller than it, and only
+// centers once the figure is bigger than the box. `autoFit` sizes the figure to
+// `min(width, height)`, so exactly one axis ever has slack — and it is the
+// height precisely when the view is TALLER than it is wide, which is the SV
+// inspector's circular pane beside a full-height spreadsheet. Splitting that
+// slack evenly left the chord plot floating in the middle of its pane with
+// nothing above or below it. The `Math.min(0, …)` keeps the centering where it
+// was load-bearing: a figure zoomed past its box still overflows top and bottom
+// equally rather than only off the bottom.
+//
+// The consequence is that this middle MOVES with the figure's size while the
+// figure is smaller than the box, which the horizontal middle (`width / 2`)
+// never does. `zoomToPoint` has to undo that or the drawing slides down as it
+// grows — hence one function both callers read.
+function figureMiddleY(height: number, figureSize: number) {
+  return Math.min(0, (height - figureSize) / 2) + figureSize / 2
+}
+
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
@@ -353,22 +374,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * Centered horizontally: a view much wider than it is tall would
        * otherwise leave the circle jammed in the corner under the controls.
        *
-       * Vertically it hangs from the TOP whenever the box is taller than the
-       * figure, and only centers when the figure is bigger than the box.
-       * `autoFit` sizes the figure to `min(width, height)`, so exactly one axis
-       * ever has slack — and the axis with slack is the height precisely when
-       * the view is TALLER than it is wide, which is the SV inspector's
-       * circular pane beside a full-height spreadsheet. Splitting that slack
-       * evenly left the chord plot floating in the middle of its pane with
-       * nothing above or below it. `Math.min(0, …)` keeps the centering where it
-       * was load-bearing: a figure zoomed past its box has a negative offset and
-       * still overflows evenly rather than only off the bottom.
+       * Vertically it hangs from the top of a box taller than itself — see
+       * `figureMiddleY`, which `zoomToPoint` reads for the same reason.
        */
       get figureOriginXY(): [number, number] {
         const { figureSize } = this
         return [
           (this.width - figureSize) / 2 + self.panX,
-          Math.min(0, (self.height - figureSize) / 2) + self.panY,
+          figureMiddleY(self.height, figureSize) - figureSize / 2 + self.panY,
         ]
       },
       /**
@@ -700,19 +713,28 @@ function stateModelFactory(pluginManager: PluginManager) {
       zoomToPoint(newBpPerPx: number, cursorX: number, cursorY: number) {
         self.autoFit = false
         const oldRadiusPx = self.radiusPx
+        const oldMiddleY = figureMiddleY(self.height, self.figureSize)
         this.setBpPerPx(newBpPerPx)
         if (!oldRadiusPx) {
           return
         }
-        // figureOriginXY keeps the circle's center pinned to the middle of the
-        // box, so the only thing that moves the point under the cursor is its
-        // own offset from that center scaling with the radius. Taking the real
-        // offset rather than assuming the cursor sits on the ruler ring is what
-        // makes this hold over the chords too — at the middle of the figure the
-        // ring assumption pushed the drawing by the whole radius change
+        // The point's screen position is the circle's middle plus its own offset
+        // from that middle, and the drawing scales that offset with the radius.
+        // Taking the real offset rather than assuming the cursor sits on the
+        // ruler ring is what makes this hold over the chords too — at the middle
+        // of the figure the ring assumption pushed the drawing by the whole
+        // radius change.
         const scale = self.radiusPx / oldRadiusPx
+        // Horizontally the middle is `width / 2` whatever the figure's size, so
+        // the offset term is the whole story. Vertically it is not: while the
+        // figure is smaller than its box it hangs from the top, so growing it
+        // slides the middle down by half the growth and drags the point under
+        // the cursor with it. That is the tall-box case the top-hang exists for.
         self.panX += cursorX * (1 - scale)
-        self.panY += cursorY * (1 - scale)
+        self.panY +=
+          cursorY * (1 - scale) +
+          oldMiddleY -
+          figureMiddleY(self.height, self.figureSize)
       },
 
       /**
