@@ -55,10 +55,21 @@ export interface RunSummary {
   total: number
 }
 
+// The two apps a card's "open live" link can open in. `hosted` is the base every
+// liveUrl above was built against (CODE_BASE, which JBROWSE_CODE_BASE
+// retargets), so the page can swap it for `local` as a prefix and nothing more —
+// it must be the base actually used rather than a constant, or the swap silently
+// matches nothing and the toggle does nothing.
+export interface LiveBases {
+  hosted: string
+  local: string
+}
+
 export interface FigureState {
   unpublished: string[]
   unpulled: string[]
   total: number
   baseline: BaselineState
   run?: RunSummary
+  liveBases: LiveBases
 }

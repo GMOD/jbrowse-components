@@ -11,6 +11,7 @@ import {
   serveReviewBundle,
 } from '@jbrowse/browser-test-utils'
 
+import { CODE_BASE } from '../src/lib/code-base.ts'
 import { readManifest, unpublishedFigures } from './figure-paths.ts'
 import { figureContentTypes, figureNames, figurePath } from './figure-store.ts'
 import {
@@ -40,13 +41,27 @@ const { values } = parseArgs({
   options: {
     help: { type: 'boolean', short: 'h', default: false },
     port: { type: 'string' },
+    'app-port': { type: 'string' },
   },
 })
+
+const portVal = values.port ? Number(values.port) : Number.NaN
+const port = Number.isFinite(portVal) ? portVal : 3335
+
+// Where a locally running jbrowse-web is. 3000 is what `pnpm start` in
+// products/jbrowse-web binds when it is free — and only when it is free; it
+// falls back to an arbitrary port otherwise, which is what --app-port is for.
+// Serving the same `?config=test_data/…` a hosted live link carries works
+// because the dev server's static root is products/jbrowse-web/public, whose
+// test_data symlinks to the repo's.
+const appPortVal = values['app-port'] ? Number(values['app-port']) : Number.NaN
+const appPort = Number.isFinite(appPortVal) ? appPortVal : 3000
+const localCodeBase = `http://localhost:${appPort}/`
 
 if (values.help) {
   console.log(`Review website screenshots in a web UI.
 
-Usage: pnpm review-screenshots-web [--port=3335]
+Usage: pnpm review-screenshots-web [--port=3335] [--app-port=3000]
 
 Each figure is shown against the same figure on origin/main, with where the
 docs use it, and approve/deny/note controls. Four ways to look at the pair,
@@ -58,13 +73,20 @@ card you are looking at:
   swipe   stacked, with a divider you drag across the picture
   diff    pixel difference — black wherever the two agree (with an amplifier)
 
+A card's "Open live in JBrowse" opens the session the figure was captured from.
+The Live links control chooses which app that is:
+
+  ${CODE_BASE}
+  ${localCodeBase} (--app-port names the port)
+
+The local one is \`pnpm start\` in products/jbrowse-web, and is what to use when
+the figure is about a change the hosted build does not have yet — otherwise the
+link opens a different app from the one the picture came out of.
+
 Verdicts are written to ${path.relative(process.cwd(), reportPath)}.
 `)
   process.exit(0)
 }
-
-const portVal = values.port ? Number(values.port) : Number.NaN
-const port = Number.isFinite(portVal) ? portVal : 3335
 
 // The image route is content-addressed: the URL carries `?v=<hash of the
 // bytes>`, so a URL can only ever mean one picture and is safe to cache
@@ -179,6 +201,10 @@ function buildFigureStatePayload(): FigureState {
     // the same memoized baseline /api/specs just used, so it costs a `git log -1`
     // and not a second parse of the manifest.
     baseline: getBaselineState(),
+    // Sent once here rather than as a second URL on all 314 cards: a live link
+    // is a whole encoded session, and the local one differs from it only in the
+    // prefix.
+    liveBases: { hosted: CODE_BASE, local: localCodeBase },
     run: run && {
       finishedAt: run.finishedAt,
       filter: run.filter,

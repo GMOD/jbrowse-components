@@ -1,6 +1,9 @@
 import { settledAs } from '@jbrowse/browser-test-utils/reviewApp'
 
+import { LIVE_WHICH } from './liveLinks.ts'
+
 import type { SpecEntry } from '../review-payload.ts'
+import type { LiveWhich } from './liveLinks.ts'
 
 // The predicates the header, the badges and the card list all ask, in one place
 // — the badge that counts what a toggle would show and the filter that applies
@@ -61,6 +64,7 @@ export interface Filters {
   group: string
   kind: Kind
   compare: CompareMode
+  live: LiveWhich
 }
 
 export const defaultFilters: Filters = {
@@ -72,6 +76,7 @@ export const defaultFilters: Filters = {
   group: '',
   kind: 'all',
   compare: 'side',
+  live: 'hosted',
 }
 
 // Diff vs origin/main, the screenshots a branch review cares about:
@@ -168,9 +173,10 @@ export function matchesFilters(s: SpecEntry, f: Filters) {
 
 // Which of a card's own properties the list is selected and ordered on: change
 // one of these and the reviewer is asking a different question, so the queue is
-// re-captured. `compare` is absent on purpose — it changes how a card draws, not
-// which cards there are, and re-capturing on it threw away the batch a reviewer
-// had settled every time they reached for a closer look.
+// re-captured. `compare` and `live` are absent on purpose — they change how a
+// card draws and where one of its links points, not which cards there are, and
+// re-capturing on them threw away the batch a reviewer had settled every time
+// they reached for a closer look.
 export const queryKey = (f: Filters) =>
   [
     searchText(f),
@@ -198,6 +204,7 @@ export function writeUrl(f: Filters) {
   put('group', f.group, '')
   put('kind', f.kind, 'all')
   put('compare', f.compare, 'side')
+  put('live', f.live, 'hosted')
   if (f.changedOnly) {
     params.set('changed', '1')
   }
@@ -236,5 +243,6 @@ export function readUrl(): Filters {
       p.get('compare'),
       'side',
     ),
+    live: oneOf(LIVE_WHICH, p.get('live'), 'hosted'),
   }
 }

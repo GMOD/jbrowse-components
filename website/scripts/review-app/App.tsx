@@ -29,9 +29,11 @@ import {
   searchText,
   writeUrl,
 } from './filters.ts'
+import { LIVE_WHICH, baseLabel, liveTargetOf } from './liveLinks.ts'
 
 import type { FigureState, SpecEntry } from '../review-payload.ts'
 import type { CompareMode, Filters, Kind, Sort, Status } from './filters.ts'
+import type { LiveWhich } from './liveLinks.ts'
 
 const errText = (err: unknown) =>
   err instanceof Error ? err.message : String(err)
@@ -241,6 +243,20 @@ export function App() {
     [entries],
   )
 
+  // Where a card's "Open live in JBrowse" points. The two bases arrive with the
+  // figure state, which lands before the first card is drawn — until then there
+  // is nothing to retarget to and the links stay hosted, which is also what a
+  // card with no local equivalent gets.
+  const liveBases = figureState?.liveBases
+  const liveTarget = useMemo(
+    () => liveTargetOf(liveBases, filters.live),
+    [liveBases, filters.live],
+  )
+  const liveLabels: Record<LiveWhich, string> = {
+    hosted: liveBases ? baseLabel(liveBases.hosted) : 'hosted build',
+    local: liveBases ? baseLabel(liveBases.local) : 'local dev server',
+  }
+
   const matching = useMemo(() => {
     const list = entries.filter(s => matchesFilters(s, filters))
     if (filters.sortBy !== 'recent') {
@@ -379,6 +395,26 @@ export function App() {
             ))}
           </select>
         </label>
+        {/* A figure under review is routinely of a change the hosted build does
+            not have yet, so the link under it opens a different app from the one
+            the picture came out of. This is how it gets pointed at the app that
+            did produce it. */}
+        <label className="ctrl">
+          <span>Live links</span>
+          <select
+            title="Which app a card's Open live link opens the captured session in — the hosted build, or a jbrowse-web dev server on this machine (pnpm start in products/jbrowse-web; --app-port if it is not on 3000)"
+            value={filters.live}
+            onChange={e => {
+              changeFilter('live', e.target.value as LiveWhich)
+            }}
+          >
+            {LIVE_WHICH.map(w => (
+              <option key={w} value={w}>
+                {liveLabels[w]}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="tabs">
           {TABS.map(t => (
             <button
@@ -494,6 +530,7 @@ export function App() {
               message={messages[spec.name]}
               pressed={pressed[spec.name]}
               drafts={drafts}
+              liveTarget={liveTarget}
               settled={leaving.has(spec.name)}
               onSetVerdict={setVerdict}
               onClearVerdict={clearVerdict}

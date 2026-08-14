@@ -90,6 +90,17 @@ which is the one result a probe like this must not be able to give: the compare
 one says so and what to do about it, the layout one times out waiting for a
 card.
 
+**A card's live link opens the hosted build, which is not the app the figure
+came out of.** The figures are captured against a build on this machine, so
+reviewing an unreleased change means the picture and the link under it disagree
+— and nothing on the card says so. The header's **Live links** control points
+every one of them at a local `pnpm start` instead (`--app-port` if it is not on
+:3000; the `?config=test_data/…` resolves because the dev server's static root
+symlinks the repo's `test_data`). It is a prefix swap over `CODE_BASE`, so the
+three `genomes_basics/site_*` figures, whose URL is an absolute one of their
+own, keep the link they had — the tooltip on every link names the host it
+actually reaches.
+
 ## Prose, captions, cards
 
 - **Few numbers in prose, and none that assert a result.** A number that names

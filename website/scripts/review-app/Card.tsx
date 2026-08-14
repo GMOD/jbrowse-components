@@ -7,8 +7,10 @@ import {
 
 import { Compare } from './Compare.tsx'
 import { isChanged, isNew, partsAhead } from './filters.ts'
+import { liveHref, linkHost } from './liveLinks.ts'
 
 import type { SpecEntry } from '../review-payload.ts'
+import type { LiveTarget } from './liveLinks.ts'
 import type {
   CardMessage,
   DraftStore,
@@ -55,6 +57,36 @@ function RunPills({ spec }: { spec: SpecEntry }) {
   )
 }
 
+// The session the figure was captured from, in whichever app the header's Live
+// links control names. The tooltip says which one it reached: the control is one
+// setting for the whole page, and a card whose live URL cannot follow it — a
+// spec pointing at a site of its own, which has no local equivalent — would
+// otherwise silently open somewhere else.
+function LiveLink({
+  url,
+  liveTarget,
+  className,
+  children,
+}: {
+  url: string
+  liveTarget?: LiveTarget
+  className?: string
+  children: React.ReactNode
+}) {
+  const href = liveHref(url, liveTarget)
+  return (
+    <a
+      className={className}
+      href={href}
+      title={`opens on ${linkHost(href)}`}
+      target="_blank"
+      rel="noopener"
+    >
+      {children}
+    </a>
+  )
+}
+
 function Usages({ spec }: { spec: SpecEntry }) {
   return spec.usages.length ? (
     <div className="usages">
@@ -77,7 +109,13 @@ function Usages({ spec }: { spec: SpecEntry }) {
 // A compose figure's parts are its ingredients, not figures of their own: the
 // card above already shows the stack they add up to, so they render as a list of
 // live links (what <Figure links=...> publishes) rather than separate cards.
-function Parts({ spec }: { spec: SpecEntry }) {
+function Parts({
+  spec,
+  liveTarget,
+}: {
+  spec: SpecEntry
+  liveTarget?: LiveTarget
+}) {
   if (!spec.parts.length) {
     return null
   }
@@ -93,9 +131,9 @@ function Parts({ spec }: { spec: SpecEntry }) {
           {isNew(p) ? <Pill cls="new">new</Pill> : null}
           {p.changed ? <Pill cls="changed">changed</Pill> : null}
           {p.liveUrl ? (
-            <a href={p.liveUrl} target="_blank" rel="noopener">
+            <LiveLink url={p.liveUrl} liveTarget={liveTarget}>
               open live ↗
-            </a>
+            </LiveLink>
           ) : null}
         </div>
       ))}
@@ -114,6 +152,9 @@ export interface CardProps {
   message?: CardMessage
   pressed?: PressStatus
   drafts: DraftStore
+  // which app the live links open in — undefined is the hosted build they were
+  // built against
+  liveTarget?: LiveTarget
   // this card is done with as far as the current filters are concerned, and is
   // only still on screen because taking it away is the reviewer's call
   settled: boolean
@@ -130,6 +171,7 @@ export const Card = memo(function Card({
   message,
   pressed,
   drafts,
+  liveTarget,
   settled,
   onSetVerdict,
   onClearVerdict,
@@ -217,16 +259,15 @@ export const Card = memo(function Card({
           <pre className="runerr">{spec.run.failed}</pre>
         ) : null}
         <Usages spec={spec} />
-        <Parts spec={spec} />
+        <Parts spec={spec} liveTarget={liveTarget} />
         {spec.liveUrl ? (
-          <a
+          <LiveLink
             className="livelink"
-            href={spec.liveUrl}
-            target="_blank"
-            rel="noopener"
+            url={spec.liveUrl}
+            liveTarget={liveTarget}
           >
             Open live in JBrowse ↗
-          </a>
+          </LiveLink>
         ) : null}
         <textarea
           className="note"
