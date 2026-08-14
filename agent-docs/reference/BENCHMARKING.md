@@ -166,6 +166,14 @@ under `node`, or under Chrome via the puppeteer resolved from
 `performance.now()` to ~0.1ms for Spectre, so anything faster than that reads as
 `0.000` there and wants the node arm for resolution.
 
+**Every `*.bench.ts` in this repo is already node-run** — each names its own
+`node <path>` command in its header — and the whole set was checked when this
+entry was written, so nothing committed is affected. That is the property to
+preserve: a bench that grows a `test()` around it to get a runner is not a
+cheaper bench, it is a different and wrong measurement. The only jest-derived
+timings found anywhere were the throwaway probes behind one handoff, which is
+where the numbers above came from.
+
 
 
 **V8's sampling heap profiler reports only survivors.** 500k objects allocated
