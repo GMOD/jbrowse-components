@@ -631,8 +631,9 @@ scroll the port, and that Tab reaches the next view.
   should disambiguate where the visible title does not is a product decision.
 
 **Retire when** a display's features are reachable and actionable from the
-keyboard. The rest above is breadth over a solved shape, and belongs in
-[../TODO.md](../TODO.md) rather than here.
+keyboard. The four below it are each something a reader can trip over without
+knowing it exists — which is what keeps them here rather than in
+[../TODO.md](../TODO.md) — but none of them is a shape problem any more.
 
 ---
 
