@@ -23,6 +23,24 @@ import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 import type { ReorderDirection } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
+// Whether `node` IS `view` or lives somewhere under it. A view can CONTAIN
+// views, so `takeOut` matches widgets to the view leaving by containment rather
+// than by `widget.view.id === view.id`. ADR-069 says what that cost.
+//
+// Deliberately not `findParentThat`, which warns and throws when the walk runs
+// out: this asks the question of every active widget, and most of them are
+// under some other view, so "no" is an ordinary answer here rather than a fault.
+function isWithin(node: IAnyStateTreeNode, view: IBaseViewModel) {
+  let cur = node
+  while (cur !== view) {
+    if (!hasParent(cur)) {
+      return false
+    }
+    cur = getParent(cur)
+  }
+  return true
+}
+
 /**
  * #stateModel MultipleViewsSessionMixin
  */
@@ -117,34 +135,6 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       // `cancer_sv/multihop_split_view` the throw went to an ErrorBoundary with
       // no view left under it and took the page. Detaching leaves the walk
       // something to find.
-      // Whether `node` IS the view or lives somewhere under it.
-      //
-      // Widgets are matched this way rather than by `widget.view.id === view.id`
-      // because a view can contain views. `openFeatureWidget` stores
-      // `getContainingView(node)`, which inside a breakpoint-split or synteny
-      // view is the SUB-view, never the view in `session.views` — so an id
-      // comparison left that widget in `activeWidgets`, still rendering, with a
-      // reference into a tree that had just left the session.
-      //
-      // Which is worse than it sounds now that the teardown is a detach. A
-      // detached node is ALIVE, so `safeReference`'s onInvalidated — which fires
-      // on destroy — has not run, but the node is already out of the session's
-      // identifier cache: the read THROWS ("Failed to resolve reference") where
-      // the old destroy-in-place resolved it to undefined. Same live-root
-      // asymmetry ADR-069 names for `getContainingView`, reached through a
-      // reference rather than a parent walk, and it lands on this very loop —
-      // which reads every active widget's view, so one such widget took the
-      // NEXT removal down with it.
-      const isWithin = (view: IBaseViewModel, node: IAnyStateTreeNode) => {
-        let cur = node
-        while (cur !== view) {
-          if (!hasParent(cur)) {
-            return false
-          }
-          cur = getParent(cur)
-        }
-        return true
-      }
       const takeOut = (view: IBaseViewModel) => {
         // Membership first, and before anything reads through `view`. A view
         // already out of the session reaches here — `replaceView` documents
@@ -154,9 +144,14 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         if (!self.views.includes(view)) {
           return
         }
+        // By containment, because `openFeatureWidget` stores
+        // `getContainingView(node)` — which inside a breakpoint-split or synteny
+        // view is the SUB-view, never the view in `session.views`. An id
+        // comparison left that widget on screen holding a reference into the
+        // tree about to leave, and the detach makes reading one THROW rather
+        // than resolve to undefined. ADR-069.
         for (const [, widget] of self.activeWidgets) {
-          const widgetView = widget.view as IAnyStateTreeNode | undefined
-          if (widgetView && isWithin(view, widgetView)) {
+          if (widget.view && isWithin(widget.view, view)) {
             self.hideWidget(widget)
           }
         }

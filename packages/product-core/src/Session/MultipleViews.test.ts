@@ -10,7 +10,7 @@ import { isAlive, onSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { MultipleViewsSessionMixin } from './MultipleViews.ts'
 
 // `views` is a pluggableMstType union, so a view can only be added for a type
-// the plugin manager knows. Two of them, because replaceView's whole point is
+// the plugin manager knows. Two flat ones, because replaceView's whole point is
 // swapping one type for another.
 function fakeView(name: string) {
   return types.model(name, {
@@ -20,24 +20,21 @@ function fakeView(name: string) {
   })
 }
 
-// One model object per name, because a `types.safeReference` resolves against
-// the type REGISTERED here: a nested view built from a second `fakeView('X')`
-// call is a different MST type under the same name, and the reference then
-// fails to resolve for a reason that has nothing to do with what is being
-// tested.
-const fakeViewModels = Object.fromEntries(
-  ['FakeLinearView', 'FakeSyntenyView'].map(name => [name, fakeView(name)]),
-)
+// Built once each, not per registration, because a `types.safeReference`
+// resolves against the type REGISTERED with the plugin manager: a nested view
+// built from a second `fakeView('X')` call is a different MST type under the
+// same name, and the reference then fails to resolve for a reason that is not
+// what is under test.
+const fakeLinearView = fakeView('FakeLinearView')
+const fakeSyntenyView = fakeView('FakeSyntenyView')
 
-// A view that contains views — the shape breakpoint-split and comparative views
+// A view that CONTAINS views — the shape breakpoint-split and comparative views
 // have, and the one that decides how `takeOut` has to match widgets.
-function fakeContainerView() {
-  return types.model('FakeContainerView', {
-    id: ElementId,
-    type: types.literal('FakeContainerView'),
-    views: types.array(fakeViewModels.FakeLinearView!),
-  })
-}
+const fakeContainerView = types.model('FakeContainerView', {
+  id: ElementId,
+  type: types.literal('FakeContainerView'),
+  views: types.array(fakeLinearView),
+})
 
 // A view that reaches OUTSIDE its own tree when it is taken out of a session,
 // which is the shape both comparative views have — they give back the
@@ -71,24 +68,20 @@ class FakeViewsPlugin extends Plugin {
           ReactComponent: () => null,
         }),
     )
-    for (const [name, stateModel] of Object.entries(fakeViewModels)) {
+    for (const stateModel of [
+      fakeLinearView,
+      fakeSyntenyView,
+      fakeContainerView,
+    ]) {
       pluginManager.addViewType(
         () =>
           new ViewType({
-            name,
+            name: stateModel.name,
             stateModel,
             ReactComponent: () => null,
           }),
       )
     }
-    pluginManager.addViewType(
-      () =>
-        new ViewType({
-          name: 'FakeContainerView',
-          stateModel: fakeContainerView(),
-          ReactComponent: () => null,
-        }),
-    )
     // The shape every real view-scoped widget has: a `types.safeReference` to a
     // pluggable view (HierarchicalTrackSelectorWidget, AddTrackWidget,
     // PluginStoreWidget all declare exactly this). What a replaced view does to
@@ -244,14 +237,19 @@ test('a widget referencing the replaced view is dropped, not rebound', () => {
 // already out of the session's identifier cache — so reading the reference
 // throws "Failed to resolve reference" until the destroy task lands, on a
 // widget React is still rendering. ADR-069.
-test('a widget referencing a sub-view is taken out with the view holding it', () => {
+function sessionWithSubViewWidget() {
   const session = createSession()
   const container = session.addView('FakeContainerView', {
     views: [{ type: 'FakeLinearView' }],
   })
-  const sub = container.views[0]
+  const sub = container.views[0]!
   const widget = session.addWidget('FakeViewWidget', 'w1', { view: sub.id })!
   session.showWidget(widget)
+  return { session, container, sub, widget }
+}
+
+test('a widget referencing a sub-view is taken out with the view holding it', () => {
+  const { session, container, sub, widget } = sessionWithSubViewWidget()
   expect(widget.view).toBe(sub)
 
   session.removeView(container)
@@ -260,21 +258,14 @@ test('a widget referencing a sub-view is taken out with the view holding it', ()
 })
 
 // Where that throw actually landed, and why the bug reads as "close a view,
-// then close another one, and it breaks". The widget left behind by the first
-// removal is still in `activeWidgets`, and the loop above has to read the view
-// of EVERY active widget to decide which to hide — so the second removal reads
-// the dangling one, throws inside the action, and leaves its view in the
-// session. Hiding the widget at the first removal is what stops the cascade.
+// then close another one, and it breaks". A widget the first removal left
+// behind is still active, and `takeOut` reads the view of EVERY active widget
+// to decide which to hide — so the second removal reads the dangling one,
+// throws inside the action, and leaves its own view in the session. Hiding the
+// widget at the first removal is what stops the cascade.
 test('removing a second view still works after one held a sub-view widget', () => {
-  const session = createSession()
-  const container = session.addView('FakeContainerView', {
-    views: [{ type: 'FakeLinearView' }],
-  })
+  const { session, container } = sessionWithSubViewWidget()
   const other = session.addView('FakeLinearView', {})
-  const widget = session.addWidget('FakeViewWidget', 'w1', {
-    view: container.views[0]!.id,
-  })!
-  session.showWidget(widget)
 
   session.removeView(container)
   session.removeView(other)
