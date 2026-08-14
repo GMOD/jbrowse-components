@@ -307,30 +307,56 @@ and volume as the max-in-flight cap it has to have anyway.
 **Retire when** a session-level priority queue with a max-in-flight cap lands, or
 `fetchRegions` at least sorts `needed` by distance from viewport center.
 
-### The fetch layer has no retry and no request timeout
+### A failed fetch is not retried automatically, and will not be
 
-**Status:** Open.
+**Status:** Accepted. Proposed 2026-08-14 and declined the same day.
 
 `RemoteFileWithRangeCache.fetchRange` throws on the first non-2xx, and nothing
 anywhere retries it — not this class, not `generic-filehandle2`, not an adapter.
-Nor is there a timeout: no `AbortSignal.timeout` in core, and none of the eight
-`fetch(` call sites passes a deadline of its own. One alignments viewport is
-hundreds of range requests against a CDN, so a single transient 5xx, 429 or
-connection reset fails the whole track, and the only recovery offered is a Retry
-button that re-runs the entire fetch. A connection that *stalls* rather than
-failing produces no error at all — the display's `loading` is correct, a fetch
-really is in flight, and it stays that way.
+One alignments viewport is hundreds of range requests against a CDN, so a single
+transient 5xx, 429 or connection reset fails the whole track.
 
-What makes the gap sharp is that the status-code path is already well diagnosed
-— the 416, the "server ignored the Range header" hint, the `Content-Range` CORS
-note. The machinery for saying something useful is there, with nothing behind it
-to say.
+Automatic retry with backoff was proposed for exactly that and **declined: the
+client does not re-issue a request the user did not ask for.** The recovery is a
+legible error plus the Retry button the display error chrome already carries
+(`DisplayErrorBar` → `model.reload()`, [DISPLAYCHROME.md](DISPLAYCHROME.md)
+§"The retry contract"). A retry that fires on its own hides the failure it is
+recovering from — a server rate-limiting the page, a CORS header nobody noticed
+was missing, a file half-uploaded — behind a delay, and the person who could
+have fixed it never learns it happened.
 
-**Retire when** idempotent range GETs retry on 429/5xx and network errors with
-jittered backoff, honouring `Retry-After`, and carry a per-request timeout. Both
-belong **inside** `getCached`'s in-flight de-duplication — a retry above it fans
-out across every coalesced reader — and must consult the stop token between
-attempts, or a cancelled navigation retries what it just cancelled.
+That puts the whole weight on the message, which is where the work goes instead:
+see ["A CORS or mixed-content failure surfaces as `Failed to
+fetch`"](#a-cors-or-mixed-content-failure-surfaces-as-failed-to-fetch) and the
+next entry, which is about a failure that never produces a message at all.
+
+**Retire when** never. Document, don't fix — and if it comes up again, the
+question to ask first is whether the error the user saw told them what to do,
+because that is the thing retry was standing in for.
+
+### A stalled request never becomes an error, so there is nothing to retry
+
+**Status:** Open.
+
+There is no timeout anywhere: no `AbortSignal.timeout` in core, and none of the
+eight `fetch(` call sites passes a deadline of its own. A connection that
+**stalls** rather than failing therefore produces no error ever — and every
+readiness signal downstream is *correct* to keep waiting, because a fetch really
+is in flight. The user gets a spinner that never resolves, no message, and no
+Retry button to press, since the chrome raises one from an error and there is
+none.
+
+That is what makes this the other half of the entry above rather than a
+consolation prize for it. Retry was declined in favour of surfacing an error the
+user acts on; this is the case where no error is ever surfaced, so there is
+nothing for them to act on.
+
+**Retire when** a per-request timeout exists and says what happened ("no
+response from `<url>` after Ns"), generous enough that a large file over a slow
+link is never cut off mid-download. It belongs **inside** `getCached`'s
+in-flight de-duplication, so one stalled reader does not strand the readers
+coalesced onto it, and it must compose with — never replace — the caller's own
+abort signal, or cancellation stops reaching the socket.
 
 ### Per-JS-context scoping multiplies by the RPC pool
 
@@ -609,8 +635,13 @@ common deployment error the project sees reaches the user as
 
 **Retire when** `fetchRange` catches the `TypeError` and rethrows with the URL
 and the triage: CORS (`Access-Control-Allow-Origin`, plus
-`Access-Control-Expose-Headers: Content-Range`), mixed content, or offline. Same
-function as the retry entry above — do them in one pass.
+`Access-Control-Expose-Headers: Content-Range`), mixed content, or offline.
+
+This entry carries more weight than it looks like it does, because automatic
+retry was declined in favour of it — see ["A failed fetch is not retried
+automatically"](#a-failed-fetch-is-not-retried-automatically-and-will-not-be).
+The user is the retry mechanism, so the message is the only thing that tells
+them whether pressing the button can possibly help.
 
 ---
 
