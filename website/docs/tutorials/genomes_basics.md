@@ -3,8 +3,8 @@ title: Basic usage of genomes.jbrowse.org
 sidebar_label: genomes.jbrowse.org (basic usage)
 description:
   Open a hosted genome, search a gene, and work through the UCSC track catalog
-  on hg38, from conservation and variation at TP53 to p53's own binding sites at
-  CDKN1A
+  on hg38, from conservation at TP53 to filtering a variant catalog down to
+  something readable
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 data: hosted
@@ -144,32 +144,15 @@ cCRE, the EPDnew call and both marks. Over the gene body the marks are flat.
 H3K4me3 marks a promoter and H3K27ac marks an active one, so a cell line with
 both is transcribing here. All seven carry both.
 
-## Four readings of one exon edge
+## Filtering a dense track
 
-Two more tracks from Phenotypes, Variants, and Literature go on the same exon,
-this time shifted to take in the intron beside it and with the three hotspot
-codons shaded. **ClinVar Variants - ClinVar SNVs** carries variants submitted
-with a clinical interpretation; it is dense enough here that its per-record
-labels are worth turning off under **Track menu → Show... → None**.
-**AlphaMissense** scores every possible single-base substitution for the amino
-acid change it would cause, as four subtracks, one per substituted base: a
-column is a position, a row is what it would become.
-
-<Figure src="/img/genomes_basics/exon_four_ways.png" caption="The downstream edge of a TP53 DNA binding domain exon, with codons 245, 248 and 249 shaded: AlphaMissense in four substitution rows, phyloP, ClinVar coloured by clinical significance, and the reference sequence with its translation." />
-
-All four change at the same base. AlphaMissense scores coding sequence, so its
-columns end where the exon does; phyloP drops to the pivot a few bases into the
-intron; ClinVar thins out. Inside the exon, AlphaMissense cells are empty where
-the substitution leaves the residue alone, and a column tall in all four rows is
-a position where no substitution is predicted to be tolerated. Most columns here
-are.
-
-The fourth reading needs the whole transcript. **gnomAD v4.1 - gnomAD v4.1
-Exomes** under Variation and Repeats opens as several thousand records over the
-gene, which is one block of colour. Two of its columns cut that into a shape,
-and **Track menu → Filter by...** takes either: `feature.AF` is the allele
-frequency, `feature.annot` gnomAD's own consequence class (pLoF, missense,
-synonymous or other).
+A catalog track over a whole gene is usually more records than a screen can
+separate, and the way through it is the track's own columns. **gnomAD v4.1 -
+gnomAD v4.1 Exomes** under Variation and Repeats opens as several thousand
+records over _TP53_, which is one block of colour. Two of its columns cut that
+into a shape, and **Track menu → Filter by...** takes either: `feature.AF` is
+the allele frequency, `feature.annot` gnomAD's own consequence class (pLoF,
+missense, synonymous or other).
 
 The dialog takes one jexl expression per line, each on its own line under the
 default already in the box, and the track redraws with the records that pass all
@@ -189,43 +172,10 @@ captures. Filtered to the common variants, few remain in coding sequence and the
 rest are intronic or in the 3' UTR. Filtered to predicted loss of function, the
 track fills the coding exons again.
 
-ClinVar takes the same treatment on its own classification column:
-`jexl:feature.clinSign == 'Pathogenic'`. Back at the exon, that leaves a stack
-of records over Arg248, and clicking one reads it back.
-
-<Figure src="/img/genomes_basics/variant_details.png" caption="AlphaMissense and phyloP over ClinVar filtered to its pathogenic records, with one of those over the shaded Arg248 codon clicked open. The panel carries the file's own columns, each linking out." />
-
-The two lanes above were computed without reference to the submissions below,
-and neither of them dips over the shaded column: no substitution there is
-predicted tolerated, and the bases are conserved. A BigBed's extra fields arrive
-as fields, so whatever columns the published file carries are what a click gives
-back, and are what there is to filter and colour on.
-
-## Where the protein binds
-
-_TP53_ codes for a transcription factor, so its binding sites are at other
-genes. _CDKN1A_ encodes p21, which p53 induces to arrest the cell cycle after
-DNA damage. Type `CDKN1A` into the location box.
-
-**JASPAR Transcription Factors - JASPAR 2026 TFBS** under Regulation holds motif
-matches for every factor in the collection, so **Filter by...** asks for one:
-`feature.TFName == 'TP53'`. Under it go two Regulation tracks from the promoter
-section, which are what the matches get read against: **ENCODE cCREs - ENCODE4
-cCREs** and **Layered H3K27Ac (hg19)**.
-
-<Figure src="/img/genomes_basics/p53_target_cdkn1a.png" caption="Top: the CDKN1A promoter region with RefSeq, JASPAR filtered to the TP53 motif, ENCODE cCREs and H3K27ac, and the two marked matches. Bottom: the distal one at base zoom, with the promoter-class cCRE it sits inside and the reference sequence. The match is called on both strands, which is what the two boxes span." />
-
-Six positions match the motif well enough to be called. The signal is low over
-the upstream half and rises from the marked pair toward the gene. Each of those
-two falls inside a cCRE, one classified a promoter and one a proximal enhancer,
-and they are where the response elements for p21 were described; the other four
-have the motif and no signal under it.
-
-**PANDAR** and **DINOL**, drawn by the same RefSeq track, are p53-induced
-lncRNAs transcribed from the same region.
-
-The lower panel zooms to the higher-scoring of the pair, where the motif is
-readable against the sequence.
+A BigBed's extra fields arrive as fields, so whatever columns the published file
+carries are what there is to filter and colour on, and the same dialog takes
+them for any track. ClinVar's clinical classification is `feature.clinSign`, so
+`jexl:feature.clinSign == 'Pathogenic'` cuts that catalog down the same way.
 
 ## Tracks in the other categories
 
@@ -306,16 +256,10 @@ largest sequenced, and this locus covers a few hundred kb of it.
 
 - [Pollard KS et al. Detection of nonneutral substitution rates on mammalian phylogenies. _Genome Res_ 2010](https://pmc.ncbi.nlm.nih.gov/articles/PMC2798823/),
   the phyloP method
-- [Cheng J et al. Accurate proteome-wide missense variant effect prediction with AlphaMissense. _Science_ 2023](https://pubmed.ncbi.nlm.nih.gov/37733863/),
-  the AlphaMissense scores
 - [Bouaoun L et al. TP53 variations in human cancers. _Hum Mutat_ 2016](https://pubmed.ncbi.nlm.nih.gov/27328919/),
   the mutation distribution across TP53 codons
 - [Cho Y et al. Crystal structure of a p53 tumor suppressor-DNA complex. _Science_ 1994](https://pubmed.ncbi.nlm.nih.gov/8023157/),
   which hotspot residues contact the DNA and which hold the structure
 - [Liao WW et al. A draft human pangenome reference. _Nature_ 2023](https://pubmed.ncbi.nlm.nih.gov/37165242/),
   the HPRC assemblies the pangenome callset is built from
-- [el-Deiry WS et al. WAF1, a potential mediator of p53 tumor suppression. _Cell_ 1993](https://pubmed.ncbi.nlm.nih.gov/8242752/),
-  the p53 response elements upstream of CDKN1A
-- [Ovek Baydar D et al. JASPAR 2026: expansion of transcription factor binding profiles and integration of deep learning models. _Nucleic Acids Res_ 2026](https://pubmed.ncbi.nlm.nih.gov/41325984/),
-  the motif collection the TFBS track is scanned from
 - [UCSC hg38 conservation downloads](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/)
