@@ -394,6 +394,37 @@ GPU passes (resolved CPU-side at pack time; no shader evaluates it). Coalescing
 without keeping the count left a 40-read translocation drawing exactly like one
 mismapped pair.
 
+**A tick is DASHED, and that is what separates it from an arc's foot.** The two
+land on the same x whenever a breakpoint reaches one acceptor the view shows and
+another it does not — the ordinary shape of a translocation seen through two
+windows, and the ordinary shape of a fusion whose transcript has more than one
+acceptor. Both marks are ARC_COLOR_INTERCHROM and both run the band's height
+there, so solid they read as one mark: on `cancer_sv/k562_bcr_abl_split` that
+hid a junction carrying six times the drawn arc's support behind what looked
+like the arc's own leg, and the figure shipped that way.
+
+**Support cannot do this job, which is the part worth knowing before reaching
+for it.** `arcLineWidth` caps at 4x the base width around 44 reads, so a
+206-read tick and a 37-read one are the same 8 device px — re-framing a figure
+to thin the bar cannot work, and two people have now expected it to.
+
+The pattern is declared in `arcLine.slang` (`ARC_LINE_DASH_PX` /
+`ARC_LINE_GAP_PX`) and the CPU side imports the generated twin, adr-051's rule.
+Its period is deliberately not arcFlat's `[3, 3]` split-line dash — the other
+dashed mark in this band, and in read-cloud mode both can be on screen at once.
+`SvgCanvas.setLineDash` carries it into the export, so the third renderer needs
+nothing of its own. `tickDash.test.ts` pins the pattern in force AT each stroke
+rather than that `setLineDash` was called, since a call after the stroke it was
+meant to dash would pass the weaker test.
+
+The hover carries the same fact in words: `partnerOffView` on
+`ArcLineTooltipPayload` prints "Outside the displayed regions". Naming the mate
+chromosome is the whole content of a tick and it is actively misleading when
+that chromosome is on screen. **The claim is safe unconditionally in arc mode
+and false in read cloud** — the cloud ticks every interchromosomal connection,
+displayed partner or not — so the caller reads `readConnections`, the same
+setting `resolveArcs` branches on, rather than assuming.
+
 **Ask `hasArcBandInk`, not `numArcs`.** A lane whose only interchromosomal
 partner is off-region carries ticks and no arcs, so an arc-count gate reserves
 the band, paints it, and then treats it as empty. The one deliberate exception

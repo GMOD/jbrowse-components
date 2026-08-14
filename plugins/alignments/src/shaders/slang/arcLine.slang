@@ -12,13 +12,31 @@
 // ignored `readConnectionsLineWidth` entirely, and snapped to a whole pixel
 // column — visibly stepping between columns as the view panned.
 //! targets: wgsl, glsl
-//! export-consts: ARC_COLOR_INTERCHROM
+//! export-consts: ARC_COLOR_INTERCHROM, ARC_LINE_DASH_PX, ARC_LINE_GAP_PX
 
 import alignmentsUniforms;
 import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+
+// DASHED, which is the one thing about a tick that is not a drawing preference.
+//
+// A tick and a cross-region arc's FOOT land on the same x whenever a breakpoint
+// has both — the same donor reaching one acceptor this view shows and another it
+// does not. Both are ARC_COLOR_INTERCHROM, both run the height of the band
+// there, so solid they read as one mark and the tick's whole claim ("there is
+// more, off screen") is invisible: on the K562 BCR donor that hid a junction
+// carrying six times the arc's support behind what looked like the arc's own
+// leg. Support cannot separate them either, since `arcLineWidth` caps at 4x
+// around 44 reads and both marks were already past it.
+//
+// Longer than arcFlat.slang's [3, 3] split-line dash on purpose. That is the
+// other dashed mark in this band, and in read-cloud mode both can be on screen
+// at once; a tick is vertical and a cloud line horizontal, but two marks a
+// glance apart should not also share a period.
+public static const float ARC_LINE_DASH_PX = 5.0;
+public static const float ARC_LINE_GAP_PX = 4.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -50,6 +68,11 @@ struct VsOut {
   // the vertex stage expanded and the ink the fragment measures cannot be sized
   // from two different widths — the same pairing arcFlat.slang makes.
   float  halfWidthPx : COLOR2;
+  // Distance DOWN the band from its top edge, in CSS px, so the fragment can
+  // cut the dash. Band-relative rather than canvas-absolute: the pattern then
+  // starts at the band's own edge and every tick in a lane phases alike, where
+  // off the canvas y two lanes at different offsets would interleave.
+  float  bandY    : COLOR3;
 };
 
 [shader("vertex")]
@@ -71,7 +94,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.halfWidthPx = max(inst.lineWidthPx, u.lineWidthPx) * 0.5;
   float hw = o.halfWidthPx + STROKE_AA_PX;
   o.dx = (local.x * 2.0 - 1.0) * hw;
-  float yPx = bandTopPx + local.y * u.arcBandH;
+  o.bandY = local.y * u.arcBandH;
+  float yPx = bandTopPx + o.bandY;
 
   float sx = ((screenX + o.dx) / u.canvasW) * 2.0 - 1.0;
   float sy = 1.0 - (yPx / u.canvasH) * 2.0;
@@ -80,8 +104,24 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   return o;
 }
 
+// Coverage of the dash pattern at `bandY`, ramped over the same AA width the
+// stroke's own edges use so the dash ends are as soft as its sides. Written as
+// distance-to-the-nearest-edge of the ON run rather than a `phase < DASH`
+// branch: a hard cut is the one thing that would make a tick stair-step as the
+// band resizes, which is the defect the quad expansion above exists to avoid on
+// the other axis.
+float dashCoverage(float bandY, Uniforms u) {
+  float period = ARC_LINE_DASH_PX + ARC_LINE_GAP_PX;
+  float phase = bandY - floor(bandY / period) * period;
+  // Signed distance into the ON run: positive inside, negative in the gap.
+  float d = min(phase, ARC_LINE_DASH_PX - phase);
+  float aa = STROKE_AA_PX / max(u.dpr, 1.0);
+  return clamp(d / aa + 0.5, 0.0, 1.0);
+}
+
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float alpha = strokeCoverage(abs(fragIn.dx), fragIn.halfWidthPx, u);
+  alpha *= dashCoverage(fragIn.bandY, u);
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

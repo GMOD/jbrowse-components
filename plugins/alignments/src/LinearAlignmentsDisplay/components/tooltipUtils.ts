@@ -122,6 +122,20 @@ export interface ArcLineTooltipPayload {
   partnerRefNames: string[]
   // Reads behind the tick, which is what its stroke width encodes.
   support: number
+  // Whether the far end of every connection under this tick is somewhere the
+  // view cannot show. True in arc mode and only there, which is a property of
+  // the feed rather than a hedge: `resolveArcs` sends a connection with both
+  // feet in displayed regions to the cross-region ARC, so a tick that survives
+  // `lineTouchesRegion` can only have been pushed for a partner that resolved
+  // to no region. Read cloud is the exception — it ticks every
+  // interchromosomal connection, displayed partner or not, because the cloud's
+  // Y axis is insert size and a translocation has none.
+  //
+  // The hover needs it because naming the mate chromosome is not enough when
+  // that chromosome is ON SCREEN with arcs into it: the reader looks across,
+  // finds the partner window, and has no way to learn that these particular
+  // reads land outside it.
+  partnerOffView: boolean
 }
 
 // "Supported by 1 read" / "Supported by 12 reads". Singular at 1 so a lone
@@ -594,6 +608,7 @@ export function formatArcTooltip(
 export function formatArcLineTooltip(
   hit: ArcLineHitResult,
   refName: string,
+  partnerOffView: boolean,
 ): ArcLineTooltipPayload {
   return {
     type: 'arcLine',
@@ -601,6 +616,7 @@ export function formatArcLineTooltip(
     position: hit.bp,
     partnerRefNames: hit.partnerRefNames,
     support: hit.support,
+    partnerOffView,
   }
 }
 

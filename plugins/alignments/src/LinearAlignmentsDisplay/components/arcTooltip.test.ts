@@ -3,7 +3,11 @@ import {
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
 } from '../../features/arcs/compute.ts'
-import { formatArcTooltip, supportLabel } from './tooltipUtils.ts'
+import {
+  formatArcLineTooltip,
+  formatArcTooltip,
+  supportLabel,
+} from './tooltipUtils.ts'
 
 import type { ArcHitResult } from '../../features/arcs/hitTest.ts'
 
@@ -121,6 +125,37 @@ describe('formatArcTooltip', () => {
     )
     expect(payload.endRefName).toBeUndefined()
     expect([payload.start, payload.end]).toEqual([1000, 2000])
+  })
+})
+
+// The tick's own hover, and the half of it that is not the mark's content.
+// Naming the mate chromosome is what a tick exists to say, and it stops being
+// enough the moment that chromosome is ON SCREEN: the reader looks across, sees
+// arcs landing in the partner window, and has nothing telling them these reads
+// land outside it. That is the ordinary case now — one donor reaching an
+// acceptor the frame shows and others it does not.
+describe('formatArcLineTooltip', () => {
+  const hit = {
+    kind: 'tick' as const,
+    index: 0,
+    bp: 23290412,
+    support: 37,
+    partnerRefNames: ['chr9'],
+  }
+
+  test('says the partner is off view in arc mode', () => {
+    const payload = formatArcLineTooltip(hit, 'chr22', true)
+    expect(payload.partnerOffView).toBe(true)
+    expect(payload.partnerRefNames).toEqual(['chr9'])
+    expect(payload.support).toBe(37)
+  })
+
+  // Read cloud ticks EVERY interchromosomal connection, displayed partner or
+  // not, because the cloud's Y axis is insert size and a translocation has
+  // none. So the claim that is safe in arc mode is false here, and the caller
+  // reads the same setting `resolveArcs` branches on rather than assuming.
+  test('makes no such claim in read-cloud mode', () => {
+    expect(formatArcLineTooltip(hit, 'chr22', false).partnerOffView).toBe(false)
   })
 })
 

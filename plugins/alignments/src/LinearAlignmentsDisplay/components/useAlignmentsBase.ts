@@ -211,7 +211,15 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       // than one formatter taking half-meaningless arguments.
       tooltip:
         hit.kind === 'tick'
-          ? formatArcLineTooltip(hit, region.refName)
+          ? formatArcLineTooltip(
+              hit,
+              region.refName,
+              // Arc mode and only there — see `partnerOffView`. Read off the
+              // same setting `resolveArcs` branches on, so the sentence the
+              // hover prints and the rule that produced the tick cannot
+              // disagree.
+              model.readConnections !== 'cloud',
+            )
           : formatArcTooltip(
               hit,
               region.refName,

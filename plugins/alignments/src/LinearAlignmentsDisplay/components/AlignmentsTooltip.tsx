@@ -402,7 +402,8 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       )
     }
     case 'arcLine': {
-      const { refName, position, partnerRefNames, support } = tooltipData
+      const { refName, position, partnerRefNames, support, partnerOffView } =
+        tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
@@ -425,6 +426,13 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                 {partnerRefNames.join(', ')}
               </div>
             )}
+            {/* Why this is a tick and not an arc. Naming the mate chromosome
+                is the whole content of the mark, and it is actively misleading
+                when that chromosome is on screen: the reader looks across,
+                sees arcs landing in the partner window, and cannot tell that
+                these reads land outside it. See `partnerOffView` for why the
+                claim is safe to make unconditionally in arc mode. */}
+            {partnerOffView ? <div>Outside the displayed regions</div> : null}
             <div>{supportLabel(support)}</div>
           </div>
         </BaseTooltip>

@@ -7,7 +7,11 @@ import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generate
 // The flat-line constants moved with the flat line: they are arcFlat.slang's
 // now, declared on the pass that consumes them.
 import { ARC_FLAT_ALPHA } from '../../shaders/slang/arcFlat.consts.generated.ts'
-import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
+import {
+  ARC_COLOR_INTERCHROM,
+  ARC_LINE_DASH_PX,
+  ARC_LINE_GAP_PX,
+} from '../../shaders/slang/arcLine.consts.generated.ts'
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAvailH, arcYScale } from './arcYScale.ts'
@@ -180,7 +184,15 @@ export function drawArcs(
   //
   // Mirrors `ARC_PASSES`, where `ARC_LINE_PASS` leads for the reason given
   // there; `hitTestArcBand` resolves its ties by this same order.
-  ctx.setLineDash([])
+  // DASHED, off arcLine.slang's own constants rather than a pair repeated here
+  // — the shader is where the pattern is declared, and this is the CPU twin
+  // (adr-051). The reason it is dashed at all is in that file: a tick and a
+  // cross-region arc's foot share an x whenever a breakpoint reaches both a
+  // displayed acceptor and an undisplayed one, and solid they read as one mark.
+  //
+  // `SvgCanvas.setLineDash` carries this into the export, so the three
+  // renderers agree without the export tracing its own tick.
+  ctx.setLineDash([ARC_LINE_DASH_PX, ARC_LINE_GAP_PX])
   ctx.strokeStyle = rgb255(arcColors[ARC_COLOR_INTERCHROM]!)
   for (let i = 0; i < region.numArcLines; i++) {
     const bp = region.arcLinePositions[i]!
@@ -194,6 +206,11 @@ export function drawArcs(
     ctx.lineTo(x, arcsTop + arcsH)
     ctx.stroke()
   }
+  // Scoped to the tick loop rather than left for the next painter to overwrite.
+  // `drawArcsToCtx` does set a dash per arc, so nothing downstream reads this
+  // today — which is exactly why leaving it set is the kind of thing that only
+  // breaks once something is inserted between the two.
+  ctx.setLineDash([])
 
   drawArcsToCtx(ctx, region, {
     bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
