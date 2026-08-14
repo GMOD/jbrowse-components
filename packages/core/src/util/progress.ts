@@ -148,12 +148,15 @@ export function createStatusThrottle() {
         pending = apply
         timer ??= setTimeout(() => {
           timer = undefined
-          const run = pending
+          // a live timer always has a write behind it: it is scheduled in the
+          // line above, right after `pending` is set, and `clearPending` drops
+          // the two together. So this is an assertion rather than a fallback —
+          // a `if (run)` here reads as a case that can happen, and would
+          // silently skip the `lastMs` bump if it ever did
+          const run = pending!
           pending = undefined
-          if (run) {
-            lastMs = Date.now()
-            run()
-          }
+          lastMs = Date.now()
+          run()
         }, wait)
       }
     },
@@ -373,10 +376,10 @@ export function aggregateStatus(
  * with) can't blank the label while the others are still running.
  *
  * Use it wherever several operations are handed one `statusCallback` at once —
- * a `Promise.all`, an rxjs `merge`, or the per-region fan-out `FetchMixin`'s
- * `runFetch` puts on every {@link FetchContext}. One fan-out per batch: slots
- * are taken for the batch's lifetime and it is the batch that ends, so a
- * long-lived one accumulates slots for work that is over.
+ * a `Promise.all`, an rxjs `merge`, or the per-region fan-out the LGV displays'
+ * `callEachRegion` builds over a fetch context. One fan-out per batch: slots are
+ * taken for the batch's lifetime and it is the batch that ends, so a long-lived
+ * one accumulates slots for work that is over.
  *
  * A slot holding `''` needs no special handling here — {@link aggregateStatus}
  * reads it as the "phase over" it is. Retiring it to `undefined` on the way in

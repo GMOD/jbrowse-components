@@ -339,7 +339,7 @@ describe('FetchMixin: progress reporting', () => {
   // The regression this replaces a hand-called setter to catch: a finished
   // region charged as still in flight made the bar run *backwards* as regions
   // completed, 50/200 where the one region still working was at 50/100.
-  it("a region's phase clear drops it from the aggregate", async () => {
+  it("a region's phase clear drops it from the aggregate", () => {
     const { m, ctxs } = twoRegions()
     const [a, b] = ctxs
     a!.statusCallback({ message: 'Downloading', current: 50, total: 100 })
