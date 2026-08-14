@@ -72,6 +72,17 @@ const IN2LT_INVERSION_TRACK = {
 // Pairs with π: a hard sweep drives BOTH down — π (fewer segregating sites) and
 // Tajima's D (an excess of rare alleles as new mutations accumulate on the swept
 // background), so the Cyp6g1 window shows a joint dip.
+//
+// THE BASELINE IS NOT ZERO AND THE FIGURE MUST NOT BE READ AS IF IT WERE.
+// Roughly three quarters of the windows flanking the sweep sit ABOVE zero, at a
+// median near +0.5. Two things put it there, both of them methodological and
+// both signed the same way: the DGRP2 callset holds variant sites only, so the
+// rare alleles that filtering takes first are the ones D is most sensitive to;
+// and the lines are inbred with homozygous diploid calls, so vcftools reads 2n
+// chromosomes off n lines (the VCF's own AN is twice its NS) and scales
+// Watterson's estimator by the harmonic number of the doubled count, which is
+// ~10% small and moves D up by a few tenths on its own. What survives both is
+// the excursion against local background, which is all the caption claims.
 const TAJD_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'tajd_all',
@@ -145,13 +156,22 @@ const IN2LT_SV_TRACK = {
 
 export const popgenSpecs: ScreenshotSpec[] = [
   // Genome-wide (all six dm6 arms): the In(2L)t Fst track rises into a tall
-  // elevated block across the whole left arm of chromosome 2 — the
-  // recombination-suppression footprint of the inversion — while every other arm
-  // (2R, 3L, 3R, 4, X) sits at low background Fst. Plotting the whole genome (not
-  // just 2L in isolation) is what makes the elevation read AS elevated: the
+  // elevated block over the inverted region of chromosome 2L, while every other
+  // arm (2R, 3L, 3R, 4, X) sits at low background Fst. Plotting the whole genome
+  // (not just 2L in isolation) is what makes the elevation read AS elevated: the
   // reader sees the 2L signal is genuinely anomalous, not a baseline the eye has
   // nothing to compare against (reviewer). The In(2L)t inversion-extent track
   // marks the 2L segment.
+  //
+  // THE BLOCK IS WIDER THAN THE BAR ABOVE IT, AND THAT IS THE DATA, NOT A
+  // MISDRAWN TRACK. Measured off this capture (region scale calibrated on the
+  // separators, ~50.4 kb/px): the plateau runs from the arm's telomeric end to
+  // ~14 Mb and then falls to about a third of its height, while the drawn extent
+  // is 2.23-13.15 Mb. Differentiation carrying up to 4 Mb outside inversion
+  // breakpoints is what Corbett-Detig & Hartl 2012 report, so this replicates
+  // the cited paper rather than contradicting the bar. Do NOT caption it as
+  // covering the whole arm: the distal ~9 Mb sits at the other arms' level, and
+  // it did say that for a while.
   //
   // No π row here, deliberately (reviewer: unclear how it matters). π carries a
   // strong broad arm-scale profile of its own that has nothing to do with the
@@ -204,10 +224,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
   // Tajima's D + π at Cyp6g1 (chr2R:12,185,667): the two-part hard-sweep signature
   // read against the gene. Both statistics dip together in the swept window — π
   // drops (diversity removed by the hitchhiking haplotype) and Tajima's D goes
-  // sharply negative (to about -2, an excess of rare alleles on the swept
-  // background) — against a genome-wide-neutral Tajima's D baseline near zero.
-  // Seeing both drop at the same window is what distinguishes a sweep from a plain
-  // low-diversity region.
+  // sharply negative (an excess of rare alleles on the swept background),
+  // against the flanking windows either side, NOT against zero; see the
+  // baseline note on TAJD_TRACK above. Seeing both drop at the same window is
+  // what distinguishes a sweep from a plain low-diversity region.
   {
     mode: 'url',
     name: 'popgen/tajimad_cyp6g1',

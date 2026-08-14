@@ -49,7 +49,7 @@ Tajima's D in one view, each scaled to its own data. The panel is the
 [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), 205
 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6,
 and the two signals it draws are Fst across the `In(2L)t` inversion, which
-suppresses recombination across the whole of chromosome arm `2L`
+suppresses recombination between the two arrangements in a heterozygote
 ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
 and the π landscape, which dips at loci under selection such as the
 insecticide-resistance gene `Cyp6g1`
@@ -92,7 +92,10 @@ vcftools --gzvcf dgrp2.vcf.gz \
   --weir-fst-pop In2Lt_INV.txt --weir-fst-pop In2Lt_STD.txt \
   --fst-window-size 2000 --fst-window-step 2000 --out fst_In2Lt
 # BIN_START is 1-based here, hence -1; negative Fst is an estimator artifact
-# at low-differentiation sites and is floored at 0
+# at low-differentiation sites and is floored at 0.
+# $5 is WEIGHTED_FST, the window's summed variance components divided; $6 beside
+# it is MEAN_FST, the average of the per-site ratios, which any window with a
+# few uninformative sites in it pulls around.
 awk 'NR>1 && $5!="nan" && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
   fst_In2Lt.windowed.weir.fst | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
@@ -102,6 +105,12 @@ Taking `chrom.sizes` from the VCF header rather than from the assembly is what
 keeps the naming consistent, since the scans carry the header's contig names.
 Diversity is the same three steps with `--window-pi 2000`, reading `$5` of
 `pi_all.windowed.pi`, and `--keep` restricts it to one arrangement.
+
+The two groups here are very unequal, since the inverted arrangement is the
+rarer one. Weir & Cockerham corrects for sample size, and Hudson's estimator
+summed as a ratio of averages is the usual recommendation where the groups
+differ this much ([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113));
+[](/docs/tutorials/dog10k_selection) scans with that one.
 
 Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) needs two
 adjustments the other two do not. `--TajimaD` reports `BIN_START` 0-based, so it
@@ -136,15 +145,29 @@ FlyBase style, where UCSC dm6 prefixes them `chr2L`. If your dm6 assembly uses
 the UCSC names, [refname aliasing](/docs/developer_guides/refname_aliasing)
 reconciles the two at display time.
 
-Two properties of the values carry into the figures. Negative Fst estimates, an
-artifact of the Weir & Cockerham estimator at low-differentiation sites, are
+Three properties of the values carry into the figures. Negative Fst estimates,
+an artifact of the Weir & Cockerham estimator at low-differentiation sites, are
 floored at 0, while Tajima's D keeps its sign, since its negative excursions are
-the signal. And because this VCF holds variant sites only, `--window-pi` omits
-invariant positions, so π is comparable across windows of the same file without
-being calibrated in absolute terms. [pixy](https://pixy.readthedocs.io/)
-([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) computes π,
-dxy and Fst from an allSites VCF without that bias, one row per window, so its
-output packs into a bigWig the same way.
+the signal.
+
+Because this VCF holds variant sites only, `--window-pi` divides by the nominal
+window size, so every position not in the file counts as invariant and callable
+alike. A window that lost sites to filtering or to coverage reads as low
+diversity rather than as unmeasured, and how much each window lost varies.
+[pixy](https://pixy.readthedocs.io/)
+([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) takes an
+allSites VCF, where an invariant position and a missing one are distinguishable,
+and reports π, dxy and Fst per window without that bias, one row per window, so
+its output packs into a bigWig the same way.
+
+Tajima's D is read as an excursion against the panel's own background rather
+than against zero, for two reasons that both push it up. The same
+variant-sites-only filtering takes rare alleles first, and D rises as
+segregating sites are removed. And these are inbred lines whose calls are
+homozygous diploid, so vcftools counts two chromosomes where a line contributes
+one: the header's `AN` is twice its `NS`, and Watterson's estimator is scaled by
+the harmonic number of that doubled count. Neither moves a trough relative to
+its flanks, which is what the figure below is read for.
 
 ## Loading it in JBrowse
 
@@ -211,14 +234,26 @@ out.
 
 Opening the assembly with no location shows all of its regions at once, so the
 six arms lay out side by side and the block has the rest of the genome to be
-measured against. The `In(2L)t` Fst track rises across the inverted region of
+measured against. The `In(2L)t` Fst track rises over the inverted region of
 chromosome 2L, while every other arm sits at low background Fst.
 
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms. Top: the In(2L)t inversion extent. Bottom: Fst between In(2L)t and standard-arrangement lines, a tall block across the whole left arm of chromosome 2 against low background on every other arm."/>
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms. Top: the In(2L)t inversion extent. Bottom: Fst between In(2L)t and standard-arrangement lines, a tall block over the inverted region and past both of its breakpoints, against low background on every other arm."/>
+
+The elevated band is wider than the inversion drawn above it: it runs to the end
+of the arm past the proximal breakpoint, and falls back to background beyond the
+distal one, leaving the rest of 2L where the other arms are. Differentiation
+carrying several megabases outside the breakpoints is what Corbett-Detig & Hartl
+report for the common _Drosophila_ inversions, so the width of the Fst block is
+not a reading of the arrangement's extent. The lane above it is, and it is drawn
+from published coordinates rather than from this scan.
 
 Then search `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track
 alongside π. Both dip together over the swept window, where either statistic
-alone would be ambiguous.
+alone would be ambiguous. A duplication of `Cyp6g1` segregates in this panel
+alongside the resistance allele
+([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
+number costs a window called sites, so the trough here is read against its own
+flanks rather than as a diversity figure.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). Both dip over the highlighted window against their background either side: the joint trough is the hard-sweep signature."/>
 
@@ -330,6 +365,8 @@ in JBrowse Desktop.
 
 ## References
 
+- Bhatia et al. (2013).
+  [Estimating and interpreting FST: the impact of rare variants](https://doi.org/10.1101/gr.154831.113)
 - Corbett-Detig & Hartl (2012).
   [Population genomics of inversion polymorphisms in Drosophila melanogaster](https://doi.org/10.1371/journal.pgen.1003056)
 - Daborn et al. (2002).
@@ -344,6 +381,8 @@ in JBrowse Desktop.
   [pixy: Unbiased estimation of nucleotide diversity and divergence in the presence of missing data](https://doi.org/10.1111/1755-0998.13326)
 - Mackay et al. (2012).
   [The Drosophila melanogaster Genetic Reference Panel](https://doi.org/10.1038/nature10811)
+- Schmidt et al. (2010).
+  [Copy number variation and transposable elements feature in recent, ongoing adaptation at the Cyp6g1 locus](https://doi.org/10.1371/journal.pgen.1000998)
 - Tajima (1989).
   [Statistical method for testing the neutral mutation hypothesis by DNA polymorphism](https://doi.org/10.1093/genetics/123.3.585)
 - Weir & Cockerham (1984).

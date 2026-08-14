@@ -60,6 +60,10 @@ if [ "$n_std" -lt 50 ] || [ "$n_inv" -lt 5 ]; then
 fi
 
 # ── Windowed Fst (In(2L)t vs standard) -> bigWig ─────────────────────────────
+# $5 is WEIGHTED_FST, the window's summed variance components divided, NOT the
+# $6 beside it: that is MEAN_FST, the average of the per-site ratios, which a
+# window's uninformative sites pull around. Both columns are plausible-looking
+# numbers on the same scale, so taking the wrong one is silent.
 vcftools --gzvcf "$VCF" \
   --weir-fst-pop In2Lt_INV.txt --weir-fst-pop In2Lt_STD.txt \
   --fst-window-size 2000 --fst-window-step 2000 --out fst_In2Lt
