@@ -2,6 +2,7 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
+import { makeTestPalette } from '../testUtils.ts'
 import {
   Canvas2DAlignmentsRenderer,
   drawAlignmentsToCtx,
@@ -249,8 +250,6 @@ function pileupData(): PileupDataResult {
   })
 }
 
-const triple: [number, number, number] = [0.5, 0.5, 0.5]
-
 function state(overrides: Partial<RenderState> = {}): RenderState {
   const section = {
     pileupTopOffset: COV_H,
@@ -287,38 +286,13 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     showPerBaseLetter: true,
     selectedChainReadIds: [],
     selectedFeatureId: undefined,
-    colors: {
-      colorFwdStrand: triple,
-      colorRevStrand: triple,
-      colorNostrand: triple,
-      colorPairLR: triple,
-      colorPairRL: triple,
-      colorPairRR: triple,
-      colorPairLL: triple,
-      colorBaseA: triple,
-      colorBaseC: triple,
-      colorBaseG: triple,
-      colorBaseT: triple,
-      colorBaseN: triple,
-      colorInsertion: triple,
-      colorDeletion: triple,
-      colorSkip: triple,
-      colorSoftclip: triple,
-      colorHardclip: triple,
-      colorInsertionIndicator: triple,
-      colorSoftclipIndicator: triple,
-      colorHardclipIndicator: triple,
-      colorCoverage: triple,
-      colorModificationFwd: triple,
-      colorModificationRev: triple,
-      colorMutedSnpBase: triple,
-      colorLongInsert: triple,
-      colorShortInsert: triple,
-      colorSupplementary: triple,
-      colorSplitInversion: triple,
-      colorUnmappedMate: triple,
-      colorInterchrom: triple,
-    },
+    // The shared fixture rather than a literal inside the cast below: this one
+    // had already fallen a field behind (`colorFlatConnector`), and a layer that
+    // reads a colour the cast let through as undefined fails at MODULE scope
+    // here, since the draws run while the `describe.each` table is built. Every
+    // slot is the same value in either form, so nothing in a mirror comparison
+    // turns on which.
+    colors: makeTestPalette(),
     chainMode: false,
     showLinkedReadLines: false,
     readConnectionsLineWidth: 1,

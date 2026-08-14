@@ -13,7 +13,7 @@ import {
   categorySwatchColor,
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import { OVERLAP_ALPHA } from '../shaders/slang/overlap.iface.generated.ts'
+import { OVERLAP_ALPHA } from '../shaders/slang/overlap.consts.generated.ts'
 import { isModificationScheme } from './colorSchemes.ts'
 import { getModificationName } from './modificationData.ts'
 import {
