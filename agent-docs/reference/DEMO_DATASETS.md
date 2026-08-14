@@ -132,22 +132,41 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **K562's BCR-ABL1 is ONE donor and 24 acceptors, not one junction.** Over the
   579 records `K562_isoseq.bam` returns for `chr22:23,286,000-23,293,000`, the
   BCR donor is essentially exact (23,290,412–23,290,415) while the chr9 side
-  spreads over **24 distinct SA start positions across ~170 kb of ABL1**:
-  130,780,369 carries **149** reads, 130,854,064 carries 26, then 130,763,193
-  (13), 130,781,804 (10) and a tail. 130,854,064 is the ABL1 exon-2 acceptor —
-  the canonical e14a2 junction, the one the DepMap STAR-Fusion call reports and
-  the one `cancer_sv/k562_bcr_abl_split` bands its chr9 panel on. **So the
-  figure's window frames the 26-read junction and not the 149-read one**, and
-  any arc/tick count read off that figure is a statement about the framing as
-  much as about the data. Whether the 149 are an alternative acceptor or an
-  alignment artefact is **not established**: those records carry multi-segment
-  chimeric alignments with 100 kb+ `D` operations, so anything derived from a
-  CIGAR reference span there is unreliable. The site distribution above is not —
-  it is SA start positions, and 217 of 222 chr9 SA entries are `+`, where the
-  acceptor foot IS the SA POS.
+  spreads over **24 distinct SA start positions**, 235 entries in all:
+  130,780,369 carries **154**, 130,854,064 carries 26, then 130,763,193 (13),
+  130,781,804 (10) and a tail. Twenty-three of the sites fall between
+  130,731,760 and 130,885,834 — ~154 kb, inside ABL1 — and one singleton sits at
+  128,691,170, about 2 Mb proximal and outside the gene. 130,854,064 is the ABL1
+  exon-2 acceptor: the canonical e14a2 junction, the one the DepMap STAR-Fusion
+  call reports and the one `cancer_sv/k562_bcr_abl_split` bands its right-hand
+  chr9 panel on.
+
+  **That figure frames the two biggest acceptors, a window each**, which is why
+  it has three displayed regions rather than two: an interchromosomal connection
+  draws as an arc only when both feet are on screen, so the FRAMING decides
+  which junctions are arcs and which collapse into a tick at the donor. Any
+  arc/tick count read off it is a statement about the framing as much as about
+  the data — 169 of the 235 entries land in its middle window, 29 in its right
+  one, and the 37 left over are what the tick still carries. The two-window
+  version framed the 26 and hid the 154.
+
+  Whether the 154 are an alternative acceptor or a recurrent alignment artefact
+  is **not established**, and nothing in this file settles it. What can be said:
+  they are a clean cluster — 151 distinct QNAMEs starting at one base, and 223
+  of the 235 chr9 SA entries are `+`, where the acceptor foot IS the SA POS —
+  landing where the RefSeq longest-isoform track draws bare ABL1 intron, with no
+  annotated exon edge under it.
+
+  An earlier version of this note blamed "100 kb+ `D` operations", and that is
+  wrong in a way worth not repeating: the largest `D` op across all 579 records
+  is **15 bp**. What these reads carry is long `N` (skip) operations, up to
+  198 kb — which is what a spliced Iso-Seq alignment across ABL1's introns looks
+  like, not evidence against one.
 
   Reproduce with `samtools view <url> chr22:23,286,000-23,293,000` and count
   `chr9,<pos>,` occurrences; no index-free download and no CIGAR walk needed.
+  Every count above is that command's, so a re-run should reproduce them
+  exactly.
 - **Querying the tumour CRAM without downloading it** — its header `UR` is an
   absolute path on the submitter's cluster and `-T` against our hg38 fails, so
   use `required_fields` to skip SEQ, the only field CRAM needs the reference for:

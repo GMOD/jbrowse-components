@@ -408,9 +408,11 @@ of this section, in the same layout.
 ```
 
 The Iso-Seq reads stop and start at the bases STAR-Fusion reported from short
-reads. Putting both partners in one view as two displayed regions, rather than
-in two stacked panels, lays the fusion out the way FusionInspector does: type
-both locations into the location box, separated by a space.
+reads. Putting both partners in one view as displayed regions, rather than in
+two stacked panels, lays the fusion out the way FusionInspector does: type the
+locations into the location box, separated by spaces. The transcript reaches
+_ABL1_ at more than one place, so this view uses three regions, the _BCR_ donor
+and two acceptor windows.
 
 A read that crosses the junction is one alignment on chr22 and a supplementary
 alignment on chr9. **Read connections → Use curved connectors** draws a curve
@@ -420,13 +422,15 @@ read that stays on one chromosome, so the pileup is the fusion's own support.
 
 A curve per molecule shows the junction is real and cannot show how many
 molecules agree on it, since near-identical curves stack into one line. **Read
-connections → Show read arcs** adds a band under the coverage where the junction
-is drawn once instead, thickened by the reads behind it, and with both partners
-displayed it reaches across the region divider rather than stopping at it. The
-vertical beside its left foot marks the molecules whose other alignment lands
-outside this window.
+connections → Show read arcs** adds a band under the coverage where each
+junction is drawn once instead, thickened by the reads behind it. An arc is
+drawn only when both of its ends are in view, so it reaches across a region
+divider rather than stopping at it, and each acceptor window receives one. The
+vertical at the _BCR_ donor stands for the molecules whose _ABL1_ alignment
+lands in neither window, which is what a window decides rather than what the
+data says.
 
-<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked, and one arc across the divider carrying every molecule that agrees on the junction." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+<Figure caption="BCR on chr22 beside two ABL1 windows on chr9 as three regions of one view, showing only split reads with supplementary alignments linked. The arc band draws one counted arc from the BCR donor into each ABL1 window, and only the right-hand window carries a STAR-Fusion band." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
 roughly seven copies, while the chr22 partners sit at one, so what is amplified

@@ -2071,12 +2071,28 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // click from the figure without any of them costing a screen of page. Don't
   // delete them to tidy up.
 
-  // BCR beside ABL1 in one row, the way FusionInspector lays a fusion out: two
-  // displayed regions in a single view rather than two stacked panels, each
-  // window centred on its own STAR-Fusion breakpoint and banded there. Iso-Seq
-  // coverage is the thing to read: it steps down at the BCR band and up at the
-  // ABL1 band, so the transcript's exons come from BCR up to the junction and
-  // from ABL1 after it.
+  // BCR beside ABL1 in one row, the way FusionInspector lays a fusion out:
+  // displayed regions in a single view rather than stacked panels, with the
+  // called breakpoints banded. Iso-Seq coverage is the thing to read: it steps
+  // down at the BCR band and up at the ABL1 band, so the transcript's exons come
+  // from BCR up to the junction and from ABL1 after it.
+  //
+  // THREE REGIONS, NOT TWO, AND THAT IS THE WHOLE POINT OF THE FRAME. K562's
+  // BCR--ABL1 is one donor and 24 acceptors (DEMO_DATASETS.md), and the two-
+  // window version of this figure framed the SECOND-largest of them: the arc
+  // band drew the called e14a2 junction and put everything else into one opaque
+  // vertical at the BCR donor, which carried six times the arc's support and
+  // said so nowhere a reader could see. A tick means "reaches somewhere you
+  // cannot see", so the fix is to show the place -- the third window is the
+  // acceptor those molecules actually reach, and adding it turns that vertical
+  // into the figure's thickest arc.
+  //
+  // The two chr9 windows are 7 kb each rather than one wide ABL1 window, and
+  // that is forced: an LGV shares one bp/px across displayed regions, so a
+  // ~180 kb chr9 panel beside a 7 kb chr22 one leaves BCR under 4% of the width
+  // and the read-by-read fan -- the thing this figure is for -- collapses into a
+  // smear. Three windows of the same size keep every panel at the zoom the fan
+  // is legible at.
   //
   // One level rather than a breakpoint split view: that view stacks the partners
   // one above the other and runs its splines down the page between them, which
@@ -2106,12 +2122,28 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // this number had to be read off the scrollbar thumb by eye, and was twice.
     // 1760 rather than 1725 because the arc band below is a strip this stack did
     // not reserve before, and the run reported exactly that much newly clipped.
-    viewportHeight: 1760,
+    //
+    // 1790 with the third region, and the +30 is smaller than it looks like it
+    // should be: chain layout merges a molecule by NAME across displayed
+    // regions, so the ~150 reads the middle window adds are mostly the SAME
+    // molecules already stacked for their chr22 alignment and they cost no new
+    // row. Measured by rendering at 2600, where the run reported 813 css px
+    // blank below the content.
+    viewportHeight: 1790,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
-      loc: 'chr22:23,286,000-23,293,000 chr9:130,851,000-130,858,000',
+      // donor, then the two acceptors in genomic order. Each 7 kb, so the three
+      // panels are the same scale and an arc's LENGTH says nothing a reader
+      // could mistake for support.
+      loc: 'chr22:23,286,000-23,293,000 chr9:130,778,000-130,785,000 chr9:130,851,000-130,858,000',
       // the two breakpoints the DepMap STAR-Fusion call reports for BCR--ABL1,
-      // one band each, so the coverage step has a marked position to sit on
+      // one band each, so the coverage step has a marked position to sit on.
+      //
+      // The middle panel gets NO band, deliberately, and the asymmetry is the
+      // figure's negative space: a band here means "a caller reported this", and
+      // nothing reported that acceptor. The panel with the most reads under it
+      // is the one with no band over it, which is a statement the caption does
+      // not have to make.
       highlight: [
         { refName: 'chr22', start: 23_290_313, end: 23_290_513 },
         { refName: 'chr9', start: 130_853_964, end: 130_854_164 },
@@ -2134,7 +2166,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // spec had to be read by eye for twice.
           heightMode: 'grow',
           // over the 800 default, which would clamp this stack and scroll away
-          // the rows the figure is about
+          // the rows the figure is about. Still not binding with the third
+          // region -- measured at 2600 viewport, the whole page settles at 1787,
+          // so the pileup is nowhere near this ceiling.
           growMaxHeight: 2400,
           coverageHeight: 190,
           showOnlySplitAlignments: true,
@@ -2159,12 +2193,25 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // band coalesces them into one mark whose stroke width is the count.
           //
           // It draws at all only because an interchromosomal connection with
-          // both feet on screen is now an arc rather than two ticks. Measured
-          // off this BAM before it was turned on: in these two windows the band
-          // resolves 29 reads into 4 arcs, split 26/1/1/1, the 26 being the ABL1
-          // exon-2 acceptor the STAR-Fusion call bands the chr9 panel on. The
-          // other 195 junctions reach acceptors outside the frame and stay
-          // ticks at the BCR donor, which is why there is a vertical there.
+          // both feet on screen is now an arc rather than two ticks -- so which
+          // junctions are arcs is a property of the WINDOWS, and the third one
+          // was added to move the biggest of them across that line.
+          //
+          // Measured off the BAM (samtools over the chr22 window, counting chr9
+          // SA start positions -- DEMO_DATASETS.md has the method): of 235 chr9
+          // SA entries, 169 land in the middle window and 29 in the right one,
+          // leaving 37 scattered over 15 sites the frame still does not reach.
+          // So the band draws a thick arc into the middle panel, a thinner one
+          // into the right, and keeps a tick at the donor for the 37.
+          //
+          // THE TICK DOES NOT GET THINNER, and that is worth knowing before
+          // re-framing this again in the hope that it will: `arcLineWidth` caps
+          // at 4x the base width around 44 reads, so 206 reads and 37 reads draw
+          // the same 8 device px. What the third window changes is what the
+          // marks MEAN -- the two junctions carrying this frame's evidence are
+          // arcs now, weighted against each other, and the bar at the donor is
+          // the honest remainder instead of the majority of the data hidden in a
+          // mark with no way to say so.
           readConnections: 'arc',
           ...SPLIT_READS,
         },

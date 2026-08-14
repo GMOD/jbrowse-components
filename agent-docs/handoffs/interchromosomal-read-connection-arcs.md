@@ -2,7 +2,7 @@
 name: handoff-interchromosomal-read-connection-arcs
 description:
   The arcs and the k562 figure landed; what is left is the second junction
-  producer that figure retires, two exploratory figures whose render IS the
+  producer that figure retires, one exploratory figure whose render IS the
   measurement, and the one number the overlay's cap still rests on an estimate
   for.
 ---
@@ -21,18 +21,18 @@ as two dangling halves. The reasoning is in the commit messages and in
 cases are its regression test.
 
 **`cancer_sv/k562_bcr_abl_split` has been re-aimed onto the band and published.**
-What is left is the second junction producer that retires, two exploratory
-figures, and one unverified frame.
+What is left is the second junction producer that retires, one exploratory
+figure, and one unverified frame.
 
 ## 1. Drop piece A — the figure it was built for no longer needs it
 
 **`cancer_sv/k562_bcr_abl_split` is done and published** (`020ea68664`,
-`01307eeead`): the band is on beside the bezier fan, and it renders as the
-measurement said it would — one arc of support 26 across the region divider at
-the ABL1 exon-2 acceptor, three hairlines under its stroke, and a tick at the BCR
-donor for the molecules reaching acceptors outside the frame.
-[DEMO_DATASETS.md](../reference/DEMO_DATASETS.md) has the acceptor distribution
-behind those numbers and the method caveat.
+`01307eeead`, then re-framed onto three regions): the band is on beside the
+bezier fan, and it draws the two biggest acceptors as weighted arcs across the
+region dividers — the 154-read intronic site and the 26-read ABL1 exon-2 one —
+with a tick at the BCR donor for the 37 molecules still reaching outside the
+frame. [DEMO_DATASETS.md](../reference/DEMO_DATASETS.md) has the acceptor
+distribution behind those numbers and what is and is not established about them.
 
 So the case for `showSplitJunctionArcs` — the counted sashimi overlay on branch
 `worktree-split-read-sashimi-arcs`, that thread's "piece A" — is spent. It is a
@@ -51,23 +51,32 @@ The clustering pre-pass that would have made the two agree is dead and filed:
 [REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md), "A clustering tolerance
 inside `arcKey`".
 
-## 2. Two exploratory figures — the render is the measurement
+## 2. One exploratory figure left — the render is the measurement
 
-Neither can be rendered before this feature exists, which is why they are here
-rather than done. Both are worth rendering **because** we do not know what they
-show.
+**The widened-ABL1 frame is done, and it went back into figure 1 rather than
+beside it.** It was written up here as a second frame paired with the first, on
+the reasoning that the pair states the semantic (a tick means "reaches somewhere
+you cannot see"; widen the frame and it becomes an arc). What settled it the
+other way is that figure 1 was *wrong on its own*: its window framed the
+26-read acceptor and put the 154-read one inside the donor's tick, so the
+published figure understated its own data by six-fold with nothing on screen
+saying so. That is a defect to fix, not a contrast to preserve.
 
-**The frame decides which connections are arcs.** Same chr22 window as figure 1,
-chr9 widened to the whole of ABL1 (~`chr9:130,710,000-130,890,000`). The ticks
-should become arcs fanning to the distinct acceptors, weighted by support. Paired
-with figure 1 it is the clearest statement of the semantic this change
-introduces: a tick means "reaches somewhere you cannot see", and widening the
-frame turns it into an arc. What is uncertain is what it draws — the acceptor
-distribution is solid but the chr22 feet of those out-of-frame junctions come
-from CIGARs carrying 100 kb+ `D` operations and are not. **Do not let the caption
-claim biology**: whether the 149-read site is an alternative acceptor or an
-alignment artefact is unestablished, and the figure's subject is the display
-behaviour. If it renders as noise, drop it and record that in `DEMO_DATASETS.md`.
+Widening chr9 to the whole gene was not the way to fix it — an LGV shares one
+bp/px, so a ~180 kb chr9 panel beside a 7 kb chr22 one leaves BCR under 4% of
+the width and destroys the read-by-read fan. Three 7 kb windows (donor + the two
+biggest acceptors) keep every panel at the fan's zoom and put both junctions on
+screen as weighted arcs. The counts and the corrected acceptor distribution are
+in [DEMO_DATASETS.md](../reference/DEMO_DATASETS.md); the framing argument is in
+the spec comment.
+
+**What is worth knowing before re-framing any figure to shrink a tick**:
+`arcLineWidth` caps at 4x the base width around 44 reads, so the donor's bar
+draws the same 8 device px at 37 reads as it did at 206. Re-framing changes what
+the marks mean, not how heavy that one looks. If the bar itself is the problem,
+that is a display question — suppressing a tick whose coordinate already carries
+a cross-region arc foot, or marking an off-window partner differently from an
+off-assembly one — and neither is done.
 
 **The multihop chain in one view.** COLO829's `chr3:25,357,600-25,361,000` with
 the chr12 and chr10 partner windows as further displayed regions, tumour track
