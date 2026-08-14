@@ -202,6 +202,27 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Performance and measurement
 
+- **A `Float32Array` for the ML probabilities in the modification path** —
+  measured 2026-08-14 and declined at **1.008x**, which is inside its own
+  control (0.994). It was the first hypothesis on that path and the obvious one:
+  `getModProbabilities` returns `Array.from(ml, v => (+v + 0.5) / 256)`, a boxed
+  `number[]` allocated per read, thousands of entries on a nanopore read. It is
+  not the cost. What was the cost, on the same fixture and in the same run, was
+  the object per **position** in the running-best array — 4.01x when that became
+  a packed `Uint16Array` (`plugins/alignments/benches/modExtract.bench.ts`, both
+  arms still in it). The generalisation worth keeping: on this path the box per
+  value is noise and the object per position is not, so price the container that
+  scales with called positions rather than the one that scales with values.
+- **Columnar typed-array output in place of `ModificationEntry[]`** — measured
+  2026-08-14 and declined at **3.38x against the 4.01x of leaving it alone**,
+  i.e. a regression of about 15% for a substantially larger change. The premise
+  looked airtight: nothing survives as an object, since
+  `buildModificationArrays` filters the array and immediately flattens it into
+  typed arrays, so the objects exist only to carry values between two loops.
+  They are also short-lived enough to die in the nursery, while growable typed
+  columns pay doubling copies and an intern lookup per push. Same bench, kept as
+  an arm. Don't re-propose it without a fixture where the marks outlive the
+  fetch.
 - **The Slang-generated `getInstance<Field>` / `setInstance<Field>` accessors in
   per-instance loops** — emitted, adopted across every coverage-band packer and
   Canvas2D draw loop, measured, and reverted to inline indexing against the
