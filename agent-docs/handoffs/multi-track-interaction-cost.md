@@ -1,6 +1,6 @@
 ---
 name: handoff-multi-track-interaction-cost
-description: Live state of the "several BAM tracks open at once" performance thread — what has landed, the four leads that remain with what each is blocked on, and the hypotheses already ruled out. The benchmarks that found all of it are named here; their numbers live in their own headers.
+description: Live state of the "several BAM tracks open at once" performance thread — what has landed, the three leads that remain with what each is blocked on, and the hypotheses already ruled out. The benchmarks that found all of it are named here; their numbers live in their own headers.
 ---
 
 # Handoff: what N open BAM tracks cost
@@ -72,22 +72,7 @@ section of [INTERACTION_PERF.md](../reference/INTERACTION_PERF.md), where the
 same gesture profiles at 83% `(program)` with every worker idle. Attribution is
 worthless in that state and the inflation is not uniform across frames.
 
-### 2. Count how often consecutive coarse ticks produce equal coverage stats
-
-The 500 ms coarse tick **is** where the over-budget frames land — confirmed, with
-the two traps that hide it, in
-[INTERACTION_PERF.md](../reference/INTERACTION_PERF.md). That section also
-retires the fix this lead used to propose: memoizing
-`computeVisibleCoverageStats` to skip the work saves nothing, because the work is
-tens of microseconds. What the tick costs is the invalidation chain it publishes
-down to `renderState`, which is a full canvas repaint per open track.
-
-So the remaining question is one count, and it decides whether the value-equality
-memo described there is worth writing at all: **during a pan, how often are two
-consecutive ticks' stats equal?** Coarse blocks move, which is why they update,
-so this is not obviously often. Take the count first.
-
-### 3. Does a sixth alignment track want a sixth RPC worker?
+### 2. Does a sixth alignment track want a sixth RPC worker?
 
 `WorkerPoolRpcDriver` sizes the pool `clamp(detectHardwareConcurrency() - 1, 1, 5)`
 and `rpcSessionId` is per-track, so tracks round-robin — and a six-track session
@@ -98,7 +83,7 @@ measurement in [BGZF_WORKER_POOL.md](../reference/BGZF_WORKER_POOL.md) and
 [ARCHITECTURAL_LIMITS.md](../reference/ARCHITECTURAL_LIMITS.md)'s per-context
 entry, not a stopwatch.
 
-### 4. The stop-token probe, for whoever finds it in a trace next
+### 3. The stop-token probe, for whoever finds it in a trace next
 
 `probeBlobUrl` is a **synchronous XHR** per throttled check and was 408 ms
 across six tracks' cold load. The cheap path is the `SharedArrayBuffer` branch,
@@ -116,12 +101,21 @@ restored. Recorded so the next person recognises it and moves on.
 - **The multi-track pan does not refetch.** Every RPC worker profiles 100% idle
   through the gesture at six tracks, so the multibam numbers are re-render cost
   as the bench claims.
+- **The 500 ms coarse tick's per-track repaint is warranted, not redundant.** The
+  tick IS where the over-budget frames land, and both halves of "make it stop"
+  are now closed: skipping the stats computation saves nothing (it is tens of
+  microseconds) and suppressing the invalidation has no case to fire in (the
+  stats changed at **every** tick for **every** display, 0 of 24).
+  [INTERACTION_PERF.md](../reference/INTERACTION_PERF.md) has both, and what is
+  left of that direction — stagger the tick, or make the repaint cheaper — folds
+  into lead 1.
 - **`computeReadBaseCounts` already early-outs** on an empty position set, so a
   track with no modification marks does not walk its reads for nothing.
-- **Three measured negatives** are filed in
+- **Five measured negatives** are filed in
   [REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md): the boxed `number[]` of
-  probabilities, columnar output in place of `ModificationEntry[]`, and
-  memoizing `computeVisibleCoverageStats` for its compute cost.
+  probabilities, columnar output in place of `ModificationEntry[]`, scanning the
+  MM delta list instead of splitting it, and both memos on `coverageStats` — the
+  compute one and the value-equality one.
 
 ## One thing about the machine
 

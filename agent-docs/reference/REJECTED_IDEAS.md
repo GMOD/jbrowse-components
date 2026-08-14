@@ -277,11 +277,22 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `coverageStats` -> `coverageDomain` -> `coverageDepthDomain` ->
   `renderState`, which is a full canvas repaint per open track, and it happens
   even when every value is unchanged because each step builds a fresh object.
-  A **value-equality** memo would stop that chain and is a different change; it is
-  still open, gated on a count that is named in the same section. The
-  generalisation: before memoizing a getter on a hot tick, ask whether the cost is
-  the computation or the invalidation, because the two want opposite fixes — one
-  caches the result, the other has to keep the previous result's identity.
+  A **value-equality** memo would stop that chain and is a different change —
+  **also declined, and by a count rather than by reasoning.** Six tracks, 360
+  frames, 4 coarse ticks: the stats changed at every tick for every display, **0
+  of 24 equal**, each display taking exactly its initial value plus one per tick
+  (`jb2bench/scripts/render/coarsetick.probe.ts`). The memo has no case to fire
+  in, because the tick fires precisely when the coarse window has moved far
+  enough to cover different data — and a stationary view does not tick at all,
+  MobX caching the computed, so there is no third state where the values repeat.
+
+  Two generalisations, and the second is the one that cost a detour. **Before
+  memoizing a getter on a hot tick, ask whether the cost is the computation or
+  the invalidation** — they want opposite fixes, one caching the result and the
+  other preserving the previous result's identity. And **when a recompute is
+  triggered by a change in its own inputs, suspect that its output changes too**:
+  the whole suppression idea assumed a tick that fires more often than the data
+  moves, and this one fires exactly as often.
 - **The Slang-generated `getInstance<Field>` / `setInstance<Field>` accessors in
   per-instance loops** — emitted, adopted across every coverage-band packer and
   Canvas2D draw loop, measured, and reverted to inline indexing against the

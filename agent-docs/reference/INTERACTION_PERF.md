@@ -74,9 +74,27 @@ canvas repaint, per open track, on one tick. Both of the first two build a fresh
 object every evaluation, so the chain runs and the repaint happens **even when
 every value is unchanged**.
 
-So the change worth measuring is a **value-equality memo on `coverageStats`** —
-return the previous object when the stats are equal, and MobX's default `===`
-comparer stops the chain there. What decides whether it pays is a count nobody has
-taken: how often consecutive coarse ticks during a pan produce equal stats. The
-coarse blocks do move, which is why they update at all, so this is not obviously
-often. Take that count before writing the memo.
+The obvious response is a **value-equality memo on `coverageStats`** — return the
+previous object when the stats are equal, and MobX's default `===` comparer stops
+the chain there. **Counted, and it has no case to fire in.** Six tracks, 360
+frames, `jb2bench/scripts/render/coarsetick.probe.ts`: 4 coarse ticks over the
+gesture, and at every one of them the stats **changed for all six displays — 0 of
+24 equal**. Each display took exactly 5 distinct values: its initial one plus one
+per tick.
+
+That is not a near miss, and in hindsight it is what the tick *is*. The coarse
+blocks update only once the view has moved far enough to warrant it, so a new
+coarse window covers different data and min/max/mean move with it. A stationary
+view does not tick at all — MobX caches the computed and nothing invalidates it —
+so there is no third state in which the values repeat. Filed in
+[REJECTED_IDEAS.md](REJECTED_IDEAS.md).
+
+**So the per-tick recompute and repaint are WARRANTED work, not redundant work**,
+and that closes the suppression direction entirely. What is left for this tick is
+either to stagger it, so N tracks and the SearchBox stop landing on one frame — a
+real option, and one that trades a briefly stale axis for smoothness — or to make
+the repaint itself cheaper, which is the React/Emotion item above and not specific
+to this tick at all.
+
+Measuring it also confirms the ~500 ms period by a second route: 4 ticks over
+~2.2 s of frames, arrived at with no reference to the frame gaps.
