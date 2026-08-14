@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
 import DisplayStatusOverlays from './DisplayStatusOverlays.tsx'
+import DotplotHoverHighlight from './DotplotHoverHighlight.tsx'
 import DotplotTooltips from './DotplotTooltips.tsx'
 import Header from './Header.tsx'
 import MouseInteractionLayer from './MouseInteractionLayer.tsx'
@@ -154,6 +155,9 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
           </div>
           <div className={classes.overlay}>
             <DotplotCanvas model={model} />
+            {/* over the canvas, unlike the grid and highlight bands — a hover
+                cue under the dots would be hidden by the one it points at */}
+            <DotplotHoverHighlight model={model} />
             <DisplayStatusOverlays model={model} />
           </div>
           <SelectionContextMenu model={model} interaction={interaction} />

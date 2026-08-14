@@ -186,6 +186,12 @@ export function useDotplotInteraction(
           setCurr(s)
           lastRef.current = s
           setUp(undefined)
+          // A gesture is starting, so the hover is over: a pan would drag the
+          // plot out from under the highlight, and a selection drag has its own
+          // pair of coord tooltips to put at this anchor. Cleared once here
+          // rather than per move — the move handler below simply doesn't pick
+          // while `down` is set.
+          model.setHoveredFeature(undefined)
         }
       },
       onPointerMove: event => {
@@ -202,6 +208,9 @@ export function useDotplotInteraction(
           }
         } else {
           setCurr(s)
+          if (!down) {
+            model.setHoveredFeature(model.pickFeatureAt(s.x, s.y))
+          }
         }
       },
       onPointerUp: event => {
@@ -226,6 +235,7 @@ export function useDotplotInteraction(
       },
       onPointerLeave: () => {
         setHovering(false)
+        model.setHoveredFeature(undefined)
       },
     },
     anchor: down,

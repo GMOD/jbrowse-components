@@ -35,6 +35,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { observable } from 'mobx'
 
+import { pickDotplotFeature } from '../DotplotDisplay/dotplotPickEngine.ts'
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
 import { doAfterAttach } from './afterAttach.ts'
 import {
@@ -45,13 +46,15 @@ import {
   thinTickPositions,
   truncateRefNames,
 } from './components/util.ts'
-import { DRAG_THRESHOLD_PX, LS_CURSOR_MODE } from './types.ts'
+import { DRAG_THRESHOLD_PX, HOVER_SLACK_PX, LS_CURSOR_MODE } from './types.ts'
 
+import type { DotplotPlotPickHit } from '../DotplotDisplay/dotplotPickEngine.ts'
 import type {
   DotplotGeometryData,
   DotplotRenderingBackend,
 } from '../DotplotDisplay/dotplotRenderingBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
+import type { DotplotHoverHighlight } from '../DotplotDisplay/types.ts'
 import type { Dotplot1DViewModel } from './1dview.ts'
 import type {
   Coord,
@@ -815,6 +818,39 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * The hovered alignment's tooltip lines, from whichever track owns the
+         * hover, or undefined when nothing is hovered.
+         *
+         * At most one track can: `setHoveredFeature` clears every other one in
+         * the same batch, so the first answer found is the only answer. Resolved
+         * here so the tooltip component takes the view it already has rather than
+         * looping the tracks itself.
+         */
+        get hoveredTooltipLines(): string[] | undefined {
+          for (const display of this.dotplotDisplays) {
+            const lines = display.tooltipLines
+            if (lines) {
+              return lines
+            }
+          }
+          return undefined
+        },
+        /**
+         * #getter
+         * The hovered alignment's restroke geometry — see
+         * `DotplotDisplay.hoveredFeatureHighlight`. One track at most, as above.
+         */
+        get hoveredHighlight(): DotplotHoverHighlight | undefined {
+          for (const display of this.dotplotDisplays) {
+            const highlight = display.hoveredFeatureHighlight
+            if (highlight) {
+              return highlight
+            }
+          }
+          return undefined
+        },
+        /**
+         * #getter
          * True if any track has an adapter with tiered storage. Used to gate the
          * LOD menu — only the indexed PIF adapters have tiers.
          */
@@ -882,6 +918,56 @@ export default function stateModelFactory(pm: PluginManager) {
               }
             : undefined
         },
+        /**
+         * #method
+         * The alignment under a pointer position (plot px, y downward), across
+         * every track on the shared canvas, or undefined.
+         *
+         * Resolved on the model rather than through the rendering backend, which
+         * is where this departs from synteny's `backend.pick(...)`: dotplot
+         * geometry is already here in absolute cumBp (`display.instanceData`), so
+         * the pick needs neither of the two backends — and so it keeps working on
+         * the Canvas2D fallback, during a GPU context loss, and in a test with no
+         * canvas at all. Synteny's has to live in the backend only because the
+         * projected geometry it indexes does.
+         *
+         * Nearest wins ACROSS tracks too, ties going to the later track (the one
+         * drawn on top) — see `pickDotplotFeature` for why a dotplot answers
+         * nearest where a ribbon answers topmost.
+         */
+        pickFeatureAt(x: number, y: number) {
+          const { hview, vview } = self
+          const transform = {
+            viewBpH: hview.offsetPx * hview.bpPerPx,
+            viewBpV: vview.offsetPx * vview.bpPerPx,
+            bpPerPxH: hview.bpPerPx,
+            bpPerPxV: vview.bpPerPx,
+            viewHeight: this.viewHeight,
+          }
+          // Half the drawn line width, so anything painted under the cursor
+          // hits, plus a fixed slack for the sub-pixel dots a whole-genome plot
+          // is mostly made of — they are a couple of px across at most, and
+          // without slack they would be unhoverable.
+          const tolerancePx = self.lineWidth / 2 + HOVER_SLACK_PX
+          let best: DotplotPlotPickHit | undefined
+          for (const display of this.dotplotDisplays) {
+            const { instanceData } = display
+            if (!instanceData) {
+              continue
+            }
+            const hit = pickDotplotFeature({
+              data: instanceData,
+              x,
+              y,
+              transform,
+              tolerancePx,
+            })
+            if (hit && (!best || hit.distancePx <= best.distancePx)) {
+              best = { ...hit, displayKey: display.displayKey }
+            }
+          }
+          return best
+        },
       }))
       .views(self => ({
         /**
@@ -922,6 +1008,22 @@ export default function stateModelFactory(pm: PluginManager) {
         },
       }))
       .actions(self => ({
+        /**
+         * #action
+         * Point the whole plot's hover state at one pick hit: the track whose
+         * geometry was hit takes the feature index, every other track clears, so
+         * `undefined` (a miss) clears the plot. An action rather than a loop in
+         * the pointer handler so the N writes land in one MobX batch — and so
+         * nothing outside the model has to resolve a `displayKey` to a display.
+         * Same shape as the synteny level's `setHoveredFeature`.
+         */
+        setHoveredFeature(hit: DotplotPlotPickHit | undefined) {
+          for (const display of self.dotplotDisplays) {
+            display.setHoveredFeatureIdx(
+              display.displayKey === hit?.displayKey ? hit.featureIdx : -1,
+            )
+          }
+        },
         /**
          * #action
          */

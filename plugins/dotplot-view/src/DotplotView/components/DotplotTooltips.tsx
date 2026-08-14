@@ -2,10 +2,15 @@ import { Suspense, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import type { DotplotViewModel } from '../model.ts'
-import type { DotplotInteraction } from './useDotplotInteraction.ts'
+import { locstr } from './util.ts'
 
-const DotplotCoordTooltip = lazy(() => import('./DotplotCoordTooltip.tsx'))
+import type { DotplotViewModel } from '../model.ts'
+import type {
+  DotplotInteraction,
+  PointerSample,
+} from './useDotplotInteraction.ts'
+
+const DotplotTooltip = lazy(() => import('./DotplotTooltip.tsx'))
 
 const DotplotTooltips = observer(function DotplotTooltips({
   model,
@@ -15,18 +20,35 @@ const DotplotTooltips = observer(function DotplotTooltips({
   interaction: DotplotInteraction
 }) {
   const { hovering, validSelect, anchor, pointer, dx, selecting } = interaction
+  const { hview, vview, viewHeight, hoveredTooltipLines } = model
+  // The cursor's own position on both axes. The v axis lays out bottom-up, so
+  // its pixel is flipped through the plot height first.
+  const coordLines = (point: PointerSample) => [
+    `x - ${locstr(point.x, hview)}`,
+    `y - ${locstr(viewHeight - point.y, vview)}`,
+  ]
   return (
     <Suspense fallback={null}>
-      {hovering && validSelect && pointer ? (
-        <DotplotCoordTooltip
-          model={model}
+      {/* One tooltip at the pointer, and the alignment under it wins: its own
+          two locations are strictly more than the cursor coordinates they would
+          replace. The hover is cleared at pointerdown, so the feature arm and
+          the drag arms below can never be live at once. */}
+      {pointer && hoveredTooltipLines ? (
+        <DotplotTooltip
+          lines={hoveredTooltipLines}
+          point={pointer}
+          placement="right"
+        />
+      ) : hovering && validSelect && pointer ? (
+        <DotplotTooltip
+          lines={coordLines(pointer)}
           point={pointer}
           placement={dx < 0 ? 'left' : 'right'}
         />
       ) : null}
       {selecting && anchor ? (
-        <DotplotCoordTooltip
-          model={model}
+        <DotplotTooltip
+          lines={coordLines(anchor)}
           point={anchor}
           placement={dx < 0 ? 'right' : 'left'}
         />

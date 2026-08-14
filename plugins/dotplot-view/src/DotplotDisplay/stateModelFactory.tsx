@@ -2,6 +2,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
 import {
@@ -14,6 +15,8 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { computeDotplotColors } from './dotplotColors.ts'
+import { featureSegmentRange } from './dotplotPickEngine.ts'
+import { getDotplotTooltipLines } from './dotplotTooltip.ts'
 import { dotplotFetchKey } from './fetchKey.ts'
 import { renderSvg } from './renderSvg.tsx'
 
@@ -23,7 +26,7 @@ import type {
 } from '../DotplotView/model.ts'
 import type { DotplotDisplayConfigSchema } from './configSchema.ts'
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
-import type { DotplotRpcData } from './types.ts'
+import type { DotplotHoverHighlight, DotplotRpcData } from './types.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -32,6 +35,12 @@ import type {
   SyntenyColorBy,
 } from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
+
+// Path coordinates to a tenth of a pixel. Full float precision makes the `d`
+// string several times longer for differences nothing can display.
+function px(n: number) {
+  return Math.round(n * 10) / 10
+}
 
 /**
  * #stateModel DotplotDisplay
@@ -74,6 +83,16 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
            * the data it describes (see `setRpcData`).
            */
           fetchWarnings: [] as ComparativeWarning[],
+          /**
+           * #volatile
+           * Index into `rpcData`'s per-FEATURE arrays of whatever the pointer is
+           * over, or -1. A feature index, not the segment index the pick walked:
+           * a CIGAR-detailed alignment is many segments of one feature, and
+           * everything downstream (tooltip, highlight) is about the feature.
+           * `dotplotPickEngine` answers in this space directly, which is where
+           * this differs from `LinearSyntenyDisplay.hoveredFeatureIdx`.
+           */
+          hoveredFeatureIdx: -1,
         })),
     )
     .views(self => ({
@@ -165,6 +184,81 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         const { instanceData } = self
         const colors = this.computedColors
         return instanceData && colors ? { ...instanceData, colors } : undefined
+      },
+      /**
+       * #getter
+       * The hovered feature's tooltip, as lines, or undefined when nothing is
+       * hovered. The dotplot twin of `LinearSyntenyDisplay.tooltipText`, in
+       * lines rather than an HTML string — see `getDotplotTooltipLines`.
+       */
+      get tooltipLines(): string[] | undefined {
+        const { hoveredFeatureIdx, rpcData } = self
+        return hoveredFeatureIdx < 0 || !rpcData
+          ? undefined
+          : getDotplotTooltipLines({
+              rpcData,
+              featureIdx: hoveredFeatureIdx,
+              hview: this.view.hview,
+              vview: this.view.vview,
+            })
+      },
+      /**
+       * #getter
+       * The hovered feature redrawn over the canvas: an SVG path of its segments
+       * in plot px, plus its own packed color as CSS.
+       *
+       * This is the whole of the hover shading, and it deliberately isn't in
+       * either renderer. Synteny boosts alpha and darkens rgb per fragment from
+       * a `hoveredFeatureId` uniform, which costs an instance lane, a uniform, a
+       * hand-written Canvas2D twin of the same arithmetic, and a broken color
+       * run in `drawDotplotInstances`' batcher. Restroking one feature — a
+       * handful of segments — over the shared canvas gets the same cue on the
+       * GPU path, the Canvas2D fallback and the SVG export at once, and needs
+       * none of that.
+       *
+       * The cue is opacity + width, not hue: the plot's own `alpha` slider
+       * routinely sits at 0.2, so restroking opaque and a few px wider is
+       * exactly synteny's "the hovered one goes solid". Nothing here picks a
+       * highlight color, because every hue is already in use — category10 paints
+       * the chromosome modes, and red/blue/black are the strand and default
+       * schemes.
+       *
+       * Recomputes on pan (through `dotplotRenderState`'s `viewBpH`/`viewBpV`),
+       * which is what keeps the highlight on its feature, and only while
+       * something is hovered.
+       */
+      get hoveredFeatureHighlight(): DotplotHoverHighlight | undefined {
+        const { hoveredFeatureIdx, instanceData } = self
+        const colors = this.computedColors
+        if (hoveredFeatureIdx < 0 || !instanceData || !colors) {
+          return undefined
+        }
+        const { x1, y1, x2, y2, instanceFeatureIdx, instanceCount } =
+          instanceData
+        const [start, end] = featureSegmentRange(
+          instanceFeatureIdx,
+          instanceCount,
+          hoveredFeatureIdx,
+        )
+        if (start >= end) {
+          // The hovered feature has no segments any more — `minAlignmentLength`
+          // was raised past it while the pointer sat still.
+          return undefined
+        }
+        const { viewHeight } = this.view
+        const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv } =
+          this.view.dotplotRenderState
+        let path = ''
+        for (let s = start; s < end; s++) {
+          // Same reconstruction as `drawDotplotInstances`, so the restroke lands
+          // on the pixels the canvas painted.
+          const sx1 = (x1[s]! - viewBpH) * bpPerPxHInv
+          const sy1 = viewHeight - (y1[s]! - viewBpV) * bpPerPxVInv
+          const sx2 = (x2[s]! - viewBpH) * bpPerPxHInv
+          const sy2 = viewHeight - (y2[s]! - viewBpV) * bpPerPxVInv
+          path += `M${px(sx1)} ${px(sy1)}L${px(sx2)} ${px(sy2)}`
+        }
+        return { path, color: abgrToCssRgba(colors[start]!) }
       },
       /**
        * #getter
@@ -334,9 +428,26 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         self.rpcData = data
         self.loadedFetchKey = fetchKey
         self.fetchWarnings = warnings
+        // The hover index addresses the OUTGOING rpcData, so it is meaningless
+        // against the incoming arrays: a surviving index describes an unrelated
+        // alignment. Same reason, same place, as
+        // `LinearSyntenyDisplay.setRpcData` clearing its own. The next
+        // pointermove re-picks against the new data anyway — a refetch is a
+        // zoom/pan/mode change, after which the pointer is no longer over
+        // whatever it was hovering.
+        self.hoveredFeatureIdx = -1
       },
       setInstanceData(data: DotplotInstanceData | undefined) {
         self.instanceData = data
+      },
+      /**
+       * #action
+       * Written by the view's `setHoveredFeature`, which points the whole plot's
+       * hover at one hit — never per display from a component, so the N writes
+       * land in one MobX batch.
+       */
+      setHoveredFeatureIdx(idx: number) {
+        self.hoveredFeatureIdx = idx
       },
     }))
     .actions(self => ({

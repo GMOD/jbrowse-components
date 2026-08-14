@@ -14,6 +14,13 @@ export const LS_CURSOR_MODE = 'dotplot-cursorMode'
 // counts as a selection.
 export const DRAG_THRESHOLD_PX = 3
 
+// Extra px of reach the hover pick gets beyond half the drawn line width. A
+// whole-genome plot is mostly sub-pixel alignments drawn as dots a couple of px
+// across, which at the default lineWidth would need the cursor within ~1px to
+// hit — unhoverable in practice. Unrelated to DRAG_THRESHOLD_PX above, which
+// measures intent rather than reach.
+export const HOVER_SLACK_PX = 3
+
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
 /**

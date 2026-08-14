@@ -17,6 +17,21 @@ export type DotplotRpcData = Omit<
   'skippedHRefNames' | 'skippedVRefNames'
 >
 
+// The hovered alignment restroked over the canvas: an SVG path of its segments
+// in plot px, and its own packed color as CSS. See
+// `DotplotDisplay.hoveredFeatureHighlight`.
+//
+// Named rather than inferred because the getter that returns it reads
+// `this.view`, and EVERY view-touching getter on this display carries an
+// explicit return type for that reason — an inferred one walks into
+// `DotplotViewModel`, which names this display back, and the mutual reference
+// collapses (TS7023 on the factory, TS2310 on `DotplotDisplayModel`, then a
+// hundred implicit-anys across the plugin). ADR-055.
+export interface DotplotHoverHighlight {
+  path: string
+  color: string
+}
+
 // What `renderSvg` reads off a DotplotDisplay. `error` is the export's terminal
 // (a failed track fails the export), not something drawn — every display paints
 // the one shared plot rect, so there is no box here to draw it into.
