@@ -153,26 +153,51 @@ queries), which nobody else is waiting on.
 ## Concurrent fetches share one field — aggregate, don't clobber
 
 A fetch generation can fan out into N parallel per-region RPCs that all write
-the same volatiles. Route each through `FetchMixin.setRegionStatus(key,
-status)` (keyed by `displayedRegionIndex`), which re-derives the shared fields
-via `aggregateStatus`. N downloads then read as one honest bar instead of
-last-writer thrash. `runFetch` / `cancelFetch` clear the map.
+the same field. There is one answer on both sides of the RPC boundary:
+**`createStatusFanOut`, a slot per operation**, re-deriving the shared value
+through `aggregateStatus` on every write. N downloads then read as one honest
+bar instead of last-writer thrash.
 
-The same hazard exists inside the worker wherever one `statusCallback` is
-handed to several operations at once — `BaseFeatureDataAdapter`'s multi-region
-`merge`, a `Promise.all` over sidecar files, a fan-out over tabix seqids. Give
-each a `createStatusFanOut` slot. The tell that it is missing: the first
-operation to finish writes the `''` that every phase helper clears with, so the
-label blanks while the rest are still running.
+On the main thread nobody calls it directly, because the fan-out helpers own it:
+`callEachRegion` — and `fetchEachRegion` through it — hands each region a copy of
+the `FetchContext` whose `statusCallback` is that region's slot. So a display
+writes `statusCallback: ctx.statusCallback` and is correct in both cases: a
+per-region slot in a fan-out, the whole fetch's channel in a batched call. It is
+the same field name either way, deliberately — there is no per-display variant to
+pick, and no index to remember.
+
+Inside the worker, and in the main-thread paths that fan out by hand, reach for
+`createStatusFanOut` yourself: `BaseFeatureDataAdapter`'s multi-region `merge`, a
+`Promise.all` over sidecar files, MAF's two concurrent branches, the canvas basic
+display's own `Promise.all`. The tell that it is missing: the first operation to
+finish writes the `''` that every phase helper clears with, and the label blanks
+while the rest are still running.
+
+This replaced a second implementation on the model —
+`regionStatuses` + `setRegionStatus` + `makeRegionStatusCallback`, a volatile Map
+keyed by `displayedRegionIndex`. Two implementations of one idea disagreed about
+what retires an entry: the closure retired on `''` and the model retired on
+`undefined`, which nothing ever sent. Every *finished* region therefore stayed in
+the aggregate, charged a share of the total, and the bar ran backwards as regions
+completed.
 
 ## The stream is throttled on the callback, never on the write
 
 An adapter emits progress ~40/s and each observable write repaints the overlay
 (and repositions its MUI Popper) — measured outpacing the view's own animation.
-`createStatusThrottle()` (`@jbrowse/core/util`) is the one leading-edge window
-(100ms): **one per display**, shared across its status callbacks so N parallel
-region fetches thin to one stream between them rather than N. Three owners, so
-progress cadence is uniform whichever path a status took:
+`createStatusThrottle()` (`@jbrowse/core/util`) is the one window (100ms),
+leading **and trailing**: the last write of a burst is the one that matters most
+and is exactly the one a leading-edge-only gate drops, which froze a determinate
+bar at whatever percentage happened to land on a boundary. Because a trailing
+write fires on a timer, its guard has to be re-read inside the throttled body —
+which is what `createGuardedStatusSink` is, and why every owner should build its
+callback with that rather than calling `run` directly.
+
+**One per owner**, shared across its status callbacks so N parallel region
+fetches thin to one stream between them rather than N. `createGuardedStatusSink`
+takes it as a required argument with no default for that reason: a per-sink
+default would silently give you N. Three owners, so progress cadence is uniform
+whichever path a status took:
 
 - `FetchMixin` — the LGV displays
 - `createStopTokenRotation` — the bare-autorun fetches (dotplot, synteny) that
@@ -183,13 +208,15 @@ progress cadence is uniform whichever path a status took:
 Two rules the shape enforces:
 
 - **`setStatusMessage` itself is never throttled.** A display writing a phase
-  label by hand ("Downloading" → "Parsing") must see every write land; there is
-  no trailing flush to recover a dropped one.
-- **`setRegionStatus` throttles only its derived bar write**, never the
-  per-region map. Throttling the whole call (as it once did) dropped `undefined`
-  deletes too, stranding a finished region in the aggregate for the rest of the
-  fetch. A cleared aggregate also bypasses the window, or a finished fetch's
-  message would stay on screen.
+  label by hand ("Downloading" → "Parsing") is a sequence of distinct labels, and
+  a trailing edge only guarantees the *last* of a burst, not each one in turn.
+- **A `''` is not throttled, and it reopens the window.** It is how every phase
+  helper says the phase is over, so it has to land, and it has to cancel the
+  progress value queued behind it — otherwise the trailing timer puts a
+  percentage back on screen after the work it measured has ended. Reopening is
+  the half that is easy to leave out: a phase boundary is immediately followed by
+  the next phase's label, so charging the clear a full window delays every label
+  by up to one and drops outright the label of any phase shorter than one.
 
 ## Cancel is durable and retryable
 

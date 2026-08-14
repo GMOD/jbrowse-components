@@ -101,8 +101,9 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 ```
 
 `call` keeps the literal RPC method name at the call site so its typed args and
-return survive, and `makeRegionStatusCallback` aggregates every region's
-progress into one bar. A batched counterpart, `fetchAllRegions`, hands all
+return survive, and the `ctx` it receives is that region's own — its
+`statusCallback` is the region's slot in a fan-out, so every region's progress
+aggregates into one bar. A batched counterpart, `fetchAllRegions`, hands all
 regions to a single RPC call (use it when the adapter serves the whole set in
 one pass more efficiently, e.g. BigWig coalescing adjacent blocks).
 

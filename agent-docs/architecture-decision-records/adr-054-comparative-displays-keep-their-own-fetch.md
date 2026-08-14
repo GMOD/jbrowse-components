@@ -45,9 +45,12 @@ of the primitive is not evidence of an unfinished migration.
 
 ### 2. `FetchMixin`'s net-new surface is mostly inapplicable or unreachable
 
-- `regionStatuses` / `setRegionStatus` / `makeRegionStatusCallback` aggregate
-  status across a per-region fan-out. Both comparative fetches are a single RPC —
-  dead weight.
+- the per-region status fan-out. Both comparative fetches are a single RPC —
+  dead weight. (At the time this named three `FetchMixin` members,
+  `regionStatuses` / `setRegionStatus` / `makeRegionStatusCallback`; the
+  aggregate now lives in `createStatusFanOut` on the fetch context, which
+  `createStopTokenRotation` callers can reach for directly. The argument is
+  unchanged — a single-RPC fetch has nothing to aggregate.)
 - `fetchCanceled` / `cancelFetchByUser` need a cancel affordance to mean
   anything. Neither comparative overlay has one:
   `LinearSyntenyRendering.tsx` passes `LoadingOverlay` no `onCancel`/`onRetry`

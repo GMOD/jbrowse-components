@@ -88,9 +88,9 @@ export abstract class BaseFeatureDataAdapter<
    * `statusCallback`: they all report the same phases ("Downloading
    * features"), and sharing one status field meant the last writer won and the
    * first region to finish cleared the label while the rest were still
-   * downloading. Aggregated, N regions read as one Σbytes bar — the same thing
-   * `FetchMixin.setRegionStatus` does for the per-region RPCs on the main
-   * thread.
+   * downloading. Aggregated, N regions read as one Σbytes bar — the same helper
+   * `callEachRegion` uses to give the per-region RPCs on the main thread a slot
+   * apiece.
    */
   public getFeaturesInMultipleRegions(
     regions: Region[],

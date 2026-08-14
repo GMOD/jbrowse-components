@@ -269,9 +269,10 @@ The worker boundary uses the [Structured Clone Algorithm][sca]. Safe types:
 The RPC layer intercepts `statusCallback` props and channels them back to the
 main thread, which is the one exception to "no functions cross the boundary" —
 the function never actually goes; a side-channel does. The main-thread half is
-the `statusCallback` in the call above; a per-region display gets it from
-`makeRegionStatusCallback`, which routes each region's messages to that region's
-slot in the loading UI.
+the `statusCallback` in the call above, which a display reads off its
+`FetchContext`. In a per-region fan-out that context is the region's own, so its
+callback is that region's slot in the loading UI and the N of them aggregate
+into one bar rather than clobbering each other.
 
 In the worker it arrives deserialized and is called normally. Hand it down to
 whatever does the slow work rather than only bracketing that work, so the
