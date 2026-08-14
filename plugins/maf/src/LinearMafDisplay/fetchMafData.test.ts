@@ -5,11 +5,16 @@ import {
 } from './fetchMafData.ts'
 
 import type { Sample } from '../types.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 const mockRpcCall = jest.fn()
 
+// the real barrel apart from the session lookup: the fetch splits its two
+// concurrent branches with `createStatusFanOut` from here, and `callEachRegion`
+// splits each of those per region, so a stub would be testing the stub
 jest.mock('@jbrowse/core/util', () => ({
+  ...jest.requireActual('@jbrowse/core/util'),
   getSession: () => ({ rpcManager: { call: mockRpcCall } }),
 }))
 jest.mock('@jbrowse/core/util/tracks', () => ({
@@ -78,12 +83,12 @@ const NEEDED = [
 // MultiRegionDisplayMixin and owns stop-token rotation + staleness, none of
 // which this test exercises — it just runs the work callback with a fresh ctx.
 function makeSelf() {
-  const statusKeys: number[] = []
+  const reported: RpcStatus[] = []
   const cleared: string[] = []
   const framesFetched: number[] = []
   const framesBlocked: boolean[] = []
   return {
-    statusKeys,
+    reported,
     cleared,
     framesFetched,
     framesBlocked,
@@ -98,13 +103,9 @@ function makeSelf() {
           work({
             stopToken: 'tok',
             isStale: () => false,
-            statusCallback: () => {},
+            statusCallback: (s: RpcStatus) => reported.push(s),
           }),
         ).then(() => {}),
-      makeRegionStatusCallback: (key: number) => {
-        statusKeys.push(key)
-        return () => {}
-      },
       setRpcData: () => {},
       setSummaryData: () => {},
       setFramesData: (i: number) => {
@@ -142,16 +143,24 @@ describe('MAF fetch progress reporting', () => {
     ['alignment', fetchMafAlignmentData],
     ['summary', fetchMafSummaryData],
   ])('%s fetch passes a per-region statusCallback', async (_name, fetchFn) => {
-    const { self, statusKeys } = makeSelf()
+    const { self, reported } = makeSelf()
     await fetchFn(self as any, NEEDED)
 
     expect(mockRpcCall).toHaveBeenCalledTimes(2)
-    for (const call of mockRpcCall.mock.calls) {
-      expect(typeof call[2].statusCallback).toBe('function')
+    const sent = mockRpcCall.mock.calls.map(c => c[2].statusCallback)
+    for (const cb of sent) {
+      expect(typeof cb).toBe('function')
     }
-    // keyed by displayedRegionIndex so the two concurrent per-region fetches
-    // aggregate into one bar rather than clobbering each other
-    expect(statusKeys).toEqual([0, 3])
+    // a slot each, so the two concurrent per-region fetches aggregate into one
+    // bar rather than clobbering each other
+    expect(sent[0]).not.toBe(sent[1])
+    sent[0]({ message: 'Downloading', current: 30, total: 100 })
+    sent[1]({ message: 'Downloading', current: 10, total: 100 })
+    expect(reported.at(-1)).toEqual({
+      message: 'Downloading',
+      current: 40,
+      total: 200,
+    })
   })
 })
 

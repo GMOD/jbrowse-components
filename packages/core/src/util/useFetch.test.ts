@@ -1,8 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 
+import { statusProgressLabel } from './progress.ts'
 import { checkStopToken } from './stopToken.ts'
 import { useFetch } from './useFetch.ts'
 
+import type { RpcStatus } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
 
 // The key→fetcher-argument contract. An array key is *spread* across the
@@ -248,4 +250,125 @@ test('surfaces a rejection as error, leaving data undefined', async () => {
   })
   expect(result.current.data).toBeUndefined()
   expect(result.current.isLoading).toBe(false)
+})
+
+// The status channel. The tests above pin that a callback is *passed*; these pin
+// what happens when a fetcher calls it, which is where the hook's `status` comes
+// from and is what eight dialogs now render instead of a bare spinner.
+describe('the status channel', () => {
+  // the sink is throttled like every other owner of a progress stream, so these
+  // step a mocked clock rather than racing the window
+  let clock = 1_000_000
+  beforeEach(() => {
+    clock = 1_000_000
+    jest.spyOn(Date, 'now').mockImplementation(() => clock)
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  // a fetcher whose status callback and resolver the test drives by hand
+  function parked() {
+    const handles: {
+      statusCallback: (status: RpcStatus) => void
+      resolve: (answer: string) => void
+    }[] = []
+    const hook = renderHook(() =>
+      useFetch(
+        ['parked'] as const,
+        (_key, _stopToken, statusCallback) =>
+          new Promise<string>(resolve => {
+            handles.push({ statusCallback, resolve })
+          }),
+      ),
+    )
+    return { ...hook, handles }
+  }
+
+  test('surfaces what the fetcher reports', async () => {
+    const { result, handles } = parked()
+    await waitFor(() => {
+      expect(handles).toHaveLength(1)
+    })
+    expect(result.current.status).toBeUndefined()
+    act(() => {
+      handles[0]!.statusCallback({
+        message: 'Downloading',
+        current: 1,
+        total: 4,
+      })
+    })
+    expect(statusProgressLabel(result.current.status)).toBe('Downloading 25%')
+  })
+
+  test('clears it when the fetch settles', async () => {
+    const { result, handles } = parked()
+    await waitFor(() => {
+      expect(handles).toHaveLength(1)
+    })
+    act(() => {
+      handles[0]!.statusCallback('Downloading')
+    })
+    expect(result.current.status).toBe('Downloading')
+    await act(async () => {
+      handles[0]!.resolve('done')
+    })
+    expect(result.current.status).toBeUndefined()
+  })
+
+  // A status queued on the throttle's trailing timer would otherwise land after
+  // the fetch it describes has settled, and then sit there: nothing else is
+  // coming to clear it.
+  test('a status queued as the fetch settles cannot reappear after it', async () => {
+    jest.useFakeTimers()
+    try {
+      const { result, handles } = parked()
+      await waitFor(() => {
+        expect(handles).toHaveLength(1)
+      })
+      act(() => {
+        handles[0]!.statusCallback('Downloading')
+        // same tick, so this one is queued rather than written
+        handles[0]!.statusCallback('Parsing')
+      })
+      await act(async () => {
+        handles[0]!.resolve('done')
+      })
+      expect(result.current.status).toBeUndefined()
+      act(() => {
+        clock += 100
+        jest.advanceTimersByTime(100)
+      })
+      expect(result.current.status).toBeUndefined()
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  // A key going nil runs the effect's cleanup first, which closes the `alive`
+  // guard the settle path is gated on — so the nil branch has to clear it, or
+  // the last progress of an abandoned fetch stays on screen for good.
+  test('a key going nil mid-fetch clears the status', async () => {
+    const handles: ((status: RpcStatus) => void)[] = []
+    const { result, rerender } = renderHook(
+      ({ on }: { on: boolean }) =>
+        useFetch(
+          on ? (['parked'] as const) : null,
+          (_key, _stopToken, statusCallback) =>
+            new Promise<string>(() => {
+              handles.push(statusCallback)
+            }),
+        ),
+      { initialProps: { on: true } },
+    )
+    await waitFor(() => {
+      expect(handles).toHaveLength(1)
+    })
+    act(() => {
+      handles[0]!('Downloading')
+    })
+    expect(result.current.status).toBe('Downloading')
+    rerender({ on: false })
+    expect(result.current.status).toBeUndefined()
+  })
 })

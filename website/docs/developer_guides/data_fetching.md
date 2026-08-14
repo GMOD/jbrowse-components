@@ -81,16 +81,17 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
     // rpcManager.call injects sessionId from its first argument, so it
     // does not go in the args object — a registered method's args are
     // Omit<…, 'sessionId'>, and passing it again is a type error
-    call: (region, ctx, displayedRegionIndex) =>
+    call: (region, ctx) =>
       rpcManager.call(sessionId, 'GetScoreData', {
         adapterConfig,
         region,
         ...self.rpcProps(),
         stopToken: ctx.stopToken,
         // the RPC layer replaces this function with a side-channel and
-        // calls it on the main thread as the worker reports progress
-        statusCallback:
-          self.makeRegionStatusCallback(displayedRegionIndex),
+        // calls it on the main thread as the worker reports progress.
+        // It is this region's slot in the fetch's fan-out, so the N
+        // parallel calls aggregate into one bar
+        statusCallback: ctx.statusCallback,
       }),
     onResult: (idx, result) => {
       self.setRpcData(idx, result)
@@ -121,9 +122,15 @@ await self.fetchRegions(needed, async (ctx: FetchContext) => {
   // The CDS-frame annotation overlay (when configured) fetches in the same
   // stop-token-guarded pass as the main data so the two share staleness +
   // loadedRegions book-keeping; the two RPCs run concurrently.
+  //
+  // Concurrently, and each is itself a per-region fan-out, so they get a slot
+  // apiece rather than the shared callback: two fan-outs writing one status
+  // field directly is last-writer-wins between them, and the annotation
+  // branch's rows are a small fraction of the alignment's.
+  const slot = createStatusFanOut(ctx.statusCallback)
   const [results] = await Promise.all([
-    callEachRegion(needed, ctx, call),
-    fetchAnnotationData(self, needed, ctx),
+    callEachRegion(needed, { ...ctx, statusCallback: slot() }, call),
+    fetchAnnotationData(self, needed, { ...ctx, statusCallback: slot() }),
   ])
   // One guard around the whole batch, not per region as in `fetchEachRegion`:
   // `setSamples` is a cross-region decision over `results`, so a partial
