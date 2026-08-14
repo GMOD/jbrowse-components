@@ -370,7 +370,7 @@ the [graph genome view](/docs/user_guides/graph_genome_view) plugin opens a
 window of it beside the alignment. The ringed segment, `s502`, is a block in
 K-12's segments lane and the long node carrying the island.
 
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. The lower band is blank across the island because Sakai's alignment to K-12 stops before it and resumes past it, and Sakai's window over the same flanks comes out longer rather than shorter: each strain carries an island of its own there, the phenylacetate operon and a prophage on K-12 and a set of nleG effector genes on Sakai. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
 
 ### From a lane to a stack, for one locus
 

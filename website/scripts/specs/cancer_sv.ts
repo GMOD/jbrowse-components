@@ -989,7 +989,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // every ribbon has a target. A single chr3 window would leave the
               // two templated inserts -- the whole point of the figure --
               // pointing at nothing.
-              loc: 'chr3:25325000-25367000 chr10:58716500-58718500 chr12:72272000-72274500',
+              loc: 'chr3:25325000-25372000 chr10:58716500-58718500 chr12:72272000-72274500',
               // WHERE THE JUNCTIONS ARE, shaded (review: "the small breaks on
               // the right are hard to see ... potentially zooming in on the
               // breakpoints"). They cannot be made wider HERE and it is worth
@@ -1004,6 +1004,24 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // So this frame's job is the architecture -- one long arm, two
               // slivers, an inverted return -- and the shading is what stops a
               // reader hunting the slivers for detail that is one figure away.
+              //
+              // AND THE STRETCH THE ALLELE ABANDONS, banded and named (review:
+              // "is it possible to show a wider window? it is unclear what
+              // happens 'after the inversion' on the far right"). The window did
+              // grow again for it -- 25,367,000 to 25,372,000, so the abandoned
+              // piece is 12.4 kb of the chr3 panel rather than 7.4 -- but width
+              // alone was what the previous round already tried and what this
+              // review came back on. The answer to "what happens after the
+              // inversion" is NOTHING, and nothing is not something a wider
+              // window can draw: an empty reference row past the last ribbon
+              // reads as margin at any width. A band with a label on it is the
+              // statement.
+              //
+              // It abuts the junctions band rather than overlapping it (two
+              // highlights over one span double-shade), and it starts where the
+              // allele's last junction is rather than at a round number:
+              // chr3:25,359,568 is the outgoing junction and 25,360,600 is where
+              // the junctions band already ends.
               highlight: [
                 {
                   refName: 'chr3',
@@ -1011,6 +1029,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   label: 'junctions',
                   start: 25358000,
                   end: 25360600,
+                },
+                {
+                  refName: 'chr3',
+                  assemblyName: 'hg38',
+                  label: 'left behind: no ribbon, not in the allele',
+                  start: 25360600,
+                  end: 25372000,
+                  color: 'rgba(60,65,72,0.10)',
                 },
               ],
               // the annotation this figure's bottom row is the projection of,
@@ -1133,7 +1159,38 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // to RARB inverted after the two inserts. Same glyph mode as the
               // reference row above, so the pair differs by coordinates alone
               tracks: [
-                'der3_segments',
+                // COMPACT (review: "can we use collapsed displayMode in 'where
+                // each segment came from' and then, here is the tricky part, use
+                // a force directed label positioning and colorize the features to
+                // match the chromosome colors ... to try to reduce y-axis space").
+                //
+                // Compact rather than collapsed, and the difference is the whole
+                // reason: `collapsed` packs every feature onto one row AND HIDES
+                // EVERY LABEL, and this lane's labels are what it exists for --
+                // `chr3:25,326,821-25,359,568 (32.7 kb)` is the provenance of the
+                // allele's largest segment. The design that makes collapsed work
+                // is the one the review names next, force-directed label
+                // placement, and there is no such thing on a linear feature
+                // display; the graph view's force layout is a different pane and a
+                // different plugin. Compact keeps the labels and scales the glyph
+                // bodies and the label font, which is the saving that is
+                // available without deleting the lane's content.
+                //
+                // NOT recoloured per source chromosome either, and this one is
+                // worth writing down because it looks free. The RIBBONS already
+                // carry that colouring (`colorBy: 'reference'`, below), and each
+                // one lands on the block it describes, so the association is in
+                // the frame. Matching it in this lane would mean hard-coding what
+                // `paletteColorAt` returns for each chromosome's index in hg38's
+                // refName order -- and two of the three collide: chr3 is position
+                // 2 and chr12 is position 11, which is the same category10 slot
+                // one lightness lap apart, so a three-colour key here would be
+                // two greens and a blue.
+                {
+                  trackId: 'der3_segments',
+                  type: 'LinearBasicDisplay',
+                  displayMode: 'compact',
+                },
                 // seven genes in one coordinate space, and the arm that spans
                 // 32 kb of it puts every other one on a row of its own, so this
                 // is the tall track in the figure rather than the thin one it is
@@ -1266,7 +1323,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           dy: 18,
         },
         textAlign: 'start',
-        text: 'Fold-back inversion\n\n• Out along chr3, then two short templated inserts\n• Back into chr3, inverted, over sequence already carried\n• So that stretch is in the allele twice, in opposite orientations',
+        // TWO BULLETS, NOT THREE (review: "reduce wordiness in the red
+        // annotation text box. might be more self explanatory after we do the
+        // above"). The out-and-back is one sentence rather than two now that the
+        // frame bands and names the stretch the allele leaves behind, and the
+        // word "templated" goes with them -- what makes an insert templated is
+        // that it has a source locus, which the chr10 and chr12 panels are.
+        text: 'Fold-back inversion\n\n• Out along chr3, two short inserts, then back into chr3 inverted\n• So that stretch is in the allele twice, on opposite strands',
         fontSize: 20,
         maxWidth: 700,
       },
@@ -1313,8 +1376,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // have somewhere to be drawn (140 of rows, and the 13 the run then
     // reported clipped below the fold), then -40 for that lane's coverage band
     // going and +180 for the der3 lane matching its pitch and taking a band of
-    // its own, then +45 for that lane's band coming back over a doubled window
-    viewportHeight: 1239,
+    // its own, then +45 for that lane's band coming back over a doubled window,
+    // then +45 for the hg38 lane's read-connection arc band
+    viewportHeight: 1284,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1442,6 +1506,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // alignments only for that reason.
                   showCoverage: true,
                   coverageHeight: 40,
+                  // THE THREE JUNCTIONS AS COUNTED ARCS (review: "please add
+                  // readconnections arcs to this figure"), which this figure
+                  // could not have before: an inter-chromosomal connection drew
+                  // as two ticks until both-feet-on-screen arcs landed, and all
+                  // three of this allele's junctions have both feet in these
+                  // three panels -- chr3:25,359,568 into chr10:58,717,463, chr10
+                  // into chr12:72,273,111, and chr12 back into the inverted chr3
+                  // arm at 25,352,683.
+                  //
+                  // It says something the bezier fan above it cannot. A curve
+                  // per molecule shows each junction is real and cannot weigh
+                  // them against each other, because 28 near-identical curves
+                  // and 3 look alike; the band coalesces each junction into one
+                  // mark whose stroke width is its support, so the three
+                  // junctions of one allele are comparable at a glance. The
+                  // per-molecule fan stays: it is what says a single read runs
+                  // through all three.
+                  //
+                  // Default band height rather than a chosen one, as on
+                  // k562_bcr_abl_split: three arcs is not a pile-up, and the
+                  // band is under the coverage profile where it has the whole
+                  // strip to itself.
+                  readConnections: 'arc',
                 },
               ],
             },
@@ -1959,8 +2046,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url' as const,
     name: 'cancer_sv/k562_fusion_inspector_reads',
-    // sized off the run's own below-the-fold report
-    viewportHeight: 985,
+    // sized off the run's own below-the-fold report; +45 for the read-connection
+    // arc band, which is a strip this stack did not reserve before
+    viewportHeight: 1030,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       // EACH WINDOW ENDS ON ITS OWN BREAKPOINT, on the side facing the join.
@@ -1974,12 +2062,23 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       //
       // WIDER ON THE OUTER SIDES ONLY (review: "it is weirdly 'abbreviated'
       // ideally it would be able to scroll farther to the left and farther to
-      // the right"). Each window keeps its breakpoint where it was, against the
-      // seam, and grows away from it -- 4.5 kb to 9.5 on chr9 and 3.5 kb to 8.6
-      // on chr22 -- so the two read piles stay adjacent while the molecules stop
-      // running off the frame at both outer edges. Growing the INNER sides is
-      // the thing that cannot be done, and the note above says why.
-      loc: 'chr9:131,190,015-131,199,515 chr22:16,800,000-16,808,583[rev]',
+      // the right", then "zoom out the lgv a bit"). Each window keeps its
+      // breakpoint where it was, against the seam, and grows away from it: 4.5
+      // kb to 9.5 to 13.0 on chr9, 3.5 kb to 8.6 to 13.0 on chr22. Growing the
+      // INNER sides is the thing that cannot be done, and the note above says
+      // why.
+      //
+      // A BIT, and this is the number with a cost attached rather than a free
+      // one. The two panels share one bp/px, and the read-by-read fan at the
+      // seam -- what the figure is for -- is drawn at that scale, so every kb
+      // added to an outer edge is resolution taken off the fan. 1.35x is where
+      // that stops being a bit: it puts a further exon or two of each gene in
+      // frame while the seam keeps most of its width.
+      //
+      // Equal windows now, where they were 9.5 and 8.6. With one bp/px, unequal
+      // windows are unequal PANEL widths, so the seam sat off-centre for no
+      // reason anyone reading the figure could recover.
+      loc: 'chr9:131,186,500-131,199,515 chr22:16,795,568-16,808,583[rev]',
       // the call's own breakpoints, one band each, so each side's coverage step
       // has a marked position to sit on
       highlight: [
@@ -1991,7 +2090,17 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: 'K562_star_fusion',
           type: 'LinearVariantDisplay',
-          height: 40,
+          // COLLAPSED, which here means "no labels" (the slot's other job, one
+          // row, this lane already had). Both records are the same call seen from
+          // its two sides, so both floating labels read `NUP214--XKR3`, and each
+          // sits at a breakpoint -- which the framing deliberately puts against
+          // the seam. Widening the windows on the review's "zoom out the lgv a
+          // bit" moved those two breakpoints close enough in px that the labels
+          // overprinted into one unreadable string. Nothing is lost by dropping
+          // them: the track's own name says which caller, and the callout names
+          // the fusion.
+          displayMode: 'collapsed',
+          height: 30,
         },
         {
           trackId: 'K562_isoseq',
@@ -2035,6 +2144,17 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // and draws as a 1px hairline; the bezier pass is the one that
           // resolves both ends through view.bpToPx. See k562_bcr_abl_split.
           showBezierConnections: true,
+          // THE JUNCTION'S TOTAL, beside the per-molecule fan (review: "please
+          // add the readconnections arcs because it now supports
+          // interchromosomal assemblies"). Both feet of this connection are on
+          // screen -- that is what the two displayed regions are for -- so it
+          // coalesces into one arc whose stroke width is its support rather than
+          // into the pair of ticks an inter-chromosomal connection used to draw.
+          // One junction here, against three on derivative_inserts and two on
+          // k562_bcr_abl_split, so what the band adds is a single weighted mark
+          // saying how many molecules the fan is: 40-odd near-identical curves
+          // and four look alike.
+          readConnections: 'arc',
           ...SPLIT_READS,
         },
       ],
@@ -2054,6 +2174,28 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           fracY: 0.55,
           alignX: 'left',
           dx: 20,
+        },
+      },
+      // THE FLIP, SAID IN THE FRAME (review: "make it clear that the right side
+      // is 'horizontally flipped'"). The app does say it, twice, and neither
+      // place is where a reader is looking: `[rev]` inside the location box, and
+      // a chr22 ruler whose labels descend left to right. Without it the panel
+      // reads as an ordinary second locus and the reason the molecules run
+      // straight across the seam -- rather than doubling back -- is invisible.
+      //
+      // In the gene lane rather than over the reads: on the chr22 side that lane
+      // holds one glyph at the seam and is empty for the rest of its width,
+      // which is the only region of this frame with nothing in it.
+      {
+        type: 'text' as const,
+        text: 'chr22 is flipped: its coordinates run right to left',
+        fontSize: 17,
+        maxWidth: 330,
+        anchor: {
+          track: GENES,
+          locus: 'chr22:16,805,600',
+          fracY: 0.5,
+          alignX: 'left',
         },
       },
     ],
@@ -2213,6 +2355,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // the honest remainder instead of the majority of the data hidden in a
           // mark with no way to say so.
           readConnections: 'arc',
+          // The key for the arcs and the read fills alike (review: "also need
+          // legend"). It is data-driven -- the display lists the colour slots
+          // actually present -- so the inter-chromosomal row appears here
+          // because this frame's arcs are inter-chromosomal, and it is the row
+          // that needed a name: a reader meeting a brown curve across a region
+          // divider has nothing else in the frame telling them what brown means.
+          showLegend: true,
           ...SPLIT_READS,
         },
       ],
@@ -2220,6 +2369,31 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // and one pill naming them, in the empty strip on the chr9 side of the
     // join. A coloured line crossing a panel divider is only obviously a
     // connection to someone who already knows the display draws them.
+    //
+    // THE SECOND PILL ANSWERS THE MIDDLE PANEL (review: "this is confusing
+    // because there is a bunch of coverage over a region of the gene glyph
+    // without an exon. might be that longest coding is not showing an isoform
+    // that is relevant to use").
+    //
+    // The isoform hypothesis was checked and comes out negative, so it is worth
+    // writing down rather than re-deriving. api.genome.ucsc.edu's ncbiRefSeq
+    // over chr9:130,775,000-130,790,000 returns three transcripts: both ABL1
+    // curated ones (NM_007313.3 from 130,713,042 and NM_005157.6 from
+    // 130,835,253) put their exon 2 at 130,854,063-130,854,237, so intron 1
+    // spans 130,714,455-130,854,063 in BOTH and this window is 140 kb of it.
+    // The only annotated exon inside the window at all is 127 bp of the ncRNA
+    // LOC124902288 (XR_007061823.1, 130,782,667-130,782,794), against a coverage
+    // block several kb wide. So `geneGlyphMode: 'longestCoding'` is hiding
+    // nothing here -- there is no ABL1 isoform with an exon under that
+    // coverage, and switching the lane to all isoforms would draw two flat lines
+    // instead of one and say the same thing less clearly.
+    //
+    // Which makes the panel a finding rather than a drawing problem, and the
+    // pill says so at the strength DEMO_DATASETS.md licenses -- 154 of the 235
+    // chr9 SA entries start at one base here, 151 distinct QNAMEs, and whether
+    // that is an alternative acceptor or a recurrent alignment artefact is NOT
+    // established. "Not annotated" is what the frame shows; the pill stops
+    // there rather than naming it a splice site.
     annotations: [
       {
         type: 'text',
@@ -2232,6 +2406,19 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           fracY: 0.32,
           alignX: 'left',
           dx: 20,
+        },
+      },
+      {
+        type: 'text',
+        text: "ABL1 intron 1. The frame's biggest cluster of chr9 ends lands here, under no annotated exon — the canonical exon-2 junction is the banded panel on the right.",
+        fontSize: 18,
+        maxWidth: 330,
+        anchor: {
+          track: 'K562_isoseq',
+          locus: 'chr9:130,783,900',
+          fracY: 0.06,
+          alignX: 'left',
+          dx: 10,
         },
       },
     ],

@@ -2240,6 +2240,54 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         // box, which for a node bent into an arc is the empty space inside it
         radius: 40,
       },
+      // WHAT THE BLANK HALF OF THE LOWER BAND IS (review: "there is a weird
+      // area of where no synteny ribbons are drawn between k12 and sakai, are
+      // they just completely distinct genes in this region? what is the story?").
+      //
+      // It is a SUBSTITUTION rather than an absence, which is the part a blank
+      // band cannot say. Sakai's alignment to K12 ends at K12 1,419,704 and
+      // resumes at 1,474,096, so 54,392 bp of K12 has no Sakai block; if Sakai
+      // simply LACKED that sequence its two blocks would meet and its window
+      // would be 54 kb shorter than K12's over the same flanks. It is 15 kb
+      // LONGER (the two offsets differ by 14,812 bp), i.e. Sakai carries ~69 kb
+      // of its own where K12 carries ~54 kb of its own.
+      //
+      // WHAT IS IN THE TWO SPANS, off the hosted GFFs rather than off the
+      // picture (`tabix .../K12.gff.gz chr:1419704-1474096` and
+      // `.../Sakai.gff.gz chr:1920861-1990065`, the second being the first
+      // carried through Sakai's two offsets):
+      //
+      //     K12    48 genes: paaA-paaZ + paaX/paaY, feaB/feaR/tynA, the Rac
+      //            prophage (racR, rzoR, stfR, tfaR, pinR, ydaS-ydaY, ynaA/E/K)
+      //            and four IS elements
+      //     Sakai  77 genes: 58 ECs_ locus tags plus nleG2-2, nleG5-1, nleG6-1
+      //            (O157 non-LEE effectors), pfo, recE/recT/racC, argO4, ileZ4
+      //
+      // SEVEN SYMBOLS ARE SHARED (hslJ, ldhA, uspF, ydbH, ydbJ, ydbL, ynbE), so
+      // "completely distinct genes" -- the reviewer's guess, and what an earlier
+      // draft of this comment asserted -- is not right and the callout must not
+      // say it. The honest reading is an island per strain with the shared
+      // backbone genes interrupted on both sides, which is why no chain spans it.
+      //
+      // In the band itself, which is the only genuinely empty region of this
+      // frame and also where the reader's question is. Anchored below the K12
+      // segments lane rather than to a pixel, so it follows the band.
+      {
+        type: 'text',
+        text: 'No ribbon: each strain carries its own island here.\nK-12 the paa operon, Sakai nleG effector genes.',
+        fontSize: 14,
+        maxWidth: 370,
+        anchor: {
+          view: [0, 1],
+          track: ECOLI_SEGMENTS_TRACK,
+          locus: 'chr:1,421,000',
+          fracY: 1,
+          alignX: 'left',
+          // clear of the segments lane's own bottom row of blocks, which a
+          // 14 px offset let the pill's border overprint
+          dy: 24,
+        },
+      },
       // What the grey half of the drawing is (review: "unclear why this isnt
       // more of a rainbow palette also"). The ramp IS on -- it is the same
       // reference-position ramp the lane above uses, which is what makes the
