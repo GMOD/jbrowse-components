@@ -2054,6 +2054,17 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // still adds here is the WITHIN-region curves (a read with two chr22
           // segments), which is a different set from the fan.
           showBezierConnections: true,
+          // The fan's total, as one arc over the coverage band with the
+          // molecule count on it. The caption has always claimed the fan is
+          // BCR-ABL1's support; this is the claim drawn rather than asserted,
+          // and it is the one thing the per-read curves cannot say — 200
+          // near-identical curves and one curve look the same.
+          showSplitJunctionArcs: true,
+          // The count is the whole point of coalescing, so it has to be on the
+          // arc. It labels the splice arcs too, which is a gain here: the
+          // figure's other claim is that BCR's own junctions are ordinary
+          // splicing, and a number on each says so.
+          showSashimiLabels: true,
           ...SPLIT_READS,
         },
       ],

@@ -410,7 +410,16 @@ between the two, and with both partners displayed those curves cross from one
 region into the other. **Show... → Show only split alignments** then drops every
 read that stays on one chromosome, so the pileup is the fusion's own support.
 
-<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked." src="/img/cancer_sv/k562_bcr_abl_split.png" />
+One curve per molecule shows that the junction is real and cannot show how many
+molecules say so — a hundred near-identical curves and one curve look alike.
+**Sashimi arcs → Show split-read junction arcs** coalesces them into a single
+arc over the coverage band, thickness and count from the molecules behind it,
+and unlike a splice-junction arc it can join two chromosomes. Turning on **Show
+labels** in the same menu writes the count on every arc in that band, so the
+fusion's support and the ordinary splice junctions on either side of it are read
+off the same scale.
+
+<Figure caption="BCR on chr22 beside ABL1 on chr9 as two regions of one view, each banded at its STAR-Fusion breakpoint, showing only split reads with supplementary alignments linked, and one counted arc across the junction." src="/img/cancer_sv/k562_bcr_abl_split.png" />
 
 The fusion is also amplified. Both chr9 breakpoints fall inside a segment at
 roughly seven copies, while the chr22 partners sit at one, so what is amplified
