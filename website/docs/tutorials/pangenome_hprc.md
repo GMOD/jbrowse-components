@@ -263,7 +263,7 @@ Read a deletion on the [anchored layout](#the-layout-dropdown), where x is
 GRCh38 bp, so the arc spans exactly the sequence it removes. The force layout
 states a size but not a position.
 
-<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT annotation, and the dashed arc under the graph's reference row is the gap that removes CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_deletion.png" />
+<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT annotation, and the dashed arc under the graph's reference row spans the gap that removes CFHR3 and CFHR1 — it is the same shape as the three smaller deletions beside it, since in a row layout the arc's span carries the size and its depth carries nothing." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
 Hovering one of these edges gives the interval and the bp it removes.
 

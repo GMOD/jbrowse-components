@@ -616,7 +616,22 @@ cd website && node scripts/generate-screenshots.ts --force --filter pangenome/
 `betabuild` uploads to the public `s3://jbrowse.org/demos/graphgenomeviewer/`,
 moves the unversioned entry point the published figures' live links resolve, and
 invalidates CloudFront — **ask before running it.** Last published
-`5e1c0d4f42b5` (2026-07-30).
+`4bcef24fbaa7` (2026-08-14).
+
+**A publish ships every plugin commit since the last one, not just yours**, so
+the figures it moves are not the figures your change explains. That publish
+carried a deletion-bow fix aimed at one anchored figure AND a bandage `<cmath>`
+fix committed two weeks earlier, so a force-layout figure that the bow cap
+cannot touch (`pangenome/rgfa_hover_sync`) moved as well — correctly, since it
+was drawn against a bundle nobody was serving. Regenerate and push those rather
+than reverting them to bytes rendered against an unpublished plugin; separate
+the two in the commit message instead.
+
+**And the typecheck gate will fail on files you did not touch** if the plugin's
+`@jbrowse/mobx-state-tree` has drifted from the one `@jbrowse/core` resolves in
+this checkout — 19 errors across seven files, all `[$type]`/assignability, none
+of them yours. Compare the two installed versions before reading any of it as
+breakage; the fix is a version bump in the plugin and it is types-only.
 
 The gate is not optional: it is what catches a bundle importing a host global
 that does not exist. Two of its failure modes read as real breakage and are not.
