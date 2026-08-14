@@ -3,6 +3,7 @@ import '@testing-library/jest-dom'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 
+import { measure } from './teardownNoise.ts'
 import {
   createView,
   doBeforeEach,
@@ -38,39 +39,9 @@ const opts = [{}, delay] as const
 // `[aria-label="JBrowse"]`.
 //
 // So both are asserted, and the throws separately from the warnings: they are
-// two severities of one bug and only one of them takes the page.
-function captureTeardownNoise() {
-  const deadReads: string[] = []
-  const thrown: string[] = []
-  const origWarn = console.warn
-  const origError = console.error
-  const capture = (...args: unknown[]) => {
-    const first = args[0]
-    const text =
-      first instanceof Error ? first.stack || first.message : `${first}`
-    if (text.includes('no longer part of a state tree')) {
-      deadReads.push(text.split('\n')[0]!)
-    } else if (
-      text.includes('no containing view found') ||
-      text.includes('no session model found') ||
-      text.includes('node does not have parent')
-    ) {
-      thrown.push(text.split('\n')[0]!)
-    } else {
-      origWarn(...(args as []))
-    }
-  }
-  console.warn = capture
-  console.error = capture
-  return {
-    deadReads,
-    thrown,
-    restore() {
-      console.warn = origWarn
-      console.error = origError
-    },
-  }
-}
+// two severities of one bug and only one of them takes the page. See
+// teardownNoise.ts, shared with undoTeardown, which measures the same window at
+// the other door into it.
 
 // A track OPEN in the view, because that is what makes this measurable: a bare
 // view has no display under it, and a display's reads are the ones that throw.
@@ -80,25 +51,6 @@ async function viewWithTrack() {
   fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
   await findAnyDisplayPainted(delay)
   return { view, session }
-}
-
-// Scoped to the action and the reaction flush closing it, and deliberately not
-// to the deferred teardown after — the same line `sessionSwitchTeardown` draws,
-// for the same reason. That window is the one that matters and the one that is
-// deterministic: components are still mounted over the view there, so a read is
-// a read of something being rendered. Destroying the detached tree afterwards
-// still produces a couple, because killing an MST tree invalidates computeds
-// inside it that something is observing; asserting zero there would promise what
-// this design does not give. The synchronous `act` is what draws the line — it
-// flushes React and MobX but not the `setTimeout(0)`.
-function measure(fn: () => void) {
-  const log = captureTeardownNoise()
-  try {
-    act(fn)
-  } finally {
-    log.restore()
-  }
-  return log
 }
 
 test('removeView does not read the view it took out', async () => {

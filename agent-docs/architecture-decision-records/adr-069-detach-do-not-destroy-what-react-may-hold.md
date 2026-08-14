@@ -92,6 +92,32 @@ reset — goes through it.
   `releaseTemporaryAssemblies`, which keeps `beforeDestroy` too, for the paths
   that destroy a view without taking it out of a session first.
 
+- **A whole-session `applySnapshot` is a fourth door into a view, and undo is
+  it.** `TimeTraveller.undo()`/`redo()` replaces the session in place; every view
+  carries an `ElementId`, so MST reconciles by identifier and destroys what the
+  target snapshot lacks, inside the action, with the components mounted. Same
+  sequence, and no call site to fix — so `TimeTraveller` asks its target to take
+  those views out first, through an optional `takeOutViewsMissingFrom` that the
+  session implements next to `takeOut` (core cannot import product-core, which is
+  why the call is duck-typed rather than an import). It sits inside the
+  `skipNextUndoState` bracket, because a detach patches the tree: outside it, the
+  patch would be recorded as an undoable step of its own and shift the history
+  under the index being applied.
+
+  Measured on a redo across a closed view, with the restored view repainted
+  first: 4 liveliness reads of its display and `getContainingView`'s throwing
+  branch running, down to none. That throw reached no boundary only because the
+  same action empties `session.views`, so React unmounts the component in the
+  same update and never reads the computed the exception was stored in — which is
+  containment by coincidence, not by design.
+
+**The rule stops at the view, and stopping there is part of it.** A track or a
+display the snapshot drops is still destroyed in place, as it is when you simply
+close the track: `hideTrackGeneric` is a plain `tracks.remove` and measures 5
+liveliness reads to the undo's 4, same shape, all on the display's
+`configuration` and `type`. Detaching below a view is not a further application
+of this rule but a worse trade — see "Detach a track or a display too" below.
+
 ## Rejected
 
 **Defer the destroy.** The obvious fix, and the one PR #5616 proposed. It works
@@ -126,6 +152,17 @@ reload, in a production browser: 48 dead reads destroying on a 0ms task, 49 on a
 5s one. It is not a race with React finishing its unmount, so no delay is the
 fix — the same finding as `setSession`'s 250ms-vs-0, and the same cause, the
 undisposed `observer()` reactions in [TODO.md](../TODO.md).
+
+**Detach a track or a display too**, so a whole-tree apply could route
+*everything* that vanishes through one path instead of stopping at views. It
+inverts the rule at exactly the point the rule is about. A detached node is a
+**live** root, and what a display reads through is `getContainingView`, which
+walks parents and throws when the walk finds no view — so detaching a track turns
+the warning a dead display produces into the throw this ADR exists to prevent, on
+a node still being rendered. A view is the highest node that walk has to find,
+which is why detaching at or above one is safe and below one is not. The cost of
+stopping there is stated above and is measured: the same reads the ordinary
+close-a-track path already produces, scalars and references only.
 
 **Guard the getters with `isAlive`.** Tried on
 `HierarchicalTrackSelectorWidget.trackContainer` and reverted. A model getter
@@ -200,7 +237,21 @@ Each fails without its fix and is scoped to what is deterministic:
   given back, which the `hasParent` guard would have turned into a leak with
   nothing said if `beforeDetach` were ever dropped.
   `MultipleViews.test.ts` pins the other half of that contract at its own layer —
-  the view is still in the session when `beforeDetach` runs.
+  the view is still in the session when `beforeDetach` runs, and, for the
+  snapshot door, that `takeOutViewsMissingFrom` detaches rather than destroys and
+  treats a changed `type` under a kept id as a different view.
+- `products/jbrowse-web/src/tests/undoTeardown.test.tsx` — the same measurement
+  at the undo door, on the real recorder rather than a hand-built history:
+  close a view, wait for the 300ms debounce to record it, undo, repaint, redo.
+  Two things keep it honest — it asserts `canRedo` before the redo, so a debounce
+  that had truncated the forward history would fail rather than silently measure
+  an empty action, and its second test pins the SCOPE from the other side, that
+  undoing a track open is no worse than closing the track. That one fails if
+  either path starts throwing, which is what a well-meant detach below a view
+  would do.
+  `teardownNoise.ts` is the shared capture, and it scans every console argument:
+  MobX reports an uncaught error in a reaction as `console.error(message, error)`,
+  so a first-argument-only filter buckets the throw as ordinary noise.
 - `products/jbrowse-web/src/components/workerPoolTeardown.test.ts` — a spy on
   `rpcManager.destroy`, because the bug was that nothing called it. No harness
   here can watch a worker thread die; see [TODO.md](../TODO.md).

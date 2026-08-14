@@ -544,31 +544,50 @@ synteny axis
 
 ## Failure containment and diagnosis
 
-### Undo applies a whole-session snapshot, bypassing the detach-then-destroy discipline
+### The detach-then-destroy discipline stops at the view
 
-**Status:** Open. Mechanism verified by reading; the crash is not reproduced.
+**Status:** Accepted. Every door a *view* leaves by is covered, the whole-session
+snapshot apply included. Nothing below a view is, and extending it there would be
+worse rather than better.
 
-ADR-069's rule is implemented in one action rather than at the boundary where
-nodes die. `MultipleViews.ts`'s `takeOut` detaches a view and hands it to
-`scheduleDetachedDestroy`, precisely so React's final read finds a live tree.
-`TimeTraveller.undo()` / `redo()` call `applySnapshot` on the session instead,
-and every view, track and display carries `ElementId`
-(`types.optional(types.identifier, …)`) — so MST reconciles by identifier and
-**destroys whatever the target snapshot lacks, synchronously, inside the
-action**, with the components still mounted and the action's reactions due at its
-`endBatch`. That is the sequence the ADR exists to prevent, reached through a
-door it does not cover.
+ADR-069's rule is that a tree React may still be rendering is detached, not
+destroyed. `MultipleViews.ts`'s `takeOut` is where a view goes out, and undo/redo
+now goes through it too: `TimeTraveller` calls `takeOutViewsMissingFrom` before
+its `applySnapshot`, inside the `skipNextUndoState` bracket so the detach is not
+recorded as an undoable step of its own. It needed to, because a whole-session
+apply reconciles by `ElementId` and **destroys whatever the target snapshot
+lacks, synchronously, inside the action**, with the components still mounted.
+Measured on a redo across a closed view, with the restored view repainted first:
+4 liveliness reads of its display and `getContainingView`'s throwing branch
+actually running, down to none.
 
-Reachable from a document-level keydown (`HistoryManagementMixin`), suppressed
-only while a text entry has focus, and from the File menu. Any undo crossing a
-view add or remove, a track close, or a `replaceView` — which
-`MultipleViews.test.ts` deliberately made a *single* undoable step — takes it.
+**Below the view, nodes die where they stand, and that is chosen.**
+`hideTrackGeneric` is a plain `tracks.remove`, so closing a track destroys it and
+its displays in place — 5 liveliness reads on an open VCF track, the same shape
+as, and one more than, the undo of the same change produced. Detaching them
+instead would trade a warning for a throw: a **detached display is a live root**,
+and `getContainingView` walks parents and throws where a *dead* node only warns.
+At or above the view is the only place that walk still lands, which is what
+scopes the rule.
 
-**Retire when** whole-tree snapshot application routes disappearing nodes through
-the same path first (diff the id sets, `detach` + `scheduleDetachedDestroy`, then
-apply), or a test that mounts a view, removes it and undoes shows the reconciler
-is not the hazard it looks like. Either way the general form stands: every future
-whole-tree apply re-opens this until the discipline moves to the boundary.
+So the standing cost is a class of teardown that is loud and, measured, not
+fatal: every read is of a scalar or a reference (`configuration`, `type`) on a
+display React unmounts in the same update, and the throw that does occur is
+stored in a computed nothing reads again. `undoTeardown.test.tsx` pins both
+halves — zero for the view, non-zero but never throwing for the track — so an
+attempt to "apply ADR-069" below a view fails there rather than in a figure
+sweep.
+
+`takeOutViewsMissingFrom` walks `session.views`, so a view nested in another (a
+breakpoint-split view's sub-views) is still reconciled to death. No user action
+removes one on its own, which is why that is a note here rather than the entry.
+
+**Retire when** a track close and an undo across one both measure zero liveliness
+reads. That is the same root cause as the session-switch residual, not a second
+one: the undisposed `observer()` reactions in [../TODO.md](../TODO.md)'s
+"Destroying an MST tree that something still observes" are what recompute against
+the dying nodes, and nothing below a view has to be detached if nothing is left
+observing it.
 
 ---
 

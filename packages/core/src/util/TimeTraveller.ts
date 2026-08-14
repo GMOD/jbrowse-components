@@ -8,9 +8,26 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 
-import type { IAnyStateTreeNode, IDisposer } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IDisposer,
+  IStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
+
+/**
+ * The one thing a whole-tree apply asks of its target beyond being a node: a
+ * chance to take out, through a door that already knows how, the nodes the
+ * incoming snapshot is about to destroy where they stand.
+ *
+ * Duck-typed because core cannot import product-core, where the session's views
+ * and their teardown live. Anything else this is pointed at leaves it undefined
+ * and the call is a no-op.
+ */
+interface SnapshotTarget extends IStateTreeNode {
+  takeOutViewsMissingFrom?: (snapshot: unknown) => void
+}
 
 /**
  * #stateModel TimeTraveller
@@ -55,9 +72,23 @@ const TimeTraveller = types
       if (!targetStore) {
         return
       }
+      const snapshot = self.history[index]
       skipNextUndoState = true
       try {
-        applySnapshot(targetStore, self.history[index])
+        // ADR-069. `applySnapshot` reconciles by identifier, so it DESTROYS
+        // every node the target snapshot does not keep — in place, inside this
+        // action, with the components still mounted over them and the action's
+        // reactions due at its `endBatch`. That is the sequence `removeView`
+        // detaches to avoid, reached through a door it does not cover, so a
+        // view leaving by undo goes out the same one first.
+        //
+        // Inside the flag, and that is the point of taking the snapshot above:
+        // a detach patches the tree, and outside the bracket it would be
+        // recorded as an undoable step of its own and shift the history under
+        // the index we are applying.
+        const target = targetStore as SnapshotTarget
+        target.takeOutViewsMissingFrom?.(snapshot)
+        applySnapshot(targetStore, snapshot)
       } finally {
         skipNextUndoState = false
       }

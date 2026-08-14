@@ -241,6 +241,49 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
+         * Take out every view the given session snapshot will not keep, before
+         * a whole-tree `applySnapshot` destroys it where it stands.
+         *
+         * Undo and redo are `applySnapshot` on the session
+         * (`core/util/TimeTraveller`, which calls this), and every view carries
+         * an `ElementId` — so MST reconciles by identifier and destroys what the
+         * target lacks, inside the action, with the components still mounted.
+         * Measured on a redo across a closed view, with the restored view
+         * repainted first: 4 liveliness reads of its display before this, 0
+         * after.
+         *
+         * A view that is present but has changed `type` is destroyed by that
+         * same reconciliation (`areSame` runs the type's `is()` before its id
+         * check), so identity here is the pair, not the id.
+         *
+         * **Views, and deliberately not what is under them.** A track or a
+         * display the snapshot drops is still destroyed in place, and that is
+         * not this door being worse than the others: `hideTrackGeneric` is a
+         * plain `tracks.remove` and measures louder (5 reads to undo's 4).
+         * Detaching one would be worse than the destroy it replaced — a
+         * detached display is a LIVE root, and `getContainingView` walks
+         * parents and throws when the walk finds no view, where a dead node
+         * only warns. At or above the view is the only place that walk still
+         * lands, which is why ADR-069's rule stops there.
+         */
+        takeOutViewsMissingFrom(snapshot: unknown) {
+          const incoming =
+            (
+              snapshot as
+                | { views?: { id?: string; type?: string }[] }
+                | undefined
+            )?.views ?? []
+          const kept = new Map(incoming.map(v => [v.id, v.type] as const))
+          // a copy, because `takeOut` splices the array it is iterating
+          for (const view of [...self.views]) {
+            if (kept.get(view.id) !== view.type) {
+              takeOut(view)
+            }
+          }
+        },
+
+        /**
+         * #action
          */
         setStickyViewHeaders(sticky: boolean) {
           self.stickyViewHeaders = sticky

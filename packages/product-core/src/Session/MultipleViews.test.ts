@@ -5,7 +5,7 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { onSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { isAlive, onSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { MultipleViewsSessionMixin } from './MultipleViews.ts'
 
@@ -310,4 +310,45 @@ test('a view is still in the session when its beforeDetach runs', () => {
   session.removeView(view)
 
   expect(seen).toEqual(['test'])
+})
+
+// Undo and redo are `applySnapshot` on the whole session (`TimeTraveller`),
+// which reconciles by identifier and so destroys every view the target snapshot
+// lacks — in place, inside the action, with the components still mounted over
+// them. That is what `takeOut` exists to prevent, reached through a door it did
+// not cover, so the apply asks for this first.
+// `products/jbrowse-web/src/tests/undoTeardown.test.tsx` measures what it is
+// worth with a display mounted over the view: 4 liveliness reads and a
+// `getContainingView` throw without it, none with it.
+test('takeOutViewsMissingFrom takes out only what the snapshot drops', () => {
+  const seen: string[] = []
+  reachingViewSaw = seen
+  const session = createSession()
+  const kept = session.addView('FakeLinearView', { displayName: 'kept' })
+  const dropped = session.addView('FakeReachingView', {
+    displayName: 'dropped',
+  })
+
+  session.takeOutViewsMissingFrom({ views: [{ id: kept.id, type: kept.type }] })
+
+  expect(session.views.map(v => v.id)).toEqual([kept.id])
+  // detached, NOT destroyed — React's final read has to find a live tree, and
+  // the destroy is a task later
+  expect(isAlive(dropped)).toBe(true)
+  expect(seen).toEqual(['test'])
+})
+
+// Same id, different type is a destroy too: MST's `areSame` runs the type's
+// `is()` before it compares identifiers, so identity here is the pair rather
+// than the id alone. `replaceView` always generates a fresh id and never lands
+// on this, but a snapshot that was imported or hand-edited can.
+test('takeOutViewsMissingFrom counts a changed type as a different view', () => {
+  const session = createSession()
+  const view = session.addView('FakeLinearView', {})
+
+  session.takeOutViewsMissingFrom({
+    views: [{ id: view.id, type: 'FakeSyntenyView' }],
+  })
+
+  expect(session.views).toHaveLength(0)
 })
