@@ -375,19 +375,20 @@ describe('sortedBy refName normalization', () => {
     expect(display.sortedBy?.type).toBe('base')
   })
 
-  // The slot is `frozen`, so a config or session spec can write a sort with no
-  // refName on it at all. A sort names a column, so that is no sort — and it
-  // has to be answered here, because normalizing it instead threw a TypeError
-  // out of a getter the fetch autorun and the render both read, replacing the
-  // whole track with an error over a typo in a spec.
-  test('a slot naming no refName is no sort, not a throw', () => {
+  // The slot is `frozen`, so a config or session spec can write half a sort. A
+  // column is a refName AND a position, so either half missing is no sort — and
+  // the refName half has to be answered here, because normalizing it instead
+  // threw a TypeError out of a getter the fetch autorun and the render both
+  // read, replacing the whole track with an error over a typo in a spec.
+  test.each([
+    ['refName', { type: 'base', pos: 100 }],
+    ['pos', { type: 'base', refName: 'ctgA' }],
+  ])('a slot naming no %s is no sort, not a throw', (_half, slot) => {
     const display = createDisplay({ withRegions: true })
     display.setSortSlot({
-      type: 'base',
-      pos: 100,
-      refName: undefined as unknown as string,
+      ...slot,
       assemblyName: 'volvox',
-    })
+    } as unknown)
 
     expect(display.sortedBy).toBeUndefined()
   })

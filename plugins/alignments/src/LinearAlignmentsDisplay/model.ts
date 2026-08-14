@@ -1040,17 +1040,22 @@ export default function stateModelFactory(
          * aliased spec (`chr1` where the assembly is canonicalized `1`) leaves
          * the reads unsorted with the menu still showing the sort as active.
          *
-         * A sort names a genomic COLUMN, so a slot that doesn't carry one is no
-         * sort rather than a broken one. The slot is `frozen` — a config or
-         * session spec can put anything in it — and `canonicalizeViewRefName`
-         * takes a refName it can lower-case, so a slot naming a position and no
-         * refName threw a TypeError out of this getter. The fetch autorun and
-         * the render both read it, so that was the whole track replaced by an
-         * error over a typo in a spec.
+         * A sort names a genomic COLUMN — a refName AND a position — so a slot
+         * carrying neither half is no sort rather than a broken one, and this
+         * getter's `SortedBy` says both are there. The slot is `frozen`, so a
+         * config or session spec can put anything in it, and the two halves
+         * fail differently: a missing refName reaches
+         * `canonicalizeViewRefName`, which lower-cases what it is handed, so it
+         * threw a TypeError out of a getter the fetch autorun and the render
+         * both read — the whole track replaced by an error over a typo in a
+         * spec. A missing `pos` merely compares false against every read and
+         * sorts nothing, which is the same answer this now gives explicitly.
          */
         get sortedBy(): SortedBy | undefined {
           const sortedBy = getConf(self, 'sortedBy') as SortedBy | null
-          return sortedBy && typeof sortedBy.refName === 'string'
+          return sortedBy &&
+            typeof sortedBy.refName === 'string' &&
+            typeof sortedBy.pos === 'number'
             ? {
                 ...sortedBy,
                 refName: canonicalizeViewRefName(self, sortedBy.refName),
