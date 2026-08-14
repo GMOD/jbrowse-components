@@ -1,7 +1,7 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { axisPlotBox } from '@jbrowse/wiggle-core'
 
-import { significanceLineY } from './components/SignificanceLine.tsx'
+import { significanceLineY } from './components/significanceLineY.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 // The threshold line's whole job is to land on the same y a point of that score

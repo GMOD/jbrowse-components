@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import {
   ConfigurationReference,
   getConf,
@@ -37,8 +39,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun } from 'mobx'
 
-import SetSignificanceLineDialog from './components/SetSignificanceLineDialog.tsx'
-import { significanceLineY } from './components/SignificanceLine.tsx'
+import { significanceLineY } from './components/significanceLineY.ts'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -57,6 +58,10 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+
+const SetSignificanceLineDialog = lazy(
+  () => import('./components/SetSignificanceLineDialog.tsx'),
+)
 
 /**
  * #stateModel LinearManhattanDisplay
