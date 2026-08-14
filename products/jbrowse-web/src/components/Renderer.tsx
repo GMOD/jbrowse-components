@@ -9,19 +9,31 @@ import type { SessionLoaderModel } from '../SessionLoader.ts'
 
 const SessionTriaged = lazy(() => import('./SessionTriaged.tsx'))
 const LoaderErrorBanner = lazy(() => import('./LoaderErrorBanner.tsx'))
+const CrashedSessionBanner = lazy(() => import('./CrashedSessionBanner.tsx'))
 
 const Renderer = observer(function Renderer({
   loader,
 }: {
   loader: SessionLoaderModel
 }) {
-  const { configError, pluginManager, pluginManagerError, sessionTriaged } =
-    loader
+  const {
+    configError,
+    crashedSession,
+    pluginManager,
+    pluginManagerError,
+    sessionTriaged,
+  } = loader
   const err = configError || pluginManagerError
   if (err) {
     return (
       <Suspense fallback={null}>
         <LoaderErrorBanner error={err} />
+      </Suspense>
+    )
+  } else if (crashedSession) {
+    return (
+      <Suspense fallback={null}>
+        <CrashedSessionBanner loader={loader} crashedSession={crashedSession} />
       </Suspense>
     )
   } else if (sessionTriaged) {

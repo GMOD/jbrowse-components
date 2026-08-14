@@ -36,6 +36,32 @@ test('passes the error and componentStack to the fallback', () => {
   spy.mockRestore()
 })
 
+// jbrowse-web records the crashed session from here, and the ordering is the
+// contract: the marker has to exist before FatalErrorDialog offers its Refresh,
+// which is the button that would otherwise restore straight back into the crash.
+test('onError runs before the fallback renders, and a throw from it is contained', () => {
+  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const order: string[] = []
+  const { getByText } = render(
+    <ErrorBoundary
+      onError={() => {
+        order.push('onError')
+        throw new Error('the handler itself failed')
+      }}
+      FallbackComponent={() => {
+        order.push('fallback')
+        return <div>fallback</div>
+      }}
+    >
+      <Boom />
+    </ErrorBoundary>,
+  )
+  expect(getByText('fallback')).toBeTruthy()
+  expect(order[0]).toBe('onError')
+  expect(order).toContain('fallback')
+  spy.mockRestore()
+})
+
 // The state was terminal before this: a track that threw once stayed a red
 // banner for the rest of the session, however transient the cause.
 test('the fallback can clear the error', () => {

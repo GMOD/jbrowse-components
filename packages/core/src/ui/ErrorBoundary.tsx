@@ -20,6 +20,14 @@ interface Props {
   resetKeys?: unknown[]
   /** runs before the error clears, on either reset path */
   onReset?: () => void
+  /**
+   * runs when an error is caught, BEFORE the fallback renders. For a caller
+   * that has to record something durable about the failure — jbrowse-web marks
+   * the session it was showing, so the next boot does not restore straight back
+   * into the crash. An effect inside the fallback would be a render later and
+   * one more thing that has to run correctly on the way down.
+   */
+  onError?: (error: unknown) => void
 }
 
 interface State {
@@ -45,6 +53,14 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
+    // guarded: this is the last boundary in some trees, and a throw from the
+    // handler would escape React's error handling itself — replacing the error
+    // the user was about to be shown with one from the code reporting it
+    try {
+      this.props.onError?.(error)
+    } catch (e) {
+      console.error(e)
+    }
     this.setState({
       error,
       componentStack: errorInfo.componentStack ?? undefined,

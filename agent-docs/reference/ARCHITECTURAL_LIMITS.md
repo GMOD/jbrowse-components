@@ -544,35 +544,6 @@ synteny axis
 
 ## Failure containment and diagnosis
 
-### Refresh after a fatal error restores the session that caused it
-
-**Status:** Open. The containment half is built; this is the boot half.
-
-`JBrowse.tsx` keeps `session=local-<id>` in the URL and `fetchLocalSession`
-restores that id from sessionStorage, which the autosave rewrote at most 400 ms
-ago — so `FatalErrorDialog`'s **Refresh** (`window.location.reload()`) restores
-the same snapshot and crashes again. Only **Reset Session** escapes, by dropping
-the query string, and it discards the user's work to do it. The *load* path has
-the rung the render path lacks: `LoaderErrorBanner` offers "Start over without
-URL options" for exactly this shape.
-
-What now keeps most crashes away from that dialog is a view-scoped boundary in
-`ViewWrapper` (`packages/app-core/src/ui/App/`), whose fallback names the view
-and offers retry or close, and an `ErrorBoundary` that can reset — by reset keys
-or by the `resetErrorBoundary` handed to the fallback, which is what
-`TrackContainer`'s banner passes to `ErrorBanner`'s Retry. So the render path
-reaching `Loader.tsx`'s boundary now means the throw was in the app chrome or in
-the view *chrome* — `ViewContainer` reads `view.showLoading`, and `ViewHeader`
-reads `assemblyNames` through `viewTitle`, both above the boundary — or in the
-boot itself, which is the case Refresh re-enters.
-[ADR-069](../architecture-decision-records/adr-069-detach-do-not-destroy-what-react-may-hold.md)
-is the standing evidence that a hard throw is reachable rather than theoretical:
-`MultipleViews.ts`'s `takeOut` comment records one that "went to an ErrorBoundary
-with no view left under it and took the page".
-
-**Retire when** a boot that follows a fatal error offers the session fresh
-instead of restoring it.
-
 ### Undo applies a whole-session snapshot, bypassing the detach-then-destroy discipline
 
 **Status:** Open. Mechanism verified by reading; the crash is not reproduced.

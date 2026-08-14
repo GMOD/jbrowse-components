@@ -70,6 +70,48 @@ test('can use config from a url with session param+sessionStorage', async () => 
   await findByText('Help', {}, delay)
 }, 20000)
 
+// The boot half of the crash-recovery ladder, through the real Renderer: a
+// marker naming the session the URL asks for holds it at the offer instead of
+// restoring it, which is what stops FatalErrorDialog's Refresh re-entering the
+// crash.
+test('a crash marker offers the session rather than restoring it', async () => {
+  sessionStorage.setItem(
+    'current',
+    `{"session":{"id": "abcdefg", "name": "testSession"}}`,
+  )
+  sessionStorage.setItem(
+    'crashedSession',
+    JSON.stringify({ id: 'abcdefg', message: 'Error: boom', at: 'now' }),
+  )
+  const { findByText, findByTestId } = render(
+    <App search="?config=test_data/volvox/config_main_thread.json&session=local-abcdefg" />,
+  )
+
+  await findByText(/JBrowse stopped unexpectedly/, {}, delay)
+  await findByTestId('open_crashed_session')
+  await findByTestId('start_fresh_session')
+}, 20000)
+
+// The other side of it, and the reason the clear exists at all: a marker left
+// by a crash in a DIFFERENT session must not haunt this one. Cleared from
+// JBrowse.tsx's mount effect, i.e. once the whole app tree has committed.
+test('a healthy boot clears a marker left by an earlier crash', async () => {
+  sessionStorage.setItem(
+    'current',
+    `{"session":{"id": "abcdefg", "name": "testSession"}}`,
+  )
+  sessionStorage.setItem(
+    'crashedSession',
+    JSON.stringify({ id: 'someOtherSession', message: 'Error: boom' }),
+  )
+  const { findByText } = render(
+    <App search="?config=test_data/volvox/config_main_thread.json&session=local-abcdefg" />,
+  )
+
+  await findByText('Help', {}, delay)
+  expect(sessionStorage.getItem('crashedSession')).toBeNull()
+}, 20000)
+
 test('can use config from a url with shared session ', async () => {
   render(
     <App search="?config=test_data/volvox/config_main_thread.json&session=share-testid&password=Z42aq" />,

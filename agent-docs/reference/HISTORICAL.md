@@ -266,3 +266,32 @@ cannot reach — there is no single correct defaults-included plain object for a
 nested display config. `readSlot` also returns the cached `getSnapshot`
 deliberately: a per-read built object was a measured perf and
 spurious-recomputation regression.
+
+## Refresh after a fatal error restored the session that caused it (closed 2026-08)
+
+`FatalErrorDialog` offered **Refresh** and **Reset Session**, and neither was a
+recovery. `JBrowse.tsx` keeps `session=local-<id>` in the URL and
+`fetchLocalSession` restores that id out of sessionStorage, which the autosave
+rewrote at most 400ms before the crash — so Refresh re-entered the crash, leaving
+`factoryReset` (which drops the whole query string) as the only exit, at the cost
+of the user's session. The ladder now has a middle rung: the app-level
+`ErrorBoundary`'s `onError` records the crashed session id (`crashedSession.ts`),
+`fetchLocalSession` offers that session instead of restoring it, and the offer's
+"start a new session" drops only the `session=` param.
+
+Three shapes that look simpler and are worse, so don't fix it back into one:
+
+- **Have the boundary drop `session=` itself, or make Refresh do it.** That is
+  the choice the offer exists to give the user, made silently and always the same
+  way — and a transient cause (a lazy chunk that 404'd, a GPU context lost, a
+  plugin that has since loaded) then costs the session for no reason.
+- **Delete the crashed session.** It is the user's work, and the single most
+  useful thing to have when they report the crash. `startFreshSession` goes the
+  other way and *writes* it into the autosave database, because the sessionStorage
+  copy it is holding is the fresher of the two and the fresh session's autosave is
+  about to overwrite it — a crash inside that first 400ms is exactly when
+  IndexedDB does not have it yet.
+- **Keep the marker in localStorage.** It is per-tab state about one attempt at
+  one session. In localStorage a crash in one tab holds the same session at an
+  offer in every other tab that has it open, and outlives the browsing session
+  that produced it.

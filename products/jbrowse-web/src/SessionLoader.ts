@@ -5,6 +5,7 @@ import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { scheduleDetachedDestroy } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 
+import { clearCrashedSession, readCrashedSession } from './crashedSession.ts'
 import { createPluginManager } from './createPluginManager.ts'
 import { resolveConfigPath } from './resolveConfigPath.ts'
 import {
@@ -15,8 +16,10 @@ import {
   readSessionFromIDB,
   readSessionFromStorage,
   stripPrefix,
+  writeSessionToIDB,
 } from './sessionLoaderHelpers.ts'
 import { arePluginsRemembered } from './trustedPlugins.ts'
+import { deleteQueryParams } from './useQueryParam.ts'
 import {
   checkPlugins,
   fromUrlSafeB64,
@@ -25,6 +28,7 @@ import {
   shareEndpoint,
 } from './util.ts'
 
+import type { CrashedSession } from './crashedSession.ts'
 import type { SessionSource, SessionTriagedInfo, Snap } from './types.ts'
 import type {
   PluginLoadFailure,
@@ -138,6 +142,7 @@ const SessionLoader = types
   })
   .volatile<{
     sessionTriaged: SessionTriagedInfo | undefined
+    crashedSession: CrashedSession | undefined
     runtimePlugins: PluginRecord[] | undefined
     sessionPlugins: PluginRecord[] | undefined
     pluginLoadFailures: PluginLoadFailure[]
@@ -152,6 +157,13 @@ const SessionLoader = types
      * #volatile
      */
     sessionTriaged: undefined,
+    /**
+     * #volatile
+     * Set when the local session this boot was asked to restore is the one a
+     * previous boot of this tab crashed on. Holds the session at the offer
+     * instead of restoring it — see fetchLocalSession.
+     */
+    crashedSession: undefined,
     /**
      * #volatile
      */
@@ -362,6 +374,22 @@ const SessionLoader = types
     },
     /**
      * #action
+     */
+    setCrashedSession(args?: CrashedSession) {
+      self.crashedSession = args
+    },
+    /**
+     * #action
+     * Forgets the `session=` this boot was asked for, once it has decided not
+     * to open it (crash recovery's "start fresh"). Its own action rather than a
+     * write in that one, which is async — past its first await an MST action is
+     * no longer in an action.
+     */
+    clearSessionQuery() {
+      self.sessionQuery = undefined
+    },
+    /**
+     * #action
      * Sets the resolved session that the build will apply. Producer of every
      * loadSessionByType branch; consumed once by initSession.
      */
@@ -563,9 +591,22 @@ const SessionLoader = types
      * link, a fresh visit) is adopting an id this tab never owned. IndexedDB is
      * shared across tabs, so we fork a fresh id via `loadImportedSession`;
      * otherwise both tabs would autosave over the same slot and fight.
+     *
+     * Ahead of both, the one case where restoring is the wrong answer: this tab
+     * already opened this exact session and crashed to the app-level
+     * ErrorBoundary doing it. The autosave rewrote the snapshot at most 400ms
+     * before that, so `FatalErrorDialog`'s **Refresh** lands back here and
+     * crashes again — the loop this offer breaks. What the marker names is the
+     * id in the URL rather than the id that got loaded, so the fork above is
+     * still recognized: it crashed under an id this URL has never carried.
      */
     async fetchLocalSession() {
       const query = stripPrefix(self.sessionQuery!)
+      const crashed = readCrashedSession()
+      if (crashed?.id === query) {
+        self.setCrashedSession(crashed)
+        return
+      }
       const fromStorage = readSessionFromStorage(query)
       const fromIDB = fromStorage ? undefined : await readSessionFromIDB(query)
       if (fromStorage) {
@@ -747,6 +788,64 @@ const SessionLoader = types
       await self.loadConfigAndPlugins(snap)
       self.setSessionTriaged(undefined)
       await this.loadSessionByType()
+    },
+    /**
+     * #action
+     * The crash offer's "open it anyway": the user may know the cause was
+     * transient (a lazy chunk that failed to fetch, a plugin that has since
+     * loaded), so this restores exactly what the boot would have restored.
+     *
+     * The marker is dropped FIRST, and that is what makes the second attempt a
+     * real one rather than a recursion — fetchLocalSession re-reads it. If this
+     * crashes again the ErrorBoundary writes a fresh marker, so the offer comes
+     * back on the next boot rather than being spent.
+     *
+     * Back through loadSessionByType rather than straight to fetchLocalSession,
+     * so this is the same dispatch an ordinary boot takes and inherits its
+     * catch: "Local session not found" (the snapshot moved while the offer was
+     * up) has to become an error sessionSource, not an unhandled rejection off
+     * a button.
+     */
+    async openCrashedSession() {
+      clearCrashedSession()
+      self.setCrashedSession(undefined)
+      await this.loadSessionByType()
+    },
+    /**
+     * #action
+     * The crash offer's other half: boot the way a first visit would, WITHOUT
+     * destroying the session that crashed.
+     *
+     * Keeping it is the point, so it is made durable rather than assumed
+     * durable — the sessionStorage copy is the fresher of the two autosaves and
+     * the new session's own autosave is about to overwrite it, which is how a
+     * session that crashed inside the first 400ms would be lost by a feature
+     * whose whole purpose is not losing it. After this it is an ordinary row in
+     * the autosave list, reopenable from the session manager.
+     *
+     * `session=local-<id>` then has to come out of the URL. The marker is gone
+     * by this point, so nothing else would stop the next reload restoring the
+     * session we just declined — and dropping only that param is what makes
+     * this a rung below `factoryReset`, which drops the config and every other
+     * option with it.
+     */
+    async startFreshSession() {
+      const id = self.crashedSession?.id
+      // no sessionStorage copy means this id was never this tab's own current
+      // session — fetchLocalSession's IndexedDB branch, where it is already a
+      // row in the autosave database and there is nothing to rescue
+      const snap = id ? readSessionFromStorage(id) : undefined
+      if (snap) {
+        await writeSessionToIDB(snap, self.configPath ?? '')
+      }
+      clearCrashedSession()
+      self.setCrashedSession(undefined)
+      deleteQueryParams(['session'])
+      // and out of the loader too, so the two readings of "which session did
+      // this boot ask for" agree — doAnalytics reports sessionQuery, and a
+      // plugin reload rebuilds the next loader from this one's snapshot
+      self.clearSessionQuery()
+      self.setSessionSource({ type: 'default' })
     },
     /**
      * #action

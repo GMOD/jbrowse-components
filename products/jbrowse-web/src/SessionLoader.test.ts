@@ -3,6 +3,11 @@ import { autorun, when } from 'mobx'
 
 import SessionLoader from './SessionLoader.ts'
 import {
+  clearCrashedSession,
+  markCrashedSession,
+  readCrashedSession,
+} from './crashedSession.ts'
+import {
   createSessionLoaderFromUrl,
   reloadSessionLoader,
   stripConsumedSessionParams,
@@ -10,6 +15,7 @@ import {
 import {
   loadPluginRecords,
   readSessionFromStorage,
+  writeSessionToIDB,
 } from './sessionLoaderHelpers.ts'
 import { forgetTrustedPlugins, rememberPlugins } from './trustedPlugins.ts'
 
@@ -35,10 +41,12 @@ jest.mock('idb', () => ({
   openDB: jest.fn(),
 }))
 
-// keep the rest of the helpers real; only stub the network plugin fetch
+// keep the rest of the helpers real; only stub the network plugin fetch and the
+// IndexedDB write (jsdom has no IndexedDB, so the real one returns early)
 jest.mock('./sessionLoaderHelpers', () => ({
   ...jest.requireActual('./sessionLoaderHelpers'),
   loadPluginRecords: jest.fn().mockResolvedValue({ records: [], failures: [] }),
+  writeSessionToIDB: jest.fn().mockResolvedValue(true),
 }))
 
 jest.mock('./createPluginManager', () => ({
@@ -765,6 +773,117 @@ describe('SessionLoader', () => {
       })
       await when(() => loader.isSessionLoaded, { timeout: 5000 })
       expect(loader.sessionSource).toMatchObject({ type: 'error' })
+    })
+  })
+
+  // The rung between FatalErrorDialog's Refresh (which restores the snapshot
+  // that just crashed) and its Reset Session (which discards the user's work).
+  describe('crash recovery', () => {
+    const setSearch = (qs: string) => {
+      window.history.replaceState(null, '', `${window.location.pathname}${qs}`)
+    }
+    const CRASHED = { id: 'abc', name: 'Crashy' }
+    const seedCrashedSession = () => {
+      sessionStorage.setItem(
+        'current',
+        JSON.stringify({ session: CRASHED, createdAt: new Date() }),
+      )
+      markCrashedSession(new Error('boom'))
+    }
+    const loaderForCrashedSession = () =>
+      SessionLoader.create({
+        sessionQuery: 'local-abc',
+        configSnapshot: {},
+        initialTimestamp: Date.now(),
+      })
+
+    beforeEach(() => {
+      setSearch('?config=foo.json&session=local-abc')
+    })
+
+    it('marks the local session the URL names, and only that', () => {
+      markCrashedSession(new Error('boom'))
+      expect(readCrashedSession()).toMatchObject({
+        id: 'abc',
+        message: 'Error: boom',
+      })
+
+      // a boot with no session to restore has nothing a refresh walks back
+      // into, and a share/spec link resolves to a fresh id every time — neither
+      // is a marker this loader could ever match
+      for (const qs of ['?config=foo.json', '?session=share-xyz']) {
+        clearCrashedSession()
+        setSearch(qs)
+        markCrashedSession(new Error('boom'))
+        expect(readCrashedSession()).toBeUndefined()
+      }
+    })
+
+    it('offers the choice instead of restoring the session that crashed', async () => {
+      seedCrashedSession()
+      const loader = loaderForCrashedSession()
+      await loader.loadSessionByType()
+
+      expect(loader.crashedSession).toMatchObject({ id: 'abc' })
+      // and specifically has NOT resolved a session, so nothing builds
+      expect(loader.sessionSource).toBeUndefined()
+      expect(loader.ready).toBe(false)
+    })
+
+    it('a marker naming another session leaves this one alone', async () => {
+      sessionStorage.setItem(
+        'current',
+        JSON.stringify({ session: CRASHED, createdAt: new Date() }),
+      )
+      setSearch('?session=local-somethingElse')
+      markCrashedSession(new Error('boom'))
+
+      const loader = loaderForCrashedSession()
+      await loader.loadSessionByType()
+
+      expect(loader.crashedSession).toBeUndefined()
+      expect(loader.sessionSource).toMatchObject({ type: 'snapshot' })
+    })
+
+    it('open-it-anyway drops the marker and restores, so a repeat crash re-offers', async () => {
+      seedCrashedSession()
+      const loader = loaderForCrashedSession()
+      await loader.loadSessionByType()
+      await loader.openCrashedSession()
+
+      expect(loader.crashedSession).toBeUndefined()
+      expect(readCrashedSession()).toBeUndefined()
+      expect(loader.sessionSource).toMatchObject({
+        type: 'snapshot',
+        snapshot: CRASHED,
+      })
+    })
+
+    // The half that would be worse than the bug if it were wrong: the crashed
+    // session is the user's work, and this path exists to not be a way of
+    // losing it.
+    it('starting fresh keeps the crashed session in the autosave list', async () => {
+      seedCrashedSession()
+      const loader = loaderForCrashedSession()
+      await loader.loadSessionByType()
+      await loader.startFreshSession()
+
+      // handed to the autosave database explicitly, because the sessionStorage
+      // copy it came from is about to be overwritten by the fresh session
+      expect(writeSessionToIDB).toHaveBeenCalledWith(CRASHED, '')
+      expect(
+        JSON.parse(sessionStorage.getItem('current')!).session,
+      ).toMatchObject(CRASHED)
+
+      expect(loader.sessionSource).toEqual({ type: 'default' })
+      expect(readCrashedSession()).toBeUndefined()
+      // and the URL stops pointing at it, or the next reload restores it with
+      // no marker left to stop that. Only `session` goes; `config` stays, which
+      // is what makes this narrower than factoryReset.
+      const after = new URLSearchParams(window.location.search)
+      expect(after.get('session')).toBeNull()
+      expect(after.get('config')).toBe('foo.json')
+      expect(loader.sessionQuery).toBeUndefined()
     })
   })
 

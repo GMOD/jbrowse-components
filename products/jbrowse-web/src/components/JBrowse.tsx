@@ -6,6 +6,7 @@ import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { clearCrashedSession } from '../crashedSession.ts'
 import { readQueryParams, setQueryParams } from '../useQueryParam.ts'
 import FileHandleRestoreBanner from './FileHandleRestoreBanner.tsx'
 import ShareButton from './ShareButton.tsx'
@@ -28,6 +29,20 @@ const JBrowse = observer(function JBrowse({
 
   useEffect(() => {
     setQueryParams({ session: `local-${id}` })
+    // ...and this is "far enough to be called a successful boot". React runs a
+    // parent's effects after its children's, so reaching here means the whole
+    // app tree below rendered and committed without reaching the app-level
+    // ErrorBoundary — the first moment that is true.
+    //
+    // Earlier is worthless: the plugin manager being built and the session
+    // being applied are both points the crash we mark happens *after*, and
+    // createPluginManager already catches its own throws into
+    // pluginManagerError. Later (a timer, a first interaction) would leave the
+    // offer standing over a boot that is plainly fine. Clearing at the first
+    // success costs nothing even for a crash that arrives seconds in, or out of
+    // a lazily-loaded view chunk that lands after this commit: the boundary
+    // writes the marker again, always after this ran.
+    clearCrashedSession()
     window.JBrowseRootModel = rootModel
     window.JBrowseSession = session
   }, [id, rootModel, session])

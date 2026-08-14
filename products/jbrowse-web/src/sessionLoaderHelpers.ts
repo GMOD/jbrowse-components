@@ -9,6 +9,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 import { openSessionDB } from './openSessionDB.ts'
 import { configBaseUri } from './resolveConfigPath.ts'
+import { upsertSessionRows } from './sessionDbOps.ts'
 import { addRelativeUris } from './util.ts'
 
 import type { Snap } from './types.ts'
@@ -63,6 +64,47 @@ export async function readSessionFromIDB(query: string) {
     // one-shot read at boot, from a connection the root model does not share.
     // Left open it lives for the tab, and an open connection at the old version
     // is what makes another tab's upgrade hang instead of run.
+    db?.close()
+  }
+}
+
+/**
+ * Puts a session into the autosave database from outside the root model that
+ * owns it — the crash-recovery path, which has to keep a session it is about to
+ * stop being the current one.
+ *
+ * Needed because the two autosaves are not equivalent. The sessionStorage
+ * mirror is the fresher of the pair (the unload flush writes there and not
+ * here, and both are debounced 400ms), and the fresh session's own autosave is
+ * about to overwrite it — so a crash inside that first debounce window is
+ * exactly the case where letting go of the sessionStorage copy loses the
+ * session for good. This is the write that makes "starting over keeps your
+ * crashed session" true rather than merely usual.
+ *
+ * upsertSessionRows over an existing row is safe: it carries `favorite` and
+ * `createdAt` forward, so re-writing a session already in the database costs
+ * only a bumped `updatedAt`.
+ */
+export async function writeSessionToIDB(snap: Snap, configPath: string) {
+  const { id, name } = snap
+  if (
+    !indexedDBAvailable() ||
+    typeof id !== 'string' ||
+    typeof name !== 'string'
+  ) {
+    return false
+  }
+  let db: Awaited<ReturnType<typeof openSessionDB>> | undefined
+  try {
+    db = await openSessionDB()
+    await upsertSessionRows(db, { ...snap, id, name }, { id, name, configPath })
+    return true
+  } catch (e) {
+    console.error(e)
+    return false
+  } finally {
+    // same one-shot discipline as readSessionFromIDB: a connection left open at
+    // the old version is what makes another tab's upgrade hang
     db?.close()
   }
 }
