@@ -184,102 +184,105 @@ export function getColumnDefinitions({
       badges: true,
     })
 
+  // Each shape below names the columns it always shows and the ones "Show all
+  // columns" appends. Which of the two lists is in play is the same decision in
+  // all three, so it is stated here instead of at the end of each branch.
+  const visible = (base: GenomeColumn[], extra: GenomeColumn[]) =>
+    showAllColumns ? [...base, ...extra] : base
+
   // Cross-group results: rows arrive from the search index with only the fields
   // it carries, so the columns are the intersection of both shapes plus the
   // group each hit came from.
   if (groupTitles) {
-    const baseColumns: GenomeColumn[] = [
-      favoriteColumn,
-      commonNameColumn(row => row.source === 'ucsc'),
-      {
-        id: 'source',
-        header: 'Group',
-        value: r => (r.source ? groupTitles.get(r.source) : undefined),
-      },
-      {
-        id: 'scientificName',
-        header: 'Scientific name',
-        value: r => r.scientificName,
-      },
-      {
-        id: 'ncbiAssemblyName',
-        header: 'Assembly',
-        value: r => r.ncbiAssemblyName,
-      },
-      { id: 'accession', header: 'Accession', value: r => r.accession },
-    ]
-
-    const extraColumns: GenomeColumn[] = [
-      {
-        id: 'assemblyStatus',
-        header: 'Assembly status',
-        value: r => r.assemblyStatus,
-      },
-      taxonIdColumn,
-    ]
-
-    return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns
+    return visible(
+      [
+        favoriteColumn,
+        commonNameColumn(row => row.source === 'ucsc'),
+        {
+          id: 'source',
+          header: 'Group',
+          value: r => (r.source ? groupTitles.get(r.source) : undefined),
+        },
+        {
+          id: 'scientificName',
+          header: 'Scientific name',
+          value: r => r.scientificName,
+        },
+        {
+          id: 'ncbiAssemblyName',
+          header: 'Assembly',
+          value: r => r.ncbiAssemblyName,
+        },
+        { id: 'accession', header: 'Accession', value: r => r.accession },
+      ],
+      [
+        {
+          id: 'assemblyStatus',
+          header: 'Assembly status',
+          value: r => r.assemblyStatus,
+        },
+        taxonIdColumn,
+      ],
+    )
   } else if (typeOption === 'ucsc') {
-    const baseColumns: GenomeColumn[] = [
-      favoriteColumn,
-      nameColumn({
-        id: 'name',
-        header: 'Name',
-        value: r => r.name,
-        isUcsc: () => true,
-      }),
-      {
-        id: 'scientificName',
-        header: 'Scientific name',
-        value: r => r.scientificName,
-      },
-      { id: 'organism', header: 'Organism', value: r => r.organism },
-      { id: 'description', header: 'Description', value: r => r.description },
-    ]
-
-    const extraColumns: GenomeColumn[] = [
-      { id: 'sourceName', header: 'Source', value: r => r.sourceName },
-      taxonIdColumn,
-    ]
-
-    return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns
+    return visible(
+      [
+        favoriteColumn,
+        nameColumn({
+          id: 'name',
+          header: 'Name',
+          value: r => r.name,
+          isUcsc: () => true,
+        }),
+        {
+          id: 'scientificName',
+          header: 'Scientific name',
+          value: r => r.scientificName,
+        },
+        { id: 'organism', header: 'Organism', value: r => r.organism },
+        { id: 'description', header: 'Description', value: r => r.description },
+      ],
+      [
+        { id: 'sourceName', header: 'Source', value: r => r.sourceName },
+        taxonIdColumn,
+      ],
+    )
   } else {
-    const baseColumns: GenomeColumn[] = [
-      favoriteColumn,
-      commonNameColumn(() => false),
-      {
-        id: 'assemblyStatus',
-        header: 'Assembly status',
-        value: r => r.assemblyStatus,
-      },
-      {
-        id: 'seqReleaseDate',
-        header: 'Release date',
-        value: r => formatReleaseDate(r.seqReleaseDate),
-      },
-      {
-        id: 'scientificName',
-        header: 'Scientific name',
-        value: r => r.scientificName,
-      },
-      {
-        id: 'ncbiAssemblyName',
-        header: 'NCBI assembly name',
-        value: r => r.ncbiAssemblyName,
-      },
-    ]
-
-    const extraColumns: GenomeColumn[] = [
-      { id: 'accession', header: 'Accession', value: r => r.accession },
-      {
-        id: 'pairedAccession',
-        header: 'Paired accession',
-        value: r => r.pairedAccession,
-      },
-      taxonIdColumn,
-      { id: 'submitterOrg', header: 'Submitter', value: r => r.submitterOrg },
-    ]
-
-    return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns
+    return visible(
+      [
+        favoriteColumn,
+        commonNameColumn(() => false),
+        {
+          id: 'assemblyStatus',
+          header: 'Assembly status',
+          value: r => r.assemblyStatus,
+        },
+        {
+          id: 'seqReleaseDate',
+          header: 'Release date',
+          value: r => formatReleaseDate(r.seqReleaseDate),
+        },
+        {
+          id: 'scientificName',
+          header: 'Scientific name',
+          value: r => r.scientificName,
+        },
+        {
+          id: 'ncbiAssemblyName',
+          header: 'NCBI assembly name',
+          value: r => r.ncbiAssemblyName,
+        },
+      ],
+      [
+        { id: 'accession', header: 'Accession', value: r => r.accession },
+        {
+          id: 'pairedAccession',
+          header: 'Paired accession',
+          value: r => r.pairedAccession,
+        },
+        taxonIdColumn,
+        { id: 'submitterOrg', header: 'Submitter', value: r => r.submitterOrg },
+      ],
+    )
   }
 }

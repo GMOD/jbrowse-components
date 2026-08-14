@@ -42,6 +42,13 @@ function clearTarget() {
   deleteQueryParams(['config', 'specLink'])
 }
 
+// PluginManager types `rootModel` as the generic state-tree node it is for every
+// product; on desktop it is always this one, and this is the only place that
+// narrowing is written down rather than restated at each of the reads below.
+function desktopRootModel(pluginManager: PluginManager | undefined) {
+  return pluginManager?.rootModel as DesktopRootModel | undefined
+}
+
 // A failing config path is a recent-session entry we can prune, so offer it as a
 // toast action rather than leaving a dead row behind. A bad link is not one, so
 // it gets a plain error.
@@ -92,9 +99,7 @@ const LoaderContents = observer(function LoaderContents() {
   // must answer even when the flush fails, or the close it is holding never
   // completes.
   useIpc('flushSessionForClose', () => {
-    const rootModel = installedRef.current?.rootModel as
-      | DesktopRootModel
-      | undefined
+    const rootModel = desktopRootModel(installedRef.current)
     Promise.resolve(rootModel?.flushSession())
       .catch(console.error)
       .finally(() => {
@@ -103,7 +108,7 @@ const LoaderContents = observer(function LoaderContents() {
   })
 
   const handleSetPluginManager = useEventCallback((pm: PluginManager) => {
-    const rootModel = pm.rootModel as DesktopRootModel | undefined
+    const rootModel = desktopRootModel(pm)
     // Both in-app routes to a session replacement go through the same swap the
     // pushed one does, so all three flush at the same moment — between the load
     // resolving and the install. Their menu items used to call flushSession
@@ -131,10 +136,7 @@ const LoaderContents = observer(function LoaderContents() {
 
   const { swap, swapping } = useSessionSwap({
     flush: useEventCallback(async () => {
-      const rootModel = installedRef.current?.rootModel as
-        | DesktopRootModel
-        | undefined
-      await rootModel?.flushSession()
+      await desktopRootModel(installedRef.current)?.flushSession()
     }),
     onLoad: handleSetPluginManager,
   })
