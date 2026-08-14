@@ -127,6 +127,29 @@ several contigs. `browser-tests/suites/synteny-follow.ts` says the same thing at
 the point where it matters; it passed against a row pinned to one contig while
 proving nothing.
 
+## `featureData` refNames are in the ADAPTER's namespace, the view's are canonical
+
+Every refName comparison here has one operand from each side, and on an aliased
+assembly they do not meet. `featureData.refNames`/`mateRefNames` come off the
+features, and the fetch renames the view regions INTO the adapter's namespace
+before the RPC rather than renaming the features back
+(`renameRegionsForAdapter`, and the comment at the head of
+`executeSyntenyFeaturesAndPositions` saying so) — because the worker has no
+assemblyManager. The window, meanwhile, is read off `dynamicBlocks`, which is
+canonical. So on a PAF naming a contig `1` against an assembly canonicalized
+`chr1`, `pickFollowFeature` matches nothing, the follow reports
+`followUnaligned` and holds every row, and nothing distinguishes that from a
+genuinely unaligned window.
+
+NOT a follow bug and not fixable here: `moveMatchingPanel`'s
+`visibleSpanOnRefName` compares the same two namespaces, so the click-driven
+move is out by the same amount, and the geometry is fine either way because it
+is computed worker-side where both sides are adapter-space. The fix is one
+inverse rename applied to the fetch's result, and the helper already exists —
+`getAdapterToCanonicalRefNameMap` in `@jbrowse/synteny-core`, which the
+diagonalize RPCs use for exactly this. Until then, read a follow that does
+nothing on an aliased file as this rather than as the mode being broken.
+
 ## Approximate is a state the UI reports, not a failure
 
 Three things can put a placement on an interpolation rather than a CIGAR walk: a
