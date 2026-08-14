@@ -10,11 +10,24 @@ import { arcMark } from './mark.ts'
 import type { ArcBandFrame, ArcDome, ArcMark } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
 
-// How long a breakend foot is drawn, in CSS px. Short: it says a direction, and
-// a longer tick starts reading as a second connection lying along the band. 20
-// is `plugins/arc`'s and BreakpointSplitView's length, and both draw theirs
-// across a whole track rather than inside a ~25-60 px arc band.
-export const ARC_FOOT_PX = 10
+// How long a breakend foot is drawn, in CSS px — `plugins/arc`'s and
+// BreakpointSplitView's length, so the three ticks in the repo are one number.
+//
+// It was 10 first, on the argument that this band is ~25-60 px where those two
+// draw across a whole track, and that a longer tick would read as a second
+// connection lying along the band. The figures that draw these say otherwise: a
+// capture publishes at about a third of its width, so at 10 the foot survives
+// the downscale as a thickening of the curve's end rather than as a horizontal
+// mark, and the direction — the whole content of the foot — is not readable. At
+// 20 it is.
+//
+// Two feet DO merge into one bar where two junctions are closer than a foot is
+// long, and that is not the failure it looks like: both feet lie over the
+// sequence their ends keep, so when they overlap it is because both ends keep
+// the SAME stretch, and the bar is that stretch drawn. It is what the 199 bp
+// templated insert looks like on cancer_sv/derivative_synteny, where the two
+// junctions bounding it are ~18 CSS px apart.
+export const ARC_FOOT_PX = 20
 
 export function arcScreenPath(
   data: ArcsUploadData,
