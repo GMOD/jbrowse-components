@@ -1580,11 +1580,9 @@ check("expand pairs copies by index instead of multiplying them out",
 check("a cell past --max-copies is a gene family and contributes nothing",
       og.orthogroup_rows(["Os1", "Z1, Z2, Z3", "Sb1"], "expand", 2, [None] * 3),
       [["Os1", ".", "Sb1"]])
-# ...and is COUNTED, the same as compara_to_blocks.py counts its own. A threshold
-# below the ploidy in the set empties the cells the table exists to show, and an
-# emptied cell reads exactly like a genome with fewer orthologs. The BED filter
-# empties a cell too and must not be counted here, since the per-column placement
-# share already reports that one.
+# ...and is COUNTED, since a threshold below the ploidy in the set empties the
+# cells the table exists to show and reads as a genome with fewer orthologs. The
+# BED filter empties a cell too, and the placement share already reports that one.
 fam = {"orthogroups": 0, "expanded": 0, "families": 0}
 og.orthogroup_rows(["Os1", "Z1, Z2, Z3", "Sb1"], "expand", 2, [None] * 3, fam)
 og.orthogroup_rows(["Os1", "Z1", "Sb1"], "expand", 2, [None] * 3, fam)
@@ -1639,15 +1637,13 @@ _, seen, resolved, _ = og.build_rows(
     ["OG1\tOs01g1\tZm01a, Zm01b\n"], ["rice", "maize"], "expand", [None] * 2, 4)
 check("the placed count is distinct ids, not the rows expansion wrote",
       [len(seen[0]), len(resolved[0])], [1, 1])
-# A row wider than the header reached orthogroup_rows whole while the per-column
-# report saw only the header's width, so the stray cell indexed a `beds` list
-# with one entry per column: IndexError, after the file had already been read.
+# `beds` has one entry per column, so a stray cell on a wider row indexed past
+# the end of it: IndexError, after the file had already been read.
 wide, _, _, _ = og.build_rows(
     ["OG1\tOs1\tZm1\tSTRAY\n"], ["rice", "maize"], "expand", [None] * 2, 4)
 check("a row wider than the header is cut to the columns, not indexed past them",
       wide, [["Os1", "Zm1"]])
-# and a row SHORTER than the header still pads, which is the ordinary case: a
-# trailing empty column is written as nothing at all
+# a row SHORTER than the header is the ordinary case and still pads
 short, _, _, _ = og.build_rows(
     ["OG1\tOs1\tZm1\n"], ["rice", "maize", "sorghum"], "expand", [None] * 3, 4)
 check("a row shorter than the header pads to it",

@@ -182,7 +182,8 @@ chosen by file order. `expand` writes one row per copy, pairing copies by index
 across columns rather than multiplying them out, so an orthogroup costs rows
 equal to its largest cell and a gene family cannot blow the table up. A cell
 with more genes than `--max-copies` is a family rather than a set of copies, and
-contributes nothing.
+contributes nothing; the conversion counts those, so a threshold set below the
+ploidy in the set says so rather than reading as a genome with fewer orthologs.
 
 Each of those rows carries the other genomes' genes too, so a pair that is not
 duplicated is named on every one of them. The track draws a gene pair once,
@@ -287,7 +288,8 @@ drawn to show. A row of thousands of scaffolds is not readable, and an ortholog
 on a sequence the assembly leaves out draws nothing rather than erroring, so the
 build prints what share of each genome's genes the kept sequences hold. Read it
 for a fragmented assembly, where the share is the part of that genome the stack
-cannot draw.
+cannot draw, and raise `MAXSEQ` where the sequences it would add are chromosomes
+rather than contigs.
 
 ## Reproduce it end to end
 
@@ -301,6 +303,15 @@ synteny track and a stacked default session.
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh
 bash build_orthofinder_synteny.sh wheat   # or: vertebrates, grasses
 npx --yes serve orthofinder_wheat_build/jbrowse2  # then open the printed URL
+```
+
+The two cuts it makes are environment variables, so a set with a different
+karyotype or ploidy needs no edit: `MAXSEQ` for the sequences kept per genome,
+`MAXCOPIES` for the point at which a cell is a gene family rather than a set of
+copies.
+
+```bash
+MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
 ```
 
 The OrthoFinder step is the long one: it searches every proteome against every

@@ -319,11 +319,9 @@ describe('real grape/peach/cacao blocks (chr1 subset)', () => {
     expect(fa.length).toBe(1045)
   })
 
-  // The transitive pair is where a reference-anchored table repeats a link: the
-  // two direct pairs are one row per grape gene and have no duplicate at all,
-  // while several grape genes anchoring the same peach gene to the same cacao
-  // gene name that peach/cacao link once each. 968 rows in the file join to 847
-  // distinct links here, one of them written nine times.
+  // The transitive pair is where a reference-anchored table repeats a link:
+  // several grape genes anchoring the same peach gene to the same cacao gene
+  // name that link once each. The two direct pairs have no duplicate at all.
   test('peach vs cacao (transitive through grape)', async () => {
     const fa = await realFeats(['peach', 'cacao'], {
       refName: 'G1',
@@ -408,12 +406,9 @@ describe('attributeColumns', () => {
   })
 })
 
-// An orthogroup table expands a duplicated gene into one row per copy, so a
-// column holding one gene repeats it once per copy beside it. That is right for
-// the duplicated pair and redundant for every other pair on the row, which gets
-// the identical two genes again. orthogroups_expand.blocks is one such
-// orthogroup (one grape gene, two peach copies, one cacao gene) plus an ordinary
-// single-copy one.
+// An orthogroup expanded a copy at a time repeats the un-duplicated columns on
+// every row. orthogroups_expand.blocks is one such orthogroup (one grape gene,
+// two peach copies, one cacao gene) plus an ordinary single-copy one.
 describe('a duplicated gene expanded across rows', () => {
   const expandFeats = (
     assemblyNames: string[],
@@ -450,9 +445,7 @@ describe('a duplicated gene expanded across rows', () => {
     ])
   })
 
-  // and the pair that is not: g1/c1 is named on both rows, and the second is the
-  // same ribbon at the same coordinates. Alpha is per link, so drawing it twice
-  // darkens the band instead of showing anything.
+  // and the pair that is not: g1/c1 is on both rows, the same ribbon twice
   test('a pair repeated by another column draws once', async () => {
     const fa = await expandFeats(['grape', 'cacao'], grapeRegion)
     expect(

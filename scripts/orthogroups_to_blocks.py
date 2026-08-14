@@ -20,11 +20,10 @@ costs rows equal to its largest cell, not their product. A cell with more than
 `--max-copies` genes is a gene family rather than a duplication and is left
 empty.
 
-Each expanded row carries the un-duplicated columns' genes too, since the
-duplicated column's later copies would otherwise have nothing to link to, so a
-pair not touching the duplication is named once per row. The format has no way
-to say it once, and `MCScanBlocksAdapter` draws a gene pair once however many
-rows name it, which is where that is settled.
+Each expanded row carries the un-duplicated columns' genes too, since the later
+copies would otherwise have nothing to link to, so a pair not touching the
+duplication is named once per row. `MCScanBlocksAdapter` draws a gene pair once
+however many rows name it, which is where that is settled.
 
 `--pick single` empties any multi-gene cell instead, for a strictly one-to-one
 table; `--pick first` is the arbitrary choice, if you want the coverage.
@@ -94,9 +93,8 @@ def column_names(header, assemblies):
 def cell_genes(cell, known, max_copies):
     """The gene ids a cell offers, and whether --max-copies is what emptied it.
 
-    A cell whose BED resolves none of its genes and a cell dropped as a family
-    both come back empty, and only the second is worth counting: the first is
-    already the per-column placement share below."""
+    A cell its BED resolved to nothing comes back empty too, and is not worth
+    counting: the per-column placement share below already reports that one."""
     genes = [g.strip() for g in cell.split(",") if g.strip()]
     if known is not None:
         genes = [g for g in genes if g in known]
@@ -133,11 +131,8 @@ def build_rows(lines, columns, pick, beds, max_copies):
     resolved = [set() for _ in columns]
     counts = {"orthogroups": 0, "expanded": 0, "families": 0}
     for line in lines:
-        # padded AND truncated to the header's width, once. A row wider than the
-        # header used to reach orthogroup_rows whole while the report below saw
-        # only the first len(columns) cells, so the stray cell was indexed
-        # against a `beds` list that has one entry per column: IndexError, on a
-        # file that had already been read.
+        # padded AND truncated to the header's width: `beds` has one entry per
+        # column, so a stray cell on a wider row indexes past the end of it
         cells = line.rstrip("\n").split("\t")[1:]
         cells = (cells + [""] * len(columns))[: len(columns)]
         counts["orthogroups"] += 1
@@ -221,10 +216,8 @@ def main():
     with open(args.out, "w") as fh:
         fh.writelines("\t".join(r) + "\n" for r in rows)
 
-    # named rather than left implicit, the same as compara_to_blocks.py: a cell
-    # over --max-copies contributes nothing, so a threshold set too low for the
-    # ploidy in the set empties the very cells the table exists to show and looks
-    # exactly like a genome with fewer orthologs
+    # a threshold below the ploidy in the set empties the cells the table exists
+    # to show, and an emptied cell reads as a genome with fewer orthologs
     families = (f", {counts['families']} dropped as a gene family (a cell with "
                 f"more than {args.max_copies} copies)" if counts["families"]
                 else "")

@@ -50,6 +50,8 @@
 #   chmod +x ~/.local/bin/orthofinder
 # Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses|wheat] [outdir]
 #
+#   MAXSEQ=60 MAXCOPIES=6 bash scripts/build_orthofinder_synteny.sh wheat
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -61,6 +63,17 @@ done
 
 SET="${1:-vertebrates}"
 OUTDIR="${2:-orthofinder_${SET}_build}"
+
+# Sequence regions kept per genome, the ones carrying the most genes: Ensembl
+# lists every unplaced scaffold, and a row with 30,000 of them is unreadable. 30
+# is tight on a karyotype larger than that (chicken has ~40) or a fragmented
+# assembly, which the chrom.sizes step below reports as a low drawable share.
+MAXSEQ="${MAXSEQ:-30}"
+
+# Past this a cell is a gene family rather than a set of copies and contributes
+# nothing. 4 clears the ploidy in all three sets, bread wheat's homoeologs
+# included; the conversion counts what it drops.
+MAXCOPIES="${MAXCOPIES:-4}"
 
 # Heredoc columns: short name (= the JBrowse assembly name, and the proteome
 # filename OrthoFinder names its column after), Ensembl species prefix,
@@ -136,21 +149,12 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
 APP=jbrowse2
-# Sequence regions to keep per genome, the ones carrying the most genes. Ensembl
-# lists every unplaced scaffold, and a synteny row with 30,000 of them is
-# unreadable.
-MAXSEQ=30
 mkdir -p proteomes
 
 # Every file lands under a .part name and is renamed only once its producer
-# returns clean, which is what makes the `[ -f ]` guards below sound. A `>`
-# redirect CREATES its output before the producer has written a byte, and
-# `wget -O` creates its file before the first response header, so an interrupted
-# step otherwise leaves something the next run treats as finished. Each of these
-# then fails somewhere other than where it went wrong: a 0-byte chrom.sizes is
-# an assembly with no sequences, a truncated proteome is an OrthoFinder run on a
-# genome missing half its genes, and a half-written .gff3.gz kills the step that
-# reads it rather than the download that produced it.
+# returns clean, which is what makes the `[ -f ]` guards below sound: a `>`
+# redirect and `wget -O` both create their output before a byte is written, so an
+# interrupted step otherwise leaves something the next run treats as finished.
 fetch() {
   local dest=$1 url=$2
   if [ ! -f "$dest" ]; then
@@ -176,9 +180,8 @@ echo "$SPECIES" | while read -r name prefix asm; do
   #
   # `match` in the pattern rather than the body: it returns 0 on a gene line
   # carrying no ID=gene:, where substr($9, 0, -1) is the empty string and the row
-  # would go out with an empty name column for the table to resolve against.
-  #
-  # Before chrom.sizes, which selects on this file's gene counts.
+  # would go out with an empty name column. Before chrom.sizes, which selects on
+  # this file's gene counts.
   if [ ! -f "$name.bed" ]; then
     gunzip -c "$name.gff3.gz" \
       | awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=gene:[^;]+/) {
@@ -192,15 +195,10 @@ echo "$SPECIES" | while read -r name prefix asm; do
   # chrom.sizes from the GFF3's own header, so no genome FASTA is needed. Read
   # in python rather than piped through awk: stopping at the first feature line
   # closes the pipe on gunzip, and under `set -o pipefail` that SIGPIPE fails
-  # the script.
-  #
-  # The line this prints is the one to read before deciding a row looks thin. A
-  # gene on a sequence that did not make the cut resolves through the BED, joins
-  # normally and draws nothing, and it is the one mismatch MCScanBlocksAdapter
-  # says it cannot report - by the time the track loads, the assembly simply has
-  # no such refName. Triticum urartu's IGDB assembly is the case that needs
-  # watching: its genes are spread over thousands of contigs, so a tenth of the
-  # column is undrawable however the cut is made.
+  # the script. The share it prints is the one to read before deciding a row
+  # looks thin: a gene on a sequence that missed the cut resolves through the BED
+  # and draws nothing, which is the one mismatch MCScanBlocksAdapter cannot
+  # report, since by then the assembly simply has no such refName.
   if [ ! -f "$name.chrom.sizes" ]; then
     python3 - "$name.gff3.gz" "$name.bed" "$MAXSEQ" <<'PY' > "$name.chrom.sizes.part"
 import gzip
@@ -220,22 +218,17 @@ with open(bed) as fh:
     for line in fh:
         seq = line.split("\t")[0]
         genes[seq] = genes.get(seq, 0) + 1
-# Select by GENE COUNT, not by length. The row is drawn to carry orthologs, so a
-# long scaffold holding none spends a slot and a tick label on nothing while a
-# short gene-dense chromosome loses one: on the vertebrates set, selecting by
-# length dropped nine real chicken microchromosomes (16, 25, 30, 31, 35, 36, 38,
-# 39 among them) while keeping 33 and 34, and left 14 of frog's 30 sequences
-# carrying no ortholog at all. A sequence with no genes is never worth a slot,
-# hence `withgenes` - unless the annotation has none anywhere, where falling back
-# to length beats writing an assembly with no sequences in it.
+# By GENE COUNT, not by length. The row is drawn to carry orthologs, so a long
+# scaffold holding none spends a slot and a tick label on nothing while a short
+# gene-dense chromosome loses one: by length, nine real chicken microchromosomes
+# fell off while 33 and 34 stayed. `or regions` is the annotation-with-no-genes
+# case, where length beats an assembly with no sequences in it.
 withgenes = [r for r in regions if genes.get(r[0])]
 ranked = sorted(withgenes or regions, key=lambda r: (-genes.get(r[0], 0), -r[1]))
 kept = {name for name, _ in ranked[:keep]}
 # ...but written in the GFF3's own order rather than the ranking's. This file's
-# line order is the assembly's region order in JBrowse, so it is what a row is
-# drawn in wherever nothing overrides it, and Ensembl lists chromosomes naturally
-# (1D 2D 3D ...) where a ranking does not. Ranked, a whole-assembly row
-# interleaves the chromosomes a reader is comparing.
+# line order is the assembly's region order in JBrowse, and Ensembl lists
+# chromosomes naturally (1D 2D 3D ...) where a ranking interleaves them.
 for name, length in regions:
     if name in kept:
         print(f"{name}\t{length}")
@@ -251,10 +244,9 @@ PY
   # first token of its header. Keeping the longest isoform and renaming it to
   # the gene id does both, and makes the ids match the BED above.
   #
-  # The .part rename is python's here rather than the shell's, so the report on
-  # stderr still names the file it wrote. A leftover part file is not a proteome
-  # to OrthoFinder either way (it scans for fa/faa/fasta/fas/pep), and the loop
-  # runs to completion before the OrthoFinder step regardless.
+  # The .part rename is python's here so the report still names the file it
+  # wrote; OrthoFinder scans for fa/faa/fasta/fas/pep, so a leftover is not a
+  # proteome to it.
   [ -f "proteomes/$name.fa" ] || python3 - "$name.pep.fa.gz" "proteomes/$name.fa" <<'PY'
 import gzip
 import os
@@ -288,10 +280,8 @@ done
 
 # ── OrthoFinder: orthogroups only (-og), which is all the table needs ────────
 # Its results directory is named for the day it ran, so the glob picks it up on
-# a re-run instead of running the whole thing again. Newest by MTIME rather than
-# by name: those names are Results_Aug14, Results_Sep05, Results_Dec01, which
-# sort Aug < Dec < Sep, so a set whose proteomes changed and were re-run in
-# another month would otherwise read the older run's table.
+# a re-run instead of running the whole thing again. Newest by MTIME: those names
+# are Results_Aug14, Results_Sep05, Results_Dec01, which sort Aug < Dec < Sep.
 if ! ls proteomes/OrthoFinder/Results_*/Orthogroups/Orthogroups.tsv >/dev/null 2>&1; then
   orthofinder -f proteomes -og -S diamond -t "$(getconf _NPROCESSORS_ONLN)"
 fi
@@ -317,7 +307,7 @@ BEDARGS=$(echo "$NAMES" | awk '{printf " --bed %s=%s.bed", $1, $1}')
 # not with $NAMES. It prints them space-separated, so every consumer below
 # splits on whitespace.
 BLOCK_ASSEMBLIES=$(python3 "$SCRIPT_DIR/orthogroups_to_blocks.py" "$ORTHOGROUPS" \
-  -o "$TABLE" $BEDARGS)
+  -o "$TABLE" --max-copies "$MAXCOPIES" $BEDARGS)
 
 gzip -kf "$TABLE"
 for name in $NAMES; do gzip -kf "$name.bed"; done
@@ -410,8 +400,6 @@ done
 # lengths this has no use for).
 if [ -n "$ALIASES" ]; then
   echo "$ALIASES" | while read -r name accession; do
-    # guarded and .part-renamed like every other download above; this was the one
-    # step that re-fetched on a re-run
     if [ ! -f "$name.sequence_report.tsv" ]; then
       datasets download genome accession "$accession" --include seq-report \
         --filename "$name.seq-report.zip"
