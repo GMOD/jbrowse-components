@@ -191,7 +191,13 @@ const LCT_HIGHLIGHT = [
 // reconciliation -- their callset and their hub are both chr-named.
 const ANOGAM3_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/anoGam3/config.json')}`
 
-const agLdTrack = (trackId: string, name: string, file: string) => ({
+const agLdTrack = (
+  trackId: string,
+  name: string,
+  file: string,
+  ldHeight: number,
+  squash: boolean,
+) => ({
   type: 'LDTrack',
   trackId,
   name,
@@ -208,26 +214,44 @@ const agLdTrack = (trackId: string, name: string, file: string) => ({
       // block's edges land where the inversion's edges are
       useGenomicPositions: true,
       showLegend: true,
-      // 340, NOT 300, AND THAT IS A CORRECTION rather than a preference. An
-      // unsquashed LD panel draws its triangle at natural aspect -- apex depth
-      // is half the drawn width (`canvasHeight` = `canvasWidth / 2` in
-      // LDDisplay/shared.ts) -- and the lane's own height then clips whatever
-      // does not fit. Clipping the whole-arm triangle is right and unavoidable:
-      // at 49.4 Mb across ~1490 css px it would be 745 px deep, and the deep
-      // half is pairs 20 Mb apart. But 2La is 20,524,058-42,165,532, which
-      // draws 653 px wide, so ITS apex is 327 px down -- and at 300 the block
-      // this figure exists to show was cut flat at the lane boundary, ~27 px
-      // short of closing. A truncated block reads as one that continues past
-      // the frame, which is the opposite of "this span is inherited as one
-      // piece". `squashToHeight` is not the fix and was reasoned out rather
-      // than tried: it fits the NATURAL triangle (745 px) into the lane, so at
-      // 300 it would scale 2La's apex to 131 px and spend the other 169 px on
-      // the empty long-range corner.
+      // THE HEIGHT ARITHMETIC, because two rounds of review have now been about
+      // it. An unsquashed LD panel draws its triangle at natural aspect -- apex
+      // depth is half the drawn width (`canvasHeight` = `canvasWidth / 2` in
+      // LDDisplay/shared.ts) -- and the lane's own height clips whatever does
+      // not fit. Clipping the whole-arm triangle is right and unavoidable: at
+      // 49.4 Mb across ~1490 css px it would be 745 px deep, and the deep half
+      // is pairs 20 Mb apart. But 2La is 20,524,058-42,165,532, which draws 653
+      // px wide, so ITS apex is 327 px down: at 300 the block this figure
+      // exists to show was cut flat at the lane boundary, 27 px short of
+      // closing, and a truncated block reads as one that continues past the
+      // frame.
       //
-      // Both panels take the same number. They are read against each other --
-      // block versus no block -- and two lanes of different heights make a
-      // reader wonder whether the empty one was drawn differently.
-      height: 340,
+      // `squashToHeight` fits that whole 745 px wedge into the lane instead, so
+      // it never cuts anything and the height becomes free -- at the cost of
+      // scaling 2La's apex by height/745.
+      //
+      // IT WAS RENDERED, at 240 on both panels, and it is WORSE ON MORE THAN
+      // THE ARITHMETIC, which is why it is a parameter here rather than a
+      // deleted line. The review asked for it ("we need to improve y-axis real
+      // estate here, including by 'squashing' the ld triangles") and the earlier
+      // round had only reasoned about it, so it was worth a capture. Two things
+      // the arithmetic did not predict:
+      //
+      // - the block stops being SOLID. Scaling y compresses each cell as well as
+      //   the wedge, so the 2La triangle came back as a pale hatched wedge --
+      //   individual cells resolvable, no filled mass -- where unsquashed it is
+      //   an unmistakable block of red. The figure's whole claim is that one
+      //   panel has a block in it and the other does not, and squashed, the
+      //   claim is a texture difference.
+      // - the empty corner is not reclaimed anyway. Squashing brings the
+      //   long-range pairs into frame, and they are white, so the lane is still
+      //   about half blank -- just blank with the block flattened above it.
+      //
+      // So this stays false for both panels, and the height saving is taken
+      // where a panel has no deep signal to lose instead. See the two call
+      // sites.
+      squashToHeight: squash,
+      height: ldHeight,
     },
   ],
 })
@@ -306,7 +330,12 @@ const AG_LOCI_TRACK = {
 // — and at a 1px row the sidebar cannot render a text label, which leaves the
 // track header as the only place a population name can go. It also lets each
 // karyotype lane sit directly under its own LD panel in the combined figure.
-const agKaryotypeTrack = (pop: string, name: string, height: number) => ({
+const agKaryotypeTrack = (
+  pop: string,
+  name: string,
+  height: number,
+  showLegend: boolean,
+) => ({
   type: 'VariantTrack',
   trackId: `ag1000g_2la_karyotype_${pop.toLowerCase()}`,
   name,
@@ -350,6 +379,16 @@ const agKaryotypeTrack = (pop: string, name: string, height: number) => ({
       // Cameroon panel's 297 mosquitoes get a pixel each. The class boundaries
       // survive that because rows are grouped — a 1px row is not readable on its
       // own, but a contiguous run of one karyotype is a band tens of px deep.
+      //
+      // THE LEGEND IS A HEIGHT FLOOR, which is why it is a parameter. It is
+      // clipped to its own display's bounds and it is nine rows tall (four
+      // genotype shades, three karyotype classes, two headings) — measured off
+      // the capture at 192 css px, i.e. essentially the whole of a 200 px lane.
+      // So a lane showing it cannot go below ~200 whatever its row count wants,
+      // and a lane not showing it is bounded by its rows alone. The second lane
+      // does not show it: its key is identical to the one directly above it,
+      // minus the class that population has no carriers of.
+      showLegend,
       height,
     },
   ],
@@ -404,10 +443,18 @@ const TWO_LA_LOCUS = 'chr2L:20,524,058-42,165,532'
 // named second population: the figure's own subject is panel-versus-pooled, and
 // naming a second population here would make a comparison the figure is not
 // about.
+//
+// WHICH panel is named, though (review: "unclear what is meant by 'one
+// population panel'"). Leaving it as "this panel" was the same reticence applied
+// one step too far: not naming a SECOND population keeps the figure's subject,
+// while not naming the FIRST one leaves three track headers each referring to a
+// set of samples the frame never identifies. It is the European panel, it is the
+// population the sweep happened in, and that is the reason this locus is the
+// worked example.
 const LCT_FST_TRACK = {
   type: 'QuantitativeTrack',
   trackId: 'kgp_lct_fst',
-  name: 'Fst, this panel vs the other 1000 Genomes samples (Weir & Cockerham)',
+  name: 'Fst, European panel vs the other 1000 Genomes samples (Weir & Cockerham)',
   assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
@@ -459,14 +506,19 @@ export const ldSpecs: ScreenshotSpec[] = [
     name: 'ld/lct_pooled_vs_panel',
     url: `${HG38_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
+        // Both lane names say which samples went in, since that is the only
+        // thing that differs between them and the two triangles are otherwise
+        // the same display over the same window. "All panels pooled" / "One
+        // population panel" named the difference without identifying either
+        // side, which is what the review caught.
         lctPanelTrack(
           'kgp_lct_pooled',
-          'All panels pooled (r²)',
+          'All 1000 Genomes populations pooled (r²)',
           'lct_1kg38_chr2_pooled_wide.vcf.gz',
         ),
         lctPanelTrack(
           'kgp_lct_panel',
-          'One population panel (r²)',
+          'European panel only, where the sweep happened (r²)',
           'lct_1kg38_chr2_eur_wide.vcf.gz',
         ),
         LCT_FST_TRACK,
@@ -648,10 +700,18 @@ export const ldSpecs: ScreenshotSpec[] = [
     url: `${ANOGAM3_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
         AG_LOCI_TRACK,
+        // 340 AND UNSQUASHED. This is the panel with the block in it, so it is
+        // the one whose depth is bought rather than chosen: 2La's apex is 327 px
+        // down at this window and width, and a lane shorter than that cuts the
+        // block flat at its own boundary, which reads as a block continuing past
+        // the frame. agLdTrack's comment carries the arithmetic and what a
+        // squashed capture of this panel actually looked like.
         agLdTrack(
           'ag1000g_2l_cmgam',
           'Cameroon, both arrangements segregating (r²)',
           'ag1000g_2L_CMgam.ld.gz',
+          340,
+          false,
         ),
         // 297 and 69 mosquitoes (the script prints both), and neither lane is
         // sized off its row count any more (review: "if there is anyway to
@@ -671,13 +731,29 @@ export const ldSpecs: ScreenshotSpec[] = [
         // while the prose says the legend names three. The Gabon lane is
         // already at 200 for the same reason and legitimately shows two, since
         // that population has no inverted homozygote.
-        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 200),
+        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 200, true),
         // "almost every mosquito", not "fixed": 5 of the 69 are heterozygous
         // for the inverted arrangement, and they are visible two lanes down
+        // 250, AND THE ASYMMETRY IS THE HONEST SAVING (review: "we need to
+        // improve y-axis real estate here"). Neither panel is squashed, so both
+        // draw at the SAME px-per-bp-of-separation; a shorter lane therefore
+        // shows less separation at an identical scale rather than a distorted
+        // version of the same thing. This population has no deep signal to show
+        // -- its r² is a small shallow triangle at the telomeric end and faint
+        // speckle under it -- so the 90 px comes off a region that is white in
+        // both readings. The panel above cannot give the same 90 px up, because
+        // there the deep half is where the block's apex is.
+        //
+        // What makes the difference in height safe to publish is that the
+        // callout on this panel already accounts for the emptiness: "so this
+        // span recombines freely" is a statement about the blank, so a reader has
+        // no reason to read the shorter lane as a cropped one.
         agLdTrack(
           'ag1000g_2l_gagam',
           'Gabon, one arrangement in almost every mosquito (r²)',
           'ag1000g_2L_GAgam.ld.gz',
+          250,
+          false,
         ),
         // 200, and this one is bounded from BELOW rather than chosen. Gabon's
         // five heterozygotes are the last five of its 69 rows (the lane is
@@ -688,7 +764,13 @@ export const ldSpecs: ScreenshotSpec[] = [
         // floating legend needs, since that legend is clipped to the display's
         // own bounds. So this lane gave back 40 px where the Cameroon one gave
         // back 157.
-        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 200),
+        // No legend on this one, and 170 rather than 200 because the legend was
+        // what held it there: the key above it is the same key, and Gabon has no
+        // inverted homozygote so its own would be that key minus a row. 170
+        // keeps the five heterozygotes' band at 12 px, above the 11 px that was
+        // rejected as close to invisible for the one thing in the lane a reader
+        // has to be able to find.
+        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 170, false),
       ],
       views: [
         {
@@ -732,20 +814,33 @@ export const ldSpecs: ScreenshotSpec[] = [
     // chrom.sizes off hgdownload.soe.ucsc.edu, which times out and refetches
     // often enough to blow through 120s on a bad day.
     readyTimeout: 180000,
-    // two LD tracks (340 each) + the two 200 px karyotype lanes + 4 headers +
-    // ruler/overview. Undersize this and the rows past the fold are cropped away
-    // silently: first paint still fires, so the capture succeeds with the
-    // informative rows missing.
+    // a 340 and a 250 px LD panel + a 200 and a 170 px karyotype lane + 4
+    // headers + ruler/overview. Undersize this and the rows past the fold are
+    // cropped away silently: first paint still fires, so the capture succeeds
+    // with the informative rows missing.
     //
-    // 1472 -> 1355: 197 px off the two karyotype lanes, 80 back to the LD
-    // panels so the 2La block closes. The measurement behind the trade is in
-    // the two comments above; what it does NOT include is any slack, because
-    // there was none -- the run reported nothing blank below the content at
-    // 1472, and an ink scan of the capture found both LD panels drawing to
-    // their own bottom edge. So the 60 px the Cameroon lane took back for its
-    // legend is added here rather than found somewhere in the frame, and 70
-    // more for the 2L loci lane and its header.
-    viewportHeight: 1485,
+    // 1485 -> 1385, 90 px of it the Gabon LD panel and 30 the Gabon karyotype
+    // lane losing the legend that was holding it at 200. The run reports nothing
+    // blank below the content at 1385, so this is the content's own height.
+    //
+    // The five Gabon heterozygotes' band -- which one of the callouts points at
+    // by name -- sits against the app frame's lower border, and that is not a
+    // crop: `groupBy: 'karyotype'` orders in dosage order, so those rows are the
+    // last rows the lane has, and at 170 px the band measures the 12 px its
+    // 5-of-69 share comes to. Checked on the capture rather than assumed, because
+    // it looks like a clip.
+    //
+    // The other 200 px are NOT available, and the two ways they looked available
+    // are both spent: squashing both panels to 240 (rendered -- see agLdTrack)
+    // and narrowing the capture. The second is arithmetic rather than a
+    // rendering: depth is half the drawn width, so a 1250 px capture would put
+    // 2La's apex at 272 and buy ~50 px a panel -- and it walks both floating
+    // legends into things. At 1250 the Cameroon karyotype legend clears its own
+    // colour bands by 27 px where it now clears them by 55, and each LD panel's
+    // r² ramp, which the callout beside it currently misses by 3 px, would be
+    // under that callout. Worth doing only together with re-anchoring both
+    // callouts, which is a bigger change than the 100 px it returns.
+    viewportHeight: 1385,
     settleMs: 8000,
     // One callout per lane, saying what each lane shows rather than only naming
     // the span (review: "a red text annotation on both cameroon and gabon
@@ -879,11 +974,18 @@ export const ldSpecs: ScreenshotSpec[] = [
     name: 'ld/lct_haploblock',
     url: `${HG38_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
-        // The statistic, over the haplotypes it is computed from. 360 rather
-        // than the standalone figure's 510: the triangle's subject is the shape
-        // of the block and its two edges, both of which survive a shorter
-        // band, and the matrix under it is what the figure is for.
-        lctTrack('LCT lactase-persistence LD, 1000G European panel (r²)', 360),
+        // The statistic, over the haplotypes it is computed from. 260, down
+        // from 360 and from the standalone figure's 510 (review: "reducing
+        // height of the lddisplay (not squash, but just cutting off some)").
+        // Cutting rather than squashing is what was asked for and it is also
+        // the right instrument here: the block draws 685 px wide over this
+        // window, so its apex is 343 px down, and 260 cuts the apex while
+        // leaving both EDGES -- which is what the figure reads the triangle
+        // for, since an edge is where the block stops and the matrix below has
+        // to stop at the same coordinate. Squashing would keep the apex and
+        // shrink the edges' slope instead, i.e. blur the one thing being
+        // compared across the two lanes.
+        lctTrack('LCT lactase-persistence LD, 1000G European panel (r²)', 260),
         {
           type: 'VariantTrack',
           trackId: 'kgp_lct_haplotypes',
@@ -943,7 +1045,16 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'kgp_lct_haplotypes',
               type: 'LinearMultiSampleVariantMatrixDisplay',
-              height: 700,
+              // 520, down from 700 (review: "reducing height of the
+              // multisamplevariantdisplay"). 300 haplotype rows is 1.73 px a
+              // row, and what the lane is read for survives that: the readout
+              // is a HORIZONTAL texture -- one band decided the same way
+              // straight across the block against speckle everywhere else --
+              // and the clade is ~124 of those rows, so it is still a 215 px
+              // slab. Per-row resolution would matter if a reader had to follow
+              // one haplotype, which is what the dendrogram gutter cannot
+              // support at any height this figure can afford anyway.
+              height: 520,
               // The matrix reads every genotype in the window rather than
               // sampling, and the 30x callset carries several times the
               // variants the phase 3 cut did over this span, so the byte gate
@@ -980,12 +1091,11 @@ export const ldSpecs: ScreenshotSpec[] = [
     // window
     readyTimeout: 300000,
     settleMs: 8000,
-    // gene(60) + clinvar(70) + the 360px LD band + the 700px matrix, their
-    // headers and the ruler. Sized from the run's own clipped/blank report;
-    // +20 for the 4 px of extra clearance every offset track label now takes.
-    // The LD band lost nothing in the move: it never reserved a 1 - r² zone,
-    // since that band only appeared when `showRecombination` was on.
-    viewportHeight: 1518,
+    // gene(60) + clinvar(70) + the 260px LD band + the 520px matrix, their
+    // headers and the ruler. Sized from the run's own clipped/blank report.
+    // 1518 -> 1238: 100 px off the LD band and 180 off the matrix, both argued
+    // where they are set.
+    viewportHeight: 1238,
     // WHAT THE CLUSTERING PRODUCED, marked (reviewer: "does this figure
     // somewhat 'clearly' show the clustering? please analyze. if needed add red
     // text annotation to figure showing groupings in the multi-sample variant
@@ -1024,28 +1134,63 @@ export const ldSpecs: ScreenshotSpec[] = [
     // chromosomes carrying most of the same background, which is what a young
     // haplotype at 30% frequency should look like. Say that; don't restore the
     // arithmetic coincidence.
+    // THREE SHORT PILLS, one line each, stacked down the matrix lane's left
+    // gutter, which is the region outside the block and so the emptiest part of
+    // the frame.
+    //
+    // BIGGER AND SHORTER (review: "make red text box annotation text larger and
+    // less wordy"): 17 -> 22 px, and the counts are gone. The count they carried
+    // was hard-won and it belongs in the caption rather than here -- it is
+    // exactly the "specific value a reader cannot check against the picture"
+    // that website/CLAUDE.md rules out of a callout, and it was also the longest
+    // clause in the frame. The measurement itself stays in the paragraph below.
+    //
+    // THE FIRST PILL IS NEW, and it is the figure's answer to "why only [a]
+    // small region highlighted? what is the scientific story there?" The shaded
+    // stripe is LCT/MCM6, 89 kb, the locus selection acted on -- and the block
+    // it dragged along is the whole width of the triangle above, a megabase and
+    // more. Naming the stripe is all the pill has to do -- the ratio is then
+    // visible, and stating it would be stating the obvious.
+    //
+    // Nothing in the frame named it: the highlight carries no label (a
+    // highlight writes one at its top-left, which here lands on the LCT gene's
+    // own label in the lane above), so a reader met a narrow stripe with no
+    // account of itself over a wide red triangle. That ratio IS the story of a
+    // sweep, and now one line of the frame states it.
     annotations: [
       {
         type: 'text',
-        text: 'One clade, unbroken across the block: the 90 rs4988235-A haplotypes and a few dozen sharing their background',
-        fontSize: 17,
-        maxWidth: 330,
+        text: 'Shaded: LCT/MCM6, the locus the sweep acted on',
+        fontSize: 22,
+        maxWidth: 340,
         anchor: {
           track: 'kgp_lct_haplotypes',
-          locus: 'chr2:134,520,000',
-          fracY: 0.3,
+          locus: 'chr2:134,470,000',
+          fracY: 0.04,
           alignX: 'left',
         },
       },
       {
         type: 'text',
-        text: 'The rest: no block shared across the window',
-        fontSize: 17,
-        maxWidth: 300,
+        text: 'One clade, unbroken across the block',
+        fontSize: 22,
+        maxWidth: 340,
         anchor: {
           track: 'kgp_lct_haplotypes',
-          locus: 'chr2:134,520,000',
-          fracY: 0.72,
+          locus: 'chr2:134,470,000',
+          fracY: 0.33,
+          alignX: 'left',
+        },
+      },
+      {
+        type: 'text',
+        text: 'Everything else: no shared block',
+        fontSize: 22,
+        maxWidth: 340,
+        anchor: {
+          track: 'kgp_lct_haplotypes',
+          locus: 'chr2:134,470,000',
+          fracY: 0.74,
           alignX: 'left',
         },
       },

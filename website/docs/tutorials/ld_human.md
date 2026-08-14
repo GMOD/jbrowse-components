@@ -80,9 +80,12 @@ along, leaving a stretch of correlated variants. That stretch is the signal
 Two things decide whether it shows as a block: the window you cut, and which
 samples went into the file.
 
-<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: every panel pooled, then one panel. Above both, Weir and Cockerham Fst per variant between the panel and the rest of the release, and the deCODE genetic map, which reads flat across the span the triangles fill and spikes at each end of it."/>
+<Figure src="/img/ld/lct_pooled_vs_panel.png" caption="The same locus, window and MAF floor twice, differing only in which samples went in: all 1000 Genomes populations pooled, then the European panel alone. Above both, Weir and Cockerham Fst per variant between that panel and the rest of the release, and the deCODE genetic map, which reads flat across the span the triangles fill and spikes at each end of it."/>
 
-Nothing about the display changed between those two lanes.
+Nothing about the display changed between those two lanes. Lactase persistence
+swept in Europe, so the block is a property of that panel: pooling it with
+populations the haplotype never reached mixes in their backgrounds and the
+correlations average down.
 
 Where the block ends is a question the triangle cannot answer about itself, so
 the lane above it is a genetic map. The deCODE map
@@ -196,7 +199,7 @@ and
 [`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
 model properties, which is what the figure below does.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises over one window: 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The pale slab is one clade, uniform across the block, and the rs4988235-A haplotypes sit inside it."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises over one window: 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The shaded stripe is the 89 kb of LCT/MCM6 selection acted on, and the block it left behind fills the triangle above. The pale slab is one clade, uniform across that block, and the rs4988235-A haplotypes sit inside it."/>
 
 **Ordering is what makes a block visible, not colour and not row count.** Left
 in file order the same matrix is a plaid at any size, because a block is a set
