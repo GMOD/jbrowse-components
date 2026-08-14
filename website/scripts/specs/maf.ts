@@ -814,4 +814,83 @@ export const mafSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // The zoom-out tier on HPRC, and the one figure here that is about the DATA
+  // rather than about a rendering. maf_summary_tier already explains what a
+  // `summaryAdapter` does, on UCSC's 470-way over 180 kb of GAPDH; repeating
+  // that with different rows would be a second picture of the same mechanism.
+  //
+  // What only HPRC can show is 464 HUMAN haplotypes at once across a region
+  // wider than a gene, and the MHC class II locus is where that stops being a
+  // wall of grey and becomes a result: GRCh38's own MHC haplotype is
+  // DR51-group, which carries HLA-DRB5, and haplotypes from the other DR groups
+  // have no counterpart to align to it. Measured off the summary itself, 189 of
+  // the 464 cover less than half of chr6:32,500,000-32,520,000, against 0 of 464
+  // over a control window 1.5 Mb away on the same chromosome — so the white is
+  // segregating gene content, not a gap in the assembly or a failure to fetch.
+  //
+  // The window is picked so the frame contains its own control: DRA and
+  // DQA1/DQB1 flank the gap and are solid grey across every row, which is what
+  // makes the middle read as absence. A whole-chromosome view of the same track
+  // draws fine (250 kB for chr6) and says nothing except that centromeres are
+  // unassembled.
+  //
+  // This is only visible with the tier configured. The alignment itself is
+  // 354 Mb over this chromosome, so without `summaryAdapter` the track at this
+  // width is the too-large prompt and nothing else.
+  {
+    mode: 'url' as const,
+    name: 'maf_hprc_hla_drb',
+    url: sessionSpec('test_data/hprc_maf_summary.json', {
+      sessionTracks: [HG38_NCBI_GENE_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:32,400,000-32,700,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'ncbi_genes_hg38_ucsc',
+              type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              geneGlyphMode: 'longestCoding',
+              heightMode: 'grow',
+            },
+            {
+              // NO subtreeFilter, unlike maf_hprc_pangenome: that figure draws
+              // sixteen named rows because a label needs 6 px and its point is
+              // that a row is a person. This one's point is the proportion that
+              // drops out, which needs all 464 and no labels — at 760 px they
+              // are ~1.6 px each, and the block structure is the signal.
+              trackId: 'hprc_v2_0_mc_grch38_summary',
+              type: 'LinearMafDisplay',
+              height: 760,
+              rowProportion: 1,
+            },
+          ],
+        },
+      ],
+    }),
+    // 1270 fits the 760 px track under a gene lane that grows to ~230 px here
+    // (eight labelled genes, three rows deep). Taller and the frame carries
+    // dead space; shorter and the run's own below-the-fold report flags rows
+    // cut off the bottom.
+    viewportHeight: 1270,
+    // the .tai is 4.98 MB and the summary read follows it
+    actions: [{ type: 'delay' as const, ms: 30000 }],
+    annotations: [
+      {
+        type: 'text' as const,
+        text: 'Grey: aligned to GRCh38\nWhite: no aligned sequence for that haplotype',
+        fontSize: 18,
+        maxWidth: 340,
+        textAlign: 'end' as const,
+        anchor: {
+          track: 'hprc_v2_0_mc_grch38_summary',
+          locus: 'chr6:32,690,000',
+          fracY: 0.06,
+        },
+      },
+    ],
+  },
 ]
