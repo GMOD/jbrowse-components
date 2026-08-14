@@ -179,10 +179,10 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "answered",
-    "note": "DONE, both halves.\n\nThe \"Annotated as INVdup\" pill and its arrow across to the sidebar's CPX_TYPE row are gone. What they asserted is in the frame three times without them -- the sidebar's own CPX_TYPE row, the variant's <CPX> label, and the shaded band, whose label is where the word lives now. ONE WORD there, because a highlight's label is clipped to its band and this band is 228 bp of a 3.6 kb view: \"INVdup: duplicated copy\" came back reading \"INVdup: duplicated\".\n\nThe shading on the variant was boxStyles.hover -- it follows the pointer, so it stayed wherever the click that opened the sidebar left it. hideTooltip removed the MUI tooltip above it and could never touch the wash, because that box is drawn by the display rather than by a popper. Parking the cursor clears it. The selection BORDER stays, and should: it says which feature the sidebar is describing.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "d5426fcc220ad2b18cffe136d0e34ab072b75ccf"
+    "status": "bad",
+    "note": "please simplify the red text annotation even more, like a bulleted list, so it is immensely obvious. remove highlight. ",
+    "reviewedAt": "2026-08-14T05:35:20.612Z",
+    "hash": "6a211426814718ad04a7e6d4511d8cfcc99df50f"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -2378,10 +2378,10 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "answered",
-    "note": "IMPROVED RATHER THAN DELETED, and the thing you asked for cannot be done in this frame -- worth having the reason on the record.\n\nA LinearSyntenyView allots each region its share of the panel in proportion to its bp. The chr10 insert is 199 bp and the chr3 arm is 32.7 kb, so the insert gets 199/46,500 of the width WHATEVER window is asked for around it: widening the chr10/chr12 windows makes the inserts relatively smaller, and narrowing them shrinks their panels by the same factor. Zooming in is the answer and it is already the next figure.\n\nSo this frame's job is the architecture -- one long arm, two slivers, an inverted return -- and the junction cluster is now SHADED on both rows, the same span in reference and in allele coordinates. That stops a reader hunting the slivers for detail that is one figure away, and it is exactly the window derivative_inserts opens.\n\nThe shading needed an app fix: highlight on a synteny ROW was silently dropped. A row is built from a snapshot and navigated by the synteny view itself, so it never runs the LGV's init autorun, and every init key but loc/tracks/displayedRegionNames had nowhere to land. Four other figures were asking for a highlight and getting none.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "51ee344b657ee41819f43faac9ec6cc3f15bb395"
+    "status": "bad",
+    "note": "are there any galaxy brain ideas to try to improve y-coord real estate usage? the figure is just very tall but its a bit of a death by 1000 cuts thing. also, we should try to explain more about this sort of inverted dup (thats what this is right? or foldback?), using red text annotations\n\nprevious notes:\nits hard to see what is going on here. the small breaks on the right are hard to see. not sure this is a good example to use, unless we can substantially improve this screenshot, potentially zooming in on the breakpoints",
+    "reviewedAt": "2026-08-14T05:48:17.633Z",
+    "hash": "3c87fceabd0583a9c1e3ec868137266e7968a1cc"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
@@ -2930,10 +2930,10 @@
   },
   "hg002_haplotypes_follow_panel": {
     "name": "hg002_haplotypes_follow_panel",
-    "status": "answered",
-    "note": "DONE: frames 1 and 2 are the header follow toggle now, ringed off and then on, in place of the right-click. The menu item is still correct and still there, and the tutorial names both -- the toggle for the continuous form, Move other panel to the matching region for the one-shot. The button had no stable handle (everything else about it is a tooltip whose wording is a function of four pieces of state), so it grew a data-testid.\n\nprevious notes:\nwe have created a fully new 'follow' toggle button that should be used instead of this manual right click thing i believe",
-    "reviewedAt": "2026-08-14T05:10:00.000Z",
-    "hash": "312162a6f1e7d45759678777215966a6a2599f57"
+    "status": "bad",
+    "note": "this should reduce to just panels 1 and 2. then a secondary screenshot can add 3 and 4 as a sepate figure, but ideally just show fig 4 with the menu from fig 3 open",
+    "reviewedAt": "2026-08-14T05:00:18.878Z",
+    "hash": "ea74571b7475be923fcb65a8bf272f108a4cd909"
   },
   "jbrowse-img/sv_review_pair": {
     "name": "jbrowse-img/sv_review_pair",
@@ -3056,17 +3056,17 @@
   },
   "genomes_basics/gnomad_filters": {
     "name": "genomes_basics/gnomad_filters",
-    "status": "answered",
-    "note": "need to say in big red text box what the filter was in each case\n\nDONE: each frame carries its own expression as a red pill under the gnomAD track -- \"no filter\", \"jexl:feature.AF >= 0.001\", \"jexl:feature.annot == 'pLoF'\". Under the track rather than over it, since what is left painted is the whole point of each frame, and anchored to the track's own band at fracY 1 so it follows the track rather than a measured y.",
-    "reviewedAt": "2026-08-13T17:30:06.023Z",
-    "hash": "e1f430733e9ae2e56f5cf14dde473d02e466660b"
+    "status": "bad",
+    "note": "i might suggest deleting this figure. its just almost too detailed. we have the one filter screenshot.\n\nprevious notes:\nneed to say in big red text box what the filter was in each case\n\nDONE: each frame carries its own expression as a red pill under the gnomAD track -- \"no filter\", \"jexl:feature.AF >= 0.001\", \"jexl:feature.annot == 'pLoF'\". Under the track rather than over it, since what is left painted is the whole point of each frame, and anchored to the track's own band at fracY 1 so it follows the track rather than a measured y.",
+    "reviewedAt": "2026-08-14T05:33:52.033Z",
+    "hash": "147e536be1d72f844e0e60a2716939b16032df6f"
   },
   "genomes_basics/isoform_control": {
     "name": "genomes_basics/isoform_control",
-    "status": "answered",
-    "note": "DONE, both halves. The frame shows the quiet ICON with the ring on it, and no chip. The chip is a first-session notice; the icon is the control as a reader meets it every time after, and it is the harder one to find unaided, which is what a ring is for. geneGlyphNoticeDismissed is volatile, so the capture presses the chip's (x) rather than setting it.\n\nTwo app changes fell out, both real. (1) data-testid=\"track-control-<icon>\" on the trigger in both TrackControl implementations: the class names are tss-react hashes and MUI strips its own icon data-testid from production builds, so the built app the generator serves offered nothing to point at but tooltip prose. Same reasoning as the track-control-dismiss handle already there. (2) The icon form's menu now opens UPWARD like the chip's -- CascadingMenuButton's default drops it below the trigger, which on a display's bottom edge means MUI flips it back into the viewport ON TOP OF the control, so the menu covered the icon it came from.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "792a787c130e4bb341e9d187016405ad9ec25c22"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-14T05:34:11.381Z",
+    "hash": "bcb5b79093b6bb177ea1e0e0a50c06fc0766681a"
   },
   "genomes_basics/p53_element_sequence": {
     "name": "genomes_basics/p53_element_sequence",
@@ -3147,10 +3147,10 @@
   },
   "fetch_chain": {
     "name": "fetch_chain",
-    "status": "answered",
-    "note": "SIMPLIFIED AND REWRITTEN IN ENGLISH, per your follow-ups.\n\nEvery box led with an identifier, so following the flow meant reading four function signatures first. The English line is the top line now and the identifier sits under it in small grey monospace -- \"do we already have data for this part of the view?\" over boundsValid && isCacheValid(), \"ask a background worker to load it\" over rpcManager.call, \"did the view move while we waited?\" over ctx.isStale(), \"done loading\" over fetchGeneration++. (That middle pair is also the plain-English gloss of isStale you asked for, which is why nothing else was added for it.) The first draft asked whether we had \"this part of the view\", which reads as a question about the view rather than about the data -- the noun a plain sentence drops is the one to check.\n\nTwo nodes and a cluster came out by the rule that a step whose whole job is to hand off is an EDGE: \"collect into needed\" is the check's no-branch, \"rotate stop token\" is a line of the cluster's label, and FetchVisibleRegions was a cluster drawn around ONE diamond -- a label with a border -- so it is the edge into that diamond. One cluster left, and it means something a colour could not: everything inside it is the display's to write.\n\nThe three questions are rounded boxes rather than diamonds. A diamond sized to hold a sentence is about twice as wide as the sentence, and there were three. 1618x1730 -> 1653x1433.",
-    "reviewedAt": "2026-08-14T05:54:49.826Z",
-    "hash": "e8a3fe0000f5648c35f1c0248be4f33991556ac1"
+    "status": "bad",
+    "note": "Try to use somewhat 'dry' language, so that this could be included in a scientific paper\n\nprevious notes:\nany way to dramatically simplify this for better user understanding, or alternatively, make simplified and full versions of this\n\nSIMPLIFIED, and it is one edge fewer rather than one state fewer. The two dashed feedback edges both returned to the same debounced check and both said the same thing, and drawn separately they were two long sweeps up the whole right side of the frame -- most of what the eye lands on before it finds the chain at all. They meet at a junction now and travel back as ONE labelled edge. Nothing is lost by merging them: what differs between the two is only what re-fires the autorun (a fetchGeneration bump, or the next settled viewport), and the caption is where that belongs, so it says it. No state was cut, because none of the eight repeats another.",
+    "reviewedAt": "2026-08-14T05:48:45.766Z",
+    "hash": "5efe33c601baff8cc7f343581701f2f253b6c8e2"
   },
   "rpc_lifecycle": {
     "name": "rpc_lifecycle",
