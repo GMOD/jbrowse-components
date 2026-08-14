@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
@@ -144,6 +143,12 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #method
+       * No isSessionModelWithWidgets guard, here or in the callers. The desktop
+       * session always has widgets (asserted in sessionModel.ts), and the guard
+       * cannot detect the case it looks like it covers: `'rpcManager' in node`
+       * is still true after a destroy, so it returns true for a dead session —
+       * and `self.session` is a getParent hop, which throws on a dead node
+       * before the guard would run anyway.
        */
       getJobStatusWidget() {
         return getOrCreateJobsListWidget(self.session)
@@ -204,13 +209,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       setWidgetStatus() {
-        if (isSessionModelWithWidgets(self.session)) {
-          const jobStatusWidget = self.getJobStatusWidget()
-          jobStatusWidget.updateJobStatusMessage(
-            self.jobName,
-            self.statusMessage,
-          )
-        }
+        self
+          .getJobStatusWidget()
+          .updateJobStatusMessage(self.jobName, self.statusMessage)
       },
 
       /**
@@ -224,24 +225,17 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       queueJob(props: TextJobsEntry) {
-        const { session } = self
-        if (isSessionModelWithWidgets(session)) {
-          const jobStatusWidget = self.getJobStatusWidget()
-          session.showWidget(jobStatusWidget)
-          const { name, statusMessage = '' } = props
-          jobStatusWidget.addQueuedJob({ name, statusMessage })
-        }
+        const jobStatusWidget = self.getJobStatusWidget()
+        self.session.showWidget(jobStatusWidget)
+        const { name, statusMessage = '' } = props
+        jobStatusWidget.addQueuedJob({ name, statusMessage })
         self.jobsQueue.push(props)
       },
       /**
        * #action
        */
       dequeueJob() {
-        const { session } = self
-        if (isSessionModelWithWidgets(session)) {
-          const jobStatusWidget = self.getJobStatusWidget()
-          jobStatusWidget.removeJob(self.jobName)
-        }
+        self.getJobStatusWidget().removeJob(self.jobName)
         return self.jobsQueue.shift()
       },
       /**
@@ -340,7 +334,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           rootModel.textSearchManager.clearCache()
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
-          if (current && isSessionModelWithWidgets(session)) {
+          if (current) {
             const jobStatusWidget = self.getJobStatusWidget()
             session.showWidget(jobStatusWidget)
             jobStatusWidget.addFinishedJob({
@@ -368,7 +362,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             )
           }
           const failed = this.dequeueJob()
-          if (failed && isSessionModelWithWidgets(session)) {
+          if (failed) {
             self.getJobStatusWidget().addAbortedJob({
               name: failed.name,
               statusMessage: self.aborted ? 'Cancelled' : `${e}`,
@@ -383,22 +377,19 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       async runJob() {
-        const { session } = self
         if (self.jobsQueue.length) {
           const firstIndexingJob = self.jobsQueue[0]!
-          if (isSessionModelWithWidgets(session)) {
-            const jobStatusWidget = self.getJobStatusWidget()
-            session.showWidget(jobStatusWidget)
-            const { name, statusMessage } = firstIndexingJob
-            jobStatusWidget.addJob({
-              name,
-              statusMessage: statusMessage ?? '',
-              cancelCallback: () => {
-                this.abortJob()
-              },
-            })
-            jobStatusWidget.removeQueuedJob(name)
-          }
+          const jobStatusWidget = self.getJobStatusWidget()
+          self.session.showWidget(jobStatusWidget)
+          const { name, statusMessage } = firstIndexingJob
+          jobStatusWidget.addJob({
+            name,
+            statusMessage: statusMessage ?? '',
+            cancelCallback: () => {
+              this.abortJob()
+            },
+          })
+          jobStatusWidget.removeQueuedJob(name)
           await this.runIndexingJob(firstIndexingJob)
         }
       },
