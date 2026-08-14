@@ -49,6 +49,9 @@ Chromosomes are free: a whole-genome view of one track is still one canvas, with
 one GPU buffer per `displayedRegionIndex` and one scissored draw per render
 block. **This ceiling is a primary motivation for targeting WebGPU**, which
 shares one device across displays (next entry) and so has no per-canvas cap.
+(Free *here*, on the canvas and buffer axis this entry is about. The view's own
+block and coordinate math is linear in the region count and is not — see
+["The region walk is linear"](#the-region-walk-is-linear-and-costs-two-different-ways-at-the-two-ends-of-the-zoom).)
 
 Mitigations in place, both bounding rather than fixing:
 
@@ -292,8 +295,42 @@ connections per host, and the region the user is looking at is no likelier to
 resolve first than one off-screen. Cancellation is per-display (stop-token
 rotation in `FetchMixin`), not a scheduler.
 
+**The other axis is volume, and nothing bounds that either.** `fetchSizeLimit`
+defaults to 5 MB on `BamAdapter`, and every gate — bytes and density both — is
+per display, per region. So the gate's promise is true of one track and there is
+no second number: twenty alignments tracks each individually under the limit is
+100 MB per viewport move, requested at once, with nothing in the session that
+knows the total. This is the same missing object as the ordering, which is why
+it is one entry: a priority queue is where both land, ordering as its comparator
+and volume as the max-in-flight cap it has to have anyway.
+
 **Retire when** a session-level priority queue with a max-in-flight cap lands, or
 `fetchRegions` at least sorts `needed` by distance from viewport center.
+
+### The fetch layer has no retry and no request timeout
+
+**Status:** Open.
+
+`RemoteFileWithRangeCache.fetchRange` throws on the first non-2xx, and nothing
+anywhere retries it — not this class, not `generic-filehandle2`, not an adapter.
+Nor is there a timeout: no `AbortSignal.timeout` in core, and none of the eight
+`fetch(` call sites passes a deadline of its own. One alignments viewport is
+hundreds of range requests against a CDN, so a single transient 5xx, 429 or
+connection reset fails the whole track, and the only recovery offered is a Retry
+button that re-runs the entire fetch. A connection that *stalls* rather than
+failing produces no error at all — the display's `loading` is correct, a fetch
+really is in flight, and it stays that way.
+
+What makes the gap sharp is that the status-code path is already well diagnosed
+— the 416, the "server ignored the Range header" hint, the `Content-Range` CORS
+note. The machinery for saying something useful is there, with nothing behind it
+to say.
+
+**Retire when** idempotent range GETs retry on 429/5xx and network errors with
+jittered backoff, honouring `Retry-After`, and carry a per-request timeout. Both
+belong **inside** `getCached`'s in-flight de-duplication — a retry above it fans
+out across every coalesced reader — and must consult the stop token between
+attempts, or a cancelled navigation retries what it just cancelled.
 
 ### Per-JS-context scoping multiplies by the RPC pool
 
@@ -411,6 +448,196 @@ index read that answers "how many features are in this window".
 **Retire when** the density figure is measured at the span being judged rather
 than extrapolated, or a file with the axis on is found that banners below the
 floor. Reach for the scan above before either.
+
+---
+
+## View math
+
+### The region walk is linear, and costs two different ways at the two ends of the zoom
+
+**Status:** Open. Measured 2026-08-14,
+[`packages/core/benches/displayedRegionScaling.bench.ts`](../../packages/core/benches/displayedRegionScaling.bench.ts).
+
+`calculateDynamicBlocks` walks `displayedRegions` from index 0 accumulating the
+left edge, and breaks once past the window's right edge — bounded on the right,
+unbounded on the left. `pxToBp`, `bpToPx`, `bpToOffset` and `cumulativeBp`
+(`Base1DUtils.ts`) do the same walk. `dynamicBlocks` is a plain computed over
+`offsetPx`, which `useRafCommit` moves once per frame during a drag, so it runs
+per frame; `staticBlocks` carries a hand-rolled memo that skips its recompute
+when only `offsetPx` moved inside the covered range, and **`dynamicBlocks`
+cannot take that memo, because its answer *is* the viewport**. That asymmetry is
+why this entry is about the dynamic one.
+
+hg38 with alts is 640 sequences and a draft assembly is routinely tens of
+thousands, so the range that matters is wide. ms per call, min of interleaved
+rounds; trust the ratios, not the absolutes, which drift on a shared box:
+
+<!-- prettier-ignore -->
+| regions | whole genome | + elided-run fast path | zoomed to last contig | + cumulative index |
+| --- | --- | --- | --- | --- |
+| 640 | 0.125 | 0.020 (6.2x) | 0.016 | 0.001 (27x) |
+| 2,500 | 0.603 | 0.076 (7.9x) | 0.058 | 0.001 (104x) |
+| 10,000 | 2.327 | 0.362 (6.4x) | 0.306 | 0.001 (506x) |
+| 50,000 | 14.958 | 2.639 (5.7x) | 1.617 | 0.001 (1368x) |
+| 200,000 | 58.828 | 10.029 (5.9x) | 6.019 | 0.001 (5347x) |
+
+**The two ends want different fixes, and each does nothing for the other.**
+
+- **Zoomed in** — a 100 kb window on the last scaffold — the walk is the whole
+  cost, and a cumulative-bp prefix array rebuilt per `displayedRegions` change
+  (0.005 ms at 640, 1.0 ms at 200k, once, not per frame) plus a binary search
+  removes it entirely. This is the case that looks like it should already be
+  cheap.
+- **Whole genome** every region intersects the window, so there is nothing to
+  skip and the index measures 1.0x. The cost is per touched region, and it is
+  work thrown away: below `minimumBlockWidth` a region becomes an `ElidedBlock`,
+  and `BlockSet.push` merges it into its predecessor keeping only the *first*
+  sub-block's identity — so the template-literal key and the two object literals
+  are built and discarded for every region in an elided run but its first.
+  Skipping their construction in that case is 5.7-8.1x.
+
+**The linear accumulation also drifts.** At 10,000 equal contigs summing one
+pixel width per region reaches 1000.0000000001588 px against an exact 1000, so
+the last region misses `rightPx >= displayedRegionRightPx` by 1.6e-10 px and the
+trailing `afterLastRegion` boundary block is never emitted. Dividing an exact
+cumulative bp has no such error, so the index changes output as well as speed —
+worth knowing before someone diffs a snapshot after the swap and reads it as a
+regression. The bench's identity check reports this and needs `--allow-diff` to
+proceed past it.
+
+**Retire when** both levers land, or a profile says neither is on the critical
+path at the contig counts users actually open. Take the index first: it is the
+one whose absence is invisible (a viewport that looks cheap and is not), and its
+storage shape is already precedented on the synteny axis
+([ADR-067](../architecture-decision-records/adr-067-synteny-dotplot-window-relative-float32.md)).
+
+---
+
+## Failure containment and diagnosis
+
+### Nothing contains a crashing view, and Refresh re-enters the crash
+
+**Status:** Open.
+
+Three `ErrorBoundary`s exist in tree — `TrackContainer`, `WidgetBody`, `Dialog`
+— and none of them sits between a view and the app. `ViewWrapper`
+(`packages/app-core/src/ui/App/`) wraps the view component in `Suspense` alone,
+and `packages/app-core` contains no `ErrorBoundary` at all, so the next one up
+is `Loader.tsx`'s, whose fallback is `FatalErrorDialog`: the whole application.
+[ADR-069](../architecture-decision-records/adr-069-detach-do-not-destroy-what-react-may-hold.md)
+is the standing evidence that this is reachable rather than theoretical — a
+React read of a destroyed node is a hard throw, and `MultipleViews.ts`'s
+`takeOut` comment records one that "went to an ErrorBoundary with no view left
+under it and took the page".
+
+**The recovery ladder is then missing its middle rung.** `JBrowse.tsx` keeps
+`session=local-<id>` in the URL and `fetchLocalSession` restores that id from
+sessionStorage, which the autosave rewrote at most 400 ms ago — so
+`FatalErrorDialog`'s **Refresh** (`window.location.reload()`) restores the same
+snapshot and crashes again. Only **Reset Session** escapes, by dropping the query
+string, and it discards the user's work to do it. The *load* path has the rung
+the render path lacks: `LoaderErrorBanner` offers "Start over without URL
+options" for exactly this shape.
+
+`ErrorBoundary` itself has no reset — `state.error` is terminal — so a track that
+throws once stays a banner for the rest of the session even after the cause
+clears. `ErrorBanner` already takes an `onReset` and renders a Retry for it;
+`TrackContainer`'s fallback passes only the error.
+
+**Retire when** a view-scoped boundary contains a throwing view (fallback:
+close it, or retry it), `ErrorBoundary` takes reset keys, and a boot that follows
+a fatal error offers the session fresh instead of restoring it.
+
+### Undo applies a whole-session snapshot, bypassing the detach-then-destroy discipline
+
+**Status:** Open. Mechanism verified by reading; the crash is not reproduced.
+
+ADR-069's rule is implemented in one action rather than at the boundary where
+nodes die. `MultipleViews.ts`'s `takeOut` detaches a view and hands it to
+`scheduleDetachedDestroy`, precisely so React's final read finds a live tree.
+`TimeTraveller.undo()` / `redo()` call `applySnapshot` on the session instead,
+and every view, track and display carries `ElementId`
+(`types.optional(types.identifier, …)`) — so MST reconciles by identifier and
+**destroys whatever the target snapshot lacks, synchronously, inside the
+action**, with the components still mounted and the action's reactions due at its
+`endBatch`. That is the sequence the ADR exists to prevent, reached through a
+door it does not cover.
+
+Reachable from a document-level keydown (`HistoryManagementMixin`), suppressed
+only while a text entry has focus, and from the File menu. Any undo crossing a
+view add or remove, a track close, or a `replaceView` — which
+`MultipleViews.test.ts` deliberately made a *single* undoable step — takes it.
+
+**Retire when** whole-tree snapshot application routes disappearing nodes through
+the same path first (diff the id sets, `detach` + `scheduleDetachedDestroy`, then
+apply), or a test that mounts a view, removes it and undoes shows the reconciler
+is not the hazard it looks like. Either way the general form stands: every future
+whole-tree apply re-opens this until the discipline moves to the boundary.
+
+### A refName mismatch is silent at the one place that can see it
+
+**Status:** Open.
+
+`loadRefNameMap` (`packages/core/src/assemblyManager/`) holds both name sets in
+one scope — the file's, from `CoreGetRefNames`, and the assembly's
+canonicalization — and writes
+`result[assembly.getCanonicalRefName(name) ?? name] = name`. When **nothing**
+canonicalizes, which is the `1/2/3` file against a `chr1/chr2/chr3` assembly, the
+`?? name` fallback yields an identity map that matches no region: the track draws
+nothing, raises nothing, and is indistinguishable from one that genuinely has no
+features in view.
+
+The comparison already exists one package over — `detectSwappedAssemblies`
+(`@jbrowse/synteny-core`) does exactly this for the comparative case. Only the
+**empty intersection** is a verdict; partial overlap is ordinary (a track
+covering some contigs), which is why this is a check on the intersection rather
+than on any individual missing name.
+
+**Retire when** an empty intersection records a diagnostic the track chrome
+shows, naming the first few names from each side. The partial case belongs in
+`RefNameInfoDialog`, which already exists and which nobody opens unprompted.
+
+### A CORS or mixed-content failure surfaces as `Failed to fetch`
+
+**Status:** Open.
+
+`fetchRange` wraps status failures with the URL, the byte range and a hint when a
+server ignored `Range`, and the size probe names CORS when `Content-Range` is
+unobservable. A **network-level** rejection is not wrapped at all, so the most
+common deployment error the project sees reaches the user as
+`TypeError: Failed to fetch` — without even the URL that failed.
+
+**Retire when** `fetchRange` catches the `TypeError` and rethrows with the URL
+and the triage: CORS (`Access-Control-Allow-Origin`, plus
+`Access-Control-Expose-Headers: Content-Range`), mixed content, or offline. Same
+function as the retry entry above — do them in one pass.
+
+---
+
+## Accessibility
+
+### The primary surface has no name, role, or announced state
+
+**Status:** Open.
+
+Keyboard support is partial and undiscoverable rather than absent, which is the
+part worth stating precisely. `LinearGenomeView/keyboardHandler.ts` binds
+ctrl/cmd + arrows to slide and zoom, gated on `session.focusedViewId`; focus is
+assigned by `useFocusOnInteraction`, which listens for `mousedown`/`keydown`
+*inside* the container — and Tab **into** a view fires its keydown on the element
+being left, so the assignment lags a keystroke. The track area carries no
+`tabIndex`, so there is nothing to Tab to in the first place.
+
+Past that: no `aria-` attributes in the LGV components except
+`HeaderPanControls`, no role or accessible name on any track canvas, and nothing
+announces the result of a pan, a zoom or a search. WCAG 2.1.1 (Keyboard) and
+4.1.2 (Name, Role, Value) are the two a procurement review fails on, and the
+model actions the first needs — `slide`, `zoom`, `moveTo` — all exist already.
+
+**Retire when** the view container is focusable and shows it, each track canvas
+carries a role and a generated `aria-label`, one polite live region per view
+restates the locstring once navigation settles, and the shortcuts are listed
+somewhere a user can find them.
 
 ---
 

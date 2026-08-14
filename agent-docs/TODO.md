@@ -42,6 +42,9 @@ before anyone noticed.
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
+| [Make the display-contract checks fail a test run](#make-the-display-contract-checks-fail-a-test-run) | tests, limits | five `console.error`s no run fails on; collect and assert in the shim |
+| [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | one call site passes it; nothing reads it |
+| [Make the pluggable-type getters say what is missing](#make-the-pluggable-type-getters-say-what-is-missing) | plugins, embedded | ~20 unchecked destructures of a bare `Map.get` |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -315,6 +318,71 @@ The alpha values were tuned against the old density — 0.15 on wheat and grasse
 0.3 on vertebrates, 0.5 on the two 4A figures. **Raise them only uniformly and
 only if the whole band reads too faint**, since the thing that just went away was
 a per-band bias and putting ink back per band would restore it.
+
+### Make the display-contract checks fail a test run
+
+There are five of them, and every one is a `console.error`:
+`assertDisplayContract` (`isCacheValid`/`rpcProps` in `.actions()`, and the
+double-install), `makeRetryContractCheck` (the dead Retry button),
+`HeightModeMixin`'s compose order, `CanvasFeatureGateMixin`'s compose order, and
+`RegionTooLargeMixin`'s renamed-hook map. `ARCHITECTURAL_LIMITS.md` §"Ordering
+is the contract" treats them as the mechanism that closed those invariants —
+they report, and nothing fails.
+
+`config/jest/console.js` passes the `[jbrowse display contract]` prefix straight
+through to stdout, so a violation is audible in a run that prints thousands of
+lines, which is one notch above silent. Collect messages carrying that prefix in
+the shim and fail in an `afterEach` (`setupFilesAfterEnv`), with an explicit
+opt-in for the tests that provoke a violation on purpose —
+`assertDisplayContract.test.ts` and `TrackHeightMixin.test.ts` both do. Roughly
+fifteen lines, and it converts five advisories into five gates.
+
+The `console.error`-not-`throw` decision stays: an error escaping `afterAttach`
+is read as an invalid track and the display is dropped, hiding the violation
+being reported. This changes who *listens*, not what the check does.
+
+Second half, separable: `process.env.NODE_ENV === 'production'` strips all five,
+so an out-of-tree display violating one is caught by nothing at all. Whether
+that is worth a session flag is a real question — it is the population with the
+least ability to diagnose it, and the one nobody can add a test for.
+
+### Delete or implement the RPC `timeout` option
+
+`loadRefNameMap` calls `rpcManager.call(..., { timeout: 1000000 })`. Follow it:
+`BaseRpcDriver.transport` spreads `options` into `worker.call`, and
+`WebWorkerHandle.call` destructures `statusCallback` and `rpcDriverClassName`
+only. There is no timeout mechanism anywhere in `packages/core/src/rpc/`, so the
+option is inert.
+
+Low stakes on its own; it earns a line because it sits next to a carefully
+argued comment about deliberately *not* passing a stop token, which makes the
+surrounding code read as though a bound exists. Deleting it is the honest
+one-line version. Implementing it is the better one, and belongs with the
+per-request timeout in ARCHITECTURAL_LIMITS.md §"The fetch layer has no retry
+and no request timeout" — same question, two layers, and a timeout at only one
+of them is the confusing outcome.
+
+### Make the pluggable-type getters say what is missing
+
+`getViewType` / `getDisplayType` / `getTrackType` / `getWidgetType`
+(`PluginManager.ts`) are bare `Map.get`, and about twenty call sites destructure
+the result on the spot — `ViewWrapper.tsx`, `LinearComparativeRenderArea.tsx`,
+`WidgetHeading.tsx`, `LGVSyntenyDisplay/index.ts`, `AlignmentsTrack/index.ts`
+among them.
+
+Session load is **not** the exposure — the MST union rejects an unregistered type
+first, and that path has a good ladder already (`LoaderErrorBanner`'s "Start over
+without URL options"). The exposure is the registration-time cross-plugin
+lookups, in a build with a different plugin set: the embedded products let a
+consumer supply their own plugin array and carry their own `corePlugins.ts`, and
+`pm.getDisplayType('LinearAlignmentsDisplay')` in a build missing that plugin
+fails as `Cannot destructure property 'ReactComponent' of undefined` during
+plugin install — landing in `pluginManagerError` as a dead app whose message
+names nothing.
+
+Throw a named error from the getters, or add `…OrThrow` variants and move the
+destructuring call sites onto them. One file, and every "my custom build won't
+boot" report starts saying which type is missing.
 
 ## Ready to build: the design is settled
 
