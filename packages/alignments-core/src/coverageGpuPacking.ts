@@ -12,6 +12,13 @@
 // (A deliberate `f32[o + SNP_U32.position]` still type-checks; the split ends
 // the drift, it doesn't prove the pairing.)
 //
+// The codegen also emits `setInstance<Field>` accessors that WOULD prove it,
+// and these loops deliberately do not use them: they measured 0.43-0.47x here
+// (`plugins/alignments/benches/instanceAccessors.bench.ts`, controls 0.98-1.06
+// across three runs). The cost is the call rather than the arithmetic, so there
+// is no accessor shape that recovers it — an offset-taking variant measured no
+// better. Cold readers use them; per-instance loops don't.
+//
 // Every packer here used to head a prose restatement of the struct
 // ("[position(u32), yOffset(f32), …] = 20 bytes"). That is the hand-kept
 // parallel declaration the codegen exists to delete — nothing checked it, and
@@ -24,26 +31,19 @@
 import {
   INSTANCE_OFFSET_F32 as COVERAGE_F32,
   INSTANCE_OFFSET_U32 as COVERAGE_U32,
+  INSTANCE_STRIDE_BYTES as COVERAGE_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as COVERAGE_STRIDE,
 } from './coverageLayout.generated.ts'
 import {
-  INSTANCE_OFFSET_F32 as INDICATOR_F32,
-  INSTANCE_OFFSET_U32 as INDICATOR_U32,
-  INSTANCE_STRIDE_WORDS as INDICATOR_STRIDE,
-} from './indicatorLayout.generated.ts'
-import {
-  INSTANCE_OFFSET_F32 as INTERBASE_F32,
-  INSTANCE_OFFSET_U32 as INTERBASE_U32,
-  INSTANCE_STRIDE_WORDS as INTERBASE_STRIDE,
-} from './interbaseHistogramLayout.generated.ts'
-import {
   INSTANCE_OFFSET_F32 as MOD_COV_F32,
   INSTANCE_OFFSET_U32 as MOD_COV_U32,
+  INSTANCE_STRIDE_BYTES as MOD_COV_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as MOD_COV_STRIDE,
 } from './modCoverageLayout.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as SNP_F32,
   INSTANCE_OFFSET_U32 as SNP_U32,
+  INSTANCE_STRIDE_BYTES as SNP_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
 
@@ -73,7 +73,7 @@ export function packCoverageBinsForGpu(
   if (binCount === 0 || maxDepth <= 0) {
     return new ArrayBuffer(0)
   }
-  const buffer = new ArrayBuffer(binCount * COVERAGE_STRIDE * 4)
+  const buffer = new ArrayBuffer(binCount * COVERAGE_STRIDE_BYTES)
   const f32 = new Float32Array(buffer)
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < binCount; i++) {
@@ -94,7 +94,7 @@ export function packSnpSegmentsForGpu(
   relDepths: Float32Array,
   count: number,
 ) {
-  const buffer = new ArrayBuffer(count * SNP_STRIDE * 4)
+  const buffer = new ArrayBuffer(count * SNP_STRIDE_BYTES)
   const f32 = new Float32Array(buffer)
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
@@ -104,23 +104,6 @@ export function packSnpSegmentsForGpu(
     f32[o + SNP_F32.segHeight] = heights[i]!
     f32[o + SNP_F32.colorType] = colorTypes[i]!
     f32[o + SNP_F32.relDepth] = relDepths[i] ?? 1
-  }
-  return buffer
-}
-
-// Position is absolute uint32.
-export function packIndicatorsForGpu(
-  positions: Uint32Array,
-  colorTypes: Uint8Array | undefined,
-  count: number,
-) {
-  const buffer = new ArrayBuffer(count * INDICATOR_STRIDE * 4)
-  const f32 = new Float32Array(buffer)
-  const u32 = new Uint32Array(buffer)
-  for (let i = 0; i < count; i++) {
-    const o = i * INDICATOR_STRIDE
-    u32[o + INDICATOR_U32.position] = positions[i]!
-    f32[o + INDICATOR_F32.colorType] = colorTypes ? colorTypes[i]! : 1
   }
   return buffer
 }
@@ -135,7 +118,7 @@ export function packModCovSegmentsForGpu(
   relDepths: Float32Array,
   count: number,
 ) {
-  const buffer = new ArrayBuffer(count * MOD_COV_STRIDE * 4)
+  const buffer = new ArrayBuffer(count * MOD_COV_STRIDE_BYTES)
   const f32 = new Float32Array(buffer)
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
@@ -149,31 +132,14 @@ export function packModCovSegmentsForGpu(
   return buffer
 }
 
-// Position is absolute uint32.
-export function packInterbaseSegmentsForGpu(
-  positions: Uint32Array,
-  yOffsets: Float32Array,
-  heights: Float32Array,
-  colorTypes: Uint8Array,
-  count: number,
-) {
-  const buffer = new ArrayBuffer(count * INTERBASE_STRIDE * 4)
-  const f32 = new Float32Array(buffer)
-  const u32 = new Uint32Array(buffer)
-  for (let i = 0; i < count; i++) {
-    const o = i * INTERBASE_STRIDE
-    u32[o + INTERBASE_U32.position] = positions[i]!
-    f32[o + INTERBASE_F32.yOffset] = yOffsets[i]!
-    f32[o + INTERBASE_F32.segHeight] = heights[i]!
-    f32[o + INTERBASE_F32.colorType] = colorTypes[i]!
-  }
-  return buffer
-}
-
 // The SNP + interbase-histogram + indicator GPU segment buffers are the coverage
 // area's position-aggregate passes, packed identically for every backend (the
 // pileup worker and the MAF worker both feed the same three shaders). Grouping
 // them here keeps the field order in one place so the two callers can't drift.
+//
+// The interbase pair is forwarded rather than packed: `computeInterbaseCoverage`
+// writes those two buffers directly, so there is no intermediate array form of
+// them to pack from and no separable count to pair with the wrong array.
 export function packCoverageSegmentsForGpu(
   snp: SNPCoverageResult,
   interbase: ReturnType<typeof computeInterbaseCoverage>,
@@ -187,17 +153,7 @@ export function packCoverageSegmentsForGpu(
       snp.relDepths,
       snp.count,
     ),
-    interbasePackedBuffer: packInterbaseSegmentsForGpu(
-      interbase.positions,
-      interbase.yOffsets,
-      interbase.heights,
-      interbase.colorTypes,
-      interbase.segmentCount,
-    ),
-    indicatorPackedBuffer: packIndicatorsForGpu(
-      interbase.indicatorPositions,
-      interbase.indicatorColorTypes,
-      interbase.indicatorCount,
-    ),
+    interbasePackedBuffer: interbase.interbasePackedBuffer,
+    indicatorPackedBuffer: interbase.indicatorPackedBuffer,
   }
 }

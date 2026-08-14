@@ -25,11 +25,11 @@ import type { PipelineDescriptor } from '@jbrowse/render-core/hal'
  *
  * What no type can see is whether the packer a pass carries actually WRITES
  * anything. Every one of them reads fields off the payload, and a wrong field
- * name that happens to type-check — `snpPositions` where `snpRelDepths` was
- * meant, `interbasePackedBuffer` where `snpPackedBuffer` was, all real, all the
- * right type — packs an empty or wrong-length buffer, uploads nothing (or the
- * wrong pass's instances), and paints a layer missing on the GPU backend only
- * while Canvas2D still draws it.
+ * name that happens to type-check — `interbasePackedBuffer` where
+ * `snpPackedBuffer` was meant, real, and the right type — packs an empty or
+ * wrong-length buffer, uploads nothing (or the wrong pass's instances), and
+ * paints a layer missing on the GPU backend only while Canvas2D still draws
+ * it.
  *
  * So: hand every pass a fixture with exactly one instance's worth of data, and
  * require that every pass uploads.
@@ -106,13 +106,9 @@ function fullyPopulated() {
 
     coverageGpuBinCount: 1,
     coveragePackedBuffer: oneInstance(COVERAGE_PASS),
-    snpPositions: new Uint32Array([START + 1]),
     snpPackedBuffer: oneInstance(SNP_COVERAGE_PASS),
-    interbaseCovPositions: new Uint32Array([START + 2]),
     interbasePackedBuffer: oneInstance(INTERBASE_PASS),
-    indicatorPositions: new Uint32Array([START + 3]),
     indicatorPackedBuffer: oneInstance(INDICATOR_PASS),
-    modCovPositions: new Uint32Array([START + 4]),
     modCovPackedBuffer: oneInstance(MOD_COVERAGE_PASS),
   })
 }

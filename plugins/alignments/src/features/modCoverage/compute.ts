@@ -119,16 +119,22 @@ function groupByPosition(
   return byPosition
 }
 
-// Stacked segments for one position, bottom-up. `heightOf` gives each bin its
-// fraction of the bar; a zero-height bin emits nothing. Segment alpha is the
-// bin's average call likelihood (bisulfite calls are prob 1 → fully opaque).
+// Stacked segments for one position, bottom-up, appended to `out`. `heightOf`
+// gives each bin its fraction of the bar; a zero-height bin emits nothing.
+// Segment alpha is the bin's average call likelihood (bisulfite calls are prob 1
+// → fully opaque).
+//
+// Appends rather than returning its own array because the caller runs this once
+// per modified position — tens of thousands of them on a methylation pileup —
+// and `segments.push(...stackBar(…))` allocated a list per position only to
+// spread it away.
 function stackBar(
+  out: CoverageSegment[],
   colorMap: Map<number, ModificationColorEntry>,
   position: number,
   relDepth: number,
   heightOf: BinHeight,
 ) {
-  const out: CoverageSegment[] = []
   let yOffset = 0
   for (const entry of [...colorMap.values()].sort(compareModEntries)) {
     const height = heightOf(entry)
@@ -146,7 +152,6 @@ function stackBar(
       yOffset += height
     }
   }
-  return out
 }
 
 // Pack the accumulated segments into the GPU typed-array layout. An empty list
@@ -200,13 +205,12 @@ function stackCoverageBars(
   )) {
     const depthAtPosition = depths[position - startPos] ?? 0
     if (depthAtPosition > 0) {
-      segments.push(
-        ...stackBar(
-          colorMap,
-          position,
-          depthAtPosition / maxDepth,
-          heightForPosition({ position, colorMap, depthAtPosition }),
-        ),
+      stackBar(
+        segments,
+        colorMap,
+        position,
+        depthAtPosition / maxDepth,
+        heightForPosition({ position, colorMap, depthAtPosition }),
       )
     }
   }
@@ -275,10 +279,13 @@ export function computeBisulfiteCoverage(
     regionStart,
     coverage,
     ({ colorMap }) => {
-      const totalCalls = [...colorMap.values()].reduce(
-        (sum, e) => sum + e.probabilityCount,
-        0,
-      )
+      // Summed off the values directly: `stackBar` is about to materialize and
+      // sort this same map, so spreading it here made two lists per position
+      // where one is needed.
+      let totalCalls = 0
+      for (const e of colorMap.values()) {
+        totalCalls += e.probabilityCount
+      }
       return entry => entry.probabilityCount / totalCalls
     },
   )

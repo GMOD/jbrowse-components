@@ -555,10 +555,25 @@ describe('emitLayoutOnly', () => {
     expect(out).toContain('export const INSTANCE_OFFSET_I32 = {')
   })
 
-  test('omits VERTEX_ATTRIBUTES and packers', () => {
+  // The packer and the per-field accessors ARE emitted here, and that is the
+  // point of the artifact rather than a leak into it: this module is what a
+  // worker writes an instance buffer through and what a hit test reads one
+  // through, in a package that cannot import the owning plugin. With offsets
+  // alone both spelled `f32[i * STRIDE + OFFSET.field]` by hand.
+  test('carries the packer and the per-field accessors', () => {
+    expect(out).toContain('export function packInstances(')
+    expect(out).toContain('export interface InstanceArrays {')
+    expect(out).toContain('export function getInstancePos(')
+    expect(out).toContain('export function setInstancePos(')
+  })
+
+  // What stays out is what would cost the module an import or a shader source
+  // string: the GL attribute table needs a `render-core` type, and the uniform
+  // block is not the instance layout.
+  test('omits VERTEX_ATTRIBUTES and the uniform block', () => {
     expect(out).not.toContain('VERTEX_ATTRIBUTES')
-    expect(out).not.toContain('packInstances')
     expect(out).not.toContain('UNIFORMS_SIZE_BYTES')
+    expect(out).not.toContain('import ')
   })
 })
 
@@ -711,7 +726,11 @@ describe('storage-buffer instancing', () => {
                 fields: [
                   { name: 'a', type: vector(2, 'float32') },
                   { name: 'b', type: scalar('float32') },
-                  { name: 'c', type: vector(2, 'float32') },
+                  // Not `c`: the layout-only module emits the per-field
+                  // accessors now, and a vector accessor binds `c` as its
+                  // component index, so a field of that name is a real
+                  // collision here rather than an arbitrary one.
+                  { name: 'd', type: vector(2, 'float32') },
                 ],
               },
             },
@@ -719,7 +738,7 @@ describe('storage-buffer instancing', () => {
         },
       ],
     } as Reflection
-    expect(emitLayoutOnly({ baseName: 'test', reflection })).toContain('c: 3,')
+    expect(emitLayoutOnly({ baseName: 'test', reflection })).toContain('d: 3,')
   })
 })
 

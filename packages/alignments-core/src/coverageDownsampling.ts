@@ -8,6 +8,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core/normalize'
 
 import { coverageLayout } from './coverageBandBox.ts'
+import { lowerBound, positionIndexFor } from './positionIndex.ts'
 
 import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
@@ -486,34 +487,63 @@ export function interbaseDepthAt(
   return Math.max(left, right)
 }
 
+/**
+ * Per-base SNP counts at one absolute genomic position, with the strand split
+ * when the caller ships strands (alignments does; MAF does not).
+ *
+ * `position` is absolute, not an offset into the coverage window — it was named
+ * `posOffset` and compared against `mismatchPositions`, which are absolute, so
+ * the name was simply wrong at both call sites.
+ *
+ * A hover asks about ONE position out of an array holding every mismatch in the
+ * region, so it goes through the shared position index rather than scanning.
+ * See positionIndex.ts for why the cache hangs off the array itself.
+ */
 export function countSnpsAtPosition(
-  posOffset: number,
+  position: number,
   mismatches: MismatchArrays,
 ) {
+  const { mismatchPositions, mismatchBases, mismatchStrands } = mismatches
   const snps: Record<string, { count: number; fwd: number; rev: number }> = {}
-  for (let i = 0; i < mismatches.mismatchPositions.length; i++) {
-    if (mismatches.mismatchPositions[i] === posOffset) {
-      const base = String.fromCharCode(mismatches.mismatchBases[i]!)
-      snps[base] ??= { count: 0, fwd: 0, rev: 0 }
-      snps[base].count++
-      if (mismatches.mismatchStrands) {
-        if (mismatches.mismatchStrands[i] === 1) {
-          snps[base].fwd++
-        } else {
-          snps[base].rev++
-        }
+  const { order, sorted } = positionIndexFor(mismatchPositions)
+  for (let k = lowerBound(sorted, position); k < sorted.length; k++) {
+    if (sorted[k] !== position) {
+      break
+    }
+    const i = order[k]!
+    const base = String.fromCharCode(mismatchBases[i]!)
+    snps[base] ??= { count: 0, fwd: 0, rev: 0 }
+    snps[base].count++
+    if (mismatchStrands) {
+      // A read with no strand (0) is neither, and adding it to `rev` — which is
+      // what an `=== 1 ? fwd : rev` split did — reports a reverse-strand read
+      // that does not exist. `count` still holds it, so the two need not sum.
+      if (mismatchStrands[i] === 1) {
+        snps[base].fwd++
+      } else if (mismatchStrands[i] === -1) {
+        snps[base].rev++
       }
     }
   }
   return snps
 }
 
-// Genomic position of the first event in [binStart, binEnd) that is
-// "significant" — at least `threshold` fraction of the local coverage depth at
-// that position. When a pixel spans many bp (zoomed out), an exact-position
-// lookup misses the event sitting elsewhere in the bin; callers scan the pixel's
-// bp range with this and tooltip the significant position instead. Single pass +
-// a small Map keyed by uint32 position. Returns undefined if nothing qualifies.
+/**
+ * Genomic position of the first event in [binStart, binEnd) that is
+ * "significant" — at least `threshold` fraction of the local coverage depth at
+ * that position. When a pixel spans many bp (zoomed out), an exact-position
+ * lookup misses the event sitting elsewhere in the bin; callers scan the pixel's
+ * bp range with this and tooltip the significant position instead. Returns
+ * undefined if nothing qualifies.
+ *
+ * Runs over the shared position index, so it visits the events in the BIN
+ * rather than every event in the region — this is on the mousemove path, and
+ * the array it was scanning holds every mismatch in the block. Two things fall
+ * out of the index that the scan had to arrange for itself: equal positions are
+ * adjacent, so counting a position needs no Map, and the run is walked in
+ * ascending order, so the first qualifying position IS the smallest and the
+ * `pos < best` comparison goes away with the loop that needed it.
+ */
 export function findSignificantInBin(
   positions: Uint32Array,
   coverageDepths: Float32Array,
@@ -522,21 +552,21 @@ export function findSignificantInBin(
   binEnd: number,
   threshold: number,
 ) {
-  const hitsByPos = new Map<number, number>()
-  for (const pos of positions) {
-    if (pos >= binStart && pos < binEnd) {
-      hitsByPos.set(pos, (hitsByPos.get(pos) ?? 0) + 1)
+  const { sorted } = positionIndexFor(positions)
+  let k = lowerBound(sorted, binStart)
+  while (k < sorted.length && sorted[k]! < binEnd) {
+    const pos = sorted[k]!
+    let n = 0
+    while (k < sorted.length && sorted[k] === pos) {
+      n++
+      k++
+    }
+    const depth = coverageDepths[Math.floor(pos - coverageStartPos)]
+    if (depth && n / depth > threshold) {
+      return pos
     }
   }
-  let best = -1
-  for (const [pos, n] of hitsByPos) {
-    const binIdx = Math.floor(pos - coverageStartPos)
-    const depth = coverageDepths[binIdx]
-    if (depth && n / depth > threshold && (best < 0 || pos < best)) {
-      best = pos
-    }
-  }
-  return best < 0 ? undefined : best
+  return undefined
 }
 
 // Flat per-event interbase arrays (one entry per insertion), parallel to
@@ -549,6 +579,8 @@ export interface InterbaseArrays {
 
 // Aggregate insertion-type interbase events anchored at `position` into the
 // tooltip bin's `interbase.insertion` summary (count + length range/avg).
+// Through the position index, like its two neighbours above — a hover reads one
+// position out of every insertion in the region.
 function countInterbaseAtPosition(
   position: number,
   { interbasePositions, interbaseLengths }: InterbaseArrays,
@@ -557,17 +589,19 @@ function countInterbaseAtPosition(
   let minLen = Infinity
   let maxLen = 0
   let lenSum = 0
-  for (let i = 0; i < interbasePositions.length; i++) {
-    if (interbasePositions[i] === position) {
-      const len = interbaseLengths[i]!
-      count++
-      lenSum += len
-      if (len < minLen) {
-        minLen = len
-      }
-      if (len > maxLen) {
-        maxLen = len
-      }
+  const { order, sorted } = positionIndexFor(interbasePositions)
+  for (let k = lowerBound(sorted, position); k < sorted.length; k++) {
+    if (sorted[k] !== position) {
+      break
+    }
+    const len = interbaseLengths[order[k]!]!
+    count++
+    lenSum += len
+    if (len < minLen) {
+      minLen = len
+    }
+    if (len > maxLen) {
+      maxLen = len
     }
   }
   const interbase: CoverageTooltipBin['interbase'] = {}
@@ -618,6 +652,28 @@ export interface MismatchEntry {
   strand: number
 }
 
+/**
+ * The zero-segment result — what `computeSNPCoverage` answers for a region with
+ * no mismatches, and what the paths that skip the coverage band entirely
+ * substitute for it. One spelling, so a field added to `SNPCoverageResult`
+ * cannot be added to some of them. It was written out three times, and the
+ * matching `emptyInterbaseCoverage` next door is the same idea.
+ *
+ * Allocated fresh per call rather than shared: the worker transfers these
+ * arrays, which detaches them, so a module-level singleton would throw
+ * DataCloneError on the second RPC reply.
+ */
+export function emptySnpCoverage(): SNPCoverageResult {
+  return {
+    positions: new Uint32Array(0),
+    yOffsets: new Float32Array(0),
+    heights: new Float32Array(0),
+    colorTypes: new Uint8Array(0),
+    relDepths: new Float32Array(0),
+    count: 0,
+  }
+}
+
 export interface SNPCoverageResult {
   positions: Uint32Array
   // yOffset/height are fractions of the per-position bar (not regional). Drawing
@@ -655,14 +711,7 @@ export function computeSNPCoverage(
     startPos: coverageStartPos,
   } = coverage
   if (mismatchPositions.length === 0 || maxDepth === 0) {
-    return {
-      positions: new Uint32Array(0),
-      yOffsets: new Float32Array(0),
-      heights: new Float32Array(0),
-      colorTypes: new Uint8Array(0),
-      relDepths: new Float32Array(0),
-      count: 0,
-    }
+    return emptySnpCoverage()
   }
 
   const windowLength = coverageDepths.length

@@ -1,6 +1,7 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { renderHook } from '@testing-library/react'
 
+import { packedInterbaseSegments } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   applyView,
   createTestAlignmentsDisplay,
@@ -44,10 +45,14 @@ function coverageUnder(data: PileupDataResult): PileupDataResult {
     coverageStartPos: 0,
     coverageDepths: new Float32Array(3000).fill(10),
     // the drawn histogram, which is what `hitTestInterbase` measures against
-    interbaseCovPositions: new Uint32Array(pos),
-    interbaseCovYOffsets: new Float32Array(n).fill(0),
-    interbaseCovHeights: new Float32Array(n).fill(1),
-    interbaseCovColorTypes: new Uint8Array(n).fill(1),
+    interbasePackedBuffer: packedInterbaseSegments(
+      pos.map(position => ({
+        position,
+        yOffset: 0,
+        height: 1,
+        colorType: 1,
+      })),
+    ),
     interbaseMaxCount: 10,
     // the per-event tallies behind the tooltip and the widget; without them
     // `getInterbaseBin` answers undefined and the click opens nothing, which

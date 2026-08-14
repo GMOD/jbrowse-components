@@ -202,6 +202,41 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Performance and measurement
 
+- **The Slang-generated `getInstance<Field>` / `setInstance<Field>` accessors in
+  per-instance loops** — emitted, adopted across every coverage-band packer and
+  Canvas2D draw loop, measured, and reverted to inline indexing against the
+  generated per-view offset maps. They are the right shape on paper: each binds
+  its field to its own typed-array view, so `position` cannot be written through
+  the f32 view and a field whose Slang type changes fails to compile at the call
+  site rather than reinterpreting bits — the residual hole the
+  `INSTANCE_OFFSET_F32` / `_U32` split left open. They measured **0.43-0.47x on
+  the write side and 0.56-0.62x on the read side** against the hoisted-offset
+  inline form (`plugins/alignments/benches/instanceAccessors.bench.ts`, controls
+  0.98-1.06 across three runs, on 60k and 12k instance fixtures).
+
+  The cost is **the call, not the arithmetic**, which is what makes this a dead
+  end rather than a fixable one. The obvious diagnosis is that a per-field
+  accessor taking an instance INDEX recomputes `i * STRIDE` once per field where
+  the inline form hoists it once per instance — so the fix would be accessors
+  taking a hoisted word offset. That variant is the `offset` arm of the same
+  bench and measured **0.43x**, i.e. no better than the index-taking one. Don't
+  re-propose either shape for a loop that runs per instance.
+
+  What survives is the emission: `//! layout-out` now writes the full typed
+  surface — `INSTANCE_STRIDE_*`, the per-view offset maps, `InstanceArrays`,
+  `packInstances` and the accessors — into packages that cannot import the
+  plugin owning the `.slang`, and the cold readers use it (the interbase hit
+  test resolves one position per mousemove; fixtures encode a record through
+  `packInstances` rather than by hand). The rule is the loop's iteration count,
+  not the module.
+
+  Beware the harness here: a first attempt at the same question dispatched its
+  arms through `arms[w](...)`, one shared call site, and reported a
+  byte-identical control at **0.31x** — trap #1 in `BENCHMARKING.md`, reproduced
+  exactly. The `coverage-bin-cap` fixture (262k instances) is also memory-bound
+  enough that its control swings 0.41-1.11 on a contended box; read the 60k and
+  12k rows.
+
 - **Porting `@gmod/bam`'s chunk forecast to the tabix byte gate** — implemented,
   measured across every `.tbi` fixture, and reverted (`@gmod/tabix` ADR 0005).
   `TabixIndexedFile.bytesForRegions` sums every chunk `blocksForRange` offers

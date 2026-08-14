@@ -384,9 +384,9 @@ function emptyRegion(): LocalRegion {
 // Pure: the per-region metadata `renderBlocks` reads each frame, derived from
 // the same payload the uploads pack. Deliberately separate from the uploads, so
 // a region whose data is unchanged can rebuild this (a handful of field reads)
-// while skipping the pack — see `syncRegion`. The two conditionals mirror the
-// uploads' own guards: a region with no coverage bars / no interbase counts
-// keeps `emptyRegion`'s neutral scaling values rather than a stale peak.
+// while skipping the pack — see `syncRegion`. The conditional mirrors the
+// uploads' own guard: a region with no coverage bars keeps `emptyRegion`'s
+// neutral scaling values rather than a stale peak.
 function regionMeta(data: ReadUploadData & CoverageUploadData): LocalRegion {
   const hasCoverage = data.coverageGpuBinCount > 0
   return {
@@ -396,8 +396,10 @@ function regionMeta(data: ReadUploadData & CoverageUploadData): LocalRegion {
     insertSizeStats: data.insertSizeStats,
     maxDepth: hasCoverage ? data.coverageMaxDepth : 0,
     binSize: hasCoverage ? data.coverageBinSize : 1,
-    interbaseMaxCount:
-      data.interbaseCovPositions.length > 0 ? data.interbaseMaxCount : 0,
+    // No conditional twin of the two above: `computeInterbaseCoverage` already
+    // reports 0 for a region with no interbase events, which is the same "keep
+    // the neutral scaling value rather than a stale peak" answer.
+    interbaseMaxCount: data.interbaseMaxCount,
   }
 }
 

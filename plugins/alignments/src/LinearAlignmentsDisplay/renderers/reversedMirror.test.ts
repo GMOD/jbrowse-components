@@ -215,12 +215,6 @@ function pileupData(): PileupDataResult {
     linkedReadLineYs: new Uint16Array([0, 1]),
     linkedReadLineColorTypes: new Uint8Array([0]),
     numLinkedReadLines: 1,
-
-    modCovPositions: new Uint32Array(),
-    modCovYOffsets: new Float32Array(),
-    modCovHeights: new Float32Array(),
-    modCovColors: new Uint32Array(),
-    modCovRelDepths: new Float32Array(),
     modCovPackedBuffer: new ArrayBuffer(0),
     snpPackedBuffer: new ArrayBuffer(0),
     interbasePackedBuffer: new ArrayBuffer(0),
@@ -236,17 +230,6 @@ function pileupData(): PileupDataResult {
     coverageBinSize: 1,
     coverageGpuBinCount: 0,
     coveragePackedBuffer: new ArrayBuffer(0),
-    snpPositions: new Uint32Array(),
-    snpYOffsets: new Float32Array(),
-    snpHeights: new Float32Array(),
-    snpColorTypes: new Uint8Array(),
-    snpRelDepths: new Float32Array(),
-    interbaseCovPositions: new Uint32Array(),
-    interbaseCovYOffsets: new Float32Array(),
-    interbaseCovHeights: new Float32Array(),
-    interbaseCovColorTypes: new Uint8Array(),
-    indicatorPositions: new Uint32Array(),
-    indicatorColorTypes: new Uint8Array(),
   })
 }
 

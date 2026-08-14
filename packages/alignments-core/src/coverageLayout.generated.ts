@@ -13,3 +13,42 @@ export const INSTANCE_OFFSET_F32 = {
 export const INSTANCE_OFFSET_U32 = {
   position: 0,
 } as const
+
+export interface InstanceArrays {
+  position: ArrayLike<number>
+  relDepth: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { position, relDepth } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_WORDS
+    u32[o + 0] = position[i]!
+    f32[o + 1] = relDepth[i]!
+  }
+  return buf
+}
+
+// Instance `i`'s `position`.
+export function getInstancePosition(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstancePosition(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `relDepth`.
+export function getInstanceRelDepth(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceRelDepth(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}

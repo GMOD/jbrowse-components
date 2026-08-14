@@ -75,13 +75,29 @@ export type { Canvas2DCoverageBuffer } from './rendererUtils.ts'
 export {
   packCoverageBinsForGpu,
   packCoverageSegmentsForGpu,
-  packIndicatorsForGpu,
-  packInterbaseSegmentsForGpu,
   packModCovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
-export { computeInterbaseCoverage } from './interbaseCoverage.ts'
+export {
+  computeInterbaseCoverage,
+  emptyInterbaseCoverage,
+} from './interbaseCoverage.ts'
 export type { ClipEntry, InsertionEntry } from './interbaseCoverage.ts'
+export {
+  nearestRecordIndex,
+  readIndicators,
+  readInterbaseSegments,
+} from './interbaseSegments.ts'
+export type {
+  IndicatorReader,
+  InterbaseSegmentReader,
+} from './interbaseSegments.ts'
+// The two coverage-band buffers `computeInterbaseCoverage` owns, re-exported as
+// their shaders' own generated packers. Production has no caller — the compute
+// writes them incrementally — but a fixture stating a bar directly should still
+// encode it the way the shader decodes it, rather than by hand.
+export { packInstances as packIndicatorInstances } from './indicatorLayout.generated.ts'
+export { packInstances as packInterbaseInstances } from './interbaseHistogramLayout.generated.ts'
 export { computeCoverage } from './coverageCompute.ts'
 export type { CoverageGap } from './coverageCompute.ts'
 export {
@@ -93,6 +109,7 @@ export {
   countSnpsAtPosition,
   downsampleDenseMax,
   downsampleStatsBins,
+  emptySnpCoverage,
   findSignificantInBin,
   interbaseDepthAt,
   niceStep,
@@ -105,6 +122,8 @@ export type {
   MismatchEntry,
   SNPCoverageResult,
 } from './coverageDownsampling.ts'
+export { lowerBound, positionIndexFor } from './positionIndex.ts'
+export type { PositionIndex } from './positionIndex.ts'
 export {
   buildConsensusTally,
   computeConsensus,

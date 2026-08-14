@@ -2,6 +2,8 @@ import {
   computeCoverage,
   computeInterbaseCoverage,
   computeSNPCoverage,
+  emptyInterbaseCoverage,
+  emptySnpCoverage,
 } from '@jbrowse/alignments-core'
 import { updateStatus } from '@jbrowse/core/util'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
@@ -11,8 +13,11 @@ import {
   computeModificationCoverage,
 } from '../features/modCoverage/compute.ts'
 import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
-import { buildModTooltipData } from './buildTooltipData.ts'
 import { computeFrequenciesAndThresholds } from './computeFrequenciesAndThresholds.ts'
+import {
+  buildModTooltipIndex,
+  emptyModTooltipIndex,
+} from './modTooltipIndex.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
@@ -199,7 +204,9 @@ function computeCoverageBand({
         )
     : undefined
 
-  const modTooltipData = buildModTooltipData({ modifications, regionStart })
+  const modTooltip =
+    buildModTooltipIndex({ modifications, regionStart }) ??
+    emptyModTooltipIndex()
   const sashimi = computeSashimiJunctions(gaps)
 
   const coverageAreaPacked = packCoverageAreaForGpu(
@@ -213,7 +220,7 @@ function computeCoverageBand({
     snpCoverage,
     interbaseCoverage,
     modCoverage,
-    modTooltipData,
+    modTooltip,
     sashimi,
     coverageAreaPacked,
   }
@@ -225,27 +232,10 @@ function computeCoverageBand({
 // allocated per call (collectGroupedTransferables detaches them on transfer).
 function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
   return {
-    snpCoverage: {
-      positions: new Uint32Array(0),
-      yOffsets: new Float32Array(0),
-      heights: new Float32Array(0),
-      colorTypes: new Uint8Array(0),
-      relDepths: new Float32Array(0),
-      count: 0,
-    },
-    interbaseCoverage: {
-      positions: new Uint32Array(0),
-      yOffsets: new Float32Array(0),
-      heights: new Float32Array(0),
-      colorTypes: new Uint8Array(0),
-      indicatorPositions: new Uint32Array(0),
-      indicatorColorTypes: new Uint8Array(0),
-      maxCount: 0,
-      segmentCount: 0,
-      indicatorCount: 0,
-    },
+    snpCoverage: emptySnpCoverage(),
+    interbaseCoverage: emptyInterbaseCoverage(),
     modCoverage: undefined,
-    modTooltipData: {},
+    modTooltip: emptyModTooltipIndex(),
     sashimi: {
       sashimiX1: new Uint32Array(0),
       sashimiX2: new Uint32Array(0),

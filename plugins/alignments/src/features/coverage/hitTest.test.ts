@@ -131,4 +131,48 @@ describe('hitTestCoverage zoomed-out bin search', () => {
       hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50)?.position,
     ).toBe(1000)
   })
+
+  // On a reversed block bp runs LEFTWARD, so the pixel holding base 1000 covers
+  // (990, 1000], not [1000, 1010). Widening rightward regardless searched the
+  // neighbouring pixel's bp and snapped to a SNP the cursor was not over.
+  describe('on a reversed block the pixel widens the other way', () => {
+    it('reaches a SNP to the left of the cursor', () => {
+      const rpcData = makeZoomedRpcData({
+        mismatchPositions: new Uint32Array([995, 995]),
+        coverageStartPos: 900,
+        coverageDepths: new Float32Array(200).fill(10),
+      })
+      expect(
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, true)?.position,
+      ).toBe(995)
+      // …and the forward reading of the same data does not, because 995 is
+      // behind the cursor there.
+      expect(
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, false)
+          ?.position,
+      ).toBe(1000)
+    })
+
+    it('does not reach a SNP to the right of the cursor', () => {
+      const rpcData = makeZoomedRpcData({
+        mismatchPositions: new Uint32Array([1005, 1005]),
+      })
+      expect(
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, true)?.position,
+      ).toBe(1000)
+      expect(
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, false)
+          ?.position,
+      ).toBe(1005)
+    })
+
+    it('still includes the base under the cursor itself', () => {
+      const rpcData = makeZoomedRpcData({
+        mismatchPositions: new Uint32Array([1000, 1000]),
+      })
+      expect(
+        hitTestCoverage(basePos, bpPerPx, 20, rpcData, true, 50, true)?.position,
+      ).toBe(1000)
+    })
+  })
 })

@@ -15,5 +15,3 @@ export const INTERBASE_PASS = {
   pack: (data: Pick<CoverageUploadData, 'interbasePackedBuffer'>) =>
     data.interbasePackedBuffer,
 }
-
-export { packInterbaseSegmentsForGpu } from '@jbrowse/alignments-core'

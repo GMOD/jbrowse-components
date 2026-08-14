@@ -12,6 +12,7 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
+import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import configSchemaFactory from './configSchema.ts'
@@ -190,20 +191,9 @@ export function makeEmptyPileupData(): PileupDataResult {
     coverageBinSize: 1,
     coverageGpuBinCount: 0,
     coveragePackedBuffer: new ArrayBuffer(0),
-    snpPositions: new Uint32Array(0),
-    snpYOffsets: new Float32Array(0),
-    snpHeights: new Float32Array(0),
-    snpColorTypes: new Uint8Array(0),
-    snpRelDepths: new Float32Array(0),
     snpPackedBuffer: new ArrayBuffer(0),
-    interbaseCovPositions: new Uint32Array(0),
-    interbaseCovYOffsets: new Float32Array(0),
-    interbaseCovHeights: new Float32Array(0),
-    interbaseCovColorTypes: new Uint8Array(0),
     interbaseMaxCount: 0,
     interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPositions: new Uint32Array(0),
-    indicatorColorTypes: new Uint8Array(0),
     indicatorPackedBuffer: new ArrayBuffer(0),
     readTagColors: new Uint32Array(0),
     readColorCategories: new Uint8Array(0),
@@ -211,6 +201,7 @@ export function makeEmptyPileupData(): PileupDataResult {
     modificationYs: new Uint16Array(0),
     modificationColors: new Uint32Array(0),
     modificationReadIndices: new Uint32Array(0),
+    ...emptyModTooltipIndex(),
     perBaseQualPositions: new Uint32Array(0),
     perBaseQualYs: new Uint16Array(0),
     perBaseQualScores: new Uint8Array(0),
@@ -219,11 +210,6 @@ export function makeEmptyPileupData(): PileupDataResult {
     perBaseLetterYs: new Uint16Array(0),
     perBaseLetterBases: new Uint8Array(0),
     perBaseLetterReadIndices: new Uint32Array(0),
-    modCovPositions: new Uint32Array(0),
-    modCovYOffsets: new Float32Array(0),
-    modCovHeights: new Float32Array(0),
-    modCovColors: new Uint32Array(0),
-    modCovRelDepths: new Float32Array(0),
     modCovPackedBuffer: new ArrayBuffer(0),
     sashimiX1: new Uint32Array(0),
     sashimiX2: new Uint32Array(0),

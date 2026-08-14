@@ -15,3 +15,64 @@ export const INSTANCE_OFFSET_F32 = {
 export const INSTANCE_OFFSET_U32 = {
   position: 0,
 } as const
+
+export interface InstanceArrays {
+  position: ArrayLike<number>
+  yOffset: ArrayLike<number>
+  segHeight: ArrayLike<number>
+  colorType: ArrayLike<number>
+}
+
+export function packInstances(
+  arrays: InstanceArrays,
+  numInstances: number,
+  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
+) {
+  const f32 = new Float32Array(buf)
+  const u32 = new Uint32Array(buf)
+  const { position, yOffset, segHeight, colorType } = arrays
+  for (let i = 0; i < numInstances; i++) {
+    const o = i * INSTANCE_STRIDE_WORDS
+    u32[o + 0] = position[i]!
+    f32[o + 1] = yOffset[i]!
+    f32[o + 2] = segHeight[i]!
+    f32[o + 3] = colorType[i]!
+  }
+  return buf
+}
+
+// Instance `i`'s `position`.
+export function getInstancePosition(u32: Uint32Array, i: number) {
+  return u32[i * INSTANCE_STRIDE_WORDS]!
+}
+
+export function setInstancePosition(u32: Uint32Array, i: number, v: number) {
+  u32[i * INSTANCE_STRIDE_WORDS] = v
+}
+
+// Instance `i`'s `yOffset`.
+export function getInstanceYOffset(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 1]!
+}
+
+export function setInstanceYOffset(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 1] = v
+}
+
+// Instance `i`'s `segHeight`.
+export function getInstanceSegHeight(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 2]!
+}
+
+export function setInstanceSegHeight(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 2] = v
+}
+
+// Instance `i`'s `colorType`.
+export function getInstanceColorType(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 3]!
+}
+
+export function setInstanceColorType(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 3] = v
+}

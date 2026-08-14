@@ -1,4 +1,5 @@
 import { parseModHeader } from './consts.ts'
+import { isSingleModType } from './getModTypes.ts'
 
 export interface ModWithPositions {
   type: string
@@ -57,9 +58,11 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
     } = parseModHeader(basemod, mod)
     const unknownSkip = skipFlag === '?'
 
-    // typestr can be multi-char lowercase e.g. 'mh' (5mC + 5hmC at same positions)
-    // or a ChEBI code e.g. '16061'. Non-lowercase or single-char = one type.
-    const isSingleType = typestr.charCodeAt(0) < 97 || typestr.length === 1
+    // typestr can be multi-char lowercase e.g. 'mh' (5mC + 5hmC at same
+    // positions) or a ChEBI code e.g. '16061'. The rule is `isSingleModType`,
+    // shared with `getModTypes` so the two cannot disagree about what a tag
+    // declares.
+    const isSingleType = isSingleModType(typestr)
     const nTypes = isSingleType ? 1 : typestr.length
 
     // this logic based on parse_mm.pl from hts-specs

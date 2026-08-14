@@ -1,7 +1,30 @@
-import { computeInterbaseCoverage } from '@jbrowse/alignments-core'
+import {
+  computeInterbaseCoverage,
+  readIndicators,
+  readInterbaseSegments,
+} from '@jbrowse/alignments-core'
 
 function cov(depths: Float32Array, maxDepth: number, startPos = 100) {
   return { depths, maxDepth, startPos }
+}
+
+// The compute writes the packed instance buffers directly, so the assertions
+// read them back through the same decoder the hit test uses.
+function segments(result: ReturnType<typeof computeInterbaseCoverage>) {
+  const r = readInterbaseSegments(result.interbasePackedBuffer)
+  return Array.from({ length: r.count }, (_, i) => ({
+    position: r.position(i),
+    stackEnd: r.stackEnd(i),
+    colorType: r.colorType(i),
+  }))
+}
+
+function indicators(result: ReturnType<typeof computeInterbaseCoverage>) {
+  const r = readIndicators(result.indicatorPackedBuffer)
+  return Array.from({ length: r.count }, (_, i) => ({
+    position: r.position(i),
+    colorType: r.colorType(i),
+  }))
 }
 
 describe('computeInterbaseCoverage (indicator triangles)', () => {
@@ -30,7 +53,7 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       cov(new Float32Array(20).fill(20), 20),
     )
     expect(result.indicatorCount).toBe(1)
-    expect(result.indicatorColorTypes[0]).toBe(1)
+    expect(indicators(result)[0]!.colorType).toBe(1)
   })
 
   it('does not create indicator when frequency is below threshold', () => {
@@ -95,7 +118,7 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       cov(new Float32Array(20).fill(20), 20),
     )
     expect(result.indicatorCount).toBe(1)
-    expect(result.indicatorColorTypes[0]).toBe(2)
+    expect(indicators(result)[0]!.colorType).toBe(2)
   })
 
   it('does not create indicator at depth 7 (below minimum 8)', () => {
@@ -140,12 +163,39 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
       cov(new Float32Array(20).fill(10), 10),
     )
     // 1 insertion + 2 softclips + 1 hardclip at one position => 3 segments
-    // (ins, soft, hard) with heights count/scale and stacked yOffsets.
+    // (ins, soft, hard) with heights count/scale, stacked so each segment's
+    // stackEnd is the running total.
     expect(result.segmentCount).toBe(3)
-    expect([...result.colorTypes]).toEqual([1, 2, 3])
-    expect([...result.heights]).toEqual([...new Float32Array([0.1, 0.2, 0.1])])
-    expect([...result.yOffsets]).toEqual([...new Float32Array([0, 0.1, 0.3])])
-    expect([...result.positions]).toEqual([105, 105, 105])
+    const segs = segments(result)
+    expect(segs.map(s => [s.position, s.colorType])).toEqual([
+      [105, 1],
+      [105, 2],
+      [105, 3],
+    ])
+    // Counts 1/2/1 against a peak depth of 10, so the stack ends at the
+    // running total of 0.1, 0.2 and 0.1.
+    expect(segs[0]!.stackEnd).toBeCloseTo(0.1)
+    expect(segs[1]!.stackEnd).toBeCloseTo(0.3)
+    expect(segs[2]!.stackEnd).toBeCloseTo(0.4)
+  })
+
+  // Ascending order is a contract, not an accident of the input: the hit test
+  // binary-searches these positions, and reads arrive in start order, not in
+  // interbase-event order. Softclips are bumped into the map after every
+  // insertion, so a softclip left of an insertion is the case that the Map's
+  // own iteration order gets wrong.
+  it('emits positions in ascending order whatever order events arrive in', () => {
+    const result = computeInterbaseCoverage(
+      [
+        { position: 130, length: 5 },
+        { position: 110, length: 5 },
+      ],
+      [{ position: 105, length: 9 }],
+      [{ position: 120, length: 4 }],
+      100,
+      cov(new Float32Array(40).fill(10), 10),
+    )
+    expect(segments(result).map(s => s.position)).toEqual([105, 110, 120, 130])
   })
 
   it('drops events left of regionStart from segments and indicators', () => {

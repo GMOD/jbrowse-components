@@ -1,11 +1,14 @@
 import { computeCoverage } from './coverageCompute.ts'
 
 describe('computeCoverage', () => {
-  it('returns empty for no features', () => {
+  it('returns empty for no features, on the region it was asked about', () => {
     const result = computeCoverage([], [], 100, 200)
     expect(result.depths.length).toBe(0)
     expect(result.maxDepth).toBe(0)
-    expect(result.startPos).toBe(0)
+    // The window is still this region's, even with no bins in it — 0 would name
+    // the contig origin and misplace every bin for the first reader that trusts
+    // the field without checking the (empty) depth array.
+    expect(result.startPos).toBe(100)
   })
 
   it('computes depth for a single feature within region', () => {

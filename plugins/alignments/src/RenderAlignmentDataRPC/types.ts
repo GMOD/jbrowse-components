@@ -192,41 +192,49 @@ export interface PileupDataResult {
   coverageGpuBinCount: number
   coveragePackedBuffer: ArrayBuffer
 
-  // SNP coverage data - absolute genomic coordinates.
-  // yOffset/height are fractions of THIS position's coverage bar.
-  snpPositions: Uint32Array
-  snpYOffsets: Float32Array
-  snpHeights: Float32Array
-  snpColorTypes: Uint8Array // 1=A, 2=C, 3=G, 4=T
-  // relDepth = totalDepthAtPos / regionMaxDepth, scales the bar at draw time.
-  snpRelDepths: Float32Array
-  // Pre-packed GPU buffer for SNP_COVERAGE_PASS (worker-built).
+  // The coverage band's four segment layers, each as its packed instance
+  // buffer and nothing else. Worker-built, uploaded verbatim by the GPU
+  // renderer, and read in place by the Canvas2D draw, the SVG export and the
+  // interbase hit test — so a mark is hit-tested against the record that was
+  // painted rather than a second copy of it. `readInterbaseSegments` /
+  // `readIndicators` (alignments-core) are the decode side; the field offsets
+  // are Slang codegen, so nothing here restates a record shape.
+
+  // SNP_COVERAGE_PASS. yOffset/segHeight are fractions of THIS position's
+  // coverage bar; relDepth = totalDepthAtPos / regionMaxDepth scales it at draw
+  // time.
   snpPackedBuffer: ArrayBuffer
 
-  // Interbase histogram (coverage-area bars) - insertion/softclip/hardclip counts by position
-  // Bars grow downward from top of coverage area
-  interbaseCovPositions: Uint32Array // absolute genomic coordinates
-  interbaseCovYOffsets: Float32Array // cumulative height below this segment (normalized 0-1)
-  interbaseCovHeights: Float32Array // height of this segment (normalized 0-1)
-  interbaseCovColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip
-  // The denominator the heights above were baked against: the region's PEAK READ
-  // DEPTH, floored at 1, or 0 when the region has no interbase events at all.
-  // Not a count of interbase events despite the name — a bar of N events is
-  // `N / interbaseMaxCount` here and `interbaseBarHeightPx` puts it back on the
-  // display's autoscaled depth axis, which is what makes the interbase bars
-  // readable against the coverage bars beside them.
-  interbaseMaxCount: number
-  // Pre-packed GPU buffer for INTERBASE_PASS (worker-built).
+  // INTERBASE_PASS: the interbase histogram's stacked insertion/softclip/
+  // hardclip bars, hanging from the top of the coverage area, in ascending
+  // position order with one position's segments consecutive.
   interbasePackedBuffer: ArrayBuffer
+  // The denominator those stack fractions were baked against: the region's PEAK
+  // READ DEPTH, floored at 1, or 0 when the region has no interbase events at
+  // all. Not a count of interbase events despite the name — a bar of N events
+  // is `N / interbaseMaxCount` in the buffer and `interbaseBarHeightPx` puts it
+  // back on the display's autoscaled depth axis, which is what makes the
+  // interbase bars readable against the coverage bars beside them.
+  interbaseMaxCount: number
 
-  // Interbase indicator data - triangles at significant positions
-  indicatorPositions: Uint32Array // absolute genomic coordinates
-  indicatorColorTypes: Uint8Array // 1=insertion, 2=softclip, 3=hardclip (dominant type)
-  // Pre-packed GPU buffer for INDICATOR_PASS (worker-built).
+  // INDICATOR_PASS: triangles at the positions where interbase events are a
+  // significant fraction of local depth.
   indicatorPackedBuffer: ArrayBuffer
 
-  // Modification tooltip data - only populated when colorBy is modifications/methylation
-  modTooltipData?: Record<number, ModTooltipEntry[]>
+  // Per-position modification aggregates for the coverage tooltip, as flat
+  // transferable arrays (shared/modTooltipIndex.ts, which owns the layout and
+  // says why it is not a Record). Read one position at a time by
+  // `modTooltipEntriesAt`; zero-length when colorBy is not
+  // modifications/methylation.
+  modTooltipPositions: Uint32Array
+  modTooltipOffsets: Uint32Array
+  modTooltipCounts: Uint32Array
+  modTooltipFwd: Uint32Array
+  modTooltipRev: Uint32Array
+  modTooltipProbTotals: Float64Array
+  modTooltipColors: Uint32Array
+  modTooltipLabelIds: Uint16Array
+  modTooltipLabels: string[]
 
   // Tag color per read, packed ABGR u32 (0 = no tag color). The worker leaves
   // this empty — it is baked on the main thread (overlayReadTagColors) from
@@ -270,15 +278,9 @@ export interface PileupDataResult {
   perBaseLetterBases: Uint8Array // uppercase ASCII base code
   perBaseLetterReadIndices: Uint32Array // maps to parent read index
 
-  // Modification coverage data - stacked colored bars in coverage area.
-  // yOffset/height are fractions of THIS position's coverage bar.
-  modCovPositions: Uint32Array
-  modCovYOffsets: Float32Array
-  modCovHeights: Float32Array
-  modCovColors: Uint32Array // ABGR u32 per segment
-  // relDepth = totalDepthAtPos / regionMaxDepth (see snpRelDepths above).
-  modCovRelDepths: Float32Array
-  // Pre-packed GPU buffer for MOD_COVERAGE_PASS (worker-built).
+  // MOD_COVERAGE_PASS: the modification band's stacked colored bars. Same
+  // per-position fraction contract as snpPackedBuffer above, with an ABGR u32
+  // per segment in place of a color type.
   modCovPackedBuffer: ArrayBuffer
 
   // Sashimi arc data (splice junctions from skip gaps). One entry per junction,

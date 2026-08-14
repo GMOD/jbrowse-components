@@ -1,3 +1,4 @@
+import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import { INTERBASE_SOFTCLIP } from '../shared/types.ts'
@@ -92,6 +93,7 @@ function makePileupData(opts: {
   return {
     readKeys,
     readIdPrefix: undefined,
+    ...emptyModTooltipIndex(),
     ...nextRefsToTable(reads.map(() => '')),
     ...namesToBlock(readNames),
     readPositions,
@@ -145,20 +147,9 @@ function makePileupData(opts: {
     coverageBinSize: 1,
     coverageGpuBinCount: 0,
     coveragePackedBuffer: new ArrayBuffer(0),
-    snpPositions: new Uint32Array(0),
-    snpYOffsets: new Float32Array(0),
-    snpHeights: new Float32Array(0),
-    snpColorTypes: new Uint8Array(0),
-    snpRelDepths: new Float32Array(0),
     snpPackedBuffer: new ArrayBuffer(0),
-    interbaseCovPositions: new Uint32Array(0),
-    interbaseCovYOffsets: new Float32Array(0),
-    interbaseCovHeights: new Float32Array(0),
-    interbaseCovColorTypes: new Uint8Array(0),
     interbaseMaxCount: 0,
     interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPositions: new Uint32Array(0),
-    indicatorColorTypes: new Uint8Array(0),
     indicatorPackedBuffer: new ArrayBuffer(0),
     modificationPositions: new Uint32Array(0),
     modificationYs: new Uint16Array(0),
@@ -172,11 +163,6 @@ function makePileupData(opts: {
     perBaseLetterYs: new Uint16Array(0),
     perBaseLetterBases: new Uint8Array(0),
     perBaseLetterReadIndices: new Uint32Array(0),
-    modCovPositions: new Uint32Array(0),
-    modCovYOffsets: new Float32Array(0),
-    modCovHeights: new Float32Array(0),
-    modCovColors: new Uint32Array(0),
-    modCovRelDepths: new Float32Array(0),
     modCovPackedBuffer: new ArrayBuffer(0),
     sashimiX1: new Uint32Array(0),
     sashimiX2: new Uint32Array(0),

@@ -10,19 +10,29 @@ import type { runCoveragePipeline } from './runCoveragePipeline.ts'
 const MAX_COVERAGE_STATS_BINS = 65536
 
 // Flattens the coverage-pipeline result into the per-region fields the main
-// thread reads (coverageDepths, snpPositions, etc.). Single owner of the
-// flat-field naming so the worker contract stays in one place.
+// thread reads (coverageDepths, the packed segment buffers, the stats sidecar).
+// Single owner of the flat-field naming so the worker contract stays in one
+// place.
+//
+// The four segment layers — SNP, interbase histogram, indicators, modification
+// coverage — ship ONLY as their packed instance buffers. They used to ship as
+// parallel typed arrays as well, sixteen of them, on the reading that the
+// buffers were "for the GPU" and the arrays "for everything else". Nothing else
+// read them: the Canvas2D draw, the SVG export and the interbase hit test all
+// go through the same buffers, so those arrays were 45-100% of each layer's
+// payload cloned and retained per region per group for no reader. What the
+// tooltip and the hit test genuinely need per-bp — `coverageDepths` and the
+// per-event `interbase*`/`mismatch*` arrays — is a different thing and is still
+// here.
 export function buildCoverageResultFields(
   pipeline: Awaited<ReturnType<typeof runCoveragePipeline>>,
 ) {
   const {
     coverage,
-    snpCoverage,
     interbaseCoverage,
-    modCoverage,
     coverageAreaPacked,
     sashimi,
-    modTooltipData,
+    modTooltip,
   } = pipeline
 
   // Coarse per-bin stats sidecar; empty (binSize 1) below the cap, so the main
@@ -48,29 +58,17 @@ export function buildCoverageResultFields(
     coverageStatsSums: statsBins.sums,
     coverageStatsSumSqs: statsBins.sumSqs,
 
-    snpPositions: snpCoverage.positions,
-    snpYOffsets: snpCoverage.yOffsets,
-    snpHeights: snpCoverage.heights,
-    snpColorTypes: snpCoverage.colorTypes,
-    snpRelDepths: snpCoverage.relDepths,
-
-    interbaseCovPositions: interbaseCoverage.positions,
-    interbaseCovYOffsets: interbaseCoverage.yOffsets,
-    interbaseCovHeights: interbaseCoverage.heights,
-    interbaseCovColorTypes: interbaseCoverage.colorTypes,
+    // The denominator the interbase stack fractions were baked against; see
+    // `interbaseBarHeightPx`. Not derivable from the buffer, so it travels
+    // beside it.
     interbaseMaxCount: interbaseCoverage.maxCount,
-
-    indicatorPositions: interbaseCoverage.indicatorPositions,
-    indicatorColorTypes: interbaseCoverage.indicatorColorTypes,
-
-    modCovPositions: modCoverage?.positions ?? new Uint32Array(0),
-    modCovYOffsets: modCoverage?.yOffsets ?? new Float32Array(0),
-    modCovHeights: modCoverage?.heights ?? new Float32Array(0),
-    modCovColors: modCoverage?.colors ?? new Uint32Array(0),
-    modCovRelDepths: modCoverage?.relDepths ?? new Float32Array(0),
 
     ...coverageAreaPacked,
     ...sashimi,
-    modTooltipData,
+    // Spread flat: `collectGroupedTransferables` walks the result's own values,
+    // so a typed array nested one level down would be structured-cloned instead
+    // of transferred — silently, and this is the field that shape was built to
+    // stop copying.
+    ...modTooltip,
   }
 }

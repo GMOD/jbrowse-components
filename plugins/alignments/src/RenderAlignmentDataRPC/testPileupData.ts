@@ -1,3 +1,9 @@
+import {
+  packIndicatorInstances,
+  packInterbaseInstances,
+} from '@jbrowse/alignments-core'
+
+import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 
 import type { PileupDataResult } from './types.ts'
@@ -116,25 +122,15 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     coverageBinSize: 1,
     coverageGpuBinCount: 0,
     coveragePackedBuffer: new ArrayBuffer(0),
-    snpPositions: new Uint32Array(0),
-    snpYOffsets: new Float32Array(0),
-    snpHeights: new Float32Array(0),
-    snpColorTypes: new Uint8Array(0),
-    snpRelDepths: new Float32Array(0),
     snpPackedBuffer: new ArrayBuffer(0),
-    interbaseCovPositions: new Uint32Array(0),
-    interbaseCovYOffsets: new Float32Array(0),
-    interbaseCovHeights: new Float32Array(0),
-    interbaseCovColorTypes: new Uint8Array(0),
     interbaseMaxCount: 0,
     interbasePackedBuffer: new ArrayBuffer(0),
-    indicatorPositions: new Uint32Array(0),
-    indicatorColorTypes: new Uint8Array(0),
     indicatorPackedBuffer: new ArrayBuffer(0),
     modificationPositions: new Uint32Array(0),
     modificationYs: new Uint16Array(0),
     modificationColors: new Uint32Array(0),
     modificationReadIndices: new Uint32Array(0),
+    ...emptyModTooltipIndex(),
     perBaseQualPositions: new Uint32Array(0),
     perBaseQualYs: new Uint16Array(0),
     perBaseQualScores: new Uint8Array(0),
@@ -143,11 +139,6 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     perBaseLetterYs: new Uint16Array(0),
     perBaseLetterBases: new Uint8Array(0),
     perBaseLetterReadIndices: new Uint32Array(0),
-    modCovPositions: new Uint32Array(0),
-    modCovYOffsets: new Float32Array(0),
-    modCovHeights: new Float32Array(0),
-    modCovColors: new Uint32Array(0),
-    modCovRelDepths: new Float32Array(0),
     modCovPackedBuffer: new ArrayBuffer(0),
     sashimiX1: new Uint32Array(0),
     sashimiX2: new Uint32Array(0),
@@ -167,4 +158,50 @@ export function basePileupDataResult(numReads: number): PileupDataResult {
     linkedReadLineColorTypes: new Uint8Array(0),
     numLinkedReadLines: 0,
   }
+}
+
+/**
+ * The interbase histogram's instance buffer, for a fixture that needs bars to
+ * hit-test or draw.
+ *
+ * Production writes this buffer inside `computeInterbaseCoverage`, which is the
+ * only place segments come from — so a fixture stating a bar directly would
+ * otherwise have to arrange the reads AND the read depth that make the worker
+ * emit one. `yOffset`/`height` are stack fractions of the full-scale bar, and
+ * segments at one position must be listed consecutively and in ascending
+ * position order, which is the contract the hit test's run walk reads.
+ *
+ * Interleaved by interbaseHistogram.slang's own generated `packInstances`, so a
+ * fixture cannot encode a record the shader would decode differently.
+ */
+export function packedInterbaseSegments(
+  segments: {
+    position: number
+    yOffset: number
+    height: number
+    colorType: number
+  }[],
+) {
+  return packInterbaseInstances(
+    {
+      position: segments.map(s => s.position),
+      yOffset: segments.map(s => s.yOffset),
+      segHeight: segments.map(s => s.height),
+      colorType: segments.map(s => s.colorType),
+    },
+    segments.length,
+  )
+}
+
+/** The indicator-triangle instance buffer; see `packedInterbaseSegments`. */
+export function packedIndicators(
+  indicators: { position: number; colorType: number }[],
+) {
+  return packIndicatorInstances(
+    {
+      position: indicators.map(i => i.position),
+      colorType: indicators.map(i => i.colorType),
+    },
+    indicators.length,
+  )
 }

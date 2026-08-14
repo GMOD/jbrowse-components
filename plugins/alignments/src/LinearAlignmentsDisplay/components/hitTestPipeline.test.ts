@@ -1,5 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { packedIndicators } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -47,8 +48,6 @@ function makeRpcData(
     interbaseLengths: new Uint32Array(),
     interbaseTypes: new Uint8Array(),
     interbaseSequences: [],
-    indicatorPositions: new Uint32Array(),
-    indicatorColorTypes: new Uint8Array(),
     softclipBasePositions: new Uint32Array(),
     softclipBaseYs: new Uint16Array(),
     softclipBaseReadIndices: new Uint32Array(),
@@ -136,8 +135,9 @@ describe('coverage hit — fires at all zoom levels', () => {
 describe('indicator hit — fires at all zoom levels', () => {
   it('returns indicator hit in top-5px strip when bpPerPx > threshold', () => {
     const resolved = makeResolved({
-      indicatorPositions: new Uint32Array([10000]),
-      indicatorColorTypes: new Uint8Array([1]),
+      indicatorPackedBuffer: packedIndicators([
+        { position: 10000, colorType: 1 },
+      ]),
     })
     // canvasY=3 ≤ 5 — indicator strip; genomicPos=10000 matches indicator
     const result = performHitTest(100, 3, resolved, ZOOMED_OUT_OPTS)
@@ -146,8 +146,9 @@ describe('indicator hit — fires at all zoom levels', () => {
 
   it('does not return indicator when showInterbaseIndicators is false', () => {
     const resolved = makeResolved({
-      indicatorPositions: new Uint32Array([10000]),
-      indicatorColorTypes: new Uint8Array([1]),
+      indicatorPackedBuffer: packedIndicators([
+        { position: 10000, colorType: 1 },
+      ]),
     })
     const result = performHitTest(100, 3, resolved, {
       ...ZOOMED_OUT_OPTS,

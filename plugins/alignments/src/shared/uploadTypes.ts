@@ -55,10 +55,12 @@ export interface CigarUploadData {
   softclipBaseBases: Uint8Array
 }
 
-// Coverage-area upload payload. Raw arrays are kept for hit testing / tooltip
-// / Canvas2D rendering; the `*PackedBuffer` fields are pre-packed GPU-layout
-// buffers produced by the RPC worker (see plugins/alignments/src/shared/
-// packCoverageArea.ts and ADR-004) that the GPU renderer uploads directly.
+// Coverage-area upload payload. `coverageDepths` is the per-bp array the hit
+// test, tooltip and autoscale read; every SEGMENT layer is its `*PackedBuffer`
+// alone — one GPU-layout buffer per pass, produced by the RPC worker (see
+// plugins/alignments/src/shared/packCoverageArea.ts and ADR-004), uploaded
+// directly by the GPU renderer and read in place by the Canvas2D draw, the SVG
+// export and the interbase hit test.
 export interface CoverageUploadData {
   coverageDepths: Float32Array
   coverageMaxDepth: number
@@ -70,32 +72,19 @@ export interface CoverageUploadData {
   coverageBinSize: number
   coverageGpuBinCount: number
   coveragePackedBuffer: ArrayBuffer
-  snpPositions: Uint32Array
-  // SNP yOffsets/heights are fractions of THIS position's coverage bar.
+  // SNP yOffset/segHeight are fractions of THIS position's coverage bar;
   // relDepth = totalDepthAtPos / regionMaxDepth scales the bar at draw time.
-  snpYOffsets: Float32Array
-  snpHeights: Float32Array
-  snpColorTypes: Uint8Array
-  snpRelDepths: Float32Array
   snpPackedBuffer: ArrayBuffer
-  interbaseCovPositions: Uint32Array
-  interbaseCovYOffsets: Float32Array
-  interbaseCovHeights: Float32Array
-  interbaseCovColorTypes: Uint8Array
+  // The denominator the interbase stack fractions were baked against — the
+  // region's peak read depth, or 0 for no interbase events at all. Not
+  // derivable from the buffer, so it travels beside it.
   interbaseMaxCount: number
   interbasePackedBuffer: ArrayBuffer
-  indicatorPositions: Uint32Array
-  indicatorColorTypes: Uint8Array
   indicatorPackedBuffer: ArrayBuffer
 }
 
 export interface ModCoverageUploadData {
-  modCovPositions: Uint32Array
-  // see CoverageUploadData.snpRelDepths
-  modCovYOffsets: Float32Array
-  modCovHeights: Float32Array
-  modCovColors: Uint32Array
-  modCovRelDepths: Float32Array
+  // see CoverageUploadData.snpPackedBuffer for the fraction contract
   modCovPackedBuffer: ArrayBuffer
 }
 

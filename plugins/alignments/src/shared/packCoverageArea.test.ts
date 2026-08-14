@@ -1,6 +1,6 @@
+import { emptyInterbaseCoverage } from '@jbrowse/alignments-core'
+
 import { COVERAGE_PASS } from '../features/coverage/packGpu.ts'
-import { INDICATOR_PASS } from '../features/indicator/packGpu.ts'
-import { INTERBASE_PASS } from '../features/interbase/packGpu.ts'
 import { MOD_COVERAGE_PASS } from '../features/modCoverage/packGpu.ts'
 import { SNP_COVERAGE_PASS } from '../features/snpCoverage/packGpu.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
@@ -8,24 +8,22 @@ import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 import type { PipelineDescriptor } from '@jbrowse/render-core/hal'
 
 /**
- * The five coverage-band passes are the only uploads whose buffer and whose
- * parallel arrays are produced on opposite sides of the RPC boundary: the
- * worker packs the bytes here, and `buildCoverageResultFields` ships the raw
- * arrays beside them for the Canvas2D draw, the hit test and the tooltip. The
- * GPU draws as many instances as the bytes hold; every other consumer walks the
- * arrays. Disagree and the two backends draw a different number of segments.
+ * Three of the coverage-band packers still take their record count as a plain
+ * argument beside the arrays it belongs to — `packSnpSegmentsForGpu(positions,
+ * …, count)` and friends — and swapping two of those arguments type-checks,
+ * both being `number` off the same compute result. A crossed pairing packs the
+ * wrong number of bytes, the GPU draws as many instances as the bytes hold, and
+ * the two backends disagree about how many segments exist.
  *
- * Nothing but this holds them together. `packCoverageSegmentsForGpu` hands each
- * packer a count taken off the compute result — five (array, count) pairings,
- * each a plain argument, and swapping any two of them type-checks
- * (`segmentCount` for `indicatorCount` is the near miss, both `number`, both
- * from the same object). So the fixtures below give every pass a DIFFERENT
- * length: a crossed pairing then packs the wrong number of bytes.
+ * So the fixtures below give every pass a DIFFERENT length, and this asserts
+ * each buffer came out at its own.
+ *
+ * The interbase and indicator passes are deliberately absent: their buffers are
+ * written by `computeInterbaseCoverage` itself and forwarded, so there is no
+ * (array, count) pair left to cross and nothing here could fail.
  */
 
 const SNP_N = 3
-const INTERBASE_N = 2
-const INDICATOR_N = 4
 const MOD_COV_N = 5
 const BIN_N = 6
 
@@ -54,17 +52,7 @@ function packed() {
       relDepths: new Float32Array(SNP_N).fill(1),
       count: SNP_N,
     },
-    {
-      positions: positions(INTERBASE_N),
-      yOffsets: new Float32Array(INTERBASE_N),
-      heights: ramp(INTERBASE_N),
-      colorTypes: new Uint8Array(INTERBASE_N).fill(1),
-      indicatorPositions: positions(INDICATOR_N),
-      indicatorColorTypes: new Uint8Array(INDICATOR_N).fill(1),
-      maxCount: 4,
-      segmentCount: INTERBASE_N,
-      indicatorCount: INDICATOR_N,
-    },
+    emptyInterbaseCoverage(),
     {
       positions: positions(MOD_COV_N),
       yOffsets: new Float32Array(MOD_COV_N),
@@ -80,20 +68,16 @@ function instances(pass: PipelineDescriptor, buf: ArrayBuffer) {
   return buf.byteLength / pass.instanceStride
 }
 
-describe('the worker packs as many instances as the arrays it ships beside them', () => {
+describe('the worker packs as many instances as the arrays it packed from', () => {
   it('one buffer per pass, each the length of its own parallel array', () => {
     const p = packed()
     expect({
       coverage: instances(COVERAGE_PASS, p.coveragePackedBuffer),
       snp: instances(SNP_COVERAGE_PASS, p.snpPackedBuffer),
-      interbase: instances(INTERBASE_PASS, p.interbasePackedBuffer),
-      indicator: instances(INDICATOR_PASS, p.indicatorPackedBuffer),
       modCov: instances(MOD_COVERAGE_PASS, p.modCovPackedBuffer),
     }).toEqual({
       coverage: BIN_N,
       snp: SNP_N,
-      interbase: INTERBASE_N,
-      indicator: INDICATOR_N,
       modCov: MOD_COV_N,
     })
   })
@@ -119,17 +103,7 @@ describe('the worker packs as many instances as the arrays it ships beside them'
         relDepths: new Float32Array(0),
         count: 0,
       },
-      {
-        positions: new Uint32Array(0),
-        yOffsets: new Float32Array(0),
-        heights: new Float32Array(0),
-        colorTypes: new Uint8Array(0),
-        indicatorPositions: new Uint32Array(0),
-        indicatorColorTypes: new Uint8Array(0),
-        maxCount: 0,
-        segmentCount: 0,
-        indicatorCount: 0,
-      },
+      emptyInterbaseCoverage(),
       undefined,
     )
     expect(p.modCovPackedBuffer.byteLength).toBe(0)

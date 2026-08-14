@@ -1,13 +1,15 @@
 import {
   coverageLayout,
   packCoverageBinsForGpu,
-  packIndicatorsForGpu,
-  packInterbaseSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/render-core/hal'
 
-import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
+import {
+  makePileupDataResult,
+  packedIndicators,
+  packedInterbaseSegments,
+} from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
 import {
   ALIGNMENTS_PASSES,
@@ -45,12 +47,6 @@ function makeCoverageData(): CoverageUploadData {
   const snpHeights = new Float32Array([0.4, 0.3])
   const snpColorTypes = new Uint8Array([1, 2])
   const snpRelDepths = new Float32Array([1, 1])
-  const interbaseCovPositions = new Uint32Array([])
-  const interbaseCovYOffsets = new Float32Array([])
-  const interbaseCovHeights = new Float32Array([])
-  const interbaseCovColorTypes = new Uint8Array([])
-  const indicatorPositions = new Uint32Array([REGION_START + 2])
-  const indicatorColorTypes = new Uint8Array([1])
   return {
     coverageDepths,
     coverageMaxDepth,
@@ -63,11 +59,6 @@ function makeCoverageData(): CoverageUploadData {
       COVERAGE_START_OFFSET,
       coverageDepths.length,
     ),
-    snpPositions,
-    snpYOffsets,
-    snpHeights,
-    snpColorTypes,
-    snpRelDepths,
     snpPackedBuffer: packSnpSegmentsForGpu(
       snpPositions,
       snpYOffsets,
@@ -76,27 +67,20 @@ function makeCoverageData(): CoverageUploadData {
       snpRelDepths,
       snpPositions.length,
     ),
-    interbaseCovPositions,
-    interbaseCovYOffsets,
-    interbaseCovHeights,
-    interbaseCovColorTypes,
     interbaseMaxCount: 0,
-    interbasePackedBuffer: packInterbaseSegmentsForGpu(
-      interbaseCovPositions,
-      interbaseCovYOffsets,
-      interbaseCovHeights,
-      interbaseCovColorTypes,
-      0,
-    ),
-    indicatorPositions,
-    indicatorColorTypes,
-    indicatorPackedBuffer: packIndicatorsForGpu(
-      indicatorPositions,
-      indicatorColorTypes,
-      indicatorPositions.length,
-    ),
+    interbasePackedBuffer: packedInterbaseSegments([]),
+    indicatorPackedBuffer: packedIndicators([
+      { position: REGION_START + 2, colorType: 1 },
+    ]),
   }
 }
+
+// The SNP fixture's own values, for the parity assertions below: the buffer is
+// the only shipped form, so the expectation has to name them here rather than
+// read them back off the region.
+const SNP_YOFFSETS = [0, 0.2]
+const SNP_HEIGHTS = [0.4, 0.3]
+const SNP_COLOR_TYPES = [1, 2]
 
 function makeMinimalReadData() {
   return {
@@ -317,11 +301,11 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     // Both should have same yOffset, height, colorType per segment
     // GPU positions are relative (no regionStart), Canvas2D are absolute
     // But yOffset/height/colorType must match
-    for (let i = 0; i < covData.snpPositions.length; i++) {
+    for (let i = 0; i < SNP_YOFFSETS.length; i++) {
       const gpuOff = i * SNP_GPU_STRIDE
-      expect(gpuF32[gpuOff + 1]).toBeCloseTo(covData.snpYOffsets[i]!)
-      expect(gpuF32[gpuOff + 2]).toBeCloseTo(covData.snpHeights[i]!)
-      expect(gpuF32[gpuOff + 3]).toBe(covData.snpColorTypes[i]!)
+      expect(gpuF32[gpuOff + 1]).toBeCloseTo(SNP_YOFFSETS[i]!)
+      expect(gpuF32[gpuOff + 2]).toBeCloseTo(SNP_HEIGHTS[i]!)
+      expect(gpuF32[gpuOff + 3]).toBe(SNP_COLOR_TYPES[i]!)
     }
   })
 

@@ -55,8 +55,6 @@ function makeRpcData(overrides: Partial<PileupDataResult>): PileupDataResult {
     modificationPositions: new Uint32Array(),
     modificationYs: new Uint16Array(),
     modificationColors: new Uint32Array(),
-    indicatorPositions: new Uint32Array(),
-    indicatorColorTypes: new Uint8Array(),
     softclipBasePositions: new Uint32Array(),
     softclipBaseYs: new Uint16Array(),
     softclipBaseReadIndices: new Uint32Array(),

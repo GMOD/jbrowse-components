@@ -103,6 +103,29 @@ describe('tooltip bin length stats', () => {
     })
   })
 
+  // The tally walks LEFT from the last deletion starting at or before the
+  // cursor and stops when the running maximum of the ends behind it no longer
+  // reaches the cursor. A long deletion starting well to the left of several
+  // short ones is what that bound has to survive: stopping at the first
+  // non-spanning deletion instead would miss it.
+  test('a long deletion behind several short ones is still found', () => {
+    const bin = getCoverageBin(
+      1000,
+      makeRpcData({
+        gapPositions: new Uint32Array([
+          100, 5000, 300, 310, 400, 410, 900, 1100, 995, 996,
+        ]),
+        gapTypes: new Uint8Array([0, 0, 0, 0, 0]),
+      }),
+    )
+    expect(bin?.deletions).toEqual({
+      count: 2,
+      minLen: 200,
+      maxLen: 4900,
+      avgLen: 2550,
+    })
+  })
+
   test('skips (gapType 1) are not deletions', () => {
     const bin = getCoverageBin(
       100,

@@ -306,6 +306,7 @@ export function performHitTest(
     resolved.rpcData,
     showCoverage,
     coverageHeight,
+    resolved.reversed,
   )
   if (coverageHit) {
     return { type: 'coverage', hit: coverageHit, resolved }

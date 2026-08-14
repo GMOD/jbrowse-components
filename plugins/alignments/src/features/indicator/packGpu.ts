@@ -12,5 +12,3 @@ export const INDICATOR_PASS = {
   pack: (data: Pick<CoverageUploadData, 'indicatorPackedBuffer'>) =>
     data.indicatorPackedBuffer,
 }
-
-export { packIndicatorsForGpu } from '@jbrowse/alignments-core'

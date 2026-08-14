@@ -1,3 +1,7 @@
+import {
+  packedIndicators,
+  packedInterbaseSegments,
+} from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { hitTestInterbase } from './hitTest.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -13,22 +17,17 @@ function makeRpcData(
   overrides: Partial<PileupDataResult> = {},
 ): PileupDataResult {
   return {
-    indicatorPositions: new Uint32Array(),
-    indicatorColorTypes: new Uint8Array(),
-    interbaseCovPositions: new Uint32Array(),
-    interbaseCovYOffsets: new Float32Array(),
-    interbaseCovHeights: new Float32Array(),
-    interbaseCovColorTypes: new Uint8Array(),
+    indicatorPackedBuffer: packedIndicators([]),
+    interbasePackedBuffer: packedInterbaseSegments([]),
     interbaseMaxCount: 0,
     ...overrides,
   } as PileupDataResult
 }
 
 const oneBarAt1005 = {
-  interbaseCovPositions: new Uint32Array([1005]),
-  interbaseCovYOffsets: new Float32Array([0]),
-  interbaseCovHeights: new Float32Array([1]),
-  interbaseCovColorTypes: new Uint8Array([1]),
+  interbasePackedBuffer: packedInterbaseSegments([
+    { position: 1005, yOffset: 0, height: 1, colorType: 1 },
+  ]),
   interbaseMaxCount: 20,
 }
 
@@ -138,10 +137,10 @@ describe('hitTestInterbase histogram bars', () => {
   // SEGMENT is under the cursor, not which segment is tallest — clicking opens a
   // widget titled by this type and showing only its counts.
   const stackedAt1005 = {
-    interbaseCovPositions: new Uint32Array([1005, 1005]),
-    interbaseCovYOffsets: new Float32Array([0, 0.2]),
-    interbaseCovHeights: new Float32Array([0.2, 0.8]),
-    interbaseCovColorTypes: new Uint8Array([1, 2]),
+    interbasePackedBuffer: packedInterbaseSegments([
+      { position: 1005, yOffset: 0, height: 0.2, colorType: 1 },
+      { position: 1005, yOffset: 0.2, height: 0.8, colorType: 2 },
+    ]),
     interbaseMaxCount: 20,
   }
 
@@ -186,8 +185,9 @@ describe('hitTestInterbase histogram bars', () => {
 describe('hitTestInterbase indicator triangles', () => {
   it('hits a triangle in the top strip when indicators are shown', () => {
     const rpcData = makeRpcData({
-      indicatorPositions: new Uint32Array([1005]),
-      indicatorColorTypes: new Uint8Array([3]),
+      indicatorPackedBuffer: packedIndicators([
+        { position: 1005, colorType: 3 },
+      ]),
     })
     expect(
       hitTestInterbase(
@@ -209,8 +209,9 @@ describe('hitTestInterbase indicator triangles', () => {
 
   it('ignores triangles when showInterbaseIndicators is off', () => {
     const rpcData = makeRpcData({
-      indicatorPositions: new Uint32Array([1005]),
-      indicatorColorTypes: new Uint8Array([3]),
+      indicatorPackedBuffer: packedIndicators([
+        { position: 1005, colorType: 3 },
+      ]),
     })
     expect(
       hitTestInterbase(

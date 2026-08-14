@@ -364,6 +364,53 @@ function instanceLayoutLines(attrs: InstanceAttr[]) {
   return lines
 }
 
+// Struct-of-arrays instance packer. Takes one input array per field (vecN
+// fields read N consecutive values per instance) and interleaves them into the
+// vertex buffer. The destination view (u32 / i32 / f32) for each field is
+// derived from the shader struct here, so changing a field's type in the
+// .slang source updates the packing automatically — the hand-written interleave
+// functions this replaces chose the view by hand and could silently drift from
+// the shader.
+function instancePackerLines(attrs: InstanceAttr[]) {
+  const lines = [
+    // #shaderExport InstanceArrays | one input array per instance field, the argument `packInstances` takes
+    'export interface InstanceArrays {',
+    ...attrs.map(a => `  ${a.name}: ArrayLike<number>`),
+    '}',
+    '',
+    // `numInstances` (not `count`) avoids colliding with an instance field
+    // literally named `count` — the destructure below binds field names as
+    // locals, so the loop bound must not share a name with any field. Every
+    // other such name is in INSTANCE_EMIT_RESERVED, checked by the caller.
+    // #shaderExport packInstances | interleaves parallel arrays into one instance buffer
+    'export function packInstances(',
+    '  arrays: InstanceArrays,',
+    '  numInstances: number,',
+    '  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),',
+    ') {',
+    ...declareViews(new Set(attrs.map(a => viewOf(a.type)))),
+    `  const { ${attrs.map(a => a.name).join(', ')} } = arrays`,
+    '  for (let i = 0; i < numInstances; i++) {',
+    '    const o = i * INSTANCE_STRIDE_WORDS',
+  ]
+  for (const a of attrs) {
+    const view = viewOf(a.type)
+    const word = a.offsetBytes / 4
+    const comps = a.type.kind === 'scalar' ? 1 : a.type.elementCount
+    if (comps === 1) {
+      lines.push(`    ${view}[o + ${word}] = ${a.name}[i]!`)
+    } else {
+      for (let c = 0; c < comps; c++) {
+        lines.push(
+          `    ${view}[o + ${word + c}] = ${a.name}[i * ${comps} + ${c}]!`,
+        )
+      }
+    }
+  }
+  lines.push('  }', '  return buf', '}', '')
+  return lines
+}
+
 /**
  * Per-field get/set over a packed instance buffer.
  *
@@ -528,6 +575,26 @@ const INSTANCE_EMIT_RESERVED = new Set([
   'INSTANCE_STRIDE_BYTES',
   'INSTANCE_STRIDE_WORDS',
 ])
+
+// Checked by both emitters that write instance code, since `//! layout-out`
+// now emits the packer and the accessors too — a shader reaching only the
+// layout-only path would otherwise generate the shadowed code unchecked.
+function assertNoReservedInstanceNames(
+  baseName: string,
+  attrs: readonly InstanceAttr[],
+) {
+  const collision = attrs.find(a => INSTANCE_EMIT_RESERVED.has(a.name))
+  if (collision) {
+    throw new Error(
+      `${baseName}.slang: instance field '${collision.name}' collides with a ` +
+        `name the generated instance code binds in its own scope ` +
+        `(${[...INSTANCE_EMIT_RESERVED].join(', ')}). packInstances() ` +
+        `destructures every field as a local and the per-field accessors bind ` +
+        `their index and value parameters, so this one would be shadowed and ` +
+        `read or write garbage. Rename the field in the .slang struct.`,
+    )
+  }
+}
 
 // One `push` parameter per COMPONENT: a scalar field contributes its own name, a
 // vecN field contributes `<name>0…<name>N-1`. Positional rather than an options
@@ -981,17 +1048,7 @@ export function emitInterface(inputs: CodegenInputs) {
 
   if (vs) {
     const attrs = instanceAttrs(vs.struct, vs.source)
-    const collision = attrs.find(a => INSTANCE_EMIT_RESERVED.has(a.name))
-    if (collision) {
-      throw new Error(
-        `${baseName}.slang: instance field '${collision.name}' collides with a ` +
-          `name the generated instance code binds in its own scope ` +
-          `(${[...INSTANCE_EMIT_RESERVED].join(', ')}). packInstances() ` +
-          `destructures every field as a local and the per-field accessors bind ` +
-          `their index and value parameters, so this one would be shadowed and ` +
-          `read or write garbage. Rename the field in the .slang struct.`,
-      )
-    }
+    assertNoReservedInstanceNames(baseName, attrs)
 
     lines.push(
       ...instanceLayoutLines(attrs),
@@ -1007,51 +1064,7 @@ export function emitInterface(inputs: CodegenInputs) {
     }
     lines.push(']', '')
 
-    // Struct-of-arrays instance packer. Takes one input array per field (vecN
-    // fields read N consecutive values per instance) and interleaves them into
-    // the vertex buffer. The destination view (u32 / i32 / f32) for each field
-    // is derived from the shader struct here, so changing a field's type in
-    // the .slang source updates the packing automatically — the hand-written
-    // interleave functions this replaces chose the view by hand and could
-    // silently drift from the shader.
-    // #shaderExport InstanceArrays | one input array per instance field, the argument `packInstances` takes
-    lines.push('export interface InstanceArrays {')
-    for (const a of attrs) {
-      lines.push(`  ${a.name}: ArrayLike<number>`)
-    }
-    lines.push('}', '')
-
-    // `numInstances` (not `count`) avoids colliding with an instance field
-    // literally named `count` — the destructure below binds field names as
-    // locals, so the loop bound must not share a name with any field. Every
-    // other such name is in PACK_INSTANCES_RESERVED, checked above.
-    lines.push(
-      // #shaderExport packInstances | interleaves parallel arrays into one instance buffer
-      'export function packInstances(',
-      '  arrays: InstanceArrays,',
-      '  numInstances: number,',
-      '  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),',
-      ') {',
-      ...declareViews(new Set(attrs.map(a => viewOf(a.type)))),
-      `  const { ${attrs.map(a => a.name).join(', ')} } = arrays`,
-      '  for (let i = 0; i < numInstances; i++) {',
-      '    const o = i * INSTANCE_STRIDE_WORDS',
-    )
-    for (const a of attrs) {
-      const view = viewOf(a.type)
-      const word = a.offsetBytes / 4
-      const comps = a.type.kind === 'scalar' ? 1 : a.type.elementCount
-      if (comps === 1) {
-        lines.push(`    ${view}[o + ${word}] = ${a.name}[i]!`)
-      } else {
-        for (let c = 0; c < comps; c++) {
-          lines.push(
-            `    ${view}[o + ${word + c}] = ${a.name}[i * ${comps} + ${c}]!`,
-          )
-        }
-      }
-    }
-    lines.push('  }', '  return buf', '}', '', ...instanceAccessorLines(attrs))
+    lines.push(...instancePackerLines(attrs), ...instanceAccessorLines(attrs))
     if (instanceWriter) {
       lines.push(...instanceWriterLines(attrs))
     }
@@ -1110,18 +1123,37 @@ export function emitConsts(baseName: string, consts: Record<string, number>) {
   ].join('\n')
 }
 
-// Emits only the instance buffer layout constants (stride + field offsets) with
-// no shader source strings, GL attributes, or typed packers. Used to write a
-// layout-only file into a package that can't import from the plugin that owns
-// the full generated file (e.g. packages/alignments-core importing snpCoverage
-// layout without being able to import from plugins/alignments).
+/**
+ * The instance buffer's whole TypeScript surface — stride, per-view offset
+ * maps, the struct-of-arrays packer and the per-field typed accessors — with no
+ * shader source strings, no GL attributes and no imports. Written into a
+ * package that can't import the plugin owning the full generated file
+ * (packages/alignments-core reading the coverage-band layouts without being
+ * able to import from plugins/alignments).
+ *
+ * It emitted the offset maps ALONE until the coverage band's packed buffers
+ * became the only shipped form of those segments. That made this module the
+ * place a worker WRITES a buffer and a hit test READS one, and with offsets
+ * alone both spell `f32[i * STRIDE + OFFSET.yOffset]` by hand — which is the
+ * interleave `packInstances` exists to delete, written per access instead of
+ * per buffer, in the package furthest from the `.slang` that defines it. The
+ * accessors bind each field to its own view, so a field that changes type in
+ * the shader fails to compile at the call site instead of reinterpreting bits.
+ */
 export function emitLayoutOnly(
   inputs: Pick<CodegenInputs, 'baseName' | 'reflection'>,
 ) {
   const { baseName, reflection } = inputs
   const vs = findInstanceStruct(reflection)
+  if (!vs) {
+    return header(baseName).join('\n')
+  }
+  const attrs = instanceAttrs(vs.struct, vs.source)
+  assertNoReservedInstanceNames(baseName, attrs)
   return [
     ...header(baseName),
-    ...(vs ? instanceLayoutLines(instanceAttrs(vs.struct, vs.source)) : []),
+    ...instanceLayoutLines(attrs),
+    ...instancePackerLines(attrs),
+    ...instanceAccessorLines(attrs),
   ].join('\n')
 }

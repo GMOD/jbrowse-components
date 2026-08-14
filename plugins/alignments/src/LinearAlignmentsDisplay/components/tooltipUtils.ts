@@ -2,6 +2,8 @@ import {
   countSnpsAtPosition,
   formatInsertionLabel,
   interbaseDepthAt,
+  lowerBound,
+  positionIndexFor,
 } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_MATE_UNMAPPED,
@@ -12,6 +14,7 @@ import { toLocale } from '@jbrowse/core/util'
 import { ARC_SHAPE_FLAT } from '../../features/arcs/compute.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
+import { modTooltipEntriesAt } from '../../shared/modTooltipIndex.ts'
 import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getCigarTypeLabel, interbaseTypeName } from '../../shared/types.ts'
@@ -375,22 +378,27 @@ function collectInterbaseStats(position: number, data: PileupDataResult) {
   } = data
   const lengths = new Map<string, LengthAccumulator>()
   const seqCounts = new Map<string, Map<string, number>>()
-  for (let i = 0; i < interbasePositions.length; i++) {
-    if (interbasePositions[i] === position) {
-      const typeName = interbaseTypeName(interbaseTypes[i]!)
-      lengths.set(
+  // Through the shared position index: a hover asks about one position out of
+  // every insertion and clip in the block, and it asks on every mousemove.
+  const { order, sorted } = positionIndexFor(interbasePositions)
+  for (let k = lowerBound(sorted, position); k < sorted.length; k++) {
+    if (sorted[k] !== position) {
+      break
+    }
+    const i = order[k]!
+    const typeName = interbaseTypeName(interbaseTypes[i]!)
+    lengths.set(
+      typeName,
+      accumulateLength(lengths.get(typeName), interbaseLengths[i]!),
+    )
+    const seq = interbaseSequences[i]
+    if (seq) {
+      const typeSeqs = getOrCreate(
+        seqCounts,
         typeName,
-        accumulateLength(lengths.get(typeName), interbaseLengths[i]!),
+        () => new Map<string, number>(),
       )
-      const seq = interbaseSequences[i]
-      if (seq) {
-        const typeSeqs = getOrCreate(
-          seqCounts,
-          typeName,
-          () => new Map<string, number>(),
-        )
-        typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
-      }
+      typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
     }
   }
   const out: CoverageTooltipBin['interbase'] = {}
@@ -406,17 +414,86 @@ function collectInterbaseStats(position: number, data: PileupDataResult) {
   return out
 }
 
+/**
+ * Deletions sorted by start, with a running maximum of the ends to their left.
+ *
+ * The tooltip's deletion tally is a STABBING query — "which deletions span this
+ * bp" — not a lookup at a position, so a sorted start array alone doesn't bound
+ * it: every deletion starting before the cursor is a candidate. `maxEndSoFar`
+ * is what closes that. It is non-decreasing by construction, so walking left
+ * from the last start at or before the cursor can stop the moment it drops to
+ * or below the cursor: nothing further left reaches that far right either.
+ *
+ * Skips are filtered out HERE rather than at the query, both because the tally
+ * is about deletions only and because an intron is exactly the long span that
+ * would keep the bound loose for every deletion beside it.
+ *
+ * Cached against `gapPositions`, which a refetch replaces wholesale — the same
+ * invalidation-by-construction the shared position index uses, and the reason
+ * neither needs a cache key.
+ */
+interface DeletionSpanIndex {
+  starts: Uint32Array
+  ends: Uint32Array
+  maxEndSoFar: Uint32Array
+}
+const deletionSpans = new WeakMap<Uint32Array, DeletionSpanIndex>()
+
+function deletionSpanIndex(gapPositions: Uint32Array, gapTypes: Uint8Array) {
+  const hit = deletionSpans.get(gapPositions)
+  if (hit) {
+    return hit
+  }
+  const n = Math.floor(gapPositions.length / 2)
+  let deletions = 0
+  for (let i = 0; i < n; i++) {
+    if (gapTypes[i] === 0) {
+      deletions++
+    }
+  }
+  const positions = new Uint32Array(deletions)
+  const rawEnds = new Uint32Array(deletions)
+  let w = 0
+  for (let i = 0; i < n; i++) {
+    if (gapTypes[i] === 0) {
+      positions[w] = gapPositions[i * 2]!
+      rawEnds[w] = gapPositions[i * 2 + 1]!
+      w++
+    }
+  }
+  const { order, sorted } = positionIndexFor(positions)
+  const ends = new Uint32Array(deletions)
+  const maxEndSoFar = new Uint32Array(deletions)
+  let running = 0
+  for (let k = 0; k < deletions; k++) {
+    const end = rawEnds[order[k]!]!
+    ends[k] = end
+    if (end > running) {
+      running = end
+    }
+    maxEndSoFar[k] = running
+  }
+  const built = { starts: sorted, ends, maxEndSoFar }
+  deletionSpans.set(gapPositions, built)
+  return built
+}
+
 // Length stats for the deletions (gapTypes 0, as opposed to skips) spanning
 // `position`. Same statistic as the interbase tally above, through the same
 // accumulator, so the two can't compute it differently.
 function collectDeletionStats(position: number, data: PileupDataResult) {
   const { gapPositions, gapTypes } = data
+  const { starts, ends, maxEndSoFar } = deletionSpanIndex(
+    gapPositions,
+    gapTypes,
+  )
   let acc: LengthAccumulator | undefined
-  for (let i = 0; i < gapPositions.length / 2; i++) {
-    const start = gapPositions[i * 2]!
-    const end = gapPositions[i * 2 + 1]!
-    if (gapTypes[i] === 0 && position >= start && position < end) {
-      acc = accumulateLength(acc, end - start)
+  for (let k = lowerBound(starts, position + 1) - 1; k >= 0; k--) {
+    if (maxEndSoFar[k]! <= position) {
+      break
+    }
+    if (ends[k]! > position) {
+      acc = accumulateLength(acc, ends[k]! - starts[k]!)
     }
   }
   return acc && toLengthStats(acc)
@@ -469,7 +546,7 @@ export function getCoverageBin(
 
   const snps = countSnpsAtPosition(position, blockRpcData)
   const deletions = collectDeletionStats(position, blockRpcData)
-  const modifications = blockRpcData.modTooltipData?.[position]
+  const modifications = modTooltipEntriesAt(blockRpcData, position)
 
   const hasData =
     depth > 0 ||

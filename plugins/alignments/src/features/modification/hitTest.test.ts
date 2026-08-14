@@ -46,8 +46,6 @@ function makeRpcData(
     modificationColors: new Uint32Array(),
     coverageDepths: new Float32Array(),
     coverageStartPos: 0,
-    indicatorPositions: new Uint32Array(),
-    indicatorColorTypes: new Uint8Array(),
     softclipBasePositions: new Uint32Array(),
     softclipBaseBases: new Uint8Array(),
     ...overrides,

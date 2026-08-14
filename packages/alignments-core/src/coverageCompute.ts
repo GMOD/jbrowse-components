@@ -50,8 +50,15 @@ export function computeCoverage(
       fwdDepths: undefined as Float32Array | undefined,
       revDepths: undefined as Float32Array | undefined,
       maxDepth: 0,
+      // `regionStart`, not 0. Nothing can currently tell the difference — every
+      // reader of `coverageStartPos` bounds-checks against a depth array that is
+      // empty here, so an index computed off either value is rejected. But 0
+      // means "the origin of the contig", and the first reader to trust the
+      // field without checking the length would place this region's bins a
+      // whole `regionStart` to the left, silently. The empty region's window is
+      // the same window as any other's; it just has no bins in it.
       binSize: 1,
-      startPos: 0,
+      startPos: regionStart,
     }
   }
 
