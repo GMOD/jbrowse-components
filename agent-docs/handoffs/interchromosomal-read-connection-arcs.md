@@ -224,9 +224,9 @@ Two consequences worth carrying:
   `arcKey` already states — so this is consistent rather than a regression. It
   does mean "one counted arc for a translocation" is true of split-read evidence
   and not of mate-pair evidence.
-- k562 goes from 8 ticks to roughly 4 arcs, and the 4 is microhomology jitter
-  across the same junction, not four events. That is the input to
-  [open decision 1](#open-decisions).
+- k562 goes from 8 ticks to **4 arcs, and they are nothing like equal** — see
+  [the k562 measurement](#what-k562-actually-draws-measured), which is the input
+  to [open decision 1](#open-decisions).
 
 **The same-chromosome case is the one to bound.** Cross-region arcs at a seam
 are the fragments straddling it, so the count scales with *physical* coverage
@@ -236,6 +236,41 @@ multiplies it again. Unmeasured — and cheap to measure now that the partition
 exists: read `crossRegion.length` off the model on the HG002 300x window split
 in two. Note the user-facing mitigation already exists and is the one a reader at
 that depth is already using: `drawProperPairArcs: false` drops 9138 of 9204 arcs.
+
+## What k562 actually draws, measured
+
+Run against the hosted BAM rather than argued about — 579 records over
+`chr22:23,286,000-23,293,000`, each read's segment chain resolved the way
+`unpairedReadChain` + `connectionEndpointBps` resolve it, then coalesced the way
+`arcKey` coalesces:
+
+**In the figure's own two windows: 29 reads over 4 arcs — one of support 26 and
+three singletons within 20 bp of it.** The 26 is `chr22:23,290,413 ↔
+chr9:130,854,063`, which is the ABL1 exon-2 acceptor, i.e. the canonical
+BCR-ABL1 e14a2 junction the STAR-Fusion call bands the figure on. A further 195
+junctions have only one foot in a displayed window and stay ticks, clustered at
+`chr22:23,290,41x` — those are the same BCR donor splicing to ABL1 acceptors tens
+of kb outside the frame.
+
+Three things follow, and each retires an argument:
+
+- **Exact coalescing is right here, and no clustering pre-pass is needed.** The
+  worry that the support would be split four ways is wrong: it splits 26/1/1/1,
+  and the three hairlines sit under a support-26 stroke inside two screen pixels.
+  `arcKey`'s documented exact-coordinate rule holds on real fusion data.
+- **The gap to piece A is 26 vs 28** — piece A's 10 bp window absorbs two or
+  three of the singletons — **and a printed label.** That is the whole
+  difference, which is what makes open decision 1 answerable.
+- **The chr9 side of this fusion is not one site.** The acceptors are tens of kb
+  apart, so which junction is an arc and which is a tick is decided by where the
+  frame is put. That is a property of the data worth knowing before reading any
+  arc/tick count as evidence.
+
+Caveat on the method: these reads carry multi-segment chimeric alignments with
+100 kb+ `D` operations, so segment ENDS derived from a CIGAR reference span are
+unreliable for some of the tail. The windowed number above rests on SA start
+positions (217 of 222 chr9 SA entries are `+`, where the acceptor foot IS the SA
+POS), which is the robust half.
 
 ## Gaps found in review
 
@@ -331,35 +366,38 @@ on exact coordinates (`arcKey`), piece A clusters within 10 bp and takes the
 modal site, so at a junction with microhomology jitter the two print **12 and
 28 at one locus**. One junction with two counts is a defect.
 
-But "drop it and re-aim the figure onto the arc band" is a bigger change than it
-sounds, and the review turned up why: **the k562 figure does not enable the arc
-band at all.** `readConnections` has `promotedBase: 'off'`, the k562 spec's
-`SPLIT_READS` is `{featureHeight: 4}`, and the fan in that figure is
-`showBezierConnections` in chain mode. So the swap is not "same figure, better
-mark" — it turns on a whole additional band in an RNA figure, and that band then
-shows ~4 arcs where piece A shows one labelled 28.
+Note first that **the k562 figure does not enable the arc band at all** —
+`readConnections` has `promotedBase: 'off'`, the k562 spec's `SPLIT_READS` is
+`{featureHeight: 4}`, and the fan in that figure is `showBezierConnections` in
+chain mode. So dropping piece A is not "same figure, better mark"; it is a
+decision to turn the band on.
 
-The landing that resolves both:
+**Turn it on.** [The measurement](#what-k562-actually-draws-measured) is what
+makes that a small decision rather than a gamble: the band draws one support-26
+arc at the junction the figure is banded on, three hairlines under its stroke,
+and a picket of ticks at the BCR donor for the molecules splicing to acceptors
+outside the frame — which is real content the figure has no way of showing
+today. Keep the bezier fan alongside it. The two say different things and the
+tutorial prose already makes that exact argument: the fan is the evidence, one
+curve per molecule; the arc is the count those molecules add up to. Having both
+in one frame is a better figure than either, and it makes the flagship figure the
+feature's own real-data regression test.
 
-- **Move piece A's clustering into the arc path** as a pre-pass over the
-  `isSplit` pending arcs — snap each junction to its cluster's modal site before
-  `arcKey`. `splitJunctions.ts` already is that code. Then both producers read
-  one junction set and cannot print two numbers, and the arc band draws k562's
-  fusion as **one** arc with support 28 across two chromosomes.
-- **The tolerance must be split-junction-only.** On mate links a 10 bp window is
-  a density merge, which is what `DEEP_COVERAGE.md` measured and declined. And
-  it does not contradict `arcKey`'s exact-coordinate defence: the five HG002
-  chr12 fold-back events it cites are 309–788 bp apart, so a 10 bp window merges
-  none of them. A split read knows its breakpoint to the base; what it does not
-  know is which base the aligner picked inside the microhomology.
-- **Then piece A's overlay is redundant** and goes, and the count *label* — the
-  one thing genuinely lost — becomes a small option on the arc band, sourced
-  from `ComputedArc.support`, serving same-chromosome junctions too.
+So: **land the interchromosomal arcs, re-aim the figure onto the band, then drop
+piece A.** What is lost is the printed count label and the position over the
+coverage band; nothing else.
 
-If that is more than this thread should carry: keep piece A, land the
-interchromosomal arcs, and accept that the two bands can disagree at one locus.
-Don't ship that silently — a reader seeing 12 and 28 has no way to know which to
-believe.
+Two arguments that were live before the measurement and are now dead:
+
+- **A clustering pre-pass is not needed.** The idea was to move piece A's 10 bp
+  window into the arc path so both producers agreed. Exact coalescing already
+  gives one arc of support 26 — the split is 26/1/1/1, not four equal quarters —
+  so `arcKey` needs no tolerance and the pre-pass buys two reads of support and
+  a change to a heavily-defended invariant. Don't.
+- **The label is a separate, later feature.** If it is wanted, it is a small
+  option on the arc band sourced from `ComputedArc.support`, one producer and one
+  number, serving same-chromosome junctions too. It is not a reason to keep a
+  second junction producer alive in the meantime.
 
 ### 2. Does the arc replace the ticks, or draw with them?
 
@@ -385,13 +423,25 @@ delete the one distinction this family exists to make.
 2. Land piece B alone: the partition reworked per proposal steps 2, 3 and 5, the
    overlay, and the cap.
 3. Then the interchromosomal arcs: steps 4 and 6 plus gaps 1–4.
-4. Then the single junction resolver, and piece A's overlay goes.
-5. SVG export + dark-mode frame; re-aim the k562 figure; `figures:push`.
+4. SVG export + dark-mode frame.
+5. Re-aim the k562 figure: `readConnections: 'arc'` on the `K562_isoseq` track
+   in `website/scripts/specs/cancer_sv.ts`, keeping `showBezierConnections`;
+   caption and tutorial prose for the fan-plus-count reading; then
+   `pnpm figures:push --exact --filter cancer_sv/k562_bcr_abl_split` and commit
+   `figures.lock`. Expect one thick arc, three hairlines under it and a tick
+   picket at the BCR donor — if the band shows something else, the model of this
+   data in [the measurement](#what-k562-actually-draws-measured) is wrong and
+   that is worth more than the figure.
+6. Then piece A goes.
 
 ## Not verified by me
 
-- Every number here other than the config defaults, the worked example and the
-  code references is the **prior thread's measurement**, re-read but not re-run:
+- [The k562 windowed counts](#what-k562-actually-draws-measured) are mine, run
+  against the hosted BAM, with the method caveat stated there. Everything else
+  below is not.
+- Every other number here — the config defaults, the worked example and the code
+  references aside — is the **prior thread's measurement**, re-read but not
+  re-run:
   52 of 381 arcs (13.6%) cross-region on the HG02768 inverted duplication split
   into two regions 300 bp apart; 0 for that view as one region and for two
   regions 2 Mb apart; 0 arcs and 8 ticks in the k562 view; 865 of 9204 arcs
