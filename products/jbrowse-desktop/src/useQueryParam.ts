@@ -26,9 +26,14 @@ function updateUrl(params: URLSearchParams) {
     ? `${window.location.pathname}?${newSearch}`
     : window.location.pathname
   window.history.replaceState(null, '', newUrl)
-  // copied: a listener may unsubscribe (React drops the subscription when the
-  // re-render this triggers unmounts the reader) while we are iterating
-  for (const listener of listeners) {
+  // Copied, which this note has claimed while the loop read the live set. A
+  // listener is React's store-change callback, and React may flush the re-render
+  // synchronously inside it, so the set can be mutated mid-notify: an unmounted
+  // reader unsubscribes (safe either way) and a remounted one re-adds itself at
+  // the end, where iterating the live set would visit it again for a change it
+  // has already read. The snapshot makes who gets notified for one change fixed
+  // before the first call.
+  for (const listener of [...listeners]) {
     listener()
   }
 }
