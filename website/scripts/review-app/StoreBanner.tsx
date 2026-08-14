@@ -9,8 +9,15 @@ import type { BaselineState } from '../screenshot-review-lib.ts'
 // world had `git status` for that. A silent banner would leave the good case
 // indistinguishable from a banner that failed to render.
 
+// A missing or unparseable timestamp says so. `finishedAt` is filled in as ''
+// for a report predating the field (loadRunReport), and Run asks for it
+// unconditionally — arithmetic on that is NaN, which fails every comparison
+// below and came out as "Last run NaN days ago".
 function agoText(iso: string) {
   const hours = (Date.now() - new Date(iso).getTime()) / 3600000
+  if (!Number.isFinite(hours)) {
+    return 'at a time it did not record'
+  }
   return hours < 1
     ? 'less than an hour ago'
     : hours < 48
