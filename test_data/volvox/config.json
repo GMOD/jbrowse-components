@@ -2281,6 +2281,34 @@
     {
       "type": "SyntenyTrack",
       "category": ["Synteny"],
+      "trackId": "volvox_alias_control.paf",
+      "name": "volvox_alias_control.paf",
+      "assemblyNames": ["volvox", "volvox_del"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "assemblyNames": ["volvox", "volvox_del"],
+        "pafLocation": {
+          "uri": "volvox_alias_control.paf"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
+      "trackId": "volvox_alias_query.paf",
+      "name": "volvox_alias_query.paf",
+      "assemblyNames": ["volvox", "volvox_del"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "assemblyNames": ["volvox", "volvox_del"],
+        "pafLocation": {
+          "uri": "volvox_alias_query.paf"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "volvox_ins.paf",
       "name": "volvox_ins.paf",
       "assemblyNames": ["volvox", "volvox_ins"],
