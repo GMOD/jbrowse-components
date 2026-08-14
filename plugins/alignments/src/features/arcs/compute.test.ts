@@ -1954,7 +1954,7 @@ describe('computeArcsByGroup', () => {
 
   test('one visible lane matches the single-group entry point exactly', () => {
     const data = lrPairs(1000, CLUSTER, 'a')
-    const byGroup = computeArcsByGroup(
+    const { byGroup } = computeArcsByGroup(
       new Map([['only', new Map([[0, data]])]]),
       regions,
       settings,
@@ -2008,7 +2008,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
   }
 
   test('each region gets its own arc and not the other region’s', () => {
-    const byGroup = computeArcsByGroup(
+    const { byGroup } = computeArcsByGroup(
       new Map([
         [
           '',
@@ -2026,9 +2026,18 @@ describe('an arc is uploaded only to the regions it reaches', () => {
     expect([...regionMap.get(1)!.arcX1]).toEqual([900000])
   })
 
-  test('an arc straddling both still reaches both, since it draws in each', () => {
-    // One pair with a mate in each window: the two blocks each paint the foot
-    // they hold and the leg leaving toward the other, so both need the arc.
+  test('an arc straddling both reaches NEITHER buffer, and is handed to the overlay', () => {
+    // One pair with a mate in each window. Both blocks used to receive it, on
+    // the reasoning that each paints the foot it holds and the leg leaving
+    // toward the other. They do not join: each block maps bp to x through its
+    // OWN range, so the far foot is extrapolated at that block's scale to a
+    // place the other block is not, and the scissor cuts what is left. The
+    // reader gets two half-curves pointing at nothing.
+    //
+    // Measured on the HG02768 inverted duplication split into two regions
+    // 300 bp apart: 52 of 381 arcs, i.e. 104 dangling halves. So the arc leaves
+    // both per-region buffers and goes to the across-the-view overlay, which
+    // resolves each foot through its own displayed region.
     const near = makePileupData({
       readPositions: new Uint32Array([1000, 1100]),
       readFlags: new Uint16Array([SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR]),
@@ -2048,7 +2057,7 @@ describe('an arc is uploaded only to the regions it reaches', () => {
     })
     far.readKeys[0] = 'c2'
 
-    const regionMap = computeArcsByGroup(
+    const { byGroup, crossRegionByGroup } = computeArcsByGroup(
       new Map([
         [
           '',
@@ -2060,9 +2069,20 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       ]),
       regions,
       settings,
-    ).get('')!
-    expect([...regionMap.get(0)!.arcX1]).toEqual([1000])
-    expect([...regionMap.get(1)!.arcX1]).toEqual([1000])
+    )
+    const regionMap = byGroup.get('')!
+    expect(regionMap.get(0)!.numArcs).toBe(0)
+    expect(regionMap.get(1)!.numArcs).toBe(0)
+    // ...and it is not lost: the overlay gets it, with the region each foot
+    // resolved to, which is the whole reason it can draw what neither block can.
+    expect(crossRegionByGroup.get('')).toMatchObject([
+      {
+        p1: { refName: 'chr1', bp: 1000 },
+        p2: { refName: 'chr1', bp: 900000 },
+        p1RegionIndex: 0,
+        p2RegionIndex: 1,
+      },
+    ])
   })
 
   test('a connector tick goes to the region holding it, and to no other', () => {
@@ -2078,11 +2098,12 @@ describe('an arc is uploaded only to the regions it reaches', () => {
       ...nextRefsToTable(['chr2']),
       readNextPositions: new Uint32Array([5000]),
     })
-    const regionMap = computeArcsByGroup(
+    const { byGroup } = computeArcsByGroup(
       new Map([['', new Map([[0, data]])]]),
       regions,
       { ...settings, drawInter: true, drawLongRange: true },
-    ).get('')!
+    )
+    const regionMap = byGroup.get('')!
     expect([...regionMap.get(0)!.arcLinePositions]).toEqual([1000])
     expect(regionMap.get(1)!.numArcLines).toBe(0)
   })

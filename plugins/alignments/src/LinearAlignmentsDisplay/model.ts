@@ -143,6 +143,7 @@ import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types'
+import type { CrossRegionArc } from '../features/arcs/compute.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
@@ -1869,9 +1870,15 @@ export default function stateModelFactory(
          * draws, and its reads would shift `poolArcScale` for everyone. Skipping
          * also saves the whole per-read arc pass over a lane no section renders.
          */
-        get arcsByGroup() {
+        get arcsResult(): {
+          byGroup: Map<string, Map<number, ArcsUploadData>>
+          crossRegionByGroup: Map<string, CrossRegionArc[]>
+        } {
           if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
-            return new Map<string, Map<number, ArcsUploadData>>()
+            return {
+              byGroup: new Map(),
+              crossRegionByGroup: new Map(),
+            }
           }
           const settings = {
             colorByType: self.arcColorByType,
@@ -1890,6 +1897,29 @@ export default function stateModelFactory(
             this.loadedRegionInfos,
             settings,
           )
+        },
+
+        /**
+         * #getter
+         * The per-region GPU/Canvas2D upload feed. Every consumer that packs,
+         * draws or hit-tests a region's arcs reads this; the arcs it does NOT
+         * contain are the cross-region ones, which no per-region pass can draw
+         * (`CrossRegionArc`) and which `crossRegionArcsByGroup` carries instead.
+         */
+        get arcsByGroup() {
+          return this.arcsResult.byGroup
+        },
+
+        /**
+         * #getter
+         * Arcs whose two feet are in different displayed regions, per group.
+         * Drawn by an SVG overlay across the whole view, because the per-region
+         * passes map bp to x through the block's own range and would each
+         * extrapolate the far foot to a place the other block is not — see
+         * `CrossRegionArc` for the measurement. Empty in a single-region view.
+         */
+        get crossRegionArcsByGroup() {
+          return this.arcsResult.crossRegionByGroup
         },
 
         /**

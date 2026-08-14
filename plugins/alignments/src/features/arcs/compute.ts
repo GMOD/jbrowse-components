@@ -1395,6 +1395,70 @@ export function groupArcsByRef(arcs: ComputedArc[], lines: ComputedLine[]) {
 // admits and which used to be uploaded everywhere and clipped away everywhere.
 // It now reaches nothing, which also takes it out of `maxFlatArcSpanBp`: an arc
 // that cannot be drawn no longer sizes the read cloud's shared Y axis.
+// Which displayed region a genomic point falls in, or undefined for a point no
+// region shows. First match wins: two displayed regions may overlap in bp (the
+// same locus shown twice), and an arbitrary-but-consistent answer beats none.
+function regionIndexOf(regions: RegionInfo[], refName: string, bp: number) {
+  for (const r of regions) {
+    if (r.refName === refName && bp >= r.start && bp <= r.end) {
+      return r.displayedRegionIndex
+    }
+  }
+  return undefined
+}
+
+/**
+ * An arc whose two feet are in DIFFERENT displayed regions, carrying the region
+ * each foot resolved to.
+ *
+ * These are separated out because **no per-region pass can draw them**, and the
+ * failure is not that they go missing. Both renderers map bp to x through the
+ * block's own range — `bpToClipX` off `u.bpHi/bpLo/bpLen` on the GPU,
+ * `bpToScreenX(bp, block, …)` on Canvas2D — and the GPU additionally draws into
+ * a viewport that IS the block. So an arc with one foot outside gets its far
+ * foot extrapolated at the block's own scale, which lands nowhere near where the
+ * other block actually sits, and the scissor cuts it at the seam. `arcsToRegionMap`
+ * hands the arc to both regions, so the reader gets TWO half-curves pointing at
+ * nothing.
+ *
+ * Measured on the HG02768 inverted duplication with its window split into two
+ * regions 300 bp apart: 52 of 381 arcs (13.6%) were cross-region, i.e. 104
+ * dangling halves. The same view as one region, and the same two regions 2 Mb
+ * apart, have none — a fragment can only straddle a seam, so this set is
+ * inherently small and an overlay drawn once across the whole view can afford
+ * to be SVG.
+ *
+ * That overlay is the same answer `bezierArcScope`'s `crossRegion` already gives
+ * for the per-read connectors, and for the same reason.
+ */
+export interface CrossRegionArc extends ComputedArc {
+  p1RegionIndex: number
+  p2RegionIndex: number
+}
+
+// Split the resolved arcs into the ones a per-region pass can draw and the ones
+// it cannot. An arc with either foot in no displayed region at all is NOT
+// cross-region: it is the off-screen-partner case, which has no second pixel to
+// draw to and stays with `arcTouchesRegion`'s existing handling.
+function partitionCrossRegionArcs(arcs: ComputedArc[], regions: RegionInfo[]) {
+  const withinRegion: ComputedArc[] = []
+  const crossRegion: CrossRegionArc[] = []
+  for (const arc of arcs) {
+    const p1RegionIndex = regionIndexOf(regions, arc.p1.refName, arc.p1.bp)
+    const p2RegionIndex = regionIndexOf(regions, arc.p2.refName, arc.p2.bp)
+    if (
+      p1RegionIndex !== undefined &&
+      p2RegionIndex !== undefined &&
+      p1RegionIndex !== p2RegionIndex
+    ) {
+      crossRegion.push({ ...arc, p1RegionIndex, p2RegionIndex })
+    } else {
+      withinRegion.push(arc)
+    }
+  }
+  return { withinRegion, crossRegion }
+}
+
 function arcTouchesRegion(arc: ComputedArc, region: RegionInfo) {
   const { bp: b1 } = arc.p1
   const { bp: b2 } = arc.p2
@@ -1514,6 +1578,23 @@ export function computeArcsFromPileupData(
 }
 
 /**
+ * The same resolution, split into what a per-region pass can draw and what only
+ * an across-the-view overlay can — see `CrossRegionArc`. Callers that render
+ * (rather than test the resolution) go through this, so the two halves are
+ * produced by one pass and cannot both claim the same arc.
+ */
+export function resolveArcsForRender(
+  pendingArcs: PendingArc[],
+  scale: ArcScale,
+  settings: ArcSettings,
+  regions: RegionInfo[],
+) {
+  const { arcs, lines } = resolveArcs(pendingArcs, scale, settings)
+  const { withinRegion, crossRegion } = partitionCrossRegionArcs(arcs, regions)
+  return { arcs: withinRegion, lines, crossRegion }
+}
+
+/**
  * The full arc upload feed for every group of one fetch.
  *
  * Resolution runs per group (a read belongs to exactly one lane, and each lane
@@ -1532,7 +1613,13 @@ export function computeArcsByGroup(
   rawDataByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>,
   regions: RegionInfo[],
   settings: ArcSettings,
-): Map<string, Map<number, ArcsUploadData>> {
+): {
+  byGroup: Map<string, Map<number, ArcsUploadData>>
+  // The arcs no per-region buffer can draw, per group — see `CrossRegionArc`.
+  // Empty in the single-region view, which is why the overlay that draws them
+  // costs nothing there.
+  crossRegionByGroup: Map<string, CrossRegionArc[]>
+} {
   // Each group carries its own collected input rather than sitting in a second
   // array indexed in step with this one: the pooling in between is the whole
   // reason collection and resolution are separate passes, and two parallel
@@ -1542,10 +1629,17 @@ export function computeArcsByGroup(
     input: collectArcInputs(rawMap, regions, settings),
   }))
   const scale = poolArcScale(groups.map(g => g.input))
-  return new Map(
-    groups.map(({ key, input }) => [
-      key,
-      arcsToRegionMap(resolveArcs(input.pendingArcs, scale, settings), regions),
-    ]),
-  )
+  const byGroup = new Map<string, Map<number, ArcsUploadData>>()
+  const crossRegionByGroup = new Map<string, CrossRegionArc[]>()
+  for (const { key, input } of groups) {
+    const { arcs, lines, crossRegion } = resolveArcsForRender(
+      input.pendingArcs,
+      scale,
+      settings,
+      regions,
+    )
+    byGroup.set(key, arcsToRegionMap({ arcs, lines }, regions))
+    crossRegionByGroup.set(key, crossRegion)
+  }
+  return { byGroup, crossRegionByGroup }
 }

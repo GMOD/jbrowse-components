@@ -33,6 +33,11 @@ with no error for anyone to act on.
 `getCanonicalRefName` THROWS before the alias file has loaded — and the getters
 that read user specs run from the first render.
 
+Takes a refName, not a spec that might hold one: `getCanonicalRefName` reads
+`refName.toLowerCase()` and throws on anything else, so a caller reading an
+untyped `frozen` slot has to establish that it names a refName at all before
+this is the right question to ask of it.
+
 ```js
 // type signature
 (node: IAnyStateTreeNode, refName: string) => string
