@@ -121,17 +121,6 @@ its chromosome 4 covers both of the first two blocks, and the distal block is on
 its chromosome 7. Any of the other four assemblies in the track opens the same
 way.
 
-## Where the ancestry changes hands
-
-With the whole of 4A across one frame the boundary between the first two blocks
-is a sliver of white, so the same track opens on it at gene resolution.
-
-<Figure caption="The 4AL/5AL junction on bread wheat 4A at gene resolution, from the same wheat_orthogroups track. The top row is tauschii 4D beside the two segments of 5D that reach this stretch of 4A, each with its gene track; the shaded band spans the last wheat gene with a 4D ortholog and the first with a 5D one." src="/img/orthofinder_synteny/wheat_4a_breakpoint.png" />
-
-The genes run continuously along 4A and their partners change chromosome between
-two neighbours. Wheat's own 5A is not in this comparison, so the moved segment
-is recognised through 5D, its counterpart in the D-genome donor.
-
 ## The conversion
 
 OrthoFinder takes a directory of proteomes, one FASTA per genome, and `-og`
