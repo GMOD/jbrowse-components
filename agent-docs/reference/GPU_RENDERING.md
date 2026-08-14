@@ -497,6 +497,25 @@ touching either path, preserve whichever of these the display uses:
   entries themselves (chevron draws off line's buffer; continuation is uploaded
   alongside rects), upload and draw ~60 lines apart and readable together. Don't
   add registries to a renderer you can check by reading.
+- **A per-instance vertex budget is a cap, and the other backend has no such
+  cap.** Where one instance draws an unbounded number of marks — canvas's chevron
+  pass, whose instance is an intron line and whose marks are the strand chevrons
+  along it — the pipeline's `verticesPerInstance` fixes how many the shader can
+  address, and every slot costs its vertices on every instance whether it draws or
+  not. So the number is a budget with two edges: raise it and every instance pays,
+  leave it and a large enough input silently loses the marks past it, while the
+  Canvas2D path — which loops in px and has no budget — keeps drawing them.
+
+  None of the four mechanisms above catches this. The constants are shared, the
+  scalar decisions are generated and oracle-checked, and the pass is one object
+  with its packer; the divergence is in neither path's arithmetic but in the range
+  over which they agree. What the budget needs is therefore **the input range it
+  covers, stated where the number is**, measured rather than reasoned: sweep the
+  shader's own window arithmetic and record the threshold and the cost of moving
+  it (`MAX_VISIBLE_CHEVRONS_PER_LINE` carries 4960 CSS px of block width, the
+  numbers either side of it, and what 7680 would cost). A budget with no stated
+  range reads as a limit nobody will hit, and there is nothing to check it
+  against.
 - **`SYNC:` comments anchor formulas** — the fallback, not a mechanism. Where a
   value must match across files and none of the above applies, a
   `SYNC:`/`mirrors` comment names the counterpart; grep the tag before editing

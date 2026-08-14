@@ -902,9 +902,9 @@ The reason is that **building the payload reads far more observables than it
 returns**, so tracking the call tracks all of them:
 
 - canvas builds it from a whole config snapshot (`getConfigSnapshotWithPromotables`),
-  which reads *every* slot on the display config — so a `showLabels`,
-  `heightMode` or compact/normal `displayMode` flip, all deliberately excluded
-  from the payload, would refetch
+  which reads *every* slot on the display config and on every schema it inherits
+  — so a `showLabels`, `heightMode` or compact/normal `displayMode` flip, none of
+  which is in the payload, would refetch
 - HiC's `activeNormalization` consults `availableNormalizations`, which is
   **fetched** (`CoreGetInfo`) — a read that has nothing to do with user intent
 
@@ -921,6 +921,50 @@ key entirely, so it can't be distinguished from a sibling state that also drops.
 Prefer primitives and plain arrays. Regression-tested in
 `installGlobalFetchAutorun.test.ts` ("ignores an observable rpcProps() reads but
 does not return"), which fails if the trigger goes back to the raw call.
+
+### Pick the payload out of the snapshot; never subtract from it
+
+Serializing fixes *which reads* invalidate. It does nothing about **which slots
+are in the payload**, and that is a second, separate hazard for any display whose
+`rpcProps()` starts from `getConfigSnapshotWithPromotables`: the snapshot carries
+every slot the display's schema *and every schema it inherits* declare, so the
+payload's contents are decided by whatever the display does with it.
+
+Do that by picking the slots the worker reads. Canvas's `pickDisplayConfig` copies
+exactly the keys its `DisplayConfig` interface declares, off a
+`Record<keyof DisplayConfig, true>` — which TypeScript checks exhaustive in **both**
+directions with no helper type, erroring on a key the list omits and on a name that
+is not a key. That is what makes the list safe to have: it cannot drift from the
+interface the worker actually reads through.
+
+The subtractive spelling — snapshot minus a destructured exclusion list — is the
+one to avoid, and it is the one you write first. Its failure is silent and
+compounding:
+
+- **A slot nobody thought to exclude becomes an RPC cache key.** Canvas's list
+  reached ten names, and the expensive one was `height`: the resize handle writes
+  it on every drag frame (`TrackContainer` → `resizeHeight` → `setConf`), so
+  dragging a track taller re-ran the whole worker pipeline.
+- **The names that leak come from a schema in another package.**
+  `BaseLinearDisplay`'s schema contributes most of them, so a contributor adding a
+  main-thread slot there has no reason to look at a display plugin's `rpcProps()`.
+- **The payload type has to be a lie.** A snapshot-minus-exclusions object is a
+  superset of the worker's config interface, so it reaches the typed RPC args
+  through an `as DisplayConfig` cast — which is exactly the assertion that would
+  have caught the extras.
+
+Picking inverts all three. A new worker slot means editing the interface and the
+key list together, and forgetting means the feature does not work — which someone
+notices. A new main-thread slot means editing neither.
+
+**Slots that are in the payload only to invalidate it get their own field.**
+Canvas sends `gateSlots` — the raw `fetchSizeLimit` / `forceLoad` /
+`maxFeatureScreenDensity` the region-too-large budgets resolve from — because the
+*resolved* budgets deliberately ride at the call site instead (as cache keys they
+blanked the display on every zoom across `AUTO_FORCE_LOAD_BP`; see [the gate
+summary](#the-region-too-large-gate-summary)). Naming that field is the difference
+between a stated invalidation channel and three slots the exclusion list happened
+not to mention, which read as config the worker might use.
 
 ### `gpuProps()` and derived region maps — re-upload without refetch
 
@@ -1119,6 +1163,12 @@ and 12 lines — and both have since been given the sections they wanted.
   `JSON.stringify` *is* the comparison, so a class without `toJSON` flattens to
   `{}` and an `undefined` drops its key — a silently dead cache axis that raises
   no error. See [the cache key](#the-cache-key-is-the-return-value-not-the-reads).
+- Don't build a config payload by subtracting from a whole-config snapshot. Pick
+  the slots the worker reads, off a key list the compiler checks exhaustive
+  against the interface it reads them through; a name nobody thought to exclude
+  is a silent RPC cache key, and most of them are inherited from a schema in
+  another package. A slot present only to invalidate gets its own named field.
+  See [pick the payload](#pick-the-payload-out-of-the-snapshot-never-subtract-from-it).
 - Don't let a feature RPC that decodes against the reference omit
   `sequenceAdapter`. `dataAdapterCache` keys on `adapterConfig` alone, so the
   first call to resolve an adapter primes it for that instance's lifetime — don't
@@ -1201,6 +1251,12 @@ and 12 lines — and both have since been given the sections they wanted.
   `.slang` and run `pnpm gen:shaders`; CI's `git diff --exit-code` catches stale
   outputs. Consume generated constants by name from TS — never copy a literal
   offset into a renderer.
+- Don't leave a per-instance vertex budget without the input range it covers.
+  Where one instance draws an unbounded number of marks, `verticesPerInstance`
+  caps how many the shader can address and the Canvas2D path has no such cap, so
+  past the budget the GPU silently drops marks the other backend still draws.
+  State the range, measured, beside the number. See
+  [GPU_RENDERING.md § Keeping the two backends in parity](reference/GPU_RENDERING.md#keeping-the-two-backends-in-parity).
 - Don't diverge the two render backends. Import shader constants into TS rather
   than retyping them, put shared glyph geometry/color math in one draw helper, and
   keep multi-layer order/gating in one exhaustively-keyed registry. And don't go
