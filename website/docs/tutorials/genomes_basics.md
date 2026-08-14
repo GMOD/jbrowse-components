@@ -89,8 +89,10 @@ cancer: Arg248 reaches into the DNA itself, and the other two hold the loop that
 carries it.
 
 One more click makes it readable: tick **Reference sequence**, which is off by
-default. The isoform control is the same one the search figure used, and at this
-zoom it matters more, since the default draws the codon row once per transcript.
+default. The isoform control is the same one the search figure used — its (×)
+shrinks the chip to the icon circled below, which stays in that corner and opens
+the same options — and at this zoom it matters more, since the default draws the
+codon row once per transcript.
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Longest coding transcript options as the track menu's Gene glyph radio." />
 

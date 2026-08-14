@@ -402,15 +402,30 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   },
 
   // The isoform control, which the next figure's session sets declaratively and
-  // a reader reaches by clicking. Its two looks are one setting apart: while
-  // transcripts are collapsed it is the loud "Longest isoform" chip, and it
-  // shrinks to a quiet icon once dismissed. So the session sets the collapsed
-  // mode and the capture clicks the chip, which opens the same three options the
-  // track menu's "Gene glyph" radio offers, with the current one checked.
+  // a reader reaches by clicking. It has two looks one dismissal apart: while
+  // transcripts are collapsed it is the loud "Longest isoform" chip, and its (x)
+  // shrinks it to the quiet icon that is always in that corner afterwards.
   //
-  // `auto` would NOT do: it resolves to `all` below 100 bp/px, so at this zoom
-  // there is no chip to click and nothing on screen says transcripts could be
-  // collapsed at all.
+  // THE ICON IS WHAT THE FIGURE SHOWS (review: "i want the circle on the small
+  // icon that launches the popover. also, i dont want it to be showing the
+  // 'longest isoform' chip"). The chip is a first-session notice; the icon is
+  // the control as a reader will meet it every time after, and it is the harder
+  // one to find unaided, which is what a ring is for. So the capture presses the
+  // (x) before it presses the control.
+  //
+  // `geneGlyphNoticeDismissed` is VOLATILE (LinearBasicDisplay/model.ts) — a
+  // session spec cannot set it, and clicking the (x) is the only way in.
+  // `track-control-dismiss` is the testid both TrackControl implementations put
+  // on that (x) for exactly this reason; MUI draws it as an svg inside the chip
+  // and the plain set as a sibling button, so there is no structural handle that
+  // finds both. `track-control-isoform` is its counterpart on the trigger, added
+  // for this figure: the class names are tss-react hashes and MUI strips its own
+  // icon `data-testid` from production builds, so the built app the generator
+  // serves offered nothing to point at but the tooltip prose.
+  //
+  // `auto` would NOT do for the mode: it resolves to `all` below 100 bp/px, so
+  // at this zoom there is no chip to dismiss and nothing on screen says
+  // transcripts could be collapsed at all.
   //
   // A small frame on purpose -- everything a wider one would add is the figure
   // above it, already on the page.
@@ -431,23 +446,29 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 8000,
     viewportWidth: 900,
-    // 380 rather than the 340 the content needs: the ring below is drawn round
-    // a wide short pill, so its radius comes off that pill's diagonal and it
-    // reaches further below the chip than the chip does.
-    viewportHeight: 380,
+    viewportHeight: 340,
     diffThreshold: 0.02,
     actions: [
-      { type: 'click', text: 'Longest isoform' },
+      // dismiss the chip, leaving the quiet icon this figure is about
+      { type: 'click', selector: '[data-testid="track-control-dismiss"]' },
+      { type: 'delay', ms: 400 },
+      // then open the popover from the icon itself
+      { type: 'click', selector: '[data-testid="track-control-isoform"]' },
       { type: 'waitForText', text: 'Longest coding transcript' },
       { type: 'delay', ms: 800 },
     ],
-    // A ring on the chip that opened the popover. The popover is a MUI menu, so
+    // A ring on the icon that opened the popover. The popover is a MUI menu, so
     // it is placed wherever it fits rather than under what it came from, and
     // this frame is the one case on the page where the control and its menu are
-    // at opposite corners: without the ring nothing says which of the two
-    // bottom-right controls was clicked. Anchored to the chip's own text, so it
-    // follows the chip when the layout moves.
-    annotations: [{ type: 'circle', anchor: { text: 'Longest isoform' } }],
+    // at opposite corners: without the ring nothing says what was clicked.
+    // Anchored to the icon's own element, so it follows the control when the
+    // layout moves.
+    annotations: [
+      {
+        type: 'circle',
+        anchor: { selector: '[data-testid="track-control-isoform"]' },
+      },
+    ],
   },
 
   // The alignment the score was computed from, at the same exon. Both tracks are

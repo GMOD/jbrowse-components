@@ -221,6 +221,11 @@ export default function PlainTrackControl({
         // design system usually does not want to restyle anyway.
         title={tooltip}
         aria-label={tooltip}
+        // same handle as the Material set's trigger — see MuiTrackControl. The
+        // string is repeated rather than imported, because importing anything
+        // from that module would drag Material UI back into this one, which is
+        // the whole point of this file.
+        data-testid={`track-control-${icon}`}
         aria-haspopup={options ? 'menu' : undefined}
         aria-expanded={options ? Boolean(anchor) : undefined}
         style={{

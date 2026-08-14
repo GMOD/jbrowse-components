@@ -264,17 +264,15 @@ const SMAD4_MANE = maneGeneLane({
 // deletion and cannot drift apart.
 const SV_85_DEL = 'chr10:122,835,344..122,837,142'
 
-// The two public catalogues that answer "is this a known bad thing" as LANES
-// rather than as prose, both from `~/src/jb2hubs/ucsc2jbrowse/configs/hg38.json`
-// and both hgdownload bigBeds that answer ranged reads with
+// The public catalogue that answers "is this a known bad thing" as a LANE rather
+// than as prose, from `~/src/jb2hubs/ucsc2jbrowse/configs/hg38.json` and an
+// hgdownload bigBed that answers ranged reads with
 // `Access-Control-Allow-Origin: *`. `assemblyNames` is the C-GIAB benchmark's
 // own GRCh38, not `hg38`: same coordinates, different assembly name in that
 // config, and a track named for the wrong one is silently absent.
 //
-// COLLAPSED, both of them. DGV in particular is a merged catalogue and packs
-// dozens of overlapping records over a 30 kb gene, which as stacked rows is
-// most of a viewport and as one row is the density read the question wants --
-// "is there ordinary variation here" is answered by the bar being there.
+// COLLAPSED: the question is whether anything is catalogued here at all, which
+// one row answers, and stacked rows over a 30 kb gene are most of a viewport.
 const CLINVAR_CNV_TRACK = {
   type: 'FeatureTrack',
   trackId: 'hg38_clinvar_cnv_ucsc',
@@ -693,11 +691,22 @@ export const svSpecs: ScreenshotSpec[] = [
           // whole story never finds the "dup" in INVdup. The shading says WHERE
           // the second copy is, which is a thing the call knows and the picture
           // does not; nothing in the frame argues it from depth.
+          //
+          // The label is also where the word INVdup now appears (review: "just
+          // put the text 'INVdup' somewhere in the figure that is unobtrusive").
+          // A highlight's label is the app's own small grey type over the band it
+          // names, so it costs no callout, sits on the thing it is about, and
+          // cannot be mistaken for one of the red teaching annotations.
+          //
+          // ONE WORD, because a highlight's label is CLIPPED TO ITS BAND and
+          // this band is 228 bp of a 3.6 kb view: "INVdup: duplicated copy" came
+          // back reading "INVdup: duplicated". What the shading is stays in the
+          // caption, which is where a sentence fits.
           highlight: [
             {
               refName: '1',
               assemblyName: 'hg38',
-              label: 'duplicated copy',
+              label: 'INVdup',
               ...INVDUP_DUP_SEGMENT,
             },
           ],
@@ -755,11 +764,15 @@ export const svSpecs: ScreenshotSpec[] = [
     // was 1,460 of it.
     viewportHeight: 1075,
     settleMs: 30000,
-    // suppress the hover tooltip the click leaves over the variant track
-    // (reviewer: a stray mouseover tooltip was captured on the variant lane)
-    hideTooltip: true,
     // click the HGSV_2721 variant's floating feature label (stable per-feature
-    // testid) to open its feature details
+    // testid) to open its feature details, then PARK THE CURSOR (review: "i
+    // dont want the variant feature to have mouseover shading on it"). The wash
+    // over the variant was `boxStyles.hover` in the canvas overlay, which tracks
+    // the pointer and so stayed for as long as the click left it there;
+    // `hideTooltip` removed the MUI tooltip above it and could never touch the
+    // wash, because that box is drawn by the display rather than by a popper.
+    // The selection border stays, and should: it says which feature the sidebar
+    // is describing.
     actions: [
       {
         type: 'click',
@@ -767,39 +780,23 @@ export const svSpecs: ScreenshotSpec[] = [
       },
       // wait for the feature-details widget's lazy chunk to load and populate
       // (a fixed delay races the Suspense fallback and captures an empty
-      // "Loading" sidebar); CPX_TYPE is the INFO field the annotation anchors to
+      // "Loading" sidebar)
       { type: 'waitForText', text: 'CPX_TYPE' },
+      PARK_CURSOR,
       { type: 'delay', ms: 1000 },
     ],
-    // explain the read evidence, plus a single connector from the "INVdup" callout
-    // directly to the CPX_TYPE INFO field in the feature-details sidebar so the
-    // annotation and the data it describes are visibly linked
+    // ONE callout, on the read evidence. There was a second, a red pill reading
+    // "Annotated as INVdup (inverted duplication)" with an arrow across to the
+    // CPX_TYPE row in the sidebar, and it is gone (review: "the red text
+    // annotation is too overwhelming now"). What it asserted is in the frame
+    // three times over without it -- the sidebar's own CPX_TYPE row, the
+    // variant's <CPX> label, and the shaded band's label -- so it was drawing a
+    // line between two things that already agreed.
     annotations: [
-      {
-        // sits in the empty white pileup band (so it doesn't cover the arcs at
-        // the top of the pileup — the key INVdup evidence), anchored to that
-        // band the same way the two evidence callouts below are: a depth into
-        // the pileup track rather than a viewport y. It lands between them,
-        // which is what the three dy values say and what a page coordinate did
-        // not.
-        type: 'text',
-        anchor: { ...INVDUP_PILEUP, dx: 632, dy: 511 },
-        text: 'Annotated as "INVdup" (inverted duplication)',
-        fontSize: 26,
-        maxWidth: 360,
-      },
-      {
-        // tail at the callout's right edge — off the SAME anchor, so the pill
-        // and the line leaving it stay one piece — and the head on the CPX_TYPE
-        // field across in the sidebar
-        type: 'arrow',
-        fromAnchor: { ...INVDUP_PILEUP, dx: 1007, dy: 521 },
-        anchor: { text: 'CPX_TYPE' },
-      },
-      // Every callout anchors to the pileup track's own top edge (fracY 0 +
-      // dy), so they sit a fixed distance below the arc band however tall it is,
+      // The callout anchors to the pileup track's own top edge (fracY 0 + dy),
+      // so it sits a fixed distance below the arc band however tall it is,
       // instead of encoding the whole layout in a viewport y. The locus is the
-      // view's left edge, which puts a pill at the track's left margin.
+      // view's left edge, which puts the pill at the track's left margin.
       {
         // inversion evidence, just below the arc band (coverage 120 + arcs 200)
         type: 'text',
@@ -1567,11 +1564,12 @@ export const svSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 360,
       },
-      // WHAT THE CATALOGUE LANE ANSWERS. It was added on "i want tracks that
-      // confirm; prose is tl;dr 99% of the time", and what it contributes is an
-      // ABSENCE, which is the one reading a lane cannot make on its own: an
-      // empty track and a track that failed to load draw the same thing. So the
-      // callout says which one it is.
+      // NO CALLOUT ON THE CATALOGUE LANE (review: "the 'this lane is empty on
+      // purpose' should be removed. dont make weird 'arguments' with the reader
+      // or with yourself"). The lane's contribution is an ABSENCE and a callout
+      // insisting on it argues with a reader who has not doubted anything yet.
+      // The tutorial's paragraph states it once, plainly, which is where a fact
+      // about what a catalogue does not contain belongs.
       //
       // MEASURED against the bigBed rather than read off the picture
       // (api.genome.ucsc.edu, 2026-08-13), because the size filter decides what
@@ -1579,24 +1577,6 @@ export const svSpecs: ScreenshotSpec[] = [
       // SV_85 is chr10:122,835,344-122,837,142, and 15 clinvarCnv records span
       // this window with the SMALLEST at 2.2 Mb -- whole-arm losses, every one
       // filtered out by `_varLen < 50000`.
-      //
-      // Anchored to the lane's own band so it moves with the track rather than
-      // with the page.
-      {
-        type: 'text',
-        text: 'The lane is empty on purpose: no submitted ClinVar CNV anywhere near this deletion\u2019s size.',
-        anchor: {
-          view: 1,
-          track: CLINVAR_CNV_TRACK.trackId,
-          fracY: 1,
-          alignX: 'left',
-          dx: 30,
-          dy: -6,
-        },
-        textAlign: 'start',
-        fontSize: 18,
-        maxWidth: 470,
-      },
     ],
     // No diffThreshold: back on the default gate, deliberately.
     //

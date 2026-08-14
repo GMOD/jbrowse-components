@@ -2128,14 +2128,16 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // was the same defect surviving in the cases where the two directions
           // chain a homology into DIFFERENT numbers of blocks, which is most of
           // this file's long alignments; the dedupe recognises those now too.
-          // 95, not 150 (reviewer: "improve y-screen real estate with shorter
-          // synteny levels, and shorter graph panel"). Two 150px bands are 300
-          // of a 1580px frame spent on ribbons that neither cross nor stack:
-          // each band is a handful of wide blocks going almost straight down,
-          // and the claim they carry is where they STOP, which a shorter band
-          // states just as well. What the height buys back goes to the graph
-          // pane below, which is the half with a shape in it.
-          levelHeights: [95, 95],
+          // 70, from 150 then 95 (reviewer: "improve y-screen real estate with
+          // shorter synteny levels, and shorter graph panel", then "try to
+          // reduce screenshot height even further"). Two 150px bands were 300 of
+          // a 1580px frame spent on ribbons that neither cross nor stack: each
+          // band is a handful of wide blocks going almost straight down, and the
+          // claim they carry is where they STOP, which a shorter band states
+          // just as well. 70 is the floor for that claim — below it the top
+          // band's unbroken run and the bottom band's left edge stop being
+          // separable at a glance.
+          levelHeights: [70, 70],
           views: [
             {
               assembly: 'NCTC86',
@@ -2186,7 +2188,12 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // one long backbone node with the rest of the graph looping past it --
           // and an anchored layout draws that loop flat against the backbone it
           // replaces.
-          paneHeight: 430,
+          //
+          // 340, from 600 then 430. The drawing scales rather than crops, and
+          // the loop is a shape rather than a reading, so it survives the
+          // scaling; what stops this going lower is the per-node bp labels,
+          // which do NOT scale and start colliding as the nodes close up.
+          paneHeight: 340,
         },
       ],
     }),
@@ -2201,7 +2208,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // FOLD rather than guessed, and it follows `paneHeight` above rather than
     // driving it: the pane is the graph's, so shortening the capture alone
     // clips the bubble instead of scaling it.
-    viewportHeight: 1299,
+    viewportHeight: 1160,
     hideTooltip: true,
     // One ring in each half, on the same segment (review: "we may want to circle
     // entries in the lineargenomeview/linearsyntenyview and the correspondence

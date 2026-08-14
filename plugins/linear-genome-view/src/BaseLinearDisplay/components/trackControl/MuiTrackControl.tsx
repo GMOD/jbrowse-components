@@ -25,6 +25,17 @@ const ICONS = {
 // so there is no structural handle that finds both.
 const DISMISS_TESTID = 'track-control-dismiss'
 
+// The same for the control itself, per icon, because a display's corner can hold
+// several of these and nothing else tells them apart from outside. The class
+// names are tss-react hashes, and the MUI icon's own `data-testid` is stripped
+// from production builds — so a figure spec pointing at the built app had
+// neither handle. `aria-label` carries the tooltip, which is prose.
+//
+// `plainTrackControl` writes the same string by hand rather than importing this,
+// since importing anything from here would drag Material UI into the module that
+// exists to avoid it.
+const trackControlTestId = (icon: TrackControlIcon) => `track-control-${icon}`
+
 const useStyles = makeStyles()(theme => ({
   // Subtle bordered look for the icon-button form, so the always-present
   // controls read as one quiet system rather than a row of bright buttons.
@@ -54,8 +65,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// The chip sits on the display's bottom edge, so its menu opens upward (the
-// menu's bottom-left corner anchored to the chip's top-left).
+// These controls sit on the display's bottom edge, so their menu opens upward
+// (the menu's bottom-left corner anchored to the control's top-left). BOTH forms
+// take it: CascadingMenuButton's own default drops the menu below its trigger,
+// which down here means MUI flips it back into the viewport ON TOP OF the
+// control — so the icon form's menu covered the icon it came from, and nothing
+// in the frame said which control had been pressed. `plainTrackControl` reaches
+// the same answer in its own words, and says so at more length.
 const anchorOrigin = { vertical: 'top', horizontal: 'left' } as const
 const transformOrigin = { vertical: 'bottom', horizontal: 'left' } as const
 
@@ -87,6 +103,8 @@ export default function MuiTrackControl({
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
   const Icon = ICONS[icon]
 
+  const testId = trackControlTestId(icon)
+
   if (label === undefined) {
     return options ? (
       <CascadingMenuButton
@@ -94,6 +112,9 @@ export default function MuiTrackControl({
         className={cx(classes.button, warning && classes.warning)}
         stopPropagation
         tooltip={tooltip}
+        data-testid={testId}
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
         menuItems={menuItemsFor(options)}
       >
         <Icon />
@@ -103,6 +124,7 @@ export default function MuiTrackControl({
         <IconButton
           size="small"
           className={cx(classes.button, warning && classes.warning)}
+          data-testid={testId}
           onClick={event => {
             event.stopPropagation()
             onClick?.()
@@ -121,6 +143,7 @@ export default function MuiTrackControl({
           size="small"
           variant="outlined"
           className={cx(classes.chip, warning && classes.warning)}
+          data-testid={testId}
           icon={<Icon />}
           label={label}
           onClick={
