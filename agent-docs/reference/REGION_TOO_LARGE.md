@@ -740,11 +740,27 @@ paths can't drift apart.
   spread over two schemas, and the two have to be read together to see what a
   given track gets:
 
-  | tier | value | applies to |
-  | --- | --- | --- |
-  | adapter slot | BAM 5 Mb, CRAM 3 Mb, VcfTabix 5 Mb, SplitVcfTabix 5 Mb | those four adapter types, whatever display |
-  | display slot | `LinearBasicDisplay` 5 Mb, `LinearMultiRowFeatureDisplay` 5 Mb | every other adapter under those displays |
-  | display slot | `baseLinearDisplayConfigSchema` 1 Mb | every other adapter under every other display |
+<!-- GATED_BUDGETS START -->
+
+<!-- prettier-ignore -->
+| tier | value | applies to |
+| --- | --- | --- |
+| adapter slot | 5 Mb | `BamAdapter`, `CramAdapter`, `SplitVcfTabixAdapter`, `VcfTabixAdapter` — whatever display they are under |
+| display slot | 5 Mb | `LinearBasicDisplay` — every inheriting adapter under this display |
+| display slot | 5 Mb | `LinearMultiRowFeatureDisplay` — every inheriting adapter under this display |
+| display slot | 1 Mb | `baseLinearDisplayConfigSchema` — every inheriting adapter under every other display |
+
+Adapters with no `fetchSizeLimit` of their own, which therefore take whichever display row applies: `BedTabixAdapter`, `BgzipMafAdapter`, `BgzipTaffyAdapter`, `BigBedAdapter`, `BigMafAdapter`, `Gff3TabixAdapter`, `GtfTabixAdapter`, `MafTabixAdapter`.
+
+<!-- GATED_BUDGETS END -->
+
+  Generated from the schemas by `website/scripts/api-docs/generateGatedBudgetDocs.ts`,
+  off the same scan `check-gated-adapter-budgets.ts` runs. Hand-transcribed, it
+  said CRAM 3 Mb for as long as it took someone to notice — and the sentence it
+  sits under is exactly the "go read two schemas together" kind that
+  agent-docs/CLAUDE.md says should have a generated table beneath it. Below the
+  `AUTO_FORCE_LOAD_BP` span every row is multiplied by
+  `SUB_FLOOR_BYTE_BUDGET_FACTOR` (§ The sub-floor budget tier).
 
   **An adapter that implements `getRegionByteSize` and declares no
   `fetchSizeLimit` inherits whichever display it lands under**, which is how two

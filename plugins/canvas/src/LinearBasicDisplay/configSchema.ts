@@ -77,8 +77,11 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
        * block-granular (a small region still pulls whole BGZF blocks), so a
        * single gene can trip a tighter gate. A few Mb of feature text downloads
        * fast; the feature-density gate remains the backstop for genuinely
-       * over-dense views. VcfTabixAdapter matches this 5 Mb for the same reason;
-       * the binary alignment adapters (CRAM 3 Mb) keep their own tighter limit.
+       * over-dense views. An adapter declaring its own `fetchSizeLimit` outranks
+       * this — the generated table in
+       * agent-docs/reference/REGION_TOO_LARGE.md § Shared primitives is which
+       * ones do, rather than a number restated here that goes stale when theirs
+       * moves (CRAM's did).
        */
       fetchSizeLimit: {
         type: 'number',

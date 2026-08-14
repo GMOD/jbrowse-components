@@ -14,81 +14,18 @@
 // The baseline is the budget table in prose form, and updating it is the point:
 // a new gated adapter fails here until someone writes down which budget it gets.
 // `--write` regenerates it.
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
-import { basename, dirname, join, relative } from 'node:path'
+//
+// The scan itself is `gatedBudgets.ts`, shared with the doc generator that
+// renders the same numbers into REGION_TOO_LARGE.md — so the table cannot say
+// one thing while this check enforces another.
+import { readFileSync, writeFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 
-const root = join(import.meta.dirname, '..')
+import { collectGatedAdapterBudgets, root } from './gatedBudgets.ts'
+
 const baselinePath = join(root, 'scripts', 'gatedAdapterBudgets.json')
-const workspaceDirs = ['packages', 'plugins', 'products']
 
-// A method DECLARATION, not a call site: `dataAdapter.getRegionByteSize(...)`
-// in the RPC workers must not count, or the gate's own callers would register
-// as adapters.
-const declaration = /^\s*(?:public\s+)?(?:async\s+)?getRegionByteSize\s*[(<]/m
-// `fetchSizeLimit: { ... defaultValue: 123 ... }` inside a config schema
-const slot = /fetchSizeLimit\s*:\s*\{[^}]*?defaultValue\s*:\s*([\d_]+)/s
-
-// The base class declares the method as its `undefined` default — that IS the
-// "no estimate, no gate" path, not an implementation of one.
-const baseDefault = join(
-  'packages',
-  'core',
-  'src',
-  'data_adapters',
-  'BaseAdapter',
-  'BaseFeatureDataAdapter.ts',
-)
-
-function* sourceFiles(dir: string): Generator<string> {
-  let entries: string[]
-  try {
-    entries = readdirSync(dir)
-  } catch {
-    return
-  }
-  for (const entry of entries) {
-    if (entry === 'node_modules' || entry === 'esm' || entry === 'dist') {
-      continue
-    }
-    const path = join(dir, entry)
-    if (statSync(path).isDirectory()) {
-      yield* sourceFiles(path)
-    } else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts')) {
-      yield path
-    }
-  }
-}
-
-// name -> declared budget, or 'display' when it inherits the display's
-const found: Record<string, string> = {}
-for (const workspaceDir of workspaceDirs) {
-  for (const file of sourceFiles(join(root, workspaceDir))) {
-    const rel = relative(root, file)
-    if (rel === baseDefault) {
-      continue
-    }
-    if (!declaration.test(readFileSync(file, 'utf8'))) {
-      continue
-    }
-    // Adapters live in a directory named for them, alongside their configSchema
-    const dir = dirname(file)
-    const name = basename(dir)
-    let budget = 'display'
-    try {
-      const match = slot.exec(
-        readFileSync(join(dir, 'configSchema.ts'), 'utf8'),
-      )
-      if (match) {
-        budget = `own:${Number(match[1]!.replaceAll('_', ''))}`
-      }
-    } catch {
-      // no sibling configSchema.ts — inherits, same as declaring no slot
-    }
-    found[name] = budget
-  }
-}
-
-const sorted = Object.fromEntries(Object.entries(found).sort())
+const sorted = collectGatedAdapterBudgets()
 
 if (process.argv.includes('--write')) {
   writeFileSync(baselinePath, `${JSON.stringify(sorted, null, 2)}\n`)

@@ -7,6 +7,7 @@ import { writeExamplePluginDocs } from './generateExamplePluginDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
 import { writeFileTypeDocs } from './generateFileTypeDocs.ts'
+import { writeGatedBudgetDocs } from './generateGatedBudgetDocs.ts'
 import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { writeLaunchViewDocs } from './generateLaunchViewDocs.ts'
@@ -87,6 +88,10 @@ export const MARKER_GENERATORS: MarkerGenerator[] = [
   {
     label: 'File type tables',
     write: (corpus, opts) => writeFileTypeDocs(corpus, opts),
+  },
+  {
+    label: 'Gated adapter budgets table',
+    write: (_corpus, opts) => writeGatedBudgetDocs(opts),
   },
   {
     label: 'Display foundations table',
