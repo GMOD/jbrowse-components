@@ -249,6 +249,27 @@ disagreeing means a connector on screen with no key entry, or the reverse. The
 `crossRegion` short-circuit on `laidOutPileupMap.size < 2` is what keeps a scope
 nobody opted into off the single-region hot path.
 
+The precision that rule is missing, since it reads as a clipping limit and is
+not one: **an arc across two regions was never clipped away, it was drawn in the
+wrong place and then clipped**. Each block projects bp through its OWN range, so
+the far foot is extrapolated as though the bp the view skips at the seam did not
+exist — 150 px of error in opposite directions on the worked case, two curves
+with two apexes, neither of them the arc. Had both blocks drawn the same
+globally-correct curve, each clip would have kept its own half and the halves
+would have joined. `CrossRegionArcsOverlay` is that curve, drawn once in view
+space, and three things about it are worth knowing before touching it:
+
+- **Its geometry is `arcMark`'s, through `arcMarkFrom`** — the same resolution
+  the GPU and Canvas2D use, with the bp→x step hoisted out because it is the one
+  part that genuinely differs (each foot resolves through its own region). A
+  lookalike traced beside it is the drift this directory keeps paying for.
+- **It is a separate z-layer**, so a cross-region arc paints above every canvas
+  arc and tick regardless of `arcPaintRank`. Accepted rather than accidental:
+  nothing cross-region is routine.
+- **Its hover writes `setHoverState`**, not a local hovered-key that thickens
+  its own stroke. `ArcHoverOverlay` is its own z-layer too, so two hover
+  mechanisms in one band can show a hover twice.
+
 **Which sub-band a sashimi arc draws in is decided once**, in genomic bp, by
 `sashimiDownKeysByGroup` (→ `features/sashimi/junctions.ts`), and read by both
 the layout that reserves the strip and the geometry that fills it. Don't
@@ -351,6 +372,18 @@ partner is off-region carries ticks and no arcs, so an arc-count gate reserves
 the band, paints it, and then treats it as empty. The one deliberate exception
 is `resolveArcBandDebug`, which answers "why is this arc this shape" and so has
 nothing to say about a tick.
+
+**A question asked ACROSS the lanes is answered by `computeArcsByGroup`, not by
+a walk of `arcsByGroup`.** There are three — the lanes with any ink
+(`inkGroupKeys`), the colour slots drawn (`colorSlots`), the read cloud's Y
+domain (`maxFlatArcSpanBp`) — and all three used to be walks of that one feed.
+Splitting the cross-region arcs out of it broke two at once and would have
+broken the third: a band unreserved for a lane whose ink had moved, a legend
+swatch missing for a colour still on screen. They are not three slips; "which
+arcs does this lane draw" had stopped having one answer, and a fourth half would
+break them again. `ArcsByGroupResult` also says why all three are computed AFTER
+regionization: an arc reaching no displayed region is dropped, so keying a
+swatch off the pre-regionization set names a colour nothing draws.
 
 The endpoint squares have no hit test of their own, covered by the bar's
 tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is arithmetic,

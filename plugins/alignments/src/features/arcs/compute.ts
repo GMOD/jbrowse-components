@@ -12,6 +12,7 @@ import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 // Generated constants, imported from the generated modules with no re-export
 // hop through palettes.ts (SHADER_JS_CODEGEN.md).
 import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.consts.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import { isConcordantPairRead } from '../../shared/buildBaseFeatureData.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import {
@@ -26,6 +27,7 @@ import { readIdAt } from '../../shared/readIdentity.ts'
 import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getOrCreate } from '../../shared/util.ts'
+import { hasArcBandInk } from './types.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -1642,6 +1644,45 @@ export function computeArcsFromPileupData(
 }
 
 /**
+ * Everything one fetch's arcs are: both drawable halves, plus the three facts
+ * that are asked ACROSS the lanes rather than of one.
+ *
+ * Those three used to be walks of `byGroup` in the model, and splitting the
+ * cross-region arcs out of it broke two of them at once — a legend swatch keyed
+ * off arcs that had moved, a Y domain sized without them, a band strip reserved
+ * for a lane whose ink was now entirely in the overlay. They were not three
+ * slips: "which arcs does this lane draw" had stopped having one answer. They
+ * are outputs of the pass holding both halves for that reason, and a third half
+ * would have to come through here too.
+ *
+ * All three are computed AFTER regionization, which is the other half of the
+ * same rule. An arc reaching no displayed region at all is dropped by
+ * `arcTouchesRegion`, so keying a swatch off the pre-regionization set would
+ * name a colour nothing draws.
+ */
+export interface ArcsByGroupResult {
+  byGroup: Map<string, Map<number, ArcsUploadData>>
+  // The arcs no per-region buffer can draw, per group — see `CrossRegionArc`.
+  // Empty in the single-region view, which is why the overlay that draws them
+  // costs nothing there.
+  crossRegionByGroup: Map<string, CrossRegionArc[]>
+  // The lanes with ANY arc-band ink, in either half. Drives the per-section band
+  // reservation: a lane whose reads yield no arc and no tick reserves no strip,
+  // so its pileup starts right under its coverage. A lane whose every arc
+  // crosses a seam — two windows either side of a breakpoint, the view read
+  // connections exist for — has ink in the overlay only, and must still reserve.
+  inkGroupKeys: Set<string>
+  // The arc colour slots actually drawn, across every lane. The legend maps them
+  // through `arcColorLegendCategory`, which needs a setting this pass doesn't
+  // have, so the slots stay raw here.
+  colorSlots: Set<number>
+  // The largest reported flat-arc span, which is the read cloud's Y domain: its
+  // axis autoscales to this and `insertSizeTickSections` labels the top tick
+  // with it. 0 when nothing flat is drawn.
+  maxFlatArcSpanBp: number
+}
+
+/**
  * The full arc upload feed for every group of one fetch.
  *
  * Resolution runs per group (a read belongs to exactly one lane, and each lane
@@ -1660,13 +1701,7 @@ export function computeArcsByGroup(
   rawDataByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>,
   regions: ArcRegions,
   settings: ArcSettings,
-): {
-  byGroup: Map<string, Map<number, ArcsUploadData>>
-  // The arcs no per-region buffer can draw, per group — see `CrossRegionArc`.
-  // Empty in the single-region view, which is why the overlay that draws them
-  // costs nothing there.
-  crossRegionByGroup: Map<string, CrossRegionArc[]>
-} {
+): ArcsByGroupResult {
   // Each group carries its own collected input rather than sitting in a second
   // array indexed in step with this one: the pooling in between is the whole
   // reason collection and resolution are separate passes, and two parallel
@@ -1678,6 +1713,9 @@ export function computeArcsByGroup(
   const scale = poolArcScale(groups.map(g => g.input))
   const byGroup = new Map<string, Map<number, ArcsUploadData>>()
   const crossRegionByGroup = new Map<string, CrossRegionArc[]>()
+  const inkGroupKeys = new Set<string>()
+  const colorSlots = new Set<number>()
+  let maxFlatArcSpanBp = 0
   for (const { key, input } of groups) {
     const { arcs, crossRegion, lines } = resolveArcs(
       input.pendingArcs,
@@ -1688,8 +1726,45 @@ export function computeArcsByGroup(
     // The per-region feed is keyed on the LOADED list, unchanged: it is what a
     // block draws from, and a displayed region whose fetch has not landed has
     // no block to draw.
-    byGroup.set(key, arcsToRegionMap({ arcs, lines }, regions.loaded))
+    const regionMap = arcsToRegionMap({ arcs, lines }, regions.loaded)
+    byGroup.set(key, regionMap)
     crossRegionByGroup.set(key, crossRegion)
+
+    // The cross-group facts, over BOTH halves and AFTER regionization — see
+    // `ArcsByGroupResult`.
+    let hasInk = crossRegion.length > 0
+    for (const data of regionMap.values()) {
+      if (hasArcBandInk(data)) {
+        hasInk = true
+      }
+      for (const ct of data.arcColorTypes) {
+        colorSlots.add(ct)
+      }
+      // A tick carries no per-instance colour — every one of them is
+      // ARC_COLOR_INTERCHROM (arcLine.slang) — so their presence, not a scan of
+      // their colours, is what keys the swatch.
+      if (data.numArcLines > 0) {
+        colorSlots.add(ARC_COLOR_INTERCHROM)
+      }
+      if (data.maxFlatArcSpanBp > maxFlatArcSpanBp) {
+        maxFlatArcSpanBp = data.maxFlatArcSpanBp
+      }
+    }
+    for (const arc of crossRegion) {
+      colorSlots.add(arc.colorType)
+      if (isFlatArcShape(arc.shapeType) && arc.spanBp > maxFlatArcSpanBp) {
+        maxFlatArcSpanBp = arc.spanBp
+      }
+    }
+    if (hasInk) {
+      inkGroupKeys.add(key)
+    }
   }
-  return { byGroup, crossRegionByGroup }
+  return {
+    byGroup,
+    crossRegionByGroup,
+    inkGroupKeys,
+    colorSlots,
+    maxFlatArcSpanBp,
+  }
 }

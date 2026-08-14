@@ -564,6 +564,10 @@ export function createTestAlignmentsDisplay() {
   const Session = baseSession
     .volatile(() => ({
       rpcManager: { call: () => Promise.resolve(undefined) },
+      // `colorPalette` derives from the session's, so without it the harness
+      // boots a display that throws the moment a test reads any getter
+      // resolving a colour — the cross-region arc geometry being the first.
+      palette: resolvePalette(),
       assemblyManager: {
         get: (name: string) => (name === 'volvox' ? asm : undefined),
         isValidRefName: () => true,

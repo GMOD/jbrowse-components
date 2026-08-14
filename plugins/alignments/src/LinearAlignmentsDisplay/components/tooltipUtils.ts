@@ -81,9 +81,19 @@ export interface SashimiTooltipPayload {
 export interface ArcTooltipPayload {
   type: 'arc'
   refName: string
-  // The two endpoints in absolute genomic bp, already ordered left-to-right.
+  // The two endpoints in absolute genomic bp, ordered left-to-right — UNLESS
+  // `endRefName` is set, where they are `refName`'s end and `endRefName`'s end
+  // in that order and ordering them would be meaningless.
   start: number
   end: number
+  // The far end's chromosome, present only when it differs from `refName`. An
+  // interchromosomal arc is the one mark whose two feet are not on one number
+  // line, so it is rendered as two positions rather than as a range with a
+  // distance: `chr22:23,290,313-130,853,964` names one chromosome and a
+  // coordinate from another, and a bp distance across a translocation is not a
+  // quantity. As a tick this fact was readable from the mark itself; as an arc
+  // the colour is the only channel carrying it, so the hover has to say it.
+  endRefName?: string
   // Reads behind this arc. One arc is one junction since `resolveArcs`, so this
   // is the number the stroke width encodes — and the reason the hover is worth
   // having: the picture ranks junctions, and this says by how much.
@@ -514,19 +524,44 @@ export function formatSashimiTooltip(arc: {
   }
 }
 
-// Unlike sashimi's, this one DOES come from a hit test: read-connection arcs are
-// painted into the canvas by both renderers, so there is no per-path mouse
-// handler to hand its own arc over and `hitTestArcs` has to find it first.
+// Unlike sashimi's, this comes from a hit test for MOST arcs: the ones painted
+// into the canvas by both renderers have no per-path mouse handler to hand their
+// own arc over, so `hitTestArcs` has to find them first. The cross-region
+// overlay is the exception and calls this directly, which is why the parameter
+// is narrowed to the fields an arc's hover reports rather than the whole
+// `ArcHitResult` — a seam-crossing arc then reads identically to one inside a
+// region instead of getting a second formatter.
 //
 // The endpoints are ordered here rather than at the hit test, which reports them
 // as the worker resolved them (mate 1, mate 2). A location range reads
 // backwards otherwise, and the arc itself is symmetric — `arcKey` already
 // treats the pair as ordered, so nothing downstream distinguishes them.
+//
+// UNLESS the two ends are on different chromosomes, where ordering them is
+// meaningless and `min`/`max` over the two bp is a locstring naming one
+// chromosome and a coordinate from another. `endRefName` is what separates the
+// two cases: absent or equal, this is a range; different, it is two positions,
+// and the partner chromosome is exactly what a tick's hover was worth more than
+// an arc's before the arc could be drawn at all.
 export function formatArcTooltip(
-  hit: ArcHitResult,
+  hit: Pick<ArcHitResult, 'x1' | 'x2' | 'support' | 'shapeType' | 'spanBp'>,
   refName: string,
   category: string | undefined,
+  endRefName?: string,
 ): ArcTooltipPayload {
+  if (endRefName !== undefined && endRefName !== refName) {
+    return {
+      type: 'arc',
+      refName,
+      // NOT ordered: `x1` belongs to `refName` and `x2` to `endRefName`, and
+      // swapping them would put each coordinate under the other's chromosome.
+      start: hit.x1,
+      end: hit.x2,
+      endRefName,
+      support: hit.support,
+      category,
+    }
+  }
   return {
     type: 'arc',
     refName,

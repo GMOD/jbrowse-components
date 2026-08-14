@@ -6,7 +6,7 @@
 // be. The geometry is `arcMark`'s, not a second reading of it.
 import { arcMark } from './mark.ts'
 
-import type { ArcBandFrame } from './mark.ts'
+import type { ArcBandFrame, ArcMark } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
 
 export function arcScreenPath(
@@ -14,7 +14,14 @@ export function arcScreenPath(
   i: number,
   frame: ArcBandFrame,
 ) {
-  const mark = arcMark(data, i, frame)
+  return arcMarkScreenPath(arcMark(data, i, frame))
+}
+
+// The path of an already-resolved mark. Split out for the cross-region overlay,
+// which has no `ArcsUploadData` to index into — its arcs are the ones no
+// per-region buffer holds — and which must trace the same ink the GPU would
+// have, not a lookalike.
+export function arcMarkScreenPath(mark: ArcMark) {
   // The read cloud's connector, at the drawn extent `arcMark` widened — so a
   // sub-minimum pair traces the bar it actually paints, which is the same extent
   // the hit test measures.

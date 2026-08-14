@@ -62,18 +62,12 @@ export function hasArcBandInk(data: ArcsUploadData) {
   return data.numArcs > 0 || data.numArcLines > 0
 }
 
-// Whether a group's arc feed paints anything at all, across its regions. Drives
-// the per-section arc band: a lane whose reads yield no arc (and no connector
-// tick) reserves no band, so its pileup starts right under its coverage instead
-// of below an empty strip. `undefined` is a group key with no arc entry, which
-// is the same "nothing to draw" answer.
-export function anyArcsDrawn(
-  regionMap: ReadonlyMap<number, ArcsUploadData> | undefined,
-) {
-  return regionMap === undefined
-    ? false
-    : [...regionMap.values()].some(hasArcBandInk)
-}
+// "Does this LANE paint anything" used to live here too, as `anyArcsDrawn` over
+// one group's region map. It moved into `computeArcsByGroup` as `inkGroupKeys`
+// when the cross-region arcs were split out, because the question stopped being
+// answerable from this feed alone: a lane whose every arc crosses a seam has
+// all its ink in the overlay and none in any region's `ArcsUploadData`, and the
+// old predicate said the band was empty and reserved no strip for it.
 
 export function emptyArcsUploadData(): ArcsUploadData {
   return {

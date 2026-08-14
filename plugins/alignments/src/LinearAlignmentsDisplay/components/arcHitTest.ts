@@ -286,7 +286,7 @@ export function resolveArcBandDebug(
 // reserves no band (`arcBandHeight` 0 — arcs off, or a lane whose reads produced
 // none), which is also the gate the renderers use to skip the pass.
 //
-// The emptiness test is `anyArcsDrawn`'s, not `numArcs === 0`: a lane can carry
+// The emptiness test is `hasArcBandInk`'s, not `numArcs === 0`: a lane can carry
 // nothing but interchromosomal ticks — a translocation at the edge of a region
 // with no intra-chromosomal pair in view is exactly that — and gating on the arc
 // count alone made those the one band that reserved space, painted ink, and

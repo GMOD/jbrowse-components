@@ -53,10 +53,13 @@ export interface SectionGroupInput {
   key: string
   label: string
   maxY: number
-  // Whether this group's arc feed draws anything (`anyArcsDrawn`). A lane with
-  // no arcs reserves no arc band and gets no draw band, so its pileup sits right
-  // under its coverage rather than below an empty strip — the visible symptom
-  // when grouping splits reads into lanes only some of which have junctions.
+  // Whether this group's arcs draw anything at all — EITHER half, which is
+  // `inkGroupKeys`. A lane with no arcs reserves no arc band and gets no draw
+  // band, so its pileup sits right under its coverage rather than below an empty
+  // strip — the visible symptom when grouping splits reads into lanes only some
+  // of which have junctions. A lane whose every arc crosses a seam has its ink
+  // in the cross-region overlay and none in any region's buffer, and must still
+  // reserve.
   hasArcs: boolean
   // The same question for the sashimi strip: whether this group has a junction
   // bound for it (`groupsWithSashimiDownArcs`). Both are the raw per-lane data

@@ -44,19 +44,19 @@ import {
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, observable } from 'mobx'
 
+import { arcAvailH, arcYScale } from '../features/arcs/arcYScale.ts'
 import {
   arcColorLegendCategory,
   computeArcsByGroup,
   computeReadChains,
 } from '../features/arcs/compute.ts'
-import { anyArcsDrawn } from '../features/arcs/types.ts'
+import { computeCrossRegionArcs } from '../features/arcs/crossRegionOverlay.ts'
 import { computeDerivativePaths } from '../features/derivativePaths/computePaths.ts'
 import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
 } from '../features/linkedReads/computeOverlay.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
-import { ARC_COLOR_INTERCHROM } from '../shaders/slang/arcLine.consts.generated.ts'
 import {
   COLOR_SCHEMES,
   isModificationScheme,
@@ -138,7 +138,7 @@ import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types'
-import type { CrossRegionArc } from '../features/arcs/compute.ts'
+import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
@@ -1364,23 +1364,14 @@ export default function stateModelFactory(
         get arcLegendCategories(): Set<ReadColorCategory> {
           const present = new Set<ReadColorCategory>()
           if (this.showLegend && self.readConnections !== 'off') {
-            for (const regionMap of this.arcsByGroup.values()) {
-              for (const data of regionMap.values()) {
-                for (const ct of data.arcColorTypes) {
-                  present.add(arcColorLegendCategory(ct, self.arcColorByType))
-                }
-                // Connector ticks carry no per-instance color — every one is
-                // ARC_COLOR_INTERCHROM (arcLine.slang) — so their presence, not
-                // a scan of their colors, is what keys the swatch.
-                if (data.numArcLines > 0) {
-                  present.add(
-                    arcColorLegendCategory(
-                      ARC_COLOR_INTERCHROM,
-                      self.arcColorByType,
-                    ),
-                  )
-                }
-              }
+            // `colorSlots`, not a walk of `arcsByGroup`: that is only one of the
+            // two halves the arcs are resolved into, and a lane whose every arc
+            // crosses a seam would key no swatch at all for colours it draws.
+            // The pass that holds both halves answers this — see
+            // `ArcsByGroupResult`, which also says why it is computed after
+            // regionization rather than before.
+            for (const slot of this.arcsResult.colorSlots) {
+              present.add(arcColorLegendCategory(slot, self.arcColorByType))
             }
           }
           return present
@@ -1933,12 +1924,15 @@ export default function stateModelFactory(
          * draws, and its reads would shift `poolArcScale` for everyone. Skipping
          * also saves the whole per-read arc pass over a lane no section renders.
          */
-        get arcsResult(): {
-          byGroup: Map<string, Map<number, ArcsUploadData>>
-          crossRegionByGroup: Map<string, CrossRegionArc[]>
-        } {
+        get arcsResult(): ArcsByGroupResult {
           if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
-            return { byGroup: new Map(), crossRegionByGroup: new Map() }
+            return {
+              byGroup: new Map(),
+              crossRegionByGroup: new Map(),
+              inkGroupKeys: new Set(),
+              colorSlots: new Set(),
+              maxFlatArcSpanBp: 0,
+            }
           }
           const settings = {
             colorByType: self.arcColorByType,
@@ -2180,9 +2174,18 @@ export default function stateModelFactory(
           // Both below-coverage strips are reserved per lane: grouping routinely
           // leaves lanes with nothing bound for one (the 'Not split' lane of a
           // split-read grouping has no arc), and those carried an empty strip.
-          // `arcsByGroup` is empty when read-connections are off, so this costs
-          // nothing on that path.
-          const arcsByGroup = self.arcsByGroup
+          // Empty when read-connections are off, so this costs nothing there.
+          //
+          // The band is reserved for INK, and a lane's ink can live entirely in
+          // the cross-region overlay: an arc whose two feet are in different
+          // displayed regions is held out of `arcsByGroup` on purpose
+          // (`CrossRegionArc`), so a lane whose every arc crosses a seam — two
+          // windows either side of a breakpoint, which is the view read
+          // connections exist for — would reserve nothing and then have nowhere
+          // to draw. `inkGroupKeys` is that question asked of the pass holding
+          // both halves, which is this directory's `hasArcBandInk`-not-`numArcs`
+          // rule met one level up.
+          const arcInkLanes = self.arcsResult.inkGroupKeys
           const sashimiLanes = self.sashimiDownArcLanes
           const groups =
             order.length === 0
@@ -2202,7 +2205,7 @@ export default function stateModelFactory(
                   key,
                   label,
                   maxY: groupMaxYFor(key),
-                  hasArcs: anyArcsDrawn(arcsByGroup.get(key)),
+                  hasArcs: arcInkLanes.has(key),
                   hasSashimiDownArcs: sashimiLanes.has(key),
                 }))
           return computeStackedSections(groups, {
@@ -2862,23 +2865,17 @@ export default function stateModelFactory(
           if (self.readConnections !== 'cloud') {
             return undefined
           }
-          // Max across every group so all sections share one Y-domain (the same
-          // comparability trick coverage uses with coverageMaxDepth). Ungrouped
-          // has one group, so this reduces to the prior single-group max.
+          // Maxed across every group and both halves by `computeArcsByGroup`, so
+          // all sections share one Y-domain (the same comparability trick
+          // coverage uses with coverageMaxDepth) and an arc that moved to the
+          // overlay still sizes the axis it is plotted on. Ungrouped has one
+          // group, so this reduces to the prior single-group max.
           //
           // The largest INSERT SIZE, not the largest drawn Y —
           // `insertSizeTickSections` labels its top tick with this number, so a
           // domain carrying the cloud's ±8% jitter printed a template length no
           // read has.
-          let maxBp = 0
-          for (const regionMap of self.arcsByGroup.values()) {
-            for (const data of regionMap.values()) {
-              if (data.maxFlatArcSpanBp > maxBp) {
-                maxBp = data.maxFlatArcSpanBp
-              }
-            }
-          }
-          return Math.max(1000, maxBp)
+          return Math.max(1000, self.arcsResult.maxFlatArcSpanBp)
         },
 
         /**
@@ -2922,6 +2919,75 @@ export default function stateModelFactory(
                   })
                 : undefined
             return ticks ? [{ groupKey: sec.groupKey, ticks }] : []
+          })
+        },
+
+        /**
+         * #getter
+         * Per-section geometry for the arcs no per-region pass can draw — the
+         * ones whose two feet are in different displayed regions
+         * (`CrossRegionArc`). Band-local, like sashimi's: the overlay and the
+         * SVG export each place the box at `bandScreenTop(bandTop, …)`, so this
+         * does not depend on `scrollTop` and MobX replays it while a grouped
+         * track scrolls.
+         *
+         * Empty in the single-region view, which is almost every view — the
+         * partition upstream returns nothing there, so this costs one Map lookup
+         * per section.
+         */
+        get crossRegionArcSections() {
+          const view = self.lgv
+          if (self.readConnections === 'off' || !view.initialized) {
+            return []
+          }
+          const byGroup = self.crossRegionArcsByGroup
+          const bpToScreenX = makeBpToScreenX(view)
+          const pxPerBp = view.bpPerPx > 0 ? 1 / view.bpPerPx : 0
+          return self.renderSections.flatMap(sec => {
+            const arcs = byGroup.get(sec.groupKey)
+            // A lane with no cross-region arcs reserves nothing and renders
+            // nothing — the same gate the per-region passes use to skip.
+            if (!arcs?.length || sec.arcBandHeight <= 0) {
+              return []
+            }
+            const { domainBp, log } = arcYScale(
+              this.arcsYDomainBp,
+              arcAvailH(sec.arcBandHeight),
+              pxPerBp,
+            )
+            return [
+              {
+                groupKey: sec.groupKey,
+                bandTop: sec.arcBandTop,
+                bandHeight: sec.arcBandHeight,
+                arcs: computeCrossRegionArcs({
+                  arcs,
+                  bpToScreenX,
+                  frame: {
+                    arcsYDomainBp: domainBp,
+                    arcsYLog: log,
+                    // Band-local, so the host places the box rather than the
+                    // path carrying the section's offset.
+                    arcsTop: 0,
+                    arcsH: sec.arcBandHeight,
+                    pairedArcsDown: sec.arcDown,
+                    // The VIEW's width — see `ComputeCrossRegionArcsOpts`, which
+                    // says why this is the one consumer that must not use a
+                    // block's.
+                    screenWidthPx: view.width,
+                  },
+                  lineWidth: self.readConnectionsLineWidth,
+                  colors: self.colorPalette,
+                  // Said out loud rather than dropped silently, which is this
+                  // repo's rule for a cap. Once per resolve, not per arc.
+                  onCapped: (dropped, kept) => {
+                    console.warn(
+                      `cross-region arcs: drawing the ${kept} best-supported of ${kept + dropped} in lane "${sec.groupKey}"; turn off concordant-pair arcs to thin them`,
+                    )
+                  },
+                }),
+              },
+            ]
           })
         },
       }))

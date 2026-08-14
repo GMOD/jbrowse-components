@@ -361,15 +361,35 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       )
     }
     case 'arc': {
-      const { refName, start, end, support, category, insertSize } = tooltipData
+      const { refName, endRefName, start, end, support, category, insertSize } =
+        tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
             <div>
-              <strong>Read connection</strong>
+              <strong>
+                {endRefName === undefined
+                  ? 'Read connection'
+                  : 'Translocation connection'}
+              </strong>
             </div>
-            <div>Location: {formatLocationRange(refName, start, end)}</div>
-            <div>Distance: {toLocale(end - start)} bp</div>
+            {/* Two POSITIONS across chromosomes, one RANGE within one. A range
+                between two chromosomes reads as a locstring naming the first
+                and a coordinate belonging to the second, and the distance below
+                it is a subtraction of two unrelated number lines — which is the
+                same reason `resolveArcs` refuses to colour these by insert size
+                or orientation. */}
+            {endRefName === undefined ? (
+              <>
+                <div>Location: {formatLocationRange(refName, start, end)}</div>
+                <div>Distance: {toLocale(end - start)} bp</div>
+              </>
+            ) : (
+              <div>
+                Location: {formatLocation(refName, start)} ↔{' '}
+                {formatLocation(endRefName, end)}
+              </div>
+            )}
             {/* The count `resolveArcs` folded into this arc, which is what its
                 stroke width encodes. */}
             <div>{supportLabel(support)}</div>
