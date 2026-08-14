@@ -1,12 +1,36 @@
-// Two nodes and a cluster came out by the same rule: a step whose whole job is
-// to hand off to the next one is an EDGE, not a box.
+// Every box says what happens in ENGLISH, with the identifier under it in small
+// grey monospace. Reading the chain and finding the code are two different
+// tasks, and a label that only names `boundsValid && isCacheValid()` serves the
+// second at the cost of the first — you cannot follow the flow until you have
+// read four function signatures. The English line is what the eye lands on; the
+// identifier is there when the reader goes looking.
 //
-//   collect into `needed`    -> the check's "no" branch label
-//   rotate stop token /      -> the second line of the cluster's own label,
-//     capture fetchGeneration   since it is what entering fetchRegions does
-//   FetchVisibleRegions      -> the edge from the viewport change to the check.
-//                               It was a cluster drawn around that single
-//                               diamond, which is a label with a border.
+// The English is plain rather than merely spelt out, which is a second pass and
+// not the same one: "is this block already covered?" is a sentence made of our
+// vocabulary, and a block, a fetch and a region are all things the reader is
+// here to learn. So it asks whether we already have this PART OF THE VIEW, the
+// worker is a BACKGROUND worker, and fetchGeneration++ is DONE LOADING. Nothing
+// in the top line of a box is a word this page has to define first.
+//
+// That needs HTML-like labels (`label=<…>` rather than `label="…"`), so `&` is
+// `&amp;` inside them, and a malformed one renders as literal angle brackets
+// rather than failing — check the render, not the exit code.
+//
+// The three questions are rounded boxes rather than diamonds. A diamond sized to
+// hold a sentence is about twice as wide as the sentence, and there are three of
+// them; the "?" and the yes/no edges already say it is a branch.
+//
+// Two nodes and a cluster came out by the rule that a step whose whole job is to
+// hand off to the next one is an EDGE, not a box:
+//
+//   collect into `needed`    -> the check's "no" branch, which also carries
+//                               fetchNeeded(needed), the call it makes
+//   rotate stop token /      -> "cancels whatever was still in flight" in the
+//     capture fetchGeneration   cluster's own label, since that is what entering
+//                               fetchRegions does
+//   FetchVisibleRegions      -> the edge from the view moving to the check. It
+//                               was a cluster drawn around that single question,
+//                               which is a label with a border.
 //
 // That leaves ONE cluster, and it now means something a fill colour could not
 // say on its own: everything inside it is the display's to write.
@@ -14,59 +38,84 @@
 // `increment fetchGeneration` looks like the same case and is not. Dropping it
 // turns two SOLID in-cluster edges into two more dashed ones leaving the box, so
 // the picture pays a crossing and a label sitting on the cluster border to save
-// one node. Keeping it holds the whole rule "dashed means re-entry" to two
+// one node. Keeping it holds the whole rule "dashed means look again" to two
 // places, both below the chain.
+//
+// The cluster's label is left-justified AND short because the edge into the box
+// enters at the first node's horizontal centre: a label reaching that far right
+// gets struck through by the arrow, which is why fetchNeeded moved to the edge
+// and fetchRegions lost nothing but its length here.
 digraph fetch_chain {
   rankdir=TB
   labelloc=t
   fontname="Helvetica"
   fontsize=18
-  label="The fetch chain: viewport change to loaded data, and back to rest"
+  label="From the view moving to data on screen, and back to rest"
   nodesep=0.35
   ranksep=0.5
 
-  node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
+  node [shape=box, fontname="Helvetica", fontsize=13, style=filled, fillcolor="#ffffff"]
   edge [fontname="Helvetica", fontsize=10, color="#555555"]
 
-  viewport [label="view.visibleRegions changes", fillcolor="#e1f5fe"]
+  viewport [
+    label=<the view moves<br/><font point-size="9" face="Courier" color="#6b6b6b">view.visibleRegions</font>>
+    fillcolor="#e1f5fe"
+  ]
   check [
-    shape=diamond
-    label="per visible block:\nboundsValid && isCacheValid()?"
+    shape=box, style="filled,rounded"
+    label=<do we already have<br/>this part of the view?<br/><font point-size="9" face="Courier" color="#6b6b6b">boundsValid &amp;&amp; isCacheValid()</font>>
     fillcolor="#e3f2fd"
   ]
 
   // ── What the display owns ────────────────────────────────────────
   subgraph cluster_fetch {
-    label="fetchNeeded → fetchRegions(needed, work)\nrotates the stop token, captures fetchGeneration"
+    label=<<br/><b>your display's own code</b><br/><font point-size="10" face="Courier" color="#5b6b4b">fetchRegions(needed, work)</font><br/><font point-size="10">cancels anything still loading</font><br/>>
     labelloc=t
+    labeljust=l
     fontname="Helvetica"
     fontsize=13
     style=filled
     fillcolor="#f1f8e9"
     color="#aed581"
 
-    bytes [shape=diamond, label="byte estimate\nover budget?", fillcolor="#ffffff"]
-    work [label="work(ctx)\nrpcManager.call(…, rpcProps(), stopToken)"]
-    stale [shape=diamond, label="ctx.isStale()?", fillcolor="#ffffff"]
-    commit [label="setRpcData(regionIndex, result)", fillcolor="#dcedc8"]
-    bump [label="increment fetchGeneration", fillcolor="#dcedc8"]
+    bytes [
+      shape=box, style="filled,rounded"
+      label=<is that too<br/>much data?<br/><font point-size="9" face="Courier" color="#6b6b6b">byte estimate vs budget</font>>
+      fillcolor="#ffffff"
+    ]
+    work [
+      label=<ask a background worker to load it<br/><font point-size="9" face="Courier" color="#6b6b6b">rpcManager.call(…, rpcProps(), stopToken)</font>>
+    ]
+    stale [
+      shape=box, style="filled,rounded"
+      label=<did the view move<br/>while we waited?<br/><font point-size="9" face="Courier" color="#6b6b6b">ctx.isStale()</font>>
+      fillcolor="#ffffff"
+    ]
+    commit [
+      label=<keep it, and draw<br/><font point-size="9" face="Courier" color="#6b6b6b">setRpcData(regionIndex, result)</font>>
+      fillcolor="#dcedc8"
+    ]
+    bump [
+      label=<done loading<br/><font point-size="9" face="Courier" color="#6b6b6b">fetchGeneration++</font>>
+      fillcolor="#dcedc8"
+    ]
   }
 
   toolarge [
-    label="regionTooLarge banner\n+ Force load"
+    label=<stop, and offer Force load<br/><font point-size="9" face="Courier" color="#8a6d3b">regionTooLarge</font>>
     style="filled,dashed"
     fillcolor="#fff3e0"
   ]
-  done [label="nothing needed — at rest", peripheries=2, fillcolor="#e1f5fe"]
+  done [label=<nothing to load>, peripheries=2, fillcolor="#e1f5fe"]
 
-  viewport -> check [label="  FetchVisibleRegions\l  debounced 600 ms\l"]
-  check -> done [label="  yes, already loaded"]
-  check -> bytes [label="  no — collect into `needed`"]
-  bytes -> toolarge [label="  yes, stop here"]
+  viewport -> check [label=<  once it stops moving, 600 ms<br align="left"/>  <font face="Courier" color="#6b6b6b">FetchVisibleRegions</font><br align="left"/>>]
+  check -> done [label="  yes"]
+  check -> bytes [label=<  no — load the missing parts<br align="left"/>  <font face="Courier" color="#6b6b6b">fetchNeeded(needed)</font><br align="left"/>>]
+  bytes -> toolarge [label="  yes"]
   bytes -> work [label="  no"]
   work -> stale
   stale -> commit [label="  no"]
-  stale -> bump [label="  yes — drop results"]
+  stale -> bump [label="  yes — throw it away"]
   commit -> bump
 
   // Both loose ends re-enter the same debounced check, so they meet at a
@@ -79,14 +128,14 @@ digraph fetch_chain {
   // puts it just below the last node of the chain. `{ rank=same; bump; reenter }`
   // is the obvious alternative and is wrong: a rankset EJECTS its members from
   // their cluster ("bump was already in a rankset, deleted from cluster"), which
-  // drops `increment fetchGeneration` out of the green box it belongs to.
+  // drops that node out of the green box it belongs to.
   bump -> reenter [style=dashed, arrowhead=none]
   // The other two are constraint=false: they close the loop but must not pull
   // their targets back up a rank, which is what left the entry node stranded
   // mid-graph and crossed every edge around it.
   toolarge -> reenter [style=dashed, constraint=false, arrowhead=none]
   reenter -> check [
-    label="  re-enters the check:\l  a fetchGeneration bump,\l  or the next settled viewport\l"
+    label=<  look again<br align="left"/>  <font point-size="9">after loading, or when the view next stops moving</font><br align="left"/>>
     style=dashed
     constraint=false
   ]
