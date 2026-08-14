@@ -541,10 +541,10 @@ export function getReadColor(
 export const swatchPaletteKeys = {
   fwdStrand: 'colorFwdStrand',
   revStrand: 'colorRevStrand',
-  noStrand: 'colorNostrand',
+  noStrand: 'colorNeutralRead',
   // non-split read under the pair-orientation scheme: reuses the neutral grey,
   // but a distinct category so the legend can label it "Non-split read"
-  nonSplit: 'colorNostrand',
+  nonSplit: 'colorNeutralRead',
   pairLR: 'colorPairLR',
   pairRL: 'colorPairRL',
   pairRR: 'colorPairRR',
@@ -566,7 +566,7 @@ export const swatchPaletteKeys = {
   noTagValue: 'colorPairLR',
   // MAPQ 255 = "unavailable". The same grey `noStrand` uses for an unknown
   // strand, and for the same reason: the answer is missing, not extreme.
-  mapqUnavailable: 'colorNostrand',
+  mapqUnavailable: 'colorNeutralRead',
 } satisfies Partial<Record<ReadColorCategory, keyof ColorPalette>>
 
 export type SwatchCategory = keyof typeof swatchPaletteKeys

@@ -112,7 +112,7 @@ public struct Uniforms {
   // alpha in the high byte). Unpack with `unpackRGBA(u.colorX).xyz`.
   public uint colorFwd;
   public uint colorRev;
-  public uint colorNostrand;
+  public uint colorNeutralRead;
   public uint colorPairLR;
   public uint colorPairRL;
   public uint colorPairRR;

@@ -345,16 +345,10 @@ const darkNeutrals: NeutralTokens = {
 // one home. `theme.ts` re-exports them, so existing imports are unaffected.
 // ---------------------------------------------------------------------------
 
-export const colorFwdStrandNotProper = '#ECC8C8'
-export const colorRevStrandNotProper = '#BEBED8'
 /** #color alignments-strand | Forward strand | Read maps to the forward strand */
 export const colorFwdStrand = '#EC8B8B'
 /** #color alignments-strand | Reverse strand | Read maps to the reverse strand */
 export const colorRevStrand = '#8F8FD8'
-export const colorFwdMissingMate = '#D11919'
-export const colorRevMissingMate = '#1919D1'
-export const colorFwdDiffChr = '#000'
-export const colorRevDiffChr = '#969696'
 /** #color alignments-pair-orientation | LR (→ ←, normal proper pair) | Concordant */
 export const colorPairLR = '#d3d3d3'
 // Dimmer grey for dark mode: the light #d3d3d3 reads as near-white glaring
@@ -366,7 +360,29 @@ export const colorPairRL = '#0099bb'
 export const colorPairLL = '#4d9a4d'
 /** #color alignments-pair-orientation | RR (← ←, both mates reverse strand) | Abnormal orientation */
 export const colorPairRR = '#5555bb'
-export const colorNostrand = '#c8c8c8'
+// Was `colorNostrand`, which named the one thing it essentially never paints. A
+// SAM record's strand is DEFINED from the reverse flag inside the adapter's
+// feature class (`SamRecordFeature.strand`), so it is always +1 or -1, and a
+// PAF/synteny block carries a real strand too — `strandCategory`'s `noStrand`
+// branch is the defensive third case of a `-1 | 0 | 1` return, not a category
+// an alignments track produces. The name survived because the two places that
+// DO reach 0 are strand questions of a different kind: a sashimi junction whose
+// spliced reads carry no XS/TS/ts tag (ordinary unstranded RNA-seq), and a
+// strand-valued read tag that a read simply lacks.
+//
+// What it actually paints, in volume, is neither — `nonSplit` ("Unsplit read",
+// the majority of a pileup under the split-read scheme) and `mapqUnavailable`
+// (MAPQ 255). What unites all five is that the scheme's question has no
+// informative answer for this read, so the value is the neutral it falls back
+// to rather than a statement about strand.
+//
+// It is NOT the only such neutral: `colorPairLR` #d3d3d3 is the baseline for
+// `normalInsert`, `noTagValue` and `plain`, and the two sit dE 3.95 apart —
+// close enough that `readTagColors.ts` moved its untagged-read case off this one
+// and onto that one, because only that one darkens under the dark theme. Whether
+// two neutrals are wanted at all is the open question here; this rename does not
+// settle it, and the dark-mode half is `agent-docs/TODO.md`.
+export const colorNeutralRead = '#c8c8c8'
 /**
  * #color alignments-pair-orientation | Inter-chromosomal | Mate maps to a different chromosome; colored distinctly rather than by orientation
  * #color alignments-insert-size | Mate on a different chromosome | Suggests an inter-chromosomal event
@@ -522,8 +538,6 @@ export const colorUnmappedMate = '#000000'
 // See colorUnmappedMate: the same dark neutral, lifted off the #121212 ground by
 // the least that still reads as a read rather than as a hole.
 export const colorUnmappedMateDark = '#4a4a4a'
-export const colorUnknown = '#808080'
-export const colorLongreadRevFwd = '#6688ee'
 export const colorLongreadInv = '#7755bb'
 /** #color alignments-pair-orientation | Split paired-end read (inverted) | A paired read's supplementary segment maps opposite-strand to its primary, so the junction is inverted — an inversion or an inverted duplication */
 export const colorSplitReadInversion = '#9b30b0'
@@ -648,9 +662,9 @@ const skip = '#009a8a'
  * red and blue, and darkening whichever drew last reads as extra-inverted.
  *
  * So the value has one job: read as NEITHER segment. Every categorized grey in
- * the alignments vocabulary is light (`colorPairLR` #d3d3d3, `colorNostrand`
- * #c8c8c8, `colorRevDiffChr` #969696, `colorUnknown` #808080), so this sits
- * past the dark end of them in light mode and past the light end in dark mode,
+ * the alignments vocabulary is light (`colorPairLR` #d3d3d3, `colorNeutralRead`
+ * #c8c8c8, and `colorPairLRDark` #8a8a8a on the dark theme), so this sits past
+ * the dark end of them in light mode and past the light end in dark mode,
  * which is also why it inverts rather than dimming: on a dark track background
  * a charcoal span is the background showing through, i.e. a gap where the mark
  * should be.

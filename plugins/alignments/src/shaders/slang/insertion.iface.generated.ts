@@ -50,7 +50,7 @@ export const UNIFORM_OFFSET_F32 = {
 export const UNIFORM_OFFSET_U32 = {
   colorFwd: 34,
   colorRev: 35,
-  colorNostrand: 36,
+  colorNeutralRead: 36,
   colorPairLR: 37,
   colorPairRL: 38,
   colorPairRR: 39,
@@ -189,7 +189,7 @@ export interface Uniforms {
   reversed: number
   colorFwd: number
   colorRev: number
-  colorNostrand: number
+  colorNeutralRead: number
   colorPairLR: number
   colorPairRL: number
   colorPairRR: number
@@ -267,7 +267,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[33] = uniforms.reversed
   u32[34] = uniforms.colorFwd
   u32[35] = uniforms.colorRev
-  u32[36] = uniforms.colorNostrand
+  u32[36] = uniforms.colorNeutralRead
   u32[37] = uniforms.colorPairLR
   u32[38] = uniforms.colorPairRL
   u32[39] = uniforms.colorPairRR

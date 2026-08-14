@@ -495,7 +495,7 @@ describe('getReadColor maps each category to its palette color', () => {
       'mapqUnavailable',
     )
     expect(getReadColor(0, data, ColorScheme.mappingQuality, palette)).toBe(
-      rgb255(palette.colorNostrand),
+      rgb255(palette.colorNeutralRead),
     )
   })
 })

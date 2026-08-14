@@ -4,7 +4,7 @@ import {
   colorFwdStrand,
   colorInterchrom,
   colorLongInsert,
-  colorNostrand,
+  colorNeutralRead,
   colorRevStrand,
   colorShortInsert,
   colorSplitReadInversion,
@@ -65,7 +65,7 @@ export function buildColorPaletteFromPalette(
   return {
     colorFwdStrand: toRgb(colorFwdStrand),
     colorRevStrand: toRgb(colorRevStrand),
-    colorNostrand: toRgb(colorNostrand),
+    colorNeutralRead: toRgb(colorNeutralRead),
     // pair colors flow through palette.alignmentFill so user theme overrides
     // render and dark mode dims pairLR (see darkPalette in theme.ts)
     colorPairLR: toRgb(palette.alignmentFill.pairLR),

@@ -7,7 +7,7 @@ export type RGBColor = [number, number, number]
 export interface ColorPalette {
   colorFwdStrand: RGBColor
   colorRevStrand: RGBColor
-  colorNostrand: RGBColor
+  colorNeutralRead: RGBColor
   colorPairLR: RGBColor
   colorPairRL: RGBColor
   colorPairRR: RGBColor

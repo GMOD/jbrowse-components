@@ -36,6 +36,7 @@ before anyone noticed.
 | [Jump the MM delta walk with `indexOf`](#jump-the-mm-delta-walk-with-indexof-instead-of-stepping-it) | alignments, perf | 1.42x probed on forward strand; measure reverse before building |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
+| [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
 | [Audit the wiggle colour paths for the same split](#audit-the-wiggle-colour-paths-for-the-same-split) | wiggle | read `sourcesLogic.ts` against its legend |
 | [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
 | [The interbase stack overruns its half-band](#the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint) | alignments | a visual call; the overflow is measured, no fix is chosen |
@@ -312,6 +313,30 @@ While there: `arcColorsMatchReads` (the getter deciding whether the arc key
 folds into the read key) has no test, because it is a model getter and the
 parity tests exercise the classifiers instead. It is still load-bearing — the
 arcs can emit `splitInversion` where a non-chain-mode read scheme does not.
+
+### Give colorNeutralRead a dark variant, or fold it into colorPairLR
+
+`colorNeutralRead` #c8c8c8 has no dark override, and it reads **11.2** against
+the dark theme's #121212 — brighter than `colorPairLR` #d3d3d3 was (12.5) before
+`colorPairLRDark` #8a8a8a was added to stop it painting "glaring near-white
+blocks". It is not a rare slot: `swatchPaletteKeys` backs `nonSplit` with it,
+which is the majority of a pileup under the split-read scheme, plus
+`mapqUnavailable` and the sashimi arcs of an unstranded RNA-seq library.
+
+Someone has already hit this and fixed only their own path.
+`LinearAlignmentsDisplay/readTagColors.ts` moved its untagged-read case off this
+value and onto the themed `colorPairLR` — "being a fixed light grey it painted
+untagged reads BRIGHTER than ordinary reads under the dark theme, where
+colorPairLR darkens and colorNeutralRead does not". The general case is still
+there.
+
+**The reason this is a decision and not a patch** is that the two values are
+dE **3.95** apart, so the palette carries two near-identical light neutrals
+serving the same role in different schemes — this one for `noStrand` / `nonSplit`
+/ `mapqUnavailable`, `colorPairLR` for `normalInsert` / `noTagValue` / `plain`.
+Adding a dark variant makes two neutrals theme-correct; folding leaves one. The
+second is the smaller palette and the bigger change, since the legend labels the
+categories separately and a fold makes two swatch rows the same colour.
 
 ### Audit the wiggle colour paths for the same split
 

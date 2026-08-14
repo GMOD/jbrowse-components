@@ -1,7 +1,7 @@
 import { getQueryColor } from '@jbrowse/core/ui/colors'
 import {
   colorFwdStrand,
-  colorNostrand,
+  colorNeutralRead,
   colorRevStrand,
 } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
@@ -19,7 +19,7 @@ function packRgb([r, g, b]: ColorRgbTuple) {
 // (its single source of truth) so it can't drift from "Color by strand".
 const fwdStrand = packRgb(cssColorToRgb(colorFwdStrand))
 const revStrand = packRgb(cssColorToRgb(colorRevStrand))
-const noStrand = packRgb(cssColorToRgb(colorNostrand))
+const noStrand = packRgb(cssColorToRgb(colorNeutralRead))
 
 // Resolve one read's per-read string (+ its strand, for the `ts` orientation
 // tag) to a packed ABGR u32; 0 means "no color" (shader palette fallback).
@@ -70,11 +70,11 @@ function makeColorResolver(
   }
   // Categorical tag: parse+pack the color table once. A read the tag is absent
   // from packs 0 — "no color", the shader's palette fallback (colorPairLR, the
-  // same neutral an uncolored read paints) — rather than colorNostrand. The tag
+  // same neutral an uncolored read paints) — rather than colorNeutralRead. The tag
   // encodes no strand, so "no strand" was never the right neutral for it, and
   // being a fixed light grey it painted untagged reads BRIGHTER than ordinary
-  // reads under the dark theme, where colorPairLR darkens and colorNostrand
-  // does not. The strand tags above keep colorNostrand: there, absent genuinely
+  // reads under the dark theme, where colorPairLR darkens and colorNeutralRead
+  // does not. The strand tags above keep colorNeutralRead: there, absent genuinely
   // means "strand unknown".
   const packedByValue = new Map<string, number>()
   for (const [k, v] of Object.entries(colorTagMap)) {

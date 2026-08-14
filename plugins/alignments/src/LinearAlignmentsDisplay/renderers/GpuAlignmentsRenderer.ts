@@ -252,7 +252,7 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
 export const PALETTE_UNIFORM_FIELDS = {
   colorFwd: 'colorFwdStrand',
   colorRev: 'colorRevStrand',
-  colorNostrand: 'colorNostrand',
+  colorNeutralRead: 'colorNeutralRead',
   colorPairLR: 'colorPairLR',
   colorPairRL: 'colorPairRL',
   colorPairRR: 'colorPairRR',

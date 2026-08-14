@@ -59,7 +59,7 @@ describe('categorical tag colors', () => {
 
   // "No color", so the shader and the Canvas2D twin both fall back to
   // colorPairLR — the same neutral an uncolored read paints, and (unlike the
-  // fixed colorNostrand this used to pack) one that darkens with the theme
+  // fixed colorNeutralRead this used to pack) one that darkens with the theme
   // instead of leaving untagged reads brighter than their neighbours.
   test('a read the tag is absent from packs the palette fallback, not a strand color', () => {
     expect([...build([''], { '1': 'red' })]).toEqual([0])

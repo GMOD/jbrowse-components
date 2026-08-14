@@ -40,7 +40,7 @@ export function makeTestPalette(
   return {
     colorFwdStrand: z,
     colorRevStrand: z,
-    colorNostrand: z,
+    colorNeutralRead: z,
     colorPairLR: z,
     colorPairRL: z,
     colorPairRR: z,
