@@ -109,10 +109,15 @@ export function navAxisToLoc(
 }
 
 // Wait for `cond`, giving up on the two things that mean it will never come:
-// the assemblies errored, or a newer init superseded this one. Every exit is
-// caused by something that reports itself — an assembly failure lands in
-// `error` and the import form's banner, a supersede is the next init taking
-// over — so the caller re-checks its own precondition and skips quietly.
+// the view reached a terminal error, or a newer init superseded this one. Every
+// exit is caused by something that reports itself — an error lands in the import
+// form's banner, a supersede is the next init taking over — so the caller
+// re-checks its own precondition and skips quietly.
+//
+// `self.error` rather than its terms spelled out again: that getter is the view's
+// one definition of terminal, and re-spelling it here as
+// `volatileError || assemblyErrors` is what left the newest term (a malformed
+// pair of axes) out of the wait.
 //
 // This replaced a 30s ceiling. A fixed timeout can only guess: too short and it
 // expires on a slow-but-healthy remote assembly, silently dropping the
@@ -125,10 +130,7 @@ async function waitForInit(
   cond: () => boolean,
   superseded: () => boolean,
 ) {
-  await when(
-    () =>
-      superseded() || cond() || !!self.volatileError || !!self.assemblyErrors,
-  )
+  await when(() => superseded() || cond() || !!self.error)
 }
 
 function applyInitTracks(self: DotplotViewModel, init: DotplotViewInit) {

@@ -464,15 +464,41 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * A dotplot plots one assembly against another, so anything but two
+         * names here cannot lay out. `initializeDisplayedRegions` walks the two
+         * axes in step with this array, so one name leaves the other axis with
+         * no regions and `initialized` never comes true — the view sat on its
+         * spinner saying "Loading" forever, with the assembly it was supposedly
+         * waiting for already loaded. Extra names are the same statement in the
+         * other direction: nothing reads past the second, so a third assembly is
+         * silently not plotted.
+         *
+         * Only reachable from a hand-authored snapshot — `setAssemblyNames`
+         * writes both, and `applyInit` already rejects an init naming one — which
+         * is exactly the case that needs telling. Zero names is not an error: it
+         * is the import form.
+         */
+        get axisAssemblyError() {
+          const { length } = self.assemblyNames
+          return length > 0 && length !== 2
+            ? new Error(
+                `A DotplotView needs exactly two assemblyNames, horizontal axis first; got ${length} (${self.assemblyNames.join(', ')})`,
+              )
+            : undefined
+        },
+        /**
+         * #getter
          * The view's terminal state: whatever the import form's submit threw,
-         * else whatever the assemblies did. Declared here rather than beside
-         * `menuItems` so every reader below is the same expression —
-         * `showImportForm` and `showLoading` each used to re-spell it, and
-         * `showLoading` spelled it as a two-term `&&` that a third source of
-         * error would have to be added to in three places.
+         * else a pair of axes that cannot lay out, else whatever the assemblies
+         * did. Declared here rather than beside `menuItems` so every reader below
+         * is the same expression — `showImportForm` and `showLoading` each used
+         * to re-spell it, and `showLoading` spelled it as a two-term `&&` that a
+         * third source of error would have to be added to in three places.
          */
         get error(): unknown {
-          return self.volatileError ?? this.assemblyErrors
+          return (
+            self.volatileError ?? this.axisAssemblyError ?? this.assemblyErrors
+          )
         },
       }))
       .views(self => ({

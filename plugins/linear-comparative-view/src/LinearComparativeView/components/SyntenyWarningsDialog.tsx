@@ -1,9 +1,12 @@
-import { InfoDialog } from '@jbrowse/core/ui'
-import { Alert, Typography } from '@mui/material'
+import { TrackWarningsDialog } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 
+// The synteny view's binding of the shared render-warnings report. Takes the
+// model (rather than the rows) because the affordance that opens it queues a
+// dialog by component + props, and the rows have to stay live: a refetch that
+// raises or clears a warning while the dialog is open should be visible in it.
 const SyntenyWarningsDialog = observer(function SyntenyWarningsDialog({
   model,
   handleClose,
@@ -11,38 +14,12 @@ const SyntenyWarningsDialog = observer(function SyntenyWarningsDialog({
   model: LinearComparativeViewModel
   handleClose: () => void
 }) {
-  const { trackWarnings } = model
   return (
-    <InfoDialog
-      open
+    <TrackWarningsDialog
+      trackWarnings={model.trackWarnings}
       title="Synteny warnings"
-      onClose={() => {
-        handleClose()
-      }}
-    >
-      {/* Grouped by track, and the track name leads each row: a stacked view's
-        levels raise the same swapped-assemblies warning verbatim, and so does
-        every overlaid track that hits it, so an ungrouped list repeated one
-        sentence N times without ever naming the file to go fix.
-
-        Still keyed by position — the message is not an identity, and neither is
-        the track name once one track raises two warnings. */}
-      {trackWarnings.flatMap(({ name, warnings }, i) =>
-        warnings.map((w, j) => (
-          <Alert
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- see above
-            key={`${i}_${j}`}
-            severity="warning"
-            style={{ marginBottom: 8 }}
-          >
-            <Typography variant="subtitle2">
-              {name}: {w.message}
-            </Typography>
-            {w.effect}
-          </Alert>
-        )),
-      )}
-    </InfoDialog>
+      handleClose={handleClose}
+    />
   )
 })
 

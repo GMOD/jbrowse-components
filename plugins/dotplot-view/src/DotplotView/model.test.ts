@@ -140,7 +140,8 @@ test('an alias of the axis assembly still bands that axis', async () => {
   expect(model.getVHighlightCoords(span)).toBeUndefined()
 })
 
-// hand-authored session JSON and `init.highlight` locstrings both omit it
+// hand-authored session JSON and grid bookmarks may omit it (an init.highlight
+// entry never does — coerceHighlight stamps the axis it named, else the h axis)
 test('a highlight with no assemblyName bands both axes', async () => {
   const model = await setupTwoAssemblies()
   const span = { refName: 'chr1', start: 100, end: 200 }
@@ -335,6 +336,32 @@ test('settled gates on an unapplied init', () => {
   // pending — the same state the real apply passes through
   model.setInit({ views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] })
   expect(model.settled).toBe(false)
+})
+
+// One assemblyName leaves the vertical axis with no regions —
+// initializeDisplayedRegions walks the two axes in step with the array — so
+// `initialized` never comes true and the view used to sit on "Loading" forever
+// with the assembly it was waiting for already loaded
+test('a snapshot naming one assembly says so instead of spinning', () => {
+  const session = createTestSession({
+    sessionSnapshot: {
+      views: [{ type: 'DotplotView', height: 600, assemblyNames: ['volvox'] }],
+    },
+  }) as any
+  const model = session.views[0]
+  expect(`${model.error}`).toContain('exactly two assemblyNames')
+  // an error is the import form with a banner, never the loading screen
+  expect(model.showImportForm).toBe(true)
+  expect(model.showLoading).toBe(false)
+})
+
+test('two assemblyNames is not an error, and neither is none', () => {
+  expect(setup().error).toBeFalsy()
+  const session = createTestSession({
+    sessionSnapshot: { views: [{ type: 'DotplotView' }] },
+  }) as any
+  // no names at all is the import form, not a malformed view
+  expect(session.views[0].error).toBeFalsy()
 })
 
 test('highlight actions add/remove and toggle visibility', () => {
