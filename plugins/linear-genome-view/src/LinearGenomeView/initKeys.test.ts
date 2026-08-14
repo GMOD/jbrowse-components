@@ -53,6 +53,19 @@ test('identity keys are not settable even though the model declares them', () =>
   expect(unknown).toEqual({ id: 'hijacked', type: 'OtherView' })
 })
 
+// `bpPerPx`/`offsetPx` stopped being declared properties when the viewport
+// became a stored window, so the model's own property list no longer contains
+// them and they would partition as typos. A spec naming them is not a typo:
+// preProcessSnapshot converts them, so they have to reach the snapshot.
+test('the pre-window viewport keys still reach the snapshot', () => {
+  const { viewProps, unknown } = partitionLaunchKeys(
+    { bpPerPx: 10, offsetPx: 1000 },
+    props,
+  )
+  expect(viewProps).toEqual({ bpPerPx: 10, offsetPx: 1000 })
+  expect(unknown).toEqual({})
+})
+
 // the launcher warns on these; afterAttach warns on the ones that reach a frozen
 // init blob. Both need the values kept, not just the names, since the blob is
 // rebuilt from the buckets

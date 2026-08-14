@@ -53,18 +53,24 @@ test('click and drag to move sideways', async () => {
 test('click and drag to rubberband', async () => {
   const { view, findByTestId, findByText } = await createView()
   const track = await findByTestId('rubberband_controls', ...opts)
-  expect(view.bpPerPx).toEqual(0.05)
+  // `bpPerPx` is derived from the stored window (windowWidthBp / width), so it
+  // carries a ULP of division residue and is not the literal the zoom was asked
+  // for. Every consumer that compares it — the fetch caches' isCacheValid, the
+  // coarse-block gate — compares it against a value read from this same getter,
+  // so they see one stable double; only a test comparing against a hand-written
+  // literal can see the residue.
+  expect(view.bpPerPx).toBeCloseTo(0.05)
   fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
   fireEvent.click(await findByText('Zoom to region'))
-  expect(view.bpPerPx).toEqual(0.02)
+  expect(view.bpPerPx).toBeCloseTo(0.02)
 }, 30000)
 
 test('click and drag rubberband, click get sequence to open sequenceDialog', async () => {
   const { view, findByTestId, findByText } = await createView()
   const rubberband = await findByTestId('rubberband_controls', ...opts)
-  expect(view.bpPerPx).toEqual(0.05)
+  expect(view.bpPerPx).toBeCloseTo(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })

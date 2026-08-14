@@ -326,26 +326,38 @@ describe('scroll-zoom diagnostic — cursor bp stability across frames', () => {
 
     const cursorPx = 600
     const initial = model.pxToBp(cursorPx)
-    const samples: { bpPerPx: number; coord: number }[] = []
+    // `.offset` — the raw float bp offset into the region — not `.coord`, which
+    // is `regionCoord`'s floor+1 and so quantized to whole bp. At bpPerPx=1 one
+    // bp IS one pixel, so a bound below 1px cannot distinguish a viewport that
+    // moved from one that merely crossed a floor boundary, and which of those
+    // you get depends on where the arithmetic happens to land.
+    const samples: { bpPerPx: number; offset: number; index: number }[] = []
 
     // mimic wheel handler: zoomAccum capped at MAX_ZOOM_RATE_PER_MS * 16.67 ≈ 0.2
     const d = sign * 0.05
     const ratio = d > 0 ? 1 + d : 1 / (1 - d)
     for (let frame = 0; frame < 30; frame++) {
       model.zoomTo(model.bpPerPx * ratio, cursorPx)
+      const at = model.pxToBp(cursorPx)
       samples.push({
         bpPerPx: model.bpPerPx,
-        coord: model.pxToBp(cursorPx).coord,
+        offset: at.offset,
+        index: at.index,
       })
     }
 
+    // the anchor must not wander into a neighbouring region either, which
+    // comparing within-region offsets would not otherwise notice
+    expect(samples.map(s => s.index)).toEqual(samples.map(() => initial.index))
+
     const maxDriftPx = Math.max(
-      ...samples.map(s => Math.abs(s.coord - initial.coord) / s.bpPerPx),
+      ...samples.map(s => Math.abs(s.offset - initial.offset) / s.bpPerPx),
     )
     // Pre-fix: monotonic drift up to ~5 px at bpPerPx=1, frame-to-frame
-    // oscillation up to ~1.5 px at higher bpPerPx. With the float-offset +
-    // unrounded-scrollTo fixes, residual drift is < 1 bp / sub-pixel.
-    expect(maxDriftPx).toBeLessThan(0.2)
+    // oscillation up to ~1.5 px at higher bpPerPx. Now the zoom anchor is
+    // computed in the units the viewport is stored in — bp — so no conversion
+    // or rounding sits in the loop at all and the residual is float noise.
+    expect(maxDriftPx).toBeLessThan(1e-6)
   })
 })
 
@@ -1776,8 +1788,6 @@ test('showLoading is true when displayedRegions are set but not yet initialized'
       displayedRegions: [
         { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
       ],
-      bpPerPx: 1,
-      offsetPx: 0,
     }),
   )
   // width not set yet, so not initialized
@@ -3126,26 +3136,52 @@ describe('resize preserves the genomic window', () => {
     expect(model.bpPerPx).toBeCloseTo(10)
   })
 
-  test('the first measure has no window to preserve', () => {
+  test('a snapshot restores its window at a different width', () => {
+    const authored = navigatedView(1000)
+    const before = edges(authored)
+    const snap = getSnapshot(authored)
+
     const { Session, LinearGenomeModel } = initialize()
-    // a restored snapshot: regions and viewport arrive together, before any
-    // width has been measured
-    const model = Session.create({ configuration: {} }).setView(
-      LinearGenomeModel.create({
-        id: 'resize-first',
-        type: 'LinearGenomeView',
-        bpPerPx: 10,
-        offsetPx: 1000,
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
-        ],
-      }),
+    const restored = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ ...snap, id: 'restored' }),
     )
-    model.setWidth(500)
-    // honors the constructed pixels, which is why a restored snapshot still
-    // shows a narrower window than the one it was authored at
-    expect(model.bpPerPx).toBe(10)
-    expect(model.offsetPx).toBe(1000)
+    restored.setWidth(500)
+
+    // the bug this representation exists to fix: authored at 1000px, this used
+    // to open at 500px showing 10,001-15,001 — half the region its author was
+    // looking at — while the same location as a `&loc=` opened correctly. The
+    // two ways to share a view disagreed.
+    expect(edges(restored)).toEqual(before)
+    expect(restored.bpPerPx).toBeCloseTo(20)
+  })
+
+  test('a pre-window snapshot keeps its old behavior', () => {
+    const { Session, LinearGenomeModel } = initialize()
+    // no windowWidthBp: written before the window was stored, so the width its
+    // pixels were measured at is unrecoverable and there is nothing to restore
+    // but the scale itself. `bpPerPx`/`offsetPx` are no longer declared
+    // properties, so only preProcessSnapshot accepts them — which is the thing
+    // under test, and why the cast belongs here rather than being designed away.
+    const legacySnapshot = {
+      id: 'legacy',
+      type: 'LinearGenomeView',
+      bpPerPx: 10,
+      offsetPx: 1000,
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50000 },
+      ],
+    } as unknown as Parameters<typeof LinearGenomeModel.create>[0]
+    const restored = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create(legacySnapshot),
+    )
+    restored.setWidth(500)
+    expect(restored.bpPerPx).toBe(10)
+    expect(restored.offsetPx).toBe(1000)
+    // and having adopted it, the view is on the new representation: a further
+    // resize preserves the window rather than adopting again
+    restored.setWidth(250)
+    expect(restored.bpPerPx).toBe(20)
+    expect(restored.offsetPx).toBe(500)
   })
 
   test('a resize round-trip returns to the original scale', () => {

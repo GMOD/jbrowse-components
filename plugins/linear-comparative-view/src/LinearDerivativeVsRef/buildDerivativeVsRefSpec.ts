@@ -73,7 +73,6 @@ export interface DerivativeVsRefSpec {
 export interface BuildDerivativeVsRefArgs {
   candidate: DerivativeCandidate
   trackAssembly: string
-  viewWidth: number
   sequenceTrackConf: { trackId: string }
   // Reference-side padding around each segment, so a junction is not flush
   // against a panel edge. The candidate's own outer flank is already applied.
@@ -130,7 +129,6 @@ export function buildDerivativeVsRefSpec(
   const {
     candidate,
     trackAssembly,
-    viewWidth,
     sequenceTrackConf,
     windowSize = 1000,
     now,
@@ -267,8 +265,7 @@ export function buildDerivativeVsRefSpec(
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          offsetPx: 0,
-          bpPerPx: refLen / viewWidth,
+          windowWidthBp: refLen,
           displayedRegions: lgvRegions,
           tracks: [
             buildSequenceTrack(
@@ -281,8 +278,7 @@ export function buildDerivativeVsRefSpec(
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          offsetPx: 0,
-          bpPerPx: totalLength / viewWidth,
+          windowWidthBp: totalLength,
           displayedRegions: [
             {
               assemblyName: derivativeAssembly,

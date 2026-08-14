@@ -30,6 +30,15 @@ const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
 // view and `id` is passed top-level so MST's optional identifier honors it.
 const RESERVED = new Set(['id', 'type', 'init'])
 
+// The viewport keys from before it was stored as a window. They are no longer
+// declared properties, so the model's own property list does not contain them
+// and they would partition as typos — reported as unknown and dropped. They are
+// not typos: `preProcessSnapshot` still converts them, so they belong in the
+// snapshot bucket, and a URL or saved spec that names them goes on working.
+//
+// Deletable with `legacyBpPerPx` in the model, and for the same reason.
+const LEGACY_VIEWPORT_PROPS = new Set(['bpPerPx', 'offsetPx'])
+
 // Partition launch keys three ways, once, for every caller that needs to know
 // which is which:
 //
@@ -58,7 +67,8 @@ export function partitionLaunchKeys(
   for (const [key, value] of Object.entries(spec)) {
     const bucket = knownInitKeys.has(key)
       ? init
-      : viewPropKeys.has(key) && !RESERVED.has(key)
+      : (viewPropKeys.has(key) || LEGACY_VIEWPORT_PROPS.has(key)) &&
+          !RESERVED.has(key)
         ? viewProps
         : unknown
     bucket[key] = value

@@ -48,11 +48,11 @@ already showing:
 }
 ```
 
-`init` is resolved when the view attaches: it works out the `displayedRegions`,
-`bpPerPx` and `offsetPx` that the locus implies, so you never write coordinates
-in pixels. [](/docs/automating) lists every field it takes — `grow` to pad the
-locus for context, `highlight`, `tracklist`, `nav`, and `displayedRegionNames`
-to open a whole-genome view of selected chromosomes.
+`init` is resolved when the view attaches: it works out the `displayedRegions`
+and the window that the locus implies, so you never write coordinates yourself.
+[](/docs/automating) lists every field it takes — `grow` to pad the locus for
+context, `highlight`, `tracklist`, `nav`, and `displayedRegionNames` to open a
+whole-genome view of selected chromosomes.
 
 A track entry can be an object rather than a string when it needs display
 options: `{ "trackId": "volvox_genes", "height": 200 }` opens the track 200px
@@ -95,12 +95,12 @@ To configure sessions via URL, see [URL parameters](/docs/urlparams).
 ## Sessions the app exports
 
 The app's export-session option writes a different shape: a full state snapshot
-with `id`s, `displayedRegions`, `bpPerPx` and `offsetPx` spelled out, and each
-track carrying a `configuration` reference and a `displays` array. It is valid
-as a `defaultSession` and pastes straight in.
+with `id`s, `displayedRegions` and the window (`windowStartBp`, `windowWidthBp`)
+spelled out, and each track carrying a `configuration` reference and a
+`displays` array. It is valid as a `defaultSession` and pastes straight in.
 
 Two things to know before doing that. It is long, and every coordinate in it is
-resolved, so re-aiming the view means editing pixel offsets rather than a
+resolved, so re-aiming the view means editing base-pair offsets rather than a
 locstring. And a snapshot's display node accepts only that display's state-model
 properties, so a config slot written there — `"height": 250` on the display — is
 dropped without warning, where the same key works in an `init` track entry.

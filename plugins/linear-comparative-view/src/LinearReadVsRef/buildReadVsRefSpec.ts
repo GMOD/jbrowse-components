@@ -25,7 +25,6 @@ export interface ReadVsRefSpec {
 export interface BuildReadVsRefArgs {
   primaryFeature: Feature
   windowSize: number
-  viewWidth: number
   trackAssembly: string
   getCanonicalRefName: (refName: string) => string | undefined
   sequenceTrackConf: { trackId: string }
@@ -42,7 +41,6 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
   const {
     primaryFeature: feature,
     windowSize,
-    viewWidth,
     trackAssembly,
     getCanonicalRefName,
     sequenceTrackConf,
@@ -102,8 +100,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          offsetPx: 0,
-          bpPerPx: refLen / viewWidth,
+          windowWidthBp: refLen,
           displayedRegions: lgvRegions,
           tracks: [
             buildSequenceTrack(
@@ -116,8 +113,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          offsetPx: 0,
-          bpPerPx: totalLength / viewWidth,
+          windowWidthBp: totalLength,
           displayedRegions: [
             {
               assemblyName: readAssembly,

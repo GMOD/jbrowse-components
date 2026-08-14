@@ -45,7 +45,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 0,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => r,
       sequenceTrackConf: { trackId: 'seq' },
@@ -83,7 +82,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 0,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => r,
       sequenceTrackConf: { trackId: 'seq' },
@@ -119,7 +117,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 0,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => remap[r] ?? r,
       sequenceTrackConf: { trackId: 'seq' },
@@ -148,7 +145,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 50,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => r,
       sequenceTrackConf: { trackId: 'seq' },
@@ -180,7 +176,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 500,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => r,
       sequenceTrackConf: { trackId: 'seq' },
@@ -208,7 +203,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 0,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => r,
       sequenceTrackConf: { trackId: 'seq' },
@@ -236,7 +230,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 0,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => r,
       sequenceTrackConf: { trackId: 'seq' },
@@ -263,7 +256,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 0,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => r,
       sequenceTrackConf: { trackId: 'seq' },
@@ -297,7 +289,6 @@ describe('buildReadVsRefSpec', () => {
     const spec = buildReadVsRefSpec({
       primaryFeature: feature,
       windowSize: 0,
-      viewWidth: 800,
       trackAssembly: 'hg38',
       getCanonicalRefName: r => r,
       sequenceTrackConf: { trackId: 'seq' },

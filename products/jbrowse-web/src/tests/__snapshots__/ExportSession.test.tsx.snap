@@ -22,7 +22,6 @@ exports[`export session with alignments and gff tracks 1`] = `
     "trackConfigDeltas": {},
     "views": [
       {
-        "bpPerPx": 0.5,
         "displayedRegions": [
           {
             "assemblyName": "volvox",
@@ -59,6 +58,7 @@ exports[`export session with alignments and gff tracks 1`] = `
           },
         ],
         "type": "LinearGenomeView",
+        "windowWidthBp": 404,
       },
     ],
     "widgets": {

@@ -330,15 +330,45 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * corresponds roughly to the horizontal scroll of the LGV
+         * Left edge of the viewport, in linearized bp — the concatenated
+         * `displayedRegions` space that `offsetPx` indexes, which carries no
+         * inter-region padding, so the two differ only by `bpPerPx`. May be
+         * negative, which is the view scrolled past the left end.
+         *
+         * The viewport is stored as the genomic WINDOW it frames rather than as
+         * the pixels that framed it, because pixels mean nothing without the
+         * width they were measured at and a snapshot does not carry one. Storing
+         * them anyway is why a session authored in a 1000px window used to open
+         * at 500px showing half the region its author was looking at, while the
+         * same location as a `&loc=` opened correctly — the two ways to share a
+         * view disagreed, and only the one that stores intent was right.
          */
-        offsetPx: types.stripDefault(types.number, 0),
+        windowStartBp: types.stripDefault(types.number, 0),
 
         /**
          * #property
-         * corresponds roughly to the zoom level, base-pairs per pixel
+         * Width of the viewport in bp. Zero means "not established yet": no
+         * width has been measured, so there is nothing to divide by. The first
+         * measure fills it in, and `bpPerPx` is `windowWidthBp / width` from
+         * then on.
          */
-        bpPerPx: types.stripDefault(types.number, 1),
+        windowWidthBp: types.stripDefault(types.number, 0),
+
+        /**
+         * #property
+         * MIGRATION ONLY, and safe to delete once pre-window sessions are no
+         * longer in circulation.
+         *
+         * A snapshot written before the window was stored carries `offsetPx` and
+         * `bpPerPx` but not the width they were measured at, so the window they
+         * framed cannot be recovered. `windowStartBp` can (it is
+         * `offsetPx * bpPerPx`, no width needed); the width in bp cannot. This
+         * carries the old `bpPerPx` to the first measure, which adopts it at
+         * whatever width arrives — exactly what the old code did — and clears
+         * this. So an old link keeps its old behavior rather than being
+         * reinterpreted, and everything authored since restores its window.
+         */
+        legacyBpPerPx: types.stripDefault(types.number, 0),
 
         /**
          * #property
@@ -524,7 +554,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #volatile
          */
-        coarseBpPerPx: self.bpPerPx,
+        // What `bpPerPx` used to hold at creation — the snapshot's value, or
+        // the default of 1 — which cannot be read here now that it is derived
+        // and declared after volatile. It has to be a real scale rather than
+        // the not-yet-measured 0: the canvas displays lay out against
+        // `coarseBpPerPx` rather than the live one, and a zero there is a
+        // degenerate layout for the frame or two before the debounced autorun
+        // first writes it.
+        coarseBpPerPx: self.legacyBpPerPx || 1,
         /**
          * #volatile
          */
@@ -549,6 +586,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .views(self => ({
+      // The viewport in pixels, derived from the window it frames — declared
+      // ahead of every other getter so that the ~300 reads of `self.bpPerPx` /
+      // `self.offsetPx` across the codebase go on resolving by name. Only the
+      // writes had to move, and they are six actions below.
+      /**
+       * #getter
+       * corresponds roughly to the zoom level, base-pairs per pixel.
+       *
+       * Zero before a width is measured, which is the same not-yet-measured
+       * sentinel `Base1DView` uses and which `displayedRegionsTotalPx` and the
+       * offset getters already guard for. Reads `volatileWidth` rather than the
+       * `width` getter on purpose: that one throws when unmeasured, and these
+       * are read from the first render.
+       */
+      get bpPerPx() {
+        const width = self.volatileWidth
+        return width === undefined || width <= 0 || self.windowWidthBp <= 0
+          ? 0
+          : self.windowWidthBp / width
+      },
+      /**
+       * #getter
+       * corresponds roughly to the horizontal scroll of the LGV
+       */
+      get offsetPx() {
+        const { bpPerPx } = this
+        return bpPerPx <= 0 ? 0 : self.windowStartBp / bpPerPx
+      },
       /**
        * #getter
        * scroll-to-zoom is a global, personal preference resolved from the
@@ -1112,51 +1177,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      // A resize keeps the genomic WINDOW, rescaling bpPerPx to the new width,
-      // rather than keeping bpPerPx and revealing/hiding sequence at the right
-      // edge. Keeping the scale was a block-cache optimization: block
-      // boundaries are `blockNum * ceil(800 * bpPerPx)` and their keys embed
-      // start/end, so holding bpPerPx across a resize kept every block key —
-      // and so every fetched region — identical. That made a resize free at the
-      // cost of it not meaning what a reader means by one.
+      // A resize needs no arithmetic: the window is what is stored, so a new
+      // width simply divides into it and `bpPerPx` follows. The view keeps the
+      // sequence it was framing rather than letting the right edge eat into it.
       //
-      // Rescaling makes a resize a zoom, and a zoom is already a solved case:
-      // FetchVisibleRegions' 300ms debounce coalesces the gesture into one
-      // refetch, its in-flight guard caps concurrent batches at one, and
-      // rpcDataMap is overwritten in place rather than cleared, so nothing
-      // blanks (ADR-008, ADR-006).
-      //
-      // The first measure has no previous width and so no window to preserve —
-      // it honors whatever offsetPx/bpPerPx it was constructed with, which is
-      // where a restored snapshot still loses the authored window.
+      // Keeping the scale instead — which is what storing pixels amounted to —
+      // was a block-cache optimization: block boundaries are
+      // `blockNum * ceil(800 * bpPerPx)` and block keys embed start/end, so
+      // holding bpPerPx across a resize kept every block key, and so every
+      // fetched region, identical. Rescaling makes a resize a zoom, and a zoom
+      // is already a solved case: FetchVisibleRegions' 300ms debounce coalesces
+      // the gesture into one refetch, its in-flight guard caps concurrent
+      // batches at one, and rpcDataMap is overwritten in place rather than
+      // cleared, so nothing blanks (ADR-008, ADR-006).
       setWidth(newWidth: number) {
-        const oldWidth = self.volatileWidth
         self.volatileWidth = newWidth
-        if (
-          oldWidth === undefined ||
-          oldWidth === newWidth ||
-          oldWidth <= 0 ||
-          newWidth <= 0 ||
-          self.bpPerPx <= 0
-        ) {
-          return
+        if (newWidth > 0 && self.windowWidthBp <= 0) {
+          // First measure, and nothing has established a window yet: a migrated
+          // snapshot names the bpPerPx it was written with (see legacyBpPerPx),
+          // and a view with no viewport at all takes the historical default of
+          // 1. From here the window is the state and every later width divides
+          // into it.
+          self.windowWidthBp = (self.legacyBpPerPx || 1) * newWidth
+          self.legacyBpPerPx = 0
         }
-        // the window in linearized bp: offsetPx space carries no inter-region
-        // padding, so it is exactly offsetPx*bpPerPx wide by width*bpPerPx
-        const windowStartBp = self.offsetPx * self.bpPerPx
-        const windowWidthBp = oldWidth * self.bpPerPx
-        // clamps read the width, so they are correct only now that it is set
-        const bpPerPx = clamp(
-          windowWidthBp / newWidth,
-          self.minBpPerPx,
-          self.maxBpPerPx,
-        )
-        self.bpPerPx = bpPerPx
-        self.offsetPx = clamp(
-          windowStartBp / bpPerPx,
-          self.minOffset,
-          self.maxOffset,
-        )
       },
       /**
        * #action
@@ -1224,8 +1268,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       scrollTo(offsetPx: number) {
         const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
-        self.offsetPx = newOffsetPx
+        self.windowStartBp = newOffsetPx * self.bpPerPx
         return newOffsetPx
+      },
+
+      /**
+       * #action
+       * `scrollTo`'s bp-space twin: place the window's left edge at a
+       * linearized bp coordinate, clamped to the same scroll limits.
+       *
+       * It exists so a caller that already knows where it wants to be in bp —
+       * zoomTo, anchoring the base under the cursor — does not have to convert
+       * to pixels and let this convert back. That round trip is lossy once per
+       * frame, and a scroll-zoom burst is a few dozen frames, which is enough
+       * to walk the base out from under the cursor.
+       */
+      scrollToBp(startBp: number) {
+        const { bpPerPx } = self
+        if (bpPerPx > 0) {
+          self.windowStartBp = clamp(
+            startBp,
+            self.minOffset * bpPerPx,
+            self.maxOffset * bpPerPx,
+          )
+        }
+        return self.windowStartBp
       },
 
       /**
@@ -1235,18 +1302,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
         const oldBpPerPx = self.bpPerPx
         if (Math.abs(oldBpPerPx - newBpPerPx) >= BP_PER_PX_EPSILON) {
-          // Anchor the bp under the cursor. offsetPx is pure bp/bpPerPx space
-          // (displayedRegionsTotalPx is totalBp/bpPerPx — no inter-region
-          // padding contributes pixels), so the cursor's bp is exactly
-          // (offsetPx + offset) * oldBpPerPx and its new pixel is that over
-          // newBpPerPx. Don't round: rounding offsetPx every frame loses up to
-          // 0.5 px per step, which at high bpPerPx becomes 0.5 * bpPerPx of
-          // cursor bp drift and compounds across a scroll-zoom burst.
-          // Fractional offsetPx is harmless — block math handles it.
-          const targetPx = ((self.offsetPx + offset) * oldBpPerPx) / newBpPerPx
-          self.bpPerPx = newBpPerPx
+          // Anchor the base under the cursor. The window is stored in bp, so
+          // this is exact arithmetic in the units the state is already in: the
+          // cursor sits at `windowStartBp + offset * oldBpPerPx` before the
+          // zoom, and must sit at the same base `offset` pixels in after it.
+          //
+          // Neither conversion to pixels nor rounding appears, and that is the
+          // point — either one loses a fraction of a pixel per frame, which at
+          // high bpPerPx is a real number of bases, and a scroll-zoom burst is
+          // dozens of frames of it compounding.
+          const anchorBp = self.windowStartBp + offset * oldBpPerPx
+          // widen/narrow about the left edge, then put the anchor back under
+          // the cursor. Guarded on displayedRegions as it always was: with
+          // nothing displayed there is no scroll space to place it in.
+          self.windowWidthBp = newBpPerPx * self.width
           if (self.displayedRegions.length) {
-            this.scrollTo(targetPx - offset)
+            this.scrollToBp(anchorBp - offset * newBpPerPx)
           }
         }
         return self.bpPerPx
@@ -1507,7 +1578,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showAllRegions() {
-        self.bpPerPx = self.maxBpPerPx
+        self.windowWidthBp = self.maxBpPerPx * self.width
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
@@ -1531,10 +1602,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * the view and the centering is what frames it.
        */
       fitAllRegions() {
-        self.bpPerPx = Math.max(
-          self.minBpPerPx,
-          self.width ? self.totalBp / self.width : self.maxBpPerPx,
-        )
+        // `max(minBpPerPx, totalBp/width) * width` — the window IS the
+        // displayed regions, which is what fitting them means, with the
+        // base-level zoom floor expressed in the same units. Nothing is fitted
+        // into a width of zero, where the pixel form was equally meaningless.
+        if (self.width) {
+          self.windowWidthBp = Math.max(
+            self.minBpPerPx * self.width,
+            self.totalBp,
+          )
+        }
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
@@ -1553,7 +1630,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * single view wants zoomTo, whose clamp keeps the genome on screen.
        */
       showAllRegionsAtScale(bpPerPx: number) {
-        self.bpPerPx = Math.max(bpPerPx, self.minBpPerPx)
+        self.windowWidthBp = Math.max(bpPerPx, self.minBpPerPx) * self.width
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
@@ -2730,8 +2807,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // The cytobands setting has been `showCytobandsSetting` and (briefly)
       // `cytobandsVisible`; both now persist as the bare `showCytobands` prop
       // (the capability-gated getter is `effectiveShowCytobands`).
-      const { highlight, showCytobandsSetting, cytobandsVisible, ...rest } =
-        snap
+      const {
+        highlight,
+        showCytobandsSetting,
+        cytobandsVisible,
+        offsetPx,
+        bpPerPx,
+        ...rest
+      } = snap
       const legacyShowCytobands = showCytobandsSetting ?? cytobandsVisible
       return {
         highlight:
@@ -2740,6 +2823,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
             : [highlight],
         ...(legacyShowCytobands !== undefined
           ? { showCytobands: legacyShowCytobands }
+          : {}),
+        // The viewport used to persist as pixels. Half of that converts
+        // exactly and needs no width — the left edge in bp is offsetPx *
+        // bpPerPx — and half of it cannot convert at all, because the width
+        // those pixels were measured at was never written down. So bpPerPx
+        // rides to the first measure as `legacyBpPerPx` and is adopted at
+        // whatever width arrives, which is precisely what the old code did.
+        // An old link therefore keeps its old behavior instead of being
+        // reinterpreted, and anything authored since restores its window.
+        //
+        // Also the path for the several places that BUILD a view from a
+        // snapshot naming bpPerPx/offsetPx (a synteny row, a split view) —
+        // they get the same treatment as a saved session, so none of them had
+        // to change.
+        ...(typeof bpPerPx === 'number' &&
+        bpPerPx > 0 &&
+        rest.windowWidthBp === undefined
+          ? {
+              legacyBpPerPx: bpPerPx,
+              windowStartBp:
+                (typeof offsetPx === 'number' ? offsetPx : 0) * bpPerPx,
+            }
           : {}),
         ...rest,
       }

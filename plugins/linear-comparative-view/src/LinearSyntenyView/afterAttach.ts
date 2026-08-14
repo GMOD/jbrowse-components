@@ -86,8 +86,6 @@ async function buildViews(
       const v = init.views[idx]!
       return {
         type: 'LinearGenomeView' as const,
-        bpPerPx: 1,
-        offsetPx: 0,
         hideHeader: true,
         // A row init gives no tracks opens collapsed to its ruler when asked
         // for (the launch dialog's checkbox), never by default: an authored

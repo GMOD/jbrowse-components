@@ -639,7 +639,6 @@ restores natively:
 <!-- prettier-ignore -->
 | Property | What it does |
 | --- | --- |
-| [`bpPerPx`](/docs/models/lineargenomeview#property-bpperpx) | corresponds roughly to the zoom level, base-pairs per pixel |
 | [`colorByCDS`](/docs/models/lineargenomeview#property-colorbycds) | color CDS segments by reading frame |
 | [`displayedRegions`](/docs/models/lineargenomeview#property-displayedregions) | currently displayed regions, can be a single chromosome, arbitrary subsections, or the entire set of chromosomes in the genome, but it not advised to use the entire set of chromosomes if your assembly is very fragmented |
 | [`displayName`](/docs/models/baseviewmodel#property-displayname) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
@@ -647,8 +646,8 @@ restores natively:
 | [`hideHeaderOverview`](/docs/models/lineargenomeview#property-hideheaderoverview) | keep the header, drop the whole-chromosome overview strip below it |
 | [`hideNoTracksActive`](/docs/models/lineargenomeview#property-hidenotracksactive) | suppress the "No tracks active" placeholder, for an embed that opens with no tracks on purpose |
 | [`labelsVisible`](/docs/models/lineargenomeview#property-labelsvisible) | controls whether highlight/bookmark chip labels are shown inline |
+| [`legacyBpPerPx`](/docs/models/lineargenomeview#property-legacybpperpx) | MIGRATION ONLY, and safe to delete once pre-window sessions are no longer in circulation.<br><br>A snapshot written before the window was stored carries `offsetPx` and `bpPerPx` but not the width they were measured at, so the window they framed cannot be recovered. `windowStartBp` can (it is `offsetPx * bpPerPx`, no width needed); the width in bp cannot. This carries the old `bpPerPx` to the first measure, which adopts it at whatever width arrives — exactly what the old code did — and clears this. So an old link keeps its old behavior rather than being reinterpreted, and everything authored since restores its window. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
-| [`offsetPx`](/docs/models/lineargenomeview#property-offsetpx) | corresponds roughly to the horizontal scroll of the LGV |
 | [`scalebarOnly`](/docs/models/lineargenomeview#property-scalebaronly) | when true, only the header and coordinate scalebar are rendered |
 | [`showAminoAcids`](/docs/models/lineargenomeview#property-showaminoacids) | draw translated codons on coding features once zoomed in far enough: an alternating per-codon shading, and the amino acid letters on top of it at base-level zoom. Independent of `colorByCDS`, which only recolors the segments by frame. |
 | [`showCenterLine`](/docs/models/lineargenomeview#property-showcenterline) | show the "center line" |
@@ -658,6 +657,8 @@ restores natively:
 | [`showTrackOutlines`](/docs/models/lineargenomeview#property-showtrackoutlines) | show the track outlines |
 | [`trackLabels`](/docs/models/lineargenomeview#property-tracklabels) | how to display the track labels, can be "overlapping", "offset", or "hidden", or empty string "" (which results in the LinearGenomeViewPlugin config default being used). the resolved value is the `effectiveTrackLabels` getter. see LinearGenomeViewPlugin https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for how conf is used |
 | [`trackSelectorType`](/docs/models/lineargenomeview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
+| [`windowStartBp`](/docs/models/lineargenomeview#property-windowstartbp) | Left edge of the viewport, in linearized bp — the concatenated `displayedRegions` space that `offsetPx` indexes, which carries no inter-region padding, so the two differ only by `bpPerPx`. May be negative, which is the view scrolled past the left end.<br><br>The viewport is stored as the genomic WINDOW it frames rather than as the pixels that framed it, because pixels mean nothing without the width they were measured at and a snapshot does not carry one. Storing them anyway is why a session authored in a 1000px window used to open at 500px showing half the region its author was looking at, while the same location as a `&loc=` opened correctly — the two ways to share a view disagreed, and only the one that stores intent was right. |
+| [`windowWidthBp`](/docs/models/lineargenomeview#property-windowwidthbp) | Width of the viewport in bp. Zero means "not established yet": no width has been measured, so there is nothing to divide by. The first measure fills it in, and `bpPerPx` is `windowWidthBp / width` from then on. |
 
 <!-- SPEC_KEYS LinearGenomeView END -->
 

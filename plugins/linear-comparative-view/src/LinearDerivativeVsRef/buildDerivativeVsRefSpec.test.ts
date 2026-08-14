@@ -26,7 +26,6 @@ function build(candidate = CANDIDATE) {
   return buildDerivativeVsRefSpec({
     candidate,
     trackAssembly: 'hg38',
-    viewWidth: 1000,
     sequenceTrackConf: { trackId: 'hg38-ReferenceSequenceTrack' },
     now: () => 1234,
     rand: () => ++n,
@@ -70,10 +69,12 @@ describe('buildDerivativeVsRefSpec', () => {
     )
     const derivativeView = viewSpec.views[1] as {
       displayedRegions: { start: number; end: number; refName: string }[]
-      bpPerPx: number
+      windowWidthBp: number
     }
     expect(derivativeView.displayedRegions[0]!.end).toBe(total)
-    expect(derivativeView.bpPerPx).toBe(total / 1000)
+    // the panel frames the whole derivative, said as the span it frames rather
+    // than as a scale against a width the builder had to be told
+    expect(derivativeView.windowWidthBp).toBe(total)
     expect(temporaryAssembly.sequence.adapter.features[0]!.end).toBe(total)
   })
 
@@ -212,7 +213,6 @@ describe('buildDerivativeVsRefSpec', () => {
       buildDerivativeVsRefSpec({
         candidate: CANDIDATE,
         trackAssembly: 'hg38',
-        viewWidth: 1000,
         sequenceTrackConf: { trackId: 'hg38-ReferenceSequenceTrack' },
         now: () => stamp++,
         rand: () => 0,

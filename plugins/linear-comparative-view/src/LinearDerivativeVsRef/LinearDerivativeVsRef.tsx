@@ -315,7 +315,6 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
         buildDerivativeVsRefSpec({
           candidate,
           trackAssembly: trackAssembly!,
-          viewWidth: view.width,
           sequenceTrackConf: getConf(assembly, 'sequence') as {
             trackId: string
           },
