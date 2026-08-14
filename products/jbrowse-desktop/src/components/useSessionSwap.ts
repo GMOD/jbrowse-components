@@ -55,11 +55,19 @@ export function useSessionSwap({
     setSwapping(true)
     try {
       const pluginManager = await load()
+      // checked again after the flush, not only after the load: the flush is a
+      // disk write over IPC, and a swap started during it took the generation
+      // while this one was still going to install unconditionally on the far
+      // side. Whichever of the two flushes finished last won, so the newer
+      // session could be installed and then replaced by the older one it
+      // superseded — with the newer manager's tree destroyed as the "previous".
+      if (launch === generation.current) {
+        await flush()
+      }
       if (launch !== generation.current) {
         destroyPluginManager(pluginManager)
         return
       }
-      await flush()
       onLoad(pluginManager)
     } finally {
       // only the swap still current clears the flag: a superseded one finishing

@@ -124,6 +124,47 @@ test('a superseded swap is destroyed rather than installed', async () => {
   expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
 })
 
+// The generation was only checked after the load, and the flush that follows it
+// is a disk write over IPC — so a swap that arrived during that write took the
+// generation while this one was still going to install unconditionally on the far
+// side. Whichever of the two flushes finished last won, which is not an order
+// anything controls: the newer session could be installed and then replaced by
+// the older one it superseded, with the newer manager's tree destroyed as the
+// "previous" on the way.
+test('a swap superseded during its own flush is destroyed rather than installed', async () => {
+  let releaseFirstFlush = () => {}
+  let signalFirstFlushEntered = () => {}
+  const enteredFirstFlush = new Promise<void>(resolve => {
+    signalFirstFlushEntered = resolve
+  })
+  let flushes = 0
+  const { swap, onLoad } = setup({
+    flush: async () => {
+      flushes += 1
+      if (flushes === 1) {
+        signalFirstFlushEntered()
+        await new Promise<void>(resolve => {
+          releaseFirstFlush = resolve
+        })
+      }
+    },
+  })
+
+  const first = swap(() => Promise.resolve(pluginManagerA))
+  await enteredFirstFlush
+
+  // the second swap loads and flushes while the first is still inside its flush
+  await swap(() => Promise.resolve(pluginManagerB))
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+
+  releaseFirstFlush()
+  await first
+
+  expect(mockDestroy).toHaveBeenCalledWith(pluginManagerA)
+  expect(onLoad).toHaveBeenCalledTimes(1)
+  expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+})
+
 // The pushed route keeps the open session on screen while it loads, so without
 // this the window shows nothing at all between accepting a link and the session
 // changing under you. The navigating path it replaced put up a loading screen
