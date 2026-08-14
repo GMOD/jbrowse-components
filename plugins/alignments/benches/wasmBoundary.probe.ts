@@ -137,8 +137,8 @@ function stepWalk() {
     const seqLength = seq.length
     let currPos = 0
     for (let i = 0; i < r.deltas.length; i++) {
+      // out of sequence: this delta contributes nothing to the sink
       if (currPos >= seqLength) {
-        sink += 0
         continue
       }
       let delta = r.deltas[i]!
