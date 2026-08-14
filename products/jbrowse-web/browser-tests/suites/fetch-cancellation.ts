@@ -23,18 +23,39 @@ import type { CDPSession, HTTPRequest, Page } from 'puppeteer'
 // own timeout), so "wait, then assert nothing went wrong" is a test that cannot
 // fail. If you add a case, give it a precondition that throws.
 //
-// Two properties of the fixture shape the setup, both learned the hard way:
+// Three properties of the fixture shape the setup, all learned the hard way:
 //   - the alignments track unmounts above ~25 bp/px, so a wide window fetches
 //     NOTHING. The windows below stay at ~5 bp/px, where a 2000x pileup issues a
 //     real range read.
 //   - reads are cached per 256 KiB chunk, so revisiting a region issues no
 //     request. Each window below is somewhere the previous ones did not touch.
+//   - the fixture sets `forceLoad` on its display, and needs to. The very depth
+//     that makes this file worth cancelling puts it over the region-too-large
+//     byte gate: 4kb of a ~2000x BAM measures 7.37 Mb against BamAdapter's 5 Mb
+//     `fetchSizeLimit`, so the display banners instead of fetching a thing. That
+//     used to be masked by AUTO_FORCE_LOAD_BP turning the byte axis off below
+//     20kb; the axis has no floor any more, since it measures at the span it
+//     judges rather than assuming a small span is a small fetch
+//     (REGION_TOO_LARGE.md). Zooming in is not the way out — it would cross the
+//     bp/px threshold above. The other three drivers of this fixture
+//     (cancel-bench, profile-ultradeep, profile-retained) want the fetch for the
+//     same reason, which is why the opt-in belongs in the config rather than
+//     here.
 
 const ULTRADEEP = 'extra_test_data/volvox-ultradeep.json'
 const BOOT_LOC = 'ctgA:1000-5000'
 const FIRST_LOC = 'ctgA:20000-24000'
 const SUPERSEDING_LOC = 'ctgA:40000-44000'
 const BAM = 'volvox-ultradeep.bam'
+
+// `volvox-ultradeep.bam` is a *prefix* of `volvox-ultradeep.bam.bai`, so a
+// substring test counts an aborted index read as an aborted alignment read. It
+// happens to be inert today — the index is fetched once during boot, before
+// these listeners attach — but it is exactly the shape this file's header warns
+// about, since the day something re-reads the index mid-navigation the abort
+// assertion below starts passing on the wrong request and says nothing. Match
+// the path.
+const isBamRead = (url: string) => new URL(url).pathname.endsWith(`/${BAM}`)
 
 interface CancelProbe {
   blobUrls: number
@@ -105,6 +126,45 @@ function displayPhases(page: Page) {
   )
 }
 
+/**
+ * Why the DOM census came back empty, asked of the models rather than the DOM.
+ *
+ * The two subtree-replacing phases (`tooLarge`, `renderError`) render their
+ * banner *instead of* the element carrying `data-display-phase`, so a display in
+ * either counts as absent above rather than as terminal — deliberately, see
+ * DISPLAYCHROME.md. That makes `[]` the likeliest precondition failure here and
+ * the least self-explanatory: it reads as "the app never booted" when it in fact
+ * means "a display booted and gave up". It cost a full rebuild to tell those
+ * apart once (the byte gate reaching this fixture), which is the whole reason
+ * this exists. The model carries both terms directly, so ask it.
+ */
+function displayDiagnosis(page: Page) {
+  return page.evaluate(() => {
+    const w = window as unknown as {
+      JBrowseSession?: {
+        views: {
+          tracks: {
+            displays: {
+              type: string
+              displayPhase?: string
+              regionTooLargeReason?: string
+              error?: unknown
+            }[]
+          }[]
+        }[]
+      }
+    }
+    return (w.JBrowseSession?.views[0]?.tracks ?? []).flatMap(t =>
+      t.displays.map(d => ({
+        type: d.type,
+        phase: d.displayPhase,
+        tooLargeReason: d.regionTooLargeReason || undefined,
+        error: d.error ? String(d.error) : undefined,
+      })),
+    )
+  })
+}
+
 function waitForNoLoadingDisplay(page: Page) {
   return page.waitForFunction(
     () => document.querySelector('[data-display-phase="loading"]') === null,
@@ -140,7 +200,7 @@ async function loadUltradeep(page: Page) {
   const phases = await displayPhases(page)
   if (!phases.includes('ready')) {
     throw new Error(
-      `expected a ready alignments display before cancelling, got ${JSON.stringify(phases)}`,
+      `expected a ready alignments display before cancelling, got ${JSON.stringify(phases)}; displays report ${JSON.stringify(await displayDiagnosis(page))}`,
     )
   }
 }
@@ -180,7 +240,7 @@ async function cancelMidFetch(page: Page) {
   const requests: RequestRecord[] = []
   const failures: RequestRecord[] = []
   const onRequest = (req: HTTPRequest) => {
-    if (req.url().includes(BAM)) {
+    if (isBamRead(req.url())) {
       requests.push({ url: req.url() })
     }
   }
@@ -231,7 +291,7 @@ const suite: TestSuite = {
             `expected an aborted BAM request out of ${requests.length} issued; failures were ${JSON.stringify(failures.slice(0, 5))}`,
           )
         }
-        if (!aborted.some(f => f.url.includes(BAM))) {
+        if (!aborted.some(f => isBamRead(f.url))) {
           throw new Error(
             `aborts did not include the BAM read: ${JSON.stringify(aborted.slice(0, 5))}`,
           )
