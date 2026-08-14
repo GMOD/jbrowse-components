@@ -1837,16 +1837,29 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // those three would assert rather than show.
   //
   // VERIFIED against the demo's own files, since the caption carries the whole
-  // finding. Joining tauschii.blocks.gz to tauschii.bed.gz and wheat.bed.gz
-  // gives 2,874 orthogroup links landing on 4A, and their 4A positions per donor
-  // chromosome are
-  //   4D  2045 links   5th-95th pct     9.9 Mb - 602.1 Mb
-  //   5D   295 links   5th-95th pct   604.0 Mb - 641.4 Mb
-  //   7D   407 links   5th-95th pct   647.3 Mb - 742.4 Mb
+  // finding, and re-derivable in one command:
+  //
+  //   python3 scripts/orthofinder_window_stats.py wheat \
+  //     --row 'tauschii 1D 2D 3D 4D 5D 6D 7D' --row 'wheat 4A' --query wheat
+  //
+  // Per donor chromosome, where its links land ALONG 4A - which is the axis the
+  // finding is about, and not the same as the donor-side extents printed beside
+  // them, which are near-whole-chromosome for all seven and separate nothing:
+  //   4D  1997 ribbons (2045 rows)   5th-95th pct     9.9 Mb - 601.3 Mb
+  //   5D   275 ribbons  (295 rows)   5th-95th pct   604.1 Mb - 641.4 Mb
+  //   7D   368 ribbons  (407 rows)   5th-95th pct   648.9 Mb - 742.4 Mb
   // -- three consecutive, non-overlapping blocks in that order, with every other
-  // tauschii sequence contributing 30 links or fewer over the whole chromosome
-  // (2D 30, 3D 25, 1D 19, 6D 18). That is the "scattered singletons" the prose
-  // claims, measured.
+  // tauschii sequence contributing 30 rows or fewer over the whole chromosome
+  // (2D 30, 3D 25, 1D 19, 6D 18) and spreading them over nearly all of 4A rather
+  // than over any interval. That is the "scattered singletons" the prose claims,
+  // measured, and the spread is the half that makes them scattered rather than
+  // merely few.
+  //
+  // Two counts because they answer different questions and the gap between them
+  // is real: `--pick expand` names one gene pair on several rows and the adapter
+  // draws it once, so the ribbon count is what the frame holds and the row count
+  // is what a join over the table returns. This comment carried only the row
+  // counts before, unlabelled.
   //
   // NO ON-FIGURE LABELS NAMING THE THREE BLOCKS, and it is not for want of
   // trying. A synteny view's sub-panels have no `view-container-<id>` element --

@@ -17,6 +17,12 @@ another chromosome entirely leaves a gene looking answer-less in the frame while
 the table has an answer for it, and a spec comment that says "9 have none"
 without saying "as drawn" is describing a different quantity.
 
+The second such pair is ribbons against table rows, and it is reported both
+ways for the same reason. `--pick expand` names one gene pair on several rows
+and `MCScanBlocksAdapter` draws it once, so the row count runs a few percent
+above the ribbon count on a whole chromosome. Either is a fair thing to quote;
+quoting one as the other is not.
+
 Rows are given exactly as the spec's `loc` strings, so a window can be pasted
 between the two without retyping it. `[rev]` is accepted and ignored: reversing
 a row changes where a ribbon is drawn and not which ribbons exist.
@@ -44,7 +50,7 @@ import os
 import re
 import sys
 import urllib.request
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 DEMO_BASE = 'https://jbrowse.org/demos/orthofinder_{set}/'
 # LinearGenomeView SHOW_ALL_REGIONS_FILL: showAllRegions targets 90% of the
@@ -109,6 +115,17 @@ def read_bed(path):
 def overlaps(hit, regions):
     chrom, start, end = hit
     return any(chrom == c and start < e and end > s for c, s, e in regions)
+
+
+def percentiles(values, lo=5, hi=95):
+    """5th and 95th percentile, nearest-rank, on an unsorted list."""
+    s = sorted(values)
+    if not s:
+        return (0.0, 0.0)
+    return (
+        s[min(len(s) - 1, int(len(s) * lo / 100))],
+        s[min(len(s) - 1, int(len(s) * hi / 100))],
+    )
 
 
 def pearson(pairs):
@@ -239,7 +256,13 @@ def main():
     qgenes = {
         gene: pos for gene, pos in qbed.items() if overlaps(pos, qregions)
     }
-    partners = defaultdict(lambda: defaultdict(set))
+    # Counter, not set, so both bases are available: a `--pick expand` table
+    # names the same pair on several rows (see orthogroups_to_blocks.py), and
+    # MCScanBlocksAdapter draws such a pair once. So the DISTINCT count is the
+    # ribbon count and the row count is larger — the two differ by a few percent
+    # on a whole chromosome, and a provenance note that reports one without
+    # saying which reads as the other.
+    partners = defaultdict(lambda: defaultdict(Counter))
     with gzip.open(
         fetch(base, os.path.basename(adapter['uri']), args.cache), 'rt'
     ) as f:
@@ -250,7 +273,7 @@ def main():
                 for name, _ in rows:
                     cell = cells[columns[name]]
                     if name != query and cell != '.':
-                        partners[gene][name].add(cell)
+                        partners[gene][name][cell] += 1
 
     ordered = sorted(qgenes.items(), key=lambda kv: (kv[1][0], kv[1][1]))
     print(f'{query}: {len(ordered)} genes in the drawn window')
@@ -262,21 +285,33 @@ def main():
         spread = repeated = 0
         offwindow = []
         hits_all = []
+        table_rows = Counter()
+        # Where along the QUERY each partner sequence's links land. The extents
+        # below are the partner's own span, which on a whole-chromosome row is
+        # near the whole chromosome for every sequence and so separates nothing;
+        # this is the axis on which "three consecutive blocks in order along 4A"
+        # is a statement, and the percentiles are what keep a handful of
+        # scattered singletons from stretching each block over everything.
+        qpos = defaultdict(list)
         for gene, _ in ordered:
             hits = [
-                beds[name][p]
-                for p in partners[gene][name]
+                (beds[name][p], n)
+                for p, n in partners[gene][name].items()
                 if p in beds[name]
             ]
-            inside = [h for h in hits if overlaps(h, regions)]
+            inside = [h for h, _ in hits if overlaps(h, regions)]
             drawn[len(inside)] += 1
             hits_all.extend(inside)
+            for h, n in hits:
+                if overlaps(h, regions):
+                    table_rows[h[0]] += n
+                    qpos[h[0]].append((qgenes[gene][1] + qgenes[gene][2]) / 2)
             if len(inside) > 1:
                 if len({h[0] for h in inside}) == len(inside):
                     spread += 1
                 else:
                     repeated += 1
-            for h in hits:
+            for h, _ in hits:
                 if not overlaps(h, regions):
                     offwindow.append((gene, h))
 
@@ -286,6 +321,10 @@ def main():
             '  ribbons per '
             f'{query} gene: '
             + ', '.join(f'{n}x{c}' for n, c in sorted(drawn.items()))
+        )
+        print(
+            f'  {len(hits_all)} ribbons drawn in all, named by '
+            f'{sum(table_rows.values())} rows of the table'
         )
         if spread or repeated:
             print(
@@ -308,8 +347,14 @@ def main():
             lo = min(s for s, _ in spans)
             hi = max(e for _, e in spans)
             print(
-                f'    {chrom}: {len(spans)} genes, {lo:,}-{hi:,} '
-                f'({(hi - lo) / 1e3:.0f} kb)'
+                f'    {chrom}: {len(spans)} genes drawn, {lo:,}-{hi:,} '
+                f'({(hi - lo) / 1e3:.0f} kb), from {table_rows[chrom]} '
+                'table rows'
+            )
+            p5, p95 = percentiles(qpos[chrom])
+            print(
+                f'      lands on {query} between {p5 / 1e6:.1f} Mb and '
+                f'{p95 / 1e6:.1f} Mb (5th-95th pct)'
             )
             pairs = [
                 ((qbed[g][1] + qbed[g][2]) / 2, (h[1] + h[2]) / 2)
