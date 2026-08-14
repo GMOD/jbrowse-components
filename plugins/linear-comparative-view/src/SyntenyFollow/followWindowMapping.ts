@@ -15,6 +15,15 @@ interface Accumulator {
   rightAt: number
 }
 
+// One candidate contig on the other axis: how much of the window aligns to it,
+// and where the window's two edges land on it.
+interface Target {
+  name: string
+  total: number
+  startAt: Accumulator
+  endAt: Accumulator
+}
+
 function newAccumulator(x: number): Accumulator {
   return {
     x,
@@ -103,16 +112,15 @@ export function followWindowMapping({
   } = window
   const n = refNames.length
 
-  // One pass, nothing allocated per block, parallel arrays rather than a Map.
-  // This runs per frame over hundreds of thousands of blocks on a whole-genome
-  // PAF: allocating a small object per block measured 51ms a frame at 500k
-  // against 5ms for a bare pass, so traversals and allocation are the cost.
-  const names: string[] = []
-  const totals: number[] = []
-  const startAt: Accumulator[] = []
-  const endAt: Accumulator[] = []
+  // One pass, and NOTHING ALLOCATED PER BLOCK — that is the measurement, not
+  // "no objects": this runs per frame over hundreds of thousands of blocks on a
+  // whole-genome PAF, where a small object per block measured 51ms a frame at
+  // 500k against 5ms for a bare pass. A `Target` is per CONTIG, of which even a
+  // whole-genome window reaches a few dozen, so the loop below allocates once
+  // per contig and then only reads.
+  const targets: Target[] = []
   let lastName: string | undefined
-  let lastIdx = -1
+  let target: Target | undefined
   for (let i = 0; i < n; i++) {
     if (
       refNames[i] !== windowRefName ||
@@ -120,16 +128,19 @@ export function followWindowMapping({
     ) {
       continue
     }
+    // blocks arrive grouped by refName, so this resolves once per contig
     const name = otherRefNames[i]!
-    if (name !== lastName) {
+    if (name !== lastName || !target) {
       lastName = name
-      lastIdx = names.indexOf(name)
-      if (lastIdx < 0) {
-        lastIdx = names.length
-        names.push(name)
-        totals.push(0)
-        startAt.push(newAccumulator(windowStartBp))
-        endAt.push(newAccumulator(windowEndBp))
+      target = targets.find(t => t.name === name)
+      if (!target) {
+        target = {
+          name,
+          total: 0,
+          startAt: newAccumulator(windowStartBp),
+          endAt: newAccumulator(windowEndBp),
+        }
+        targets.push(target)
       }
     }
     const aLo = starts[i]!
@@ -140,7 +151,7 @@ export function followWindowMapping({
     // so never wins, which is what stops a neighbour from being picked.
     const overlap = Math.min(aHi, windowEndBp) - Math.max(aLo, windowStartBp)
     if (overlap > 0) {
-      totals[lastIdx]! += overlap
+      target.total += overlap
     }
     // `atLo`/`atHi` are the mate coordinates this block's LEFT and RIGHT anchor
     // edges map to, so a reverse-strand block simply reports them swapped and
@@ -148,22 +159,20 @@ export function followWindowMapping({
     const flip = data.strands[i] === -1
     const atLo = flip ? otherEnds[i]! : otherStarts[i]!
     const atHi = flip ? otherStarts[i]! : otherEnds[i]!
-    offer(startAt[lastIdx]!, aLo, aHi, atLo, atHi)
-    offer(endAt[lastIdx]!, aLo, aHi, atLo, atHi)
+    offer(target.startAt, aLo, aHi, atLo, atHi)
+    offer(target.endAt, aLo, aHi, atLo, atHi)
   }
-  let target = -1
-  let best = 0
-  for (let i = 0; i < names.length; i++) {
-    if (totals[i]! > best) {
-      best = totals[i]!
-      target = i
+  let best: Target | undefined
+  for (const t of targets) {
+    if (!best || t.total > best.total) {
+      best = t
     }
   }
-  if (target < 0) {
+  if (!best || best.total <= 0) {
     return undefined
   }
-  const p = resolve(startAt[target]!)
-  const q = resolve(endAt[target]!)
+  const p = resolve(best.startAt)
+  const q = resolve(best.endAt)
   if (p === undefined || q === undefined) {
     return undefined
   }
@@ -175,7 +184,7 @@ export function followWindowMapping({
   // added to protect.
   return hi > lo
     ? {
-        refName: names[target]!,
+        refName: best.name,
         start: Math.floor(lo),
         // at least one base, since a zero-width span assembles into an inverted
         // locstring
