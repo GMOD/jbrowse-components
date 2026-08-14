@@ -363,21 +363,20 @@ day HiC's behaviour changes, something says so.
 
 ### Delete or implement the RPC `timeout` option
 
-`loadRefNameMap` calls `rpcManager.call(..., { timeout: 1000000 })`. Follow it:
+**The delete half is done.** `loadRefNameMap`'s `{ timeout: 1000000 }` is gone:
 `BaseRpcDriver.transport` spreads `options` into `worker.call`, and
 `WebWorkerHandle.call` destructures `statusCallback` and `rpcDriverClassName`
-only. There is no timeout mechanism anywhere in `packages/core/src/rpc/`, so the
-option is inert.
+only, so there is no timeout mechanism anywhere in `packages/core/src/rpc/` and
+the option was inert. It earned a line because it sat next to a carefully argued
+comment about deliberately *not* passing a stop token, which made the
+surrounding code read as though a bound existed.
 
-Low stakes on its own; it earns a line because it sits next to a carefully
-argued comment about deliberately *not* passing a stop token, which makes the
-surrounding code read as though a bound exists. Deleting it is the honest
-one-line version. Implementing it is the better one, and is now the sharper of
-the two: `RemoteFileWithRangeCache` has a per-request deadline
-(`RESPONSE_TIMEOUT_MS`) and the RPC layer has none, so the same question is
-answered two ways at two layers. Copy the shape rather than inventing one — it
-bounds the wait for a *response*, not the transfer, and composes with the
-caller's signal instead of replacing it.
+What is left is the implement half, and it is now the sharper of the two:
+`RemoteFileWithRangeCache` has a per-request deadline (`RESPONSE_TIMEOUT_MS`)
+and the RPC layer has none, so the same question is answered two ways at two
+layers. Copy the shape rather than inventing one — it bounds the wait for a
+*response*, not the transfer, and composes with the caller's signal instead of
+replacing it.
 
 ## Ready to build: the design is settled
 

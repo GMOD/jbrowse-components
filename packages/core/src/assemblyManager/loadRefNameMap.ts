@@ -69,7 +69,6 @@ export async function loadRefNameMap(
       // which is what it was.
       statusCallback: options.statusCallback,
     },
-    { timeout: 1000000 },
   )
 
   const { refNameAliases } = assembly
