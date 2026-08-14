@@ -327,7 +327,11 @@ Ribbons below are colored by the reference chromosome they come from, so the
 wide green one is the chr3 arm and the crossing ribbons at right are the chr10
 and chr12 inserts with chr3 returning inverted.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from." src="/img/cancer_sv/derivative_synteny.png" />
+A read lane sits under each row. Against hg38 it draws split alignments only, so
+the band over it counts the molecules carrying a junction; on the allele it
+draws every read realigned there.
+
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from, and a read lane under each row." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 
