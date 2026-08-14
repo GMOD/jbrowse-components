@@ -127,13 +127,6 @@ export function extractModifications(
     return
   }
   const modifications = getModPositions(mmTag, seq, strand)
-  // Two readings of the same ML tag, and which one is built matters: the marks
-  // path only ever COMPARES probabilities, so it takes the raw bytes (see
-  // `forEachMaxProbMod`), while `getMethBins` needs the scaled numbers and is
-  // the only thing that reads `ParsedModData.probabilities`. Building the
-  // scaled `number[]` unconditionally meant allocating one per read — thousands
-  // of entries on a nanopore read — and discarding it in every mode but
-  // fill-unmarked.
   const fillUnmarked = !!colorBy.modifications?.fillUnmarked
 
   // fillUnmarked hands cytosine painting to extractMethylation (the getMethBins
@@ -173,6 +166,13 @@ export function extractModifications(
       },
     )
   }
+  // Two readings of the same ML tag, and which one is built matters. The marks
+  // path above only ever COMPARES probabilities, so it takes the raw bytes
+  // (`forEachMaxProbMod` says why that is exact). `getMethBins` needs the
+  // scaled numbers, and it is the ONLY thing that reads this field — so
+  // building the scaled `number[]` unconditionally allocated one per read,
+  // thousands of entries on a nanopore read, and discarded it in every mode but
+  // fill-unmarked.
   return {
     modifications,
     probabilities: fillUnmarked ? getModProbabilities(feature) : undefined,
