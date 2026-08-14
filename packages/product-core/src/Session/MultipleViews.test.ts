@@ -20,6 +20,25 @@ function fakeView(name: string) {
   })
 }
 
+// One model object per name, because a `types.safeReference` resolves against
+// the type REGISTERED here: a nested view built from a second `fakeView('X')`
+// call is a different MST type under the same name, and the reference then
+// fails to resolve for a reason that has nothing to do with what is being
+// tested.
+const fakeViewModels = Object.fromEntries(
+  ['FakeLinearView', 'FakeSyntenyView'].map(name => [name, fakeView(name)]),
+)
+
+// A view that contains views — the shape breakpoint-split and comparative views
+// have, and the one that decides how `takeOut` has to match widgets.
+function fakeContainerView() {
+  return types.model('FakeContainerView', {
+    id: ElementId,
+    type: types.literal('FakeContainerView'),
+    views: types.array(fakeViewModels.FakeLinearView!),
+  })
+}
+
 // A view that reaches OUTSIDE its own tree when it is taken out of a session,
 // which is the shape both comparative views have — they give back the
 // read-vs-ref assemblies they synthesized. The module-level sink is how the
@@ -52,16 +71,24 @@ class FakeViewsPlugin extends Plugin {
           ReactComponent: () => null,
         }),
     )
-    for (const name of ['FakeLinearView', 'FakeSyntenyView']) {
+    for (const [name, stateModel] of Object.entries(fakeViewModels)) {
       pluginManager.addViewType(
         () =>
           new ViewType({
             name,
-            stateModel: fakeView(name),
+            stateModel,
             ReactComponent: () => null,
           }),
       )
     }
+    pluginManager.addViewType(
+      () =>
+        new ViewType({
+          name: 'FakeContainerView',
+          stateModel: fakeContainerView(),
+          ReactComponent: () => null,
+        }),
+    )
     // The shape every real view-scoped widget has: a `types.safeReference` to a
     // pluggable view (HierarchicalTrackSelectorWidget, AddTrackWidget,
     // PluginStoreWidget all declare exactly this). What a replaced view does to
@@ -203,6 +230,56 @@ test('a widget referencing the replaced view is dropped, not rebound', () => {
   expect(widget.view).not.toBe(created)
   // and the widget is taken off screen rather than left showing an empty panel
   expect(session.activeWidgets.has('w1')).toBe(false)
+})
+
+// A view can CONTAIN views, and a widget can hold the inner one:
+// `openFeatureWidget` stores `getContainingView(node)`, and inside a
+// breakpoint-split or synteny view that walk lands on the sub-view, never on
+// the view in `session.views`. Matching widgets by `widget.view.id === view.id`
+// missed exactly those, leaving the widget on screen over a tree that had just
+// left the session.
+//
+// The detach is what makes it a throw rather than a blank panel: a detached
+// node is ALIVE, so `safeReference`'s onInvalidated has not fired, but it is
+// already out of the session's identifier cache — so reading the reference
+// throws "Failed to resolve reference" until the destroy task lands, on a
+// widget React is still rendering. ADR-069.
+test('a widget referencing a sub-view is taken out with the view holding it', () => {
+  const session = createSession()
+  const container = session.addView('FakeContainerView', {
+    views: [{ type: 'FakeLinearView' }],
+  })
+  const sub = container.views[0]
+  const widget = session.addWidget('FakeViewWidget', 'w1', { view: sub.id })!
+  session.showWidget(widget)
+  expect(widget.view).toBe(sub)
+
+  session.removeView(container)
+
+  expect(session.activeWidgets.has('w1')).toBe(false)
+})
+
+// Where that throw actually landed, and why the bug reads as "close a view,
+// then close another one, and it breaks". The widget left behind by the first
+// removal is still in `activeWidgets`, and the loop above has to read the view
+// of EVERY active widget to decide which to hide — so the second removal reads
+// the dangling one, throws inside the action, and leaves its view in the
+// session. Hiding the widget at the first removal is what stops the cascade.
+test('removing a second view still works after one held a sub-view widget', () => {
+  const session = createSession()
+  const container = session.addView('FakeContainerView', {
+    views: [{ type: 'FakeLinearView' }],
+  })
+  const other = session.addView('FakeLinearView', {})
+  const widget = session.addWidget('FakeViewWidget', 'w1', {
+    view: container.views[0]!.id,
+  })!
+  session.showWidget(widget)
+
+  session.removeView(container)
+  session.removeView(other)
+
+  expect(session.views).toHaveLength(0)
 })
 
 // `session.views` is the one ordering, so a workspace move is the same action

@@ -118,6 +118,19 @@ liveliness reads to the undo's 4, same shape, all on the display's
 `configuration` and `type`. Detaching below a view is not a further application
 of this rule but a worse trade — see "Detach a track or a display too" below.
 
+**A `safeReference` into the detached tree is the live-root asymmetry again.**
+The same trade the rejected alternative below is about also reaches the widgets,
+because a detached node is alive and so `onInvalidated` — which fires on
+destroy — has not run, while the node is already out of the session's identifier
+cache. Reading such a reference **throws** where destroy-in-place resolved it to
+undefined. So `takeOut` matches widgets by containment (`isWithin`), not by
+`widget.view.id === view.id`: `openFeatureWidget` stores
+`getContainingView(node)`, which inside a breakpoint-split or synteny view is
+the SUB-view, and an id comparison left that widget active and rendering. Worse,
+the matching loop reads every active widget's view, so one left behind took the
+NEXT `removeView` down with it — "close a view, then close another, and it
+breaks". Pinned by two tests in `MultipleViews.test.ts`.
+
 ## Rejected
 
 **Defer the destroy.** The obvious fix, and the one PR #5616 proposed. It works
