@@ -508,14 +508,27 @@ export default function RegionTooLargeMixin() {
       /**
        * #getter
        * The byte budget the gate enforces: the adapter's limit, else the display
-       * config. Also what `resolvedByteLimit()` hands the worker, so the two can't
-       * gate against different numbers. Force-load doesn't raise this — it exempts
-       * the track outright via `gateExempt`.
+       * config, raised by `SUB_FLOOR_BYTE_BUDGET_FACTOR` below the
+       * `AUTO_FORCE_LOAD_BP` span. Also what `resolvedByteLimit()` hands the
+       * worker, so the two can't gate against different numbers. Force-load
+       * doesn't raise this — it exempts the track outright via `gateExempt`.
+       *
+       * The span tier makes this swing at 20kb, which is safe only because this
+       * budget reaches the worker as a call-site argument rather than through
+       * `rpcProps()`. In the payload it would be an RPC cache key, and crossing
+       * the floor would be a full `clearAllRpcData()` refetch — the bug
+       * `maxFeatureDensity` already shipped once (REGION_TOO_LARGE.md §"Neither
+       * worker budget may be an RPC cache key").
+       *
+       * `aboveForceLoadFloor` is also false on an unmeasured view, so read this
+       * under `gateActive` — as both consumers below do — or an unmeasured
+       * display reads the sub-floor budget rather than no budget.
        */
       get gateByteLimit() {
         return resolveByteLimit({
           adapterFetchSizeLimit: self.adapterFetchSizeLimit,
           configFetchSizeLimit: self.configuredFetchSizeLimit,
+          belowForceLoadFloor: !self.aboveForceLoadFloor,
         })
       },
       /**
@@ -540,6 +553,13 @@ export default function RegionTooLargeMixin() {
        * `fetchSizeLimit` and no banner appears. Two displays used to opt out of
        * it one at a time (`gateBelowForceLoadFloor`, on MAF and alignments); the
        * opt-in is gone because there is nothing left to opt out of.
+       *
+       * What the span does below 20kb is raise the *budget*
+       * (`SUB_FLOOR_BYTE_BUDGET_FACTOR`, on `gateByteLimit`) rather than switch
+       * this off. The difference is that the gate stays reachable at every zoom:
+       * index estimates are monotone in span, so an off-switch made the gate
+       * bypassable by zooming into it, which is what the floor's own banner told
+       * people to do.
        *
        * Everything reads it rather than restating it: the verdict, the
        * pre-flight (no estimate RPC when nothing could act on it), the worker's

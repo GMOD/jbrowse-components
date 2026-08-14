@@ -154,8 +154,11 @@ describe('LD derived regionTooLarge', () => {
     })
     expect(display.regionTooLarge).toBe(true)
 
-    // zoom in: the stored estimate is now about a viewport the user has left
-    view.zoomTo(10)
+    // zoom in: the stored estimate is now about a viewport the user has left.
+    // Still above AUTO_FORCE_LOAD_BP, so the sub-floor budget tier isn't what
+    // holds or releases the banner here — the measurement is.
+    view.zoomTo(50)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.gateMeasurementStale).toBe(true)
     expect(display.regionTooLarge).toBe(true)
 

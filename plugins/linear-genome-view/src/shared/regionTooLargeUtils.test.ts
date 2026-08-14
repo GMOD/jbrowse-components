@@ -1,4 +1,5 @@
 import {
+  SUB_FLOOR_BYTE_BUDGET_FACTOR,
   TOO_MANY_FEATURES_REASON,
   bytesTooLargeReason,
   evaluateRegionTooLarge,
@@ -42,6 +43,67 @@ describe('resolveByteLimit', () => {
         configFetchSizeLimit: 30,
       }),
     ).toBe(30)
+  })
+
+  // The span tier: below AUTO_FORCE_LOAD_BP the gate keeps asking, but against a
+  // larger number, because at gene scale the user navigated here deliberately.
+  // Multiplies whichever tier won above, so an adapter that declares its own
+  // budget keeps its relationship to the display default at both spans.
+  it('raises whichever budget won, below the force-load floor', () => {
+    expect(
+      resolveByteLimit({
+        adapterFetchSizeLimit: 20,
+        configFetchSizeLimit: 30,
+        belowForceLoadFloor: true,
+      }),
+    ).toBe(20 * SUB_FLOOR_BYTE_BUDGET_FACTOR)
+    expect(
+      resolveByteLimit({
+        configFetchSizeLimit: 30,
+        belowForceLoadFloor: true,
+      }),
+    ).toBe(30 * SUB_FLOOR_BYTE_BUDGET_FACTOR)
+  })
+
+  // The gate does not turn off down there, which is the whole difference from
+  // the floor this replaced: index estimates are monotone in span, so a region
+  // over budget below the floor was over budget above it, and an off-switch
+  // meant "zoom in to see features" handed over the bytes it had just refused.
+  it('still yields a finite budget below the floor', () => {
+    const belowFloor = resolveByteLimit({
+      configFetchSizeLimit: 5_000_000,
+      belowForceLoadFloor: true,
+    })
+    expect(Number.isFinite(belowFloor)).toBe(true)
+    expect(
+      evaluateRegionTooLarge({
+        estimatedFetchBytes: belowFloor + 1,
+        byteLimit: belowFloor,
+      }),
+    ).toMatchObject({ tooLarge: true, axis: 'bytes' })
+  })
+
+  // Regression, measured 2026-08-14 on extra_test_data/volvox-ultradeep.bam:
+  // 7,441,672 bytes at every span from 1kb to 10kb (a BAI's linear index
+  // resolves 16kb bins, so the estimate is pinned below the floor). Against
+  // BamAdapter's 5 Mb that bannered a gene-scale view of ordinary deep
+  // sequencing with no zoom that could release it.
+  it('clears the deepest BAM in this repo at gene scale, and gates it at 20kb', () => {
+    const bam = { adapterFetchSizeLimit: 5_000_000, configFetchSizeLimit: 1e6 }
+    const atGeneScale = 7_441_672
+    const at20kb = 14_468_389
+    expect(
+      evaluateRegionTooLarge({
+        estimatedFetchBytes: atGeneScale,
+        byteLimit: resolveByteLimit({ ...bam, belowForceLoadFloor: true }),
+      }).tooLarge,
+    ).toBe(false)
+    expect(
+      evaluateRegionTooLarge({
+        estimatedFetchBytes: at20kb,
+        byteLimit: resolveByteLimit(bam),
+      }).tooLarge,
+    ).toBe(true)
   })
 })
 

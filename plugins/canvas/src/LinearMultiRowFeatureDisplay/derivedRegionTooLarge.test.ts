@@ -51,8 +51,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.regionTooLarge).toBe(true)
 
     // zoom alone is not a verdict — the stored figure is what the index quoted,
-    // not a rate to scale by span
-    view.zoomTo(20)
+    // not a rate to scale by span. Stays above AUTO_FORCE_LOAD_BP so the
+    // sub-floor budget tier isn't what this is measuring; the test below is.
+    view.zoomTo(50)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
 
     display.setByteEstimate({
@@ -60,6 +62,31 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(false)
+  })
+
+  // Crossing AUTO_FORCE_LOAD_BP raises the budget by SUB_FLOOR_BYTE_BUDGET_FACTOR
+  // rather than turning the byte axis off, so the same measured estimate can
+  // release on zoom — the one thing zoom does to this axis. 8 Mb sits between
+  // the two tiers of the 5 Mb display config, which is the case that moved.
+  it('releases the same estimate below the force-load floor, on the budget tier', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setByteEstimate({
+      bytes: 8_000_000,
+      viewport: display.gateViewport!,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    view.zoomTo(20)
+    expect(view.visibleBp).toBeLessThan(20_000)
+    expect(display.regionTooLarge).toBe(false)
+
+    // and the axis is still live down there — it is a tier, not an off-switch
+    display.setByteEstimate({
+      bytes: 40_000_000,
+      viewport: display.gateViewport!,
+    })
+    expect(display.regionTooLarge).toBe(true)
   })
 
   // The estimate carries the span it was MEASURED over, not whatever is on

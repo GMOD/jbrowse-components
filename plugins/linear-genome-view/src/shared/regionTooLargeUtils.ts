@@ -6,18 +6,19 @@
  * `RegionTooLargeMixin` is the only comparison against it, and MAF's summary
  * swap reads that getter, so the threshold has one spelling.
  *
- * **It is not a floor on the byte axis, and used not to be only that.** The byte
- * gate now measures at the viewport it is judging (`RegionTooLargeMixin`
- * §"Measurement follows the viewport"), so "a small span is a small fetch" is
- * something it checks rather than assumes — and the check routinely fails. An
- * index quotes whole blocks, so the estimate goes flat wherever a query stops
- * splitting bins, and *where* that happens is a property of the file, not of the
- * index's bin width. Measured 2026-08-06 on files in this repo:
- * `volvox.maf.bed.gz` reports an identical 306,719 bytes from 25kb up to 100kb,
- * and the whole-genome `hs37d5.HG002…sv.vcf.gz` is flat at 15,408 from 7.8 Mb
- * down — 400x above where a 20kb floor would have looked. The old reading here
- * ("roughly a tabix/BAI linear index's own resolution, 16kb bins") described one
- * dense file and generalized from it.
+ * **On the byte axis it is a budget tier, not a floor** — see
+ * {@link SUB_FLOOR_BYTE_BUDGET_FACTOR}. It was a floor: the gate simply stopped
+ * asking below it, on the premise that "a small span is a small fetch". The gate
+ * now measures at the viewport it is judging (`RegionTooLargeMixin`
+ * §"Measurement follows the viewport") rather than assuming that, and the
+ * assumption routinely fails. An index quotes whole blocks, so the estimate goes
+ * flat wherever a query stops splitting bins, and *where* that happens is a
+ * property of the file, not of the index's bin width. Measured 2026-08-06 on
+ * files in this repo: `volvox.maf.bed.gz` reports an identical 306,719 bytes
+ * from 25kb up to 100kb, and the whole-genome `hs37d5.HG002…sv.vcf.gz` is flat
+ * at 15,408 from 7.8 Mb down — 400x above where a 20kb floor would have looked.
+ * The old reading here ("roughly a tabix/BAI linear index's own resolution, 16kb
+ * bins") described one dense file and generalized from it.
  *
  * The density axis keeps the floor because its number is still a *model* — the
  * last fetch's features-per-bp times the current bpPerPx — with no measurement
@@ -27,6 +28,47 @@
  * benefit and an unmeasured risk.
  */
 export const AUTO_FORCE_LOAD_BP = 20_000
+
+/**
+ * How much the byte budget is multiplied by below {@link AUTO_FORCE_LOAD_BP}.
+ * The gate keeps asking down there — it is a tier, not the old floor's
+ * off-switch — but it asks against a larger number, because at gene scale the
+ * user navigated to this locus deliberately and a banner is a worse answer than
+ * a few seconds of download.
+ *
+ * **Why a tier and not the floor back.** Index estimates are monotone
+ * non-decreasing in span, so a region over budget below the floor was over
+ * budget at 20kb too. Turning the gate off down there therefore made it
+ * *bypassable*: the banner said "zoom in to see features", and zooming in handed
+ * over the very bytes it had just refused — or, arriving by locus search, never
+ * showed a banner at all. That is what `7958e989d0` fixed for alignments and
+ * `ea80879d95` generalized. A tier keeps the gate reachable at every zoom, so
+ * the pathological files it exists for (a mitochondrial or amplicon pileup, tens
+ * of MB inside a gene-sized window) still ask, while ordinary deep sequencing
+ * stops being asked about.
+ *
+ * **Why below the floor specifically.** A BAI's linear index resolves 16kb bins,
+ * so under it the estimate stops moving and the user cannot act on the banner's
+ * own advice. Measured 2026-08-14, `estimatedBytesForRegions` on `ctgA`:
+ *
+ * | span | volvox-ultradeep (~2000x) | volvox-sorted | volvox long reads |
+ * | --- | --- | --- | --- |
+ * | 1kb–10kb | 7,441,672 (flat) | 256,892 (flat) | 101,982 (flat) |
+ * | 20kb | 14,468,389 | 317,130 | 101,982 |
+ *
+ * So the sub-floor budget is really "what one index bin costs", and 2x is what
+ * it takes for the deepest file in this repo to clear it: 7.44 Mb against BAM's
+ * 5 Mb becomes 7.44 against 10. It is a policy dial rather than a derived
+ * constant — it buys ordinary deep sequencing at gene scale and still stops
+ * anything an order of magnitude worse — so raise it if real tracks keep
+ * bannering at a locus and lower it if a tab hangs.
+ *
+ * Deliberately a multiplier of the resolved budget rather than a second absolute
+ * number, so an adapter that declares its own `fetchSizeLimit` keeps its
+ * relationship to the display default at both tiers, and so there is one budget
+ * to reason about instead of two.
+ */
+export const SUB_FLOOR_BYTE_BUDGET_FACTOR = 2
 
 /**
  * A re-measure is only evidence about zoom when the span actually moved: below
@@ -194,26 +236,34 @@ export function tooLargeBannerText(
 
 /**
  * Resolve the effective byte budget: the adapter's self-reported limit, else the
- * display's configured default. A non-positive adapter limit means "no opinion"
- * (e.g. htsget/no-index adapters report 0) and is skipped — without this guard a
- * 0 would gate every request as too-large, and a negative sentinel (-1) would
- * survive `|| undefined` (truthy) and do the same.
+ * display's configured default, times {@link SUB_FLOOR_BYTE_BUDGET_FACTOR} when
+ * the span is below {@link AUTO_FORCE_LOAD_BP}. A non-positive adapter limit
+ * means "no opinion" (e.g. htsget/no-index adapters report 0) and is skipped —
+ * without this guard a 0 would gate every request as too-large, and a negative
+ * sentinel (-1) would survive `|| undefined` (truthy) and do the same.
  *
- * Both inputs are read on the main thread (`gateByteLimit`), so the banner and
- * the worker budget resolve one number. There is deliberately no force-load tier:
- * force-load is a boolean "render this track regardless" (`gateExempt`), not
- * a raised ceiling — see agent-docs/reference/REGION_TOO_LARGE.md § Force-load.
+ * All three inputs are read on the main thread (`gateByteLimit`), so the banner
+ * and the worker budget resolve one number. There is deliberately no force-load
+ * tier: force-load is a boolean "render this track regardless" (`gateExempt`),
+ * not a raised ceiling — see agent-docs/reference/REGION_TOO_LARGE.md
+ * § Force-load. The span tier is not that ceiling wearing a hat, and the four
+ * questions that killed the old one don't reach it: it is static rather than
+ * derived from a measurement, single-axis by construction, and never expires.
  */
 export function resolveByteLimit({
   adapterFetchSizeLimit,
   configFetchSizeLimit,
+  belowForceLoadFloor = false,
 }: {
   adapterFetchSizeLimit?: number
   configFetchSizeLimit: number
+  belowForceLoadFloor?: boolean
 }) {
-  return adapterFetchSizeLimit !== undefined && adapterFetchSizeLimit > 0
-    ? adapterFetchSizeLimit
-    : configFetchSizeLimit
+  const base =
+    adapterFetchSizeLimit !== undefined && adapterFetchSizeLimit > 0
+      ? adapterFetchSizeLimit
+      : configFetchSizeLimit
+  return belowForceLoadFloor ? base * SUB_FLOOR_BYTE_BUDGET_FACTOR : base
 }
 
 export interface RegionTooLargeStatus {

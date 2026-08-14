@@ -192,13 +192,17 @@ to clear its hover), so the two displays outside that family — LD and arc — 
 get it.
 
 **The `AUTO_FORCE_LOAD_BP` comparison lives in `aboveForceLoadFloor`, and only
-there** — and it now has exactly two readers: `densityGateActive`, and MAF's
-`showSummary`. The byte axis has no floor at all, because it measures at the span
-it is judging rather than assuming a small span is a small fetch; the density
-axis keeps one because its number is still extrapolated. `evaluateRegionTooLarge`
-only compares (bytes vs limit, then density) and knows nothing about either. The
-constant sits with the gate (`shared/regionTooLargeUtils.ts`), not on the view,
-which never reads it.
+there** — and it now has exactly three readers: `densityGateActive`, MAF's
+`showSummary`, and `gateByteLimit`. Each uses it for something different, which
+is the thing to hold on to: the density axis stops gating below it, MAF swaps to
+its summary adapter at it, and the byte axis multiplies its *budget* by
+`SUB_FLOOR_BYTE_BUDGET_FACTOR` below it. The byte axis has no floor — it measures
+at the span it is judging rather than assuming a small span is a small fetch — but
+it does have a tier, for reasons that are about what the user asked for rather
+than about what the fetch costs (§ The sub-floor budget tier).
+`evaluateRegionTooLarge` only compares (bytes vs limit, then density) and knows
+nothing about any of it. The constant sits with the gate
+(`shared/regionTooLargeUtils.ts`), not on the view, which never reads it.
 
 MAF's `showSummary` flips to the cheap summary adapter at that same 20kb, and
 that is a rendering decision that merely shares the number — where a summary tier
@@ -222,7 +226,10 @@ not the feature.
 canvas's `maxFeatureDensity` are resolved values that go undefined the moment
 their axis stops gating — `densityGateActive` still folds in
 `AUTO_FORCE_LOAD_BP`, so `maxFeatureDensity` swings at 20 kb, and both swing on
-force-load. Canvas passes them as call-site arguments to
+force-load. **`resolvedByteLimit()` now swings at 20 kb too**, on
+`SUB_FLOOR_BYTE_BUDGET_FACTOR`, so what was a density-only hazard is a
+both-axes one and the rule below is what makes the tier affordable at all.
+Canvas passes them as call-site arguments to
 `RenderFeatureData` / `MultiRowGetFeatures`; they are deliberately **not** in
 `rpcProps()`. `maxFeatureDensity` used to be, and that made zooming across the
 floor a full `SettingsInvalidate` → `clearAllRpcData()` → refetch, blanking the
@@ -240,6 +247,46 @@ no-budget fetch — with the worker re-gating whenever a fetch actually happens,
 which is the moment a download would occur and so the moment the gate is for.
 Pinned by "gate budgets are not RPC cache keys" in
 `LinearBasicDisplay/fetchAutorun.test.ts`.
+
+## The sub-floor budget tier
+
+Below `AUTO_FORCE_LOAD_BP` the byte budget is multiplied by
+`SUB_FLOOR_BYTE_BUDGET_FACTOR` (2). The gate keeps asking down there — this is a
+tier, not the off-switch the floor used to be — but it asks against a larger
+number, because at gene scale the user navigated to this locus deliberately and a
+banner is a worse answer than a few seconds of download.
+
+**Why not simply the floor back.** Index estimates are monotone non-decreasing in
+span, so a region over budget below the floor was over budget at 20 kb too.
+Turning the gate off down there therefore made it *bypassable*: the banner said
+"zoom in to see features", and zooming in handed over the very bytes it had just
+refused — or, arriving by locus search rather than by zooming, showed no banner
+at all. A tier keeps the gate reachable at every zoom, so a mitochondrial or
+amplicon pileup at tens of MB inside a gene-sized window still asks.
+
+**Why a tier is warranted at all**, given the floor's stated premise ("a small
+span is a small fetch") is false: below the floor the estimate stops moving, so
+the user cannot act on the banner's own advice. A BAI's linear index resolves
+16 kb bins. Measured 2026-08-14, `estimatedBytesForRegions` on `ctgA`:
+
+| span | volvox-ultradeep (~2000x) | volvox-sorted | volvox long reads |
+| --- | --- | --- | --- |
+| 1 kb – 10 kb | 7,441,672 (flat) | 256,892 (flat) | 101,982 (flat) |
+| 20 kb | 14,468,389 | 317,130 | 101,982 |
+
+So the sub-floor budget is really "what one index bin costs", and 2x is what it
+takes for the deepest file in this repo to clear it — 7.44 Mb against BAM's 5 Mb
+becomes 7.44 against 10. It is a policy dial rather than a derived constant:
+raise it if real tracks keep bannering at a locus, lower it if a tab hangs. It is
+a multiplier of the resolved budget rather than a second absolute number, so an
+adapter declaring its own `fetchSizeLimit` keeps its relationship to the display
+default at both tiers.
+
+**It is not the deleted per-region ceiling system wearing a hat** (§ Force-load).
+None of the four questions that killed that one reaches a static span tier: it is
+not derived from a measurement, so there is no "raise past which number"; it is
+single-axis by construction; it never expires; and it does not turn the other
+axis off.
 
 ## Measurement follows the viewport
 
@@ -613,16 +660,17 @@ paths can't drift apart.
 
 - `AUTO_FORCE_LOAD_BP` is the span below which the **density** axis stops gating.
   It lives here rather than on the LGV model — the view never read it — and
-  `aboveForceLoadFloor` is its only comparison, with exactly two readers:
-  `densityGateActive`, and MAF's `showSummary` (which reads that getter rather
-  than the constant, so the threshold has one spelling). It is not exported from
-  the plugin.
+  `aboveForceLoadFloor` is its only comparison, with exactly three readers:
+  `densityGateActive`, MAF's `showSummary`, and `gateByteLimit` (each reads that
+  getter rather than the constant, so the threshold has one spelling). It is not
+  exported from the plugin.
 
-  **It is not a floor on the byte axis, and it used to be.** The floor's premise
-  was "a small span is a small fetch", and the byte gate now checks that rather
-  than assuming it — it measures at whatever is on screen. The premise fails in
-  two directions and both are measured (2026-08-06, `bytesForRegions` against
-  files in this repo):
+  **It is not a floor on the byte axis, and it used to be** — it is a budget
+  tier there instead (§ The sub-floor budget tier). The floor's premise was "a
+  small span is a small fetch", and the byte gate now checks that rather than
+  assuming it — it measures at whatever is on screen. The premise fails in two
+  directions and both are measured (2026-08-06, `bytesForRegions` against files
+  in this repo):
 
   - **A second dimension the view doesn't shrink.** Cost is bytes per reference
     base **times** something zoom can't reduce. Row count: a 470-way MAF is
