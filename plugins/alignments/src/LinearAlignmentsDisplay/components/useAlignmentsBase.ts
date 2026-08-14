@@ -110,7 +110,17 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             pileupVisible: picked.section.pileupHeight > 0,
           })
         : { type: 'none' }
-    return { resolved, picked, result }
+    // The arc band, asked here rather than by each gesture, so that HAVING a
+    // pileup hit and knowing whether an arc outranks it are one answer. All
+    // three gestures need it — the hover to name the arc, the click and the
+    // right-click to decline to act through it — and when each asked for
+    // itself, one of them didn't: `93af1f54f0` guarded the click and left the
+    // right-click building the interbase menu for whatever the arc crossed.
+    // A fourth gesture now gets the answer whether or not it thinks to ask.
+    const arc = picked
+      ? resolveArcHover(canvasX, canvasY, picked.section)
+      : undefined
+    return { resolved, picked, result, arc }
   }
 
   function resolveSectionForCanvasY(canvasY: number) {
@@ -260,28 +270,21 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    const { resolved, result, picked } = hitTestEvent(e)
+    const { resolved, result, arc } = hitTestEvent(e)
 
     // The same guard `handleClick` carries, for the same reason and with the
-    // same reach: the hover resolves an arc AHEAD of the band it is painted
-    // over, so a right-click on an arc must not build a menu for whatever the
-    // arc happens to overlay. In up mode the arc band IS the coverage band
-    // (`computeArcBand` gives it top 0), and `hitTestInterbase` answers over the
-    // indicator strip and the bar stack inside it — so right-clicking an arc
-    // that crossed an indicator column opened the interbase menu for that
-    // column while the tooltip said "Read connection".
+    // same reach: an arc outranks the band it is painted over, so a right-click
+    // on one must not build a menu for whatever it overlays. In up mode the arc
+    // band IS the coverage band (`computeArcBand` gives it top 0), and
+    // `hitTestInterbase` answers over the indicator strip and the bar stack
+    // inside it — so right-clicking an arc that crossed an indicator column
+    // opened the interbase menu for that column while the tooltip said "Read
+    // connection".
     //
     // Falls through to the browser's own menu rather than calling
     // `preventDefault`, which is what every other mark with nothing to offer
     // does here (`contextMenuFieldsForHit` returns `show: false` for coverage).
-    if (
-      picked &&
-      resolveArcHover(
-        e.nativeEvent.offsetX,
-        e.nativeEvent.offsetY,
-        picked.section,
-      )
-    ) {
+    if (arc) {
       return
     }
 
@@ -471,18 +474,14 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   }
 
   function resolveHoverAt(canvasX: number, canvasY: number) {
-    const { result, picked } = runHitTest(canvasX, canvasY)
-
     // Arcs are painted AFTER coverage by both backends (see the pass order in
     // drawAlignmentBlocks), so in up mode an arc is the ink on top of the
     // histogram it overlays — and the ink under the cursor is what a hover
-    // should name. Asked ahead of the pileup pipeline for that reason, and safe
-    // there because this is a stroke test, not a band test: it only answers
-    // within a few px of a curve, so the rest of the coverage band still reaches
-    // `hitTestCoverage` untouched.
-    const arc = picked
-      ? resolveArcHover(canvasX, canvasY, picked.section)
-      : undefined
+    // should name. Outranking the pileup result is safe because the arc test is
+    // a STROKE test, not a band test: it only answers within a few px of a
+    // curve, so the rest of the coverage band still reaches `hitTestCoverage`
+    // untouched.
+    const { result, picked, arc } = runHitTest(canvasX, canvasY)
 
     model.setHoverState({
       ...(arc
@@ -518,19 +517,18 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       dragMovedRef.current = false
       return
     }
-    const { offsetX, offsetY } = e.nativeEvent
-    const { result, picked } = hitTestEvent(e)
+    const { result, arc } = hitTestEvent(e)
 
-    // The click has to agree with the hover, and the hover resolves an arc
-    // AHEAD of the band it is painted over (see `resolveHoverAt`). An arc has
-    // nothing to open, so this is a no-op — but it has to be an explicit one:
-    // falling through named whatever the arc happens to overlay. In down mode
-    // that is nothing, and `case 'none'` CLEARED THE SELECTION, so clicking the
-    // arc you were hovering threw away the read you had selected. In up mode the
-    // arc band IS the coverage band (`computeArcBand` gives it top 0), so the
-    // click opened the coverage bin widget for the column while the tooltip
-    // said "Read connection".
-    if (picked && resolveArcHover(offsetX, offsetY, picked.section)) {
+    // The click has to agree with the hover, which names the arc over the band
+    // it is painted on (see `resolveHoverAt`). An arc has nothing to open, so
+    // this is a no-op — but it has to be an explicit one: falling through named
+    // whatever the arc happens to overlay. In down mode that is nothing, and
+    // `case 'none'` CLEARED THE SELECTION, so clicking the arc you were
+    // hovering threw away the read you had selected. In up mode the arc band IS
+    // the coverage band (`computeArcBand` gives it top 0), so the click opened
+    // the coverage bin widget for the column while the tooltip said "Read
+    // connection".
+    if (arc) {
       return
     }
 

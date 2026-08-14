@@ -356,18 +356,20 @@ The endpoint squares have no hit test of their own, covered by the bar's
 tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is arithmetic,
 not design, so `hitTest.test.ts` pins it.
 
-**An arc resolves ahead of the band it is painted over, so BOTH gestures need
-the guard.** `handleClick` and `handleContextMenu` each ask `resolveArcHover`
-first and return; an arc carries no read id, so there is nothing to select or
-open and the pointer cursor stays off. `93af1f54f0` added it to the click and
-not to the right-click, which left the sharper half: in up mode `computeArcBand`
-gives the band `top: 0`, which IS the coverage band, and `hitTestInterbase`
-answers over the indicator strip and the bar stack inside it — so a right-click
-on an arc built the interbase menu for the column underneath while the tooltip
-said "Read connection". Down mode never showed it (own band, `type: 'none'`),
-which is why it survives casual testing. Neither guard calls `preventDefault`: a
-mark with nothing to offer falls through to the browser's menu here, same as
-coverage.
+**An arc resolves ahead of the band it is painted over, and `runHitTest` answers
+for both at once.** It returns `arc` beside `result`, so having a pileup hit and
+knowing whether an arc outranks it are one answer that all three gestures read —
+the hover to name the arc, the click and the right-click to decline to act
+through it. An arc carries no read id, so there is nothing to select or open and
+the pointer cursor stays off. When each gesture asked for itself, one of them
+didn't: `93af1f54f0` guarded the click and left the right-click, which was the
+sharper half: in up mode `computeArcBand` gives the band `top: 0`, which IS the
+coverage band, and `hitTestInterbase` answers over the indicator strip and the
+bar stack inside it — so a right-click on an arc built the interbase menu for
+the column underneath while the tooltip said "Read connection". Down mode never
+showed it (own band, `type: 'none'`), which is why it survives casual testing.
+Neither guard calls `preventDefault`: a mark with nothing to offer falls through
+to the browser's menu here, same as coverage.
 
 `arcGestureGuard.test.ts` is what holds the three gestures together, and it
 works the one pixel where an arc's ink lies over an interbase bar — the mark

@@ -1,28 +1,13 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  heightModeLabel,
-  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
-} from '@jbrowse/plugin-linear-genome-view'
+import { heightModeLabel } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import { namesToBlock } from '../shared/readNameBlock.ts'
-import configSchemaFactory from './configSchema.ts'
-import stateModelFactory from './model.ts'
-import { makeEmptyPileupData } from './testUtils.ts'
+import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Builds a real LinearAlignmentsDisplay so the cross-feature coupling that
 // lives in the model actions (not the menu handlers) is tested against the
@@ -33,119 +18,34 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // exercise menu/action coupling that never looks at a region.
 function createDisplay({ withRegions = false } = {}) {
   console.warn = jest.fn()
-  const pluginManager = new PluginManager()
-  const configSchema = configSchemaFactory(pluginManager)
-
-  pluginManager.addTrackType(() => {
-    const trackConfigSchema = ConfigurationSchema(
-      'AlignmentsTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'AlignmentsTrack',
-      configSchema: trackConfigSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'AlignmentsTrack',
-        trackConfigSchema,
-      ),
-    })
-  })
-
-  pluginManager.addDisplayType(() => {
-    return new DisplayType({
-      name: 'LinearAlignmentsDisplay',
-      configSchema,
-      stateModel: stateModelFactory(configSchema),
-      trackType: 'AlignmentsTrack',
-      viewType: 'LinearGenomeView',
-      // never rendered here; this harness exercises the model
-      ReactComponent: () => null,
-    })
-  })
-
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
-    {
-      type: 'AlignmentsTrack',
-      trackId: 'test_track',
-      assemblyNames: ['volvox'],
+  const { baseSession, mount } = bootAlignmentsDisplay()
+  const Session = baseSession.volatile(() => ({
+    // `call` is replaced per test by the cases that drive an RPC.
+    rpcManager: { call: jest.fn() },
+    // `colorPalette` (and so `renderState`) derives from the session theme
+    theme: createJBrowseTheme(),
+    palette: resolvePalette(),
+    // the feature-details lookup asks for the region's sequence adapter, and
+    // reports a failed lookup through notify — hence no `sequence` here.
+    // `getCanonicalRefName` carries one alias because user-authored refName
+    // text (the `sortedBy` slot) is normalized through it, and a stub that
+    // only ever answered identity could not tell a reader that normalizes
+    // from one that doesn't.
+    assemblyManager: {
+      get: (name: string) =>
+        name === 'volvox'
+          ? {
+              initialized: true,
+              getCanonicalRefName: (refName: string) =>
+                refName === 'chrA' ? 'ctgA' : refName,
+              configuration: { sequence: undefined },
+            }
+          : undefined,
     },
-    { pluginManager },
-  )
-
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-    })
-    .volatile(() => ({
-      // satisfies isSessionModel so getSession(view) resolves; the LGV
-      // localStorage autorun calls getSession via the trackLabels getter.
-      // `call` is replaced per test by the cases that drive an RPC.
-      rpcManager: { call: jest.fn() },
-      // `colorPalette` (and so `renderState`) derives from the session theme
-      theme: createJBrowseTheme(),
-      palette: resolvePalette(),
-      // the feature-details lookup asks for the region's sequence adapter, and
-      // reports a failed lookup through notify — hence no `sequence` here.
-      // `getCanonicalRefName` carries one alias because user-authored refName
-      // text (the `sortedBy` slot) is normalized through it, and a stub that
-      // only ever answered identity could not tell a reader that normalizes
-      // from one that doesn't.
-      assemblyManager: {
-        get: (name: string) =>
-          name === 'volvox'
-            ? {
-                initialized: true,
-                getCanonicalRefName: (refName: string) =>
-                  refName === 'chrA' ? 'ctgA' : refName,
-                configuration: { sequence: undefined },
-              }
-            : undefined,
-      },
-      notify: jest.fn(),
-      notifyError: jest.fn(),
-    }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // every promotable slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
-      getDisplayTypeDefault() {
-        return undefined
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-    }))
-
-  const session = Session.create({ configuration: {} }, { pluginManager })
-  const view = session.setView(
-    LinearGenomeModel.create({
-      type: 'LinearGenomeView',
-      tracks: [
-        {
-          type: 'AlignmentsTrack',
-          configuration: 'test_track',
-          displays: [{ type: 'LinearAlignmentsDisplay' }],
-        },
-      ],
-    }),
-  )
+    notify: jest.fn(),
+    notifyError: jest.fn(),
+  }))
+  const { view, display } = mount(Session)
   // `renderState` reads `view.width`, which throws while volatileWidth is unset
   view.setWidth(800)
   if (withRegions) {
@@ -153,7 +53,7 @@ function createDisplay({ withRegions = false } = {}) {
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50_000 },
     ])
   }
-  return view.tracks[0]!.displays[0]!
+  return display
 }
 
 describe('alignments display cross-feature coupling', () => {

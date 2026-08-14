@@ -7,6 +7,8 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
@@ -19,7 +21,7 @@ import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { RenderState } from './renderers/rendererTypes.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // A full ColorPalette with every channel zeroed, for tests that only assert on
@@ -302,20 +304,49 @@ export function pileupDataFromSamRecords(
 }
 
 /**
- * Boots a real LinearAlignmentsDisplay inside a measured LinearGenomeView.
+ * The half of a display test's setup that says nothing about the test.
  *
- * For the cases that have to run through the model's own chain — `arcsByGroup`
- * → `sections` → `renderSections`, or the mouse handlers, which reach for
- * `getContainingView` and the view's `visibleRegions` — rather than by calling
- * a pure function with a hand-built argument. Both halves have their own tests
- * (`sectionLayout.test.ts`, `hitTest.test.ts`); this is for the wiring between
- * them, which is where the drift lives.
+ * Registering the two pluggable types, building the LGV model against them,
+ * creating the track config, and the session skeleton every one of these needs
+ * (`view`, `configuration`, `getTrackById`, `setView`) were written out
+ * longhand in ten files. They were not *quite* copies: the same
+ * `addDisplayType` is an arrow in seven and a block in two, one comment is
+ * reworded three ways, and the drift was invisible because nothing here has
+ * any meaning to disagree about.
  *
- * The view is left at the default zoom deliberately: a case that projects bp to
- * screen has to say what scale it means, so it calls `view.zoomTo` itself.
+ * What is deliberately NOT here is the rest of the session stub — the
+ * `rpcManager`, the `assemblyManager` and its assembly's extent, the theme, the
+ * notify hooks. That is where a display test says what world it is in, and the
+ * ten files genuinely disagree: assemblies from 50kb to 10Mb, an rpcManager
+ * that answers and one that would throw if called, a session that can host a
+ * widget and one that cannot. Folding those into options here would turn ten
+ * honest stubs into one fixture with eight flags, which is the same complexity
+ * spent worse. So callers compose onto `baseSession`:
+ *
+ * ```
+ * const { pluginManager, LinearGenomeModel, baseSession, mount } = bootAlignmentsDisplay()
+ * const Session = baseSession.volatile(() => ({ rpcManager: { call: jest.fn() } }))
+ * const { session, view, display } = mount(Session)
+ * ```
+ *
+ * `mount` leaves the view UNMEASURED, because "no width, no displayed regions"
+ * is a state some of these tests are specifically about (a slot read before
+ * init). Measuring it is `applyView`, or the caller's own `setWidth` /
+ * `setDisplayedRegions`, which is also where the region extent gets stated.
  */
-export function createTestAlignmentsDisplay() {
+export function bootAlignmentsDisplay({
+  trackConfig: trackConfigExtra = {},
+  register,
+}: {
+  // merged into the track's config snapshot — an `adapter`, or a `displays`
+  // list whose entries a view-level display then references by id
+  trackConfig?: Record<string, unknown>
+  // anything else this test's plugin manager needs, registered before
+  // `createPluggableElements` closes it
+  register?: (pluginManager: PluginManager) => void
+} = {}) {
   const pluginManager = new PluginManager()
+  register?.(pluginManager)
   const configSchema = configSchemaFactory(pluginManager)
 
   pluginManager.addTrackType(() => {
@@ -346,7 +377,7 @@ export function createTestAlignmentsDisplay() {
         stateModel: stateModelFactory(configSchema),
         trackType: 'AlignmentsTrack',
         viewType: 'LinearGenomeView',
-        // the harness exercises the model and the hook; nothing mounts this
+        // these harnesses exercise the model; nothing mounts this
         ReactComponent: () => null,
       }),
   )
@@ -355,15 +386,160 @@ export function createTestAlignmentsDisplay() {
   pluginManager.configure()
 
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
+  const trackConfig = pluginManager.pluggableConfigSchemaType('track').create(
     {
       type: 'AlignmentsTrack',
       trackId: 'test_track',
       assemblyNames: ['volvox'],
+      ...trackConfigExtra,
     },
     { pluginManager },
   )
+
+  const baseSession = types
+    .model({
+      name: 'testSession',
+      view: types.maybe(LinearGenomeModel),
+      configuration: types.map(types.frozen()),
+      // same shape as BaseSession's preferencesOverrides.displayTypeDefaults:
+      // displayType -> slot -> value, reassigned wholesale so a display getter
+      // tracks it reactively.
+      displayTypeDefaults: types.frozen<
+        Record<string, Record<string, unknown>>
+      >({}),
+    })
+    .views(self => ({
+      getTrackById(id: string) {
+        return id === 'test_track' ? trackConfig : undefined
+      },
+      // Every promotable slot read walks the cascade through this, and
+      // `resolveSlotIn` calls it UNCONDITIONALLY — a session without it doesn't
+      // fall back, it throws `getDisplayTypeDefault is not a function` from
+      // somewhere that looks nothing like the test. So it is the real store for
+      // everyone rather than a stub for most and an implementation for the one
+      // file about promotion; empty, it answers `undefined` for every slot,
+      // which is what a stub was standing in for anyway.
+      getDisplayTypeDefault(displayType: string, slot: string): unknown {
+        return self.displayTypeDefaults[displayType]?.[slot]
+      },
+    }))
+    .actions(self => ({
+      setView(view: Instance<typeof LinearGenomeModel>) {
+        self.view = view
+        return view
+      },
+      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
+        const forType = { ...self.displayTypeDefaults[displayType] }
+        if (value === undefined) {
+          delete forType[slot]
+        } else {
+          forType[slot] = value
+        }
+        self.displayTypeDefaults = {
+          ...self.displayTypeDefaults,
+          [displayType]: forType,
+        }
+      },
+    }))
+
+  // Generic over the composed model, so a caller's own volatiles and actions
+  // stay typed on the session it gets back; intersected with the base's
+  // instance because that is what supplies `setView` here.
+  function mount<T extends IAnyModelType>(
+    Session: T,
+    displaySnapshot: Record<string, unknown> = {},
+  ) {
+    const session = Session.create(
+      { configuration: {} },
+      {
+        pluginManager,
+      },
+    ) as Instance<T> & Instance<typeof baseSession>
+    const view = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        tracks: [
+          {
+            type: 'AlignmentsTrack',
+            configuration: 'test_track',
+            displays: [{ type: 'LinearAlignmentsDisplay', ...displaySnapshot }],
+          },
+        ],
+      }),
+    )
+    return { session, view, display: view.tracks[0]!.displays[0]! }
+  }
+
+  return { pluginManager, LinearGenomeModel, trackConfig, baseSession, mount }
+}
+
+/**
+ * A display over a 10Mb assembly whose `rpcManager.call` is a spy: the world
+ * the two fetch-behaviour suites need, which they had written out identically
+ * to the byte (`zoomInvalidation`, `derivedRegionTooLarge` — the first one's
+ * comment already said "same shape as" the second).
+ *
+ * Hands back a `createDisplay` rather than a display, because those suites
+ * build several independent ones against one registration, and the spy so a
+ * case can read what the display asked for.
+ */
+export function createRpcTestEnvironment() {
+  const { baseSession, mount } = bootAlignmentsDisplay()
+  const mockRpcCall = jest.fn()
+  const asm = {
+    initialized: true,
+    regions: [
+      { refName: 'ctgA', start: 0, end: 10_000_000, assemblyName: 'volvox' },
+    ],
+    getCanonicalRefName: (refName: string) => refName,
+    getGeneticCodeId: () => undefined,
+    configuration: { sequence: undefined },
+  }
+  const Session = baseSession
+    .volatile(() => ({
+      rpcManager: { call: mockRpcCall },
+      theme: createJBrowseTheme(),
+      palette: resolvePalette(),
+      assemblyManager: {
+        get: (name: string) => (name === 'volvox' ? asm : undefined),
+        waitForAssembly: () => Promise.resolve(asm),
+        isValidRefName: () => true,
+      },
+    }))
+    .actions(() => ({
+      notify() {},
+      notifyError() {},
+      queueDialog() {},
+    }))
+
+  function createDisplay() {
+    const { session, view, display } = mount(Session)
+    view.setWidth(800)
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgA' },
+    ])
+    return { session, view, display, mockRpcCall }
+  }
+
+  return { createDisplay, mockRpcCall }
+}
+
+/**
+ * Boots a real LinearAlignmentsDisplay inside a measured LinearGenomeView, with
+ * a session that can host a widget and hold a selection.
+ *
+ * For the cases that have to run through the model's own chain — `arcsByGroup`
+ * → `sections` → `renderSections`, or the mouse handlers, which reach for
+ * `getContainingView` and the view's `visibleRegions` — rather than by calling
+ * a pure function with a hand-built argument. Both halves have their own tests
+ * (`sectionLayout.test.ts`, `hitTest.test.ts`); this is for the wiring between
+ * them, which is where the drift lives.
+ *
+ * The view is left at the default zoom deliberately: a case that projects bp to
+ * screen has to say what scale it means, so it calls `applyView` itself.
+ */
+export function createTestAlignmentsDisplay() {
+  const { baseSession, mount } = bootAlignmentsDisplay()
 
   // `arcsByGroup` normalizes SA/RNEXT refNames through the assembly, so the mock
   // has to answer `initialized` + `getCanonicalRefName2`.
@@ -384,12 +560,7 @@ export function createTestAlignmentsDisplay() {
     type: string
     featureData: SimpleFeatureSerialized
   }[] = []
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-    })
+  const Session = baseSession
     .volatile(() => ({
       rpcManager: { call: () => Promise.resolve(undefined) },
       assemblyManager: {
@@ -399,21 +570,7 @@ export function createTestAlignmentsDisplay() {
       widgets: new Map<string, unknown>(),
       selection: undefined as unknown,
     }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // every promotable slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
-      getDisplayTypeDefault() {
-        return undefined
-      },
-    }))
     .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
       setSelection(thing: unknown) {
         self.selection = thing
       },
@@ -431,29 +588,12 @@ export function createTestAlignmentsDisplay() {
       showWidget() {},
     }))
 
-  const session = Session.create({ configuration: {} }, { pluginManager })
-  const view = session.setView(
-    LinearGenomeModel.create({
-      type: 'LinearGenomeView',
-      tracks: [
-        {
-          type: 'AlignmentsTrack',
-          configuration: 'test_track',
-          displays: [{ type: 'LinearAlignmentsDisplay' }],
-        },
-      ],
-    }),
-  )
+  const { session, view, display } = mount(Session)
   view.setWidth(800)
   view.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
   ])
-  return {
-    session,
-    view,
-    display: view.tracks[0]!.displays[0]!,
-    openedWidgets,
-  }
+  return { session, view, display, openedWidgets }
 }
 
 /**

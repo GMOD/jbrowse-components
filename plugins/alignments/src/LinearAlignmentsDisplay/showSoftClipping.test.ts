@@ -1,141 +1,39 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import {
-  ConfigurationSchema,
   clearPromotedDefaults,
   getDisplayTypeDefaultChanges,
 } from '@jbrowse/core/configuration'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from '@jbrowse/mobx-state-tree'
-import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import configSchemaFactory from './configSchema.ts'
 import { getFeatureHeightMenuItem } from './menus/featureSize.ts'
-import stateModelFactory from './model.ts'
-
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import { bootAlignmentsDisplay } from './testUtils.ts'
 
 // Boots a real LinearAlignmentsDisplay so the showSoftClipping resolution and
-// the promote/clear actions run against the actual MST model. The test Session
+// the promote/clear actions run against the actual MST model. `baseSession`
 // backs get/setDisplayTypeDefault with the same nested-object store BaseSession
 // uses (round-trip-tested in sessionModelFactory.test.ts); here we exercise how
 // the display reads it. showSoftClipping is a promotable `maybeBoolean` slot,
 // resolved through getConf (track pin -> session default -> off).
+//
+// `displayConfig` lands on the track's own display config (`displayId: 'd1'`),
+// which the view-level display then references — that indirection is how a
+// case states the TRACK's pinned value, as opposed to the session default it is
+// resolved against.
 function createDisplay(displayConfig: Record<string, unknown> = {}) {
   console.warn = jest.fn()
-  const pluginManager = new PluginManager()
-  const configSchema = configSchemaFactory(pluginManager)
-
-  pluginManager.addTrackType(() => {
-    const trackConfigSchema = ConfigurationSchema(
-      'AlignmentsTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'AlignmentsTrack',
-      configSchema: trackConfigSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'AlignmentsTrack',
-        trackConfigSchema,
-      ),
-    })
-  })
-
-  pluginManager.addDisplayType(() => {
-    return new DisplayType({
-      name: 'LinearAlignmentsDisplay',
-      configSchema,
-      stateModel: stateModelFactory(configSchema),
-      trackType: 'AlignmentsTrack',
-      viewType: 'LinearGenomeView',
-      // never rendered here; this harness exercises the model
-      ReactComponent: () => null,
-    })
-  })
-
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
-    {
-      type: 'AlignmentsTrack',
-      trackId: 'test_track',
-      assemblyNames: ['volvox'],
+  const { baseSession, mount } = bootAlignmentsDisplay({
+    trackConfig: {
       displays: [
         { type: 'LinearAlignmentsDisplay', displayId: 'd1', ...displayConfig },
       ],
     },
-    { pluginManager },
-  )
-
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-      // same shape as BaseSession's preferencesOverrides.displayTypeDefaults:
-      // displayType -> slot -> value, reassigned wholesale so the display getter
-      // tracks it reactively
-      displayTypeDefaults: types.frozen<
-        Record<string, Record<string, unknown>>
-      >({}),
-    })
-    .volatile(() => ({
-      rpcManager: {},
-    }))
-    .views(self => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        return self.displayTypeDefaults[displayType]?.[slot]
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
+  })
+  // no `call`: nothing here is meant to reach a fetch, so one would throw
+  const Session = baseSession
+    .volatile(() => ({ rpcManager: {} }))
+    .actions(() => ({
       notify(_message: string, _level?: string) {},
-      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        const forType = { ...self.displayTypeDefaults[displayType] }
-        if (value === undefined) {
-          delete forType[slot]
-        } else {
-          forType[slot] = value
-        }
-        self.displayTypeDefaults = {
-          ...self.displayTypeDefaults,
-          [displayType]: forType,
-        }
-      },
     }))
-
-  const session = Session.create({ configuration: {} }, { pluginManager })
-  const view = session.setView(
-    LinearGenomeModel.create({
-      type: 'LinearGenomeView',
-      tracks: [
-        {
-          type: 'AlignmentsTrack',
-          configuration: 'test_track',
-          displays: [{ type: 'LinearAlignmentsDisplay', configuration: 'd1' }],
-        },
-      ],
-    }),
-  )
-  return { session, display: view.tracks[0]!.displays[0]! }
+  const { session, display } = mount(Session, { configuration: 'd1' })
+  return { session, display }
 }
 
 // The grow/fit radios live in the same merged "Read height" menu as the fixed

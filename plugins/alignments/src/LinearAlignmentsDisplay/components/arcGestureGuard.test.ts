@@ -43,9 +43,6 @@ function coverageUnder(data: PileupDataResult): PileupDataResult {
     ...data,
     coverageStartPos: 0,
     coverageDepths: new Float32Array(3000).fill(10),
-    coverageMaxDepth: 10,
-    indicatorPositions: new Uint32Array(pos),
-    indicatorColorTypes: new Uint8Array(n).fill(1),
     // the drawn histogram, which is what `hitTestInterbase` measures against
     interbaseCovPositions: new Uint32Array(pos),
     interbaseCovYOffsets: new Float32Array(n).fill(0),
@@ -56,12 +53,8 @@ function coverageUnder(data: PileupDataResult): PileupDataResult {
     // `getInterbaseBin` answers undefined and the click opens nothing, which
     // would make the control indistinguishable from the guard working
     interbasePositions: new Uint32Array(pos),
-    interbaseYs: new Uint16Array(n),
     interbaseLengths: new Uint32Array(n).fill(5),
     interbaseTypes: new Uint8Array(n).fill(1),
-    interbaseReadIndices: new Uint32Array(n),
-    interbaseSequences: pos.map(() => 'AAAAA'),
-    interbaseFrequencies: new Uint8Array(n).fill(255),
   }
 }
 
@@ -94,27 +87,20 @@ function setup({ down }: { down: boolean }) {
   })
 
   const { result } = renderHook(() => useAlignmentsBase(display))
-  const event = (x: number, y: number) => {
-    const preventDefault = jest.fn()
-    return {
-      event: {
-        nativeEvent: { offsetX: x, offsetY: y },
-        clientX: x,
-        clientY: y,
-        preventDefault,
-      } as never,
-      preventDefault,
-    }
-  }
+  const event = (x: number, y: number) => ({
+    nativeEvent: { offsetX: x, offsetY: y },
+    clientX: x,
+    clientY: y,
+    preventDefault: jest.fn(),
+  })
   return {
-    view,
     display,
     session,
     openedWidgets,
     // What the tooltip would say — the discriminant only, which is the whole
     // question here: which mark did this pixel resolve to.
     hover(x: number, y: number) {
-      result.current.handleCanvasMouseMove(event(x, y).event)
+      result.current.handleCanvasMouseMove(event(x, y) as never)
       const cb = frame
       frame = undefined
       cb?.(0)
@@ -123,12 +109,14 @@ function setup({ down }: { down: boolean }) {
       )?.type
     },
     click(x: number, y: number) {
-      result.current.handleClick(event(x, y).event)
+      result.current.handleClick(event(x, y) as never)
     },
+    // Returns the event, so a case can ask whether the handler took the menu
+    // over (`preventDefault`) or let it fall through to the browser's.
     contextMenu(x: number, y: number) {
-      const { event: e, preventDefault } = event(x, y)
-      result.current.handleContextMenu(e)
-      return { preventDefault }
+      const e = event(x, y)
+      result.current.handleContextMenu(e as never)
+      return e
     },
   }
 }

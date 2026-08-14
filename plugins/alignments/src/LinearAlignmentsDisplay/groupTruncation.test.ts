@@ -1,21 +1,7 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from '@jbrowse/mobx-state-tree'
-import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
-
 import { namesToBlock } from '../shared/readNameBlock.ts'
-import configSchemaFactory from './configSchema.ts'
-import stateModelFactory from './model.ts'
-import { makeEmptyPileupData } from './testUtils.ts'
+import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Boots a real LinearAlignmentsDisplay, because which cap clipped a lane is a
 // property of the whole layout chain (`groupOrder` → `layoutGroupsToViewport` →
@@ -23,56 +9,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // answers agree with what that chain actually laid out.
 function createEnv() {
   console.warn = jest.fn()
-  const pluginManager = new PluginManager()
-  const configSchema = configSchemaFactory(pluginManager)
-
-  pluginManager.addTrackType(() => {
-    const trackConfigSchema = ConfigurationSchema(
-      'AlignmentsTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'AlignmentsTrack',
-      configSchema: trackConfigSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'AlignmentsTrack',
-        trackConfigSchema,
-      ),
-    })
-  })
-
-  pluginManager.addDisplayType(
-    () =>
-      new DisplayType({
-        name: 'LinearAlignmentsDisplay',
-        configSchema,
-        stateModel: stateModelFactory(configSchema),
-        trackType: 'AlignmentsTrack',
-        viewType: 'LinearGenomeView',
-        // never rendered here; this harness exercises the model
-        ReactComponent: () => null,
-      }),
-  )
-
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
-    {
-      type: 'AlignmentsTrack',
-      trackId: 'test_track',
-      assemblyNames: ['volvox'],
-    },
-    { pluginManager },
-  )
-
+  const { baseSession, mount } = bootAlignmentsDisplay()
   const asm = {
     initialized: true,
     regions: [
@@ -81,52 +18,19 @@ function createEnv() {
     getCanonicalRefName: (refName: string) => refName,
     getCanonicalRefName2: (refName: string) => refName,
   }
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-    })
-    .volatile(() => ({
-      rpcManager: { call: jest.fn() },
-      assemblyManager: {
-        get: (name: string) => (name === 'volvox' ? asm : undefined),
-        isValidRefName: () => true,
-      },
-    }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      getDisplayTypeDefault() {
-        return undefined
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-    }))
-
-  const session = Session.create({ configuration: {} }, { pluginManager })
-  const view = session.setView(
-    LinearGenomeModel.create({
-      type: 'LinearGenomeView',
-      tracks: [
-        {
-          type: 'AlignmentsTrack',
-          configuration: 'test_track',
-          displays: [{ type: 'LinearAlignmentsDisplay' }],
-        },
-      ],
-    }),
-  )
+  const Session = baseSession.volatile(() => ({
+    rpcManager: { call: jest.fn() },
+    assemblyManager: {
+      get: (name: string) => (name === 'volvox' ? asm : undefined),
+      isValidRefName: () => true,
+    },
+  }))
+  const { view, display } = mount(Session)
   view.setWidth(800)
   view.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
   ])
-  return view.tracks[0]!.displays[0]!
+  return display
 }
 
 // n reads all covering one span, so the layout has to stack them n rows deep and

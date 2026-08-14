@@ -1,24 +1,9 @@
-import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from '@jbrowse/mobx-state-tree'
-import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
+  bootAlignmentsDisplay,
+  oneReadWithMate as oneRead,
+} from './testUtils.ts'
 
-import { namesToBlock } from '../shared/readNameBlock.ts'
-import { nextRefsToTable } from '../shared/readNextRefs.ts'
-import configSchemaFactory from './configSchema.ts'
-import stateModelFactory from './model.ts'
-import { makeEmptyPileupData } from './testUtils.ts'
-
-import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 // Boots a real LinearAlignmentsDisplay in a measured view, so the per-lane band
@@ -27,56 +12,7 @@ import type { YScaleTicks } from '@jbrowse/wiggle-core'
 // covers the pure function).
 function createEnv() {
   console.warn = jest.fn()
-  const pluginManager = new PluginManager()
-  const configSchema = configSchemaFactory(pluginManager)
-
-  pluginManager.addTrackType(() => {
-    const trackConfigSchema = ConfigurationSchema(
-      'AlignmentsTrack',
-      {},
-      {
-        baseConfiguration: createBaseTrackConfig(pluginManager),
-        explicitIdentifier: 'trackId',
-      },
-    )
-    return new TrackType({
-      name: 'AlignmentsTrack',
-      configSchema: trackConfigSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'AlignmentsTrack',
-        trackConfigSchema,
-      ),
-    })
-  })
-
-  pluginManager.addDisplayType(
-    () =>
-      new DisplayType({
-        name: 'LinearAlignmentsDisplay',
-        configSchema,
-        stateModel: stateModelFactory(configSchema),
-        trackType: 'AlignmentsTrack',
-        viewType: 'LinearGenomeView',
-        // never rendered here; this harness exercises the model
-        ReactComponent: () => null,
-      }),
-  )
-
-  pluginManager.createPluggableElements()
-  pluginManager.configure()
-
-  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-  const trackConfig = trackConfigSchema.create(
-    {
-      type: 'AlignmentsTrack',
-      trackId: 'test_track',
-      assemblyNames: ['volvox'],
-    },
-    { pluginManager },
-  )
-
+  const { baseSession, mount } = bootAlignmentsDisplay()
   // `arcsByGroup` normalizes SA/RNEXT refNames through the assembly, so the mock
   // has to answer `initialized` + `getCanonicalRefName2`.
   const asm = {
@@ -87,75 +23,19 @@ function createEnv() {
     getCanonicalRefName: (refName: string) => refName,
     getCanonicalRefName2: (refName: string) => refName,
   }
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-    })
-    .volatile(() => ({
-      rpcManager: { call: jest.fn() },
-      assemblyManager: {
-        get: (name: string) => (name === 'volvox' ? asm : undefined),
-        isValidRefName: () => true,
-      },
-    }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // every promotable slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
-      getDisplayTypeDefault() {
-        return undefined
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-    }))
-
-  const session = Session.create({ configuration: {} }, { pluginManager })
-  const view = session.setView(
-    LinearGenomeModel.create({
-      type: 'LinearGenomeView',
-      tracks: [
-        {
-          type: 'AlignmentsTrack',
-          configuration: 'test_track',
-          displays: [{ type: 'LinearAlignmentsDisplay' }],
-        },
-      ],
-    }),
-  )
+  const Session = baseSession.volatile(() => ({
+    rpcManager: { call: jest.fn() },
+    assemblyManager: {
+      get: (name: string) => (name === 'volvox' ? asm : undefined),
+      isValidRefName: () => true,
+    },
+  }))
+  const { view, display } = mount(Session)
   view.setWidth(800)
   view.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
   ])
-  return { view, display: view.tracks[0]!.displays[0]! }
-}
-
-// One read spanning 1000..1100. `mateBp` makes it a same-chromosome pair, which
-// is what `computeArcsFromPileupData` turns into an arc; without it the lane has
-// reads but no arc — the 'Not split' lane of a split-read grouping.
-function oneRead(mateBp?: number): PileupDataResult {
-  return {
-    ...makeEmptyPileupData(),
-    readKeys: ['r0'],
-    ...namesToBlock(['readA']),
-    readPositions: new Uint32Array([1000, 1100]),
-    readYs: new Uint16Array(1),
-    readFlags: new Uint16Array([mateBp === undefined ? 0 : SAM_FLAG_PAIRED]),
-    readMapqs: new Uint8Array(1),
-    readStrands: new Int8Array([1]),
-    readInsertSizes: new Float32Array([500]),
-    readPairOrientations: new Uint8Array([1]),
-    ...nextRefsToTable(mateBp === undefined ? [''] : ['ctgA']),
-    readNextPositions:
-      mateBp === undefined ? undefined : new Uint32Array([mateBp]),
-  }
+  return { view, display }
 }
 
 // Two lanes, only the second holding a pair, with down-mode arcs on so the band
