@@ -1378,6 +1378,12 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     // it, the worker never sees it
     ['maxLabelFeatureDensity', 0.05],
     ['maxDescriptionFeatureDensity', 0.01],
+    // The declared color key, drawn by the `colorLegend` chrome hook. The last
+    // member of `rpcProps`'s exclusion list to get a row here, and the one whose
+    // absence mattered most: editing a legend entry used to clear and refetch
+    // every region to redraw a floating box, and nothing but that list stood
+    // between the fix and a regression.
+    ['legend', [{ label: 'SINE', color: '#e41a1c' }]],
   ])('a main-thread-only %s change does not refetch', async (slot, value) => {
     const { display, mockRpcCall } = await loadedDisplay()
     const callsBefore = mockRpcCall.mock.calls.length
