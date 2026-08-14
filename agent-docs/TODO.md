@@ -25,6 +25,8 @@ before anyone noticed.
 
 | Item | Area | First move |
 | --- | --- | --- |
+| [Sort the api-docs generator's output](#sort-the-api-docs-generators-output-so-an-unrelated-file-cannot-reorder-it) | tooling, CI | sort at each emission point; a double run does NOT reproduce it |
+| [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
 | [Validate the react-app site's volvox config](#run-jbrowse-validate-over-the-react-app-sites-volvox-configjson) | embedded, config | 8 errors already reported; fix the file, then ask why it is a copy |
 | [Pool the coordinate ruler's tick divs](#pool-the-coordinate-rulers-tick-divs-so-a-zoom-stops-rebuilding-them) | LGV, perf | measured; a fixed pool is the low-risk version |
@@ -74,6 +76,66 @@ before anyone noticed.
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 
 ## Ready to build: small and self-contained
+
+### Sort the api-docs generator's output so an unrelated file cannot reorder it
+
+`pnpm autogen --check` is a CI gate (`push.yml`), and it goes red for changes that
+touch nothing it covers. The generator emits TypeScript union members and model
+table rows in the order the checker visited them, so **adding or removing any file
+in the program reorders them in unrelated docs**: `"none" | "overlay" | "below"`
+becomes `"none" | "below" | "overlay"`, a `BaseTrack` "Extended by" list permutes,
+a `packInstances` row moves up two places. Nothing about the affected doc changed.
+
+Already paid for repeatedly, which is the argument for fixing it rather than
+regenerating again — `19a97a8aaf` ("regenerate for the file-order churn the new
+test file causes") names the mechanism, and `6a2cb0e47f`, `81ba418132`,
+`b9670e300d` and `97d62f5d4c` are four more regen-only commits. With several
+agents landing a day it also ping-pongs: each one's regen looks stale to the next,
+so the same two lines flip back and forth.
+
+**Do not try to reproduce it by running autogen twice.** A clean tree is
+idempotent — verified — because the visit order only changes when the file set
+does. Reproduce by adding any new source or test file to a package that has model
+docs, then running autogen and diffing docs you did not touch.
+
+The fix is a sort at each emission point in `website/scripts/api-docs/generate.ts`
+— union members and the "Extended by"/member rows — not a re-run. Sort keys have
+to be the printed strings, since that is what has to be stable; sorting union
+members changes what the docs *say* for a handful of slots, so the first commit is
+the sort plus the one-time regen it produces, and after that a regen is only ever
+caused by a real source change.
+
+### Let a dotplot click open the alignment it is on
+
+The dotplot resolves the alignment under the pointer already — `pickFeatureAt`
+answers a `{displayKey, featureIdx, segmentIdx}` hit, the tooltip names it, the
+hover restrokes it — but a click does nothing with it. Synteny opens
+`SyntenyFeatureWidget` from the same pick, so the asymmetry is the dotplot's, not
+the widget's.
+
+What is missing is only the payload: the widget wants a `uniqueId`, and the
+dotplot fetch ships no `featureIds`. Two ways, and the cheap one is not obviously
+right:
+
+- **Ship them**, as synteny does. Measured cost of one `string[]` at 500k
+  features is ~44ms of structured clone per fetch (`makeStringDict` in
+  synteny-core carries the measurement), and a dictionary does not help because
+  ids are distinct by definition. That is a real cost on every whole-genome fetch
+  to serve at most one click.
+- **Fetch the one id on demand**, from the hit's feature index, the way
+  `SyntenyResolveMatchingRegion` returns an answer rather than a feature. Free on
+  the fetch path, one round trip on the click, and it needs a new RPC method.
+
+The second is the better shape and the reason this is not already done: it wants
+the method designed rather than a lane added. Note the local coordinates the widget
+takes are derivable without either — `dotplotTooltip.ts` already resolves both
+axes' spans off the view's regions, and canonically, which is what that panel
+should show.
+
+Worth doing with it: the pointer handler currently clears a selection on any
+click (`useDotplotInteraction`'s `onPointerUp`), so the new behaviour has to
+distinguish "clicked an alignment" from "clicked empty plot to cancel", which the
+hit already answers.
 
 ### Jump the MM delta walk with `indexOf` instead of stepping it
 
