@@ -7,6 +7,10 @@ export { getMethBins } from './getMethBins.ts'
 export type { ParsedModData } from './getMethBins.ts'
 export { getModPositions } from './getModPositions.ts'
 export type { ModWithPositions } from './getModPositions.ts'
-export { getModProbabilities, modProbAt } from './getModProbabilities.ts'
+export {
+  getModProbabilities,
+  getModProbabilityBytes,
+  modProbAt,
+} from './getModProbabilities.ts'
 export { getTag, getTagAlt } from './getTagAlt.ts'
 export type { ModificationType } from './types.ts'

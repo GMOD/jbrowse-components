@@ -44,3 +44,33 @@ export function getModProbabilities(feature: Feature) {
     typeof ml === 'string' ? ml.split(',') : (ml as ArrayLike<number | string>)
   return Array.from(values, v => (+v + 0.5) / 256)
 }
+
+/**
+ * #api
+ * The ML tag as its raw 0..255 bytes, without the scaling `getModProbabilities`
+ * applies.
+ *
+ * The byte is a LOSSLESS stand-in for the probability — every value on this
+ * path is exactly `(N + 0.5) / 256` — and it is monotonic in it, so anything
+ * that only compares probabilities (picking the most likely call at a
+ * position, testing a threshold) can work in bytes and divide once, at the end,
+ * for the few calls that survive. A caller that needs the numbers themselves
+ * still wants `getModProbabilities`.
+ */
+export function getModProbabilityBytes(feature: Feature) {
+  const ml = getTagAlt(feature, 'ML', 'Ml')
+  if (ml === undefined) {
+    return undefined
+  }
+  if (typeof ml !== 'string') {
+    return ml as ArrayLike<number>
+  }
+  // htsget/SAM text gives a comma-separated string; parse it once into bytes
+  // rather than making every read of it coerce.
+  const parts = ml.split(',')
+  const out = new Uint8Array(parts.length)
+  for (let i = 0; i < parts.length; i++) {
+    out[i] = +parts[i]!
+  }
+  return out as ArrayLike<number>
+}

@@ -18,10 +18,11 @@ import {
   getMethBins,
   getModPositions,
   getModProbabilities,
+  getModProbabilityBytes,
   matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
 
-import { getMaxProbModAtEachPosition } from '../../shared/getMaxProbModAtEachPosition.ts'
+import { forEachMaxProbMod } from '../../shared/getMaxProbModAtEachPosition.ts'
 import {
   DEFAULT_MODIFICATION_THRESHOLD,
   isModificationTypeVisible,
@@ -100,7 +101,15 @@ export function extractModifications(
     return
   }
   const modifications = getModPositions(mmTag, seq, strand)
-  const probabilities = getModProbabilities(feature)
+  // Two readings of the same ML tag, and which one is built matters: the marks
+  // path only ever COMPARES probabilities, so it takes the raw bytes (see
+  // `forEachMaxProbMod`), while `getMethBins` needs the scaled numbers and is
+  // the only thing that reads `ParsedModData.probabilities`. Building the
+  // scaled `number[]` unconditionally meant allocating one per read — thousands
+  // of entries on a nanopore read — and discarding it in every mode but
+  // fill-unmarked.
+  const fillUnmarked =
+    colorBy?.type === 'modifications' && !!colorBy.modifications?.fillUnmarked
 
   // One pass over the parsed MM types:
   // - detectedModifications lists every type so the menu can offer all of them
@@ -120,46 +129,43 @@ export function extractModifications(
   // fillUnmarked hands cytosine painting to extractMethylation (the getMethBins
   // context walk paints every cytosine, called or not), so skip the MM-tag paint
   // here to avoid double marks — matching the old standalone methylation scheme.
-  if (
-    colorBy?.type === 'modifications' &&
-    !colorBy.modifications?.fillUnmarked
-  ) {
+  if (colorBy?.type === 'modifications' && !fillUnmarked) {
     const modStrand = strand === -1 ? -1 : 1
     const modThreshold =
       (colorBy.modifications?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100
     const twoColor = colorBy.modifications?.twoColor ?? false
-    const mods = getMaxProbModAtEachPosition(
+    forEachMaxProbMod(
       modifications,
-      probabilities,
+      getModProbabilityBytes(feature),
       cigarOps,
       strand,
+      (refPos, { type, base }, prob) => {
+        // twoColor renders every call, painting low-confidence ones in the
+        // unmethylated color (with prob = 1-prob = the unmodified confidence);
+        // default mode hides calls below the threshold and always paints the mod
+        // color at full prob. `isMeth` unifies both without an intermediate alloc.
+        if (
+          isModificationTypeVisible(colorBy.modifications, type) &&
+          (twoColor || prob >= modThreshold)
+        ) {
+          const isMeth = !twoColor || prob > 0.5
+          modificationsData.push({
+            readIndex,
+            position: featureStart + refPos,
+            base,
+            modType: type,
+            strand: modStrand,
+            color: isMeth ? modColorForType(type) : ABGR_UNMODIFIED,
+            prob: isMeth ? prob : 1 - prob,
+            noMod: !isMeth,
+          })
+        }
+      },
     )
-    mods.forEach(({ prob, type, base }, refPos) => {
-      // twoColor renders every call, painting low-confidence ones in the
-      // unmethylated color (with prob = 1-prob = the unmodified confidence);
-      // default mode hides calls below the threshold and always paints the mod
-      // color at full prob. `isMeth` unifies both without an intermediate alloc.
-      if (
-        isModificationTypeVisible(colorBy.modifications, type) &&
-        (twoColor || prob >= modThreshold)
-      ) {
-        const isMeth = !twoColor || prob > 0.5
-        modificationsData.push({
-          readIndex,
-          position: featureStart + refPos,
-          base,
-          modType: type,
-          strand: modStrand,
-          color: isMeth ? modColorForType(type) : ABGR_UNMODIFIED,
-          prob: isMeth ? prob : 1 - prob,
-          noMod: !isMeth,
-        })
-      }
-    })
   }
   return {
     modifications,
-    probabilities,
+    probabilities: fillUnmarked ? getModProbabilities(feature) : undefined,
     cigarOps,
     seq,
     fstrand: strand,
