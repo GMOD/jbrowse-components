@@ -125,7 +125,15 @@ export default class TextSearchManager {
   }
 
   async search(args: BaseTextSearchArgs, assemblyName: string) {
+    // Entry check, for the same reason `BaseRpcDriver.call` has one: a query
+    // superseded before it got here has nothing to deliver to, and
+    // `loadTextSearchAdapters` below constructs adapters and opens their index
+    // files. Typing is the workload — every keystroke supersedes the last — so
+    // this is the common case rather than a corner.
+    checkStopToken(args.stopToken)
     const adapters = await this.loadTextSearchAdapters(assemblyName)
+    // and again once they are open, before any index is actually read
+    checkStopToken(args.stopToken)
     const results = await keepFulfilled(
       adapters.map(a => a.searchIndex(args)),
       'text search adapter failed',

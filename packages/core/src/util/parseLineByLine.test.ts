@@ -12,10 +12,14 @@ line3`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
 
-    parseLineByLine(buffer, line => {
-      lines.push(line)
-      return true
-    })
+    parseLineByLine(
+      buffer,
+      line => {
+        lines.push(line)
+        return true
+      },
+      undefined,
+    )
 
     expect(lines).toEqual(['line1', 'line2', 'line3'])
   })
@@ -28,13 +32,17 @@ line4`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
 
-    parseLineByLine(buffer, line => {
-      lines.push(line)
-      if (line === 'line2') {
-        return false
-      }
-      return true
-    })
+    parseLineByLine(
+      buffer,
+      line => {
+        lines.push(line)
+        if (line === 'line2') {
+          return false
+        }
+        return true
+      },
+      undefined,
+    )
 
     expect(lines).toEqual(['line1', 'line2'])
   })
@@ -46,10 +54,14 @@ line3`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
 
-    parseLineByLine(buffer, line => {
-      lines.push(line)
-      return true
-    })
+    parseLineByLine(
+      buffer,
+      line => {
+        lines.push(line)
+        return true
+      },
+      undefined,
+    )
 
     expect(lines).toEqual(['line1', 'line3'])
   })
@@ -60,10 +72,14 @@ line2`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
 
-    parseLineByLine(buffer, line => {
-      lines.push(line)
-      return true
-    })
+    parseLineByLine(
+      buffer,
+      line => {
+        lines.push(line)
+        return true
+      },
+      undefined,
+    )
 
     expect(lines).toEqual(['line1', 'line2'])
   })
@@ -98,10 +114,14 @@ line3`
     const buffer = new TextEncoder().encode(content)
     const lineIndices: number[] = []
 
-    parseLineByLine(buffer, (line, index) => {
-      lineIndices.push(index)
-      return true
-    })
+    parseLineByLine(
+      buffer,
+      (line, index) => {
+        lineIndices.push(index)
+        return true
+      },
+      undefined,
+    )
 
     expect(lineIndices).toEqual([0, 1, 2])
   })
@@ -110,10 +130,14 @@ line3`
     const buffer = new TextEncoder().encode('')
     const lines: string[] = []
 
-    parseLineByLine(buffer, line => {
-      lines.push(line)
-      return true
-    })
+    parseLineByLine(
+      buffer,
+      line => {
+        lines.push(line)
+        return true
+      },
+      undefined,
+    )
 
     expect(lines).toEqual([])
   })
@@ -125,10 +149,14 @@ line3`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
 
-    parseLineByLine(buffer, line => {
-      lines.push(line)
-      return true
-    })
+    parseLineByLine(
+      buffer,
+      line => {
+        lines.push(line)
+        return true
+      },
+      undefined,
+    )
 
     expect(lines).toEqual([])
   })
@@ -138,10 +166,14 @@ line3`
     const buffer = new TextEncoder().encode(content)
     const lines: string[] = []
 
-    parseLineByLine(buffer, line => {
-      lines.push(line)
-      return true
-    })
+    parseLineByLine(
+      buffer,
+      line => {
+        lines.push(line)
+        return true
+      },
+      undefined,
+    )
 
     expect(lines).toEqual(['single line'])
   })
@@ -153,10 +185,14 @@ line3`
   describe('across decode chunk boundaries', () => {
     const collect = (content: string) => {
       const lines: string[] = []
-      parseLineByLine(new TextEncoder().encode(content), line => {
-        lines.push(line)
-        return true
-      })
+      parseLineByLine(
+        new TextEncoder().encode(content),
+        line => {
+          lines.push(line)
+          return true
+        },
+        undefined,
+      )
       return lines
     }
 
@@ -193,10 +229,14 @@ line3`
         '\n',
       )
       const lines: string[] = []
-      parseLineByLine(new TextEncoder().encode(content), line => {
-        lines.push(line)
-        return line !== 'line19000'
-      })
+      parseLineByLine(
+        new TextEncoder().encode(content),
+        line => {
+          lines.push(line)
+          return line !== 'line19000'
+        },
+        undefined,
+      )
       expect(lines.at(-1)).toBe('line19000')
       expect(lines).toHaveLength(19001)
     })
@@ -206,10 +246,14 @@ line3`
     it('keeps line indices continuous across chunks', () => {
       const content = `${'y\n'.repeat(50000)}last`
       const seen: number[] = []
-      parseLineByLine(new TextEncoder().encode(content), (_line, index) => {
-        seen.push(index)
-        return true
-      })
+      parseLineByLine(
+        new TextEncoder().encode(content),
+        (_line, index) => {
+          seen.push(index)
+          return true
+        },
+        undefined,
+      )
       expect(seen).toHaveLength(50001)
       expect(seen.at(-1)).toBe(50000)
       expect(seen).toEqual(seen.map((_, i) => i))

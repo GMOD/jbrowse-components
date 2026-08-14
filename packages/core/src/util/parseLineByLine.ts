@@ -1,10 +1,12 @@
 import { IntervalTree } from './IntervalTree.ts'
 import { createProgressReporter } from './progress.ts'
 
-import type { RpcStatus } from './progress.ts'
+import type { StatusCallback } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
 
-export type StatusCallback = (arg: RpcStatus) => void
+// Re-exported rather than redeclared: it was a structurally identical copy, so
+// it type-checked against the real one right up until one of them changed.
+export type { StatusCallback }
 export type LineCallback = (
   line: string,
   lineIndex: number,
@@ -117,7 +119,11 @@ function chunkBoundary(buffer: Uint8Array, start: number) {
  * Parse buffer line by line, calling a callback for each line
  * @param buffer - The buffer to parse
  * @param lineCallback - Callback function called for each line. Return false to stop parsing.
- * @param statusCallback - Optional callback for progress updates
+ * @param statusCallback - Progress channel, or `undefined` for none. A required
+ *   parameter with a nullable value rather than an optional one, so a caller
+ *   states which it means; `undefined` is the value the rest of this module's
+ *   contract is built on ("no channel, skip the bookkeeping"), and it used to
+ *   default to `() => {}`, which says the opposite.
  * @param opts - `label` names the phase on the progress bar (a multi-phase
  *   adapter wants "Parsing PAF", not another "Loading" indistinguishable from
  *   the download that preceded it); `stopToken` makes a multi-GB parse
@@ -126,7 +132,7 @@ function chunkBoundary(buffer: Uint8Array, start: number) {
 export function parseLineByLine(
   buffer: Uint8Array,
   lineCallback: LineCallback,
-  statusCallback: StatusCallback = () => {},
+  statusCallback: StatusCallback | undefined,
   opts: { label?: string; stopToken?: StopToken } = {},
 ) {
   const { label = 'Loading', stopToken } = opts
@@ -190,6 +196,6 @@ export function parseLineByLine(
     // Cleared in a finally: on the happy path so the finished parse's last
     // percentage doesn't sit on screen through whatever unlabelled phase runs
     // next, and on a throw (or a cancel) so it doesn't sit under the error.
-    statusCallback('')
+    statusCallback?.('')
   }
 }

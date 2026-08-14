@@ -230,7 +230,7 @@ describe('stopToken', () => {
       new Int32Array(buffer)[0] = 0
       const checker = createStopTokenChecker(buffer)
       expect(checker.sabView).toBeInstanceOf(Int32Array)
-      expect(checker.checkIters).toBe(10)
+      expect(checker.iters).toBe(0)
     })
 
     it('leaves sabView undefined for string tokens', () => {
@@ -262,7 +262,7 @@ describe('stopToken', () => {
       expect(checker.iters).toBe(0)
     })
 
-    it('increments iters on every call', () => {
+    it('increments iters on every call of the SAB path', () => {
       const buffer = new SharedArrayBuffer(4)
       new Int32Array(buffer)[0] = 0
       const checker = createStopTokenChecker(buffer)
@@ -273,12 +273,11 @@ describe('stopToken', () => {
     })
 
     describe('SAB throttling', () => {
-      it('does not throw before checkIters reached', () => {
+      it('does not throw before the iteration mask is reached', () => {
         const buffer = new SharedArrayBuffer(4)
         const view = new Int32Array(buffer)
         view[0] = 0
         const checker = createStopTokenChecker(buffer)
-        expect(checker.checkIters).toBe(10)
 
         // Stop the token — but checks should be skipped until iter 10
         Atomics.store(view, 0, 1)
@@ -418,12 +417,15 @@ describe('stopToken', () => {
     })
 
     describe('string token throttling (time-gated, not iteration-gated)', () => {
-      it('increments iters on every call for string tokens', () => {
+      // The counter belongs to the SAB path's iteration mask; nothing on the
+      // string path reads it, so it deliberately stays at 0 here rather than
+      // being bumped per item for no reader.
+      it('leaves iters alone for string tokens', () => {
         const checker = createStopTokenChecker('some-token')
         for (let i = 0; i < 200; i++) {
           checkStopTokenThrottled(checker)
         }
-        expect(checker.iters).toBe(200)
+        expect(checker.iters).toBe(0)
       })
 
       it('does not throw for a live token however many times it is called', () => {
@@ -451,7 +453,6 @@ describe('stopToken', () => {
           expect(() => {
             checkStopTokenThrottled(checker)
           }).toThrow('aborted')
-          expect(checker.iters).toBe(2)
         } finally {
           spy.mockRestore()
         }

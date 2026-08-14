@@ -1,4 +1,5 @@
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
+import { updateStatus } from '../util/progress.ts'
 import { getSequenceAdapterConfig } from './getSequenceAdapterConfig.ts'
 import { checkRefName } from './refNameMaps.ts'
 import { detectRefNameMismatch } from './refNameMismatch.ts'
@@ -43,32 +44,38 @@ export async function loadRefNameMap(
   // later use when fetching features
   const sequenceAdapter = getSequenceAdapterConfig(assembly)
 
-  const refNames = await assembly.rpcManager.call(
-    sessionId,
-    'CoreGetRefNames',
-    {
-      adapterConfig: adapterConfig as Record<string, unknown>,
-      assemblyName: assembly.name,
-      sequenceAdapter,
-      // stopToken intentionally not passed, fixes issues like #2221.
-      // alternative fix #2540 was proposed but non-working currently
-      stopToken: undefined,
-      // Forwarded rather than dropped (unlike stopToken above), because the
-      // adapter's index download happens here during refname mapping
-      // (getRefNames -> setup) and this is the only place its "Downloading
-      // index" progress can surface. For an in-memory adapter it is not an
-      // index but the whole file — GWAS LD coloring resolves a second map
-      // against its PLINK `.ld` sub-adapter, and that adapter parses all of it
-      // to answer `getRefNames`.
-      //
-      // This was latent for a while, and what revived it is one line elsewhere
-      // that is easy to undo by tidying: `BaseRpcDriver.call` strips
-      // `statusCallback` off the *result* of `serializeArguments` rather than
-      // off the args going in. Strip it going in and the rename pass — which
-      // runs inside serialization — is handed undefined for every RPC there is,
-      // which is what it was.
-      statusCallback: options.statusCallback,
-    },
+  // Labelled, because this is the multi-second stall before any RPC's own
+  // status appears: `renameRegionsIfNeeded` runs inside `serializeArguments`,
+  // so every fetch waits here first, and the byte-granularity progress below
+  // arrives with no phase name on it. Without the label a whole-file in-memory
+  // load reads as a bare percentage climbing under no heading.
+  const refNames = await updateStatus(
+    'Resolving reference names',
+    options.statusCallback,
+    () =>
+      assembly.rpcManager.call(sessionId, 'CoreGetRefNames', {
+        adapterConfig: adapterConfig as Record<string, unknown>,
+        assemblyName: assembly.name,
+        sequenceAdapter,
+        // stopToken intentionally not passed, fixes issues like #2221.
+        // alternative fix #2540 was proposed but non-working currently
+        stopToken: undefined,
+        // Forwarded rather than dropped (unlike stopToken above), because the
+        // adapter's index download happens here during refname mapping
+        // (getRefNames -> setup) and this is the only place its "Downloading
+        // index" progress can surface. For an in-memory adapter it is not an
+        // index but the whole file — GWAS LD coloring resolves a second map
+        // against its PLINK `.ld` sub-adapter, and that adapter parses all of it
+        // to answer `getRefNames`.
+        //
+        // This was latent for a while, and what revived it is one line elsewhere
+        // that is easy to undo by tidying: `BaseRpcDriver.call` strips
+        // `statusCallback` off the *result* of `serializeArguments` rather than
+        // off the args going in. Strip it going in and the rename pass — which
+        // runs inside serialization — is handed undefined for every RPC there is,
+        // which is what it was.
+        statusCallback: options.statusCallback,
+      }),
   )
 
   const { refNameAliases } = assembly

@@ -63,6 +63,15 @@ function isSharedArrayBuffer(value: unknown): value is SharedArrayBuffer {
   )
 }
 
+// A view is allocated per use rather than cached per buffer. That looks like an
+// easy win and is not one: the deployments this ships to are not cross-origin
+// isolated, so `hasSharedArrayBuffer` is false and every token is a string —
+// caching here would add a module-global WeakMap to speed up the branch that
+// never runs. The string path allocates nothing.
+function sabView(stopToken: SharedArrayBuffer) {
+  return new Int32Array(stopToken)
+}
+
 /**
  * Narrow an untyped RPC argument to a StopToken, so a caller holding
  * `Record<string, unknown>` can check one without a cast.
@@ -185,7 +194,7 @@ function createStringToken() {
 export function stopStopToken(stopToken?: StopToken) {
   if (stopToken !== undefined) {
     if (isSharedArrayBuffer(stopToken)) {
-      const view = new Int32Array(stopToken)
+      const view = sabView(stopToken)
       Atomics.store(view, 0, ABORT_FLAG_SET)
       // wakes the waitAsync watcher stopTokenSignal installs; free when there
       // is none waiting
@@ -241,7 +250,7 @@ export function isStopped(stopToken?: StopToken) {
   return stopToken === undefined
     ? false
     : isSharedArrayBuffer(stopToken)
-      ? Atomics.load(new Int32Array(stopToken), 0) === ABORT_FLAG_SET
+      ? Atomics.load(sabView(stopToken), 0) === ABORT_FLAG_SET
       : stoppedIds.has(stopToken)
 }
 
@@ -292,11 +301,7 @@ export function stopTokenSignal(stopToken?: StopToken): StopTokenSignal {
       // SAB deployment simply keeps today's behavior of not aborting sockets.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (Atomics.waitAsync !== undefined) {
-        const wait = Atomics.waitAsync(
-          new Int32Array(stopToken),
-          0,
-          ABORT_FLAG_CLEAR,
-        )
+        const wait = Atomics.waitAsync(sabView(stopToken), 0, ABORT_FLAG_CLEAR)
         let disposed = false
         dispose = () => {
           disposed = true
@@ -372,9 +377,9 @@ export type SyncStopProbe = (stopToken: string) => boolean
 export interface StopTokenChecker {
   stopToken?: StopToken
   sabView?: Int32Array
+  // iteration counter for the SAB path's mask only; the string path is
+  // time-gated and reads nothing from it
   iters: number
-  // iteration mask for the SAB path only; the string path is time-gated
-  checkIters: number
   checkInterval: number
   checkDue: TimeGate
   syncProbe: SyncStopProbe
@@ -383,15 +388,13 @@ export interface StopTokenChecker {
 export function createStopTokenChecker(
   stopToken: StopToken | undefined,
 ): StopTokenChecker {
-  const sabView =
-    stopToken !== undefined && isSharedArrayBuffer(stopToken)
-      ? new Int32Array(stopToken)
-      : undefined
   return {
     stopToken,
-    sabView,
+    sabView:
+      stopToken !== undefined && isSharedArrayBuffer(stopToken)
+        ? sabView(stopToken)
+        : undefined,
     iters: 0,
-    checkIters: SAB_CHECK_EVERY_N_ITERS,
     checkInterval: STRING_CHECK_INTERVAL_MS,
     checkDue: createTimeGate(),
     syncProbe: probeBlobUrl,
@@ -413,8 +416,6 @@ export function checkStopTokenThrottled(checker?: StopTokenChecker) {
   // on `sabView` alone
   const stopToken = checker?.stopToken
   if (checker !== undefined && stopToken !== undefined) {
-    checker.iters++
-
     if (typeof stopToken === 'string') {
       if (checker.checkDue(checker.checkInterval)) {
         if (stoppedIds.has(stopToken) || checker.syncProbe(stopToken)) {
@@ -427,10 +428,12 @@ export function checkStopTokenThrottled(checker?: StopTokenChecker) {
           STRING_CHECK_INTERVAL_MAX_MS,
         )
       }
-      // SAB path: a cheap atomic read, gated by a small iteration mask.
+      // SAB path: a cheap atomic read, gated by a small iteration mask. The
+      // counter is bumped here rather than above the branch because it is the
+      // only reader of it.
     } else if (
       checker.sabView &&
-      checker.iters % checker.checkIters === 0 &&
+      ++checker.iters % SAB_CHECK_EVERY_N_ITERS === 0 &&
       Atomics.load(checker.sabView, 0) === ABORT_FLAG_SET
     ) {
       throw makeAbortError()
@@ -438,5 +441,10 @@ export function checkStopTokenThrottled(checker?: StopTokenChecker) {
   }
 }
 
-// Keep old name as alias for backwards compatibility in external consumers
+/**
+ * Former name of {@link StopTokenChecker}. Still the primary spelling in several
+ * in-tree RPC argument types (the three variants methods, `WiggleRPC/types.ts`)
+ * as well as in external consumers, so it is a live alias rather than a
+ * deprecation shim — renaming those is a wire-type edit with no behavior in it.
+ */
 export type LastStopTokenCheck = StopTokenChecker
