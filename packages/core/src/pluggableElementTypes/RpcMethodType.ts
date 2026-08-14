@@ -17,7 +17,7 @@ import {
 import PluggableElementBase from './PluggableElementBase.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { RpcExecuteReturn } from '../rpc/RpcRegistry.ts'
+import type { RpcExecuteArgs, RpcExecuteReturn } from '../rpc/RpcRegistry.ts'
 import type { Region } from '../util/index.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { StopToken } from '../util/stopToken.ts'
@@ -299,8 +299,22 @@ export default abstract class RpcMethodType<
     return args
   }
 
+  /**
+   * The args are {@link RpcExecuteArgs} rather than `unknown` so that a method
+   * parameterized with its own name has BOTH ends checked against the registry.
+   * The return has been checked for a while; the args were hand-written in each
+   * of 45 subclasses, which is the asymmetry that let them drift — and the drift
+   * is not cosmetic, because the two handles every method receives are the two
+   * an author who did not write them down never forwards.
+   *
+   * `CoreGetExportData` is the worked example: the stop token and status
+   * callback arrived on every call and its `execute` destructured neither, so
+   * the Save-track-data dialog's cancel did nothing and its progress never moved
+   * on the adapter-export branch. Nothing was mistyped — the fields simply were
+   * not in a signature anyone read.
+   */
   abstract execute(
-    serializedArgs: unknown,
+    serializedArgs: RpcExecuteArgs<MethodName>,
     rpcDriverClassName: string,
   ): Promise<RpcExecuteReturn<MethodName>>
 

@@ -4,6 +4,7 @@ import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import type { StatusCallback } from '../util/progress.ts'
+import type { RpcHandles } from './RpcRegistry.ts'
 
 export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
@@ -28,9 +29,7 @@ export default abstract class BaseRpcDriver {
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
-    args: Record<string, unknown> & {
-      statusCallback?: StatusCallback
-    },
+    args: Record<string, unknown> & RpcHandles,
     options: Record<string, unknown> = {},
   ) {
     if (!sessionId) {

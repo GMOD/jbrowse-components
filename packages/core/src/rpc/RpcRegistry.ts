@@ -17,8 +17,6 @@ export interface RpcRegistry {
       adapterConfig: Record<string, unknown>
       sequenceAdapter?: Record<string, unknown>
       assemblyName?: string
-      stopToken?: StopToken
-      statusCallback?: StatusCallback
     }
     return: string[]
   }
@@ -34,8 +32,6 @@ export interface RpcRegistry {
     args: {
       region: RegionLike
       adapterConfig: Record<string, unknown>
-      stopToken?: StopToken
-      statusCallback?: StatusCallback
     }
     return: string | undefined
   }
@@ -44,8 +40,6 @@ export interface RpcRegistry {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
       sequenceAdapter?: Record<string, unknown>
-      statusCallback?: StatusCallback
-      stopToken?: StopToken
       opts?: Record<string, unknown>
     }
     return: Feature[]
@@ -54,9 +48,7 @@ export interface RpcRegistry {
     args: {
       adapterConfig: Record<string, unknown>
       regions: RegionLike[]
-      stopToken?: StopToken
       headers?: Record<string, string>
-      statusCallback?: StatusCallback
     }
     return: number | undefined
   }
@@ -68,15 +60,12 @@ export interface RpcRegistry {
   CoreGetInfo: {
     args: {
       adapterConfig: Record<string, unknown>
-      stopToken?: StopToken
-      statusCallback?: StatusCallback
     }
     return: unknown
   }
   CoreGetMetadata: {
     args: {
       adapterConfig: Record<string, unknown>
-      stopToken?: StopToken
     }
     return: unknown
   }
@@ -100,6 +89,39 @@ export type RpcMethodName = keyof RpcRegistry
 export type RpcArgs<M extends RpcMethodName> = RpcRegistry[M]['args']
 
 export type RpcReturn<M extends RpcMethodName> = RpcRegistry[M]['return']
+
+/**
+ * The caller's handles on an operation: how to stop it, and where it reports.
+ *
+ * Deliberately NOT part of any method's `args`. They are properties of the
+ * call, not of the payload — every method can be cancelled and every method can
+ * report — so they ride `rpcManager.call`'s fourth parameter and
+ * `BaseRpcDriver.call` merges them into what the worker sees. A registry entry
+ * that declares them is stating something it does not get to decide.
+ *
+ * They used to be per-entry, and the cost was not the 82 repeated lines: it was
+ * that omitting them made a method silently uncancellable and silent, with the
+ * call site still type-checking (an `...opts` spread suppresses the
+ * excess-property check). `CoreGetExportData` shipped that way.
+ */
+export interface RpcHandles {
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
+}
+
+/**
+ * What a registered method's `execute` actually receives: its declared args,
+ * plus the session it is pinned to, plus the handles the driver merged in.
+ *
+ * Derived rather than hand-written, for the reason {@link RpcExecuteReturn} is:
+ * the return type has been checked against the registry for a while and the
+ * args have not, which is the whole reason the two could drift. A method
+ * parameterized with its own name (`RpcMethodType<'CoreGetSequence'>`) gets
+ * both ends checked.
+ */
+export type RpcExecuteArgs<M extends string> = M extends RpcMethodName
+  ? RpcArgs<M & RpcMethodName> & { sessionId: string } & RpcHandles
+  : unknown
 
 // What a registered method's `execute` may resolve to: the declared return, or
 // that return wrapped in rpcResult to carry transferables. An RpcMethodType

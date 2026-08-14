@@ -18,6 +18,7 @@ import {
 import { ixIxxStream } from 'ixixx'
 
 import type { indexType } from './util.ts'
+import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Track } from '@jbrowse/text-indexing-core'
 
@@ -29,7 +30,7 @@ export async function indexTracks(args: {
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
   indexType?: indexType
-  statusCallback: (message: string) => void
+  statusCallback: StatusCallback | undefined
 }) {
   const {
     tracks,
@@ -84,7 +85,7 @@ async function perTrackIndex({
   stopToken,
 }: {
   tracks: Track[]
-  statusCallback: (message: string) => void
+  statusCallback: StatusCallback | undefined
   outDir?: string
   attributesToIndex?: string[]
   featureTypesToExclude?: string[]
@@ -119,7 +120,7 @@ async function aggregateIndex({
   assemblyNames,
 }: {
   tracks: Track[]
-  statusCallback: (message: string) => void
+  statusCallback: StatusCallback | undefined
   outDir?: string
   attributesToIndex?: string[]
   assemblyNames?: string[]
@@ -166,7 +167,7 @@ async function indexDriver({
   name: string
   featureTypesToExclude: string[]
   assemblyNames: string[]
-  statusCallback: (message: string) => void
+  statusCallback: StatusCallback | undefined
   stopToken?: StopToken
 }) {
   const checker = createStopTokenChecker(stopToken)
@@ -193,7 +194,11 @@ async function indexDriver({
             cumulativeTotal += bytes
           },
           onUpdate: bytes => {
-            statusCallback(`${bankedBytes + bytes}/${cumulativeTotal}`)
+            statusCallback?.({
+              message: 'Indexing files',
+              current: bankedBytes + bytes,
+              total: cumulativeTotal,
+            })
           },
           onDone: () => {
             bankedBytes += trackTotal
@@ -202,7 +207,7 @@ async function indexDriver({
       },
     }),
   )
-  statusCallback('Indexing files.')
+  statusCallback?.('Indexing files.')
   await runIxIxx(readable, outDir, name)
   checkStopToken(stopToken)
   generateMeta({

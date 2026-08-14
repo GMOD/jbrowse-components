@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { statusMessageText } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
@@ -306,8 +307,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             indexType,
             outLocation,
             stopToken,
-            statusCallback: (message: string) => {
-              this.reportStatus(message)
+            statusCallback: status => {
+              this.reportStatus(statusMessageText(status) ?? '')
             },
           })
           if (indexType === 'perTrack') {

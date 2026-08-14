@@ -191,46 +191,36 @@ describe('RpcManager.destroy', () => {
   })
 })
 
-// Several displays pass `statusCallback` in `opts` rather than in `args`. Only
-// WorkerPoolRpcDriver ever honored it there (it spreads options over its own
-// arguments); MainThreadRpcDriver ignores `opts` entirely, so those progress
-// bars were silent under the driver every embedded component defaults to.
-// Normalizing here is what makes `args` the one place a driver has to read.
-describe('RpcManager statusCallback normalization', () => {
-  test('hoists a statusCallback passed in opts into args', async () => {
+// The handles ride `args`, for every method, and there is only the one position.
+// They used to be accepted in `opts` as well and the two disagreed —
+// WorkerPoolRpcDriver spreads options over its own arguments and honored it
+// there, MainThreadRpcDriver ignores `opts` entirely — so the same call had a
+// working progress bar under a worker and a silent one under the driver every
+// embedded component defaults to.
+describe('RpcManager: the handles are args, and every method takes them', () => {
+  test('forwards both handles to the driver, for a method whose registry entry declares neither', async () => {
     const { manager, driver } = makeManager()
     const statusCallback = () => {}
-    await manager.call(
-      's',
-      'CoreGetRegions',
-      { adapterConfig: {} },
-      { statusCallback },
-    )
+    const stopToken = 'tok'
+    // CoreGetRegions declares only `adapterConfig`. Passing the handles anyway
+    // is the point: they are part of RpcCallArgs, not of the entry, so no
+    // method can be uncancellable or silent by having omitted them.
+    await manager.call('s', 'CoreGetRegions', {
+      adapterConfig: {},
+      stopToken,
+      statusCallback,
+    })
     const [entry] = driver.callLog
     expect(entry?.args?.statusCallback).toBe(statusCallback)
-    // and it does not travel twice, so the two positions can never disagree
-    expect(entry?.options?.statusCallback).toBeUndefined()
+    expect(entry?.args?.stopToken).toBe(stopToken)
   })
 
-  test('args wins when both positions carry one', async () => {
-    const { manager, driver } = makeManager()
-    const fromArgs = () => {}
-    const fromOpts = () => {}
-    await manager.call(
-      's',
-      'CoreGetRegions',
-      { adapterConfig: {}, statusCallback: fromArgs } as any,
-      { statusCallback: fromOpts },
-    )
-    expect(driver.callLog[0]?.args?.statusCallback).toBe(fromArgs)
-  })
-
-  test('leaves other opts alone', async () => {
+  test('opts carries no handles, so the two positions cannot disagree', async () => {
     const { manager, driver } = makeManager()
     await manager.call(
       's',
       'CoreGetRegions',
-      { adapterConfig: {} },
+      { adapterConfig: {}, statusCallback: () => {} },
       { rpcDriverName: 'StubDriver' },
     )
     expect(driver.callLog[0]?.options).toEqual({ rpcDriverName: 'StubDriver' })

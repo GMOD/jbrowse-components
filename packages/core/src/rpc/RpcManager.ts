@@ -7,9 +7,13 @@ import rpcConfigSchema from './configSchema.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
-import type { StatusCallback } from '../util/progress.ts'
 import type BaseRpcDriver from './BaseRpcDriver.ts'
-import type { RpcArgs, RpcMethodName, RpcReturn } from './RpcRegistry.ts'
+import type {
+  RpcArgs,
+  RpcHandles,
+  RpcMethodName,
+  RpcReturn,
+} from './RpcRegistry.ts'
 
 export type RpcDriverFactory = (
   config: AnyConfigurationModel,
@@ -19,11 +23,17 @@ export type RpcDriverFactory = (
 // `call` accepts any string method name: a registered one resolves to its typed
 // args/return (the `& RpcMethodName` re-narrows M inside the conditional, which
 // TS won't do on its own), and an unknown one (e.g. a plugin-defined method not
-// in the registry) falls back to the loose shapes. Registry args never include
-// `sessionId` — `call` injects it from its first argument before dispatch.
+// in the registry) falls back to the loose shapes.
+//
+// What a CALLER passes is the method's own data, minus the `sessionId` this
+// injects, plus {@link RpcHandles} — which EVERY method takes, whether or not
+// its registry entry ever mentioned them. That `& RpcHandles` is the fix for a
+// class of silent bug: an entry omitting them made passing one a type error at
+// the call site, so the method was uncancellable and silent with nothing saying
+// so. There is now nothing to omit.
 type RpcCallArgs<M extends string> = M extends RpcMethodName
-  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'>
-  : Record<string, unknown>
+  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'> & RpcHandles
+  : Record<string, unknown> & RpcHandles
 type RpcCallReturn<M extends string> = M extends RpcMethodName
   ? RpcReturn<M & RpcMethodName>
   : unknown
@@ -119,39 +129,32 @@ export default class RpcManager {
     return this.getDriver(backendName)
   }
 
-  // A per-call `rpcDriverName` travels inside `args`; `opts` stays part of the
-  // public API for external plugins, and several displays here use it to pass a
-  // `statusCallback`.
+  /**
+   * `args` carries the method's data and the caller's handles on the operation
+   * — the stop token and the status callback. Both are always accepted, for
+   * every method, because {@link RpcHandles} is part of `RpcCallArgs` rather
+   * than of any registry entry.
+   *
+   * There is deliberately no second position for them. They were accepted in
+   * `opts` as well, and the two disagreed: `WorkerPoolRpcDriver` honored a
+   * `statusCallback` there and `MainThreadRpcDriver` ignored `opts` entirely,
+   * so the same call had a working progress bar under a worker and a silent one
+   * under the driver every embedded component defaults to. One position.
+   */
   async call<M extends string>(
     sessionId: string,
     functionName: M,
     args: RpcCallArgs<M>,
-    opts?: {
-      rpcDriverName?: string
-      statusCallback?: StatusCallback
-    } & Record<string, unknown>,
+    opts?: { rpcDriverName?: string } & Record<string, unknown>,
   ): Promise<RpcCallReturn<M>> {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
-    // statusCallback is accepted in either position and normalized to `args`
-    // here, which is the one place every driver reads it: `WorkerPoolRpcDriver`
-    // happened to also honor it out of `opts` (it spreads them over its own),
-    // and `MainThreadRpcDriver` ignores `opts` entirely — so a call passing it
-    // there had a working progress bar under a worker and a silent one under
-    // the main-thread driver every embedded component defaults to. Normalizing
-    // also puts it where `serializeArguments` can see it, which is what gets
-    // refName-map resolution reported (see BaseRpcDriver.call).
-    const { statusCallback, ...restOpts } = opts ?? {}
-    const a = { statusCallback, ...args, sessionId } as Record<
-      string,
-      unknown
-    > & {
+    const a = { ...args, sessionId } as Record<string, unknown> & {
       sessionId: string
       rpcDriverName?: string
-      statusCallback?: StatusCallback
     }
-    const driverForCall = this.getDriverForCall(a, restOpts)
+    const driverForCall = this.getDriverForCall(a, opts)
     try {
       return (await this.withAuthRetry(() =>
         driverForCall.call(
@@ -159,7 +162,7 @@ export default class RpcManager {
           sessionId,
           functionName,
           a,
-          restOpts,
+          opts,
         ),
       )) as RpcCallReturn<M>
     } finally {
