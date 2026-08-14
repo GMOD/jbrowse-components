@@ -264,6 +264,45 @@ export function checkStopToken(stopToken?: StopToken) {
   }
 }
 
+/**
+ * Run an awaited stage under a stop token: checked before it starts, and again
+ * once it settles. Prefer this to hand-placing {@link checkStopToken} around an
+ * await — the point is that the check *after* comes with the one before, and the
+ * one after is always the one that gets left out.
+ *
+ * It reads as sufficient to check at the top of an operation, because at the
+ * time you write it the await below is not yet the slow part. `BaseRpcDriver`
+ * checked at entry and then awaited `serializeArguments`, which resolves the
+ * refName map, which downloads the adapter's index — and for an in-memory
+ * adapter the whole file. A stop landing in that window woke a worker anyway.
+ *
+ * {@link updateStatus} and {@link withProgress} in `progress.ts` are this same
+ * shape for a stage that also has something to say on the status channel; reach
+ * for one of those when there is a label, and this when there isn't. What you
+ * should not reach for is a bare `checkStopToken` sprinkled at a boundary you
+ * happened to think of — the periodic in-loop case is
+ * {@link checkStopTokenThrottled}, and it is driven by `createProgressReporter`
+ * for the same reason.
+ *
+ * **Checking twice costs nothing, and it is worth knowing why**, because the
+ * cost of a stop-token check is otherwise easy to remember backwards. The
+ * expensive one is the synchronous XHR blob probe, which runs at up to ~10ms a
+ * call — and it is reached ONLY from {@link checkStopTokenThrottled}, behind a
+ * wall-clock gate with linear backoff, precisely because of that. This path is
+ * {@link isStopped}: an atomic load for a SAB token, a `Map.has` for a string
+ * one. So an extra boundary check here is free, and a per-item one in a tight
+ * loop is not — which is the split the two functions exist to keep.
+ */
+export async function withStopTokenCheck<T>(
+  stopToken: StopToken | undefined,
+  fn: () => T | Promise<T>,
+): Promise<T> {
+  checkStopToken(stopToken)
+  const result = await fn()
+  checkStopToken(stopToken)
+  return result
+}
+
 // ---------------------------------------------------------------------------
 // AbortSignal bridge (for aborting in-flight network requests)
 // ---------------------------------------------------------------------------

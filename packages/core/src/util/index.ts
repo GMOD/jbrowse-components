@@ -446,6 +446,7 @@ export {
   registerStopTokenBroadcaster,
   stopStopToken,
   stopTokenSignal,
+  withStopTokenCheck,
   withStopTokenSignal,
 } from './stopToken.ts'
 export {

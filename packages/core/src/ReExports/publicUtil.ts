@@ -282,5 +282,6 @@ export {
   wheelFrameElapsedMs,
   wheelZoomAccum,
   withProgress,
+  withStopTokenCheck,
   withStopTokenSignal,
 } from '../util/index.ts'

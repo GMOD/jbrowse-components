@@ -1,4 +1,4 @@
-import { checkStopToken, isStopToken } from '../util/stopToken.ts'
+import { isStopToken, withStopTokenCheck } from '../util/stopToken.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -37,14 +37,6 @@ export default abstract class BaseRpcDriver {
       throw new TypeError('sessionId is required')
     }
 
-    // A call whose token was already stopped has nothing to deliver to: refuse
-    // it here rather than serializing args, waking a worker and racing a stop
-    // notification against the call it means to cancel. Callers already treat
-    // an abort as the ordinary outcome of a superseded fetch.
-    if (isStopToken(args.stopToken)) {
-      checkStopToken(args.stopToken)
-    }
-
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
 
     // statusCallback is an out-of-band progress handle, not data: each transport
@@ -60,24 +52,29 @@ export default abstract class BaseRpcDriver {
     // left that download with nothing to report through — `loadRefNameMap`
     // forwards a `statusCallback` for exactly this and, for every RPC, was
     // handed undefined. The wire payload is identical either way.
+    //
+    // Serialization is the one long await here, and it is wrapped rather than
+    // fenced by hand-placed checks so the check on the FAR side comes with the
+    // near one — that is the whole point of `withStopTokenCheck`, and the far
+    // one is what was missing. A call whose token was already stopped has
+    // nothing to deliver to, so refuse it rather than serializing args, waking a
+    // worker and racing a stop notification against the call it means to cancel;
+    // and a stop landing DURING serialization had nowhere to be seen at all,
+    // because the broadcast it fires reaches only *booted* workers and on a
+    // driver's first call `LazyWorker.workerP` is undefined until `transport`
+    // reaches `getWorker`. The worker never learned the token was stopped and
+    // ground the fetch to completion. SharedArrayBuffer tokens see the stop
+    // through shared memory regardless; this is the string-token path, which
+    // without cross-origin isolation is every deployment.
+    //
+    // Callers already treat an abort as the ordinary outcome of a superseded
+    // fetch.
+    const stopToken = isStopToken(args.stopToken) ? args.stopToken : undefined
     const { statusCallback } = args
     const { statusCallback: _outOfBand, ...serializedArgs } =
-      await rpcMethod.serializeArguments(args, this.name)
-
-    // Re-check, because serialization is the long await this method has: it
-    // resolves the refName map, which downloads the adapter's index and, for an
-    // in-memory adapter, the whole file. A stop landing in that window has
-    // nowhere to be seen — the entry check is already past, and the broadcast it
-    // fires reaches only *booted* workers, so on a driver's first call
-    // (`LazyWorker.workerP` still undefined until `transport` reaches
-    // `getWorker`) the notification is dropped on the floor and the worker never
-    // learns the token was stopped. It then grinds the fetch to completion.
-    // SharedArrayBuffer tokens are shared memory and see the stop regardless;
-    // this is the string-token path, i.e. any deployment that isn't
-    // cross-origin isolated.
-    if (isStopToken(args.stopToken)) {
-      checkStopToken(args.stopToken)
-    }
+      await withStopTokenCheck(stopToken, () =>
+        rpcMethod.serializeArguments(args, this.name),
+      )
 
     const result = await this.transport(
       pluginManager,

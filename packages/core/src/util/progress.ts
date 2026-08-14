@@ -1,7 +1,7 @@
 import {
   checkStopTokenThrottled,
-  checkStopToken,
   createStopTokenChecker,
+  withStopTokenCheck,
 } from './stopToken.ts'
 import { createTimeGate } from './timeGate.ts'
 
@@ -9,8 +9,10 @@ import type { StopToken, StopTokenChecker } from './stopToken.ts'
 
 /**
  * Indeterminate phase: set `label` on the status channel, run `fn`, then clear
- * it. Pass `stopToken` to check for cancellation before clearing (a no-op when
- * undefined). The determinate counterpart is {@link withProgress}.
+ * it. Pass `stopToken` and the phase becomes a cancellation boundary too — this
+ * is the labelled form of {@link withStopTokenCheck}, so `fn` is checked on both
+ * sides of its await and neither check has to be remembered at the call site.
+ * The determinate counterpart is {@link withProgress}.
  *
  * The clear is absolute — `''`, not "restore whatever was there" — so these do
  * not nest: an inner phase blanks the label its caller set, for the rest of the
@@ -29,9 +31,7 @@ export async function updateStatus<U>(
   // finally, so a throwing `fn` doesn't leave its phase label sitting on the
   // channel forever — the error surfaces under a stale "Downloading file"
   try {
-    const res = await fn()
-    checkStopToken(stopToken)
-    return res
+    return await withStopTokenCheck(stopToken, fn)
   } finally {
     cb?.('')
   }
@@ -427,9 +427,7 @@ export async function withProgress<T>(
   })
   report(0)
   try {
-    const res = await fn(report)
-    checkStopToken(stopToken)
-    return res
+    return await withStopTokenCheck(stopToken, () => fn(report))
   } finally {
     statusCallback?.('')
   }
