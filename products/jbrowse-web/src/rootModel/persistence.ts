@@ -119,9 +119,9 @@ export async function setupSessionDB(self: WebRootModel) {
     // the first, then stay quiet until it works again, exactly as
     // setupSessionStorageAutosave does below.
     let savingFailed = false
-    // registerTeardown rather than addDisposer: this writes to IndexedDB, so
-    // it has to stop when the React host detaches, and this root is no longer
-    // destroyed at that point (rootModel's `detach`).
+    // registerTeardown rather than addDisposer: this writes to IndexedDB, so it
+    // has to stop when the React host detaches, a task ahead of the destroy an
+    // addDisposer would wait for (rootModel's `detach`).
     registerTeardown(
       self,
       autorun(
@@ -190,6 +190,18 @@ function writeSessionSnapshot(sessionSnap: unknown) {
   )
 }
 
+// Stop this when the React host detaches the root, AND if anything destroys it
+// outright (tests do). Both, because the two teardowns are different events and
+// the detach is the earlier one: it is what the app performs at the swap, while
+// the destroy follows a task later (ADR-069). An `addDisposer` alone would run
+// these late rather than never, and "the moment the host lets go" is the
+// contract anything reaching outside the tree wants. Running a disposer twice is
+// harmless.
+function registerTeardown(self: WebRootModel, disposer: () => void) {
+  self.addDetachDisposer(disposer)
+  addDisposer(self, disposer)
+}
+
 // The autorun below is debounced, so the snapshot on disk trails the session by
 // up to that delay and a tab closed inside the window loses the difference.
 // Writing once more on the way out means the delay only trades write frequency
@@ -197,16 +209,6 @@ function writeSessionSnapshot(sessionSnap: unknown) {
 // can be tuned for cost alone.
 //
 // Safe to do synchronously here, which is why this is worth doing at all:
-// Stop this when the React host detaches the root, AND if anything destroys it
-// outright (tests do). Both, because the two teardowns are now different
-// events: `detach` is the one the app performs and the one that has to stop
-// anything reaching outside the tree, while `destroy` no longer happens on
-// that path at all. Running a disposer twice is harmless.
-function registerTeardown(self: WebRootModel, disposer: () => void) {
-  self.addDetachDisposer(disposer)
-  addDisposer(self, disposer)
-}
-
 // sessionStorage.setItem is synchronous, so unlike an async save there is nothing
 // to await and no way to wedge the unload. Errors are swallowed rather than
 // reported — the page is going away, and a quota failure has already been
@@ -230,9 +232,10 @@ function setupUnloadFlush(self: WebRootModel) {
   // prevents, not a bad write — the isAlive check above already covers that, and
   // the two are deliberately redundant.
   //
-  // On detach rather than on destroy, because this root is no longer destroyed
-  // (rootModel's `detach`). addDisposer as well, for the tests that destroy a
-  // root directly; both are idempotent.
+  // On detach rather than on destroy, because the destroy is a task later than
+  // the swap (rootModel's `detach`) and the swap is when this has to stop.
+  // addDisposer as well, for the tests that destroy a root directly; both are
+  // idempotent.
   const remove = () => {
     window.removeEventListener('beforeunload', flush)
   }

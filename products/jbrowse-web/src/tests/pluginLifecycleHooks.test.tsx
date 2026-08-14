@@ -131,7 +131,14 @@ test('a plugin reload runs the beforeDestroy hooks a plugin registered', async (
   expect(isAlive(oldRoot)).toBe(false)
 
   // the replacement built its own, still live — a teardown that took both down
-  // would satisfy every assertion above and leave the user with no websocket
+  // would satisfy every assertion above and leave the user with no websocket.
+  // Waited for rather than read straight out: the replacement's account is built
+  // by the same config autorun the first one was, and nothing above pins that it
+  // has run by now, so reading it directly would fail on the ordering rather than
+  // on the contract.
+  await waitFor(() => {
+    expect(lifecycleProbe.internetAccounts.length).toBeGreaterThan(1)
+  }, delay)
   const replacement = lifecycleProbe.internetAccounts.at(-1)
   expect(replacement).not.toBe(account)
   expect(replacement!.socketOpen).toBe(true)

@@ -59,6 +59,17 @@ reset — goes through it.
   `BaseTrackModel`'s `rpcSessionId` release, `TimeTraveller`, `HistoryManagement`
   — and every `addDisposer` in the tree, which fires only on destroy, so the
   superseded app's autoruns and reactions go on running.
+- jbrowse-desktop's `destroyPluginManager` takes the same shape at its own swap:
+  `detach()` then `scheduleDetachedDestroy`, with the worker pool and the
+  autosave autorun on `addDetachDisposer`. Every route that replaces a session
+  lands there (Open session, Open link, Return to start screen, and a launch
+  target pushed from the main process), as do the two that abandon a manager
+  React never installed.
+
+  **This one is preventive.** Desktop destroyed synchronously, so its
+  `beforeDestroy` hooks did run and Apollo's report is not about it; what it had
+  was the ordering hazard, and the reason to fix it anyway is that an invariant
+  one product keeps and the other doesn't is worth less than either.
 - `setSession` detaches the outgoing session inside the action and destroys it
   on a later task (#5621). It is the weaker of the two cases and worth saying so:
   measured, every read there is of a scalar or a reference, which warns and
@@ -164,6 +175,21 @@ Each fails without its fix and is scoped to what is deterministic:
   are the whole decision, and the first without the second is what #5618
   shipped; it buckets by `isAlive` rather than by a timer so neither half can
   quietly become the other.
+- `products/jbrowse-web/src/tests/pluginLifecycleHooks.test.tsx` — the same
+  reload, asserting the plugin-facing half: an Apollo-shaped fixture (a socket on
+  a `.volatile()`, a `window` listener, an `AbortController`, and `beforeDestroy`
+  rather than `beforeDetach`) registered at both of Apollo's extension points,
+  since an internet account lives on the rootModel and a session extension on the
+  session. It waits on the socket rather than on `isAlive`, so a regression fails
+  saying the socket is still open — which is what was reported — and the pre-fix
+  code fails it there. This is the entry the rest of the list could not be: every
+  hook in this repo is one we could equally have called explicitly, which is why
+  a suite full of teardown tests stayed green through #5618.
+- `products/jbrowse-desktop/src/components/StartScreen/destroyPluginManager.test.ts`
+  — the same contract at desktop's call site, with a smaller account of its own,
+  plus the ordering half specifically: the root is still alive immediately after
+  the call and the worker pool is already stopped. A forward guard rather than a
+  reproduction, per the desktop bullet above.
 - `products/jbrowse-web/src/tests/sessionSwitchTeardown.test.tsx` — a real
   session switch, asserting zero dead reads across the action and the reaction
   flush closing it, and that the outgoing session is destroyed afterwards
