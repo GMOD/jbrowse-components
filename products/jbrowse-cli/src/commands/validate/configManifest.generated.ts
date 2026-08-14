@@ -3232,6 +3232,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "showSplitJunctionArcs",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
           "name": "readConnectionsHeight",
           "type": "(JexlString | number)"
         },
@@ -3536,6 +3540,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "sashimiArcsHeight",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "showSplitJunctionArcs",
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "readConnectionsHeight",

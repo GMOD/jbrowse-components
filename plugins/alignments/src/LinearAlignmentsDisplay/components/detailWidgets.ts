@@ -101,24 +101,34 @@ export function openSashimiWidget(
     start: number
     end: number
     refName: string
+    endRefName: string
     score: number
     strand: number
+    title: string
   },
 ) {
+  // A junction across two chromosomes — only a split read produces one — has no
+  // single range to be a feature over. It gets a point feature at its first end
+  // plus a `partner` field naming the second, rather than a `start`/`end` pair
+  // spanning two number lines, which renders as a negative-length location and
+  // would send "show in new view" somewhere meaningless.
+  const interchrom = arc.refName !== arc.endRefName
   openFeatureWidget(model, {
-    // refName:start:end already identifies the arc — the compute layer emits one
-    // per junction, tinted by its dominant strand. Strand stays in the uniqueId
+    // The two loci already identify the arc — each compute layer emits one per
+    // junction, tinted by its dominant strand. Strand stays in the uniqueId
     // anyway so a re-tinted junction (a fetch that shifts which strand leads)
     // reads as a new selection rather than silently reusing the old one.
-    uniqueId: `sashimi-${arc.refName}-${arc.start}-${arc.end}-${arc.strand}`,
+    uniqueId: `sashimi-${arc.refName}-${arc.start}-${arc.endRefName}-${arc.end}-${arc.strand}`,
     // Named like its siblings (openIndicatorWidget, openCigarWidget) so the
     // widget has a heading; without one it opened titled by nothing, leaving the
-    // bare `type: 'skip'` to explain what had been clicked.
-    name: 'Splice junction',
-    type: 'skip',
+    // bare `type` to explain what had been clicked. The arc's own `title` says
+    // which junction kind this is, so the two sources don't need two callers.
+    name: arc.title,
+    type: interchrom ? 'split_junction' : 'skip',
     refName: arc.refName,
     start: arc.start,
-    end: arc.end,
+    end: interchrom ? arc.start + 1 : arc.end,
+    ...(interchrom ? { partner: `${arc.endRefName}:${arc.end + 1}` } : {}),
     score: arc.score,
     strand: arc.strand,
   })

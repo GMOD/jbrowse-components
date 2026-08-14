@@ -6,15 +6,17 @@ import {
   sashimiSideBand,
 } from './sashimiArcs.ts'
 
-import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiArc } from '../../features/sashimi/arcGeometry.ts'
 import type { SashimiArcSection } from './sashimiArcs.ts'
 
 function makeArc(arc: Partial<SashimiArc>): SashimiArc {
   return {
     refName: 'chr1',
+    endRefName: 'chr1',
     start: 1000,
     end: 2000,
     strand: 1,
+    title: 'Intron/Skip',
     score: 5,
     d: 'M...',
     stroke: 'red',
@@ -28,10 +30,19 @@ function makeArc(arc: Partial<SashimiArc>): SashimiArc {
 }
 
 describe('sashimiArcKey', () => {
-  it('keys by stable identity (refName/start/end/strand), not array index', () => {
+  it('keys by stable identity (both refNames/start/end/strand), not array index', () => {
     const key = sashimiArcKey(makeArc({ start: 1000, end: 2000, strand: 1 }))
-    expect(key).toBe('chr1:1000:2000:1')
+    expect(key).toBe('chr1:1000:chr1:2000:1')
     expect(key).not.toBe('0')
+  })
+
+  it('distinguishes the two halves of a foldback by the far end refName', () => {
+    // Only a split-read junction has ends on two contigs. Without `endRefName`
+    // in the key, one molecule's chr9 partner and another's chr22 partner at
+    // the same chr22 coordinate collide.
+    const toChr9 = sashimiArcKey(makeArc({ endRefName: 'chr9' }))
+    const toChr22 = sashimiArcKey(makeArc({ endRefName: 'chr22' }))
+    expect(toChr9).not.toBe(toChr22)
   })
 
   it('distinguishes same coordinates in different regions', () => {

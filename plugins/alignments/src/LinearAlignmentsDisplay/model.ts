@@ -55,7 +55,13 @@ import {
   bezierConnectionLegendItems,
   enumerateBezierPairs,
 } from '../features/linkedReads/computeOverlay.ts'
+import { sortArcsByScore } from '../features/sashimi/arcGeometry.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
+import {
+  computeSplitJunctionArcs,
+  DEFAULT_SPLIT_JUNCTION_WINDOW_BP,
+  mergeSplitJunctions,
+} from '../features/sashimi/splitJunctions.ts'
 import { ARC_COLOR_INTERCHROM } from '../shaders/slang/arcLine.consts.generated.ts'
 import {
   COLOR_SCHEMES,
@@ -142,6 +148,7 @@ import type { DerivativeCandidate } from '../features/derivativePaths/computePat
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { ModificationHitResult } from '../features/modification/hitTest.ts'
+import type { MergedSplitJunction } from '../features/sashimi/splitJunctions.ts'
 import type { CigarHitResult, ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type {
   ArcColorByType,
@@ -563,6 +570,21 @@ export default function stateModelFactory(
         /** #getter */
         get sashimiArcsHeight(): number {
           return getConf(self, 'sashimiArcsHeight')
+        },
+        /** #getter */
+        // Sentinel promotable slot, like `showSashimiArcs`: a track pins the
+        // counted split-read arcs on/off explicitly, else follows the
+        // session-wide default, falling back to off.
+        get showSplitJunctionArcs(): boolean {
+          return resolveConf(self, 'showSplitJunctionArcs')
+        },
+        /**
+         * #getter
+         * "make the current split-junction arc state the default for all
+         * tracks" control (pin) for the submenu's own checkbox.
+         */
+        get showSplitJunctionArcsDisplayTypeDefault() {
+          return makePin(self, 'showSplitJunctionArcs')
         },
         /** #getter */
         get readConnectionsHeight(): number {
@@ -2215,6 +2237,54 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Scroll/pan-invariant half of the counted split-read junction arcs:
+         * each group's junctions, merged and clustered once per relayout, keyed
+         * by group. Mirrors `bezierPairSections` — the read walk
+         * (`iterLinkedPairs` → `groupReadsByName`) is the allocation-heavy step,
+         * so memoizing it here keeps a scroll frame down to the projection in
+         * `computeSplitJunctionArcs`.
+         *
+         * Empty unless the arcs are switched on, which is what keeps that walk
+         * off the hot path — it is the same O(reads) grouping the bezier overlay
+         * pays for, and when BOTH are on it is walked twice. Sharing the walk
+         * would mean one enumeration wide enough for both scopes (this one wants
+         * every split pair; `enumerateBezierPairs` wants the connections the GPU
+         * line pass does not own, split or not), and the narrowing predicate is
+         * applied inside that enumeration precisely so each consumer gets what it
+         * draws. Measured, the walk is ~80ms at 200k reads against a 587ms
+         * relayout it runs beside; a second one is not what to attack here.
+         *
+         * Keyed by groupKey rather than positional, unlike `sourceSections`: the
+         * consumer walks `sections.sections` and nothing structurally ties a
+         * separate array's index to it.
+         */
+        get splitJunctionsByGroup(): Map<string, MergedSplitJunction[]> {
+          const out = new Map<string, MergedSplitJunction[]>()
+          if (self.showSplitJunctionArcs) {
+            const displayedRegions = self.lgv.displayedRegions
+            for (const sec of this.renderSections) {
+              out.set(
+                sec.groupKey,
+                mergeSplitJunctions({
+                  laidOutPileupMap: sec.laidOutPileupMap,
+                  displayedRegions,
+                  windowBp: DEFAULT_SPLIT_JUNCTION_WINDOW_BP,
+                  // `minSashimiScore`, deliberately shared rather than given a
+                  // floor of its own: both arc families draw into this one band
+                  // and the slider's question — "how many reads before an arc is
+                  // worth ink" — is the same one for a splice junction and a
+                  // breakpoint. A second threshold would mean a second slider
+                  // that reads identically in the menu.
+                  minScore: self.minSashimiScore,
+                }),
+              )
+            }
+          }
+          return out
+        },
+
+        /**
+         * #getter
          * Connection types (LINKED_READ_COLOR_*) actually drawn as bezier/line
          * arcs in view, the input that lets the legend list only the connection
          * colors present. `bezierPairSections` is already narrowed to what the
@@ -2270,11 +2340,9 @@ export default function stateModelFactory(
          */
         get sashimiArcSections(): SashimiArcSection[] {
           const view = self.lgv
-          if (
-            !self.showSashimiArcs ||
-            !self.showCoverage ||
-            !view.initialized
-          ) {
+          const splice = self.showSashimiArcs
+          const split = self.showSplitJunctionArcs
+          if ((!splice && !split) || !self.showCoverage || !view.initialized) {
             return []
           }
           const byGroup = self.rawDataByGroup
@@ -2282,23 +2350,40 @@ export default function stateModelFactory(
           const noDownKeys: ReadonlySet<string> = new Set()
           const downKeys = self.sashimiDownKeysByGroup
           const bpToScreenX = makeBpToScreenX(view)
+          const heights = {
+            coverageHeight: self.coverageHeight,
+            sashimiArcsHeight: self.sashimiArcsHeight,
+          }
+          const splitJunctions = this.splitJunctionsByGroup
           return this.sections.sections.map(sec => {
-            const arcs = computeSashimiArcs({
-              rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
-              visibleRegions: view.visibleRegions,
-              bpToScreenX,
-              coverageHeight: self.coverageHeight,
-              sashimiArcsHeight: self.sashimiArcsHeight,
-              minSashimiScore: self.minSashimiScore,
-              downJunctionKeys: downKeys.get(sec.groupKey) ?? noDownKeys,
-            })
-            // Already ascending by score — `computeSashimiArcs` emits them that
-            // way, and `computeOverlay.test.ts` pins it. The sort used to be
-            // here, one call up from the array's producer, which is why it read
-            // as missing to anyone looking at the producer.
+            const arcs = [
+              ...(splice
+                ? computeSashimiArcs({
+                    rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
+                    visibleRegions: view.visibleRegions,
+                    bpToScreenX,
+                    ...heights,
+                    minSashimiScore: self.minSashimiScore,
+                    downJunctionKeys: downKeys.get(sec.groupKey) ?? noDownKeys,
+                  })
+                : []),
+              ...(split
+                ? computeSplitJunctionArcs({
+                    junctions: splitJunctions.get(sec.groupKey) ?? [],
+                    bpToScreenX,
+                    heights,
+                    colors: self.colorPalette,
+                  })
+                : []),
+            ]
+            // Each producer already emits ascending by score
+            // (`computeOverlay.test.ts` pins sashimi's), but two sorted arrays
+            // laid end to end are not one — and the band draws them as one, so
+            // paint and hover order need the merged array sorted. See
+            // `sortArcsByScore` for what that order buys.
             return {
               groupKey: sec.groupKey,
-              ...splitArcsBySide(arcs),
+              ...splitArcsBySide(sortArcsByScore(arcs)),
               // Content-space band tops. Both consumers project them through
               // `bandScreenTop` — sticky when ungrouped, scrolled with the
               // section when grouped. That includes the SVG export, which since
@@ -2932,6 +3017,17 @@ export default function stateModelFactory(
             setConf(self, 'showCoverage', true)
           }
         }
+        // Same tie, same reason: the counted split-read arcs draw into the 'up'
+        // sub-band, which IS the coverage histogram's box and takes its height
+        // from `coverageHeight`. Unlike sashimi there is no worker half to this —
+        // the junctions come off the read arrays every fetch already carries —
+        // so the tie is purely about having a band to draw in.
+        function setShowSplitJunctionArcs(show: boolean) {
+          setConf(self, 'showSplitJunctionArcs', show)
+          if (show) {
+            setConf(self, 'showCoverage', true)
+          }
+        }
         /**
          * #action
          * The other half of the sashimi/coverage tie. Without it, hiding coverage
@@ -2944,6 +3040,7 @@ export default function stateModelFactory(
           setConf(self, 'showCoverage', show)
           if (!show) {
             setConf(self, 'showSashimiArcs', false)
+            setConf(self, 'showSplitJunctionArcs', false)
           }
         }
         return {
@@ -3327,6 +3424,11 @@ export default function stateModelFactory(
            * #action
            */
           setShowSashimiArcs,
+
+          /**
+           * #action
+           */
+          setShowSplitJunctionArcs,
 
           setShowCoverage,
 

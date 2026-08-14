@@ -1,6 +1,9 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
-import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type {
+  SashimiArc,
+  SashimiBandHeights,
+} from '../../features/sashimi/arcGeometry.ts'
 import type { SashimiSide } from '../../features/sashimi/junctions.ts'
 
 // One entry of the model's `sashimiArcSections`: a group's arcs already split
@@ -22,13 +25,6 @@ export const SASHIMI_SIDES = [
   'up',
   'down',
 ] as const satisfies readonly SashimiSide[]
-
-// The heights the two sub-bands are cut from. Both are display-global settings,
-// so the model satisfies this shape directly.
-export interface SashimiBandHeights {
-  coverageHeight: number
-  sashimiArcsHeight: number
-}
 
 // The remaining half of that pairing: WHERE a side draws. Up arcs are drawn over
 // the coverage histogram, down arcs in the reserved strip below it — and the
@@ -86,10 +82,16 @@ export function splitArcsBySide(
 }
 
 // Stable React key, shared by overlay and export. Unique within one group
-// section + side: the compute layer emits one arc per refName:start:end, so the
-// strand here only records which tint that junction resolved to.
+// section + side: each compute layer emits one arc per junction, so the strand
+// here only records which tint that junction resolved to.
+//
+// BOTH refNames, because a split-read junction's ends can be on different
+// chromosomes and the two halves of one fusion are then distinguished by nothing
+// else — a foldback's two junctions share a `start` on the same contig and
+// differ only in where they land. `endRefName` equals `refName` for every splice
+// junction, so this is the old key with a repeated field on that path.
 export function sashimiArcKey(arc: SashimiArc) {
-  return `${arc.refName}:${arc.start}:${arc.end}:${arc.strand}`
+  return `${arc.refName}:${arc.start}:${arc.endRefName}:${arc.end}:${arc.strand}`
 }
 
 // Display-wide selection identity, scoped by group section. Selection lives once

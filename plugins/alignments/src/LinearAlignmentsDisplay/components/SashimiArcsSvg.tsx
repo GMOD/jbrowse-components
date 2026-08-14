@@ -6,7 +6,7 @@ import SashimiArcLabels from './SashimiArcLabels.tsx'
 import { SASHIMI_SIDES, sashimiArcKey, sashimiSideBand } from './sashimiArcs.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 
-import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiArc } from '../../features/sashimi/arcGeometry.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 

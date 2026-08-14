@@ -1,10 +1,10 @@
 import {
   SASHIMI_LABEL_FONT_SIZE,
   SASHIMI_LABEL_HALO_WIDTH,
-} from '../../features/sashimi/computeOverlay.ts'
+} from '../../features/sashimi/arcGeometry.ts'
 import { sashimiArcKey } from './sashimiArcs.ts'
 
-import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiArc } from '../../features/sashimi/arcGeometry.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // Read-count label at a sashimi arc's apex, shared by the on-screen overlay and

@@ -616,6 +616,19 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      showSplitJunctionArcs: {
+        type: 'maybeBoolean',
+        // Promotable sentinel, exactly like `showSashimiArcs` beside it: these
+        // arcs draw into the same band and a reader turning one on wants the
+        // same per-track pin available for the other.
+        defaultValue: undefined,
+        promotedBase: false,
+        description:
+          'Draw one counted arc per split-read junction, over the coverage band',
+      },
+      /**
+       * #slot
+       */
       readConnectionsHeight: {
         type: 'number',
         // Arcs scale to whatever band they get, so this only buys apex

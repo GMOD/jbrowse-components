@@ -15,7 +15,7 @@ import {
 import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'
 
-import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiArc } from '../../features/sashimi/arcGeometry.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

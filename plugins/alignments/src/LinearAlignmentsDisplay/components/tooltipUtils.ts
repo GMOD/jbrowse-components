@@ -74,8 +74,18 @@ export interface SashimiTooltipPayload {
   start: number
   end: number
   score: number
+  // Empty when the junction has no single strand to report — a split-read
+  // junction joins two segments whose strands may differ, and the connection
+  // type in `title` is what carries that instead. The renderer omits the row.
   strand: string
   refName: string
+  // Equal to `refName` unless the junction crosses chromosomes, which only a
+  // split-read junction can. The renderer prints two loci and no length in that
+  // case: subtracting coordinates on two number lines is not a distance.
+  endRefName: string
+  // What to head the tooltip with — 'Intron/Skip' for a splice junction, the
+  // connection's own name for a split one. See `SashimiArc.title`.
+  title: string
 }
 
 export interface ArcTooltipPayload {
@@ -502,15 +512,22 @@ export function formatSashimiTooltip(arc: {
   score: number
   strand: number
   refName: string
+  endRefName: string
+  title: string
 }): SashimiTooltipPayload {
-  const { start, end, score, strand, refName } = arc
+  const { start, end, score, strand, refName, endRefName, title } = arc
   return {
     type: 'sashimi',
     start,
     end,
     score,
-    strand: strand === 1 ? '+' : strand === -1 ? '-' : 'unknown',
+    // '' rather than 'unknown', which is a row that costs a line to say
+    // nothing. Reached by an unstranded splice junction as well as by every
+    // split-read junction, and it was never worth printing for either.
+    strand: strand === 1 ? '+' : strand === -1 ? '-' : '',
     refName,
+    endRefName,
+    title,
   }
 }
 

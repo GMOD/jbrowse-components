@@ -25,6 +25,9 @@ interface SashimiModel {
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
   showSashimiArcsDisplayTypeDefault: Pin
+  showSplitJunctionArcs: boolean
+  setShowSplitJunctionArcs: (show: boolean) => void
+  showSplitJunctionArcsDisplayTypeDefault: Pin
   showSashimiLabels: boolean
   setShowSashimiLabels: (show: boolean) => void
   showSashimiLabelsDisplayTypeDefault: Pin
@@ -35,10 +38,21 @@ interface SashimiModel {
   setMinSashimiScore: (score: number) => void
 }
 
-// All sashimi (splice-junction arc) controls in one place. The labels,
-// placement, and score-filter options tune what's already drawn, so they're
-// revealed only when the arcs are on (never shown disabled).
+// All junction-arc controls in one place. The labels, placement, and score-
+// filter options tune what's already drawn, so they're revealed only when some
+// arcs are on (never shown disabled).
+//
+// TWO sources feed this band and they get one row each, then share everything
+// below: splice junctions from the coverage pipeline's skip gaps, and split-read
+// junctions coalesced from the reads' own SA segments. The shared settings are
+// shared on purpose rather than duplicated per source — "how many reads before
+// an arc is worth ink" and "draw the count on it" are the same question for
+// both, and a second copy of each would double this menu to say the same things.
+// Placement is the one that genuinely differs: split-junction arcs always draw
+// above coverage (see `computeSplitJunctionArcs`), so the radio group below
+// governs the splice arcs alone and only appears with them.
 export function getSashimiMenuItem(model: SashimiModel) {
+  const anyArcs = model.showSashimiArcs || model.showSplitJunctionArcs
   const subMenu: MenuItem[] = [
     promotableToggleItem({
       label: 'Show sashimi arcs',
@@ -48,7 +62,17 @@ export function getSashimiMenuItem(model: SashimiModel) {
       },
       pin: model.showSashimiArcsDisplayTypeDefault,
     }),
-    ...(model.showSashimiArcs
+    promotableToggleItem({
+      label: 'Show split-read junction arcs',
+      checked: model.showSplitJunctionArcs,
+      onToggle: () => {
+        model.setShowSplitJunctionArcs(!model.showSplitJunctionArcs)
+      },
+      pin: model.showSplitJunctionArcsDisplayTypeDefault,
+      helpText:
+        'coalesce the split reads crossing one breakpoint into a single arc over the coverage band, with its stroke width and count label from the number of supporting molecules. Unlike a sashimi arc this can join two chromosomes, so a fusion or translocation shown as two regions of one view draws one arc across the seam. The per-read curves stay in the pileup below; this is their total.',
+    }),
+    ...(anyArcs
       ? [
           promotableToggleItem({
             label: 'Show labels',
@@ -58,18 +82,22 @@ export function getSashimiMenuItem(model: SashimiModel) {
             },
             pin: model.showSashimiLabelsDisplayTypeDefault,
           }),
-          {
-            label: 'Arc placement',
-            type: 'subMenu' as const,
-            subMenu: promotableRadioItems(
-              SASHIMI_MODE_OPTIONS,
-              model.sashimiArcsMode,
-              mode => {
-                model.setSashimiArcsMode(mode)
-              },
-              mode => model.sashimiArcsModeDisplayTypeDefault(mode),
-            ),
-          },
+          ...(model.showSashimiArcs
+            ? [
+                {
+                  label: 'Arc placement',
+                  type: 'subMenu' as const,
+                  subMenu: promotableRadioItems(
+                    SASHIMI_MODE_OPTIONS,
+                    model.sashimiArcsMode,
+                    mode => {
+                      model.setSashimiArcsMode(mode)
+                    },
+                    mode => model.sashimiArcsModeDisplayTypeDefault(mode),
+                  ),
+                },
+              ]
+            : []),
           makeSizeMenu({
             label: 'Filter by score',
             title: 'Min read support',
@@ -78,6 +106,9 @@ export function getSashimiMenuItem(model: SashimiModel) {
             // a junction has at least one read); 0 would be a dead notch, since
             // sliderScale('log') clamps to `Math.max(1, n)`. Recomputes arcs on
             // the main thread (tier 3), so a live onChange is fine.
+            //
+            // Governs BOTH sources — see this function's header for why they
+            // share it rather than getting a threshold each.
             scale: 'log',
             min: 1,
             max: 10_000,

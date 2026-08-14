@@ -345,17 +345,31 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         </>
       )
     case 'sashimi': {
-      const { start, end, score, strand, refName } = tooltipData
+      const { start, end, score, strand, refName, endRefName, title } =
+        tooltipData
+      // A junction whose ends are on two chromosomes has no range and no
+      // length — only a split read can produce one, and it is the whole point
+      // of that arc, so it reads as two loci rather than as a broken range.
+      const interchrom = refName !== endRefName
       return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
             <div>
-              <strong>Intron/Skip</strong>
+              <strong>{title}</strong>
             </div>
-            <div>Location: {formatLocationRange(refName, start, end)}</div>
-            <div>Length: {toLocale(end - start)} bp</div>
+            {interchrom ? (
+              <div>
+                Junction: {formatLocation(refName, start)} &harr;{' '}
+                {formatLocation(endRefName, end)}
+              </div>
+            ) : (
+              <>
+                <div>Location: {formatLocationRange(refName, start, end)}</div>
+                <div>Length: {toLocale(Math.abs(end - start))} bp</div>
+              </>
+            )}
             <div>Reads supporting junction: {score}</div>
-            <div>Strand: {strand}</div>
+            {strand ? <div>Strand: {strand}</div> : null}
           </div>
         </BaseTooltip>
       )

@@ -25,6 +25,11 @@ function makeModel() {
       this.showSashimiArcs = v
     },
     showSashimiArcsDisplayTypeDefault: control('showSashimiArcs'),
+    showSplitJunctionArcs: false,
+    setShowSplitJunctionArcs(v: boolean) {
+      this.showSplitJunctionArcs = v
+    },
+    showSplitJunctionArcsDisplayTypeDefault: control('showSplitJunctionArcs'),
     showSashimiLabels: false,
     setShowSashimiLabels() {},
     showSashimiLabelsDisplayTypeDefault: control('showSashimiLabels'),
@@ -51,9 +56,12 @@ function labels(model: ReturnType<typeof makeModel>) {
 }
 
 describe('sashimi menu', () => {
-  test('only the toggle shows until sashimi arcs are on', () => {
+  test('only the two source toggles show until some arcs are on', () => {
     const model = makeModel()
-    expect(labels(model)).toEqual(['Show sashimi arcs'])
+    expect(labels(model)).toEqual([
+      'Show sashimi arcs',
+      'Show split-read junction arcs',
+    ])
   })
 
   test('labels, placement, and score filter appear when arcs are on', () => {
@@ -61,10 +69,32 @@ describe('sashimi menu', () => {
     model.showSashimiArcs = true
     expect(labels(model)).toEqual([
       'Show sashimi arcs',
+      'Show split-read junction arcs',
       'Show labels',
       'Arc placement',
       'Filter by score',
     ])
+  })
+
+  test('split-read arcs alone reveal the shared settings but not placement', () => {
+    // Labels and the score floor govern both sources; placement governs the
+    // splice arcs only, since split-junction arcs always draw above coverage.
+    const model = makeModel()
+    model.showSplitJunctionArcs = true
+    expect(labels(model)).toEqual([
+      'Show sashimi arcs',
+      'Show split-read junction arcs',
+      'Show labels',
+      'Filter by score',
+    ])
+  })
+
+  test('"Show split-read junction arcs" carries a default-for-all pin', () => {
+    const model = makeModel()
+    const toggle = getSashimiMenuItem(model).subMenu.find(
+      i => 'label' in i && i.label === 'Show split-read junction arcs',
+    )
+    expect(defaultForAllOf(toggle)).toBeDefined()
   })
 
   test('placement submenu checks the active mode and switches on click', () => {

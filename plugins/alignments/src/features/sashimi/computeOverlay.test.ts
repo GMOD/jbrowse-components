@@ -5,10 +5,8 @@ import {
 } from '@jbrowse/core/ui/theme'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import {
-  SASHIMI_APEX_CLEARANCE_PX,
-  computeSashimiArcs,
-} from './computeOverlay.ts'
+import { SASHIMI_APEX_CLEARANCE_PX } from './arcGeometry.ts'
+import { computeSashimiArcs } from './computeOverlay.ts'
 import { junctionKey } from './junctions.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
