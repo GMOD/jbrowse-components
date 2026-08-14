@@ -933,14 +933,31 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // these reads span the whole allele in one alignment, so there is nothing to
   // chain.
   //
-  // AND THE CHR3 WINDOW REACHES PAST THE LAST BREAKPOINT (reviewer: "it would
-  // be somewhat interesting to zoom out 'even more' so we see what is on the
+  // THE CHR3 WINDOW REACHES PAST THE LAST BREAKPOINT (reviewer: "it would be
+  // somewhat interesting to zoom out 'even more' so we see what is on the
   // 'other side' of the inversion on the right side of the figure"). The
   // allele's last hop returns inverted to chr3:25,352,683-25,359,111, so
   // everything on chr3 past 25,359,568 is reference the derivative abandons.
   // Ending the window at 25,361,000 gave that 1.4 kb, which reads as margin;
-  // at 25,367,000 it is 7.4 kb of reference row with no ribbon under it, which
-  // is the piece this allele leaves behind, drawn.
+  // banding and naming it is what made it a statement rather than a margin, and
+  // that band is still here at a fifth of the chr3 panel.
+  //
+  // AND THEN THE CHR3 WINDOW CAME BACK IN, from 47 kb to 13 (review, twice:
+  // "we should just zoom in more on the breakpoint"). chr3 is the only lever --
+  // a synteny view gives each region its share of the panel in proportion to
+  // its bp, so the two inserts are `insert_bp / total_bp x panel_px` and chr3
+  // was 47 kb of the 51.5 kb total. At 13 kb the same two inserts are ~3x
+  // wider, and the fold-back's inverted return (chr3:25,352,683-25,359,111,
+  // 6.4 kb) is half the chr3 panel instead of an eighth of it, which is the
+  // frame in which the turn itself is legible.
+  //
+  // What it costs is the START of the 32.7 kb arm, and there is no window that
+  // keeps both: the arm begins at 25,326,821, so showing all of it means a
+  // window of 36 kb or more, which is the frame this review came back on. The
+  // arm's ribbon is therefore drawn CLIPPED at the left edge rather than
+  // dropped, which is `clampBlockToRegions`, and the lane below still names its
+  // full extent in words. The "left behind" band goes from 11.4 kb to 2.4 and
+  // stays about a fifth of the panel, because the panel shrank with it.
   {
     mode: 'url',
     name: 'cancer_sv/derivative_synteny',
@@ -961,7 +978,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // own data instead of giving it a line above, and there are five tracks
     // here. Two of them take it; see the der3 row for why the other three
     // cannot. The rest is the ribbon band and the two coverage bands, trimmed.
-    viewportHeight: 811,
+    //
+    // Then +45 for the hg38 lane's read-connection arc band, the same 45 the
+    // sibling paid for it.
+    viewportHeight: 856,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -982,33 +1002,36 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // every ribbon has a target. A single chr3 window would leave the
               // two templated inserts -- the whole point of the figure --
               // pointing at nothing.
-              loc: 'chr3:25325000-25372000 chr10:58716500-58718500 chr12:72272000-72274500',
+              loc: 'chr3:25350000-25363000 chr10:58716500-58718500 chr12:72272000-72274500',
               // WHERE THE JUNCTIONS ARE, shaded (review: "the small breaks on
               // the right are hard to see ... potentially zooming in on the
-              // breakpoints"). They cannot be made wider HERE and it is worth
-              // saying why: a LinearSyntenyView allots each region its share of
-              // the panel in proportion to its bp, so a 199 bp insert beside a
-              // 32.7 kb arm gets 199/46,500 of the width whatever window is
-              // asked for around it -- widening the chr10 and chr12 windows
-              // makes the inserts RELATIVELY smaller, and narrowing them shrinks
-              // their panels by the same factor. Zooming in is the answer and it
-              // is the next figure, which opens exactly this span.
+              // breakpoints"). The half of that which is still impossible is
+              // worth keeping written down: a LinearSyntenyView allots each
+              // region its share of the panel in proportion to its bp, so a
+              // 199 bp insert gets 199/total of the width whatever window is
+              // asked for AROUND IT -- widening the chr10 and chr12 windows
+              // makes the inserts RELATIVELY smaller, and narrowing them
+              // shrinks their panels by the same factor. Every bp of zoom this
+              // figure has comes out of chr3's window, which is what the
+              // section comment above does.
               //
-              // So this frame's job is the architecture -- one long arm, two
-              // slivers, an inverted return -- and the shading is what stops a
-              // reader hunting the slivers for detail that is one figure away.
+              // The shading stays with it. This frame's job is still the
+              // architecture -- one long arm, two slivers, an inverted return
+              // -- and 2.6 kb of junctions inside a 13 kb window is a fifth of
+              // the panel rather than a twentieth, so the band now marks a
+              // stretch a reader can actually look INTO.
               //
               // AND THE STRETCH THE ALLELE ABANDONS, banded and named (review:
               // "is it possible to show a wider window? it is unclear what
-              // happens 'after the inversion' on the far right"). The window did
-              // grow again for it -- 25,367,000 to 25,372,000, so the abandoned
-              // piece is 12.4 kb of the chr3 panel rather than 7.4 -- but width
-              // alone was what the previous round already tried and what this
-              // review came back on. The answer to "what happens after the
-              // inversion" is NOTHING, and nothing is not something a wider
-              // window can draw: an empty reference row past the last ribbon
-              // reads as margin at any width. A band with a label on it is the
-              // statement.
+              // happens 'after the inversion' on the far right"). Width alone
+              // was what the previous round tried and what that review came back
+              // on: the answer to "what happens after the inversion" is NOTHING,
+              // and nothing is not something a wider window can draw -- an empty
+              // reference row past the last ribbon reads as margin at any width.
+              // A band with a label on it is the statement, which is why the
+              // zoom-in above could take 34 kb off this window without taking
+              // the answer with it: 2.4 kb of named empty reference says the
+              // same thing 11.4 did.
               //
               // It abuts the junctions band rather than overlapping it (two
               // highlights over one span double-shade), and it starts where the
@@ -1028,7 +1051,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   assemblyName: 'hg38',
                   label: 'left behind: no ribbon, not in the allele',
                   start: 25360600,
-                  end: 25372000,
+                  end: 25363000,
                   color: 'rgba(60,65,72,0.10)',
                 },
               ],
@@ -1118,6 +1141,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   coverageHeight: 30,
                   featureHeight: 1,
                   colorBy: { type: 'strand' },
+                  // THE THREE JUNCTIONS AS COUNTED ARCS (review: "please try to
+                  // add the interchromosomal arcs like cancer_sv/
+                  // derivative_inserts has"), and it is one key because the top
+                  // view already displays all three loci: every junction of the
+                  // allele therefore has both feet on screen and draws as an arc
+                  // rather than as the pair of ticks an off-screen partner gets.
+                  //
+                  // It earns its 45 px here for a different reason than on the
+                  // sibling. There the arcs weigh three junctions against each
+                  // other; here the lane under them is a 1px-pitch pileup, in
+                  // which a molecule is not followable at all -- so the band is
+                  // what says HOW MANY reads cross each junction, at a zoom
+                  // where the rows can only say that some do.
+                  //
+                  // Interchromosomal arcs also carry breakend feet, and they
+                  // are the one mark in this figure that states junction
+                  // ORIENTATION -- a short tick at each foot lying over the
+                  // sequence that end keeps, so outward reads as a
+                  // deletion-type junction, inward as a duplication-type and
+                  // parallel as an inversion. Everything else here says which
+                  // pieces the allele is made of; this says how each join is
+                  // put together.
+                  readConnections: 'arc',
                 },
               ],
             },

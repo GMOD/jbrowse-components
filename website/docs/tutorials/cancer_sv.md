@@ -339,7 +339,12 @@ A read lane sits under each row. Against hg38 it draws split alignments only, so
 the band over it counts the molecules carrying a junction; on the allele it
 draws every read realigned there.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from, and a read lane under each row." src="/img/cancer_sv/derivative_synteny.png" />
+Between the two, each junction is drawn once as an arc joining its two ends,
+with a short tick at each foot lying over the sequence that end keeps: ticks
+pointing away from each other are a deletion-type join, toward each other a
+duplication-type, and parallel an inversion.
+
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from, a read lane under each row, and the junctions drawn once each as arcs over the hg38 lane." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 
