@@ -1196,19 +1196,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   //    frame neither can draw a base, so each was 130 px of mismatch-coloured
   //    hash that reads as data and is not. That is 260 px, most of the height
   //    the figure lost.
-  //  - `drawCurves` is OFF. That is a legibility call and NOT the answer to the
-  //    missing ribbon, which was an app bug and is now fixed. The synteny
-  //    projection asked bpToCumBp per corner and dropped the whole block when
-  //    one corner fell outside the displayed region, so every segment reaching
-  //    past the edge of these deliberately narrow panels -- the 32.7 kb chr3
-  //    arm above all -- vanished instead of being drawn clipped;
-  //    clampBlockToRegions now trims such a block to the part both panels can
-  //    show. An earlier note here blamed the bezier control point for leaving
-  //    the frame vertically, which it does not: the curve's y is monotonic
-  //    between the two panel edges, and both curve modes were missing the same
-  //    ribbon. With the ribbons restored there are five of them crossing in a
-  //    220 px band, and straight quadrilaterals are the easier pair of edges to
-  //    follow through the crossings.
+  //  - The missing ribbon was an app bug and is fixed: the synteny projection
+  //    asked bpToCumBp per corner and dropped the whole block when one corner
+  //    fell outside the displayed region, so every segment reaching past the
+  //    edge of these deliberately narrow panels -- the 32.7 kb chr3 arm above
+  //    all -- vanished instead of being drawn clipped. clampBlockToRegions now
+  //    trims such a block to the part both panels can show. It was never the
+  //    bezier control point leaving the frame vertically: the curve's y is
+  //    monotonic between the two panel edges, and both curve modes were missing
+  //    the same ribbon.
   //  - A pill on each row saying which genome it is.
   {
     mode: 'url',
@@ -1459,7 +1455,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [['der3_vs_hg38']],
-          drawCurves: false,
+          // ON (review: "please use showCurves:true"). The name is `drawCurves`
+          // and it is a property of the SYNTENY VIEW rather than of a track, so
+          // spelled the other way in `tracks` it is one of the inline keys that
+          // are dropped in silence -- the figure would have regenerated
+          // identical and read as fixed.
+          drawCurves: true,
           // 180 rather than 220: five ribbons crossing need enough band to
           // stay separable and no more, and the 40 px buys most of the row
           // height the reads gained. 140 once the whole frame went compact --

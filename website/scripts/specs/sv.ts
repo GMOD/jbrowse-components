@@ -289,20 +289,6 @@ const CLINVAR_CNV_TRACK = {
   },
 }
 
-const DGV_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'hg38_dgv_ucsc',
-  name: 'DGV common germline SVs',
-  assemblyNames: ['GRCh38_GIABv3'],
-  adapter: {
-    type: 'BigBedAdapter',
-    bigBedLocation: {
-      uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb',
-      locationType: 'UriLocation',
-    },
-  },
-}
-
 // The pileup band `inverted_duplication`'s three callouts sit in, as an origin:
 // the track's own top edge (`fracY: 0`) at the view's left edge, with each
 // callout a dx/dy into it. The band is 2000px of arcs and reads in a 2010px
@@ -1403,12 +1389,11 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/deletion_sv_inspector_search',
-    // +277 for the two catalogue lanes, off the run's own below-the-fold report
-    viewportHeight: 1127,
+    // +140 for the one catalogue lane, off the run's own below-the-fold report
+    viewportHeight: 990,
     url: cgiabUrl({
       sessionTracks: [
         CLINVAR_CNV_TRACK,
-        DGV_TRACK,
         // hg38 NCBI RefSeq genes (chr-named, CSI-indexed) so the LGV below the
         // inspector shows CUZD1's gene model over the deletion
         {
@@ -1465,38 +1450,30 @@ export const svSpecs: ScreenshotSpec[] = [
             //                   structural variation catalogued in germline
             //                   genomes
             //
-            // WHY THE SECOND ONE, since this is a somatic callset (asked
-            // directly: "why would healthy genomes be interesting"). Not as
-            // benign evidence in the ACMG sense -- that is a germline argument
-            // and this is a tumour. It is the false-positive check a somatic
-            // callset needs: a locus that is ordinary CNV territory in germline
-            // catalogues is a locus where a somatic caller most often emits
-            // something that was never somatic. So the pair reads "not a known
-            // pathogenic CNV, and a place where common germline variation
-            // lives" -- which is the triage a reviewer performs, in lanes
-            // rather than in a paragraph.
-            // SIZE-FILTERED, and that is what makes them answer the question
-            // rather than decorate it. Both catalogues carry chromosome-scale
-            // records -- whole-10q26 losses in ClinVar, megabase CNV regions in
-            // DGV -- which merely CONTAIN this 1.8 kb deletion, and drawn
-            // unfiltered each lane is one bar edge to edge. A red bar across
-            // the window would read as "pathogenic CNV here", which is exactly
-            // the wrong answer. `_varLen` (ClinVar) and `_size` (DGV) are the
-            // catalogues' own length fields, off the bigBed autoSql, so the
-            // lanes keep the records at this event's own scale. Bare
-            // expressions: a canvas display's jexlFilters slot adds the `jexl:`
-            // prefix itself.
+            // ONE LANE, not two. dgvMerged.bb was the second and is gone
+            // (review, twice: "why do i care about common germline svs here?
+            // consider remove", then "sorry i dont understand the logic here,
+            // why does a somatic sv require common germline sv to 'survive'").
+            // The keep argument was a false-positive prior -- that a locus which
+            // is ordinary CNV territory in germline catalogues is where a
+            // somatic caller most often emits something that was never somatic
+            // -- and whatever its merits, it is a claim about callers that no
+            // part of this frame shows. A lane a reader has to be argued into
+            // is a lane that is not answering anything.
+            //
+            // SIZE-FILTERED, which is what makes the one that stays answer the
+            // question rather than decorate it. ClinVar carries chromosome-scale
+            // records -- whole-10q26 losses -- which merely CONTAIN this 1.8 kb
+            // deletion, and drawn unfiltered the lane is one bar edge to edge. A
+            // red bar across the window would read as "pathogenic CNV here",
+            // which is exactly the wrong answer. `_varLen` is the catalogue's
+            // own length field, off the bigBed autoSql. Bare expression: a
+            // canvas display's jexlFilters slot adds the `jexl:` prefix
+            // itself.
             {
               trackId: CLINVAR_CNV_TRACK.trackId,
               type: 'LinearBasicDisplay',
               jexlFilters: ["get(feature,'_varLen') < 50000"],
-              displayMode: 'compact',
-              heightMode: 'grow',
-            },
-            {
-              trackId: DGV_TRACK.trackId,
-              type: 'LinearBasicDisplay',
-              jexlFilters: ["get(feature,'_size') < 50000"],
               displayMode: 'compact',
               heightMode: 'grow',
             },
@@ -1607,41 +1584,27 @@ export const svSpecs: ScreenshotSpec[] = [
         fontSize: 18,
         maxWidth: 360,
       },
-      // WHAT THE TWO CATALOGUE LANES ANSWER (review: "why do i care about
-      // common germline svs here? consider remove"). They were added a round
-      // earlier, on "i want tracks that confirm; prose is tl;dr 99% of the
-      // time" — and then said nothing, because one of them is empty and the
-      // other draws two bars whose relationship to the call is the whole point
-      // and is not legible from the drawing.
+      // WHAT THE CATALOGUE LANE ANSWERS. It was added on "i want tracks that
+      // confirm; prose is tl;dr 99% of the time", and what it contributes is an
+      // ABSENCE, which is the one reading a lane cannot make on its own: an
+      // empty track and a track that failed to load draw the same thing. So the
+      // callout says which one it is.
       //
-      // MEASURED against the two bigBeds rather than read off the picture
-      // (api.genome.ucsc.edu, 2026-08-13), because the lanes' size filters
-      // decide what is in them and the answer is different above and below the
-      // cut. SV_85 is chr10:122,835,344-122,837,142.
+      // MEASURED against the bigBed rather than read off the picture
+      // (api.genome.ucsc.edu, 2026-08-13), because the size filter decides what
+      // is in the lane and the answer is different above and below the cut.
+      // SV_85 is chr10:122,835,344-122,837,142, and 15 clinvarCnv records span
+      // this window with the SMALLEST at 2.2 Mb -- whole-arm losses, every one
+      // filtered out by `_varLen < 50000`.
       //
-      //   clinvarCnv   15 records span this window and the SMALLEST is 2.2 Mb —
-      //                whole-arm losses, every one of them filtered out by
-      //                `_varLen < 50000`. So the empty lane is the reading: no
-      //                submitted pathogenic CNV at anything like this event's
-      //                scale.
-      //   dgvMerged    two records survive the size cut and BOTH overlap the
-      //                call — nsv1159779 (12.9 kb deletion) over its first
-      //                kilobase, nsv975804 (3.0 kb duplication) over most of
-      //                it.
-      //
-      // Which is the opposite of a clearance, and is the reason the lane is
-      // worth its rows: this deletion sits in ordinary germline copy-number
-      // territory, which is where a somatic caller most often emits something
-      // that was never somatic.
-      //
-      // Anchored to the DGV lane's own band, in the strip under its two
-      // records, so it moves with the track rather than with the page.
+      // Anchored to the lane's own band so it moves with the track rather than
+      // with the page.
       {
         type: 'text',
-        text: 'No ClinVar CNV at this size. Two common germline CNVs do overlap the call, which is the check a somatic caller has to survive.',
+        text: 'The lane is empty on purpose: no submitted ClinVar CNV anywhere near this deletion\u2019s size.',
         anchor: {
           view: 1,
-          track: DGV_TRACK.trackId,
+          track: CLINVAR_CNV_TRACK.trackId,
           fracY: 1,
           alignX: 'left',
           dx: 30,
