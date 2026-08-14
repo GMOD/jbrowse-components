@@ -6,7 +6,29 @@ export {
   LABEL_OVERLAY_BACKGROUND,
 } from '../../RenderFeatureDataRPC/constants.ts'
 
-// Instancing limits
+// How many chevron slots the GPU pass addresses per intron line. A BUDGET, not
+// a limit: `makeChevronPass` multiplies it by `CHEVRON_VERTS` to get the pass's
+// per-instance vertex count, so every line instance shades all 128 × 12 = 1536
+// vertices whether or not a chevron lands in any of those slots. Raising it
+// costs that on every intron on the track, which is why it is not simply large.
+//
+// What 128 buys, since nothing in the shader can say so: `vs_main` draws
+// `firstVisible + localChevronIndex`, where the visible window it walks spans
+// `blockWidthPx / CHEVRON_SPACING_PX` slots plus 4 of floor/ceil slack at the
+// two ends — so this covers a block up to **4960 CSS px** wide. Measured by
+// sweeping the shader's own window arithmetic over line lengths from
+// just-clears-the-gate to 4096× the viewport, every bpPerPx from 0.02 to 1e6,
+// and the viewport at every position along the line: 1200px block → 34 slots,
+// 3840 → 100, 4960 → 128, 5120 → 132, 7680 → 196.
+//
+// Past 4960px the GPU path silently drops the far-end chevrons of the longest
+// lines while Canvas2D, which windows in px and has no cap, still draws them —
+// the per-backend divergence class ADR-005 exists to remove, and the reason this
+// number is worth a paragraph. It needs an ultra-wide window (a spanned pair of
+// 4K panels at 100% scaling reaches ~7680 CSS px) to reach, so the trade stands:
+// covering that would cost +53% chevron vertices for every user. If it ever
+// needs raising, `196` is the 7680px number, and the sweep above is how to
+// re-derive it for another width.
 export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
 // Continuation markers ("feature keeps going") fire only where a block edge is
