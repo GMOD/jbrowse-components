@@ -35,7 +35,6 @@ before anyone noticed.
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
 | [Jump the MM delta walk with `indexOf`](#jump-the-mm-delta-walk-with-indexof-instead-of-stepping-it) | alignments, perf | 1.42x probed on forward strand; measure reverse before building |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
-| [Retire the last position-index WeakMap](#retire-the-last-position-index-weakmap-the-interbase-one) | alignments, perf | ship an order array; the type-grouping contract is why sorting won't do |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Audit the wiggle colour paths for the same split](#audit-the-wiggle-colour-paths-for-the-same-split) | wiggle | read `sourcesLogic.ts` against its legend |
 | [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
@@ -294,39 +293,6 @@ labels will overflow the boxes laid out for them.
   already in hand at hit time: the flatbush search returns every match before
   `topmostMatch` picks one. A tooltip line ("+3 more here") is probably the
   whole job; a click-to-list is the larger version.
-
-### Retire the last position-index WeakMap, the interbase one
-
-`positionIndexFor`'s `WeakMap` now has exactly two callers, both about
-`interbasePositions`: `countInterbaseAtPosition` (`coverageDownsampling.ts`, and
-MAF reaches it through `buildCoverageTooltipBin`) and `collectInterbaseStats`
-(`tooltipUtils.ts`). Every other user is gone — the mismatch readers take arrays
-their producers sort, and `deletionSpanIndex` builds its own array so it calls
-`positionOrder` and keeps nothing.
-
-**Sorting interbase the same way does not work, and the reason is a contract
-rather than effort.** `interbasePositions` is deliberately grouped as
-(insertions, softclips, hardclips) with `numInsertions` / `numSoftclips` /
-`numHardclips` so three consumers can slice subranges without re-scanning
-`interbaseTypes`: `features/insertion/packGpu.ts`, `shared/clipPass.ts` and the
-range arithmetic in `shared/uploadTypes.ts`. Position order breaks all three.
-
-Two ways to close it:
-
-- **Ship an `interbaseOrder: Uint32Array`** from the worker beside the existing
-  arrays — sorted order over the type-grouped array. 4 bytes an entry over an
-  array far smaller than the mismatch one, explicit in the RPC contract, lifetime
-  is the result's, nothing to invalidate. The readers index through it exactly as
-  they index through `order` today, so their bodies barely change. MAF ships its
-  own interbase arrays and would need the same field.
-- **Give the three slicers a type scan** and then sort by position. Smaller
-  contract, more work per fetch, and it gives up the "no re-scanning
-  `interbaseTypes`" property those counts exist for.
-
-The first is the smaller change and does not touch the GPU passes. Either way,
-verify the interbase marks headed on both backends before believing it — the
-insertion/clip passes read those ranges, so an off-by-one here draws the wrong
-marks rather than failing.
 
 ### Verify the overlay palettes in dark mode
 

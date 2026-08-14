@@ -12,40 +12,44 @@
  * tracks are stacked in the view. On the six-track pan profile those arrays hold
  * hundreds of thousands of entries each.
  *
- * ## Prefer sorting at the PRODUCER; this memo is the fallback
+ * ## The producer sorts. There is no cache here, and there was.
  *
- * Where the producer can emit ascending positions, it should, and then no index
- * exists to cache: the reader `lowerBound`s the shipped array and reads the
- * parallel arrays at the same subscript. `buildMismatchArrays` does exactly that
- * via `positionOrder` below, so the two hottest readers — the ones quoted above —
- * hold nothing. That is strictly better than what this file offers: no retained
- * bytes, no lifetime question, no invalidation invariant, and one less
- * indirection per entry on the mousemove.
+ * Every consumer's array now arrives ascending, so a reader `lowerBound`s what it
+ * was given and reads the parallel arrays at the same subscript — nothing built,
+ * nothing retained, nothing to invalidate. `buildMismatchArrays` and
+ * `buildInterbaseArrays` call `positionOrder` below; MAF's twins do the same.
  *
- * **`interbasePositions` is the case that cannot follow**, and the reason is a
- * competing contract rather than effort: it is deliberately grouped as
- * (insertions, softclips, hardclips) with `numInsertions` / `numSoftclips` /
- * `numHardclips` so three GPU passes can slice subranges without re-scanning
+ * This replaced a `WeakMap<Uint32Array, PositionIndex>` memoized on the main
+ * thread, and the whole of what that cost is worth keeping, because the memo
+ * looked free at each call site:
+ *
+ * - **8 bytes an entry**, measured exactly, retained for as long as the array —
+ *   7.6 MB per 1M-entry array, per region, per stacked track, behind a call that
+ *   read as a lookup. The bench that measured it is gone with the memo; the
+ *   numbers are in REJECTED_IDEAS.md.
+ * - **An invalidation invariant nothing enforced.** It was correct only because a
+ *   refetch replaces the array wholesale; anything mutating a positions array in
+ *   place would have gotten a silently stale index.
+ * - **A silent wrong answer per unkeyed parameter.** `stride` was not in the key,
+ *   so one array read at two strides got whichever index was built first — the
+ *   defect this file shipped, and a property of identity-keyed caches rather than
+ *   of that bug.
+ * - It was also **slower**: the `order[k]` indirection to reach the parallel
+ *   arrays cost 1.2-1.4x per hover against reading a sorted array directly.
+ *
+ * ## Two shapes of sorted, because interbase could not follow the simple one
+ *
+ * `mismatchPositions` is sorted outright. `interbasePositions` is sorted **within
+ * each of its (insertions, softclips, hardclips) blocks** and not across them,
+ * because those boundaries are a contract: `numInsertions` / `numSoftclips` /
+ * `numHardclips` let three GPU passes slice subranges without re-scanning
  * `interbaseTypes` (`insertion/packGpu.ts`, `shared/clipPass.ts`,
- * `shared/uploadTypes.ts`). Sorting it by position breaks all three. Its two
- * per-hover readers — `countInterbaseAtPosition` and `collectInterbaseStats` —
- * are what keeps the memo below alive; see TODO.md for the shipped-order-array
- * alternative that would retire it.
+ * `shared/uploadTypes.ts`), and sorting the array outright breaks all three.
  *
- * ## What the memo costs, when it is used
- *
- * 8 bytes per entry — measured exactly, `benches/hoverIndexMemory.bench.ts` —
- * retained for as long as the array it indexes, and only from the first hover, so
- * a cold render builds none. Read that as the absolute rather than the ratio:
- * 7.6 MB per 1M-entry array, per region, per stacked track. It is 2.00x the
- * positions array it indexes and 0.57x the whole parallel set it makes usable.
- *
- * The invalidation is by construction, and that is the part to be suspicious of:
- * a refetch replaces the array wholesale — the worker allocates fresh
- * transferables per reply and the old one is detached — so a stale index cannot be
- * reached. **Nothing enforces that.** Anything that mutated a positions array in
- * place would get a silently stale index, which is why the rule is to sort at the
- * producer wherever a producer exists.
+ * `forEachAtPosition` is what reads that shape — one binary search per block. It
+ * is worth knowing this beat the alternative the TODO entry proposed, which was to
+ * ship a 4-byte-an-entry order array from the worker: sorting inside the blocks
+ * costs nothing extra, ships nothing extra, and leaves every slice untouched.
  *
  * ## Building it
  *
@@ -97,57 +101,19 @@ const EMPTY: PositionIndex = {
   stride: 1,
 }
 
-// One index per array, and it CARRIES the stride it was built at rather than
-// being keyed by it.
-//
-// The stride has to be checked somehow: one array can be read at two strides,
-// and those are different indexes. `gapPositions` is the case — stride 2 over
-// its starts, stride 1 if anything ever wants every entry — and a memo that
-// ignored the stride handed the second caller the first one's index, silently
-// and with a plausible answer (`[10, 20, 30, 50, 60, 90]` where the starts are
-// `[10, 30, 50]`), indistinguishable from a region whose gaps really do sit
-// there.
-//
-// Checking it on the index costs NO memory, which a per-stride collection does:
-// this index is 8 bytes an entry, so on the 1M-entry fixture it is 7.6 MB per
-// array, per region, per stacked track, and the rule on this path is that
-// nothing gets added beside it without a reason. A stride mismatch REPLACES the
-// entry instead of holding both.
-//
-// That trade is only right because production is entirely stride 1 —
-// `coverageDownsampling` and `tooltipUtils` between them are every caller, and
-// `deletionSpanIndex` copies gap starts into an array of their own rather than
-// striding. A future path that alternates two strides over ONE array on the
-// mousemove would rebuild per hover, which is worse than the array this
-// replaces; if that ever appears, hold both and pay the bytes deliberately.
-const cache = new WeakMap<Uint32Array, PositionIndex>()
-
 /**
- * The position index for `positions`, built on first use and cached against the
- * array. `stride` reads every stride'th entry from the start of the array, for
- * one that interleaves something else — `gapPositions` holds [start, end] pairs,
- * so its starts are stride 2. Asking for a stride the cached index was not built
- * at rebuilds it.
- */
-export function positionIndexFor(positions: Uint32Array, stride = 1) {
-  const hit = cache.get(positions)
-  if (hit?.stride === stride) {
-    return hit
-  }
-  const built = buildPositionIndex(positions, stride)
-  cache.set(positions, built)
-  return built
-}
-
-/**
- * The sort with NO cache attached — `{ order, sorted }` computed and handed back.
+ * The sort, computed and handed back. There is no cache in this module, and that
+ * is the point: every consumer's array is sorted by whoever PRODUCED it, so a
+ * reader binary-searches what it was given and retains nothing.
  *
- * This is the primitive a PRODUCER wants: `buildMismatchArrays` calls it to emit
- * its parallel arrays in ascending position order, which is what lets the hover
- * readers `lowerBound` the shipped array and keep no index at all. Prefer it to
- * `positionIndexFor` anywhere the caller owns the output, and note that the
- * sparse fallback above is the reason to share this rather than write a counting
- * sort at the call site.
+ * `buildMismatchArrays` and `buildInterbaseArrays` are the two callers, plus
+ * MAF's twins and `deletionSpanIndex`, which builds an array of its own. Note
+ * that the sparse fallback below is the reason to share this rather than write a
+ * counting sort at each call site.
+ *
+ * `stride` reads every stride'th entry from the start of the array, for one that
+ * interleaves something else — `gapPositions` holds [start, end] pairs, so its
+ * starts are stride 2.
  */
 export function positionOrder(positions: Uint32Array, stride = 1) {
   return buildPositionIndex(positions, stride)
@@ -208,10 +174,20 @@ function buildPositionIndex(
  * standard lower bound, so `[lowerBound(P), lowerBound(P + 1))` is the run of
  * entries at exactly P and `[lowerBound(a), lowerBound(b))` is the run in
  * `[a, b)`.
+ *
+ * `from`/`to` bound the search to one RUN of a multi-run array. That is what
+ * `interbasePositions` is: sorted within each of its (insertions, softclips,
+ * hardclips) blocks but not across them, because those block boundaries are a
+ * contract three GPU passes slice on. See `forEachAtPosition`.
  */
-export function lowerBound(sorted: Uint32Array, target: number) {
-  let lo = 0
-  let hi = sorted.length
+export function lowerBound(
+  sorted: Uint32Array,
+  target: number,
+  from = 0,
+  to = sorted.length,
+) {
+  let lo = from
+  let hi = to
   while (lo < hi) {
     const mid = (lo + hi) >> 1
     if (sorted[mid]! < target) {
@@ -221,4 +197,37 @@ export function lowerBound(sorted: Uint32Array, target: number) {
     }
   }
   return lo
+}
+
+/**
+ * Visit every entry at exactly `position`, across one or more ascending runs.
+ *
+ * `blockEnds` are the runs' exclusive end offsets — `[n]` for a single sorted
+ * array, `[numInsertions, +numSoftclips, +numHardclips]` for the interbase set.
+ * One binary search per run, so an interbase hover costs three instead of one and
+ * still touches nothing but the entries under the cursor.
+ *
+ * The alternative was a side index over the whole array, which is what this
+ * replaced: it answered in one search but had to be built, retained and
+ * invalidated, and could not be built at the producer because sorting the array
+ * outright would break the block contract. Three searches over data that sorts
+ * itself is the cheaper trade in every dimension except elegance.
+ */
+export function forEachAtPosition(
+  positions: Uint32Array,
+  blockEnds: readonly number[],
+  position: number,
+  visit: (i: number) => void,
+) {
+  let start = 0
+  for (const end of blockEnds) {
+    for (
+      let i = lowerBound(positions, position, start, end);
+      i < end && positions[i] === position;
+      i++
+    ) {
+      visit(i)
+    }
+    start = end
+  }
 }

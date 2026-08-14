@@ -1,4 +1,8 @@
-import { lowerBound, positionIndexFor } from './positionIndex.ts'
+import {
+  forEachAtPosition,
+  lowerBound,
+  positionOrder,
+} from './positionIndex.ts'
 
 // The two sorts are chosen by span-per-entry, so a test that only ever builds
 // dense fixtures exercises one of them. `sparse` is wide enough to cross
@@ -10,11 +14,11 @@ function sparse(values: number[]) {
   return new Uint32Array(values.map(v => v * 100_000))
 }
 
-describe('positionIndexFor', () => {
+describe('positionOrder', () => {
   it('orders entries by position, both ways it can sort', () => {
     for (const make of [dense, sparse]) {
       const positions = make([5, 1, 9, 1, 3])
-      const { order, sorted } = positionIndexFor(positions)
+      const { order, sorted } = positionOrder(positions)
       expect([...sorted]).toEqual([...make([1, 1, 3, 5, 9])])
       // `order` names the original slot each sorted entry came from — which is
       // the whole point, since the parallel arrays are read through it.
@@ -25,63 +29,44 @@ describe('positionIndexFor', () => {
   it('reads every stride-th entry, for an array of pairs', () => {
     // gapPositions is [start, end] pairs; the index is over the starts.
     const gaps = new Uint32Array([50, 60, 10, 20, 30, 90])
-    const { order, sorted } = positionIndexFor(gaps, 2)
+    const { order, sorted } = positionOrder(gaps, 2)
     expect([...sorted]).toEqual([10, 30, 50])
     expect([...order]).toEqual([1, 2, 0])
   })
 
   it('is empty for an empty array', () => {
-    const { order, sorted } = positionIndexFor(new Uint32Array(0))
+    const { order, sorted } = positionOrder(new Uint32Array(0))
     expect(order.length).toBe(0)
     expect(sorted.length).toBe(0)
   })
 
   it('handles a single entry and an all-equal run', () => {
-    expect([...positionIndexFor(new Uint32Array([7])).sorted]).toEqual([7])
-    expect([...positionIndexFor(new Uint32Array([7, 7, 7])).sorted]).toEqual([
+    expect([...positionOrder(new Uint32Array([7])).sorted]).toEqual([7])
+    expect([...positionOrder(new Uint32Array([7, 7, 7])).sorted]).toEqual([
       7, 7, 7,
     ])
   })
 
-  it('returns the same object for the same array', () => {
-    // Memoized against the array itself — a refetch replaces the array, so this
-    // is also how the index invalidates.
+  it('returns a fresh result each call, holding no cache', () => {
+    // There is no memo in this module: every consumer's array is sorted by its
+    // producer, so a reader searches what it was given. This pins that, because
+    // the memo that used to be here retained 8 bytes an entry per region per
+    // stacked track behind a call that read as a lookup.
     const positions = new Uint32Array([3, 1, 2])
-    expect(positionIndexFor(positions)).toBe(positionIndexFor(positions))
-    expect(positionIndexFor(new Uint32Array([3, 1, 2]))).not.toBe(
-      positionIndexFor(positions),
-    )
+    expect(positionOrder(positions)).not.toBe(positionOrder(positions))
+    expect([...positionOrder(positions).sorted]).toEqual([1, 2, 3])
   })
 
-  it('answers the stride asked for, not the one cached', () => {
-    // One array read two ways is two different indexes. A memo that ignored the
-    // stride returned the stride-1 index here — a plausible answer (every entry,
-    // in order) for a caller that asked about the starts.
+  it('answers the stride asked for, every time', () => {
+    // One array read two ways is two different orders, and with no cache in the
+    // way each call simply computes the one asked for. The memo got this wrong —
+    // `stride` was not in its key, so the second caller got the first's index:
+    // `[10, 20, 30, 50, 60, 90]` where the starts are `[10, 30, 50]`.
     const gaps = new Uint32Array([50, 60, 10, 20, 30, 90])
-    expect([...positionIndexFor(gaps).sorted]).toEqual([10, 20, 30, 50, 60, 90])
-    expect([...positionIndexFor(gaps, 2).sorted]).toEqual([10, 30, 50])
-    // Either order, since whichever ran first is the one that populated the memo.
-    const other = new Uint32Array([50, 60, 10, 20, 30, 90])
-    expect([...positionIndexFor(other, 2).sorted]).toEqual([10, 30, 50])
-    expect([...positionIndexFor(other).sorted]).toEqual([
-      10, 20, 30, 50, 60, 90,
-    ])
-  })
-
-  it('holds ONE index per array, replacing it when the stride changes', () => {
-    // The stride is carried on the index rather than keyed on, so a mismatch
-    // rebuilds and evicts instead of retaining both. That is deliberate: the
-    // index is 8 bytes an entry, and nothing on this path may quietly hold two.
-    const gaps = new Uint32Array([50, 60, 10, 20, 30, 90])
-    const a = positionIndexFor(gaps, 2)
-    expect(positionIndexFor(gaps, 2)).toBe(a)
-    expect(a.stride).toBe(2)
-
-    const b = positionIndexFor(gaps)
-    expect(b).not.toBe(a)
-    expect(b.stride).toBe(1)
-    // Asking for stride 2 again rebuilds — the stride-1 index replaced it.
-    expect(positionIndexFor(gaps, 2)).not.toBe(a)
+    expect([...positionOrder(gaps).sorted]).toEqual([10, 20, 30, 50, 60, 90])
+    expect([...positionOrder(gaps, 2).sorted]).toEqual([10, 30, 50])
+    expect([...positionOrder(gaps).sorted]).toEqual([10, 20, 30, 50, 60, 90])
+    expect([...positionOrder(gaps, 2).sorted]).toEqual([10, 30, 50])
   })
 
   it('agrees with a plain sort on a large mixed input', () => {
@@ -92,9 +77,47 @@ describe('positionIndexFor', () => {
       s = (s * 1664525 + 1013904223) >>> 0
       positions[i] = 1_000_000 + (s % 4000)
     }
-    const { order, sorted } = positionIndexFor(positions)
+    const { order, sorted } = positionOrder(positions)
     expect([...sorted]).toEqual([...positions].sort((a, b) => a - b))
     expect([...order].map(i => positions[i])).toEqual([...sorted])
+  })
+})
+
+describe('forEachAtPosition', () => {
+  const visitAll = (
+    positions: Uint32Array,
+    blockEnds: number[],
+    position: number,
+  ) => {
+    const hit: number[] = []
+    forEachAtPosition(positions, blockEnds, position, i => hit.push(i))
+    return hit
+  }
+
+  it('visits the run at a position in a single sorted array', () => {
+    const positions = new Uint32Array([10, 20, 20, 20, 30])
+    expect(visitAll(positions, [5], 20)).toEqual([1, 2, 3])
+    expect(visitAll(positions, [5], 10)).toEqual([0])
+    expect(visitAll(positions, [5], 25)).toEqual([])
+  })
+
+  it('crosses blocks that are each sorted but not sorted together', () => {
+    // The interbase layout: insertions [0,3), softclips [3,5), hardclips [5,7),
+    // ascending inside each. A single search over the whole array would miss the
+    // later blocks entirely, which is the bug this shape exists to prevent.
+    const positions = new Uint32Array([10, 20, 30, 15, 20, 20, 40])
+    expect(visitAll(positions, [3, 5, 7], 20)).toEqual([1, 4, 5])
+    expect(visitAll(positions, [3, 5, 7], 15)).toEqual([3])
+    expect(visitAll(positions, [3, 5, 7], 40)).toEqual([6])
+    expect(visitAll(positions, [3, 5, 7], 25)).toEqual([])
+  })
+
+  it('handles empty blocks and an empty array', () => {
+    // A region with no softclips gives a zero-width middle block, which must not
+    // swallow the block after it.
+    const positions = new Uint32Array([10, 20, 20])
+    expect(visitAll(positions, [1, 1, 3], 20)).toEqual([1, 2])
+    expect(visitAll(new Uint32Array(0), [0, 0, 0], 20)).toEqual([])
   })
 })
 

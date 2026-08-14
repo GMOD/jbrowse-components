@@ -1,13 +1,26 @@
-import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
 import { getInterbaseBin, getCoverageBin } from './tooltipUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Coverage-only baseline; each test layers on the interbase/gap arrays it needs.
+//
+// The three interbase block counts are DERIVED from `interbaseTypes` rather than
+// left to each test, because they are half of the interbase layout contract:
+// `interbasePositions` is grouped (insertions, softclips, hardclips) and sorted
+// within each block, and the tooltip reader binary-searches those blocks. A
+// fixture that sets positions and leaves the counts at 0 reads as "no interbase
+// events here" instead of failing, which is exactly how this file broke when the
+// reader stopped scanning the whole array. An explicit override still wins, for a
+// test that wants to state an inconsistent layout on purpose.
 function makeRpcData(
   overrides: Partial<PileupDataResult> = {},
 ): PileupDataResult {
-  return {
+  const merged = {
     coverageStartPos: 100,
     coverageDepths: new Float32Array([10]),
     coverageFwdDepths: new Float32Array(),
@@ -22,6 +35,14 @@ function makeRpcData(
     gapPositions: new Uint32Array(),
     gapTypes: new Uint8Array(),
     ...overrides,
+  }
+  const tally = (type: number) =>
+    [...merged.interbaseTypes].filter(t => t === type).length
+  return {
+    numInsertions: tally(INTERBASE_INSERTION),
+    numSoftclips: tally(INTERBASE_SOFTCLIP),
+    numHardclips: tally(INTERBASE_HARDCLIP),
+    ...merged,
   } as PileupDataResult
 }
 

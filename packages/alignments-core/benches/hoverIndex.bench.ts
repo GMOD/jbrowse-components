@@ -43,7 +43,8 @@
 // ARMS:
 //   scan-hover     the original: a full scan of the read-order array
 //   index-hover    the previous implementation, transcribed — read-order array
-//                  plus `positionIndexFor`
+//                  plus a WeakMap memo, transcribed below since src/ no longer
+//                  has one
 //   sorted-hover   what ships: the shared readers over ascending arrays
 //   control        a second, separately-declared copy of scan-hover. A row whose
 //                  control is far from 1.00 measured nothing.
@@ -159,11 +160,26 @@ import {
   countSnpsAtPosition,
   findSignificantInBin,
 } from '../src/coverageDownsampling.ts'
-import {
-  lowerBound,
-  positionIndexFor,
-  positionOrder,
-} from '../src/positionIndex.ts'
+import { lowerBound, positionOrder } from '../src/positionIndex.ts'
+
+// The memo the `index-hover` arm needs, transcribed HERE because it no longer
+// exists in `src/` — sorting at the producer replaced it. Keeping the arm is the
+// point of this file now: it is the only place the three candidates can be read
+// against each other, and a proposal to reintroduce a main-thread cache should
+// have to beat the `sorted` column rather than the `scan` one.
+const indexCache = new WeakMap<
+  Uint32Array,
+  { order: Uint32Array; sorted: Uint32Array }
+>()
+const indexFor = (positions: Uint32Array) => {
+  const hit = indexCache.get(positions)
+  if (hit) {
+    return hit
+  }
+  const built = positionOrder(positions)
+  indexCache.set(positions, built)
+  return built
+}
 
 const arg = (name: string, dflt: string) =>
   process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1] ?? dflt
@@ -286,7 +302,7 @@ const indexSnps = (
   mismatchStrands: Int8Array,
 ) => {
   const snps: Record<string, { count: number; fwd: number; rev: number }> = {}
-  const { order, sorted } = positionIndexFor(mismatchPositions)
+  const { order, sorted } = indexFor(mismatchPositions)
   for (let k = lowerBound(sorted, position); k < sorted.length; k++) {
     if (sorted[k] !== position) {
       break
@@ -312,7 +328,7 @@ const indexSignificant = (
   binEnd: number,
   threshold: number,
 ) => {
-  const { sorted } = positionIndexFor(positions)
+  const { sorted } = indexFor(positions)
   let k = lowerBound(sorted, binStart)
   while (k < sorted.length && sorted[k]! < binEnd) {
     const pos = sorted[k]!

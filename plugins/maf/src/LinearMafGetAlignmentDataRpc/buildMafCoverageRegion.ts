@@ -3,6 +3,7 @@ import {
   computeSNPCoverage,
   packCoverageBinsCanvas2D,
   packCoverageSegmentsForGpu,
+  positionOrder,
 } from '@jbrowse/alignments-core'
 
 import { computeMafCoverage } from './computeMafCoverage.ts'
@@ -54,13 +55,22 @@ export function buildMafCoverageRegion(
     coverageForSnp,
   )
 
+  // Ascending by position, which `countInterbaseAtPosition` requires: it
+  // binary-searches this array (as MAF's single interbase block) rather than
+  // building a side index, so read-order input would return a plausible wrong
+  // insertion tally instead of failing. Sorted rather than assumed, for the same
+  // reason `MismatchWriter.finish` sorts — the walk's ordering is a property of
+  // nested loops elsewhere.
   const insCount = mafCov.insertions.length
-  const insertionPositions = new Uint32Array(insCount)
+  const rawInsPositions = new Uint32Array(insCount)
+  for (let i = 0; i < insCount; i++) {
+    rawInsPositions[i] = mafCov.insertions[i]!.position
+  }
+  const { order: insOrder, sorted: insertionPositions } =
+    positionOrder(rawInsPositions)
   const insertionLengths = new Uint32Array(insCount)
   for (let i = 0; i < insCount; i++) {
-    const ins = mafCov.insertions[i]!
-    insertionPositions[i] = ins.position
-    insertionLengths[i] = ins.length
+    insertionLengths[i] = mafCov.insertions[insOrder[i]!]!.length
   }
 
   return {

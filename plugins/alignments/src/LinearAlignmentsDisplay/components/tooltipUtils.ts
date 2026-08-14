@@ -1,9 +1,9 @@
 import {
   countSnpsAtPosition,
+  forEachAtPosition,
   formatInsertionLabel,
   interbaseDepthAt,
   lowerBound,
-  positionIndexFor,
   positionOrder,
 } from '@jbrowse/alignments-core'
 import {
@@ -19,6 +19,7 @@ import { modTooltipEntriesAt } from '../../shared/modTooltipIndex.ts'
 import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getCigarTypeLabel, interbaseTypeName } from '../../shared/types.ts'
+import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 import { getOrCreate } from '../../shared/util.ts'
 import { READ_COLOR_CATEGORY_BY_INDEX } from '../colorUtils.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
@@ -379,14 +380,14 @@ function collectInterbaseStats(position: number, data: PileupDataResult) {
   } = data
   const lengths = new Map<string, LengthAccumulator>()
   const seqCounts = new Map<string, Map<string, number>>()
-  // Through the shared position index: a hover asks about one position out of
-  // every insertion and clip in the block, and it asks on every mousemove.
-  const { order, sorted } = positionIndexFor(interbasePositions)
-  for (let k = lowerBound(sorted, position); k < sorted.length; k++) {
-    if (sorted[k] !== position) {
-      break
-    }
-    const i = order[k]!
+  // One binary search per interbase block — a hover asks about one position out
+  // of every insertion and clip in the block, and it asks on every mousemove.
+  // The array is sorted WITHIN each of its (insertions, softclips, hardclips)
+  // runs rather than across them, because those boundaries are what three GPU
+  // passes slice on. `interbaseRangeEnds` is that layout's single declaration,
+  // the same one the renderers take their `subarray` bounds from.
+  const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
+  forEachAtPosition(interbasePositions, [insEnd, scEnd, hcEnd], position, i => {
     const typeName = interbaseTypeName(interbaseTypes[i]!)
     lengths.set(
       typeName,
@@ -401,7 +402,7 @@ function collectInterbaseStats(position: number, data: PileupDataResult) {
       )
       typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
     }
-  }
+  })
   const out: CoverageTooltipBin['interbase'] = {}
   for (const [typeName, acc] of lengths) {
     const typeSeqs = seqCounts.get(typeName)

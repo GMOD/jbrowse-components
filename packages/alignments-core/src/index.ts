@@ -122,7 +122,11 @@ export type {
   MismatchEntry,
   SNPCoverageResult,
 } from './coverageDownsampling.ts'
-export { lowerBound, positionIndexFor, positionOrder } from './positionIndex.ts'
+export {
+  forEachAtPosition,
+  lowerBound,
+  positionOrder,
+} from './positionIndex.ts'
 export type { PositionIndex } from './positionIndex.ts'
 export {
   buildConsensusTally,

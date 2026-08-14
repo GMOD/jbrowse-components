@@ -60,6 +60,13 @@ function coverageUnder(data: PileupDataResult): PileupDataResult {
     interbasePositions: new Uint32Array(pos),
     interbaseLengths: new Uint32Array(n).fill(5),
     interbaseTypes: new Uint8Array(n).fill(1),
+    // The block counts are the other half of that: the reader binary-searches
+    // the (insertions, softclips, hardclips) runs, so counts left at 0 answer
+    // "no interbase events" and put the control back where it started. All n
+    // events here are type 1.
+    numInsertions: n,
+    numSoftclips: 0,
+    numHardclips: 0,
   }
 }
 

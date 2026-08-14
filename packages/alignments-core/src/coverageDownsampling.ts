@@ -8,7 +8,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { makeScoreNormalizer } from '@jbrowse/wiggle-core/normalize'
 
 import { coverageLayout } from './coverageBandBox.ts'
-import { lowerBound, positionIndexFor } from './positionIndex.ts'
+import { forEachAtPosition, lowerBound } from './positionIndex.ts'
 
 import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
@@ -574,38 +574,45 @@ export function findSignificantInBin(
 // Flat per-event interbase arrays (one entry per insertion), parallel to
 // `MismatchArrays`. Only insertion-type events are modeled — the callers that
 // pass these (e.g. MAF) emit no soft/hard clips.
+//
+// `interbasePositions` must be ASCENDING within each block named by `blockEnds`.
+// MAF passes one block and omits the field; the alignments worker's array is
+// three, since its (insertions, softclips, hardclips) grouping is sliced by three
+// GPU passes and so cannot be sorted across. See `forEachAtPosition`.
 export interface InterbaseArrays {
   interbasePositions: Uint32Array
   interbaseLengths: Uint32Array
+  blockEnds?: readonly number[]
 }
 
 // Aggregate insertion-type interbase events anchored at `position` into the
 // tooltip bin's `interbase.insertion` summary (count + length range/avg).
-// Through the position index, like its two neighbours above — a hover reads one
-// position out of every insertion in the region.
+// Binary-searches the shipped array like its two neighbours above — a hover reads
+// one position out of every insertion in the region, and retains nothing.
 function countInterbaseAtPosition(
   position: number,
-  { interbasePositions, interbaseLengths }: InterbaseArrays,
+  { interbasePositions, interbaseLengths, blockEnds }: InterbaseArrays,
 ) {
   let count = 0
   let minLen = Infinity
   let maxLen = 0
   let lenSum = 0
-  const { order, sorted } = positionIndexFor(interbasePositions)
-  for (let k = lowerBound(sorted, position); k < sorted.length; k++) {
-    if (sorted[k] !== position) {
-      break
-    }
-    const len = interbaseLengths[order[k]!]!
-    count++
-    lenSum += len
-    if (len < minLen) {
-      minLen = len
-    }
-    if (len > maxLen) {
-      maxLen = len
-    }
-  }
+  forEachAtPosition(
+    interbasePositions,
+    blockEnds ?? [interbasePositions.length],
+    position,
+    i => {
+      const len = interbaseLengths[i]!
+      count++
+      lenSum += len
+      if (len < minLen) {
+        minLen = len
+      }
+      if (len > maxLen) {
+        maxLen = len
+      }
+    },
+  )
   const interbase: CoverageTooltipBin['interbase'] = {}
   if (count > 0) {
     interbase.insertion = { count, minLen, maxLen, avgLen: lenSum / count }
