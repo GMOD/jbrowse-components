@@ -1,7 +1,7 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/keyedUploadSync'
@@ -157,8 +157,37 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
               rpcData,
               colorBy: this.colorBy,
               trackColor: this.trackColor,
+              nameOrder: this.paintedChromosomeOrder,
             })
           : undefined
+      },
+      /**
+       * #getter
+       * The chromosome order the chromosome-painting modes color by: the
+       * refNames of whichever axis' assembly `colorBy` names, in the assembly's
+       * own order. Undefined for every other mode, and while the assembly is
+       * still loading — the color function falls back to its hash there.
+       *
+       * It has to come from the assembly rather than from the features, because
+       * a color must not change with which chromosomes happen to be in view.
+       *
+       * The dotplot twin of `LinearSyntenyDisplay.paintedChromosomeOrder`, off
+       * the two axes instead of two stacked levels: 'query' is the horizontal
+       * axis (the feature's own refName lane) and 'target' the vertical (the
+       * mate's). 'reference' is a stacked-view mode with no dotplot meaning, and
+       * the shared color function falls it back to query — with no order, since
+       * naming an axis for it would be inventing an answer.
+       */
+      get paintedChromosomeOrder(): readonly string[] | undefined {
+        const colorBy = this.colorBy
+        if (colorBy !== 'query' && colorBy !== 'target') {
+          return undefined
+        }
+        const assemblyName =
+          this.view.assemblyNames[colorBy === 'query' ? 0 : 1]
+        return assemblyName === undefined
+          ? undefined
+          : getSession(self).assemblyManager.get(assemblyName)?.refNames
       },
       /**
        * #getter

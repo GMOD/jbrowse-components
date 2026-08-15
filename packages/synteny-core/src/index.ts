@@ -109,6 +109,14 @@ export {
   resolveContinuousMode,
 } from './colorRamps.ts'
 export type { AttributeRange, ContinuousMode, Rgb } from './colorRamps.ts'
+export {
+  MISSING_VALUE_COLOR,
+  createComparativeColorFunction,
+  makeContinuousColorFunction,
+  makeNameColorFunction,
+  paletteColorAt,
+} from './colorFunctions.ts'
+export type { ColorFunctionInputs } from './colorFunctions.ts'
 export { ColorByLegend } from './ColorByLegend.tsx'
 export { SVGColorByLegend } from './SVGColorByLegend.tsx'
 export {
