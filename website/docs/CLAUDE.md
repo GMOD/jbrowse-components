@@ -5,210 +5,90 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 
 ## Generated — never hand-edit
 
-`pnpm autogen` rebuilds `config/`, `models/`, `api/`, the guide indexes
-(`user_guide.md` etc.), `cli.md`, `jbrowse-img.md`, and every
-`<!-- NAME START -->` / `<!-- NAME END -->` marker-pair block. Each renders from
-a JSDoc tag, a registration, or a manifest at the definition site — document a
-new one by tagging the source. Everything else under `docs/` is hand-written.
-
-`scripts/autogen.ts` is the list of which markers exist; don't keep a copy of it
-here, which is the same mistake as a hand-written table. Four of them are worth
-knowing about because their failure mode is not "the table is missing a row".
-
-`ELEMENT_PHASES` is the one where the failure would be a table that stays
-_complete_. It renders `PluginManager`'s `elementCreationSchedule` arguments,
-and the pluggable-elements guide leans on that order hard — a track type can
-look up a display type by name because displays are built first. Reorder the
-schedule and a hand-written list still names all ten, still looks right, and the
-dependency it documents is silently false.
-
-`LAUNCH_VIEW_POINTS` is the second reader of the launch registry, and the one
-that shows what a cross-page link costs. Its middle column deep-links each
-`LaunchView-` point into that view type's section on `urlparams.md`, so the link
-text and the anchor come from the `###` heading standing over that type's
-`SPEC_KEYS` block rather than from anything typed twice — rename the heading and
-the table follows it, where hand-written the link would 404 with nothing to
-notice.
-
-`SLOT_TYPES` is the one whose gate is not about the doc. Three tables define the
-closed set of config slot types — the MST models in `configurationSlot.ts`, the
-read types in `configuration/types.ts`, and the config editor's
-type-string-to-control dispatch in `SlotEditor.tsx` — and only the first two are
-checked against each other, by tsc. The dispatch has to be typed
-`Record<string, …>`, so a slot type missing from it falls back to a plain text
-box behind a `console.warn`: a number editing as free text, said nowhere a user
-or a schema author looks. That is now a failed `pnpm autogen` instead.
-
-`SPEC_KEYS` is the grouped one on `urlparams.md`:
-`<!-- SPEC_KEYS <ViewType> -->` renders what a session spec may set on that
-view, in the two buckets the launcher actually partitions on. **No path and no
-view type is written down.** Which types need a block comes from the
-`'LaunchView-<type>': { args: X }` entries the launchers add to PluginManager's
-`ExtensionPointRegistry` — that IS the registry of what a spec can open. The
-keys come from that args interface (minus what its `Omit<SnapshotIn<Model>, …>`
-takes away, which the launcher builds itself), from a
-`#launchKeys <ViewType>`-tagged Commands interface where the view keeps them
-separately, from `#valueList <key>` for a key's accepted values, and from the
-model's `#property` tags including everything it composes in.
-
-So adding a spec-settable key means describing it at its declaration and nothing
-else. Four things **fail** the run, and each is a mode this generator hit rather
-than a hypothetical: a key with no description, a launchable view type no page
-documents, a `ViewInit<>` Commands interface with no `#launchKeys` tag, and a
-launch bucket where only some keys carry a comment. The last three all render a
-table that looks complete and is short, which is the one failure a generated
-table is supposed to make impossible.
-
-The sweep also covers `agent-docs/`, so a guide table and its architecture-spec
-twin come from one scan rather than one being a hand-mirror of the other.
-`CROSS_CUTTING_MIXINS` goes further and renders the _same_ block in both.
+`pnpm autogen` rebuilds `config/`, `models/`, `api/`, the guide indexes,
+`cli.md`, `jbrowse-img.md`, and every `<!-- NAME START/END -->` marker block
+from JSDoc tags, registrations and manifests at the definition site. Document a
+new one by tagging the source. `scripts/autogen.ts` is the list of markers —
+don't copy it here.
 
 **A table a reader could check against the code is a generator waiting to be
-written**, and the strongest tell is a sentence pointing at a file: the
-re-export table sat directly under "treat that file as the source of truth" and
-was five paths short. Every generated table above replaced a hand-written one
-that had already gone wrong, and none of them failed loudly — each just quietly
-stopped describing the code.
+written.** Every generated table replaced a hand-written one that had already
+gone wrong, and none failed loudly — each just quietly stopped describing the
+code. The strongest tell is a sentence pointing at a file.
 
 Where a generator needs prose it can't derive, the tag goes at the definition
-site and a missing one is **fatal**, not a blank cell — same reasoning as the
-untagged-`#slot` check. A blank cell reads as "this does nothing"; a failed
-build reads as "write one line here".
+site and a missing one is **fatal**, not a blank cell: a blank cell reads as
+"this does nothing", a failed build reads as "write one line here". Four things
+fail the `SPEC_KEYS` run for that reason — an undescribed key, a launchable view
+type no page documents, a `ViewInit<>` Commands interface with no `#launchKeys`
+tag, and a launch bucket where only some keys carry a comment.
 
-**An `#example`'s keys are checked against the type's slots** (fatal, in
-`generateConfigDocs`), because JBrowse ignores an undeclared key rather than
-rejecting it — so a mistyped one loads, does nothing, and reads as the
-documented way. `check-config-blocks` covers the hand-written blocks in the
-guides and deliberately skips generated pages, which left the most-copied config
-in the docs as the one surface with no checker at all. **Write the example in
-the shape a reader pastes** — an alias or cytoband adapter inside the whole
-assembly that carries it, a sequence adapter inside its
-`ReferenceSequenceTrack`, a track as itself — and the check finds the object
-whose `type` is the documented type, however deep that is. Internet accounts and
-the root schemas aren't in the manifest, so they are skipped rather than guessed
-at; **text search adapters are skipped too** because the manifest computes
-`shorthandKeys` only for `group === 'adapter'`, so a Trix example's real `uri`
-would read as an unknown key. Widen the check by fixing the manifest, not by
-removing the skip.
+**An `#example`'s keys are checked against the type's slots** (fatal), because
+JBrowse ignores an undeclared key rather than rejecting it — so a mistyped one
+loads, does nothing, and reads as the documented way. **Write the example in the
+shape a reader pastes**: an alias or cytoband adapter inside the whole assembly,
+a sequence adapter inside its `ReferenceSequenceTrack`, a track as itself.
+Internet accounts, root schemas and text-search adapters are skipped; widen the
+check by fixing the manifest, not by removing a skip.
 
 ## Avoiding drift in hand-written docs
 
 - **Don't restate a config slot's default** — link
-  `/docs/config/<type>/#slot-<name>`.
-- **Don't restate a value a build script owns, either.** The same rule, one
-  directory over, and easier to miss because a `scripts/build_*.sh` has no page
-  to link to. The OrthoFinder tutorial stated `MAXSEQ`'s default, its DIAMOND
-  count and the size of each species set in prose, with nothing connecting the
-  page to the script — so a number that survives the "few numbers in prose" cut
-  (`docs/tutorials/CLAUDE.md`) is a number that has to come from a marker block
-  rather than from typing. `ORTHOFINDER_SETS`/`ORTHOFINDER_CUTS` are the worked
-  example, and the generator reading a shell script rather than TypeScript is
-  the only thing about them that is unusual.
+  `/docs/config/<type>/#slot-<name>`. Same for a value a build script owns: it
+  comes from a marker block, not from typing (`ORTHOFINDER_SETS` is the worked
+  example).
 - **Don't hand-list a directory's pages** — use `<!-- doclist:<dir> -->`.
 - **Prefer an `include:` marker over a copied code fence**, pointed at compiled
-  tested source. `sync-doc-snippets --check` ratchets the count of un-included
-  fences across **every hand-written page** — not just `developer_guides/`,
-  which is where it started — so convert one and lower `DOC_FENCE_BASELINE`. The
-  marker fills an existing fence rather than creating one, so write an empty
-  ` ```ts ` block under it and run `pnpm sync-doc-snippets`.
+  tested source. `sync-doc-snippets --check` ratchets un-included fences across
+  every hand-written page, so convert one and lower `DOC_FENCE_BASELINE`. The
+  marker fills an existing fence, so write an empty one under it first.
 - **Write `displayDefaults`, not a `displays` array**, unless the example
   selects a non-default display type or needs real `displayId`s.
-- **Show a whole track config, not a fragment** — a reader has to be able to
-  paste it. That means the `type`/`trackId`/`name`/`assemblyNames`/`adapter` and
-  the slot in its `displayDefaults`, tagged ```json addtrack, **however small
-  the point being made is**: a bare `{ "color": … }` or `{ "legend": […] }` blob
-  is the tempting shape when a paragraph is about one slot, and it is the one
-  shape a reader cannot use. Two slots that belong to the same recipe go in one
-  config, not one fence each. `pnpm check-config-blocks` enforces it.
-- **A `defaultSession` gets its own fence, tagged ```json session.** The three
-  tags (`addtrack`, `addassembly`, `session`) each render a Config/CLI tab pair
-  whose command is derived from the block, and `check-config-cli` runs every one
-  of them through the real CLI. The session tag is the one with a **shape
-  requirement**: `defaultSession` must be the block's only top-level key, since
-  `set-default-session` writes that key and nothing else — pair it with
-  `preConfiguredSessions`, or show it inside a whole `config.json`, and the tab
-  would claim to reproduce the block while reproducing part of it. So a page
-  showing a whole config keeps its session in a second fence rather than tagging
-  the first. Both checks say which case a block fell into.
-- **Add `config=` to a session fence when a published config serves it** and the
-  block grows a third tab, a live link that opens the session in the app
-  (`&session=json-`, the snapshot form, which is what a `defaultSession` is).
-  Opt-in rather than automatic because plenty of doc sessions illustrate a
-  config nobody hosts, and a dead live link is worse than none. **There are two
-  published forms and the one to reach for is usually the second**, since the
-  tutorials' own data mostly lives there rather than in `demos/`:
-  - ` ```json session config=https://jbrowse.org/demos/<name>/config.json ` ←
-    `demos/<name>/config.json`, a manual `deploy-demo.sh` push.
-  - ` ```json session config=test_data/<name>/config.json ` ←
-    `products/jbrowse-web/test_data/<name>/`, which `push.yml` builds and syncs
-    to `code/jb2/main/` on every commit to main. Relative, resolved against
-    `CODE_BASE`, and what the figure specs' own live links already use. **Keep
-    it relative** — a figure's "Open this view in JBrowse" shows the absolute
-    `.../code/jb2/main/test_data/…`, and pasting that pins every reader to one
-    build instead of retargeting with `JBROWSE_CODE_BASE`. The check refuses it
-    and says which relative form to write.
+- **Show a whole track config, not a fragment**, tagged ```json addtrack —
+  however small the point being made is. A bare `{ "color": … }` blob is the one
+  shape a reader cannot paste. Two slots in one recipe go in one config.
+  `check-config-blocks` enforces it.
+- **A `defaultSession` gets its own fence, tagged ```json session**, and
+  `defaultSession` must be its only top-level key, since `set-default-session`
+  writes that key and nothing else. A page showing a whole config keeps its
+  session in a second fence.
+- **Add `config=` to a session fence when a published config serves it** — it
+  grows a live link that opens the session in the app. Opt-in, because a dead
+  live link is worse than none. Two published forms, and usually the second:
+  - `config=https://jbrowse.org/demos/<name>/config.json` — a manual
+    `deploy-demo.sh` push.
+  - `config=test_data/<name>/config.json` — synced from
+    `products/jbrowse-web/test_data/` on every commit to main. **Keep it
+    relative**, or every reader is pinned to one build instead of retargeting
+    with `JBROWSE_CODE_BASE`.
 
-  `check-session-urls` resolves either back to its source **in this repo** and
-  fails if the session names a track or assembly the config lacks — the failure
-  worth gating, since JBrowse opens such a session without the track and says
-  nothing.
-
-  Two further things it refuses, both of which resolve their names perfectly and
-  would still hand the reader a broken page:
-
-  - **a config the checkout has but git does not track.** On disk is not
-    published — `test_data/graphgenomeview/*_local.json` is a local plugin build
-    and is served by nothing.
-  - **a session that opens no tracks**, whose link lands on an empty browser.
-    This is why the `colorByCDS` fence in `config_guides/default_session.md` has
-    no `config=`: `test_data/volvox/config.json` would back its assembly, and
-    the view would still show nothing.
-
-  So the question to ask of a `config=` is what the session _shows_, not whether
-  the check accepts it.
+  `check-session-urls` resolves either back to its source in this repo and fails
+  on a missing track or assembly (JBrowse opens such a session silently), on a
+  config git does not track, and on a session that opens no tracks. **Ask what
+  the session _shows_, not whether the check accepts it.**
 
 - **Write jexl the short way**: `feature.rank` over `get(feature,'rank')`.
-- **`user_guides/` drives the UI, `config_guides/` shows the JSON.** When a
-  config guide starts explaining a concept, that section belongs in the user
-  guide.
+- **`user_guides/` drives the UI, `config_guides/` shows the JSON.** A config
+  guide explaining a concept belongs in the user guide.
 - Cross-page anchors are `/docs/page#anchor` (no slash before `#`).
 
 ## Voice: dry and scientific, let the figure do the talking
 
 The figure carries the result; the prose says what was done and what it means.
-No drama or stakes, no rhetorical framing of a method, no reveals held for
-effect, no conclusion one picture can't support. Applies to captions, gallery
-descriptions, TL;DRs, and headings too.
+No drama, no rhetorical framing, no conclusion one picture can't support —
+captions, gallery descriptions, TL;DRs and headings alike.
 
-**Don't argue with the previous version of the page.** Correcting a doc leaves a
-strong pull toward writing the correction rather than the fact — "X is the
-second thing tried, **not the first**", "these are part of the contract, **not
-extras**", a paragraph justifying a behavior by describing the implementation it
-replaced. The reader never saw the old text, so the contrast lands as an
-argument with nobody, and the thing they came for (the order, the list, what to
-do) is now the subordinate clause. State the behavior; put what it used to say
-in the commit message, which is where the next author looks for it. The tell is
-a sentence that only parses if you already know the old wording.
+**Don't argue with the previous version of the page.** The reader never saw the
+old text, so a correction written as a contrast lands as an argument with nobody
+and buries the thing they came for. State the behavior; put what it used to say
+in the commit message. The tell is a sentence that only parses if you already
+know the old wording.
 
 ## The TL;DR
 
 Every page under `user_guides/`, `config_guides/`, `developer_guides/` and
-`tutorials/` opens with a `**TL;DR:**` paragraph. `pnpm check-tldr` enforces
-that it exists and that it doesn't sell; what it can't check is whether the
-paragraph is worth reading. Four failure modes, one page each from the sweep
-that added the check:
-
-- **Restating the title.** "load the Cancer Genome in a Bottle HG008 ... data
-  into JBrowse" told a reader nothing the tab hadn't.
-- **Restating itself.** "... a single assembly, and the project publishes the
-  alignment, so comparing two haplotypes is one assembly, one alignment file and
-  no pipeline" — the third clause is the first two, recounted as files.
-- **Closing on a superlative** rather than a fact. This is the part `check-tldr`
-  catches.
-- **Crediting the page's result to the wrong mechanism.** The GC content TL;DR
-  claimed the bacterial replication origin, which is a GC _skew_ result, and the
-  page's own section said so.
-
-Say what the page shows and the one thing that makes it work. A page whose body
-is shorter than its summary would be needs no TL;DR, which is why the check has
-a length floor.
+`tutorials/` opens with a `**TL;DR:**` paragraph; `pnpm check-tldr` enforces
+that it exists and doesn't sell. Say what the page shows and the one thing that
+makes it work. The four ways it goes wrong: restating the title, restating
+itself, closing on a superlative, and crediting the result to the wrong
+mechanism.
