@@ -1,11 +1,8 @@
 # examples-site
 
-Shared doctrine for all four examples sites — the copy-pasteable-file rule, the
-"publish the block" escape hatch, the prose caps, `demoHeights.json`, the
-puppeteer-probe pattern, the CI wiring — is
+Shared doctrine for all four sites:
 [agent-docs/reference/EXAMPLES_SITES.md](../../../agent-docs/reference/EXAMPLES_SITES.md).
-**Read it before adding a page or refactoring an example.** This file is only
-what is local here.
+Local to this one:
 
 The published package an example may import from is
 `@jbrowse/react-linear-genome-view2`, plus the other published packages that doc

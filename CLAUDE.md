@@ -16,9 +16,6 @@ General worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
   To test a tree without your changes, `git diff main -- <path>`.
 - **Never merge a `*.generated.ts` conflict — regenerate it.** Take either side,
   re-run the generator, `git add`.
-- Land with `git -C ~/src/jbrowse-components merge --ff-only <branch>`.
-  `git push . HEAD:main` refuses here, and `update-ref` on a checked-out dirty
-  `main` desynchronises its index from its worktree.
 
 **A worktree from `EnterWorktree` arrives installed**; one made by hand with
 `git worktree add` does not, and `tsc` dies without the gitignored
