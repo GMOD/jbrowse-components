@@ -101,6 +101,24 @@ export interface SlotFacade {
 }
 
 /**
+ * The vocabulary an enum slot offers, or undefined for any other slot. Reads the
+ * author's own `types.enumeration` off `model` — `stringEnum` and
+ * `maybeStringEnum` are the only two types the editor takes choices from, so a
+ * slot typed anything else renders as free text however valid its `model` is.
+ *
+ * Shared by the config editor's facade below and by
+ * `ConfigSlotDefaults.test.ts`, which snapshots every schema's vocabularies:
+ * dropping a member is a silent compatibility break, since a saved session
+ * holding it fails MST validation and the track then fails to hydrate.
+ */
+export function slotChoices(def: ConfigSlotDefinition): string[] | undefined {
+  const { type, model } = def
+  return (type === 'stringEnum' || type === 'maybeStringEnum') && model
+    ? getEnumerationValues(model)
+    : undefined
+}
+
+/**
  * Look up a slot's metadata (type/description/defaultValue/contextVariable/
  * model) from the schema-type table stashed by ConfigurationSchema. Includes
  * slots inherited via `baseConfiguration`, which are merged into the table at
@@ -121,14 +139,14 @@ export function makeSlotFacade(
   node: AnyConfigurationModel,
   slotName: string,
 ): SlotFacade {
+  const definition = getSlotDefinition(node, slotName)
   const {
     type,
     description = '',
     defaultValue,
     promotedBase,
     contextVariable = [],
-    model,
-  } = getSlotDefinition(node, slotName)
+  } = definition
   return {
     name: slotName,
     description,
@@ -136,10 +154,7 @@ export function makeSlotFacade(
     contextVariable,
     defaultValue,
     promotedBase,
-    choices:
-      (type === 'stringEnum' || type === 'maybeStringEnum') && model
-        ? getEnumerationValues(model)
-        : undefined,
+    choices: slotChoices(definition),
     pluginManager: getEnv(node).pluginManager,
     get value() {
       return node[slotName]

@@ -1,7 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   getConfigurationSchemaDefinition,
+  isConstantEntry,
   isSlotDefinitionEntry,
+  slotChoices,
 } from '@jbrowse/core/configuration'
 
 import corePlugins from '../corePlugins.ts'
@@ -59,20 +61,39 @@ test('every registered schema slot default', () => {
       const slots: Record<string, string> = {}
       for (const name of Object.keys(definition).sort()) {
         const entry = definition[name]
+        if (isConstantEntry(entry)) {
+          // A bare string/number entry, which becomes a volatile instance
+          // constant rather than a slot. Recorded because the feature looks
+          // unused — if this line never appears, `volatileConstants` and
+          // `isConstantEntry` are dead weight in `makeConfigurationSchemaModel`.
+          slots[name] = `constant ${JSON.stringify(entry)}`
+          continue
+        }
         if (!isSlotDefinitionEntry(entry)) {
           continue
         }
-        // `promotedBase` is here too: it is the bottom of a promotable slot's
-        // cascade, so it is that slot's real default and moves for the same
-        // silent reasons. A slot declaring one has no `defaultValue` by
+        // `promotedBase` stands in for the default on a promotable slot: it is
+        // the bottom of that slot's cascade, so it is the real default and moves
+        // for the same silent reasons. Such a slot has no `defaultValue` by
         // construction.
-        // spelled out rather than leaning on JSON.stringify(undefined), whose
-        // declared return type is a plain string even though it really answers
-        // undefined — and an unset `maybe*` slot is the common case here
-        slots[name] =
+        //
+        // `undefined` is spelled out rather than leaning on
+        // JSON.stringify(undefined), whose declared return type is a plain
+        // string even though it really answers undefined — and an unset
+        // `maybe*` slot is the common case here.
+        const value =
           entry.promotedBase === undefined
-            ? `${entry.type} = ${entry.defaultValue === undefined ? 'undefined' : JSON.stringify(entry.defaultValue)}`
-            : `${entry.type} promotedBase ${JSON.stringify(entry.promotedBase)}`
+            ? `= ${entry.defaultValue === undefined ? 'undefined' : JSON.stringify(entry.defaultValue)}`
+            : `promotedBase ${JSON.stringify(entry.promotedBase)}`
+        // An enum's vocabulary is the other schema fact that breaks saved
+        // sessions silently: drop a member and a session holding it fails MST
+        // validation, so the track stops hydrating rather than falling back.
+        // Appended rather than branched, so a *promotable* enum (`heightMode`,
+        // `displayMode`) records its base and its vocabulary both.
+        const choices = slotChoices(entry)
+        slots[name] = choices
+          ? `${entry.type} ${value} of ${JSON.stringify(choices)}`
+          : `${entry.type} ${value}`
       }
       bySchema[`${group}: ${element.name}`] = slots
     }

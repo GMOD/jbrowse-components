@@ -43,7 +43,10 @@ node not the snapshot, forwarding a callback slot raw, reference resolution) and
 - **A changed slot default shows up in
   `products/jbrowse-web/src/tests/ConfigSlotDefaults.test.ts`**, a snapshot of
   every registered schema's slots. It is the only thing that reports one. A diff
-  there is a line to review, not a failure; `-u` when it's intended.
+  there is a line to review, not a failure; `-u` when it's intended. It also
+  pins each **enum slot's vocabulary** — dropping a member is a silent
+  compatibility break, since a saved session holding it fails MST validation and
+  the track then fails to hydrate rather than falling back.
 - `actions` / `views` / `extend` / `preProcessSnapshot` **compose** rather than
   replace; override one by redeclaring its name.
   `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy for a different

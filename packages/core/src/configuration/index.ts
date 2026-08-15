@@ -45,6 +45,7 @@ export {
   isConfigurationSlot,
   makeSlotFacade,
   preProcessSlotValues,
+  slotChoices,
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
 export type { ResolvableDisplay } from './promotableResolve.ts'
