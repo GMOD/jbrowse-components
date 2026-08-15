@@ -2,9 +2,9 @@ import {
   ARC_APEX_FRACTION,
   ARC_HEIGHT_MARGIN,
 } from '../../shaders/slang/arc.consts.generated.ts'
-import { ARC_SHAPE_ARC } from './compute.ts'
 import { strokeArcMark } from './drawCanvas.ts'
 import { arcMark } from './mark.ts'
+import { ARC_SHAPE_ARC } from './shapes.ts'
 import { emptyArcsUploadData } from './types.ts'
 
 import type { ArcDome } from './mark.ts'

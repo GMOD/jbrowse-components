@@ -1,6 +1,6 @@
 import { ARC_FOOT_PX, arcMarkScreenPath } from './arcPath.ts'
-import { ARC_SHAPE_ARC } from './compute.ts'
 import { arcMarkFrom } from './mark.ts'
+import { ARC_SHAPE_ARC } from './shapes.ts'
 
 // What `feetSubpaths` puts in the arc's `d`: a tick of `ARC_FOOT_PX` leaving
 // each anchor in that foot's direction, and nothing at all when the mark carries

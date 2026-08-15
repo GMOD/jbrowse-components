@@ -1,8 +1,8 @@
 import { arcScreenPath } from './arcPath.ts'
-import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './compute.ts'
 import { strokeArcMark } from './drawCanvas.ts'
 import { hitTestArcBand } from './hitTest.ts'
 import { arcMark } from './mark.ts'
+import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './shapes.ts'
 import { emptyArcsUploadData } from './types.ts'
 
 import type { ArcHitOptions } from './hitTest.ts'

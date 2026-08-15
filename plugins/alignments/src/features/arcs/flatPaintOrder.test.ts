@@ -1,6 +1,7 @@
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT, arcsToRegionResult } from './compute.ts'
+import { arcsToRegionResult } from './compute.ts'
 import { drawArcs } from './drawCanvas.ts'
+import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './shapes.ts'
 
 import type {
   DrawBlock,

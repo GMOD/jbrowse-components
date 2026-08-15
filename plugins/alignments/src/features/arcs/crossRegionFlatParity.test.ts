@@ -1,12 +1,12 @@
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { arcsToRegionResult } from './compute.ts'
+import { computeCrossRegionArcs } from './crossRegionOverlay.ts'
+import { drawArcs } from './drawCanvas.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
-  arcsToRegionResult,
-} from './compute.ts'
-import { computeCrossRegionArcs } from './crossRegionOverlay.ts'
-import { drawArcs } from './drawCanvas.ts'
+} from './shapes.ts'
 
 import type {
   DrawBlock,

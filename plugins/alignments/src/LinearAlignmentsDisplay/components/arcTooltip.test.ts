@@ -2,7 +2,7 @@ import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
   ARC_SHAPE_FLAT_SPLIT,
-} from '../../features/arcs/compute.ts'
+} from '../../features/arcs/shapes.ts'
 import {
   formatArcLineTooltip,
   formatArcTooltip,

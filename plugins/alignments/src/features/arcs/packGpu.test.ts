@@ -2,18 +2,18 @@ import * as arcShader from '../../shaders/slang/arc.iface.generated.ts'
 import * as arcFlatShader from '../../shaders/slang/arcFlat.iface.generated.ts'
 import * as arcLineShader from '../../shaders/slang/arcLine.iface.generated.ts'
 import { ARC_WIDTH_MAX_SCALE } from './arcLineWidth.ts'
-import {
-  ARC_SHAPE_ARC,
-  ARC_SHAPE_FLAT,
-  ARC_SHAPE_FLAT_SPLIT,
-  arcsToRegionResult,
-} from './compute.ts'
+import { arcsToRegionResult } from './compute.ts'
 import {
   packArcFlats,
   packArcLines,
   packArcMarkers,
   packArcs,
 } from './packGpu.ts'
+import {
+  ARC_SHAPE_ARC,
+  ARC_SHAPE_FLAT,
+  ARC_SHAPE_FLAT_SPLIT,
+} from './shapes.ts'
 
 import type { ComputedArc } from './compute.ts'
 

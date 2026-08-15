@@ -13,8 +13,9 @@ import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generat
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcMarkScreenPath } from './arcPath.ts'
-import { ARC_SHAPE_FLAT_SPLIT, arcPaintOrder } from './compute.ts'
+import { arcPaintOrder } from './compute.ts'
 import { arcMarkFrom } from './mark.ts'
+import { ARC_SHAPE_FLAT_SPLIT } from './shapes.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { CrossRegionArc } from './compute.ts'

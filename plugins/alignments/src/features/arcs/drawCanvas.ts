@@ -19,8 +19,8 @@ import {
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAvailH, arcYScale } from './arcYScale.ts'
-import { ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
 import { arcMark } from './mark.ts'
+import { ARC_SHAPE_FLAT_SPLIT } from './shapes.ts'
 
 import type {
   DrawBlock,

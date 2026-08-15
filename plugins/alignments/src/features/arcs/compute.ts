@@ -28,6 +28,12 @@ import { readIdAt } from '../../shared/readIdentity.ts'
 import { readNameAt } from '../../shared/readNameBlock.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getOrCreate } from '../../shared/util.ts'
+import {
+  ARC_SHAPE_ARC,
+  ARC_SHAPE_FLAT,
+  ARC_SHAPE_FLAT_SPLIT,
+  isFlatArcShape,
+} from './shapes.ts'
 import { hasArcBandInk } from './types.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -35,27 +41,6 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 import type { ArcsUploadData } from './types.ts'
-
-// Arc shape enum. Values are shared with arc.slang (which checks them via
-// `> 0.5` / `> 1.5` thresholds); keep in lockstep.
-//
-// There is a single curved paired-read shape (ARC). Its on-screen form is
-// chosen by the *renderer* from how wide the pair is, not by a bp threshold
-// here: a rounded dome while both mates fit on screen, collapsing to
-// near-vertical lines rising from each real endpoint once the pair spans wider
-// than the screen (the circle gets so big the band clips its apex). The
-// endpoints always sit at the true genomic coordinates. See arc.slang.
-export const ARC_SHAPE_ARC = 0
-// read-cloud flat line at Y=|tlen|; the split variant is drawn dashed
-// (matching samplot.py's plot_split_plan dotted-line style).
-export const ARC_SHAPE_FLAT = 1
-export const ARC_SHAPE_FLAT_SPLIT = 2
-
-// Both flat variants (solid read-cloud line + dashed split line) plot as a
-// horizontal line with endpoint-square markers, unlike the curved ARC shape.
-export function isFlatArcShape(shape: number) {
-  return shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT
-}
 
 // Matches samplot.py --jitter const default (0.08). Applied multiplicatively
 // to |tlen| so lines at the same insert size are visually separated.

@@ -5,7 +5,7 @@ import * as arcFlatShader from '../../shaders/slang/arcFlat.generated.ts'
 import * as arcLineShader from '../../shaders/slang/arcLine.generated.ts'
 import * as arcMarkerShader from '../../shaders/slang/arcMarker.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
-import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
+import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './shapes.ts'
 
 import type { ArcsUploadData } from './types.ts'
 

@@ -12,7 +12,7 @@ import {
 } from '@jbrowse/cigar-utils'
 import { toLocale } from '@jbrowse/core/util'
 
-import { ARC_SHAPE_FLAT } from '../../features/arcs/compute.ts'
+import { ARC_SHAPE_FLAT } from '../../features/arcs/shapes.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
 import { modTooltipEntriesAt } from '../../shared/modTooltipIndex.ts'

@@ -1,4 +1,4 @@
-import { ARC_SHAPE_ARC } from '../../features/arcs/compute.ts'
+import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { resolveArcBandHover } from './arcHitTest.ts'
 

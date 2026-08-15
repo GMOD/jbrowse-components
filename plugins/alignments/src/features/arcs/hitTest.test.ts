@@ -1,9 +1,9 @@
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
-import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './compute.ts'
 import { strokeArcMark } from './drawCanvas.ts'
 import { ARC_HIT_SLOP_PX, hitTestArcBand } from './hitTest.ts'
 import { arcMark } from './mark.ts'
+import { ARC_SHAPE_ARC, ARC_SHAPE_FLAT } from './shapes.ts'
 import { emptyArcsUploadData } from './types.ts'
 
 import type { ArcHitOptions } from './hitTest.ts'

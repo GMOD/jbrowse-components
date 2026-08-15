@@ -3,8 +3,9 @@ import {
   ARC_LINE_DASH_PX,
   ARC_LINE_GAP_PX,
 } from '../../shaders/slang/arcLine.consts.generated.ts'
-import { ARC_SHAPE_ARC, arcsToRegionResult } from './compute.ts'
+import { arcsToRegionResult } from './compute.ts'
 import { drawArcs } from './drawCanvas.ts'
+import { ARC_SHAPE_ARC } from './shapes.ts'
 
 import type {
   DrawBlock,

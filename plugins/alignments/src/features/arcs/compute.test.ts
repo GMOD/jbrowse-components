@@ -14,9 +14,6 @@ import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generat
 import { namesToBlock } from '../../shared/readNameBlock.ts'
 import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import {
-  ARC_SHAPE_ARC,
-  ARC_SHAPE_FLAT,
-  ARC_SHAPE_FLAT_SPLIT,
   arcColorLegendCategory,
   arcPaintRank,
   arcsToRegionResult,
@@ -24,6 +21,11 @@ import {
   computeArcsFromPileupData,
   groupArcsByRef,
 } from './compute.ts'
+import {
+  ARC_SHAPE_ARC,
+  ARC_SHAPE_FLAT,
+  ARC_SHAPE_FLAT_SPLIT,
+} from './shapes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ComputedLine, ComputedArc } from './compute.ts'
