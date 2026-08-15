@@ -13,6 +13,14 @@ export type Span = [start: number, end: number]
  *
  * Does not mutate the input — it sorts a copy — because both callers pass a list
  * they go on to use in its original order.
+ *
+ * Deliberately NOT core's `mergeIntervals`, which answers the same question over
+ * `{start, end}` OBJECTS with a padding argument and carries each interval's
+ * other fields through. Both callers here have nothing but the pair and are on
+ * hot paths — the px merge runs once per ref-group per pack, and the fit solve
+ * packs a ref-group ~10 times — so routing them through it would box and clone
+ * every span to keep fields neither of them has. Use core's wherever the
+ * intervals are features; this is the primitive twin, not a second opinion.
  */
 export function mergeSpans(spans: readonly Span[]): Span[] {
   const merged: Span[] = []
