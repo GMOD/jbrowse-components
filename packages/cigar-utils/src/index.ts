@@ -23,6 +23,8 @@ export { encodeSeqNumeric } from './bamSeqEncoder.ts'
 // format.
 export { flipCigar, swapIndelCigar } from './cigarReorient.ts'
 export { csToCigar } from './csToCigar.ts'
+export { flipCs, forEachCsMismatch, forEachCsOp } from './csOps.ts'
+export type { CsOp } from './csOps.ts'
 export { pafIdentity } from './pafIdentity.ts'
 export {
   DELETION_TYPE,
@@ -33,12 +35,7 @@ export {
   SOFTCLIP_TYPE,
 } from './mismatchCallback.ts'
 export type { MismatchCallback, MismatchWindow } from './mismatchCallback.ts'
-export {
-  visitCigarOps,
-  visitCigarRenderedSegments,
-  visitCsOps,
-} from './cigarOpsVisitor.ts'
-export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
+export { visitCigarRenderedSegments } from './cigarRenderedSegments.ts'
 export { cigarToMismatches2 } from './cigarToMismatches2.ts'
 export { mdToMismatches2 } from './mdToMismatches2.ts'
 export { getNextRefPos } from './getNextRefPos.ts'

@@ -5,7 +5,7 @@ import {
   CIGAR_N,
   CIGAR_X,
 } from './cigarConstants.ts'
-import { visitCigarRenderedSegments } from './cigarOpsVisitor.ts'
+import { visitCigarRenderedSegments } from './cigarRenderedSegments.ts'
 
 function pack(len: number, op: number) {
   return (len << 4) | op

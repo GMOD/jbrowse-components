@@ -3,11 +3,10 @@ import {
   INSERTION_TYPE,
   MISMATCH_TYPE,
   SKIP_TYPE,
+  forEachCsMismatch,
   getMismatches,
 } from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
-
-import { forEachCsMismatch } from '../csUtils.ts'
 
 import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature } from '@jbrowse/core/util'
