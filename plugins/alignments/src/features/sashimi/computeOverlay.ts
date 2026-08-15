@@ -43,6 +43,10 @@ export interface ComputeSashimiArcsOpts {
     displayedRegionIndex: number
   }[]
   bpToScreenX: (refName: string, bp: number) => number | undefined
+  // The view's width, which is the box both hosts draw into — the overlay's
+  // `<svg width>` and, through `canvasWidth`, the export's. One number, so the
+  // cull below cannot drop an arc one of them would have shown.
+  viewWidthPx: number
   coverageHeight: number
   sashimiArcsHeight: number
   minSashimiScore: number
@@ -232,6 +236,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
     rpcDataMap,
     visibleRegions,
     bpToScreenX,
+    viewWidthPx,
     coverageHeight,
     sashimiArcsHeight,
     minSashimiScore,
@@ -281,6 +286,29 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
       continue
     }
     const span = screenSpan(x1, x2)
+    const strokeWidth = strokeWidthForCount(j.count)
+    // OFF-SCREEN ARCS ARE DROPPED, which is a cull and not a filter: an arc's
+    // ink runs exactly foot to foot in x — `arcCubic` puts both control points
+    // on the endpoints' own xs, and the count label rides the midpoint between
+    // them — so one whose whole span sits outside the box paints nothing
+    // wherever it is placed.
+    //
+    // There is a real set of them. A region is FETCHED by block, and blocks
+    // extend past the viewport, so `rpcDataMap` carries junctions for sequence
+    // the reader cannot see; every one of them was becoming a `<path>` (and a
+    // `<text>`) that React reconciled on every pan frame. The arc band has both
+    // a cull (`arcTouchesRegion`) and a cap (`CROSS_REGION_ARC_CAP`); sashimi
+    // had neither, and `minSashimiScore` is a statement about evidence rather
+    // than a frame budget.
+    //
+    // Not a cap, deliberately: a cap has to decide which junctions matter, and
+    // this decides nothing — every arc it drops is one with no pixel in the box.
+    // The stroke is what makes the bound exact rather than approximate, since a
+    // deeply-supported junction is drawn several px wide about its own path.
+    const inkPad = strokeWidth / 2
+    if (span.right < -inkPad || span.left > viewWidthPx + inkPad) {
+      continue
+    }
     // Junctions the layout never saw can't exist (it merges the loaded regions,
     // a superset of the visible ones), but 'up' is the side that needs no
     // reserved strip, so it is also the safe answer if one ever did.
@@ -293,7 +321,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
     arcs.push({
       ...arcCubic(span, baseline, baseline + dir * arcHeight),
       stroke: getArcColor(j.strand),
-      strokeWidth: strokeWidthForCount(j.count),
+      strokeWidth,
       start: j.start,
       end: j.end,
       refName: j.refName,

@@ -78,6 +78,10 @@ function collapsedOpts(
       displayedRegionIndex: i,
     })),
     bpToScreenX: projectionOver(regions),
+    // Wider than the regions above project to (three 400bp windows, so 1200px),
+    // so the off-screen cull never fires — these tests are about the merge and
+    // the piecewise projection.
+    viewWidthPx: 10_000,
     coverageHeight: 100,
     sashimiArcsHeight: 40,
     minSashimiScore: 0,

@@ -46,6 +46,9 @@ const baseOpts = (
   rpcDataMap: new Map([[0, rpcData]]),
   visibleRegions: [{ refName: 'chr1', displayedRegionIndex: 0 }],
   bpToScreenX: (_refName: string, bp: number) => bp,
+  // Wider than anything these fixtures project to, so the off-screen cull never
+  // fires — every test below is about geometry, and the cull has its own.
+  viewWidthPx: 10_000,
   coverageHeight: 100,
   sashimiArcsHeight: 40,
   minSashimiScore,
@@ -318,4 +321,58 @@ test('a coverage band too short for its scalebar margins flattens, never inverts
   })
   expect(arcs[0]!.labelY).toBe(0)
   expect(arcs[0]!.d).toBe('M 100 0 C 100 0, 200 0, 200 0')
+})
+
+describe('junctions with no pixel in the box are culled', () => {
+  // A region is FETCHED by block and blocks run past the viewport, so
+  // `rpcDataMap` carries junctions for sequence the reader cannot see. Each was
+  // becoming a `<path>` React reconciled on every pan frame; the arc band has
+  // both a cull (`arcTouchesRegion`) and a cap (`CROSS_REGION_ARC_CAP`) and
+  // sashimi had neither, `minSashimiScore` being a statement about evidence
+  // rather than a frame budget.
+  //
+  // Ink runs exactly foot to foot — `arcCubic` puts both control points on the
+  // endpoints' own xs and the count label rides the midpoint — so this drops
+  // nothing that would have painted.
+  const junction = (x1: number, x2: number, count = 5) =>
+    makePileupDataResult({
+      sashimiX1: new Uint32Array([x1]),
+      sashimiX2: new Uint32Array([x2]),
+      sashimiCounts: new Uint32Array([count]),
+      sashimiStrands: new Int8Array([0]),
+    })
+
+  // `bpToScreenX` is the identity here, so a bp IS a screen x.
+  const drawn = (x1: number, x2: number, viewWidthPx: number, count = 5) => {
+    const data = junction(x1, x2, count)
+    return computeSashimiArcs({
+      ...baseOpts(data, 0),
+      rpcDataMap: new Map([[0, data]]),
+      viewWidthPx,
+    })
+  }
+
+  it('keeps one inside the box and drops one past its right edge', () => {
+    expect(drawn(100, 300, 500)).toHaveLength(1)
+    expect(drawn(600, 800, 500)).toHaveLength(0)
+  })
+
+  it('keeps one that straddles the box', () => {
+    // Both feet outside, on OPPOSITE sides — the case a naive "is either foot
+    // visible" test drops, and the arc spanning the whole viewport is the most
+    // visible thing in it.
+    expect(drawn(0, 100_000, 500)).toHaveLength(1)
+  })
+
+  it('measures from the ink, so a thick arc just outside still answers', () => {
+    // `strokeWidthForCount` is a log of the read count and the stroke is drawn
+    // ABOUT the path, so a deeply-supported junction whose feet are a hair past
+    // the edge still paints half a stroke inside it. Its own bound, not a
+    // constant slop.
+    const arcs = drawn(502, 600, 500, 10_000)
+    expect(arcs[0]!.strokeWidth).toBeGreaterThan(4)
+    expect(arcs).toHaveLength(1)
+    // a hairline at the same place has no ink in the box and goes
+    expect(drawn(502, 600, 500, 1)).toHaveLength(0)
+  })
 })

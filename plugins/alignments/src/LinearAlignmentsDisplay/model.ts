@@ -2415,6 +2415,12 @@ export default function stateModelFactory(
               rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
               visibleRegions: view.visibleRegions,
               bpToScreenX,
+              // Safe past the `view.initialized` gate above, which is the same
+              // thing that makes the hosts' own `view.width` read safe — and it
+              // is THEIR width: the overlay sizes its `<svg>` with it and the
+              // export paints at `canvasWidth`, which `renderDisplaySvg`
+              // resolves to `view.width` for every LGV display.
+              viewWidthPx: view.width,
               coverageHeight: self.coverageHeight,
               sashimiArcsHeight: self.sashimiArcsHeight,
               minSashimiScore: self.minSashimiScore,
