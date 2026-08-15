@@ -1,3 +1,5 @@
+import { followAxes } from './followAxes.ts'
+
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
@@ -99,30 +101,20 @@ export function followWindowMapping({
   toMate: boolean
   mateAssembly?: string
 }): ResolvedSpan | undefined {
-  const refNameIds = toMate ? data.refNameIds : data.mateRefNameIds
-  const refNameDict = toMate ? data.refNameDict : data.mateRefNameDict
-  const starts = toMate ? data.starts : data.mateStarts
-  const ends = toMate ? data.ends : data.mateEnds
-  const otherRefNameIds = toMate ? data.mateRefNameIds : data.refNameIds
-  const otherRefNameDict = toMate ? data.mateRefNameDict : data.refNameDict
-  const otherStarts = toMate ? data.mateStarts : data.starts
-  const otherEnds = toMate ? data.mateEnds : data.ends
-
   const {
-    refName: windowRefName,
-    start: windowStartBp,
-    end: windowEndBp,
-  } = window
+    refNameIds,
+    starts,
+    ends,
+    otherRefNameIds,
+    otherRefNameDict,
+    otherStarts,
+    otherEnds,
+    windowRefNameId,
+    mateAssemblyNameIds,
+    mateAssemblyId,
+  } = followAxes({ data, window, toMate, mateAssembly })
+  const { start: windowStartBp, end: windowEndBp } = window
   const n = refNameIds.length
-  // Both filters resolved to dictionary ids ONCE, so the hot loop compares
-  // integers where it used to compare strings. A name the dictionary does not
-  // hold gives -1, which is not a valid id and so matches no block — the same
-  // answer the string compare gave, reached without a special case.
-  const windowRefNameId = refNameDict.indexOf(windowRefName)
-  const mateAssemblyId =
-    mateAssembly === undefined
-      ? undefined
-      : data.mateAssemblyNameDict.indexOf(mateAssembly)
 
   // One pass, and NOTHING ALLOCATED PER BLOCK — that is the measurement, not
   // "no objects": this runs per frame over hundreds of thousands of blocks on a
@@ -137,7 +129,7 @@ export function followWindowMapping({
     if (
       refNameIds[i] !== windowRefNameId ||
       (mateAssemblyId !== undefined &&
-        data.mateAssemblyNameIds[i] !== mateAssemblyId)
+        mateAssemblyNameIds[i] !== mateAssemblyId)
     ) {
       continue
     }

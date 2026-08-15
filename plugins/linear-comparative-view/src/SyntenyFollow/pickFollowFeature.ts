@@ -1,3 +1,5 @@
+import { followAxes } from './followAxes.ts'
+
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
@@ -29,13 +31,7 @@ export function preferIncumbent<T extends FollowCandidate>(
  * arrays rather than materializing `FeatPos`, since this runs on every settled
  * pan over hundreds of thousands of blocks.
  *
- * `mateAssembly` KEEPS AN ALL-VS-ALL TRACK IN ITS LANE — belt to the adapter's
- * braces. The fetch is single-axis, so nothing in the shape of what arrives
- * says the mates all belong to the level's lower row; that is a property of the
- * adapters we ship honoring `targetAssemblyName`. One that ignored it would put
- * every sample in a PanSN file here and send the row to another genome. The
- * MATE array is checked in both directions, being the multi-assembly axis and
- * the only one every adapter fills in.
+ * `undefined` means nothing covers the window, and the caller holds the row.
  */
 export function pickFollowFeature({
   data,
@@ -47,22 +43,17 @@ export function pickFollowFeature({
   data: SyntenyFeatureData
   window: FollowWindow
   toMate: boolean
-  // undefined where the caller cannot name it, which skips the filter rather
-  // than dropping every candidate
   mateAssembly?: string
   incumbentId?: string
 }): FollowCandidate | undefined {
-  const refNameIds = toMate ? data.refNameIds : data.mateRefNameIds
-  const refNameDict = toMate ? data.refNameDict : data.mateRefNameDict
-  const starts = toMate ? data.starts : data.mateStarts
-  const ends = toMate ? data.ends : data.mateEnds
-  // Resolved once so the scan compares integers; a name the dictionary does not
-  // hold gives -1, which matches no block. Same in followWindowMapping.
-  const windowRefNameId = refNameDict.indexOf(window.refName)
-  const mateAssemblyId =
-    mateAssembly === undefined
-      ? undefined
-      : data.mateAssemblyNameDict.indexOf(mateAssembly)
+  const {
+    refNameIds,
+    starts,
+    ends,
+    windowRefNameId,
+    mateAssemblyNameIds,
+    mateAssemblyId,
+  } = followAxes({ data, window, toMate, mateAssembly })
   let best: FollowCandidate | undefined
   let incumbent: FollowCandidate | undefined
   for (let i = 0; i < refNameIds.length; i++) {
@@ -71,7 +62,7 @@ export function pickFollowFeature({
     }
     if (
       mateAssemblyId !== undefined &&
-      data.mateAssemblyNameIds[i] !== mateAssemblyId
+      mateAssemblyNameIds[i] !== mateAssemblyId
     ) {
       continue
     }
