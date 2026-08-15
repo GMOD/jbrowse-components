@@ -12,6 +12,12 @@ payload unchanged, so it was reverted. `browser-tests/measure-load.ts` and
 Always build first — the tests load `build/`, and a stale one gives false
 failures. `--debug` unsuppresses GPU/WebGL console noise.
 
+**`blob-location-probe.ts` is the only check that a locally-opened file still
+resolves in the worker**, and it needs a real one: the worker's blob map is
+installed by `RpcMethodType.invoke` and by nothing else, but every jest test
+runs worker code in the main thread's realm, where the map is already populated
+and a method that skips installing it reads the right answer by accident.
+
 **Goldens are not in git.** `__snapshots__/` is gitignored; the bytes live in
 `s3://jbrowse.org/jb2-snapshots/` and git tracks `browser-tests/snapshots.lock`.
 `pnpm snapshots` is the CLI, and the runner pulls what the lock names before it

@@ -132,9 +132,10 @@ export type RpcSession = {
 export type RpcCallContext = RpcSession & RpcHandles
 
 /**
- * What the two `RpcExecute*` derivations resolve to for a method name that was
- * written out but has no registry entry: a shape nothing satisfies, so the miss
- * is a compile error naming the method rather than silence.
+ * What {@link RpcExecuteArgs} and {@link RpcWireReturn} resolve to for a method
+ * name that was written out but has no registry entry: a shape nothing
+ * satisfies, so the miss is a compile error naming the method rather than
+ * silence.
  *
  * The silence was the problem. Both derivations are conditionals over `keyof
  * RpcRegistry`, and a name that misses falls out the bottom — where `unknown`
@@ -158,7 +159,7 @@ export interface NotInRpcRegistry<M extends string> {
  * What a registered method's `execute` actually receives: its declared args,
  * plus the session it is pinned to, plus the handles the driver merged in.
  *
- * Derived rather than hand-written, for the reason {@link RpcExecuteReturn} is:
+ * Derived rather than hand-written, for the reason {@link RpcWireReturn} is:
  * the return type has been checked against the registry for a while and the
  * args have not, which is the whole reason the two could drift. A method
  * parameterized with its own name (`RpcMethodType<'CoreGetSequence'>`) gets
