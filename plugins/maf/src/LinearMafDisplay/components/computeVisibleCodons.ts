@@ -1,7 +1,8 @@
 import { codonTable } from '@jbrowse/core/util'
 
+import { buildColumnForGenomicOffset } from '../../LinearMafRenderer/binning.ts'
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
-import { DASH, LOWER_BIT, isNoBaseByte } from '../../util/asciiBytes.ts'
+import { LOWER_BIT, isNoBaseByte } from '../../util/asciiBytes.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
@@ -9,6 +10,7 @@ import {
   visibleRowRange,
 } from './visibleRegionGeometry.ts'
 
+import type { GenomicColumns } from '../../LinearMafRenderer/binning.ts'
 import type {
   MafBlock,
   MafRegionData,
@@ -194,29 +196,6 @@ export function enumerateCodons(
   return codons
 }
 
-/**
- * Reference position → column index within a block: `out[g]` is the column of
- * the g-th non-gap reference byte, so consecutive reference positions map to
- * consecutive entries (insertion columns, where the reference is `-`, are
- * skipped). Lets a codon's three reference bases be read from any row in O(1).
- */
-function buildRefColumns(refSeqBytes: Uint8Array): Int32Array {
-  let n = 0
-  for (const byte of refSeqBytes) {
-    if (byte !== DASH) {
-      n++
-    }
-  }
-  const out = new Int32Array(n)
-  let g = 0
-  for (let i = 0; i < refSeqBytes.length; i++) {
-    if (refSeqBytes[i] !== DASH) {
-      out[g++] = i
-    }
-  }
-  return out
-}
-
 /** A codon's three reference bytes (from the reference row or a species row),
  * gathered in ascending genomic order — possibly across two blocks. */
 type CodonBytes = [number, number, number]
@@ -229,17 +208,61 @@ interface RefColLoc {
 }
 
 /**
+ * The two per-block indexes a codon lookup needs — reference position → column
+ * (the shared `buildColumnForGenomicOffset`, so the codon walk and the two base
+ * painters agree on what a block's genomic offsets map to) and rowIndex →
+ * alignment bytes — each built on first use.
+ *
+ * Lazy because a codon touches a handful of blocks and a region holds far more:
+ * the data is the *buffered* region, tens of thousands of blocks on a
+ * fine-grained multiz, and building a typed array and a `Map` for every one of
+ * them was the walk's dominant cost. Codon cells only draw at base level, where
+ * that gap is small — but the codon conservation band consumes the same spine
+ * with no zoom gate at all, so it ran the whole-region build on every frame at
+ * every zoom.
+ */
+class BlockIndexes {
+  private refColumns: (GenomicColumns | undefined)[]
+
+  private rowBytes: (Map<number, Uint8Array> | undefined)[]
+
+  constructor(private blocks: MafBlock[]) {
+    this.refColumns = new Array<GenomicColumns | undefined>(blocks.length)
+    this.rowBytes = new Array<Map<number, Uint8Array> | undefined>(
+      blocks.length,
+    )
+  }
+
+  columnsAt(blockIdx: number): GenomicColumns {
+    return (this.refColumns[blockIdx] ??= buildColumnForGenomicOffset(
+      this.blocks[blockIdx]!.refSeqBytes,
+    ))
+  }
+
+  // So a codon straddling blocks can read a species' bytes from whichever block
+  // holds each of its three positions.
+  rowBytesAt(blockIdx: number): Map<number, Uint8Array> {
+    return (this.rowBytes[blockIdx] ??= new Map(
+      this.blocks[blockIdx]!.rows.map(row => [
+        row.rowIndex,
+        row.alignmentBytes,
+      ]),
+    ))
+  }
+}
+
+/**
  * Resolve an absolute reference position to the block containing it and the
  * alignment column of that base within the block. Blocks are disjoint reference
- * ranges (`refColumns.length` reference bases starting at `startBp`, which is
- * what `endBp` records), so at most one contains `p` and `blockIndexAtBp`
- * binary-searches it; returns undefined when no fetched block covers it. The
- * scan this replaced ran three times per codon over the whole buffered region,
- * so it was quadratic in the block count on a fine-grained multiz.
+ * ranges (`refLen` reference bases starting at `startBp`, which is what `endBp`
+ * records), so at most one contains `p` and `blockIndexAtBp` binary-searches it;
+ * returns undefined when no fetched block covers it. The scan this replaced ran
+ * three times per codon over the whole buffered region, so it was quadratic in
+ * the block count on a fine-grained multiz.
  */
 function locateRefPos(
   blocks: MafBlock[],
-  refColumnsPerBlock: Int32Array[],
+  indexes: BlockIndexes,
   p: number,
 ): RefColLoc | undefined {
   const bi = blockIndexAtBp(blocks, p)
@@ -247,8 +270,8 @@ function locateRefPos(
     return undefined
   }
   const g = p - blocks[bi]!.startBp
-  const cols = refColumnsPerBlock[bi]!
-  return g < cols.length ? { blockIdx: bi, col: cols[g]! } : undefined
+  const { colForGpos, refLen } = indexes.columnsAt(bi)
+  return g < refLen ? { blockIdx: bi, col: colForGpos[g]! } : undefined
 }
 
 /** Codon type resolved to per-block columns. */
@@ -264,22 +287,12 @@ type CodonLocs = [RefColLoc, RefColLoc, RefColLoc]
 function locateCodon(
   positions: readonly [number, number, number],
   blocks: MafBlock[],
-  refColumnsPerBlock: Int32Array[],
+  indexes: BlockIndexes,
 ): CodonLocs | undefined {
-  const l0 = locateRefPos(blocks, refColumnsPerBlock, positions[0])
-  const l1 = locateRefPos(blocks, refColumnsPerBlock, positions[1])
-  const l2 = locateRefPos(blocks, refColumnsPerBlock, positions[2])
+  const l0 = locateRefPos(blocks, indexes, positions[0])
+  const l1 = locateRefPos(blocks, indexes, positions[1])
+  const l2 = locateRefPos(blocks, indexes, positions[2])
   return l0 && l1 && l2 ? [l0, l1, l2] : undefined
-}
-
-// Per-block rowIndex → alignment bytes, so a codon straddling blocks can read a
-// species' bytes from whichever block holds each of its three positions.
-function rowByteMap(block: MafBlock): Map<number, Uint8Array> {
-  const m = new Map<number, Uint8Array>()
-  for (const row of block.rows) {
-    m.set(row.rowIndex, row.alignmentBytes)
-  }
-  return m
 }
 
 // The three reference bytes of a located codon (from each position's block).
@@ -299,12 +312,12 @@ function refCodonBytes(locs: CodonLocs, blocks: MafBlock[]): CodonBytes {
  */
 function rowCodonBytes(
   locs: CodonLocs,
-  rowMapsPerBlock: Map<number, Uint8Array>[],
+  indexes: BlockIndexes,
   rowIndex: number,
 ): CodonBytes | undefined {
-  const r0 = rowMapsPerBlock[locs[0].blockIdx]!.get(rowIndex)
-  const r1 = rowMapsPerBlock[locs[1].blockIdx]!.get(rowIndex)
-  const r2 = rowMapsPerBlock[locs[2].blockIdx]!.get(rowIndex)
+  const r0 = indexes.rowBytesAt(locs[0].blockIdx).get(rowIndex)
+  const r1 = indexes.rowBytesAt(locs[1].blockIdx).get(rowIndex)
+  const r2 = indexes.rowBytesAt(locs[2].blockIdx).get(rowIndex)
   if (!r0 || !r1 || !r2) {
     return undefined
   }
@@ -396,8 +409,7 @@ function* eachLocatedCodon(
       continue
     }
     const blocks = regionData.blocks
-    const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
-    const rowMapsPerBlock = blocks.map(rowByteMap)
+    const indexes = new BlockIndexes(blocks)
     for (const codon of codons) {
       // Both the frames and the alignment are fetched for the *buffered*
       // region, so about half of what `enumerateCodons` yields is off screen —
@@ -413,7 +425,7 @@ function* eachLocatedCodon(
       if (codon.positions[2] < bpLo || codon.positions[0] >= bpHi) {
         continue
       }
-      const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
+      const locs = locateCodon(codon.positions, blocks, indexes)
       if (!locs) {
         continue
       }
@@ -432,7 +444,7 @@ function* eachLocatedCodon(
         // from their blocks (all the same block in the common single-block case).
         *rows() {
           for (const row of blocks[locs[0].blockIdx]!.rows) {
-            const bytes = rowCodonBytes(locs, rowMapsPerBlock, row.rowIndex)
+            const bytes = rowCodonBytes(locs, indexes, row.rowIndex)
             if (bytes) {
               yield { rowIndex: row.rowIndex, bytes }
             }

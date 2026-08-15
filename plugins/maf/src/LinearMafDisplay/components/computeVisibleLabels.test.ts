@@ -99,6 +99,29 @@ test('space chars in alignment are treated as gaps, not labeled', () => {
   expect(labels.map(l => l.text)).toEqual(['A', 'A'])
 })
 
+test('columns outside the visible span emit no label', () => {
+  // One stanza can span the whole buffered region — three canvases wide — so
+  // the block-level cull the sibling overlays use isn't enough here. bpPerPx
+  // 0.05 makes the marker slack 16 * 0.05 + 1 = 1.8bp, so the visible
+  // [100, 110) admits bp 100..111 out of the block's 100..129.
+  const rpcDataMap = new Map<number, MafRegionData>([
+    [0, regionData('A'.repeat(30), 'A'.repeat(30))],
+  ])
+  const labels = computeVisibleLabels({
+    view,
+    rpcDataMap,
+    rowHeight: 15,
+    rowProportion: 0.8,
+    scrollTop: 0,
+    viewportHeight: 1000,
+    showAllLetters: true,
+    showAsUpperCase: false,
+  })
+  expect(labels).toHaveLength(12)
+  expect(labels[0]!.x).toBe(10)
+  expect(labels.at(-1)!.x).toBe(230)
+})
+
 test('dashes in alignment are treated as gaps', () => {
   const rpcDataMap = new Map<number, MafRegionData>([
     [0, regionData('AAAAA', 'A---A')],

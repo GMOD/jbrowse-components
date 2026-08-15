@@ -79,8 +79,20 @@ export function computeVisibleLabels(
         for (let i = 0, genomicOffset = 0; i < len; i++) {
           const refCode = refSeqBytes[i]!
           if (refCode !== DASH) {
+            const bp = block.startBp + genomicOffset
             const alnCode = alignmentBytes[i]!
-            if (alnCode !== DASH && alnCode !== SPACE) {
+            // The same `[bpLo, bpHi)` cull the sibling overlays apply per
+            // block, applied per column here because a block is not a screenful:
+            // one TAF/bigMaf stanza can span the whole buffered region, which is
+            // three times the canvas, so most of its columns emit a label the
+            // overlay then draws off the edge of a canvas exactly
+            // `canvasWidthPx` wide.
+            if (
+              bp >= bpLo &&
+              bp < bpHi &&
+              alnCode !== DASH &&
+              alnCode !== SPACE
+            ) {
               const isMatch = (refCode | LOWER_BIT) === (alnCode | LOWER_BIT)
               if (showAllLetters || !isMatch) {
                 const displayCode = showAsUpperCase
@@ -88,7 +100,7 @@ export function computeVisibleLabels(
                   : alnCode
                 labels.push({
                   // +0.5 → cell center, orientation-aware via bpToPx
-                  x: bpToPx(block.startBp + genomicOffset + 0.5),
+                  x: bpToPx(bp + 0.5),
                   y: yPos,
                   text: String.fromCharCode(displayCode),
                   lowerBase: String.fromCharCode(alnCode | LOWER_BIT),
