@@ -4,3 +4,7 @@
 export const ARC_FLAT_MIN_PX = 2.5
 
 export const ARC_FLAT_ALPHA = 0.7
+
+export const ARC_FLAT_DASH_PX = 3
+
+export const ARC_FLAT_GAP_PX = 3

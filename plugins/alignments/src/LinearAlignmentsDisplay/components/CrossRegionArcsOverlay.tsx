@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import { arcMarkScreenPath } from '../../features/arcs/arcPath.ts'
 import { arcColorLegendCategory } from '../../features/arcs/compute.ts'
 import { offsetArcMark } from '../../features/arcs/mark.ts'
+import CrossRegionArcMarkers from './CrossRegionArcMarkers.tsx'
 import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
 import { formatArcTooltip } from './tooltipUtils.ts'
 
@@ -69,6 +70,7 @@ const CrossRegionArcsBand = observer(function CrossRegionArcsBand({
           d={arc.d}
           stroke={arc.stroke}
           strokeWidth={arc.strokeWidth}
+          strokeDasharray={arc.dash}
           fill="none"
           style={{ pointerEvents: 'stroke', cursor: 'default' }}
           onMouseEnter={() => {
@@ -113,6 +115,7 @@ const CrossRegionArcsBand = observer(function CrossRegionArcsBand({
           }}
         />
       ))}
+      <CrossRegionArcMarkers arcs={arcs} />
     </svg>
   )
 })

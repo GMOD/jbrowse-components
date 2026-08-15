@@ -2,6 +2,7 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { observer } from 'mobx-react'
 
+import CrossRegionArcMarkers from './CrossRegionArcMarkers.tsx'
 import { bandScreenTop } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
@@ -40,9 +41,11 @@ const CrossRegionArcsSvg = observer(function CrossRegionArcsSvg({
             d={arc.d}
             stroke={arc.stroke}
             strokeWidth={arc.strokeWidth}
+            strokeDasharray={arc.dash}
             fill="none"
           />
         ))}
+        <CrossRegionArcMarkers arcs={section.arcs} />
       </SvgClipRect>
     </g>
   ))

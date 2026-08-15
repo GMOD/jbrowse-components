@@ -6,7 +6,11 @@ import { buildArcColorPalette } from '../../shaders/palettes.ts'
 import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 // The flat-line constants moved with the flat line: they are arcFlat.slang's
 // now, declared on the pass that consumes them.
-import { ARC_FLAT_ALPHA } from '../../shaders/slang/arcFlat.consts.generated.ts'
+import {
+  ARC_FLAT_ALPHA,
+  ARC_FLAT_DASH_PX,
+  ARC_FLAT_GAP_PX,
+} from '../../shaders/slang/arcFlat.consts.generated.ts'
 import {
   ARC_COLOR_INTERCHROM,
   ARC_LINE_DASH_PX,
@@ -99,7 +103,12 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     // dome deliberately leaves the band rather than flattening onto its ceiling.
     const mark = arcMark(data, i, opts)
 
-    ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
+    // arcFlat.slang's own dash, not a `[3, 3]` held to the shader's `6.0`
+    // period by a comment — the same move arcLine.slang's tick dash already
+    // made, and now the SVG cross-region overlay's third reading of it.
+    ctx.setLineDash(
+      shape === ARC_SHAPE_FLAT_SPLIT ? [ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX] : [],
+    )
     if (mark.kind === 'bar') {
       // Neutral connector line at the mark's own widened extent, so short-insert
       // pairs stay visible; mirrors arcFlat.slang's clamp. The endpoint squares

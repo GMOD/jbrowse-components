@@ -1,13 +1,19 @@
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { buildArcColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
 // the same slot the GPU and Canvas2D passes resolve, so an arc that moves to
 // this overlay does not change colour.
 import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import {
+  ARC_FLAT_ALPHA,
+  ARC_FLAT_DASH_PX,
+  ARC_FLAT_GAP_PX,
+} from '../../shaders/slang/arcFlat.consts.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
+import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcMarkScreenPath } from './arcPath.ts'
-import { arcPaintOrder } from './compute.ts'
+import { ARC_SHAPE_FLAT_SPLIT, arcPaintOrder } from './compute.ts'
 import { arcMarkFrom } from './mark.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
@@ -31,12 +37,32 @@ import type { ArcBandFrame, ArcMark } from './mark.ts'
 // SVG for the same reason sashimi is: the set is inherently small — a fragment
 // can straddle only one seam — so the vector cost is nothing and the paths
 // carry native hover.
+// One endpoint square of a read-cloud connector, as the five SVG `<rect>`
+// attributes, so a host is `<rect {...marker} />` and cannot transpose them —
+// the shape `ArcBandClip` already takes for the band rect.
+export interface CrossRegionArcMarker {
+  x: number
+  y: number
+  width: number
+  height: number
+  fill: string
+}
+
 export interface CrossRegionArcShape {
   // `ComputedArc.key`, which `resolveArcs` already made unique across the feed.
   key: string
   d: string
   stroke: string
   strokeWidth: number
+  // `stroke-dasharray`, present only on the split-read read-cloud connector —
+  // arcFlat.slang's dash, which `drawArcsToCtx` hands to `setLineDash` and the
+  // GPU fragment measures its phase against.
+  dash?: string
+  // The two endpoint squares of a read-cloud connector, absent on every other
+  // mark. They are where a flat arc's CATEGORY COLOUR lives (arcMarker.slang;
+  // the line between them is neutral), so an overlay drawing only `d` published
+  // a bar with no insert-size or orientation channel at all.
+  markers?: CrossRegionArcMarker[]
   // The resolved mark, band-local like `d`. Carried for the hover alone: the
   // highlight is drawn by `ArcHoverOverlay` at the component's origin rather
   // than inside this band's box, so it needs the same mark one offset down —
@@ -149,6 +175,51 @@ function screenFeet(
   }
 }
 
+// Everything about a mark that is not its path: the stroke, the split variant's
+// dash, and the two endpoint squares.
+//
+// It exists because a DOME is stroked in its category colour and a BAR is not.
+// This overlay painted both with `palette[arcColorSlot(colorType)]`, on the
+// argument its own import comment makes — an arc moving here must not change
+// colour — which holds for the domes and fails for the read cloud's flat
+// connector: the per-region passes draw that line in the theme's neutral
+// foreground at ARC_FLAT_ALPHA (arcFlat.slang, `flatConnectorTheme.test.ts`) and
+// keep the insert-size / orientation colour in the two squares at its ends. A
+// discordant pair straddling a seam therefore published as an opaque saturated
+// line with no squares — the one mark in the band whose whole category channel
+// had gone missing — and the split variant lost its dash with it.
+//
+// The squares sit on the REAL mates rather than on the ends of the bar
+// `arcMarkFrom` widened, which is `drawArcsToCtx`' rule and `packArcMarkers`'
+// alike: a sub-minimum pair draws them overlapping in the middle of its 2.5px
+// bar.
+function markInk(
+  mark: ArcMark,
+  shapeType: number,
+  categoryCss: string,
+  flatConnectorCss: string,
+) {
+  if (mark.kind !== 'bar') {
+    return { stroke: categoryCss }
+  }
+  const { sx1, sx2, markY } = mark
+  const m = ARC_MARKER_PX
+  return {
+    stroke: flatConnectorCss,
+    dash:
+      shapeType === ARC_SHAPE_FLAT_SPLIT
+        ? `${ARC_FLAT_DASH_PX} ${ARC_FLAT_GAP_PX}`
+        : undefined,
+    markers: [sx1, sx2].map(x => ({
+      x: x - m / 2,
+      y: markY - m / 2,
+      width: m,
+      height: m,
+      fill: categoryCss,
+    })),
+  }
+}
+
 export function computeCrossRegionArcs({
   arcs,
   bpToScreenX,
@@ -203,6 +274,10 @@ export function computeCrossRegionArcs({
     onCapped?.(projected.length - CROSS_REGION_ARC_CAP, kept.length)
   }
   const palette = buildArcColorPalette(colors)
+  // The connector's neutral, resolved once per lane rather than per bar: it is
+  // the theme's foreground and the same string for every flat arc in the feed —
+  // `drawArcsToCtx` hoists it out of its own loop for the same reason.
+  const flatConnectorCss = rgba255(colors.colorFlatConnector, ARC_FLAT_ALPHA)
   return kept.map(({ arc, sx1, sx2 }) => {
     const strokeWidth = arcLineWidth(arc.support, lineWidth)
     const mark = arcMarkFrom(
@@ -219,7 +294,12 @@ export function computeCrossRegionArcs({
       key: arc.key,
       d: arcMarkScreenPath(mark),
       mark,
-      stroke: rgb255(palette[arcColorSlot(arc.colorType)]!),
+      ...markInk(
+        mark,
+        arc.shapeType,
+        rgb255(palette[arcColorSlot(arc.colorType)]!),
+        flatConnectorCss,
+      ),
       strokeWidth,
       support: arc.support,
       refName: arc.p1.refName,

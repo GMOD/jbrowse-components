@@ -77,6 +77,18 @@ describe('sashimiSideBand', () => {
       clipped: true,
     })
   })
+
+  it('floors the up band at 0 rather than emitting a negative height', () => {
+    // `coverageHeight` is a plain number slot and `clampBandHeight`'s 20px floor
+    // constrains DRAGGING, not what a config or a session snapshot declares — so
+    // a height under one y-scalebar offset reaches here, and unfloored it lands
+    // on an `<svg height>` and an `<SvgClipRect>` as a negative number. Same
+    // floor `computeSashimiArcs` puts on the height it draws INTO, which had it
+    // and this did not.
+    expect(
+      sashimiSideBand(section, 'up', { ...heights, coverageHeight: 3 }).height,
+    ).toBe(0)
+  })
 })
 
 describe('sashimiSelectionKey', () => {

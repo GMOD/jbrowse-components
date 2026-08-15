@@ -53,7 +53,16 @@ export function sashimiSideBand(
         top: section.coverageOverlayTop,
         // The band runs from this box's own top — the histogram top, already one
         // y-scalebar offset below the coverage band's — to the band's bottom.
-        height: heights.coverageHeight - YSCALEBAR_LABEL_OFFSET,
+        //
+        // FLOORED AT 0, where the expression is declared rather than at the two
+        // hosts: `coverageHeight` is a plain number slot and the 20px drag floor
+        // (`clampBandHeight`) constrains DRAGGING, not what a config or a
+        // session snapshot may declare, so any height in 1..4 arrives here.
+        // Unfloored it reaches an `<svg height>` and an `<SvgClipRect>` as a
+        // negative number, which is invalid SVG — the same reason
+        // `computeSashimiArcs` floors the `effectiveHeight` it draws into and
+        // `arcAvailH` floors the arc band.
+        height: Math.max(0, heights.coverageHeight - YSCALEBAR_LABEL_OFFSET),
         clipped: false,
       }
 }

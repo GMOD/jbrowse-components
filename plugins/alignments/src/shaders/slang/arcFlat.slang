@@ -15,7 +15,7 @@
 // The two shapes are disjoint per draw, so splitting costs nothing: in arc mode
 // this pass has zero instances, in read cloud the curve pass does.
 //! targets: wgsl, glsl
-//! export-consts: ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA
+//! export-consts: ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_FLAT_DASH_PX, ARC_FLAT_GAP_PX
 
 import alignmentsUniforms;
 // `unpackRGBA`, for the connector colour. Slang does not re-export through an
@@ -35,6 +35,13 @@ static const float ARC_FLAT_MIN_PX = 2.5;
 // an isolated short-insert pair is a single thin line, and at 0.25-0.4 it all but
 // vanishes into the background. Exported so drawCanvas.ts strokes the same value.
 static const float ARC_FLAT_ALPHA = 0.7;
+// The split-read variant's dash, in CSS px — samplot.py's dotted style. Declared
+// here and exported for the same reason arcLine.slang's tick dash is: the
+// Canvas2D twin spelled it `setLineDash([3, 3])` and the SVG cross-region
+// overlay would have been a third spelling, each held to the other two by a
+// comment. One declaration, three consumers.
+static const float ARC_FLAT_DASH_PX = 3.0;
+static const float ARC_FLAT_GAP_PX = 3.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -119,15 +126,22 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // of device pixels, not a derivative — see STROKE_AA_PX.
   float d = sdSegment(fragIn.local, fragIn.halfLen);
   float alpha = strokeCoverage(d, fragIn.halfWidthPx, u);
-  // Split-read flat arcs render dashed (samplot.py's dotted style, and
-  // Canvas2D's setLineDash([3,3])): 3px on, 3px off, with the same STROKE_AA_PX
-  // ramp on the dash ends that the stroke's sides get. The +0.25 rotates the
-  // period so the ON segment is centred at phase 3 rather than straddling the
-  // wrap — measuring `abs(phase - centre)` across the wrap would leave one end
-  // of every dash hard-edged.
+  // Split-read flat arcs render dashed, off the two constants above rather than
+  // a 3.0/6.0 pair spelled into the arithmetic — the SVG twin passes them to
+  // `stroke-dasharray` and Canvas2D to `setLineDash`, so a period written here
+  // in numbers is a period only a comment holds the other two to.
+  //
+  // The ON run is centred at half a period, with a 1px ramp either side (the
+  // STROKE_AA_PX ramp the stroke's sides get, in the one axis `sdSegment` does
+  // not measure), so the half-alpha crossings land exactly a dash apart. The
+  // quarter-period rotation puts that centre off the wrap — measuring
+  // `abs(phase - centre)` across it would leave one end of every dash
+  // hard-edged.
   if (fragIn.dashed > 0.5) {
-    float phase = frac(fragIn.screenPx / 6.0 + 0.25) * 6.0;
-    alpha *= clamp(2.0 - abs(phase - 3.0), 0.0, 1.0);
+    float period = ARC_FLAT_DASH_PX + ARC_FLAT_GAP_PX;
+    float phase = frac(fragIn.screenPx / period + 0.25) * period;
+    float halfOn = ARC_FLAT_DASH_PX * 0.5;
+    alpha *= clamp(halfOn + 0.5 - abs(phase - period * 0.5), 0.0, 1.0);
   }
   // Neutral, not black: `colorFlatConnector` is the theme's foreground, so the
   // line reads against a dark track background the way it does against a light
