@@ -145,6 +145,24 @@ the branch was mid-flight, and one reverted by the same hand this branch had
 deleted it with. Re-run the hash triage rather than trusting a list you made
 before the last rebase.
 
+**Accumulate the flips as a script and commit THAT.**
+`scripts/flips-screenshot-review-bad.sh` is the worked example: one
+`flip-review.ts` call per item, with the reply as its note, run from the primary
+checkout after the branch lands. It keeps `screenshot-review.json` off the
+branch (which is what the paragraphs above are for) while still leaving the
+replies reviewable in the diff, and an item that could not be finished is a
+comment in the same file rather than a silent omission.
+
+**A `figures push` with no `--filter` will sweep in other agents' regens even
+when you are only retiring a figure.** The retiring recipe says a bare
+`push --allow-deletions` is what expresses a deletion, and that is true — but if
+you have already removed the lock line by hand, the deletion is a no-op and all
+the bare push does is adopt every locally-modified figure on disk. Four came in
+that way in one run. Check `git diff figures.lock` immediately after; restoring
+the lock and re-pushing with `--exact --filter` is the fix, and the blobs the
+stray push uploaded are harmless (content-addressed, and their lock lines stay
+their owner's to commit).
+
 **Discriminate a sweep on pixels, not on the file list.** `--affected` selected
 89 specs for one variants change and rewrote 15, of which 3 had anything to do
 with it; narrowing to "every spec whose session carries a
