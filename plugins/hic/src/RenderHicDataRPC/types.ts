@@ -135,8 +135,8 @@ export interface HicDataResult {
   /**
    * The normalization the `.hic` file actually applied, which is not always the
    * one requested: vectors are stored per (type, chr, unit, binsize), so a file
-   * can offer KR at 5 kb and nothing at 2.5 Mb. hic-straw's answer was to warn
-   * to the console and hand back raw counts; carrying it here lets the track
+   * can offer KR at 5 kb and nothing at 2.5 Mb. Upstream hic-straw's answer was to
+   * warn to the console and hand back raw counts; carrying it here lets the track
    * menu tick the scheme in effect rather than the one asked for.
    */
   appliedNormalization: string

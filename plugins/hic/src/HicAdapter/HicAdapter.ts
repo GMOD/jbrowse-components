@@ -1,12 +1,11 @@
+import { HicFile, NO_DATA_FOR_RESOLUTION } from '@gmod/hic'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import { openHicFilehandle } from './HicFilehandle.ts'
-import HicFile, { NO_DATA_FOR_RESOLUTION } from './hic-straw/index.ts'
-
-import type { ContactRecords } from './hic-straw/contactRecords.ts'
+import type { ContactRecords } from '@gmod/hic'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -39,7 +38,7 @@ export interface RegionPairRun {
  * A whole multi-region matrix as three parallel typed arrays plus the run
  * table describing which region pair each stretch came from.
  *
- * `bin1`/`bin2` are `Uint32Array` rather than the `Int32Array` hic-straw
+ * `bin1`/`bin2` are `Uint32Array` rather than the `Int32Array` `@gmod/hic`
  * decodes into because these are the arrays that transfer to the main thread
  * and feed the hover index unchanged — bins are non-negative chromosome
  * indices, so the reinterpretation is exact.
@@ -103,14 +102,14 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   ) {
     super(config, getSubAdapter, pluginManager)
     this.hic = new HicFile({
-      file: openHicFilehandle(this.getConf('hicLocation'), this.pluginManager),
+      filehandle: openLocation(this.getConf('hicLocation'), this.pluginManager),
     })
   }
 
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {}, stopToken } = opts ?? {}
     // Only surface the "Downloading header" status on the genuine first
-    // fetch: hic-straw memoizes the parsed header, so every later call (e.g. on
+    // fetch: `@gmod/hic` memoizes the parsed header, so every later call (e.g. on
     // each zoom-level change) resolves from memory and shouldn't re-flash a
     // download message for work that isn't happening. Memoize the promise, and
     // clear it on failure (like hicFile's initPromise) so a failed load retries
@@ -300,7 +299,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   /**
-   * Fetch one region pair's contacts, un-swapping hic-straw's transpose so
+   * Fetch one region pair's contacts, un-swapping the parser's transpose so
    * `bin1` always maps back to `region1`'s coordinates.
    *
    * The un-swap is a swap of the two array references, not per-contact work:
@@ -310,7 +309,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
    * for at this resolution rather than throwing: inter-chromosomal pairs
    * commonly only carry coarse binsizes, so when several regions are displayed
    * the fine auto-picked resolution that intra-chromosomal pairs use can be
-   * absent for the inter-chromosomal pairs (hic-straw throws in that case).
+   * absent for the inter-chromosomal pairs (`@gmod/hic` throws in that case).
    * Isolating each pair keeps one missing matrix from failing the whole
    * multi-region fetch.
    */
@@ -328,11 +327,11 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     { recs: ContactRecords; appliedNormalization: string } | undefined
   > {
     try {
-      // hic-straw transposes the query when idx1 > idx2 (or same chr, region1
+      // `@gmod/hic` transposes the query when idx1 > idx2 (or same chr, region1
       // starts after region2), swapping bin1/bin2 relative to our (i, j) order —
       // un-swap before storing. `transposed` comes back from the query that made
       // the decision rather than being re-derived here off the region pair: the
-      // condition is over hic-straw's own alias table and chromosome indices, so
+      // condition is over the parser's own alias table and chromosome indices, so
       // a second derivation could disagree on a refName the file serves under a
       // different name and un-swap the wrong axis.
       const { records, appliedNormalization, transposed } =

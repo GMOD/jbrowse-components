@@ -150,7 +150,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        * The normalization to *request*, resolved against what the file offers
        * (`availableNormalizations`). Falls back to the next-best available scheme
-       * when the selection is absent (hic-straw silently uses NONE otherwise).
+       * when the selection is absent (the parser silently uses NONE otherwise).
        * A pure getter, so opening a file that lacks the selected scheme never
        * writes a config delta / marks the track edited — only an explicit user
        * pick (setActiveNormalization) does.
@@ -536,7 +536,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       setAvailableResolutions(f: number[]) {
         // Sort ascending (smallest binsize first) regardless of the order
-        // hic-straw returns, so `resolutionBias` arithmetic is consistent: a
+        // `@gmod/hic` returns, so `resolutionBias` arithmetic is consistent: a
         // negative bias is always finer, a positive one always coarser.
         self.availableResolutions = [...f].sort((a, b) => a - b)
       },

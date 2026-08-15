@@ -1361,6 +1361,9 @@ importers:
 
   plugins/hic:
     dependencies:
+      '@gmod/hic':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1382,18 +1385,12 @@ importers:
       '@mui/material':
         specifier: ^9.3.1
         version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      generic-filehandle2:
-        specifier: ^2.3.1
-        version: 2.3.1
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
       mobx-react:
         specifier: ^10.0.0
         version: 10.0.0(mobx@7.0.0)(react@19.2.8)
-      pako-esm2:
-        specifier: ^2.0.2
-        version: 2.0.2
       react:
         specifier: '>=19.0.0'
         version: 19.2.8
@@ -4436,6 +4433,9 @@ packages:
 
   '@gmod/hclust@4.0.4':
     resolution: {integrity: sha512-BF8g3auPe2eqbcea5TcNUTOFGx54hX8Jf3tb63mnKsn2l8+iOeluRxIOLjIaRUZEcFVuUiQDwAUTHZ9nIpqOqg==}
+
+  '@gmod/hic@1.0.0':
+    resolution: {integrity: sha512-GFKQ2FSjihkHhiNhmKcozzVzMqp2Q+03LV2oKZMHzwS2IKg5K0TtjrvNlUxoEjNKtkFwf710zw+egvTXzJR/PQ==}
 
   '@gmod/indexedfasta@5.0.10':
     resolution: {integrity: sha512-XL5GcrvS9sbJchAWyPVbmrqs2H2SMRiVIBRPWsxlcsodBCg2sx/lkGL2mmDk59F2LQiN2IcN5JlSfYp3GHnotg==}
@@ -12361,6 +12361,11 @@ snapshots:
   '@gmod/faidx@3.0.1': {}
 
   '@gmod/hclust@4.0.4': {}
+
+  '@gmod/hic@1.0.0':
+    dependencies:
+      generic-filehandle2: 2.3.1
+      pako-esm2: 2.0.2
 
   '@gmod/indexedfasta@5.0.10':
     dependencies:

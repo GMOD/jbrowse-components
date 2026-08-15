@@ -1,9 +1,9 @@
+import { NO_DATA_FOR_RESOLUTION } from '@gmod/hic'
 import { isAbortException } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import HicAdapter from './HicAdapter.ts'
 import configSchema from './configSchema.ts'
-import { NO_DATA_FOR_RESOLUTION } from './hic-straw/index.ts'
 
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -15,7 +15,7 @@ const metadata = {
   resolutions: [100000],
 }
 
-// hic-straw hands back struct-of-arrays plus the two things only it can answer:
+// `@gmod/hic` hands back struct-of-arrays plus the two things only it can answer:
 // which normalization it actually applied, and whether it transposed the query.
 // Spell one contact out readably.
 function oneContact(
@@ -50,7 +50,7 @@ function noContacts({ appliedNormalization = 'NONE' } = {}) {
   }
 }
 
-// Mock parser whose inter-chromosomal query throws (mirrors hic-straw throwing
+// Mock parser whose inter-chromosomal query throws (mirrors `@gmod/hic` throwing
 // when a chr-pair matrix lacks the requested resolution), while intra-chrom
 // queries succeed.
 function makeMockParser() {
@@ -70,7 +70,7 @@ function makeMockParser() {
   }
 }
 
-// The slice of hic-straw the adapter actually calls, spelled out so the stubs
+// The slice of `@gmod/hic` the adapter actually calls, spelled out so the stubs
 // below are checked against it rather than typed through `never[]`/`unknown`.
 interface MockParser {
   getMetaData: () => Promise<typeof metadata>
@@ -134,8 +134,8 @@ test('an already-stopped stopToken aborts the multi-region fetch', async () => {
   expect(isAbortException(err)).toBe(true)
 })
 
-test('un-swaps bin1/bin2 when hic-straw transposed the query', async () => {
-  // region1 is the higher-index chromosome, so hic-straw transposes and returns
+test('un-swaps bin1/bin2 when the parser transposed the query', async () => {
+  // region1 is the higher-index chromosome, so the parser transposes and returns
   // bins along the swapped axis, saying so in `transposed`; the adapter must
   // un-swap so bin1 maps back to region1.
   const adapter = makeAdapter({

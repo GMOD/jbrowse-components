@@ -109,7 +109,7 @@ describe('hic track menu shape', () => {
   })
 
   // A file can list KR yet carry no KR vector at the current binsize (they are
-  // stored per resolution), in which case hic-straw hands back raw counts. The
+  // stored per resolution), in which case the parser hands back raw counts. The
   // tick follows the data, and the requested row explains where it went rather
   // than leaving an unexplained tick on NONE.
   it('ticks what the data carries when the requested scheme was unavailable', () => {

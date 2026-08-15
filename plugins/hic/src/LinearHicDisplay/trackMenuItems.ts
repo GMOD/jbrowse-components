@@ -132,7 +132,7 @@ function showMenuItems(self: HicMenuSelf): MenuItem[] {
 }
 
 // Only the schemes the file actually offers, so the radios can't check a
-// normalization hic-straw would silently answer with NONE. `appliedNormalization`
+// normalization the file would silently answer with NONE. `appliedNormalization`
 // — not the raw config slot, and not the requested scheme either — drives the
 // tick, so the radios always describe the matrix on screen. Two things can make
 // them diverge from the user's pick: a file that lacks the scheme entirely
