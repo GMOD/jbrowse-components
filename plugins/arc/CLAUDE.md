@@ -8,8 +8,8 @@ refName.
 ## Chrome: renders `DisplayStatusChrome`, the backend-free half of DisplayChrome
 
 With no GPU backend arc can't wrap `DisplayChrome`, so it renders the component
-`DisplayChrome` delegates to. Don't reintroduce arc-local loading/error
-components or an arc-local container — arc used to assemble them by hand and
+`DisplayChrome` delegates to. Container, `data-*` attributes, banners and
+progress chip all come from that one file; assembled arc-locally by hand, they
 drifted into being the only display with no background-progress chip.
 
 `displayPhase` stays on the **model** (a component-side derivation is free to
@@ -21,7 +21,7 @@ read `isLoadingOrCanceled`, never `isLoading` — see
 It is computed by `foundationDisplayStatusPhase`, the same mapping the two GPU
 foundations use, so arc supplies only its staleness argument (`() => true`).
 While arc hand-wrote that literal, a term added to `computeLoadingTerm` for the
-other two reached every display except this one. Don't inline it back.
+other two reached every display except this one.
 
 ## `reload()` must invalidate `dataCurrent`, not just bump the counter
 

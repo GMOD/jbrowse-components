@@ -11,8 +11,8 @@ channel). Both plugins used to carry drifting copies.
 reject a paste, so both land in the dialog's error state rather than silently
 dropping a row. `validateClusterOrder` guards the R-paste path.
 
-`src/hierarchy.ts` is a hand-written subset of d3-hierarchy, which is pure ESM
-and breaks Jest. Don't reintroduce it as a dependency.
+`src/hierarchy.ts` is a hand-written subset of d3-hierarchy, which as a
+dependency is pure ESM and breaks Jest.
 
 ## `ClusterMatrix` is a `Map` because its key order _is_ the result
 

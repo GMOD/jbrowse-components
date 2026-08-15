@@ -129,14 +129,13 @@ new one that doesn't is a silent no-op, and a tag sort additionally refetches.
 
 Layout is main-thread —
 [ADR-053](../../../../agent-docs/architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md)
-before proposing the move. **Don't reintroduce a levels / right-edge-only
-array** in `placeRect`: features arrive out of start order in both layouts.
+before proposing the move. `placeRect` cannot use a levels / right-edge-only
+array: features arrive out of start order in both layouts.
 
-On-screen and SVG export share `drawAlignmentBlocks`; don't reintroduce SVG-only
-draw functions. Sashimi and linked-read bezier arcs are interactive SVG overlays
-sharing one geometry source with the export — don't port them in. Sashimi's
-source is a model because the geometry depends on pan/zoom but **not**
-`scrollTop`.
+On-screen and SVG export share `drawAlignmentBlocks`. Sashimi and linked-read
+bezier arcs stay interactive SVG overlays, each sharing one geometry source with
+the export; sashimi's source is a model because the geometry depends on pan/zoom
+but **not** `scrollTop`.
 
 **No GPU pass can join two displayed regions** — one buffer per region, clipped
 to its own bp range. `bezierArcScope` is the one place that decides between
@@ -147,8 +146,8 @@ A cross-region arc was never clipped away — each block projects bp through its
 OWN range, so the far foot is extrapolated as though the bp at the seam did not
 exist. `CrossRegionArcsOverlay` draws the globally-correct curve once in view
 space, and three things about it matter: its geometry is `arcMark`'s through
-`arcMarkFrom` (don't trace a lookalike beside it), it is a separate z-layer so
-it paints above every canvas arc regardless of `arcPaintRank`, and its hover
+`arcMarkFrom` rather than a lookalike traced beside it, it is a separate z-layer
+so it paints above every canvas arc regardless of `arcPaintRank`, and its hover
 writes `setHoverState` rather than a local hovered-key (two hover mechanisms in
 one band show a hover twice).
 
@@ -165,10 +164,10 @@ it too, the declaration is the `.slang` one and the CPU side imports the
 generated twin (adr-051).
 
 `computeArcBand` is the single source of truth for the arc band and is decoupled
-from `showCoverage` — don't reintroduce a `covH > 0` gate. Arc and sashimi
-strips are reserved **per section**, so resize handles gate on the section.
-`coverageDisplayHeight` and the fit-height row budget stay global: re-deriving
-them from `sections` routes the fit volatile back through the layout it feeds.
+from `showCoverage`, so no `covH > 0` gate. Arc and sashimi strips are reserved
+**per section**, so resize handles gate on the section. `coverageDisplayHeight`
+and the fit-height row budget stay global: re-deriving them from `sections`
+routes the fit volatile back through the layout it feeds.
 
 Screen-x is not start/end-ordered — keep new sashimi geometry on the normalized
 fields. In shaders use `bpToClipX`/`bpToLinear`, never

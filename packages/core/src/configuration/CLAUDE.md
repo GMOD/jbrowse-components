@@ -5,12 +5,11 @@ Full model: `agent-docs/reference/CONFIG_PATTERN.md` and
 
 - `getConf` is exactly `readConfObject(model.configuration, path)` — equally
   strict about slot names, so **switching readers cannot make a slot-name error
-  go away.** Don't re-widen `readConfObject`'s map overload to admit
-  `AnyConfigurationModel`; that let a typo compile as `any`.
+  go away.** `readConfObject`'s map overload takes only `IMSTMap`; widened to
+  admit `AnyConfigurationModel` it let a typo compile as `any`.
 - **`setSlot` throws on a name the schema doesn't declare**, which is what makes
   a misspelled _write_ diagnosable at all — `setConf`'s compile-time guard only
-  covers concrete schemas, and a mixin erases that. Don't weaken it to a
-  warning.
+  covers concrete schemas, and a mixin erases that.
 - **`resolveConf` is the only thing that walks a promotable slot's cascade.**
   `getConf` stays raw. Never paper over the resulting compile error with
   `?? someDefault`.
@@ -50,11 +49,11 @@ are total.
 a reader — because the worker binds the feature. `CONFIG_PATTERN.md`
 §"Forwarding a callback slot" has the symptoms and the test to copy.
 
-Do **not** fix this by teaching the reader to skip evaluation when `args` is
-empty. That was built, measured and backed out: it hands back `"jexl:…"` for
-every caller in the repo and every third-party plugin, trading an enumerable set
-of wrong values for an unenumerable one. Keying on `contextVariable` is worse —
-it is editor metadata a slot is free to forget.
+Teaching the reader to skip evaluation when `args` is empty was built, measured
+and backed out: it hands back `"jexl:…"` for every caller in the repo and every
+third-party plugin, trading an enumerable set of wrong values for an
+unenumerable one. Keying on `contextVariable` is worse — it is editor metadata a
+slot is free to forget.
 
 ## A config snapshot is transport, not a value-read API
 
@@ -69,9 +68,9 @@ check** (reading off an un-hydrated frozen config is load-bearing in
 Reads narrow only when the schema is concrete — the lever is typing a state
 model factory's `configSchema` param to its concrete type. Don't pin a shared
 base if any consumer reads its own non-shared slots through it; a subclass
-reclaims them by redeclaring the `configuration` prop. **Generic threading does
-not rescue this — don't retry it in any form.** Guards in
-`configTypeNarrowing.test.ts` (checked by `pnpm typecheck`, not jest).
+reclaims them by redeclaring the `configuration` prop. Generic threading does
+not rescue this. Guards in `configTypeNarrowing.test.ts` (checked by
+`pnpm typecheck`, not jest).
 
 **A widened `baseConfiguration` poisons the whole schema**, since
 `ConfigurationSlotName` recurses through `GetBase` — so a schema taking its base

@@ -17,8 +17,8 @@ third-party display use it without pulling in core. Don't put `Gpu` on a symbol
 that also drives the Canvas2D fallback.
 
 The WebGL→Canvas2D ladder runs at **backend construction only**. A context lost
-afterwards surfaces as `renderError` with the page-wide `setGpuOverride` escape;
-don't add a second per-display fallback path.
+afterwards surfaces as `renderError`, with the page-wide `setGpuOverride` as the
+escape.
 
 **Module state must survive being duplicated, or live on the `globalThis`
 cell.** ADR-030 makes this package static-import-only, so two live instances on

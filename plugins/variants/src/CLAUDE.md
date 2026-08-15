@@ -102,8 +102,8 @@ Render input → the subclass `renderState` getter.
 - A drag-resized dimension goes on a config slot; the config node outlives the
   display instance.
 - **Matrix mode is zoom-cache-strict** (`isCacheValid` requires
-  `bpPerPx === loadedBpPerPx`). Don't extend that or the visible-only fetch to
-  regular mode.
+  `bpPerPx === loadedBpPerPx`) and fetches visible-only; regular mode is
+  neither.
 
 ## `layout` orders rows; `subtreeFilter` narrows them
 
@@ -202,8 +202,7 @@ not the live block width (which double-applies zoom during the RPC window).
 
 The two counters in `shared/alleleCounts.ts` are context-tuned, not duplication
 — the VCF hot path must accumulate into an object because mutating captured
-primitives inside the `processGenotypes` closure forces a V8 deopt. Don't merge
-them.
+primitives inside the `processGenotypes` closure forces a V8 deopt.
 
 MAF is over **called** alleles — `.` is never a candidate minor allele nor part
 of the denominator. LD computes its own and must land on the same number: count

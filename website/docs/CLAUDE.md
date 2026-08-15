@@ -8,8 +8,7 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 `pnpm autogen` rebuilds `config/`, `models/`, `api/`, the guide indexes,
 `cli.md`, `jbrowse-img.md`, and every `<!-- NAME START/END -->` marker block
 from JSDoc tags, registrations and manifests at the definition site. Document a
-new one by tagging the source. `scripts/autogen.ts` is the list of markers —
-don't copy it here.
+new one by tagging the source. `scripts/autogen.ts` is the list of markers.
 
 **A table a reader could check against the code is a generator waiting to be
 written.** Every generated table replaced a hand-written one that had already

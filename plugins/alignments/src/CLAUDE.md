@@ -93,8 +93,8 @@ or tag sort, so neither is on the default path.
 `extractFeatureArrays` calls `feature.get(...)` per read, so keep work out of
 it: `seq` (CRAM decodes the whole read) and `convertTagsToPlainArrays` belong
 only in `toJSON()`, and the `mismatches` getter allocates — the render path
-drives `forEachMismatch`. Don't add a memo without an interleaved A/B; the ones
-that were there measured as pure state.
+drives `forEachMismatch`. The memos that were here measured as pure state, so a
+new one wants an interleaved A/B behind it.
 
 **`get('tags')` is never the way to read a tag on this path**, however many you
 want. It decodes every tag on the read and BAM memoizes it onto a record in a
@@ -103,9 +103,10 @@ shared chunk LRU, so it is retained as well as paid for. Use `getTag` /
 
 That inverts only for a read whose tag block is dominated by a long `MD`, where
 a targeted walk byte-scans past kilobytes. `benches/gapStrand.bench.ts` prints
-tag bytes/read alongside the ratio. **Don't fold the walks into one** — the cost
-is the scan, not the number of walks. The real fix is a library change, sized as
-seam 5 in `agent-docs/reference/BAM_STACK_INTEGRATION.md`.
+tag bytes/read alongside the ratio. Folding the walks into one buys nothing
+there — the cost is the scan, not the number of walks — and the real fix is a
+library change, sized as seam 5 in
+`agent-docs/reference/BAM_STACK_INTEGRATION.md`.
 
 ## `withRegionRef`, never `record.ref = …`
 
@@ -119,8 +120,7 @@ it, resolving one region's mismatches against another's sequence.
 
 CRAM stores no CIGAR; the reconstruction lives in cram-js as
 `CramRecord.forEachCigarOp`, where it is cross-checked against samtools.
-`packCigar.ts` here only packs into `(length << 4) | op` — don't reintroduce a
-second walk on this side.
+`packCigar.ts` here only packs into `(length << 4) | op`.
 
 `readFeaturesToMismatches` is a walk of our own because it emits this repo's
 `MISMATCH_TYPE` vocabulary. It must stay consistent with cram-js's

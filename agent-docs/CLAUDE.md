@@ -31,9 +31,9 @@ the homes above; in `handoffs/` it is the point of the file.
 
 `TODO.md` vs `ideas/` is commitment, not size. A parked proposal often already
 contains the reasoning that kills the obvious version of the idea, so
-re-proposing without reading it wastes a session. Don't add a fifth folder — a
-`guides/` split was tried and collapsed. If `reference/` gets hard to scan, the
-fix is better `description:` lines.
+re-proposing without reading it wastes a session. A `guides/` split alongside
+`reference/` was tried and collapsed, nothing landing cleanly on the line; if
+`reference/` gets hard to scan, the fix is better `description:` lines.
 
 ## Third parties: say what we chose, not how they rank
 

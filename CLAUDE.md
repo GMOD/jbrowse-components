@@ -67,8 +67,7 @@ the root — resolve it from `packages/browser-test-utils/`.
   not `type X = Instance<…>`. A view naming its displays and a display naming
   its view is a mutual reference only the interface form defers; as aliases the
   pair collapses into TS7023/TS2456 plus ~20 implicit-any errors in unrelated
-  files, which is what you'll see first. Don't route around it by duck-typing
-  the view. ADR-055.
+  files, which is what you'll see first. ADR-055.
 - A duck-typed `interface XSelf` extends **`IStateTreeNode`**, never
   `IAnyStateTreeNode` — the latter resolves to `any`, silently turning off
   checking for every member you just declared.
@@ -136,15 +135,10 @@ exception.
 - Tests are slow — run `pnpm test <directory>`, not the full suite, and in your
   own worktree: a full-suite run from the shared primary checkout **lies**,
   since other agents edit the tree mid-run. Lint with `--fix`.
-- **Your test runs get 2 jest workers, deliberately — don't raise it.** The
-  point is the machine-wide total, which no per-run config can see.
-  `JEST_MAX_WORKERS` overrides it for one command.
-- **`jest.config.js`'s `.claude/` ignore is load-bearing — don't re-diagnose
-  it.**
 - **Bare `pnpm format` is fine** — it rewrites only mis-formatted files, ~7s
   whole-tree. Scoping risks missing a file a repo-wide `--fix` just rewrote.
 - **`agent-docs` is on `.prettierignore`, and naming it explicitly overrides
-  that** — formatting that path rewraps 9k lines of prose. Never do it.
+  that** — formatting that path rewraps 9k lines of prose.
 - **`pnpm autogen` rewrites every generated-and-committed artifact** and is the
   answer to almost any "X is out of date" CI failure. It owns `package.json`
   `exports` maps, `tsconfig.build.esm.json` `references`, and the JSDoc doc
@@ -159,7 +153,7 @@ exception.
   Slang does not re-export through an import, and this is the likeliest cause of
   a stale-generated case.
 - Two TypeScript versions on purpose: `typescript` 6.x for lint, aliased
-  `typescript7` for `pnpm typecheck`. Don't unify them. Use `--checkers 1`.
+  `typescript7` for `pnpm typecheck`.
 - The `@jbrowse/core/*` modules in `ReExports/modules.ts` are the ABI external
   plugins resolve against (`abi.test.ts` vs `abiBaseline.json`). Removals fail
   there; to drop a name, delete it from the baseline in the same commit and say

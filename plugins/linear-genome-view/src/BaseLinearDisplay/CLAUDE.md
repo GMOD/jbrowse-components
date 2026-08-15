@@ -2,8 +2,7 @@
 
 `FetchMixin` (stop tokens, staleness, `isLoading`) + `MultiRegionDisplayMixin`
 (autoruns, `fetchRegions`, `loadedRegions`, overridable hooks). Status chrome is
-`DisplayChrome.tsx` — see `agent-docs/reference/DISPLAYCHROME.md` and adr-026,
-and don't re-litigate the layering.
+`DisplayChrome.tsx` — see `agent-docs/reference/DISPLAYCHROME.md` and adr-026.
 
 ## Lifecycle traps
 
@@ -33,10 +32,10 @@ which is why the byte gate's opt-in is the `measuresBytesPreFlight` getter.
 `makeRetryContractCheck` is the same idea for the retry contract: it reports
 when a `reloadCounter` bump re-runs the autorun and the display's gate still
 declines — the dead Retry button arc. Exempt yourself with `loadingSuppressed`
-if the display is deliberately not fetching, and **don't silence `console.error`
-in a test harness**, which kept every one of these checks inaudible until
-2026-08. A jest gate now fails the run on any of them; a test that provokes one
-on purpose calls `takeDisplayContractReports()`.
+if the display is deliberately not fetching. These reports reach a jest gate
+through `console.error`, so a harness that replaces it takes itself out of the
+gate; a test that provokes a violation on purpose calls
+`takeDisplayContractReports()`.
 
 **A `fetchNeeded` that declines to fetch must be woken by something the autorun
 already tracks.** The coverage test short-circuits, so `isCacheValid`'s
@@ -66,8 +65,8 @@ axes content can move on (`bpPerPx`, `offsetPx`, `scrollTop`), not just zoom.
 does-a-layout-exist; neither is derivable from the other. `dataCurrent` is this
 family's answer to the one freshness name cross-cutting consumers read. Paint
 readiness is a fourth thing and is `painted` (`RenderLifecycleMixin`), which is
-what every consumer outside the display wants — don't reintroduce a
-display-local `canvasDrawn && !isLoading`.
+what every consumer outside the display wants, in place of a display-local
+`canvasDrawn && !isLoading`.
 
 The loading scrim goes through `foundationDisplayPhase`, and the only thing this
 family supplies is `viewportWithinLoadedData`; every other term is read straight
