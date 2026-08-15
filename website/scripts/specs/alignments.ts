@@ -14,6 +14,22 @@ import {
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+// Every Hi-C spec below waits this long, and the number is sized for the sweep
+// rather than for the data: solo, each of them reaches its ready selector in a
+// few seconds, and the whole block renders in about a minute at concurrency 4 on
+// an idle machine. They are contiguous in the spec list, so the pool holds four
+// of them at once — four SwiftShader WebGL contact matrices, the heaviest moment
+// in the run. On 2026-08-15 the block timed out at 60s each on a box 24 GB into
+// swap whose /tmp was a 16 GB tmpfs, 72% full.
+//
+// Headroom is only half an answer to that. Those pages could not be screenshot
+// at all, so `debugDump` wrote no frame and the failure arrived as a bare
+// selector timeout — a dead renderer outlasts any budget. This is the half that
+// is ours to set. `hic/whole_genome` takes more still: it answers 300 region
+// pairs where the others answer one.
+const HIC_READY_TIMEOUT = 180000
+const HIC_WHOLE_GENOME_READY_TIMEOUT = 240000
+
 // volvox_sv_cram's adapter, used to build the read_cloud session track. Session
 // tracks don't inherit the config's baseUri, so an absolute url is used (the
 // same volvox test data jbrowse.org hosts) — works in both the local generator
@@ -959,7 +975,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       ],
     }),
     readySelector: displayPainted('hic-display'),
-    readyTimeout: 60000,
+    readyTimeout: HIC_READY_TIMEOUT,
+    slowLiveSession: false,
     settleMs: 10000,
   },
 
@@ -1048,7 +1065,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // 224 s measured serially, which is what the 900 s here used to be for; off
     // the rehosted 1.6 MB file (see the track note above) the whole capture is
     // under a minute, so this is headroom rather than an expectation.
-    readyTimeout: 180000,
+    readyTimeout: HIC_WHOLE_GENOME_READY_TIMEOUT,
+    slowLiveSession: false,
     settleMs: 15000,
   },
 
@@ -1088,7 +1106,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // anchored to the bottom of the track band is drawn off the frame
     viewportHeight: 532,
     readySelector: displayPainted('hic-display'),
-    readyTimeout: 60000,
+    readyTimeout: HIC_READY_TIMEOUT,
+    slowLiveSession: false,
     settleMs: 10000,
     annotations: [
       {
@@ -1135,7 +1154,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     }),
     viewportHeight: 530,
     readySelector: displayPainted('hic-display'),
-    readyTimeout: 60000,
+    readyTimeout: HIC_READY_TIMEOUT,
+    slowLiveSession: false,
     settleMs: 10000,
   },
 

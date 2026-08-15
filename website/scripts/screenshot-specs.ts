@@ -142,7 +142,11 @@ export const screenshotLiveLabels: Record<string, string> = Object.fromEntries(
 // the reader pays for in their own browser. The Figure macro annotates their
 // "Open in JBrowse" link so a reader who clicks it knows to expect a wait rather
 // than a broken page. Derived from the spec, not a hand-kept list, so it can't
-// drift: a raised timeout is the spec's own statement that this one is slow.
+// drift: a raised timeout is the spec's own statement that this one is slow,
+// unless it says otherwise through `slowLiveSession`. That escape exists because
+// a capture budget answers a second question too — how long the sweep may wait
+// on a machine rendering four of these at once — and the Hi-C block is where the
+// two answers part company.
 //
 // Both kinds of timeout count, because a spec can put its whole wait in either.
 // `readyTimeout` covers getting to a session, but a session spec that launches
@@ -174,9 +178,10 @@ export const screenshotSlowSpecNames = new Set(
     .filter(
       spec =>
         spec.mode === 'url' &&
-        (spec.heavyNetwork ||
-          (spec.readyTimeout ?? 0) >= SLOW_TIMEOUT_MS ||
-          longestActionTimeout(spec) >= SLOW_TIMEOUT_MS),
+        (spec.slowLiveSession ??
+          (spec.heavyNetwork ||
+            (spec.readyTimeout ?? 0) >= SLOW_TIMEOUT_MS ||
+            longestActionTimeout(spec) >= SLOW_TIMEOUT_MS)),
     )
     .map(spec => spec.name),
 )

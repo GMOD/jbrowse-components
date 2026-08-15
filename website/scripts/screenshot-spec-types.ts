@@ -127,6 +127,12 @@ export interface BaseSpecFields {
   // rasterizer. Skipped unless --headed, keeping the committed PNG, instead of
   // failing the run. See reference-swiftshader-pileup-zoom-stall.
   headedOnly?: boolean
+  // whether the LIVE session a reader opens is slow, overriding the timeouts
+  // screenshotSlowSpecNames otherwise infers it from. Set it wherever a budget
+  // is capture headroom rather than a claim about the reader: the Hi-C block
+  // waits minutes because four of its specs render at once on a loaded sweep
+  // machine, and opens in seconds in a browser that is only running one.
+  slowLiveSession?: boolean
   // per-spec override of the content-stable diff gate (fraction of pixels in
   // [0,1]). Raise it for specs with irreducible render jitter — remote-data
   // timing, heavy text, animated chrome — so an unchanged capture isn't
