@@ -2,8 +2,8 @@ import { splitJunctionKind } from '@jbrowse/alignments-core'
 import {
   connectionEndpointBps,
   featurizeSA,
-  readLeadingBodyDir,
   readLeadingBp,
+  readTrailingBodyDir,
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
@@ -374,14 +374,21 @@ export interface ComputedArc {
 export interface CrossRegionArc extends ComputedArc {
   p1RegionIndex: number
   p2RegionIndex: number
-  // Which side of each foot the aligned body lies on, as a GENOMIC direction
-  // (+1 toward higher coordinates, -1 toward lower) — `connectionEndpointBps`'
-  // `dir1`/`dir2`, carried unchanged. The breakend orientation: outward feet are
-  // a deletion-type junction, inward a duplication-type, parallel an inversion,
-  // and that grammar is the only thing left saying it once
-  // `ARC_COLOR_INTERCHROM` has overwritten an interchromosomal arc's colour.
-  // `screenFeet` (crossRegionOverlay.ts) is the one consumer and says which arcs
-  // draw them.
+  // Which way the ARM this junction keeps runs from each foot, as a GENOMIC
+  // direction (+1 toward higher coordinates, -1 toward lower). The breakend
+  // orientation: outward feet are a deletion-type junction, inward a
+  // duplication-type, parallel an inversion, and that grammar is the only thing
+  // left saying it once `ARC_COLOR_INTERCHROM` has overwritten an
+  // interchromosomal arc's colour. `screenFeet` (crossRegionOverlay.ts) is the
+  // one consumer and says which arcs draw them.
+  //
+  // THE ARM, not "this segment's own aligned body", and the difference is what
+  // the two producers have to be read against. They coincide for a split
+  // junction, whose endpoint IS the junction — so `connectionEndpointBps` hands
+  // its `dir1`/`dir2` straight through. They are OPPOSITE rays for a mate link,
+  // whose endpoint is the fragment's outer edge with the read's body pointing
+  // back at the junction from it; `pairOuterDir` negates for that reason and
+  // carries the worked example.
   //
   // HERE rather than on `ComputedArc`, alongside the region indices and for the
   // same reason: the two are only ever read by the overlay. Nothing per-region
@@ -421,10 +428,12 @@ interface PendingArcEndpoints {
   p1Ref: string
   p1Bp: number
   p1Strand: number
-  // Genomic direction of the aligned body at each foot — see `ArcEndpoint.dir`.
-  // Resolved by the producer that chose the bp, never re-derived from the strand
-  // downstream: which edge an endpoint IS decides it, and the three producers
-  // here choose three different edges.
+  // Genomic direction of the retained ARM at each foot — see
+  // `CrossRegionArc.p1Dir`, which is where it ends up. Resolved by the producer
+  // that chose the bp, never re-derived from the strand downstream: which edge
+  // an endpoint IS decides it, the producers here choose different edges, and
+  // the two that choose the fragment's outer edge answer this with the read's
+  // direction NEGATED (`pairOuterDir`).
   p1Dir: number
   p2Ref: string
   p2Bp: number
@@ -825,13 +834,29 @@ function pairOuterBp(entry: ReadEntry) {
   return readLeadingBp(strandOf(entry), start, end)
 }
 
-// The body direction that goes with `pairOuterBp`'s edge — the mate reads INTO
-// the fragment from its own 5' end, so this is the read's own direction. Its own
-// function beside the bp for the reason `readLeadingBodyDir` mirrors
-// `readLeadingBp`: the edge and the direction are one choice, and this path picks
-// a different edge from `connectionEndpointBps`.
+// The foot direction that goes with `pairOuterBp`'s edge, and it is the READ'S
+// OWN DIRECTION NEGATED — `readTrailingBodyDir`, not the `readLeadingBodyDir`
+// that mirrors the bp above. The asymmetry is the whole point, so it is worth
+// saying why before someone lines the two ternaries up again.
+//
+// A foot says which ARM the junction keeps, measured from the junction. A split
+// junction's endpoint IS the junction, so there "the arm" and "this segment's
+// own aligned body" are the same ray and `connectionEndpointBps` can answer with
+// one ternary. A mate link's endpoint is the FRAGMENT's outer edge, a read
+// length outside the junction, and from there the read's body points INWARD, at
+// the junction — the opposite ray. Both rays lie inside the retained arm, so
+// both readings are defensible in isolation; what is not defensible is the two
+// producers disagreeing, since nothing in the picture says which evidence drew a
+// given arc.
+//
+// So: taking the read's own direction here made an FR pair — the deletion-type
+// signature — draw INWARD feet, which the mark's grammar spells "duplication",
+// while a split read over the identical junction drew outward. On a translocation
+// with both kinds of support the two land within a fragment length of each other,
+// in one colour, pointing opposite ways. `arcBreakendFeet.test.ts` pins the two
+// families against each other rather than against a remembered ±1.
 function pairOuterDir(entry: ReadEntry) {
-  return readLeadingBodyDir(strandOf(entry))
+  return readTrailingBodyDir(strandOf(entry))
 }
 
 // The mate link between the two reads of one pair, sourcing orientation and
@@ -910,24 +935,27 @@ function offScreenMateArcs(
   }
   const strand = strandOf(entry)
   const mateStrand = flagsOf(entry) & SAM_FLAG_MATE_REVERSE ? -1 : 1
-  const { start, end } = spanOf(entry)
   return [
     {
       p1Ref: refName,
-      p1Bp: readLeadingBp(strand, start, end),
+      // The pair family's edge and its foot direction, through the two helpers
+      // that own them together rather than spelled again here — this endpoint is
+      // the same fragment-outer edge `mateLinkArc` places, and the direction is
+      // the half that reads backwards on its own (see `pairOuterDir`).
+      p1Bp: pairOuterBp(entry),
       p1Strand: strand,
-      p1Dir: readLeadingBodyDir(strand),
+      p1Dir: pairOuterDir(entry),
       p2Ref: mateCanonRef,
       p2Bp: mateBp,
       p2Strand: mateStrand,
-      // The mate's own reading direction, carrying the SAME read-length
-      // approximation `p2Bp` already does: PNEXT is the mate's leftmost base, so
-      // for a reverse mate the fragment boundary this direction is measured from
-      // is one read length to the right of where the foot is placed. Negligible
-      // at arc-view zoom, for the reason above — and the alternative of reporting
-      // no direction throws away the orientation, which for an interchromosomal
+      // The mate's arm direction, carrying the SAME read-length approximation
+      // `p2Bp` already does: PNEXT is the mate's leftmost base, so for a reverse
+      // mate the fragment boundary this direction is measured from is one read
+      // length to the right of where the foot is placed. Negligible at arc-view
+      // zoom, for the reason above — and the alternative of reporting no
+      // direction throws away the orientation, which for an interchromosomal
       // pair is the whole of what the mark has to say.
-      p2Dir: readLeadingBodyDir(mateStrand),
+      p2Dir: readTrailingBodyDir(mateStrand),
       pairOrientationNum: data.readPairOrientations[readIdx]!,
       tlen: data.readInsertSizes[readIdx]!,
       flags: flagsOf(entry),
@@ -1321,7 +1349,7 @@ function resolveArcs(
     arc: Omit<ComputedArc, 'support' | 'key'>,
     p1RegionIndex: number | undefined,
     p2RegionIndex: number | undefined,
-    // The two body directions, carried through from the producer that chose the
+    // The two arm directions, carried through from the producer that chose the
     // endpoints. Taken here rather than on `arc` because they are only kept on
     // the cross-region half — see `CrossRegionArc.p1Dir`.
     feetDirs: { p1Dir: number; p2Dir: number },

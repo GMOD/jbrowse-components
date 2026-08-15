@@ -29,6 +29,17 @@ export function readLeadingBp(strand: number, start: number, end: number) {
 // sequencing the same molecule from the other end swaps which segment is
 // trailing and flips both strands, and the two flips cancel. That is what makes
 // it safe for a mark drawn from arcs several reads were coalesced into.
+//
+// WHICH OF THE TWO A CALLER WANTS IS DECIDED BY ITS ANCHOR, not by its strand,
+// and that is the thing to get right. A mark placed AT the junction takes the
+// one that matches its edge, which is what `connectionEndpointBps` pairs up
+// below. A mark placed at the fragment's outer edge — a mate-link arc, whose
+// endpoints are the two reads' 5' ends rather than the junction between them —
+// is a read length OUTSIDE the junction with the read's body pointing back at
+// it, so it wants the OTHER one: `readTrailingBodyDir` beside a
+// `readLeadingBp`. Pairing the mirrored names there instead drew an FR pair's
+// feet inward, which the breakend grammar spells "duplication", while a split
+// read over the identical junction drew them outward.
 export function readTrailingBodyDir(strand: number) {
   return strand === -1 ? 1 : -1
 }

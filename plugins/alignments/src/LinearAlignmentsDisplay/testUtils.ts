@@ -640,11 +640,13 @@ export function oneReadWithMate(mateBp?: number): PileupDataResult {
  * connection, which is the only family the cross-region overlay draws breakend
  * feet for, and which `oneReadWithMate` cannot express because it names `ctgA`.
  *
- * `strand` and `mateReverse` are the two inputs those feet are derived from: the
- * body direction at each foot is the read's own reading direction out of its
- * outer 5' edge (`readLeadingBodyDir`), so a case that wants outward feet asks
- * for a forward read with a reverse mate and one that wants parallel feet asks
- * for two forward.
+ * `strand` and `mateReverse` are the two inputs those feet are derived from. A
+ * foot points along the ARM its junction keeps, and this family's endpoints are
+ * the fragment's OUTER edges, so the direction is each read's own reading
+ * direction negated (`pairOuterDir`, features/arcs/compute.ts): a case that
+ * wants outward feet asks for a forward read with a reverse mate — the FR,
+ * deletion-type signature — and one that wants parallel feet asks for two
+ * forward.
  */
 export function oneReadWithInterchromMate({
   mateRefName,

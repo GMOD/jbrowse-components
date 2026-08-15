@@ -4,10 +4,11 @@ import {
   makeEmptyPileupData as emptyPileupData,
   oneReadWithInterchromMate,
   oneReadWithMate,
+  pileupDataFromSamRecords,
 } from '../testUtils.ts'
 
 // The breakend feet an interchromosomal arc draws: a short horizontal tick at
-// each foot, lying over the sequence that foot's aligned body occupies.
+// each foot, lying over the ARM that foot's junction keeps.
 //
 // Driven through the model rather than through `computeCrossRegionArcs` directly,
 // because the thing most likely to break is not the geometry — it is the chain
@@ -15,18 +16,21 @@ import {
 // the coalescer, the region partition and the reversal. A unit test of the last
 // step passes with any of the earlier ones inverted.
 //
+// TWO PRODUCERS REACH THAT CHAIN and they have to answer alike, which is what
+// `the two evidence kinds agree` below is for. A split junction's arc endpoint
+// IS the junction; a mate link's is the fragment's outer edge, a read length
+// outside it with the read's body pointing back at the junction. Taking each
+// read's own direction at both made an FR pair draw its feet inward — the
+// grammar's "duplication" — while a split read over the identical junction drew
+// them outward, in one colour, within a fragment length of each other.
+//
 // Every case reads the DIRECTIONS off the path rather than the coordinates: the
 // arc's own placement is `crossRegionArcs.test.ts`' subject, and re-asserting it
 // here would be a second, drifting statement of it.
 
-// Two contigs side by side, 10 kb each, with one paired read on the first whose
-// mate is on the second — the connection that is interchromosomal by
-// construction, and so always in the cross-region overlay.
-//
-// bpPerPx 40 puts the whole 20 kb in 500 px, which is what keeps BOTH feet
-// inside the 800 px band: the overlay's box is the view's width and its
-// `overflow: hidden` is the clip, so a foot beyond it would be dropped from the
-// picture while still appearing in `d`.
+// The MATE-LINK evidence: one paired read on ctgA whose mate is on ctgB — a
+// connection that is interchromosomal by construction, and so always in the
+// cross-region overlay.
 function interchromDisplay({
   strand = 1,
   mateReverse = false,
@@ -36,6 +40,28 @@ function interchromDisplay({
   mateReverse?: boolean
   reverseSecondRegion?: boolean
 } = {}) {
+  return twoContigDisplay(
+    oneReadWithInterchromMate({
+      mateRefName: 'ctgB',
+      mateBp: 2000,
+      strand,
+      mateReverse,
+    }),
+    reverseSecondRegion,
+  )
+}
+
+// Two contigs side by side, 10 kb each, showing whatever one fetch of ctgA
+// found.
+//
+// bpPerPx 40 puts the whole 20 kb in 500 px, which is what keeps BOTH feet
+// inside the 800 px band: the overlay's box is the view's width and its
+// `overflow: hidden` is the clip, so a foot beyond it would be dropped from the
+// picture while still appearing in `d`.
+function twoContigDisplay(
+  data: ReturnType<typeof oneReadWithInterchromMate>,
+  reverseSecondRegion = false,
+) {
   const { view, display } = createTestAlignmentsDisplay()
   view.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
@@ -54,18 +80,7 @@ function interchromDisplay({
   // every case here would pass its assertion on an empty section list.
   display.setMinInterchromSupport(1)
   display.setRpcData(0, {
-    groups: [
-      {
-        key: '',
-        label: '',
-        data: oneReadWithInterchromMate({
-          mateRefName: 'ctgB',
-          mateBp: 2000,
-          strand,
-          mateReverse,
-        }),
-      },
-    ],
+    groups: [{ key: '', label: '', data }],
   })
   // ctgB's own fetch, empty: the read scan walks the LOADED list, and the mate
   // is known here only from RNEXT/PNEXT on the ctgA record.
@@ -110,22 +125,33 @@ function oneArcPath(display: ReturnType<typeof interchromDisplay>) {
   return sections[0]!.arcs[0]!
 }
 
-test('a forward read with a reverse mate draws its feet inward', () => {
-  // The ordinary FR-like pair across two contigs: each mate reads INTO the
-  // fragment, so each body lies on the side of its own breakend nearer the
-  // other one. Inward feet.
+test('a forward read with a reverse mate draws its feet outward', () => {
+  // The ordinary FR-like pair across two contigs, which is the deletion-type
+  // signature: the fragment runs off ctgA toward higher coordinates and into
+  // ctgB from above, so each junction keeps the arm running AWAY from the other
+  // one. Outward feet.
+  //
+  // The two mates read INTO the fragment, which is the opposite ray and the one
+  // this used to draw — see `pairOuterDir`. It is the wrong one because a foot
+  // is placed at the fragment's outer edge here and at the junction itself for a
+  // split read, so answering with the read's direction makes the two families
+  // disagree about the same junction.
   const d = oneArcPath(interchromDisplay({ mateReverse: true })).d
-  expect(feetOf(d)).toEqual({ left: 1, right: -1, count: 2 })
+  expect(feetOf(d)).toEqual({ left: -1, right: 1, count: 2 })
 })
 
 test('and two forward reads draw them parallel', () => {
-  // Both bodies run toward higher coordinates, which is the same-orientation
-  // (LL) junction — the shape that distinguishes an inversion-flavoured join
-  // from a deletion-flavoured one, and the reason the mark exists at all: the
-  // interchromosomal colour slot has overwritten the orientation colour, so
-  // nothing else in the band says these two are not an ordinary pair.
+  // The same-orientation (LL) junction — the shape that distinguishes an
+  // inversion-flavoured join from a deletion-flavoured one, and the reason the
+  // mark exists at all: the interchromosomal colour slot has overwritten the
+  // orientation colour, so nothing else in the band says these two are not an
+  // ordinary pair.
+  //
+  // Parallel is the case that survives getting the ray backwards, since negating
+  // both feet of a parallel pair is a no-op. That is exactly why it cannot be
+  // the only multi-foot case here.
   const d = oneArcPath(interchromDisplay({ mateReverse: false })).d
-  expect(feetOf(d)).toEqual({ left: 1, right: 1, count: 2 })
+  expect(feetOf(d)).toEqual({ left: -1, right: -1, count: 2 })
 })
 
 test('and reversing the read flips both, because the junction is the same one seen from the far end', () => {
@@ -135,7 +161,47 @@ test('and reversing the read flips both, because the junction is the same one se
   )
   // Not a mirror of `fwd`: only the ctgA read turned round, so only its foot
   // moves. The mate's is where its own flag put it.
-  expect(rev).toEqual({ ...fwd, left: -1 })
+  expect(rev).toEqual({ ...fwd, left: 1 })
+})
+
+test('the two evidence kinds agree about one junction', () => {
+  // The crossing test, and the one the families exist to be held against. A
+  // split read and a discordant pair supporting the SAME deletion-type
+  // translocation must draw the SAME feet: both are ARC_COLOR_INTERCHROM, both
+  // are domes, and on a real breakpoint they land within a fragment length of
+  // each other — so two answers here is two marks contradicting one another with
+  // nothing in the picture saying which is which.
+  //
+  // They reach the answer by different routes, which is the point: the split
+  // read's endpoints come from `connectionEndpointBps` at the junction itself,
+  // the pair's from `pairOuterBp` at the fragment's outer edge a read length
+  // away. Asserted against each other rather than against a remembered ±1, so
+  // this stays a statement about agreement even if the sign convention moves.
+  const pair = feetOf(oneArcPath(interchromDisplay({ mateReverse: true })).d)
+  const split = feetOf(
+    oneArcPath(
+      twoContigDisplay(
+        // ctgA:4001 forward, 200 aligned bases then 300 soft-clipped, with the
+        // clipped tail aligning forward at ctgB:6001. Read order is primary then
+        // supplementary (clipAtStart 0, then 200), so the junction is ctgA's
+        // right edge joined to ctgB's left edge — the same arms the FR pair
+        // above says are joined.
+        pileupDataFromSamRecords([
+          {
+            name: 'splitRead',
+            flag: 0,
+            strand: 1,
+            pos: 4001,
+            CIGAR: '200M300S',
+            SA: 'ctgB,6001,+,200S300M,60,0;',
+          },
+        ]),
+      ),
+    ).d,
+  )
+  expect(split).toEqual(pair)
+  // and stated once absolutely, so a change that inverted BOTH still fails
+  expect(split).toEqual({ left: -1, right: 1, count: 2 })
 })
 
 test('a reversed displayed region mirrors the foot in it and only that one', () => {

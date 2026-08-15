@@ -448,9 +448,9 @@ tolerance because `ARC_MARKER_PX / 2 <= ARC_HIT_SLOP_PX`. That is arithmetic,
 not design, so `hitTest.test.ts` pins it.
 
 **An interchromosomal arc draws BREAKEND FEET, and no other arc does.** A short
-horizontal tick at each foot, lying over the sequence that foot's aligned body
-occupies: outward feet are a deletion-type junction, inward a duplication-type,
-parallel an inversion. Three things about the scope are load-bearing:
+horizontal tick at each foot, lying over the ARM that foot's junction keeps:
+outward feet are a deletion-type junction, inward a duplication-type, parallel
+an inversion. Three things about the scope are load-bearing:
 
 - **It is the family whose colour channel is spent.** Every interchromosomal
   connection paints `ARC_COLOR_INTERCHROM` whatever `colorByType` says, so
@@ -467,15 +467,35 @@ parallel an inversion. Three things about the scope are load-bearing:
   cancel (`readTrailingBodyDir`, @jbrowse/cigar-utils). A `ComputedLine` still
   carries none, because a tick coalesces on one coordinate and two junctions
   sharing a breakpoint would take whichever read arrived first.
+- **THE ARM, not "this foot's own aligned body", and the two producers differ on
+  exactly that.** A split junction's arc endpoint IS the junction, so there the
+  arm and the segment's body are the same ray and `connectionEndpointBps` hands
+  its `dir1`/`dir2` straight through. A mate link's endpoint is the FRAGMENT's
+  outer edge — a read length outside the junction, with the read's body pointing
+  back at it — so `pairOuterDir` answers with the read's direction NEGATED.
+  Mirroring the two ternaries instead made an FR pair draw its feet inward,
+  which this grammar spells "duplication", while a split read over the identical
+  junction drew them outward; on a translocation with both kinds of support
+  those land within a fragment length of each other, in one colour, pointing
+  opposite ways. `arcBreakendFeet.test.ts` holds the two families against each
+  other, and the parallel case is deliberately not the only multi-foot one
+  there, since negating both feet of a parallel pair is a no-op.
 
 The feet live in the **mark** (`ArcFeet`), not in the overlay's path string, so
 the hover highlight — which re-traces `arc.mark` at its own origin — draws them
 too. Their sign is deliberately the opposite of `tangentSign`
 (`core/util/bezierConnector.ts`), which is the direction a per-read connector
-LEAVES the same endpoint in: a foot lies over the body and the curve departs
-across the junction, which together is what BreakpointSplitView's
+LEAVES the same endpoint in: a foot lies over the retained arm and the curve
+departs across the junction, which together is what BreakpointSplitView's
 `buildBreakpointPath` draws as a tick into its breakend and a line out of it.
 Don't "fix" either to match the other.
+
+A foot is `ARC_FOOT_PX` from its anchor unconditionally, so two feet closer than
+that merge into one bar — which is the mark working, since they overlap
+precisely because both ends keep the same stretch. What is NOT handled is a foot
+crossing its region's seam, and the obvious bound (by the other foot) clamps the
+merge case instead: `agent-docs/TODO.md`, "Bound a breakend foot by its
+displayed region".
 
 The interchromosomal **ticks** have no feet, and that is unfinished rather than
 decided — `agent-docs/TODO.md`, "Give the interchromosomal ticks breakend feet

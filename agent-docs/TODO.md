@@ -56,6 +56,7 @@ before anyone noticed.
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Feet on the interchromosomal ticks](#give-the-interchromosomal-ticks-breakend-feet-too) | alignments | decide what a coalesced tick's direction is, then the shader |
+| [Bound a breakend foot by its region](#bound-a-breakend-foot-by-its-displayed-region) | alignments | bound it by the REGION; the partner bound is wrong and was reverted |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
 | [Pangenome graph view queue](#pangenome-graph-view-the-open-queue) | pangenome | three items unblock the rest; take the LGV axis first |
 | [Collapse trivial bubbles in a file-loaded graph](#coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles) | pangenome | designed; path lanes are the open question |
@@ -647,6 +648,43 @@ tick coalescing several reads on one coordinate has one answer — but note that
 `ComputedLine` deliberately carries none today, and two junctions sharing a
 breakpoint would otherwise take whichever read arrived first. Decide that before
 packing a direction into the tick buffer.
+
+Whichever direction a tick's foot ends up taking, it is the OFF-SCREEN-partner
+case, so `pairOuterDir`'s distinction applies to it too: the mate-link producers
+answer with the read's direction negated, because their endpoint is the
+fragment's outer edge rather than the junction.
+
+### Bound a breakend foot by its displayed region
+
+`ARC_FOOT_PX` is 20 CSS px from the anchor, unconditionally, and an
+interchromosomal arc's two feet are in **different displayed regions** by
+construction. So a breakend within 20 px of a seam draws part of its foot across
+that seam, over a contig the junction has nothing to say about — and a foot's
+whole content is "this much sequence is retained here".
+
+Not hypothetical framing: a two-region view of a fusion exists to put both
+breakends on screen, and a reader zoomed in on one puts it near an edge.
+
+**The obvious version is wrong and was written and reverted.** Bounding a foot by
+the OTHER foot's anchor (`min(ARC_FOOT_PX, 2 * rx)` when it points that way)
+looks equivalent and is not: two feet pointing the SAME way must keep overrunning
+each other, since they overlap precisely because both ends keep the same stretch
+and the bar they merge into is that stretch drawn (`ARC_FOOT_PX` carries the
+199 bp templated insert this was measured on). A partner bound clamps exactly
+that case. `arcFeetPath.test.ts` pins it against the mistake.
+
+The right bound is each foot's own region's screen extent, which means:
+
+- the model projecting `displayedRegions[i]`'s `start`/`end` once per resolve,
+  beside `reversedByRegion` in `crossRegionArcSections` — a per-pan-frame cost,
+  so measure it against the existing two `bpToPx` calls per arc;
+- a per-foot max length on `ArcFeet` rather than one number, since the two feet
+  hit different edges;
+- `screenFeet` resolving it, for the same reason it resolves `regionReversed`
+  there: it is the layer that knows which region each foot came through.
+
+Same shape as the tick entry above — the mark says a direction, and a mark that
+says it on the wrong contig is worse than one that says nothing.
 
 ### Linearize the pangenome: draw graph variation as alignment-style glyphs
 

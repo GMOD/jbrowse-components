@@ -116,8 +116,9 @@ export interface ComputeCrossRegionArcsOpts {
   onCapped?: (dropped: number, kept: number) => void
 }
 
-// The genomic body direction at each foot, mirrored per region into the screen
-// direction `ArcFeet` wants, and only for the family that has no other channel
+// The genomic direction of the retained arm at each foot, mirrored per region
+// into the screen direction `ArcFeet` wants — the producers resolved it, this
+// only reflects it — and only for the family that has no other channel
 // left: `ARC_COLOR_INTERCHROM` overwrites orientation, insert size and long-range
 // distance with one colour, so a reader of an interchromosomal arc has nothing
 // telling them which arms are joined.

@@ -84,10 +84,16 @@ export interface ArcBar extends ArcMarkBase {
 }
 
 // The breakend feet a dome can carry: a short horizontal tick at each foot,
-// lying over the sequence that foot's aligned body occupies. Outward feet are a
+// lying over the ARM that foot's junction keeps. Outward feet are a
 // deletion-type junction, inward a duplication-type, parallel an inversion —
 // the standard breakend grammar, and the only channel left saying it once
 // `ARC_COLOR_INTERCHROM` has overwritten an interchromosomal arc's colour.
+//
+// "The arm", not "this segment's aligned body". The two coincide only where the
+// arc's endpoint IS the junction, which is the split-read producer and not the
+// mate-pair one — `pairOuterDir` (features/arcs/compute.ts) is where that gets
+// reconciled, and it is what stops one junction drawing opposite feet depending
+// on which kind of read happened to evidence it.
 //
 // LEFT/RIGHT rather than 1/2, because that is the question the path builder
 // asks: the dome's two feet are `mid - rx` and `mid + rx`, which are min and max
@@ -95,7 +101,7 @@ export interface ArcBar extends ArcMarkBase {
 // it, so no consumer has to re-decide which endpoint is on which side of a
 // reversed region.
 //
-// The DIRECTION IS ALREADY SCREEN-SPACE. A body direction is genomic, and a
+// The DIRECTION IS ALREADY SCREEN-SPACE. An arm direction is genomic, and a
 // reversed displayed region (which is also how `horizontallyFlip` is
 // implemented) mirrors it; the caller applies that, because it is the caller
 // that knows which region each foot resolved through.
