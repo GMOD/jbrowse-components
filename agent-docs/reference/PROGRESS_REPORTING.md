@@ -196,7 +196,7 @@ callback with that rather than calling `run` directly.
 **One per owner**, shared across its status callbacks so N parallel region
 fetches thin to one stream between them rather than N. `createGuardedStatusSink`
 takes it as a required argument with no default for that reason: a per-sink
-default would silently give you N. Three owners, so progress cadence is uniform
+default would silently give you N. The owners, so progress cadence is uniform
 whichever path a status took:
 
 - `FetchMixin` — the LGV displays
@@ -204,6 +204,12 @@ whichever path a status took:
   compose no fetch mixin
 - `withDiagonalizeProgress` and `DiagonalizeDialog` — the diagonalize RPC,
   which drives a spinner and a dialog rather than a display's status fields
+- `useFetch` — every dialog and widget fetch, one window per effect run
+- `assembly.loadPre` — the four concurrent startup files (see above)
+
+They are listed rather than counted for the reason
+[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) states at "ordering is the
+contract": this said "Three owners" while the last two were already here.
 
 Two rules the shape enforces:
 
@@ -217,6 +223,38 @@ Two rules the shape enforces:
   the half that is easy to leave out: a phase boundary is immediately followed by
   the next phase's label, so charging the clear a full window delays every label
   by up to one and drops outright the label of any phase shorter than one.
+
+## A fetcher that declares no parameters is opted out, silently
+
+`useFetch` hands its fetcher the key elements and then a **stop token and a
+status callback**, positionally. TypeScript accepts a function that declares
+fewer parameters, so `() => rpcManager.call(...)` is assignable and simply never
+sees either one — no error, and the only symptom is a bare spinner over an
+uninterruptible read. That is the intended default for the many fetchers that
+are a local lookup; it is a trap for the ones that are an RPC.
+
+The cluster dialog was the worked case, and it is worth knowing because the
+comparison was on screen the whole time. Its "Run clustering" tab reported a
+determinate bar with a Stop, and its "Download Rscript" tab a bare
+`LoadingEllipses` with no cancel — for the *same* region fetch and the same
+matrix build, differing only in the clustering step at the end. Both worker RPCs
+had honored `stopToken` and `statusCallback` since they were written; the dialog
+never passed them. The fix is in the shared contract rather than in either
+plugin: `ClusterDialogProps.fetchMatrix` now takes `{ stopToken, statusCallback }`
+exactly as its sibling `run` does, so forwarding them is what a display writes by
+default.
+
+Two things to copy from it:
+
+- **Declare the argument in the contract a display fills in.** Both plugins
+  complied with a signature that dropped the handles, so neither was wrong; the
+  interface was.
+- **A variable-length `useFetch` key makes the trailing arguments unnameable.**
+  With `[...matrixKey, regionKey]` the fetcher's parameter list is
+  `(...args)` and the two handles have no name to destructure, which is how they
+  went unnoticed. Nest the display's key pieces (`['clusterMatrix', [...]]`)
+  so the arity is fixed and the parameters can be named — `useFetch` serializes
+  the whole key, so nesting caches identically.
 
 ## Cancel is durable and retryable
 

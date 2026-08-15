@@ -33,4 +33,31 @@ describe('ClusterProgress', () => {
     expect(bar.getAttribute('aria-valuenow')).toBe('0')
     expect(bar.className).not.toMatch(/indeterminate/)
   })
+
+  // The manual tab drives this off `useFetch`, which exposes no stop handle —
+  // its token is tied to the key and the mount, so the dialog's own Cancel IS
+  // the stop and a second button here would claim an affordance that does
+  // nothing. It still gets the label and the bar, which is the point: the two
+  // tabs do the same work and now report it the same way.
+  it('omits the Stop button when the caller has no stop to offer', () => {
+    render(<ClusterProgress label="Generating genotype matrix" />)
+
+    expect(screen.getByText('Generating genotype matrix')).toBeTruthy()
+    expect(screen.queryByText('Stop')).toBeNull()
+    expect(screen.getByRole('progressbar')).toBeTruthy()
+  })
+
+  // The label is a fallback, never a prefix: once the fetcher names its phase
+  // that is the more specific thing to show.
+  it('a reported phase replaces the fallback label', () => {
+    render(
+      <ClusterProgress
+        label="Generating genotype matrix"
+        status={{ message: 'Downloading variants', current: 3, total: 4 }}
+      />,
+    )
+
+    expect(screen.getByText('Downloading variants 75%')).toBeTruthy()
+    expect(screen.queryByText('Generating genotype matrix')).toBeNull()
+  })
 })

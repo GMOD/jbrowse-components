@@ -3,7 +3,6 @@ import { useState } from 'react'
 import {
   CopyToClipboardButton,
   ErrorBanner,
-  LoadingEllipses,
   SubmitForm,
 } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -18,6 +17,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ClusterProgress from '../ClusterProgress.tsx'
 import { generateClusterRScript, matrixToTsv } from '../clusterRScript.ts'
 import { parseClusterOrder } from '../clusterUtils.ts'
 import ClusterAdvancedOptions from './ClusterAdvancedOptions.tsx'
@@ -77,9 +77,22 @@ const ClusterManualTab = observer(function ClusterManualTab({
     data: matrix,
     error,
     isLoading: loading,
+    status,
   } = useFetch(
-    view.initialized && matrixKey ? [...matrixKey, regionKey] : null,
-    fetchMatrix,
+    // The display's key pieces go in NESTED rather than spread, so this is a
+    // fixed 2-tuple: `useFetch` hands the fetcher one argument per key element
+    // and then the stop token and status callback, so a variable-length key
+    // makes those two unnameable — which is why they went unforwarded here. It
+    // serializes the whole key, so nesting caches identically.
+    view.initialized && matrixKey
+      ? (['clusterMatrix', [...matrixKey, regionKey]] as const)
+      : null,
+    // The token makes Cancel — and a pan that re-keys the fetch — actually stop
+    // the worker rather than leave it building a matrix nobody is waiting for,
+    // and the status sink is what turns the row below into the same determinate
+    // readout the auto tab shows for the same work.
+    (_name, _key, stopToken, statusCallback) =>
+      fetchMatrix({ stopToken, statusCallback }),
   )
 
   const script = matrix ? generateClusterRScript(matrix, clusterMethod) : ''
@@ -157,7 +170,10 @@ const ClusterManualTab = observer(function ClusterManualTab({
           {advancedOptions}
         </ClusterAdvancedOptions>
         {loading ? (
-          <LoadingEllipses variant="h6" message={`Generating ${matrixLabel}`} />
+          <ClusterProgress
+            status={status}
+            label={`Generating ${matrixLabel}`}
+          />
         ) : error ? (
           <ErrorBanner error={error} />
         ) : null}

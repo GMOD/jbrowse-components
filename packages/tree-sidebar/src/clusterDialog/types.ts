@@ -42,7 +42,23 @@ export interface ClusterDialogProps {
    * yet).
    */
   matrixKey: readonly unknown[] | null
-  fetchMatrix: () => Promise<ClusterMatrix>
+  /**
+   * The exported matrix, given the same stop token and status sink as `run` —
+   * and it takes them for the reason it looks like it wouldn't need to. This is
+   * the *same* work the auto tab does (fetch the region, build the matrix); only
+   * the clustering step differs. It was declared `() => Promise<ClusterMatrix>`,
+   * which `useFetch` accepts — its fetcher's trailing `stopToken` /
+   * `statusCallback` are positional, so a zero-parameter function is assignable
+   * and simply never sees them. Both plugins complied with the interface and
+   * both lost cancel and progress, so one dialog reported a determinate bar on
+   * one tab and a bare spinner on the other for identical work. Declaring the
+   * argument is what makes forwarding it the default rather than something each
+   * display has to think of.
+   */
+  fetchMatrix: (args: {
+    stopToken: StopToken
+    statusCallback: (arg: RpcStatus) => void
+  }) => Promise<ClusterMatrix>
   /**
    * Apply a 0-based row order pasted back from R. Throw to reject it — the
    * dialog stays open and reports the message, so the user can fix the paste.

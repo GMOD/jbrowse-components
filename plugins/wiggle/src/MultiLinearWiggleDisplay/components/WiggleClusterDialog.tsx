@@ -61,11 +61,15 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
           statusCallback,
         })
       }}
-      fetchMatrix={() =>
+      fetchMatrix={({ stopToken, statusCallback }) =>
         getSession(model).rpcManager.call(
           getRpcSessionId(model),
           'MultiWiggleGetScoreMatrix',
-          clusterScoreMatrixArgs(model, samplesPerPixel),
+          {
+            ...clusterScoreMatrixArgs(model, samplesPerPixel),
+            stopToken,
+            statusCallback,
+          },
         )
       }
       applyOrder={order => {

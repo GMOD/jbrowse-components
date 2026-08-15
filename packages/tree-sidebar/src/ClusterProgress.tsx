@@ -13,6 +13,12 @@ import type { RpcStatus } from '@jbrowse/core/util'
  * a Stop button pushed to the far right so it never crowds the text, and a
  * determinate bar underneath.
  *
+ * `onStop` is optional, and the tab that omits it is the manual one: its fetch
+ * is driven by `useFetch`, whose stop token is tied to the key and the mount, so
+ * the dialog's own Cancel is the stop and a second button beside it would claim
+ * an affordance the hook doesn't expose. It gets the same label and bar, which
+ * is the point — identical work reported identically on both tabs.
+ *
  * The bar holds at 0 rather than going indeterminate for the sub-second
  * startup, before the first counts arrive: MUI animates an indeterminate bar by
  * sweeping it across the full width, which reads as ~100% and then appears to
@@ -22,10 +28,13 @@ import type { RpcStatus } from '@jbrowse/core/util'
  */
 export default function ClusterProgress({
   status,
+  label,
   onStop,
 }: {
   status?: RpcStatus
-  onStop: () => void
+  /** shown until the fetcher reports a phase of its own */
+  label?: string
+  onStop?: () => void
 }) {
   const fraction = statusFraction(status)
   return (
@@ -39,11 +48,15 @@ export default function ClusterProgress({
         }}
       >
         <span style={{ flex: 1 }}>
-          {progressLabel(statusMessageText(status), fraction) || 'Loading...'}
+          {progressLabel(statusMessageText(status), fraction) ||
+            label ||
+            'Loading...'}
         </span>
-        <Button variant="contained" color="primary" onClick={onStop}>
-          Stop
-        </Button>
+        {onStop ? (
+          <Button variant="contained" color="primary" onClick={onStop}>
+            Stop
+          </Button>
+        ) : null}
       </div>
       <StatusProgressBar fraction={fraction ?? 0} />
     </div>

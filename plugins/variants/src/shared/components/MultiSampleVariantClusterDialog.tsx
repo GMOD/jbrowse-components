@@ -55,7 +55,7 @@ const MultiSampleVariantClusterDialog = observer(
         // Same rows the auto path clusters — the ones on screen. Both paths have
         // to agree, or the order pasted back would be indexed against a different
         // sample set than "Run clustering" would have produced.
-        fetchMatrix={() =>
+        fetchMatrix={({ stopToken, statusCallback }) =>
           getSession(model).rpcManager.call(
             getRpcSessionId(model),
             'MultiSampleVariantGetGenotypeMatrix',
@@ -68,6 +68,8 @@ const MultiSampleVariantClusterDialog = observer(
               adapterConfig: model.adapterConfig,
               renderingMode: model.renderingMode,
               sampleInfo: model.sampleInfo,
+              stopToken,
+              statusCallback,
             },
           )
         }
