@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import { useNoteDraft } from './useNoteDraft.ts'
 import { useReview } from './useReview.ts'
@@ -10,9 +10,11 @@ import type { ReviewEntry } from './types.ts'
 
 // What a verdict carries with it. The note the reviewer can SEE is the one that
 // has to ride along with Approve/Deny — the card's own text, not a guess
-// reconstructed from somewhere else — because every path that changes the
-// report's copy underneath the box (a clear, a 409 the server won) leaves the
-// two disagreeing, and the reviewer is looking at the box.
+// reconstructed from somewhere else, because a 409 the server won moves the
+// report's copy out from under the box and the reviewer is looking at the box.
+//
+// And when the report's copy goes away entirely, the box goes with it: a clear
+// deletes the entry, note included, in both the report and the draft store.
 
 const ENTRY: ReviewEntry = { name: 'x', stale: false, imageHash: 'h' }
 
@@ -21,10 +23,12 @@ interface Posted {
   body: { name: string; status?: string; note?: string }
 }
 
-function Harness({ posted }: { posted: Posted[] }) {
+function Harness() {
   const { entries, loadEntries, drafts, setVerdict, saveNote, clearVerdict } =
     useReview<ReviewEntry>({
-      draftsKey: `drafts-${posted.length}`,
+      // one key across a remount, so the drafts a reload would restore are the
+      // drafts the last render left behind
+      draftsKey: 'drafts',
       imageMovedPhrase: 'it moved',
     })
   useEffect(() => {
@@ -102,7 +106,7 @@ function setup() {
           hash: 'h',
         })
   })
-  render(<Harness posted={posted} />)
+  render(<Harness />)
   return posted
 }
 
@@ -132,18 +136,27 @@ test('a note typed before the first verdict goes with it', async () => {
   })
 })
 
-test('the note survives clearing the verdict it was attached to', async () => {
+test('clearing a verdict empties the note it was attached to', async () => {
   const posted = setup()
   type('the labels overlap')
   await click('approve')
   await click('clear')
-  // the box still shows the reason, so re-approving has to carry it: the card
-  // says "unsaved — approve or deny to save this note" at this point, and it
-  // used to be lying
-  expect(noteBox().value).toBe('the labels overlap')
+  // the clear deleted the report entry, note and all, so a box still showing
+  // the reason would be showing something nothing anywhere holds
+  expect(noteBox().value).toBe('')
   await click('approve')
-  expect(posted.at(-1)?.body).toMatchObject({
-    status: 'good',
-    note: 'the labels overlap',
-  })
+  expect(posted.at(-1)?.body).toMatchObject({ status: 'good', note: '' })
+})
+
+test('a cleared note does not come back from the draft store', async () => {
+  setup()
+  type('the labels overlap')
+  await click('approve')
+  // typed after the save, so the draft store is holding it when the clear lands
+  type('and the axis is cut off')
+  await click('clear')
+  expect(noteBox().value).toBe('')
+  cleanup()
+  setup()
+  expect(noteBox().value).toBe('')
 })

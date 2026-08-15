@@ -42,6 +42,31 @@ export function useNoteDraft({ entry, drafts, onSave }: UseNoteDraftOptions) {
   // clicking away posts a write nobody asked for.
   const atFocus = useRef(value)
 
+  // Empty the box when the verdict goes away. `clear` deletes the whole report
+  // entry, note included, so text left behind is text nothing will save: it
+  // outlived its verdict in the box alone, unbacked by the draft store, and the
+  // next unmount — Clear settled, a filter, a browser reload — took it without
+  // saying so. The draft goes with it for the same reason, or a reload would
+  // put back what was just cleared.
+  //
+  // Written for the verdict going away rather than for the button, so a clear
+  // that FAILS leaves the note where the reviewer needs it, and a clear another
+  // process made — adopted through a 409, or seen on the next load — reads the
+  // same as one made here.
+  //
+  // Adjusted during render, the pattern React documents for state derived from
+  // a changed input; the draft write rides along because the two are the same
+  // fact and a box emptied without it is the bug above in miniature.
+  const [hadVerdict, setHadVerdict] = useState(!!entry.verdict)
+  if (hadVerdict !== !!entry.verdict) {
+    setHadVerdict(!!entry.verdict)
+    if (!entry.verdict) {
+      setValue('')
+      atFocus.current = ''
+      drafts.set(name, '', '')
+    }
+  }
+
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) {

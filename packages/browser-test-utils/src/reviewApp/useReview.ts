@@ -165,9 +165,8 @@ export function useReview<E extends ReviewEntry>({
   // `note` is the text in the card's own box at the moment of the click, and it
   // is the caller's to supply because the card is the only thing that knows it.
   // Reconstructing it here instead — draft, else the report's copy — was wrong
-  // wherever the report's copy moved out from under the box: clearing a verdict
-  // drops the note the box is still showing, and a 409 adopts the other side's.
-  // Both then posted a note the reviewer could see was not the one they had.
+  // wherever the report's copy moved out from under the box: a 409 adopts the
+  // other side's note, and posted one the reviewer could see was not theirs.
   const setVerdict = useCallback(
     (name: string, status: Verdict['status'], note: string) => {
       if (!entryOf(name)) {

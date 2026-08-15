@@ -233,7 +233,7 @@ export const Card = memo(function Card({
             disabled={!v}
             title={
               v
-                ? 'Drop this verdict — the card goes back to unreviewed'
+                ? 'Drop this verdict and its note — the card goes back to unreviewed'
                 : 'nothing recorded yet'
             }
             onClick={() => {
