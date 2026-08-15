@@ -200,15 +200,16 @@ still has no zoom-out path, and force-load remains the only way past the gate.
 
 ## Render cost is no longer the open question
 
-Worth stating so the next person doesn't re-profile it: ten passes have landed
+Worth stating so the next person doesn't re-profile it: eleven passes have landed
 (sub-pixel decimation on the base cells, `IdentityColumns` on the identity plot,
 memoized source-chromosome ranks and inversion consensus, the deletion overlay
 gated on what its label can fit, `bpLo`/`bpHi` culling for every marker overlay,
 `blockIndexAtBp` replacing two linear block scans, per-*column* culling in
 `computeVisibleLabels`, the codon spine's per-block indexes built on first use,
-the source-chromosome ranks re-keyed off `renderBlocks`, and the per-region event
-index the marker overlays now project). `git log --oneline -- plugins/maf` has
-them with their numbers.
+the source-chromosome ranks re-keyed off `renderBlocks`, the per-region event
+index the marker overlays now project, and the per-block longest-run bound that
+retires the deletion walk). `git log --oneline -- plugins/maf` has them with
+their numbers.
 
 Three lessons generalize, and they are why the list above is not the point:
 
@@ -269,6 +270,38 @@ Three things the sketch got wrong, and they are the transferable part:
   cannot label and is answered whole, for all its rows, by one subtraction.
   Indexing what is cheap to bound is how a per-frame walk becomes a per-region
   memory leak.
+
+  **A second bound followed, and it is where the win actually is.** The span
+  bound says nothing about a block wide enough to label whose runs are all short
+  — a 200bp block of 2bp runs at 13bp/px — and that is the common shape, so the
+  columns were still walked every frame to emit nothing. One `Uint32` per block
+  holding its longest run (`regionDeletionRunBounds`) closes it, and the label
+  test is a test on *length*, so `maxRun < MIN_LABEL_WIDTH * bpPerPx` drops no
+  marker the per-run test would have kept. Measured against a 1.02x control, and
+  the ratios are not typos: the steady-state pan is **2,750x** on 20kb blocks
+  with dense reference gaps (267ms → 0.10ms) and **2,149x** on the 447-way
+  (627ms → 0.29ms), both output-identical, because the whole walk goes away.
+  The shape where runs really do label is 0.965x against a 1.023x control — i.e.
+  unchanged, which is the point: the bound only removes walks that emit nothing.
+
+  The cost is **first touch, and it is the same trade the index makes**: the
+  bound has to be over all rows or it cannot survive a scroll, so the block that
+  fills it walks its full depth where a frame walks only what it draws. On the
+  447-way that is 0.872x against a 1.004x control — 13% on one frame, against
+  three orders of magnitude on every frame after it.
+
+  Two things nearly went wrong, both caught by the tests rather than the bench,
+  and both mutation-checked by narrowing the code and re-running. A bound taken
+  over the *visible* rows loses a deep row's labels the moment you scroll to it.
+  A bound stored as "does this label" rather than as a length loses them on zoom
+  in. Neither shows up in a bench, whose viewport never moves off row 0.
+
+  A third was only visible in the bench: on the shape the bound cannot cull, the
+  first version measured **0.867x**. The walk was unchanged — the cost was the
+  emit callback, whose context chain had gained a level because `longest` sat in
+  a per-block scope, plus a `??=` resolving the flank per row. Hoisting both put
+  it back to 1.02x. When a change to a hot loop's *surroundings* costs 13%, look
+  at what the innermost closure now captures.
 - **The merge underneath it needed no index either.** Zoomed out the insertion
   overlay collapses everything in a pixel column of a row to the longest, which
   was a `Map` of `Map`s. A row's events arrive in ascending bp and bp->px is

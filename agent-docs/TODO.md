@@ -65,7 +65,6 @@ before anyone noticed.
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
-| [Cache each block's longest deletion run](#cache-each-blocks-longest-deletion-run) | MAF | run mafOverlays.bench on a quiet box first |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
 | [Byte-native MAF adapter path](#a-byte-native-maf-adapter-path-once-tabix-js-publishes-linebytescallback) | MAF | blocked on a tabix-js publish; measure the pack stage, not the decode |
@@ -1500,31 +1499,6 @@ check before building any of it. The byte-gate half is closed: the gate no longe
 scales an estimate by span, it re-measures at the viewport it is judging, so a
 cost quantized by feature is measured rather than modelled
 (REGION_TOO_LARGE.md § "Measurement follows the viewport").
-
-### Cache each block's longest deletion run
-
-`computeVisibleDeletions` culls a block whose whole reference span is narrower
-than one digit at the current zoom, which answers the many-small-blocks shapes
-for free. It does nothing for a block wider than that whose deletions are all
-short — a 200bp block of 2bp runs at 13bp/px — and there the per-column walk
-still runs every frame to emit nothing. One `Uint32` per block, the longest run
-over all its rows, filled on first touch by the same lazy per-block index the
-insertion overlay uses (`mafRowEvents.ts`), would make every later frame at any
-zoom free for those blocks: `maxRun < MIN_LABEL_WIDTH * bpPerPx` is exact, since
-the label test is a test on length.
-
-Two things to settle before building, and they are why this is here rather than
-in the pass that landed:
-
-- **It has to be measured on an idle box.** The run that suggested it had a load
-  average of 51 on 16 cores, and the deletion rows came back between 0.71x and
-  1.01x with the control itself ranging 0.69x to 1.24x — i.e. those rows
-  measured nothing. `plugins/maf/benches/mafOverlays.bench.ts` already carries
-  the shapes, including the sparse-ref-gap one where labels genuinely draw.
-- **The bound is over all rows, not the visible ones**, or it is not reusable
-  across a scroll. So first touch of a block walks its full depth where the
-  current code walks only the rows on screen — the same trade the insertion
-  index makes, and worth confirming it is still the right one at 447 rows.
 
 ### Produce and host the HPRC summary tier
 
