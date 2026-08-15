@@ -70,3 +70,43 @@ test('every RPC method deserializes its arguments', () => {
   // `execute`, and if the method really has no locations it goes in EXEMPT
   expect(offenders).toEqual([])
 })
+
+// A sibling gap, and the same reason it needs a test rather than a type: TS
+// checks a METHOD declaration bivariantly, so an `execute` may narrow its
+// parameter below what the base declares and the override still passes. What
+// gets narrowed away is always the same two fields, because they are the two an
+// author writing the args type out by hand does not think to include — 18 of
+// the 32 hand-written arg types named neither `stopToken` nor `statusCallback`,
+// and the values were arriving on the object the whole time.
+//
+// Declaring `RpcExecuteArgs<'Key'>` is what puts them in the signature, since it
+// is derived from the registry rather than written. That is not enforceable
+// contravariantly without moving `execute` to a property of function type, which
+// makes every subclass that writes `async execute(...)` — i.e. every external
+// plugin — a TS2425 error.
+//
+// Three methods had genuinely dropped them when this was written:
+// GetPileupFeatureDetails and SyntenyResolveMatchingRegion each built a fresh
+// `{ lodMode }` opts object for a per-region re-read, and
+// MultiSampleVariantGetSources called `getSources` with no opts at all, which is
+// a full scan of every visible region.
+test('every RPC method takes the full RpcExecuteArgs', () => {
+  const offenders = ROOTS.flatMap(root =>
+    sourceFiles(path.join(repoRoot, root)),
+  )
+    .map(full => ({ rel: path.relative(repoRoot, full), full }))
+    .filter(({ full }) => {
+      const source = readFileSync(full, 'utf8')
+      if (
+        !/\bclass\s+\w+\s+extends\s+RpcMethodType\w*<'/.test(source) ||
+        !/\basync\s+execute\s*\(/.test(source)
+      ) {
+        return false
+      }
+      const param = /async\s+execute\s*\(\s*\w+\s*:\s*([^,)]+)/.exec(source)
+      return !param?.[1]!.trim().startsWith('RpcExecuteArgs<')
+    })
+    .map(({ rel }) => rel)
+
+  expect(offenders).toEqual([])
+})

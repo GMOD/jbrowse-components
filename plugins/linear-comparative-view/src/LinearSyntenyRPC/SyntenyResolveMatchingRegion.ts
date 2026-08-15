@@ -65,6 +65,8 @@ export default class SyntenyResolveMatchingRegion extends RpcMethodTypeWithRenam
       window,
       toMate,
       lodMode,
+      stopToken,
+      statusCallback,
     } = await this.deserializeArguments(args, rpcDriverClassName)
 
     const region = regions[0]
@@ -76,8 +78,15 @@ export default class SyntenyResolveMatchingRegion extends RpcMethodTypeWithRenam
       sessionId,
       adapterConfig,
     })
+    // Forwarded rather than rebuilt: locating one alignment by id re-reads the
+    // whole region out of the PAF/chain file, so a fresh opts object made this
+    // uncancellable and silent.
     const features =
-      (await dataAdapter?.getFeaturesArray(region, { lodMode })) ?? []
+      (await dataAdapter?.getFeaturesArray(region, {
+        lodMode,
+        stopToken,
+        statusCallback,
+      })) ?? []
     const alignment = features.find(f => f.id() === featureId)
     if (!alignment) {
       return undefined

@@ -30,8 +30,14 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
     args: RpcExecuteArgs<'PileupGetGlobalValueForTag'>,
     rpcDriverClassName: string,
   ) {
-    const { sessionId, adapterConfig, regions, tag, stopToken } =
-      await this.deserializeArguments(args, rpcDriverClassName)
+    const {
+      sessionId,
+      adapterConfig,
+      regions,
+      tag,
+      stopToken,
+      statusCallback,
+    } = await this.deserializeArguments(args, rpcDriverClassName)
 
     const dataAdapter = await getFeatureAdapter({
       pluginManager: this.pluginManager,
@@ -41,8 +47,14 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
 
     const tagValues = new Set<string>()
     for (const region of regions) {
+      // statusCallback as well as the token: this reads every feature of every
+      // visible region to enumerate a tag's values, which is the longest thing
+      // the "Color by tag" dialog does and had nowhere to report it.
       const features =
-        (await dataAdapter?.getFeaturesArray(region, { stopToken })) ?? []
+        (await dataAdapter?.getFeaturesArray(region, {
+          stopToken,
+          statusCallback,
+        })) ?? []
       for (const feature of features) {
         // The same extractor the render path keys on, so a field-backed tag (no
         // `tags` object) is discovered here too — re-spelling its source order

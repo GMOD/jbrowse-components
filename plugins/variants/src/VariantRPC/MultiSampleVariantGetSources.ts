@@ -35,6 +35,11 @@ export class MultiSampleVariantGetSources extends RpcMethodTypeWithFiltersAndRen
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Expected a feature data adapter')
     }
-    return dataAdapter.getSources(regions ?? [])
+    // The whole deserialized bag as opts, so the handles ride along. The
+    // default `getSources` has no index to consult — it scans every feature in
+    // every region to collect the source names — and this was calling it with
+    // no opts at all, which on a large panel is a full scan that cannot be
+    // cancelled and reports nothing.
+    return dataAdapter.getSources(regions ?? [], deserializedArgs)
   }
 }

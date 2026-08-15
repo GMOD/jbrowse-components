@@ -41,6 +41,8 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
       regions,
       featureId,
       lodMode,
+      stopToken,
+      statusCallback,
     } = await this.deserializeArguments(args, rpcDriverClassName)
 
     const region = regions[0]!
@@ -52,8 +54,16 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
       sequenceAdapter,
     })
 
+    // The handles go to the adapter, not just into the signature: finding one
+    // read by id means re-reading the region it was in, which on a deep BAM is
+    // the same fetch the pileup does. A fresh opts object here dropped both, so
+    // clicking a read started an uncancellable, silent read.
     const features =
-      (await dataAdapter?.getFeaturesArray(region, { lodMode })) ?? []
+      (await dataAdapter?.getFeaturesArray(region, {
+        lodMode,
+        stopToken,
+        statusCallback,
+      })) ?? []
 
     return {
       feature: features.find(f => f.id() === featureId)?.toJSON(),
