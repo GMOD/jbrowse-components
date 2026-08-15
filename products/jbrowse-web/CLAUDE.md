@@ -41,6 +41,13 @@ compares, so a fresh clone needs no command.
   for canvas paint (`findDisplayPainted`).
 - `runner.ts` reaps orphaned test browsers at startup; SIGKILLed prior runs
   otherwise accumulate until the kernel OOM-kills a live renderer mid-run.
+- **A box's height cannot tell hard line breaks from wrapped text.** Anything
+  asserting that text laid out as N lines counts LINE BOXES —
+  `range.selectNodeContents(el); range.getClientRects().length` — because a
+  collapsed multi-line string just wraps at `maxWidth` and stays tall.
+  `comparative-tooltips.ts` carries the measured pair. **Mutate the source and
+  rebuild before believing a layout assertion**: the first spelling of that
+  check passed against a deliberately broken build.
 - **`pnpm review-snapshots-web` rebuilds its page on every load**, so editing
   `browser-tests/review-app/` needs a reload, not a restart. It shares its write
   protocol and repaint properties with the website's screenshot review via
