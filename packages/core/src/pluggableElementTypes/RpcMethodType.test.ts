@@ -123,9 +123,13 @@ test('augmentLocationObject still walks when only file handles are present', asy
   }
 })
 
-// Owning the arg tree must not throw on a stray non-cloneable (the test env's
-// structuredClone would): it passes through by reference, and a genuine bug is
-// surfaced at the worker postMessage boundary in production instead.
+// Owning the arg tree must not throw on a function, and this is the test that
+// says swapping in `structuredClone` is not available: the args reaching
+// serialization still carry the `statusCallback` (BaseRpcDriver strips it from
+// the output, not the input, so the refName-map download can report progress),
+// and a real structuredClone throws DataCloneError on a function. It passes
+// through by reference; a value that is non-cloneable by mistake is still caught
+// at the worker postMessage boundary.
 test('augmentLocationObject tolerates non-cloneable args (functions) while owning the tree', async () => {
   const mockFile = new File(['x'], 'a.bam')
   setFileInCache('augment-fn-test', mockFile)

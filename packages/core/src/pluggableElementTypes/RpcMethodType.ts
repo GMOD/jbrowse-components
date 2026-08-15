@@ -136,13 +136,20 @@ function isStructuredClonePassthrough(thing: object): boolean {
 
 // Deep-clone the object/array spine of the RPC args so blob conversion and auth
 // augmentation mutate owned data, never the read-only config snapshots that flow
-// in via readConfObject. A plain structuredClone can't be used here: the test
-// environment's structuredClone collapses typed arrays and the SharedArrayBuffer
-// stop token to plain objects, and it would reject any stray function. Non-
-// cloneable leaves (functions, Errors) and structured-clone natives (typed
-// arrays, Blobs, the SAB stop token...) pass through by reference unchanged; a
-// genuinely non-cloneable value that leaked in by mistake is surfaced at the
-// worker postMessage boundary (real structuredClone) in production.
+// in via readConfObject.
+//
+// **`structuredClone` is not the simplification it looks like, and the reason is
+// production rather than the test realm.** These args still carry the
+// `statusCallback`: `BaseRpcDriver.call` strips it from serialization's OUTPUT,
+// deliberately and with its own comment saying so, because resolving a refName
+// map downloads an index and that download has to have somewhere to report. A
+// function is not cloneable, so a real structuredClone would throw
+// DataCloneError on every call a display makes.
+//
+// So: non-cloneable leaves (functions, Errors) and structured-clone natives
+// (typed arrays, Blobs, the SAB stop token...) pass through by reference
+// unchanged. A genuinely non-cloneable value that leaked in by mistake is still
+// caught — at the worker postMessage boundary, which is a real structuredClone.
 function ownArgs(
   thing: unknown,
   seen = new WeakMap<object, unknown>(),
