@@ -210,36 +210,42 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const isoforms = getIsoforms(subfeatures, transcriptTypeSet)
   const hasMultipleIsoforms = isoforms.length > 1
 
-  let isoformsCollapsed = false
-  if (geneGlyphMode === 'longestCoding') {
-    isoformsCollapsed = hasMultipleIsoforms
-    subfeatures = isoformsCollapsed
-      ? [rankIsoforms(isoforms, scores)[0]!]
-      : isoforms
-  } else {
-    // Drop the isoforms past the cap, leaving the decorations alongside them (an
-    // NCBI source record, a `biological_region`) alone.
-    //
-    // Before the sort below, which is in place and over an array `isoforms` can
-    // BE — getIsoforms falls back to the raw subfeatures for a gene with no
-    // isoform-shaped children. Ranking after it would rank a reordered list, and
-    // rankIsoforms breaks a tie by index, so the cap at n = 1 would have kept a
-    // different isoform than the longestCoding collapse does.
-    const keep = isoformsWithinCap(isoforms, maxIsoforms, scores)
-    if (keep) {
-      const isoformIds = new Set(isoforms.map(f => f.id()))
-      subfeatures = subfeatures.filter(
-        f => !isoformIds.has(f.id()) || keep.has(f.id()),
-      )
-      isoformsCollapsed = true
-    }
-    // Stack the tagged isoform on top, then the coding ones (skipped for
-    // longestCoding, which collapses to a single feature). Same two terms
-    // `rankIsoforms` leads with, so the transcript a capped gene keeps first is
-    // also the one it draws first, and the gene reads top-down. Stable, so the
-    // survivors of the cap keep the order they would have had — and an
-    // annotation that tags nothing, which is most of them, sorts exactly as
-    // before.
+  // Which isoforms survive, or undefined when none are being dropped. The two
+  // modes differ only in the count: `longestCoding` is the cap at one, taking
+  // the head of the same ranking, so the two agree by construction.
+  //
+  // Ranked BEFORE the stack sort below, which is in place and over an array
+  // `isoforms` can BE — getIsoforms falls back to the raw subfeatures for a
+  // gene with no isoform-shaped children. Ranking after it would rank a
+  // reordered list, and rankIsoforms breaks a tie by index, so the cap at n = 1
+  // would have kept a different isoform than the longestCoding collapse does.
+  const keep =
+    geneGlyphMode === 'longestCoding'
+      ? hasMultipleIsoforms
+        ? new Set([rankIsoforms(isoforms, scores)[0]!.id()])
+        : undefined
+      : isoformsWithinCap(isoforms, maxIsoforms, scores)
+
+  // Drop the isoforms that lost, leaving the decorations alongside them alone —
+  // an NCBI source record, a `biological_region`. `longestCoding` used to
+  // replace the child list with the isoform list outright, so those went with
+  // them, and for a gene with a single isoform beside one it did that while
+  // reporting nothing collapsed at all.
+  const isoformsCollapsed = keep !== undefined
+  if (keep) {
+    const isoformIds = new Set(isoforms.map(f => f.id()))
+    subfeatures = subfeatures.filter(
+      f => !isoformIds.has(f.id()) || keep.has(f.id()),
+    )
+  }
+
+  if (geneGlyphMode !== 'longestCoding') {
+    // Stack the tagged isoform on top, then the coding ones (pointless for
+    // longestCoding, which keeps one). Same two terms `rankIsoforms` leads
+    // with, so the transcript a capped gene keeps first is also the one it
+    // draws first, and the gene reads top-down. Stable, so the survivors of the
+    // cap keep the order they would have had — and an annotation that tags
+    // nothing, which is most of them, sorts exactly as before.
     subfeatures.sort((a, b) => {
       const x = scores.get(a.id())!
       const y = scores.get(b.id())!

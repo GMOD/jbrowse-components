@@ -67,21 +67,32 @@ export function readFeatureLabels(
   }
 }
 
-// Glyph types whose emitter registers the feature ITSELF as a labeled
-// subfeature (processTranscriptLayout's `!isRoot` branch, and emitBox's). The
-// rest label their CHILDREN instead — a polyprotein's cleavage products, a
-// transposon's subparts — and those rows are counted by the child layout's own
-// `labelRows`, not here.
+// Does this glyph's emitter register the feature ITSELF as a labeled subfeature
+// (processTranscriptLayout's `!isRoot` branch, and emitBox's)? The rest label
+// their CHILDREN instead — a polyprotein's cleavage products, a transposon's
+// subparts — and those rows are counted by the child layout's own `labelRows`,
+// not here.
 //
 // Keyed off the glyph the child actually resolved to, because the emitter is:
 // it was keyed off `transcriptTypes` instead, a seven-entry type list that does
 // not name `lnc_RNA` or `misc_RNA`, so such an isoform drew a `below` label
 // with no row reserved for it and the text lay across the transcript beneath.
-const SELF_LABELING_GLYPHS: ReadonlySet<GlyphType> = new Set([
-  'ProcessedTranscript',
-  'Segments',
-  'Box',
-])
+//
+// Exhaustive over GlyphType, like GLYPH_EMITTERS itself: a new glyph is a
+// compile error here until it says whether it labels itself, which is the only
+// thing keeping this table and that one from drifting apart silently.
+const SELF_LABELING_GLYPHS: Record<GlyphType, boolean> = {
+  ProcessedTranscript: true,
+  Segments: true,
+  Box: true,
+  MatureProteinRegion: false,
+  RepeatRegion: false,
+  CrisprGuide: false,
+  Motif: false,
+  // never a child of a gene — it IS the gene, and its own label is the
+  // feature's, drawn by processFeatureRecord
+  Subfeatures: false,
+}
 
 // Whether a child inside a gene needs a `below` label row reserved under it —
 // i.e. `below` mode is on, the child draws its own label, and it has a name to
@@ -117,7 +128,7 @@ export function reservesBelowLabelRow(args: {
 }) {
   const { feature, config, glyphType } = args
   return (
-    SELF_LABELING_GLYPHS.has(glyphType) &&
+    SELF_LABELING_GLYPHS[glyphType] &&
     config.subfeatureLabels === 'below' &&
     hasVisibleText(truncateLabel(getFeatureName(feature) ?? ''))
   )

@@ -237,9 +237,41 @@ describe('layoutSubfeatures layout', () => {
         end: 700,
         subfeatures: [mrna, strayCds],
       })
-      expect(
-        layoutSubfeatures({ feature: gene, config }).isoformsCollapsed,
-      ).toBe(false)
+      const layout = layoutSubfeatures({ feature: gene, config })
+      expect(layout.isoformsCollapsed).toBe(false)
+      // and the stray stays drawn: collapsing isoforms is not a licence to drop
+      // the decorations beside them, which replacing the child list with the
+      // isoform list outright used to do
+      expect(layout.children.map(c => c.feature.get('name'))).toEqual([
+        'mRNA-1',
+        'stray',
+      ])
+    })
+
+    // The cap leaves them alone and this is the cap at one, so it does too.
+    it('keeps the decorations beside the isoform it collapses to', () => {
+      const gene = mockFeature({
+        type: 'gene',
+        name: 'TestGene',
+        start: 100,
+        end: 700,
+        subfeatures: [
+          isoform('mRNA', 'mRNA-1', 0, 'CDS'),
+          isoform('mRNA', 'mRNA-2', 1, 'CDS'),
+          mockFeature({
+            type: 'biological_region',
+            name: 'promoter',
+            start: 90,
+            end: 100,
+          }),
+        ],
+      })
+      const layout = layoutSubfeatures({ feature: gene, config })
+      expect(layout.isoformsCollapsed).toBe(true)
+      expect(layout.children.map(c => c.feature.get('name'))).toEqual([
+        'mRNA-2',
+        'promoter',
+      ])
     })
 
     // A gene with one mRNA and one lnc_RNA used to collapse to the mRNA while
