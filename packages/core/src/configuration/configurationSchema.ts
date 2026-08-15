@@ -41,13 +41,21 @@ export type {
   AnyConfigurationSchemaType,
 } from './types.ts'
 
+/**
+ * The three entry kinds `makeConfigurationSchemaModel` classifies: a slot
+ * definition, a constant (bare string/number), or a nested sub-schema — which
+ * is the **MST type** `ConfigurationSchema()` returned, hence `IAnyType`.
+ *
+ * A raw nested `ConfigurationSchemaDefinition` used to be a fourth member here,
+ * and it was both dead and load-bearing in the wrong direction: nothing
+ * constructs a sub-schema from one (the loop has no branch for it, so it throws
+ * "no type set for config slot"), while a plain object of strings and numbers is
+ * exactly what a *slot definition* is — so every slot in the repo matched that
+ * member instead and was never checked against `ConfigSlotDefinition` at all.
+ * `type: 'enum'`, a name this system has never had, compiled for years that way.
+ */
 export interface ConfigurationSchemaDefinition {
-  [n: string]:
-    | ConfigSlotDefinition
-    | ConfigurationSchemaDefinition
-    | string
-    | number
-    | IAnyType
+  [n: string]: ConfigSlotDefinition | string | number | IAnyType
 }
 
 export interface ConfigurationSchemaOptions<

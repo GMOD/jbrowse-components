@@ -74,6 +74,7 @@ export function FormatDetailsConfigSchemaFactory() {
       // read, and the session-wide value can never apply to a track. The
       // resolved default is DEFAULT_FORMAT_DETAILS_DEPTH, applied by the reader
       type: 'maybeNumber',
+      defaultValue: undefined,
       description:
         'levels of subfeature the formatDetails.subfeatures callback runs on, default 2',
     },
@@ -87,6 +88,7 @@ export function FormatDetailsConfigSchemaFactory() {
       // `maybeNumber` for the same reason as `depth`, and here unset is also
       // the meaningful value: no limit at all
       type: 'maybeNumber',
+      defaultValue: undefined,
       description: 'hide subfeatures nested deeper than this, default no limit',
     },
   })

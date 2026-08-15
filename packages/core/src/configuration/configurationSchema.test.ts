@@ -159,7 +159,7 @@ describe('configuration schemas', () => {
   // declares two of them and replace-semantics meant no track config schema
   // could declare its own at all.
   describe('baseConfiguration hook composition', () => {
-    const numberSlot = { x: { type: 'number', defaultValue: 1 } }
+    const numberSlot = { x: { type: 'number', defaultValue: 1 } } as const
 
     test('actions chain, and the child sees the base actions on self', () => {
       const base = ConfigurationSchema('ActionBase', numberSlot, {
@@ -780,6 +780,8 @@ describe('setSlot', () => {
 describe('schema definition entry classification', () => {
   test('a slot definition missing its type throws a specific error', () => {
     expect(() =>
+      // @ts-expect-error a slot definition without `type` is also a compile
+      // error; this pins the runtime throw a JS plugin still reaches
       ConfigurationSchema('Bad', { broken: { defaultValue: 1 } }),
     ).toThrow(/no type set for config slot Bad.broken/)
   })
