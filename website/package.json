@@ -11,6 +11,7 @@
     "typecheck": "astro check && node ../node_modules/typescript7/bin/tsc --noEmit -p scripts/api-docs",
     "lint-docs": "node scripts/generate-guide-indexes.ts",
     "check-doc-imports": "node scripts/check-doc-imports.ts",
+    "check-rename-archaeology": "node scripts/check-rename-archaeology.ts",
     "check-sidebar": "node scripts/check-sidebar.ts",
     "check-wiki-titles": "node scripts/check-wiki-titles.ts",
     "check-captions": "node scripts/check-captions.ts",

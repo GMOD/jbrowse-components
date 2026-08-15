@@ -427,7 +427,7 @@ export default function RegionTooLargeMixin() {
        * manhattan, sequence, synteny), which therefore never evaluate the
        * LGV-only getters below.
        *
-       * It was `gateEnabled`, which named an implementation
+       * It was `derivedRegionTooLargeEnabled`, which named an implementation
        * detail of 2026 ("the verdict is derived now, not an imperative flag")
        * rather than the question, and was long enough that both opt-ins were
        * named for how they differ from *it* instead of from each other.
@@ -565,8 +565,8 @@ export default function RegionTooLargeMixin() {
        * all on the byte side and `densityGateEnabled && aboveForceLoadFloor` on
        * the density one.
        *
-       * It was `gateActive`, and none of its three terms was ever about
-       * bytes; `densityGateActive` was defined as `gateActive && …`, which
+       * It was `byteGateActive`, and none of its three terms was ever about
+       * bytes; `densityGateActive` was defined as `byteGateActive && …`, which
        * is what that name being wrong looks like from the outside.
        *
        * No span floor on the byte axis. There was one — `AUTO_FORCE_LOAD_BP` —

@@ -847,6 +847,17 @@ them was invisible to a reader and to CI. So the lever is coverage rather than
 editing: each was found by widening `check-doc-imports.ts`, and each class it
 now checks cannot come back.
 
+**The sharpest of those classes is a comment a rename inverted.** A rename
+sweeps every use of a name, including the sentence recording the rename — which
+is written in the old name, so the sweep turns it into "the current name was the
+bad one", carrying the old sentence's argument for it. Nothing else can see it:
+tsc resolves the identifier, the doc checkers see a live symbol, and the diff
+looks like a rename correctly touching a comment. `RegionTooLargeMixin.ts`
+carried **three at once** from one rename, and a hand audit of that same file
+found only the first. `check-rename-archaeology.ts` is the detector — a
+past-tense rename idiom naming an identifier the same file declares — and its
+corpus is at zero.
+
 **The membership half is largely done.** Display stacks, cross-cutting mixins,
 DisplayChrome's adoption map, gated budgets and the display-hook overrides are
 all generated; the pin-coverage list is a test baseline. The last two also

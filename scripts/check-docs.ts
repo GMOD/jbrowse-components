@@ -32,6 +32,15 @@ const VALIDATORS: Validator[] = [
     argv: web('check-doc-imports.ts'),
   },
   {
+    // The one check that reads SOURCE comments for a claim about the source.
+    // A rename sweeps every use of a name including, fatally, the sentence
+    // recording the rename — which is written in the old name, so the sweep
+    // turns it into "the current name was the bad one". tsc resolves it and
+    // every doc checker sees a live symbol; three landed in one file.
+    name: 'no comment says a live local name is the old one',
+    argv: web('check-rename-archaeology.ts'),
+  },
+  {
     name: 'every doc reachable from the sidebar',
     argv: web('check-sidebar.ts'),
   },
