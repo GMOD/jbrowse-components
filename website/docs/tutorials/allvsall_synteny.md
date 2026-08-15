@@ -377,7 +377,7 @@ longer rather than shorter: each strain carries an island of its own there, the
 phenylacetate operon and a prophage on K-12 against a set of nleG effector genes
 on Sakai.
 
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, the lower band blank across the island each strain replaces with one of its own. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. Each strain's own island is shaded in its own row and the band between them is blank across both, which is what a substitution looks like from either side. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
 
 ### From a lane to a stack, for one locus
 

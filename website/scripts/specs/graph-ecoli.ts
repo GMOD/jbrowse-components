@@ -356,6 +356,38 @@ const PAA_ISLAND_HIGHLIGHT = {
   color: 'rgba(214,137,16,0.13)',
 }
 
+// THE TWO ISLANDS THEMSELVES, which is a different span from the one above and
+// the one the synteny figure is about (review, on rgfa_paa_bubble: "we are
+// relying on textbox to tell the whole story, ideally the data viz tells the
+// story"). s502 is 21.8 kb of graph segment INSIDE K12's island; the island is
+// the whole run with no partner block, and each strain has one.
+//
+// Both come from the alignment rather than from the picture: Sakai's chain to
+// K12 ends at K12 1,419,704 and resumes at 1,474,096, and Sakai's own bounds
+// are those two carried through its two offsets (+501,157 on the left block,
+// +515,969 on the right — see PAA_SYNTENY_WINDOW). So K12 holds 54,392 bp
+// nothing in Sakai matches and Sakai holds 69,204 bp nothing in K12 does, which
+// is why the band between them is blank in both directions.
+//
+// Shaded in their own rows and NAMED, so the frame states the substitution
+// without a callout: two marked blocks, no ribbon between them, each labelled
+// with what it carries. A shade is what the app can draw over its own
+// coordinates, and it moves with the layout where a pill does not.
+const PAA_K12_ISLAND_HIGHLIGHT = {
+  refName: 'chr',
+  start: 1419704,
+  end: 1474096,
+  label: 'K-12 island: paa operon',
+  color: 'rgba(214,137,16,0.13)',
+}
+const PAA_SAKAI_ISLAND_HIGHLIGHT = {
+  refName: 'chr',
+  start: 1920861,
+  end: 1990065,
+  label: 'Sakai island: nleG effectors',
+  color: 'rgba(214,137,16,0.13)',
+}
+
 // The same span as a locstring, for a linear view placed over one of these cuts:
 // the window has to be the cut's own region, or the lane's ramp and the graph's
 // run over different spans and the shared hue stops meaning anything.
@@ -2147,7 +2179,11 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               assembly: 'K12',
               loc: PAA_SYNTENY_WINDOW,
-              highlight: [PAA_ISLAND_HIGHLIGHT],
+              // The island rather than s502's span. The ring below still marks
+              // s502 inside it, so the three objects the shade used to tie
+              // together — gene block, segment, node — are now shade, ring and
+              // node, and the shade is free to be the thing the figure is about.
+              highlight: [PAA_K12_ISLAND_HIGHLIGHT],
               tracks: [
                 strainGeneLane('K12_genes'),
                 {
@@ -2161,6 +2197,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               assembly: 'Sakai',
               loc: PAA_SAKAI_WINDOW,
+              // The other half of the substitution, in Sakai's own coordinates.
+              // Without it the frame showed one marked block and one blank band,
+              // which reads as a deletion.
+              highlight: [PAA_SAKAI_ISLAND_HIGHLIGHT],
               tracks: [strainGeneLane('Sakai_genes')],
             },
           ],
@@ -2269,25 +2309,25 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       // say it. The honest reading is an island per strain with the shared
       // backbone genes interrupted on both sides, which is why no chain spans it.
       //
-      // In the band itself, which is the only genuinely empty region of this
-      // frame and also where the reader's question is. Anchored below the K12
-      // segments lane rather than to a pixel, so it follows the band.
-      {
-        type: 'text',
-        text: 'No ribbon: each strain carries its own island here.\nK-12 the paa operon, Sakai nleG effector genes.',
-        fontSize: 14,
-        maxWidth: 370,
-        anchor: {
-          view: [0, 1],
-          track: ECOLI_SEGMENTS_TRACK,
-          locus: 'chr:1,421,000',
-          fracY: 1,
-          alignX: 'left',
-          // clear of the segments lane's own bottom row of blocks, which a
-          // 14 px offset let the pill's border overprint
-          dy: 24,
-        },
-      },
+      // AND THE PILL THAT USED TO SAY ALL OF THAT IS GONE. It read "No ribbon:
+      // each strain carries its own island here. K-12 the paa operon, Sakai
+      // nleG effector genes", sitting in the blank band, and it was the figure
+      // (review: "we are relying on textbox to tell the whole story, ideally
+      // the data viz tells the story").
+      //
+      // Every clause of it is drawn now. "No ribbon" is the blank band, which
+      // was always visible and only needed something either side of it to be
+      // about; "each strain carries its own island here" is the two shaded
+      // blocks, one per row, which is the half that was missing and without
+      // which the frame read as a deletion; and the two names are those blocks'
+      // own labels, written by the app at the coordinates they belong to
+      // instead of in a box 40 kb to the left of one of them.
+      //
+      // What the picture cannot say -- which genes, that seven symbols are
+      // shared across the two spans, that Sakai's island is the longer -- is on
+      // the page under the figure, where it can be attributed. The rule this
+      // follows is website/CLAUDE.md's: a callout naming the most obvious thing
+      // in the frame is deleted rather than reworded.
       // What the grey half of the drawing is (review: "unclear why this isnt
       // more of a rainbow palette also"). The ramp IS on -- it is the same
       // reference-position ramp the lane above uses, which is what makes the
