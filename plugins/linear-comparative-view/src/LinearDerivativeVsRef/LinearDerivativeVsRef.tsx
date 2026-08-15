@@ -26,6 +26,7 @@ import {
   buildDerivativeVsRefSpec,
   derivativePathLabel,
   derivativePathTestId,
+  selectedCandidateIndex,
 } from './buildDerivativeVsRefSpec.ts'
 import { buildSplitViewFromPath } from './buildSplitViewFromPath.ts'
 import { segmentSizeSummary } from './derivativePathStrip.ts'
@@ -201,18 +202,18 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // index means the selection silently slides onto a different allele between
   // the click and the draw.
   //
-  // `pathId` and not `locString`, which was the same bug one step quieter.
-  // A locstring carries the path's OUTER edges, and those come from whichever
-  // supporting read is widest -- so one wider read landing in the group the user
-  // already picked rewrites its locstring, the lookup misses, and the selection
-  // drops back to row 0. Same streaming that motivates holding a route at all,
-  // and it needs no re-ranking to fire. `pathId` is the junctions, which is what
-  // makes two reads one allele in the first place.
-  const [selectedPathId, setSelectedPathId] = useState<string>()
-  const selected = Math.max(
-    0,
-    candidates.findIndex(c => c.pathId === selectedPathId),
-  )
+  // The route rather than its `locString`, which was the same bug one step
+  // quieter. A locstring carries the path's OUTER edges, and those come from
+  // whichever supporting read is widest -- so one wider read landing in the
+  // group the user already picked rewrites its locstring, the lookup misses,
+  // and the selection drops back to row 0. Same streaming that motivates
+  // holding a route at all, and it needs no re-ranking to fire.
+  //
+  // `selectedCandidateIndex` is where the lookup lives, because `pathId` alone
+  // does not finish the job either: it is the junctions, but the junctions
+  // carry clustered coordinates that a later read can relabel.
+  const [picked, setPicked] = useState<DerivativeCandidate>()
+  const selected = selectedCandidateIndex(candidates, picked)
   const [error, setError] = useState<unknown>()
   // WHAT to draw, kept here beside WHICH route because both are properties of
   // the reconstruction; the buttons then answer only where it goes, in the same
@@ -227,140 +228,130 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // chromosome by hand -- which loses the ORDER the reads cross the loci in, and
   // silently merges a path that visits one chromosome twice into a single
   // panel. The candidate already knows both, so nothing here is typed.
-  async function onOpenSplitView(replace: boolean) {
-    try {
-      const candidate = candidates[selected]
-      if (!candidate) {
-        return
-      }
-      const session = getSession(track)
-      // `IStateTreeNode`, not `unknown[]`: `getSnapshot` takes the live MST node
-      // and this is where it comes from, so typing it as a plain array both
-      // fails to compile and hides that `?? []` is not a fallback -- getSnapshot
-      // throws on a value that is not a tree node, so an empty literal would
-      // have been a runtime error rather than an empty track list.
-      const view = getContainingView(track) as {
-        tracks?: IStateTreeNode
-      }
-      const { viewSnapshot, locStrings } = buildSplitViewFromPath({
-        candidate,
-        // every track, alignments included: a read leaving one panel and
-        // arriving in the next is the whole content of this view type, which is
-        // the opposite of the synteny launch's reference panel
-        tracks: view.tracks
-          ? (getSnapshot(view.tracks) as Parameters<
-              typeof buildSplitViewFromPath
-            >[0]['tracks'])
-          : [],
-      })
-      // The assembly has to be named. A panel created by this action has no
-      // displayedRegions yet, so it has no assembly to infer one from, and a
-      // bare navToLocString reports `assemblyName:undefined`. It is also what
-      // makes the path's refNames resolve: the reads carry `3`/`10`/`12` where
-      // the assembly is `chr3`/`chr10`/`chr12`, and refName aliasing runs off
-      // the named assembly.
-      //
-      // Read BEFORE the replace below, like `onSubmit` reads its carried track
-      // list: replacing destroys the launching view, and `track` lives in it.
-      const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
-      // "Replace current view" is the destination this drawing is usually
-      // wanted at, and the one the docs and figures take: unlike the synteny
-      // reconstruction, the split view carries the launching view's OWN tracks
-      // and its first panel opens on the segment the pileup is already showing,
-      // so leaving that view standing above it is a second copy of the same
-      // locus with the same tracks, one scroll apart. (Reviewer, on the figure
-      // of exactly that: "too chaotic ... should also use 'replace view'".)
-      const created = addOrReplaceView({
-        session,
-        typeName: 'BreakpointSplitView',
-        initialState: viewSnapshot,
-        replacing: replace ? (view as AbstractViewModel) : undefined,
-      }) as unknown as {
-        views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
-      }
-      await Promise.all(
-        locStrings.map(async (loc, idx) => {
-          await created.views[idx]?.navToLocString(loc, trackAssembly!)
-        }),
-      )
-      handleClose()
-    } catch (e) {
-      console.error(e)
-      setError(e)
+  async function drawSplitView(
+    candidate: DerivativeCandidate,
+    replace: boolean,
+  ) {
+    const session = getSession(track)
+    // `IStateTreeNode`, not `unknown[]`: `getSnapshot` takes the live MST node
+    // and this is where it comes from, so typing it as a plain array both
+    // fails to compile and hides that `?? []` is not a fallback -- getSnapshot
+    // throws on a value that is not a tree node, so an empty literal would
+    // have been a runtime error rather than an empty track list.
+    const view = getContainingView(track) as {
+      tracks?: IStateTreeNode
     }
+    const { viewSnapshot, locStrings } = buildSplitViewFromPath({
+      candidate,
+      // every track, alignments included: a read leaving one panel and
+      // arriving in the next is the whole content of this view type, which is
+      // the opposite of the synteny launch's reference panel
+      tracks: view.tracks
+        ? (getSnapshot(view.tracks) as Parameters<
+            typeof buildSplitViewFromPath
+          >[0]['tracks'])
+        : [],
+    })
+    // The assembly has to be named. A panel created by this action has no
+    // displayedRegions yet, so it has no assembly to infer one from, and a
+    // bare navToLocString reports `assemblyName:undefined`. It is also what
+    // makes the path's refNames resolve: the reads carry `3`/`10`/`12` where
+    // the assembly is `chr3`/`chr10`/`chr12`, and refName aliasing runs off
+    // the named assembly.
+    //
+    // Read BEFORE the replace below, like `drawSynteny` reads its carried
+    // track list: replacing destroys the launching view, and `track` lives in
+    // it.
+    const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
+    // "Replace current view" is the destination this drawing is usually
+    // wanted at, and the one the docs and figures take: unlike the synteny
+    // reconstruction, the split view carries the launching view's OWN tracks
+    // and its first panel opens on the segment the pileup is already showing,
+    // so leaving that view standing above it is a second copy of the same
+    // locus with the same tracks, one scroll apart. (Reviewer, on the figure
+    // of exactly that: "too chaotic ... should also use 'replace view'".)
+    const created = addOrReplaceView({
+      session,
+      typeName: 'BreakpointSplitView',
+      initialState: viewSnapshot,
+      replacing: replace ? (view as AbstractViewModel) : undefined,
+    }) as unknown as {
+      views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
+    }
+    await Promise.all(
+      locStrings.map(async (loc, idx) => {
+        await created.views[idx]?.navToLocString(loc, trackAssembly!)
+      }),
+    )
+    handleClose()
   }
 
-  async function onSubmit(replace = false) {
-    try {
-      const candidate = candidates[selected]
-      if (!candidate) {
-        return
-      }
-      const session = getSession(track)
-      const view = getContainingView(track) as {
-        width: number
-        tracks?: ViewTrack[]
-      }
-      // Read off the launching view BEFORE it may be swapped out: replacing
-      // destroys it, and this list is what the reference panel opens with.
-      const carried = refPanelTrackIds(view)
-      const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
-      const assembly = await session.assemblyManager.waitForAssembly(
-        trackAssembly!,
-      )
-      if (!assembly) {
-        throw new Error('assembly not found')
-      }
-      const { segmentsTrack, segmentsDisplay, temporaryAssembly, viewSpec } =
-        buildDerivativeVsRefSpec({
-          candidate,
-          trackAssembly: trackAssembly!,
-          sequenceTrackConf: getConf(assembly, 'sequence') as {
-            trackId: string
-          },
-          now: () => Date.now(),
-          rand: () => Math.random(),
-        })
-      session.addTemporaryAssembly?.(temporaryAssembly)
-      const created = addOrReplaceView({
-        session,
-        typeName: 'LinearSyntenyView',
-        initialState: viewSpec,
-        replacing: replace ? (view as AbstractViewModel) : undefined,
-      }) as { views?: SyntenyPanel[] }
-      const [refPanel, derivativePanel] = created.views ?? []
-      // the launching view's own tracks go onto the reference panel only: the
-      // derivative panel is a synthetic assembly no configured track names
-      if (refPanel && carried.length > 0) {
-        showWhenMeasured(refPanel, () => {
-          for (const trackId of carried) {
-            refPanel.showTrack?.(trackId)
-          }
-        })
-      }
-      // A session that refuses track configs (embedded, `disableAddTracks`) gets
-      // the reconstruction without its segment labels rather than a panel
-      // naming a track nothing can resolve.
-      if (isSessionWithAddTracks(session) && derivativePanel) {
-        session.addTrackConf(segmentsTrack)
-        showWhenMeasured(derivativePanel, () => {
-          derivativePanel.showTrack?.(
-            segmentsTrack.trackId,
-            {},
-            segmentsDisplay,
-          )
-        })
-      }
-      handleClose()
-    } catch (e) {
-      console.error(e)
-      setError(e)
+  async function drawSynteny(candidate: DerivativeCandidate, replace: boolean) {
+    const session = getSession(track)
+    const view = getContainingView(track) as { tracks?: ViewTrack[] }
+    // Read off the launching view BEFORE it may be swapped out: replacing
+    // destroys it, and this list is what the reference panel opens with.
+    const carried = refPanelTrackIds(view)
+    const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
+    const assembly = await session.assemblyManager.waitForAssembly(
+      trackAssembly!,
+    )
+    if (!assembly) {
+      throw new Error('assembly not found')
     }
+    const { segmentsTrack, segmentsDisplay, temporaryAssembly, viewSpec } =
+      buildDerivativeVsRefSpec({
+        candidate,
+        trackAssembly: trackAssembly!,
+        sequenceTrackConf: getConf(assembly, 'sequence') as {
+          trackId: string
+        },
+        now: () => Date.now(),
+        rand: () => Math.random(),
+      })
+    session.addTemporaryAssembly?.(temporaryAssembly)
+    const created = addOrReplaceView({
+      session,
+      typeName: 'LinearSyntenyView',
+      initialState: viewSpec,
+      replacing: replace ? (view as AbstractViewModel) : undefined,
+    }) as { views?: SyntenyPanel[] }
+    const [refPanel, derivativePanel] = created.views ?? []
+    // the launching view's own tracks go onto the reference panel only: the
+    // derivative panel is a synthetic assembly no configured track names
+    if (refPanel && carried.length > 0) {
+      showWhenMeasured(refPanel, () => {
+        for (const trackId of carried) {
+          refPanel.showTrack?.(trackId)
+        }
+      })
+    }
+    // A session that refuses track configs (embedded, `disableAddTracks`) gets
+    // the reconstruction without its segment labels rather than a panel
+    // naming a track nothing can resolve.
+    if (isSessionWithAddTracks(session) && derivativePanel) {
+      session.addTrackConf(segmentsTrack)
+      showWhenMeasured(derivativePanel, () => {
+        derivativePanel.showTrack?.(segmentsTrack.trackId, {}, segmentsDisplay)
+      })
+    }
+    handleClose()
   }
 
   // The one thing both buttons do, differing only in where the drawing lands.
   function draw(replace: boolean) {
-    void (drawAs === 'split' ? onOpenSplitView(replace) : onSubmit(replace))
+    const candidate = candidates[selected]
+    if (!candidate) {
+      return
+    }
+    const drawn =
+      drawAs === 'split'
+        ? drawSplitView(candidate, replace)
+        : drawSynteny(candidate, replace)
+    drawn.catch((e: unknown) => {
+      console.error(e)
+      setError(e)
+    })
   }
 
   return (
@@ -457,7 +448,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 data-testid="derivative-path-candidates"
                 value={selected}
                 onChange={event => {
-                  setSelectedPathId(candidates[+event.target.value]?.pathId)
+                  setPicked(candidates[+event.target.value])
                 }}
               >
                 {candidates.map((candidate, idx) => (

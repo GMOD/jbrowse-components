@@ -28,9 +28,8 @@ export interface DerivativeSegment {
 export interface DerivativeCandidate {
   segments: DerivativeSegment[]
   /**
-   * Opaque identity of the ROUTE, stable across recomputation: it is the
-   * grouping key itself, so two candidate lists computed from different read
-   * sets agree on it exactly when they are describing one allele.
+   * Opaque identity of the ROUTE: the grouping key itself, built from the
+   * clustered junctions alone.
    *
    * Nothing may parse it — its spelling is `pathSignature`'s business. It
    * exists because a consumer holding "which candidate did the user pick" has
@@ -39,6 +38,14 @@ export interface DerivativeCandidate {
    * move when a wider read lands while the list is on screen; `readCount` and
    * `refNames` move or collide for their own reasons. The junctions are the
    * allele, and this is the junctions.
+   *
+   * It survives that widening, but it is NOT stable across every
+   * recomputation, and a consumer holding one has to cope with losing it. A
+   * junction cluster is labelled by the lowest endpoint any read placed it at
+   * (`buildClusterOf`), so a read landing a few bp left of the group the user
+   * already picked relabels the cluster and the id changes without the allele
+   * changing at all. No pure function of the reads escapes that: the label is
+   * data, and the data grows.
    */
   pathId: string
   // Number of distinct reads whose chain describes this path.

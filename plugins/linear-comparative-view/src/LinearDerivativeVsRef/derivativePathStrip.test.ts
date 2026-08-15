@@ -79,6 +79,24 @@ describe('pathStripBlocks', () => {
     expect(blocks.map(b => b.width)).toEqual([85, 5, 5, 5])
   })
 
+  it('stays inside the strip however many hops the path has', () => {
+    // Nothing upstream bounds the segment count, and past the point where the
+    // gaps alone fill the strip the blocks were laid out beyond it: at 460px
+    // and a 2px gap, 200 segments ran to 598px, so a third of the path was
+    // drawn outside the viewBox and silently clipped.
+    for (const n of [1, 2, 154, 155, 200, 943]) {
+      const many = Array.from({ length: n }, (_, i) =>
+        seg(`chr${i}`, 0, (i + 1) * 1000),
+      )
+      const blocks = pathStripBlocks(many, { width: 460 })
+      expect(blocks).toHaveLength(n)
+      expect(blocks.at(-1)!.x + blocks.at(-1)!.width).toBeLessThanOrEqual(460.5)
+      for (const block of blocks) {
+        expect(block.width).toBeGreaterThan(0)
+      }
+    }
+  })
+
   it('draws nothing for an empty path', () => {
     expect(pathStripBlocks([], { width: 460 })).toEqual([])
   })

@@ -123,6 +123,41 @@ export function derivativePathTestId(candidate: DerivativeCandidate) {
     .join('-')}`
 }
 
+/**
+ * Which row a candidate the user picked earlier is now, or 0 when the list no
+ * longer holds it.
+ *
+ * `pathId` first, which is the identity — but it is not a stable one, and the
+ * picker is an observer over a list recomputed from whatever reads have landed.
+ * A cluster of junction endpoints is labelled by the lowest coordinate any read
+ * placed it at, so a read arriving a few bp to the left of the route already
+ * selected renames that route: the id lookup misses and the radio drops back to
+ * row 0 with the allele still sitting there, which is the bug holding a
+ * `pathId` rather than a row index was meant to end.
+ *
+ * The route's SHAPE does not move with a coordinate, so it is the fallback —
+ * and `derivativePathTestId` is already that shape, spelled for a spec to
+ * select by. Taken only when it names exactly one row, because two routes of
+ * the same shape at nearby loci are precisely the pair a fold-back produces and
+ * guessing between them is how the wrong allele gets drawn under the right
+ * caption.
+ */
+export function selectedCandidateIndex(
+  candidates: DerivativeCandidate[],
+  picked: DerivativeCandidate | undefined,
+) {
+  if (!picked) {
+    return 0
+  }
+  const exact = candidates.findIndex(c => c.pathId === picked.pathId)
+  if (exact !== -1) {
+    return exact
+  }
+  const shape = derivativePathTestId(picked)
+  const matches = candidates.filter(c => derivativePathTestId(c) === shape)
+  return matches.length === 1 ? candidates.indexOf(matches[0]!) : 0
+}
+
 export function buildDerivativeVsRefSpec(
   args: BuildDerivativeVsRefArgs,
 ): DerivativeVsRefSpec {

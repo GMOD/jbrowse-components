@@ -1,6 +1,7 @@
 import {
   buildDerivativeVsRefSpec,
   derivativeName,
+  selectedCandidateIndex,
 } from './buildDerivativeVsRefSpec.ts'
 
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
@@ -220,5 +221,51 @@ describe('buildDerivativeVsRefSpec', () => {
     expect(spec().temporaryAssembly.name).not.toBe(
       spec().temporaryAssembly.name,
     )
+  })
+})
+
+// The picker is an observer over a list recomputed from whatever reads have
+// landed, so the row a user clicked has to be found again in a list they did
+// not see built.
+describe('selectedCandidateIndex', () => {
+  const other: DerivativeCandidate = {
+    ...CANDIDATE,
+    segments: [
+      { refName: 'chr7', start: 1000, end: 2000, strand: 1 },
+      { refName: 'chr9', start: 5000, end: 6000, strand: 1 },
+    ],
+    pathId: 'other',
+    refNames: ['chr7', 'chr9'],
+  }
+
+  it('falls back to the first row when nothing is picked yet', () => {
+    expect(selectedCandidateIndex([other, CANDIDATE], undefined)).toBe(0)
+  })
+
+  it('finds the picked route by its id', () => {
+    expect(selectedCandidateIndex([other, CANDIDATE], CANDIDATE)).toBe(1)
+  })
+
+  it('holds the route when a later read relabels its junction cluster', () => {
+    // Same allele, same shape, a `pathId` that moved: a cluster is labelled by
+    // the lowest endpoint any read placed it at, so a read arriving to the left
+    // of the group the user already picked renames it. Matching on the id alone
+    // dropped the selection back to row 0 with the allele still on screen.
+    const relabelled = { ...CANDIDATE, pathId: 'der3-shifted' }
+    expect(selectedCandidateIndex([other, relabelled], CANDIDATE)).toBe(1)
+  })
+
+  it('refuses to guess between two routes of the same shape', () => {
+    // Two visits to one chromosome in the same orientations is what a fold-back
+    // locus produces; picking either would draw the wrong allele under the right
+    // caption, so an id that no longer matches falls back to row 0 instead.
+    const twin = { ...CANDIDATE, pathId: 'twin' }
+    const alsoTwin = { ...CANDIDATE, pathId: 'also-twin' }
+    expect(
+      selectedCandidateIndex([other, twin, alsoTwin], {
+        ...CANDIDATE,
+        pathId: 'gone',
+      }),
+    ).toBe(0)
   })
 })

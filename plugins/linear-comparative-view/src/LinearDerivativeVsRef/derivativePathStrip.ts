@@ -96,14 +96,24 @@ export function pathStripBlocks(
 ): StripBlock[] {
   const {
     width,
-    gap = DEFAULTS.gap,
+    gap: requestedGap = DEFAULTS.gap,
     minBlockWidth = DEFAULTS.minBlockWidth,
   } = opts
   const n = segments.length
   if (n === 0 || width <= 0) {
     return []
   }
-  const available = Math.max(n, width - gap * (n - 1))
+  // The gaps come out of the same `width` the blocks do, so a path with more
+  // hops than the strip has pixels for has to give them up. Nothing upstream
+  // bounds the segment count — a real ngmlr-aligned ONT record in COLO829
+  // carries 943 SA entries — and at 460px with a 2px gap the gaps alone exceed
+  // the strip from 155 segments on, so the blocks were laid out past the
+  // viewBox and the strip silently drew a prefix of the path as if it were the
+  // whole of it. Squeezed to 0 the blocks abut, which is the honest drawing of
+  // "too many pieces to separate".
+  const gap =
+    n > 1 ? Math.min(requestedGap, Math.max(0, (width - n) / (n - 1))) : 0
+  const available = width - gap * (n - 1)
   const widths = allocateWidths(
     segments.map(segmentLength),
     available,
