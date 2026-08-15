@@ -263,7 +263,9 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorHardclipIndicator: 'colorHardclipIndicator',
   colorCoverage: 'colorCoverage',
   colorFlatConnector: 'colorFlatConnector',
+  colorConnectingLine: 'colorConnectingLine',
   colorOverlap: 'colorOverlap',
+  colorOverlapTint: 'colorOverlapTint',
 } satisfies Record<string, keyof ColorPalette>
 
 // Pack every palette color into the UBO. Pure — writes through the given views

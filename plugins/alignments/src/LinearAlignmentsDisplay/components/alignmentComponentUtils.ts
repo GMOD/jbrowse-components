@@ -103,6 +103,13 @@ export function buildColorPaletteFromPalette(
     // argument for it: the mark drawn ON a hovered flat connector already
     // followed the theme while the connector under it was hard black.
     colorFlatConnector: toRgb(palette.text.primary),
+    // The other two neutral overlays, on the same token and for the same
+    // reason. Three slots rather than one shared `colorNeutral`, because what
+    // makes them equal is a fact about this theme and not about the marks —
+    // `colorInsertionIndicator` and friends are equal to their base colours in
+    // light mode and differ in dark for exactly the same kind of reason.
+    colorConnectingLine: toRgb(palette.text.primary),
+    colorOverlapTint: toRgb(palette.text.primary),
   }
 }
 

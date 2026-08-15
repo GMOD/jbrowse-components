@@ -139,6 +139,12 @@ public struct Uniforms {
   // so it wants the foreground colour, and both renderers hard-coded that as
   // black, which is the background in dark mode.
   public uint colorFlatConnector;
+  // The chain's mate-joining hairline (connectingLine.slang) and the
+  // collapsed-row overlap tint (overlap.slang). Same argument as the flat
+  // connector above — see colors.ts, which is where each says which neutral it
+  // wants and why.
+  public uint colorConnectingLine;
+  public uint colorOverlapTint;
   // The chain-layout overlap span (overlap.slang). Same argument as the flat
   // connector above and the opposite conclusion about WHICH neutral: two
   // segments of one molecule cover that span, so no read colour is right there,

@@ -53,11 +53,16 @@ export function drawOverlaps(
       const w = Math.abs(x2 - x1)
       const fade = overlapFade(w)
       if (w > 0 && fade > 0) {
-        // black mirrors the shader's OVERLAP_TINT, which is a float3 and so has
-        // no generated twin to import — the one value here kept in step by eye
+        // Both tints come off the palette now. The collapsed one was a literal
+        // black held to the shader's own `float3` by eye — and since it STACKS
+        // to show depth, black on a dark ground composed toward the ground and
+        // showed none.
         ctx.fillStyle = chainMode
           ? normalizedRgbToCssRgba(state.colors.colorOverlap, fade)
-          : `rgba(0,0,0,${overlapAlpha(w)})`
+          : normalizedRgbToCssRgba(
+              state.colors.colorOverlapTint,
+              overlapAlpha(w),
+            )
         ctx.fillRect(left, y, w, fH)
       }
     }

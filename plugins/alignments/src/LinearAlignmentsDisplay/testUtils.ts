@@ -69,7 +69,9 @@ export function makeTestPalette(
     colorUnmappedMate: z,
     colorInterchrom: z,
     colorFlatConnector: z,
+    colorConnectingLine: z,
     colorOverlap: z,
+    colorOverlapTint: z,
     ...overrides,
   }
 }

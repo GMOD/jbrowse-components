@@ -1,3 +1,4 @@
+import { rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowOffCanvas,
@@ -26,8 +27,14 @@ export function drawConnectingLines(
 
   // CONNECTING_LINE_ALPHA comes from connectingLine.generated.ts
   // (connectingLine.slang is the source of truth), so this path can't drift from
-  // the shader.
-  ctx.strokeStyle = `rgba(0,0,0,${CONNECTING_LINE_ALPHA})`
+  // the shader. The colour is `colorConnectingLine` for the same reason the flat
+  // read-cloud connector's is: a hairline joining two mates carries no category,
+  // so it wants the theme's foreground, and both renderers spelled that as a
+  // literal black — which is the background in dark mode.
+  ctx.strokeStyle = rgba255(
+    state.colors.colorConnectingLine,
+    CONNECTING_LINE_ALPHA,
+  )
   ctx.lineWidth = 1
 
   for (let i = 0; i < numLines; i++) {

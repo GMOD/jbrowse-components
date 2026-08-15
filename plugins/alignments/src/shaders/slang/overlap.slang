@@ -10,14 +10,16 @@
 // two segments paint over each other and leave a clean edge at whichever one
 // drew last. So the span is filled with a theme neutral (`u.colorOverlap`) that
 // is no read category: "both segments are here, neither colour is the answer".
-// Darkening instead was the older behaviour and says the opposite — on a
-// foldback the arms are opposite-strand red and blue, and 40% black over
-// whichever drew last reads as a stronger version of that one arm.
+// Tinting instead was the older behaviour and says the opposite — on a foldback
+// the arms are opposite-strand red and blue, and a 40% wash over whichever drew
+// last reads as a stronger version of that one arm.
 //
 // COLLAPSED GROUP ROWS: several unrelated reads sharing a row on purpose, where
 // the count is the point. Spans are deliberately not merged upstream, so the
-// dark tint STACKS and depth reads as darkness. Unchanged, and the reason this
-// is a branch rather than a replacement.
+// tint STACKS and depth reads as weight. That is why this is a branch rather
+// than a replacement — and why the tint is `u.colorOverlapTint`, the theme's
+// foreground: it was a literal black, which on a dark ground composes toward the
+// ground and made depth read as nothing at all.
 //
 // Both fade with on-screen width so sub-pixel overlaps (zoomed out) disappear.
 // Source of truth for both: features/overlap/drawCanvas.ts (Canvas2D) runs the
@@ -37,7 +39,6 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 
 // Collapsed-rows tint at full strength; the px-width fade scales it down for
 // narrow overlaps. Kept low so it can stack a few deep before saturating.
-static const float3 OVERLAP_TINT = float3(0.0, 0.0, 0.0);
 static const float OVERLAP_ALPHA = 0.4;
 // On-screen width (CSS px) where the mark starts to appear / reaches full alpha.
 static const float FADE_LO_PX = 1.5;
@@ -80,7 +81,8 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // both branches spelled through the js-exported helpers, which is also what
   // keeps them exported: slangc drops a function no entry point reaches
   bool chain = u.chainMode != 0;
-  float3 tint = chain ? unpackRGBA(u.colorOverlap).xyz : OVERLAP_TINT;
+  float3 tint =
+    unpackRGBA(chain ? u.colorOverlap : u.colorOverlapTint).xyz;
   float alpha = chain ? fade : overlapAlpha(pxW);
 
   float2 yy = pileupY(inst.y, u);
