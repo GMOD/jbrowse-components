@@ -213,16 +213,22 @@ interface ConfigSlotDefinitionCommon {
  * `defaultValue`, so requiring the field of every slot alike made 81 slots
  * across the repo carry a `defaultValue: undefined` line that said nothing.
  *
- * A `maybe*` slot may still *state* a concrete default — the union permits it,
- * as the runtime does — but no longer has to state the sentinel to satisfy the
- * type. Stating it stays meaningful in a subclass override, where the definition
- * merge is a spread and an omitted key inherits the base's value.
+ * A `maybe*` slot's only legal `defaultValue` is the sentinel itself, but the
+ * field stays `unknown` rather than being pinned to `undefined`: the spread in
+ * `mergeSchemaDefinition` combines a base and a child whose halves may disagree,
+ * so pinning it forces a cast through the one place slot definitions are
+ * combined. `ConfigSlot` throws on a concrete one instead — and has to anyway,
+ * since no type can see what a `baseConfiguration` merged in, which is the way
+ * this mistake actually happens.
+ *
+ * Stating the sentinel stays meaningful in a subclass override, where the merge
+ * is a spread and an omitted key inherits the base's value.
  */
 export type ConfigSlotDefinition =
   | (ConfigSlotDefinitionCommon & {
       /** a `maybe*` slot type, whose unset state is `undefined` */
       type: MaybeSlotTypeName
-      /** optional: unset is the default, and the only value a promotable slot may take */
+      /** optional: unset is the default, and the only value `ConfigSlot` accepts */
       defaultValue?: unknown
     })
   | (ConfigSlotDefinitionCommon & {
@@ -311,6 +317,25 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
     // the default for every other track — and for every later session, since this
     // object belongs to the schema. See `freezeDeep` for why by-reference stays.
     freezeDeep(promotedBase)
+  }
+  // The inverse of the `defaultValue === undefined` check above, and the half
+  // that had no guard. A `maybe*` slot whose default is concrete can never *be*
+  // unset — no config can spell `undefined` — so the unset state such a slot
+  // exists to express (auto-fit, decide-from-the-data, inherit) is unreachable
+  // and the branch reading it never runs. There is no symptom: the slot reads as
+  // a perfectly good value everywhere.
+  //
+  // Last, so a promotable slot still gets the more specific message above.
+  //
+  // The way this happens is **inheritance**, which is why the type can't catch
+  // it: a `maybe*` override of a plain base slot inherits the base's concrete
+  // default through the definition spread, and the override's own literal looks
+  // right. `LinearMafDisplay.height` over `BaseLinearDisplay`'s `number`/100 is
+  // the case in the repo, and only that display's own tests noticed.
+  if (defaultValue !== undefined && MAYBE_TYPES.has(type)) {
+    throw new Error(
+      `a "${type}" slot cannot have a concrete defaultValue (${JSON.stringify(defaultValue)}): unset is the state a maybe* slot exists for, and no config can spell undefined, so it would be unreachable. If this slot overrides a base slot, the base's defaultValue merged in — state 'defaultValue: undefined' to overwrite it. Otherwise use the non-maybe form of the type.`,
+    )
   }
 
   return types.stripDefault(

@@ -1,4 +1,4 @@
-import { getType } from '@jbrowse/mobx-state-tree'
+import { getType, isType } from '@jbrowse/mobx-state-tree'
 
 import type {
   ConfigurationSchemaDefinition,
@@ -51,14 +51,24 @@ export function isRegisteredConfigurationSchema(type: IAnyType) {
 // through a helper for `definition`.
 
 /**
- * The slot/sub-schema/constant table for a live config node (includes slots
- * merged in from `baseConfiguration` at schema construction). Undefined when the
- * node's type isn't a registered configuration schema. The single accessor for
- * "what are this config's slots?" — shared by the slot facade, promotable
- * defaults, and `fullConfSnapshot`.
+ * The slot/sub-schema/constant table for a config (includes slots merged in from
+ * `baseConfiguration` at schema construction). Undefined when the argument isn't
+ * a registered configuration schema. The single accessor for "what are this
+ * config's slots?" — shared by the slot facade, promotable defaults, and
+ * `fullConfSnapshot`.
+ *
+ * Takes a live node *or* the schema type itself. Every in-tree reader holds a
+ * node, which is why the `getType` hop is here; a caller enumerating registered
+ * element types (`ConfigSlotDefaults.test.ts`) holds only the type, and for a
+ * track schema it cannot get a node — `explicitIdentifier` makes `trackId` a
+ * required MST identifier, so there is nothing to `create({})`.
  */
-export function getConfigurationSchemaDefinition(node: AnyConfigurationModel) {
-  return getConfigurationSchemaMetadata(getType(node))?.definition
+export function getConfigurationSchemaDefinition(
+  nodeOrType: AnyConfigurationModel | IAnyType,
+) {
+  return getConfigurationSchemaMetadata(
+    isType(nodeOrType) ? nodeOrType : getType(nodeOrType),
+  )?.definition
 }
 
 /**

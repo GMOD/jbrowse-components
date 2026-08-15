@@ -37,7 +37,13 @@ node not the snapshot, forwarding a callback slot raw, reference resolution) and
   slot overrides a base slot that has a concrete default.** The merge is a
   spread, so omitting inherits that value and the slot is never unset;
   `LinearMafDisplay`'s `height` over `BaseLinearDisplay`'s `number`/100 is the
-  one case in the repo, and nothing catches it but that display's own tests.
+  one case in the repo. **`ConfigSlot` now throws on it** rather than leaving it
+  to that display's own tests — a `maybe*` slot with a concrete merged default
+  is always an authoring mistake, because no config can spell `undefined`.
+- **A changed slot default shows up in
+  `products/jbrowse-web/src/tests/ConfigSlotDefaults.test.ts`**, a snapshot of
+  every registered schema's slots. It is the only thing that reports one. A diff
+  there is a line to review, not a failure; `-u` when it's intended.
 - `actions` / `views` / `extend` / `preProcessSnapshot` **compose** rather than
   replace; override one by redeclaring its name.
   `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy for a different
