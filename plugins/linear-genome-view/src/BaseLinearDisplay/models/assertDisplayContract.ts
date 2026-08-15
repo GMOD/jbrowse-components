@@ -69,7 +69,7 @@ export function assertDisplayContract(
         `its fetch autoruns are installed twice (double fetches, double ` +
         `clears). Our MST fork auto-chains lifecycle hooks — delete the ` +
         `superAfterAttach() call from this display's afterAttach. ` +
-        `See plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md §"Lifecycle traps".`,
+        `See agent-docs/ARCHITECTURE.md §"What not to do".`,
     )
     return
   }

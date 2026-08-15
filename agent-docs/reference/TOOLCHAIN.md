@@ -111,10 +111,10 @@ the primary checkout — the per-package `@jbrowse/*` links are relative, so
 cross-package imports resolve back to its sources.
 
 Figures are the one thing the install does not bring: `pnpm figures:pull`, or
-symlink both gitignored corpora (`website/static/img`,
-`products/jbrowse-img/img`). Miss the second and `pnpm autogen` **dies** on the
-jbrowse-img generator rather than reporting it stale, so every later generator
-silently never runs.
+symlink both gitignored corpora — the website's `static/img` and jbrowse-img's
+own `img`. Miss the second and `pnpm autogen` **dies** on the jbrowse-img
+generator rather than reporting it stale, so every later generator silently
+never runs.
 
 `website/scripts/*.ts` needs `puppeteer`, which is not hoisted to the root —
 resolve it from `packages/browser-test-utils/`.

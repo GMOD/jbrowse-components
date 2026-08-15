@@ -391,8 +391,8 @@ export default function stateModelFactory(
         // configuration.setSlot) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
         // remaining toggles. Each setting also has a refetch/relayout/render
-        // blast radius documented in CLAUDE.md §"Settings: storage +
-        // invalidation tiers".
+        // blast radius documented in CLAUDE.md §"Which getter decides what a
+        // setting invalidates".
         types.model({
           /**
            * #property

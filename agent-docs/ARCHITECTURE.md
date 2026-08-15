@@ -243,7 +243,7 @@ mirroring step to forget. Don't hand-edit between a `<!-- NAME START -->` /
 A row joins any of them by existing in the source, never by being written down.
 Every one replaced a hand-written table that had already drifted; what each of
 them got wrong, and the rule to draw from it, is in
-[CLAUDE.md](CLAUDE.md#generated-tables).
+[CLAUDE.md](CLAUDE.md#frontmatter-and-generated-tables).
 
 ## Display stacks
 
