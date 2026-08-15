@@ -900,9 +900,41 @@ export const ldSpecs: ScreenshotSpec[] = [
           fracY: 0,
           dy: 20,
         },
-        text: 'Nearly every mosquito here carries the same\nversion (the few that do not are the blue rows\nbelow), so this span recombines freely.',
+        text: 'Nearly every mosquito here carries the same\nversion, so this span recombines freely.\nThe few that do not are the blue band below.',
         fontSize: 16,
         maxWidth: 430,
+      },
+      // POINT AT THE BAND, because it is the one thing in this figure that
+      // looks like a defect (review: "are you happy with this figure?").
+      //
+      // Gabon's five heterozygotes are the last five of its 69 rows -- the lane
+      // is grouped in dosage order -- so their band is the lane's own bottom
+      // edge, 12 px of blue lying against the app frame's border. It is not
+      // cropped and it reads as cropped, which is worse than cropped: a reader
+      // who takes it for a clip discounts the sentence above it, and that
+      // sentence is the whole reason the Gabon panel is white.
+      //
+      // An arrow is what settles it. A mark aimed at something is a statement
+      // that the something is there in full, and it does the parenthetical's
+      // job in the callout above better than the parenthetical did -- so the
+      // sentence gets its own line back and stops describing a position.
+      //
+      // The head goes to fracY 0.94 rather than 1: the band's centre. At 170 px
+      // and 5 of 69 rows it spans roughly 0.88-1.0, and a head ON the border
+      // would restate the ambiguity it is there to remove.
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'ag1000g_2l_gagam',
+          locus: TWO_LA_LOCUS,
+          fracY: 0,
+          dy: 96,
+        },
+        anchor: {
+          track: 'ag1000g_2la_karyotype_gagam',
+          locus: TWO_LA_LOCUS,
+          fracY: 0.94,
+        },
       },
     ],
   },
