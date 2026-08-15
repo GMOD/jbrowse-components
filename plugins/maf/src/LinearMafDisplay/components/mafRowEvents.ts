@@ -17,47 +17,21 @@ type FillBlock = (
 ) => void
 
 /**
- * Everything a region's blocks say about one kind of per-row event — an
- * insertion, an inverted block — as absolute genomic spans on display rows, with
- * no screen position in it.
+ * A region's per-row events — insertions, inverted blocks — as
+ * `(positionBp, rowIndex, length)`, with no screen position in them. Panning
+ * changes only the bp→px mapping over these, so the overlays project this
+ * instead of re-deriving it from the alignment bytes every frame.
  *
- * That separation is the point. `(positionBp, rowIndex, length)` is a fact about
- * the alignment: **panning does not change it**, only the bp→px mapping over it.
- * The overlay walks used to rediscover these facts from the alignment bytes on
- * every frame — a per-column scan of every visible block × row — so a pan
- * re-derived an answer it already had. agent-docs/reference/MAF_LARGE_BLOCKS.md
- * names this as the next step, and names the insertion walk as the one to be
- * careful with because its geometry is shared with the hover hit-test: the
- * shared walk (`forEachInsertion`) is what fills this, and the hover still calls
- * it directly for the one row under the cursor, so the two cannot disagree.
+ * Filled per block on first touch, not per region up front: the walks are
+ * proportional to the viewport, and eagerly indexing a 54k-block region made the
+ * first frame after a fetch 145ms against a 4.5ms frame.
  *
- * **Filled per block, on first touch, not per region up front**, which is the
- * difference between a memo and a stall. A whole-region build inverts the cost
- * model the walks already had: they are proportional to the *viewport*, so
- * eagerly indexing a region makes the first frame after a fetch proportional to
- * the buffered span instead — measured at 145ms against a 4.5ms frame when
- * zoomed in on a 54k-block region, a jank on every navigation in exchange for
- * cheaper pans. Filling only the blocks the bp cull admits keeps every frame
- * proportional to what it draws, and a full pan across the region still ends up
- * having walked it exactly once.
+ * Deletions get `regionDeletionRunBounds` instead. Insertions need a reference
+ * gap and so are sparse; a deletion is any run of alignment gap, millions per
+ * region — indexing what is cheap to bound is how this turns into a leak.
  *
- * **Deletions deliberately have none**, and the reason is the shape of the data
- * rather than the shape of the code: an insertion needs a reference gap to exist
- * at all, so insertions are sparse, while a deletion is any run of alignment gap
- * — a few percent of every row on a divergent alignment, millions of events per
- * region where insertions are hundreds of thousands. They get an exact per-block
- * bound instead (`computeVisibleDeletions`), which costs nothing and does the
- * same job better. Indexing what is cheap to bound is how a per-frame walk turns
- * into a per-region memory leak.
- *
- * Columnar: three growable typed arrays for the whole region whatever the event
- * count, plus three small per-block ones, rather than an object per event or an
- * array per block. Blocks are appended in the order they are first drawn, so the
- * per-block range is `(eventStart, eventCount)` rather than the wire's ascending
- * `blockStart` sentinel — the one place this shape differs from `MafWireRegionData`.
- *
- * Order within a block is row order, then the walk's own order within a row —
- * the same order the per-frame walks emitted in.
+ * Blocks are appended in first-drawn order, so a block's range is
+ * `(eventStart, eventCount)` rather than the wire's ascending `blockStart`.
  */
 export class MafRowEventIndex {
   private blocks: MafBlock[]
@@ -128,15 +102,10 @@ function grow(array: Uint32Array) {
 }
 
 /**
- * Cache an index against the region object it describes.
- *
- * A `WeakMap` rather than a MobX computed for two reasons. It invalidates
- * itself: `placeMafRegionData` builds a fresh `MafRegionData` for a region on
- * every fetch **and** on every row reorder, which is exactly when a baked
+ * A `WeakMap` rather than a MobX computed: `placeMafRegionData` builds a fresh
+ * `MafRegionData` per fetch and per row reorder — exactly when a baked
  * `rowIndex` stops being true — so a stale index is unreachable rather than
- * merely wrong. And it is per region, where a computed over `rpcDataMap` would
- * rebuild every loaded region's events because one of them landed. Same shape
- * and the same reasoning as the alignments display's `maxFeatureLengths`.
+ * wrong, and one region landing doesn't rebuild the others.
  */
 function cachedBy(
   cache: WeakMap<MafRegionData, MafRowEventIndex>,
@@ -155,11 +124,8 @@ const insertionCache = new WeakMap<MafRegionData, MafRowEventIndex>()
 
 /**
  * Insertions: a run of reference-gap columns where a sample carries bases,
- * anchored at the reference base following the run.
- *
- * `blockHasRefGap` is what keeps filling this affordable — most blocks of a real
- * MAF have no reference gap at all, and it answers for every row of one at once,
- * off the block's own `endBp`.
+ * anchored at the reference base following the run. `blockHasRefGap` answers for
+ * every row of a block at once, and most real MAF blocks have no gap at all.
  */
 export function regionInsertionEvents(region: MafRegionData) {
   return cachedBy(insertionCache, region, (block, _blockIndex, push) => {
@@ -178,23 +144,19 @@ export function regionInsertionEvents(region: MafRegionData) {
   })
 }
 
-/**
- * Blocks that align inverted relative to their own scaffold's consensus
- * orientation, one event per (block, row), carrying the block's reference span.
- *
- * Cached against the consensus as well as the region, because unlike insertions
- * this is not a fact about the region alone: `consensusStrandByRowChr` is scored
- * across every *loaded* region, so a region landing elsewhere can flip which of
- * this one's blocks read as inverted. The consensus is a fresh Map whenever that
- * happens (a MobX computed), so keying on it is what makes the cache correct
- * rather than merely fast — and the outer `WeakMap` drops a whole generation of
- * indexes when the consensus they belong to is replaced.
- */
 const inversionCache = new WeakMap<
   StrandConsensus,
   WeakMap<MafRegionData, MafRowEventIndex>
 >()
 
+/**
+ * Blocks that align inverted relative to their own scaffold's consensus
+ * orientation, one event per (block, row), carrying the block's reference span.
+ *
+ * Keyed on the consensus as well as the region: `consensusStrandByRowChr` scores
+ * every *loaded* region, so a region landing elsewhere can flip which of this
+ * one's blocks read as inverted. That makes the cache correct, not merely fast.
+ */
 export function regionInversionEvents(
   region: MafRegionData,
   consensus: StrandConsensus,
@@ -216,4 +178,22 @@ export function regionInversionEvents(
       }
     }
   })
+}
+
+const deletionRunCache = new WeakMap<MafRegionData, Uint32Array>()
+
+/**
+ * Longest deletion run per block, over **all** its rows — `0` while unwalked,
+ * else that run plus one. Over all rows so it survives a scroll; a length rather
+ * than a verdict so it survives a zoom. `computeVisibleDeletions` fills it from
+ * the walk that emits the frame's markers, since measuring separately would cost
+ * more than the bound saves.
+ */
+export function regionDeletionRunBounds(region: MafRegionData) {
+  let bounds = deletionRunCache.get(region)
+  if (bounds === undefined) {
+    bounds = new Uint32Array(region.blocks.length)
+    deletionRunCache.set(region, bounds)
+  }
+  return bounds
 }

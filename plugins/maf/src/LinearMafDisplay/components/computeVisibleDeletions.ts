@@ -3,6 +3,7 @@ import { measureText } from '@jbrowse/core/util'
 
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
 import { makeRowFlank } from '../../LinearMafRenderer/rendering/rowFlank.ts'
+import { regionDeletionRunBounds } from './mafRowEvents.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
@@ -37,16 +38,12 @@ export interface DeletionMarker {
  * comes from the shared `forEachDeletion` walk, the same source the hover
  * hit-test uses.
  *
- * Only runs that could actually carry their label become markers, because this
- * walk is per column per row per frame and every marker it emits is otherwise
- * re-tested and thrown away at draw time. Unlike the insertion overlay, which
- * paints a bar whether or not the count fits, this one draws *nothing but* the
- * label — the gap cells themselves come from the base pass — so a band under
- * `MIN_HEIGHT_FOR_TEXT` makes the entire walk dead work. Zoomed out on a
- * multi-species alignment that was 679k markers built and 0 drawn per frame.
- *
- * The height gate is the one `computeVisibleLabels` already applies, so all row
- * text still reveals together.
+ * Unlike the insertion overlay this draws *nothing but* the label — the gap
+ * cells come from the base pass — so a run that cannot carry one is dead work,
+ * and the gates below drop it as early as they can. Zoomed out on a
+ * multi-species alignment that was 679k markers built and 0 drawn per frame. The
+ * height gate is the one `computeVisibleLabels` applies, so all row text still
+ * reveals together.
  */
 export function computeVisibleDeletions(
   params: MafOverlayParams,
@@ -59,19 +56,12 @@ export function computeVisibleDeletions(
     scrollTop,
     params.viewportHeight,
   )
-  // The shortest deletion that could carry a digit at this zoom. A run's screen
-  // width is its bp length over `bpPerPx`, so at a fixed zoom the label test is
-  // a test on LENGTH — and a run can be at most as long as its block's own
-  // reference span, which the block already reports as `endBp - startBp`. So a
-  // narrow block is answered for whole, for every one of its rows at once, by
-  // one subtraction and no walk.
-  //
-  // That is the case the walk keeps losing on: real MAF is many small blocks
-  // (UCSC ce11 26-way's median is 7bp) and the zooms where the most blocks are
-  // in view are exactly the zooms where none of them is wide enough to label.
-  // An exact bound rather than a heuristic — nothing longer than the block's
-  // reference can be deleted from it — so this can never drop a marker the
-  // per-run test below would have kept.
+  // A run's screen width is its length over `bpPerPx`, so the label test is a
+  // test on LENGTH — which makes both block culls below exact rather than
+  // heuristic. The block's own reference span bounds every run in it, answering
+  // the many-small-blocks shapes (ce11 26-way's median block is 7bp) for free;
+  // `regionDeletionRunBounds` covers what that cannot, a block wide enough to
+  // label whose runs are all short — a 200bp block of 2bp runs at 13bp/px.
   const minLabelBp = MIN_LABEL_WIDTH * view.bpPerPx
 
   if (h >= MIN_HEIGHT_FOR_TEXT) {
@@ -79,9 +69,11 @@ export function computeVisibleDeletions(
       view,
       rpcDataMap,
     )) {
-      const rowFlank = makeRowFlank(regionData.blocks)
-      for (let i = 0; i < regionData.blocks.length; i++) {
-        const block = regionData.blocks[i]!
+      const { blocks } = regionData
+      const rowFlank = makeRowFlank(blocks)
+      const runBounds = regionDeletionRunBounds(regionData)
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i]!
         if (
           block.endBp <= bpLo ||
           block.startBp >= bpHi ||
@@ -89,22 +81,40 @@ export function computeVisibleDeletions(
         ) {
           continue
         }
+        const bound = runBounds[i]!
+        if (bound !== 0 && bound - 1 < minLabelBp) {
+          continue
+        }
+        // Walked to its full depth while measuring, so the bound survives a
+        // scroll; only where it draws once it has one.
+        const measuring = bound === 0
+        let longest = 0
         for (const row of block.rows) {
-          if (row.rowIndex >= firstRow && row.rowIndex < endRow) {
-            const rowTop = offset + rowHeight * row.rowIndex
-            forEachDeletion(
-              block.refSeqBytes,
-              row.alignmentBytes,
-              block.startBp,
-              rowFlank(i, row.rowIndex),
-              (start, length) => {
+          const drawn = row.rowIndex >= firstRow && row.rowIndex < endRow
+          if (!drawn && !measuring) {
+            continue
+          }
+          const rowTop = offset + rowHeight * row.rowIndex
+          forEachDeletion(
+            block.refSeqBytes,
+            row.alignmentBytes,
+            block.startBp,
+            rowFlank(i, row.rowIndex),
+            (start, length) => {
+              if (length > longest) {
+                longest = length
+              }
+              if (drawn) {
                 const { xLeft, width } = bpSpanPx(bpToPx, start, start + length)
                 if (width >= MIN_LABEL_WIDTH) {
                   markers.push({ xLeft, width, rowTop, h, length })
                 }
-              },
-            )
-          }
+              }
+            },
+          )
+        }
+        if (measuring) {
+          runBounds[i] = longest + 1
         }
       }
     }

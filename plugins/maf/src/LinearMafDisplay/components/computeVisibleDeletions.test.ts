@@ -135,3 +135,60 @@ test('multiple rows each contribute their own markers', () => {
   // row 1 is ungapped, so only rows 0 and 2 mark
   expect(markers.map(m => m.rowTop)).toEqual([1.5, 31.5])
 })
+
+// The two tests below pin what a block's cached longest-run bound may depend on.
+// Both hand the *same* region object to two calls, which is what the cache keys
+// on — a fresh one each time would measure nothing.
+function rowsRegion(refSeq: string, alignments: string[]): MafRegionData {
+  return {
+    blocks: [
+      {
+        startBp: 100,
+        endBp: 100 + refSeq.replaceAll('-', '').length,
+        refSeqBytes: enc.encode(refSeq),
+        rows: alignments.map((alignment, rowIndex) => ({
+          rowIndex,
+          alignmentBytes: enc.encode(alignment),
+        })),
+        empties: [],
+      },
+    ],
+    coverage: emptyMafCoverage(100),
+  }
+}
+
+function frame(
+  data: MafRegionData,
+  { bpPerPx = 1, scrollTop = 0, viewportHeight = 1000 } = {},
+) {
+  return computeVisibleDeletions({
+    view: view(bpPerPx),
+    rpcDataMap: new Map([[0, data]]),
+    rowHeight: 15,
+    rowProportion: 0.8,
+    scrollTop,
+    viewportHeight,
+  })
+}
+
+// Taken over every row, not the ones on screen when it was filled — otherwise
+// scrolling to a deep row with longer runs finds the block already culled.
+test('a bound filled while a row was scrolled off still admits that row', () => {
+  const short = `AAAAA${'-'.repeat(3)}AAAAAAAAAAAAAAAAAAAAAA`
+  const long = `AAAAA${'-'.repeat(20)}AAAAA`
+  const rows = [short, short, short, short, short, long]
+  const data = rowsRegion('A'.repeat(30), rows)
+
+  // one row tall, so the first call sees row 0 only and never touches row 5
+  expect(frame(data, { viewportHeight: 15 })).toEqual([])
+  const scrolled = frame(data, { scrollTop: 75, viewportHeight: 15 })
+  expect(scrolled.map(m => m.length)).toEqual([20])
+})
+
+// ...and a length, not a verdict about the zoom it was filled at.
+test('a bound filled at a zoom where nothing labelled admits a closer one', () => {
+  const data = rowsRegion('A'.repeat(30), [`AAAAA${'-'.repeat(20)}AAAAA`])
+
+  expect(frame(data, { bpPerPx: 3 })).toEqual([])
+  expect(frame(data, { bpPerPx: 1 }).map(m => m.length)).toEqual([20])
+})
