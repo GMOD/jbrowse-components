@@ -195,14 +195,16 @@ still has no zoom-out path, and force-load remains the only way past the gate.
 
 ## Render cost is no longer the open question
 
-Worth stating so the next person doesn't re-profile it: six passes have landed
+Worth stating so the next person doesn't re-profile it: nine passes have landed
 (sub-pixel decimation on the base cells, `IdentityColumns` on the identity plot,
 memoized source-chromosome ranks and inversion consensus, the deletion overlay
 gated on what its label can fit, `bpLo`/`bpHi` culling for every marker overlay,
-and `blockIndexAtBp` replacing two linear block scans). `git log --oneline --
-plugins/maf` has them with their numbers.
+`blockIndexAtBp` replacing two linear block scans, per-*column* culling in
+`computeVisibleLabels`, the codon spine's per-block indexes built on first use,
+and the source-chromosome ranks re-keyed off `renderBlocks`). `git log --oneline
+-- plugins/maf` has them with their numbers.
 
-Two lessons generalize, and they are why the list above is not the point:
+Three lessons generalize, and they are why the list above is not the point:
 
 - **Check the siblings before declaring a zoom level cheap.** The decimation
   pass fixed the base-cell encode and stopped at the encode boundary, while a
@@ -215,6 +217,23 @@ Two lessons generalize, and they are why the list above is not the point:
   was the painter the earlier pass missed. Measured on a synthetic ce11-26-way
   shape (54k blocks, 26 rows, 360kb buffered / 180kb visible): insertions
   463ms -> 168ms, deletions 1.39s -> 0.72s.
+
+  The pass after that missed a *fifth* site of a different shape:
+  `computeVisibleLabels` had the block-level cull and nothing finer, which is
+  the same amount of protection as none once one stanza spans the whole
+  buffered region — the cull has to be at the granularity the walk emits at,
+  not at the granularity the neighbouring walks happened to need.
+- **A memo is only a memo if its key stops moving.** `sourceChromRanks` was
+  keyed on `renderBlocks`, which is rebuilt on every pan tick, so it re-ranked
+  every (block, row) pair per frame to produce the identical map — the blocks
+  only chose *which region* to walk, and a region carries the whole buffered
+  span either way. Its sibling `inversionConsensus` had always keyed off
+  `rpcDataMap`. The tell is a computed that reads a per-frame array but uses
+  only `displayedRegionIndex` off it; the fix and the stability argument are
+  the same one, since a value that shouldn't move with the view shouldn't be
+  recomputed when it does. `sourceChromRanks.test.ts` pins it by identity under
+  an `autorun` — a bare read won't do, since MobX doesn't cache an unobserved
+  computed at all.
 
 **Still on the table, and the next real step:** the insertion and deletion walks
 are *pan-independent*. `(anchorBp, rowIndex, length)` does not change when the
