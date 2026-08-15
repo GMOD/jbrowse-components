@@ -607,6 +607,34 @@ shallower angle than any correspondence a reader could follow has nothing
 anchoring it either. It is a change to every synteny figure's marker set, so it
 wants its own review and its own before/after rather than riding a figure pass.
 
+## A synteny window over chr8's pericentromere throws DataCloneError
+
+Blocks `hg002_haplotypes_location_markers` from moving to the locus its own note
+asks for, so it is written down rather than rediscovered.
+
+`chr8_MATERNAL:44,880,000-45,180,000` (and the same locus at 70 kb, so it is the
+locus and not the width) renders the whole synteny band as an error banner:
+
+```
+DataCloneError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope':
+ArrayBuffer at index 19 is already detached.
+```
+
+Reproducible on every run; the 8p23.1 windows the other figures use are fine.
+
+`executeSyntenyFeaturesAndPositions` hand-maintains its transfer list (18+
+`.buffer` entries, no dedup), so the obvious cause is a duplicate — a buffer
+listed twice is detached by its first entry and throws on the second, which is
+exactly this message. **That was tried and is NOT it**: wrapping the list in a
+`Set` changes nothing, so the buffer is already detached when the post starts.
+Something is holding a typed array across calls and re-posting it. Index 19 is
+`instanceData.alignmentLengths` when `attributes` has three channels, which is
+the place to start.
+
+Why this locus: it is the one scored highest for "indels at least 2 px wide"
+across chr8, i.e. the densest chain in the file — so whatever aliases is
+plausibly a size- or count-dependent path rather than anything about the region.
+
 ## Known blockers (check `screenshot-review.json` for current status first)
 
 - ~~`hgdownload.soe.ucsc.edu` is unreachable~~ — **resolved 2026-08-05**, and

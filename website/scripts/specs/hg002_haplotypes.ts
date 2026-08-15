@@ -334,6 +334,24 @@ function haplotypeSession(
 const DRIFT_WINDOW_MAT = 'chr8_MATERNAL:7,700,000-7,770,000'
 const DRIFT_WINDOW_PAT_BEFORE = 'chr8_PATERNAL:7,700,000-7,770,000'
 
+// THE MARKERS FIGURE STAYS AT 8p23.1 AND AT 70 kb, and the zoom-out is declined
+// with a measurement rather than tried and reverted (reviewer: 'the show
+// location markers mostly shines when there are lots of indels interrupting it,
+// so then you can see, the matches amongst the indels').
+//
+// Zooming out makes the indels smaller, which the chain file says before any
+// render: this window is inside one 204 kb chain whose 141 gaps are nearly all
+// under 50 bp, so at 50 bp/px they are already sub-pixel.
+//
+// The locus that WOULD deliver it is scored rather than guessed -- ranking every
+// chr8 chain by indels at least 2 px wide at this window width puts it at the
+// pericentromeric chain chr8_MATERNAL:44,638,867-45,382,648, where 300 kb holds
+// 23 indels of 429 bp or more against 0 here. It is unused because the synteny
+// RPC throws DataCloneError on that locus at any width; see
+// screenshot-review-plan.md.
+const MARKER_WINDOW_MAT = DRIFT_WINDOW_MAT
+const MARKER_WINDOW_PAT_BEFORE = DRIFT_WINDOW_PAT_BEFORE
+
 // Both frames wait on the same synteny-canvas signal and pay the same remote
 // fetch (a whole-genome chain read in one go), so the capture settings are
 // shared and only the viewport height differs.
@@ -669,8 +687,8 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     ...CAPTURE,
     name: 'hg002_haplotypes_location_markers',
     url: haplotypeSession(
-      DRIFT_WINDOW_MAT,
-      DRIFT_WINDOW_PAT_BEFORE,
+      MARKER_WINDOW_MAT,
+      MARKER_WINDOW_PAT_BEFORE,
       [CHAIN_BLOCKS],
       [CHAIN_BLOCKS],
     ),
