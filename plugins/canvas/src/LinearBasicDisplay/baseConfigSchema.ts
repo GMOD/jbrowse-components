@@ -277,18 +277,20 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * it is the transcript shown by `longestCoding`, and the first kept when
        * `auto` caps a gene at the rows the track has. Matched
        * case-insensitively, against a multi-valued attribute member-wise
-       * (`tag=MANE Select,RefSeq Select`). A set, not a priority order —
-       * between two isoforms both tagged, the coding-length ranking below still
-       * decides. Empty turns the whole rule off.
+       * (`tag=MANE Select,RefSeq Select`). Ordered best-first, because a gene
+       * can carry two of these at once: `MANE Plus Clinical` marks an
+       * ADDITIONAL transcript beside the `MANE Select` one and is often the
+       * longer, so it sorts last and the coding-length ranking below never gets
+       * to break that tie the wrong way. Empty turns the whole rule off.
        */
       canonicalTranscriptTags: {
         type: 'stringArray',
         defaultValue: [
           'MANE Select',
           'MANE_Select',
-          'MANE Plus Clinical',
           'RefSeq Select',
           'Ensembl_canonical',
+          'MANE Plus Clinical',
         ],
       },
       /**
