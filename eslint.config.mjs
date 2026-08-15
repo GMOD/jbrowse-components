@@ -41,8 +41,9 @@ const noExportStar = {
   message:
     "Do not use `export *` / `export type *`. List the names explicitly (`export { a, b } from './x.ts'`) so a barrel's public surface is greppable and a new internal export can't silently become package API. Regenerate a list with the TS checker rather than hand-writing it.",
 }
-// The three below pin invariants CLAUDE.md already states, each of which fails
+// Those below pin invariants CLAUDE.md already states, each of which fails
 // silently — the code keeps working, just wrongly, so no test catches them.
+// Unnumbered on purpose: this said "three" while listing four.
 const noNamedObserver = {
   selector: "CallExpression[callee.name='observer'] > Identifier.arguments",
   message:
@@ -63,7 +64,7 @@ const noAnyStateTreeNode = {
 const noTrackWidthPx = {
   selector: "MemberExpression[property.name='trackWidthPx']",
   message:
-    "Read `model.canvasWidthPx`, not `view.trackWidthPx`. The mixin getter exists because the choice was being made by copying whichever neighbour the author read first, out of four plausible view getters — and MAF drifted onto `view.width`. The two agree today, so a second spelling is silent until one of them moves. See ARCHITECTURE.md §'SVG export' and MultiRegionDisplayMixin.canvasWidthPx.",
+    'Read `model.canvasWidthPx`, not `view.trackWidthPx`. Four view getters answer plausibly and MAF drifted onto the wrong one; the two agree today, so a second spelling is silent until one of them moves. See MultiRegionDisplayMixin.canvasWidthPx.',
 }
 
 // The set every file gets. A block below that needs its own extra selectors

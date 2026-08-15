@@ -233,28 +233,18 @@ sees either one — no error, and the only symptom is a bare spinner over an
 uninterruptible read. That is the intended default for the many fetchers that
 are a local lookup; it is a trap for the ones that are an RPC.
 
-The cluster dialog was the worked case, and it is worth knowing because the
-comparison was on screen the whole time. Its "Run clustering" tab reported a
-determinate bar with a Stop, and its "Download Rscript" tab a bare
-`LoadingEllipses` with no cancel — for the *same* region fetch and the same
-matrix build, differing only in the clustering step at the end. Both worker RPCs
-had honored `stopToken` and `statusCallback` since they were written; the dialog
-never passed them. The fix is in the shared contract rather than in either
-plugin: `ClusterDialogProps.fetchMatrix` now takes `{ stopToken, statusCallback }`
-exactly as its sibling `run` does, so forwarding them is what a display writes by
-default.
+Two rules, both from the cluster dialog, where one tab reported a determinate bar
+with a Stop and the other a bare spinner with no cancel — for the same fetch:
 
-Two things to copy from it:
-
-- **Declare the argument in the contract a display fills in.** Both plugins
-  complied with a signature that dropped the handles, so neither was wrong; the
-  interface was.
+- **Declare the argument in the contract a display fills in.**
+  `ClusterDialogProps.fetchMatrix` takes `{ stopToken, statusCallback }` exactly
+  as its sibling `run` does. Both plugins had complied with the signature that
+  dropped them, so neither was wrong; the interface was.
 - **A variable-length `useFetch` key makes the trailing arguments unnameable.**
-  With `[...matrixKey, regionKey]` the fetcher's parameter list is
-  `(...args)` and the two handles have no name to destructure, which is how they
-  went unnoticed. Nest the display's key pieces (`['clusterMatrix', [...]]`)
-  so the arity is fixed and the parameters can be named — `useFetch` serializes
-  the whole key, so nesting caches identically.
+  Spread as `[...matrixKey, regionKey]`, the fetcher's parameter list is
+  `(...args)` and the two handles have no name to destructure. Nest the caller's
+  key pieces (`['clusterMatrix', [...]]`) so the arity is fixed — `useFetch`
+  serializes the whole key, so nesting caches identically.
 
 ## Cancel is durable and retryable
 

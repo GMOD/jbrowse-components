@@ -43,17 +43,12 @@ export interface ClusterDialogProps {
    */
   matrixKey: readonly unknown[] | null
   /**
-   * The exported matrix, given the same stop token and status sink as `run` —
-   * and it takes them for the reason it looks like it wouldn't need to. This is
-   * the *same* work the auto tab does (fetch the region, build the matrix); only
-   * the clustering step differs. It was declared `() => Promise<ClusterMatrix>`,
-   * which `useFetch` accepts — its fetcher's trailing `stopToken` /
-   * `statusCallback` are positional, so a zero-parameter function is assignable
-   * and simply never sees them. Both plugins complied with the interface and
-   * both lost cancel and progress, so one dialog reported a determinate bar on
-   * one tab and a bare spinner on the other for identical work. Declaring the
-   * argument is what makes forwarding it the default rather than something each
-   * display has to think of.
+   * The exported matrix, given the same stop token and status sink as `run`:
+   * this is the *same* work the auto tab does, differing only in the clustering
+   * step. Declared here rather than left to the caller because `useFetch`'s
+   * trailing handles are positional, so a zero-parameter fetcher is assignable
+   * and simply never sees them — which is how both plugins lost cancel and
+   * progress on this tab while complying with the interface.
    */
   fetchMatrix: (args: {
     stopToken: StopToken

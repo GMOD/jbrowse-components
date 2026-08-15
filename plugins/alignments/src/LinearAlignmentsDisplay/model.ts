@@ -3166,17 +3166,6 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Clear the hover/tooltip when the region goes too large (the banner
-           * replaces the pileup). Called by MultiRegionDisplayMixin's
-           * `ClearHoverOnRegionTooLarge` autorun, so it fires on the derived
-           * gate's `regionTooLarge` transition without an imperative setter.
-           */
-          onRegionTooLarge() {
-            clearMouseoverState()
-          },
-
-          /**
-           * #action
            */
           setRpcData(
             displayedRegionIndex: number,
@@ -4180,9 +4169,10 @@ export default function stateModelFactory(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // `measuresBytesPreFlight` above: `fetchRegions` measures the region set before it
-      // downloads, afterAttach clears the estimate on chromosome nav, and
-      // onRegionTooLarge clears the hover. Byte-only — no density axis.
+      // `measuresBytesPreFlight` above: `fetchRegions` measures the region set
+      // before it downloads and afterAttach clears the estimate on chromosome
+      // nav. Byte-only — no density axis. The hover is dropped on the flip by
+      // `installClearHoverOnViewportChange`, along with the three viewport axes.
       .actions(self => ({
         /**
          * #action

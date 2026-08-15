@@ -206,10 +206,9 @@ describe('alignments derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
-  // The shared ClearHoverOnRegionTooLarge autorun (MultiRegionDisplayMixin)
-  // fires the display's onRegionTooLarge hook when the banner trips; alignments
-  // overrides it to clear the lingering hover, since the banner replaces the
-  // pileup and a stale hover would pin to a now-hidden feature.
+  // The banner replaces the pileup, so a hover held across the flip pins to a
+  // feature nobody can see. The fourth axis of
+  // `installClearHoverOnViewportChange`.
   it('clears the hover when the region becomes too large', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
@@ -221,6 +220,23 @@ describe('alignments derived regionTooLarge', () => {
       viewport: display.gateViewport!,
     })
     expect(display.regionTooLarge).toBe(true)
+    expect(display.featureIdUnderMouse).toBeUndefined()
+  })
+
+  // The release is the direction that shows: Force load remounts the subtree and
+  // a box drawn off the hovered id reappears under no cursor.
+  it('clears the hover again when force load releases the banner', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      viewport: display.gateViewport!,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    display.setFeatureIdUnderMouse('read-123')
+    display.setForceLoadTrack(true)
+    expect(display.regionTooLarge).toBe(false)
     expect(display.featureIdUnderMouse).toBeUndefined()
   })
 })

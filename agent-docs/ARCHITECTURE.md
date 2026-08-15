@@ -198,6 +198,14 @@ so its effect can read hover state without setting a hover re-firing it. Clearin
 on `bpPerPx` alone is the same bug with two axes left in it, which is where
 alignments started.
 
+**A fourth axis *removes* the content, and it is the same installer's job.**
+`regionTooLarge` replaces the subtree with the banner, and Force load brings it
+back — where a highlight box positioned from the layout draws with no pointer
+near it. The reaction fires on both directions of the flip. It was a separate
+overridable hook that only alignments overrode, while five other displays store
+a hover and reach the same banner: one invalidation question is one place to
+answer it.
+
 **A derived hover needs none of this, and that is the other correct design.** MAF
 stores no hit: its body re-runs `mafHitTest` from the live pointer on every
 render, so an observer re-resolves under a moving viewport by construction.
@@ -370,27 +378,24 @@ contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
 
 ### The hooks, and who is sitting on a default
 
-The two tables above answer *what a display composed*. This one answers the
-question that costs more debugging time: **which displays override which hook**.
-Composition is the cheaper mistake — get a foundation wrong and the display
-breaks — while every hook below has a default that keeps working and does less,
-which is the class of failure this whole doc is organized around.
+The two tables above answer *what a display composed*. This one answers **which
+displays override which hook** — the costlier question, since a wrong foundation
+breaks the display while every hook below has a default that keeps working and
+does less.
 
-Read a `—` row as "nobody needed it yet" and a short row as a question, the way
-the cross-cutting table asks it. The rows attribute a declaration to the
-directory it sits in, so a shared model (`variants/shared`, `wiggle/shared`,
-`canvas/shared`) names itself rather than each display composing it.
+Read a short row as a question, the way the cross-cutting table asks it. A
+declaration is attributed to the directory it sits in, so a shared model
+(`variants/shared`, `wiggle/shared`, `canvas/shared`) names itself rather than
+each display composing it.
 
-The generator also asserts that every hook is still declared by the file that
-owns its default, which is the static half of the rename hazard
-`RegionTooLargeMixin`'s `RENAMED_HOOKS` catches at runtime for out-of-tree
-displays: rename the owner's declaration, miss a consumer, and the consumer
-reads a name nothing declares — `undefined`, read as a boolean, in silence.
+The generator also asserts every hook is still declared by the file owning its
+default: rename that declaration, miss a consumer, and the consumer reads a name
+nothing declares — `undefined`, read as a boolean, in silence.
 
 <!-- BEGIN GENERATED DISPLAY_HOOK_OVERRIDES -->
 
 
-18 overridable hooks, and the units that override each. The **Sitting on the default** column is what a display that does not override it gets — every one of them keeps working and does less, which is why this table exists and the two above it are not enough.
+17 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
 
 <!-- prettier-ignore -->
 | Hook | Sitting on the default | Declared by |
@@ -409,7 +414,6 @@ reads a name nothing declares — `undefined`, read as a boolean, in silence.
 | `densityTooLarge` | byte-only gating, no feature-density axis | `canvas/shared` |
 | `densityGateEnabled` | the density axis stays on — override to false for a display painting into fixed lanes | `canvas/LinearMultiRowFeatureDisplay` |
 | `byteGateAdapterConfig` | the estimate measures the display’s own adapter — wrong for a display that reads a different file at different zooms | `maf/LinearMafDisplay` |
-| `onRegionTooLarge` | nothing happens on the false→true transition | `alignments/LinearAlignmentsDisplay` |
 | `scrollableHeight` | `Infinity` — the display does not scroll internally | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `maf/LinearMafDisplay`, `variants/shared` |
 | `growTargetHeight` | grow mode targets the raw `height` slot | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
 | `fetchInert` | false, the strict answer — a comparative display that grows an inert state and does not declare it hangs `displaysSettled` (diagnosable) rather than reporting done with nothing drawn | `linear-comparative-view/LinearSyntenyDisplay` |
@@ -465,7 +469,7 @@ LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
 
 <!-- FETCH_AUTORUNS START -->
 
-`MultiRegionDisplayMixin`'s `afterAttach` installs five autoruns:
+`MultiRegionDisplayMixin`'s `afterAttach` installs four autoruns:
 
 <!-- prettier-ignore -->
 | Autorun | Fires on | Action |
@@ -474,7 +478,6 @@ LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
 | `FetchVisibleRegions` | the viewport, or `fetchGeneration` after a fetch ends (debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
 | `SettingsInvalidate` | `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()` |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself |
-| `ClearHoverOnRegionTooLarge` | `regionTooLarge` becoming true | the overridable `onRegionTooLarge()` hook — a no-op unless the display overrides it |
 
 <!-- FETCH_AUTORUNS END -->
 
@@ -791,12 +794,10 @@ getter rather than a note on each display because the choice was being made by
 copying whichever neighbour the author read first, out of four plausible view
 getters — MAF had drifted onto `view.width` and sized a canvas that overhangs the
 track container's 2px outline under `contain: strict`. **A getter alone did not
-hold it**: ten call sites went on reading `view.trackWidthPx` beside it, two of
-them assigning the result to a field named `canvasWidthPx`, and nothing failed
-because the two agree — which is the hazard rather than the reassurance, since a
-second spelling is silent until one of them moves. `no-restricted-syntax` bans
-the read everywhere but the getter now, the same treatment `setSlot` and the
-named `observer` get and for the same reason. Export is the documented
+hold it** — ten call sites went on reading `view.trackWidthPx` beside it, and
+nothing failed because the two agree, which is the hazard rather than the
+reassurance. `no-restricted-syntax` bans the read everywhere but the getter, the
+same treatment `setSlot` and the named `observer` get. Export is the documented
 exception to it: the export shell has no outline, so `renderSvg` overrides
 `canvasWidth` with the shell's own width (`LgvSvgBodyProps`). The full
 contract — the `svgReady`/`settled` freshness gates, the one permitted TypeScript

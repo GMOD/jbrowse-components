@@ -43,6 +43,14 @@ export const RENAMED_HOOKS: Record<string, string> = {
   gateVisibleBp: 'gateViewport?.spanBp',
 }
 
+// The same failure for a removed hook rather than a renamed one, over ACTIONS
+// because that is what these were.
+export const REMOVED_ACTION_HOOKS: Record<string, string> = {
+  onRegionTooLarge:
+    'installClearHoverOnViewportChange, which clears on the `regionTooLarge` ' +
+    'flip as well as on the three viewport axes',
+}
+
 // Dev-only, from `afterAttach`, so it fires once for every display composing
 // this mixin — the only place that sees them all. `console.error` rather than
 // `throw` for the reason `assertDisplayContract` gives: an error escaping
@@ -52,7 +60,7 @@ export function reportRenamedHooks(self: IAnyStateTreeNode) {
   if (process.env.NODE_ENV === 'production') {
     return
   }
-  const { views, name } = getMembers(self)
+  const { views, actions, name } = getMembers(self)
   for (const [old, current] of Object.entries(RENAMED_HOOKS)) {
     if (views.includes(old)) {
       console.error(
@@ -60,6 +68,15 @@ export function reportRenamedHooks(self: IAnyStateTreeNode) {
           `\`${current}\`. Nothing reads the old name any more, so this ` +
           `override is inert and the region-too-large gate may be off for ` +
           `this display. See agent-docs/reference/REGION_TOO_LARGE.md.`,
+      )
+    }
+  }
+  for (const [old, replacement] of Object.entries(REMOVED_ACTION_HOOKS)) {
+    if (actions.includes(old)) {
+      console.error(
+        `[jbrowse display contract] ${name}: \`${old}\` was removed. ` +
+          `Nothing calls it, so this override never runs — its job is done by ` +
+          `${replacement}. See agent-docs/reference/REGION_TOO_LARGE.md.`,
       )
     }
   }

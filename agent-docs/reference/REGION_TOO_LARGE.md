@@ -186,10 +186,11 @@ which fetch that is.
 is a track-wide approval, so expiring it here would reinstate exactly the
 per-locus re-prompting it exists to avoid. See § Force-load.
 
-One smaller wire, and it lives on `MultiRegionDisplayMixin` rather than here:
-`onRegionTooLarge()` fires on the false→true transition (alignments overrides it
-to clear its hover), so the two displays outside that family — LD and arc — don't
-get it.
+**The banner also drops a stored hover, and that is the hover installer's job
+rather than the gate's.** `installClearHoverOnViewportChange` reads
+`regionTooLarge` alongside its three viewport axes; see ARCHITECTURE.md §"A
+stored hover". An out-of-tree display still overriding the hook this replaced is
+reported through `REMOVED_ACTION_HOOKS`, beside `RENAMED_HOOKS`.
 
 **The `AUTO_FORCE_LOAD_BP` comparison lives in `aboveForceLoadFloor`, and only
 there** — and it now has exactly three readers: `densityGateActive`, MAF's

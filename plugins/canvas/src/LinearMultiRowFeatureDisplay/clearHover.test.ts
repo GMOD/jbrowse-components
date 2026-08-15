@@ -9,12 +9,13 @@ import type { MultiRowHit } from './model.ts'
 // survives every other one — leaving the tooltip and `MultiRowHoverHighlight`
 // describing a block that has scrolled out from under the cursor.
 //
-// Three axes, not one. Zoom is the obvious one; `offsetPx` moves on a
-// side-scroll or a locstring pan with no pointer event at all; `scrollTop` is
-// the display's own. Same rule and same installer as alignments, canvas
-// features, Manhattan and the wiggle family — see
-// `installClearHoverOnViewportChange`, and ARCHITECTURE.md "Don't **store** a
-// hover without clearing it on viewport change".
+// Four axes, not one. Three move the content: zoom is the obvious one,
+// `offsetPx` moves on a side-scroll or a locstring pan with no pointer event at
+// all, and `scrollTop` is the display's own. The fourth removes it —
+// `regionTooLarge` replaces the whole subtree with the banner. Same rule and
+// same installer as alignments, canvas features, Manhattan and the wiggle family
+// — see `installClearHoverOnViewportChange`, and ARCHITECTURE.md "Don't
+// **store** a hover without clearing it on viewport change".
 const HIT: MultiRowHit = {
   id: 'f1',
   regionIndex: 0,
@@ -55,6 +56,33 @@ test('a pan clears the hover, with no zoom change', () => {
 test('the display scrolling under the cursor clears the hover', () => {
   const { display } = hovering()
   display.setScrollTop(40)
+  expect(display.hoveredFeature).toBeUndefined()
+})
+
+// The fourth axis, and the one this display never had. Nothing draws the stale
+// hover while the banner is up; Force load brings the subtree back and
+// `MultiRowHoverHighlight`, positioned from the layout rather than the pointer,
+// paints a box on a block the cursor is nowhere near.
+test('the too-large banner clears the hover', () => {
+  const { display } = hovering()
+  display.setByteEstimate({
+    bytes: 500_000_000,
+    viewport: display.gateViewport!,
+  })
+  expect(display.regionTooLarge).toBe(true)
+  expect(display.hoveredFeature).toBeUndefined()
+})
+
+test('force load releasing the banner clears it too', () => {
+  const { display } = hovering()
+  display.setByteEstimate({
+    bytes: 500_000_000,
+    viewport: display.gateViewport!,
+  })
+  display.setHoveredFeature(HIT)
+
+  display.setForceLoadTrack(true)
+  expect(display.regionTooLarge).toBe(false)
   expect(display.hoveredFeature).toBeUndefined()
 })
 

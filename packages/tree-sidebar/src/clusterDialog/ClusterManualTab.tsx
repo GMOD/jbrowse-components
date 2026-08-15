@@ -79,18 +79,15 @@ const ClusterManualTab = observer(function ClusterManualTab({
     isLoading: loading,
     status,
   } = useFetch(
-    // The display's key pieces go in NESTED rather than spread, so this is a
+    // The caller's key pieces go in NESTED rather than spread, keeping this a
     // fixed 2-tuple: `useFetch` hands the fetcher one argument per key element
-    // and then the stop token and status callback, so a variable-length key
-    // makes those two unnameable — which is why they went unforwarded here. It
-    // serializes the whole key, so nesting caches identically.
+    // and then the two handles, so a variable-length key leaves them unnameable.
+    // It serializes the whole key, so nesting caches identically.
     view.initialized && matrixKey
       ? (['clusterMatrix', [...matrixKey, regionKey]] as const)
       : null,
-    // The token makes Cancel — and a pan that re-keys the fetch — actually stop
-    // the worker rather than leave it building a matrix nobody is waiting for,
-    // and the status sink is what turns the row below into the same determinate
-    // readout the auto tab shows for the same work.
+    // The token makes Cancel — and a pan that re-keys the fetch — stop the
+    // worker; the status sink drives the determinate row below.
     (_name, _key, stopToken, statusCallback) =>
       fetchMatrix({ stopToken, statusCallback }),
   )

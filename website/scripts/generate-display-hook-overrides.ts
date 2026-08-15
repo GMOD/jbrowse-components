@@ -1,42 +1,17 @@
-// Generates ARCHITECTURE.md's display-hook table from the overrides themselves.
+// Generates ARCHITECTURE.md's display-hook table: which displays override which
+// hook, and therefore which are sitting on a default. The foundations and
+// cross-cutting tables answer what a display COMPOSED; a wrong foundation breaks
+// the display, while every hook here has a default that keeps working and does
+// less.
 //
-// The foundations table and the cross-cutting-mixin table are already
-// generated, and both answer "what did this display compose". Neither answers
-// the question that actually costs debugging time: **which displays override
-// which hook**, and therefore which are sitting on a default.
+// It also asserts each hook is still declared by the file owning its default —
+// the static half of the rename hazard REGION_TOO_LARGE.md names, which
+// `RENAMED_HOOKS` catches at runtime and only out-of-tree.
 //
-// That matters more than composition does, because a foundation getting it
-// wrong breaks the display while a hook getting it wrong does not. Every hook
-// below has a default that keeps working — `layoutReady` false drops every
-// overlay, `dataCurrent` false hangs the export, `measuresBytesPreFlight` false
-// downloads whatever the track is pointed at with no banner, `isCacheValid`
-// inherited from a wiggle mixin refetches on a zoom axis a display may not
-// have. ARCHITECTURE.md tells the reader to "check what you inherit before
-// leaving the hook alone", which is a question a display×hook table answers at a
-// glance and prose cannot.
-//
-// Two things are generated, and the second is the reason the first is
-// trustworthy:
-//
-//   1. the table — which units declare each hook
-//   2. an assertion that every hook is still declared by the file that owns its
-//      default
-//
-// (2) is the static half of a hazard REGION_TOO_LARGE.md already names:
-// "Renaming a gate hook is itself a hazard", guarded at runtime by
-// `RENAMED_HOOKS` for out-of-tree displays. In-tree, renaming the *owner's*
-// declaration and missing a consumer leaves a hook nothing reads; this fails
-// the build instead, naming the hook and the file it went missing from.
-//
-// **Attribution is by directory, not by walking the compose graph**, and that
-// is deliberate rather than a shortcut. A display's model files live under its
-// own directory and the shared models under `<plugin>/src/shared`, so a
-// declaration's home is its own name. The failure mode — a shared mixin listed
-// under its own name rather than under each display that composes it — is
-// visible in the table rather than silent, which is exactly the allowance
-// ARCHITECTURE.md already makes for the cross-cutting-mixin column ("A row is
-// also allowed to name an intermediate mixin rather than a display... because
-// the column reports what actually composes what").
+// **Attribution is by directory, not by walking the compose graph.** A shared
+// mixin therefore names itself rather than each display composing it, which is
+// visible in the table rather than silent — the same allowance the
+// cross-cutting-mixin column already makes.
 //
 // Only the block between the markers is generated. Run: `pnpm autogen`
 // (or `--check` in CI).
@@ -75,11 +50,9 @@ interface Hook {
   ifNotOverridden: string
 }
 
-// The pick, deliberately: hooks a display is expected to consider, each with a
-// default that fails by doing less rather than by throwing. Adding a hook here
-// is how it joins the table; there is no scan that would find them on its own,
-// because "a getter with a base default" is not a shape distinguishable from
-// any other getter.
+// The pick, deliberately. Adding a hook here is how it joins the table — no
+// scan can find them, since "a getter with a base default" is not a shape
+// distinguishable from any other getter.
 const HOOKS: Hook[] = [
   {
     name: 'isCacheValid',
@@ -169,12 +142,6 @@ const HOOKS: Hook[] = [
       'the estimate measures the display’s own adapter — wrong for a display that reads a different file at different zooms',
   },
   {
-    name: 'onRegionTooLarge',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
-    ifNotOverridden: 'nothing happens on the false→true transition',
-  },
-  {
     name: 'scrollableHeight',
     owner:
       'plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx',
@@ -223,12 +190,9 @@ function unitOf(file: string): string | undefined {
  * ACCESS does not count as a declaration.
  *
  * **`x: value` is deliberately NOT counted.** It is the `.volatile()` shape,
- * which none of these hooks uses, and counting it swept up every plain object
- * that happens to carry a same-named field: `{ scrollableHeight:
- * model.scrollableHeight }` passed to `useVirtualScrollWheel` listed
- * `packages/core` as a declarer, and `{ rendersCanvas: false }` inside
- * `foundationDisplayStatusPhase` listed the foundation package as one. Both
- * read as a second implementation and neither was.
+ * which none of these hooks uses, and counting it sweeps up every plain object
+ * carrying a same-named field — `{ scrollableHeight: model.scrollableHeight }`
+ * passed to a hook reads as a second implementation and is not one.
  */
 function declaredMembers(file: string): Set<string> {
   const src = ts.createSourceFile(
@@ -322,7 +286,7 @@ function main() {
 
   const body = [
     '',
-    `${HOOKS.length} overridable hooks, and the units that override each. The **Sitting on the default** column is what a display that does not override it gets — every one of them keeps working and does less, which is why this table exists and the two above it are not enough.`,
+    `${HOOKS.length} overridable hooks. **Sitting on the default** is what a display that does not override one gets.`,
     '',
     '<!-- prettier-ignore -->',
     ...markdownTableLines(

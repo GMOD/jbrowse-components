@@ -312,13 +312,17 @@ export function WiggleCommonMixin() {
         // all three axes is what installClearHoverOnViewportChange is for —
         // don't reduce it to bpPerPx, a locstring pan moves offsetPx alone.
         //
-        // `scrollTop` belongs to TrackHeightMixin, which both composers bring
-        // but this mixin can't see — the same reason WiggleScoreConfigMixin
-        // casts for its config reads.
+        // `scrollTop` belongs to TrackHeightMixin and `regionTooLarge` to
+        // RegionTooLargeMixin, which both composers bring but this mixin can't
+        // see — the same reason WiggleScoreConfigMixin casts for its config
+        // reads.
         addDisposer(
           self,
           installClearHoverOnViewportChange(
-            self as typeof self & { scrollTop: number },
+            self as typeof self & {
+              scrollTop: number
+              regionTooLarge: boolean
+            },
             () => {
               self.setFeatureUnderMouse(undefined)
             },

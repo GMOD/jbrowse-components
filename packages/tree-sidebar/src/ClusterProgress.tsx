@@ -13,11 +13,10 @@ import type { RpcStatus } from '@jbrowse/core/util'
  * a Stop button pushed to the far right so it never crowds the text, and a
  * determinate bar underneath.
  *
- * `onStop` is optional, and the tab that omits it is the manual one: its fetch
- * is driven by `useFetch`, whose stop token is tied to the key and the mount, so
- * the dialog's own Cancel is the stop and a second button beside it would claim
- * an affordance the hook doesn't expose. It gets the same label and bar, which
- * is the point — identical work reported identically on both tabs.
+ * `onStop` is optional: the manual tab's fetch runs on `useFetch`, whose token
+ * is tied to the key and the mount, so the dialog's Cancel is its stop and a
+ * second button would claim an affordance the hook doesn't expose. It still gets
+ * the same label and bar.
  *
  * The bar holds at 0 rather than going indeterminate for the sub-second
  * startup, before the first counts arrive: MUI animates an indeterminate bar by

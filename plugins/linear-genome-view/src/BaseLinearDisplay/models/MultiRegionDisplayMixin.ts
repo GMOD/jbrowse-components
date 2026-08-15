@@ -57,10 +57,10 @@ export function isBlockCovered(
  * #displayFoundationDef Per-region fetch + render: the fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case.
  * #category display
  *
- * Per-region fetch lifecycle for LGV-based GPU displays. Installs five autoruns
- * in `afterAttach` and exposes overridable hooks (`fetchNeeded`, `rpcProps`,
- * `isCacheValid`, `measuresBytesPreFlight`, `clearDisplaySpecificData`) plus the
- * `fetchRegions` / `loadedRegions` machinery.
+ * Per-region fetch lifecycle for LGV-based GPU displays. Installs the fetch
+ * autoruns in `afterAttach` and exposes overridable hooks (`fetchNeeded`,
+ * `rpcProps`, `isCacheValid`, `measuresBytesPreFlight`) plus the `fetchRegions`
+ * / `loadedRegions` machinery.
  */
 export default function MultiRegionDisplayMixin() {
   return (
@@ -112,32 +112,23 @@ export default function MultiRegionDisplayMixin() {
          * agree or the bp→px mapping is scaled against a box it doesn't fill.
          *
          * `trackWidthPx`, **not** `view.width`: `TrackRenderingContainer` insets
-         * the rendering component by the 2px track outline and applies
+         * the rendering component by the 2px track outline under
          * `contain: strict`, so a `view.width`-wide canvas overhangs its own
          * container and the browser clips the overhang away. It renders almost
-         * identically, which is why this drifted — MAF sized itself off
-         * `view.width` until 2026-08 and nothing caught it.
+         * identically, which is why MAF drifted onto `view.width` uncaught.
          *
-         * It is a getter rather than a note on each display because the choice
-         * was being made by copying whichever neighbour the author read first,
-         * out of four plausible view getters: `width` (the viewport),
-         * `trackWidthPx` (this one), and `totalWidthPx` /
+         * A getter rather than a note on each display, because the choice was
+         * being made by copying a neighbour out of four plausible view getters —
+         * `width` (the viewport), this one, and `totalWidthPx` /
          * `totalWidthPxWithoutBorders` (the *content* width, which the global
-         * family's heatmaps legitimately want and which is a different question,
-         * not a different answer to this one).
+         * family's heatmaps legitimately want: a different question, not a
+         * different answer). `no-restricted-syntax` bans the underlying read
+         * everywhere but this line, since a second spelling agrees until it
+         * doesn't.
          *
-         * A getter alone did not hold it: ten call sites across alignments,
-         * canvas, wiggle, multi-wiggle, gwas and the shared tree-sidebar
-         * crosshair went on reading `view.trackWidthPx` anyway, two of them
-         * assigning the result to a field literally named `canvasWidthPx`. They
-         * agreed, so nothing failed — which is the whole hazard, since a second
-         * spelling is silent right up until one of them moves. The
-         * `no-restricted-syntax` rule in `eslint.config.mjs` now bans the read
-         * everywhere but this line, and this is the one file it exempts.
-         *
-         * SVG export is the one place it does not apply: the export shell has no
-         * track outline, so `renderSvg` overrides `canvasWidth` with the shell's
-         * own width (see `LgvSvgBodyProps`).
+         * SVG export is the one exception: the export shell has no outline, so
+         * `renderSvg` overrides `canvasWidth` with the shell's own width (see
+         * `LgvSvgBodyProps`).
          */
         get canvasWidthPx(): number {
           return this.lgv.trackWidthPx
@@ -352,16 +343,6 @@ export default function MultiRegionDisplayMixin() {
         ) {
           // no-op base
         },
-
-        /**
-         * #action
-         * Overridable hook (no-op base): called when `regionTooLarge` transitions
-         * to true. Displays with transient hover/tooltip state override it to clear
-         * that state — the too-large banner replaces the rendered content, so a
-         * lingering hover would otherwise pin to a now-hidden feature. Wired to the
-         * `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.
-         */
-        onRegionTooLarge() {},
       }))
       // A pure read of view/display state, read from the `FetchVisibleRegions`
       // autorun. It is a **view, not an action**, deliberately: MobX runs an
@@ -416,9 +397,9 @@ export default function MultiRegionDisplayMixin() {
       .actions(self => ({
         /**
          * #action
-         * installs the five fetch-lifecycle autoruns (DisplayedRegionsChange,
-         * FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange,
-         * ClearHoverOnRegionTooLarge)
+         * installs the fetch-lifecycle autoruns (DisplayedRegionsChange,
+         * FetchVisibleRegions, SettingsInvalidate,
+         * ClearBlockingStateOnViewportChange)
          */
         afterAttach() {
           // Dev-only: the contracts no type expresses (this hook not being
@@ -612,23 +593,6 @@ export default function MultiRegionDisplayMixin() {
               }
             },
             { name: 'ClearBlockingStateOnViewportChange' },
-          )
-
-          // Clear display-specific transient state (hover/tooltip) whenever
-          // `regionTooLarge` becomes true — the banner replaces the rendered
-          // content, so a lingering hover would pin to a now-hidden feature. Fires
-          // the overridable `onRegionTooLarge` hook on the transition; no-op unless
-          // the display overrides the hook.
-          //
-          // #autorun `regionTooLarge` becoming true | the overridable `onRegionTooLarge()` hook — a no-op unless the display overrides it
-          autorunOnReadyView(
-            self,
-            () => {
-              if (self.regionTooLarge) {
-                self.onRegionTooLarge()
-              }
-            },
-            { name: 'ClearHoverOnRegionTooLarge' },
           )
         },
       }))
