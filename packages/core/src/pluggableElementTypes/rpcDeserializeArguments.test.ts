@@ -29,10 +29,7 @@ test('invoke installs the blob map before execute runs, without the method askin
   const method = new PlainMethod(pluginManager)
   const file = new File(['x'], 'local.bam')
 
-  await method.invoke(
-    { sessionId: 's', blobMap: { 'blob-1': file } },
-    'MainThreadRpcDriver',
-  )
+  await method.invoke({ sessionId: 's', blobMap: { 'blob-1': file } })
 
   expect(getBlobMap()['blob-1']).toBe(file)
 })
@@ -40,10 +37,10 @@ test('invoke installs the blob map before execute runs, without the method askin
 test('execute sees the filter chain its arg type promises, not the wire string[]', async () => {
   const method = new FilteredMethod(pluginManager)
 
-  await method.invoke(
-    { sessionId: 's', filters: ['jexl:get(feature,"score") > 5'] },
-    'MainThreadRpcDriver',
-  )
+  await method.invoke({
+    sessionId: 's',
+    filters: ['jexl:get(feature,"score") > 5'],
+  })
 
   const { filters } = method.seen as { filters: SerializableFilterChain }
   expect(filters).toBeInstanceOf(SerializableFilterChain)
@@ -54,11 +51,11 @@ test('execute sees the filter chain its arg type promises, not the wire string[]
 // already has; rebuilding a chain from a chain would reach filters.map on one
 test('deserializeArguments is idempotent, for plugins that still call it themselves', async () => {
   const method = new FilteredMethod(pluginManager)
-  const once = await method.deserializeArguments(
-    { sessionId: 's', filters: ['jexl:get(feature,"score") > 5'] },
-    'MainThreadRpcDriver',
-  )
-  const twice = await method.deserializeArguments(once, 'MainThreadRpcDriver')
+  const once = await method.deserializeArguments({
+    sessionId: 's',
+    filters: ['jexl:get(feature,"score") > 5'],
+  })
+  const twice = await method.deserializeArguments(once)
 
   const { filters } = twice as unknown as { filters: SerializableFilterChain }
   expect(filters).toBeInstanceOf(SerializableFilterChain)

@@ -43,30 +43,25 @@ test('augmentLocationObject walks and serializes URIs when internet accounts exi
       internetAccountId: 'HTTPBasicInternetAccount-test2',
     }
 
-    await mockRpc.serializeArguments(
-      {
-        adapter: {
-          testLocation: locationInAdapter,
-        },
-        filters: [],
-        stopToken: 'teststring',
-        randomProperty: 'randomstring',
-        parentObject: {
-          nestedObject: {
-            arrayInNestedObject: [deeplyNestedLocation],
-          },
+    await mockRpc.serializeArguments({
+      adapter: {
+        testLocation: locationInAdapter,
+      },
+      filters: [],
+      stopToken: 'teststring',
+      randomProperty: 'randomstring',
+      parentObject: {
+        nestedObject: {
+          arrayInNestedObject: [deeplyNestedLocation],
         },
       },
-      '',
-    )
+    })
     expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledTimes(2)
     expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
       locationInAdapter,
-      '',
     )
     expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
       deeplyNestedLocation,
-      '',
     )
   } finally {
     restore()
@@ -77,17 +72,14 @@ test('augmentLocationObject skips walk when no internet accounts and no file han
   // No rootModel set up → no internet accounts; no FileHandles in cache either
   const mockRpc = new MockRpcMethodType(pluginManager)
   mockRpc.serializeNewAuthArguments = jest.fn()
-  await mockRpc.serializeArguments(
-    {
-      adapter: {
-        location: {
-          locationType: 'UriLocation',
-          uri: 'test',
-        },
+  await mockRpc.serializeArguments({
+    adapter: {
+      location: {
+        locationType: 'UriLocation',
+        uri: 'test',
       },
     },
-    '',
-  )
+  })
   expect(mockRpc.serializeNewAuthArguments).not.toHaveBeenCalled()
 })
 
@@ -106,7 +98,7 @@ test('augmentLocationObject still walks when only file handles are present', asy
         },
       },
     }
-    const result = await mockRpc.serializeArguments(args, '')
+    const result = await mockRpc.serializeArguments(args)
     // serialization owns its output (config snapshots that flow in are
     // read-only) — the conversion lands on the returned args, not the input
     expect(
@@ -151,7 +143,7 @@ test('augmentLocationObject tolerates non-cloneable args (functions) while ownin
       theme: { breakpoints: { up: themeFn } },
     }
 
-    const result = await mockRpc.serializeArguments(args, '')
+    const result = await mockRpc.serializeArguments(args)
 
     // file handle still converted on the owned output
     expect(
@@ -199,7 +191,7 @@ test('augmentLocationObject passes structured-clone-native values through by ref
       bytes,
     }
 
-    const result = await mockRpc.serializeArguments(args, '')
+    const result = await mockRpc.serializeArguments(args)
 
     expect(result.bytes).toBe(bytes)
   } finally {

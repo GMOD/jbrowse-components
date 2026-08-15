@@ -47,28 +47,25 @@ test('derives the pair selector from the vertical axis and reorders it', async (
     jexl: {},
   } as unknown as PluginManager)
 
-  const result = await rpc.execute(
-    {
-      sessionId: 'test',
-      adapters: [
-        {
-          adapterConfig: {},
-          fetchRegions: [],
-          refRefNameMap: {},
-          queryRefNameMap: {},
-        },
-      ],
-      referenceRegions: [
-        { refName: 'g1', start: 0, end: 1000, assemblyName: 'grape' },
-        { refName: 'g2', start: 0, end: 1000, assemblyName: 'grape' },
-      ],
-      currentRegions: [
-        { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
-        { refName: 'c2', start: 0, end: 1000, assemblyName: 'cacao' },
-      ],
-    },
-    'MainThreadRpcDriver',
-  )
+  const result = await rpc.invoke({
+    sessionId: 'test',
+    adapters: [
+      {
+        adapterConfig: {},
+        fetchRegions: [],
+        refRefNameMap: {},
+        queryRefNameMap: {},
+      },
+    ],
+    referenceRegions: [
+      { refName: 'g1', start: 0, end: 1000, assemblyName: 'grape' },
+      { refName: 'g2', start: 0, end: 1000, assemblyName: 'grape' },
+    ],
+    currentRegions: [
+      { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
+      { refName: 'c2', start: 0, end: 1000, assemblyName: 'cacao' },
+    ],
+  })
 
   expect(getFeaturesInMultipleRegionsArray).toHaveBeenCalledWith(
     [],
@@ -86,26 +83,23 @@ test('returns null when the pair has no alignments', async () => {
     jexl: {},
   } as unknown as PluginManager)
 
-  const result = await rpc.execute(
-    {
-      sessionId: 'test',
-      adapters: [
-        {
-          adapterConfig: {},
-          fetchRegions: [],
-          refRefNameMap: {},
-          queryRefNameMap: {},
-        },
-      ],
-      referenceRegions: [
-        { refName: 'g1', start: 0, end: 1000, assemblyName: 'grape' },
-      ],
-      currentRegions: [
-        { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
-      ],
-    },
-    'MainThreadRpcDriver',
-  )
+  const result = await rpc.invoke({
+    sessionId: 'test',
+    adapters: [
+      {
+        adapterConfig: {},
+        fetchRegions: [],
+        refRefNameMap: {},
+        queryRefNameMap: {},
+      },
+    ],
+    referenceRegions: [
+      { refName: 'g1', start: 0, end: 1000, assemblyName: 'grape' },
+    ],
+    currentRegions: [
+      { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
+    ],
+  })
 
   expect(result).toBeNull()
 })

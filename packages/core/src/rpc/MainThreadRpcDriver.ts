@@ -24,6 +24,6 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     //
     // `invoke`, not `execute` — it is the entry point that deserializes the
     // arguments first, and the worker binds the same one
-    return rpcMethod.invoke({ ...serializedArgs, statusCallback }, this.name)
+    return rpcMethod.invoke({ ...serializedArgs, statusCallback })
   }
 }

@@ -24,7 +24,6 @@ export interface WorkerHandle {
       // out-of-band progress handle; carries a determinate StatusWithProgress
       // object as readily as a plain string label (see WebWorkerHandle.call)
       statusCallback?: StatusCallback
-      rpcDriverClassName: string
     },
   ): Promise<unknown>
 }
@@ -190,7 +189,6 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
     )
     return worker.call(rpcMethod.name, serializedArgs, {
       statusCallback,
-      rpcDriverClassName: this.name,
       ...options,
     })
   }

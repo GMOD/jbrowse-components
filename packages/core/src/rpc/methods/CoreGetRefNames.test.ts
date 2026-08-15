@@ -14,7 +14,7 @@ function run(dataAdapter: unknown) {
   mockGetAdapter.mockResolvedValue({ dataAdapter } as Awaited<
     ReturnType<typeof getAdapter>
   >)
-  return method.execute({
+  return method.invoke({
     sessionId: 's',
     adapterConfig: { type: 'AnyAdapter' },
   })

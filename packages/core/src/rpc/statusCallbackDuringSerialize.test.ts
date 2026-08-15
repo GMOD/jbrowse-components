@@ -18,12 +18,9 @@ class RecordingMethod extends RpcMethodType {
   name = 'RecordingMethod'
   seenDuringSerialize: unknown
 
-  override async serializeArguments(
-    args: Record<string, unknown>,
-    driver: string,
-  ) {
+  override async serializeArguments(args: Record<string, unknown>) {
     this.seenDuringSerialize = args.statusCallback
-    return super.serializeArguments(args, driver)
+    return super.serializeArguments(args)
   }
 
   async execute() {}

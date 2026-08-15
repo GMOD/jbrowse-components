@@ -10,18 +10,12 @@ export default abstract class RpcMethodTypeWithRenameRegion<
   MethodName extends string = string,
   WireReturn = RpcExecuteReturn<MethodName>,
 > extends RpcMethodType<MethodName, WireReturn> {
-  async serializeArguments<T extends RenameRegionArgs>(
-    args: T,
-    rpcDriverClassName: string,
-  ) {
+  async serializeArguments<T extends RenameRegionArgs>(args: T) {
     // adapt the singular `region` to the plural renameRegions helper
     const { regions } = await this.renameRegions({
       ...args,
       regions: [args.region],
     })
-    return super.serializeArguments(
-      { ...args, region: regions[0]! },
-      rpcDriverClassName,
-    )
+    return super.serializeArguments({ ...args, region: regions[0]! })
   }
 }

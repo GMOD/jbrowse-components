@@ -239,13 +239,9 @@ export default abstract class RpcMethodType<
     this.pluginManager = pluginManager
   }
 
-  async serializeArguments(
-    args: object,
-    rpcDriverClassName: string,
-  ): Promise<Record<string, unknown>> {
+  async serializeArguments(args: object): Promise<Record<string, unknown>> {
     const augmented = await this.augmentLocationObjects(
       args as Record<string, unknown>,
-      rpcDriverClassName,
     )
     return {
       ...augmented,
@@ -277,10 +273,7 @@ export default abstract class RpcMethodType<
     return isAppRootModel(rootModel) && alive ? rootModel : undefined
   }
 
-  async serializeNewAuthArguments(
-    loc: UriLocation,
-    _rpcDriverClassName: string,
-  ) {
+  async serializeNewAuthArguments(loc: UriLocation) {
     const rootModel = this.authRootModel
 
     // args dont need auth or already have auth
@@ -315,12 +308,8 @@ export default abstract class RpcMethodType<
    */
   async invoke(
     serializedArgs: RpcExecuteArgs<MethodName>,
-    rpcDriverClassName: string,
   ): Promise<WireReturn> {
-    return this.execute(
-      await this.deserializeArguments(serializedArgs, rpcDriverClassName),
-      rpcDriverClassName,
-    )
+    return this.execute(await this.deserializeArguments(serializedArgs))
   }
 
   /**
@@ -329,10 +318,7 @@ export default abstract class RpcMethodType<
    * twice on the same object**, since an external plugin written against the
    * older contract still calls it from its own `execute`.
    */
-  async deserializeArguments<T>(
-    args: T,
-    _rpcDriverClassName: string,
-  ): Promise<T> {
+  async deserializeArguments<T>(args: T): Promise<T> {
     // read off rather than named in the parameter type: for a driver holding an
     // unparameterized RpcMethodType, RpcExecuteArgs<string> is `unknown`, and
     // intersecting a blobMap into that rejects everything else
@@ -360,14 +346,9 @@ export default abstract class RpcMethodType<
    */
   abstract execute(
     serializedArgs: RpcExecuteArgs<MethodName>,
-    rpcDriverClassName: string,
   ): Promise<WireReturn>
 
-  async deserializeReturn(
-    serializedReturn: unknown,
-    _args: unknown,
-    _rpcDriverClassName: string,
-  ) {
+  async deserializeReturn(serializedReturn: unknown, _args: unknown) {
     // Unwrap rpcResult if present (needed for MainThreadRpcDriver where the
     // rpcResult wrapper isn't stripped by the worker message handler)
     return isRpcResult(serializedReturn)
@@ -375,10 +356,7 @@ export default abstract class RpcMethodType<
       : serializedReturn
   }
 
-  private async augmentLocationObjects(
-    thing: Record<string, unknown>,
-    rpcDriverClassName: string,
-  ) {
+  private async augmentLocationObjects(thing: Record<string, unknown>) {
     const needsFileHandles = hasFileHandlesInCache()
     const needsUris = !!this.authRootModel?.internetAccounts.length
 
@@ -402,7 +380,7 @@ export default abstract class RpcMethodType<
     })
 
     for (const uri of uris) {
-      await this.serializeNewAuthArguments(uri, rpcDriverClassName)
+      await this.serializeNewAuthArguments(uri)
     }
 
     if ('renderingProps' in thing) {

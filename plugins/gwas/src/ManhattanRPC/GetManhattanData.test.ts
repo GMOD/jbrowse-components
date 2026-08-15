@@ -61,14 +61,14 @@ function args(overrides: Partial<GetManhattanDataArgs> = {}) {
 describe('serializeArguments resolves the LD adapter its own refName', () => {
   it('renames the region for the GWAS file and the LD name for the LD file', async () => {
     const { rpc } = setup()
-    const out = await rpc.serializeArguments(args(), '')
+    const out = await rpc.serializeArguments(args())
     expect(out.region).toMatchObject({ refName: 'GWAS_1' })
     expect(out.ldRefName).toBe('chr1')
   })
 
   it('resolves ldRefName from the canonical region, not the renamed one', async () => {
     const { rpc, getRefNameMapForAdapter } = setup()
-    const out = await rpc.serializeArguments(args(), '')
+    const out = await rpc.serializeArguments(args())
     // The LD pass must be fed `1`, not `GWAS_1`. Feeding it the already-renamed
     // region finds no entry in a canonically-keyed map, so the region comes back
     // untouched and ldRefName would be `GWAS_1` — the same bug in a new spelling,
@@ -82,7 +82,7 @@ describe('serializeArguments resolves the LD adapter its own refName', () => {
 
   it('never touches the LD adapter in normal coloring mode', async () => {
     const { rpc, getRefNameMapForAdapter } = setup()
-    const out = await rpc.serializeArguments(args({ colorBy: 'normal' }), '')
+    const out = await rpc.serializeArguments(args({ colorBy: 'normal' }))
     expect(out.ldRefName).toBeUndefined()
     // Not just "no name resolved": no refName map resolved at all. That call is
     // a CoreGetRefNames round trip, and for the in-memory PLINK adapter it parses
@@ -98,7 +98,7 @@ describe('serializeArguments resolves the LD adapter its own refName', () => {
     ['no LD adapter configured', { ldAdapterConfig: undefined }],
   ])('skips the LD pass with %s', async (_label, override) => {
     const { rpc, getRefNameMapForAdapter } = setup()
-    const out = await rpc.serializeArguments(args(override), '')
+    const out = await rpc.serializeArguments(args(override))
     expect(out.ldRefName).toBeUndefined()
     expect(getRefNameMapForAdapter).not.toHaveBeenCalledWith(
       LD_ADAPTER,
@@ -110,7 +110,6 @@ describe('serializeArguments resolves the LD adapter its own refName', () => {
     const { rpc } = setup()
     const out = await rpc.serializeArguments(
       args({ indexSnp: `${CANONICAL}:100` }),
-      '',
     )
     // The index is compared against GWAS features in the worker, so it lands in
     // the GWAS file's scheme — while the query that fetches the LD records uses

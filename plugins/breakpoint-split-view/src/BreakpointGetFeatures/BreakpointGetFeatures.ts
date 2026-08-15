@@ -80,15 +80,10 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
 > {
   name = 'BreakpointGetFeatures' as const
 
-  async deserializeReturn(
-    feats: BreakpointSerializedFeature[],
-    args: unknown,
-    rpcDriver: string,
-  ) {
+  async deserializeReturn(feats: BreakpointSerializedFeature[], args: unknown) {
     const superDeserialized = (await super.deserializeReturn(
       feats,
       args,
-      rpcDriver,
     )) as BreakpointSerializedFeature[]
     return superDeserialized.map(
       feat => new SimpleFeature(feat as unknown as SimpleFeatureSerialized),

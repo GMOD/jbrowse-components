@@ -48,10 +48,7 @@ export default class GetManhattanData extends RpcMethodType<
 > {
   name = 'GetManhattanData' as const
 
-  async serializeArguments(
-    args: GetManhattanDataArgs & RpcCallContext,
-    rpcDriver: string,
-  ) {
+  async serializeArguments(args: GetManhattanDataArgs & RpcCallContext) {
     // bundle the query region and (when parseable) the index-SNP position into
     // one regions array so both ride through the same renaming pass and land in
     // the data adapter's alias space
@@ -63,15 +60,12 @@ export default class GetManhattanData extends RpcMethodType<
     const indexSnp = indexRegion
       ? `${regions[1]!.refName}:${regions[1]!.end}`
       : args.indexSnp
-    return super.serializeArguments(
-      {
-        ...args,
-        region: regions[0]!,
-        indexSnp,
-        ldRefName: await this.ldRefName(args),
-      },
-      rpcDriver,
-    )
+    return super.serializeArguments({
+      ...args,
+      region: regions[0]!,
+      indexSnp,
+      ldRefName: await this.ldRefName(args),
+    })
   }
 
   // The LD sub-adapter's name for the query contig.

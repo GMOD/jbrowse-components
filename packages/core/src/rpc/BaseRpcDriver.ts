@@ -72,7 +72,7 @@ export default abstract class BaseRpcDriver {
     const { statusCallback } = args
     const { statusCallback: _outOfBand, ...serializedArgs } =
       await withStopTokenCheck(stopToken, () =>
-        rpcMethod.serializeArguments(args, this.name),
+        rpcMethod.serializeArguments(args),
       )
 
     const result = await this.transport(
@@ -84,7 +84,7 @@ export default abstract class BaseRpcDriver {
       options,
     )
 
-    return rpcMethod.deserializeReturn(result, args, this.name)
+    return rpcMethod.deserializeReturn(result, args)
   }
 
   // Dispatch already-serialized args to wherever this driver runs the method

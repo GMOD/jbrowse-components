@@ -49,14 +49,8 @@ export default abstract class DiagonalizeRpcBase<
   // says for whichever key a subclass names AND states what the body needs —
   // including the handles, which is why it is the payload-plus-handles type
   // rather than the payload alone.
-  async execute(
-    args: DiagonalizeExecuteArgs & RpcExecuteArgs<MethodName>,
-    rpcDriverClassName: string,
-  ) {
+  async execute(args: DiagonalizeExecuteArgs & RpcExecuteArgs<MethodName>) {
     const { executeDiagonalize } = await import('./executeDiagonalize.ts')
-    return executeDiagonalize(
-      this.pluginManager,
-      await this.deserializeArguments(args, rpcDriverClassName),
-    )
+    return executeDiagonalize(this.pluginManager, args)
   }
 }

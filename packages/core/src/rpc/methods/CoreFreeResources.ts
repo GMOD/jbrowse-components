@@ -23,7 +23,7 @@ export default class CoreFreeResources extends RpcMethodType<'CoreFreeResources'
     await freeAdapterResources(args)
   }
 
-  async serializeArguments(args: Record<string, unknown>, _rpcDriver: string) {
+  async serializeArguments(args: Record<string, unknown>) {
     return args
   }
 }

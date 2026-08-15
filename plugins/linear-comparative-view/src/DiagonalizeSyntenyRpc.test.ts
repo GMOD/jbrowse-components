@@ -49,29 +49,26 @@ test('execute forwards targetAssemblyName to getFeatures and reorders the query 
     jexl: {},
   } as unknown as PluginManager)
 
-  const result = await rpc.execute(
-    {
-      sessionId: 'test',
-      adapters: [
-        {
-          adapterConfig: {},
-          fetchRegions: [],
-          refRefNameMap: {},
-          queryRefNameMap: {},
-        },
-      ],
-      referenceRegions: [
-        { refName: 'p1', start: 0, end: 1000, assemblyName: 'peach' },
-        { refName: 'p2', start: 0, end: 1000, assemblyName: 'peach' },
-      ],
-      currentRegions: [
-        { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
-        { refName: 'c2', start: 0, end: 1000, assemblyName: 'cacao' },
-      ],
-      bpPerPx: 1,
-    },
-    'MainThreadRpcDriver',
-  )
+  const result = await rpc.invoke({
+    sessionId: 'test',
+    adapters: [
+      {
+        adapterConfig: {},
+        fetchRegions: [],
+        refRefNameMap: {},
+        queryRefNameMap: {},
+      },
+    ],
+    referenceRegions: [
+      { refName: 'p1', start: 0, end: 1000, assemblyName: 'peach' },
+      { refName: 'p2', start: 0, end: 1000, assemblyName: 'peach' },
+    ],
+    currentRegions: [
+      { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
+      { refName: 'c2', start: 0, end: 1000, assemblyName: 'cacao' },
+    ],
+    bpPerPx: 1,
+  })
 
   // the pair selector reached the adapter
   expect(getFeaturesInMultipleRegionsArray).toHaveBeenCalledWith(

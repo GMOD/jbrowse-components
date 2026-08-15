@@ -26,7 +26,7 @@ function mockAdapter(features: SimpleFeature[]) {
 }
 
 function run(args: { featureId: string; lodMode?: 'fine' | 'coarse' }) {
-  return new GetFeatureDetails(new PluginManager()).execute({
+  return new GetFeatureDetails(new PluginManager()).invoke({
     sessionId: 'sess',
     adapterConfig: { type: 'PairwiseIndexedPAFAdapter' },
     regions: [region],

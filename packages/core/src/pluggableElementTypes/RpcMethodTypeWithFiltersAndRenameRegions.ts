@@ -25,9 +25,8 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions<
     // it as the deserialized SerializableFilterChain, so a string[] intersection
     // would collapse to `never` and reject every call
     args: T & { filters?: unknown },
-    rpcDriverClassName: string,
   ): Promise<T> {
-    const l = await super.deserializeArguments(args, rpcDriverClassName)
+    const l = await super.deserializeArguments(args)
     return {
       ...l,
       // on the wire filters is the serialized string[] (see serializeArguments),
@@ -52,13 +51,12 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions<
       stopToken?: StopToken
       statusCallback?: StatusCallback
     },
-    rpcDriverClassName: string,
   ) {
     // serialize the filter chain to its on-wire string[] form, then let the
     // base class rename region refNames and finish serialization
-    return super.serializeArguments(
-      { ...args, filters: args.filters?.toJSON().filters },
-      rpcDriverClassName,
-    )
+    return super.serializeArguments({
+      ...args,
+      filters: args.filters?.toJSON().filters,
+    })
   }
 }

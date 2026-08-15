@@ -21,12 +21,10 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<
   async deserializeReturn(
     feats: SimpleFeatureSerialized[],
     args: unknown,
-    rpcDriver: string,
   ): Promise<RpcReturn<'CoreGetFeatures'>> {
     const superDeserialized = (await super.deserializeReturn(
       feats,
       args,
-      rpcDriver,
     )) as SimpleFeatureSerialized[]
     return superDeserialized.map(feat => new SimpleFeature(feat))
   }

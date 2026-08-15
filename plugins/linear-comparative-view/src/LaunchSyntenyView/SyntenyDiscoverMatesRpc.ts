@@ -45,13 +45,11 @@ export class SyntenyDiscoverMates extends RpcMethodTypeWithRenameRegions<
   async deserializeReturn(
     ret: SyntenyDiscoverMatesReturn,
     args: unknown,
-    rpcDriver: string,
   ): Promise<MateDiscoveryResult> {
     // the base unwraps the rpcResult envelope, and types that as unknown
     const { mates, unconfigured } = (await super.deserializeReturn(
       ret,
       args,
-      rpcDriver,
     )) as SyntenyDiscoverMatesReturn
     return {
       mates: mates.map(({ assemblyName, feature }) => ({

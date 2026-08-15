@@ -13,7 +13,6 @@ interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
 
 interface Options {
   statusCallback?: StatusCallback
-  rpcDriverClassName: string
 }
 
 class WebWorkerHandle {
@@ -44,7 +43,7 @@ class WebWorkerHandle {
   }
 
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
-    const { statusCallback, rpcDriverClassName } = opts
+    const { statusCallback } = opts
     const channel = `message-${nanoid()}`
     // RpcClient is a generic event emitter (it also carries 'error' events), so
     // its listeners see `unknown`. This channel is dedicated to one method's
@@ -55,11 +54,7 @@ class WebWorkerHandle {
     }
     this.client.on(channel, listener)
     try {
-      const result = await this.client.call(funcName, {
-        ...args,
-        channel,
-        rpcDriverClassName,
-      })
+      const result = await this.client.call(funcName, { ...args, channel })
       return result
     } finally {
       this.client.off(channel, listener)

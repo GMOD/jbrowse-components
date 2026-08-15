@@ -70,26 +70,22 @@ async function getPluginManager(
 }
 
 interface WrappedFuncArgs {
-  rpcDriverClassName: string
   channel: string
   [key: string]: unknown
 }
 
-type RpcFunc = (args: unknown, rpcDriverClassName: string) => Promise<unknown>
+type RpcFunc = (args: unknown) => Promise<unknown>
 
 function wrapForRpc(func: RpcFunc) {
   return (args: unknown) => {
     const wrappedArgs = args as WrappedFuncArgs
-    const { channel, rpcDriverClassName } = wrappedArgs
-    return func(
-      {
-        ...wrappedArgs,
-        statusCallback: (message: RpcStatus) => {
-          self.rpcServer?.emit(channel, message)
-        },
+    const { channel } = wrappedArgs
+    return func({
+      ...wrappedArgs,
+      statusCallback: (message: RpcStatus) => {
+        self.rpcServer?.emit(channel, message)
       },
-      rpcDriverClassName,
-    )
+    })
   }
 }
 
