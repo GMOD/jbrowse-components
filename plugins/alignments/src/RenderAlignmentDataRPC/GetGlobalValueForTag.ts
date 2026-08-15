@@ -3,15 +3,14 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
 
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 interface GetGlobalValueForTagArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   regions: Region[]
   tag: string
-  stopToken?: StopToken
   rpcDriverName?: string
 }
 
@@ -27,7 +26,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'PileupGetGlobalValueForTag'
 
-  async execute(args: GetGlobalValueForTagArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'PileupGetGlobalValueForTag'>,
+    rpcDriverClassName: string,
+  ) {
     const { sessionId, adapterConfig, regions, tag, stopToken } =
       await this.deserializeArguments(args, rpcDriverClassName)
 

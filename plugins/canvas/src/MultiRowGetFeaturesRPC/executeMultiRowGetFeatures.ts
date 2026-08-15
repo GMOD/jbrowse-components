@@ -10,15 +10,15 @@ import { measureRegionBytes } from '../RenderFeatureDataRPC/byteGate.ts'
 import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
-import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export async function executeMultiRowGetFeatures({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: MultiRowGetFeaturesArgs
+  args: RpcExecuteArgs<'MultiRowGetFeatures'>
 }) {
   const {
     sessionId,

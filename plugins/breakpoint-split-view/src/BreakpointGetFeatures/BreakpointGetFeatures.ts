@@ -3,17 +3,15 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
-import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface BreakpointGetFeaturesArgs {
   sessionId: string
   regions: Region[]
   adapterConfig: Record<string, unknown>
   assemblyName?: string
-  statusCallback?: StatusCallback
-  stopToken?: StopToken
   opts?: Record<string, unknown>
 }
 
@@ -93,7 +91,7 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
   }
 
   async execute(
-    args: BreakpointGetFeaturesArgs,
+    args: RpcExecuteArgs<'BreakpointGetFeatures'>,
     rpcDriver: string,
   ): Promise<BreakpointSerializedFeature[]> {
     const {

@@ -8,12 +8,7 @@ import rpcConfigSchema from './configSchema.ts'
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type BaseRpcDriver from './BaseRpcDriver.ts'
-import type {
-  RpcArgs,
-  RpcHandles,
-  RpcMethodName,
-  RpcReturn,
-} from './RpcRegistry.ts'
+import type { RpcCallArgs, RpcMethodName, RpcReturn } from './RpcRegistry.ts'
 
 export type RpcDriverFactory = (
   config: AnyConfigurationModel,
@@ -23,17 +18,9 @@ export type RpcDriverFactory = (
 // `call` accepts any string method name: a registered one resolves to its typed
 // args/return (the `& RpcMethodName` re-narrows M inside the conditional, which
 // TS won't do on its own), and an unknown one (e.g. a plugin-defined method not
-// in the registry) falls back to the loose shapes.
-//
-// What a CALLER passes is the method's own data, minus the `sessionId` this
-// injects, plus {@link RpcHandles} — which EVERY method takes, whether or not
-// its registry entry ever mentioned them. That `& RpcHandles` is the fix for a
-// class of silent bug: an entry omitting them made passing one a type error at
-// the call site, so the method was uncancellable and silent with nothing saying
-// so. There is now nothing to omit.
-type RpcCallArgs<M extends string> = M extends RpcMethodName
-  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'> & RpcHandles
-  : Record<string, unknown> & RpcHandles
+// in the registry) falls back to the loose shapes. `RpcCallArgs` is in the
+// registry rather than here, because it is not only this class that types a
+// `call`.
 type RpcCallReturn<M extends string> = M extends RpcMethodName
   ? RpcReturn<M & RpcMethodName>
   : unknown

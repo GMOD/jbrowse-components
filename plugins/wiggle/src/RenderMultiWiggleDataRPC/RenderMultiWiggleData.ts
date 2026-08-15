@@ -1,7 +1,6 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Region } from '@jbrowse/core/util'
 import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface RenderMultiWiggleDataArgs {
@@ -13,10 +12,8 @@ interface RenderMultiWiggleDataArgs {
   regions: Region[]
   sources?: SourceInfo[]
   bicolorPivot?: number
-  stopToken?: StopToken
   bpPerPx?: number
   resolution?: number
-  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

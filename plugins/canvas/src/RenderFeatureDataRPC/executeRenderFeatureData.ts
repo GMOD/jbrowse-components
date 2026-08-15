@@ -19,16 +19,17 @@ import { findGlyph } from './glyphs/findGlyph.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
-import type { FeatureDataResult, RenderFeatureDataArgs } from './rpcTypes.ts'
+import type { FeatureDataResult } from './rpcTypes.ts'
 import type { FeatureLayout, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export async function executeRenderFeatureData({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: RenderFeatureDataArgs
+  args: RpcExecuteArgs<'RenderFeatureData'>
 }) {
   const {
     sessionId,

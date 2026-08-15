@@ -6,8 +6,6 @@ import type {
   SyntenyTargetViewSnap,
 } from './executeSyntenyFeaturesAndPositions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface SyntenyGetFeaturesAndPositionsArgs {
   adapterConfig: Record<string, unknown>
@@ -16,7 +14,6 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   queryView: SyntenyQueryViewSnap
   targetView: SyntenyTargetViewSnap
   sessionId: string
-  stopToken?: StopToken
   // no colorBy: the worker emits per-instance kind/featureIdx descriptors and
   // the display recomputes colors on the main thread, so a color-scheme change
   // never reaches this RPC (see computeSyntenyColors)
@@ -24,7 +21,6 @@ export interface SyntenyGetFeaturesAndPositionsArgs {
   drawCIGARMatchesOnly?: boolean
   drawLocationMarkers?: boolean
   lodMode?: BaseOptions['lodMode']
-  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

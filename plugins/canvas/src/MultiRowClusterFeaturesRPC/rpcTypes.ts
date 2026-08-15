@@ -1,6 +1,3 @@
-import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-
 export interface MultiRowClusterFeaturesArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
@@ -19,8 +16,6 @@ export interface MultiRowClusterFeaturesArgs {
   // raw `color` config slot (CSS or `jexl:...`), evaluated per feature to the
   // categorical signal clustered on
   colorConfig: string | undefined
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

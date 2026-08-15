@@ -1,6 +1,4 @@
 import type { RegionTooLargeResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface MultiRowGetFeaturesArgs {
   sessionId: string
@@ -32,8 +30,6 @@ export interface MultiRowGetFeaturesArgs {
   // in the worker against the feature. Per-row color (sampleColorMap / palette /
   // dialog) is applied on the main thread at render time, not here.
   colorConfig: string | undefined
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 // One region's painting: absolute genomic positions, pre-resolved ABGR colors,

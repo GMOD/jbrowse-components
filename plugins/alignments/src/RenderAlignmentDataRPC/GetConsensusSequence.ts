@@ -12,8 +12,8 @@ import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
 
 import type { FilterBy } from '../shared/types.ts'
 import type { ConsensusVariant } from '@jbrowse/alignments-core'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { Region } from '@jbrowse/core/util'
 
 interface GetConsensusSequenceArgs {
   sessionId: string
@@ -25,8 +25,6 @@ interface GetConsensusSequenceArgs {
   callFract?: number
   hetFract?: number
   includeInsertions?: boolean
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
   rpcDriverName?: string
 }
 
@@ -48,7 +46,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'GetConsensusSequence'
 
-  async execute(args: GetConsensusSequenceArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'GetConsensusSequence'>,
+    rpcDriverClassName: string,
+  ) {
     const {
       sessionId,
       adapterConfig,

@@ -310,6 +310,18 @@ export default function FetchMixin() {
        */
       beforeDestroy() {
         self.stopActiveFetch()
+        // and the status window regardless of whether there was a fetch to
+        // stop: `stopActiveFetch` resets only when it finds a live token, so a
+        // display torn down BETWEEN fetches — the common case, since a fetch
+        // that finished cleared its own token — left its trailing write
+        // standing on a timer. The write itself is already a no-op (the sink
+        // re-reads `isAlive`), but the timer is not, and jest reports a worker
+        // that will not exit rather than anything about a display.
+        //
+        // Third of three: `createStopTokenRotation.dispose` and `useFetch`'s
+        // effect cleanup are the other two owners of a window, and both end it
+        // with the thing that owns it.
+        self.resetStatus()
       },
       /**
        * #action

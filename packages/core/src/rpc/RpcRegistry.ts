@@ -123,6 +123,19 @@ export type RpcExecuteArgs<M extends string> = M extends RpcMethodName
   ? RpcArgs<M & RpcMethodName> & { sessionId: string } & RpcHandles
   : unknown
 
+/**
+ * What a CALLER passes to `rpcManager.call`: the method's own data, minus the
+ * `sessionId` the layer injects, plus the {@link RpcHandles} every method takes.
+ *
+ * Exported and used by everything that types a `call` — `RpcManager` itself and
+ * the structural `RpcMethodCaller` the clustering helpers take — because there
+ * were three hand-written copies of this expression and the third one silently
+ * lagged the other two the moment the handles moved.
+ */
+export type RpcCallArgs<M extends string> = M extends RpcMethodName
+  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'> & RpcHandles
+  : Record<string, unknown> & RpcHandles
+
 // What a registered method's `execute` may resolve to: the declared return, or
 // that return wrapped in rpcResult to carry transferables. An RpcMethodType
 // parameterized with its own name (`RpcMethodType<'CoreGetRegions'>`) gets its

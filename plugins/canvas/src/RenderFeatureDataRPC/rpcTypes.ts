@@ -1,8 +1,6 @@
 import type { DisplayConfig } from './renderConfig.ts'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
-import type { StatusCallback } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface LabelItem {
   text: string
@@ -67,8 +65,6 @@ export interface RenderFeatureDataArgs {
   // byte gate (i.e. after force-load).
   byteLimit?: number
   theme?: SerializableThemeArgs
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 export interface GetFeatureDetailsArgs {
@@ -81,8 +77,6 @@ export interface GetFeatureDetailsArgs {
     end: number
     assemblyName: string
   }
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

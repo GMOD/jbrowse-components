@@ -14,15 +14,15 @@ import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 
 import type { MatrixFeature } from './buildMultiRowMatrix.ts'
-import type { MultiRowClusterFeaturesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export async function executeMultiRowClusterFeatures({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: MultiRowClusterFeaturesArgs
+  args: RpcExecuteArgs<'MultiRowClusterFeatures'>
 }) {
   const {
     sessionId,

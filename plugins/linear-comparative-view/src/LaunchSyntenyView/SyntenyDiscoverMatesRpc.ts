@@ -2,9 +2,8 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface SyntenyDiscoverMatesArgs {
   adapterConfig: Record<string, unknown>
@@ -16,8 +15,6 @@ export interface SyntenyDiscoverMatesArgs {
   trackAssemblyNames: string[]
   anchorAssembly: string
   sessionId: string
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 /** What crosses the wire: one alignment per mate assembly, narrowed. */

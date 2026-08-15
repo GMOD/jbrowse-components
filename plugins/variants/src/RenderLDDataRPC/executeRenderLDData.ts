@@ -7,14 +7,14 @@ import { applyDisplayOrder, getDisplayOrder } from './reversedRegions.ts'
 import { isPrecomputedLDAdapter } from './types.ts'
 
 import type { LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
-import type { RenderLDDataArgs } from './RenderLDData.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { StatusCallback } from '@jbrowse/core/util'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
-type ExecuteArgs = RenderLDDataArgs & {
-  statusCallback?: StatusCallback
-}
+// `RpcExecuteArgs`, not `RenderLDDataArgs & { statusCallback? }`: re-adding one
+// handle by hand is how a worker-side type ends up carrying a different set from
+// the one the driver delivers.
+type ExecuteArgs = RpcExecuteArgs<'RenderLDData'>
 
 // Nothing to lay out — no SNPs passed the filters, or there is no region to lay
 // them out in. `filterStats` rides along regardless: an empty triangle is
