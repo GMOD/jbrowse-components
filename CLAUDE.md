@@ -24,10 +24,13 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - In React, `autorun` inside `useEffect`, not `reaction`.
 - **`detach` before `destroy`, and still destroy** (`scheduleDetachedDestroy`) —
   a detached-and-alive tree leaks silently. ADR-069.
-- **An `autorun` must do its own reads** — MST actions run untracked.
+- **An `autorun` must do its own reads** — MST actions run untracked, and a
+  direct observable write inside an autorun body silently fails.
 - **`interface X extends Instance<…> {}`**, never a type alias. ADR-055.
 - Duck-typed `interface XSelf` extends `IStateTreeNode`, never
-  `IAnyStateTreeNode` (which is `any`).
+  `IAnyStateTreeNode` (which is `any`). **Duck-type across a lazy boundary too**
+  — importing an MST model type across a lazy import is a circular-reference
+  trap.
 - Write observers inline — `observer(function(){})`. The `observer(F)` form gets
   compiled by React Compiler and can stale a MobX read.
 
