@@ -201,3 +201,35 @@ export type RpcExecuteReturn<M extends string> = M extends RpcMethodName
   : string extends M
     ? unknown
     : NotInRpcRegistry<M>
+
+/**
+ * Registry entries that declare a field belonging to the CALL rather than to
+ * the payload. Should always be `never`; {@link AssertNoCallLevelFields} below
+ * is what makes a non-empty one a compile error naming the entry.
+ *
+ * This has now gone wrong twice with the same shape, which is why it is checked
+ * rather than written down. Both times a caller needed one of these on one
+ * method, the field went into that method's `args`, and the other forty then
+ * could not be passed it — so the property that belongs to every call became a
+ * type error on all but the entry that happened to name it. The handles went
+ * that way (`CoreGetExportData` shipped uncancellable), and `rpcDriverName`
+ * went the same way after them.
+ *
+ * `sessionId` is deliberately NOT in this union yet: 22 entries still declare
+ * it, which is why `RpcCallArgs` still has to subtract it. Adding it here is
+ * the check that would let that `Omit` go.
+ */
+export type EntriesDeclaringCallLevelFields = {
+  [K in RpcMethodName]: Extract<
+    keyof RpcArgs<K>,
+    keyof RpcHandles | keyof RpcRouting
+  > extends never
+    ? never
+    : K
+}[RpcMethodName]
+
+// Fails as "Type 'X' does not satisfy the constraint 'never'", naming the entry
+// that has to give the field back to the call layer.
+type AssertNoCallLevelFields<T extends never> = T
+export type _NoCallLevelFieldsInRegistry =
+  AssertNoCallLevelFields<EntriesDeclaringCallLevelFields>

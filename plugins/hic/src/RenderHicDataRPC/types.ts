@@ -1,6 +1,5 @@
 import type { RegionPairRun } from '../HicAdapter/HicAdapter.ts'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Region } from '@jbrowse/core/util'
 
 /**
  * What the *view* knows about one displayed block and the worker cannot see,
@@ -36,8 +35,6 @@ export interface RenderHicDataArgs {
   bpPerPx: number
   resolution: number
   normalization: string
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 export interface HicContactItem {

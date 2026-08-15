@@ -6,12 +6,12 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { extractAlignmentData } from './extractAlignmentData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { Region } from '@jbrowse/core/util'
 import type {
   AlignmentData,
   DiagonalizationResult,
 } from '@jbrowse/core/util/diagonalizeRegions'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // One alignment adapter to diagonalize against, plus the per-adapter refName
 // reconciliation the worker needs (it has no assemblyManager to resolve
@@ -51,9 +51,19 @@ export interface DiagonalizeArgs {
   // Optional on purpose: the synteny view passes its reference view's zoom, the
   // dotplot passes nothing so its diagonalize fetch stays LOD-unculled.
   bpPerPx?: number
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
+
+/**
+ * What the body below takes: the payload plus the call's handles.
+ *
+ * They are separate types because the payload is what the two RpcRegistry
+ * entries declare, and the handles belong to the call rather than to any
+ * entry — declaring them there made pinning one a type error on every method
+ * that had not thought to, which is the drift
+ * `EntriesDeclaringCallLevelFields` now checks for. This body is shared by two
+ * named methods and genuinely reads both, so it names them here instead.
+ */
+export type DiagonalizeExecuteArgs = DiagonalizeArgs & RpcHandles
 
 /**
  * Fetch a pair of axes' alignments and run the shared `diagonalizeRegions` off
@@ -79,7 +89,7 @@ export async function executeDiagonalize(
     bpPerPx,
     stopToken,
     statusCallback,
-  }: DiagonalizeArgs,
+  }: DiagonalizeExecuteArgs,
 ): Promise<DiagonalizationResult | null> {
   if (!sessionId) {
     throw new Error('must pass a unique session id')

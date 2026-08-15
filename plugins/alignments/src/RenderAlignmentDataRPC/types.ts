@@ -11,9 +11,8 @@ import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKeys } from '../shared/readIdentity.ts'
 import type { ColorBy, FilterBy, GroupBy } from '../shared/types'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type Flatbush from '@jbrowse/core/util/flatbush'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // Args for the single RenderAlignmentData RPC. `linkedReads` selects the
 // pileup (`'off'`) vs chain (`'normal'`) path inside the worker — the same flag
@@ -61,8 +60,6 @@ export interface RenderAlignmentDataArgs {
   drawSingletons?: boolean
   drawProperPairs?: boolean
   showOnlySplitAlignments?: boolean
-  statusCallback?: StatusCallback
-  stopToken?: StopToken
 }
 
 export type { CoverageTooltipBin } from '@jbrowse/alignments-core'

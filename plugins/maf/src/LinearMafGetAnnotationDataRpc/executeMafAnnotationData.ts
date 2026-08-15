@@ -4,8 +4,8 @@ import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { MafFrameRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { Region } from '@jbrowse/core/util'
 
 /**
  * Unlike the alignment/summary RPCs (whose `adapterConfig` is the track's MAF
@@ -17,8 +17,6 @@ export interface LinearMafGetAnnotationDataArgs {
   adapterConfig: Record<string, unknown>
   sessionId: string
   regions: Region[]
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 export interface LinearMafGetAnnotationDataResult {
@@ -39,7 +37,7 @@ export async function executeMafAnnotationData({
   args,
 }: {
   pluginManager: PluginManager
-  args: LinearMafGetAnnotationDataArgs
+  args: LinearMafGetAnnotationDataArgs & RpcHandles
 }): Promise<LinearMafGetAnnotationDataResult> {
   const { regions, adapterConfig, sessionId, stopToken } = args
   const region = regions[0]!

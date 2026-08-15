@@ -3,6 +3,7 @@ import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { BaseMafRpcArgs, MafSummaryRecord, Sample } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
 
 export interface LinearMafGetSummaryDataArgs extends BaseMafRpcArgs {
   // The display's subtree filter, as a SET — same contract as the detail path's
@@ -42,7 +43,7 @@ export async function executeMafSummaryData({
   args,
 }: {
   pluginManager: PluginManager
-  args: LinearMafGetSummaryDataArgs
+  args: LinearMafGetSummaryDataArgs & RpcHandles
 }): Promise<LinearMafGetSummaryDataResult> {
   const {
     regions,

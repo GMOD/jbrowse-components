@@ -5,13 +5,14 @@ import { getScoreMatrix } from './getScoreMatrix.ts'
 
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
 
 export async function executeClusterScoreMatrix({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: GetScoreMatrixArgs
+  args: GetScoreMatrixArgs & RpcHandles
 }) {
   const stopTokenCheck = createStopTokenChecker(args.stopToken)
   const matrix = await getScoreMatrix({

@@ -64,6 +64,7 @@ import type {
   RenderAlignmentDataArgs,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
@@ -486,7 +487,7 @@ export async function executeRenderAlignmentData({
   args,
 }: {
   pluginManager: PluginManager
-  args: RenderAlignmentDataArgs
+  args: RenderAlignmentDataArgs & RpcHandles
 }) {
   const {
     sessionId,

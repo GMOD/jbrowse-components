@@ -16,6 +16,7 @@ import { defaultGlyph, ldColoringRequested } from './rpcTypes.ts'
 
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
 import type {
   Feature,
   ProgressReporter,
@@ -173,7 +174,7 @@ export async function executeGetManhattanData({
   args,
 }: {
   pluginManager: PluginManager
-  args: GetManhattanDataArgs
+  args: GetManhattanDataArgs & RpcHandles
 }): Promise<ManhattanRpcResult> {
   const {
     sessionId,

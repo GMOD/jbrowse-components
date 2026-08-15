@@ -2,8 +2,7 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, StatusCallback, UriLocation } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Region, UriLocation } from '@jbrowse/core/util'
 import type { Observable } from 'rxjs'
 
 /**
@@ -22,8 +21,6 @@ export interface BaseMafRpcArgs {
   adapterConfig: Record<string, unknown>
   sessionId: string
   regions: Region[]
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 /**

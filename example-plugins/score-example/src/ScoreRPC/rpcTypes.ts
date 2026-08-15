@@ -1,14 +1,11 @@
 // #exampleFile shared | ScoreRegionData and the RPC arg types
-import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Region } from '@jbrowse/core/util'
 
 export interface GetScoreDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
   scoreColumn: string
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 // #region region-data

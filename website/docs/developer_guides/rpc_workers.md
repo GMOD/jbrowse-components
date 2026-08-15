@@ -38,6 +38,7 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { buildScoreResult } from './buildScoreResult.ts'
 
 import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 // Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
 // at every call site: the args are checked and the return type is inferred,
@@ -54,7 +55,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
   name = 'GetScoreData' as const
 
-  async execute(args: GetScoreDataArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RpcExecuteArgs<'GetScoreData'>,
+    rpcDriverClassName: string,
+  ) {
     const {
       sessionId,
       adapterConfig,

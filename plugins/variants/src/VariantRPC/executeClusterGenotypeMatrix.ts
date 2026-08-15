@@ -4,31 +4,16 @@ import { clusterMatrix } from '@jbrowse/tree-sidebar'
 import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
 import { imputeMissingToSiteMean } from './genotypeMatrixEncoding.ts'
 
-import type { SampleInfo, Source } from '../shared/types.ts'
+import type { ClusterGenotypeMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Region, StatusCallback, StopToken } from '@jbrowse/core/util'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
 
 export async function executeClusterGenotypeMatrix({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: {
-    adapterConfig: Record<string, unknown>
-    stopToken?: StopToken
-    sessionId: string
-    headers?: Record<string, string>
-    regions: Region[]
-    bpPerPx?: number
-    minorAlleleFrequencyFilter: number
-    maxMissingnessFilter: number
-    filters?: SerializableFilterChain
-    statusCallback: StatusCallback
-    sources: Source[]
-    renderingMode?: string
-    sampleInfo?: Record<string, SampleInfo>
-  }
+  args: ClusterGenotypeMatrixArgs & RpcHandles
 }) {
   const stopTokenCheck = createStopTokenChecker(args.stopToken)
   const matrix = await buildGenotypeMatrix({

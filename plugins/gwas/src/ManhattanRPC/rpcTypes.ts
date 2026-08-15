@@ -3,8 +3,7 @@ import {
   GLYPH_POINT,
 } from '../LinearManhattanDisplay/shaders/manhattan.consts.generated.ts'
 
-import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Feature, Region } from '@jbrowse/core/util'
 
 // The per-feature glyph classes this file used to declare are manhattan.slang's
 // now, generated into `shaders/manhattan.iface.generated.ts` by
@@ -47,8 +46,6 @@ export interface GetManhattanDataArgs {
   // free to spell the same contig differently, so it needs its own name.
   // Present only in LD coloring mode, where it is the only thing that reads it.
   ldRefName?: string
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
 }
 
 // Whether this request colors by LD. Three things have to be present, and both

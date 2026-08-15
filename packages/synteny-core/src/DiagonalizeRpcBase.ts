@@ -1,6 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
-import type { DiagonalizeArgs } from './executeDiagonalize.ts'
+import type { DiagonalizeExecuteArgs } from './executeDiagonalize.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'
 
@@ -42,13 +42,15 @@ import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegion
 export default abstract class DiagonalizeRpcBase<
   MethodName extends string = string,
 > extends RpcMethodType<MethodName, DiagonalizationResult | null> {
-  // `DiagonalizeArgs &`, not `RpcExecuteArgs<MethodName>` alone: this body is
-  // written once for a name that is still generic here, and TS defers the
-  // conditional inside RpcExecuteArgs until the name is known, so on its own it
-  // is `unknown` to this method. The intersection keeps what the registry says
-  // for whichever key a subclass names AND states what the body needs.
+  // `DiagonalizeExecuteArgs &`, not `RpcExecuteArgs<MethodName>` alone: this
+  // body is written once for a name that is still generic here, and TS defers
+  // the conditional inside RpcExecuteArgs until the name is known, so on its own
+  // it is `unknown` to this method. The intersection keeps what the registry
+  // says for whichever key a subclass names AND states what the body needs —
+  // including the handles, which is why it is the payload-plus-handles type
+  // rather than the payload alone.
   async execute(
-    args: DiagonalizeArgs & RpcExecuteArgs<MethodName>,
+    args: DiagonalizeExecuteArgs & RpcExecuteArgs<MethodName>,
     rpcDriverClassName: string,
   ) {
     const { executeDiagonalize } = await import('./executeDiagonalize.ts')

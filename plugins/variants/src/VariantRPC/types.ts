@@ -1,10 +1,9 @@
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type { Region, RpcStatus, StopToken } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 
 interface BaseVariantRpcArgs {
   adapterConfig: Record<string, unknown>
-  stopToken?: StopToken
   sessionId: string
   headers?: Record<string, string>
   regions: Region[]
@@ -26,9 +25,13 @@ export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sampleInfo?: Record<string, SampleInfo>
 }
 
-export interface ClusterGenotypeMatrixArgs extends GetGenotypeMatrixArgs {
-  statusCallback: (status: RpcStatus) => void
-}
+// The payload is `GetGenotypeMatrixArgs` exactly — clustering adds nothing to
+// what gets fetched. It existed as its own interface only to add a REQUIRED
+// `statusCallback`, which made this the one method in the registry a caller had
+// to hand a progress callback to; that belongs to the call (RpcHandles, where it
+// is optional like everywhere else), so the helper takes it and the entry does
+// not.
+export type ClusterGenotypeMatrixArgs = GetGenotypeMatrixArgs
 
 export interface GetCellDataArgs extends BaseVariantRpcArgs {
   // Which samples get rows, as a SET — never an order. The worker builds its own
@@ -47,15 +50,12 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
   featureColor?: string
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]
-  statusCallback: (status: RpcStatus) => void
 }
 
 export interface MultiSampleVariantGetSourcesArgs {
   adapterConfig: Record<string, unknown>
-  stopToken?: StopToken
   sessionId: string
   headers?: Record<string, string>
   regions?: Region[]
   bpPerPx?: number
-  statusCallback?: (status: RpcStatus) => void
 }

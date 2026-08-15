@@ -9,6 +9,7 @@ import type { RawFeatureArrays } from '../util.ts'
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // One region's slice of the concatenated row: the column it starts at, how many
@@ -114,7 +115,7 @@ type MatrixData = Map<string, RegionValues[]>
 async function fetchMatrixData(
   dataAdapter: BaseFeatureDataAdapter,
   regions: Region[],
-  args: GetScoreMatrixArgs,
+  args: GetScoreMatrixArgs & RpcHandles,
 ): Promise<MatrixData> {
   // The same fast path the render RPC takes (see isMultiSource): typed arrays,
   // every region in one call per subtrack, and no grouping pass. Clustering
@@ -163,7 +164,7 @@ export async function getScoreMatrix({
   pluginManager,
   args,
 }: {
-  args: GetScoreMatrixArgs
+  args: GetScoreMatrixArgs & RpcHandles
   pluginManager: PluginManager
 }) {
   const {

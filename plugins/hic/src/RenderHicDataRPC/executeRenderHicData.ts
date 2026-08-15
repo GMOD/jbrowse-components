@@ -13,13 +13,14 @@ import { computeCountStats } from './countStats.ts'
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
 import type { HicDataResult, RenderHicDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
 
 export async function executeRenderHicData({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: RenderHicDataArgs
+  args: RenderHicDataArgs & RpcHandles
 }): Promise<HicDataResult> {
   const {
     sessionId,
