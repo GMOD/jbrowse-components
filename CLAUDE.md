@@ -19,8 +19,7 @@ The general worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - **Never merge a `*.generated.ts` conflict — regenerate it.** Take either side,
   re-run the generator (see Tooling), `git add`. Only the sources conflict for
   real.
-- **Don't push to `origin` (GMOD/jbrowse-components) or open a PR unless
-  asked.**
+- You can regenerate docs at any time with pnpm autogen for the website/docs/
 - Land with `git -C ~/src/jbrowse-components merge --ff-only <branch>`. The two
   things that look like shortcuts are worse: `git push . HEAD:main` refuses here
   (`receive.denyCurrentBranch` is unset), and `update-ref` on a checked-out
