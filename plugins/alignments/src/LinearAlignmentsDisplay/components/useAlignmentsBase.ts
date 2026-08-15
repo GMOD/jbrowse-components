@@ -57,10 +57,13 @@ export interface FeatureHit {
 // canvas is a borderless leaf element), so no canvas ref or rect math is needed.
 export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const view = getContainingView(model) as LinearGenomeViewModel
-  // trackWidthPx, matching renderState.canvasWidth — the CSS width of the canvas
-  // element and the width its backing store is sized to must agree, or the whole
-  // pileup draws at the wrong horizontal scale.
-  const width = view.initialized ? view.trackWidthPx : undefined
+  // `canvasWidthPx`, matching renderState.canvasWidth — the CSS width of the
+  // canvas element and the width its backing store is sized to must agree, or
+  // the whole pileup draws at the wrong horizontal scale. Off the model, never a
+  // second `view.trackWidthPx` read (see
+  // `MultiRegionDisplayMixin.canvasWidthPx`); gated on `initialized` because it
+  // reaches `view.width`, which throws before the view is measured.
+  const width = view.initialized ? model.canvasWidthPx : undefined
 
   // Tracks the currently-active pan drag. Starting a new pan aborts the
   // previous and unmount aborts in-flight. Doubles as the "is dragging"
@@ -197,7 +200,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       scroll: model.scrollModel,
       lineWidth: model.readConnectionsLineWidth,
       arcsYDomainBp: model.arcsYDomainBp,
-      canvasWidthPx: view.trackWidthPx,
+      canvasWidthPx: model.canvasWidthPx,
     })
     if (!hover) {
       return undefined

@@ -21,6 +21,13 @@ export interface WiggleGpuDisplayModel<
   // directly to gate its LD legend on real pixels.
   painted: boolean
   height: number
+  // The CSS width of the display's canvas, and the width its `renderState`
+  // carries. Off the model rather than `getContainingView(model).trackWidthPx`
+  // in each component: that is the same question answered a second way, out of
+  // four plausible view getters, and it is the one MAF drifted on. See
+  // `MultiRegionDisplayMixin.canvasWidthPx`, which every display in this family
+  // composes.
+  canvasWidthPx: number
   // `unknown`, matching FetchMixin's volatile (it preserves whatever was thrown)
   // and DisplayChrome's error bar. Declaring `Error | null` here was a lie the
   // model never satisfied — nothing in this contract's consumers narrows it.

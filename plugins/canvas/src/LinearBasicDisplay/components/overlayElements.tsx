@@ -43,6 +43,9 @@ type AssignableTo<A extends B, B> = A
 interface FloatingLabelsModel {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
+  // the canvas' CSS width, off the model rather than a second
+  // `view.trackWidthPx` read — see `MultiRegionDisplayMixin.canvasWidthPx`
+  canvasWidthPx: number
   labelFontSize: number
   // viewport height + quantized scroll bucket drive the label vertical cull
   // (labelCullBand). The bucket, not raw scrollTop, keeps a scroll tick within
@@ -65,6 +68,8 @@ interface FloatingLabelsModel {
 interface HighlightBoxesModel {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
+  // as on FloatingLabelsModel above
+  canvasWidthPx: number
   // resolved label size for the display mode; the boxes reserve label width, and
   // baked widths are measured at the base size (see renderedTextWidth)
   labelFontSize: number
@@ -257,7 +262,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     toggleSoloFeature,
   } = model
   const viewInitialized = view.initialized
-  const width = viewInitialized ? view.trackWidthPx : undefined
+  const width = viewInitialized ? model.canvasWidthPx : undefined
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions as VisibleRegion[]
 
@@ -460,7 +465,7 @@ export const HighlightLayer = observer(function HighlightLayer({
   const { classes, cx } = useStyles()
   const boxStyles = overlayBoxStyles(usePalette())
   const viewInitialized = view.initialized
-  const width = viewInitialized ? view.trackWidthPx : undefined
+  const width = viewInitialized ? model.canvasWidthPx : undefined
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions as VisibleRegion[]
 

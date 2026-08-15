@@ -1,10 +1,7 @@
 import { Crosshairs } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
-
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Above the track content and its overlays, below the app chrome.
 const CROSSHAIR_Z_INDEX = 800
@@ -17,6 +14,11 @@ const CROSSHAIR_Z_INDEX = 800
  * Lives here because that edge does. Every display that grew a crosshair
  * re-derived the same four props and re-picked the z-index, and they had already
  * drifted on the width.
+ *
+ * `canvasWidthPx` off the model rather than `trackWidthPx` off the view, for the
+ * same reason `height` comes off the model: a shared component reading the view
+ * directly answers the width question a second way, and cannot follow a display
+ * that overrides it. See `MultiRegionDisplayMixin.canvasWidthPx`.
  */
 export const DisplayCrosshairs = observer(function DisplayCrosshairs({
   model,
@@ -24,6 +26,7 @@ export const DisplayCrosshairs = observer(function DisplayCrosshairs({
   mouseY,
 }: {
   model: {
+    canvasWidthPx: number
     height: number
     showTree: boolean
     hierarchy?: unknown
@@ -32,12 +35,11 @@ export const DisplayCrosshairs = observer(function DisplayCrosshairs({
   mouseX: number
   mouseY: number
 }) {
-  const view = getContainingView(model) as LinearGenomeViewModel
   return (
     <Crosshairs
       mouseX={mouseX}
       mouseY={mouseY}
-      width={view.trackWidthPx}
+      width={model.canvasWidthPx}
       height={model.height}
       minLeft={treeSidebarRightEdge(model)}
       zIndex={CROSSHAIR_Z_INDEX}

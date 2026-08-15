@@ -60,6 +60,11 @@ const noAnyStateTreeNode = {
   message:
     'A duck-typed interface extends `IStateTreeNode`, never `IAnyStateTreeNode`. The latter resolves through `STNValue<any, …>` to `any`, which silently turns off checking for every member you just declared. See the MST section of CLAUDE.md.',
 }
+const noTrackWidthPx = {
+  selector: "MemberExpression[property.name='trackWidthPx']",
+  message:
+    "Read `model.canvasWidthPx`, not `view.trackWidthPx`. The mixin getter exists because the choice was being made by copying whichever neighbour the author read first, out of four plausible view getters — and MAF drifted onto `view.width`. The two agree today, so a second spelling is silent until one of them moves. See ARCHITECTURE.md §'SVG export' and MultiRegionDisplayMixin.canvasWidthPx.",
+}
 
 // The set every file gets. A block below that needs its own extra selectors
 // spreads this rather than re-listing it — flat config overrides the rule
@@ -514,6 +519,22 @@ export default defineConfig(
     // way to say it. In source there were three, one of which is `setConf`
     // itself.
     ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...restrictedSyntax,
+        noSetSlot,
+        noTrackWidthPx,
+      ],
+    },
+  },
+  // The one file allowed to read `trackWidthPx`: the getter that answers the
+  // width question for everyone else. `LinearGenomeView/model.ts` defines it and
+  // is not a read, so it needs no entry.
+  {
+    files: [
+      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
+    ],
     rules: {
       'no-restricted-syntax': ['error', ...restrictedSyntax, noSetSlot],
     },

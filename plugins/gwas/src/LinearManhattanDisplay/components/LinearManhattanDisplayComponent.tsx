@@ -36,8 +36,7 @@ const LinearManhattanDisplayComponent = observer(
   }: {
     model: ManhattanDisplayModel
   }) {
-    const { lgv, height } = model
-    const width = lgv.trackWidthPx
+    const { height, canvasWidthPx: width } = model
     const [contextMenu, setContextMenu] = useState<ManhattanContextMenu>()
 
     // renderState is always defined; an empty rpcDataMap/flatbush set simply

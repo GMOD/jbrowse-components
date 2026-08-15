@@ -107,7 +107,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
           scroll: model.scrollModel,
           lineWidth: model.readConnectionsLineWidth,
           arcsYDomainBp: model.arcsYDomainBp,
-          canvasWidthPx: view.trackWidthPx,
+          canvasWidthPx: model.canvasWidthPx,
         },
       )
       return geom ? [geom] : []

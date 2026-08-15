@@ -49,7 +49,7 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   // installPerRegionLifecycle's encode step reads `self.gpuProps()`, so a
   // gpuProps change re-fires every per-region autorun and re-uploads.
   const view = getContainingView(model) as LGV
-  const totalWidth = view.trackWidthPx
+  const totalWidth = model.canvasWidthPx
   const height = model.height
 
   const computeHit = useCallback(

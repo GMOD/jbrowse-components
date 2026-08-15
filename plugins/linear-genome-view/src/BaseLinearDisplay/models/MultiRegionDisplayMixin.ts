@@ -126,6 +126,15 @@ export default function MultiRegionDisplayMixin() {
          * family's heatmaps legitimately want and which is a different question,
          * not a different answer to this one).
          *
+         * A getter alone did not hold it: ten call sites across alignments,
+         * canvas, wiggle, multi-wiggle, gwas and the shared tree-sidebar
+         * crosshair went on reading `view.trackWidthPx` anyway, two of them
+         * assigning the result to a field literally named `canvasWidthPx`. They
+         * agreed, so nothing failed — which is the whole hazard, since a second
+         * spelling is silent right up until one of them moves. The
+         * `no-restricted-syntax` rule in `eslint.config.mjs` now bans the read
+         * everywhere but this line, and this is the one file it exempts.
+         *
          * SVG export is the one place it does not apply: the export shell has no
          * track outline, so `renderSvg` overrides `canvasWidth` with the shell's
          * own width (see `LgvSvgBodyProps`).

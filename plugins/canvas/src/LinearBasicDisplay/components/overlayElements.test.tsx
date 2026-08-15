@@ -39,6 +39,9 @@ const DATA = makeFeatureData({
 const MODEL = {
   renderedShowLabels: true,
   renderedShowDescriptions: false,
+  // matches the view slice's `trackWidthPx` below, since the real getter is
+  // `lgv.trackWidthPx` — the two are one number, read from the model
+  canvasWidthPx: 1000,
   labelFontSize: 11,
   height: 100,
   contentHeight: 100,
@@ -136,6 +139,7 @@ test.each([
 const HIGHLIGHT_MODEL = {
   renderedShowLabels: true,
   renderedShowDescriptions: false,
+  canvasWidthPx: 1000,
   labelFontSize: 11,
   selectedFeatureId: undefined,
   hoveredFeature: null,

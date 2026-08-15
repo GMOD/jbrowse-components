@@ -743,7 +743,13 @@ outline-adjusted width the on-screen canvas uses. That on-screen width is
 getter rather than a note on each display because the choice was being made by
 copying whichever neighbour the author read first, out of four plausible view
 getters — MAF had drifted onto `view.width` and sized a canvas that overhangs the
-track container's 2px outline under `contain: strict`. Export is the documented
+track container's 2px outline under `contain: strict`. **A getter alone did not
+hold it**: ten call sites went on reading `view.trackWidthPx` beside it, two of
+them assigning the result to a field named `canvasWidthPx`, and nothing failed
+because the two agree — which is the hazard rather than the reassurance, since a
+second spelling is silent until one of them moves. `no-restricted-syntax` bans
+the read everywhere but the getter now, the same treatment `setSlot` and the
+named `observer` get and for the same reason. Export is the documented
 exception to it: the export shell has no outline, so `renderSvg` overrides
 `canvasWidth` with the shell's own width (`LgvSvgBodyProps`). The full
 contract — the `svgReady`/`settled` freshness gates, the one permitted TypeScript

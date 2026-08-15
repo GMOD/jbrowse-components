@@ -33,7 +33,7 @@ const WiggleComponent = observer(function WiggleComponent({
   // LinearWiggleDisplay model. This component is just a thin bridge that
   // plugs the canvas and the backend into those model actions.
   const view = getContainingView(model) as LGV
-  const width = view.trackWidthPx
+  const width = model.canvasWidthPx
   const height = model.height
 
   const computeHit = useCallback(

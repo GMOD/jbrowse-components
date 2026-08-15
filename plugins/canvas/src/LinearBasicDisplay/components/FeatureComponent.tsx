@@ -199,7 +199,10 @@ const FeatureBody = observer(function FeatureBody({
 
   const view = getContainingView(model) as LGV
 
-  const width = view.initialized ? view.trackWidthPx : undefined
+  // `canvasWidthPx` off the model, gated on `initialized` because it reaches
+  // `view.width`, which throws before the view is measured. Never a second
+  // `view.trackWidthPx` read — see `MultiRegionDisplayMixin.canvasWidthPx`.
+  const width = view.initialized ? model.canvasWidthPx : undefined
   const height = model.height
 
   // model.openContextMenu (a stable MST action) is passed straight to the
