@@ -103,8 +103,9 @@ test('a region gets one index across calls', () => {
 // landing elsewhere can flip which of this one's blocks read as inverted — the
 // index has to belong to the consensus that built it.
 test('inversion events are keyed by consensus as well as region', () => {
-  const rows = [{ rowIndex: 0, chr: 'chr1', strand: -1 }]
-  const data = region([{ ...block(100, 'AAAA', ['AAAA']), rows }])
+  const base = block(100, 'AAAA', ['AAAA'])
+  const rows = base.rows.map(row => ({ ...row, chr: 'chr1', strand: -1 }))
+  const data = region([{ ...base, rows }])
   const forward: StrandConsensus = new Map([[0, new Map([['chr1', 1]])]])
   const reverse: StrandConsensus = new Map([[0, new Map([['chr1', -1]])]])
 
