@@ -190,13 +190,10 @@ export function nextJunctionFrom({
   const arrivalIds = new Set(
     [arrivedBy?.id, arrivedBy?.mateId].filter(id => id !== undefined),
   )
-  // Where this stop was reached from, which is the one place at it that is
-  // certainly not a way onward. `visited` holds it too, to within the tolerance
-  // of whatever coordinate the previous hop recorded — so this only earns its
-  // place for a candidate that sits past that: a callset that files one junction
-  // twice at coordinates a kilobase apart, which is what merging two callers
-  // gives. Anchoring on the junction the walk actually crossed is the answer
-  // that does not depend on how far the recorded stop drifted from it.
+  // `visited` holds this locus too, to within the tolerance of whatever
+  // coordinate the previous hop recorded — so the guard below only earns its
+  // place for a candidate sitting past that: one junction filed twice a
+  // kilobase apart, which is what merging two callers gives.
   const cameFrom =
     arrivedBy === undefined
       ? undefined

@@ -127,11 +127,11 @@ export function derivativePathTestId(candidate: DerivativeCandidate) {
  * Which row a candidate the user picked earlier is now, or 0 when the list no
  * longer holds it.
  *
- * `pathId` first, which is the identity — but it is not a stable one, and the
- * picker is an observer over a list recomputed from whatever reads have landed.
- * A cluster of junction endpoints is labelled by the lowest coordinate any read
- * placed it at, so a read arriving a few bp to the left of the route already
- * selected renames that route: the id lookup misses and the radio drops back to
+ * `pathId` first, which is the identity — but not an absolutely stable one, and
+ * the picker is an observer over a list recomputed from whatever reads have
+ * landed. The id carries clustered junction coordinates, and a cluster is
+ * labelled by a coordinate some read supplied, so a route can be renamed
+ * without its allele changing: the lookup misses and the radio drops back to
  * row 0 with the allele still sitting there, which is the bug holding a
  * `pathId` rather than a row index was meant to end.
  *

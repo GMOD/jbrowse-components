@@ -39,14 +39,11 @@ export interface DerivativeCandidate {
    * `refNames` move or collide for their own reasons. The junctions are the
    * allele, and this is the junctions.
    *
-   * It survives that widening, and `buildClusterOf` labels a junction cluster
-   * by the coordinate most reads placed it at so that it survives the ordinary
-   * arrival of another read too — but it is still NOT stable across every
-   * recomputation, and a consumer holding one has to cope with losing it. The
-   * label is data, and the data grows: a route whose two reads disagree about
-   * where a junction sits has no modal coordinate to speak of, so a third read
-   * can still rename it. Measured on the COLO829 tumour records, that residue
-   * is 4 streaming orders in 40, against 37 in 40 before.
+   * It survives that widening, and `buildClusterOf` labels a cluster by the
+   * coordinate most reads gave it so that it survives another read arriving
+   * too — but it is not absolutely stable, and a consumer holding one has to
+   * cope with losing it: a route whose two reads disagree about a junction has
+   * no mode, so a third can still rename it.
    */
   pathId: string
   // Number of distinct reads whose chain describes this path.
@@ -135,26 +132,14 @@ function exitBp(seg: SegAln) {
 // two alleles into one candidate. Capping a cluster's width at the tolerance
 // keeps them apart, which is what the tolerance is being asked for.
 //
-// WHICH ENDPOINT LABELS A CLUSTER is a separate question from which endpoints
-// are in it, and it is answered by the reads rather than by the sweep: the
-// label is the coordinate MOST of them placed the junction at, ties going to
-// the lower. The sweep's own leader is the LOWEST coordinate anybody placed it
-// at, so labelling by it makes the label move whenever a read lands to the left
-// of the whole cluster — and the label is what `pathSignature` spells, i.e.
-// what `pathId` is, i.e. the identity the picker holds a user's chosen route
-// by while the pileup is still streaming.
-//
-// It is not a rare move. Feeding the 37 real COLO829 tumour chains in one at a
-// time, over 40 arrival orders, the der(3) route's `pathId` changed a mean of
-// 2.98 times per run under the leader label, in 37 of the 40 orders. Under the
-// modal label: 0.10 and 4 of 40. Every pinned count in `realReads.*` is
-// unchanged, because none of this moves a cluster's MEMBERSHIP.
-//
-// It is a better representative on its own terms, too — reads stack exactly on
-// an unambiguous breakpoint, so the mode is the called position and the leader
-// is the worst-placed read in the pile. What it is not is a guarantee: two
-// reads that disagree have no mode, so the residue is real and the picker
-// copes with it (`selectedCandidateIndex`).
+// WHICH endpoint labels a cluster is a separate question from which endpoints
+// are in it, and the reads answer it: the label is the coordinate MOST of them
+// placed the junction at, ties to the lower. The sweep's own leader is the
+// lowest coordinate ANYBODY placed it at, so labelling by that moves the label
+// whenever a read lands left of the whole cluster — and the label is what
+// `pathSignature` spells, i.e. what `pathId` is, i.e. what the picker holds a
+// user's chosen route by over a streaming pileup. Membership is untouched,
+// which is why no `realReads.*` count moves. SV_MULTIHOP.md has the measurement.
 type ClusterOf = (refName: string, bp: number) => number
 
 function junctionEndpoints(chain: SegAln[]) {
@@ -314,15 +299,12 @@ function segmentsFromChain(chain: SegAln[], flank: number) {
       // clamped at 0: a breakpoint near the start of a chromosome would
       // otherwise produce a negative coordinate that no locstring parses.
       //
-      // Not clamped at the other end, and the asymmetry is the limit of what
-      // this function knows rather than an oversight: 0 is a universal lower
-      // bound and there is no universal upper one, so a contig length would
-      // have to be threaded in from an assembly this layer deliberately has no
-      // access to. What overruns it is context, never a junction, and both
-      // consumers are undamaged by it — `navToLocString` clamps a requested
-      // region, and the synteny launch's reference panel draws a few kb of
-      // empty ruler past a contig end. Worth threading a length map in for only
-      // if something starts depending on these bounds being real.
+      // Not clamped at the other end, which is a limit rather than an
+      // oversight: 0 is a universal lower bound and there is no universal upper
+      // one, so a contig length would have to come from an assembly this layer
+      // has no access to. What overruns is context, never a junction, and it
+      // costs a few kb of empty ruler on the synteny launch's reference panel —
+      // `navToLocString` clamps for everyone else.
       start: Math.max(0, seg.start - growLow),
       end: seg.end + growHigh,
       strand: seg.strand,

@@ -210,8 +210,8 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // holding a route at all, and it needs no re-ranking to fire.
   //
   // `selectedCandidateIndex` is where the lookup lives, because `pathId` alone
-  // does not finish the job either: it is the junctions, but the junctions
-  // carry clustered coordinates that a later read can relabel.
+  // does not quite finish the job: it is the junctions, but the junctions carry
+  // clustered coordinates a later read can still relabel.
   const [picked, setPicked] = useState<DerivativeCandidate>()
   const selected = selectedCandidateIndex(candidates, picked)
   const [error, setError] = useState<unknown>()
