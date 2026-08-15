@@ -359,6 +359,44 @@ author who lands on a behavior change can find the sentence that explains it.
   must compile against both this release and an older one can declare it
   optional (`driver?: string`), which satisfies either base.
 
+- **The RPC call has no second options position any more.**
+  `RpcManager.call(sessionId, functionName, args)` lost its fourth parameter,
+  and with it `BaseRpcDriver.call`'s and `transport`'s `options`. Only
+  `rpcDriverName` was ever read from it, as a *fallback* behind the same field in
+  `args`, and nothing in the tree passed it there. Everything else put in it went
+  to a position `MainThreadRpcDriver` drops on the floor and
+  `WorkerPoolRpcDriver` spread over its own — which is the same two-positions
+  disagreement that made `CoreGetExportData` silent under a worker and cancelable
+  under neither, and one in-tree call site was still shaped by it: the hic
+  header read passed a `statusCallback` there, so its "walking the norm-vector
+  index" labels appeared under a web worker and nowhere else. **Opt-out: move
+  the field into `args`**, which is where `RpcHandles` and `RpcRouting` say it
+  belongs and where every driver reads it. Subclassing `BaseRpcDriver` is the
+  breaking half — an override declaring `options` is no longer assignable, per
+  the parameter-count rule above.
+
+- **`RpcMethodType.deserializeReturn` is now typed off the registry**, taking
+  the entry's wire shape and returning its `return`. It was `(unknown, unknown)
+  => Promise<unknown>`, so the type a caller was promised rested on a cast in
+  `RpcManager.call` and on nothing else; the hook that produces the value is now
+  checked against the same entry `execute` is. The check is covariant, so an
+  override returning anything the entry does not declare is a compile error at
+  the override — which is the point, and is also the break. An override that
+  called `super` to strip the `rpcResult` envelope should call `unwrapRpcResult`
+  (`@jbrowse/core/util/librpc`) instead: `super` now promises the rebuilt value
+  the override is the one rebuilding. **Opt-out: leave the class
+  unparameterized** — `RpcMethodType` with no name argument resolves both ends to
+  `unknown`, exactly as before. Unrelated but shipped alongside: the three
+  rename-region bases lost their unused second type parameter, so
+  `RpcMethodTypeWithRenameRegions<'X', Y>` is now an arity error; drop the `Y`.
+
+- **`RpcClient.call` no longer takes a transfer list.** Transferables flow only
+  worker → main, inside a reply's `rpcResult` wrapper; transferring an *argument*
+  would neuter the main thread's own buffer. The option existed for one and
+  nothing ever passed it. `RpcServer.emit` keeps its transfer list, which runs
+  the direction that works. **Opt-out: none needed** — a call passing one was
+  already being handed a `[]` by every in-tree path.
+
 - **`@jbrowse/core/data_adapters/dataAdapterCache` is now served**
   (`ReExports/list.ts`). `adapterCache` is module-level state, so a plugin that
   deep-imported `getAdapter` got a *second* cache in the RPC worker while
