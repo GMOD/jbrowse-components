@@ -457,6 +457,25 @@ an inversion. Three things about the scope are load-bearing:
   orientation has nowhere else to go. A same-chromosome split junction still has
   it — `unpairedOrientationColor` paints a strand flip magenta and a co-linear
   join yellow — which is why those arcs get none.
+
+  **Widening it to the pair arcs has been asked for and measured down** (review,
+  on `gallery/inverted_duplication`: "do you think its worth adding 'feet' to
+  the arcs? i know they would all be at e.g. y=0 but it might help. not sure").
+  Two counts against it, and the second is the one that settles it. Orientation
+  on a pair arc IS the colour — green LL, navy RR, magenta split inverted, all
+  three named in the legend beside them — so a foot restates a row of the key.
+  And every foot lands on the baseline: that frame draws ~278 arcs across 3000
+  px (counted as non-white runs along one scanline of its band), so the feet
+  would be ~556 marks 20 px long on one horizontal line, five pixels apart. That
+  is a rule under the band, not a set of directions. The reviewer's own "they
+  would all be at e.g. y=0" is the whole objection; what makes it fatal is the
+  count.
+
+  The ticks are the half that IS worth it, and are filed rather than declined —
+  `agent-docs/TODO.md`, "Give the interchromosomal ticks breakend feet too".
+  Same reasoning as the arcs': their colour channel is spent too, and a tick has
+  no second endpoint to read an orientation off at all.
+
 - **Interchromosomal is the one family that is ALWAYS cross-region**, so drawing
   the feet in `CrossRegionArcsOverlay` covers all of it. Feet on the
   same-chromosome cross-region arcs would appear and disappear as a reader
