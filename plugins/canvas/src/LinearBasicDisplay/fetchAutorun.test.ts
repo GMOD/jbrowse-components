@@ -1405,13 +1405,13 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
   async function loadedDisplay() {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue(makeFeatureData())
-    const { display } = createDisplay()
+    const { display, view } = createDisplay()
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
-    return { display, mockRpcCall }
+    return { display, view, mockRpcCall }
   }
 
   it.each([
@@ -1509,6 +1509,59 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
 
     expect(display.effectiveMaxIsoforms).toBeGreaterThan(budgetBefore)
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+  })
+
+  // A `below` transcript label is a row of its own (reservesBelowLabelRow), and
+  // at a 10px feature it is nearly as tall as the transcript — so a cap that
+  // does not spend it admits about twice what the lane holds, which is the
+  // overflow the cap exists to end.
+  it('a below subfeature label costs the budget rows', async () => {
+    const { display } = await loadedDisplay()
+    const budgetBefore = display.effectiveMaxIsoforms!
+
+    display.configuration.setSlot('subfeatureLabels', 'below')
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(display.effectiveMaxIsoforms).toBeLessThan(budgetBefore)
+  })
+
+  // `featureHeight` declares `contextVariable`, so it may hold a `jexl:`
+  // expression — and an arg-less read of one EVALUATES it, against a context
+  // where `feature` is undefined. Read through readConfObject this threw out of
+  // a getter rpcProps() calls, i.e. it broke fetching outright.
+  it('a jexl featureHeight falls back rather than being evaluated', async () => {
+    const { display } = await loadedDisplay()
+    // the slot default is 10, which is also FALLBACK_FEATURE_HEIGHT — so the
+    // budget is unchanged exactly when the callback was not evaluated
+    const budgetBefore = display.effectiveMaxIsoforms
+
+    display.configuration.setSlot(
+      'featureHeight',
+      `jexl:get(feature,'score')>10?20:10`,
+    )
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(display.effectiveMaxIsoforms).toBe(budgetBefore)
+  })
+
+  // Zoomed out, `auto` has already resolved to longestCoding and the worker
+  // ignores the cap, so keeping it live would make a resize drag an RPC cache
+  // key for a payload that draws the same thing.
+  it('drops the cap once the zoom has collapsed the isoforms', async () => {
+    const { display, view } = await loadedDisplay()
+    expect(display.effectiveMaxIsoforms).toBeDefined()
+
+    // a region wide enough that the view will zoom past the 100bp/px the
+    // collapse threshold sits at
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 500_000, refName: 'ctgA' },
+    ])
+    zoomAndSettle(view, 200)
+
+    expect(display.effectiveGeneGlyphMode).toBe('longestCoding')
+    expect(display.effectiveMaxIsoforms).toBeUndefined()
   })
 
   it('an explicit glyph mode takes no cap, so the height stops mattering', async () => {

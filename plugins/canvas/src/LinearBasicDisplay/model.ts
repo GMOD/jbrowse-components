@@ -23,6 +23,7 @@ import { autorun } from 'mobx'
 import {
   FALLBACK_FEATURE_HEIGHT,
   HEIGHT_MULTIPLIERS,
+  labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { TRANSCRIPT_PADDING_RATIO as ISOFORM_GAP_RATIO } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
@@ -169,16 +170,31 @@ export default function stateModelFactory(
         return this.geneGlyphMode
       },
 
+      // The height the isoform cap is measured against, before the debounce
+      // `coarseTrackHeight` puts on it. `fitTargetHeight` is the raw slot, so
+      // it reads before the view is measured; grow reports 0 (no cap) for the
+      // reason effectiveMaxIsoforms gives.
+      get cappableTrackHeight() {
+        return self.heightMode === 'grow' ? 0 : self.fitTargetHeight
+      },
+
       /**
        * #getter
        * How many isoforms a gene may draw, or undefined for no cap — `auto`'s
        * second reason to hide transcripts, after zoom: a gene with 28 of them
        * in a 100px lane draws all 28 inside the lane's own scrollbar.
        *
-       * Rows, so it is the packer's own arithmetic: body height at this display
-       * mode plus `layoutSubfeatures`' inter-transcript gap, less one row for
-       * the gene's label. A jexl `featureHeight` only resolves in the worker,
-       * so a callback height falls back to the worker's own 10px.
+       * Rows, so it is the packer's own arithmetic (`decideLabelReservations`
+       * in layout.ts): body height at this display mode,
+       * `layoutSubfeatures`' inter-transcript gap,
+       * and the `below` subfeature-label row the worker reserves per transcript
+       * — which is most of a labeled row's height and, left unspent here, let
+       * the cap admit roughly twice what fits. Less one row for the gene's own
+       * label.
+       *
+       * Only while the resolved mode is `all`: under `longestCoding` the worker
+       * ignores it, so leaving it live would put a resize drag into the RPC
+       * cache key for nothing.
        *
        * OFF in `grow`, and that gate is load-bearing: grow's height IS its
        * content's, so a cap read off it would be a fetch-derived value in
@@ -186,19 +202,28 @@ export default function stateModelFactory(
        * `fitTargetHeight`, the raw slot, rather than `height`.
        */
       get effectiveMaxIsoforms(): number | undefined {
-        if (this.geneGlyphMode !== 'auto' || self.heightMode === 'grow') {
+        if (
+          this.geneGlyphMode !== 'auto' ||
+          this.effectiveGeneGlyphMode !== 'all' ||
+          self.heightMode === 'grow' ||
+          !self.coarseTrackHeight
+        ) {
           return undefined
         }
-        const height = self.coarseTrackHeight
-        if (!height) {
-          return undefined
-        }
-        const raw = readConfObject(self.configuration, 'featureHeight')
+        // The raw slot, NOT readConfObject: `featureHeight` declares
+        // `contextVariable`, and an arg-less read of a `jexl:` one still
+        // evaluates it — against a context where `feature` is undefined, so
+        // `get(feature, …)` throws, out of a getter `rpcProps()` reads. Only
+        // the worker can resolve it per feature, so a callback height assumes
+        // the same 10px the worker's own fallback does.
+        const raw: unknown = self.configuration.featureHeight
         const body =
           typeof raw === 'number' && raw > 0 ? raw : FALLBACK_FEATURE_HEIGHT
+        const mode = self.displayMode
         const rowPx =
-          body * HEIGHT_MULTIPLIERS[self.displayMode] * (1 + ISOFORM_GAP_RATIO)
-        return Math.max(1, Math.floor(height / rowPx) - 1)
+          body * HEIGHT_MULTIPLIERS[mode] * (1 + ISOFORM_GAP_RATIO) +
+          (this.subfeatureLabels === 'below' ? labelFontSize(mode) : 0)
+        return Math.max(1, Math.floor(self.coarseTrackHeight / rowPx) - 1)
       },
 
       // Gate for the bottom-right isoform-collapse control: the loaded data has
@@ -222,8 +247,7 @@ export default function stateModelFactory(
        */
       get geneGlyphIsoformCap(): number | undefined {
         const cap = this.effectiveMaxIsoforms
-        return this.effectiveGeneGlyphMode !== 'longestCoding' &&
-          cap !== undefined &&
+        return cap !== undefined &&
           [...self.rpcDataMap.values()].some(data => data.isoformsHidden)
           ? cap
           : undefined
@@ -298,17 +322,13 @@ export default function stateModelFactory(
       afterAttach() {
         // Seeded synchronously: a delayed autorun's first run is delayed too,
         // which would spend an uncapped round trip on every track load.
-        self.setCoarseTrackHeight(
-          self.heightMode === 'grow' ? 0 : self.fitTargetHeight,
-        )
+        self.setCoarseTrackHeight(self.cappableTrackHeight)
         addDisposer(
           self,
           autorun(
             () => {
               // read here, not in the action — an MST action runs untracked
-              const height =
-                self.heightMode === 'grow' ? 0 : self.fitTargetHeight
-              self.setCoarseTrackHeight(height)
+              self.setCoarseTrackHeight(self.cappableTrackHeight)
             },
             { delay: HEIGHT_SETTLE_MS, name: 'CanvasCoarseTrackHeight' },
           ),

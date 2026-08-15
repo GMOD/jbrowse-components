@@ -58,27 +58,28 @@ function codingLength(feature: Feature): number {
 // The gene's isoforms, best first: `longestCoding` takes the head, the height
 // cap takes the first n, so the two agree at n = 1 by construction.
 //
+// Coding isoforms rank above non-coding ones, and by protein length; a
+// non-coding one is ranked by span, which it is only ever compared on against
+// other non-coding ones — so that is also the whole ranking for a gene with no
+// coding isoform at all (a lncRNA).
+//
 // A coding-length tie resolves to the LATER isoform (DPP6 and other fixtures
 // depend on it), which a stable sort would break the other way — hence the
 // explicit index tiebreak. Sized once per isoform, not inside the comparator,
 // which would re-walk each subtree O(n log n) times.
 function rankIsoforms(isoforms: Feature[]): Feature[] {
-  const codingCandidates = isoforms.filter(hasCodingSubfeature)
-  const anyCoding = codingCandidates.length > 0
-  const size = anyCoding
-    ? codingLength
-    : (f: Feature) => f.get('end') - f.get('start')
-  const sized = isoforms.map((feature, index) => ({
-    feature,
-    index,
-    coding: anyCoding && hasCodingSubfeature(feature),
-    // non-coding isoforms of a coding gene rank last, among themselves by span
-    size:
-      anyCoding && !hasCodingSubfeature(feature)
-        ? feature.get('end') - feature.get('start')
-        : size(feature),
-  }))
-  return sized
+  return isoforms
+    .map((feature, index) => {
+      const coding = hasCodingSubfeature(feature)
+      return {
+        feature,
+        index,
+        coding,
+        size: coding
+          ? codingLength(feature)
+          : feature.get('end') - feature.get('start'),
+      }
+    })
     .sort(
       (a, b) =>
         Number(b.coding) - Number(a.coding) ||
@@ -86,19 +87,6 @@ function rankIsoforms(isoforms: Feature[]): Feature[] {
         b.index - a.index,
     )
     .map(s => s.feature)
-}
-
-// Returns the single longest coding transcript, plus whether an actual choice
-// among multiple isoforms was collapsed (drives the "Isoforms collapsed" notice).
-// Takes the pre-resolved isoform list so getIsoforms runs once per gene.
-function longestCodingTranscript(isoforms: Feature[]): {
-  result: Feature[]
-  collapsed: boolean
-} {
-  if (isoforms.length <= 1) {
-    return { result: isoforms, collapsed: false }
-  }
-  return { result: [rankIsoforms(isoforms)[0]!], collapsed: true }
 }
 
 // The isoforms to keep under a height cap, or undefined when the gene fits.
@@ -138,22 +126,17 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   let isoformsCollapsed = false
   if (geneGlyphMode === 'longestCoding') {
-    const collapsed = longestCodingTranscript(isoforms)
-    subfeatures = collapsed.result
-    isoformsCollapsed = collapsed.collapsed
+    isoformsCollapsed = hasMultipleIsoforms
+    subfeatures = isoformsCollapsed ? [rankIsoforms(isoforms)[0]!] : isoforms
   } else {
-    // Sort coding transcripts first so they render on top in stacked layout.
-    // Skipped for longestCoding which collapses to a single feature.
-    const codingStatus = new Map(
-      subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
-    )
-    subfeatures.sort((a, b) => {
-      const aHasCDS = codingStatus.get(a.id()) ? 1 : 0
-      const bHasCDS = codingStatus.get(b.id()) ? 1 : 0
-      return bHasCDS - aHasCDS
-    })
-    // …then drop the isoforms past the cap, leaving non-transcript children
-    // (an NCBI source record, a `biological_region`) alone.
+    // Drop the isoforms past the cap, leaving non-transcript children (an NCBI
+    // source record, a `biological_region`) alone.
+    //
+    // Before the sort below, which is in place and over an array `isoforms` can
+    // BE — getIsoforms falls back to the raw subfeatures for a gene with no
+    // transcript children. Ranking after it would rank a reordered list, and
+    // rankIsoforms breaks a tie by index, so the cap at n = 1 would have kept a
+    // different isoform than the longestCoding collapse does.
     const keep = isoformsWithinCap(isoforms, maxIsoforms)
     if (keep) {
       const isoformIds = new Set(isoforms.map(f => f.id()))
@@ -162,6 +145,17 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
       )
       isoformsCollapsed = true
     }
+    // Sort coding transcripts first so they render on top in stacked layout
+    // (skipped for longestCoding, which collapses to a single feature). Stable,
+    // so the survivors of the cap keep the order they would have had.
+    const codingStatus = new Map(
+      subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
+    )
+    subfeatures.sort((a, b) => {
+      const aHasCDS = codingStatus.get(a.id()) ? 1 : 0
+      const bHasCDS = codingStatus.get(b.id()) ? 1 : 0
+      return bHasCDS - aHasCDS
+    })
   }
 
   const children: FeatureLayout[] = []
