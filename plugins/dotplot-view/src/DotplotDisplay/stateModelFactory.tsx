@@ -17,6 +17,7 @@ import {
 import { segmentCigarOp } from './dotplotCigarDetail.ts'
 import { computeDotplotColors } from './dotplotColors.ts'
 import { featureSegmentRange } from './dotplotPickEngine.ts'
+import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
 import { getDotplotTooltipLines } from './dotplotTooltip.ts'
 import { dotplotFetchKey } from './fetchKey.ts'
 import { renderSvg } from './renderSvg.tsx'
@@ -287,12 +288,12 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           this.view.plotTransform
         let path = ''
         for (let s = start; s < end; s++) {
-          // Same reconstruction as `drawDotplotInstances`, so the restroke lands
-          // on the pixels the canvas painted.
-          const sx1 = (x1[s]! - viewBpH) * bpPerPxHInv
-          const sy1 = viewHeight - (y1[s]! - viewBpV) * bpPerPxVInv
-          const sx2 = (x2[s]! - viewBpH) * bpPerPxHInv
-          const sy2 = viewHeight - (y2[s]! - viewBpV) * bpPerPxVInv
+          // The shared reconstruction, so the restroke lands on the pixels the
+          // canvas painted.
+          const sx1 = cumBpToPxH(x1[s]!, viewBpH, bpPerPxHInv)
+          const sy1 = cumBpToPxV(y1[s]!, viewBpV, bpPerPxVInv, viewHeight)
+          const sx2 = cumBpToPxH(x2[s]!, viewBpH, bpPerPxHInv)
+          const sy2 = cumBpToPxV(y2[s]!, viewBpV, bpPerPxVInv, viewHeight)
           path += `M${px(sx1)} ${px(sy1)}L${px(sx2)} ${px(sy2)}`
         }
         return { path, color: abgrToCssRgba(colors[start]!) }

@@ -1,5 +1,7 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
+
 import type { DotplotInstanceData } from './dotplotRenderingBackendTypes.ts'
 
 // The screen transform a pick is answered against: the same four numbers
@@ -240,12 +242,12 @@ export function pickDotplotFeature({
       feature,
     )
     for (let s = start; s < end; s++) {
-      // Same reconstruction as drawDotplotInstances, so a hit means the cursor
-      // is within tolerance of pixels that were actually painted.
-      const sx1 = (x1[s]! - viewBpH) * bpPerPxHInv
-      const sy1 = viewHeight - (y1[s]! - viewBpV) * bpPerPxVInv
-      const sx2 = (x2[s]! - viewBpH) * bpPerPxHInv
-      const sy2 = viewHeight - (y2[s]! - viewBpV) * bpPerPxVInv
+      // The shared reconstruction, so a hit means the cursor is within
+      // tolerance of pixels `drawDotplotInstances` actually painted.
+      const sx1 = cumBpToPxH(x1[s]!, viewBpH, bpPerPxHInv)
+      const sy1 = cumBpToPxV(y1[s]!, viewBpV, bpPerPxVInv, viewHeight)
+      const sx2 = cumBpToPxH(x2[s]!, viewBpH, bpPerPxHInv)
+      const sy2 = cumBpToPxV(y2[s]!, viewBpV, bpPerPxVInv, viewHeight)
       const distSq = pointSegmentDistSq(x, y, sx1, sy1, sx2, sy2)
       // A tie goes to the later segment, the one drawn on top. `<=` alone would
       // not give that: Flatbush hands candidates back in tree order, so an

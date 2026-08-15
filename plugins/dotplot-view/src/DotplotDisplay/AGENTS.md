@@ -82,11 +82,17 @@
   gesture instead is how the wheel got missed while pointerdown and pointerleave
   were both covered. The LGV side reached the same shape from the same bug:
   `installClearHoverOnViewportChange`.
-- **`plotTransform` is the cumBp -> px reconstruction, and three readers share
-  it**: `dotplotRenderState`, `pickFeatureAt`'s exact test, and
-  `hoveredFeatureHighlight`. Read it, not `dotplotRenderState`, unless you also
-  want `alpha` and `lineWidth` — the highlight did, and rebuilt its path once a
-  frame under an opacity drag.
+- **`plotTransform` is where the four numbers come from; `dotplotProject.ts` is
+  where the arithmetic lives.** Read `plotTransform` rather than
+  `dotplotRenderState` unless you also want `alpha` and `lineWidth` — the hover
+  highlight took the latter and rebuilt its path once a frame under an opacity
+  drag. Then project with `cumBpToPxH` / `cumBpToPxV` rather than writing
+  `viewHeight - (…)` again: draw and pick have to agree pixel for pixel or the
+  cursor picks an alignment other than the one it is pointing at, and the v-axis
+  flip is the half a fourth copy would get wrong. The scalar-primitive shape is
+  not a style choice — a transform-object helper costs the Canvas2D loop 1.45x
+  and a projector closure 3.5x, both measured in
+  `benches/cumBpProjection.bench.ts` and written up in `REJECTED_IDEAS.md`.
 - **The pick's tie-break needs `>`, not `<=`.** Flatbush hands candidates back
   in Hilbert order past `nodeSize` items, so an equidistant EARLIER segment can
   arrive last and take a hit that belongs to the one drawn on top. At or under

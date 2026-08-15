@@ -5,6 +5,8 @@ import {
   abgrRed,
 } from '@jbrowse/core/util/colorBits'
 
+import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
+
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -72,10 +74,10 @@ export function drawDotplotInstances(
   const cssByAbgr = new Map<number, string>()
   let currentAbgr: number | undefined
   for (let i = 0; i < instanceCount; i++) {
-    const sx1 = (x1[i]! - viewBpH) * bpPerPxHInv
-    const sy1 = viewHeight - (y1[i]! - viewBpV) * bpPerPxVInv
-    const sx2 = (x2[i]! - viewBpH) * bpPerPxHInv
-    const sy2 = viewHeight - (y2[i]! - viewBpV) * bpPerPxVInv
+    const sx1 = cumBpToPxH(x1[i]!, viewBpH, bpPerPxHInv)
+    const sy1 = cumBpToPxV(y1[i]!, viewBpV, bpPerPxVInv, viewHeight)
+    const sx2 = cumBpToPxH(x2[i]!, viewBpH, bpPerPxHInv)
+    const sy2 = cumBpToPxV(y2[i]!, viewBpV, bpPerPxVInv, viewHeight)
     const offscreen =
       Math.max(sx1, sx2) < -lineWidth ||
       Math.min(sx1, sx2) > viewWidth + lineWidth ||
