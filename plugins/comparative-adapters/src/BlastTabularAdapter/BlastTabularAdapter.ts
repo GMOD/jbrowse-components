@@ -6,13 +6,9 @@ import {
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
+import { PairwiseAdapterBase } from '../PairwiseAdapterBase.ts'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import {
-  collectLines,
-  getAssemblyNamesFromConf,
-  indexRecordsByName,
-} from '../util.ts'
+import { collectLines, indexRecordsByName } from '../util.ts'
 
 import type { BlastTabularAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -229,7 +225,7 @@ function blastIdentity(pident: string | undefined) {
   return Number.isFinite(v) ? v / 100 : undefined
 }
 
-export default class BlastTabularAdapter extends ComparativeAdapterBase<BlastTabularAdapterConfig> {
+export default class BlastTabularAdapter extends PairwiseAdapterBase<BlastTabularAdapterConfig> {
   // Download+parse plus the per-refName index every query walks, for the reason
   // indexRecordsByName documents: a region query used to test every hit in the
   // table, and the callers ask once per visible contig.
@@ -256,47 +252,39 @@ export default class BlastTabularAdapter extends ComparativeAdapterBase<BlastTab
     })
   }
 
-  getAssemblyNames(): string[] {
-    return getAssemblyNamesFromConf(this)
-  }
-
   async getRefNames(opts: BaseOptions = {}) {
     // Resolved before the setup: an assembly this adapter does not carry has
     // the same answer whatever the file says, and reading it first was
     // downloading and parsing the whole table to return [].
-    const r1 = opts.assemblyName
-    const idx = r1 === undefined ? -1 : this.getAssemblyNames().indexOf(r1)
-    if (idx === -1) {
+    const side = this.sideFor(opts.assemblyName)
+    if (side === -1) {
       return []
     }
     const { byRefName } = await this.setup(opts)
-    return [...byRefName[idx === 0 ? 0 : 1].keys()]
+    return [...byRefName[side].keys()]
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const [queryAssembly, targetAssembly] = this.getAssemblyNames()
-
       const {
         refName: queryRefName,
         assemblyName: queryAssemblyName,
         start: queryStart,
         end: queryEnd,
       } = query
-      if (
-        queryAssemblyName !== targetAssembly &&
-        queryAssemblyName !== queryAssembly
-      ) {
+      const side = this.sideFor(queryAssemblyName)
+      if (side === -1) {
         console.warn(`${queryAssemblyName} not found in this adapter`)
         observer.complete()
         return
       }
       const { records, byRefName } = await this.setup(opts)
-      const flip = queryAssemblyName === queryAssembly
+      const flip = side === 0
+      const mateAssemblyName = this.mateAssemblyName(side)
 
       // Only the hits anchored on the queried contig, walked in ascending
       // record index so features still arrive in file order.
-      for (const i of byRefName[flip ? 0 : 1].get(queryRefName) ?? []) {
+      for (const i of byRefName[side].get(queryRefName) ?? []) {
         const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } =
           records[i]!
         const side = flip
@@ -322,7 +310,7 @@ export default class BlastTabularAdapter extends ComparativeAdapterBase<BlastTab
                 start: mate.start,
                 end: mate.end,
                 refName: flip ? sseqid : qseqid,
-                assemblyName: flip ? targetAssembly : queryAssembly,
+                assemblyName: mateAssemblyName,
               },
             }),
           )

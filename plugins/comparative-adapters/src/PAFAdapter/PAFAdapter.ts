@@ -3,8 +3,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
-import { getAssemblyNamesFromConf } from '../util.ts'
+import { PairwiseAdapterBase } from '../PairwiseAdapterBase.ts'
 import {
   indexPafRecords,
   loadPafRecords,
@@ -18,7 +17,7 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-export default class PAFAdapter extends ComparativeAdapterBase {
+export default class PAFAdapter extends PairwiseAdapterBase {
   // One download+parse shared by every display on this track, reporting to
   // whichever of them is currently waiting, plus the per-refName index every
   // query walks. Subclasses (delta, chain, MashMap) override setupPre alone, so
@@ -35,23 +34,6 @@ export default class PAFAdapter extends ComparativeAdapterBase {
       parse: parsePafBuffer,
       opts,
     })
-  }
-
-  getAssemblyNames(): string[] {
-    return getAssemblyNamesFromConf(this)
-  }
-
-  // Which side of the file an assembly is anchored on: 0 = the PAF query
-  // (qname) columns, 1 = the target (tname) columns, -1 = not ours. Indexes
-  // `byRefName` directly, and `flip` (the query perspective) is side 0.
-  // Anything past the second name reads as the target side, which is what the
-  // positional indexOf has always done.
-  private sideFor(assemblyName: string | undefined): 0 | 1 | -1 {
-    const idx =
-      assemblyName === undefined
-        ? -1
-        : this.getAssemblyNames().indexOf(assemblyName)
-    return idx === -1 ? -1 : idx === 0 ? 0 : 1
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -76,12 +58,11 @@ export default class PAFAdapter extends ComparativeAdapterBase {
         return
       }
       const { records, byRefName } = await this.setup(opts)
-      const assemblyNames = this.getAssemblyNames()
 
       // if the getFeatures::query is on the query assembly, flip orientation
       // of data
       const flip = side === 0
-      const mateAssemblyName = assemblyNames[flip ? 1 : 0]!
+      const mateAssemblyName = this.mateAssemblyName(side)
 
       // Only the rows anchored on the queried contig, rather than the whole
       // file per region — see indexRecordsByName. Walked in ascending record
