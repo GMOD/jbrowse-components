@@ -94,7 +94,7 @@ export function spanOf(e: MinEntry) {
 
 // Named flag predicates, so the partition below reads as the rule it implements
 // rather than as bitmask arithmetic. Each returns a boolean, not the masked bit.
-export function isSupplementary(e: MinEntry) {
+function isSupplementary(e: MinEntry) {
   return (flagsOf(e) & SAM_FLAG_SUPPLEMENTARY) !== 0
 }
 
