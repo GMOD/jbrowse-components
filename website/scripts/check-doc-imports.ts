@@ -727,12 +727,23 @@ function scanSectionCites(path: string, lines: string[]): Problem[] {
   const problems: Problem[] = []
   const strip = (l: string) => l.replace(/^\s*(\/\/|\*|\/\*\*?)\s?/, '')
   lines.forEach((line, i) => {
-    // A citation may wrap across two comment lines; only join when this line
-    // opens a quote it doesn't close, so a single-line hit isn't matched twice.
-    const opensUnclosed = /§\s*"[^"]*$/.test(line)
-    const text = opensUnclosed
-      ? `${strip(line)} ${strip(lines[i + 1] ?? '')}`
-      : line
+    // A citation may wrap across two lines, and there are two places it breaks:
+    // inside the quoted title, or between the filename and the §. Join on
+    // either, and only when this line cannot already carry a whole citation, so
+    // a single-line hit isn't matched twice.
+    //
+    // The second case is the one that was missing, and it matters most in
+    // prose: agent-docs is in .prettierignore and hand-wrapped at 80 columns,
+    // so a citation naming a path and a title of more than a few words wraps by
+    // default. An unmatched citation is not reported — it is simply never
+    // checked, which is the wrong failure for a checker to have.
+    // CONFIG_PATTERN.md cited an alignments heading that had since been
+    // reworded, and the only thing hiding it for that whole time was the line
+    // break before its §.
+    //
+    // `strip` is a no-op on a prose line, so one path serves docs and comments.
+    const wraps = /(?:§\s*"[^"]*|\.md\s*)$/.test(line)
+    const text = wraps ? `${strip(line)} ${strip(lines[i + 1] ?? '')}` : line
     for (const m of text.matchAll(SECTION_CITE)) {
       const ref = m[1]!
       const title = m[2]!

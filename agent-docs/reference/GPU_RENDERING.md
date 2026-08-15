@@ -615,7 +615,7 @@ most per-region plugins keep the default.
 
 Whole-map synced (alignments, multi-LGV synteny) and monolithic (HiC, LD,
 multi-variant-matrix, dotplot) plugins define their own backend interfaces
-because their upload shapes differ — see "Three upload patterns."
+because their upload shapes differ — see "Upload patterns."
 
 #### Whole-map synced: skipping a region inside the rebuild transaction
 
@@ -706,7 +706,7 @@ correct caching. (The first fetch still fires: `FetchVisibleRegions` gates it on
 consults `isCacheValid` for covered blocks, so an always-`true` `isCacheValid`
 suppresses only *re*-fetches.)
 
-### Four upload patterns
+### Upload patterns
 
 Displays use one of four upload shapes. Pick the one that matches the data
 shape, not the one your neighbour copied. **Every one of these contracts extends

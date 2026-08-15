@@ -79,8 +79,8 @@ paint:
   layout map). Alignments exports a named `buildAlignmentsRegionMap` because the
   on-screen `sync(sources)` reuses it.
 
-Per-block-vs-monolithic is an upload/data-shape question (see ARCHITECTURE.md
-§"Three upload patterns"), **not** a draw-API question. Whether a plugin needs a
+Per-block-vs-monolithic is an upload/data-shape question (see GPU_RENDERING.md
+§"Upload patterns"), **not** a draw-API question. Whether a plugin needs a
 `drawXxxToCtx` wrapper depends only on whether there's transformation between raw
 data and paint.
 

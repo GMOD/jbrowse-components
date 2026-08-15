@@ -28,8 +28,11 @@ MST confined to main thread; renderers work on plain objects.
 - **Every config schema must be `explicitlyTyped`.** The pluggable unions have no
   dispatcher and rely on the literal `type` discriminator; without it one bad
   field produces the multi-page "No type is applicable" wall.
-- A wholesale snapshot spread ships every slot to the worker (canvas, wiggle);
-  alignments curates a narrow `rpcProps()` so visual-only changes don't refetch.
+- **`rpcProps()` is a pick, never a subtraction.** Canvas is the only display
+  that starts from the whole snapshot, and it picks the worker's slots back out
+  of it (`pickDisplayConfig`); every other display names its fields directly.
+  Either way the payload is the RPC cache key, so a slot that reaches it without
+  being read is a silent refetch trigger.
 
 ## The pattern
 
@@ -190,11 +193,15 @@ Where to put a new setting:
   that every consumer reads instead of the raw setting — see
   `ROW_HEIGHT_AND_FIT.md`.
 
-The wholesale `displayConfig: { ...getConfigSnapshotWithPromotables(self) }` form
-above ships every slot to the worker (canvas/wiggle, minus the handful of
-main-thread-only slots the caller destructures out); alignments instead curates a
-narrow `rpcProps()` so visual-only changes don't refetch (its CLAUDE.md
-§"Settings: storage + invalidation tiers").
+The `getConfigSnapshotWithPromotables(self)` form above is canvas's, and canvas
+does not ship what it returns: `pickDisplayConfig` takes exactly the slots
+`DisplayConfig` declares back out of it, off a `Record<keyof DisplayConfig, true>`
+the compiler proves complete in both directions. Everything else — alignments,
+both wiggles, multi-row, Manhattan, HiC, MAF, LD, multi-sample variant —
+enumerates its `rpcProps()` fields by hand, which is the same discipline reached
+without the snapshot. `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`
+§"Which getter decides what a setting invalidates" is the worked account of why
+visual-only changes must not refetch.
 
 ## Reading a slot: node, not snapshot
 
@@ -306,13 +313,26 @@ rely on it as a correctness signal.
 | Hardcoded `mockConfig` with fallback defaults                   | the real snapshot includes real values           |
 | Nested `renderer: { type: "X", color1: "..." }` in config       | Direct `color1: "..."` on display config         |
 
-## Adoption
+## Which displays are on it
 
-- **Canvas** (LinearFeatureDisplay, LinearBasicDisplay, LinearVariantDisplay):
-  fully adopted
-- **Wiggle, alignments, multi-variant**: direct config slots, main-thread render
-- **Arc, chord, HiC, dotplot**: still using ServerSideRendererType —
-  adopt on GPU migration
+The pipeline is for a display whose worker reads config. That is every display
+with an `rpcProps()`: canvas's three (`LinearBasicDisplay`,
+`LinearVariantDisplay`, `LinearMultiRowFeatureDisplay`), alignments, both
+wiggles, Manhattan, HiC, MAF, LD, multi-sample variant, and `LGVSyntenyDisplay`.
+
+The rest have no worker config to send, which is a different shape rather than
+an unfinished migration: **arc** and **circular-view**'s chords paint the live
+view as main-thread SVG with every feature in one array, **dotplot** and
+**synteny** own their fetch outside `FetchMixin` entirely
+([SHARED_CANVAS_VIEWS.md](SHARED_CANVAS_VIEWS.md)), and
+`LinearReferenceSequenceDisplay` deliberately omits `rpcProps()` so no
+`SettingsInvalidate` is installed at all — see
+[ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"Ordering is the contract".
+
+There is no server-side renderer left to migrate off. The renderer registry —
+`ServerSideRendererType`, `FeatureRendererType`, `BoxRendererType`, `GlyphType`
+— is gone, and `packages/core/src/ReExports/abiPreviousRelease.test.ts` records
+each removal with its reason.
 
 ## Reference resolution (the other config concern)
 

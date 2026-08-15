@@ -604,24 +604,26 @@ knowing it exists — which is what keeps them here rather than in
 
 **Status:** Open.
 
-`LinearBasicDisplay`'s `rpcProps()` returns the whole resolved config snapshot
-(minus a hand-listed set of display-only slots) plus
+`LinearBasicDisplay`'s `rpcProps()` returns the slots the worker reads plus
 `theme: getSession(self).themeOptions`. Every returned field is an RPC cache key,
 so `SettingsInvalidate` fires `clearAllRpcData()` and every visible region
 refetches. **A light/dark toggle, or one color slot edit, re-downloads and
 re-parses every region of every canvas feature track.**
 
-**The exclusion list is a blocklist, so its default is wrong.**
-`getConfigSnapshotWithPromotables` walks `fullConfSnapshot`, which emits *every*
-slot including defaults — so a slot that is neither read by the worker nor named
-in the destructure is a silent refetch trigger, and adding a main-thread-only
-slot introduces one by omission. That is a separate failure from the appearance
-coupling above: it refetches for settings that have nothing to do with what the
-worker draws. Found 2026-08-01 with five such slots in the payload, `height`
-among them — and `height` is written on *every resize-handle drag frame*
-(`TrackContainer` → `resizeHeight` → `setConf`), so dragging a canvas track
-taller re-ran the whole worker pipeline once the drag settled. Grow-mode exit
-(`installGrowExitBake`) and the fit bake hit the same path.
+**The payload is picked, not filtered, and that half is closed.** It used to be
+the whole `getConfigSnapshotWithPromotables` snapshot minus a hand-kept exclusion
+list — which, over a walker that emits *every* slot including defaults, made a
+slot that was neither read by the worker nor named in the list a silent refetch
+trigger, introduced by omission. Ten names had accumulated, and the ones that
+mattered were inherited from `BaseLinearDisplay`'s schema rather than written in
+canvas, where nobody adding one would look. `height` was among them, and it is
+written on *every resize-handle drag frame* (`TrackContainer` → `resizeHeight` →
+`setConf`), so dragging a canvas track taller re-ran the whole worker pipeline
+once the drag settled. `pickDisplayConfig` (`RenderFeatureDataRPC/renderConfig.ts`)
+inverts it: `WORKER_READS` is a `Record<keyof DisplayConfig, true>`, exhaustive
+in both directions with no helper, so a slot reaches the worker only by joining
+`DisplayConfig` and forgetting means the feature does not work — which someone
+notices — rather than every unrelated write refetching, which nobody does.
 
 Two rules when auditing that list. A slot the worker reads must invalidate
 through *something* — either the slot itself or a top-level `rpcProps` field
@@ -649,16 +651,17 @@ instance buffer. It is also why canvas is the only per-region display with no
 `gpuProps()` (ARCHITECTURE.md §"`rpcProps()` / `gpuProps()` pattern").
 
 **Retire when** canvas splits its payload into fetch-affecting and
-appearance-affecting halves and grows a `gpuProps()`. That split also inverts the
-blocklist into an allowlist, which is what stops the omission failure above from
-recurring — `DisplayConfig` in `renderConfig.ts` already enumerates exactly what
-the worker reads, but the `as DisplayConfig` cast on the payload launders the
-extra keys past it. The consistent fix has the
+appearance-affecting halves and grows a `gpuProps()`. The consistent fix has the
 worker emit a per-feature color *class index* plus the attributes jexl needs, and
 resolve the palette in the main-thread encoder, as synteny's `computedColors`
 already does. The cheap intermediate is a worker-side parsed-feature cache keyed
 by adapter + region + the non-visual payload, so a color change re-encodes
 without re-parsing.
+
+The pick above is what makes that split tractable rather than a prerequisite for
+it: `WORKER_READS` is already the list of what the worker actually consumes, so
+the question left is which of those slots are appearance rather than which slots
+are in the payload at all.
 
 ### Three staleness mechanisms behind one name
 

@@ -738,7 +738,7 @@ What the GPU doc covers, so you can jump straight in:
 | Life of a frame | Debugging "why didn't it redraw", context loss, tab visibility |
 | RenderingBackend interfaces per plugin | Writing a backend factory; going Canvas2D-only |
 | Keeping the two backends in parity | Touching either a `.slang` or a Canvas2D draw fn |
-| Four upload patterns / `installPerRegionLifecycle` | Choosing how a display shovels bytes; O(N²) upload bugs |
+| Upload patterns / `installPerRegionLifecycle` | Choosing how a display shovels bytes; O(N²) upload bugs |
 | HAL / Renderers stay stateless | Touching `packages/render-core/src/hal/` or renderer state |
 | Shaders (Slang codegen) | Editing a `.slang` or a generated module |
 | Canvas scaling & hi-DPI / `displayedRegionIndex` | Blurry canvases; region↔buffer join keys |
@@ -1054,7 +1054,7 @@ it belongs in the uniform/draw params.
 A genuine recolor does still produce a fresh `colors` array over the same
 coordinate arrays, and a naive keyed-upload backend re-packs every lane to change
 one. The two-line memo that avoids it is a backend concern:
-[GPU_RENDERING.md § Four upload patterns](reference/GPU_RENDERING.md#four-upload-patterns),
+[GPU_RENDERING.md § Upload patterns](reference/GPU_RENDERING.md#upload-patterns),
 under "the color-lane patch".
 
 Derived region maps apply when upload needs whole fresh per-region payloads, not
