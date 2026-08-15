@@ -7,7 +7,6 @@ import type { Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 interface GetFeatureDetailsArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]

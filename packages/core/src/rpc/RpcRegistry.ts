@@ -118,6 +118,46 @@ export type RpcHandles = {
 }
 
 /**
+ * Which session the call belongs to. Like {@link RpcHandles}, a property of the
+ * call rather than of any payload — `rpcManager.call` takes it as its FIRST
+ * parameter and merges it into the args bag itself, so no caller has ever
+ * written it and no registry entry gets to require it.
+ *
+ * Twenty-two entries declared it anyway, and the cost was the shape this file
+ * keeps paying for: `RpcCallArgs` had to `Omit` it back off, because otherwise
+ * every caller of those twenty-two would have had to pass a field the layer was
+ * about to overwrite — while the other nineteen were fine. A subtraction that
+ * exists to undo a declaration is the declaration admitting it was wrong.
+ *
+ * The worker side is the mirror of the handles, too: {@link RpcExecuteArgs}
+ * intersects it in, so `execute` sees `sessionId` whether or not its entry
+ * mentioned one, and `getAdapter(pm, sessionId, ...)` type-checks in all
+ * forty-one rather than in twenty-two.
+ */
+export type RpcSession = {
+  sessionId: string
+}
+
+/**
+ * Everything the call layer contributes to what a worker body sees, as one
+ * name: the session it is pinned to and the handles it can be stopped and can
+ * report through. {@link RpcRouting} is not here — it never crosses.
+ *
+ * For the code that runs inside a worker this is the *fallback*, not the first
+ * answer. Nearly every `execute` is one line long and hands its args to a
+ * helper (`executeRenderHicData`, `getScoreMatrix`), and that helper should
+ * take `RpcExecuteArgs<'ItsKey'>` — the same type its `execute` declares, so
+ * the forward is an identity and a fourth call-level field reaches it without
+ * an edit. `Payload & RpcCallContext` recomposes that derivation by hand, which
+ * is how the three hand-written copies of `RpcCallArgs` drifted.
+ *
+ * Reach for it where there is no single key to name: a body registered under
+ * two names (`executeDiagonalize`, `getScoreMatrix`), or a method-generic base
+ * like {@link RenameRegionsArgs} that describes the shape rather than an entry.
+ */
+export type RpcCallContext = RpcSession & RpcHandles
+
+/**
  * What the two `RpcExecute*` derivations resolve to for a method name that was
  * written out but has no registry entry: a shape nothing satisfies, so the miss
  * is a compile error naming the method rather than silence.
@@ -151,7 +191,7 @@ export interface NotInRpcRegistry<M extends string> {
  * both ends checked.
  */
 export type RpcExecuteArgs<M extends string> = M extends RpcMethodName
-  ? RpcArgs<M & RpcMethodName> & { sessionId: string } & RpcHandles
+  ? RpcArgs<M & RpcMethodName> & RpcCallContext
   : string extends M
     ? unknown
     : NotInRpcRegistry<M>
@@ -176,18 +216,29 @@ export type RpcRouting = {
 }
 
 /**
- * What a CALLER passes to `rpcManager.call`: the method's own data, minus the
- * `sessionId` the layer injects, plus the {@link RpcHandles} every method takes
- * and the {@link RpcRouting} that decides where it runs.
+ * What a CALLER passes to `rpcManager.call`: the method's own data, plus the
+ * {@link RpcHandles} every method takes and the {@link RpcRouting} that decides
+ * where it runs. No {@link RpcSession} — that one is the call's first
+ * parameter, not part of the bag a caller builds.
  *
  * Exported and used by everything that types a `call` — `RpcManager` itself and
  * the structural `RpcMethodCaller` the clustering helpers take — because there
  * were three hand-written copies of this expression and the third one silently
  * lagged the other two the moment the handles moved.
+ *
+ * A written-out name with no entry is an error here for the reason it is one in
+ * {@link RpcExecuteArgs}, and this is the side that matters more: there is one
+ * `execute` per method and hundreds of call sites, and the fallback used to be
+ * `Record<string, unknown>` — so a mistyped or renamed method name accepted any
+ * args at all and failed at runtime in the worker, which is exactly the silence
+ * {@link NotInRpcRegistry} exists to break. The bare `string` escape hatch is
+ * still there, for the callers that genuinely dispatch on a variable.
  */
 export type RpcCallArgs<M extends string> = M extends RpcMethodName
-  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'> & RpcHandles & RpcRouting
-  : Record<string, unknown> & RpcHandles & RpcRouting
+  ? RpcArgs<M & RpcMethodName> & RpcHandles & RpcRouting
+  : string extends M
+    ? Record<string, unknown> & RpcHandles & RpcRouting
+    : NotInRpcRegistry<M>
 
 // What a registered method's `execute` may resolve to: the declared return, or
 // that return wrapped in rpcResult to carry transferables. An RpcMethodType
@@ -207,22 +258,24 @@ export type RpcExecuteReturn<M extends string> = M extends RpcMethodName
  * the payload. Should always be `never`; {@link AssertNoCallLevelFields} below
  * is what makes a non-empty one a compile error naming the entry.
  *
- * This has now gone wrong twice with the same shape, which is why it is checked
- * rather than written down. Both times a caller needed one of these on one
+ * This went wrong three times with the same shape, which is why it is checked
+ * rather than written down. Each time a caller needed one of these on one
  * method, the field went into that method's `args`, and the other forty then
  * could not be passed it — so the property that belongs to every call became a
  * type error on all but the entry that happened to name it. The handles went
- * that way (`CoreGetExportData` shipped uncancellable), and `rpcDriverName`
- * went the same way after them.
+ * that way (`CoreGetExportData` shipped uncancellable), `rpcDriverName` went
+ * the same way after them, and `sessionId` was the oldest of the three.
  *
- * `sessionId` is deliberately NOT in this union yet: 22 entries still declare
- * it, which is why `RpcCallArgs` still has to subtract it. Adding it here is
- * the check that would let that `Omit` go.
+ * `sessionId` is the one that shows what a missing check costs over time: it
+ * was never a type error, because `RpcCallArgs` subtracted it back off with an
+ * `Omit`, so nothing ever pushed back and it spread to 22 of the 41 entries
+ * before anyone counted. The union covers all three now, and the `Omit` is
+ * gone.
  */
 export type EntriesDeclaringCallLevelFields = {
   [K in RpcMethodName]: Extract<
     keyof RpcArgs<K>,
-    keyof RpcHandles | keyof RpcRouting
+    keyof RpcCallContext | keyof RpcRouting
   > extends never
     ? never
     : K

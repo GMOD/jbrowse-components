@@ -1,7 +1,6 @@
 import type { RegionTooLargeResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 export interface MultiRowGetFeaturesArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   // start/end are integer bp (LGV's bufferedVisibleRegions already rounds).
   region: {

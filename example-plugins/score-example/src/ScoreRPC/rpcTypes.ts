@@ -2,7 +2,6 @@
 import type { Region } from '@jbrowse/core/util'
 
 export interface GetScoreDataArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
   scoreColumn: string

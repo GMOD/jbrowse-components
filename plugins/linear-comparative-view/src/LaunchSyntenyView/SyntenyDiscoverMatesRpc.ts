@@ -15,7 +15,6 @@ export interface SyntenyDiscoverMatesArgs {
   // panel at all; read from the config on the main thread, where the config is
   trackAssemblyNames: string[]
   anchorAssembly: string
-  sessionId: string
 }
 
 /** What crosses the wire: one alignment per mate assembly, narrowed. */

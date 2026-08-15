@@ -14,9 +14,9 @@ import { makeColorEvaluator } from './makeColorEvaluator.ts'
 import { makeLdEvaluator } from './makeLdEvaluator.ts'
 import { defaultGlyph, ldColoringRequested } from './rpcTypes.ts'
 
-import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
+import type { ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type {
   Feature,
   ProgressReporter,
@@ -122,7 +122,7 @@ export function buildManhattanResult({
 // config, which is also the whole of normal coloring mode.
 async function makeEvaluators(
   args: Pick<
-    GetManhattanDataArgs,
+    RpcExecuteArgs<'GetManhattanData'>,
     | 'sessionId'
     | 'region'
     | 'color'
@@ -174,7 +174,7 @@ export async function executeGetManhattanData({
   args,
 }: {
   pluginManager: PluginManager
-  args: GetManhattanDataArgs & RpcHandles
+  args: RpcExecuteArgs<'GetManhattanData'>
 }): Promise<ManhattanRpcResult> {
   const {
     sessionId,

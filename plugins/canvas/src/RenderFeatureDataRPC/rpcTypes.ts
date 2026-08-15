@@ -10,7 +10,6 @@ export interface LabelItem {
 }
 
 export interface RenderFeatureDataArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   displayConfig: DisplayConfig
   // start/end MUST be integer bp positions. The on-screen producer is LGV's
@@ -68,7 +67,6 @@ export interface RenderFeatureDataArgs {
 }
 
 export interface GetFeatureDetailsArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   featureId: string
   region: {

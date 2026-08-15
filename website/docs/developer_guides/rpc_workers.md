@@ -204,9 +204,16 @@ export default class ScoreExamplePlugin extends Plugin {
 
 `getRpcSessionId(self)` is the sticky session id and
 `getSession(self).rpcManager` dispatches. Note that `sessionId` is **not**
-repeated inside the args object — `call` injects it from its first parameter,
-and a registered method's args type is `Omit<…, 'sessionId'>`, so passing it
-again is a type error.
+repeated inside the args object — `call` injects it from its first parameter.
+
+Three fields work that way, and none of them belongs in a registry entry:
+`sessionId` (`RpcSession`), the `stopToken`/`statusCallback` pair
+(`RpcHandles`), and `rpcDriverName` (`RpcRouting`). They are properties of the
+_call_, so every method accepts them and no entry gets to require or refuse one.
+`EntriesDeclaringCallLevelFields` in `RpcRegistry.ts` fails compilation, naming
+the entry, if one declares any of them — each of the three had spread through
+the registry before it existed, and the handles reached production that way:
+`CoreGetExportData` shipped with a Cancel button that did nothing.
 
 A per-region display does not `await` the call itself. `fetchEachRegion` owns
 cancellation, stop tokens and staleness, so `LinearScoreDisplay` hands it the
@@ -227,8 +234,9 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   const { rpcManager } = getSession(self)
   return fetchEachRegion(self, needed, {
     // rpcManager.call injects sessionId from its first argument, so it
-    // does not go in the args object — a registered method's args are
-    // Omit<…, 'sessionId'>, and passing it again is a type error
+    // does not go in the args object — it is a property of the call
+    // (RpcSession) rather than of any registry entry, and an entry that
+    // declared one would fail EntriesDeclaringCallLevelFields
     call: (region, ctx) =>
       rpcManager.call(sessionId, 'GetScoreData', {
         adapterConfig,

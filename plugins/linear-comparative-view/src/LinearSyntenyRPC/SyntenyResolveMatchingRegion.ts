@@ -7,7 +7,6 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
 export interface SyntenyResolveMatchingRegionArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   // The clicked block's own extent on the QUERY axis, which is the axis the
   // band's fetch queries (`executeSyntenyFeaturesAndPositions` is single-axis:

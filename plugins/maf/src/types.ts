@@ -19,7 +19,6 @@ import type { Observable } from 'rxjs'
  */
 export interface BaseMafRpcArgs {
   adapterConfig: Record<string, unknown>
-  sessionId: string
   regions: Region[]
 }
 

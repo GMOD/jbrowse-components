@@ -7,7 +7,6 @@ import type { Region } from '@jbrowse/core/util'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 export interface DotplotGetFeaturesAndPositionsArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   regions: Region[]
   hViewSnap: BpIndexViewSnap

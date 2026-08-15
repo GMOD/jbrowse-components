@@ -16,7 +16,6 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
 interface GetConsensusSequenceArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]

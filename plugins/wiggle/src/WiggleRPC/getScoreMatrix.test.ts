@@ -6,6 +6,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
 import type { GetScoreMatrixArgs } from './types.ts'
+import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
@@ -45,7 +46,7 @@ function callArgs({
     regions,
     bpPerPx,
     sources: sources.map(name => ({ name, source: name })),
-  } satisfies GetScoreMatrixArgs
+  } satisfies GetScoreMatrixArgs & RpcCallContext
 }
 
 // A plain feature adapter carrying several sources in one file (bedMethyl):

@@ -14,6 +14,7 @@ import type {
   Sample,
 } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
 
 export interface LinearMafGetAlignmentDataArgs extends BaseMafRpcArgs {
@@ -95,7 +96,7 @@ export async function executeMafAlignmentData({
   args,
 }: {
   pluginManager: PluginManager
-  args: LinearMafGetAlignmentDataArgs
+  args: RpcExecuteArgs<'LinearMafGetAlignmentData'>
 }) {
   const { regions, adapterConfig, sessionId, subtreeFilter } = args
   const region = regions[0]!

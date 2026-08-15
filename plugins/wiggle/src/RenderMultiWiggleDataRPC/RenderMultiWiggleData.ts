@@ -5,7 +5,6 @@ import type { Region } from '@jbrowse/core/util'
 import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface RenderMultiWiggleDataArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   // All visible regions in one call so each subtrack's adapter can coalesce
   // reads across them (BigWig). Returns one WiggleDataResult per region, in

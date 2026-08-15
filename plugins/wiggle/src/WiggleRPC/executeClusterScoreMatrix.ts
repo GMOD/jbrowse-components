@@ -3,16 +3,15 @@ import { clusterMatrix } from '@jbrowse/tree-sidebar'
 
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
-import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export async function executeClusterScoreMatrix({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: GetScoreMatrixArgs & RpcHandles
+  args: RpcExecuteArgs<'MultiWiggleClusterScoreMatrix'>
 }) {
   const stopTokenCheck = createStopTokenChecker(args.stopToken)
   const matrix = await getScoreMatrix({

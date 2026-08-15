@@ -4,7 +4,7 @@ import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { MafFrameRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
 /**
@@ -15,7 +15,6 @@ import type { Region } from '@jbrowse/core/util'
  */
 export interface LinearMafGetAnnotationDataArgs {
   adapterConfig: Record<string, unknown>
-  sessionId: string
   regions: Region[]
 }
 
@@ -37,7 +36,7 @@ export async function executeMafAnnotationData({
   args,
 }: {
   pluginManager: PluginManager
-  args: LinearMafGetAnnotationDataArgs & RpcHandles
+  args: RpcExecuteArgs<'LinearMafGetAnnotationData'>
 }): Promise<LinearMafGetAnnotationDataResult> {
   const { regions, adapterConfig, sessionId, stopToken } = args
   const region = regions[0]!

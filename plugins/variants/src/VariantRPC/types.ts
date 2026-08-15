@@ -4,7 +4,6 @@ import type { Region } from '@jbrowse/core/util'
 
 interface BaseVariantRpcArgs {
   adapterConfig: Record<string, unknown>
-  sessionId: string
   headers?: Record<string, string>
   regions: Region[]
   bpPerPx?: number
@@ -54,7 +53,6 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
 
 export interface MultiSampleVariantGetSourcesArgs {
   adapterConfig: Record<string, unknown>
-  sessionId: string
   headers?: Record<string, string>
   regions?: Region[]
   bpPerPx?: number

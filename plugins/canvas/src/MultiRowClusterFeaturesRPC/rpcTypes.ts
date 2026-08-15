@@ -1,5 +1,4 @@
 export interface MultiRowClusterFeaturesArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   // visible regions to cluster over (renamed to the adapter's refName scheme by
   // RpcMethodTypeWithRenameRegions on the way to the worker)

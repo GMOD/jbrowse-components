@@ -23,7 +23,6 @@ import type Flatbush from '@jbrowse/core/util/flatbush'
 // `drawProperPairs`/`showOnlySplitAlignments` (grouped-by-read-name chain
 // filters) apply in both modes.
 export interface RenderAlignmentDataArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   sequenceAdapter?: Record<string, unknown>
   regions: Region[]

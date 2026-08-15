@@ -6,7 +6,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { extractAlignmentData } from './extractAlignmentData.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 import type {
   AlignmentData,
@@ -35,7 +35,6 @@ export interface DiagonalizeAdapterSpec {
 // algorithm matches against them and hands currentRegions (reordered) straight
 // back to the view.
 export interface DiagonalizeArgs {
-  sessionId: string
   // the alignment adapters drawn between this pair of axes; both callers pass
   // one per display — a synteny level's, a dotplot's — since either can show
   // several synteny tracks over the one pair
@@ -54,16 +53,17 @@ export interface DiagonalizeArgs {
 }
 
 /**
- * What the body below takes: the payload plus the call's handles.
+ * What the body below takes: the payload plus what the call layer adds to it.
  *
- * They are separate types because the payload is what the two RpcRegistry
- * entries declare, and the handles belong to the call rather than to any
- * entry — declaring them there made pinning one a type error on every method
- * that had not thought to, which is the drift
- * `EntriesDeclaringCallLevelFields` now checks for. This body is shared by two
- * named methods and genuinely reads both, so it names them here instead.
+ * A helper that is the body of ONE method should take that method's
+ * `RpcExecuteArgs<'Key'>` — same type its `execute` declares, so the forward is
+ * an identity rather than a re-derivation, and a fourth call-level field
+ * reaches it without an edit. This is the other case: one body registered under
+ * two names (`DiagonalizeSynteny`, `DiagonalizeDotplot`), so there is no single
+ * key to name and the composition is the honest statement. `RpcCallContext` is
+ * the whole of what `RpcExecuteArgs` adds, so it stays in step either way.
  */
-export type DiagonalizeExecuteArgs = DiagonalizeArgs & RpcHandles
+export type DiagonalizeExecuteArgs = DiagonalizeArgs & RpcCallContext
 
 /**
  * Fetch a pair of axes' alignments and run the shared `diagonalizeRegions` off

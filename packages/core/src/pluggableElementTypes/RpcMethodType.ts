@@ -17,29 +17,36 @@ import {
 import PluggableElementBase from './PluggableElementBase.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { RpcExecuteArgs, RpcExecuteReturn } from '../rpc/RpcRegistry.ts'
+import type {
+  RpcCallContext,
+  RpcExecuteArgs,
+  RpcExecuteReturn,
+  RpcSession,
+} from '../rpc/RpcRegistry.ts'
 import type { Region } from '../util/index.ts'
-import type { StatusCallback } from '../util/progress.ts'
-import type { StopToken } from '../util/stopToken.ts'
 import type { FileHandleLocation, UriLocation } from '../util/types/index.ts'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
-// the arg shape renameRegions (and RpcMethodTypeWithRenameRegions) operate on
-export interface RenameRegionsArgs {
+// The arg shape renameRegions (and RpcMethodTypeWithRenameRegions) operate on.
+//
+// Composed from RpcCallContext rather than restating its three fields, because
+// this is the serialize-side twin of RpcExecuteArgs and was the fourth place
+// that wrote `stopToken`/`statusCallback`/`sessionId` out by hand. It gets them
+// for the same reason `execute` does: RpcManager merges the session id in
+// before BaseRpcDriver.call, and the driver strips the status callback on the
+// way OUT rather than on the way in, precisely so serialization can report
+// through it (resolving a refName map downloads the adapter's index).
+export type RenameRegionsArgs = RpcCallContext & {
   assemblyName?: string
   regions?: Region[]
-  stopToken?: StopToken
   adapterConfig: Record<string, unknown>
-  sessionId: string
-  statusCallback?: StatusCallback
 }
 
 // singular-region counterpart, for RpcMethodTypeWithRenameRegion
-export interface RenameRegionArgs {
+export type RenameRegionArgs = RpcSession & {
   region: Region
   adapterConfig: Record<string, unknown>
-  sessionId: string
 }
 
 function convertFileHandleToBlob(

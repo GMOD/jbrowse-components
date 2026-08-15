@@ -4,16 +4,15 @@ import { clusterMatrix } from '@jbrowse/tree-sidebar'
 import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
 import { imputeMissingToSiteMean } from './genotypeMatrixEncoding.ts'
 
-import type { ClusterGenotypeMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
 export async function executeClusterGenotypeMatrix({
   pluginManager,
   args,
 }: {
   pluginManager: PluginManager
-  args: ClusterGenotypeMatrixArgs & RpcHandles
+  args: RpcExecuteArgs<'MultiSampleVariantClusterGenotypeMatrix'>
 }) {
   const stopTokenCheck = createStopTokenChecker(args.stopToken)
   const matrix = await buildGenotypeMatrix({

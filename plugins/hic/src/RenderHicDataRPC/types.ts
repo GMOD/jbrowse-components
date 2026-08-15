@@ -27,7 +27,6 @@ export interface HicViewBlock {
 }
 
 export interface RenderHicDataArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   regions: Region[]
   /** parallel to `regions`; see {@link HicViewBlock} */

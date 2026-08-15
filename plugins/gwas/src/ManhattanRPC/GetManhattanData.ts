@@ -4,7 +4,10 @@ import { parseChrBp } from './parseChrBp.ts'
 import { ldColoringRequested } from './rpcTypes.ts'
 
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type {
+  RpcCallContext,
+  RpcExecuteArgs,
+} from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
@@ -41,7 +44,10 @@ function indexSnpAsRegion(args: GetManhattanDataArgs): Region | undefined {
 export default class GetManhattanData extends RpcMethodType<'GetManhattanData'> {
   name = 'GetManhattanData' as const
 
-  async serializeArguments(args: GetManhattanDataArgs, rpcDriver: string) {
+  async serializeArguments(
+    args: GetManhattanDataArgs & RpcCallContext,
+    rpcDriver: string,
+  ) {
     // bundle the query region and (when parseable) the index-SNP position into
     // one regions array so both ride through the same renaming pass and land in
     // the data adapter's alias space
@@ -76,7 +82,7 @@ export default class GetManhattanData extends RpcMethodType<'GetManhattanData'> 
   // `getRefNames`, which for the in-memory PLINK adapter parses the whole `.ld`
   // file. Doing that for a track drawn in normal coloring mode would be a
   // download nobody asked for.
-  private async ldRefName(args: GetManhattanDataArgs) {
+  private async ldRefName(args: GetManhattanDataArgs & RpcCallContext) {
     if (!ldColoringRequested(args)) {
       return undefined
     }

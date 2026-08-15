@@ -6,7 +6,6 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
 
 export interface RenderLDDataArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   regions: Region[]
   bpPerPx: number

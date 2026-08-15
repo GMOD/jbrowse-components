@@ -22,9 +22,8 @@ import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/co
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { SampleInfo } from '../shared/types.ts'
 import type { SimplifiedVariantFeature } from './computeSampleInfo.ts'
-import type { GetCellDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -118,7 +117,7 @@ export async function executeVariantCellData({
   args,
 }: {
   pluginManager: PluginManager
-  args: GetCellDataArgs & RpcHandles
+  args: RpcExecuteArgs<'MultiSampleVariantGetCellData'>
 }) {
   const {
     mode,

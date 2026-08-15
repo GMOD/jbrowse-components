@@ -9,7 +9,7 @@ import type { RawFeatureArrays } from '../util.ts'
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region } from '@jbrowse/core/util'
 
 // One region's slice of the concatenated row: the column it starts at, how many
@@ -115,7 +115,7 @@ type MatrixData = Map<string, RegionValues[]>
 async function fetchMatrixData(
   dataAdapter: BaseFeatureDataAdapter,
   regions: Region[],
-  args: GetScoreMatrixArgs & RpcHandles,
+  args: GetScoreMatrixArgs & RpcCallContext,
 ): Promise<MatrixData> {
   // The same fast path the render RPC takes (see isMultiSource): typed arrays,
   // every region in one call per subtrack, and no grouping pass. Clustering
@@ -160,11 +160,15 @@ async function fetchMatrixData(
   return bySource
 }
 
+// Payload plus call context rather than an `RpcExecuteArgs<'Key'>`, because
+// this body serves two registry entries — `MultiWiggleGetScoreMatrix` reads the
+// matrix out and `MultiWiggleClusterScoreMatrix` clusters it — so there is no
+// single key to name. Every helper that IS one method's body names its key.
 export async function getScoreMatrix({
   pluginManager,
   args,
 }: {
-  args: GetScoreMatrixArgs & RpcHandles
+  args: GetScoreMatrixArgs & RpcCallContext
   pluginManager: PluginManager
 }) {
   const {

@@ -58,13 +58,9 @@ import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKey } from '../shared/readIdentity.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
-import type {
-  AlignmentGroup,
-  PileupDataResult,
-  RenderAlignmentDataArgs,
-} from './types.ts'
+import type { AlignmentGroup, PileupDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { RpcHandles } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
@@ -487,7 +483,7 @@ export async function executeRenderAlignmentData({
   args,
 }: {
   pluginManager: PluginManager
-  args: RenderAlignmentDataArgs & RpcHandles
+  args: RpcExecuteArgs<'RenderAlignmentData'>
 }) {
   const {
     sessionId,

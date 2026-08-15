@@ -26,7 +26,6 @@ export function defaultGlyph(feature: Feature) {
 export const DEFAULT_MANHATTAN_COLOR = '#0068d1'
 
 export interface GetManhattanDataArgs {
-  sessionId: string
   adapterConfig: Record<string, unknown>
   region: Region
   // CSS color literal or jexl expression (`jexl:...`). Evaluated per feature

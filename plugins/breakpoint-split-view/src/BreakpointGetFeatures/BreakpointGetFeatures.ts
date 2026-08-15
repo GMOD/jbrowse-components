@@ -8,7 +8,6 @@ import type { Feature, Region } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface BreakpointGetFeaturesArgs {
-  sessionId: string
   regions: Region[]
   adapterConfig: Record<string, unknown>
   assemblyName?: string
