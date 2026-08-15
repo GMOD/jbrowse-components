@@ -11,6 +11,7 @@ import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
+  getOrCreate,
   hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
@@ -119,17 +120,8 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
         for (const seq of new Set(names.map(n => n.slice(1)))) {
           const contig = panSNContig(seq)
           for (const prefix of panSNPrefixes(seq)) {
-            let byContig = index.get(prefix)
-            if (!byContig) {
-              byContig = new Map()
-              index.set(prefix, byContig)
-            }
-            const seqs = byContig.get(contig)
-            if (seqs) {
-              seqs.push(seq)
-            } else {
-              byContig.set(contig, [seq])
-            }
+            const byContig = getOrCreate(index, prefix, () => new Map())
+            getOrCreate(byContig, contig, () => []).push(seq)
           }
         }
         return index

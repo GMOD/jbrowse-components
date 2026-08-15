@@ -4,16 +4,17 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { parsePafBuffer } from '../PAFAdapter/PAFAdapter.ts'
 import {
   loadPafRecords,
   makeSyntenyFeature,
   orientPafRecord,
+  parsePafBuffer,
 } from '../PAFAdapter/util.ts'
 import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
+  getOrCreate,
   isSelfDiagonal,
   markReciprocalDuplicates,
   noPanSNMatchError,
@@ -128,22 +129,9 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
       const contig = panSNContig(side.refName)
       const matePrefixes = panSNPrefixes(side.mateRefName)
       for (const prefix of panSNPrefixes(side.refName)) {
-        let byContig = index.get(prefix)
-        if (!byContig) {
-          byContig = new Map()
-          index.set(prefix, byContig)
-        }
-        const bucket = byContig.get(contig)
-        if (bucket) {
-          bucket.push(i)
-        } else {
-          byContig.set(contig, [i])
-        }
-        let mates = matesByPrefix.get(prefix)
-        if (!mates) {
-          mates = new Set()
-          matesByPrefix.set(prefix, mates)
-        }
+        const byContig = getOrCreate(index, prefix, () => new Map())
+        getOrCreate(byContig, contig, () => []).push(i)
+        const mates = getOrCreate(matesByPrefix, prefix, () => new Set())
         for (const matePrefix of matePrefixes) {
           mates.add(matePrefix)
         }

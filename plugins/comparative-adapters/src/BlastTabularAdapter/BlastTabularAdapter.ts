@@ -8,7 +8,11 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { collectLines, getAssemblyNamesFromConf } from '../util.ts'
+import {
+  collectLines,
+  getAssemblyNamesFromConf,
+  indexRecordsByName,
+} from '../util.ts'
 
 import type { BlastTabularAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -228,7 +232,19 @@ function blastIdentity(pident: string | undefined) {
 export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTabularAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
+  // Download+parse plus the per-refName index every query walks, for the reason
+  // indexRecordsByName documents: a region query used to test every hit in the
+  // table, and the callers ask once per visible contig.
+  setup = createSharedSetup(async (opts: BaseOptions) => {
+    const records = await this.setupPre(opts)
+    return {
+      records,
+      byRefName: [
+        indexRecordsByName(records, r => r.qseqid),
+        indexRecordsByName(records, r => r.sseqid),
+      ] as const,
+    }
+  })
 
   async setupPre(opts?: BaseOptions): Promise<BlastRecord[]> {
     return collectLines({
@@ -254,23 +270,20 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTab
   }
 
   async getRefNames(opts: BaseOptions = {}) {
+    // Resolved before the setup: an assembly this adapter does not carry has
+    // the same answer whatever the file says, and reading it first was
+    // downloading and parsing the whole table to return [].
     const r1 = opts.assemblyName
-    const feats = await this.setup(opts)
-
     const idx = r1 === undefined ? -1 : this.getAssemblyNames().indexOf(r1)
-    if (idx !== -1) {
-      const set = new Set<string>()
-      for (const feat of feats) {
-        set.add(idx === 0 ? feat.qseqid : feat.sseqid)
-      }
-      return [...set]
+    if (idx === -1) {
+      return []
     }
-    return []
+    const { byRefName } = await this.setup(opts)
+    return [...byRefName[idx === 0 ? 0 : 1].keys()]
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const blastRecords = await this.setup(opts)
       const [queryAssembly, targetAssembly] = this.getAssemblyNames()
 
       const {
@@ -284,43 +297,44 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTab
         queryAssemblyName !== queryAssembly
       ) {
         console.warn(`${queryAssemblyName} not found in this adapter`)
-      } else {
-        const flip = queryAssemblyName === queryAssembly
-        for (let i = 0; i < blastRecords.length; i++) {
-          const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } =
-            blastRecords[i]!
-          const refName = flip ? qseqid : sseqid
-          const side = flip
-            ? orientBlastSide(qstart, qend)
-            : orientBlastSide(sstart, send)
-          if (
-            refName === queryRefName &&
-            doesIntersect2(queryStart, queryEnd, side.start, side.end)
-          ) {
-            const mate = flip
-              ? orientBlastSide(sstart, send)
-              : orientBlastSide(qstart, qend)
-            observer.next(
-              new SyntenyFeature({
-                uniqueId: i + queryAssemblyName,
-                assemblyName: queryAssemblyName,
-                start: side.start,
-                end: side.end,
-                type: 'match',
-                refName,
-                strand: side.strand * mate.strand,
-                syntenyId: i,
-                identity: blastIdentity(rest.pident),
-                ...rest,
-                mate: {
-                  start: mate.start,
-                  end: mate.end,
-                  refName: flip ? sseqid : qseqid,
-                  assemblyName: flip ? targetAssembly : queryAssembly,
-                },
-              }),
-            )
-          }
+        observer.complete()
+        return
+      }
+      const { records, byRefName } = await this.setup(opts)
+      const flip = queryAssemblyName === queryAssembly
+
+      // Only the hits anchored on the queried contig, walked in ascending
+      // record index so features still arrive in file order.
+      for (const i of byRefName[flip ? 0 : 1].get(queryRefName) ?? []) {
+        const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } =
+          records[i]!
+        const side = flip
+          ? orientBlastSide(qstart, qend)
+          : orientBlastSide(sstart, send)
+        if (doesIntersect2(queryStart, queryEnd, side.start, side.end)) {
+          const mate = flip
+            ? orientBlastSide(sstart, send)
+            : orientBlastSide(qstart, qend)
+          observer.next(
+            new SyntenyFeature({
+              uniqueId: i + queryAssemblyName,
+              assemblyName: queryAssemblyName,
+              start: side.start,
+              end: side.end,
+              type: 'match',
+              refName: flip ? qseqid : sseqid,
+              strand: side.strand * mate.strand,
+              syntenyId: i,
+              identity: blastIdentity(rest.pident),
+              ...rest,
+              mate: {
+                start: mate.start,
+                end: mate.end,
+                refName: flip ? sseqid : qseqid,
+                assemblyName: flip ? targetAssembly : queryAssembly,
+              },
+            }),
+          )
         }
       }
 

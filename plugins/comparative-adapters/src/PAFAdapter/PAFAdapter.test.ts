@@ -42,6 +42,34 @@ test('getWeightedMeans computes a true length-weighted mean identity per pair', 
   expect(records[1]!.extra.meanIdentity).toBeCloseTo(0.7)
 })
 
+// A `${qname}-${tname}` key made these one pair, so each averaged the other's
+// identity. Contig names carrying the separator are ordinary (HLA-A, scaffold-1).
+test('two pairs whose joined names collide stay separate', () => {
+  const records = [
+    makeRecord('HLA-A', 'B', 60, 1000, 900),
+    makeRecord('HLA', 'A-B', 60, 1000, 500),
+  ]
+  getWeightedMeans(records)
+  expect(records[0]!.extra.meanIdentity).toBeCloseTo(0.9)
+  expect(records[1]!.extra.meanIdentity).toBeCloseTo(0.5)
+})
+
+// A contig name is data, and on a plain object `map['constructor']` finds
+// Object rather than a missing entry, so the running sum lands on the
+// constructor and reads back NaN.
+test('a contig named like an Object property gets a real mean', () => {
+  const records = [makeRecord('constructor', 'constructor', 60, 1000, 900)]
+  getWeightedMeans(records)
+  expect(records[0]!.extra.meanIdentity).toBeCloseTo(0.9)
+})
+
+// 0/0 rode out to the identity color ramp as a NaN
+test('a pair with no block length to weight means zero, not NaN', () => {
+  const records = [makeRecord('q1', 't1', 60, 0, 0)]
+  getWeightedMeans(records)
+  expect(records[0]!.extra.meanIdentity).toBe(0)
+})
+
 function makeAdapter() {
   return new Adapter(
     MyConfigSchema.create({
@@ -77,6 +105,10 @@ test('adapter can fetch features from peach_grape.paf', async () => {
   expect(fa2.length).toBe(5)
   expect(fa1[0]!.get('refName')).toBe('Pp01')
   expect(fa2[0]!.get('refName')).toBe('chr1')
+  // walking one contig's bucket rather than the whole file must not reorder
+  // the result: syntenyId is the record's position in the file
+  const ids = fa1.map(f => f.get('syntenyId') as number)
+  expect(ids).toEqual([...ids].sort((a, b) => a - b))
 })
 
 test('getFeatures returns nothing for an unknown assembly even when its refName collides with a target name', async () => {
@@ -125,6 +157,60 @@ test('getRefNames returns empty when no regions provided', async () => {
   const adapter = makeAdapter()
   const refNames = await adapter.getRefNames({})
   expect(refNames).toEqual([])
+})
+
+// An assembly this adapter doesn't carry has the same answer whatever the file
+// says, so it must not be read: this used to download and parse a whole PAF —
+// gigabytes, for an in-memory adapter — to return []. A location that cannot be
+// opened is how the test sees that no read happened.
+test('an assembly this adapter has no side for is answered without reading the file', async () => {
+  const adapter = new Adapter(
+    MyConfigSchema.create({
+      pafLocation: {
+        localPath: '/nonexistent/never-read.paf',
+        locationType: 'LocalPathLocation',
+      },
+      assemblyNames: ['peach', 'grape'],
+    }),
+  )
+  await expect(adapter.getRefNames({})).resolves.toEqual([])
+  await expect(adapter.getRefNames({ assemblyName: 'mouse' })).resolves.toEqual(
+    [],
+  )
+})
+
+// The per-contig index a query walks must report exactly the contigs the query
+// can emit for, on the side the assembly is anchored on
+test('getRefNames reports only its own side of the file', async () => {
+  const adapter = makeAdapter()
+  const peach = await adapter.getRefNames({ assemblyName: 'peach' })
+  const grape = await adapter.getRefNames({ assemblyName: 'grape' })
+  expect(peach.every(n => n.startsWith('Pp'))).toBe(true)
+  expect(grape.every(n => n.startsWith('chr'))).toBe(true)
+  expect(peach).not.toEqual(grape)
+})
+
+// A tab-delimited column that isn't a `TAG:t:value` used to be filed under a
+// key one character short of itself and spread onto the feature
+test('a trailing non-tag column is not carried onto the feature', async () => {
+  const path = join(mkdtempSync(join(tmpdir(), 'paf-tag-')), 'in.paf')
+  writeFileSync(
+    path,
+    'q1\t1000\t100\t200\t+\tt1\t2000\t300\t400\t95\t100\t60\tjunk\tNM:i:5\n',
+  )
+  const adapter = new Adapter(
+    MyConfigSchema.create({
+      pafLocation: { localPath: path, locationType: 'LocalPathLocation' },
+      assemblyNames: ['q', 't'],
+    }),
+  )
+  const [f] = await firstValueFrom(
+    adapter
+      .getFeatures({ refName: 't1', start: 0, end: 1000, assemblyName: 't' })
+      .pipe(toArray()),
+  )
+  expect(f!.get('NM')).toBe('5')
+  expect(f!.get('jun')).toBeUndefined()
 })
 
 // odgi untangle writes its identity as an `id:f:` tag. It feeds the feature's

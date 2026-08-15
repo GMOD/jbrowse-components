@@ -210,6 +210,43 @@ export function noSuchPairError({
   )
 }
 
+/**
+ * The value at `key`, inserting `make()` first if there is none. Nested
+ * `Map<string, Map<string, T[]>>` indexes are how every adapter here files a
+ * record under (prefix, contig) or (refName, mateRefName), and a Map rather
+ * than a joined string key because a contig name can contain any character one
+ * would reach for as a separator.
+ */
+export function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V) {
+  let value = map.get(key)
+  if (value === undefined) {
+    value = make()
+    map.set(key, value)
+  }
+  return value
+}
+
+/**
+ * refName -> the positions in `records` of the rows anchored on it.
+ *
+ * The in-memory comparative adapters used to answer a region query by walking
+ * every record and testing its refName, which is O(records) per region — and
+ * the callers ask per region: a whole-genome dotplot fetches one region per
+ * visible contig, so a scaffold-level assembly turned one query into hundreds
+ * of full scans of the same array. Built once in `setup` — the same move
+ * AllVsAllPAFAdapter's own index makes — a query walks one bucket.
+ */
+export function indexRecordsByName<T>(
+  records: T[],
+  name: (record: T) => string,
+) {
+  const index = new Map<string, number[]>()
+  for (const [i, record] of records.entries()) {
+    getOrCreate(index, name(record), () => []).push(i)
+  }
+  return index
+}
+
 export function parseBed(text: string) {
   const result = new Map<string, BareFeature>()
   for (const line of text.split(/\n|\r\n|\r/)) {
@@ -291,8 +328,15 @@ export function parsePAFLine(line: string) {
 
   for (let i = 12; i < parts.length; i++) {
     const field = parts[i]!
+    // `TAG:t:value`, so the first colon ends the tag name and the value starts
+    // two characters later — a `cs` value's own colons are inside the value. A
+    // column that is not a tag at all is skipped rather than filed under a
+    // truncated key: it would otherwise be spread onto the feature and shown in
+    // the tooltip as a garbage field.
     const colonIndex = field.indexOf(':')
-    extra[field.slice(0, colonIndex)] = field.slice(colonIndex + 3)
+    if (colonIndex !== -1) {
+      extra[field.slice(0, colonIndex)] = field.slice(colonIndex + 3)
+    }
   }
 
   return {
@@ -610,17 +654,8 @@ export function markReciprocalDuplicates(sides: AlignedSide[]) {
   // reach for as a separator.
   const byPair = new Map<string, Map<string, number[]>>()
   for (const [i, side] of sides.entries()) {
-    let byMate = byPair.get(side.refName)
-    if (!byMate) {
-      byMate = new Map()
-      byPair.set(side.refName, byMate)
-    }
-    const group = byMate.get(side.mateRefName)
-    if (group) {
-      group.push(i)
-    } else {
-      byMate.set(side.mateRefName, [i])
-    }
+    const byMate = getOrCreate(byPair, side.refName, () => new Map())
+    getOrCreate(byMate, side.mateRefName, () => []).push(i)
   }
 
   for (const byMate of byPair.values()) {

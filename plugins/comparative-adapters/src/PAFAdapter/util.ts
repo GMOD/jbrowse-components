@@ -3,6 +3,12 @@ import { fetchAndMaybeUnzip, updateStatus } from '@jbrowse/core/util'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { orientAlignment } from '../csUtils.ts'
+import {
+  collectLines,
+  getOrCreate,
+  indexRecordsByName,
+  parsePAFLine,
+} from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { GenericFilehandle } from 'generic-filehandle2'
@@ -53,40 +59,68 @@ export interface PAFRecord {
 // Notes: in the weighted mean longer alignments factor in more heavily of all
 // the fragments of a query vs the reference that it mapped to
 //
-// this uses a combined key query+'-'+ref to iteratively map all the alignments
-// that match a particular ref from a particular query (so 1d array of what
-// could be a 2d map)
-//
 // the result is a single identity that says e.g. chr5 from human mapped to
 // chr5 on mouse at 0.8 identity, and that 0.8 is then attached to all the
 // pieces of chr5 on human that mapped to chr5 on mouse — so a query split
 // across many hits is colored by its overall identity to the target.
 
-export function getWeightedMeans(ret: PAFRecord[]) {
-  // One pass: length-weighted identity sums per query-target pair.
-  const map: Record<string, { idSum: number; weightSum: number }> = {}
-  for (const entry of ret) {
-    const key = `${entry.qname}-${entry.tname}`
-    const len = entry.extra.blockLen ?? 1
-    const id = pafIdentity(entry.extra)
-    const e = map[key]
-    if (e) {
-      e.idSum += id * len
-      e.weightSum += len
-    } else {
-      map[key] = { idSum: id * len, weightSum: len }
-    }
+interface WeightedSum {
+  idSum: number
+  weightSum: number
+}
+
+export function getWeightedMeans(records: PAFRecord[]) {
+  // Length-weighted identity sums per query-target pair. Nested maps rather
+  // than a `${qname}-${tname}` key: a contig name can contain any character
+  // one would reach for as a separator, so `HLA-A` vs `B` and `HLA` vs `A-B`
+  // used to share a sum and average each other's identity. A plain object was
+  // also unsafe with names as keys — `map['constructor']` finds Object.
+  const byQuery = new Map<string, Map<string, WeightedSum>>()
+  // The sum each record belongs to, so the second pass costs an array read
+  // rather than a second pair of hash lookups.
+  const sums: WeightedSum[] = []
+  for (const record of records) {
+    const byTarget = getOrCreate(byQuery, record.qname, () => new Map())
+    const sum = getOrCreate(byTarget, record.tname, () => ({
+      idSum: 0,
+      weightSum: 0,
+    }))
+    const len = record.extra.blockLen ?? 1
+    sum.idSum += pafIdentity(record.extra) * len
+    sum.weightSum += len
+    sums.push(sum)
   }
 
   // Mean identity is a true [0,1] fraction, so it shares the per-alignment
-  // identity color scale.
-  for (const entry of ret) {
-    const key = `${entry.qname}-${entry.tname}`
-    const { idSum, weightSum } = map[key]!
-    entry.extra.meanIdentity = idSum / weightSum
+  // identity color scale. A pair whose every row states a zero block length
+  // has no weights to average, and 0/0 put a NaN on the color ramp.
+  for (const [i, record] of records.entries()) {
+    const { idSum, weightSum } = sums[i]!
+    record.extra.meanIdentity = weightSum > 0 ? idSum / weightSum : 0
   }
 
-  return ret
+  return records
+}
+
+/**
+ * The two sides of the file indexed by refName, in the order `assemblyNames`
+ * gives them: index 0 is the PAF query (`qname`) side, index 1 the target
+ * (`tname`) side — so a query's assembly index selects its own index directly.
+ */
+export function indexPafRecords(records: PAFRecord[]) {
+  return [
+    indexRecordsByName(records, r => r.qname),
+    indexRecordsByName(records, r => r.tname),
+  ] as const
+}
+
+export function parsePafBuffer(buffer: Uint8Array, opts?: BaseOptions) {
+  return collectLines({
+    buffer,
+    label: 'Parsing PAF',
+    parseLine: parsePAFLine,
+    opts,
+  })
 }
 
 /**
