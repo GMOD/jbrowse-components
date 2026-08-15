@@ -11,7 +11,6 @@ interface GetGlobalValueForTagArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
   tag: string
-  rpcDriverName?: string
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

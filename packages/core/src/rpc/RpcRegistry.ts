@@ -157,8 +157,28 @@ export type RpcExecuteArgs<M extends string> = M extends RpcMethodName
     : NotInRpcRegistry<M>
 
 /**
+ * Where this one call runs. Like {@link RpcHandles} and for the same reason: a
+ * property of the call rather than of the payload, so it belongs to every method
+ * and to no registry entry.
+ *
+ * It was per-entry, and had got exactly as far as the handles had — declared by
+ * two of the forty-one (`GetConsensusSequence`, `PileupGetGlobalValueForTag`,
+ * both because a caller needed to pin one), which left pinning a driver a
+ * type error on the other thirty-nine. `RpcManager.getDriverForCall` has read it
+ * off the args bag the whole time, so the fix is to say so once here.
+ *
+ * Caller-side only: it picks the driver and is not payload, so it stays out of
+ * {@link RpcExecuteArgs}. A worker seeing the extra field ignores it, the way it
+ * ignores the `blobMap` that `serializeArguments` adds.
+ */
+export type RpcRouting = {
+  rpcDriverName?: string
+}
+
+/**
  * What a CALLER passes to `rpcManager.call`: the method's own data, minus the
- * `sessionId` the layer injects, plus the {@link RpcHandles} every method takes.
+ * `sessionId` the layer injects, plus the {@link RpcHandles} every method takes
+ * and the {@link RpcRouting} that decides where it runs.
  *
  * Exported and used by everything that types a `call` — `RpcManager` itself and
  * the structural `RpcMethodCaller` the clustering helpers take — because there
@@ -166,8 +186,8 @@ export type RpcExecuteArgs<M extends string> = M extends RpcMethodName
  * lagged the other two the moment the handles moved.
  */
 export type RpcCallArgs<M extends string> = M extends RpcMethodName
-  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'> & RpcHandles
-  : Record<string, unknown> & RpcHandles
+  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'> & RpcHandles & RpcRouting
+  : Record<string, unknown> & RpcHandles & RpcRouting
 
 // What a registered method's `execute` may resolve to: the declared return, or
 // that return wrapped in rpcResult to carry transferables. An RpcMethodType

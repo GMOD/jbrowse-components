@@ -25,7 +25,6 @@ interface GetConsensusSequenceArgs {
   callFract?: number
   hetFract?: number
   includeInsertions?: boolean
-  rpcDriverName?: string
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
