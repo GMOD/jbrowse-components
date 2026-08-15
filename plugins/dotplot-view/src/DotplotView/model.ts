@@ -818,36 +818,31 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * The hovered alignment's tooltip lines, from whichever track owns the
-         * hover, or undefined when nothing is hovered.
+         * The one track that owns the plot's hover, or undefined. At most one
+         * can: `setHoveredFeature` points a single display at the hit and clears
+         * every other in the same batch.
          *
-         * At most one track can: `setHoveredFeature` clears every other one in
-         * the same batch, so the first answer found is the only answer. Resolved
-         * here so the tooltip component takes the view it already has rather than
-         * looping the tracks itself.
+         * Resolved here so the two readers below — and the components — take the
+         * view they already have rather than looping the tracks themselves.
+         */
+        get hoveredDisplay(): DotplotDisplayModel | undefined {
+          return this.dotplotDisplays.find(d => d.hoveredSegmentIdx >= 0)
+        },
+        /**
+         * #getter
+         * The hovered alignment's tooltip lines, or undefined when nothing is
+         * hovered.
          */
         get hoveredTooltipLines(): string[] | undefined {
-          for (const display of this.dotplotDisplays) {
-            const lines = display.tooltipLines
-            if (lines) {
-              return lines
-            }
-          }
-          return undefined
+          return this.hoveredDisplay?.tooltipLines
         },
         /**
          * #getter
          * The hovered alignment's restroke geometry — see
-         * `DotplotDisplay.hoveredFeatureHighlight`. One track at most, as above.
+         * `DotplotDisplay.hoveredFeatureHighlight`.
          */
         get hoveredHighlight(): DotplotHoverHighlight | undefined {
-          for (const display of this.dotplotDisplays) {
-            const highlight = display.hoveredFeatureHighlight
-            if (highlight) {
-              return highlight
-            }
-          }
-          return undefined
+          return this.hoveredDisplay?.hoveredFeatureHighlight
         },
         /**
          * #getter
@@ -875,6 +870,27 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * The cumBp -> plot px reconstruction, as the four numbers everything
+         * that draws or hit-tests this plot runs on: the viewport-start cumBp
+         * per axis, and the inverse bpPerPx per axis.
+         *
+         * Its own getter because three readers want exactly these and nothing
+         * else — the render state below, the pick's exact test, and
+         * `DotplotDisplay.hoveredFeatureHighlight`. Taking them off
+         * `dotplotRenderState` also subscribes to `alpha`, `lineWidth` and the
+         * display-key list, so an opacity drag rebuilt the hover path.
+         */
+        get plotTransform() {
+          const { hview, vview } = self
+          return {
+            viewBpH: hview.offsetPx * hview.bpPerPx,
+            viewBpV: vview.offsetPx * vview.bpPerPx,
+            bpPerPxHInv: 1 / hview.bpPerPx,
+            bpPerPxVInv: 1 / vview.bpPerPx,
+          }
+        },
+        /**
+         * #getter
          * Aggregated per-frame render state — a resolved value, never
          * undefined; "the view isn't measured yet" is the `canRender`
          * precondition below.
@@ -886,16 +902,11 @@ export default function stateModelFactory(pm: PluginManager) {
          * but nothing repainted).
          */
         get dotplotRenderState() {
-          const displayKeys = [...this.geometryByDisplayKey.keys()]
-          const { hview, vview } = self
           return {
-            viewBpH: hview.offsetPx * hview.bpPerPx,
-            viewBpV: vview.offsetPx * vview.bpPerPx,
-            bpPerPxHInv: 1 / hview.bpPerPx,
-            bpPerPxVInv: 1 / vview.bpPerPx,
+            ...this.plotTransform,
             lineWidth: self.lineWidth,
             alpha: self.alpha,
-            displayKeys,
+            displayKeys: [...this.geometryByDisplayKey.keys()],
           }
         },
         /**
@@ -940,9 +951,10 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         pickFeatureAt(x: number, y: number) {
           const { hview, vview } = self
+          const { viewBpH, viewBpV } = this.plotTransform
           const transform = {
-            viewBpH: hview.offsetPx * hview.bpPerPx,
-            viewBpV: vview.offsetPx * vview.bpPerPx,
+            viewBpH,
+            viewBpV,
             bpPerPxH: hview.bpPerPx,
             bpPerPxV: vview.bpPerPx,
             viewHeight: this.viewHeight,

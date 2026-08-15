@@ -160,6 +160,9 @@ export function useDotplotInteraction(
             // plot, the opposite of a downward drag.
             model.scrollXY(dx, dy)
           }
+          // No hover clear here: a wheel moves the plot under a stationary
+          // cursor, and `setupClearHoverOnPlotMove` answers that for every way
+          // the plot can move rather than for this one.
           scheduled = false
           dx = 0
           dy = 0
@@ -186,11 +189,11 @@ export function useDotplotInteraction(
           setCurr(s)
           lastRef.current = s
           setUp(undefined)
-          // A gesture is starting, so the hover is over: a pan would drag the
-          // plot out from under the highlight, and a selection drag has its own
-          // pair of coord tooltips to put at this anchor. Cleared once here
-          // rather than per move — the move handler below simply doesn't pick
-          // while `down` is set.
+          // A gesture is starting, so the hover is over. A pan is covered by
+          // `setupClearHoverOnPlotMove` anyway; a selection drag moves nothing
+          // and is not, and it wants this anchor for its own pair of coord
+          // tooltips. Cleared once here rather than per move — the move handler
+          // below simply doesn't pick while `down` is set.
           model.setHoveredFeature(undefined)
         }
       },

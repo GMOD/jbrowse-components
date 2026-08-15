@@ -257,9 +257,11 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * the chromosome modes, and red/blue/black are the strand and default
        * schemes.
        *
-       * Recomputes on pan (through `dotplotRenderState`'s `viewBpH`/`viewBpV`),
-       * which is what keeps the highlight on its feature, and only while
-       * something is hovered.
+       * Recomputes on pan (through `plotTransform`'s `viewBpH`/`viewBpV`), which
+       * is what keeps the highlight on its feature, and only while something is
+       * hovered. `plotTransform` rather than `dotplotRenderState`, which carries
+       * `alpha` and `lineWidth` too — an opacity drag would rebuild this path
+       * once a frame for a value it does not read.
        */
       get hoveredFeatureHighlight(): DotplotHoverHighlight | undefined {
         const { instanceData } = self
@@ -282,7 +284,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         }
         const { viewHeight } = this.view
         const { viewBpH, viewBpV, bpPerPxHInv, bpPerPxVInv } =
-          this.view.dotplotRenderState
+          this.view.plotTransform
         let path = ''
         for (let s = start; s < end; s++) {
           // Same reconstruction as `drawDotplotInstances`, so the restroke lands

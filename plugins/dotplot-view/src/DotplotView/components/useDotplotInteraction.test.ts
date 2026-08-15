@@ -15,18 +15,43 @@ import type React from 'react'
 // unbatched drew a frame against a moved h axis and a stale v one.
 function setup(cursorMode: 'move' | 'crosshair') {
   const scrollXY = jest.fn()
+  const zoomAt = jest.fn()
   const setHoveredFeature = jest.fn()
   const hit = { displayKey: 1, featureIdx: 7, distancePx: 0 }
   const pickFeatureAt = jest.fn(() => hit)
   const model = {
     scrollXY,
+    zoomAt,
     setHoveredFeature,
     pickFeatureAt,
     cursorMode,
     lockAspectRatio: false,
   } as unknown as DotplotViewModel
   const { result } = renderHook(() => useDotplotInteraction(model))
-  return { scrollXY, setHoveredFeature, pickFeatureAt, hit, result }
+  return { scrollXY, zoomAt, setHoveredFeature, pickFeatureAt, hit, result }
+}
+
+// Attach the container ref and run the wheel listener's rAF body inline, which
+// is the only way to observe it — React attaches wheel passively, so the hook
+// registers it by hand on the element rather than through containerProps.
+function wheel(
+  result: { current: ReturnType<typeof useDotplotInteraction> },
+  init: WheelEventInit,
+) {
+  const el = document.createElement('div')
+  act(() => {
+    result.current.containerProps.ref(el)
+  })
+  const raf = jest
+    .spyOn(window, 'requestAnimationFrame')
+    .mockImplementation(cb => {
+      cb(0)
+      return 0
+    })
+  act(() => {
+    el.dispatchEvent(new WheelEvent('wheel', init))
+  })
+  raf.mockRestore()
 }
 
 // getBoundingClientRect is stubbed at the origin so component-relative x/y are
@@ -120,6 +145,24 @@ test.each(['move', 'crosshair'] as const)(
     expect(pickFeatureAt).not.toHaveBeenCalled()
   },
 )
+
+// The hook does NOT clear the hover on a wheel, deliberately: a wheel moves the
+// plot under a stationary cursor, and the view answers that for every way the
+// plot can move (`setupClearHoverOnPlotMove`). Clearing here too would be a
+// second copy of one rule — pinned so the copy doesn't come back.
+test.each([
+  ['pan', { deltaX: 40, deltaY: 0 }],
+  ['zoom', { deltaX: 0, deltaY: -120 }],
+])('a wheel %s leaves the hover to the view', (_name, init) => {
+  const { setHoveredFeature, scrollXY, zoomAt, result } = setup('move')
+  act(() => {
+    result.current.containerProps.onPointerMove(pointerEvent(140, 140))
+  })
+  wheel(result, init)
+
+  expect(scrollXY.mock.calls.length + zoomAt.mock.calls.length).toBe(1)
+  expect(setHoveredFeature).not.toHaveBeenCalledWith(undefined)
+})
 
 test('leaving the plot drops the hover', () => {
   const { setHoveredFeature, result } = setup('move')

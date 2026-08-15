@@ -130,6 +130,27 @@ describe('pickDotplotFeature', () => {
     expect(pick(two, 20, 80)?.featureIdx).toBe(1)
   })
 
+  // Past one Flatbush node the index Hilbert-sorts, and candidates then come
+  // back in tree order rather than insertion order — so a tie can arrive with
+  // the later segment FIRST, where `<=` alone lets an earlier one overwrite it.
+  // Four dots 2px from the cursor, one on each side, decide the answer by draw
+  // order alone; the filler is only there to push the index past `nodeSize`,
+  // which is what makes it sort at all. A whole-genome plot is nothing but this.
+  test('a tie is broken by draw order even when the index reorders them', () => {
+    const filler = Array.from(
+      { length: 20 },
+      (_, i) => [1000 + i * 100, 1000, 1000 + i * 100, 1000, i] as const,
+    )
+    const ring = makeData([
+      ...filler.map(f => [...f] as [number, number, number, number, number]),
+      [22, 20, 22, 20, 20],
+      [20, 22, 20, 22, 21],
+      [18, 20, 18, 20, 22],
+      [20, 18, 20, 18, 23],
+    ])
+    expect(pick(ring, 20, 80)?.featureIdx).toBe(23)
+  })
+
   // The two axes are independently scaled and routinely differ by orders of
   // magnitude (a read-vs-ref plot). A distance measured in bp would answer with
   // whichever feature is nearest in the compressed axis' units, which is not

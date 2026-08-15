@@ -247,7 +247,14 @@ export function pickDotplotFeature({
       const sx2 = (x2[s]! - viewBpH) * bpPerPxHInv
       const sy2 = viewHeight - (y2[s]! - viewBpV) * bpPerPxVInv
       const distSq = pointSegmentDistSq(x, y, sx1, sy1, sx2, sy2)
-      if (distSq <= toleranceSq && distSq <= bestDistSq) {
+      // A tie goes to the later segment, the one drawn on top. `<=` alone would
+      // not give that: Flatbush hands candidates back in tree order, so an
+      // equidistant earlier segment can arrive last — which a whole-genome plot
+      // reaches routinely, where repeats collapse to dots at identical cumBp.
+      const better =
+        distSq < bestDistSq ||
+        (distSq === bestDistSq && s > (best?.segmentIdx ?? -1))
+      if (distSq <= toleranceSq && better) {
         bestDistSq = distSq
         best = {
           segmentIdx: s,

@@ -27,21 +27,19 @@ const DotplotTooltips = observer(function DotplotTooltips({
     `x - ${locstr(point.x, hview)}`,
     `y - ${locstr(viewHeight - point.y, vview)}`,
   ]
+  // One tooltip at the pointer, and the alignment under it wins: its own two
+  // locations are strictly more than the cursor coordinates they would replace.
+  // The hover is cleared at pointerdown, so `dx` is 0 whenever the feature lines
+  // are the ones showing — the drag placement below applies to the coordinates
+  // only, and the two can never be live at once.
+  const pointerLines =
+    hoveredTooltipLines ??
+    (hovering && validSelect && pointer ? coordLines(pointer) : undefined)
   return (
     <Suspense fallback={null}>
-      {/* One tooltip at the pointer, and the alignment under it wins: its own
-          two locations are strictly more than the cursor coordinates they would
-          replace. The hover is cleared at pointerdown, so the feature arm and
-          the drag arms below can never be live at once. */}
-      {pointer && hoveredTooltipLines ? (
+      {pointer && pointerLines ? (
         <DotplotTooltip
-          lines={hoveredTooltipLines}
-          point={pointer}
-          placement="right"
-        />
-      ) : hovering && validSelect && pointer ? (
-        <DotplotTooltip
-          lines={coordLines(pointer)}
+          lines={pointerLines}
           point={pointer}
           placement={dx < 0 ? 'left' : 'right'}
         />

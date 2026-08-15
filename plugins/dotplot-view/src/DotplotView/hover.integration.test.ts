@@ -160,6 +160,25 @@ test('the view resolves the tooltip and the highlight off the hovered track', as
   expect(highlight?.color).toMatch(/^rgba\(/)
 }, 20000)
 
+// The plot moving under a stationary cursor is its own invalidation axis, and
+// the one nothing re-picks after: the canvas has no element travelling with its
+// alignments, so it fires no pointer event when they slide. Asserted on the
+// model rather than through a handler because that is where the answer lives —
+// one reaction over `plotTransform`, covering every way the plot can move.
+//
+// A pan is the case that needs it. A zoom is covered twice over, since it also
+// rebuilds the geometry the stored index addresses (below).
+test('a pan drops the hover, and the tooltip and highlight with it', async () => {
+  const { view, a } = await setup()
+  view.setHoveredFeature(pickAtBp(view, 1500, 1500))
+  expect(a.hoveredSegmentIdx).toBe(0)
+
+  view.scrollXY(50, 0)
+  expect(a.hoveredSegmentIdx).toBe(-1)
+  expect(view.hoveredTooltipLines).toBeUndefined()
+  expect(view.hoveredHighlight).toBeUndefined()
+}, 20000)
+
 // The stored index addresses the geometry, so it cannot outlive it — a surviving
 // one points at an unrelated alignment. Both writers of that geometry drop it,
 // and the second is the one that would be missed: a zoom rebuilds the segments
