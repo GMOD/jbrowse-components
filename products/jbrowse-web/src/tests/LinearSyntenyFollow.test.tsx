@@ -563,6 +563,60 @@ test('a level that can never resolve reports itself once, not once a settle', as
   ).toHaveLength(1)
 }, 60000)
 
+// A LOCKED TAB, not a slow one: this pegged one core at 90% with ~1.4 GB
+// resident, indefinitely, and jest's own timeout never fired because the loop
+// starves the timer queue.
+//
+// `volvox_del.paf` declares rows ["volvox", "volvox_del"] while its adapter
+// declares queryAssembly volvox_del / targetAssembly volvox, so the level's top
+// row is the adapter's TARGET — the swapped-assemblies case the codebase warns
+// about elsewhere, and a config someone can legitimately write. The walk then
+// clamps the anchor window to a block whose axes are not what the plan thought
+// and brings both ends back on ONE coordinate.
+//
+// Two things made that a loop rather than a bad placement. A view cannot show a
+// zero-width span: `navToResolvedSpan` widens it to a base and the view's zoom
+// floor widens it to sixteen, so `alreadyShowing` compared a 16bp window
+// against a 0bp answer with 1bp of slack, said no, and renavigated — which
+// flushed the row's coarse blocks and woke the pass that had just run.
+test('a swapped-assembly track holds the row rather than spinning', async () => {
+  const { session } = getTestSession()
+  const view = session.addView('LinearSyntenyView', {
+    init: {
+      views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
+      tracks: ['volvox_del.paf'],
+    },
+  }) as unknown as SyntenyView
+  view.setWidth(800)
+  await waitFor(() => {
+    expect(view.initialized).toBe(true)
+  }, timeout)
+  const display = view.levels[0]!.linearSyntenyDisplays[0]!
+  await waitFor(() => {
+    expect(display.featureData).toBeDefined()
+  }, timeout)
+
+  const [top, bottom] = view.views
+  const before = windowOf(bottom!)
+  const call = jest.spyOn(getSession(top!).rpcManager, 'call')
+
+  view.setRowSyncMode('follow')
+  view.setFollowAnchorIndex(0)
+  await top!.navToLocString('ctgA:30000..31000', 'volvox')
+  // long enough that a runaway would have issued hundreds by now; before the
+  // fix this never returned at all
+  await new Promise(resolve => setTimeout(resolve, 6000))
+
+  expect(
+    call.mock.calls.filter(c => c[1] === 'SyntenyResolveMatchingRegion').length,
+  ).toBeLessThan(5)
+  // held, rather than flung to the sixteen bases around a coordinate the
+  // arithmetic never identified
+  expect(windowOf(bottom!)).toEqual(before)
+  // and it says so, since a held row and a dead follow look identical
+  expect(view.followUnaligned).toBe(true)
+}, 60000)
+
 test('the two row-sync modes are mutually exclusive', async () => {
   const view = await openSyntenyView()
   const model = view as unknown as {

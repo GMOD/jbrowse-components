@@ -51,7 +51,7 @@ before anyone noticed.
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
 | [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Rename RPC results, once, for all six plugins](#rename-rpc-results-once-for-all-six-plugins) | RPC | read REFNAME_NAMESPACES.md; a design pass, not a patch |
-| [The follow runs away on a swapped track](#the-synteny-follow-runs-away-on-a-swapped-assembly-track) | synteny | profile the hung worker; the swap is a lead, not isolated |
+| [The swapped track resolves to a point](#the-swapped-assembly-track-resolves-to-a-point) | synteny | the hang is fixed; what is left is the swap, still not isolated |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Verify the shared rect buffer headed](#verify-the-shared-rectcontinuation-buffer-on-real-hardware) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
 | [Feet on the interchromosomal ticks](#give-the-interchromosomal-ticks-breakend-feet-too) | alignments | decide what a coalesced tick's direction is, then the shader |
@@ -1235,31 +1235,31 @@ other side: sharing a CIGAR walk was 1.08x where sharing the sequence walk was
 Keep the identity grouping when doing this — it answers a different question
 (which entries are the same walk) and any merge is a layer above it.
 
-### The synteny follow runs away on a swapped-assembly track
+### The swapped-assembly track resolves to a point
 
-Turning `followSynteny` on with `volvox_del.paf` and navigating the anchor pegs
-one core at 90% with ~1.4 GB resident, indefinitely — observed twice at 18
-minutes of CPU on a test that should take four seconds. That is a locked tab,
-not a slow one.
+The hang this used to describe is fixed, and it was the follow's, not the swap's:
+`alreadyShowing` can never agree with an answer narrower than the moving view's
+zoom floor, and saying no means navigate, which wakes the pass that asked. A
+zero-width answer now holds the row and lights `followUnaligned`, a narrow one
+is matched by containment within the floor, and
+`LinearSyntenyFollow.test.tsx` covers a follow on a swapped track. See
+`SyntenyFollow/CLAUDE.md`.
 
-**Measure what is actually spinning before touching the follow.** The obvious
-suspect is a non-converging loop between the frame pass and the fetch, but
-nothing has attributed it; take a CPU profile of the hung worker first.
-
-What is already bracketed: `volvox_del.paf` declares rows
+What is left is why the answer is degenerate. `volvox_del.paf` declares rows
 `["volvox", "volvox_del"]` while its adapter declares
 `queryAssembly: volvox_del` / `targetAssembly: volvox`, so the level's top row is
 the adapter's *target* — the swapped-assemblies case the codebase already warns
-about elsewhere. `volvox_alias_control.paf` describes the same alignment with the
-orientation aligned and completes in four seconds
-(`LinearSyntenyRefNameAlias.test.tsx`). So the swap is the lead, but the two
-fixtures differ in orientation *and* in column order, so it is not isolated to
-one variable yet — one more fixture would settle that.
+about elsewhere — and the walk clamps the anchor window to a block whose axes are
+not what the plan thought, bringing both ends back on one coordinate.
+`volvox_alias_control.paf` describes the same alignment with the orientation
+aligned and resolves normally (`LinearSyntenyRefNameAlias.test.tsx`).
 
-Nothing in the suite covers a follow on a swapped track, which is why this has
-never been seen. Whatever the cause, a guard belongs in the follow: it should
-refuse or hold rather than spin, since a swapped track is a config someone can
-legitimately write.
+So the follow is safe on such a track but useless on one, which is the honest
+state to leave it in until the swap itself is addressed: the two fixtures differ
+in orientation *and* in column order, so it is still not isolated to one
+variable — one more fixture would settle that. The user-facing answer may be that
+`swappedAssembliesWarning` should reach the follow's own reporting rather than
+that the walk should be taught to cope.
 
 ### Destroying an MST tree that something still observes
 

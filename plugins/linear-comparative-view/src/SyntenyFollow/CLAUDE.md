@@ -81,6 +81,30 @@ against where the row actually is, with a tolerance; and the per-level answer
 promise is shared by key, so all three ride one `SyntenyResolveMatchingRegion`.
 The integration suite asserts that count.
 
+## That convergence is load-bearing, and a narrow answer used to break it
+
+`alreadyShowing` saying no means navigate, and navigating wakes the pass that
+asked. So **anything it can never say yes to is an infinite loop**, not a
+misplacement — one core at 90%, and jest's own timeout does not fire because the
+loop starves the timer queue.
+
+A view cannot show a span below `minBpPerPx * width`; it centres and widens it.
+So the row reports back a window the answer merely sits inside, which on the
+numbers is not "already there". `alreadyShowing` takes that floor and accepts
+**containment** within it — not a predicted window, since navTo also clamps to
+the displayed regions near a contig end.
+
+And a **zero-width answer is not a place at all**: the caller holds and lights
+`followUnaligned`. A CIGAR walk clamps the window to its block before walking,
+so a block whose axes are not what the plan thought brings both ends back on one
+coordinate — which is what a swapped-assembly track does, and it is a config
+someone can legitimately write. Widening one would fling the row to base-level
+zoom on a coordinate the arithmetic never identified.
+
+The two are separate holes. `interpolateFollowSpan` and `followWindowMapping`
+clamp their answers up to a base on purpose, so a collapsed interpolation is one
+base wide, clears the zero-width check, and needs the floor.
+
 A frame-pass span off the row's displayed regions is not an error — the row is
 showing another contig and the exact pass is on its way to navigate it.
 

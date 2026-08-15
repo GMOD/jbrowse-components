@@ -45,3 +45,34 @@ test('a row showing another contig is moved whatever its coordinates say', () =>
 test('a row with no settled window yet is moved', () => {
   expect(alreadyShowing(undefined, SPAN)).toBe(false)
 })
+
+// The hang. A view asked for a span below its zoom floor centres and widens it,
+// so the row reports back 16bp around a 1bp answer; on the numbers alone that is
+// never "already there", and the follow renavigated to the same place on every
+// wake — one core at 90%, indefinitely, on a swapped-assembly track whose CIGAR
+// walk collapses to a point.
+describe('a span narrower than the view can show', () => {
+  const tiny = { refName: 'ctgA', start: 28498, end: 28499 }
+  const FLOOR = 16
+
+  test('is showing once the row has widened it', () => {
+    expect(alreadyShowing(shown(28491, 28507), tiny, FLOOR)).toBe(true)
+  })
+
+  test('is not showing without the floor, which is the loop', () => {
+    expect(alreadyShowing(shown(28491, 28507), tiny)).toBe(false)
+  })
+
+  test('is not showing when the row is parked somewhere else entirely', () => {
+    // the whole-genome window a follow exists to correct is orders of magnitude
+    // wider than the floor, so containment alone cannot swallow it
+    expect(alreadyShowing(shown(0, 50000), tiny, FLOOR)).toBe(false)
+    expect(alreadyShowing(shown(40000, 40016), tiny, FLOOR)).toBe(false)
+  })
+
+  test('near a contig end, where the widened window is not centred on it', () => {
+    // navTo clamps to the displayed regions too, so the edges cannot be
+    // arithmetic'd for — containment is what survives that
+    expect(alreadyShowing(shown(28484, 28500), tiny, FLOOR)).toBe(true)
+  })
+})

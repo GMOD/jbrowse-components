@@ -43,6 +43,9 @@ interface FollowWork {
   pair: FollowPair
   step: FollowStep
   movingWindow: FollowWindow | undefined
+  // the narrowest window the moving row can show, which is what lets
+  // `alreadyShowing` terminate over an answer below it
+  movingMinWidthBp: number
   seq: number
 }
 
@@ -69,7 +72,13 @@ interface FollowPlan {
 export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = createFollowLevelStates<FollowLevel>()
 
-  async function execute({ pair, step, movingWindow, seq }: FollowWork) {
+  async function execute({
+    pair,
+    step,
+    movingWindow,
+    movingMinWidthBp,
+    seq,
+  }: FollowWork) {
     const { movingView } = pair
     const state = levelStates.get(pair.level)
     const { span, approximate } = await state.answer(step)
@@ -80,6 +89,17 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       !isAlive(movingView) ||
       !self.followSynteny
     ) {
+      return
+    }
+    // A WALK THAT COLLAPSES TO A POINT IS NOT A PLACE. `resolveAlignmentSpan`
+    // clamps the window to the block before walking it, so a block whose axes
+    // do not mean what the plan thought — a swapped-assembly track, which is a
+    // config someone can legitimately write — brings both ends back on the same
+    // coordinate. Navigating there flings the row to base-level zoom on a
+    // coordinate the arithmetic never identified, so the row holds instead, and
+    // says so.
+    if (span.end - span.start <= 0) {
+      self.setFollowUnaligned(true)
       return
     }
     state.lastErrorMessage = undefined
@@ -98,7 +118,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         ? followTransform(step.window, span, step.feat.strand === -1)
         : undefined,
     }
-    if (alreadyShowing(movingWindow, span)) {
+    if (alreadyShowing(movingWindow, span, movingMinWidthBp)) {
       return
     }
     await navToResolvedSpan(movingView, span)
@@ -149,7 +169,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       incumbentId: state.pick?.feat.id,
     })
     return {
-      work: step && { pair, step, movingWindow, seq },
+      work: step && {
+        pair,
+        step,
+        movingWindow,
+        movingMinWidthBp: movingView.minBpPerPx * movingView.width,
+        seq,
+      },
       // a level still fetching has no answer YET rather than no answer
       unaligned: !step && level.linearSyntenyDisplays.some(d => d.featureData),
       approximate: !!step && (!step.windowInsideFeat || !step.hasCigar),
