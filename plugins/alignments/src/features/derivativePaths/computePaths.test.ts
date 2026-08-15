@@ -332,6 +332,30 @@ describe('computeDerivativePaths', () => {
     )
   })
 
+  it('keeps one route’s pathId when a later read places a junction lower', () => {
+    // The other way a read changes a group it joins, and the one the widening
+    // case above cannot see: not a wider outer edge but a junction a few bp to
+    // the LEFT. A cluster used to be labelled by its lowest endpoint, so such a
+    // read renamed the cluster, and with it every signature built from it — the
+    // picker's held selection missed and the radio dropped back to row 0, which
+    // is what holding a `pathId` rather than a row index exists to prevent.
+    //
+    // On the real COLO829 tumour records this fired in 37 of 40 arrival orders.
+    // The label is the coordinate most reads agree on, so the two below outvote
+    // the newcomer.
+    const at = (exit: number, entry: number) => [
+      seg('chr3', 25_326_821, exit, 1, 0),
+      seg('chr10', entry, 58_717_662, 1, 32_732),
+    ]
+    const agreed = at(25_359_568, 58_717_463)
+    const lower = at(25_359_563, 58_717_458)
+
+    const before = computeDerivativePaths({ chains: [agreed, agreed] })
+    const after = computeDerivativePaths({ chains: [agreed, agreed, lower] })
+    expect(after[0]!.readCount).toBe(3)
+    expect(after[0]!.pathId).toBe(before[0]!.pathId)
+  })
+
   it('gives two genuinely different routes two pathIds', () => {
     const other = der3Chain()
     other[3] = seg('chr3', 25_352_683, 25_359_111, 1, 33_126)

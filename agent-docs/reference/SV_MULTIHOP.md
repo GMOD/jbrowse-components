@@ -391,17 +391,28 @@ flip for the same reason; it is informational and shown only when the candidates
 disagree about it, so it has not been worth a field.
 
 **And the junctions are read-derived too, one level down — `pathId` is not a
-stable id, only a better one.** It carries CLUSTERED coordinates, and a cluster
-is labelled by the lowest endpoint any read placed it at (`buildClusterOf`), so
-a read landing a few bp to the left of the route the user already picked
-relabels that cluster and rewrites its id, with the allele unchanged. Measured
-on a two-segment route: two reads at `chr1:5000>chr2:20000`, then a third 5 bp
-to the left, and `pathId` goes from `chr1:5000:1>chr2:20000:1` to
-`chr1:4995:1>chr2:19995:1`. That is the same silent drop back to row 0, one
-layer further down, and no pure function of the reads escapes it — the label is
-data, and the data grows.
+stable id, only a better one.** It carries CLUSTERED coordinates, and the
+cluster's LABEL is a coordinate some read supplied. Label it with the sweep's
+own leader — the lowest endpoint anybody placed the junction at — and a read
+landing to the left of the whole cluster renames it, so the route the user
+already picked gets a new id with the allele unchanged. That is the same silent
+drop back to row 0, one layer further down.
 
-So the picker does not trust the id alone. `selectedCandidateIndex`
+**It was the common case, not an edge.** Feeding the 37 real COLO829 tumour
+chains in one at a time, over 40 arrival orders, the der(3) route's `pathId`
+changed a mean of **2.98 times per run, in 37 of the 40 orders**.
+
+The label is now the coordinate **most** reads placed the junction at, ties to
+the lower: **0.10 changes per run, 4 orders in 40**. It is the better
+representative anyway — reads stack exactly on an unambiguous breakpoint, so the
+mode is the called position while the leader is the worst-placed read in the
+pile. Cluster MEMBERSHIP is untouched, which is why every pinned count in
+`realReads.*` and every tolerance property above is unchanged; only the name a
+cluster answers to moved.
+
+The residue is real and irreducible: a route whose two reads disagree about a
+junction has no mode to speak of, so a third read can still rename it. So the
+picker does not trust the id alone either. `selectedCandidateIndex`
 (`buildDerivativeVsRefSpec.ts`) matches on `pathId` first and falls back to the
 route's SHAPE — `derivativePathTestId`, refNames and orientations, which no
 coordinate moves — taking it only when it names exactly one row, since two

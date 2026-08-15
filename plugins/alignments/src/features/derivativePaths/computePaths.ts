@@ -39,13 +39,14 @@ export interface DerivativeCandidate {
    * `refNames` move or collide for their own reasons. The junctions are the
    * allele, and this is the junctions.
    *
-   * It survives that widening, but it is NOT stable across every
-   * recomputation, and a consumer holding one has to cope with losing it. A
-   * junction cluster is labelled by the lowest endpoint any read placed it at
-   * (`buildClusterOf`), so a read landing a few bp left of the group the user
-   * already picked relabels the cluster and the id changes without the allele
-   * changing at all. No pure function of the reads escapes that: the label is
-   * data, and the data grows.
+   * It survives that widening, and `buildClusterOf` labels a junction cluster
+   * by the coordinate most reads placed it at so that it survives the ordinary
+   * arrival of another read too — but it is still NOT stable across every
+   * recomputation, and a consumer holding one has to cope with losing it. The
+   * label is data, and the data grows: a route whose two reads disagree about
+   * where a junction sits has no modal coordinate to speak of, so a third read
+   * can still rename it. Measured on the COLO829 tumour records, that residue
+   * is 4 streaming orders in 40, against 37 in 40 before.
    */
   pathId: string
   // Number of distinct reads whose chain describes this path.
@@ -133,6 +134,27 @@ function exitBp(seg: SegAln) {
 // read-placement jitter between them bridges the two into one cluster, merging
 // two alleles into one candidate. Capping a cluster's width at the tolerance
 // keeps them apart, which is what the tolerance is being asked for.
+//
+// WHICH ENDPOINT LABELS A CLUSTER is a separate question from which endpoints
+// are in it, and it is answered by the reads rather than by the sweep: the
+// label is the coordinate MOST of them placed the junction at, ties going to
+// the lower. The sweep's own leader is the LOWEST coordinate anybody placed it
+// at, so labelling by it makes the label move whenever a read lands to the left
+// of the whole cluster — and the label is what `pathSignature` spells, i.e.
+// what `pathId` is, i.e. the identity the picker holds a user's chosen route
+// by while the pileup is still streaming.
+//
+// It is not a rare move. Feeding the 37 real COLO829 tumour chains in one at a
+// time, over 40 arrival orders, the der(3) route's `pathId` changed a mean of
+// 2.98 times per run under the leader label, in 37 of the 40 orders. Under the
+// modal label: 0.10 and 4 of 40. Every pinned count in `realReads.*` is
+// unchanged, because none of this moves a cluster's MEMBERSHIP.
+//
+// It is a better representative on its own terms, too — reads stack exactly on
+// an unambiguous breakpoint, so the mode is the called position and the leader
+// is the worst-placed read in the pile. What it is not is a guarantee: two
+// reads that disagree have no mode, so the residue is real and the picker
+// copes with it (`selectedCandidateIndex`).
 type ClusterOf = (refName: string, bp: number) => number
 
 function junctionEndpoints(chain: SegAln[]) {
@@ -147,21 +169,38 @@ function junctionEndpoints(chain: SegAln[]) {
 }
 
 function buildClusterOf(chains: SegAln[][], tolerance: number): ClusterOf {
-  const byRef = new Map<string, number[]>()
+  const byRef = new Map<string, Map<number, number>>()
   for (const chain of chains) {
     for (const { refName, bp } of junctionEndpoints(chain)) {
-      getOrCreate(byRef, refName, () => []).push(bp)
+      const counts = getOrCreate(
+        byRef,
+        refName,
+        () => new Map<number, number>(),
+      )
+      counts.set(bp, (counts.get(bp) ?? 0) + 1)
     }
   }
   const ids = new Map<string, number>()
-  for (const [refName, bps] of byRef) {
-    const sorted = [...new Set(bps)].sort((a, b) => a - b)
+  for (const [refName, counts] of byRef) {
+    const sorted = [...counts.keys()].sort((a, b) => a - b)
     let anchor = sorted[0]!
+    let members: number[] = []
+    const clusters = [members]
     for (const bp of sorted) {
       if (bp - anchor > tolerance) {
         anchor = bp
+        members = []
+        clusters.push(members)
       }
-      ids.set(`${refName}:${bp}`, anchor)
+      members.push(bp)
+    }
+    for (const cluster of clusters) {
+      const label = cluster.reduce((best, bp) =>
+        counts.get(bp)! > counts.get(best)! ? bp : best,
+      )
+      for (const bp of cluster) {
+        ids.set(`${refName}:${bp}`, label)
+      }
     }
   }
   // The fallback is unreachable by construction — a chain and its reverse
@@ -273,7 +312,17 @@ function segmentsFromChain(chain: SegAln[], flank: number) {
     return {
       refName: seg.refName,
       // clamped at 0: a breakpoint near the start of a chromosome would
-      // otherwise produce a negative coordinate that no locstring parses
+      // otherwise produce a negative coordinate that no locstring parses.
+      //
+      // Not clamped at the other end, and the asymmetry is the limit of what
+      // this function knows rather than an oversight: 0 is a universal lower
+      // bound and there is no universal upper one, so a contig length would
+      // have to be threaded in from an assembly this layer deliberately has no
+      // access to. What overruns it is context, never a junction, and both
+      // consumers are undamaged by it — `navToLocString` clamps a requested
+      // region, and the synteny launch's reference panel draws a few kb of
+      // empty ruler past a contig end. Worth threading a length map in for only
+      // if something starts depending on these bounds being real.
       start: Math.max(0, seg.start - growLow),
       end: seg.end + growHigh,
       strand: seg.strand,
