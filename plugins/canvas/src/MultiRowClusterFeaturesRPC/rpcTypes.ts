@@ -17,11 +17,7 @@ export interface MultiRowClusterFeaturesArgs {
   colorConfig: string | undefined
 }
 
-declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcRegistry {
-    MultiRowClusterFeatures: {
-      args: MultiRowClusterFeaturesArgs
-      return: { order: number[]; tree: string }
-    }
-  }
+export interface MultiRowClusterFeaturesResult {
+  order: number[]
+  tree: string
 }
