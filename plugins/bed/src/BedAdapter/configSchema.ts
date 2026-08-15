@@ -50,7 +50,8 @@ const BedAdapter = ConfigurationSchema(
      */
     columnNames: {
       type: 'stringArray',
-      description: 'List of column names',
+      description:
+        "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text",
       defaultValue: [],
     },
     /**

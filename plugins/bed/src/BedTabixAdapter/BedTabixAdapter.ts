@@ -1,4 +1,3 @@
-import BED from '@gmod/bed'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -15,16 +14,19 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
-import { featureData, parseNamesFromHeader } from '../util.ts'
+import { featureData, makeParser, parseNamesFromHeader } from '../util.ts'
 
 import type { BedTabixAdapterConfig } from './configSchema.ts'
+import type BED from '@gmod/bed'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdapterConfig> {
-  private parser: BED
+  // the parser needs the column names, which come from the file's header, so
+  // it cannot be built in the constructor
+  private parserP?: Promise<BED>
 
   private readonly bedGzLoc: FileLocation
 
@@ -59,7 +61,6 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       chunkCacheBudget: decompressedBytesBudget,
       bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
-    this.parser = new BED({ autoSql: readConfObject(this.config, 'autoSql') })
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -120,6 +121,21 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     return this.namesP
   }
 
+  private async getParser() {
+    this.parserP ??= this.getNames()
+      .then(columnNames =>
+        makeParser({
+          autoSql: readConfObject(this.config, 'autoSql'),
+          columnNames,
+        }),
+      )
+      .catch((e: unknown) => {
+        this.parserP = undefined
+        throw e
+      })
+    return this.parserP
+  }
+
   private async readNames() {
     const columnNames: string[] = readConfObject(this.config, 'columnNames')
     if (columnNames.length) {
@@ -140,6 +156,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       // download it under "Downloading features"
       await this.getMetadata()
       const names = await this.getNames()
+      const parser = await this.getParser()
       const scoreColumn = readConfObject(this.config, 'scoreColumn')
       const disableGeneHeuristic = readConfObject(
         this.config,
@@ -167,7 +184,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
                     start,
                     end,
                     scoreColumn,
-                    parser: this.parser,
+                    parser,
                     uniqueId: `${this.id}-${fileOffset}`,
                     names,
                     disableGeneHeuristic,

@@ -850,8 +850,8 @@ importers:
         specifier: ^11.2.1
         version: 11.2.1
       '@gmod/bed':
-        specifier: ^2.2.10
-        version: 2.2.10
+        specifier: ^2.3.0
+        version: 2.3.0
       '@gmod/tabix':
         specifier: ^3.8.1
         version: 3.8.1
@@ -4319,8 +4319,8 @@ packages:
   '@gmod/bbi@11.2.1':
     resolution: {integrity: sha512-rfbbR9mliiHSNHNl8Zf2MVowIUB44XQkLpzEk85VDxrNCdfi97jAiD1szijWuvIyh7D2zkBQMS5hKhjT47qUgw==}
 
-  '@gmod/bed@2.2.10':
-    resolution: {integrity: sha512-LpoMHyfYuT+fB9ZXTcfMOsDqROORsoNFBUTcfMegh2HSYSctYlBe515njrKgHnzeZ7ioV+5zvRDMcKtFaX9Ppg==}
+  '@gmod/bed@2.3.0':
+    resolution: {integrity: sha512-okN64rgbCIAIPgRBeFCmEJEX4Isehwcv3J95ln/bGiMazfnTarhks82cxwOueduDPttdGOSB7zcTVsmqGOLAwg==}
 
   '@gmod/bgzf-filehandle@6.6.0':
     resolution: {integrity: sha512-rCKRWfN4KXf4YYH4TeMKKq+56Viu+FX/l2B53uBIx2+ThP9yVbupFMtspteh7Z/lnP6R3vn2kfIytB0wt+bFbA==}
@@ -12210,7 +12210,7 @@ snapshots:
       '@gmod/shared-read-cache': 1.5.1
       generic-filehandle2: 2.3.1
 
-  '@gmod/bed@2.2.10': {}
+  '@gmod/bed@2.3.0': {}
 
   '@gmod/bgzf-filehandle@6.6.0':
     dependencies:

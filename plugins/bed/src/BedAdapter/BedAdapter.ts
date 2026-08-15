@@ -1,4 +1,3 @@
-import BED from '@gmod/bed'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   IntervalTree,
@@ -12,10 +11,12 @@ import {
   bedFeatureLocus,
   bucketBedLines,
   featureData,
+  makeParser,
   resolveColumnNames,
 } from '../util.ts'
 
 import type { BedAdapterConfig } from './configSchema.ts'
+import type BED from '@gmod/bed'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -23,8 +24,11 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
   protected bedFeatures?: Promise<{
     header: string
     features: Record<string, string[]>
-    parser: BED
   }>
+
+  // the parser needs the column names, which come from the header, so it can
+  // only be built once the file is loaded
+  private parserP?: Promise<BED>
 
   protected intervalTrees: Record<
     string,
@@ -38,12 +42,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
       openLocation(this.getConf('bedLocation'), this.pluginManager),
       opts,
     )
-    const { header, features } = bucketBedLines(buffer, opts?.statusCallback)
-    return {
-      header,
-      features,
-      parser: new BED({ autoSql: this.getConf('autoSql') }),
-    }
+    return bucketBedLines(buffer, opts?.statusCallback)
   }
 
   async loadData(opts: BaseOptions = {}) {
@@ -72,13 +71,26 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
     )
   }
 
+  private async getParser() {
+    this.parserP ??= this.getNames()
+      .then(columnNames =>
+        makeParser({ autoSql: this.getConf('autoSql'), columnNames }),
+      )
+      .catch((e: unknown) => {
+        this.parserP = undefined
+        throw e
+      })
+    return this.parserP
+  }
+
   private async loadFeatureIntervalTreeHelper(refName: string) {
-    const { features, parser } = await this.loadData()
+    const { features } = await this.loadData()
     const lines = features[refName]
     if (!lines) {
       return undefined
     }
     const names = await this.getNames()
+    const parser = await this.getParser()
     const scoreColumn = this.getConf('scoreColumn')
     const colRef = this.getConf('colRef')
     const colStart = this.getConf('colStart')

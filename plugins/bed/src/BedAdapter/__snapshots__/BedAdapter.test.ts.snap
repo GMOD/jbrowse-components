@@ -254,6 +254,11 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
 [
   {
     "end": 9000,
+    "field12": "EDEN",
+    "field13": "EDEN",
+    "field14": "-",
+    "field15": "-",
+    "field16": "-",
     "itemRgb": "0,0,0",
     "name": "EDEN.1",
     "refName": "ctgA",
@@ -325,6 +330,11 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
   },
   {
     "end": 9000,
+    "field12": "EDEN",
+    "field13": "EDEN",
+    "field14": "-",
+    "field15": "-",
+    "field16": "-",
     "itemRgb": "0,0,0",
     "name": "EDEN.2",
     "refName": "ctgA",
@@ -386,6 +396,11 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
   },
   {
     "end": 9000,
+    "field12": "EDEN",
+    "field13": "EDEN",
+    "field14": "-",
+    "field15": "-",
+    "field16": "-",
     "itemRgb": "0,0,0",
     "name": "EDEN.3",
     "refName": "ctgA",
@@ -456,6 +471,11 @@ exports[`adapter can fetch features from volvox-bed12.bed 1`] = `
   },
   {
     "end": 23000,
+    "field12": "rna-Apple3",
+    "field13": "rna-Apple3",
+    "field14": "-",
+    "field15": "-",
+    "field16": "-",
     "itemRgb": "0,0,0",
     "name": "rna-Apple3",
     "refName": "ctgA",

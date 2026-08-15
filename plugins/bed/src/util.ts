@@ -1,3 +1,4 @@
+import BED from '@gmod/bed'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 
 import {
@@ -15,7 +16,6 @@ import {
 } from './generateUcscTranscript.ts'
 
 import type { MinimalFeature } from './types.ts'
-import type BED from '@gmod/bed'
 import type { StatusCallback } from '@jbrowse/core/util'
 
 interface BedData {
@@ -71,49 +71,6 @@ export function bucketBedLines(
     statusCallback,
   )
   return { header: headerLines.join('\n'), features }
-}
-
-function defaultParser(fields: string[], splitLine: string[]): BedData {
-  const obj: Record<string, string> = {}
-  for (const [i, element] of splitLine.entries()) {
-    const field = fields[i]
-    // '.' is BED's "missing" marker; skip it so this path matches @gmod/bed's
-    // parseLine (which leaves such columns unset) instead of storing a literal
-    // '.' that later coerces to NaN
-    if (field && element !== '.') {
-      obj[field] = element
-    }
-  }
-
-  // heuristically take the 'slow path' only when block fields are present, as
-  // GWAS-type BED data can be very large and we avoid the extra work for it
-  if ('blockCount' in obj) {
-    const {
-      blockStarts,
-      blockCount,
-      chromStarts,
-      thickEnd,
-      thickStart,
-      blockSizes,
-      exonFrames,
-      _exonFrames,
-      ...rest
-    } = obj
-    return {
-      ...rest,
-      blockStarts: arrayify(blockStarts),
-      chromStarts: arrayify(chromStarts),
-      blockSizes: arrayify(blockSizes),
-      // exonFrames is int[blockCount] like the block lists; generateUcscTranscript
-      // reads it (or its _exonFrames alias) as number[] to derive CDS phases
-      exonFrames: arrayify(exonFrames),
-      _exonFrames: arrayify(_exonFrames),
-      thickStart: thickStart ? +thickStart : undefined,
-      thickEnd: thickEnd ? +thickEnd : undefined,
-      blockCount: blockCount ? +blockCount : undefined,
-    }
-  }
-  return obj
 }
 
 export function makeBlocks({
@@ -178,6 +135,21 @@ export async function resolveColumnNames(
   return parseNamesFromHeader(await getHeader())
 }
 
+// A header names the columns but says nothing about their types, so @gmod/bed
+// takes the types from the standard BED columns of the same name — that is what
+// splits `blockSizes` into numbers and leaves an unrecognized column a string.
+// Names win over a configured autoSql, as they did when this file parsed the
+// named case itself.
+export function makeParser({
+  autoSql,
+  columnNames,
+}: {
+  autoSql?: string
+  columnNames?: string[]
+}) {
+  return columnNames?.length ? new BED({ columnNames }) : new BED({ autoSql })
+}
+
 // Decode a BED line's locus (0-based half-open) from its column layout, so the
 // off-by-one rules live in one place instead of being re-derived at each call
 // site. `oneBased` shifts a 1-based-closed start back a base. `hasEndColumn`
@@ -208,10 +180,9 @@ export function bedFeatureLocus({
   }
 }
 
-// Two sources, so this re-normalizes as much as it parses: `defaultParser`
-// hands over the raw BED text, while `@gmod/bed`'s `parseLine` has already run
-// its own parseStrand and hands over ±1/0 — which is what `BedData.strand`'s
-// union is about. `.` and a missing column are unstranded, i.e. 0.
+// Takes either form: `@gmod/bed`'s parseLine has already run its own
+// parseStrand and hands over ±1/0, while the methylation and bedpe paths read
+// the raw column. `.` and a missing column are unstranded, i.e. 0.
 export function parseStrand(strand: string | number | undefined): number {
   if (strand === '-' || strand === -1) {
     return -1
@@ -220,14 +191,6 @@ export function parseStrand(strand: string | number | undefined): number {
     return 1
   }
   return 0
-}
-
-export function arrayify(f: string | undefined): number[] | undefined {
-  // BED block columns are conventionally comma-terminated ("200,300,200,");
-  // drop the trailing empty so we don't emit a trailing NaN
-  return f === undefined
-    ? undefined
-    : f.replace(/,$/, '').split(',').map(Number)
 }
 
 export function featureData({
@@ -248,6 +211,8 @@ export function featureData({
   parser: BED
   uniqueId: string
   scoreColumn: string
+  // only for the dialects identified by their header, not for parsing: the
+  // parser already carries the column names (see makeParser)
   names?: string[]
   disableGeneHeuristic?: boolean
 }): FeatureData {
@@ -274,9 +239,7 @@ export function featureData({
     })
   }
 
-  const data: BedData = names
-    ? defaultParser(names, splitLine)
-    : parser.parseLine(splitLine, { uniqueId })
+  const data: BedData = parser.parseLine(splitLine, { uniqueId })
   const {
     strand: strandRaw,
     score: scoreRaw,

@@ -61,7 +61,7 @@ surface.
 | Slot | Description |
 | --- | --- |
 | <span id="slot-bedlocation">**bedLocation**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }</code> | path to bed file, also allows gzipped bed |
-| <span id="slot-columnnames">**columnNames**</span><br>`stringArray` = <code>[]</code> | List of column names |
+| <span id="slot-columnnames">**columnNames**</span><br>`stringArray` = <code>[]</code> | List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text |
 | <span id="slot-scorecolumn">**scoreColumn**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The column to use as a "score" attribute |
 | <span id="slot-autosql">**autoSql**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The autoSql definition for the data fields in the file |
 | <span id="slot-colref">**colRef**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The column to use as a "refName" attribute |

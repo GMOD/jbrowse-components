@@ -3,12 +3,17 @@ import BED from '@gmod/bed'
 import { isBedMethylFeature } from './generateBedMethylFeature.ts'
 import { isRastairMethylFeature } from './generateRastairMethylFeature.ts'
 import {
-  arrayify,
   bedFeatureLocus,
   bucketBedLines,
   featureData,
+  makeParser,
   parseNamesFromHeader,
 } from './util.ts'
+
+// what the adapters do once they have resolved the file's column names
+function withNames(columnNames: string[]) {
+  return { parser: makeParser({ columnNames }), names: columnNames }
+}
 
 // a BED12 line that looks like a gene (has thickStart, blockCount, strand)
 function makeTranscriptLikeInput() {
@@ -89,6 +94,44 @@ const bigGenePredNames = [
   'geneName2',
 ]
 
+describe('makeParser', () => {
+  it('types a column named like a standard BED column, and only that', () => {
+    const parsed = makeParser({
+      columnNames: ['chrom', 'chromStart', 'chromEnd', 'blockSizes', 'pValue'],
+    }).parseLine('chr1\t1000\t2000\t200,300,\t1e-4')
+    expect(parsed.chromStart).toBe(1000)
+    expect(parsed.blockSizes).toEqual([200, 300])
+    expect(parsed.pValue).toBe('1e-4')
+  })
+
+  it('uses the column names over a configured autoSql', () => {
+    const autoSql = `table t
+"d"
+(
+string chrom;      "Chromosome"
+uint   chromStart; "Start"
+uint   chromEnd;   "End"
+string other;      "Other"
+)`
+    const parsed = makeParser({
+      autoSql,
+      columnNames: ['chrom', 'chromStart', 'chromEnd', 'mine'],
+    }).parseLine('chr1\t1000\t2000\tx')
+    expect(parsed.mine).toBe('x')
+    expect(parsed.other).toBeUndefined()
+  })
+
+  it('falls back to the standard BED schema with no column names', () => {
+    const parsed = makeParser({ columnNames: [] }).parseLine('chr1\t1000\t2000')
+    expect(parsed).toEqual({
+      chrom: 'chr1',
+      chromStart: 1000,
+      chromEnd: 2000,
+      strand: 0,
+    })
+  })
+})
+
 describe('bucketBedLines', () => {
   const enc = (s: string) => new TextEncoder().encode(s)
 
@@ -155,10 +198,9 @@ describe('featureData', () => {
       refName: 'chr1',
       start: 1000,
       end: 2000,
-      parser: new BED(),
       uniqueId: 'test-1',
       scoreColumn: '',
-      names: bigGenePredNames,
+      ...withNames(bigGenePredNames),
     })
     expect(result.type).toBe('mRNA')
     expect(result.geneName2).toBe('EDEN')
@@ -184,10 +226,9 @@ describe('featureData', () => {
       refName: 'chr1',
       start: 1000,
       end: 2000,
-      parser: new BED(),
       uniqueId: 'test-2',
       scoreColumn: '',
-      names: bigGenePredNames,
+      ...withNames(bigGenePredNames),
       disableGeneHeuristic: true,
     })
     expect(result.geneName2).toBe('EDEN')
@@ -216,10 +257,9 @@ describe('featureData', () => {
       refName: 'chr1',
       start: 1000,
       end: 2000,
-      parser: new BED(),
       uniqueId: 'test-ef',
       scoreColumn: '',
-      names: [
+      ...withNames([
         'chrom',
         'chromStart',
         'chromEnd',
@@ -233,7 +273,7 @@ describe('featureData', () => {
         'blockSizes',
         'chromStarts',
         'exonFrames',
-      ],
+      ]),
     })
     expect(result.type).toBe('mRNA')
     const phases = result.subfeatures
@@ -248,10 +288,16 @@ describe('featureData', () => {
       refName: 'chr1',
       start: 1000,
       end: 2000,
-      parser: new BED(),
       uniqueId: 'test-dot',
       scoreColumn: '',
-      names: ['chrom', 'chromStart', 'chromEnd', 'name', 'score', 'strand'],
+      ...withNames([
+        'chrom',
+        'chromStart',
+        'chromEnd',
+        'name',
+        'score',
+        'strand',
+      ]),
     })
     expect(result.score).toBeUndefined()
   })
@@ -276,28 +322,13 @@ describe('featureData', () => {
       refName: 'chr1',
       start: 1000,
       end: 2000,
-      parser: new BED(),
       uniqueId: 'test-3',
       scoreColumn: '',
-      names: bigGenePredNames,
+      ...withNames(bigGenePredNames),
     })
     // strand=0 means isUcscTranscript returns false
     expect(result.type).toBeUndefined()
     expect(result.geneName2).toBe('MYGENE')
-  })
-})
-
-describe('arrayify', () => {
-  it('returns undefined for undefined', () => {
-    expect(arrayify(undefined)).toBeUndefined()
-  })
-
-  it('drops a trailing comma rather than emitting a trailing NaN', () => {
-    expect(arrayify('200,300,200,')).toEqual([200, 300, 200])
-  })
-
-  it('parses a list without a trailing comma', () => {
-    expect(arrayify('0,400,800')).toEqual([0, 400, 800])
   })
 })
 
@@ -416,10 +447,9 @@ describe('generateRastairMethylFeature via featureData', () => {
     refName: 'chr20',
     start: 100000,
     end: 100002,
-    parser: new BED(),
     uniqueId: 'r-1',
     scoreColumn: '',
-    names: rastairNames,
+    ...withNames(rastairNames),
   })
 
   it('scales beta_est (0-1) to a 0-100 methylation percentage', () => {

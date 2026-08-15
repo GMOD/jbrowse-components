@@ -54,20 +54,20 @@ ctgA_3982_4535_3:0:0_5:0:0_2229	16	ctgA	4436	25	100M	*	0	0	AAAGAATGATTGCTTGCTTAA
 
 exports[`save track data for BED track 1`] = `
 "##gff-version 3
-ctgA	.	mRNA	1050	9000	1000	+	.	ID=test-45690;Name=EDEN.1;itemRgb=0%2C0%2C0
+ctgA	.	mRNA	1050	9000	1000	+	.	ID=test-45690;Name=EDEN.1;itemRgb=0%2C0%2C0;field12=EDEN;field13=EDEN;field14=-;field15=-;field16=-
 ctgA	.	five_prime_UTR	1050	1200	.	+	.	Parent=test-45690
 ctgA	.	CDS	1201	1500	.	+	0	Parent=test-45690
 ctgA	.	CDS	3000	3902	.	+	0	Parent=test-45690
 ctgA	.	CDS	5000	5500	.	+	0	Parent=test-45690
 ctgA	.	CDS	7000	7608	.	+	0	Parent=test-45690
 ctgA	.	three_prime_UTR	7609	9000	.	+	.	Parent=test-45690
-ctgA	.	mRNA	1050	9000	1000	+	.	ID=test-45787;Name=EDEN.2;itemRgb=0%2C0%2C0
+ctgA	.	mRNA	1050	9000	1000	+	.	ID=test-45787;Name=EDEN.2;itemRgb=0%2C0%2C0;field12=EDEN;field13=EDEN;field14=-;field15=-;field16=-
 ctgA	.	five_prime_UTR	1050	1200	.	+	.	Parent=test-45787
 ctgA	.	CDS	1201	1500	.	+	0	Parent=test-45787
 ctgA	.	CDS	5000	5500	.	+	0	Parent=test-45787
 ctgA	.	CDS	7000	7608	.	+	0	Parent=test-45787
 ctgA	.	three_prime_UTR	7609	9000	.	+	.	Parent=test-45787
-ctgA	.	mRNA	1300	9000	1000	+	.	ID=test-45875;Name=EDEN.3;itemRgb=0%2C0%2C0
+ctgA	.	mRNA	1300	9000	1000	+	.	ID=test-45875;Name=EDEN.3;itemRgb=0%2C0%2C0;field12=EDEN;field13=EDEN;field14=-;field15=-;field16=-
 ctgA	.	five_prime_UTR	1300	1500	.	+	.	Parent=test-45875
 ctgA	.	five_prime_UTR	3000	3300	.	+	.	Parent=test-45875
 ctgA	.	CDS	3301	3902	.	+	0	Parent=test-45875

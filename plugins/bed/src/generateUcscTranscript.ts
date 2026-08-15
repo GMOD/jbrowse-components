@@ -55,6 +55,12 @@ function frameToPhase(frame: number) {
   return (3 - frame) % 3
 }
 
+function parseFrames(frames: unknown) {
+  return typeof frames === 'string'
+    ? frames.replace(/,$/, '').split(',').map(Number)
+    : (frames as number[] | undefined)
+}
+
 interface UcscTranscriptInput {
   uniqueId: string
   strand: number
@@ -101,10 +107,9 @@ export function generateUcscTranscript(
   } = data
 
   // exonFrames from bigGenePred - the @gmod/bed parser returns it in genomic order.
-  // _exonFrames fallback supports BED files that use the underscore-prefixed column name.
-  const exonFrames = (rest.exonFrames ?? rest._exonFrames) as
-    | number[]
-    | undefined
+  // _exonFrames fallback supports BED files that use the underscore-prefixed column
+  // name, which the parser leaves as raw text because it is not a standard column.
+  const exonFrames = parseFrames(rest.exonFrames ?? rest._exonFrames)
 
   const feats = oldSubfeatures
     .filter(child => child.type === 'block')
