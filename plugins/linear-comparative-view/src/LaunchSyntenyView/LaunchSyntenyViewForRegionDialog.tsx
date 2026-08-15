@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
+  Button,
   CircularProgress,
   MenuItem,
   TextField,
@@ -137,6 +138,7 @@ function DiscoveryStatus({
   trackName,
   loading,
   error,
+  onRetry,
   mateCount,
   unconfigured,
   status,
@@ -144,13 +146,24 @@ function DiscoveryStatus({
   trackName: string
   loading: boolean
   error: unknown
+  onRetry: () => void
   mateCount: number | undefined
   unconfigured: string[]
   status: RpcStatus | undefined
 }) {
   const { classes } = useStyles()
   if (error) {
-    return <ErrorMessage error={error} />
+    // Retry, because what failed is a fetch over the network and cancelling out
+    // of the dialog to find the menu entry again loses the dataset, the panel
+    // order and the options chosen before the blip.
+    return (
+      <>
+        <ErrorMessage error={error} />
+        <Button size="small" onClick={onRetry}>
+          Retry
+        </Button>
+      </>
+    )
   }
   if (loading) {
     // named, not a bare spinner: this is a feature fetch over the whole
@@ -215,11 +228,12 @@ export default function LaunchSyntenyViewForRegionDialog({
     DEFAULT_WINDOW_SIZE,
   )
   const track = tracks.find(t => t.trackId === trackId)!
-  const { rows, setRows, unconfigured, error, status } = useMateDiscovery({
-    discoverMatesFor,
-    trackId,
-    region,
-  })
+  const { rows, setRows, unconfigured, error, status, retry } =
+    useMateDiscovery({
+      discoverMatesFor,
+      trackId,
+      region,
+    })
   const { anchorIndex, mates } = launchOrder(rows ?? [])
 
   return (
@@ -267,6 +281,7 @@ export default function LaunchSyntenyViewForRegionDialog({
         loading={!rows}
         status={status}
         error={error}
+        onRetry={retry}
         mateCount={rows && mates.length}
         unconfigured={unconfigured}
       />

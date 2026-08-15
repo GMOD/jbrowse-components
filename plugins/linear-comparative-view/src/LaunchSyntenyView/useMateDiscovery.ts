@@ -29,6 +29,10 @@ import type { Region, RpcStatus } from '@jbrowse/core/util'
  * `rows` is `undefined` while in flight, which is what the caller draws a
  * spinner on — distinct from `[]`, a dataset that reached nothing. `status` is
  * the RPC's own phase, for the caller to say more than "waiting".
+ *
+ * `retry` re-runs it. What fails here is a fetch over the network, and without
+ * one the only way past a blip was to cancel the dialog and find the menu entry
+ * again — losing the dataset, order and options chosen before it.
  */
 export function useMateDiscovery({
   discoverMatesFor,
@@ -43,6 +47,7 @@ export function useMateDiscovery({
   const [unconfigured, setUnconfigured] = useState<string[]>([])
   const [error, setError] = useState<unknown>()
   const [status, setStatus] = useState<RpcStatus | undefined>()
+  const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     const stopToken = createStopToken()
     let alive = true
@@ -81,7 +86,16 @@ export function useMateDiscovery({
     }
     // `region` whole rather than its assemblyName: the panels the worker
     // resolves are cut from all four of its fields. Stable for the dialog's life
-    // for the same reason `discoverMatesFor` is
-  }, [discoverMatesFor, trackId, region])
-  return { rows, setRows, unconfigured, error, status }
+    // for the same reason `discoverMatesFor` is; `attempt` is what retry moves
+  }, [discoverMatesFor, trackId, region, attempt])
+  return {
+    rows,
+    setRows,
+    unconfigured,
+    error,
+    status,
+    retry: () => {
+      setAttempt(n => n + 1)
+    },
+  }
 }

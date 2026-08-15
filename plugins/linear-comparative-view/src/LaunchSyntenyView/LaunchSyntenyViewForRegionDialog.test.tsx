@@ -129,6 +129,22 @@ test('a failed discovery surfaces rather than spinning forever', async () => {
   expect(await screen.findByText(/tabix query failed/)).toBeTruthy()
 })
 
+// What failed is a fetch over the network. Without a retry the only way past a
+// blip was to cancel out and find the menu entry again, losing the dataset, the
+// panel order and the options chosen before it.
+test('a failed discovery can be retried in place', async () => {
+  let attempt = 0
+  renderDialog(() => {
+    attempt += 1
+    return attempt === 1
+      ? Promise.reject(new Error('tabix query failed'))
+      : Promise.resolve(mates('volvox_ins'))
+  })
+  fireEvent.click(await screen.findByText('Retry'))
+  expect(await screen.findByLabelText('volvox_ins')).toBeTruthy()
+  expect(screen.queryByText(/tabix query failed/)).toBeNull()
+})
+
 // The anchor is a row so it can be moved through the stack, but it is where the
 // coordinates came from, so it cannot be dropped from it. Said with a mark
 // rather than a disabled checkbox: `disabled` greyed out the row every other row
