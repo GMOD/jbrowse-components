@@ -32,16 +32,13 @@ Keeping it honest:
 **Status:** Mitigated (view-level), root cause is WebGL2 itself.
 
 **Budget contexts as one per open GPU track.** One display owns one backend
-canvas and `WebGL2Hal` takes its own context with no pooling, so the count to
-watch is open GPU tracks. **The ceiling is 16** (Chrome 151, measured
-2026-08-05); past it, eviction and re-acquisition cascade and wedge the main
-thread rather than degrading. **A single ordinary view reaches it** — 17 GPU
-tracks on one LGV, nothing synthetic. That retires the older reading of this
-entry, which bracketed the cascade "between 20 and 72" from a 24-view harness
-and called the realistic shape unmeasured.
+canvas and `WebGL2Hal` takes its own context with no pooling. **The ceiling is
+16** (Chrome 151); past it, eviction and re-acquisition cascade and wedge the
+main thread rather than degrading. **A single ordinary view reaches it** — 17 GPU
+tracks on one LGV, nothing synthetic.
 
-[GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) owns this subject and is the
-only place the numbers should be edited: the ceiling table on both drivers, the
+[GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) owns this subject and is the only
+place the numbers should be edited: the ceiling table on both drivers, the
 software-vs-hardware cost crossover, the harness, and the four fixes already
 measured and eliminated.
 
@@ -49,9 +46,9 @@ Chromosomes are free: a whole-genome view of one track is still one canvas, with
 one GPU buffer per `displayedRegionIndex` and one scissored draw per render
 block. **This ceiling is a primary motivation for targeting WebGPU**, which
 shares one device across displays (next entry) and so has no per-canvas cap.
-(Free *here*, on the canvas and buffer axis this entry is about. The view's own
-block and coordinate math is linear in the region count and is not — see
-["The region walk is linear"](#the-region-walk-is-linear-and-costs-two-different-ways-at-the-two-ends-of-the-zoom).)
+Free on the canvas and buffer axis only — the view's own block and coordinate
+math is linear in the region count, and is
+["The region walk is linear"](#the-region-walk-is-linear-and-costs-two-different-ways-at-the-two-ends-of-the-zoom).
 
 Mitigations in place, both bounding rather than fixing:
 
@@ -71,11 +68,10 @@ Still exposed: tracks inside a mounted view are not virtualized, so one LGV with
 17 GPU tracks allocates 17 contexts and crosses the ceiling.
 
 **Retire when** WebGL2 retires (RFC-001 §13a) or track-level mount/release lands.
-The measurement that used to gate both is done — the ceiling above — and it says
-track-level mount/release is worth building. The other unbuilt interim moves are
-dropping a display to Canvas2D after K context losses, so the failure is one slow
-track rather than a wedged page, and picking Canvas2D up front when the renderer
-string says software.
+The measurement that gated both is done, and it says track-level mount/release is
+worth building. Two unbuilt interim moves: drop a display to Canvas2D after K
+context losses, so the failure is one slow track rather than a wedged page, and
+pick Canvas2D up front when the renderer string says software.
 
 ### WebGPU shares one device across every display
 
@@ -135,22 +131,20 @@ used and that effective dpr is threaded through `clipBlock` instead of the free
 
 **The dpr cap is what makes it this hard to reach.** `getDpr()` returns
 `min(devicePixelRatio, MAX_DPR)` with `MAX_DPR = 2`, so an axis has to reach 4096
-CSS px to clamp, not 2731 as it would at dpr=3. Retina is the target and is
-unaffected; the cap only bites above it, where cost scales with dpr² for a
-difference essentially nobody resolves. Capping *inside* `getDpr` is what keeps
-it safe — every consumer reads the same capped number, so the backing store, the
-rects derived from it, and the variant-matrix shader's `devicePixelRatio` uniform
-cannot disagree. **A call site that reads the global `devicePixelRatio` directly
-re-opens exactly that split**, which is why the one that did
-(`GpuVariantMatrixRenderer`) was routed through `getDpr`. Two places diverge on
-purpose and say so: `createSvgRasterCanvas` pins 2x because export goes to a file
-rather than a screen, and the analytics / error-report paths read the raw global
-because they are reporting the device, not drawing on it.
+CSS px to clamp, not 2731 as it would at dpr=3. Retina is unaffected; the cap
+only bites above it, where cost scales with dpr² for a difference essentially
+nobody resolves. Capping *inside* `getDpr` is what keeps it safe — every consumer
+reads the same capped number, so the backing store, the rects derived from it and
+the variant-matrix shader's `devicePixelRatio` uniform cannot disagree. **A call
+site reading the global `devicePixelRatio` directly re-opens that split.** Two
+places diverge on purpose: `createSvgRasterCanvas` pins 2x because export goes to
+a file rather than a screen, and the analytics / error-report paths read the raw
+global because they are reporting the device, not drawing on it.
 
 ### A region arrival draws twice wherever the render autorun observes the data
 
-**Status:** Accepted, and as of 2026-07-25 measured rather than assumed. Removing
-the redundant draws changes nothing a user can perceive.
+**Status:** Accepted, and measured rather than assumed. Removing the redundant
+draws changes nothing a user can perceive.
 
 **Never rely on the upload autorun running before the render autorun.** Both can
 observe the same arrival — upload through the key set, render through any read
@@ -197,16 +191,15 @@ Two things that already coalesce correctly, so don't "fix" them:
   so a gesture commits at most once per frame.
 
 **Deferring the `renderTick` bump does not help, and the arrival draw is the
-stale one.** The obvious-looking fix is a `renderSoon()` (dirty flag flushed on
-rAF) replacing the `renderNow()` in `installPerRegionLifecycle`. It cannot work:
-the render autorun is scheduled by the `rpcDataMap` write itself, and it runs
-*before* the upload autorun, so deferring the tick defers only the correct,
-post-upload draw and leaves the pre-upload one as the single draw in that frame.
-Measured with a prototype host whose `renderNow` was frame-coalesced: 4 arrivals
-gave 9 renders, exactly the un-deferred count.
+stale one.** The obvious fix — a `renderSoon()` replacing the `renderNow()` in
+`installPerRegionLifecycle` — cannot work: the render autorun is scheduled by the
+`rpcDataMap` write itself and runs *before* the upload autorun, so deferring the
+tick defers only the correct, post-upload draw and leaves the pre-upload one as
+the single draw in that frame. Measured with a frame-coalesced `renderNow`: 4
+arrivals gave 9 renders, exactly the un-deferred count.
 
 **A scheduler on the render autorun works, and buys nothing in the app.**
-`autorun(fn, { scheduler })` does coalesce every case. A/B on
+`autorun(fn, { scheduler })` coalesces every case. A/B on
 `tcga/cohort_cnv_genome` (24 whole-genome regions into
 `LinearMultiRowFeatureDisplay`), headed on a real GPU, 3 runs, median:
 
@@ -217,38 +210,33 @@ gave 9 renders, exactly the un-deferred count.
 | microtask | 26 | 11.2s | 18 | 176ms | 1.3s |
 | `setTimeout(0)` | 25 | 11.7s | 18 | 174ms | 1.4s |
 
-Note 24 regions cost **72** draws, not the 48 the double-draw alone predicts, so
-there is more redundancy here than this entry describes. Removing two thirds of
-it still moves nothing: every column is inside baseline run-to-run spread
-(11.1s to 12.7s to-ready). The draws are not on the critical path. Fetch, parse
-and clustering are, and the long tasks are JS. A microtask scheduler scores the
-same as rAF, which says most of the redundancy is same-task.
+24 regions cost **72** draws, not the 48 the double-draw alone predicts, so there
+is more redundancy here than this entry describes. Removing two thirds of it
+moves nothing: every column is inside baseline run-to-run spread (11.1s to 12.7s
+to-ready). The draws are not on the critical path — fetch, parse and clustering
+are, and the long tasks are JS. A microtask scheduler scores the same as rAF,
+which says most of the redundancy is same-task.
 
 Three costs, for whoever revisits this:
 
 - **rAF makes painting depend on frame delivery.** In one headless run the rAF
   arm recorded **zero** draws and never became ready inside 900s, because a
-  backgrounded tab gets no frames (the harness needed `page.bringToFront()`).
-  Synchronous rendering has no such dependency. A microtask or timeout scheduler
-  avoids it.
+  backgrounded tab gets no frames. Synchronous rendering has no such dependency;
+  a microtask or timeout scheduler avoids it.
 - **The test contract.** Forcing a scheduler on across render-core, wiggle,
-  canvas, gwas and maf fails **11 tests in 3 files** (`RenderLifecycleMixin.test.ts`,
-  `installPerRegionLifecycle.test.ts`,
-  `plugins/canvas/.../renderLifecycleGate.test.ts`), all asserting a synchronous
+  canvas, gwas and maf fails **11 tests in 3 files**, all asserting a synchronous
   draw. Smaller than feared, but they would need an explicit flush helper, and
   anything on jest fake timers stalls because rAF is mocked.
 - **Software raster is the one place it pays, and is not the app.** The same A/B
-  under SwiftShader went from 208.7s to 43.2s. That is the figure pipeline, not a
-  user, and its real answer is the `--angle-gl` flag already on
-  `website/scripts/profile-spec.ts` (background in
-  [SCREENSHOT_PERF.md](SCREENSHOT_PERF.md)).
+  under SwiftShader went 208.7s to 43.2s. That is the figure pipeline, whose real
+  answer is the `--angle-gl` flag already on `website/scripts/profile-spec.ts`
+  ([SCREENSHOT_PERF.md](SCREENSHOT_PERF.md)).
 
-**Don't chase this per display.** Removing one display's read is not a fix: the
-dependency is legitimate wherever render geometry derives from fetched data
-(alignments' stacked bands, wiggle's autoscale domain), and eliminating it means
-either duplicating the derivation outside MobX or pushing a data-arrival concept
-down into backends whose contract is "did a draw call run". Both cost more than
-one wasted submit per arrival.
+**Don't chase this per display.** The dependency is legitimate wherever render
+geometry derives from fetched data (alignments' stacked bands, wiggle's autoscale
+domain), so removing one display's read means either duplicating the derivation
+outside MobX or pushing a data-arrival concept down into backends whose contract
+is "did a draw call run". Both cost more than one wasted submit per arrival.
 
 **Retire when** a profile shows GPU submits on the critical path of a real
 interaction, which the numbers above say they are not today. The mechanism is
@@ -309,7 +297,7 @@ and volume as the max-in-flight cap it has to have anyway.
 
 ### A failed fetch is not retried automatically, and will not be
 
-**Status:** Accepted. Proposed 2026-08-14 and declined the same day.
+**Status:** Accepted. Proposed and declined the same day.
 
 `RemoteFileWithRangeCache.fetchRange` throws on the first non-2xx, and nothing
 anywhere retries it — not this class, not `generic-filehandle2`, not an adapter.
@@ -319,32 +307,29 @@ transient 5xx, 429 or connection reset fails the whole track.
 Automatic retry with backoff was proposed for exactly that and **declined: the
 client does not re-issue a request the user did not ask for.** The recovery is a
 legible error plus the Retry button the display error chrome already carries
-(`DisplayErrorBar` → `model.reload()`, [DISPLAYCHROME.md](DISPLAYCHROME.md)
-§"The retry contract"). A retry that fires on its own hides the failure it is
-recovering from — a server rate-limiting the page, a CORS header nobody noticed
-was missing, a file half-uploaded — behind a delay, and the person who could
-have fixed it never learns it happened.
+([DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract"). A retry that fires
+on its own hides the failure it is recovering from — a server rate-limiting the
+page, a missing CORS header, a file half-uploaded — behind a delay, and the
+person who could have fixed it never learns it happened.
 
-That puts the whole weight on the message, and that is where the work went
-instead. Both halves of it have landed in `RemoteFileWithRangeCache`:
+That puts the whole weight on the message, which is where the work went. Both
+halves landed in `RemoteFileWithRangeCache`:
 
 - **A network-level rejection is rewritten.** A CORS denial, a mixed-content
   block, a DNS failure and an offline browser all reject `fetch` with the same
-  bare `TypeError`, and it now becomes the URL, the byte range, and the triage —
-  offline and mixed content where the page can tell them apart, otherwise the
-  two CORS headers to add. The other messages the class throws carry the same
-  treatment: the 416, the "server ignored the Range header" hint, 401/403 at the
-  credential, 404 at the index beside the data file, `stat`'s CORS error naming
-  `Access-Control-Expose-Headers: Content-Range`.
-- **A stalled connection becomes an error at all.** It used to produce none
-  ever, and every readiness signal downstream was *correct* to keep waiting,
-  because a fetch really was in flight — so the user got a spinner that never
-  resolved and no Retry to press, since the chrome raises one from an error and
-  there was none. `RESPONSE_TIMEOUT_MS` bounds the wait for a **response**, not
-  for the bytes: it is cleared when the headers arrive, so a 6.5 MiB coalesced
-  read over a slow link is never cut off mid-download. It sits on the shared
-  request inside the chunk de-duplication and composes with the caller's signal
-  rather than replacing it, or cancellation would stop reaching the socket.
+  bare `TypeError`; it now becomes the URL, the byte range, and the triage —
+  offline and mixed content where the page can tell them apart, otherwise the two
+  CORS headers to add. Every other message the class throws carries the same
+  treatment.
+- **A stalled connection becomes an error at all.** It used to produce none, and
+  every readiness signal downstream was *correct* to keep waiting, because a
+  fetch really was in flight — so the user got a spinner that never resolved and
+  no Retry to press, the chrome raising one only from an error.
+  `RESPONSE_TIMEOUT_MS` bounds the wait for a **response**, not for the bytes: it
+  clears when the headers arrive, so a 6.5 MiB coalesced read over a slow link is
+  never cut off mid-download. It sits on the shared request inside the chunk
+  de-duplication and composes with the caller's signal rather than replacing it,
+  or cancellation would stop reaching the socket.
 
 **Retire when** never. Document, don't fix — and if it comes up again, the
 question to ask first is whether the error the user saw told them what to do,
@@ -410,19 +395,17 @@ non-monotone in span in a way the byte axis is not. It is what remains of the
 `densityGateActive` still carries the floor while `gateActive` doesn't.
 
 **Measured, and the floor costs nothing today.** A scan of all 60 indexed files
-in this repo (2026-08-06) found exactly two that would banner below 20kb —
-`dog10k_cyp1a2_cohort_cn.bed.gz` (7,511 features in a 20kb window, still 1,987 at
-500bp) and `dog10k_slc28a3_cohort_cn.bed.gz` — and both are
+here found exactly two that would banner below 20kb, both
 `LinearMultiRowFeatureDisplay` tracks, which set `densityGateEnabled: false`. The
 densest track with the axis on peaks at 590 features per 20kb and falls
-monotonically from there. So removing the floor would buy nothing measurable, and
-keeping it hides nothing measurable.
+monotonically. So removing the floor would buy nothing measurable, and keeping it
+hides nothing measurable.
 
 Note the shape of those two files: N samples over the same interval, so the
 feature count doesn't fall with span at all. That is the density counterpart of
 the block-quantized byte case, and the argument that retired the *byte* floor
 (measure at the span being judged) has no counterpart here — there is no cheap
-index read that answers "how many features are in this window".
+index read answering "how many features are in this window".
 
 **Retire when** the density figure is measured at the span being judged rather
 than extrapolated, or a file with the axis on is found that banners below the
@@ -469,15 +452,14 @@ rounds; trust the ratios, not the absolutes, which drift on a shared box:
   skip and the index measures 1.0x. The cost was per touched region, and it was
   work thrown away: below `minimumBlockWidth` a region becomes an `ElidedBlock`,
   and `BlockSet.push` merges it into its predecessor keeping only the *first*
-  sub-block's identity — so the template-literal key and the two object literals
-  were built and discarded for every region in an elided run but its first.
-  `BlockSet.growElidedRun` now widens the run from a width the loop already has,
-  and `calculateDynamicBlocks` calls it instead of building a block `push` would
-  throw away. Output-identical, and 4.5-5.6x. Two edges keep it that way and are
-  the ones to preserve: the first region can never take the skip, because
-  nothing has been pushed for the run to merge into, so its leading padding
-  block survives; the last region is held out of it, because it may still owe a
-  trailing padding block keyed off its own key.
+  sub-block's identity, so the key and two object literals were built and
+  discarded for every region in an elided run but its first.
+  `BlockSet.growElidedRun` widens the run from a width the loop already has, and
+  `calculateDynamicBlocks` calls it instead. Output-identical, 4.5-5.6x. Two
+  edges keep it that way: the first region can never take the skip, nothing
+  having been pushed for the run to merge into, so its leading padding block
+  survives; the last is held out because it may still owe a trailing padding
+  block keyed off its own key.
 - **Zoomed in** — a 100 kb window on the last scaffold — the walk is the whole
   cost, and a cumulative-bp prefix array rebuilt per `displayedRegions` change
   (0.003 ms at 640, 1.1 ms at 200k, once, not per frame) plus a binary search
@@ -513,31 +495,27 @@ worse rather than better.
 
 ADR-069's rule is that a tree React may still be rendering is detached, not
 destroyed. `MultipleViews.ts`'s `takeOut` is where a view goes out, and undo/redo
-now goes through it too: `TimeTraveller` calls `takeOutViewsMissingFrom` before
-its `applySnapshot`, inside the `skipNextUndoState` bracket so the detach is not
-recorded as an undoable step of its own. It needed to, because a whole-session
-apply reconciles by `ElementId` and **destroys whatever the target snapshot
-lacks, synchronously, inside the action**, with the components still mounted.
-Measured on a redo across a closed view, with the restored view repainted first:
-4 liveliness reads of its display and `getContainingView`'s throwing branch
-actually running, down to none.
+goes through it too: `TimeTraveller` calls `takeOutViewsMissingFrom` before its
+`applySnapshot`, inside the `skipNextUndoState` bracket so the detach is not
+recorded as an undoable step. It needed to, because a whole-session apply
+reconciles by `ElementId` and **destroys whatever the target snapshot lacks,
+synchronously, inside the action**, with the components still mounted. Measured
+on a redo across a closed view: 4 liveliness reads and `getContainingView`'s
+throwing branch actually running, down to none.
 
 **Below the view, nodes die where they stand, and that is chosen.**
 `hideTrackGeneric` is a plain `tracks.remove`, so closing a track destroys it and
-its displays in place — 5 liveliness reads on an open VCF track, the same shape
-as, and one more than, the undo of the same change produced. Detaching them
-instead would trade a warning for a throw: a **detached display is a live root**,
-and `getContainingView` walks parents and throws where a *dead* node only warns.
-At or above the view is the only place that walk still lands, which is what
-scopes the rule.
+its displays in place. Detaching them instead would trade a warning for a throw:
+a **detached display is a live root**, and `getContainingView` walks parents and
+throws where a *dead* node only warns. At or above the view is the only place
+that walk still lands, which is what scopes the rule.
 
-So the standing cost is a class of teardown that is loud and, measured, not
-fatal: every read is of a scalar or a reference (`configuration`, `type`) on a
-display React unmounts in the same update, and the throw that does occur is
-stored in a computed nothing reads again. `undoTeardown.test.tsx` pins both
-halves — zero for the view, non-zero but never throwing for the track — so an
-attempt to "apply ADR-069" below a view fails there rather than in a figure
-sweep.
+So the standing cost is a teardown that is loud and, measured, not fatal: every
+read is of a scalar or a reference on a display React unmounts in the same
+update, and the throw that does occur is stored in a computed nothing reads
+again. `undoTeardown.test.tsx` pins both halves — zero for the view, non-zero but
+never throwing for the track — so an attempt to "apply ADR-069" below a view
+fails there rather than in a figure sweep.
 
 `takeOutViewsMissingFrom` walks `session.views`, so a view nested in another (a
 breakpoint-split view's sub-views) is still reconciled to death. No user action

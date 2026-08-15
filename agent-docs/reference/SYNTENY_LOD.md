@@ -5,9 +5,8 @@ description: The two PIF tiers (fine/coarse), the profiled cost model, and why r
 
 # Synteny level-of-detail (PIF tiers) and the density problem
 
-Reference for the linear-comparative-view / dotplot LOD system and where its
-remaining scaling limit is. Read before touching `make-pif`, the indexed PIF
-adapters, or the synteny fetch RPC.
+The linear-comparative-view / dotplot LOD system, and where its remaining scaling
+limit is.
 
 ## The two PIF tiers
 
@@ -127,13 +126,10 @@ is only marginal. The bottleneck there is N.
 
 Synthetic human-vs-mouse-scale PIF (short blocks over 20 chromosome-scale
 contigs), whole-genome fetch of one perspective, phases mirroring
-`LinearSyntenyRPC/executeSyntenyFeaturesAndPositions`:
-
-A first profile lumped fetch + parse + construct into one bucket (~78-87% at
-100k-300k). A follow-up broke that bucket apart with real tabix reads (300k
-rows, whole-genome one perspective), because whether read-time binning is worth
-building hinges on the split — binning removes construction and everything
-downstream, but it must still **read and parse every line to bin it**:
+`LinearSyntenyRPC/executeSyntenyFeaturesAndPositions`. Whether read-time binning
+is worth building hinges on where the split falls — binning removes construction
+and everything downstream, but must still **read and parse every line to bin
+it**:
 
 | phase                                   | 300k ms | share |
 | --------------------------------------- | ------- | ----- |
@@ -144,12 +140,12 @@ downstream, but it must still **read and parse every line to bin it**:
 | **unavoidable at read-time (fetch+parse)** | **835** | **66%** |
 | **removable by binning (construct+downstream)** | **427** | **34%** |
 
-So the earlier "the cost is building all N features" framing is wrong: only ~1/3
-is feature construction + downstream. The dominant ~2/3 is **reading and parsing
-N lines**, which read-time binning cannot touch. N is genuinely unbounded at
-whole-genome zoom: `syntenyFetchRegions` buffers by `panBufferPx·bpPerPx`, which
-at `bpPerPx≈10000` exceeds the region, collapsing the fetch window to the whole
-genome. Fetch scoping does not rescue coarse zoom.
+So "the cost is building all N features" is wrong: only ~1/3 is construction plus
+downstream. The dominant ~2/3 is **reading and parsing N lines**, which read-time
+binning cannot touch. N is genuinely unbounded at whole-genome zoom:
+`syntenyFetchRegions` buffers by `panBufferPx·bpPerPx`, which at `bpPerPx≈10000`
+exceeds the region and collapses the fetch window to the whole genome. Fetch
+scoping does not rescue coarse zoom.
 
 To reproduce: build a PIF of N short alignments (fine tier `t`/`q` lines, one
 indel CIGAR each), `sort -k1,1 -k3,3n | bgzip` + `tabix -s1 -b3 -e4 -0`, open a
@@ -177,19 +173,16 @@ Two things reduce cost, at different ceilings:
 - **Worker, post-adapter** (bin the `Feature[]` the RPC gets back) — too late; N
   is already read, parsed, and built. Not worth it.
 
-Note the visual hairball is already handled without binning: the
-`fillCoverage` shader floor (sub-pixel ribbons fade to true proportional
-coverage) and the `auto` fade-thin mode (coverage-fraction density signal). So
-binning is a **compute/instance-count** optimization, not a rendering fix — weigh
-it against that ~1.5× read-time ceiling before adding config + accumulation
-complexity.
+The visual hairball is already handled without binning: the `fillCoverage` shader
+floor and the `auto` fade-thin mode. So binning is a **compute/instance-count**
+optimization, not a rendering fix — weigh it against that ~1.5× read-time ceiling
+before adding config and accumulation complexity.
 
-Recommended binning scheme (applies to whichever layer does it): fixed
-**absolute-genomic** grid (query-bin × target-bin),
-gated on zoomed-out LOD + a per-window count cap; emit one aggregate quad per
-occupied cell with mean identity. Absolute bins are window-stable and preserve
-the diagonal synteny signal. This **composes with** the coarse tier (read coarse
-cheaply, then bin) — coarse kills per-alignment cost, binning kills count.
+Recommended scheme, for whichever layer does it: a fixed **absolute-genomic**
+grid (query-bin × target-bin), gated on zoomed-out LOD plus a per-window count
+cap, emitting one aggregate quad per occupied cell with mean identity. Absolute
+bins are window-stable and preserve the diagonal synteny signal. It **composes
+with** the coarse tier — coarse kills per-alignment cost, binning kills count.
 
 Do NOT reintroduce runtime collinear chaining: a `maxGap`-heuristic
 `chainCollinearAlignments` was tried and removed (unreliable, zoom-dependent).
@@ -204,8 +197,7 @@ case.
 Coarse-by-default doubles PIF record count. Whether that buys anything is
 entirely a function of **CIGAR weight per row**, because a coarse row passes
 through every optional tag and drops only the CIGAR. So the tier's value is
-`coarse_bytes / fine_bytes` at the zoom it is served, and that ratio was
-measured rather than guessed:
+`coarse_bytes / fine_bytes` at the zoom it is served:
 
 | block len | CIGAR bytes/row | coarse/fine bytes | file vs `--no-coarse` |
 | --------- | --------------- | ----------------- | --------------------- |
