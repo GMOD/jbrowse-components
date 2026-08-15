@@ -3,6 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { setNumberGrouping } from '@jbrowse/core/util'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
+import { enableStaticRendering } from 'mobx-react'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
@@ -99,6 +100,15 @@ export async function initializeWorker(
   // a worker error's stack is captured here, not on the main thread, so the
   // frame limit has to be raised in this scope to deepen it
   setStackTraceLimit()
+
+  // Workers fetch data; rendering happens on the main thread, and no RPC method
+  // renders React. Kept as a guard: if plugin code ever pulls an observer into
+  // this realm, static rendering keeps it from setting up reactions that would
+  // leak here. Here rather than in each product's worker entry, where four
+  // copies meant a fifth product would silently ship without it — the plugins
+  // that could trip it are not loaded until getPluginManager below, so this is
+  // still ahead of anything that observes.
+  enableStaticRendering(true)
 
   // Add global error handler to catch uncaught errors in the worker
   self.addEventListener('error', event => {
