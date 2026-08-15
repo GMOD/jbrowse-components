@@ -174,6 +174,45 @@ describe('nextJunctionFrom', () => {
     expect(hop?.junction.id).toBe('r_13_0')
   })
 
+  it('drops the way back whichever end of the arrival junction it came in on', () => {
+    // The same duplicate as below, on a hop taken through the arrival
+    // junction's MATE end rather than its first — which is the ordinary case
+    // whenever a callset files the mate spelling of a pair first.
+    //
+    // The two ends of one junction are `tolerance` apart at most from the
+    // coordinate the previous hop recorded as a stop, so a duplicate can be
+    // twice that from the stop and still be the same way back. This one is:
+    // 1.6 kb from the recorded chr3 stop, so `visited` does not see it, and
+    // 833 bp from the end of the junction the walk actually crossed. Compared
+    // against the arrival record's FIRST end — which on this hop is the chr10
+    // stop itself — nothing matched, and the walk turned round and added a
+    // panel 800 bp from one it already had.
+    const arrivedBy = j(
+      'r_12_0',
+      'r_12_1',
+      'chr10',
+      58_717_463,
+      'chr3',
+      25_359_568,
+    )
+    const duplicate = j(
+      'other_0',
+      'other_1',
+      'chr10',
+      58_717_470,
+      'chr3',
+      25_360_401,
+    )
+    expect(
+      nextJunctionFrom({
+        stop,
+        arrivedBy,
+        candidates: [duplicate],
+        visited: [{ refName: 'chr3', pos: 25_358_800 }, stop],
+      }),
+    ).toBeUndefined()
+  })
+
   it('drops a second copy of the arrival junction with unrelated ids', () => {
     // Two callers merged, or one that writes no MATEID: the same junction is
     // present again under names the arrival ids cannot match, and only its

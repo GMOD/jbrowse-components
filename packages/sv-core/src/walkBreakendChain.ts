@@ -110,6 +110,31 @@ function sameLocus(
 }
 
 /**
+ * The locus a stop was reached FROM: the end of the arrival junction that is not
+ * this stop.
+ *
+ * A junction is reachable from either end, so which of its two ends the walk
+ * came in on is a fact about the HOP and not about the record — and reading it
+ * off the record is where this went wrong. It compared against `arrivedBy`'s
+ * first end unconditionally, so on a hop taken through the junction's mate end
+ * that first end IS the current stop, and a guard meant to refuse the way back
+ * asked instead whether a candidate looped onto the stop it left. It therefore
+ * worked in one traversal direction and silently did nothing in the other, and
+ * the direction is decided by which spelling of a reciprocal pair the callset
+ * happened to file first.
+ */
+function arrivedFrom(
+  arrivedBy: Junction,
+  stop: { refName: string; pos: number },
+  tolerance: number,
+) {
+  const mateEnd = { refName: arrivedBy.mateRefName, pos: arrivedBy.matePos }
+  return sameLocus(arrivedBy, stop, tolerance)
+    ? mateEnd
+    : { refName: arrivedBy.refName, pos: arrivedBy.pos }
+}
+
+/**
  * Which junction the chain leaves this stop by, given every junction with an end
  * at it. Pure, and the whole of the walk's judgment.
  *
@@ -165,6 +190,17 @@ export function nextJunctionFrom({
   const arrivalIds = new Set(
     [arrivedBy?.id, arrivedBy?.mateId].filter(id => id !== undefined),
   )
+  // Where this stop was reached from, which is the one place at it that is
+  // certainly not a way onward. `visited` holds it too, to within the tolerance
+  // of whatever coordinate the previous hop recorded — so this only earns its
+  // place for a candidate that sits past that: a callset that files one junction
+  // twice at coordinates a kilobase apart, which is what merging two callers
+  // gives. Anchoring on the junction the walk actually crossed is the answer
+  // that does not depend on how far the recorded stop drifted from it.
+  const cameFrom =
+    arrivedBy === undefined
+      ? undefined
+      : arrivedFrom(arrivedBy, stop, tolerance)
   const fresh = onward.filter(
     o =>
       // not the record we arrived on, nor its own mate record: a reciprocal
@@ -172,7 +208,7 @@ export function nextJunctionFrom({
       (o.junction.id === undefined || !arrivalIds.has(o.junction.id)) &&
       // and not a second copy of the arrival junction filed under other ids,
       // which is what a callset with no MATEID gives instead
-      (arrivedBy === undefined || !sameLocus(o.next, arrivedBy, tolerance)),
+      (cameFrom === undefined || !sameLocus(o.next, cameFrom, tolerance)),
   )
   const open = fresh.filter(
     o => !visited.some(v => sameLocus(o.next, v, tolerance)),

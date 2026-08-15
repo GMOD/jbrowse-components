@@ -250,6 +250,25 @@ sidesteps it, but a mate refName handed to consumers as the caller wrote it
 (`CHR10` against a `chr10` CHROM) means anything that groups on it has to
 normalize — the same bug this file had, one layer up.
 
+**And the walk's own "don't go back the way you came" guard worked in one
+direction only.** A junction is reachable from either end, so which end the walk
+came in on is a fact about the HOP; `nextJunctionFrom` read it off the RECORD
+instead, comparing every candidate against `arrivedBy`'s first end. On a hop
+taken through the junction's mate end that first end IS the current stop, so the
+guard asked whether a candidate looped back onto the stop it was leaving — a
+question nothing answers yes to — and did nothing at all. Which direction a
+given hop takes is decided by which spelling of a reciprocal pair the callset
+filed first, so the guard was on or off per callset with nothing saying which.
+
+`visited` hides it in the ordinary case, since the previous stop is on the list.
+What it does not cover is the case the guard names: one junction filed twice at
+coordinates further apart than `BREAKEND_COLOCATION_BP`, which merging two
+callers gives. The recorded stop and the junction's own end are up to the
+tolerance apart, so a duplicate can be twice that from the stop and still be the
+way back — and the walk turned round onto it, adding a panel a kilobase from one
+it already had. Anchoring on the junction actually crossed (`arrivedFrom`) is
+the reading that does not depend on how far the recorded stop drifted.
+
 ## HG008-T, the reconstruction's second dataset
 
 The picker is checked against a second cancer on different chemistry, in
