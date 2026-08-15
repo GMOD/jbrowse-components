@@ -100,13 +100,24 @@ export function minBodyHeight(
 // it appears in — the same basis as maxBottom). Non-zero means the display is
 // showing the user strictly less than the data it holds, which fit mode in
 // particular must own up to rather than present as a complete picture.
+//
+// `measureIds` narrows it the way it narrows `maxBottom` and `minBodyHeight`, and
+// fit mode passes the same on-screen set to all three. The count is surfaced as
+// "N not shown (past the layout row limit; filter or zoom in)", and counting the
+// fetch buffer put features half a viewport away — which panning, not filtering,
+// reveals — into that sentence. An unplaced feature still carries its bp span, so
+// membership is answerable even though its row is not.
 export function countTruncatedFeatures(
   map: ReadonlyMap<number, FeatureDataResult>,
+  measureIds?: ReadonlySet<string>,
 ) {
   let n = 0
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
-      if (!isPlacedRow(item.topPx)) {
+      if (
+        !isPlacedRow(item.topPx) &&
+        (!measureIds || measureIds.has(item.featureId))
+      ) {
         n++
       }
     }
@@ -887,9 +898,10 @@ export function scaleLaidOutData(
       // labelFontPx 0: the label rows were already spent when this layout was
       // committed (layoutRefGroups), so they are part of the Y values being
       // scaled here and must not be added a second time. Scaling them with
-      // everything else is right — a fit scale below 1 only ever lands on the
-      // `bodies` rung, where no label draws, and a scale above 1 only
-      // over-reserves.
+      // everything else is right in both directions — above 1 it only
+      // over-reserves, and below 1 nothing is left drawing in them (the `bodies`
+      // rung is the only one that squeezes, and it hides names, descriptions and
+      // — via `renderedShowSubfeatureLabels` — subfeature labels too).
       applyHeightScale(cloned, scale, 0)
       for (const item of cloned.flatbushItems) {
         item.topPx *= scale

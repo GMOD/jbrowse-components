@@ -282,7 +282,7 @@ describe('canvas display fit-to-display-height', () => {
       start: 0,
       end: 10_000,
     })
-    // Height above MIN_FIT_HEIGHT and chosen so base(355)*(97/355) rounds just
+    // Height above MIN_GROW_HEIGHT and chosen so base(355)*(97/355) rounds just
     // ABOVE 97 in float — the exact case the clamp guards. Content stacks well
     // past it, so the base layout overflows.
     display.setHeight(97)
@@ -299,13 +299,13 @@ describe('canvas display fit-to-display-height', () => {
     expect(display.scrollableHeight).toBe(0)
   })
 
-  // naturalContentHeight (the grow-mode target / sparse-track floor) resolves to
-  // MIN_FIT_HEIGHT when there's no content, rather than collapsing to a sliver.
-  it('naturalContentHeight floors at MIN_FIT_HEIGHT with no content', () => {
+  // growTargetHeight (the grow-mode target) resolves to MIN_GROW_HEIGHT when
+  // there's no content, rather than collapsing the track to a sliver.
+  it('growTargetHeight floors at MIN_GROW_HEIGHT with no content', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     expect(display.maxY).toBe(0)
-    expect(display.naturalContentHeight).toBe(50)
+    expect(display.growTargetHeight).toBe(50)
   })
 
   // Grow drives `height` from the laid-out content reactively — via the `height`
@@ -356,7 +356,7 @@ describe('canvas display fit-to-display-height', () => {
     const { display, view } = createDisplay()
     display.setHeightMode('grow')
     display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
-    const content = display.naturalContentHeight
+    const content = display.growTargetHeight
 
     display.configuration.setSlot('growMaxHeight', content - 30)
     expect(display.height).toBe(content - 30)
@@ -438,7 +438,7 @@ describe('canvas display fit-to-display-height', () => {
 
   // A Y morph holds `maxY` at the taller of the old/new layout so rows animating
   // up from a deeper row aren't clipped — that inflation belongs to the scroll
-  // extent, NOT to the grow-mode target height. `naturalContentHeight`/`grownHeight`
+  // extent, NOT to the grow-mode target height. `growTargetHeight`/`grownHeight`
   // read the settled height so the track doesn't bounce to the old (taller) height
   // for the morph's duration and then collapse.
   it('grow height ignores the morph hold that maxY applies', () => {
@@ -448,7 +448,7 @@ describe('canvas display fit-to-display-height', () => {
     display.setHeight(400)
 
     const settled = display.settledMaxY
-    const fitHeightBefore = display.naturalContentHeight
+    const fitHeightBefore = display.growTargetHeight
     expect(settled).toBeGreaterThan(0)
 
     // Simulate a morph animating up from a much deeper prior layout.
@@ -459,7 +459,7 @@ describe('canvas display fit-to-display-height', () => {
     expect(display.scrollableHeight).toBeGreaterThan(0)
     // ...but the settled height and the grow target are unmoved.
     expect(display.settledMaxY).toBe(settled)
-    expect(display.naturalContentHeight).toBe(fitHeightBefore)
+    expect(display.growTargetHeight).toBe(fitHeightBefore)
   })
 })
 
@@ -1210,6 +1210,26 @@ function genesOver(
   return { feats, floatingLabelsData }
 }
 
+// n features sharing ONE span, so every one of them needs a row of its own —
+// enough of them and the stack passes GranularRectLayout's row limit and the
+// overflow is truncated. Same shape as `genesOver` so both feed `geneRegionData`.
+function stackedGenesAt(
+  prefix: string,
+  start: number,
+  end: number,
+  n: number,
+): ReturnType<typeof genesOver> {
+  return {
+    feats: Array.from({ length: n }, (_, i) => ({
+      featureId: `${prefix}${i}`,
+      startBp: start,
+      endBp: end,
+      height: 20,
+    })),
+    floatingLabelsData: {},
+  }
+}
+
 function geneRegionData(
   groups: ReturnType<typeof genesOver>[],
 ): FeatureDataResult {
@@ -1367,6 +1387,40 @@ describe('canvas display fit measures the visible window', () => {
     // ...so the visible stack squeezes into the track instead of scrolling.
     expect(display.fitScale).toBeLessThan(1)
     expect(display.hasOverflow).toBe(false)
+  })
+
+  // The truncated count is the third measurement, and it is the one the user
+  // reads: "N not shown (past the layout row limit; filter or zoom in)". A pile
+  // deep enough to truncate, sitting entirely in the fetch buffer, is not
+  // something filtering or zooming addresses — panning is — so in fit mode the
+  // count is over the visible window like everything else.
+  it('counts only the truncation the user is looking at', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 400_000, refName: 'ctgA' },
+    ])
+    view.zoomTo(100)
+    view.scrollTo(1000)
+    display.setRpcData(
+      0,
+      geneRegionData([
+        genesOver('vis', 120_000, 160_000, 4),
+        // one bp span, 800 deep: they pass the row limit among themselves, while
+        // the on-screen four sit beside them in X and keep their rows
+        stackedGenesAt('left', 62_000, 98_000, 800),
+      ]),
+      view.bpPerPx,
+      { assemblyName: 'volvox', refName: 'ctgA', start: 60_000, end: 220_000 },
+    )
+    view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+    display.setHeight(100)
+
+    // Outside fit mode the whole stack is the subject, and it is truncated...
+    expect(display.truncatedFeatureCount).toBeGreaterThan(0)
+    // ...but nothing the viewport holds is, so fit mode reports none.
+    display.setHeightMode('fit')
+    expect(display.truncatedFeatureCount).toBe(0)
   })
 
   // Outside fit mode nothing is narrowed: grow sizes the track to every feature

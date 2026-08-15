@@ -210,9 +210,11 @@ const ColorByAttributeDialog = lazy(
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 
-// Floor for the auto-fit height so a sparse/empty track doesn't collapse to a
-// sliver. Capped by the maxHeight config in naturalContentHeight.
-const MIN_FIT_HEIGHT = 50
+// Floor for GROW mode's target height, so a sparse or empty track doesn't shrink
+// the track to a sliver. Nothing to do with the fit ladder below, which never
+// resizes the track at all — `growTargetHeight` is its only reader, and the
+// `maxHeight` config slot is the ceiling at the other end of the same clamp.
+const MIN_GROW_HEIGHT = 50
 
 // Smallest feature-body height (px) the fit squeeze may leave. Once bodies would
 // pack tighter than this the squeeze stops and the surplus scrolls, rather than
@@ -1560,8 +1562,16 @@ export default function baseStateModelFactory(
         // showing strictly less than its data. Fit mode is where this bites — its
         // whole promise is that every feature is in view — so the track-sizing
         // affordance surfaces it (see TrackHeightIndicator's tooltip).
+        //
+        // Over `fitMeasureFeatureIds` in fit mode, like every other measurement
+        // the ladder takes: the tooltip tells the user to filter or zoom in, and
+        // a count including the fetch buffer said that about features a pan would
+        // have shown. Everything outside fit mode, where the set is undefined.
         get truncatedFeatureCount() {
-          return countTruncatedFeatures(self.laidOutDataMap)
+          return countTruncatedFeatures(
+            self.laidOutDataMap,
+            self.fitMeasureFeatureIds,
+          )
         },
 
         /**
@@ -1586,26 +1596,20 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Height that fits the laid-out content: the settled content height
-        // (settledMaxY, NOT the morph-inflated maxY — grow must target the
-        // destination height so it doesn't bounce during a zoom morph) clamped to
-        // MIN_FIT_HEIGHT (so a sparse track doesn't collapse) and the maxHeight
-        // cap. Feeds `grownHeight`, the grow-mode target (a tighter cap).
-        get naturalContentHeight() {
-          return clamp(this.settledMaxY, MIN_FIT_HEIGHT, self.maxHeight)
-        },
-
-        /**
-         * #getter
-         */
-        // HeightModeMixin's grow hook: what the laid-out stack wants before the
-        // `growMaxHeight` cap. Height-independent (naturalContentHeight reads the
-        // config-slot `fitTargetHeight`, not the reactive `height` getter), which
-        // is what lets the mixin's `height` return it in grow mode without
-        // cycling. `grownHeight`, the `height` override and the grow-aware
-        // `resizeHeight` all come from the mixin.
+        // HeightModeMixin's grow hook: the height the laid-out stack wants,
+        // before the mixin's own `growMaxHeight` cap. That is the settled content
+        // height (settledMaxY, NOT the morph-inflated maxY — grow must target the
+        // destination height so it doesn't bounce during a zoom morph), floored
+        // at MIN_GROW_HEIGHT so a sparse track doesn't collapse to a sliver and
+        // capped by the `maxHeight` config slot.
+        //
+        // Height-independent — settledMaxY reads the config-slot
+        // `fitTargetHeight`, never the reactive `height` getter — which is what
+        // lets the mixin's `height` return this in grow mode without cycling.
+        // `grownHeight`, the `height` override and the grow-aware `resizeHeight`
+        // all come from the mixin.
         get growTargetHeight() {
-          return this.naturalContentHeight
+          return clamp(this.settledMaxY, MIN_GROW_HEIGHT, self.maxHeight)
         },
 
         /**

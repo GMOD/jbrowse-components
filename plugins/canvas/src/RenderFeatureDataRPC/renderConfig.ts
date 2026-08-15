@@ -86,7 +86,11 @@ export function isDisplayMode(value: unknown): value is DisplayMode {
 // confined to the readConfigValue wrapper above.
 export interface DisplayConfig {
   // displayMode is NOT sent to the worker — compact/superCompact height scaling
-  // is applied on the main thread so switching modes skips an RPC round-trip.
+  // is applied on the main thread. That is what lets switching modes skip an RPC
+  // round-trip, but only while `maxIsoforms` below is undefined: a compact row is
+  // shorter, so the lane holds more isoforms, and the cap is derived from the
+  // mode. Under `auto` glyph mode at close zoom the switch therefore does refetch
+  // — deliberately, and pinned by fetchAutorun.test.ts.
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
   // At most this many isoforms per gene, or undefined for no cap. Not a config
   // slot — the display derives it from its track height (`effectiveMaxIsoforms`)

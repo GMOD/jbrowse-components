@@ -29,12 +29,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
     'LinearCanvasBaseDisplay',
     {
       // NOT a cap on the layout, and NOT the autogrow ceiling (that is
-      // `growMaxHeight` below). It clamps `naturalContentHeight`, the settled
-      // content height the grow ceiling is then applied to, so it only binds when
-      // set below that ceiling. The packer has its own, separate limit —
-      // GranularRectLayout's row limit — past which features are dropped entirely
-      // (surfaced as truncatedFeatureCount). Three different limits, don't
-      // conflate them.
+      // `growMaxHeight` below). It is the outer clamp on `growTargetHeight`, the
+      // content height the grow ceiling is then applied to, so it binds only in
+      // grow mode and only when set below that ceiling. The packer has its own,
+      // separate limit — GranularRectLayout's row limit — past which features are
+      // dropped entirely (surfaced as truncatedFeatureCount). Three different
+      // limits, don't conflate them.
       /**
        * #slot
        */
@@ -42,13 +42,13 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 1200,
         description:
-          'Clamp in pixels on the content height this display reports (does not limit fixed or fit mode, where taller content scrolls). The autogrow ceiling is growMaxHeight',
+          'Outer clamp in pixels on the content height the "autogrow track height" mode sizes to. Applies to no other mode — fixed and fit keep their configured height and scroll taller content. The autogrow ceiling proper is growMaxHeight, which is lower by default, so this only binds when set below it',
         advanced: true,
       },
       /**
        * #slot
        */
-      // `maxHeight` clamps `naturalContentHeight` first, so the effective grow
+      // `maxHeight` clamps `growTargetHeight` first, so the effective grow
       // ceiling here is min(maxHeight, growMaxHeight) — raising this past
       // maxHeight alone changes nothing.
       growMaxHeight: {
