@@ -132,9 +132,12 @@ export default {
   //
   // Ceiling of 4: a bare percentage scales with the machine, and on a big dev
   // box that is 8+ workers each entitled to workerIdleMemoryLimit before it is
-  // recycled — enough to wedge the whole machine. Suite wall-clock is dominated
-  // by the serial transform prefix and by a handful of slow integration files,
-  // so the workers past ~4 buy much less than they cost.
+  // recycled — enough to wedge the whole machine. Workers past 2 buy nothing
+  // measurable: `packages/core/src/util` (98 suites), warm, two reps each, ran
+  // 18.8/17.2s at 2, 25.1/19.9s at 4, 20.9/24.3s at 8 — spread swamps the
+  // difference while memory scales, ~900MB per worker (~1.8GB at 2, ~7.3GB at
+  // 8). Measured on one unit-test-heavy suite; the slow integration files may
+  // spread better and were not measured.
   //
   // This has to live in the config rather than in a `--maxWorkers` flag on the
   // package.json scripts: ~15 package-level `test` scripts invoke `jest`

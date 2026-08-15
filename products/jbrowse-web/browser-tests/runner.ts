@@ -93,9 +93,13 @@ const { values } = parseArgs({
 })
 
 const headed = values.headed
+// Each unit is a whole Chrome, so this is the heaviest of the three things
+// competing for the machine (browser tests, jest, tsgo). Agents get 1 because
+// they run concurrently with each other and with their own jest and typecheck,
+// and none of those can see the others' load; an interactive run keeps 4.
 const CONCURRENCY = values.concurrency
   ? Number(values.concurrency)
-  : headed
+  : headed || process.env.CLAUDECODE
     ? 1
     : 4
 const slowMo = values['slow-mo'] ? parseInt(values['slow-mo'], 10) : 0
