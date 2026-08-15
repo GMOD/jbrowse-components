@@ -5,109 +5,17 @@ description: The shared display status chrome that owns loading, error, and retr
 
 # DisplayChrome — the shared display status chrome
 
-## TL;DR
-
-- The single wrapper every GPU/Canvas2D-backed LGV display renders. It owns
-  `useRenderingBackend` and all terminal-state UI, so a display can't paint a
-  canvas while skipping a terminal state.
-- It branches on one getter, `model.displayPhase`, whose precedence
-  (`renderError > tooLarge > error > loading > ready`) is single-sourced in
-  `computeDisplayPhase`. Never re-encode it as `&& !error && !regionTooLarge`.
-- **Two components, split at the backend.** `DisplayChromeBase` owns only the
-  hook and the `renderError` phase — the one phase whose banner needs the hook's
-  `retry()`. Everything below it (container, the four `data-*` attributes, the other four overlays) is `DisplayStatusChromeBase`,
-  which a display with no rendering backend renders directly. That is how arc
-  gets the chrome instead of a copy of it.
-- The **loading term** is single-sourced too, in `computeLoadingTerm`, and so is
-  the **mapping onto it**, in `foundationDisplayPhase` — the twin of
-  `foundationSvgReady`. All three foundations call it and supply exactly one
-  argument, their staleness predicate: per-region its spatial one, global and arc
-  `() => true`. Arc goes through `foundationDisplayStatusPhase`, the same mapping
-  returning the narrower phase and supplying the two canvas terms it has no
-  canvas for. Customize it through `loadingSuppressed` / `rendersCanvas`, never
-  by overriding `displayPhase` — an override restates every term and then
-  silently misses the next one added. Same rule the precedence has, one level
-  down.
-- **The four loading inputs live on the mixin every foundation composes**, so no
-  family can carry half the pair: `loadingSuppressed` and `isLoadingOrCanceled`
-  on `FetchMixin`, `rendersCanvas` and `canvasDrawn` on `RenderLifecycleMixin`.
-  A display that draws a deliberate static placeholder instead of a canvas
-  (sequence past base resolution, LD with the triangle off) answers **both**
-  `rendersCanvas: false` and `loadingSuppressed: true`, and needs both:
-  `rendersCanvas` drops the pre-first-paint term *alone*, so the fetch terms
-  still scrim over the placeholder — and `fetchCanceled` is durable, so a cancel
-  parks "Loading canceled / Retry" over it permanently. LD had exactly that hole
-  while the global family hard-coded `loadingSuppressed: false`.
-- **`painted` is the first-paint answer, never the raw `canvasDrawn`**, and it
-  has three terms: `canvasDrawn || !rendersCanvas || paintInert`. The third is
-  the state where a display *would* paint and never gets to — a fetch that failed
-  before first paint, whose error bar is an *overlay*, so the canvas stays
-  mounted and the flag can never flip. Both families fill `paintInert` with
-  `!!error`.
-- `renderError`/`tooLarge` replace the subtree (canvas unmounts,
-  `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
-- **The three overlay states portal as a group**, in `DisplayStatusChromeBase`,
-  into the TrackContainer's overlay layer — otherwise the LGV's inter-region
-  masks stripe the loading chip and the error banner at multi-region scale, and
-  no z-index inside the display's `contain: strict` sandbox can win against
-  them ([ADR-058](../architecture-decision-records/adr-058-track-paint-containment-stays.md)).
-  One portal at that level rather than one per overlay, because it is the level
-  both the MUI set and `plainChromeOverlays` pass through. That layer is
-  `pointer-events: none`, so an interactive overlay sets `pointer-events: auto`
-  on its own box — part of the overlay-set contract in `chromeOverlays.ts`.
-- A status set while the phase is `ready` — work with no fetch behind it, e.g.
-  declarative clustering — renders as a corner `ProgressChip`
-  (`DisplayBackgroundProgress`), not the scrim: the drawn content is still
-  usable. Report such work through the display's own `setStatusMessage` and it
-  shows up; don't add a phase for it.
-- **The bottom-right corner has one owner, and it is the chrome.** That chip and
-  the display's own control row (`BottomRightIndicators`) both want the corner
-  and neither can see the other — one is rendered by the overlay set, the other
-  by the display several components down, and both used to pin themselves to
-  `bottom: 2; right: 2` of the same per-track overlay layer. The chrome anchors
-  a single flex column there and publishes it through `BottomRightCornerContext`;
-  the chip is its first member and the row portals in as its second. So
-  `BackgroundProgress` is the one overlay state that does **not** own its box —
-  a replacement set renders an in-flow chip (see `bottomRightCorner.ts`).
-- Always: a thin outer owns the chrome, a named observer body owns the canvas
-  and overlays, joined by a render-prop child. **The render prop holds
-  components and nothing else** — it runs during the chrome's own render, so an
-  inline observable read there re-renders the chrome rather than the body.
-- **The pointer measurement is the chrome's too**, because it owns the element
-  the position is measured against. It publishes `mouseTracker` through the
-  handle and the body reads it with `useMouseState` — never hold the position
-  beside the chrome, and don't call `useMouseTracking` in a display.
-- Load-bearing: a terminal state **replaces the subtree** (that is what disposes
-  the backend) and `displayPhase`'s loading term is a **thunk**. Early-`return`
-  vs ternary is style only, since `'use no memo'`.
-- **Every** LGV display uses it — the generated adoption map below is the list,
-  and a display registered for `LinearGenomeView` that renders neither chrome
-  would show there as a `—` row. Arc and paired-arc sit on the backend-free
-  half. Off it by design: dotplot and synteny (non-LGV, drop to
-  `useRenderingBackend`), circular-view (radial, own banners).
-- **The map covers the export too**, in its last two columns: every LGV display's
-  `renderSvg` reaches `SvgChrome`, the narrower export-side gate, and the same
-  `—` row would appear for one that stopped. Two chromes, two columns, one list —
-  because on-screen and export drift independently.
-- **The export side tolerates absence; the on-screen side does not.**
-  `renderSvg` is optional (`SvgExportTrack`), and a display without one is
-  dropped from the export the way a minimized track is, with the user notified
-  which tracks were left out — so a third-party display that never wrote one
-  costs itself a place in figures instead of breaking export for every track in
-  the session. Every in-tree LGV display still has one, which is what makes a
-  `—` in the last column here a regression rather than a choice.
-- **One element per display**, carrying a stable `data-testid` plus
-  `data-display-id`, `data-display-drawn` and `data-display-phase` — one
-  question each (ADR-065). `testid` is required, no display bypasses the chrome,
-  and the two non-LGV views publish `data-display-drawn` too (via
-  `RenderCanvas`), so one selector answers "has everything painted?" for the
-  whole app. The three coexisting testid shapes, `DisplayContainer`,
-  `BaseLinearDisplayComponent` and the model's `DisplayMessageComponent` getter
-  are all gone.
+The single wrapper every GPU/Canvas2D-backed LGV display renders. It owns
+`useRenderingBackend` and all terminal-state UI, so a display cannot paint a
+canvas while skipping a terminal state, and it branches on one getter —
+`model.displayPhase`, whose precedence (`renderError > tooLarge > error >
+loading > ready`) is single-sourced in `computeDisplayPhase`. Never re-encode
+that as `&& !error && !regionTooLarge`.
 
 Related: banner content for `tooLarge` is in
-[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md); the rejected refactors (don't
-re-litigate) are in
+[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md); the two comparative views that sit
+off this chrome are [SHARED_CANVAS_VIEWS.md](SHARED_CANVAS_VIEWS.md); the
+rejected refactors (don't re-litigate) are in
 [ADR-026](../architecture-decision-records/adr-026-displaychrome-layering-stays.md);
 the mount/dispose contract is in
 [ADR-025](../architecture-decision-records/adr-025-gpu-canvas-stays-mounted-not-xor-error.md).
@@ -141,6 +49,45 @@ The lifecycle state (`canvasDrawn`, `renderError`, `currentRenderingBackend`,
 `renderTick`) lives on `RenderLifecycleMixin`
 (`packages/render-core/src/RenderLifecycleMixin.ts`), which every GPU display
 composes. Plugins never re-declare it.
+
+The five phases split two ways. `renderError`/`tooLarge` **replace the subtree**
+(canvas unmounts, `backend.dispose()`); `error`/`loading` are overlays over a
+live canvas.
+
+**The three overlay states portal as a group**, in `DisplayStatusChromeBase`,
+into the TrackContainer's overlay layer — otherwise the LGV's inter-region masks
+stripe the loading chip and the error banner at multi-region scale, and no
+z-index inside the display's `contain: strict` sandbox can win against them
+([ADR-058](../architecture-decision-records/adr-058-track-paint-containment-stays.md)).
+One portal at that level rather than one per overlay, because it is the level
+both the MUI set and `plainChromeOverlays` pass through. That layer is
+`pointer-events: none`, so an interactive overlay sets `pointer-events: auto` on
+its own box — part of the overlay-set contract in `chromeOverlays.ts`.
+
+**The loading term is single-sourced in `computeLoadingTerm`, and so is the
+mapping onto it**, in `foundationDisplayPhase` — the twin of `foundationSvgReady`.
+All three foundations call it and supply exactly one argument, their staleness
+predicate: per-region its spatial one, global and arc `() => true`. Arc goes
+through `foundationDisplayStatusPhase`, the same mapping returning the narrower
+phase and supplying the two canvas terms it has no canvas for. Customize it
+through `loadingSuppressed` / `rendersCanvas`, **never by overriding
+`displayPhase`** — an override restates every term and then silently misses the
+next one added. Same rule the precedence has, one level down.
+
+**The bottom-right corner has one owner, and it is the chrome.** The background
+`ProgressChip` and the display's own control row (`BottomRightIndicators`) both
+want the corner and neither can see the other — one is rendered by the overlay
+set, the other by the display several components down, and both used to pin
+themselves to `bottom: 2; right: 2` of the same per-track overlay layer. The
+chrome anchors a single flex column there and publishes it through
+`BottomRightCornerContext`; the chip is its first member and the row portals in
+as its second. So `BackgroundProgress` is the one overlay state that does **not**
+own its box (see `bottomRightCorner.ts`).
+
+A status set while the phase is `ready` — work with no fetch behind it, e.g.
+declarative clustering — renders as that corner chip rather than the scrim,
+because the drawn content is still usable. Report such work through the
+display's own `setStatusMessage` and it shows up; don't add a phase for it.
 
 Every GPU display follows one shape:
 
@@ -317,6 +264,14 @@ rather than being decay: an over-budget region is a state the user navigated to
 on purpose and a figure saying so is the honest export of it, while a fetch that
 failed is the export being unable to answer, which `throwOnExportErrors` reports
 by failing rather than by drawing.
+
+**The export side tolerates absence; the on-screen side does not.** `renderSvg`
+is optional (`SvgExportTrack`), and a display without one is dropped from the
+export the way a minimized track is, with the user notified which tracks were
+left out — so a third-party display that never wrote one costs itself a place in
+figures instead of breaking export for every track in the session. Every in-tree
+LGV display still has one, which is what makes a `—` in the last column above a
+regression rather than a choice.
 
 **An `inherits` row means the display composes another display's model** and
 gets that model's `renderSvg`, the export-side twin of a borrowed component. The

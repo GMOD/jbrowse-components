@@ -11,22 +11,6 @@ a dialog triggers an RPC call that builds a feature matrix, runs hierarchical
 clustering via `@gmod/hclust`, and writes the result into `TreeSidebarMixin`
 state, which drives dendrogram rendering.
 
-## TL;DR
-
-- One pattern, two plugins: dialog → worker RPC → `{ order, tree }` →
-  `buildClusteredLayout` → `TreeSidebarMixin` state → dendrogram + row reorder.
-- Only the **matrix** differs: wiggle bins scores by `bpPerPx`; variants build a
-  dosage matrix (`0/1/2/-1`), one row per haplotype in phased mode.
-- `TreeSidebarMixin` holds the persistent state (`layout`, `clusterTree` Newick,
-  `treeAreaWidth`, `subtreeFilter`) and is shared by both plugins.
-- **Both plugins commit layout and tree together**, through one
-  `setLayoutAndClusterTree`. Variants used to defer the tree; it doesn't any
-  more (see [Why the tree no longer waits](#why-the-tree-no-longer-waits)).
-- Manual mode emits an R script and takes a pasted Newick, then joins the exact
-  same `buildClusteredLayout` + `setLayoutAndClusterTree` path.
-
----
-
 ## Data flow
 
 ```

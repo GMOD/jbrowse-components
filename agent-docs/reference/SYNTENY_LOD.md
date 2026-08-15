@@ -9,31 +9,6 @@ Reference for the linear-comparative-view / dotplot LOD system and where its
 remaining scaling limit is. Read before touching `make-pif`, the indexed PIF
 adapters, or the synteny fetch RPC.
 
-## TL;DR
-
-- Two tiers in one tabix-indexed PIF, keyed by seqid case: fine `t`/`q` (per-row
-  CIGAR), coarse `T`/`Q` (no CIGAR, split at indels `>= --coarse`).
-- Coarse cuts **per-alignment** cost, not alignment **count**. It's the tool for
-  few-huge-CIGARs, marginal for many-short-alignments.
-- **`auto` resolves on the main thread only** (`resolveLodTier`), never in the
-  adapter: the tier is a fetch input and must reach the refetch cache key.
-- Coarse identity is written from `pafIdentity`, the same function the fine tier
-  is read with — never recomputed from CIGAR (`M` folds in mismatches, giving
-  spurious 100% identity across the LOD switch) and never a private copy of the
-  fallback chain (a copy is what skipped the `id:f:` rung).
-- A PIF row carries **one** alignment string, `cg:Z:`; a `cs:Z:` is folded into
-  it. `forEachMismatch` prefers `cs`, so an unflipped one beside a flipped CIGAR
-  is wrong, not stale.
-- Nothing user-visible may key off which tier is loaded. The CIGAR menu did
-  (`hasCigarData`) and so appeared and disappeared as the user zoomed.
-- Profiled, not guessed: ~66% of cost is fetch + parse (unavoidable at read
-  time), ~34% construct + downstream. So read-time binning caps at ~1.5×.
-- The only lever on the dominant cost is a **precomputed binned tier in
-  `make-pif`** (fewer lines read), at the price of regenerating files.
-- The visual hairball is already solved by `fillCoverage` + auto fade-thin.
-  Binning would be a compute optimization, not a rendering fix.
-- Don't reintroduce runtime collinear chaining; it was tried and removed.
-
 ## The two PIF tiers
 
 `jbrowse make-pif` writes two tiers into one tabix-indexed PIF, distinguished by
@@ -102,6 +77,13 @@ Adapter side (`plugins/comparative-adapters/src/util.ts`) is now just
 rather than querying `T`/`Q` prefixes that match nothing.
 
 ## Identity continuity across the switch
+
+**Nothing user-visible may key off which tier is loaded.** Identity is the case
+with the most ways to get it wrong, and the rest of this section is those; but
+the rule is general, and the other place it was broken was a menu. The CIGAR
+entry gated itself on `hasCigarData`, so it appeared and disappeared as the user
+zoomed — a control coming and going under a gesture that is supposed to be an
+implementation detail.
 
 A coarse row's `de:f:` is written as `1 - pafIdentity(row)` using
 **`pafIdentity` itself** (`@jbrowse/cigar-utils`), the same function the adapters

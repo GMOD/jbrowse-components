@@ -5,70 +5,21 @@ description: The byte/density gate that raises the "region too large" banner and
 
 # The region-too-large gate
 
-## TL;DR
+You load `chr1:1-1,000,000`. Before fetching, we ask the adapter roughly how many
+bytes that region would download. Over the limit → skip the fetch, show the
+"region too large" banner. Under → fetch normally. For tabix the estimate is just
+an index lookup (a byte range in the file), so it is free.
 
-**What it does:** you load `chr1:1-1,000,000`. Before fetching, we ask the
-adapter roughly how many bytes that region would download. Over the limit → skip
-the fetch, show the "region too large" banner. Under → fetch normally. For tabix
-the estimate is just an index lookup (a byte range in the file), so it's free.
-
-There's a second gate on the same banner: canvas also blocks regions with too
+There is a second gate on the same banner: canvas also blocks regions with too
 many *features* to draw, even when the byte count is fine. Same machinery,
 different axis (`densityTooLarge`).
 
-**There is one byte number, and it is measured rather than derived.**
-`byteEstimate.bytes` is the last thing an adapter said, and `regionTooLarge`
-compares it against the budget. What keeps it describing the viewport you are
-actually looking at is that a blocked display **keeps fetching, once per settled
-viewport** — and a blocked fetch stops at the gate that rejected it, so on the
-byte axis that is one index read and no features. See § Measurement follows the
-viewport, which prices the density axis too.
-
-There used to be a second, derived number — `estimatedBytesForVisibleSpan`, this
-one scaled by `visibleBp / measuredSpanBp` — and it was the only thing that ever
-released the banner. Bytes do not follow span: an index quotes whole blocks, so
-the estimate is a step function whose steps are a property of the file. The
-measurements that retired it are in [HISTORICAL.md](HISTORICAL.md) § "The byte
-estimate was a rate".
-
-**The footgun:** gating is **opt-in**, and a display that doesn't opt in never
-gates. The two opt-ins are named as a pair, because they are alternatives:
-`measuresBytesPreFlight` (a `CoreGetRegionByteEstimate` before fetching) and
-`measuresBytesInFetch` (canvas, checking inside its own feature RPC). Both
-default to false and `gateEnabled` is their OR — additive, so composition order
-can't turn a gate off.
-
 **The naming law, since the gate has a lot of members:** a `byte`/`density`
 prefix means the term is genuinely about that axis, and nothing else carries one.
-So the shared question — "may the gate act at all right now?" — is `gateActive`
-(opted in, not exempt, view measured), the exemption is `gateExempt`, and a
-per-axis question is `gateActive` plus that axis's own terms. Today the byte axis
-adds nothing, so it has no getter of its own; `densityGateActive` adds
-`densityGateEnabled` and the `AUTO_FORCE_LOAD_BP` floor. Until 2026-08 those two
-shared terms were `byteGateActive` / `byteGateExempt` — neither had a single
-byte-specific term, `densityGateActive` was literally `byteGateActive && …`, and
-`byteGateExempt`'s own docstring opened by saying it applied to either axis.
-"Force-load only lifts the byte gate" is a thing the *predecessor* system
-actually did (§ Force-load); the names shouldn't keep suggesting it.
-
-**The rest:**
-
-- Canvas doesn't do a separate estimate RPC. It folds the byte check **inside**
-  its feature RPC (via the adapter's `getRegionByteSize`), so an over-budget
-  region short-circuits before downloading any features.
-- Force-load ("show me this anyway") is one **volatile boolean per track**
-  (`forceLoadTrack`) — never saved to a session, but deliberately kept across
-  chromosome navigation, since it approves the track rather than a locus. The
-  durable escape hatch is the `forceLoad` config slot.
-- An adapter that summarizes at screen resolution (BigWig, MultiWiggle, HiC,
-  sequence) simply **reports no estimate**, and no estimate means no byte axis in
-  the verdict. There is no `alwaysRender` exemption flag any more: it could only
-  arrive on an estimate from an adapter that reports none, so it was dead by
-  construction.
-- **One adapter method**, `getRegionByteSize(regions)`, serves both halves: the
-  pre-flight RPC calls it in a worker, canvas's feature RPCs call it inline. The
-  byte *budget* it is compared against never crosses the worker boundary — it is a
-  main-thread config read (`gateByteLimit`).
+So the shared question — "may the gate act at all right now?" — is `gateActive`,
+the exemption is `gateExempt`, and a per-axis question is `gateActive` plus that
+axis's own terms. `RegionTooLargeMixin`'s header comment carries why, and what
+the names were before.
 
 | Code | Path |
 | --- | --- |

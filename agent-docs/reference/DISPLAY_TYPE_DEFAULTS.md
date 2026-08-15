@@ -14,40 +14,6 @@ that hasn't customized its own value follows.
 The whole thing is a **small CSS cascade for a single config slot**. If you only
 read one section, read [The cascade](#the-cascade).
 
-## TL;DR
-
-- Three tiers, resolved at read time by `resolveConf`: **customized track value >
-  session-wide promoted default for the display type > the slot's base value**.
-- **No stored is-customized flag.** `stripDefault` collapses an unset slot out
-  of the snapshot, so "unset" *is* "follows the default".
-- The promoted value lives in the **session**, not the track, so setting a
-  default rewrites nothing. Objects compare with `deepEqual`, not `!==`.
-- **Declaring `promotedBase` is what makes a slot promotable**, and the inherit
-  sentinel is always `undefined`: such a slot is a `maybe*` type with no
-  `defaultValue`, both enforced by `ConfigSlot`. That keeps every real value
-  customizable over an opposite default, and keeps the mechanism out of the
-  slot's own vocabulary.
-- **Standing rule at every serialization boundary:** flatten the cascade like
-  `getComputedStyle`. Worker RPC → `getConfigSnapshotWithPromotables`;
-  share/export → `bakePromotedDefaultsIntoSnapshot`. Never emit a raw promotable
-  slot.
-- A shared session carries **baked values only**. A baked value reads as
-  *customized*, which is the top of the cascade, so a recipient's own defaults
-  can't repaint it. The one uncovered case is the sender sitting at `base` — see
-  [Received sessions](#received-sessions).
-- UI is **one row per value**, each with a trailing `PushPin`. Filled = default
-  for all tracks of this type. No separate "make default" row.
-
-Why it is shaped this way, and what was rejected getting here:
-[ADR-046](../architecture-decision-records/adr-046-resolveconf-names-the-cascade.md)
-(`resolveConf` is named, `getConf` never cascades),
-[ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)
-(`undefined` is the only inherit sentinel),
-[ADR-048](../architecture-decision-records/adr-048-pin-edits-the-stylesheet-not-the-elements.md)
-(the pin never rewrites a track). This file is the mechanism; those are the
-decisions. Read the relevant one before undoing something here that looks
-accidental.
-
 ## Vocabulary (the two words that matter)
 
 - **customized** — the track's slot is *set* to a usable value of its own

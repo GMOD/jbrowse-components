@@ -5,48 +5,6 @@ description: SVG export pipeline covering the renderSvg shape, the svgReady/sett
 
 # SVG export pipeline
 
-## TL;DR
-
-- **The GPU shader path is an accelerator; the Canvas2D draw function is the
-  source of truth, and SVG export runs it.** So a shader-only tweak can't
-  silently diverge the export.
-- Every LGV `renderSvg.tsx` is one shape, and the shape is a **function**, not a
-  convention to retype: `return renderDisplaySvg(model, opts, XxxSvgBody)`, where
-  `XxxSvgBody` is a component taking `LgvSvgBodyProps<M>` and painting via
-  `PaintLayer`.
-- **Paint at `props.canvasWidth`, never at `model.renderState.canvasWidth`.** The
-  on-screen render state carries `view.trackWidthPx` (2px narrower, for the track
-  outline the export doesn't draw) and that value is also the block scissor
-  bound — see [the export canvas width](#the-export-canvas-width-is-viewwidth).
-- **Never** inline `when(() => …)`, hand-roll `if (model.error) return`, mount
-  `SvgChrome` yourself, or gate a body on data size. Those belong to
-  `renderDisplaySvg` and "render empty naturally".
-- **A track whose data failed to load fails the whole export** — the dialog shows
-  its error banner and saves nothing, jbrowse-img exits nonzero. Nothing draws an
-  error into a figure. `regionTooLarge` is the one terminal that still draws.
-- **A view fans its display renders out with `awaitSvgRenders`, not
-  `Promise.all`** — same thing, except it reports *every* failure rather than
-  whichever rejected first, and nests.
-- `svgReady` deliberately excludes `canvasDrawn` (a headless export's canvas may
-  never paint) and always carries a **freshness** axis, so an export fired right
-  after a pan captures fresh data.
-- `settled` is the separate **on-screen** capture gate: `canvasDrawn` plus that
-  same freshness axis.
-- Anything draw-shaped goes through `PaintLayer`. Hand-rolled
-  `<rect>`/`<path>`/`<line>` is a red flag, with three permitted exceptions
-  (trivial chrome, bezier-arc overlays, shared React-SVG overlays).
-- **Clip-path ids must be scoped by the owning model's `.id`.** SVG ids are
-  document-global; a duplicate renders the second group unclipped. They must
-  also be **stable** — the same content exports to the same bytes, or diffing
-  two saved files shows changes that aren't real.
-- **`renderSvg` is optional, and a display without one is skipped, not called.**
-  Partition before rendering and pass the skipped tracks to
-  `notifySkippedSvgTracks` (`@jbrowse/core/svg/trackNames`). Calling it anyway
-  is a `TypeError` that fails the whole export, which is the opposite of what
-  making it optional was for.
-
-## Detail
-
 SVG export and on-screen rendering share the same pure Canvas2D draw functions,
 so a shader-only tweak can't silently diverge the export. Read this when
 touching a display's `renderSvg.tsx`, the `svgReady` gate, or the on-screen
@@ -95,6 +53,13 @@ Canonical references: builder-wrapper shape →
 direct shape → `plugins/maf/src/LinearMafRenderer/drawMafBlocks.ts`.
 
 ## The renderSvg.tsx shape (every LGV display, identical)
+
+**`renderSvg` is optional**, and a display without one is dropped from the export
+the way a minimized track is — `notifySkippedSvgTracks`
+(`packages/core/src/svg/trackNames.ts`) tells the user which tracks were left
+out. So a third-party display that never wrote one costs itself a place in
+figures rather than breaking the export for every track in the session. Every
+in-tree LGV display has one.
 
 `renderDisplaySvg` (`plugins/linear-genome-view/src/shared/renderDisplaySvg.tsx`)
 **is** the shape: it awaits readiness (failing the export if the display errored),

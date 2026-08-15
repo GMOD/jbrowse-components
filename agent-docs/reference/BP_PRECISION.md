@@ -10,20 +10,6 @@ can't represent every integer past 2²⁴ ≈ 16.7 Mbp, so a naive float upload 
 ~256 bp of precision at 3 Gbp. GPU clip-space is unavoidably float32 — this doc
 is how we keep positions exact anyway.
 
-## TL;DR
-
-- **Every position array crossing the worker boundary is absolute genomic
-  uint32.** No pixel coordinates, no `regionStart`-relative offsets, no
-  `regionStart +` arithmetic downstream.
-- Intervals are **0-based half-open** `[start, end)`, matching BED/BAM.
-- In an LGV-family shader you write `bpToClipX(bp, u)` and stop thinking about
-  precision. The hi/lo split lives inside that one wrapper.
-- Synteny and dotplot use a different scheme: cumulative-bp stored
-  **window-relative** as a single Float32 against a per-axis fetch-time base
-  (ADR-067).
-- Limits: one chromosome must be `< 2³²` (the one hard assumption);
-  whole-assembly cumulative bp has **no** GPU ceiling.
-
 ## The absolute-uint32 rule
 
 **Every position array that crosses the worker boundary is absolute genomic

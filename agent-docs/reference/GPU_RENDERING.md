@@ -15,28 +15,6 @@ Everything here applies to displays that draw to a canvas. Arc — the one displ
 class that paints JSX SVG on both the on-screen and export paths — composes none
 of it; see ARCHITECTURE.md §"Display stacks".
 
-## TL;DR
-
-- `attachRenderingBackend(backend, { upload, render })` spawns **two autoruns**
-  tied to the model's lifetime. MobX tracks whatever each callback reads — you
-  never declare a dependency or call an invalidate.
-- `render` returns `true` **only when real content was drawn**. That flips
-  `canvasDrawn`, which is what dismisses the loading scrim.
-- Pick an **upload pattern** by data shape: per-region streamed (independent
-  regions), whole-map synced (cross-region Y layout), monolithic (no region
-  partitioning), or keyed shared-canvas (one canvas, several displays). Getting
-  this wrong is how you get O(N²) uploads.
-- Iterating `rpcDataMap` inside an upload callback tracks the **whole map**.
-  `installPerRegionLifecycle` gives each key its own autorun; use it unless
-  layout couples regions.
-- Renderers are **stateless** — no region maps, no mirrored upload data. HAL owns
-  which regions have buffers (`hal.pruneRegions`).
-- Shaders are `.slang`; `pnpm gen:shaders` emits typed packers, offsets, and
-  constants. Import generated constants by name — never retype a literal.
-- A dual-path display must keep Canvas2D and the shader in parity, **except** for
-  deliberate AA compensation (fudge factors, stroke-vs-fill), which must not be
-  ported into a shader.
-
 ## Package layout
 
 The rendering primitives live in **`@jbrowse/render-core`**

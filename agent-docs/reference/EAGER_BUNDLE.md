@@ -5,48 +5,6 @@ description: What every JBrowse host downloads before it can run, why plugin reg
 
 # The eager bundle
 
-## TL;DR
-
-- The **eager set** is the transitive closure over *static* imports from a
-  page's entry. Everything JBrowse defers — renderers, display bodies, dialogs
-  — is already behind `lazy()`/`import()`, so what remains is plugin
-  registration plus whatever accidentally got pinned to it.
-- Menu-item builders live in **`@jbrowse/core/ui/menuItems`**, which is React-free
-  and guarded by a test. Import builders from there, components from
-  `@jbrowse/core/ui`.
-- **A dialog opened through `session.queueDialog` can always be `lazy()`** —
-  `DialogQueue` already Suspense-wraps it. A model naming one directly was the
-  single cheapest win of the five.
-- Plugin registration is **genuinely eager and not reducible**: every plugin's
-  models, adapters and config schemas must be registered before a session
-  snapshot can be read. **Eager relative to reading a snapshot, though — not to
-  first paint.** A host that opens on something other than a session (Desktop's
-  start screen) can draw it without the registry, and pin 6 is what was stopping
-  it: one static import.
-- What *is* reducible is the set of **React components a registration-time
-  module names**. Three shapes cause almost all of it, none visible in a diff: a
-  plugin's `exports` object, a state model importing a component, and a menu-item
-  builder returning an element where a description would do.
-- `makeStyles` hands a component **JBrowse's own plain-data theme**
-  (`ui/styleTheme.ts`), not Material UI's. That is architecture, not a win: it
-  cost 1 KB. See "Theme-free `makeStyles`" below for why, and for the census
-  that says so.
-- Measured and guarded per page by
-  `products/jbrowse-build-your-own/examples-site`'s
-  `pnpm measure-eager-bundle`, run by that site's `pnpm smoke`. It is a
-  **ceiling with a ratchet** — going far enough under a budget fails too.
-- **`pnpm probe-eager-graph` in that site answers *why*** — which module is
-  paying for what, and which first-party module holds a given dependency there.
-  Reach for it before any claim about a pin; every wrong number below came from
-  reasoning instead.
-- Don't reason from chunk *names*. A rolldown chunk is named after one of its
-  modules and routinely contains unrelated ones; a chunk called
-  `LinearGenomeView` turned out to be the `@jbrowse/core/ui` barrel.
-
-Related: `reference/DISPLAYCHROME.md` "Reach vs weight" (what the two
-bring-your-own seams do and don't buy), `reference/PLUGIN_ABI_STABILITY.md` (why
-an `exports` entry is hard to remove and easy to make lazy instead).
-
 ## The number
 
 Measured 2026-08-05 on the build-your-own examples site, whose sparsest page
@@ -197,10 +155,10 @@ TS4023 (`LDFilterModel` here). Export the interface.
 ### 6. Desktop's start screen holding the whole plugin graph
 
 The first five pins are one mistake — an eagerly evaluated module naming a React
-component. This one is a different shape, and it is the exception to "plugin
-registration is not reducible" above: **a screen that renders no session does not
-need the registry before it paints**, and JBrowse Desktop opens on exactly such a
-screen.
+component. This one is a different shape, and it is the exception to the rule
+that plugin registration is not reducible: **a screen that renders no session
+does not need the registry before it paints**, and JBrowse Desktop opens on
+exactly such a screen.
 
 Before it paints, not never — see "the part that did not work" below.
 
