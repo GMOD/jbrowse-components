@@ -76,16 +76,14 @@ test('leaves an index past the end of the list alone', () => {
 // is 3: at 2 it reported every entry of an 86-buffer list as "not in the
 // payload", which reads as a bug in the transfer list rather than in the walk.
 test('reaches a buffer three containers down, as the alignments result is', () => {
+  const starts = new Uint32Array(4)
   const mismatchStarts = new Uint32Array(4)
   const value = {
-    groups: [
-      { data: { starts: new Uint32Array(4) } },
-      { data: { mismatchStarts } },
-    ],
+    groups: [{ data: { starts } }, { data: { mismatchStarts } }],
   }
 
   const { message } = explainTransferError(detached(1), value, [
-    value.groups[0]!.data.starts.buffer,
+    starts.buffer,
     mismatchStarts.buffer,
   ]) as Error
 
