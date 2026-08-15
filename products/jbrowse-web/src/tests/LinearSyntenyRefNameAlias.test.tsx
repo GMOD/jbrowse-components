@@ -29,24 +29,38 @@ const timeout = { timeout: 30000 }
 const CONTROL = 'volvox_alias_control.paf'
 const ALIASED = 'volvox_alias_query.paf'
 
+// The MATE axis's copy of the same problem, which needs the stack the other way
+// up: volvox is the only assembly here that declares aliases, so it has to be
+// the axis that is NOT queried for its spelling to reach `mateRefNameDict`.
+// One transposed row, no `cg:Z:` — see the test at the bottom for why the
+// missing CIGAR is the point rather than an omission.
+const ALIASED_TARGET = 'volvox_alias_target.paf'
+
 // In the first 28498M block the two assemblies run 1:1, so the expected answer
 // needs no arithmetic and a row left where it started fails loudly.
 const LOCUS = 'ctgA:10000..11000'
 
+interface SyntenyDisplay {
+  featureData?: { refNameDict: string[]; mateRefNameDict: string[] }
+}
+
 interface SyntenyView {
   initialized: boolean
   views: LinearGenomeViewModel[]
-  levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
+  levels: { linearSyntenyDisplays: SyntenyDisplay[] }[]
   followUnaligned: boolean
   setWidth: (n: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
 }
 
-async function openWith(trackId: string) {
+async function openWith(
+  trackId: string,
+  assemblies = ['volvox', 'volvox_del'],
+) {
   const { session } = getTestSession()
   const view = session.addView('LinearSyntenyView', {
     init: {
-      views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
+      views: assemblies.map(assembly => ({ assembly })),
       tracks: [trackId],
     },
   }) as unknown as SyntenyView
@@ -107,7 +121,7 @@ test('the follow places the row through a canonically-spelled file', async () =>
 // `ResolvedSpan.refName` from `SyntenyResolveMatchingRegion` (renamed in
 // `resolveMatchingSpan`), which `alreadyShowing`, `followTransform` and
 // `positionViewOnSpan` all then compare against view state.
-// `getAdapterToCanonicalRefNameMap` (@jbrowse/synteny-core) is the map for both;
+// `getCanonicalRefNameFn` (@jbrowse/synteny-core) is the resolver for both;
 // renaming a dictionary means re-interning it, for the reason
 // `agent-docs/reference/REFNAME_NAMESPACES.md` gives.
 //
@@ -128,4 +142,30 @@ test('the follow places the row through an alias-spelled file too', async () => 
     expect(win.end).toBeLessThan(11500)
   }, timeout)
   expect(view.followUnaligned).toBe(false)
+})
+
+// THE OTHER AXIS, which the two tests above cannot reach and which nothing
+// pinned: with the alias on the query side both axes' resolvers can be the same
+// one — or the mate rename can be dropped outright — and every assertion still
+// passes. Here they have to be told apart. `volvox_del` declares no aliases, so
+// resolving the mate dictionary against it (the swap) leaves `A` as `A`.
+//
+// Asserted on the DICTIONARIES rather than on where a row lands, because the
+// mate spelling is nearly invisible from the outside: `navToLocString` resolves
+// aliases itself, so an un-renamed span still navigates to the right place. What
+// it breaks is quieter — `alreadyShowing` compares `A` against a canonical
+// `ctgA` and never matches, so the row renavigates on every settle, and
+// `positionViewOnSpan` finds no offset for `A` in `displayedRegions` and the
+// per-frame pass silently stops moving the row at all.
+//
+// The file carries NO CIGAR on purpose. With one, the follow resolves through
+// `SyntenyResolveMatchingRegion` and channel 2 canonicalizes the answer whatever
+// the dictionary says; without one it interpolates across the block and reads
+// `feat.mate.refName` straight out of `mateRefNameDict`, which is the only path
+// where this dictionary is the sole source of the name.
+test('the target axis is canonicalized against its own assembly', async () => {
+  const view = await openWith(ALIASED_TARGET, ['volvox_del', 'volvox'])
+  const { featureData } = view.levels[0]!.linearSyntenyDisplays[0]!
+  expect(featureData!.refNameDict).toEqual(['ctgA'])
+  expect(featureData!.mateRefNameDict).toEqual(['ctgA'])
 })
