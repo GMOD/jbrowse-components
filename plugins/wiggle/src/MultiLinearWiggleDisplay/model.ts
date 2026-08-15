@@ -55,7 +55,7 @@ import {
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import { buildSources } from './sourcesLogic.ts'
+import { buildSources, rowColorMode } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { Source } from '../util.ts'
@@ -229,7 +229,11 @@ export default function stateModelFactory(
        * deciding to draw cannot disagree. See `buildLegendItems`.
        */
       get legendItems(): LegendItem[] {
-        return buildLegendItems(self.sources, self.isDensityMode, self.posColor)
+        return buildLegendItems(
+          self.sources,
+          rowColorMode(self.isOverlay, self.isDensityMode),
+          self.posColor,
+        )
       },
     }))
     .views(self => ({

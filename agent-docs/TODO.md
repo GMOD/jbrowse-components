@@ -36,7 +36,6 @@ before anyone noticed.
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
-| [Audit the wiggle colour paths for the same split](#audit-the-wiggle-colour-paths-for-the-same-split) | wiggle | read `sourcesLogic.ts` against its legend |
 | [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
 | [The interbase stack overruns its half-band](#the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint) | alignments | a visual call; the overflow is measured, no fix is chosen |
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
@@ -303,21 +302,6 @@ serving the same role in different schemes — this one for `noStrand` / `nonSpl
 Adding a dark variant makes two neutrals theme-correct; folding leaves one. The
 second is the smaller palette and the bigger change, since the legend labels the
 categories separately and a fold makes two swatch rows the same colour.
-
-### Audit the wiggle colour paths for the same split
-
-The alignments plugin turned up three instances of one failure mode — a colour
-or label table duplicated across two paths, agreeing by comment rather than by
-derivation, and agreeing only in the default theme with well-formed data. All
-three are written up in
-[ALIGNMENTS_COLOR_PARITY.md](reference/ALIGNMENTS_COLOR_PARITY.md).
-
-`plugins/wiggle` has the same shape and has not been looked at:
-`MultiLinearWiggleDisplay/sourcesLogic.ts` carries a three-mode colour model
-(overlay / multirow / density, with identity displaced to `labelColor` in
-density) and `legendItems.ts` derives the key separately. The question to ask is
-the one that found the others: does the legend derive from the table the
-renderer paints, or restate it.
 
 ### Make the snapshot capture scroll-invariant, then widen the gate to webgpu
 

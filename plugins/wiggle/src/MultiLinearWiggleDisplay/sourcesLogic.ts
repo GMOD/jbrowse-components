@@ -43,13 +43,18 @@ import type { Source } from '../util.ts'
  * has a color, so signed data still reads as bicolor; that split is the
  * renderer's and is settled (ADR-016, `buildSourceRenderData`).
  */
-type RowColorMode = 'overlay' | 'multirow' | 'density'
+export type RowColorMode = 'overlay' | 'multirow' | 'density'
 
 // Three modes but two booleans, because `multirowdensity` IS a multi-row
 // rendering — so overlay and density are never both true. Collapsed once, here,
 // so everything downstream branches on the mode itself and the impossible
 // fourth combination has nowhere left to hide.
-function rowColorMode(
+//
+// Exported because the color key is downstream of this table too: `legendItems`
+// takes the mode rather than the raw booleans, so which channel it reads and
+// what an unset one falls back to are both read off the table above instead of
+// restated against `isDensityMode`.
+export function rowColorMode(
   isOverlay: boolean,
   isDensityMode: boolean,
 ): RowColorMode {

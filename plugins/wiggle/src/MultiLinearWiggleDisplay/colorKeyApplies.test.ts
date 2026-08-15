@@ -95,21 +95,58 @@ describe('density mode keys off the row identity colour', () => {
     expect(display.overlayLegendApplies).toBe(true)
   })
 
-  // Nothing carries an identity colour, so every swatch would fall back to the
-  // one posColor: rows over the plot naming sources they cannot tell apart.
-  // Sized so the entry count alone would let the key through (20 rows at 5px is
-  // under both the label threshold and MAX_LEGEND_ITEMS), leaving the
-  // one-colour test as the only thing refusing it.
-  it('does not apply when every entry would share one colour', () => {
+  // Nothing carries an identity colour, and in density there is no fallback to
+  // invent one: `posColor` is the score ramp, so keying a row with it points at
+  // a colour every row on the plot is already drawn on. SvgRowLabels draws no
+  // swatch for such a row either, so the key drawing no entry matches it.
+  // Sized so the entry count alone would let a key through (20 rows at 5px is
+  // under both the label threshold and MAX_LEGEND_ITEMS).
+  it('keys nothing when no row carries an identity colour', () => {
     const display = makeDisplay(
       Array.from({ length: 20 }, (_, i) => makeSource(`cell${i}`)),
       100,
     )
     display.setRenderingType('multirowdensity')
     expect(display.effectiveRowHeight).toBeLessThan(6)
-    expect(display.legendItems).toHaveLength(20)
+    expect(display.legendItems).toHaveLength(0)
     expect(display.overlayLegendApplies).toBe(false)
   })
+
+  // The mixed track: grouped subtracks always take a group palette entry, so
+  // they key; ungrouped ones take none and have no identity colour at all. They
+  // used to key in `posColor` — the ramp — which put swatches in the key for
+  // rows whose label boxes are the plain theme background.
+  it('keys the grouped rows and leaves the uncoloured ones out', () => {
+    const display = makeDisplay(
+      [
+        ...groupedUncoloured(6, 3),
+        ...Array.from({ length: 2 }, (_, i) => makeSource(`ref${i}`)),
+      ] as WiggleSourceData[],
+      40,
+    )
+    display.setRenderingType('multirowdensity')
+    expect(display.sources.filter(s => !s.labelColor)).toHaveLength(2)
+    expect(display.legendItems.map(i => i.label)).toEqual(['g0', 'g1', 'g2'])
+    expect(display.legendItems.every(i => i.color !== display.posColor)).toBe(
+      true,
+    )
+  })
+})
+
+// The other side of the same rule: outside density an unset `color` really is
+// what `buildSourceRenderData` paints in `posColor`, so the key resolves to it
+// rather than dropping the row — and a whole key collapsing to that one colour
+// is what `legendIsReadable` is left to refuse.
+it('keys uncoloured multi-row rows in the colour they are painted', () => {
+  const display = makeDisplay(
+    Array.from({ length: 20 }, (_, i) => makeSource(`cell${i}`)),
+    100,
+  )
+  expect(display.legendItems).toHaveLength(20)
+  expect(display.legendItems.every(i => i.color === display.posColor)).toBe(
+    true,
+  )
+  expect(display.overlayLegendApplies).toBe(false)
 })
 
 // A group whose sources disagree about their colour still collapses, to one row

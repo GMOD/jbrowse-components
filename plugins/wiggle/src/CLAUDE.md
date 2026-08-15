@@ -106,6 +106,17 @@ builds one gradient per layer. Everything else keeps the band whole with
 per-instance colors; splitting line or scatter breaks continuity at every pivot
 crossing.
 
+## The colour key takes the mode, not `isDensityMode`
+
+`sourcesLogic.ts` owns the three-mode colour table and `buildLegendItems` takes
+its `RowColorMode`, because **the fallback belongs to the mode as much as the
+channel does**. Outside density an unset `color` really is painted in
+`posColor`, so the key resolves to it; in density `posColor` is the score ramp
+and identity is drawn by `SvgRowLabels`, which paints a row with no `labelColor`
+as no swatch at all — so an uncoloured density row gets no key entry either.
+Reachable whenever a density track mixes grouped subtracks (which always take a
+group palette entry) with ungrouped ones (which take none).
+
 ## The shipped arrays are aliased — read, never write
 
 `processFeaturesFromArrays` aliases min/max onto `featureScores` when there's no
