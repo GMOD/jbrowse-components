@@ -9,108 +9,78 @@ what is local here.
 
 The published package an example may import from is
 `@jbrowse/react-linear-genome-view2`, plus the other published packages that doc
-names. This site is where the no-shared-helpers rule was learned: it was built
-with a `src/browser/` module first and had to be rewritten.
+names. This site is where the no-shared-helpers rule was learned.
 
 ## `check-duplication.mjs` holds the copy-paste rule up from both sides
 
-Run by `pnpm check-links`, and unique to this site. It asks two questions, and
-they are not the same question.
+Run by `pnpm check-links`, and unique to this site. Two questions:
 
-**Are the copies identical?** Two top-level blocks with the same name in two
-example files must match once comments are stripped. This exists because the
-cost of the rule is drift — a pan-handler fix has to land in five files, and the
-file that gets missed is a page teaching a bug with nothing to say so. A block
-that genuinely differs per page goes in `DIVERGES` **with a reason**.
+**Are the copies identical?** Two top-level blocks with the same name must match
+once comments are stripped, because the cost of the rule is drift — the file
+that gets missed is a page teaching a bug with nothing to say so. A block that
+genuinely differs per page goes in `DIVERGES` **with a reason**.
 
 **Should the copies exist?** A block in `COPY_THRESHOLD` (3) files or more needs
-a `COPIED` entry saying why it is the reader's own to write. Identical-ness says
-nothing about this, so before `COPIED` existed a green run sat on ~1400
-redundant lines. A failure here has two possible fixes and choosing between them
-_is_ the check:
+a `COPIED` entry saying why it is the reader's own to write. Choosing between
+the two fixes _is_ the check:
 
-- the reader would write it anyway — their box, their track config, their app's
-  dark-mode wiring — so add the entry.
+- the reader would write it anyway — their box, their track config — so add the
+  entry.
 - the reader would have to write it because JBrowse publishes no equivalent.
-  That is a missing export. `usePanZoom` was eight hand-rolled copies, each
-  worse than the gesture layer JBrowse already ran.
+  That is a missing export (`usePanZoom` was eight hand-rolled copies).
 
-Deliberately **not** a redundant-line budget. Adding a page adds copies, which
-is the rule working; introducing a new widely-shared block is the event worth
-interrupting. The line total is printed for the trend, and gates nothing.
+Deliberately **not** a redundant-line budget: adding a page adds copies, which
+is the rule working. The line total is printed for the trend and gates nothing.
 
 **It only sees named top-level declarations, so behaviour that repeats has to be
-given a name.** Repeated JSX written inline has nothing to group by and is
-invisible to both halves above — the most-repeated thing on this site was the
-pan/zoom container div, its four style properties written out inline in 13
-files, and the check had never looked at it. One of the four is
-`touchAction: 'none'`, whose absence costs nothing on a desktop and makes the
-demo inert on a phone, silently. It is `viewport` now, one `const` per file.
-When a styled div reaches a fifth example, name it there rather than reading a
-green run as coverage.
+given a name.** Repeated inline JSX is invisible to both halves — the
+most-repeated thing on this site was a pan/zoom container div written out in 13
+files, one of whose four style properties is `touchAction: 'none'`, whose
+absence makes the demo inert on a phone, silently. When a styled div reaches a
+fifth example, name it there rather than reading a green run as coverage.
 
-Keep both lists short. If either starts growing, the shared surface has outgrown
+Keep both lists short. If either grows, the shared surface has outgrown
 copy-paste and the answer is a different rule argued here, not more entries.
 
-## Two measured claims this site makes, and both are ratchets
+## Two measured claims, and both are ratchets
 
-**`smoke.mjs` holds the evidence for this site's central claim**, in two halves:
-`MUI_BUDGET` counts `Mui*`-classed elements, and `muiThemedStyling` counts
-elements whose font came from MUI's default theme — the only way to see a
-`makeStyles` component, since an emotion class has no `Mui` in its name. Every
-page that installs `plainChromeOverlays` + `plainTrackControl` scores **zero**
-on both. When one fails, the fix is almost never to change the number — it is
-that a display started rendering a Material component that isn't behind either
-provider. Raising the budget quietly makes the prose false. Background:
-`agent-docs/reference/DISPLAYCHROME.md`, "The bring-your-own seams".
+**`smoke.mjs` holds the evidence for this site's central claim**: `MUI_BUDGET`
+counts `Mui*`-classed elements and `muiThemedStyling` counts elements whose font
+came from MUI's default theme — the only way to see a `makeStyles` component.
+Every page installing `plainChromeOverlays` + `plainTrackControl` scores
+**zero** on both. When one fails, the fix is almost never the number: a display
+started rendering a Material component that isn't behind either provider, and
+raising the budget quietly makes the prose false.
 
-**`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` (what each
-page downloads before it can run — the static-import closure from its entry) and
-re-checked by `pnpm smoke`. Going **under** a budget fails as well as going over
-— bank the win by re-running and committing, or the next change quietly spends
-it. Don't raise a budget to make it pass, for the same reason `MUI_BUDGET` isn't
-raised.
+**`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
+re-checked by `pnpm smoke`. Going **under** a budget fails as well as over —
+bank the win by re-running and committing, or the next change spends it quietly.
 
-Two things to check before hunting an import, both written up in
+Two things to check before hunting an import, both in
 `agent-docs/reference/EAGER_BUNDLE.md`:
 
-- **Was a page added or removed?** Page budgets here are coupled — a new entry
-  re-partitions chunks across the whole site, worth ~13 KB gzip a page. Two such
-  steps are banked in the committed figures. See §"A multi-page site's budgets
-  are coupled".
+- **Was a page added or removed?** Page budgets are coupled — a new entry
+  re-partitions chunks site-wide, worth ~13 KB gzip a page.
 - **Is it a shared React-free module?** A module imported by both an eager and a
   lazy module gets grouped with the lazy chunk, so the eager import pays for the
-  whole chunk. This, not a component import, is what both regressions since have
-  been — in each, `--holds` reported _zero_ eagerly-evaluated modules importing
-  any React component. A lazy module importing an eager one is free; only the
-  shared module costs. See §"A duplicate is how a bundling split looks from the
-  inside".
+  whole chunk. This, not a component import, is what both regressions have been.
 
 ## `pnpm probe-eager-graph` answers _why_, and is the one to reach for first
 
-`measure-eager-bundle` gives a number; this gives the modules behind it. It
-rebuilds through `astro.config.probe.mjs` — the real config plus one Vite plugin
-that dumps the pre-treeshake source graph (`buildEnd`) and the post-treeshake
-chunks with per-module byte counts (`generateBundle`) — and intersects them, so
+`measure-eager-bundle` gives a number; this gives the modules behind it, by
+intersecting the pre-treeshake source graph with the post-treeshake chunks — so
 "is statically reachable" becomes "is actually paid for".
 
-    pnpm probe-eager-graph                          costliest eager modules, by package
-    pnpm probe-eager-graph --holds @mui/material/styles    who is keeping it here
-    pnpm probe-eager-graph --no-build               reuse the last dump
+    pnpm probe-eager-graph                                costliest eager modules
+    pnpm probe-eager-graph --holds @mui/material/styles   who is keeping it here
+    pnpm probe-eager-graph --no-build                     reuse the last dump
 
-It is committed because three sessions in a row rebuilt it from scratch, and
-because every wrong bundle number in EAGER_BUNDLE.md's history came from
-reasoning where this would have answered. Two traps are wired into it rather
-than left as advice: it attributes at module level, never by chunk name (a
-rolldown chunk is named after one of its modules and holds unrelated ones); and
-when nothing first-party names the target directly it falls back to listing the
-package's barrel importers, because `import { Button } from '@mui/material'`
-records an edge to the barrel and a direct-importer query would report "nothing
-to fix".
+Two traps are wired in rather than left as advice: it attributes at module
+level, never by chunk name (a rolldown chunk is named after one of its modules
+and holds unrelated ones); and when nothing first-party names the target
+directly it falls back to the package's barrel importers, since
+`import { Button } from '@mui/material'` records an edge to the barrel.
 
-The dump lands in `node_modules/.cache/`, and the probe build overwrites `dist/`
-like any other — re-run `pnpm build` before trusting a measurement taken after
-it.
-
-The chrome bundle figures in the prose come from the repo-root
-`scripts/measureChromeBundle.ts` and its `pnpm autogen` entry.
+The probe build overwrites `dist/` — re-run `pnpm build` before trusting a
+measurement taken after it. The chrome bundle figures in the prose come from the
+repo-root `scripts/measureChromeBundle.ts`.

@@ -3,23 +3,17 @@
 Full model: `agent-docs/reference/CONFIG_PATTERN.md` and
 `DISPLAY_TYPE_DEFAULTS.md`.
 
-- `getConf` (model with `.configuration`) is exactly
-  `readConfObject(model.configuration, path)` — the two readers are equally
+- `getConf` is exactly `readConfObject(model.configuration, path)` — equally
   strict about slot names, so **switching readers cannot make a slot-name error
-  go away.** `readConfObject`'s map overload takes only `IMSTMap`; don't
-  re-widen it to admit `AnyConfigurationModel`, which let a typo fall through
-  and compile as `any`. The map case is a top-level `types.map` of sub-schemas,
-  which no production schema declares.
+  go away.** Don't re-widen `readConfObject`'s map overload to admit
+  `AnyConfigurationModel`; that let a typo compile as `any`.
 - **`setSlot` throws on a name the schema doesn't declare**, which is what makes
-  a misspelled _write_ diagnosable at all — the compile-time guard on `setConf`
-  only covers writes whose schema is concrete, and a mixin or a widened factory
-  erases that. Don't weaken it to a warning: the failure it replaces was an
-  assignment to an undeclared property, silent at every layer. Note this is a
-  different check from the read-side one that was tried and reverted (below); a
-  write always targets a live node, so it has no snapshot ambiguity.
+  a misspelled _write_ diagnosable at all — `setConf`'s compile-time guard only
+  covers concrete schemas, and a mixin erases that. Don't weaken it to a
+  warning.
 - **`resolveConf` is the only thing that walks a promotable slot's cascade.**
   `getConf` stays raw. Never paper over the resulting compile error with
-  `?? someDefault` — that silences the check and bypasses the cascade.
+  `?? someDefault`.
 - **`promotedBase` is the one thing that makes a slot promotable.** Such a slot
   must be a `maybe*` type with no `defaultValue`; `undefined` is the only
   inherit sentinel. Every boundary serializing a display config **must flatten**
@@ -29,96 +23,74 @@ Full model: `agent-docs/reference/CONFIG_PATTERN.md` and
 ## Slot overrides merge over `baseConfiguration`
 
 A subclass redeclaring a slot gets a field-by-field merge, so state only what
-differs. Keep `type` and `defaultValue` regardless (they're what distinguish a
-slot from a sub-schema). The merge is a spread, so to turn a base field off,
-state it — including `promotedBase: undefined` to make an inherited promotable
-slot plain again.
+differs — but keep `type` and `defaultValue`, which are what distinguish a slot
+from a sub-schema. The merge is a spread, so turning a base field off means
+stating it, including `promotedBase: undefined`.
 
-`actions` / `views` / `extend` / `preProcessSnapshot` are the exception to the
-spread: they **compose** with the base's rather than replacing them. The first
-three chain through separate MST calls, so the base's members are on `self`
-inside the subclass's function and a subclass overrides one by redeclaring its
-name. `preProcessSnapshot` folds to `child(base(snapshot))`, base normalizes
-first. `ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy of the base's
-slots for a _different_ reason (it wants a subset, and `baseConfiguration` only
-ever adds), so composition does not retire it.
+`actions` / `views` / `extend` / `preProcessSnapshot` **compose** instead of
+replacing: the first three chain through separate MST calls, so a subclass
+overrides one by redeclaring its name, and `preProcessSnapshot` folds to
+`child(base(snapshot))`. `ReferenceSequenceTrack/configSchema.ts` hand-rolls a
+copy for a different reason (it wants a subset, and `baseConfiguration` only
+adds).
 
-The base has to be **the type `ConfigurationSchema()` returned**, since that is
-the only handle registered against a slot table. A `types.late` wrapper or a
-union (`pluginManager.pluggableConfigSchemaType(…)`) type-checks and passes
-`isBareConfigurationSchemaType`, and used to drop every inherited slot in
-silence; it now throws at construction.
+The base must be **the type `ConfigurationSchema()` returned**. A `types.late`
+wrapper or a union type-checks and passes `isBareConfigurationSchemaType`, and
+used to drop every inherited slot in silence; it now throws at construction.
 
 ## An arg-less read of a callback slot resolves it against nothing
 
-`args` is **optional** on `readConfObject` / `getConf` / `resolveConf`, so "what
-is this setting" and "what is this setting FOR this feature" are the same call
-with and without a third argument. On a `jexl:` slot the arg-less form still
-evaluates, against a context where every name the expression mentions is
-`undefined`, and returns the fallout as the setting — a throw out of whatever
-getter did the read (`get(feature,…)`), or a plausible wrong value (`''`, `NaN`)
-when the functions involved are total.
+`args` is **optional**, so "what is this setting" and "what is this setting FOR
+this feature" are the same call. On a `jexl:` slot the arg-less form still
+evaluates, against a context where every name is `undefined`, and returns the
+fallout as the setting — a throw, or a plausible wrong value when the functions
+are total.
 
 **A curated `rpcProps()` must read such a slot raw** — `self.conf.someSlot`, not
-a reader — because the worker is what binds the feature. `CONFIG_PATTERN.md`
-§"Forwarding a callback slot" has the two symptoms, the worked examples on both
-sides, and the test to copy.
+a reader — because the worker binds the feature. `CONFIG_PATTERN.md`
+§"Forwarding a callback slot" has the symptoms and the test to copy.
 
 Do **not** fix this by teaching the reader to skip evaluation when `args` is
-empty. That was built, measured and backed out: it makes a read typed as the
-slot's resolved type hand back `"jexl:…"` for every caller in the repo and every
-third-party plugin (`@jbrowse/core/configuration` is in `ReExports/modules.ts`,
-and `abiBaseline.json` guards names, not behavior) — trading an enumerable set
-of wrong values for an unenumerable one. Keying on the slot's `contextVariable`
-instead is worse still: it is editor metadata, and a slot is free to forget it.
-The typed repair — forking the reader so a call site states which of the two
-operations it wants — is written up in the ADR's consequences, not scheduled.
+empty. That was built, measured and backed out: it hands back `"jexl:…"` for
+every caller in the repo and every third-party plugin, trading an enumerable set
+of wrong values for an unenumerable one. Keying on `contextVariable` is worse —
+it is editor metadata a slot is free to forget.
 
 ## A config snapshot is transport, not a value-read API
 
 `types.stripDefault` omits a slot still at its default, so reading a defaulted
 slot off a snapshot returns `undefined` for most tracks. Use an array slot path
-off the live node — `getConf(track, ['adapter', 'someSlot'])`. Types enforce
-this; there is deliberately **no runtime check** (reading off an un-hydrated
-frozen config is load-bearing in `generateHierarchy`, and a throw was tried and
-reverted).
+off the live node. Types enforce this; there is deliberately **no runtime
+check** (reading off an un-hydrated frozen config is load-bearing in
+`generateHierarchy`).
 
 ## Read type narrowing
 
 Reads narrow only when the schema is concrete — the lever is typing a state
 model factory's `configSchema` param to its concrete type. Don't pin a shared
 base if any consumer reads its own non-shared slots through it; a subclass
-reclaims its own slots by redeclaring the `configuration` prop
-(`SharedGCContentModel` is the worked example). **Generic threading does not
-rescue this — don't retry it in any form.** Guards in
+reclaims them by redeclaring the `configuration` prop. **Generic threading does
+not rescue this — don't retry it in any form.** Guards in
 `configTypeNarrowing.test.ts` (checked by `pnpm typecheck`, not jest).
 
 **A widened `baseConfiguration` poisons the whole schema**, since
-`ConfigurationSlotName` recurses through `GetBase` — so a schema that takes its
-base from `pluginManager.getDisplayType(…).configSchema` has unchecked reads of
-its _own_ slots, and no downstream annotation can recover them. Import the base
-schema directly instead. gccontent hit exactly this.
+`ConfigurationSlotName` recurses through `GetBase` — so a schema taking its base
+from `pluginManager.getDisplayType(…).configSchema` has unchecked reads of its
+_own_ slots. Import the base schema directly.
 
-`pnpm check-config-read-types` is the other half: the narrowing test proves the
-machinery works on a concrete schema, this counts how many real call sites reach
-it (baselined in `scripts/configReadTypeGaps.txt`; run the script with `--write`
-to re-baseline, and say why in the commit). **Gated in CI** on the `typecheck`
-job; it fails only when the source count grows. Note the baseline groups by
-file, which hides that many per-display gaps are reads against the _track_
-schema and so unreachable by narrowing the display. **The signal is the read's
-return type, not the config node's** — `AnyConfigurationModel` is a real object
-type rather than `any`, so a widened holder looks concrete while
-`ConfigurationSlotName` of it has already degraded to `string`. A
-`@ts-expect-error` probe on the mixin idiom compiles clean; only the `any`
-return gives it away.
+`pnpm check-config-read-types` counts how many real call sites reach the
+narrowing (baselined in `scripts/configReadTypeGaps.txt`; `--write` to
+re-baseline, and say why in the commit). Gated in CI, failing only when the
+count grows. **The signal is the read's return type, not the config node's** —
+`AnyConfigurationModel` is a real object type, so a widened holder looks
+concrete while `ConfigurationSlotName` of it has degraded to `string`.
 
 ## Frozen tracks + hydration
 
 The hydration cache on `PluginManager` is load-bearing, not an optimization:
 MST's custom reference `get()` has no memoization, so without it every read of
 `track.configuration` fabricates a fresh non-identical node. It lives on the
-manager, not a module singleton, so two managers in one realm can't cross wires
-(ADR-031).
+manager, not a module singleton (ADR-031).
 
 Hydration is `create(frozen)`, so an invalid config throws on first read. The
 invariant is that **`view.tracks` only ever holds usable tracks**, enforced at
