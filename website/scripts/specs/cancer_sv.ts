@@ -981,7 +981,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     //
     // Then +45 for the hg38 lane's read-connection arc band, the same 45 the
     // sibling paid for it.
-    viewportHeight: 856,
+    //
+    // THEN BACK UP for this round: +65 as the arc band goes 45 -> 110, and
+    // ~+150 as both read lanes leave super-compact for the Compact pitch. Then
+    // 1070 -> 1074, which is what the der3 read lane actually grew to.
+    viewportHeight: 1074,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1125,21 +1129,21 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // curve colored by connection type, which is the thing that
                   // makes a molecule's path across the three windows followable.
                   showBezierConnections: true,
-                  // SUPER-COMPACT (reviewer: "please show reads as
-                  // supercompact"), which is the 1px COMPACTNESS_PRESETS entry,
-                  // gap 0. `heightMode` goes from 'fit' to 'grow' to make it
-                  // take effect at all: while fitting, `featureHeight` is
-                  // DERIVED from the lane height over the row count and the
-                  // configured value is ignored, so a spec asking for 1px in
-                  // fit mode silently gets whatever the fit lands on. Grow does
-                  // the opposite -- the pitch is what the spec says and the
-                  // lane sizes itself to the rows -- which also means nothing
-                  // scrolls out of sight inside the lane, the one failure the
-                  // run's own size checks cannot see.
+                  // COMPACT, not super-compact (reviewer: "turn off
+                  // supercompact"; the same reviewer asked for it one round
+                  // earlier). At the 1px pitch a row was a hairline and the
+                  // strand colour it carries had nowhere to be seen, so the
+                  // lane cost 45px and said only that reads were present.
+                  //
+                  // `grow` stays, and is what makes a pitch mean anything at
+                  // all: while fitting, `featureHeight` is DERIVED from the
+                  // lane height over the row count and the configured value is
+                  // ignored, so a spec asking for a pitch in fit mode silently
+                  // gets whatever the fit lands on.
                   heightMode: 'grow',
                   height: 200,
                   coverageHeight: 30,
-                  featureHeight: 1,
+                  featureHeight: 3,
                   colorBy: { type: 'strand' },
                   // THE THREE JUNCTIONS AS COUNTED ARCS (review: "please try to
                   // add the interchromosomal arcs like cancer_sv/
@@ -1164,12 +1168,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // pieces the allele is made of; this says how each join is
                   // put together.
                   readConnections: 'arc',
+                  // 45 -> 110 (reviewer: "we need to increase height of the
+                  // arcs"). At 45 the three domes clamped to the band ceiling
+                  // and drew as one flat mass, so the count each carries -- the
+                  // reason this band is here at all -- was unreadable.
+                  readConnectionsHeight: 110,
                 },
               ],
             },
             {
               assembly: 'der3_RARB_BICC1_TRHDE',
-              loc: 'der3_RARB_BICC1_TRHDE:1-39,549',
+              // THE SAME SCALE AS THE ROW ABOVE (reviewer: "i think the top and
+              // bottom have two different 'scales', we may want to zoom in on
+              // the bottom for same scale"). A synteny panel gives every region
+              // one bp/px, so matching the two rows' TOTAL spans matches them
+              // everywhere: the top lays out 13,000 + 2,000 + 2,500 bp, and this
+              // is 17,549. Every ribbon is then near-vertical instead of fanning
+              // 2.3x wider on the way down.
+              //
+              // It costs the first 22 kb of the 32.7 kb arm, which is the half
+              // that carries nothing: the arm's own label draws at its start and
+              // so goes with it, and the segments lane's remaining labels are
+              // the three at the junctions, which is what this frame is about.
+              loc: 'der3_RARB_BICC1_TRHDE:22,000-39,549',
               // NOT overlapping on this row, unlike the one above, and the
               // difference is the segments lane: `trackLabels` is a property of
               // the VIEW, so it is all three tracks or none, and floating the
@@ -1180,18 +1201,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // say. The row above has no label under anything in its left
               // margin, so it pays nothing for the same setting.
               trackLabels: 'offset',
-              // the same span in the allele's own coordinates, so the two
-              // shadings are one object seen from both sides -- and it is the
-              // window the next figure opens
-              highlight: [
-                {
-                  refName: 'der3_RARB_BICC1_TRHDE',
-                  assemblyName: 'der3_RARB_BICC1_TRHDE',
-                  label: 'junctions',
-                  start: 32000,
-                  end: 33700,
-                },
-              ],
+              // NO HIGHLIGHT ON THIS ROW (reviewer: "potentially remove the
+              // highlight it is confusing because that is not the only place
+              // being shown in the breakpoint area on bottom"). Right: the band
+              // shaded 32,000-33,700, and the fold-back's inverted return runs
+              // from there to the end of the contig, so a reader is told to look
+              // at one part of a breakpoint region the row draws all of. The
+              // window is now that region, which is what the shading was for.
               // the provenance track says which reference interval each stretch
               // came from; the projected genes say what that stretch is -- the
               // allele carries RARB's first coding exon at 14 kb and comes back
@@ -1297,15 +1313,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   trackId: 'reads_vs_der3',
                   coverageHeight: 30,
-                  // super-compact, same reviewer note as the lane above. 53
-                  // non-secondary records pack into ~41 rows (a few of the
-                  // short ones share); at a 1px pitch that is 41px of reads
-                  // under the band, where the Compact pitch of 3 took 130.
-                  // `grow` sizes the lane to them rather than the spec guessing
-                  // a height that could scroll rows out of sight.
+                  // compact, same reviewer note as the lane above. 53
+                  // non-secondary records pack into ~41 rows, so the Compact
+                  // pitch of 3 costs ~130px against super-compact's 41 --
+                  // spent because at 1px the strand colour has nowhere to draw.
+                  // `grow` sizes the lane to the rows rather than the spec
+                  // guessing a height that could scroll some out of sight.
                   heightMode: 'grow',
                   height: 170,
-                  featureHeight: 1,
+                  featureHeight: 3,
                   colorBy: { type: 'strand' },
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
