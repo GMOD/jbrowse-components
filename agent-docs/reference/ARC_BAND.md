@@ -51,11 +51,21 @@ Stated in two places, for the two things that overlap:
   short-read data mismapped pairs put a full-height opaque vertical at a large
   share of loci — straight through the arcs that carry insert size and
   orientation.
-- Within the arcs, in `resolveArcs`' sort: `arcPaintRank` (categorized over
+- Within the arcs, in `arcPaintOrder`: `arcPaintRank` (categorized over
   uncategorized) first, `support` second, dedup key last. A deep pileup is
   overwhelmingly concordant pairs and they all paint the baseline slot, so
   support-ascending alone let grey punch through the few arcs that mean
   something.
+
+  **BOTH halves take it**, which is why it is one exported comparator rather
+  than a sort per feed. The cross-region overlay ranked on support alone, on the
+  ground that "nothing cross-region is routine" — and the opposite is true: arcs
+  reach that overlay by straddling a SEAM, so they are the ordinary fragments
+  lying across it and the 9138-of-9204 ratio arrives there too. SVG document
+  order is paint order and `pointerEvents: 'stroke'` gives the top path the
+  tooltip, so a two-read grey pair both covered and answered for the
+  interchromosomal arc under it; and `CROSS_REGION_ARC_CAP`, which keeps the
+  tail, dropped that arc first.
 
 `hitTestArcBand` is the single entry point for the band, because which mark a
 hover resolves to is a question about that order, and the answer belongs beside

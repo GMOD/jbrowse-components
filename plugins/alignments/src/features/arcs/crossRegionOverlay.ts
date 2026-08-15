@@ -7,6 +7,7 @@ import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generate
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.consts.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
 import { arcMarkScreenPath } from './arcPath.ts'
+import { arcPaintOrder } from './compute.ts'
 import { arcMarkFrom } from './mark.ts'
 
 import type { ColorPalette } from '../../shaders/colors.ts'
@@ -175,19 +176,27 @@ export function computeCrossRegionArcs({
       projected.push({ arc, sx1, sx2 })
     }
   }
-  // ASCENDING SUPPORT, the same order `resolveArcs` sorts the per-region feed
-  // into and for the same two reasons: array order is document order, so the
-  // last path drawn keeps the pixels it shares, and `pointerEvents: 'stroke'`
-  // gives the topmost path the tooltip. `resolveArcs` sorts on paint rank first,
-  // but every arc here is one the reader is looking for — nothing cross-region
-  // is routine — so support alone is the ranking, tie-broken on the dedup key so
-  // the order is the same twice.
-  projected.sort(
-    (a, b) => a.arc.support - b.arc.support || (a.arc.key < b.arc.key ? -1 : 1),
-  )
-  // The cap takes the TAIL, which is the heaviest-supported end of that sort —
-  // so what survives is the junctions the most reads agree on, and what goes is
-  // the singletons that were about to be painted over anyway.
+  // `arcPaintOrder`, the same comparator `resolveArcs` puts the per-region feed
+  // in, for the same two reasons one level down: array order is document order,
+  // so the last path drawn keeps the pixels it shares, and `pointerEvents:
+  // 'stroke'` gives the topmost path the tooltip.
+  //
+  // Re-sorted here rather than trusted off the input, because the projection
+  // above DROPS arcs and the cap below reads the tail — an order the caller
+  // happens to leave behind is not a thing to key a filter on.
+  //
+  // It sorted on support alone, on the ground that "nothing cross-region is
+  // routine". That is false, and the cap's own comment says so two paragraphs
+  // up: cross-region arcs at a seam ARE the fragments straddling it, so at depth
+  // this set is overwhelmingly ordinary concordant pairs — the 9138-of-9204
+  // ratio `arcPaintRank` exists for, arriving here as well. Ranking them by
+  // support alone let a grey pair two reads deep paint over, and take the hover
+  // from, the interchromosomal arc the two-region view was opened to see; and
+  // the cap, taking the tail, dropped that arc first.
+  projected.sort((a, b) => arcPaintOrder(a.arc, b.arc))
+  // The cap takes the TAIL, which is the categorized, heaviest-supported end of
+  // that sort — so what survives is what the picture is for, and what goes is
+  // the routine singletons that were about to be painted over anyway.
   let kept = projected
   if (projected.length > CROSS_REGION_ARC_CAP) {
     kept = projected.slice(projected.length - CROSS_REGION_ARC_CAP)

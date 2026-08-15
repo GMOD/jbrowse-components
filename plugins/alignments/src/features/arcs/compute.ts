@@ -178,6 +178,43 @@ export function arcPaintRank(colorType: number) {
   return colorType === COLOR_DEFAULT ? 0 : 1
 }
 
+// CATEGORY FIRST, then ASCENDING SUPPORT, because array order is paint order and
+// the strokes are opaque: the last arc drawn over a shared pixel is the one that
+// keeps it. THE order for both halves of the feed — the per-region arrays here
+// and the cross-region overlay's SVG document order, where it also decides which
+// arcs a cap keeps.
+//
+// `arcPaintRank` is the coarse key — every arc that says something paints over
+// every arc that does not; see it for why a deep pileup needs that. Support
+// orders each rank internally: first-seen order is the reads' order, which is
+// arbitrary with respect to support, so a singleton fetched late punched a gap
+// through every heavier arc it crossed — and `hitTestArcs`' last-drawn-wins
+// tie-break then handed those pixels to it too. Heaviest-last is the ranking
+// `arcLineWidth` exists to express, and it is what lets the hit test resolve an
+// overlap toward the strongest junction and still be describing the arc on top.
+//
+// TOTAL, tie-broken on the dedup key, because "the reads' order they arrived in"
+// — which is what a merely stable sort leaves equal-support arcs in — is not the
+// same order twice. Reads reach `pendingArcs` as their fetches complete, so on a
+// loaded machine a different interleaving produces a different paint order among
+// equal-support arcs, and paint order is what decides the color of every pixel
+// where two of them cross.
+//
+// It surfaced as an intermittently failing image snapshot: AlignmentArcs'
+// out-of-view-pairing frame came back 4.9% different, with the whole difference
+// inside the arc band and the reads and coverage below it pixel-identical — the
+// data was the same, only the order it was painted in had changed. `key` is what
+// arcs are deduped by, so no two share it and this is a strict weak ordering;
+// which arc wins a tie does not matter, only that the same one wins it every
+// time.
+export function arcPaintOrder(a: ComputedArc, b: ComputedArc) {
+  return (
+    arcPaintRank(a.colorType) - arcPaintRank(b.colorType) ||
+    a.support - b.support ||
+    (a.key < b.key ? -1 : 1)
+  )
+}
+
 // Legend category for an arc / read-cloud color slot. The read legend is
 // otherwise driven purely by read-fill categories (readColorCategory), so
 // cloud-only buckets — split junctions especially, which no read fill produces
@@ -1723,43 +1760,11 @@ function resolveArcs(
     )
   }
 
-  // CATEGORY FIRST, then ASCENDING SUPPORT, because array order is paint order
-  // and the strokes are opaque: the last arc drawn over a shared pixel is the
-  // one that keeps it.
-  //
-  // `arcPaintRank` is the coarse key — every arc that says something paints
-  // over every arc that does not; see it for why a deep pileup needs that.
-  // Support orders each rank internally: first-seen order is the reads' order,
-  // which is arbitrary with respect to support, so a singleton fetched late
-  // punched a gap through every heavier arc it crossed — and `hitTestArcs`'
-  // last-drawn-wins tie-break then handed those pixels to it too. Heaviest-last
-  // is the ranking `arcLineWidth` exists to express, and it is what lets the hit
-  // test resolve an overlap toward the strongest junction and still be
-  // describing the arc on top.
-  //
-  // TOTAL, tie-broken on the dedup key, because "the reads' order they arrived
-  // in" — which is what a merely stable sort leaves equal-support arcs in — is
-  // not the same order twice. Reads reach `pendingArcs` as their fetches
-  // complete, so on a loaded machine a different interleaving produces a
-  // different paint order among equal-support arcs, and paint order is what
-  // decides the color of every pixel where two of them cross.
-  //
-  // It surfaced as an intermittently failing image snapshot: AlignmentArcs'
-  // out-of-view-pairing frame came back 4.9% different, with the whole
-  // difference inside the arc band and the reads and coverage below it
-  // pixel-identical — the data was the same, only the order it was painted in
-  // had changed. `key` is what arcs are deduped by, so no two share it and this
-  // is a strict weak ordering; which arc wins a tie does not matter, only that
-  // the same one wins it every time.
-  const paintOrder = (a: ComputedArc, b: ComputedArc) =>
-    arcPaintRank(a.colorType) - arcPaintRank(b.colorType) ||
-    a.support - b.support ||
-    (a.key < b.key ? -1 : 1)
-  arcs.sort(paintOrder)
+  arcs.sort(arcPaintOrder)
   // The same TOTAL order over the overlay's half, for the same reason one level
   // down: SVG document order is paint order, and equal-support arcs left in the
   // reads' arrival order are not in the same order twice.
-  crossRegion.sort(paintOrder)
+  crossRegion.sort(arcPaintOrder)
 
   // The same ordering, for the same reason, over the ticks. They are opaque
   // full-band verticals, so two within a stroke width of each other resolve by

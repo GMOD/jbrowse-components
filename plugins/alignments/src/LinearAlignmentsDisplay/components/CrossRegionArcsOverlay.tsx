@@ -29,8 +29,10 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // and they are deliberately not in it.
 //
 // Being a separate z-layer, a cross-region arc paints above every canvas arc and
-// tick regardless of `arcPaintRank`. Defensible rather than accidental: nothing
-// cross-region is routine.
+// tick regardless of `arcPaintRank` — which is a limit of the layering rather
+// than a claim about the arcs. At depth most of this set is ordinary concordant
+// pairs straddling the seam (see `CROSS_REGION_ARC_CAP`), so WITHIN the layer
+// the rank decides, off the same `arcPaintOrder` the canvas feed uses.
 const CrossRegionArcsBand = observer(function CrossRegionArcsBand({
   model,
   arcs,
