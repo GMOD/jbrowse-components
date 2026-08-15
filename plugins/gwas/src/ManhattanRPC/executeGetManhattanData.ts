@@ -22,6 +22,7 @@ import type {
   ProgressReporter,
   StatusCallback,
 } from '@jbrowse/core/util'
+import type { RpcResult } from '@jbrowse/core/util/librpc'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 // The per-feature derivations the reducer needs, built once per request by
@@ -175,7 +176,7 @@ export async function executeGetManhattanData({
 }: {
   pluginManager: PluginManager
   args: RpcExecuteArgs<'GetManhattanData'>
-}): Promise<ManhattanRpcResult> {
+}): Promise<RpcResult<ManhattanRpcResult>> {
   const {
     sessionId,
     adapterConfig,
@@ -241,5 +242,5 @@ export async function executeGetManhattanData({
     result.r2s?.buffer,
     result.flatbushData,
   ].filter(buffer => buffer !== undefined)
-  return rpcResult(result, transferables) as unknown as ManhattanRpcResult
+  return rpcResult(result, transferables)
 }

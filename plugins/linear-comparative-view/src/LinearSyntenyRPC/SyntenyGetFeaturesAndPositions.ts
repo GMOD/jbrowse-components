@@ -7,6 +7,7 @@ import type {
 } from './executeSyntenyFeaturesAndPositions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcResult } from '@jbrowse/core/util/librpc'
 
 export interface SyntenyGetFeaturesAndPositionsArgs {
   adapterConfig: Record<string, unknown>
@@ -32,7 +33,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class SyntenyGetFeaturesAndPositions extends RpcMethodType<'SyntenyGetFeaturesAndPositions'> {
+export class SyntenyGetFeaturesAndPositions extends RpcMethodType<
+  'SyntenyGetFeaturesAndPositions',
+  RpcResult<SyntenyRpcResult>
+> {
   name = 'SyntenyGetFeaturesAndPositions' as const
 
   async execute(args: RpcExecuteArgs<'SyntenyGetFeaturesAndPositions'>) {

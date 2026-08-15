@@ -33,12 +33,8 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions<
       // on the wire filters is the serialized string[] (see serializeArguments),
       // even though T statically types it as the deserialized chain
       //
-      // The instanceof is what lets this run twice on the same object, which
-      // RpcMethodType.deserializeArguments asks of every override: an external
-      // plugin written against the older contract still opens its `execute`
-      // with a call to this, and by then `invoke` has already rebuilt the
-      // chain. Without the check the second pass would reach `filters.map` on a
-      // SerializableFilterChain and throw.
+      // instanceof so a second pass is a no-op rather than reaching
+      // `filters.map` on a chain — see deserializeArguments on the base
       filters:
         args.filters instanceof SerializableFilterChain
           ? args.filters

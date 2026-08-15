@@ -2,6 +2,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { GroupedAlignmentsResult, RenderAlignmentDataArgs } from './types'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcResult } from '@jbrowse/core/util/librpc'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -14,7 +15,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 
 // Single RPC for both pileup and chain (linked-reads) modes; the worker
 // branches on `args.linkedReads`.
-export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<'RenderAlignmentData'> {
+export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<
+  'RenderAlignmentData',
+  RpcResult<GroupedAlignmentsResult>
+> {
   name = 'RenderAlignmentData' as const
 
   async execute(args: RpcExecuteArgs<'RenderAlignmentData'>) {

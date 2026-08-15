@@ -14,6 +14,7 @@ import type HicAdapter from '../HicAdapter/HicAdapter.ts'
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcResult } from '@jbrowse/core/util/librpc'
 
 export async function executeRenderHicData({
   pluginManager,
@@ -21,7 +22,7 @@ export async function executeRenderHicData({
 }: {
   pluginManager: PluginManager
   args: RpcExecuteArgs<'RenderHicData'>
-}): Promise<HicDataResult> {
+}): Promise<RpcResult<HicDataResult>> {
   const {
     sessionId,
     adapterConfig,
@@ -124,5 +125,5 @@ export async function executeRenderHicData({
     pairRuns: pairs,
   }
   // Move the one per-contact buffer zero-copy instead of structured-cloning it.
-  return rpcResult(result, [instances.buffer]) as unknown as HicDataResult
+  return rpcResult(result, [instances.buffer])
 }

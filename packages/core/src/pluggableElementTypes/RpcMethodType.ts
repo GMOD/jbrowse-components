@@ -28,15 +28,9 @@ import type { FileHandleLocation, UriLocation } from '../util/types/index.ts'
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
-// The arg shape renameRegions (and RpcMethodTypeWithRenameRegions) operate on.
-//
-// Composed from RpcCallContext rather than restating its three fields, because
-// this is the serialize-side twin of RpcExecuteArgs and was the fourth place
-// that wrote `stopToken`/`statusCallback`/`sessionId` out by hand. It gets them
-// for the same reason `execute` does: RpcManager merges the session id in
-// before BaseRpcDriver.call, and the driver strips the status callback on the
-// way OUT rather than on the way in, precisely so serialization can report
-// through it (resolving a refName map downloads the adapter's index).
+// the arg shape renameRegions (and RpcMethodTypeWithRenameRegions) operate on —
+// the serialize-side twin of RpcExecuteArgs, so composed from the same
+// RpcCallContext rather than restating its three fields
 export type RenameRegionsArgs = RpcCallContext & {
   assemblyName?: string
   regions?: Region[]
@@ -310,38 +304,14 @@ export default abstract class RpcMethodType<
   }
 
   /**
-   * What the drivers call, and the only caller of {@link deserializeArguments}
-   * that has to exist. Both transports go through here —
-   * `product-core/src/rpcWorker.ts` binds it per method and
-   * `MainThreadRpcDriver` calls it in-band — so `execute` receives arguments
-   * that have already crossed back.
+   * What both drivers call: deserialize, then `execute`.
    *
-   * It used to be `execute` they called, with each subclass opening its body
-   * with `await this.deserializeArguments(args, driver)` and a source-scanning
-   * test to catch the ones that didn't. Eleven methods across seven plugins had
-   * drifted off it when that test was written, every primary per-region fetch
-   * RPC among them, and the reason it kept happening is that the step is
-   * invisible in both directions:
-   *
-   * - **What it does is invisible.** It sets the worker's blob map, which is
-   *   how a `BlobLocation` — a file the user opened from their own disk —
-   *   resolves to a `File` in that realm. The map is a module global, so
-   *   whichever RPC deserialized last leaves one behind and the next method to
-   *   skip this reads *that* one: the right answer, by accident. It goes wrong
-   *   when the inherited map is not the current one, and a worker that died and
-   *   was re-booted starts with none at all — so a local-file track renders all
-   *   day and renders nothing after a GPU hiccup takes a worker with it.
-   * - **Skipping it is invisible to the compiler, and worse than invisible.**
-   *   `RpcExecuteArgs<M>` describes the DESERIALIZED shape: a registry entry
-   *   declares `filters?: SerializableFilterChain`, while the wire carries the
-   *   `string[]` that `serializeArguments` wrote. So an `execute` reading
-   *   `args.filters` without this step gets an array where its own signature
-   *   promises a chain, and calling `.passes()` on it is a runtime TypeError
-   *   that type-checks. One call per method was the only thing making the
-   *   declared type true.
-   *
-   * Doing it here makes that type true by construction, and there is nothing
-   * left to skip or to exempt.
+   * Each `execute` used to open with the deserialize call itself, and eleven
+   * methods across seven plugins had silently drifted off it. `RpcExecuteArgs`
+   * describes the DESERIALIZED shape — an entry declares `filters?:
+   * SerializableFilterChain` where the wire carries a `string[]` — so skipping
+   * it made the declared type false rather than erroring. Here it is true by
+   * construction.
    */
   async invoke(
     serializedArgs: RpcExecuteArgs<MethodName>,
@@ -354,26 +324,18 @@ export default abstract class RpcMethodType<
   }
 
   /**
-   * The far side of `serializeArguments`. {@link invoke} calls it once, before
-   * `execute`; subclasses override it to add to the step (the
-   * filters-and-regions base turns the on-wire `string[]` back into a
-   * `SerializableFilterChain`) rather than to call it.
-   *
-   * **Overrides must tolerate running twice on the same object.** Nothing
-   * in-tree calls this from an `execute` any more, but an external plugin
-   * written against the older contract still does, and its args have already
-   * been through here. This one is naturally idempotent — `setBlobMap`
-   * replaces wholesale — and the filters override checks what it is handed.
+   * The far side of `serializeArguments`; {@link invoke} calls it. Override to
+   * add to the step, not to call it — and **an override must tolerate running
+   * twice on the same object**, since an external plugin written against the
+   * older contract still calls it from its own `execute`.
    */
   async deserializeArguments<T>(
     args: T,
     _rpcDriverClassName: string,
   ): Promise<T> {
-    // `blobMap` is what serializeArguments added on the way out — it rides the
-    // wire and is in no registry entry, so it is read off here rather than
-    // being intersected into the parameter. Naming it in the type made the
-    // parameter reject everything else for a driver holding an unparameterized
-    // RpcMethodType, where RpcExecuteArgs<string> is `unknown`.
+    // read off rather than named in the parameter type: for a driver holding an
+    // unparameterized RpcMethodType, RpcExecuteArgs<string> is `unknown`, and
+    // intersecting a blobMap into that rejects everything else
     const { blobMap } = args as { blobMap?: Record<string, File> }
     if (blobMap) {
       setBlobMap(blobMap)

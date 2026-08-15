@@ -3,6 +3,7 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import type { CellDataResult } from './executeVariantCellData.ts'
 import type { GetCellDataArgs } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcResult } from '@jbrowse/core/util/librpc'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -13,7 +14,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export class MultiSampleVariantGetCellData extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiSampleVariantGetCellData'> {
+export class MultiSampleVariantGetCellData extends RpcMethodTypeWithFiltersAndRenameRegions<
+  'MultiSampleVariantGetCellData',
+  RpcResult<CellDataResult>
+> {
   name = 'MultiSampleVariantGetCellData' as const
 
   async execute(args: RpcExecuteArgs<'MultiSampleVariantGetCellData'>) {

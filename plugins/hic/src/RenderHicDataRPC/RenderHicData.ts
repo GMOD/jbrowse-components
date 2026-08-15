@@ -2,6 +2,7 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 
 import type { HicDataResult, RenderHicDataArgs } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcResult } from '@jbrowse/core/util/librpc'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -12,7 +13,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class RenderHicData extends RpcMethodTypeWithRenameRegions<'RenderHicData'> {
+export default class RenderHicData extends RpcMethodTypeWithRenameRegions<
+  'RenderHicData',
+  RpcResult<HicDataResult>
+> {
   name = 'RenderHicData' as const
 
   async execute(args: RpcExecuteArgs<'RenderHicData'>) {

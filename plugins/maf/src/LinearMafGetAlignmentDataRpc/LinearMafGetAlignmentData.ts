@@ -5,6 +5,7 @@ import type {
   LinearMafGetAlignmentDataResult,
 } from './executeMafAlignmentData.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RpcResult } from '@jbrowse/core/util/librpc'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -15,7 +16,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<'LinearMafGetAlignmentData'> {
+export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions<
+  'LinearMafGetAlignmentData',
+  RpcResult<LinearMafGetAlignmentDataResult>
+> {
   name = 'LinearMafGetAlignmentData' as const
 
   async execute(args: RpcExecuteArgs<'LinearMafGetAlignmentData'>) {

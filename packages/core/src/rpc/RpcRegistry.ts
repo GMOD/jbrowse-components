@@ -2,7 +2,6 @@ import type { StatusCallback } from '../util/progress.ts'
 import type { Feature } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { NoAssemblyRegion } from '../util/types/index.ts'
-import type { RpcResult } from './RpcServer.ts'
 
 export interface RegionLike {
   refName: string
@@ -117,44 +116,16 @@ export type RpcHandles = {
   statusCallback?: StatusCallback
 }
 
-/**
- * Which session the call belongs to. Like {@link RpcHandles}, a property of the
- * call rather than of any payload — `rpcManager.call` takes it as its FIRST
- * parameter and merges it into the args bag itself, so no caller has ever
- * written it and no registry entry gets to require it.
- *
- * Twenty-two entries declared it anyway, and the cost was the shape this file
- * keeps paying for: `RpcCallArgs` had to `Omit` it back off, because otherwise
- * every caller of those twenty-two would have had to pass a field the layer was
- * about to overwrite — while the other nineteen were fine. A subtraction that
- * exists to undo a declaration is the declaration admitting it was wrong.
- *
- * The worker side is the mirror of the handles, too: {@link RpcExecuteArgs}
- * intersects it in, so `execute` sees `sessionId` whether or not its entry
- * mentioned one, and `getAdapter(pm, sessionId, ...)` type-checks in all
- * forty-one rather than in twenty-two.
- */
+// Like RpcHandles: a property of the call, not of any payload. `rpcManager.call`
+// takes it as its first parameter and merges it in, so no caller writes one.
 export type RpcSession = {
   sessionId: string
 }
 
-/**
- * Everything the call layer contributes to what a worker body sees, as one
- * name: the session it is pinned to and the handles it can be stopped and can
- * report through. {@link RpcRouting} is not here — it never crosses.
- *
- * For the code that runs inside a worker this is the *fallback*, not the first
- * answer. Nearly every `execute` is one line long and hands its args to a
- * helper (`executeRenderHicData`, `getScoreMatrix`), and that helper should
- * take `RpcExecuteArgs<'ItsKey'>` — the same type its `execute` declares, so
- * the forward is an identity and a fourth call-level field reaches it without
- * an edit. `Payload & RpcCallContext` recomposes that derivation by hand, which
- * is how the three hand-written copies of `RpcCallArgs` drifted.
- *
- * Reach for it where there is no single key to name: a body registered under
- * two names (`executeDiagonalize`, `getScoreMatrix`), or a method-generic base
- * like {@link RenameRegionsArgs} that describes the shape rather than an entry.
- */
+// What the call layer adds to every payload the worker sees. A helper factored
+// out of one method's `execute` takes that method's `RpcExecuteArgs<'Key'>`
+// instead; this is for the ones with no single key — a body registered under
+// two names, or a method-generic base like RenameRegionsArgs.
 export type RpcCallContext = RpcSession & RpcHandles
 
 /**
@@ -226,13 +197,10 @@ export type RpcRouting = {
  * were three hand-written copies of this expression and the third one silently
  * lagged the other two the moment the handles moved.
  *
- * A written-out name with no entry is an error here for the reason it is one in
- * {@link RpcExecuteArgs}, and this is the side that matters more: there is one
- * `execute` per method and hundreds of call sites, and the fallback used to be
- * `Record<string, unknown>` — so a mistyped or renamed method name accepted any
- * args at all and failed at runtime in the worker, which is exactly the silence
- * {@link NotInRpcRegistry} exists to break. The bare `string` escape hatch is
- * still there, for the callers that genuinely dispatch on a variable.
+ * A written-out name with no entry lands on {@link NotInRpcRegistry}; it used to
+ * fall through to `Record<string, unknown>`, so a mistyped name accepted any
+ * args and failed at runtime in the worker. Bare `string` is still the hatch for
+ * a caller dispatching on a variable.
  */
 export type RpcCallArgs<M extends string> = M extends RpcMethodName
   ? RpcArgs<M & RpcMethodName> & RpcHandles & RpcRouting
@@ -240,15 +208,22 @@ export type RpcCallArgs<M extends string> = M extends RpcMethodName
     ? Record<string, unknown> & RpcHandles & RpcRouting
     : NotInRpcRegistry<M>
 
-// What a registered method's `execute` may resolve to: the declared return, or
-// that return wrapped in rpcResult to carry transferables. An RpcMethodType
-// parameterized with its own name (`RpcMethodType<'CoreGetRegions'>`) gets its
-// executor checked against the registry, so a registry entry can't drift from
-// what the worker actually sends back. `string` (the default) resolves to
-// `unknown`, leaving unparameterized methods unconstrained; a name that is not a
-// key resolves to NotInRpcRegistry, which nothing satisfies.
+/**
+ * What a registered method's `execute` resolves to: the declared return, and
+ * nothing else. An RpcMethodType parameterized with its own name
+ * (`RpcMethodType<'CoreGetRegions'>`) gets its executor checked against the
+ * registry, so a registry entry can't drift from what the worker actually sends
+ * back. `string` (the default) resolves to `unknown`, leaving unparameterized
+ * methods unconstrained; a name that is not a key resolves to NotInRpcRegistry,
+ * which nothing satisfies.
+ *
+ * No `| RpcResult<…>` here: whether a method wraps its return to carry
+ * transferables is fixed when the method is written, so it says so in
+ * `RpcMethodType`'s second parameter instead. As a union it described no method
+ * and cost two `as unknown as` casts (gwas, hic).
+ */
 export type RpcExecuteReturn<M extends string> = M extends RpcMethodName
-  ? RpcReturn<M & RpcMethodName> | RpcResult<RpcReturn<M & RpcMethodName>>
+  ? RpcReturn<M & RpcMethodName>
   : string extends M
     ? unknown
     : NotInRpcRegistry<M>
@@ -258,19 +233,12 @@ export type RpcExecuteReturn<M extends string> = M extends RpcMethodName
  * the payload. Should always be `never`; {@link AssertNoCallLevelFields} below
  * is what makes a non-empty one a compile error naming the entry.
  *
- * This went wrong three times with the same shape, which is why it is checked
- * rather than written down. Each time a caller needed one of these on one
- * method, the field went into that method's `args`, and the other forty then
- * could not be passed it — so the property that belongs to every call became a
- * type error on all but the entry that happened to name it. The handles went
- * that way (`CoreGetExportData` shipped uncancellable), `rpcDriverName` went
- * the same way after them, and `sessionId` was the oldest of the three.
- *
- * `sessionId` is the one that shows what a missing check costs over time: it
- * was never a type error, because `RpcCallArgs` subtracted it back off with an
- * `Omit`, so nothing ever pushed back and it spread to 22 of the 41 entries
- * before anyone counted. The union covers all three now, and the `Omit` is
- * gone.
+ * Checked rather than written down because it went wrong three times the same
+ * way: a caller needs the field on one method, it goes into that method's
+ * `args`, and the other forty can no longer be passed it. The handles went that
+ * way (CoreGetExportData shipped uncancellable), then `rpcDriverName`, and
+ * `sessionId` spread to 22 of 41 entries because `RpcCallArgs` had been
+ * subtracting it back off.
  */
 export type EntriesDeclaringCallLevelFields = {
   [K in RpcMethodName]: Extract<
