@@ -96,6 +96,7 @@ export type {
 // the palette button itself, not just the menu inside it — the two headers had a
 // copy each and only one of them said which mode it was in
 export { default as ColorBySelector } from './ColorBySelector.tsx'
+export { default as ComparativeTooltip } from './ComparativeTooltip.tsx'
 export {
   PRESET_ATTRIBUTES,
   createAttributeChannels,

@@ -2,7 +2,7 @@ import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
 
 import { buildSyntenyGeometry } from '../../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import { KIND_BASE } from '../../LinearSyntenyRPC/syntenyColors.ts'
-import { getCigarOpAtInstance, getTooltip } from './util.ts'
+import { getCigarOpAtInstance, getTooltipLines } from './util.ts'
 
 import type { FeatPos } from '../model.ts'
 
@@ -60,7 +60,7 @@ test('getCigarOpAtInstance returns undefined for the base block', () => {
   expect(getCigarOpAtInstance(g, baseIdx)).toBeUndefined()
 })
 
-test('getTooltip appends the CIGAR operator line only when given one', () => {
+test('getTooltipLines appends the CIGAR operator line only when given one', () => {
   const feat: FeatPos = {
     id: 'f1',
     strand: 1,
@@ -71,8 +71,32 @@ test('getTooltip appends the CIGAR operator line only when given one', () => {
     assemblyName: 'hg38',
     mate: { start: 300, end: 380, refName: 'chr2', assemblyName: 'mm10' },
   }
-  expect(getTooltip(feat)).not.toContain('CIGAR operator')
-  expect(getTooltip(feat, { op: 'D', length: 50 })).toContain(
+  expect(getTooltipLines(feat)).not.toContain('CIGAR operator: 50D')
+  expect(getTooltipLines(feat, { op: 'D', length: 50 })).toContain(
     'CIGAR operator: 50D',
   )
+})
+
+// Lines, not one `<br/>`-joined string: a refName and a feature name both come
+// out of an alignment file, and the renderer puts these on screen as text nodes
+// with no sanitizer on the path.
+test('getTooltipLines emits no markup, and drops the lines it has no value for', () => {
+  const feat: FeatPos = {
+    id: 'f1',
+    strand: -1,
+    name: '',
+    refName: '<img src=x onerror=alert(1)>',
+    start: 100,
+    end: 200,
+    assemblyName: 'hg38',
+    mate: { start: 300, end: 380, refName: 'chr2', assemblyName: 'mm10' },
+  }
+  const lines = getTooltipLines(feat)
+  expect(lines.some(l => l.includes('<br'))).toBe(false)
+  // the hostile refName rides through verbatim, as text
+  expect(lines[0]).toContain('<img src=x onerror=alert(1)>')
+  // no identity and no name on this feature, so neither line is emitted
+  expect(lines.some(l => l.startsWith('Identity:'))).toBe(false)
+  expect(lines.some(l => l.startsWith('Name:'))).toBe(false)
+  expect(lines).toContain('Inverted: true')
 })

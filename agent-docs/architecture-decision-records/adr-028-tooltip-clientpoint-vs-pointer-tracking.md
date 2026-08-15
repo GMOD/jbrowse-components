@@ -71,7 +71,8 @@ component was doing anyway. (Superseded 2026-08-06 — see the second amendment
 below. The conclusion holds; the coordinates now come from the chrome.)
 
 **Pointer-tracking mode stays a legitimate choice — for tooltips that do *not*
-have their own per-move driver.** `SyntenyTooltip` and `ArcTooltip` render
+have their own per-move driver.** `ComparativeTooltip` (from the synteny
+display, which passes no coordinates) and `ArcTooltip` render
 `<BaseTooltip>` with no coordinates on purpose: they have no mouse coordinates to
 pass and want cursor-follow for free. On them the single floating-ui listener is
 the *only* per-move work, not a second copy of it, so it is the idiomatic and
@@ -124,7 +125,14 @@ pointer-tracking mode this ADR is about was one missing prop away with nothing
 at the call site to say so. It takes a required `mouseState` now, and the body
 only renders it when there is a pointer, so the absent case no longer exists to
 model. The two consumers that still omit `clientPoint` on purpose
-(`SyntenyTooltip`, `ArcTooltip`) are unaffected and still correct.
+(the synteny display's `ComparativeTooltip`, `ArcTooltip`) are unaffected and
+still correct.
+
+`ComparativeTooltip` is the one component live in **both** modes: the dotplot
+renders it from `DotplotTooltips`, which already samples the pointer per move
+and so passes `clientPoint`, while the synteny display renders it off model
+state alone and wants cursor-follow. That is why `clientPoint` stays optional
+there — the same reason `BaseTooltip` keeps the dual contract, one layer up.
 
 ### Companion decision: per-move highlight is an overlay, not a redraw input
 

@@ -456,11 +456,15 @@ for (const n of [500_000, 2_000_000, 5_000_000]) {
     mon = Math.min(mon, timeObjectMono(g, params, plot, reps))
     ctl = Math.min(ctl, timeControl(g, params, reps))
   }
+  const ratios = [sca, clo, obj, mon, ctl].map(v =>
+    (v / inl).toFixed(3).padStart(7),
+  )
   console.log(
-    `${n.toLocaleString().padStart(10)}  ${inl.toFixed(2).padStart(7)}  ` +
-      `${(sca / inl).toFixed(3).padStart(7)}  ${(clo / inl).toFixed(3).padStart(7)}  ` +
-      `${(obj / inl).toFixed(3).padStart(7)}  ${(mon / inl).toFixed(3).padStart(7)}  ` +
-      (ctl / inl).toFixed(3).padStart(7),
+    [
+      n.toLocaleString().padStart(10),
+      inl.toFixed(2).padStart(7),
+      ...ratios,
+    ].join('  '),
   )
 }
 console.log(

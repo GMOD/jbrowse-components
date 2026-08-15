@@ -1,8 +1,10 @@
-import { ComparativeFetchStatus } from '@jbrowse/synteny-core'
+import {
+  ComparativeFetchStatus,
+  ComparativeTooltip,
+} from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
-import SyntenyTooltip from './SyntenyTooltip.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../model.ts'
 
@@ -13,7 +15,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const { tooltipText, contextMenuAnchor } = model
+  const { tooltipLines, contextMenuAnchor } = model
 
   return (
     <>
@@ -21,7 +23,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
           shared with dotplot so the two views can't show different things for
           the same state. */}
       <ComparativeFetchStatus display={model} />
-      {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
+      {tooltipLines ? <ComparativeTooltip lines={tooltipLines} /> : null}
       {contextMenuAnchor ? (
         <SyntenyContextMenu
           model={model}

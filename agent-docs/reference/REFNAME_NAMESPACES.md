@@ -226,7 +226,7 @@ Channel 1, `refNameDict` / `mateRefNameDict` reached through `getFeatureAtIndex`
 
 | site | the other operand | class | symptom, on an aliased file, before the fix |
 | --- | --- | --- | --- |
-| `components/util.ts` `getTooltip` | none, it is printed | display text | the tooltip shows the file's spelling |
+| `components/util.ts` `getTooltipLines` | none, it is printed | display text | the tooltip shows the file's spelling |
 | `LevelSyntenyCanvas` `openSyntenyFeatureWidget` | none, into the widget | display text | the feature panel shows the file's spelling |
 | `bandMoveTargets.ts` → `visibleSpanOnRefName` | `dynamicBlocks` | **straddle** | the band's "Move … to the matching region" item is not offered at all |
 | `moveMatchingPanel.ts` RPC `regions[]` | — it goes back OUT | safe — see below | none |

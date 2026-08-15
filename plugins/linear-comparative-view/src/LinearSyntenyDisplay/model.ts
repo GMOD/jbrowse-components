@@ -22,7 +22,7 @@ import {
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
-import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
+import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
@@ -689,19 +689,25 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         }
         return { ...instanceData, colors }
       },
-      get tooltipText() {
+      /**
+       * #getter
+       * The hovered ribbon's tooltip, as lines, or undefined when nothing is
+       * hovered. Lines rather than an HTML string — see `getTooltipLines`, and
+       * `DotplotDisplay.tooltipLines` for the twin.
+       */
+      get tooltipLines(): string[] | undefined {
         const { hoveredFeatureIdx, instanceData } = self
         if (hoveredFeatureIdx < 0) {
-          return ''
+          return undefined
         }
         const feat = this.getFeature(hoveredFeatureIdx)
         if (!feat) {
-          return ''
+          return undefined
         }
         const cigarOp = instanceData
           ? getCigarOpAtInstance(instanceData, hoveredFeatureIdx)
           : undefined
-        return getTooltip(feat, cigarOp)
+        return getTooltipLines(feat, cigarOp)
       },
       /**
        * #getter

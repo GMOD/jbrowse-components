@@ -1,5 +1,4 @@
-import { Suspense, lazy } from 'react'
-
+import { ComparativeTooltip } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { locstr } from './util.ts'
@@ -9,8 +8,6 @@ import type {
   DotplotInteraction,
   PointerSample,
 } from './useDotplotInteraction.ts'
-
-const DotplotTooltip = lazy(() => import('./DotplotTooltip.tsx'))
 
 const DotplotTooltips = observer(function DotplotTooltips({
   model,
@@ -36,22 +33,22 @@ const DotplotTooltips = observer(function DotplotTooltips({
     hoveredTooltipLines ??
     (hovering && validSelect && pointer ? coordLines(pointer) : undefined)
   return (
-    <Suspense fallback={null}>
+    <>
       {pointer && pointerLines ? (
-        <DotplotTooltip
+        <ComparativeTooltip
           lines={pointerLines}
-          point={pointer}
+          clientPoint={{ x: pointer.clientX, y: pointer.clientY }}
           placement={dx < 0 ? 'left' : 'right'}
         />
       ) : null}
       {selecting && anchor ? (
-        <DotplotTooltip
+        <ComparativeTooltip
           lines={coordLines(anchor)}
-          point={anchor}
+          clientPoint={{ x: anchor.clientX, y: anchor.clientY }}
           placement={dx < 0 ? 'right' : 'left'}
         />
       ) : null}
-    </Suspense>
+    </>
   )
 })
 

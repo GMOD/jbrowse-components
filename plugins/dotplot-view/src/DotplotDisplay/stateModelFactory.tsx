@@ -243,8 +243,9 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       /**
        * #getter
        * The hovered feature's tooltip, as lines, or undefined when nothing is
-       * hovered. The dotplot twin of `LinearSyntenyDisplay.tooltipText`, in
-       * lines rather than an HTML string — see `getDotplotTooltipLines`.
+       * hovered. The dotplot twin of `LinearSyntenyDisplay.tooltipLines`; both
+       * feed `ComparativeTooltip`, which renders lines as text nodes — see
+       * `getDotplotTooltipLines`.
        */
       get tooltipLines(): string[] | undefined {
         const { hoveredSegmentIdx, instanceData, rpcData } = self

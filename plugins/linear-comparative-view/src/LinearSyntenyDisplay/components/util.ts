@@ -50,7 +50,13 @@ export function getCigarOpAtInstance(
   return { op, length }
 }
 
-export function getTooltip(feat: FeatPos, cigarOp?: CigarOpInfo) {
+// The hovered ribbon's tooltip, as LINES rather than a `<br/>`-joined HTML
+// string. A refName and a feature name both come out of an alignment file and
+// can hold anything; `ComparativeTooltip` renders these as text nodes, so
+// nothing here has to be sanitized on the way to the screen. This used to be
+// one string, which bought a `SanitizedHTML` on the render path to undo the
+// join. Same shape as the dotplot's `getDotplotTooltipLines`.
+export function getTooltipLines(feat: FeatPos, cigarOp?: CigarOpInfo) {
   const l1 = feat.end - feat.start
   const l2 = feat.mate.end - feat.mate.start
   return [
@@ -64,7 +70,5 @@ export function getTooltip(feat: FeatPos, cigarOp?: CigarOpInfo) {
       : '',
     cigarOp ? `CIGAR operator: ${toLocale(cigarOp.length)}${cigarOp.op}` : '',
     feat.name ? `Name: ${feat.name}` : '',
-  ]
-    .filter(Boolean)
-    .join('<br/>')
+  ].filter(Boolean)
 }
