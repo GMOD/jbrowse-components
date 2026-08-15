@@ -306,6 +306,17 @@ export interface ComposeSpec extends BaseSpecFields {
   // inserted above each part after the first rather than as a border round each
   // one, so the figure gains no margin at its top or bottom.
   gutter?: number
+  // white columns down the LEFT and RIGHT of a stacked composition, in the
+  // composition's own px. Ignored side by side, where `padPanels` already
+  // frames each panel.
+  //
+  // Opt-in for one reason, and it is the mirror of `gutter`'s: a `trapezoid`
+  // whose narrow end is the FIRST region of the row above has a near-vertical
+  // side at x = 0, which the image edge clips. The margin is where that side
+  // gets drawn. It moves each part's box, so `annotateComposition` reads it
+  // too — a callout anchored a margin's worth off its part is the failure
+  // nothing would report.
+  sideMargin?: number
   // callouts drawn over the composed image, anchored per part (see above)
   annotations?: Annotation[]
 }

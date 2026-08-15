@@ -226,6 +226,30 @@ function padPanels(files: string[], gutter = GRID_GUTTER_PX) {
   }
 }
 
+// One reading of a stacked composition's side margin, for the same reason
+// `composeGutter` has one: the ImageMagick pass that inserts it and the overlay
+// pass that computes each part's box both need it.
+function composeSideMargin(spec: ComposeSpec) {
+  return spec.direction === 'horizontal' ? 0 : (spec.sideMargin ?? 0)
+}
+
+// White columns down BOTH sides of each part, and no rows. Symmetric, so
+// `-border WxH` with H=0 is exactly it, and unlike the gutter this one is a
+// margin at the figure's own edges — which is the point of it.
+function padSides(files: string[], margin: number) {
+  for (const f of files) {
+    execFileSync(IM, [
+      f,
+      '-bordercolor',
+      'white',
+      '-border',
+      `${margin}x0`,
+      ...IM_REPRODUCIBLE,
+      f,
+    ])
+  }
+}
+
 // A gutter ABOVE each of these files, and nothing below: `-splice` inserts rows
 // rather than framing the image, so a stack gains space between its parts
 // without gaining a margin at its own top and bottom. `-border` cannot express
@@ -580,6 +604,7 @@ async function annotateComposition(spec: ComposeSpec, renderPath: string) {
   }
   const { width, height } = await imageSize(renderPath)
   const gutter = composeGutter(spec)
+  const sideMargin = composeSideMargin(spec)
   const sizes = await Promise.all(
     spec.parts.map(part => imageSize(path.join(outDir, `${part}.png`))),
   )
@@ -592,7 +617,7 @@ async function annotateComposition(spec: ComposeSpec, renderPath: string) {
     const box =
       spec.direction === 'horizontal'
         ? { left: offset + gutter / 2, top: gutter / 2, ...size }
-        : { left: 0, top: offset + i * gutter, ...size }
+        : { left: sideMargin, top: offset + i * gutter, ...size }
     offset +=
       spec.direction === 'horizontal' ? size.width + gutter : size.height
     return box
@@ -662,10 +687,11 @@ async function captureComposeSpec(spec: ComposeSpec) {
   const renderPath = tempPath('jb-compose', spec.name)
   const horizontal = spec.direction === 'horizontal'
   const gutter = composeGutter(spec)
+  const sideMargin = composeSideMargin(spec)
   // Any padding at all goes on a COPY of the part. They are the committed part
   // PNGs, so padding them in place makes every part figure grow a white frame
   // of its own each time the compose runs.
-  const padded = horizontal || gutter > 0
+  const padded = horizontal || gutter > 0 || sideMargin > 0
   const partPaths = spec.parts.map((part, i) =>
     padded ? tempPath('jb-part', spec.name, `-${i}`) : partPath(part),
   )
@@ -677,8 +703,14 @@ async function captureComposeSpec(spec: ComposeSpec) {
       if (horizontal) {
         padPanels(partPaths, gutter)
       } else {
-        // every part but the first, so the gutters land between them
-        spliceGutterAbove(partPaths.slice(1), gutter)
+        if (gutter > 0) {
+          // every part but the first, so the gutters land between them
+          spliceGutterAbove(partPaths.slice(1), gutter)
+        }
+        if (sideMargin > 0) {
+          // every part, so `-append` still left-aligns them onto one width
+          padSides(partPaths, sideMargin)
+        }
       }
     }
     execFileSync(IM, [

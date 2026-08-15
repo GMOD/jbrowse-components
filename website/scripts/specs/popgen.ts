@@ -532,6 +532,14 @@ export const popgenSpecs: ScreenshotSpec[] = [
     // own px, which is 80 css px of either capture -- paid for out of the two
     // Fst lanes above, so the whole figure comes out shorter than it was.
     gutter: 160,
+    // AND A MARGIN DOWN BOTH SIDES (review: "i cant see the left side of the
+    // trapezoid"). It was drawn and it was clipped: chr2L is the row's FIRST
+    // region, so the wedge's narrow end starts at x 12 and its wide end at x 0,
+    // which is a near-vertical line running off the image edge — correct
+    // geometry with nowhere to be. 60 px of white each side puts it inside the
+    // frame. The slant stays slight, because that is what the data says: the
+    // panel this opens is the left end of the row above.
+    sideMargin: 60,
     // THE NARROW END IS chr2L'S PANEL IN THE TOP ROW, and it is SOLVED FOR
     // rather than assumed, which is the part worth keeping even though the answer
     // has since become almost the obvious one.
