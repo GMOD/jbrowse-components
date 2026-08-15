@@ -75,21 +75,25 @@ phyloP scores each base against the neutral rate the alignment implies. The
 score is signed, so the track has a pivot rather than a floor: blue above the
 line changes more slowly than neutral, red below it faster.
 
-<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The TP53 transcript over the gene body with phyloP under it, as the track opens. The shaded block is the 3' UTR." />
+<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The TP53 transcript over the gene body with phyloP under it, as the track opens. Two blocks are shaded: exons 5-8, and the 3' UTR at the left." />
 
-The peaks are the width of the coding exons rather than of the gene. The introns
-between them drop to the pivot, and so does the shaded block — the 3' UTR, an
-exon as wide as any coding one and present in every transcript. What the track
-is following is the protein rather than the transcript, and the shading is where
-the two come apart.
+The peaks are the width of the coding exons rather than of the gene. Exons 5-8
+carry the codons this gene is most often mutated at in cancer, and phyloP is
+high across all four of them, so a variant landing there has 100 vertebrates
+saying the base matters.
+
+The introns drop to the pivot, and so does the other shaded block — the 3' UTR,
+an exon as wide as any coding one and present in every transcript. The track
+follows the protein, and the 3' UTR is where the protein and the transcript come
+apart. A variant there gets no support from this track either way.
 
 ## Checking it against the raw data
 
 At gene zoom a per-base score and a smoothed band are the same picture, so zoom
-in until the sequence appears. The exon below is in the DNA binding domain and
-covers G245, R248 and R249, three of the codons most often mutated in human
-cancer: Arg248 reaches into the DNA itself, and the other two hold the loop that
-carries it.
+in until the sequence appears. The exon below is exon 7, one of the four shaded
+above, and it covers G245, R248 and R249, three of the codons most often mutated
+in human cancer: Arg248 reaches into the DNA itself, and the other two hold the
+loop that carries it.
 
 One more click makes it readable: tick **Reference sequence**, which is off by
 default. The isoform control is the same one the search figure used — its (×)

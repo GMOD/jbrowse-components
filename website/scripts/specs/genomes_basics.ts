@@ -385,16 +385,43 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           // 7,669,608, so this span is the 3' UTR whichever of them the collapse
           // picks.
           //
-          // NO LABEL. A highlight writes its label at the band's top-left, and
-          // this band starts 20 bp into the window, so the text landed on the
-          // gene track's own drag handle and menu. The callout on the phyloP
-          // lane names the block, which is where a sentence fits.
+          // NO LABEL on this one. A highlight writes its label at the band's
+          // top-left, and this band starts 20 bp into the window, so the text
+          // landed on the gene track's own drag handle and menu. The callout
+          // names the block, which is where a sentence fits.
+          //
+          // THE SECOND BAND IS THE REASON TO CARE (review: "sorry but i dont
+          // really get the story here. why should the user 'care' about the utr
+          // of tp53?"). They should not, on its own — the UTR was doing the job
+          // of a control with nothing to be a control FOR, since the peaks
+          // beside it were unnamed. Exons 5-8 are where the gene's cancer
+          // mutations sit (R175, G245, R248, R249, R273, R282 are all in this
+          // block), so the frame now holds the part of TP53 a reader has a
+          // reason to look at AND the part that shows conservation is following
+          // the protein rather than the transcript.
+          //
+          // Bounds are exon 8's start to exon 5's end, off
+          // api.genome.ucsc.edu's ncbiRefSeqCurated for NM_000546.6 rather than
+          // eyeballed: exon 8 7,673,700-7,673,837 and exon 5
+          // 7,675,052-7,675,236, minus strand, so 5' order runs right to left
+          // and the block is contiguous in genomic coordinates.
+          //
+          // This one CAN carry a label: it starts mid-frame, so the text has
+          // the gene lane's empty middle to sit in. The section below zooms
+          // into exon 7 of it, so the two figures name the same thing.
           highlight: [
             {
               refName: 'chr17',
               assemblyName: 'hg38',
               start: 7668420,
               end: 7669608,
+            },
+            {
+              refName: 'chr17',
+              assemblyName: 'hg38',
+              label: 'exons 5-8',
+              start: 7673700,
+              end: 7675236,
             },
           ],
           // gene track first, phyloP second: a track opened from the selector
@@ -414,14 +441,20 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportHeight: 460,
     diffThreshold: 0.02,
-    // WHAT THE SHADED BAND IS FOR, said in the frame (review: "still unclear
+    // WHAT THE SHADED BANDS ARE FOR, said in the frame (review: "still unclear
     // what the story is. why is the utr highlighted? who cares? needs red text
-    // annotation or delete"). The shading was doing half the work: a reader can
-    // see that the band is flat and cannot see that it is an EXON, which is the
-    // only reason its flatness says anything. Two sentences, and the second is
-    // the one a reader takes away from the page — a conservation track scores
-    // codons, so a variant in a transcribed, universally-included exon can
-    // still sit under no signal at all.
+    // annotation or delete", then "sorry but i dont really get the story here.
+    // why should the user 'care' about the utr of tp53?"). The shading was
+    // doing half the work: a reader can see that the band is flat and cannot
+    // see that it is an EXON, which is the only reason its flatness says
+    // anything. The second round is the other half — that reading is a fact
+    // about phyloP, and a reader wants a fact about TP53.
+    //
+    // So the first line is the use, and the two shaded blocks are the two
+    // answers it gets: a variant in exons 5-8 sits under 100-way constraint at
+    // the codons cancer hits, and a variant a few kb away in a fully
+    // transcribed exon sits under none. Neither claim can be read off the
+    // picture without the other block in the same frame.
     //
     // Anchored in the GENE lane rather than the phyloP one, at the band's own
     // left edge. Collapsed to one transcript row, that lane is a glyph across
@@ -438,7 +471,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           fracY: 0.45,
           alignX: 'left',
         },
-        text: "TP53's 3' UTR: an exon in every transcript, transcribed in full, and flat.\nThe peaks are coding exons — phyloP scores codons, not transcripts.",
+        text: "Where a variant falls in TP53 changes what conservation says about it:\nhigh at every codon of exons 5-8, where most of the gene's cancer mutations land,\nand flat across the shaded 3' UTR at the left, an exon in every transcript.",
         fontSize: 15,
         // Wide enough that neither authored line re-wraps. At 560 the first one
         // did, and the third word of the wrap became a one-word fourth line
