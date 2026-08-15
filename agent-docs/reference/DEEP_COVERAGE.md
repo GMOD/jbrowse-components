@@ -63,14 +63,13 @@ Going from an exact key to a 2 kb window merges five clusters, and the largest
 thing in the window is two reads. They are genuinely scattered mismapping, not a
 real signal that a bad key failed to gather.
 
-**But the window is still required**, and this is the part worth keeping. A real
-translocation at 300x recruits ~100 pairs, and mates STRADDLE a breakpoint
-rather than landing on it, so those pairs scatter across a fragment length too.
-Under `arcKey`'s exact count every one of them is a singleton, so a naive
-`support >= 2` floor would delete the real event exactly as thoroughly as the
-noise. `clusteredInterchromSupport` counts over one fragment length on both
-sides for that reason, and the window comes from `stats.upper` rather than a
-constant so it tracks the library.
+**But the window is still required.** A real translocation at 300x recruits ~100
+pairs, and mates STRADDLE a breakpoint rather than landing on it, so those pairs
+scatter across a fragment length too. Under `arcKey`'s exact count every one is a
+singleton, so a naive `support >= 2` floor would delete the real event as
+thoroughly as the noise. `clusteredInterchromSupport` counts over one fragment
+length on both sides for that reason, and the window comes from `stats.upper`
+rather than a constant, so it tracks the library.
 
 Driving the shipped function over the real records: at the default (window from
 the band, min 2) **852 of 868 connections are dropped, 98.2%**.
@@ -131,11 +130,10 @@ rows laid out               431
 rows the cap allows         750      <- so pileupTruncated is FALSE at this depth
 ```
 
-Two things to take from it. The 138:1 ratio is why the category-first paint
-order is load-bearing rather than a nicety: 66 arcs carrying a meaning against
-9138 that do not, all in one band, all opaque. And long-insert is 17 of 9204
-(0.18%) where the un-floored band would have painted ~1%, so the floor is doing
-on live data what the offline sweep predicted.
+The 138:1 ratio is why category-first paint order is load-bearing: 66 arcs
+carrying a meaning against 9138 that do not, all in one band, all opaque. And
+long-insert is 17 of 9204 (0.18%) where the un-floored band would have painted
+~1%, so the floor does on live data what the offline sweep predicted.
 
 That ratio is also what `drawProperPairArcs` ("Show concordant-pair arcs") is
 for. Unticked, the same window draws **68 arcs instead of 9204** — a 99.3% cut
@@ -150,18 +148,16 @@ show concordant  off        68          2     17      48        1
 The two-condition rule is what makes the right column identical. It hides an arc
 only when the aligner called the pair proper (`isConcordantPairRead`, shared
 verbatim with the "Show proper pairs" READ filter) **and** the arc is painting
-the baseline slot. The first condition alone is not enough and the measurement
-is why: a pair can be flagged proper and still have a |TLEN| below the band, so
-it paints short-insert — 42 of those 48 pink arcs vanished under the flag test
-on its own, which would read as a bug. Requiring the baseline colour as well
-means nothing the display is currently drawing as a category can be hidden as
-routine, and it follows `colorByType` for free.
+the baseline slot. The flag alone is not enough: a pair can be flagged proper and
+still have a |TLEN| below the band, so it paints short-insert — 42 of those 48
+pink arcs vanished under the flag test on its own, which would read as a bug.
+Requiring the baseline colour too means nothing currently drawn as a category can
+be hidden as routine, and it follows `colorByType` for free.
 
-The 431-vs-750 row count is the one that corrected a mistake. Reproduce any of
-it by pointing a local jbrowse-web at a `ChromSizesAdapter` assembly named with
-plain `1`/`2`/... contigs (the BAM is hs37d5, so no alias file is needed) and
-raising `fetchSizeLimit` or pressing Force Load — 5 kb at this depth is 6.65 Mb
-buffered and the byte gate stops it first.
+Reproduce any of this by pointing a local jbrowse-web at a `ChromSizesAdapter`
+assembly named with plain `1`/`2`/… contigs (the BAM is hs37d5, so no alias file
+is needed) and raising `fetchSizeLimit` or pressing Force Load — 5 kb at this
+depth is 6.65 Mb buffered, and the byte gate stops it first.
 
 ## Reproducing
 

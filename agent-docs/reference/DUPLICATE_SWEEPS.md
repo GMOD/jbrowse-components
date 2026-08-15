@@ -5,17 +5,16 @@ description: What repo-wide duplicate sweeps actually turn up — both the same-
 
 # Sweeping for duplicates
 
-Three sweeps have now run this over the whole repo. Each found one or two real
-things and spent most of its budget re-deriving the same false positives, so
-this is the part worth keeping.
+Three sweeps have run this over the whole repo. Each found one or two real things
+and spent most of its budget re-deriving the same false positives, which is what
+this records.
 
 ## Running it
 
 Scan for names exported from more than one file — `export function|const|class|
 let NAME`, skipping tests, `*.generated.ts` and fixture directories, over
-`packages/ plugins/ products/`. It returns **117 names** as of 2026-08-13.
-
-That number is not a backlog. Almost all of it is one of the classes below.
+`packages/ plugins/ products/`. It returns ~117 names, and that is not a backlog:
+almost all of it is one of the classes below.
 
 ## The seven false-positive classes
 
@@ -103,9 +102,9 @@ djb2/oklch one) and breakpoint-split's `isOffscreenLayout` — which was the one
 that should not have been merged.
 
 Everything else was a name collision, a documented copy, or a missing pin. The
-sweep's yield is low and its cost is a whole session; the useful version of it
-is not "find duplicates" but **"find copies whose mechanism is missing"** —
-which is a much smaller question, and the one the classes above leave you with.
+sweep's yield is low and its cost is a whole session; the useful version is not
+"find duplicates" but **"find copies whose mechanism is missing"** — a much
+smaller question, and the one the classes above leave you with.
 
 ## The other scan: structural, not by name
 
@@ -135,14 +134,14 @@ are name-shaped and these are body-shaped:
   preamble — destructure args, `createStopTokenChecker`, `getFeatureAdapterOrThrow`.
   The substance is already extracted; what repeats is the call sequence.
 
-**This scan is MORE prone to the eager-bundle trap than the name scan, not
-less.** Its evidence is "these bodies are identical", and byte-identical bodies
-are exactly what a deliberate module split produces — see "The one that bit"
-above, which a structural scan would have nominated even more confidently than
-the name scan did. tsc, jest and lint cannot see a bundle boundary. Before
-merging any copy, read the **file header**, not just the comment at the
-duplication: in that case the header stated the rule in bold twenty lines up
-while the comment beside the code only said the copies mirror each other.
+**This scan is MORE prone to the eager-bundle trap than the name scan.** Its
+evidence is "these bodies are identical", and byte-identical bodies are exactly
+what a deliberate module split produces — it would have nominated "The one that
+bit" above even more confidently than the name scan did. tsc, jest and lint
+cannot see a bundle boundary. Before merging any copy, read the **file header**,
+not just the comment at the duplication: there the header stated the rule in bold
+twenty lines up, while the comment beside the code only said the copies mirror
+each other.
 
 A cheap check when a header hints at a boundary: walk value-imports transitively
 from the module that must stay light and assert what it cannot reach — e.g. the

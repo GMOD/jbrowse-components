@@ -58,16 +58,16 @@ the decompression; the pool has already taken most of what it can reach.
 
 ## It does engage in production — verified, and how to re-check
 
-Worth verifying deliberately, because the failure mode is silence. jbrowse-web
-runs adapters under `WebWorkerRpcDriver`, so `sharedBgzfWorkerPool()` is called
+Verify this deliberately, because the failure mode is silence. jbrowse-web runs
+adapters under `WebWorkerRpcDriver`, so `sharedBgzfWorkerPool()` is called
 *inside* a web worker and the pool is a worker spawning workers — **nested**
 workers. Where those are unavailable `workersAvailable()` is false, the pool
 resolves to `undefined`, every read quietly inflates in process, and nothing
-fails: no error, no failing test, just the speedup silently gone. That is the
-same graceful degradation that makes the option safe to pass unconditionally,
-working against you.
+fails: no error, no failing test, just the speedup gone. That is the same
+graceful degradation that makes the option safe to pass unconditionally, working
+against you.
 
-Checked on the production build (2026-08-11), and it works:
+Checked on the production build, and it works:
 
 - Inside a dedicated worker, `Worker` / `Blob` / `URL.createObjectURL` are all
   present, the pool is created, and it round-tripped 55 BGZF blocks to 3.4MB.
@@ -87,30 +87,19 @@ just counting whatever else spawns workers.
 Note Safari only gained nested workers in 16.4; below that this degrades to
 in-process by design, which is correct rather than a bug to fix.
 
-**The four is per RPC worker, not per session — counted 2026-08-12.** The check
-above loaded one track, which is what made this invisible.
-`getSharedWorkerPool()` memoizes per JS context and `WorkerPoolRpcDriver` gives
-each track a sticky worker out of `clamp(hardwareConcurrency - 1, 1, 5)`, so the
-pool multiplies by the number of contexts:
+**The four is per RPC worker, not per session.** The check above loaded one
+track, which is what made this invisible. `getSharedWorkerPool()` memoizes per JS
+context and `WorkerPoolRpcDriver` gives each track a sticky worker out of
+`clamp(hardwareConcurrency - 1, 1, 5)`, so the pool multiplies by the number of
+contexts: 5 tracks give 20 pool workers, and so do 8.
 
-| tracks | RPC workers | pool workers |
-| ------ | ----------- | ------------ |
-| 1      | 1           | 4            |
-| 5      | 5           | 20           |
-| 8      | 5           | 20           |
-
-Each of the 20 has its own grow-only wasm heap. Since
-`@gmod/bgzf-filehandle` 6.6.0 those are given back after 3 minutes idle — a
-pool terminates its own workers and spawns a fresh set on the next call, which
-is transparent to holders in a way `destroySharedWorkerPool` is not (a
-destroyed pool throws out of `decompressBlocks`, and every open track holds
-one).
-`@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` for
-this and nothing here uses them. The naive wiring is a regression on exactly the
-several-tracks case it is meant to help, so the open question is pool size
-rather than plumbing — see
-[BAM_STACK_INTEGRATION.md](BAM_STACK_INTEGRATION.md) seam 1 and the TODO entry
-it points at.
+Each of the 20 has its own grow-only wasm heap. Since `@gmod/bgzf-filehandle`
+6.6.0 those are given back after 3 minutes idle — a pool terminates its own
+workers and spawns a fresh set on the next call, transparent to holders in a way
+`destroySharedWorkerPool` is not, since a destroyed pool throws out of
+`decompressBlocks` and every open track holds one.
+[BAM_STACK_INTEGRATION.md](BAM_STACK_INTEGRATION.md) § "Seam 1" owns the counts
+and the question of what to do about them.
 
 `browser-tests/percontext-probe.ts` is the harness, and it needs a **recursive**
 `Target.setAutoAttach`: a pool worker is a worker inside a worker, so
@@ -142,21 +131,20 @@ in machine state lands entirely on the second — a laptop coming off AC mid-run
 did exactly that here. Interleaving makes throttling hit both arms alike, so the
 ratio survives even when the absolute milliseconds do not.
 
-Also worth knowing: `unzipChunkSlice` declines the pool outright when a chunk
-holds a single BGZF block, one block not being worth a round trip. A fixture
-small enough to have one-block chunks measures nothing, silently.
+`unzipChunkSlice` also declines the pool outright when a chunk holds a single
+BGZF block, one block not being worth a round trip — so a fixture small enough to
+have one-block chunks measures nothing, silently.
 
 **Jest suite time is not a usable signal here, and was once mistaken for one.**
 The helper's import is dynamic for bundle reasons — static pins the inlined
 worker blob into the initial bundle at 23.4kb gzipped, against 141 bytes plus a
-lazily fetched chunk — and that is the whole justification. A comment asserting
-it also took three jbrowse-web alignments suites from 16s to 181s did not
-reproduce: three variant suites measured 13.887s static against 13.856s
-dynamic on a warm cache. The 29s reading that seemed to confirm it was a cold
-jest transform cache in a fresh worktree, which is the *same* mistake as the
-HTTP-cache trap above, made twice in one session. Measure bundles with esbuild
-`--splitting --minify` and compare the entry chunk; don't infer graph weight
-from a test run.
+lazily fetched chunk — and that is the whole justification. A comment claiming it
+also took three alignments suites from 16s to 181s did not reproduce: 13.887s
+static against 13.856s dynamic on a warm cache. The 29s reading that seemed to
+confirm it was a cold jest transform cache in a fresh worktree — the *same*
+mistake as the HTTP-cache trap above, made twice in one session. Measure bundles
+with esbuild `--splitting --minify` and compare the entry chunk; don't infer
+graph weight from a test run.
 
 ## Harness
 
