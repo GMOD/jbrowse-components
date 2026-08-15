@@ -487,6 +487,18 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // sentence. The three that were real drift (a chord component, a clustering
 // action, a context-menu anchor — each also wrong about more than its name) were
 // fixed directly. Re-run the scan after a big refactor rather than wiring it up.
+//
+// Re-run 2026-08-15: ~120 unresolved identifiers, and the exemption still holds.
+// Two classes account for nearly all of them, and neither is drift — the
+// "deleted on purpose" idiom above (DISPLAY_TYPE_DEFAULTS.md has a section whose
+// whole job is listing removed names "so a reader doesn't go looking for them"),
+// and symbols belonging to a DIFFERENT repo, since several of these docs are
+// about a boundary with one: `@gmod/bam`'s and `@gmod/cram`'s options, and the
+// graph plugin's launcher, which lives in jbrowse-plugin-graphgenomeview.
+// One real find: CONFIG_PATTERN.md's "Key functions" table listed a
+// `createRenderConfigContext` that no longer exists, which is the one shape the
+// exemption is genuinely bad at — a table of CURRENT API, where the idiom that
+// justifies the exemption cannot apply.
 const SYMBOL_DIRS = [join(docsDir, 'developer_guides')]
 const SYMBOL_FILES = new Set([join(repoRoot, 'agent-docs', 'ARCHITECTURE.md')])
 // Every CLAUDE.md is symbol-checked too — see claudeDocs() below for why, and
