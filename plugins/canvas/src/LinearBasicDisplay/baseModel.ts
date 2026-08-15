@@ -85,7 +85,7 @@ import {
   createIncrementalLayout,
   featureIdsTouchingBlocks,
   maxBottom,
-  minBodyHeight,
+  minDrawnBoxHeight,
   scaleLaidOutData,
 } from './layout.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
@@ -1245,37 +1245,33 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * The unscaled height (px) of the SHORTEST feature body on screen — the
-         * one a uniform squeeze drives below the minimum first, and so the basis
-         * for the squeeze floor below. 0 when nothing is laid out, which makes
-         * that floor a no-op.
+         * The unscaled height (px) of the shortest box on screen that the layout
+         * actually DRAWS — a UTR at its 0.65 fraction, a transcript rect inside a
+         * gene, a plain variant box — which is the one a uniform squeeze takes
+         * below a visible size first, and so the basis for the squeeze floor
+         * below. 0 when nothing is drawn, which makes that floor a no-op.
          *
-         * Measured off the laid-out stack (`minBodyHeight`), not off the
-         * `featureHeight` config slot. The slot is a per-feature jexl callback
-         * slot (`contextVariable: ['feature']`), so reading it here — with no
-         * feature in scope — evaluates the callback against nothing and throws,
-         * taking the whole fit layout down with it. And even where it holds a
-         * plain number it describes the plain-rect glyph: a display whose worker
-         * sizes features some other way (a taller gene glyph, a per-feature
-         * height expression) has bodies the slot never mentions, and a floor that
-         * misses the shortest of them is not a floor. The layout already carries
-         * every body's packed height with the display-mode multiplier applied
-         * (see applyHeightScale), so it is both the safe read and the true one.
+         * A drawn box, not a feature's laid-out extent, and the distinction is the
+         * whole floor: a gene's extent is every stacked transcript plus its label
+         * rows, so a floor built on it promised 2px boxes while letting each
+         * transcript render at a third of a pixel. See `minDrawnBoxHeight`.
+         *
+         * Measured off the layout, never off the `featureHeight` config slot. The
+         * slot is a per-feature jexl callback slot (`contextVariable:
+         * ['feature']`), so reading it here — with no feature in scope —
+         * evaluates the callback against nothing and throws, taking the whole fit
+         * layout down with it. And even where it holds a plain number it names
+         * the plain-rect glyph's row height, which is not what a UTR or an
+         * isoform inside a gene is drawn at.
          *
          * Reads the `full` rung specifically because it is the stack the ladder
-         * always materializes; body heights don't vary across rungs (only the
-         * label reservation does), so any rung would give the same answer and
-         * this one costs nothing extra.
-         *
-         * Narrowed to `fitMeasureFeatureIds`, the same on-screen set every rung
-         * is measured over: the floor bounds a squeeze chosen against the visible
-         * stack, so it has to be built on the shortest body IN that stack. The
-         * shortest body binds, so including the fetch buffer could only raise the
-         * floor — one buffered sub-pixel mark half a viewport away pinned it at 1
-         * and stopped the visible stack squeezing at all.
+         * always materializes; box heights don't vary across rungs (only the label
+         * reservation does), so any rung gives the same answer and this one costs
+         * nothing extra. Narrowed to `fitMeasureFeatureIds`, the same on-screen set
+         * every rung is measured over.
          */
-        get fitBodyPx() {
-          return minBodyHeight(
+        get fitSmallestBoxPx() {
+          return minDrawnBoxHeight(
             this.baseLaidOutDataMap,
             self.fitMeasureFeatureIds,
           )
@@ -1283,14 +1279,14 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * Floor on the fit squeeze: the smallest vertical scale that still leaves
-         * every feature body at least `MIN_FIT_BOX_PX` tall. When bodies would pack
+         * every drawn box at least `MIN_FIT_BOX_PX` tall. When boxes would pack
          * tighter than this the squeeze stops here and the surplus scrolls instead
          * of vanishing. `squeezeFloorScale` answers both degenerate cases (nothing
-         * laid out, or bodies already at the minimum) as 1 — no squeeze available —
-         * so there is nothing to clamp or zero-check here.
+         * drawn, or boxes already at the minimum) as 1 — no squeeze available — so
+         * there is nothing to clamp or zero-check here.
          */
         get fitMinScale() {
-          return squeezeFloorScale(this.fitBodyPx, MIN_FIT_BOX_PX)
+          return squeezeFloorScale(this.fitSmallestBoxPx, MIN_FIT_BOX_PX)
         },
         /**
          * #getter
@@ -1307,7 +1303,7 @@ export default function baseStateModelFactory(
          * that height times the mode's multiplier, so it cancels whatever it was
          * per feature and the ceiling is purely the display mode's compact ratio (1
          * in normal mode → no grow). Unlike the squeeze floor, which has to know
-         * the shortest actual body (see `fitBodyPx`), this bound is uniform.
+         * the shortest actual box (see `fitSmallestBoxPx`), this bound is uniform.
          */
         get fitMaxScale() {
           return Math.max(1, 1 / HEIGHT_MULTIPLIERS[self.displayMode])

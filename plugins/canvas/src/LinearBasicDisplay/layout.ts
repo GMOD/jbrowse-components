@@ -54,39 +54,53 @@ export function maxBottom(
   return max
 }
 
-// Shortest feature body in a layout, i.e. the one a uniform vertical squeeze
-// shrinks below a minimum first. `featureHeightPx` is the packed body height —
-// the raw worker height with the display mode's multiplier already applied (see
-// applyHeightScale) — so this is the number the squeeze floor has to be built on
-// (see `fitBodyPx`). Unplaced features are excluded for the same reason
-// `maxBottom` excludes them: they don't render, so nothing about them is visible
-// to squeeze. 0 when there is no placed body, which callers read as "no body to
-// size" and turn into a no-op bound.
+// The shortest box the layout actually DRAWS — the one a uniform vertical
+// squeeze takes below a visible size first, and so the basis for the squeeze
+// floor (see `fitSmallestBoxPx`). 0 when nothing is drawn, which callers read as
+// "nothing to size" and turn into a no-op bound.
 //
-// `measureIds` narrows it exactly as it narrows `maxBottom`, and fit mode passes
-// the same on-screen set to both: the squeeze the floor bounds is chosen against
-// the visible stack, so a body in the off-screen fetch buffer must not decide how
-// far that stack may shrink. It is the shortest body that binds, so an unnarrowed
-// read can only ever raise the floor — one buffered 2px mark half a viewport away
-// pinned the floor at 1 and stopped the visible stack squeezing at all.
+// Measured over `rectHeights`, the emitted rect primitives, and NOT over
+// `flatbushItems[].featureHeightPx`. That field is the feature's whole laid-out
+// EXTENT — for a gene, `layout.height`, every stacked transcript plus its label
+// rows — which is nothing anyone draws. Built on it, a floor of MIN_FIT_BOX_PX
+// promised 2px boxes and delivered a fifth of that: a 5-transcript gene extends
+// ~70px, so the floor allowed a 0.03 squeeze and each 10px transcript rect
+// rendered at a third of a pixel. The promise is about boxes, so measure boxes.
 //
-// Deliberately measured off the layout rather than read off the `featureHeight`
-// config slot: that slot is a per-feature jexl callback slot, so it has no single
-// value to read here, and even as a plain number it describes the plain-rect
-// glyph rather than whatever height the worker actually gave each feature.
-export function minBodyHeight(
+// A rect's feature is `rectFeatureIndices[i]`, so the two filters below are the
+// same ones `maxBottom` applies, asked of the rect's owner: unplaced features are
+// excluded because they don't render, and `measureIds` narrows to the on-screen
+// set exactly as it does there — fit mode passes the same set to both, so the
+// squeeze is bounded by the stack it is chosen against rather than by the fetch
+// buffer. It is the SHORTEST box that binds, so either filter left off can only
+// raise the floor: one buffered 2px mark half a viewport away pinned it at 1 and
+// stopped the visible stack squeezing at all.
+//
+// Non-positive heights are skipped rather than winning: a box already drawing
+// nothing cannot be shrunk to invisibility, and letting a degenerate
+// `featureHeight: 0` config answer 0 here would silently disable the squeeze for
+// the whole track.
+export function minDrawnBoxHeight(
   map: ReadonlyMap<number, FeatureDataResult>,
   measureIds?: ReadonlySet<string>,
 ) {
   let min = Number.POSITIVE_INFINITY
   for (const data of map.values()) {
-    for (const item of data.flatbushItems) {
+    const { rectHeights, rectFeatureIndices, flatbushItems } = data
+    for (let i = 0; i < rectHeights.length; i++) {
+      const height = rectHeights[i]!
+      // Cheap test first: most rects lose on height alone, and the owner lookup
+      // is only worth doing for one that would win.
+      if (height <= 0 || height >= min) {
+        continue
+      }
+      const owner = flatbushItems[rectFeatureIndices[i]!]
       if (
-        isPlacedRow(item.topPx) &&
-        item.featureHeightPx < min &&
-        (!measureIds || measureIds.has(item.featureId))
+        owner &&
+        isPlacedRow(owner.topPx) &&
+        (!measureIds || measureIds.has(owner.featureId))
       ) {
-        min = item.featureHeightPx
+        min = height
       }
     }
   }
@@ -101,7 +115,7 @@ export function minBodyHeight(
 // showing the user strictly less than the data it holds, which fit mode in
 // particular must own up to rather than present as a complete picture.
 //
-// `measureIds` narrows it the way it narrows `maxBottom` and `minBodyHeight`, and
+// `measureIds` narrows it the way it narrows `maxBottom` and `minDrawnBoxHeight`,
 // fit mode passes the same on-screen set to all three. The count is surfaced as
 // "N not shown (past the layout row limit; filter or zoom in)", and counting the
 // fetch buffer put features half a viewport away — which panning, not filtering,

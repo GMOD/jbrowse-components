@@ -172,6 +172,68 @@ function mixedHeightRegionData(heights: number[]) {
   })
 }
 
+// The gene shape: a feature whose laid-out EXTENT is the whole stack of
+// isoforms it contains, while the boxes it draws are the individual transcript
+// rects inside it. The two numbers are what the squeeze floor's basis has to
+// choose between, and every other fixture here makes them equal — a plain
+// feature is one box the height of its own extent — so only this one can tell
+// which the floor was built on.
+function geneStackRegionData(opts: {
+  genes: number
+  isoformsPerGene: number
+  isoformPx: number
+}) {
+  const { genes, isoformsPerGene, isoformPx } = opts
+  const extentPx = isoformsPerGene * isoformPx
+  const items = Array.from({ length: genes }, (_, i) => ({
+    featureId: `g${i}`,
+    startBp: 100,
+    endBp: 900,
+  }))
+  // one rect per isoform, each attributed to its gene's flatbush entry
+  const rects = items.flatMap((gene, i) =>
+    Array.from({ length: isoformsPerGene }, (_, j) => ({
+      geneIdx: i,
+      startBp: gene.startBp,
+      endBp: gene.endBp,
+      y: j * isoformPx,
+    })),
+  )
+  return makeFeatureData({
+    flatbushItems: items.map(f =>
+      makeFlatbushItem({
+        featureId: f.featureId,
+        type: 'gene',
+        startBp: f.startBp,
+        endBp: f.endBp,
+        bottomPx: extentPx,
+        featureHeightPx: extentPx,
+      }),
+    ),
+    rectPositions: new Uint32Array(rects.flatMap(r => [r.startBp, r.endBp])),
+    rectYs: new Float32Array(rects.map(r => r.y)),
+    rectHeights: new Float32Array(rects.map(() => isoformPx)),
+    rectColors: new Uint32Array(rects.length),
+    rectStrands: new Float32Array(rects.length),
+    rectDensityFade: new Uint32Array(rects.length),
+    rectFeatureIndices: new Uint32Array(rects.map(r => r.geneIdx)),
+  })
+}
+
+// Every rect the display would paint, at the scale it would paint it — the
+// quantity MIN_FIT_BOX_PX is a promise about.
+function drawnBoxHeights(display: { laidOutDataMap: Map<number, unknown> }) {
+  const out: number[] = []
+  for (const data of (
+    display as {
+      laidOutDataMap: Map<number, { rectHeights: Float32Array }>
+    }
+  ).laidOutDataMap.values()) {
+    out.push(...data.rectHeights)
+  }
+  return out
+}
+
 const ctgA = {
   assemblyName: 'volvox',
   refName: 'ctgA',
@@ -508,7 +570,7 @@ describe('canvas display fit escalation ladder', () => {
   })
 
   // Fit never scales a feature body past its normal height: in the default
-  // (normal) display mode fitBodyPx already is the normal height, so the grow
+  // (normal) display mode fitSmallestBoxPx already is the normal height, so the grow
   // scale pins at 1 and a track taller than the content strands whitespace rather
   // than ballooning the bodies (the resize-taller regression).
   it('does not grow features past the normal feature height', () => {
@@ -819,7 +881,7 @@ describe('canvas display fit escalation ladder', () => {
     )
     display.setHeightMode('fit')
     expect(readConfObject(display.configuration, 'featureHeight')).toBe(10)
-    expect(display.fitBodyPx).toBe(2)
+    expect(display.fitSmallestBoxPx).toBe(2)
     // The shortest body is already at the minimum, so there is no squeeze left.
     expect(display.fitMinScale).toBe(1)
 
@@ -828,8 +890,42 @@ describe('canvas display fit escalation ladder', () => {
     const { display: tall } = createDisplay()
     tall.setRpcData(0, mixedHeightRegionData([20, 20, 20]), view.bpPerPx, ctgA)
     tall.setHeightMode('fit')
-    expect(tall.fitBodyPx).toBe(20)
+    expect(tall.fitSmallestBoxPx).toBe(20)
     expect(tall.fitMinScale).toBeCloseTo(0.1)
+  })
+
+  // MIN_FIT_BOX_PX is a promise about DRAWN boxes, and for a gene the drawn box
+  // is one transcript rect while the feature's laid-out extent is the whole
+  // stack of them. Built on the extent, the floor let a 10-deep gene squeeze by
+  // 1/50 and rendered each 10px isoform at a fifth of a pixel while reporting
+  // that no box had gone under 2. Every other fixture here makes the two
+  // numbers equal, so only a gene-shaped one can tell them apart.
+  it('floors on the transcript rect a gene draws, not the gene it stacks them in', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(
+      0,
+      geneStackRegionData({ genes: 6, isoformsPerGene: 10, isoformPx: 10 }),
+      view.bpPerPx,
+      ctgA,
+    )
+    display.setHeightMode('fit')
+
+    // the drawn box, not the 100px extent the six genes stack out of
+    expect(display.fitSmallestBoxPx).toBe(10)
+    expect(display.fitMinScale).toBeCloseTo(0.2)
+
+    // Ask for a height far under what even the floored squeeze can reach, so the
+    // floor is what stops it...
+    display.setHeight(20)
+    expect(display.fitScale).toBeCloseTo(0.2)
+    // ...and the promise holds on the rects that actually paint.
+    for (const height of drawnBoxHeights(display)) {
+      expect(height).toBeGreaterThanOrEqual(2)
+    }
+    // The surplus scrolls rather than vanishing, which is the trade the floor is
+    // making.
+    expect(display.hasOverflow).toBe(true)
   })
 
   // `featureHeight` is a per-feature jexl callback slot (contextVariable:
@@ -1382,7 +1478,7 @@ describe('canvas display fit measures the visible window', () => {
 
     // The off-screen 2px marks are laid out, but the floor is built on the 20px
     // bodies the user is looking at...
-    expect(display.fitBodyPx).toBe(20)
+    expect(display.fitSmallestBoxPx).toBe(20)
     expect(display.fitMinScale).toBeCloseTo(0.1)
     // ...so the visible stack squeezes into the track instead of scrolling.
     expect(display.fitScale).toBeLessThan(1)

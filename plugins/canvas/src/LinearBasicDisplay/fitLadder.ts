@@ -157,7 +157,7 @@ export function fitScaleToFill(
 // same comparison rather than through separate guards: a stack whose shortest
 // body is already at or under the minimum has nothing left to give, and a stack
 // with no body at all (`shortestBodyPx` 0, an empty layout) has nothing to
-// measure. That is what lets the caller pass a raw `minBodyHeight` straight in,
+// measure. That is what lets the caller pass a raw `minDrawnBoxHeight` straight in,
 // with no zero check and no `Math.min(1, …)` clamp of its own — the two places
 // the old spelling could have disagreed with each other.
 export function squeezeFloorScale(shortestBodyPx: number, minBoxPx: number) {
