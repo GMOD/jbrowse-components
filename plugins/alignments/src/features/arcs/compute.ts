@@ -359,8 +359,8 @@ export interface ComputedArc {
   // `minInterchromSupport` filters on, so the number drawn and the number
   // filtered are one number rather than two free to disagree.
   //
-  // A tick keeps the coordinate count either way; `pushLine` says why the
-  // windowed one does not transfer onto half a junction.
+  // A tick is windowed too, and `pushLine` has the one difference: half a
+  // junction can be reached by more than one cluster, so it sums them.
   support: number
   // The `arcKey` this arc was deduped under, so it is unique across the array.
   // Only `resolveArcs`' sort reads it, as the tie-break that makes paint order
@@ -439,9 +439,10 @@ export interface ComputedLine {
   // not the same claim, and until the ticks were coalesced there was nowhere for
   // that count to go.
   //
-  // The reads at this COORDINATE, not the windowed cluster an interchromosomal
-  // arc counts — see `pushLine`, and `ComputedArc.support` for the two
-  // measurements side by side.
+  // Counted the way half a junction has to be: the sum of the sizes of the
+  // distinct windowed CLUSTERS reaching this coordinate, each contributing once.
+  // `pushLine` has why neither the reads at the coordinate nor one cluster's own
+  // size will do, and `ComputedArc.support` the whole-junction case beside it.
   support: number
   // The refName(s) on the FAR side of this breakpoint, sorted and unique. The
   // one fact a tick is drawn to convey and the only one it could not answer: a
@@ -1160,16 +1161,13 @@ const INTERCHROM_ARC_YBP = 0xffffffff
 // finite number when `stats` is absent.
 const DEFAULT_INTERCHROM_WINDOW_BP = 1000
 
-// How many reads agree on each interchromosomal connection, counted over a
-// WINDOW rather than at a coordinate — returns the per-connection support, index
-// for index with `arcs`. Intra-chromosomal entries keep a support of 0 and are
-// never read: the caller asks only from inside its own interchromosomal branch,
-// so walking the whole array is what lets the two agree BY INDEX rather than by
-// a counter kept in step with a filter.
+// Which reads agree on each interchromosomal connection, grouped over a WINDOW
+// rather than at a coordinate — see `InterchromClusters` for the shape and why
+// it is an identity rather than the count it returned first.
 //
-// THE MARK'S OWN `support` IS THIS NUMBER, not just the floor's input — see
-// `ComputedArc.support`, which is why this runs at every setting rather than
-// only above the floor.
+// BOTH MARKS' OWN `support` COMES OUT OF THIS, not just the floor's input — see
+// `ComputedArc.support` and `pushLine` — which is why it runs at every setting
+// rather than only above the floor.
 //
 // A mate-pair breakpoint is not localized to a base. The two mates straddle it,
 // so a read supporting a translocation can start anywhere within about one
@@ -1218,11 +1216,29 @@ interface ClusterEntry {
   bpB: number
 }
 
+// The clustering's answer, as an IDENTITY per connection rather than the bare
+// count it used to be, because the two marks spend it differently. An arc is a
+// whole junction, so its number is its own cluster's size and an index into
+// `sizeOf` says it. A tick is half a junction and several clusters can reach one
+// coordinate, so it sums the DISTINCT ones — which no per-connection number can
+// answer, since adding two connections of one cluster would double it. See
+// `pushLine`.
+interface InterchromClusters {
+  // Cluster index per `pendingArcs` entry, -1 for an intra-chromosomal one.
+  // Those are never read: the caller asks only from inside its own
+  // interchromosomal branch, so walking the whole array is what lets the two
+  // agree BY INDEX rather than by a counter kept in step with a filter.
+  clusterOf: number[]
+  // Connections in each cluster, indexed by cluster.
+  sizeOf: number[]
+}
+
 function clusteredInterchromSupport(
   arcs: PendingArc[],
   windowBp: number,
-): number[] {
-  const support = new Array<number>(arcs.length).fill(0)
+): InterchromClusters {
+  const clusterOf = new Array<number>(arcs.length).fill(-1)
+  const sizeOf: number[] = []
   // ENDPOINT ORDER IS NORMALIZED before anything is keyed or compared, on
   // refName, which is `arcKey`'s rule and is here for the same reason: the
   // event is symmetric in endpoint order, so the count over it has to be.
@@ -1274,15 +1290,17 @@ function clusteredInterchromSupport(
           e => e.bpB,
           windowBp,
           cluster => {
+            const id = sizeOf.length
+            sizeOf.push(cluster.length)
             for (const m of cluster) {
-              support[m.index] = cluster.length
+              clusterOf[m.index] = id
             }
           },
         )
       },
     )
   }
-  return support
+  return { clusterOf, sizeOf }
 }
 
 // Single-linkage runs over a list already sorted on `valueOf`: a run ends
@@ -1351,7 +1369,14 @@ function resolveArcs(
   // cannot end up on a copy in the other half.
   const byKey = new Map<string, ComputedArc>()
   const lines: ComputedLine[] = []
-  const byLineKey = new Map<string, ComputedLine>()
+  // The tick, plus the clusters already counted into it — see `pushLine`. The
+  // set is off `ComputedLine` because it is bookkeeping for the coalescing, not
+  // a field of the mark, and it is one element for all but a coordinate two
+  // events share.
+  const byLineKey = new Map<
+    string,
+    { line: ComputedLine; clusters: Set<number> }
+  >()
 
   // The window is the LIBRARY's, not a constant: how far a supporting read can
   // sit from the breakpoint is one fragment length, and `stats.upper` is the
@@ -1367,7 +1392,7 @@ function resolveArcs(
   // interchromosomal connection and sorts it — ~10% of the feed on deep
   // short-read data — against an `arcKey` string built for every connection that
   // survives, so making it unconditional is not what this loop costs.
-  const interchromSupport = clusteredInterchromSupport(
+  const { clusterOf, sizeOf } = clusteredInterchromSupport(
     pendingArcs,
     stats?.upper ?? DEFAULT_INTERCHROM_WINDOW_BP,
   )
@@ -1387,37 +1412,53 @@ function resolveArcs(
   // same curve the arcs use) instead of being thrown away, and what gives the
   // hover something to report. Deduping alone would have been lossy.
   //
-  // COUNTED AT THE COORDINATE, and deliberately not swapped for the windowed
-  // cluster count an interchromosomal ARC now carries (`ComputedArc.support`).
-  // A tick is HALF a junction: a coordinate whose far side this view cannot
-  // show, and — `partnerRefNames` being plural — possibly more than one far side
-  // at once. So the reads that landed on it are the thing it can honestly
-  // report, where an arc has a whole junction to count the reads OF.
+  // THE SUM OF THE DISTINCT CLUSTERS reaching this coordinate, which is neither
+  // of the two obvious numbers and is the only one that survives both cases.
   //
-  // The cluster count does not transfer onto it. Two singleton events sharing a
-  // chr1 base (`a breakpoint reaching two chromosomes names both`) would report
-  // the larger, 1, for the two reads sitting there; and two coordinates of ONE
-  // event would each report the whole event, hiding that one of them carries
-  // twice the reads. Summing the distinct clusters reaching a coordinate is the
-  // number that survives both, and it wants a cluster identity per connection
-  // rather than a count — worth doing if a tick's weight ever has to carry an
-  // event, and not for its own sake.
-  function pushLine(refName: string, bp: number, partnerRef: string) {
+  // Counting the connections AT the coordinate — which this did — is the
+  // measurement the interchromosomal family was already shown not to have. Mate
+  // pairs straddle a breakpoint rather than landing on it, so the count is 1 for
+  // 862 of 865 connections (`ComputedArc.support`), and the tick is the mark a
+  // SINGLE-chromosome view draws for a translocation: the arc half of the fix
+  // never reaches it. Worse, `minInterchromSupport` gates a tick on its cluster,
+  // so a five-pair breakpoint cleared a floor of 2 and then drew, and hovered,
+  // as one read.
+  //
+  // Taking the cluster's own size instead understates the other way: two
+  // singleton events sharing a chr1 base (`a breakpoint reaching two chromosomes
+  // names both`) would report the larger, 1, for the two reads sitting there.
+  // `partnerRefNames` is plural for exactly that shape.
+  //
+  // So: each cluster contributes its size ONCE. A tick is half a junction, and
+  // the reads standing behind the halves that meet here is what it can say. Its
+  // two coordinates of one event do both report the whole event — the same trade
+  // an arc makes, and for the same reason: the mark is the junction and the
+  // POSITION is its own read's.
+  function pushLine(
+    refName: string,
+    bp: number,
+    partnerRef: string,
+    cluster: number,
+    clusterSupport: number,
+  ) {
     const key = `${refName}\0${bp}`
     const seen = byLineKey.get(key)
     if (seen) {
-      seen.support++
-      if (!seen.partnerRefNames.includes(partnerRef)) {
-        seen.partnerRefNames.push(partnerRef)
+      if (!seen.clusters.has(cluster)) {
+        seen.clusters.add(cluster)
+        seen.line.support += clusterSupport
+      }
+      if (!seen.line.partnerRefNames.includes(partnerRef)) {
+        seen.line.partnerRefNames.push(partnerRef)
       }
       return
     }
     const line = {
       x: { refName, bp },
-      support: 1,
+      support: clusterSupport,
       partnerRefNames: [partnerRef],
     }
-    byLineKey.set(key, line)
+    byLineKey.set(key, { line, clusters: new Set([cluster]) })
     lines.push(line)
   }
 
@@ -1539,8 +1580,11 @@ function resolveArcs(
       // cluster would have to invent a position for it, which is the thing
       // `arcKey`'s exact-coordinate rule exists to refuse.
       // The reads behind this connection, and the number both its marks are
-      // drawn and reported with — see `ComputedArc.support`.
-      const support = interchromSupport[i]!
+      // drawn and reported with — see `ComputedArc.support`. The tick also takes
+      // the cluster's IDENTITY, because a coordinate several events reach adds
+      // each of them once (`pushLine`).
+      const cluster = clusterOf[i]!
+      const support = sizeOf[cluster]!
       if (drawInter && support >= minInterchromSupport) {
         // AN ARC WHEN BOTH FEET ARE ON SCREEN, ticks otherwise — decided per
         // connection, so a breakpoint reaching one displayed and one undisplayed
@@ -1592,8 +1636,8 @@ function resolveArcs(
           // what makes the two ticks different marks rather than a mirrored
           // pair. The one whose chromosome is not displayed reaches no region
           // and is dropped by `lineTouchesRegion`.
-          pushLine(p1Ref, p1Bp, p2Ref)
-          pushLine(p2Ref, p2Bp, p1Ref)
+          pushLine(p1Ref, p1Bp, p2Ref, cluster, support)
+          pushLine(p2Ref, p2Bp, p1Ref, cluster, support)
         }
       }
       continue

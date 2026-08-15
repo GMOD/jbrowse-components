@@ -104,8 +104,9 @@ reads over a window of one fragment length on _both_ sides
 rather than landing on it, so `arcKey`'s exact count is 1 for essentially every
 interchromosomal connection and a floor over it would delete a real translocation
 as thoroughly as the mismapping. The window comes from `stats.upper`, so it tracks
-the library instead of a constant. The same count is what an interchromosomal arc
-is DRAWN with — see below. The same floor on same-chromosome arcs was
+the library instead of a constant. The same clusters are what BOTH
+interchromosomal marks are DRAWN with — see below. The same floor on
+same-chromosome arcs was
 measured and declined — at depth it is a density filter, not an evidence filter.
 Both results are in [DEEP_COVERAGE.md](DEEP_COVERAGE.md).
 
@@ -118,23 +119,36 @@ passes (resolved CPU-side at pack time; no shader evaluates it). Coalescing
 without keeping the count left a 40-read translocation drawing exactly like one
 mismapped pair.
 
-**They do not COUNT it the same way, and that follows from the floor above.** A
+**They do not COUNT it the same way, and the split is CHROMOSOME, not mark.** A
 same-chromosome arc counts the connections coalesced onto its exact coordinate;
-an **interchromosomal arc carries its windowed cluster** instead, the same number
-`minInterchromSupport` filters on, so the number drawn and the number filtered
-cannot disagree. Counting coincidences there read 1 over a hundred-pair
-translocation — that is the measurement the floor exists because of — so the
-channel was empty in the family that needs it most. The pass therefore runs at
-every setting, not only above the floor. One arc is one junction is one cluster,
-so coalescing has nothing to add on that arm.
+every INTERCHROMOSOMAL mark is windowed, so the number drawn and the number
+`minInterchromSupport` filters on cannot disagree. Counting coincidences there
+read 1 over a hundred-pair translocation — that is the measurement the floor
+exists because of — so the channel was empty in the family that needs it most.
+The pass therefore runs at every setting, not only above the floor. One arc is
+one junction is one cluster, so coalescing has nothing to add on that arm.
 
-**A tick keeps the coordinate count**, deliberately. It is HALF a junction: a
+**An interchromosomal TICK sums the distinct clusters reaching its coordinate**,
+which is where the two marks' arithmetic differs. A tick is HALF a junction: a
 coordinate whose far side the view cannot show and, `partnerRefNames` being
-plural, possibly several far sides at once. Two singleton events sharing a base
-would report the larger, and two coordinates of one event would each report the
-whole event. Summing the DISTINCT clusters reaching a coordinate is the number
-that survives both, and it wants a cluster identity per connection rather than a
-count — worth building if a tick's weight ever has to carry an event.
+plural, possibly several far sides at once. Neither obvious number works — the
+reads AT the coordinate is the count already shown to read 1 for 862 of 865
+mate-pair connections, and one cluster's own size reports the larger, 1, where
+two singleton events share a base. Each cluster contributing its size once
+survives both, which is why `clusteredInterchromSupport` returns a cluster
+IDENTITY per connection rather than a count.
+
+**The ticks are the half that matters more**, and the arc change reached them
+only through the floor. A translocation is usually looked at from ONE
+chromosome, where both feet cannot be on screen, so the mark is always a tick;
+the arc carries a cluster only in the two-region view. And `minInterchromSupport`
+already gated a tick on its cluster, so a five-pair breakpoint cleared a floor of
+2 and then drew, and hovered, as a single read — the same two-numbers-free-to-
+disagree, on the more common path.
+
+Two coordinates of one event do both report the whole event. That is the trade
+the arc already makes and for the same reason — the mark is the junction, the
+POSITION is its own read's — rather than a residue of this rule.
 
 **A tick is DASHED, and that is what separates it from an arc's foot.** The two
 land on the same x whenever a breakpoint reaches one acceptor the view shows and

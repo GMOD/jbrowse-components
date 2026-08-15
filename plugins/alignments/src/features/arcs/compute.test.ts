@@ -276,6 +276,48 @@ describe('computeArcsFromPileupData', () => {
       ).toHaveLength(5)
     })
 
+    // The other half of that, and the half the arc fix did not reach: a
+    // single-chromosome view of a translocation draws TICKS, so counting a
+    // tick's reads at its own coordinate left the whole channel reading 1 in
+    // the one view a translocation is usually looked at in — while the floor
+    // beside it had already been told this breakpoint carries five.
+    test('a tick is drawn with its cluster, not with its coordinate', () => {
+      const data = scattered(
+        [2000, 2130, 2260, 2390, 2520],
+        [5000, 5140, 5280, 5410, 5550],
+        { upper: 600, lower: 100 },
+      )
+      expect(run(data, 2).lines.map(l => l.support)).toEqual([
+        5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      ])
+    })
+
+    // Half a junction can be reached by more than one, which is the case a
+    // cluster's own size cannot report: two events sharing a chr1 base, one
+    // pair each. The larger cluster is 1 and two reads are sitting there.
+    test('a coordinate two events reach counts both of them', () => {
+      const data = makePileupData({
+        readPositions: new Uint32Array([2000, 2100, 2000, 2100]),
+        readFlags: new Uint16Array(2).fill(SAM_FLAG_PAIRED),
+        readStrands: new Int8Array([1, 1]),
+        readInsertSizes: new Float32Array([0, 0]),
+        readPairOrientations: new Uint8Array([1, 1]),
+        ...namesToBlock(['readA', 'readB']),
+        ...nextRefsToTable(['chr2', 'chr3']),
+        readNextPositions: new Uint32Array([5000, 900_000]),
+        insertSizeStats: { upper: 600, lower: 100 },
+      })
+      const shared = run(data, 1).lines.find(l => l.x.refName === 'chr1')
+      expect(shared?.support).toBe(2)
+      expect(shared?.partnerRefNames).toEqual(['chr2', 'chr3'])
+      // ...and each far side keeps its own event's weight, not the sum
+      expect(
+        run(data, 1)
+          .lines.filter(l => l.x.refName !== 'chr1')
+          .map(l => l.support),
+      ).toEqual([1, 1])
+    })
+
     // ...and the noise it is meant to remove: same five chr1 positions, but the
     // mates point all over chr2. Agreeing on one side is not evidence.
     test('reads agreeing on one side only are dropped', () => {
@@ -708,6 +750,13 @@ describe('computeArcsFromPileupData', () => {
     // Array order is paint order and the ticks are opaque, exactly as for the
     // arcs — and `hitTestArcBand` reads the same order as its tie-break. Two
     // breakpoints, the lighter one fetched first.
+    //
+    // TWO ACCEPTORS 45 kb apart, not one: a tick's weight is its clusters'
+    // (`pushLine`), so three reads pointing at a single chr2 locus are ONE
+    // breakpoint however their chr1 ends scatter, and both its ticks then
+    // correctly report all three. Distinguishing the ticks by weight takes
+    // distinguishing the events, which is what the comment above always claimed
+    // this fixture did.
     const data = makePileupData({
       readPositions: new Uint32Array([1000, 1100, 1500, 1600, 1500, 1600]),
       readFlags: new Uint16Array(3).fill(SAM_FLAG_PAIRED),
@@ -716,7 +765,7 @@ describe('computeArcsFromPileupData', () => {
       readPairOrientations: new Uint8Array([1, 1, 1]),
       ...namesToBlock(['readA', 'readB', 'readC']),
       ...nextRefsToTable(['chr2', 'chr2', 'chr2']),
-      readNextPositions: new Uint32Array([5000, 5000, 5000]),
+      readNextPositions: new Uint32Array([5000, 50_000, 50_000]),
     })
 
     const { lines } = computeArcsFromPileupData(
