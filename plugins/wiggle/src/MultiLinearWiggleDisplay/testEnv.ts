@@ -8,14 +8,17 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  displayTestSessionModel,
+  testAssembly,
+  testAssemblyManager,
+} from '@jbrowse/display-test-utils'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { WiggleDataResult, WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // A minimal but fully-typed zero-feature source: enough to populate
@@ -52,12 +55,8 @@ export function makeMultiWiggleData(...names: string[]): WiggleDataResult[] {
 // seed persistent state (e.g. runClustering) declaratively, exactly as the app
 // does via addView.
 export function createTestEnvironment() {
-  // `console.warn` only. `console.error` is the channel the dev-only
-  // display-contract checks report through (assertDisplayContract,
-  // makeRetryContractCheck), so silencing it here would mute the one
-  // signal these harnesses exist to be able to produce. It was silenced
-  // by copied boilerplate and was hiding nothing: with it removed the
-  // seven display plugins run 3344 tests with no console.error at all.
+  // `console.warn` only — `console.error` is the display-contract channel
+  // (TEST_INFRASTRUCTURE.md).
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
 
@@ -127,85 +126,13 @@ export function createTestEnvironment() {
     { pluginManager },
   )
 
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-      // promoted display-type defaults, behind the same
-      // get/setDisplayTypeDefault interface the promotable cascade reads
-      // (BaseSession stores them flat in an observable.map — the nesting here is
-      // local, and reassigned wholesale so the display getters track it)
-      displayTypeDefaults: types.frozen<
-        Record<string, Record<string, unknown>>
-      >({}),
-    })
-    .volatile(() => ({
-      // what queueDialog was called with, resolved to [Component, props] so a
-      // test can assert on the props a menu item passes its dialog
-      queuedDialogs: [] as [unknown, Record<string, unknown>][],
-      rpcManager: {
-        call: mockRpcCall,
-      },
-      assemblyManager: {
-        get: (name: string) =>
-          name === 'volvox'
-            ? {
-                initialized: true,
-                regions: [
-                  {
-                    refName: 'ctgA',
-                    start: 0,
-                    end: 50_000,
-                    assemblyName: 'volvox',
-                  },
-                ],
-                // identity for a canonical name, plus one alias: user-authored
-                // refName text is normalized through this, and a stub that only
-                // ever answered identity could not tell a reader that
-                // normalizes from one that doesn't. It lower-cases its argument
-                // because the real one does, so a stub tolerating a non-string
-                // would be green over a spec that takes the display down.
-                getCanonicalRefName: (refName: string) =>
-                  refName.toLowerCase() === 'chra' ? 'ctgA' : refName,
-                configuration: { sequence: undefined },
-              }
-            : undefined,
-        isValidRefName: () => true,
-      },
-    }))
-    .views(self => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        return self.displayTypeDefaults[displayType]?.[slot]
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-      notifyError() {},
-      queueDialog(
-        cb: (handleClose: () => void) => [unknown, Record<string, unknown>],
-      ) {
-        self.queuedDialogs.push(cb(() => {}))
-      },
-      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        const forType = { ...self.displayTypeDefaults[displayType] }
-        if (value === undefined) {
-          delete forType[slot]
-        } else {
-          forType[slot] = value
-        }
-        self.displayTypeDefaults = {
-          ...self.displayTypeDefaults,
-          [displayType]: forType,
-        }
-      },
-    }))
+  const Session = displayTestSessionModel({
+    viewModel: LinearGenomeModel,
+    rpcManager: { call: mockRpcCall },
+    assemblyManager: testAssemblyManager(testAssembly()),
+    getTrackById: (id: string) =>
+      id === 'test_track' ? trackConfig : undefined,
+  })
 
   function createDisplay(displaySnapshot?: Record<string, unknown>) {
     const session = Session.create({ configuration: {} }, { pluginManager })

@@ -8,25 +8,23 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  displayTestSessionModel,
+  testAssembly,
+  testAssemblyManager,
+} from '@jbrowse/display-test-utils'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
-
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Headless harness for the real LinearWiggleDisplay inside a real
 // LinearGenomeView, with a stub session and a `jest.fn()` rpcManager — no worker
 // and no DOM. One per display rather than a copy per test file, the same way the
 // multi-row displays do it.
 export function createTestEnvironment() {
-  // `console.warn` only. `console.error` is the channel the dev-only
-  // display-contract checks report through (assertDisplayContract,
-  // makeRetryContractCheck), so silencing it here would mute the one
-  // signal these harnesses exist to be able to produce. It was silenced
-  // by copied boilerplate and was hiding nothing: with it removed the
-  // seven display plugins run 3344 tests with no console.error at all.
+  // `console.warn` only — `console.error` is the display-contract channel
+  // (TEST_INFRASTRUCTURE.md).
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
 
@@ -96,68 +94,13 @@ export function createTestEnvironment() {
     { pluginManager },
   )
 
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-    })
-    .volatile(() => ({
-      rpcManager: {
-        call: mockRpcCall,
-      },
-      assemblyManager: {
-        get: (name: string) =>
-          name === 'volvox'
-            ? {
-                initialized: true,
-                regions: [
-                  {
-                    refName: 'ctgA',
-                    start: 0,
-                    end: 50_000,
-                    assemblyName: 'volvox',
-                  },
-                ],
-                getCanonicalRefName: (refName: string) => refName,
-                configuration: { sequence: undefined },
-              }
-            : undefined,
-        waitForAssembly: () =>
-          Promise.resolve({
-            initialized: true,
-            regions: [
-              {
-                refName: 'ctgA',
-                start: 0,
-                end: 50_000,
-                assemblyName: 'volvox',
-              },
-            ],
-            getCanonicalRefName: (refName: string) => refName,
-            configuration: { sequence: undefined },
-          }),
-        isValidRefName: () => true,
-      },
-    }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // every promotable slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
-      getDisplayTypeDefault() {
-        return undefined
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-      notifyError() {},
-      queueDialog() {},
-    }))
+  const Session = displayTestSessionModel({
+    viewModel: LinearGenomeModel,
+    rpcManager: { call: mockRpcCall },
+    assemblyManager: testAssemblyManager(testAssembly()),
+    getTrackById: (id: string) =>
+      id === 'test_track' ? trackConfig : undefined,
+  })
 
   function createDisplay() {
     const session = Session.create({ configuration: {} }, { pluginManager })

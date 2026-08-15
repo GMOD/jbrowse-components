@@ -7,7 +7,11 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  displayTestSessionModel,
+  testAssembly,
+  testAssemblyManager,
+} from '@jbrowse/display-test-utils'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import FeatureComponent from './components/FeatureComponent.tsx'
@@ -19,7 +23,6 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Shared display-instantiation harness: builds a PluginManager with a
 // FeatureTrack + LinearBasicDisplay and a minimal session/assemblyManager so a
@@ -31,12 +34,8 @@ export function createTestEnvironment(opts?: {
   // this value, exercising the adapter-limit path in the byte gate
   adapterFetchSizeLimit?: number
 }) {
-  // `console.warn` only. `console.error` is the channel the dev-only
-  // display-contract checks report through (assertDisplayContract,
-  // makeRetryContractCheck), so silencing it here would mute the one
-  // signal these harnesses exist to be able to produce. It was silenced
-  // by copied boilerplate and was hiding nothing: with it removed the
-  // seven display plugins run 3344 tests with no console.error at all.
+  // `console.warn` only — `console.error` is the display-contract channel
+  // (TEST_INFRASTRUCTURE.md).
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
 
@@ -113,105 +112,13 @@ export function createTestEnvironment(opts?: {
     { pluginManager },
   )
 
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-      // promoted display-type defaults, behind the same
-      // get/setDisplayTypeDefault interface the cascade reads (BaseSession
-      // stores them flat in an observable.map — the nesting here is local, and
-      // reassigned wholesale so the promotable display getters track it
-      // reactively)
-      displayTypeDefaults: types.frozen<
-        Record<string, Record<string, unknown>>
-      >({}),
-    })
-    .volatile(() => ({
-      // what queueDialog was called with, resolved to [Component, props] so
-      // tests can assert on the props a menu item passes its dialog
-      queuedDialogs: [] as [unknown, Record<string, unknown>][],
-      rpcManager: {
-        call: mockRpcCall,
-      },
-      assemblyManager: {
-        get: (name: string) =>
-          name === 'volvox'
-            ? {
-                initialized: true,
-                regions: [
-                  {
-                    refName: 'ctgA',
-                    start: 0,
-                    end: 50_000,
-                    assemblyName: 'volvox',
-                  },
-                ],
-                // identity for a canonical name, plus one alias: the display
-                // normalizes user-typed refName text through this, and a stub
-                // that only ever answered identity could not tell a resolver
-                // that normalizes from one that doesn't
-                getCanonicalRefName: (refName: string) =>
-                  refName === 'chrA' ? 'ctgA' : refName,
-                getGeneticCodeId: () => undefined,
-                configuration: {
-                  sequence: undefined,
-                },
-              }
-            : undefined,
-        waitForAssembly: () =>
-          Promise.resolve({
-            initialized: true,
-            regions: [
-              {
-                refName: 'ctgA',
-                start: 0,
-                end: 50_000,
-                assemblyName: 'volvox',
-              },
-            ],
-            getCanonicalRefName: (refName: string) => refName,
-            getGeneticCodeId: () => undefined,
-            configuration: {
-              sequence: undefined,
-            },
-          }),
-        isValidRefName: () => true,
-      },
-    }))
-    .views(self => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        return self.displayTypeDefaults[displayType]?.[slot]
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-      notify() {},
-      notifyError() {},
-      queueDialog(
-        cb: (handleClose: () => void) => [unknown, Record<string, unknown>],
-      ) {
-        self.queuedDialogs.push(cb(() => {}))
-      },
-      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        const forType = { ...self.displayTypeDefaults[displayType] }
-        if (value === undefined) {
-          delete forType[slot]
-        } else {
-          forType[slot] = value
-        }
-        self.displayTypeDefaults = {
-          ...self.displayTypeDefaults,
-          [displayType]: forType,
-        }
-      },
-    }))
+  const Session = displayTestSessionModel({
+    viewModel: LinearGenomeModel,
+    rpcManager: { call: mockRpcCall },
+    assemblyManager: testAssemblyManager(testAssembly()),
+    getTrackById: (id: string) =>
+      id === 'test_track' ? trackConfig : undefined,
+  })
 
   function createDisplay(
     displaySnapshot?: Record<string, unknown>,

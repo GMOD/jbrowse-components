@@ -8,9 +8,11 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  displayTestSessionModel,
+  testAssembly,
+  testAssemblyManager,
+} from '@jbrowse/display-test-utils'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -19,7 +21,6 @@ import configSchemaF from './configSchema.ts'
 import stateModelFactory from './stateModel.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * Headless harness for the real `LinearMafDisplay` state model inside a real
@@ -51,12 +52,8 @@ export function createMafTestEnvironment({
   // How much of the assembly `createDisplay` displays by default.
   viewRegionEnd?: number
 } = {}) {
-  // `console.warn` only. `console.error` is the channel the dev-only
-  // display-contract checks report through (assertDisplayContract,
-  // makeRetryContractCheck), so silencing it here would mute the one
-  // signal these harnesses exist to be able to produce. It was silenced
-  // by copied boilerplate and was hiding nothing: with it removed the
-  // seven display plugins run 3344 tests with no console.error at all.
+  // `console.warn` only — `console.error` is the display-contract channel
+  // (TEST_INFRASTRUCTURE.md).
   console.warn = jest.fn()
   // MAF's configSchema reads baseLinearDisplayConfigSchema off the installed
   // LinearGenomeViewPlugin's exports, so the real plugin must be registered.
@@ -124,49 +121,18 @@ export function createMafTestEnvironment({
     },
     { pluginManager },
   )
-  const asm = {
-    initialized: true,
+  const asm = testAssembly({
     regions: [
       { refName: 'ctgA', start: 0, end: assemblyEnd, assemblyName: 'volvox' },
     ],
-    getCanonicalRefName: (refName: string) => refName,
-    configuration: { sequence: undefined },
-  }
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-    })
-    .volatile(() => ({
-      rpcManager: { call: mockRpcCall },
-      theme: createJBrowseTheme(),
-      palette: resolvePalette(),
-      assemblyManager: {
-        get: (name: string) => (name === 'volvox' ? asm : undefined),
-        waitForAssembly: () => Promise.resolve(asm),
-        isValidRefName: () => true,
-      },
-    }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // every promotable-slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
-      getDisplayTypeDefault() {
-        return undefined
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-      notify() {},
-      notifyError() {},
-      queueDialog() {},
-    }))
+  })
+  const Session = displayTestSessionModel({
+    viewModel: LinearGenomeModel,
+    rpcManager: { call: mockRpcCall },
+    assemblyManager: testAssemblyManager(asm),
+    getTrackById: (id: string) =>
+      id === 'test_track' ? trackConfig : undefined,
+  })
 
   function createDisplay({
     regions = [

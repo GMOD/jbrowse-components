@@ -80,6 +80,33 @@ Jest, co-located (`*.test.ts`), run with `pnpm test-ci`. Node-based and fast —
 use for logic, config, RPC, and buffer packing; use browser tests for rendering
 and UI.
 
+### A display harness takes its session from `@jbrowse/display-test-utils`
+
+`displayTestSessionModel` and `testAssembly` / `testAssemblyManager`. A
+`testEnv.ts` registers its own plugin types — that part genuinely differs — and
+composes for an extra prop rather than forking:
+
+```ts
+types.compose('X', displayTestSessionModel({…}), types.model({ stack }))
+```
+
+**Don't hand-roll a shim.** Ten did, each stubbing an overlapping subset, and
+both failures the arrangement produced were invisible from inside any one file:
+nine copied `console.error = jest.fn()` and muted every display-contract check,
+and twenty-one of twenty-eight session fakes in the repo lacked
+`getDisplayTypeDefault`. The shared model carries every member a display reaches
+for whether or not the caller's tests touch it — `palette` was in two harnesses
+of ten while every model-side color getter reads it.
+
+The half not yet delivered: the shim is still not annotated as
+`AbstractSessionModel`, so a member added to that interface is a runtime
+`TypeError` rather than a compile error. It is one shim to annotate now instead
+of ten, which is the point of the move.
+
+Silence `console.warn` if a harness must, never `console.error` — that is the
+channel the contract checks report through, and `config/jest/displayContractGate.js`
+fails the test that collected one.
+
 ## Wait signals
 
 Two completion signals. **Do not** wait on `LoadingOverlay` text — it keeps the

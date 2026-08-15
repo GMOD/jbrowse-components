@@ -8,16 +8,17 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  displayTestSessionModel,
+  testAssembly,
+  testAssemblyManager,
+} from '@jbrowse/display-test-utils'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { configSchemaFactory } from './configSchemaFactory.ts'
 import { stateModelFactory } from './stateModelFactory.ts'
-
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Headless harness for the real LinearManhattanDisplay inside a real
 // LinearGenomeView, with a stub session and a `jest.fn()` rpcManager — no worker
@@ -28,12 +29,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // what happens across a multi-region load (the LD auto-index has to survive a
 // partially-arrived batch).
 export function createTestEnvironment() {
-  // `console.warn` only. `console.error` is the channel the dev-only
-  // display-contract checks report through (assertDisplayContract,
-  // makeRetryContractCheck), so silencing it here would mute the one
-  // signal these harnesses exist to be able to produce. It was silenced
-  // by copied boilerplate and was hiding nothing: with it removed the
-  // seven display plugins run 3344 tests with no console.error at all.
+  // `console.warn` only — `console.error` is the display-contract channel
+  // (TEST_INFRASTRUCTURE.md).
   console.warn = jest.fn()
   const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])
 
@@ -112,69 +109,13 @@ export function createTestEnvironment() {
     assemblyName: 'volvox',
   }))
 
-  const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      configuration: types.map(types.frozen()),
-      // same shape as BaseSession's preferencesOverrides.displayTypeDefaults
-      displayTypeDefaults: types.frozen<
-        Record<string, Record<string, unknown>>
-      >({}),
-    })
-    .volatile(() => ({
-      rpcManager: { call: mockRpcCall },
-      theme: createJBrowseTheme(),
-      assemblyManager: {
-        get: (name: string) =>
-          name === 'volvox'
-            ? {
-                initialized: true,
-                regions,
-                getCanonicalRefName: (refName: string) => refName,
-                configuration: { sequence: undefined },
-              }
-            : undefined,
-        isValidRefName: () => true,
-      },
-    }))
-    .views(self => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // Every promotable-slot read walks the cascade through this. Backed by
-      // the same nested displayType -> slot -> value shape BaseSession uses, so
-      // a test can promote a default and watch a display pick it up; with
-      // nothing promoted (the usual case) every display resolves to its
-      // promotedBase, which is what this returned unconditionally before
-      // `showLdLegend` gave the harness a second promotable slot worth driving.
-      getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        return self.displayTypeDefaults[displayType]?.[slot]
-      },
-    }))
-    .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
-      notifyError() {},
-      // the promotable pin reports through this ("Set as the default")
-      notify(_message: string, _level?: string) {},
-      queueDialog() {},
-      // reassigned wholesale so the display getters track it reactively
-      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        const forType = { ...self.displayTypeDefaults[displayType] }
-        if (value === undefined) {
-          delete forType[slot]
-        } else {
-          forType[slot] = value
-        }
-        self.displayTypeDefaults = {
-          ...self.displayTypeDefaults,
-          [displayType]: forType,
-        }
-      },
-    }))
+  const Session = displayTestSessionModel({
+    viewModel: LinearGenomeModel,
+    rpcManager: { call: mockRpcCall },
+    assemblyManager: testAssemblyManager(testAssembly({ regions })),
+    getTrackById: (id: string) =>
+      id === 'test_track' ? trackConfig : undefined,
+  })
 
   function createDisplay({
     colorBy = 'normal',

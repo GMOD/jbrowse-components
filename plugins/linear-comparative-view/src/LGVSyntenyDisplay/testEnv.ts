@@ -7,6 +7,10 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import {
+  displayTestSessionModel,
+  testAssembly,
+} from '@jbrowse/display-test-utils'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
@@ -79,11 +83,6 @@ export function createDisplay({
     { pluginManager },
   )
 
-  // Promoted display-type defaults, held here rather than stubbed to undefined:
-  // a pin's filled state is `getDisplayTypeDefault` reading back what its
-  // `toggle` wrote, so a read-only shim can only ever show an outline pin.
-  const promoted = new Map<string, unknown>()
-
   // width/setWidth are what isViewModel keys on, and the whole point of the
   // stack being a VIEW rather than any node with a `views` array
   const Stack = types
@@ -100,43 +99,24 @@ export function createDisplay({
     }))
 
   const Session = types
-    .model({
-      name: 'testSession',
-      view: types.maybe(LinearGenomeModel),
-      stack: types.maybe(Stack),
-      configuration: types.map(types.frozen()),
-    })
-    .volatile(() => ({
-      rpcManager: {},
-      theme: createJBrowseTheme(),
-      // giving the view a displayed region wakes the assembly-readiness
-      // reactions, which want an assemblyManager to ask
-      assemblyManager: {
-        get: () => ({ initialized: true }),
-      },
-    }))
-    .views(() => ({
-      getTrackById(id: string) {
-        return id === 'test_track' ? trackConfig : undefined
-      },
-      // every promotable-slot read walks the cascade through this
-      getDisplayTypeDefault(displayType: string, slot: string) {
-        return promoted.get(`${displayType}\0${slot}`)
-      },
-    }))
+    .compose(
+      'SyntenyTestSession',
+      displayTestSessionModel({
+        viewModel: LinearGenomeModel,
+        // Answers for any name: the two panels sit on different assemblies, and
+        // the readiness reactions a displayed region wakes only need something
+        // to ask.
+        assemblyManager: { get: () => testAssembly() },
+        getTrackById: (id: string) =>
+          id === 'test_track' ? trackConfig : undefined,
+      }),
+      types.model({ stack: types.maybe(Stack) }),
+    )
     .actions(self => ({
-      setView(view: Instance<typeof LinearGenomeModel>) {
-        self.view = view
-        return view
-      },
       setStack(stack: Instance<typeof Stack>) {
         self.stack = stack
         return stack
       },
-      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        promoted.set(`${displayType}\0${slot}`, value)
-      },
-      notify() {},
     }))
 
   const trackSnapshot = {
