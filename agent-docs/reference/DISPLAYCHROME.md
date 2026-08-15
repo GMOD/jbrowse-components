@@ -452,8 +452,10 @@ for anywhere a throwing getter is destructured next to the flag that gates it.
 ## Not on DisplayChrome, by design (non-LGV views)
 
 These are the rows the generated table above does not have, and cannot: it scans
-display types registered for `LinearGenomeView`, and these are not. Two distinct
-reasons, not to be conflated:
+display types registered for `LinearGenomeView`, and these are not.
+[SHARED_CANVAS_VIEWS.md](SHARED_CANVAS_VIEWS.md) is the subject doc for the two
+comparative ones; what follows is only what they owe the chrome's contracts. Two
+distinct reasons, not to be conflated:
 
 - **GPU, dropping to the `useRenderingBackend` primitive directly:**
   `dotplot-view` and `linear-comparative-view` (synteny). Both are non-LGV view
@@ -556,6 +558,7 @@ the comparative side, same fix: one name the display publishes and every
 consumer reads. Arc, with no `RenderLifecycleMixin`, declares its own `painted`
 on `ArcFetchModel` for the same reason its `displayPhase` lives there — a
 component-side derivation is free to disagree with the model.
+
 `DisplayChrome` takes a **required** `testid`, which it publishes unchanged.
 Displays that pixel-match the canvas also give the inner `<canvas>` a static
 selector (`hic_canvas`, `ld_canvas`, `variant_canvas`, `variant_matrix_canvas`,
@@ -598,6 +601,14 @@ infrastructure, which had to accept every shape:
   could only be related with `:has()`. Each form matched nothing in the other's
   case and the symptom was a capture that timed out rather than an authoring
   error. It is now one selector.
+
+**The co-location is pinned in jest, which is the only one of those systems that
+runs outside CI.** `BigWig.test.tsx` and `Manhattan.test.tsx` assert that the
+testid, `data-display-id`, `data-display-drawn` and `data-display-phase` land on
+**one** element. Collapsing a wrapper is invisible to jest without that
+assertion, and every system that would notice needs a GPU and a headless Chrome
+— so this is the guard that would catch the next such refactor going wrong, and
+it runs locally.
 
 **What was deleted with it.** `DisplayContainer` and `BaseLinearDisplayComponent`
 are gone, and with them `BaseDisplayModel`'s `DisplayMessageComponent` getter —
@@ -646,37 +657,20 @@ That sharing is also why the two emit the same `data-testid` base
 (`feature-display`): they are one component. `data-display-id` is what tells two
 instances — or two display types sharing a body — apart.
 
-### How the unification was verified
+### Changing a readiness selector: ask which system depends on which shape
 
-**Read as history.** This describes the change that ADDED the three attributes,
-which deliberately left `-done` alone. ADR-065 then removed the suffix outright
-— so the "freeze" below no longer holds, and the four test systems it names have
-all been migrated onto `data-display-drawn`. Kept because the method (check
-which system depends on which shape, rather than assuming all depend on all) is
-what made both changes tractable.
+Both passes over these attributes — the one that added them and ADR-065's
+removal of the `-done` suffix — were tractable for the same reason, and it is
+the part worth reusing. The selectors were a contract across four test systems,
+and **none of them depended on all of it**: the website specs and cypress only
+ever used the static bases (`pileup-display`, `wiggle-display`), only puppeteer's
+browser-tests used the generic `display-${id}`, and only jest asserts the
+co-location. Checking that first is what turned a change that looked like it
+touched every suite into one that left ~50 spec selectors untouched.
 
-The freeze was real at the time: the `-done` selectors were a contract across
-four test systems, only one of which (jest/jsdom) runs outside CI. What made it
-tractable was checking *which* system depends on *which* shape, rather than
-assuming all of them depend on all of it:
-
-- **website screenshot specs and cypress only ever used the static bases**
-  (`pileup-display-done`, `wiggle-display-done`, …), never the generic
-  `display-${id}`. Keeping `data-testid` exactly as it was means ~50 spec
-  selectors, the cypress spec and the plugin-vite smoke test needed **no edit at
-  all**. The one spec-side change was `displayReady()` getting simpler.
-- **only puppeteer's browser-tests used the generic id** — seven selectors, all
-  migrated to `data-display-id`, which is a better hook anyway (it doesn't
-  mutate, and `[data-display-id]` beats `[data-testid^="display-"]` for "any
-  display").
-- **jest/jsdom** pins the co-location directly now: `BigWig.test.tsx` and
-  `Manhattan.test.tsx` assert that the testid, `data-display-id` and
-  `data-display-drawn` are on **one** element. That is the assertion that would
-  have caught this refactor going wrong, and it runs locally.
-
-The browser suite was run locally against a real build before and after
-(`pnpm test:browser --swiftshader --filter=…`), which is what the old plan
-called for and could not previously assume.
+Assuming instead that all four depend on all of it prices the change as a freeze
+across systems that mostly need a GPU to run, which is how a selector shape stays
+wrong.
 
 ## The bring-your-own seams
 

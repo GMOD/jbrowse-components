@@ -548,24 +548,26 @@ cheaply convertible to the other: the pre-flight measures a region set in one
 adapter call and has no per-region number to keep, while canvas has no
 cross-region call to sum. Left as is, and recorded here so the divergence is a
 known one rather than something the next reader has to re-derive from the two
-call sites. **A batch that measured no bytes at all writes
-nothing** — not `bytes: undefined`. Two ways that happens and they mean the same
-thing: the adapter offers no index estimate, or the fetch carried no `byteLimit`
-because `gateActive` was false when it was issued (force-loaded). Neither is
-a measurement, so neither may overwrite the last real one — nor reset the
+call sites.
+
+**A batch that measured no bytes at all writes nothing** — not
+`bytes: undefined`. Two ways that happens and they mean the same thing: the
+adapter offers no index estimate, or the fetch carried no `byteLimit` because
+`gateActive` was false when it was issued (force-loaded). Neither is a
+measurement, so neither may overwrite the last real one — nor reset the
 zoom-effectiveness comparison, which needs two real ones. Publishing an empty
 estimate used to cost a wasted round trip on every re-activation: it wiped a
 perfectly good estimate, so putting the track back under the gate had no verdict
 left to raise the banner from and had to re-derive it from a fresh worker
-rejection. The
-pre-flight path never had the bug — `byteGateBlocksFetch` skips the RPC outright
-when nothing could gate, and so writes nothing either. Pinned by "keeps a good
-estimate when a batch measured no bytes" in
+rejection. The pre-flight path never had the bug — `byteGateBlocksFetch` skips
+the RPC outright when nothing could gate, and so writes nothing either. Pinned
+by "keeps a good estimate when a batch measured no bytes" in
 `LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`. An all-stale batch
-likewise commits nothing, so a superseded fetch can't wipe a good estimate. What
-it does publish is `bytes` and the span they cover, and nothing else — the budget
-they are compared against is the main-thread `gateByteLimit`, the same getter
-that produced the worker's `resolvedByteLimit()`, so the two agree by
+likewise commits nothing, so a superseded fetch can't wipe a good estimate.
+
+What a batch *does* publish is `bytes` and the span they cover, and nothing else
+— the budget they are compared against is the main-thread `gateByteLimit`, the
+same getter that produced the worker's `resolvedByteLimit()`, so the two agree by
 construction rather than by echoing a limit back across the boundary.
 
 A measurement is handed over as `{ displayedRegionIndex, region, result }` — the

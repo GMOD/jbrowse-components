@@ -216,13 +216,34 @@ But the obvious fix is not free, which is why this is written down rather than
 done. Three things to settle:
 
 - **The speed argument is gone.** `pool-oversub-probe.ts` took the
-  multiplication to its worst case — 4 cores under `taskset`, 12 inflate
-  workers, ~4x oversubscribed — and no arm beat the status quo; cutting the
-  inflate workers to 3 was slower in every batch. Per-chunk parallelism is worth
-  more than avoiding oversubscription. The remaining argument is the 20
-  grow-only wasm heaps, which is unmeasured and which JS heap counters cannot
-  see. Weigh that before building the channel, and be willing to close the item
-  instead: untidy and free is a fine place for this to end.
+  multiplication to its worst case — 4 cores under `taskset`, so 3 RPC workers x
+  4 = 12 inflate workers, ~4x oversubscribed — with 5 no-MD tracks, min of 3:
+
+  | arm                             | rpc | inflate | min    |
+  | ------------------------------- | --- | ------- | ------ |
+  | today, build 1                  | 3   | 12      | 2586ms |
+  | today, build 2, identical code  | 3   | 12      | 2984ms |
+  | `workerCount=1` (one pool)      | 1   | 4       | 2759ms |
+  | pool capped to 1 per context    | 3   | 3       | 3382ms |
+
+  The two `today` rows are the same code built twice and differ by 15%, wider
+  than every gap between arms — so the only safe reading is that **no arm beat
+  the status quo**, and cutting the inflate workers to 3 was slower in every
+  batch. Per-chunk parallelism is worth more than avoiding oversubscription,
+  which makes sense: the pool exists to split one chunk across workers, and
+  starving it of that costs more than the threads do.
+
+  That lowers the risk of doing this rather than raising it. The `capped to 1`
+  arm is strictly worse than one shared pool of four — fewer threads AND no
+  per-chunk parallelism — and cost only ~13%, inside the drift, so the worry
+  that one shared pool of four would regress the several-tracks case is not
+  supported.
+
+  The remaining argument is the 20 grow-only wasm heaps, which is unmeasured and
+  which JS heap counters cannot see — wasm memory is outside
+  `Runtime.getHeapUsage`, so it needs process-level RSS per target rather than a
+  heap snapshot. Weigh that before building the channel, and be willing to close
+  the item instead: untidy and free is a fine place for this to end.
 - `BgzfWorkerPoolClient` copies the compressed input once more per chunk so the
   transfer detaches a buffer it owns. The library calls this small against the
   inflate; it has not been measured here.

@@ -354,70 +354,31 @@ because that is the thing retry was standing in for.
 
 **Status:** Open. Measured 2026-08-12, `browser-tests/percontext-probe.ts`.
 
-Three read-path resources are scoped per JS context, and adapters are sticky per
-track to one of `clamp(hardwareConcurrency - 1, 1, 5)` RPC workers — so each
-multiplies by however many workers a session spreads its tracks over. On a
-production build, 16 cores, N alignments tracks with distinct adapter configs
-whose reads carry no MD tag:
+Three read-path resources are scoped per JS context — the BGZF inflate pool,
+`RemoteFileWithRangeCache`'s chunk map, and `SharedBudget` — and adapters are
+sticky per track to one of `clamp(hardwareConcurrency - 1, 1, 5)` RPC workers, so
+each multiplies by however many workers a session spreads its tracks over. Eight
+alignments tracks give **five** pools and five reference downloads, not eight:
+both quantities track the context count rather than the track count, so the
+caches work and their scope is the problem.
 
-| tracks | RPC workers | bgzf pool workers | reference fetches |
-| ------ | ----------- | ----------------- | ----------------- |
-| 1      | 1           | 4                 | 1                 |
-| 5      | 5           | 20                | 5                 |
-| 8      | 5           | 20                | 5                 |
+Only the third of them should be per context — a worker OOMs on its own heap
+(ADR-064). Threads and the network are machine-wide, and are being bounded from
+inside a context that cannot see the others.
 
-Eight tracks give five of each, not eight, so both track the context count
-rather than the track count — the caches work, their scope is the problem.
+[BAM_STACK_INTEGRATION.md](BAM_STACK_INTEGRATION.md) § "Seam 1" owns this
+subject and is the only place the numbers should be edited: the per-track
+counts, the oversubscription A/B that removed the thread-count argument for
+fixing it, and the three things a shared `MessagePort` has to settle.
+[BGZF_WORKER_POOL.md](BGZF_WORKER_POOL.md) has the harness and the benchmark
+traps.
 
-- **The inflate pool.** 20 workers, each with its own copy of the inlined wasm
-  bundle and so its own grow-only `WebAssembly.Memory` — the memory
-  REJECTED_IDEAS.md names behind the transient RPC-worker peaks. They used to
-  outlive the last bgzip track; as of `@gmod/bgzf-filehandle` 6.6.0 a pool
-  reaps its own workers after 3 minutes idle and respawns them on demand, so
-  the RESTING level is reclaimed. The peak while someone is actively browsing
-  is not, and is still unmeasured.
-- **`RemoteFileWithRangeCache`.** Its chunk `Map` is module-global, so the same
-  reference sequence is downloaded once per worker for tracks sharing an
-  assembly and a viewport. Nothing above it dedupes — there is no session-level
-  sequence cache, and each alignments adapter builds its own sequence
-  sub-adapter inside its own worker.
-- **`SharedBudget`** (ADR-064) is the one that should stay per context: a worker
-  OOMs on its own heap. Threads and the network are machine-wide and are being
-  bounded from inside a context that cannot see the others.
-
-`@gmod/bgzf-filehandle` ships `BgzfWorkerPoolHost` / `BgzfWorkerPoolClient` for
-the pool half, naming JBrowse's data workers as the case; neither symbol appears
-in this repo.
-
-**The thread count is not what makes this worth fixing** — that was the original
-framing and it was measured out. `browser-tests/pool-oversub-probe.ts`, 4 cores
-under `taskset` (3 RPC workers x 4 = 12 inflate workers, ~4x oversubscribed), 5
-no-MD tracks, min of 3:
-
-| arm                             | rpc | inflate | min    |
-| ------------------------------- | --- | ------- | ------ |
-| today, build 1                  | 3   | 12      | 2586ms |
-| today, build 2, identical code  | 3   | 12      | 2984ms |
-| `workerCount=1` (one pool)      | 1   | 4       | 2759ms |
-| pool capped to 1 per context    | 3   | 3       | 3382ms |
-
-The two `today` rows are the same code built twice and differ by 15%, wider than
-every gap between arms — so the only safe reading is that **no arm beat the
-status quo**, and cutting the inflate workers to 3 was slower in every batch.
-Per-chunk parallelism is worth more than avoiding oversubscription, which makes
-sense: the pool exists to split one chunk across workers, and starving it of
-that costs more than the threads do.
-
-That also lowers the risk of the shared-pool work rather than raising it. The
-`capped to 1` arm is strictly worse than one shared pool of four — fewer threads
-AND no per-chunk parallelism — and cost only ~13%, inside the drift. So the
-"one shared pool of four regresses the several-tracks case" worry above is not
-supported.
-
-**What is left is memory**, and it is unmeasured: 20 grow-only
-`WebAssembly.Memory` instances that nothing tears down. JS heap counters will not
-show it — wasm memory is outside `Runtime.getHeapUsage` — so measuring it needs
-process-level RSS per target, not the usual heap snapshot.
+What keeps it here is the part that is a ceiling rather than a seam: **20
+grow-only `WebAssembly.Memory` instances that nothing tears down**, one per
+inflate worker. Since `@gmod/bgzf-filehandle` 6.6.0 a pool reaps its own workers
+after 3 minutes idle, so the resting level is reclaimed and the peak while
+someone is actively browsing is not. That peak is the unmeasured quantity, and
+JS heap counters cannot see it.
 
 **Retire when** either that memory is measured and found not to matter, or one
 pool and one byte cache serve every RPC worker over a `MessagePort` (the same
