@@ -58,9 +58,9 @@ const PRIMARY_BUTTON = 0
 
 function openSyntenyFeatureWidget(
   display: LinearSyntenyDisplayModel,
-  featureIndex: number,
+  instanceIndex: number,
 ) {
-  const feat = display.getFeature(featureIndex)
+  const feat = display.getFeature(instanceIndex)
   if (!feat) {
     return
   }
@@ -243,7 +243,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     model.setClickedFeature(hit)
     const display = hitDisplay(hit)
     if (display && hit) {
-      openSyntenyFeatureWidget(display, hit.featureIndex)
+      openSyntenyFeatureWidget(display, hit.instanceIndex)
     }
   }
 
@@ -273,7 +273,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       return
     }
     const display = hitDisplay(hit)
-    const feat = display?.getFeature(hit.featureIndex)
+    const feat = display?.getFeature(hit.instanceIndex)
     if (display && feat) {
       // preventDefault only when a menu actually opens, so a right-click on
       // empty canvas between the ribbons falls through to the browser instead

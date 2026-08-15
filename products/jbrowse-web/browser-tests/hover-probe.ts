@@ -134,9 +134,9 @@ try {
       const view = (window as any).JBrowseRootModel.session.views[0]
       const found: string[] = []
       const visit = (d: any, where: string) => {
-        if (d && typeof d.setHoveredFeatureIdx === 'function') {
-          d.setHoveredFeatureIdx(i)
-          found.push(`${where}:${d.type ?? '?'} idx=${d.hoveredFeatureIdx}`)
+        if (d && typeof d.setHoveredInstanceIdx === 'function') {
+          d.setHoveredInstanceIdx(i)
+          found.push(`${where}:${d.type ?? '?'} idx=${d.hoveredInstanceIdx}`)
         }
       }
       for (const [li, level] of (view.levels ?? []).entries()) {
@@ -164,7 +164,7 @@ try {
   for (const idx of [0, 1, 2, 3, 4]) {
     const found = await setHover(idx)
     if (idx === 0 && found.length === 0) {
-      throw new Error('no display exposed setHoveredFeatureIdx — model moved?')
+      throw new Error('no display exposed setHoveredInstanceIdx — model moved?')
     }
     const shot = await settledShot(plainInk * 0.5)
     if (!shot) {

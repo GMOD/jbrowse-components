@@ -95,8 +95,8 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
            * this one (`hoveredFeatureIdx` below), and the CIGAR operator under
            * the cursor derives from nothing else — a CIGAR-detailed alignment is
            * a staircase of segments and the pointer is on one step of it. Same
-           * choice `LinearSyntenyDisplay` makes, where the stored index is
-           * likewise the instance and `getFeature` translates.
+           * choice `LinearSyntenyDisplay.hoveredInstanceIdx` makes, where
+           * `getFeature` does the translating.
            *
            * It addresses `instanceData`, so it is dropped by BOTH writers of
            * that — a zoom rebuilds the geometry without refetching.

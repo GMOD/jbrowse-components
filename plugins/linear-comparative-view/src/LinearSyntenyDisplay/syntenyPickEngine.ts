@@ -274,7 +274,7 @@ export function pickFeatureAtPoint(
       // Path built in track-local space (yTop=0) to match localY below.
       buildFeaturePath(ctx, c, 0, height, params.drawCurves)
       if (ctx.isPointInPath(x, localY)) {
-        return { key, featureIndex: i }
+        return { key, instanceIndex: i }
       }
     }
   }

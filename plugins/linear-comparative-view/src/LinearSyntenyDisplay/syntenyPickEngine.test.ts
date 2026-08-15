@@ -179,7 +179,7 @@ describe('pick after panning', () => {
     // unpanned: the ribbon covers x=[100,200]
     expect(pickAt(150, 50, makeParams(), pickIndices)).toEqual({
       key: 0,
-      featureIndex: 0,
+      instanceIndex: 0,
     })
 
     // panning right by 50px moves it to x=[50,150] — the same index must now
@@ -187,7 +187,7 @@ describe('pick after panning', () => {
     const panned = makeParams({ offsetPx0: 50, offsetPx1: 50 })
     expect(pickAt(100, 50, panned, pickIndices)).toEqual({
       key: 0,
-      featureIndex: 0,
+      instanceIndex: 0,
     })
     expect(pickAt(190, 50, panned, pickIndices)).toBeUndefined()
   })
@@ -201,11 +201,11 @@ describe('pick after panning', () => {
     const skewed = makeParams({ offsetPx0: 50, offsetPx1: 0 })
     expect(pickAt(75, 2, skewed, pickIndices)).toEqual({
       key: 0,
-      featureIndex: 0,
+      instanceIndex: 0,
     })
     expect(pickAt(190, 98, skewed, pickIndices)).toEqual({
       key: 0,
-      featureIndex: 0,
+      instanceIndex: 0,
     })
     // near the top the ribbon has already moved left, so the bottom-edge x
     // must not register a hit there
@@ -297,7 +297,7 @@ function bruteForcePick(
     }
     buildFeaturePath(ctx, c, 0, height, params.drawCurves)
     if (ctx.isPointInPath(x, y - params.yTop)) {
-      return { key: 0, featureIndex: i }
+      return { key: 0, instanceIndex: i }
     }
   }
   return undefined

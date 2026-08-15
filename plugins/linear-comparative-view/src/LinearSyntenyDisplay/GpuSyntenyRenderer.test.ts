@@ -100,7 +100,7 @@ describe('GpuSyntenyRenderer CPU pick', () => {
     const state = makeState([[0, makeParams()]])
     renderer.uploadGeometry(0, makeInstanceData())
 
-    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 0 })
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
   })
 
   test('pick returns undefined when the path does not match', () => {

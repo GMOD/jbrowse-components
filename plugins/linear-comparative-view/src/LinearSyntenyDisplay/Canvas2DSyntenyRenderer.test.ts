@@ -471,7 +471,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(2)
   })
 
-  test('pick returns hit with key + featureIndex', () => {
+  test('pick returns hit with key + instanceIndex', () => {
     const { canvas, ctx } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
@@ -480,7 +480,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
     const state = makeState([[0, makeParams()]])
-    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 0 })
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
   })
 
   test('pick returns undefined when isPointInPath does not match', () => {
@@ -504,7 +504,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(3))
     const state = makeState([[0, makeParams()]])
-    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 2 })
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 2 })
   })
 
   test('pick prefers later track when multiple overlap', () => {
@@ -602,7 +602,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     const state = makeState([[0, makeParams()]])
     expect(renderer.pick(100.75, 50, state)).toEqual({
       key: 0,
-      featureIndex: 0,
+      instanceIndex: 0,
     })
   })
 
@@ -645,7 +645,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(1))
     const state = makeState([[0, makeParams({ drawCurves: true })]])
-    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 0 })
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
     expect(ctx.bezierCurveTo.mock.calls.length).toBeGreaterThan(0)
   })
 
@@ -675,7 +675,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     renderer.uploadGeometry(0, makeInstanceData(3))
     const state = makeState([[0, makeParams()]])
-    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, featureIndex: 1 })
+    expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 1 })
   })
 
   test('dispose cleans up data', () => {

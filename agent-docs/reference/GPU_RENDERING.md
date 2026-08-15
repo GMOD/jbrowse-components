@@ -1309,7 +1309,7 @@ line a change falls on *before* planning how to verify it.
 
 Two things have no suite and needed one-off probes, both of which record their
 traps in the file header: `browser-tests/hover-probe.ts` (drive
-`setHoveredFeatureIdx`, never the mouse — a mouse move that lands on no feature
+`setHoveredInstanceIdx`, never the mouse — a mouse move that lands on no feature
 is indistinguishable from a hover cue that draws nothing; and require a settled
 non-blank frame, because the repaint clears the canvas first) and the pad-cost
 probe above.

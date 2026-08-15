@@ -185,8 +185,8 @@ export function linearSyntenyViewHelperModelFactory(
        */
       setHoveredFeature(hit: SyntenyPickResult | undefined) {
         for (const display of self.linearSyntenyDisplays) {
-          display.setHoveredFeatureIdx(
-            display.displayKey === hit?.key ? hit.featureIndex : -1,
+          display.setHoveredInstanceIdx(
+            display.displayKey === hit?.key ? hit.instanceIndex : -1,
           )
         }
       },
@@ -196,8 +196,8 @@ export function linearSyntenyViewHelperModelFactory(
        */
       setClickedFeature(hit: SyntenyPickResult | undefined) {
         for (const display of self.linearSyntenyDisplays) {
-          display.setClickedFeatureIdx(
-            display.displayKey === hit?.key ? hit.featureIndex : -1,
+          display.setClickedInstanceIdx(
+            display.displayKey === hit?.key ? hit.instanceIndex : -1,
           )
         }
       },

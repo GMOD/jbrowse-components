@@ -211,8 +211,23 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * `displayKey`. Clearing it (undefined) triggers backend eviction.
        */
       instanceData: undefined as SyntenyGeometry | undefined,
-      hoveredFeatureIdx: -1,
-      clickedFeatureIdx: -1,
+      /**
+       * #volatile
+       * Index into `instanceData` of the GPU instance the pointer is over, or
+       * -1. The INSTANCE, not the feature, even though the tooltip and the
+       * highlight are both about the feature: a CIGAR-detailed ribbon is a base
+       * block plus a tile per indel, and the operator under the cursor is
+       * readable from nothing else (`getCigarOpAtInstance`). `getFeature`
+       * translates to the feature. Same choice `DotplotDisplay` makes, where
+       * the stored index is `hoveredSegmentIdx`.
+       */
+      hoveredInstanceIdx: -1,
+      /**
+       * #volatile
+       * Clicked twin of `hoveredInstanceIdx` — the instance whose feature stays
+       * highlighted after the pointer leaves it.
+       */
+      clickedInstanceIdx: -1,
       contextMenuAnchor: undefined as ClickCoord | undefined,
     }))
     .actions(self => ({
@@ -246,15 +261,23 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         self.featureData = featureData
         self.instanceData = instanceData
         self.loadedFetchKey = fetchKey
-        self.hoveredFeatureIdx = -1
-        self.clickedFeatureIdx = -1
+        self.hoveredInstanceIdx = -1
+        self.clickedInstanceIdx = -1
         self.contextMenuAnchor = undefined
       },
-      setHoveredFeatureIdx(idx: number) {
-        self.hoveredFeatureIdx = idx
+      /**
+       * #action
+       * Point the hover at one GPU instance, or -1 for none. The level's
+       * `setHoveredFeature` is what calls this, from a pick hit.
+       */
+      setHoveredInstanceIdx(idx: number) {
+        self.hoveredInstanceIdx = idx
       },
-      setClickedFeatureIdx(idx: number) {
-        self.clickedFeatureIdx = idx
+      /**
+       * #action
+       */
+      setClickedInstanceIdx(idx: number) {
+        self.clickedInstanceIdx = idx
       },
       openContextMenu(anchor: ClickCoord) {
         self.contextMenuAnchor = anchor
@@ -700,16 +723,16 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * `DotplotDisplay.tooltipLines` for the twin.
        */
       get tooltipLines(): string[] | undefined {
-        const { hoveredFeatureIdx, instanceData } = self
-        if (hoveredFeatureIdx < 0) {
+        const { hoveredInstanceIdx, instanceData } = self
+        if (hoveredInstanceIdx < 0) {
           return undefined
         }
-        const feat = this.getFeature(hoveredFeatureIdx)
+        const feat = this.getFeature(hoveredInstanceIdx)
         if (!feat) {
           return undefined
         }
         const cigarOp = instanceData
-          ? getCigarOpAtInstance(instanceData, hoveredFeatureIdx)
+          ? getCigarOpAtInstance(instanceData, hoveredInstanceIdx)
           : undefined
         return getTooltipLines(feat, cigarOp)
       },
@@ -823,7 +846,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         }
         const view = this.view
         const { v0, v1 } = connected
-        const { hoveredFeatureIdx, clickedFeatureIdx, instanceData } = self
+        const { hoveredInstanceIdx, clickedInstanceIdx, instanceData } = self
         // Instance index -> 1-based featureId (0 = "no hit"), the id the
         // shaders/canvas compare against to highlight every instance of a
         // feature. Matches the `instanceFeatureIdx[i] + 1` mapping in
@@ -842,8 +865,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           alpha: view.alpha,
           fadeThinAlignments: view.fadeThinAlignments,
           minAlignmentLength: view.minAlignmentLength,
-          hoveredFeatureId: toFeatureId(hoveredFeatureIdx),
-          clickedFeatureId: toFeatureId(clickedFeatureIdx),
+          hoveredFeatureId: toFeatureId(hoveredInstanceIdx),
+          clickedFeatureId: toFeatureId(clickedInstanceIdx),
           offsetPx0: v0.offsetPx,
           offsetPx1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,

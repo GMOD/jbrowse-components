@@ -36,7 +36,7 @@ export interface SyntenyRenderState {
 
 export interface SyntenyPickResult {
   key: number
-  featureIndex: number
+  instanceIndex: number
 }
 
 /**
