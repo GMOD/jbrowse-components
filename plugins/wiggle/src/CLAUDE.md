@@ -127,6 +127,7 @@ regions. A pass that normalizes a band in place rewrites the average scores
 under every other reader, and the throw lands at the `postMessage`, nowhere near
 the cause.
 
-Nothing shares a buffer across regions only because `processFeaturesFromArrays`
-copies its inputs — and that copy is the obvious thing to remove next, with
-`@gmod/bbi` handing back views into a single buffer.
+Nothing shares a buffer across regions, because `processFeaturesFromArrays`
+copies its inputs. Keep it that way: aliasing the adapter's arrays instead looks
+free and retains 20 bytes a feature on the main thread where copying retains 12
+— costed in `agent-docs/reference/REJECTED_IDEAS.md`.

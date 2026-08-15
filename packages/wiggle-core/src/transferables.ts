@@ -10,17 +10,12 @@ import type { WiggleDataResult } from './dataTypes.ts'
 // data → min/max are the scores; an all-one-sided window → the pos or neg
 // arrays are the full arrays). postMessage throws on a repeated transferable.
 //
-// It takes ALL the results rather than one, and that is the point — the RPC
-// executors hand back a result per region, so a per-result Set only dedupes
-// within a region and a buffer shared BETWEEN two regions would still be listed
-// twice. Nothing shares across regions while processFeaturesFromArrays copies
-// its inputs into fresh arrays, but that copy is exactly the thing worth
-// removing: an adapter's arrays are already the right shape, and @gmod/bbi
-// hands a one-region getFeaturesAsArraysMulti back as views into a single
-// buffer. Aliasing them instead of copying would make cross-region sharing the
-// normal case, and the throw it produced would be a mystery at the postMessage
-// rather than at the aliasing. Deduping over the whole set costs nothing and
-// keeps that refactor from having to remember this.
+// Takes ALL the results rather than one, so the dedupe spans regions too — a
+// per-result Set would list a shared buffer twice.
+//
+// Aliasing the adapter's own arrays here as well, rather than copying them, is
+// costed and declined in agent-docs/reference/REJECTED_IDEAS.md: it retains 20
+// bytes a feature on the main thread where copying retains 12.
 export function collectWiggleTransferables(
   results: WiggleDataResult[],
 ): ArrayBuffer[] {
