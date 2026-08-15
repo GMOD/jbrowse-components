@@ -18,7 +18,9 @@ branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked vertically)
   restored snapshot_. `integrity.test.ts` catches a counter; the obvious test
   doesn't.
 - **Every pure function in `tree.ts` is total** — unknown id, tree unchanged.
-  Test tree and model separately; the model guard hides tree bugs.
+  Test tree and model separately; the model guard hides tree bugs. `splitPanel`
+  / `addTab` return `undefined` rather than claim an id that was never inserted,
+  since `activePanelId` is homing's fallback.
 - **Normalisation must have a fixed point** — `scaleSizes` leaves siblings alone
   within `SIZE_EPSILON`. `expectCanonical` passes both halves of an oscillation.
 - **Every operation goes in `integrity.test.ts`'s 2000-step sequence.** Take
@@ -47,7 +49,10 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
   button of the primary pointer**, **one `pointerId` per gesture**,
   **`pointercancel` ends it**.
 - **The in-flight drag is React state, never MST** — every hover would enter
-  undo.
+  undo. Escape cancels from a `window` listener and must clear `pendingRef` too,
+  since the drag is rebuilt from `pending` on every move.
+- **`showDrag` publishes nothing when the new target would paint the same
+  indicator** — same reason `drag` is kept out of the chrome.
 - **`index` counts the strip the user sees**; `moveTabToPanel` adjusts for its
   own remove-then-insert.
 

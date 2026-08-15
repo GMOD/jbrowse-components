@@ -3,10 +3,9 @@
 The HAL, the draw-lifecycle mixin, backend base classes, clip/canvas geometry,
 React backend hooks.
 
-Rules for _using_ this package are in `agent-docs/ARCHITECTURE.md` ("What not to
-do") and `reference/GPU_RENDERING.md` (lifecycle, the four upload patterns, HAL,
-shaders). Don't restate them here. What follows is specific to editing the
-package itself.
+`agent-docs/ARCHITECTURE.md` ("What not to do") and `reference/GPU_RENDERING.md`
+(lifecycle, the four upload patterns, backend parity, HAL, shaders) own the
+rules those two state; don't restate them. What follows is this package's own.
 
 **@experimental** — third-party plugins should pin an exact version.
 
@@ -33,3 +32,37 @@ widening → `spanLeft`, a genomic strand from the worker → `flipX` /
 `block.reversed ? -d : d` before it becomes left/right. Each helper's JSDoc says
 when to reach for it; `reversedGlyphDirection.test.ts` says why a
 Canvas2D-vs-GPU parity gate cannot catch the strand case.
+
+## Upload
+
+- **`createInstanceCache` for a buffer reused across recolors.** Declare its
+  options beside the `interleave` whose lanes they name, not in the renderer —
+  the one way this breaks is a patch landing in a different lane than the pack.
+  Its geometry token must be a **coordinate** array (replaced atomically on
+  refetch); a color array would never invalidate.
+- **An `installPerRegionLifecycle` `encode` reads a narrow inputs getter
+  (`gpuProps()`), never the display's `renderState`.** The encode runs inside
+  the per-key autorun, so every observable it touches re-encodes _every_ region
+  — and a `renderState` carries the canvas box and row geometry, which move on
+  each frame of a height drag, rebuilding byte-identical output at tens of MB
+  per frame. `encode: data => data` is the other safe shape.
+- **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
+  before it looks at the count, so an empty pack IS the release.
+
+## Drawing
+
+- **A scrolling GPU canvas and its DOM overlays must share one scroll source
+  (`model.scrollTop`)** — wrap overlays in `ScrollLockedOverlay`. A native
+  `overflow:auto` container is a second, compositor-driven scroll space, so on a
+  fast scroll labels tear away from their glyphs.
+- **Every drawing path gets its ratio from `getDpr()`**, never a bare
+  `devicePixelRatio` — it caps at 2, so a canvas sized by one with geometry from
+  the other is scaled wrong. Analytics is not a drawing path. The cap's own
+  consequences are in `reference/ARCHITECTURAL_LIMITS.md`.
+- **Two uniform-write patterns, don't invent a third**: the generated
+  object-packer when every field is set each frame, or offset-pokes when writes
+  are incremental. The `bpRangeX` triple always goes through
+  `writeBpRangeUniforms`.
+- **Per-block Canvas2D clipping goes through `forEachClippedBlock`.** Its
+  `select` callback is the single skip gate, and the `finally`-paired restore is
+  what keeps a throwing painter from leaving every later frame clipped.

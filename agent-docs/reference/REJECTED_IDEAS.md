@@ -1020,6 +1020,12 @@ re-attempt without genuinely new data.
 
 ## Tooling, tests and docs
 
+- **A `guides/` directory alongside `reference/`** — tried and collapsed:
+  nothing landed cleanly on the line between "how a subsystem works" and "how to
+  operate it", so entries drifted between the two and neither directory could be
+  scanned. If `reference/` gets hard to scan the fix is better `description:`
+  lines, which is what the generated index is read through.
+
 - **A hand-written growable-typed-array writer, generalizing the generated
   `InstanceWriter`** — costed 2026-08-13 and declined for want of a second
   consumer. The generated writer serves the two encoders whose output is one
