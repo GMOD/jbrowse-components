@@ -1,7 +1,7 @@
 import { applyFollowTransform } from './followTransform.ts'
 import { followWindowMapping } from './followWindowMapping.ts'
 import { interpolateFollowSpan } from './interpolateFollowSpan.ts'
-import { windowInsideFeat } from './planFollowStep.ts'
+import { windowInsideFeat } from './windowInsideFeat.ts'
 
 import type {
   FeatPos,
