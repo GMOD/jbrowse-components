@@ -90,6 +90,42 @@ export function AdvancedLaunchOptions({ children }: { children: ReactNode }) {
   )
 }
 
+export interface LaunchOptionProps {
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
+// The shape every option below is: one boxed, compact checkbox whose label is
+// the whole of what it says, plus a tooltip carrying the "why". Written once so
+// each option is its own words and nothing else.
+function LaunchCheckbox({
+  checked,
+  onChange,
+  label,
+  help,
+}: LaunchOptionProps & { label: string; help?: string }) {
+  const { classes } = useStyles()
+  return (
+    <LabeledCheckbox
+      className={classes.formControl}
+      size="small"
+      checked={checked}
+      onChange={val => {
+        onChange(val)
+      }}
+      label={
+        help ? (
+          <span>
+            {label} <HelpTooltip help={help} />
+          </span>
+        ) : (
+          label
+        )
+      }
+    />
+  )
+}
+
 // Narrow both panels to the slice of the alignment the user is looking at,
 // rather than framing them on the whole block's endpoints. Offered by the
 // pairwise launch, where the clicked block can be far wider than the view.
@@ -100,61 +136,31 @@ export function AdvancedLaunchOptions({ children }: { children: ReactNode }) {
 // but is an estimate rather than a mapping and shouldn't be worded as one.
 export function ClipToRegionCheckbox({
   hasCigar,
-  checked,
-  onChange,
-}: {
-  hasCigar: boolean
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <LabeledCheckbox
-      className={classes.formControl}
-      size="small"
-      checked={checked}
-      onChange={val => {
-        onChange(val)
-      }}
-      label={
-        hasCigar ? (
-          'Use CIGAR to map the current visible region to the target'
-        ) : (
-          <span>
-            Clip the panels to the current visible region{' '}
-            <HelpTooltip help="This alignment carries no CIGAR, so the matching interval on the target is estimated by interpolating across the block — the same straight line its ribbon is drawn as" />
-          </span>
-        )
-      }
+  ...props
+}: LaunchOptionProps & { hasCigar: boolean }) {
+  return hasCigar ? (
+    <LaunchCheckbox
+      {...props}
+      label="Use CIGAR to map the current visible region to the target"
+    />
+  ) : (
+    <LaunchCheckbox
+      {...props}
+      label="Clip the panels to the current visible region"
+      help="This alignment carries no CIGAR, so the matching interval on the target is estimated by interpolating across the block — the same straight line its ribbon is drawn as"
     />
   )
 }
 
-export function FlipInvertedTargetsCheckbox({
-  checked,
-  onChange,
-}: {
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  const { classes } = useStyles()
+export function FlipInvertedTargetsCheckbox(props: LaunchOptionProps) {
   return (
-    <LabeledCheckbox
-      className={classes.formControl}
-      size="small"
-      checked={checked}
-      onChange={val => {
-        onChange(val)
-      }}
+    <LaunchCheckbox
+      {...props}
+      label="Horizontally flip inverted targets"
       // the "why" is a tooltip rather than two wrapped lines of dialog: an
       // unflipped inverted panel runs right to left, which is what the reader
       // needs on demand, not permanently
-      label={
-        <span>
-          Horizontally flip inverted targets{' '}
-          <HelpTooltip help="Without flipping, an inverted panel's coordinates decrease left to right" />
-        </span>
-      }
+      help="Without flipping, an inverted panel's coordinates decrease left to right"
     />
   )
 }
@@ -165,28 +171,12 @@ export function FlipInvertedTargetsCheckbox({
 // that just opened blank — but it is a checkbox rather than unconditional
 // because the copy costs a second fetch of everything open, which is a real
 // price when what's open is a BAM.
-export function CopySourceTracksCheckbox({
-  checked,
-  onChange,
-}: {
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  const { classes } = useStyles()
+export function CopySourceTracksCheckbox(props: LaunchOptionProps) {
   return (
-    <LabeledCheckbox
-      className={classes.formControl}
-      size="small"
-      checked={checked}
-      onChange={val => {
-        onChange(val)
-      }}
-      label={
-        <span>
-          Copy this view&apos;s tracks into its panel{' '}
-          <HelpTooltip help="The panel for the assembly you launched from opens with the tracks open here; the other panels open empty, since nothing here says what they should show" />
-        </span>
-      }
+    <LaunchCheckbox
+      {...props}
+      label="Copy this view's tracks into its panel"
+      help="The panel for the assembly you launched from opens with the tracks open here; the other panels open empty, since nothing here says what they should show"
     />
   )
 }
@@ -196,28 +186,12 @@ export function CopySourceTracksCheckbox({
 // viewport than the ribbons the launch was for. Collapsed to rulers by default,
 // with this to opt out; a row also expands from its own MiniControls afterwards.
 // A row that has tracks (the anchor, when the copy above is on) is unaffected.
-export function CollapsePanelsCheckbox({
-  checked,
-  onChange,
-}: {
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
-  const { classes } = useStyles()
+export function CollapsePanelsCheckbox(props: LaunchOptionProps) {
   return (
-    <LabeledCheckbox
-      className={classes.formControl}
-      size="small"
-      checked={checked}
-      onChange={val => {
-        onChange(val)
-      }}
-      label={
-        <span>
-          Collapse panels to rulers{' '}
-          <HelpTooltip help="Each genome row opens as just its ruler until you add tracks to it; expand a row from its own controls at any time" />
-        </span>
-      }
+    <LaunchCheckbox
+      {...props}
+      label="Collapse panels to rulers"
+      help="Each genome row opens as just its ruler until you add tracks to it; expand a row from its own controls at any time"
     />
   )
 }
