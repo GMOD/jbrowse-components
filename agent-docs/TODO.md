@@ -77,6 +77,7 @@ before anyone noticed.
 | [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 | [The synteny RPC transfers a detached buffer](#the-synteny-rpc-transfers-an-already-detached-buffer-on-the-hg002-chain) | synteny, RPC | the banner now names the field; re-run a capture and read it |
+| [Nothing checks a hand-built transfer list](#nothing-checks-a-hand-built-rpc-transfer-list-against-its-payload) | RPC | decide whether the synteny list should be derived instead |
 
 ## Ready to build: small and self-contained
 
@@ -1144,10 +1145,17 @@ What is established, so nobody re-derives it:
 
 - **It is on main**, not from any figure change. Reproduced with the working
   tree's only synteny edit reverted to HEAD and the app rebuilt.
-- **It is not a duplicate within one transfer list.** Wrapping that list in a
-  `Set` was tried and the failure did not move — same index, same message. So
-  the buffer was detached by an EARLIER postMessage, which means something is
-  handing out an array that a previous call already transferred.
+- **The browser has already ruled out a duplicate within the list**, and said so
+  in the message. Chrome words the three transfer-list failures differently, and
+  the wording is now pinned by the `TransferListDiagnostics` browser suite:
+  `is already detached` / `is a duplicate of an earlier ArrayBuffer` /
+  `does not have a transferable type`. This one says "already detached", so the
+  buffer was detached by an EARLIER postMessage — something is handing out an
+  array a previous call already transferred. (The `Set`-wrapping experiment that
+  "confirmed" this was answering a question the message had answered already.)
+- **A zero-length result is not the explanation.** Empty buffers transfer
+  cleanly — same suite — so a `capacity` of 0 in `buildSyntenyGeometry` would
+  not produce this.
 - **It is not universal to synteny.** `pangenome/rgfa_paa_bubble`
   (AllVsAllPAFAdapter) renders normally. The failing three all read the Q100
   chain, so start with what that adapter hands back and whether any of it
@@ -1158,12 +1166,11 @@ What is established, so nobody re-derives it:
   — four presets plus the track's `attributeColumns`, which a chain track does
   not declare — so N=4, length 21, and index 19 is `instanceFeatureIdx`.
 
-**The first move is done and no longer needs doing by hand.** `RpcServer.reply`
-now names the field when a post fails, and separates the two causes the browser
-reports with identical words: a duplicate *within* this list (postMessage
-detaches on the first occurrence and rejects the second) versus detached by an
-earlier post. Re-run any failing capture and read the banner — it says
-`instanceData.<field>` and which cause, in one run.
+**The counting above no longer needs doing by hand.** `RpcServer.reply` runs
+`explainTransferError`, which takes the index out of the browser's own sentence
+and appends the field at it — `index 19 is instanceData.instanceFeatureIdx`.
+Re-run any failing capture and read the banner; the cause is Chrome's word, the
+field is ours.
 
 **What reading has already eliminated, so nobody re-reads it:**
 
@@ -1181,6 +1188,34 @@ earlier post. Re-run any failing capture and read the banner — it says
   and no path from a cached `PAFRecord` to a transferred buffer was found by
   reading. That is where the empirical answer should be pointed once the banner
   names the field.
+
+### Nothing checks a hand-built RPC transfer list against its payload
+
+`rpcResultWithArrayBuffers` derives the list from the payload — every top-level
+typed-array field, through a `Set` so two views onto one allocation cannot both
+be named. The synteny result cannot use it: its arrays are two levels down, in
+`instanceData` and in the `attributes` record, so
+`executeSyntenyFeaturesAndPositions` spells out eighteen `.buffer` expressions
+by hand.
+
+That hand-built list is what made the detached-buffer bug above expensive —
+`index 19` is only a field name if you can reconstruct the list's layout, and
+this one's moves with the track's attribute-channel count. It is also
+unchecked in both directions: a field added to `instanceData` and forgotten here
+is silently structure-cloned (a copy, per fetch, of the largest arrays the
+worker produces), and an entry naming a buffer the payload does not carry
+detaches something for nobody.
+
+The obvious move is to make the derivation walk one level into plain-object
+children — `explainTransferError`'s `bufferPaths` already walks exactly that
+shape, for exactly this payload. **Do not just do it.** Deriving the list means
+transferring whatever the walk finds, and transferring is destructive: a view
+onto a buffer the worker still owns (an adapter cache, a module-level array)
+would be handed away, which is the same symptom as the bug above and harder to
+attribute. So the question to answer first is whether any RPC result in the tree
+reaches a buffer it does not exclusively own — and if the answer is yes anywhere,
+the cheaper fix is a test that asserts the hand-built list and the payload name
+the same set, which needs no walk and no policy.
 
 ### Walk the CIGAR once for a read's whole MM tag, not once per group
 

@@ -112,8 +112,8 @@ describe('RpcServer.handler()', () => {
   // The report is only useful if it survives the trip: it is built in `reply`'s
   // catch, has to go through serializeError, and is what a display's error
   // banner ends up showing. jsdom's postMessage does not police transfer lists,
-  // so the throw is staged — what is under test is the enrichment, not the
-  // browser's own check.
+  // so the throw is staged — the browser's own check, and the wording this keys
+  // on, are pinned by the transfer-list-diagnostics browser suite instead.
   test('a failed post names the offending transferable in the error it sends', async () => {
     const original = (globalThis as any).postMessage
     const sent: unknown[] = []
@@ -141,10 +141,10 @@ describe('RpcServer.handler()', () => {
     sendMessage(server, { method: 'pack', uid: 'p', data: null, libRpc: true })
     await flushPromises()
 
-    const { message } = (sent[0] as any).error
+    const { name, message } = (sent[0] as any).error
+    expect(name).toBe('DataCloneError')
     expect(message).toContain('already detached')
-    expect(message).toContain('instanceData.dead')
-    expect(message).toContain('survives between RPC calls')
+    expect(message).toContain('index 1 is instanceData.dead')
     ;(globalThis as any).postMessage = original
   })
 
