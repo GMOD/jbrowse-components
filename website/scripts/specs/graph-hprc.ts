@@ -746,6 +746,64 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     name: 'pangenome/hprc_whole_chromosome',
     url: sessionSpec(HPRC_CONFIG, {
       sessionTracks: [
+        // THE THREE LOCI THIS PAGE ALREADY OPENED, ON THE SAME AXIS, which is
+        // what turns the curve from a shape into an index (review: "this is a
+        // somewhat interesting figure, but its also kind of a 'dead end'. like,
+        // why does the user care?"). All three of the page's chr1 subjects are
+        // here: the amylase bubble the force graph draws, the 1q21.1 inversion,
+        // and the CFHR3/CFHR1 deletion. Their coordinates are the same
+        // constants those figures use.
+        //
+        // WHAT THIS DOES NOT CLAIM, because it was checked and is false: that
+        // they are the tallest peaks. Ranked over all 9,444 chr1 bubbles by
+        // segment count -- `tabix …bubbles.bed.gz 'GRCh38#0#chr1' | sort -k4nr`
+        // -- amylase is 50th, the inversion 77th and the deletion 155th, so
+        // they are the top 2% and not the top 5. The chromosome's biggest
+        // bubble by a factor of ten is at 2.65-2.78 Mb, and 1q21.1 carries
+        // several more in 144-148 Mb than the one this page opens. So the lane
+        // says WHERE they are and lets a reader see the curve is high at each;
+        // the ranks are in the prose, where a number can be attributed.
+        //
+        // A FeatureTrack rather than a highlight: at 178 kb per css px the
+        // widest of the three is 0.7 px, so a shaded band would be a hairline
+        // with a label floating over the lanes below. A feature draws at a
+        // minimum width and carries its own name, which is the whole ask.
+        {
+          type: 'FeatureTrack',
+          trackId: 'hprc_chr1_loci',
+          name: 'Loci this page opens on chr1',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'FromConfigAdapter',
+            adapterId: 'hprc_chr1_loci',
+            features: [
+              {
+                uniqueId: 'amylase',
+                refName: 'chr1',
+                start: 103_611_080,
+                end: 103_732_636,
+                name: 'amylase',
+                type: 'region',
+              },
+              {
+                uniqueId: 'inv_1q21',
+                refName: 'chr1',
+                start: 144_419_292,
+                end: 144_572_458,
+                name: '1q21.1 inversion',
+                type: 'region',
+              },
+              {
+                uniqueId: 'cfhr',
+                refName: 'chr1',
+                start: 196_753_088,
+                end: 196_837_771,
+                name: 'CFHR3/CFHR1 deletion',
+                type: 'region',
+              },
+            ],
+          },
+        },
         {
           type: 'FeatureTrack',
           trackId: 'hprc_tier',
@@ -816,6 +874,17 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
                 "get(feature,'gieStain')=='gpos75' ? 'rgb(110,110,110)' : 'rgb(70,70,70)'",
               height: 30,
             },
+            // Between the bands and the curve, so the reading order down the
+            // frame is landmark, name, how much the graph varies there.
+            {
+              trackId: 'hprc_chr1_loci',
+              type: 'LinearBasicDisplay',
+              // NOT collapsed. Collapsed drops labels, and at 178 kb per css px
+              // each of these features is a sub-pixel tick -- so collapsed the
+              // lane was three orange specks and the names, which are the whole
+              // content, were gone.
+              height: 50,
+            },
             {
               trackId: 'hprc_bubble_score',
               type: 'LinearWiggleDisplay',
@@ -871,9 +940,10 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     settleMs: 15000,
     viewportWidth: 1400,
-    // the cytoband lane, the variability curve, the tier lane, and a two-row
-    // anchored drawing
-    viewportHeight: 733,
+    // the cytoband lane, the loci lane, the variability curve, the tier lane,
+    // and a two-row anchored drawing. +90 for the loci lane, its header and the
+    // row its labels take, which is 25 more than the lane's own height.
+    viewportHeight: 823,
     hideTooltip: true,
     // The blank is the loudest thing in the picture and nothing on the image
     // said what it was. The caption used to call it the centromere and 1q12,

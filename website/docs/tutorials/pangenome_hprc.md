@@ -680,7 +680,7 @@ segment count as its `score`, so the only change is the track type, since a
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then three lanes off two files: the bubble file as a curve of segments per bubble, the same bubbles as the tier's segments lane, and the tier as a graph. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then the three chr1 loci this page opens, then three lanes off two files: the bubble file as a curve of segments per bubble, the same bubbles as the tier's segments lane, and the tier as a graph. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 The graph is 474 nodes against about 751,000 segments in the graph itself, laid
 out in 18 ms. The chain alternates strictly, 237 backbone nodes and 237 bubbles,
@@ -689,6 +689,15 @@ overlap, which is what makes one flat walk complete rather than lossy. The
 heterochromatin gap the caption names, a long run of unknown sequence (N) in
 GRCh38, costs it a single backbone node. The centromere itself is not blank:
 bubbles are called across it.
+
+The lane above the curve is what this view is for. Every locus this page has
+opened on chr1 is in it — the amylase bubble, the 1q21.1 inversion, the
+CFHR3/CFHR1 deletion — and the curve is high at each. Ranked by segment count
+over all 9,444 chr1 bubbles they come 50th, 77th and 155th, so the coarse view
+narrows a chromosome to a few dozen candidates rather than to three; the
+chromosome's largest bubble by an order of magnitude is at 2.65 Mb and this page
+does not open it. Scanning here and expanding what stands out is the working
+order, and each of the detailed figures above is one pass of it.
 
 This is the coarse end of a ladder, not a replacement: a tier node is a bubble,
 so it says where the graph varies and by how much, and nothing about the alleles
