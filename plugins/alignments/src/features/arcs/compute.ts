@@ -1152,10 +1152,19 @@ const DEFAULT_INTERCHROM_WINDOW_BP = 1000
 // `agent-docs/reference/DEEP_COVERAGE.md`), and is why this is offered for the
 // interchromosomal family only.
 //
-// Single-linkage, so a run of reads stepping across the span stays one cluster.
-// The `some` is over one cluster's mates and clusters are 1-2 members on real
-// data, so this is linear in practice; a genuine translocation makes one big
-// cluster and pays a few thousand comparisons once.
+// Single-linkage on each side in turn, so a run of reads stepping across the
+// span stays one cluster: group the sorted entries into runs on `bpA`, then
+// re-sort each run on `bpB` and run the same rule again. Two sorts and two
+// linear passes, and no comparison of an entry against a cluster's members.
+//
+// Chaining ONE open cluster along `bpA` and testing each entry's `bpB` against
+// its members is what this replaces, and it lost reads to the order they arrived
+// in. Real support and mismapping interleave along the source contig, so a noise
+// entry sorts into the middle of a real cluster; failing the mate test, it closed
+// that cluster and opened its own, and the supporting pairs after it were counted
+// as a separate event. Measured on the five-pair fixture in `compute.test.ts`, a
+// four-read breakpoint scored 1 and 3 — below the default floor of 2 for the
+// first of them, and below any floor the real count clears.
 // One interchromosomal connection, in the endpoint order the clustering keys on:
 // `bpA` on the lexicographically-first contig, `bpB` on the other, `index` back
 // into the caller's `pendingArcs`.
@@ -1210,32 +1219,46 @@ function clusteredInterchromSupport(
   }
   for (const entries of byContigPair.values()) {
     entries.sort((a, b) => a.bpA - b.bpA)
-    let members: ClusterEntry[] = []
-    let mates: number[] = []
-    let lastBp = 0
-    const flush = () => {
-      for (const m of members) {
-        support[m.index] = members.length
-      }
-    }
-    for (const entry of entries) {
-      if (
-        members.length > 0 &&
-        entry.bpA - lastBp <= windowBp &&
-        mates.some(m => Math.abs(m - entry.bpB) <= windowBp)
-      ) {
-        members.push(entry)
-        mates.push(entry.bpB)
-      } else {
-        flush()
-        members = [entry]
-        mates = [entry.bpB]
-      }
-      lastBp = entry.bpA
-    }
-    flush()
+    forEachRun(
+      entries,
+      e => e.bpA,
+      windowBp,
+      run => {
+        run.sort((a, b) => a.bpB - b.bpB)
+        forEachRun(
+          run,
+          e => e.bpB,
+          windowBp,
+          cluster => {
+            for (const m of cluster) {
+              support[m.index] = cluster.length
+            }
+          },
+        )
+      },
+    )
   }
   return support
+}
+
+// Single-linkage runs over a list already sorted on `valueOf`: a run ends
+// wherever consecutive values are further apart than `windowBp`.
+function forEachRun<T>(
+  sorted: T[],
+  valueOf: (item: T) => number,
+  windowBp: number,
+  onRun: (run: T[]) => void,
+) {
+  let start = 0
+  for (let i = 1; i <= sorted.length; i++) {
+    if (
+      i === sorted.length ||
+      valueOf(sorted[i]!) - valueOf(sorted[i - 1]!) > windowBp
+    ) {
+      onRun(sorted.slice(start, i))
+      start = i
+    }
+  }
 }
 
 // Colour + shape one group's resolved connections against the pooled scale,

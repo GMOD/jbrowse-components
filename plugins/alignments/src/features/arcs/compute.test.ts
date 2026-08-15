@@ -305,6 +305,27 @@ describe('computeArcsFromPileupData', () => {
       ).toEqual([])
     })
 
+    // Real supporting pairs and mismapped ones interleave along the source
+    // contig — the noise is not conveniently sorted to one end — and one noise
+    // pair landing between two supporting ones must not break their cluster.
+    // Chaining a single open cluster along `bpA` did exactly that: the noise
+    // entry failed the mate test, closed the cluster it interrupted, and the
+    // pairs on either side of it were counted as two events plus a singleton.
+    test('a noise pair between supporting ones does not split the cluster', () => {
+      const data = scattered(
+        [2000, 2050, 2100, 2150, 2200],
+        [5000, 900_000, 5100, 5150, 5200],
+        { upper: 600, lower: 100 },
+      )
+      // Four pairs agree on this breakpoint; the fifth agrees with nothing.
+      expect(
+        run(data, 4)
+          .lines.filter(l => l.x.refName === 'chr1')
+          .map(l => l.x.bp)
+          .sort((a, b) => a - b),
+      ).toEqual([2000, 2100, 2150, 2200])
+    })
+
     test('support 1 keeps every connection, as before the setting existed', () => {
       const data = scattered([2000], [5000], { upper: 600, lower: 100 })
       expect(run(data, 1).lines).toHaveLength(2)
