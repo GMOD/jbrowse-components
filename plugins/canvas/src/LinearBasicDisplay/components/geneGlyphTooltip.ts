@@ -1,5 +1,18 @@
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 
+// The loud chip's text. Here beside the tooltip, and tested with it, because
+// the two describe the same state and a gene drawn with 7 of its 28
+// transcripts looks exactly like a gene with 7 — so the chip has to name which
+// collapse this is rather than leaving it to the tooltip.
+//
+// A cap of one is spelled as the collapse it is: a very short lane resolves the
+// row budget to 1, which read as "Top 1 isoforms".
+export function geneGlyphChipLabel(maxIsoforms: number | undefined) {
+  return maxIsoforms === undefined || maxIsoforms === 1
+    ? 'One isoform'
+    : `Top ${maxIsoforms} isoforms`
+}
+
 // The isoform-collapse control's tooltip: what it is currently showing, whether
 // that was the user's choice or the zoom's, and how to dismiss the notice.
 //

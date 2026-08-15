@@ -232,22 +232,25 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * feature types counted as transcripts for isoform stacking, label
-       * spacing, and the gene-only view. It does not decide which glyph is
-       * drawn, whether UTRs are implied, or whether a feature can be
-       * translated — those are structural (anything with a direct CDS child is
-       * a coding transcript), so org-specific and prokaryotic coding types
-       * render correctly without being listed here.
+       * feature types admitted by the gene-only view (`showOnlyGenes`), plus
+       * the fallback for recognizing a CHILDLESS transcript as one of a gene's
+       * isoforms. It does not decide which glyph is drawn, whether UTRs are
+       * implied, whether a feature can be translated, or — for a transcript
+       * with subfeatures, which is nearly all of them — whether it is an
+       * isoform or gets a label row. Those are all structural (anything with a
+       * direct CDS child is a coding transcript; anything with children of its
+       * own takes a row), so org-specific and prokaryotic types render
+       * correctly without being listed here.
        */
       transcriptTypes: {
         type: 'stringArray',
-        // No longer gates glyph choice, UTR synthesis, or peptide translation —
-        // those are structural (any feature with a direct CDS child is a coding
-        // transcript), so org-specific/prokaryotic coding types render correctly
-        // without being listed. This now only tunes isoform stacking/label
-        // spacing (subfeatures.ts) and the gene-only view (featureAdmission.ts);
+        // Deliberately NOT the isoform test: keying that off this list left
+        // every `lnc_RNA`/`misc_RNA` isoform NCBI hangs off a gene exempt from
+        // the height cap and dropped by longestCoding (see subfeatures.ts
+        // `isIsoform`), so the list survives only as the childless-transcript
+        // fallback there and as the gene-only view's own gate.
         // V/C/D/J_gene_segment are kept so NCBI immunoglobulin/TCR segments are
-        // treated as transcripts there too.
+        // admitted by that view too.
         defaultValue: [
           'mRNA',
           'transcript',

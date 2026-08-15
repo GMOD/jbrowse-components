@@ -2,7 +2,7 @@ import { TrackControl } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { GENE_GLYPH_MODE_OPTIONS } from '../geneGlyphMode.ts'
-import { geneGlyphTooltip } from './geneGlyphTooltip.ts'
+import { geneGlyphChipLabel, geneGlyphTooltip } from './geneGlyphTooltip.ts'
 
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 
@@ -38,10 +38,6 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
   // icon. Whether the control belongs on screen at all is the caller's call (it
   // mounts this only when the display offers a `geneGlyphNotice`).
   const noticeShowing = collapsed && !dismissed
-  // a gene drawn with 7 of its 28 transcripts looks exactly like a gene with 7,
-  // so the chip names which collapse it is rather than leaving it to the tooltip
-  const label =
-    maxIsoforms === undefined ? 'One isoform' : `Top ${maxIsoforms} isoforms`
   return (
     <TrackControl
       icon="isoform"
@@ -51,7 +47,7 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
         maxIsoforms,
         noticeShowing,
       })}
-      label={noticeShowing ? label : undefined}
+      label={noticeShowing ? geneGlyphChipLabel(maxIsoforms) : undefined}
       onDelete={noticeShowing ? onDismiss : undefined}
       options={GENE_GLYPH_MODE_OPTIONS.map(option => ({
         label: option.label,

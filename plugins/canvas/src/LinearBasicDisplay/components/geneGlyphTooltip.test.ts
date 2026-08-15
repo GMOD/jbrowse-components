@@ -1,4 +1,16 @@
-import { geneGlyphTooltip } from './geneGlyphTooltip.ts'
+import { geneGlyphChipLabel, geneGlyphTooltip } from './geneGlyphTooltip.ts'
+
+describe('gene-glyph chip label', () => {
+  it('names which collapse this is', () => {
+    expect(geneGlyphChipLabel(undefined)).toBe('One isoform')
+    expect(geneGlyphChipLabel(7)).toBe('Top 7 isoforms')
+  })
+
+  // a very short lane resolves the row budget to 1, which read "Top 1 isoforms"
+  it('spells a cap of one as the collapse it is', () => {
+    expect(geneGlyphChipLabel(1)).toBe('One isoform')
+  })
+})
 
 // GeneGlyphControl draws its (×) only while `noticeShowing` (collapsed AND not
 // dismissed). These pin the tooltip's minimize clause to that same term, which is
