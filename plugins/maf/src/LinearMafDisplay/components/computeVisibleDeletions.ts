@@ -75,6 +75,9 @@ export function computeVisibleDeletions(
       // the region's blocks, and with the bounds in place most frames cull
       // every one of them and want no flank at all.
       let rowFlank: ReturnType<typeof makeRowFlank> | undefined
+      // Hoisted so the emit callback closes over this scope rather than a
+      // per-block one: it is the innermost thing on a hot walk.
+      let longest = 0
       for (let i = 0; i < blocks.length; i++) {
         const block = blocks[i]!
         if (
@@ -91,7 +94,8 @@ export function computeVisibleDeletions(
         // Walked to its full depth while measuring, so the bound survives a
         // scroll; only where it draws once it has one.
         const measuring = bound === 0
-        let longest = 0
+        const flank = (rowFlank ??= makeRowFlank(blocks))
+        longest = 0
         for (const row of block.rows) {
           const drawn = row.rowIndex >= firstRow && row.rowIndex < endRow
           if (!drawn && !measuring) {
@@ -102,9 +106,9 @@ export function computeVisibleDeletions(
             block.refSeqBytes,
             row.alignmentBytes,
             block.startBp,
-            (rowFlank ??= makeRowFlank(blocks))(i, row.rowIndex),
+            flank(i, row.rowIndex),
             (start, length) => {
-              if (length > longest) {
+              if (measuring && length > longest) {
                 longest = length
               }
               if (drawn) {
