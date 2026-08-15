@@ -366,4 +366,14 @@ if (crashed.length > 0 || stale.length > 0) {
   process.exit(1)
 }
 
+// Drops the nag the post-merge hook leaves for pre-commit to print. A clean run
+// IS the condition it reports on, so clearing it anywhere else would be a
+// second opinion about the same question.
+const gitDir = spawnSync('git', ['rev-parse', '--git-common-dir'], {
+  encoding: 'utf8',
+})
+if (gitDir.status === 0) {
+  rmSync(join(gitDir.stdout.trim(), 'autogen-stale'), { force: true })
+}
+
 console.log(check ? '\nAll generated artifacts up to date' : '\nRegenerated')

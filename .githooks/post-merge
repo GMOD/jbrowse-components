@@ -1,0 +1,107 @@
+#!/bin/sh
+# Answers "did that land leave a generated artifact stale" at the moment work
+# actually enters main here, which is `git merge --ff-only`, not `git push`.
+#
+# WHY THIS EXISTS WHEN pre-push ALREADY CHECKS. It checks on push, and nothing
+# here pushes: agents land with `git -C <primary-checkout> merge --ff-only`, so
+# main accumulates red locally and the gate does not run until someone finally
+# pushes -- at which point they are handed a 2min hook run and somebody else's
+# breakage. pre-push's own header diagnosed this ("work lands locally here and
+# these gates only ran on push") and then still only ran on push. This is the
+# missing half.
+#
+# IT COSTS THE LANDER NOTHING. The check is detached and runs after the merge
+# has already returned, so `git merge` is as fast as it was. Nothing here can
+# fail a merge either -- post-merge runs after the fact and git ignores its exit
+# status -- which is the right shape: a landed commit is not something to
+# refuse, only something to report on.
+#
+# HOW YOU HEAR ABOUT IT. The background run leaves `autogen-stale` in the common
+# git dir, and pre-commit prints it on your next commit for the cost of one
+# stat. That is deliberately not a terminal message from here: by the time the
+# check finishes, the shell that ran the merge has moved on, and writing to its
+# tty would land in the middle of whatever is there now.
+#
+# READ-ONLY, because the primary checkout is shared. `--check` reports and
+# writes nothing, so this can never rewrite another agent's uncommitted work --
+# the hazard pre-push's header spends two paragraphs on, and the reason this
+# does not just run the fixer.
+#
+# WHAT IT CANNOT TELL APART. The check reads the working tree, so uncommitted
+# source in the shared checkout counts toward the answer. A stale artifact it
+# names may be another agent's in-flight edit rather than the land -- the
+# marker says so rather than pretending otherwise.
+set -eu
+
+[ "${SKIP_AUTOGEN_CHECK:-}" = 1 ] && exit 0
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+cd "$root"
+command -v pnpm >/dev/null 2>&1 || exit 0
+
+# A squash merge ($1 = 1) has no ORIG_HEAD range worth reading, and is not how
+# anything lands here.
+[ "${1:-0}" = 1 ] && exit 0
+
+# What the merge brought in. No ORIG_HEAD means this was not a merge we can
+# scope, so check anyway rather than silently passing.
+range=$(git diff --name-only ORIG_HEAD HEAD 2>/dev/null || true)
+if [ -n "$range" ]; then
+  # The sources the generated artifacts come out of, same broad set pre-push
+  # uses: model and config docs are derived from plugin and package sources, so
+  # a land touching only code can still leave a doc table stale. A land that is
+  # purely CI config matches nothing and skips.
+  printf '%s' "$range" | grep -Eq \
+    '^(website/|products/|plugins/|packages/|agent-docs/|scripts/|figures\.lock)' ||
+    exit 0
+fi
+
+common=$(git rev-parse --git-common-dir)
+marker=$common/autogen-stale
+lock=$common/autogen-check.lock
+
+# One check at a time. Several agents landing in the same minute would otherwise
+# each start a 34s run, and they would all reach the same answer. mkdir is the
+# atomic test-and-set; a lock older than 10 minutes is a crashed run, not a live
+# one.
+if [ -d "$lock" ]; then
+  if [ -z "$(find "$lock" -maxdepth 0 -mmin +10 2>/dev/null)" ]; then
+    exit 0
+  fi
+  rm -rf "$lock"
+fi
+mkdir "$lock" 2>/dev/null || exit 0
+
+# Detached, so the merge returns now and this outlives the shell that ran it.
+(
+  trap 'rm -rf "$lock"' EXIT
+
+  # The figure-dependent generators derive from the corpus on disk while CI
+  # derives from figures.lock, so they answer a different question whenever the
+  # two disagree -- which on a machine that shoots figures is the normal state,
+  # not the exception. Drop those three rather than report a difference that is
+  # about the corpus. Same reasoning, and the same two cases, as pre-push.
+  flags=
+  if [ ! -d website/static/img ] || [ ! -d products/jbrowse-img/img ] ||
+    ! pnpm figures:check >/dev/null 2>&1; then
+    flags=--skip-figure-dependent
+  fi
+
+  out=$(pnpm autogen --check $flags 2>&1) && status=0 || status=$?
+
+  if [ "$status" = 0 ]; then
+    rm -f "$marker"
+  else
+    {
+      echo "main is missing a regeneration as of $(git rev-parse --short HEAD)."
+      echo "Fix: pnpm autogen, then commit what it writes."
+      echo
+      echo "(Checked against the working tree, so an artifact named below may be"
+      echo "another checkout's uncommitted edit rather than the commit that landed.)"
+      echo
+      printf '%s\n' "$out" | grep -A20 'out of date' || printf '%s\n' "$out" | tail -20
+    } >"$marker" 2>/dev/null || true
+  fi
+) </dev/null >/dev/null 2>&1 &
+
+exit 0
