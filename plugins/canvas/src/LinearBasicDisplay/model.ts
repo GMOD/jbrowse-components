@@ -23,6 +23,7 @@ import { autorun } from 'mobx'
 import {
   FALLBACK_FEATURE_HEIGHT,
   HEIGHT_MULTIPLIERS,
+  ROW_PADDING,
   labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { TRANSCRIPT_PADDING_RATIO as ISOFORM_GAP_RATIO } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
@@ -67,6 +68,20 @@ function isGeneLikeType(type: string | undefined) {
 
 // How long a track height has to hold still before the isoform cap follows it.
 const HEIGHT_SETTLE_MS = 300
+
+// Label lines the isoform cap budgets for a gene's own row: a name and a
+// description, the most `decideLabelReservations` can reserve.
+//
+// A constant, not the two flags that actually decide it. Reading them would
+// couple `maxIsoforms` — an RPC cache key — to `showLabels`, and a
+// main-thread-only `showLabels` change refetching nothing is a pinned invariant
+// (fetchAutorun.test.ts); `showLabels` also folds in the visible feature
+// density, which would put a fetch-derived value in `rpcProps()`. So the cap
+// budgets the worst case and can only leave a row unspent, never overflow —
+// which is the right direction, because an unspent row is visible in the chip
+// and one click from `All transcripts`, while an overflowing one is the silent
+// scrollbar the cap exists to end.
+const MAX_FEATURE_LABEL_LINES = 2
 
 /**
  * #stateModel LinearBasicDisplay
@@ -185,12 +200,20 @@ export default function stateModelFactory(
        * in a 100px lane draws all 28 inside the lane's own scrollbar.
        *
        * Rows, so it is the packer's own arithmetic (`decideLabelReservations`
-       * in layout.ts): body height at this display mode,
-       * `layoutSubfeatures`' inter-transcript gap,
-       * and the `below` subfeature-label row the worker reserves per transcript
-       * — which is most of a labeled row's height and, left unspent here, let
-       * the cap admit roughly twice what fits. Less one row for the gene's own
-       * label.
+       * in layout.ts) solved for n rather than approximated: n bodies at this
+       * display mode, the n − 1 inter-transcript gaps `layoutSubfeatures`
+       * spends, the `below` subfeature-label row the worker reserves per
+       * transcript — most of a labeled row's height, and left unspent here it
+       * let the cap admit roughly twice what fits — then the gene's own row
+       * padding and label lines.
+       *
+       * Those last two were "less one row", which is short by most of a row
+       * once the gene draws both a name and a description: at the defaults
+       * (`showLabels: auto`, `subfeatureLabels: none`) a row costs 12px and the
+       * gene's own lines cost 27, so the cap admitted one more isoform than fit
+       * and the lane it was sizing scrolled anyway. Budgeted at
+       * `MAX_FEATURE_LABEL_LINES` rather than the flags that decide it, for the
+       * reason given there.
        *
        * Only while the resolved mode is `all`: under `longestCoding` the worker
        * ignores it, so leaving it live would put a resize drag into the RPC
@@ -220,10 +243,20 @@ export default function stateModelFactory(
         const body =
           typeof raw === 'number' && raw > 0 ? raw : FALLBACK_FEATURE_HEIGHT
         const mode = self.displayMode
-        const rowPx =
-          body * HEIGHT_MULTIPLIERS[mode] * (1 + ISOFORM_GAP_RATIO) +
-          (this.subfeatureLabels === 'below' ? labelFontSize(mode) : 0)
-        return Math.max(1, Math.floor(self.coarseTrackHeight / rowPx) - 1)
+        const bodyPx = body * HEIGHT_MULTIPLIERS[mode]
+        const labelPx = labelFontSize(mode)
+        const perIsoform =
+          bodyPx * (1 + ISOFORM_GAP_RATIO) +
+          (this.subfeatureLabels === 'below' ? labelPx : 0)
+        // collapsed is a single-row overview and draws no labels at all
+        const labelLines = mode === 'collapsed' ? 0 : MAX_FEATURE_LABEL_LINES
+        // the gene's own row costs, less the gap the last isoform doesn't spend
+        const geneOwnPx =
+          ROW_PADDING[mode] + labelLines * labelPx - bodyPx * ISOFORM_GAP_RATIO
+        return Math.max(
+          1,
+          Math.floor((self.coarseTrackHeight - geneOwnPx) / perIsoform),
+        )
       },
 
       // Gate for the bottom-right isoform-collapse control: the loaded data has

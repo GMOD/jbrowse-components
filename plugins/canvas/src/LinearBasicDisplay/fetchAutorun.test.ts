@@ -1528,6 +1528,27 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     expect(display.effectiveMaxIsoforms).toBeLessThan(budgetBefore)
   })
 
+  // The budget is `decideLabelReservations`' own row arithmetic solved for n,
+  // so the gene it admits fits the lane it was measured against and one more
+  // does not. It was "less one row", which is short by most of a row once the
+  // gene draws both label lines — so at the defaults the cap admitted an
+  // isoform past the lane it exists to fit, and the lane scrolled anyway.
+  it('admits exactly the isoforms the lane has room for', async () => {
+    const { display } = await loadedDisplay()
+    display.configuration.setSlot('height', 325)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    // normal mode at a 10px feature: a row is the body plus the 0.2
+    // inter-transcript gap, and the gene's own row is the mode's 5px padding
+    // plus its two 11px label lines, less the gap the last isoform never spends
+    const rowPx = 10 * (1 + 0.2)
+    const geneOwnPx = 5 + 2 * 11 - 10 * 0.2
+    const n = display.effectiveMaxIsoforms!
+    expect(n * rowPx + geneOwnPx).toBeLessThanOrEqual(325)
+    expect((n + 1) * rowPx + geneOwnPx).toBeGreaterThan(325)
+  })
+
   // `featureHeight` declares `contextVariable`, so it may hold a `jexl:`
   // expression — and an arg-less read of one EVALUATES it, against a context
   // where `feature` is undefined. Read through readConfObject this threw out of
