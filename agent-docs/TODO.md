@@ -29,7 +29,7 @@ before anyone noticed.
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
 | [Validate the react-app site's volvox config](#run-jbrowse-validate-over-the-react-app-sites-volvox-configjson) | embedded, config | 8 errors already reported; fix the file, then ask why it is a copy |
-| [Pool the coordinate ruler's tick divs](#pool-the-coordinate-rulers-tick-divs-so-a-zoom-stops-rebuilding-them) | LGV, perf | measured; a fixed pool is the low-risk version |
+| [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
@@ -191,25 +191,25 @@ Doing this for every site at once means the check belongs in
 `@jbrowse/cli` in all four sites' installs for one function — weigh that against
 two fixtures.
 
-### Pool the coordinate ruler's tick `<div>`s so a zoom stops rebuilding them
+### Give the coordinate ruler a genuinely fixed tick pool
 
-`ScalebarCoordinateLabels` (`plugins/linear-genome-view`) creates and destroys
-~144 tick nodes per zoom click. Its `key`-by-base reuse works for *pan* (the
-same bases scroll across) but not *zoom*: the scale changes, so the tick set and
-its keys change every frame, React tears down and rebuilds the whole list, and
-each new node pays the emotion/tss `tickLabel` styling cost. This is the
-measured dominant source of per-frame DOM churn during interaction — 719
-structural add/removes plus 439 style-attr mutations out of ~2056 attributed
-during a 5× zoom, against **2 of 2056** in the alignments overlays, which are
-already zoom-invariant and should not be chased.
-[reference/INTERACTION_PERF.md](reference/INTERACTION_PERF.md) has the
-measurement and the repro tooling.
+The key half landed 2026-08-15: `ScalebarCoordinateLabels` keys its list
+positionally, so a zoom repositions and relabels nodes instead of rebuilding
+them, and the scalebar's structural churn over a 5× zoom went 535 → 248 against
+a 1523 → 1369 total.
 
-Lowest-risk fix first: a fixed pool of tick `<div>`s that is repositioned and
-relabelled rather than added and removed — kills the structural churn and keeps
-accessible DOM text. Alternatives if that is not enough: a canvas ruler (bigger
+What is left is the label *count* moving between frames — positional keys pool
+`min(oldCount, newCount)` and still mount or unmount the difference, and the
+count shifts as label text changes width and `labelFitsInBlock` /
+`MIN_TICK_LABELS_PER_BLOCK` drop a different number of them. A constant node
+count with the extras hidden closes it, and is worth about that remainder.
+Weigh it against the other two options before building:  a canvas ruler (bigger
 win, loses selectable text), or coarsening ticks off `coarseBpPerPx` during the
 zoom spring and snapping exact on settle.
+
+[reference/INTERACTION_PERF.md](reference/INTERACTION_PERF.md) has both
+measurements and the repro tool, including the trap that it serves
+`products/jbrowse-web/build` and so needs a rebuild between arms.
 ### Get the synteny shader source out of the eager set
 
 `GpuSyntenyRenderer.ts` is statically imported by `SyntenyRendererFactory`

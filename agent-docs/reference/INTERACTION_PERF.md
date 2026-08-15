@@ -29,7 +29,21 @@ a CPU flame graph — that's the right tool for "who re-rendered and why."
 
 **Measured culprit (2026-07-11): the LGV coordinate ruler, not the alignments overlays.** A `MutationObserver` attributing every DOM mutation during a 5× zoom to its nearest `data-testid` subtree found ~2056 mutations dominated by `rubberband_controls` (the ScaleBar): 719 structural node add/remove + 439 style-attr, vs **2 of 2056** in the alignments overlays. The alignments display overlays are already zoom-invariant (`highlightBoxes` short-circuits to `[]` when nothing hovered; `renderSections`/`sections`/`groupLaidOutMap` read only vertical layout, never `offsetPx`/`bpPerPx`; sashimi/bezier default-off) — **do not chase them.** `VisibleLabelsOverlay` is a canvas, so it contributes no DOM churn.
 
-The churn is `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../ScalebarCoordinateLabels.tsx`): it creates/destroys ~144 tick `<div>` nodes per zoom click. Its `key`-by-base reuse works for *pan* (same bases scroll across) but not *zoom* — the scale changes, so the tick set + keys change every frame, forcing React to tear down + rebuild the whole tick list, each new node paying the emotion/tss `tickLabel` styling cost. Fix, lowest-risk first: **pool the tick `<div>`s** (fixed pool, reposition+relabel, no add/remove) → kills the 719 structural churn, keeps accessible DOM text; or a **canvas ruler** (bigger win, loses selectable text); or **coarsen ticks off `coarseBpPerPx`** during the zoom spring, snap exact on settle. Repro tool: `website/scripts/measure-zoom-churn.ts` (throwaway) + `~/src/jb2bench/scripts/interaction-profile.ts <url> <label> [pan|scroll|zoom|both]`, `THROTTLE=n`.
+The churn was `ScalebarCoordinateLabels` (`plugins/linear-genome-view/.../ScalebarCoordinateLabels.tsx`): it created and destroyed ~144 tick `<div>` nodes per zoom click. Its `key`-by-base reuse works for *pan* and not *zoom*, which is the wrong way round — `scalebarLabels` is **unchanged** during a pan (the labels live in the staticBlocks frame, and only the container transform moves), so there was nothing there to save; a zoom moves the whole tick set, so every key changed and React rebuilt the list, each new node paying the emotion/tss `tickLabel` styling cost.
+
+**Fixed 2026-08-15 by keying the list positionally**, which makes it a pool: same nodes, patched transform and text. Measured A/B on one machine and toolchain, two builds of the same commit differing only in the key:
+
+| during a 5× zoom | identity keys | positional |
+| --- | --- | --- |
+| structural (mount/unmount), scalebar | 535 | **248** |
+| attribute patches, scalebar | 323 | 499 |
+| total mutations | 1523 | 1369 |
+
+Read the trade, not the total: structural churn is the expensive class (each new node pays styling, layout and paint) and it halves, while the rise in attribute patches is the same work done the cheap way on nodes that survived.
+
+**The residual 248 is the label *count* moving between frames.** Positional keys pool `min(oldCount, newCount)` nodes and still mount or unmount the difference, and the count shifts as label text changes width and `labelFitsInBlock` / `MIN_TICK_LABELS_PER_BLOCK` drop a different number of them. Closing it needs a genuinely fixed pool — a constant node count with the extras hidden — which is a bigger change than the key was, and worth roughly this remainder. The other two options are unchanged: a **canvas ruler** (bigger win, loses selectable text), or **coarsening ticks off `coarseBpPerPx`** during the zoom spring, snapping exact on settle.
+
+Repro tool: `website/scripts/measure-zoom-churn.ts`, which needs `products/jbrowse-web/build` current — it serves the built bundle, so rebuild between arms or you measure the old one twice.
 
 Also, per-mousemove: `AlignmentsDisplayComponent` `setMouseCoord` on every `onMouseMove` re-runs the top observer; children are `observer`-memoized so blast radius is mostly the tooltip — confirm no inline object/array prop defeats a child's memo.
 
