@@ -1,23 +1,18 @@
-import { TabixIndexedFile } from '@gmod/tabix'
 import { createStatusFanOut } from '@jbrowse/core/util'
-import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
-import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
-import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
+import { PifFile } from '../PifFile.ts'
 import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
   getOrCreate,
-  hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
   noPanSNMatchError,
   panSNInventory,
-  readPifLines,
   resolveCoarseTier,
   resolvePanSNPrefix,
   sideDraws,
@@ -25,9 +20,7 @@ import {
 
 import type { AlignedSide, PifLine } from '../util.ts'
 import type { AllVsAllIndexedPAFAdapterConfig } from './configSchema.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -49,28 +42,8 @@ function pifSide(line: PifLine): AlignedSide {
 }
 
 export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<AllVsAllIndexedPAFAdapterConfig> {
-  protected pif: TabixIndexedFile
-  private refSeqNamesP?: Promise<string[]>
+  private pif = new PifFile(this)
   private seqIndexP?: Promise<Map<string, Map<string, string[]>>>
-
-  public constructor(
-    config: AllVsAllIndexedPAFAdapterConfig,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    const pifGzLoc = this.getConf('pifGzLocation')
-    const type = this.getConf(['index', 'indexType'])
-    const loc = this.getConf(['index', 'location'])
-    const pm = this.pluginManager
-
-    this.pif = new TabixIndexedFile({
-      filehandle: openLocation(pifGzLoc, pm),
-      ...openTabixIndexFilehandle(loc, type, pm),
-      chunkCacheBudget: decompressedBytesBudget,
-      bgzfWorkerPool: sharedBgzfWorkerPool(),
-    })
-  }
 
   // Config-derived and therefore fixed for this adapter: an edit produces a new
   // snapshot, hence a new cache key and a new adapter (see dataAdapterCache).
@@ -81,19 +54,6 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
   private asmByPrefix() {
     this.asmByPrefixCache ??= assemblyByPanSNPrefix(this)
     return this.asmByPrefixCache
-  }
-
-  // The tabix contig list, read once. Every seqid is a PanSN name prefixed with
-  // its tier letter (fine t/q, coarse T/Q); both the stripped-and-deduped seqid
-  // set and the coarse-tier probe derive from this one fetch.
-  private async refSeqNames(opts?: BaseOptions) {
-    this.refSeqNamesP ??= this.pif
-      .getReferenceSequenceNames(opts)
-      .catch((e: unknown) => {
-        this.refSeqNamesP = undefined
-        throw e
-      })
-    return this.refSeqNamesP
   }
 
   // The distinct PanSN seqids (tier letter t/q/T/Q stripped, deduped across
@@ -108,7 +68,8 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
   // region, per pan/zoom — would otherwise re-split and re-scan the entire
   // contig list.
   private async seqIndex(opts?: BaseOptions) {
-    this.seqIndexP ??= this.refSeqNames(opts)
+    this.seqIndexP ??= this.pif
+      .refSeqNames(opts)
       .then(names => {
         const index = new Map<string, Map<string, string[]>>()
         for (const seq of new Set(names.map(n => n.slice(1)))) {
@@ -127,8 +88,11 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
     return this.seqIndexP
   }
 
-  private async hasCoarseTier(opts?: BaseOptions) {
-    return hasCoarseTierPrefix(await this.refSeqNames(opts))
+  // What the file holds, for the message a query naming an unknown assembly
+  // raises. The tier letter (t/q/T/Q) is not part of a name.
+  private async inventory(opts?: BaseOptions) {
+    const names = await this.pif.refSeqNames(opts)
+    return panSNInventory(names.map(n => n.slice(1)))
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -153,7 +117,7 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
       const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
 
       const coarse = resolveCoarseTier({
-        hasCoarseTier: await this.hasCoarseTier(opts),
+        hasCoarseTier: await this.pif.hasCoarseTier(opts),
         lodMode: opts.lodMode,
       })
       // The anchor is the PAF query side of some records and the target side of
@@ -187,10 +151,7 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
           throw noPanSNMatchError({
             assemblyName: name,
             prefix,
-            inventory: panSNInventory(
-              // the tier letter (t/q/T/Q) is not part of the name
-              (await this.refSeqNames(opts)).map(n => n.slice(1)),
-            ),
+            inventory: await this.inventory(opts),
           })
         }
       }
@@ -198,9 +159,7 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
         throw noPanSNMatchError({
           assemblyName,
           prefix: anchorPrefix,
-          inventory: panSNInventory(
-            (await this.refSeqNames(opts)).map(name => name.slice(1)),
-          ),
+          inventory: await this.inventory(opts),
         })
       }
       const seqs = byContig.get(qref) ?? []
@@ -222,8 +181,7 @@ export default class AllVsAllIndexedPAFAdapter extends ComparativeAdapterBase<Al
       await Promise.all(
         seqs.flatMap(seq =>
           letters.map(letter =>
-            readPifLines({
-              pif: this.pif,
+            this.pif.readLines({
               seqid: letter + seq,
               start,
               end,

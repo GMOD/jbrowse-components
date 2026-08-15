@@ -1,24 +1,16 @@
-import { TabixIndexedFile } from '@gmod/tabix'
-import { updateStatus } from '@jbrowse/core/util'
-import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
-import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
-import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
+import { PifFile } from '../PifFile.ts'
 import {
   getAssemblyNamesFromConf,
-  hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
-  readPifLines,
   resolveCoarseTier,
 } from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
@@ -43,49 +35,14 @@ export function pickPifPrefix({
 }
 
 export default class PairwiseIndexedPAFAdapter extends ComparativeAdapterBase<PairwiseIndexedPAFAdapterConfig> {
-  protected pif: TabixIndexedFile
-  private refSeqNamesP?: Promise<string[]>
+  private pif = new PifFile(this)
 
-  public constructor(
-    config: PairwiseIndexedPAFAdapterConfig,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    const pifGzLoc = this.getConf('pifGzLocation')
-    const type = this.getConf(['index', 'indexType'])
-    const loc = this.getConf(['index', 'location'])
-    const pm = this.pluginManager
-
-    this.pif = new TabixIndexedFile({
-      filehandle: openLocation(pifGzLoc, pm),
-      ...openTabixIndexFilehandle(loc, type, pm),
-      chunkCacheBudget: decompressedBytesBudget,
-      bgzfWorkerPool: sharedBgzfWorkerPool(),
-    })
-  }
-  async getHeader(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
-    return updateStatus('Downloading header', statusCallback, () =>
-      this.pif.getHeader(),
-    )
+  getHeader(opts?: BaseOptions) {
+    return this.pif.getHeader(opts)
   }
 
   getAssemblyNames(): string[] {
     return getAssemblyNamesFromConf(this)
-  }
-
-  // The tabix contig list, read once. Every seqid is a refName prefixed with its
-  // tier letter (fine q/t, coarse Q/T); both getRefNames and the coarse-tier
-  // probe derive from this one fetch.
-  private async refSeqNames(opts?: BaseOptions) {
-    this.refSeqNamesP ??= this.pif
-      .getReferenceSequenceNames(opts)
-      .catch((e: unknown) => {
-        this.refSeqNamesP = undefined
-        throw e
-      })
-    return this.refSeqNamesP
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -95,20 +52,14 @@ export default class PairwiseIndexedPAFAdapter extends ComparativeAdapterBase<Pa
     }
 
     const idx = this.getAssemblyNames().indexOf(r1)
-    const names = await this.refSeqNames(opts)
-    // Only consider the fine tier here so we don't double-report chroms when
-    // the coarse T/Q tier is also present.
-    if (idx === 0) {
-      return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
-    } else if (idx === 1) {
-      return names.filter(n => n.startsWith('t')).map(n => n.slice(1))
-    } else {
+    if (idx !== 0 && idx !== 1) {
       return []
     }
-  }
-
-  private async hasCoarseTier(opts?: BaseOptions) {
-    return hasCoarseTierPrefix(await this.refSeqNames(opts))
+    // Only the fine tier here, so a file that also carries the coarse T/Q tier
+    // does not report every chrom twice.
+    const letter = idx === 0 ? 'q' : 't'
+    const names = await this.pif.refSeqNames(opts)
+    return names.filter(n => n.startsWith(letter)).map(n => n.slice(1))
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
@@ -131,15 +82,14 @@ export default class PairwiseIndexedPAFAdapter extends ComparativeAdapterBase<Pa
 
       const letter = pickPifPrefix({
         flip,
-        hasCoarseTier: await this.hasCoarseTier(opts),
+        hasCoarseTier: await this.pif.hasCoarseTier(opts),
         lodMode: opts.lodMode,
       })
 
       // The "other" assembly is the mate
       const mateAssemblyName = assemblyNames[flip ? 1 : 0]!
 
-      await readPifLines({
-        pif: this.pif,
+      await this.pif.readLines({
         seqid: letter + query.refName,
         start: query.start,
         end: query.end,

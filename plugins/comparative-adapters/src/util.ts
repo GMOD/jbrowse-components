@@ -1,14 +1,6 @@
 import { csToCigar, pafIdentity } from '@jbrowse/cigar-utils'
-import {
-  createStatusFanOut,
-  downloadStatus,
-  fetchAndMaybeUnzipText,
-} from '@jbrowse/core/util'
+import { createStatusFanOut, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
-import {
-  checkStopTokenThrottled,
-  withStopTokenSignal,
-} from '@jbrowse/core/util/stopToken'
 
 import SyntenyFeature from './SyntenyFeature/index.ts'
 import { panSNMatchesPrefix, panSNPrefixes } from './pansn.ts'
@@ -18,8 +10,6 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 // assemblyNames is ordered [query, target]: index 0 is the PAF/delta/chain
@@ -696,71 +686,6 @@ export function markReciprocalDuplicates(sides: AlignedSide[]) {
     }
   }
   return duplicate
-}
-
-/**
- * Minimal structural view of `@gmod/tabix`'s `TabixIndexedFile.getLines`, so
- * this signature needn't name the concrete class.
- */
-interface PifLineSource {
-  getLines(
-    refName: string,
-    start: number,
-    end: number,
-    opts: {
-      lineCallback: (line: string, fileOffset: number) => void
-      onProgress?: (bytesDownloaded: number, totalBytes?: number) => void
-      signal?: AbortSignal
-    },
-  ): Promise<void>
-}
-
-/**
- * Read one PIF range under a determinate download bar, parsing each line and
- * checking the stop token as it goes. Shared by the two indexed PIF adapters,
- * which previously wrapped the scan in a bare `updateStatus` — the only tabix
- * adapters left showing a spinner where the rest show bytes, and the only ones
- * that ran a cancelled query to completion.
- */
-export function readPifLines({
-  pif,
-  seqid,
-  start,
-  end,
-  statusCallback,
-  stopTokenCheck,
-  lineCallback,
-}: {
-  pif: PifLineSource
-  seqid: string
-  start: number
-  end: number
-  statusCallback: StatusCallback
-  stopTokenCheck: StopTokenChecker
-  lineCallback: (line: PifLine, fileOffset: number) => void
-}) {
-  // the signal comes off the checker's own token, so the caller passes one
-  // cancellation handle rather than two that could disagree
-  return withStopTokenSignal(stopTokenCheck.stopToken, signal =>
-    downloadStatus('Downloading features', statusCallback, onProgress =>
-      pif.getLines(seqid, start, end, {
-        onProgress,
-        lineCallback: (line, fileOffset) => {
-          checkStopTokenThrottled(stopTokenCheck)
-          lineCallback(parsePifLine(line), fileOffset)
-        },
-        signal,
-      }),
-    ),
-  )
-}
-
-// A file carries the coarse tier only if make-pif emitted at least one
-// uppercase-prefixed (T/Q) seqid. The tier letter is always the first char, so
-// a sample whose PanSN name itself starts with T/Q can't false-positive (its
-// fine seqid is `t`/`q` + name). Shared by the two indexed PIF adapters.
-export function hasCoarseTierPrefix(refSeqNames: string[]) {
-  return refSeqNames.some(n => n.startsWith('T') || n.startsWith('Q'))
 }
 
 // The coarse (uppercase T/Q) tier is a no-CIGAR summary served when zoomed out;
