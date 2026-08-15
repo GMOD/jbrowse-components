@@ -9,6 +9,28 @@ import type {
 import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'
 
 /**
+ * The registry keys this base can serve: those whose wire return is exactly
+ * what `executeDiagonalize` produces.
+ *
+ * The class has to pin that type as its second parameter — `MethodName` is
+ * still generic here, so `RpcWireReturn<MethodName>` is a conditional
+ * TypeScript will not resolve and the shared body would have nothing to check
+ * against. Pinning it is a claim about the registry, and this is what makes the
+ * claim checked: a subclass naming a key that returns something else is a
+ * compile error at the subclass, rather than a body typed against a return no
+ * caller receives.
+ *
+ * Derived rather than written as `'DiagonalizeSynteny' | 'DiagonalizeDotplot'`
+ * because those two keys are declared by the plugins, and this package must not
+ * need either of them loaded to compile.
+ */
+type DiagonalizeMethodName = {
+  [K in RpcMethodName]: DiagonalizationResult | null extends RpcWireReturn<K>
+    ? K
+    : never
+}[RpcMethodName]
+
+/**
  * Worker-side diagonalize RPC, minus its name. The linear-synteny and dotplot
  * views each register their own method (an RPC method is only callable if the
  * plugin that registers it is loaded, and either view can be installed without
@@ -23,10 +45,8 @@ import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegion
  *
  * Declare the method's args/return in the RpcRegistry from the plugin, so the
  * registry entry lives next to the registration — and pass the key here too, so
- * the class is checked against it. The parameter is forwarded rather than pinned
- * to `'DiagonalizeSynteny' | 'DiagonalizeDotplot'` because those two keys are
- * declared by the plugins, and this package must not need either of them loaded
- * to compile.
+ * the class is checked against it. See {@link DiagonalizeMethodName} for which
+ * keys qualify.
  *
  * Extends the plain RpcMethodType rather than
  * RpcMethodTypeWithFiltersAndRenameRegions, which is what a comparative RPC
@@ -43,24 +63,6 @@ import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegion
  * walks the whole args tree, so each `adapters[].adapterConfig` is still
  * augmented at its nested position.
  */
-/**
- * The registry keys this base can serve: those whose wire return is exactly
- * what `executeDiagonalize` produces.
- *
- * The class has to pin that type as its second parameter — `MethodName` is
- * still generic here, so `RpcWireReturn<MethodName>` is a conditional
- * TypeScript will not resolve and the shared body would have nothing to check
- * against. Pinning it is a claim about the registry, and this constrains
- * `MethodName` to the keys the claim is true of, so a subclass naming a key
- * that returns something else is a compile error at the subclass rather than a
- * body typed against a return no caller receives.
- */
-type DiagonalizeMethodName = {
-  [K in RpcMethodName]: DiagonalizationResult | null extends RpcWireReturn<K>
-    ? K
-    : never
-}[RpcMethodName]
-
 export default abstract class DiagonalizeRpcBase<
   MethodName extends DiagonalizeMethodName,
 > extends RpcMethodType<MethodName, DiagonalizationResult | null> {
