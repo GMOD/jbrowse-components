@@ -108,13 +108,14 @@ Not to be confused with the read cloud's `isConcordantFRPair`, which asks whethe
 readings are deliberate; each function's comment names the other.
 
 **A support FLOOR is offered for the INTERCHROMOSOMAL family — either mark — and
-deliberately not for the same-chromosome arcs.** `minInterchromSupport` counts
-reads over a window of one fragment length on _both_ sides
+deliberately not for the same-chromosome arcs.** `minInterchromSupport` counts a
+MATE link's reads over a window of one fragment length on _both_ sides
 (`clusteredInterchromSupport`), never at a coordinate: mates straddle a breakpoint
 rather than landing on it, so `arcKey`'s exact count is 1 for essentially every
-interchromosomal connection and a floor over it would delete a real translocation
+interchromosomal PAIR and a floor over it would delete a real translocation
 as thoroughly as the mismapping. The window comes from `stats.upper`, so it tracks
-the library instead of a constant. The same clusters are what BOTH
+the library instead of a constant — and a SPLIT junction takes window 0 whatever
+the chromosomes, for the reason below. The same clusters are what BOTH
 interchromosomal marks are DRAWN with — see below. The same floor on
 same-chromosome arcs was
 measured and declined — at depth it is a density filter, not an evidence filter.
@@ -129,14 +130,29 @@ passes (resolved CPU-side at pack time; no shader evaluates it). Coalescing
 without keeping the count left a 40-read translocation drawing exactly like one
 mismapped pair.
 
-**They do not COUNT it the same way, and the split is CHROMOSOME, not mark.** A
-same-chromosome arc counts the connections coalesced onto its exact coordinate;
-every INTERCHROMOSOMAL mark is windowed, so the number drawn and the number
-`minInterchromSupport` filters on cannot disagree. Counting coincidences there
-read 1 over a hundred-pair translocation — that is the measurement the floor
-exists because of — so the channel was empty in the family that needs it most.
-The pass therefore runs at every setting, not only above the floor. One arc is
-one junction is one cluster, so coalescing has nothing to add on that arm.
+**They do not COUNT it the same way, and the axis is the EVIDENCE, not the
+mark and not the chromosomes.** A window is right for a MATE LINK, whose two
+reads straddle a breakpoint they never land on, and wrong for a SPLIT JUNCTION,
+whose read knows the breakpoint to the base. So an interchromosomal MATE link is
+windowed — the number drawn and the number `minInterchromSupport` filters on
+cannot disagree — and everything else counts exact coincidences.
+
+**A split junction is never windowed, on either chromosome**, and the cost of
+getting that wrong is specific rather than theoretical. `arcKey` refuses a
+tolerance citing five distinct events inside 2.3 kb on the HG002 chr12 fold-back
+— every gap under the default window. K562's BCR-ABL1 is one donor and **24
+acceptors** over ~154 kb ([DEMO_DATASETS.md](DEMO_DATASETS.md)), where "is the
+154-read site a real alternative acceptor" is the question the figure exists to
+put to the reader; chaining acceptors under a fragment-length window answers it
+for them. Window 0 through the same single-linkage walk is how a split junction
+gets `arcKey`'s coincidence count while the floor, the arc's weight and the
+tick's sum keep reading one number.
+
+Counting coincidences on a MATE link read 1 over a hundred-pair translocation —
+that is the measurement the floor exists because of — so the channel was empty in
+the family that needs it most. The pass therefore runs at every setting, not only
+above the floor. One arc is one junction is one cluster, so coalescing has
+nothing to add on that arm.
 
 **An interchromosomal TICK sums the distinct clusters reaching its coordinate**,
 which is where the two marks' arithmetic differs. A tick is HALF a junction: a

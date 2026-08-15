@@ -891,6 +891,50 @@ describe('computeArcsFromPileupData', () => {
     expect(lines.map(l => l.x.refName)).toEqual(['chr1', 'chr2'])
   })
 
+  // ONE DONOR, TWO ACCEPTORS — K562's BCR-ABL1 in miniature, which is one donor
+  // and 24 acceptors spread over ~154 kb (reference/DEMO_DATASETS.md). A split
+  // read knows its breakpoint to the base, so two acceptors 600 bp apart are two
+  // junctions and the reader's question is which of them carries the reads.
+  //
+  // The windowed count was keyed on interchromosomal-ness, which put split
+  // evidence under a fragment-length window and chained the acceptors: every
+  // mark reported 5, the sum of both. Same rule, same reason, as `arcKey`'s
+  // refusal to merge on a tolerance — it cites five distinct events inside
+  // 2.3 kb, every gap of which is under the default window.
+  test('two split acceptors inside one window stay two junctions', () => {
+    const acceptors = [9000, 9000, 9000, 9600, 9600]
+    const data = makePileupData({
+      readPositions: new Uint32Array(acceptors.flatMap(() => [1000, 1500])),
+      readFlags: new Uint16Array(acceptors.length),
+      readStrands: new Int8Array(acceptors.length).fill(1),
+      ...namesToBlock(acceptors.map((_, i) => `split${i}`)),
+      readClipAtStart: new Uint32Array(acceptors.length),
+      readSuppAlignments: acceptors.map(bp => `chr2,${bp},+,500S500M,60,0;`),
+    })
+    const { lines } = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
+      { colorByType: 'insertSize', drawInter: true, drawLongRange: true },
+    )
+
+    // each acceptor carries its own reads...
+    expect(
+      lines
+        .filter(l => l.x.refName === 'chr2')
+        .map(l => [l.x.bp, l.support])
+        .sort((a, b) => a[0]! - b[0]!),
+    ).toEqual([
+      // 8999/9599, not 9000/9600: an SA tag's POS is 1-based and these are the
+      // interbase coordinates it converts to.
+      [8999, 3],
+      [9599, 2],
+    ])
+    // ...and the donor, which every read really does share to the base, carries
+    // all five — the distinct-cluster sum, with the two acceptors' clusters both
+    // reaching it.
+    expect(lines.find(l => l.x.refName === 'chr1')?.support).toBe(5)
+  })
+
   test('single-region reads with drawLongRange=false are skipped', () => {
     const data = makePileupData({
       readPositions: new Uint32Array([0, 100]),

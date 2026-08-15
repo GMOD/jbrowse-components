@@ -1270,9 +1270,37 @@ interface InterchromClusters {
   sizeOf: number[]
 }
 
+// THE WINDOW IS A PROPERTY OF THE EVIDENCE, NOT OF THE CHROMOSOMES.
+//
+// A window is the right answer for a MATE LINK and the wrong one for a SPLIT
+// JUNCTION, and this pass keyed on interchromosomal-ness — which correlates with
+// neither. The comment above already states the principle ("a split read KNOWS
+// the breakpoint to the base") and `arcKey` is written on it at length: over the
+// HG002 chr12 fold-back the reads put feet at 86,845,554 / 86,846,342 /
+// 86,846,818 / 86,847,127 / 86,847,804, FIVE DISTINCT EVENTS INSIDE 2.3 kb, and
+// merging on a tolerance "would draw them as one thick arc, which states
+// something the data does not". Every gap there is under 1 kb, so the default
+// window would have chained all five into one cluster reporting 5.
+//
+// That is not hypothetical on the interchromosomal side either. K562's BCR-ABL1
+// is ONE donor and 24 ACCEPTORS (reference/DEMO_DATASETS.md): the chr22 donor is
+// exact to a few bases while the chr9 sites spread over ~154 kb, and whether the
+// 154-read site is an alternative acceptor or an alignment artefact is exactly
+// the question a reader brings to that figure. Chaining acceptors under a
+// fragment-length window answers it for them, wrongly.
+//
+// So a split junction clusters at WINDOW 0, which the same single-linkage walk
+// already expresses: a run ends wherever consecutive values differ at all, so
+// runs become groups sharing both coordinates exactly — `arcKey`'s coincidence
+// count, arrived at through this pass so the floor, the arc's weight and the
+// tick's sum all keep reading one number.
+function windowFor(arc: PendingArc, mateWindowBp: number) {
+  return arc.isSplit ? 0 : mateWindowBp
+}
+
 function clusteredInterchromSupport(
   arcs: PendingArc[],
-  windowBp: number,
+  mateWindowBp: number,
 ): InterchromClusters {
   const clusterOf = new Array<number>(arcs.length).fill(-1)
   const sizeOf: number[] = []
@@ -1298,23 +1326,40 @@ function clusteredInterchromSupport(
   // connections outnumber these by ~10:1 on deep short-read data (9204 arcs, 865
   // of them interchromosomal, measured at 1:2,000,000 on HG002 300x), and only
   // `clusterOf` has to span the whole feed.
-  const byContigPair = new Map<string, ClusterEntry[]>()
+  // Keyed on the WINDOW as well as the contig pair, so two kinds of evidence
+  // never land in one bucket to be walked at one of their windows. Keyed on the
+  // window itself rather than on `isSplit` because the window IS the grouping
+  // criterion: kinds that agree on it can share a bucket safely, and one that
+  // does not cannot.
+  //
+  // A breakpoint carrying both kinds therefore yields a split cluster and a mate
+  // cluster, each counted the way its own evidence localizes. That is two
+  // measurements reported separately, not a double count — they are different
+  // marks, at the coordinates their own reads put them at.
+  const byContigPair = new Map<
+    string,
+    { windowBp: number; entries: ClusterEntry[] }
+  >()
   for (let i = 0; i < arcs.length; i++) {
     const arc = arcs[i]!
     if (arc.p1Ref === arc.p2Ref) {
       continue
     }
     const swap = arc.p2Ref < arc.p1Ref
+    const windowBp = windowFor(arc, mateWindowBp)
     const key = swap
-      ? `${arc.p2Ref}\0${arc.p1Ref}`
-      : `${arc.p1Ref}\0${arc.p2Ref}`
-    getOrCreate(byContigPair, key, () => []).push({
+      ? `${windowBp}\0${arc.p2Ref}\0${arc.p1Ref}`
+      : `${windowBp}\0${arc.p1Ref}\0${arc.p2Ref}`
+    getOrCreate(byContigPair, key, () => ({
+      windowBp,
+      entries: [],
+    })).entries.push({
       index: i,
       bpA: swap ? arc.p2Bp : arc.p1Bp,
       bpB: swap ? arc.p1Bp : arc.p2Bp,
     })
   }
-  for (const entries of byContigPair.values()) {
+  for (const { windowBp, entries } of byContigPair.values()) {
     entries.sort((a, b) => a.bpA - b.bpA)
     forEachRun(
       entries,
