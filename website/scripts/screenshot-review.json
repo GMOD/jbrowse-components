@@ -2,14 +2,16 @@
   "volvox_alignments": {
     "name": "volvox_alignments",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-14T14:28:55.644Z"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:31.861Z",
+    "hash": "820151abc71d808b494fcc0b879577a655b2598a"
   },
   "volvox_variants": {
     "name": "volvox_variants",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-14T14:28:59.916Z"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:57:26.140Z",
+    "hash": "201cf391fb9432434d935e08bd927f4894575635"
   },
   "variant_with_pileup": {
     "name": "variant_with_pileup",
@@ -40,9 +42,9 @@
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:29:08.853Z",
-    "hash": "7c7592ed2311f50401aca4b0b71882e71462a38d"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:17.886Z",
+    "hash": "cd7311b7917b0e44feaaced7b59f2f5a83f546ed"
   },
   "alignments/arc_display": {
     "name": "alignments/arc_display",
@@ -160,9 +162,9 @@
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
     "status": "good",
-    "note": "FIXED+regen: taller viewport + short (h90) variant lanes; both panels + splines captured.",
-    "reviewedAt": "2026-08-10T15:29:56.242Z",
-    "hash": "02c1a33107a285322f2dd14c57e1692c02f63c7e"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:19.757Z",
+    "hash": "da13d7325b57cb0df3ef7f4cc0955ac8d58f8f36"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -201,9 +203,9 @@
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-11T05:32:02.795Z",
-    "hash": "db801a2c94cd8a0dbb5fee1df539c37182eddaf5"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:31.198Z",
+    "hash": "405729fce6fe50d0c6bfab34ab705b8e2768bdfd"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
@@ -248,8 +250,9 @@
   "alignments_soft_clipped_menu": {
     "name": "alignments_soft_clipped_menu",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T20:32:56.898Z"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:18.178Z",
+    "hash": "ad727a38ddd04bc154821e0c00cca4053f41d75c"
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
@@ -261,9 +264,9 @@
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "WON'T FIX per reviewer's follow-up: they reconsidered and want the read-name field kept, since someone working outside JBrowse (e.g. holding a QNAME from samtools output) needs to paste a name — the right-click path can't serve that, as it requires already seeing the read. The suggested right-click item already exists anyway: 'Filter for this read' in LinearAlignmentsDisplay/menus/contextMenu.ts.",
-    "reviewedAt": "2026-08-10T15:29:25.881Z",
-    "hash": "a0daa7a98c9e066516a1c784c57e93dad78ac38a"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:16.223Z",
+    "hash": "45f7d772647ec9f1f0bb0998574aa283c9ef26d7"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
@@ -355,16 +358,16 @@
   "lgv_usage_guide": {
     "name": "lgv_usage_guide",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:35:58.675Z",
-    "hash": "471f904f6c0f31fe89801f1ae5f7d04a7267f7b0"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:23.605Z",
+    "hash": "4aa396564bfa8377ed1ef9d6339969f9427e73c9"
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:36:00.506Z",
-    "hash": "b53452fcfb17874c4c2d85cbe82c93f1c9aee29b"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:57:25.847Z",
+    "hash": "31915d942e92f1f9e80ae8acc1a399816fee4733"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -492,9 +495,9 @@
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-13T17:37:02.447Z",
-    "hash": "3de6f5e5e6dbd79722a5d706942bd8f9135f1e6d"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:29.010Z",
+    "hash": "95f9331a936f258478f49cc30ffca637a3b8f2ee"
   },
   "recent_tracks": {
     "name": "recent_tracks",
@@ -511,9 +514,9 @@
   "rnaseq/longread_isoseq": {
     "name": "rnaseq/longread_isoseq",
     "status": "good",
-    "note": "FIXED: switched to super-compact (featureHeight 1) so all isoforms stack in view.",
-    "reviewedAt": "2026-08-10T15:43:51.161Z",
-    "hash": "4fe5dff6e76601c06612043f75c130e5510286f0"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:29.325Z",
+    "hash": "4b8992f7934853114ec44ff5e1cf5278e7c585d1"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -548,9 +551,9 @@
   "share_button": {
     "name": "share_button",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:44:08.101Z",
-    "hash": "9fa41f65d573937cfa5ed279b2c94902bafbc298"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:30.265Z",
+    "hash": "b086d1f36be79b63fe67b784b9b1a12fe3ba640e"
   },
   "sv_inspector_importform": {
     "name": "sv_inspector_importform",
@@ -675,9 +678,9 @@
   "multi-sv-trio": {
     "name": "multi-sv-trio",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T23:24:45.228Z",
-    "hash": "1d9cc8b603c7579ec9183baebdc5250374f77a03"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:23.964Z",
+    "hash": "bc47f3c641d371f29b1d3183305d319a59dfd5dd"
   },
   "product_architecture": {
     "name": "product_architecture",
@@ -831,22 +834,23 @@
   "scroll_zoom_toggle": {
     "name": "scroll_zoom_toggle",
     "status": "good",
-    "note": "tell users how they can ctrl+scroll alternatively can sort of pinch to zoom too (macbook trackpad in particular)  DONE: basic_usage.md now documents Ctrl/Cmd+scroll-to-zoom (works without the toggle) and MacBook trackpad pinch-to-zoom (browser delivers pinch as ctrl-wheel; verified in useWheelScroll.ts).",
-    "reviewedAt": "2026-06-21T22:46:23.000Z"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:29.926Z",
+    "hash": "432fc6403a5d8e65bae9c3d0e5243c7aec28915d"
   },
   "alignments/haplotype": {
     "name": "alignments/haplotype",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:29:27.322Z",
-    "hash": "9fdbefcd721d051699bb19c7448a8606323ec0f7"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:16.552Z",
+    "hash": "4cc6942aa7d4c910f73b18cfe8d40f4ef2d0dfc8"
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "good",
-    "note": "reduce width and height of browser",
-    "reviewedAt": "2026-08-10T15:29:34.169Z",
-    "hash": "d581e93e091a904777f66410c4c3dce90c72b5ac"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:17.577Z",
+    "hash": "6855a82f1d6cdb6d3cf01e7c3ba21518379ec55d"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -919,9 +923,9 @@
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
-    "note": "FIXED in the app. groupByRadioMenuItem passed keepMenuOpen: undefined for the radios that open a dialog, where its own comment said they dismiss — and staysOpenOnClick defaults a radio to staying open, so Group by -> Tag... opened its dialog behind the submenu AND the track menu, both of which then sat in the result frame too. Passes false now; getGroupByMenuItem.test.ts asserts it through staysOpenOnClick rather than the flag, since the flag is what silently inverted.",
-    "reviewedAt": "2026-08-10T15:29:29.862Z",
-    "hash": "6c342fff29fee8770d94416676eb75862e084898"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:16.905Z",
+    "hash": "2996da66c6dfedfc267378f0d7760cfc82dc3e5a"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1188,9 +1192,9 @@
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-11T05:30:23.996Z",
-    "hash": "fa2aa7a74795fee271ebaa24f052ebc211018a72"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:31.519Z",
+    "hash": "6448133489826a7c28feee821d4d1cf5575b6db7"
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
@@ -1216,9 +1220,9 @@
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-11T21:28:02.950Z",
-    "hash": "58b520c85037f718858284ae88fd74944093bdde"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:21.177Z",
+    "hash": "d05feac198d4abaccc09decbe601435143e62018"
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
@@ -1236,9 +1240,9 @@
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:33:05.599Z",
-    "hash": "3a85ef717ba6c52e3596ac17338e140fb1db4845"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:22.555Z",
+    "hash": "6d21c16d892baa5461ceb808da6a9861ee6e9a39"
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
@@ -1250,9 +1254,9 @@
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:33:06.474Z",
-    "hash": "d75f0a0fd41309389cb112a95feff55698e01ea4"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:22.888Z",
+    "hash": "07ec74312d693aa281f84e5584a90319cb617773"
   },
   "gallery/hg19_vs_hg38": {
     "name": "gallery/hg19_vs_hg38",
@@ -1535,9 +1539,9 @@
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-11T05:31:43.784Z",
-    "hash": "1d8a7c7e0c2dc0b615d413452a915efa3ee9f25d"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:30.717Z",
+    "hash": "3f903740aabab4145226a9a4d8b68baf67fa151a"
   },
   "feature_height_default": {
     "name": "feature_height_default",
@@ -1549,16 +1553,16 @@
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
     "status": "good",
-    "note": "NOT RUN-TO-RUN VARIANCE, and measured rather than argued: three consecutive `pnpm screenshots --filter multiway_synteny/ecoli_stx_island` on this machine produced bytes identical to each other AND to the committed figure (sha1 487c1407, the one this verdict is against). The two verdicts are against two different PUBLISHED revisions, not two runs of one spec. The `good` at 13:10 hashes to 5ecc219a, which is store blob 77ff67456605 -- the figure as it stood BEFORE 84001026c5, the sweep that regenerated eleven comparative figures off the projection fix in e7f99860b7 (alignment blocks reaching past a displayed region's edge were being dropped, so each was drawing a subset of its own data). So it moved once, for a stated app fix, and the review saw the old one after the new one had already landed in figures.lock -- a stale copy on disk, which `figures:pull` replaces on the next run. That replacement is what reads as \"changes across runs\". Worth knowing why the delta LOOKS huge for a fix about ribbons: 14.6% of pixels differ, and most of them are the two gene lanes re-packing their rows, since a label layout that shifts by one row moves every name after it. The ribbons themselves barely move at this window.",
-    "reviewedAt": "2026-08-13T17:36:14.334Z",
-    "hash": "81c948380b21479fc6ae4ff22c3f7c253935644b"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:24.595Z",
+    "hash": "e586a6d6310882fd57b3a710846b94b416a9bec3"
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
     "status": "good",
-    "note": "DONE as a two-part figure. Both frames are the same track, the same window and the same capture size, so the only difference between them is the display; that composite is what repeatmasker_classes.md shows now, in place of the two Figures that sat next to each other. The cookbook keeps them separate on purpose, since each sits under the config block that produces it. The tutorial card crop moved to the composite with it.\n\nprevious notes:\nthis might want to show the multirow canvas version of this also, either as two part figure or nearby",
-    "reviewedAt": "2026-08-14T04:23:30.172Z",
-    "hash": "a69c9a03a7edeff2c8cb326fd24492bdd4ff7a39"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:20.552Z",
+    "hash": "e4d246cce3010aa328d80a4dde6688392f169834"
   },
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
@@ -1577,9 +1581,9 @@
   "pangenome/maf": {
     "name": "pangenome/maf",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T02:35:36.517Z",
-    "hash": "7d2c4d09350081e9ac3f30474d9cd27b38bb8a52"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:26.295Z",
+    "hash": "82b731b076853ec481e7a27390a297c83ff5f45f"
   },
   "methylation/hg002_snrpn_combined": {
     "name": "methylation/hg002_snrpn_combined",
@@ -1720,9 +1724,9 @@
   "alignments/height_mode_fit": {
     "name": "alignments/height_mode_fit",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:29:32.381Z",
-    "hash": "2398ea69b084d6c49e2968a0c018c2c9a8f0b311"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:17.226Z",
+    "hash": "ff990129c2ea214a709e5627b0768721301e0cdd"
   },
   "alignments/height_mode_fixed": {
     "name": "alignments/height_mode_fixed",
@@ -1892,9 +1896,9 @@
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:43:24.233Z",
-    "hash": "553c1bd28cf94342b911e06d872e43976c3533e9"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:28.019Z",
+    "hash": "fe6b77feda1f622cbe47a74ed77f65b4c1500bae"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
@@ -2046,9 +2050,9 @@
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T02:35:32.429Z",
-    "hash": "505dc92e494aa6afa3d064743edeb770b1be9c95"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:25.929Z",
+    "hash": "8fac819d07859e7e91f7fb7c8543d478d9b54c6e"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
@@ -2093,9 +2097,9 @@
   "dog10k-cyp1a2-cohort-copy-number": {
     "name": "dog10k-cyp1a2-cohort-copy-number",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:31:14.416Z",
-    "hash": "8a28d864619c35b268db19740183d004c6b5d0a5"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:21.892Z",
+    "hash": "334cd8bad6388dd66905935812926a559b677074"
   },
   "dog10k-cyp1a2-copy-number": {
     "name": "dog10k-cyp1a2-copy-number",
@@ -2142,9 +2146,9 @@
   "dog10k-nhej1-cea-deletion": {
     "name": "dog10k-nhej1-cea-deletion",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:32:22.076Z",
-    "hash": "412a56bd3c66a613957c3878f2ec60296eb407d4"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:22.216Z",
+    "hash": "199d05df1231e6de4ad905f38ad8a5946f888e7f"
   },
   "pangenome/hprc_amylase_graph": {
     "name": "pangenome/hprc_amylase_graph",
@@ -2198,9 +2202,9 @@
   "multiway_synteny/blocks_one_vs_all": {
     "name": "multiway_synteny/blocks_one_vs_all",
     "status": "good",
-    "note": "it would be cool if we had even more plants. not sure how easy/hard that would be. would be easy presence/absence DONE 2026-08-09: six plants instead of two, and the whole demo re-derived from NCBI. The lanes read as presence/absence exactly as you predicted -- over 15 grape genes on chr11 cacao keeps 14, peach 12, poplar 12, citrus 8, tomato 4 and arabidopsis 3, counted off the table rather than the picture. Window re-derived on the new assembly by scanning chr11 for the clearest gradient rather than by eye. ALL SEVEN SPECIES NOW COME FROM ONE NCBI ACCESSION EACH, which is what fixes the real problem this uncovered: the hosted cacao assembly was never the build the script produced (I..X against 1..10, and all ten chromosome LENGTHS disagree), so a rename I briefly deployed placed genes at another assembly's coordinates. Reverted, then removed the possibility -- one accession supplies genome, annotation and CDS, so the two cannot diverge. Grape/peach/cacao assemblies, annotations, BEDs, blocks and refNameAliases are all rehosted from that build. Verified all three figures on the dataset, not just this one: the stacked view is what catches an assembly problem, and it draws its ribbons again. Note grape is now GCF_030704535.1, PN40024 but a newer build, so coordinates and gene ids differ from before. ONE THING LEFT, cosmetic: the ruler and row labels show accessions (NC_081815.1) rather than 11 -- the aliases let you TYPE 11 but the display uses the assembly's own refName. Fixing that means renaming the FASTA seqids to chromosome names and aliasing the accession, which is safe here (NCBI's own report is a 1:1 map) but is another rehost, so I left it for your call.",
-    "reviewedAt": "2026-08-13T17:36:09.037Z",
-    "hash": "192df7b29a486edbe2b4335837ce8c54ebb09a3d"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:24.292Z",
+    "hash": "df733e93af9562ebdb6abe686cf8e4b72b7a0316"
   },
   "sv_synteny/ortholog_colors": {
     "name": "sv_synteny/ortholog_colors",
@@ -2219,9 +2223,9 @@
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
     "status": "good",
-    "note": "THE PILL IS GONE AND BOTH ISLANDS ARE SHADED. The frame had one shaded block,\non K-12, over a blank band -- which reads as a deletion -- and everything\ncorrecting that was in the textbox.\n\nEach strain's island is shaded in its own row now and labelled with what it\ncarries. Two marked blocks with no ribbon between them IS the substitution, so\nthe pill went rather than being reworded.\n\nThe bounds come from the alignment: Sakai's chain to K-12 ends at K12 1,419,704\nand resumes at 1,474,096, and Sakai's own island is those two carried through its\ntwo block offsets -- 54,392 bp of K-12 against 69,204 of Sakai, which is why the\nband is blank read from either side. The K-12 shade moved off s502's 21.8 kb span\nonto the island itself; the ring still marks s502 inside it, so the three objects\nthat shade used to tie together are now shade, ring and node.\n\nWhat the picture still cannot say stays on the page: which genes, that seven\nsymbols are shared across the two spans, that Sakai's island is the longer.",
-    "reviewedAt": "2026-08-15T01:04:14.804Z",
-    "hash": "e96b666cf48ea42d197e847c0073472e2cb1e4a1"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:27.683Z",
+    "hash": "9fd2bc8fdd027ca60cdf67289f17c352530aea2c"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
@@ -2421,9 +2425,9 @@
   "hic/faint_contacts": {
     "name": "hic/faint_contacts",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:34:08.259Z",
-    "hash": "d3be7d5f5b4df18a899eb42dc3fc507aac08ee47"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:19.102Z",
+    "hash": "6ed3d8d8bf817cbe50e2f2ff2c87cbf4b16d5884"
   },
   "methylation/hg002_snrpn_ungrouped": {
     "name": "methylation/hg002_snrpn_ungrouped",
@@ -2442,9 +2446,9 @@
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T15:38:45.404Z",
-    "hash": "7abcd6760d37f7b0142a49ada824b9bd320a0180"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:28.317Z",
+    "hash": "4a618467f893ac019c8b04a1b045219a24de2eaf"
   },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
@@ -2554,9 +2558,9 @@
   "hic/compartment_switch": {
     "name": "hic/compartment_switch",
     "status": "good",
-    "note": "are there any other 'interesting' tracks that complement or enhance result? why are we even comparing gm12878 and k562, ostensibly normal vs cancer? elaborate on this context in red annotation box very briefly. previous notes: i dont like the silly colors of the subcompartment tracks. also, we need to see the hi-c to get confirmatory. also, this just confuses me in general. do we need loop or enhancer tracks? I need clarity and obviousness. this is just crazy colors and the text annotations dont help me understand. previous notes: CUT DOWN, not deleted. The matrix lane is gone: it was 300 squashed px arguing for the one thing the guide own paragraph says a raw contact map cannot show (compartments only become a checkerboard in an observed/expected matrix, which JBrowse does not compute), so a reader was asked to take a faint plaid on trust under four lanes that state the answer outright. The window is 4 Mb rather than 10, which is what makes the 100 kb subcompartment strips read as blocks instead of alternating every few pixels, and both edges still carry the two eigenvectors on the same side as the control. Two callouts name the compartment per lane (GM12878 B across TCF4, K562 A) so positive/negative does not have to be decoded. Captions in hic_track.md and hic_structural_variants.md updated.  FIXED by deleting the noise rather than adding to it. BOTH subcompartment strips are gone: they were the only categorical encoding in the frame (A1/A2/B1/B2/B3 as yellow, red, grey, green, with the key off the figure) and a coarser second copy of the sign the two eigenvector lanes already draw as red against blue -- which is most of 'the text annotations dont help me understand', since a reader had to decide which encoding to believe. Three lanes now: genes, GM12878 eigenvector, K562 eigenvector, with the band between them. The pills say what the sign means rather than naming a letter ('eigenvector negative across the band, the B (closed) compartment'). ON THE HI-C: the answer is still no and it is now IN THE CAPTION rather than only in the spec, so it does not get asked a third time -- a compartment only appears once a matrix is divided by its distance expectation, which JBrowse does not compute, and the eigenvector IS that computation, published. -60px. 2026-08-09 -- WHY THESE TWO IS IN THE PILLS NOW, one parenthesis each: 'GM12878 (normal lymphoblastoid): B, closed' and 'K562 (leukemia): A, open'. It went there rather than into a third box because the answer is per-lane -- naming the lane and saying what the cell is are one sentence -- and folding it in made both pills SHORTER, not longer. The caption carries the point the comparison exists to make: open or closed is a property of the cell, not of the sequence. ON OTHER TRACKS: measured, and the answer is no. DNase is the obvious corroboration and both lines have it on the same CORS-enabled ENCODE S3 the eigenvectors come from, from one pipeline run (GM12878 ENCFF594DFV, K562 ENCFF655HFU). Mean signal inside the band against the rest of the 4 Mb frame: GM12878 0.1046 vs 0.1261 (0.83x), K562 0.1496 vs 0.1442 (1.04x). The direction is right in both -- closed line depleted, open line enriched -- but the switch between them is only 1.25x, and 1.25x drawn as two more wiggle lanes at this width is two lanes that look identical, which is the complaint hic/loops_and_domains already collected for exactly that. The eigenvector is a 100 kb aggregate, DNase is peaky per site: real in the arithmetic, invisible in the picture. Recorded in the spec so it is not re-attempted.",
-    "reviewedAt": "2026-08-09T06:19:59.982Z",
-    "hash": "18f0b9e7a63b996bd2939c02d36bb9b334632b73"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:23.233Z",
+    "hash": "b840d58a3ee524809aba6fa3d797859d74602daf"
   },
   "hic/loops_and_domains": {
     "name": "hic/loops_and_domains",
@@ -2617,9 +2621,9 @@
   "rnaseq/strand_split_coverage": {
     "name": "rnaseq/strand_split_coverage",
     "status": "good",
-    "note": "reads shown and coloured by first-of-pair strand, the same dimension that grouped them, so the switch at the NELFE/SKIV2L boundary reads twice: as the fill of the two histograms and as which section the reads stack in.",
-    "reviewedAt": "2026-08-10T15:43:52.570Z",
-    "hash": "b978f98901137221f61a91d499fd402f73c42d5c"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:29.623Z",
+    "hash": "5f37ded1982bfc98c91980ad7ff2e6b664d7bc3b"
   },
   "maf_summary_tier": {
     "name": "maf_summary_tier",
@@ -2868,9 +2872,9 @@
   "qc/smn_read_placement": {
     "name": "qc/smn_read_placement",
     "status": "good",
-    "note": "RENAMED from qc/smn_vs_control, which was outdated exactly as you say -- it was two 30 kb panels, SMN1 against a control locus, and has been one 650 kb window with the recovery inside it for two rounds. AND IT IS NOW HALF OF A TWO-PART FIGURE: qc/smn_block_and_reads stacks the 2.5 Mb block over this 650 kb window, so the second frame is visibly a window into the first instead of being embedded two sections away from it in the tutorial. Both parts stay reachable live on their own. Mappability was already here (Umap k100 at summaryScoreMode 'min') and stays. Longest isoform on, chip hidden.",
-    "reviewedAt": "2026-08-09T14:12:25.173921Z",
-    "hash": "f36eaf4777d3bae4629d75caf3f6799e17772215"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:28.667Z",
+    "hash": "a2804e95aad9c2e7d5f22379fff73c58776b7831"
   },
   "qc/smn_block_and_reads": {
     "name": "qc/smn_block_and_reads",
@@ -2882,9 +2886,9 @@
   "pangenome/pggb_bubble_tier": {
     "name": "pangenome/pggb_bubble_tier",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T02:35:40.580Z",
-    "hash": "b885a1286ce291902e1e7c0cfc46f7a67eb37c57"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:26.643Z",
+    "hash": "1383d1e206e19621dc2cb4dcc1f01dc54aefc0a0"
   },
   "synteny_self_chry_palindromes": {
     "name": "synteny_self_chry_palindromes",
@@ -2903,9 +2907,9 @@
   "cancer_sv/k562_fusion_inspector_all": {
     "name": "cancer_sv/k562_fusion_inspector_all",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T22:52:45.028Z",
-    "hash": "732dc89e10eddbcbed614523105a0d8418c5dac9"
+    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
+    "reviewedAt": "2026-08-15T22:56:18.529Z",
+    "hash": "6dcba2ba6741ce44ad578aefd1bcbde7a7061dd2"
   },
   "cancer_sv/k562_fusion_inspector_form": {
     "name": "cancer_sv/k562_fusion_inspector_form",
@@ -2931,9 +2935,9 @@
   "pangenome/rgfa_insertion_synteny": {
     "name": "pangenome/rgfa_insertion_synteny",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T02:35:55.100Z",
-    "hash": "ef8f688e6320979f3dfd92c48b22a5e9e818e8cb"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:27.365Z",
+    "hash": "d32ec7363282943d7d9bc0d8a0436a173c7d6a21"
   },
   "sv_synteny/color_by_attribute_steps": {
     "name": "sv_synteny/color_by_attribute_steps",
@@ -2973,16 +2977,16 @@
   "alignments/strand_split_depth": {
     "name": "alignments/strand_split_depth",
     "status": "good",
-    "note": "REPLACED, per the note on alignments/strand_split_coverage (\"sorry but we need a new viral coverage example. rnaseq is too crazy\") -- this is a different frame on different data and the previous note here, about K562 Iso-Seq over LUC7L and FAM234A, no longer describes it. It is HSV-1 mRNA over UL21 (+) and UL22 (-), about 150 reads a strand over its own gene against about 5 over its neighbour's, on a 152 kb genome whose genes are packed on both strands and essentially unspliced -- so the frame has no intron in it and both pileups fit under their own bands. See that entry for the dataset and why this run rather than the other nanopore run in the same study.",
-    "reviewedAt": "2026-08-11T08:20:59.793Z",
-    "hash": "f99e66be4db0184a9252215e7fa192e1949d4682"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:19.417Z",
+    "hash": "05d953b5e5973591faa83467df97d27649305ef2"
   },
   "cancer_sv/k562_fusion_inspector_reads": {
     "name": "cancer_sv/k562_fusion_inspector_reads",
     "status": "good",
-    "note": "Same two, same mechanism -- see k562_bcr_abl_split for the wording table and\nwhy the interchromosomal row is new. Here the band carries one junction, so the\n90 px is purely about the arc reading as a dome rather than as a bump on the\ncoverage floor, and that arc's stroke width is the figure's headline number.",
-    "reviewedAt": "2026-08-15T01:04:12.883Z",
-    "hash": "55a07565d7834f536d29737d55f0bbb27a55ffb3"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:20.130Z",
+    "hash": "814bef4b025f5e3cd1c9de33985bd9ab11ab8bcb"
   },
   "jbrowse-img/sv_review_derivative": {
     "name": "jbrowse-img/sv_review_derivative",
@@ -3155,9 +3159,9 @@
   "cookbook_color_by_type_two_ways": {
     "name": "cookbook_color_by_type_two_ways",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T04:23:27.203Z",
-    "hash": "8266d7d3b5044c8c68e5e53fad7e0c2ea540acd0"
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:20.878Z",
+    "hash": "0775788a983e9e092b45734f43fdf241d552d993"
   },
   "hg002_haplotypes_location_markers": {
     "name": "hg002_haplotypes_location_markers",
@@ -3193,5 +3197,26 @@
     "note": "NO for these arcs, and the count is the reason rather than the principle.\nFeet would land on the baseline, as you say -- and this frame draws ~278 arcs\nacross 3000 px (non-white runs along one scanline of the band), so that is ~556\nmarks 20 px long on one horizontal line five pixels apart. A rule under the band,\nnot a set of directions.\n\nThe other count: orientation on a pair arc is already the colour. Green LL, navy\nRR, magenta split inverted, all three named in the legend in this same frame, so\na foot restates a row of the key. That is the existing scope rule read from the\nother side -- the interchromosomal family gets feet because its colour channel is\nspent, every such connection painting one colour whatever colorBy says.\n\nYES for the interchromosomal TICKS, which is the half worth doing and was already\nfiled: agent-docs/TODO.md, 'Give the interchromosomal ticks breakend feet too'.\nA tick has no second endpoint to read an orientation off at all. It is a\nGPU/Canvas2D pass rather than the SVG overlay the arc feet live in, so it needs a\nper-instance attribute, shader geometry, the Canvas2D mirror, the SVG export and\na hit-test decision -- about a day, nothing blocking it.\n\nBoth halves are now written next to the scope rule in\nplugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md rather than only here.",
     "reviewedAt": "2026-08-15T12:14:57.468Z",
     "hash": "d45600cbb6cdaf336c15a8fcdd8cd1f9c525d4ad"
+  },
+  "dog10k-amy2b-duplication": {
+    "name": "dog10k-amy2b-duplication",
+    "status": "good",
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:21.551Z",
+    "hash": "9857b64a8c2708b5aa4251e5a3b91f35008f405a"
+  },
+  "pangenome/graph_resolution_minigraph": {
+    "name": "pangenome/graph_resolution_minigraph",
+    "status": "good",
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:25.195Z",
+    "hash": "60d7edc04bb146417921d1e213eaa08a1714a90b"
+  },
+  "pangenome/graph_resolution_pggb": {
+    "name": "pangenome/graph_resolution_pggb",
+    "status": "good",
+    "note": "Sweep of 2026-08-15: every differing band is the new scroll-edge shadow. Fitting now=(1-a)*base+a*ink per row recovers a=0.29-0.30, the constant itself, and leaves nothing else.",
+    "reviewedAt": "2026-08-15T22:56:25.567Z",
+    "hash": "04721836c634a617c5f784425121821d995cdf9d"
   }
 }
