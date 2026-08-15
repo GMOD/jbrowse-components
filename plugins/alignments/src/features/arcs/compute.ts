@@ -932,10 +932,22 @@ function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
 // Gated on `emitsOffScreenPartner` — either user setting can ask for it, and a
 // translocation seen from a single-chromosome view has ONLY this path, which is
 // why "Show inter-chromosomal pairs" is one of the two — and on the mate
-// actually having a locus: an unmapped mate has none, and neither does a record
-// that claims a mapped mate while naming RNEXT `*` / PNEXT 0 (BAM next_refid
-// -1). Substituting this read's own refName and bp 0 there drew a
+// actually having a locus. An unmapped mate has none; neither does a record
+// naming a real RNEXT with PNEXT 0, which SAM spells "unavailable" and
+// `parseSam` maps to `undefined`. Substituting bp 0 there drew a
 // full-chromosome arc down to the origin.
+//
+// The `!mateBp` half of that test is what catches the second case, and it is
+// approximate in the one direction that costs nothing: `extractFeatureArrays`
+// stores the absent position as 0 (`readNextPositions` is a Uint32Array with no
+// sentinel to spare), so a mate genuinely aligned to the FIRST BASE of a contig
+// reads as absent and its arc is not drawn. Separating the two would mean
+// zeroing the read's mate-reference slot at extraction time, where `undefined`
+// is still visible — which also moves `buildReadInterchrom` and the tooltip's
+// RNEXT, for a mate at base 0 of a contig with its arc off screen. Not worth
+// the three consumers; recorded so it is not re-derived.
+// The RNEXT `*` case is NOT this test's: `nextRefAt` already answers `''` for a
+// BAM `next_refid` -1, and `parseSam` maps a literal `*` to `undefined`.
 //
 // The arc connects the read's own outer (5') edge — the fragment boundary TLEN
 // measures from — to the recorded mate position. Only PNEXT (the mate's
