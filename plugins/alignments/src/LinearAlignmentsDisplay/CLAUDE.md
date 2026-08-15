@@ -138,7 +138,9 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   carries ticks and no arcs.
 - **Across lanes, ask `computeArcsByGroup`**, not a walk of `arcsByGroup`, and
   after regionization.
-- **`runHitTest` returns `arc ?? result`** — the one place "an arc outranks the
-  band under it" is stated.
+- **`runHitTest` asks the arc band FIRST and returns
+  `arc ?? performHitTest(…)`** — the one place "an arc outranks the band under
+  it" is stated, and outranking it means `performHitTest` is skipped rather than
+  computed and discarded.
 - **`isFlatArcShape` answers "does this draw as a bar", never "does this have an
   insert size"** — only `ARC_SHAPE_FLAT` has a TLEN.

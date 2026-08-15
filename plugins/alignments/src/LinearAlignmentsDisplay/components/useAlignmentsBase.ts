@@ -93,11 +93,29 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     const resolved = picked
       ? resolveBlockForCanvasX(canvasX, picked.section.laidOutPileupMap)
       : undefined
+    // The arc band OUTRANKS the pileup, so it answers as the result rather than
+    // beside it — one value with one discriminant, which is what makes every
+    // gesture's switch state what it does about an arc (see `ArcMarkHit`).
+    // Arcs are painted after coverage by both backends, so in up mode an arc is
+    // the ink on top of the histogram it overlays, and the ink under the cursor
+    // is what a gesture should be about. Safe to let it win because the arc test
+    // is a STROKE test, not a band test: it only answers within a few px of a
+    // curve, so the rest of the coverage band still reaches `hitTestCoverage`.
+    //
+    // Asked BEFORE the pileup, because outranking it also means not paying for
+    // it: `performHitTest` is the expensive half of this listener and its answer
+    // is discarded whenever an arc has one. `resolved` still comes first — the
+    // context menu wants the block whatever is under the cursor — but it is a
+    // region lookup and a map get, not the pipeline.
+    const arc = picked
+      ? resolveArcHover(canvasX, canvasY, picked.section)
+      : undefined
     // No section under the cursor, or no fetched block at that x, is a miss.
     // Answering it here is what lets performHitTest take a definite block and
     // read the section's real offsets rather than standing in for a missing one.
     const result: MarkHitResult =
-      picked && resolved
+      arc ??
+      (picked && resolved
         ? performHitTest(canvasX, canvasY, resolved, {
             showCoverage,
             showInterbaseIndicators,
@@ -113,19 +131,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             showMismatches: model.showMismatches,
             pileupVisible: picked.section.pileupHeight > 0,
           })
-        : { type: 'none' }
-    // The arc band OUTRANKS the pileup, so it answers as the result rather than
-    // beside it — one value with one discriminant, which is what makes every
-    // gesture's switch state what it does about an arc (see `ArcMarkHit`).
-    // Arcs are painted after coverage by both backends, so in up mode an arc is
-    // the ink on top of the histogram it overlays, and the ink under the cursor
-    // is what a gesture should be about. Safe to let it win because the arc test
-    // is a STROKE test, not a band test: it only answers within a few px of a
-    // curve, so the rest of the coverage band still reaches `hitTestCoverage`.
-    const arc = picked
-      ? resolveArcHover(canvasX, canvasY, picked.section)
-      : undefined
-    return { resolved, picked, result: arc ?? result }
+        : { type: 'none' })
+    return { resolved, picked, result }
   }
 
   function resolveSectionForCanvasY(canvasY: number) {
@@ -187,8 +194,13 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       arcDown: boolean
     },
   ) {
+    // The setting first: this now runs ahead of `performHitTest` on every hover
+    // frame, so a display with the band off must not pay a region scan for it.
+    if (model.readConnections === 'off') {
+      return undefined
+    }
     const region = visibleRegionAt(canvasX)
-    if (!region || model.readConnections === 'off') {
+    if (!region) {
       return undefined
     }
     const arcs = model.arcsByGroup

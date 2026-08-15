@@ -319,6 +319,25 @@ test('the column prefilter is wider than the reach of the ink it guards', () => 
   expect(hitTestArcBand(180, foot, data, BAND)).toBeUndefined()
 })
 
+// The pad is the WIDEST arc's reach — `ARC_WIDTH_MAX_SCALE` of the configured
+// width — rather than each arc's own, so that the per-arc `arcLineWidth` (a
+// `log2`) is spent only past the reject instead of on every arc in the feed. A
+// hairline is therefore admitted several px further out than its ink reaches,
+// and the geometry has to be what turns it down. This pins that: the extra
+// tolerance is scan bookkeeping, not target.
+test('a thin arc is not made hoverable by the pad the thickest one needs', () => {
+  // A bar, so the distance is a subtraction rather than a conic. Support 1 draws
+  // the configured 1px, so it answers 0.5 + ARC_HIT_SLOP_PX past its own end at
+  // x=500 — while the pad admits it to the distance test out to 6.25.
+  const data = arcsData([
+    { x1: 300, x2: 500, yBp: 40, shape: ARC_SHAPE_FLAT, support: 1 },
+  ])
+  const flatY = BAND.arcsH - 40
+  expect(hitTestArcBand(503.4, flatY, data, BAND)?.index).toBe(0)
+  // Inside the pad, outside the ink's own reach.
+  expect(hitTestArcBand(505.5, flatY, data, BAND)).toBeUndefined()
+})
+
 test('an empty feed answers nothing', () => {
   expect(hitTestArcBand(400, 50, emptyArcsUploadData(), BAND)).toBeUndefined()
 })

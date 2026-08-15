@@ -1,7 +1,9 @@
 // What the cursor is on in the arc band. The counterpart to `drawArcs`: it takes
-// its geometry from `arcMark`, the same call the draw makes, because a hit test
-// that re-derives it is a second placement of the arcs — free to disagree with
-// the drawn one, and it has, twice.
+// its geometry from `arcMarkFrom`, which is what `arcMark` and the draw both
+// resolve through, because a hit test that re-derives it is a second placement
+// of the arcs — free to disagree with the drawn one, and it has, twice. It
+// projects the two feet itself rather than going through `arcMark` only because
+// it has already spent that projection rejecting arcs by column.
 //
 // The band paints TWO families of mark and this answers for both. It used to
 // answer only for the arcs, which is the "layer with no hit test at all" gap
@@ -10,10 +12,10 @@
 // meaning is least guessable from its shape was the one you could not ask.
 import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.consts.generated.ts'
-import { arcLineWidth } from './arcLineWidth.ts'
+import { ARC_WIDTH_MAX_SCALE, arcLineWidth } from './arcLineWidth.ts'
 import { arcAnchorY } from './arcYScale.ts'
 import { ellipseDistance } from './ellipseDistance.ts'
-import { arcMark } from './mark.ts'
+import { arcMarkFrom } from './mark.ts'
 
 import type { ArcBandFrame, ArcMark } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
@@ -86,15 +88,16 @@ interface Candidate<T> {
 /**
  * The ranking WITHIN one family, which both families use.
  *
- * Two buckets, and the split is the decision:
+ * ONE rule, and the clamp is what makes it one: every candidate the cursor is
+ * literally ON ties at distance 0, so "nearest wins, later-painted breaks the
+ * tie" says both halves of what used to be two buckets.
  *
- * ON THE INK (`outside <= 0`) — the cursor is literally over this mark, so the
- * answer is whichever mark is painted ON TOP at that pixel, the strokes being
- * opaque. Both feeds arrive in paint order and both scans run ascending, so
- * that is simply the LAST on-ink candidate considered. Ranking these on
+ * ON THE INK — the strokes are opaque, so the answer is whichever mark is
+ * painted ON TOP at that pixel. Both feeds arrive in paint order and both scans
+ * run ascending, so that is the LAST candidate to tie at 0. Ranking these on
  * distance to the centre line, as this once did, reported whichever hairline
  * the cursor was nearest and threw away the target the per-mark tolerance had
- * just widened.
+ * just widened — which is exactly what the clamp throws away instead.
  *
  * Reading the paint order off the feed rather than re-deriving it is the point:
  * it used to rank on support, which was equivalent only while support WAS the
@@ -106,30 +109,30 @@ interface Candidate<T> {
  * NEAR THE INK — reached only through `ARC_HIT_SLOP_PX`, so the cursor is over
  * blank band and the answer is a best guess. Nearest wins, measured from each
  * mark's own ink rather than its centre so a fat mark is not beaten by a
- * hairline it is visibly wider than. Consulted only when nothing is on ink, and
- * `<=` so a tie again resolves to the later-painted one.
+ * hairline it is visibly wider than. It cannot outrank an on-ink mark, 0 being
+ * the floor, and `<=` breaks its own ties to the later-painted one too.
  *
  * Shared because the arcs and the ticks were two spellings of it, each with the
  * same locals and the same tie-breaks, under comments on the tick side saying
- * it was the "same two-bucket ranking as the arcs". Two instances of one rule
- * is a missing function — the argument `mark.ts` makes for the geometry,
- * applied to the ranking. One object per scan (two per mousemove); the per-mark
- * loops it serves still only write numbers.
+ * it was the "same ranking as the arcs". Two instances of one rule is a missing
+ * function — the argument `mark.ts` makes for the geometry, applied to the
+ * ranking. One object per scan (two per mousemove); the per-mark loops it
+ * serves still only write numbers.
  */
 function bestMark() {
-  let onInk = -1
-  let nearest = -1
-  let nearestOutside = Number.POSITIVE_INFINITY
+  let index = -1
+  let outside = Number.POSITIVE_INFINITY
   return {
-    consider(index: number, outside: number) {
-      if (outside > ARC_HIT_SLOP_PX) {
+    consider(i: number, dist: number) {
+      if (dist > ARC_HIT_SLOP_PX) {
         return
       }
-      if (outside <= 0) {
-        onInk = index
-      } else if (outside <= nearestOutside) {
-        nearest = index
-        nearestOutside = outside
+      // Clamped, not signed: how far INTO its stroke the cursor is says nothing
+      // about which of two overlapping opaque marks the reader sees.
+      const d = dist > 0 ? dist : 0
+      if (d <= outside) {
+        index = i
+        outside = d
       }
     },
     // Builds the winner rather than handing back its index, because both
@@ -137,14 +140,10 @@ function bestMark() {
     // outside }` — two instances of one shape, which is the argument this
     // function was extracted on one level down.
     //
-    // `outside` 0 for an on-ink winner: `pickBetween` reads it as the on-ink
-    // flag, so it must not carry the negative depth into the stroke.
-    best<T>(hitAt: (index: number) => T): Candidate<T> | undefined {
-      return onInk !== -1
-        ? { hit: hitAt(onInk), outside: 0 }
-        : nearest === -1
-          ? undefined
-          : { hit: hitAt(nearest), outside: nearestOutside }
+    // `outside` is 0 for an on-ink winner and positive otherwise, which is what
+    // lets `pickBetween` be one comparison.
+    best<T>(hitAt: (i: number) => T): Candidate<T> | undefined {
+      return index === -1 ? undefined : { hit: hitAt(index), outside }
     },
   }
 }
@@ -215,14 +214,15 @@ export function hitTestArcBand(
   )
 }
 
-// The two families' winners, resolved by the rule the picture already states.
+// The two families' winners, resolved by the SAME rule `bestMark` applies
+// within one: nearest ink wins, and the later-painted breaks the tie.
 //
-// ON THE INK beats near it, whichever family: the cursor is literally over that
-// mark, and a mark it is merely NEAR is a guess. Within that, the ARC wins,
-// because the tick pass now paints first (see `ARC_PASSES`) and naming the mark
-// underneath would describe a colour the reader cannot see. Only when neither is
-// on ink does distance decide, and a tie there goes to the arc for the same
-// reason.
+// Both halves fall out of that one comparison, because `bestMark` clamps an
+// on-ink winner to 0. On the ink beats near it, whichever family — a mark the
+// cursor is merely NEAR is a guess. Two on-ink marks both read 0, so the `<=`
+// gives it to the ARC, which is the tick pass now painting first (see
+// `ARC_PASSES`): naming the mark underneath would describe a colour the reader
+// cannot see.
 //
 // This whole function inverts with the pass order and must: it is the one place
 // that reads paint order as an answer, which is why the ordering is stated in
@@ -235,14 +235,6 @@ function pickBetween(
     return tick?.hit
   }
   if (!tick) {
-    return arc.hit
-  }
-  const arcOnInk = arc.outside <= 0
-  const tickOnInk = tick.outside <= 0
-  if (arcOnInk !== tickOnInk) {
-    return arcOnInk ? arc.hit : tick.hit
-  }
-  if (arcOnInk) {
     return arc.hit
   }
   return arc.outside <= tick.outside ? arc.hit : tick.hit
@@ -275,49 +267,76 @@ function arcCandidate(
   data: ArcsUploadData,
   opts: ArcHitOptions,
 ): Candidate<ArcHitResult> | undefined {
-  // The projection, the Y scale and the near/far branch are read by `arcMark`,
-  // not here — this needs only the band rect, the direction and the stroke width.
-  const { arcsTop, arcsH, pairedArcsDown, lineWidth } = opts
+  // The Y scale and the near/far branch are read by `arcMarkFrom`, not here —
+  // this needs the band rect, the direction, the projection and the width.
+  const { arcsTop, arcsH, pairedArcsDown, lineWidth, bpToScreenX } = opts
   const anchorY = arcAnchorY(arcsTop, arcsH, pairedArcsDown)
   // Drawn-side-positive local Y: an up-pointing band measures upward from the
   // anchor, a down-pointing one downward, and every test below is written once
   // against that single frame instead of twice against the two directions.
   const localY = (canvasY - anchorY) * (pairedArcsDown ? 1 : -1)
+  const pad = columnPad(lineWidth)
 
-  // `bestMark` is the two-bucket ranking — see it for why on-ink is settled by
-  // paint order and near-ink by distance. What is local to the arcs is the
-  // DISTANCE fed to it, which needs a mark per arc where a tick needs one
-  // subtract.
+  // `bestMark` is the ranking — see it for why on-ink is settled by paint order
+  // and near-ink by distance. What is local to the arcs is the DISTANCE fed to
+  // it, which needs a mark per arc where a tick needs one subtract.
   const picker = bestMark()
   for (let i = 0; i < data.numArcs; i++) {
-    const halfWidth = arcLineWidth(data.arcSupport[i]!, lineWidth) / 2
-    if (!nearArcColumns(canvasX, data, i, opts, halfWidth)) {
+    // Projected ONCE, here, and handed to `arcMarkFrom` — `arcMark` would
+    // re-run the same two `bpToScreenX` calls it takes to reject an arc.
+    const sx1 = bpToScreenX(data.arcX1[i]!)
+    const sx2 = bpToScreenX(data.arcX2[i]!)
+    if (!nearArcColumns(canvasX, sx1, sx2, pad)) {
       continue
     }
+    const mark = arcMarkFrom(
+      {
+        sx1,
+        sx2,
+        yBp: data.arcYBp[i]!,
+        shapeType: data.arcShapeTypes[i]!,
+      },
+      opts,
+    )
     // How far past this arc's own ink the cursor is: the quantity that both
-    // gates the hit and sorts the two buckets.
+    // gates the hit and ranks the survivors. `arcLineWidth` is a `log2` and is
+    // spent only here, past the reject — the pad above is the widest case, so
+    // the scan does not need each arc's own width to decide whether to skip it.
     picker.consider(
       i,
-      markDistance(canvasX, localY, arcMark(data, i, opts)) - halfWidth,
+      markDistance(canvasX, localY, mark) -
+        arcLineWidth(data.arcSupport[i]!, lineWidth) / 2,
     )
   }
   return picker.best(i => arcHitAt(data, i))
 }
 
-// Whether arc `i` can possibly have ink in the cursor's COLUMN — the cheap
-// rejection that keeps the scan from solving a quartic per arc. The read cloud
-// emits thousands of arcs into one band and this runs on every hover frame, so
-// what it skips is the whole of `arcMark` + `ellipseDistance` for every arc
-// the cursor is nowhere near.
+// How far outside its own two endpoints ANY arc can still answer, at this
+// configured width — the widest case rather than each arc's own, so the reject
+// below is one subtraction and the per-arc `arcLineWidth` is paid only by what
+// survives it. `ARC_WIDTH_MAX_SCALE` is the ceiling `arcLineWidth` caps at.
+function columnPad(lineWidth: number) {
+  return (
+    (lineWidth * ARC_WIDTH_MAX_SCALE) / 2 +
+    ARC_HIT_SLOP_PX +
+    ARC_FLAT_MIN_PX / 2
+  )
+}
+
+// Whether an arc projected to `sx1`/`sx2` can possibly have ink in the cursor's
+// COLUMN — the cheap rejection that keeps the scan from solving a quartic per
+// arc. The read cloud emits thousands of arcs into one band and this runs on
+// every hover frame, so what it skips is the whole of `arcMarkFrom` +
+// `ellipseDistance` for every arc the cursor is nowhere near.
 //
 // Horizontal because that is the only bound available without placing the arc,
 // and it holds for all three mark kinds: a dome and a far pair's circle are both
 // centred on the midpoint with `rx` = the pair's own half-span (`arcRadiiPx`
 // returns nothing wider), so neither reaches past its own endpoints, and a flat
 // bar reaches past them only by the `ARC_FLAT_MIN_PX` widening. Deliberately
-// over-inclusive — the pad is the widest case for every arc — because a
-// prefilter that is merely conservative costs a few extra solves, while one that
-// is tight is a second placement free to disagree with the real one.
+// over-inclusive because a prefilter that is merely conservative costs a few
+// extra solves, while one that is tight is a second placement free to disagree
+// with the real one.
 //
 // It replaces a guard that tested `localY` against the anchor, which read as
 // rejecting the mirrored half of the conic and in fact rejected nothing:
@@ -326,14 +345,10 @@ function arcCandidate(
 // the scan nothing and saved it nothing.
 function nearArcColumns(
   canvasX: number,
-  data: ArcsUploadData,
-  i: number,
-  { bpToScreenX }: ArcHitOptions,
-  strokeHalfWidth: number,
+  sx1: number,
+  sx2: number,
+  pad: number,
 ) {
-  const sx1 = bpToScreenX(data.arcX1[i]!)
-  const sx2 = bpToScreenX(data.arcX2[i]!)
-  const pad = strokeHalfWidth + ARC_HIT_SLOP_PX + ARC_FLAT_MIN_PX / 2
   return (
     canvasX >= Math.min(sx1, sx2) - pad && canvasX <= Math.max(sx1, sx2) + pad
   )
