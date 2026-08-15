@@ -20,18 +20,16 @@ import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import SegmentIcon from '@mui/icons-material/Segment'
 import { autorun } from 'mobx'
 
-import {
-  FALLBACK_FEATURE_HEIGHT,
-  HEIGHT_MULTIPLIERS,
-  ROW_PADDING,
-  labelFontSize,
-} from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { TRANSCRIPT_PADDING_RATIO as ISOFORM_GAP_RATIO } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
+import {
+  budgetFeatureHeightPx,
+  geneRowCostPx,
+  isoformRowBudget,
+} from './isoformBudget.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
@@ -68,20 +66,6 @@ function isGeneLikeType(type: string | undefined) {
 
 // How long a track height has to hold still before the isoform cap follows it.
 const HEIGHT_SETTLE_MS = 300
-
-// Label lines the isoform cap budgets for a gene's own row: a name and a
-// description, the most `decideLabelReservations` can reserve.
-//
-// A constant, not the two flags that actually decide it. Reading them would
-// couple `maxIsoforms` — an RPC cache key — to `showLabels`, and a
-// main-thread-only `showLabels` change refetching nothing is a pinned invariant
-// (fetchAutorun.test.ts); `showLabels` also folds in the visible feature
-// density, which would put a fetch-derived value in `rpcProps()`. So the cap
-// budgets the worst case and can only leave a row unspent, never overflow —
-// which is the right direction, because an unspent row is visible in the chip
-// and one click from `All transcripts`, while an overflowing one is the silent
-// scrollbar the cap exists to end.
-const MAX_FEATURE_LABEL_LINES = 2
 
 /**
  * #stateModel LinearBasicDisplay
@@ -199,21 +183,11 @@ export default function stateModelFactory(
        * second reason to hide transcripts, after zoom: a gene with 28 of them
        * in a 100px lane draws all 28 inside the lane's own scrollbar.
        *
-       * Rows, so it is the packer's own arithmetic (`decideLabelReservations`
-       * in layout.ts) solved for n rather than approximated: n bodies at this
-       * display mode, the n − 1 inter-transcript gaps `layoutSubfeatures`
-       * spends, the `below` subfeature-label row the worker reserves per
-       * transcript — most of a labeled row's height, and left unspent here it
-       * let the cap admit roughly twice what fits — then the gene's own row
-       * padding and label lines.
-       *
-       * Those last two were "less one row", which is short by most of a row
-       * once the gene draws both a name and a description: at the defaults
-       * (`showLabels: auto`, `subfeatureLabels: none`) a row costs 12px and the
-       * gene's own lines cost 27, so the cap admitted one more isoform than fit
-       * and the lane it was sizing scrolled anyway. Budgeted at
-       * `MAX_FEATURE_LABEL_LINES` rather than the flags that decide it, for the
-       * reason given there.
+       * Rows, so it is the packer's own arithmetic solved for n rather than
+       * approximated — see `geneRowCostPx` in isoformBudget.ts, which owns the
+       * mirror of `decideLabelReservations` and the test pinning the two
+       * together. This getter is only the display's half: which state turns the
+       * cap on, and which height it is measured against.
        *
        * Only while the resolved mode is `all`: under `longestCoding` the worker
        * ignores it, so leaving it live would put a resize drag into the RPC
@@ -222,41 +196,25 @@ export default function stateModelFactory(
        * OFF in `grow`, and that gate is load-bearing: grow's height IS its
        * content's, so a cap read off it would be a fetch-derived value in
        * `rpcProps()` (the loop trap `makeSettingsLoopGuard` names). Hence
-       * `fitTargetHeight`, the raw slot, rather than `height`.
+       * `fitTargetHeight`, the raw slot, rather than `height` (see
+       * `cappableTrackHeight`).
        */
       get effectiveMaxIsoforms(): number | undefined {
-        if (
-          this.geneGlyphMode !== 'auto' ||
+        return this.geneGlyphMode !== 'auto' ||
           this.effectiveGeneGlyphMode !== 'all' ||
           self.heightMode === 'grow' ||
           !self.coarseTrackHeight
-        ) {
-          return undefined
-        }
-        // The raw slot, NOT readConfObject: `featureHeight` declares
-        // `contextVariable`, and an arg-less read of a `jexl:` one still
-        // evaluates it — against a context where `feature` is undefined, so
-        // `get(feature, …)` throws, out of a getter `rpcProps()` reads. Only
-        // the worker can resolve it per feature, so a callback height assumes
-        // the same 10px the worker's own fallback does.
-        const raw: unknown = self.configuration.featureHeight
-        const body =
-          typeof raw === 'number' && raw > 0 ? raw : FALLBACK_FEATURE_HEIGHT
-        const mode = self.displayMode
-        const bodyPx = body * HEIGHT_MULTIPLIERS[mode]
-        const labelPx = labelFontSize(mode)
-        const perIsoform =
-          bodyPx * (1 + ISOFORM_GAP_RATIO) +
-          (this.subfeatureLabels === 'below' ? labelPx : 0)
-        // collapsed is a single-row overview and draws no labels at all
-        const labelLines = mode === 'collapsed' ? 0 : MAX_FEATURE_LABEL_LINES
-        // the gene's own row costs, less the gap the last isoform doesn't spend
-        const geneOwnPx =
-          ROW_PADDING[mode] + labelLines * labelPx - bodyPx * ISOFORM_GAP_RATIO
-        return Math.max(
-          1,
-          Math.floor((self.coarseTrackHeight - geneOwnPx) / perIsoform),
-        )
+          ? undefined
+          : isoformRowBudget(
+              self.coarseTrackHeight,
+              geneRowCostPx({
+                featureHeightPx: budgetFeatureHeightPx(
+                  self.configuration.featureHeight,
+                ),
+                displayMode: self.displayMode,
+                subfeatureLabelsBelow: this.subfeatureLabels === 'below',
+              }),
+            )
       },
 
       // Gate for the bottom-right isoform-collapse control: the loaded data has

@@ -171,7 +171,9 @@ describe('forEachRenderedLabel', () => {
   // it was reserved in while the text keeps its font size.
   test('drops the subfeature label when the fit squeeze has hidden it', () => {
     const data = makeData({
-      f1: makeLabelData('f1', { subfeatureLabel: makeLabel({ text: 'sub' }) }),
+      f1: makeLabelData('f1', {
+        subfeatureLabel: { ...makeLabel({ text: 'sub' }), isOverlay: false },
+      }),
     })
     expect(
       collect(data, FULL_REGION, {

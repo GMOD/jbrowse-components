@@ -1,25 +1,10 @@
+import { mergeSpans } from '../../shared/mergeSpans.ts'
 import { getSubfeatures, isCDS, isExon, isUTR } from '../util.ts'
 
+import type { Span } from '../../shared/mergeSpans.ts'
 import type { TranscriptCoords } from '../rpcTypes.ts'
 import type { FeatureLayout } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
-
-type Span = [start: number, end: number]
-
-// Merge touching/overlapping spans, ascending. `<=` not `<` so the CDS and UTR
-// halves of one exon (which abut exactly) join instead of counting twice.
-function mergeSpans(spans: Span[]): Span[] {
-  const merged: Span[] = []
-  for (const [start, end] of [...spans].sort((a, b) => a[0] - b[0])) {
-    const last = merged.at(-1)
-    if (last && start <= last[1]) {
-      last[1] = Math.max(last[1], end)
-    } else {
-      merged.push([start, end])
-    }
-  }
-  return merged
-}
 
 function spanOf(feature: Feature): Span {
   return [feature.get('start'), feature.get('end')]

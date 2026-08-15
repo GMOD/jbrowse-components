@@ -10,6 +10,7 @@ import {
   STRAND_ARROW_WIDTH,
   labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { mergeSpans } from '../shared/mergeSpans.ts'
 import {
   ARROW_MIN_FEATURE_WIDTH_PX,
   MIN_RECT_WIDTH_PX,
@@ -22,6 +23,7 @@ import type {
   FeatureDataResult,
   FeatureLabelData,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { Span } from '../shared/mergeSpans.ts'
 
 // Tallest row bottom across a layout, i.e. its content height. Unplaced features
 // are excluded — they don't render, so they contribute no height — which also
@@ -975,29 +977,13 @@ function renderedSpanPx(
   return [startPx, Math.max(ext.endBp / bpPerPx, startPx + MIN_RECT_WIDTH_PX)]
 }
 
-// Merge sorted [start,end] px intervals into a disjoint, sorted set so an
-// overlap query is a single binary search.
-function mergeIntervals(intervals: [number, number][]) {
-  const sorted = [...intervals].sort((a, b) => a[0] - b[0])
-  const merged: [number, number][] = []
-  for (const [start, end] of sorted) {
-    const last = merged.at(-1)
-    if (last && start <= last[1]) {
-      last[1] = Math.max(last[1], end)
-    } else {
-      merged.push([start, end])
-    }
-  }
-  return merged
-}
-
 // True if [queryStart,queryEnd) overlaps any of the disjoint, sorted `merged`
 // intervals. Finds the rightmost interval starting before queryEnd; because the
 // set is disjoint, no earlier interval can reach queryStart if that one doesn't.
 function intersectsMerged(
   queryStart: number,
   queryEnd: number,
-  merged: [number, number][],
+  merged: readonly Span[],
 ) {
   let lo = 0
   let hi = merged.length - 1
@@ -1126,7 +1112,7 @@ interface PackPrep {
   // fade box may collapse onto row 0 only where it doesn't overlap one of these,
   // else it must stack, or it renders on top of the other feature (a 1bp SNP
   // sitting inside a wide gene box is the canonical case).
-  solidSpansPx: [number, number][]
+  solidSpansPx: readonly Span[]
   // Features that draw at least one label under the current flags. Pre-decimation
   // on purpose: it gates the density-collapse path, which asks "does anything
   // render here", not "did the name survive".
@@ -1243,7 +1229,7 @@ function prepareRefPack(
   // here is what stops an unlabeled neighbor from pinning to row 0 on top of one
   // (a partially-rs-ID'd VCF at sub-pixel zoom: the named variant stacks, so the
   // unnamed one must see it).
-  const solidSpansPx: [number, number][] = []
+  const solidSpansPx: Span[] = []
   if (anyCollapseCandidate) {
     for (const [id, geom] of features) {
       if (!isSubPixelFade(geom, bpPerPx) || labeledFeatureIds.has(id)) {
@@ -1259,7 +1245,10 @@ function prepareRefPack(
       labelDecimation === 'fitWidth'
         ? labelOverhangRoomPx(features, bpPerPx)
         : undefined,
-    solidSpansPx: mergeIntervals(solidSpansPx),
+    // Merged so the per-feature overlap query below is a single binary search
+    // (intersectsMerged); touching spans join, so two abutting solid features
+    // read as one stretch.
+    solidSpansPx: mergeSpans(solidSpansPx),
     labeledFeatureIds,
   }
 }
