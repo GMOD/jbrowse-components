@@ -30,7 +30,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bbi": "^11.1.0",
+    "@gmod/bbi": "^11.2.0",
     "@gmod/bed": "^2.2.10",
     "@gmod/tabix": "^3.8.1",
     "@jbrowse/core": "workspace:^",
