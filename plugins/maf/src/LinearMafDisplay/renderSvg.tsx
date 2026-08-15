@@ -38,8 +38,7 @@ import {
   drawConservation,
 } from './components/drawConservation.ts'
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
-import { drawRowIdentity } from './components/drawRowIdentity.ts'
-import { drawSourceChrom } from './components/drawSourceChrom.ts'
+import { drawMafRowsCanvas2d } from './components/drawMafRowsCanvas2d.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type {
@@ -88,7 +87,6 @@ function MafSvgBody({
     conservationHeight,
     rowsCanvas2dMode,
     basesRenderingActive,
-    rowProportion,
     scrollTop,
   } = model
   // SVG export builds its palette from the user-selected export theme, not
@@ -156,26 +154,11 @@ function MafSvgBody({
           paint={ctx => {
             // One rows rendering at a time, and which one is the model's
             // decision — `rowsCanvas2dMode` is what MafRowsCanvas paints from,
-            // so the export can't disagree with the screen. Codon cells are
-            // drawn by drawMafCodons below, so that mode paints nothing here.
-            const canvas2dState = {
-              rowHeight: effectiveRowHeight,
-              rowProportion,
-              nRows: sources.length,
-              canvasWidth: width,
-              canvasHeight: rowsHeight,
-              scrollTop,
-            }
-            if (rowsCanvas2dMode === 'sourceChrom') {
-              drawSourceChrom(ctx, renderBlocks, model.rpcDataMap, {
-                ...canvas2dState,
-                ranks: model.sourceChromRanks.ranks,
-              })
-            } else if (rowsCanvas2dMode !== undefined) {
-              drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
-                ...canvas2dState,
-                mode: rowsCanvas2dMode,
-              })
+            // through the same `drawMafRowsCanvas2d`, so the export can't
+            // disagree with the screen. Codon cells are drawn by drawMafCodons
+            // below, so that mode paints nothing here.
+            if (rowsCanvas2dMode !== undefined) {
+              drawMafRowsCanvas2d(ctx, model, renderBlocks, width)
             } else if (basesRenderingActive) {
               drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
             }

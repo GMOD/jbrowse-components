@@ -1,8 +1,7 @@
 import { observer } from 'mobx-react'
 
 import TrackBandCanvas from './TrackBandCanvas.tsx'
-import { drawRowIdentity } from './drawRowIdentity.ts'
-import { drawSourceChrom } from './drawSourceChrom.ts'
+import { drawMafRowsCanvas2d } from './drawMafRowsCanvas2d.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
@@ -14,48 +13,24 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
  * and this stays hidden. Its parent div is already offset to `rowsTopOffset`.
  *
  * One component for both because they differ only in the draw call — as two they
- * had already grown two spellings of the same show test and nRows read.
+ * had already grown two spellings of the same show test and nRows read. The draw
+ * itself is `drawMafRowsCanvas2d`, shared with the SVG export for the same
+ * reason.
  */
 const MafRowsCanvas = observer(function MafRowsCanvas({
   model,
 }: {
   model: LinearMafDisplayModel
 }) {
-  const {
-    rowsCanvas2dMode: mode,
-    rowsHeight,
-    effectiveRowHeight,
-    rowProportion,
-    scrollTop,
-    sources,
-  } = model
-  const nRows = sources.length
+  const { rowsCanvas2dMode, rowsHeight, sources } = model
   return (
     <TrackBandCanvas
       model={model}
       top={0}
       height={rowsHeight}
-      show={mode !== undefined && nRows > 0}
+      show={rowsCanvas2dMode !== undefined && sources.length > 0}
       draw={ctx => {
-        const state = {
-          rowHeight: effectiveRowHeight,
-          rowProportion,
-          nRows,
-          canvasWidth: model.canvasWidthPx,
-          canvasHeight: rowsHeight,
-          scrollTop,
-        }
-        if (mode === 'sourceChrom') {
-          drawSourceChrom(ctx, model.renderBlocks, model.rpcDataMap, {
-            ...state,
-            ranks: model.sourceChromRanks.ranks,
-          })
-        } else if (mode !== undefined) {
-          drawRowIdentity(ctx, model.renderBlocks, model.rpcDataMap, {
-            ...state,
-            mode,
-          })
-        }
+        drawMafRowsCanvas2d(ctx, model, model.renderBlocks, model.canvasWidthPx)
       }}
     />
   )
