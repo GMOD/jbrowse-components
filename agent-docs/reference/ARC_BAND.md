@@ -104,7 +104,8 @@ reads over a window of one fragment length on _both_ sides
 rather than landing on it, so `arcKey`'s exact count is 1 for essentially every
 interchromosomal connection and a floor over it would delete a real translocation
 as thoroughly as the mismapping. The window comes from `stats.upper`, so it tracks
-the library instead of a constant. The same floor on same-chromosome arcs was
+the library instead of a constant. The same count is what an interchromosomal arc
+is DRAWN with — see below. The same floor on same-chromosome arcs was
 measured and declined — at depth it is a density filter, not an evidence filter.
 Both results are in [DEEP_COVERAGE.md](DEEP_COVERAGE.md).
 
@@ -116,6 +117,24 @@ one curve turning that count into ink for Canvas2D, the SVG export and both GPU
 passes (resolved CPU-side at pack time; no shader evaluates it). Coalescing
 without keeping the count left a 40-read translocation drawing exactly like one
 mismapped pair.
+
+**They do not COUNT it the same way, and that follows from the floor above.** A
+same-chromosome arc counts the connections coalesced onto its exact coordinate;
+an **interchromosomal arc carries its windowed cluster** instead, the same number
+`minInterchromSupport` filters on, so the number drawn and the number filtered
+cannot disagree. Counting coincidences there read 1 over a hundred-pair
+translocation — that is the measurement the floor exists because of — so the
+channel was empty in the family that needs it most. The pass therefore runs at
+every setting, not only above the floor. One arc is one junction is one cluster,
+so coalescing has nothing to add on that arm.
+
+**A tick keeps the coordinate count**, deliberately. It is HALF a junction: a
+coordinate whose far side the view cannot show and, `partnerRefNames` being
+plural, possibly several far sides at once. Two singleton events sharing a base
+would report the larger, and two coordinates of one event would each report the
+whole event. Summing the DISTINCT clusters reaching a coordinate is the number
+that survives both, and it wants a cluster identity per connection rather than a
+count — worth building if a tick's weight ever has to carry an event.
 
 **A tick is DASHED, and that is what separates it from an arc's foot.** The two
 land on the same x whenever a breakpoint reaches one acceptor the view shows and
