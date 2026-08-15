@@ -1134,63 +1134,122 @@ export const ldSpecs: ScreenshotSpec[] = [
     // chromosomes carrying most of the same background, which is what a young
     // haplotype at 30% frequency should look like. Say that; don't restore the
     // arithmetic coincidence.
-    // THREE SHORT PILLS, one line each, stacked down the matrix lane's left
-    // gutter, which is the region outside the block and so the emptiest part of
-    // the frame.
+    // TWO PILLS, AND EVERY MARK POINTS AT SOMETHING (review: "there are too
+    // many red text annotations, unclear what they are pointing at. might need
+    // red arrow from the 'unbroken across block' and ideally the red text is
+    // not overlapping the sample labels on left").
     //
-    // BIGGER AND SHORTER (review: "make red text box annotation text larger and
-    // less wordy"): 17 -> 22 px, and the counts are gone. The count they carried
-    // was hard-won and it belongs in the caption rather than here -- it is
-    // exactly the "specific value a reader cannot check against the picture"
-    // that website/CLAUDE.md rules out of a callout, and it was also the longest
-    // clause in the frame. The measurement itself stays in the paragraph below.
+    // The three that were here were stacked down the matrix lane at chr2
+    // 134,470,000, which is x 42 css px -- inside the dendrogram-and-population
+    // gutter, so all three sat on the sidebar they were meant to be beside. The
+    // gutter measures 107 css px on this capture (the sidebar's right edge
+    // against a 1490 px data area over 2.5 Mb, so 1678 bp/px), and the pill now
+    // starts at 134,650,000, which is 149.
     //
-    // THE FIRST PILL IS NEW, and it is the figure's answer to "why only [a]
-    // small region highlighted? what is the scientific story there?" The shaded
-    // stripe is LCT/MCM6, 89 kb, the locus selection acted on -- and the block
-    // it dragged along is the whole width of the triangle above, a megabase and
-    // more. Naming the stripe is all the pill has to do -- the ratio is then
-    // visible, and stating it would be stating the obvious.
+    // The third pill is folded into the second as its second line. "Everything
+    // else: no shared block" was a whole pill for the half of the finding that
+    // the OTHER arrow now makes: two heads out of one pill, one into the clade
+    // and one into the mosaic below it, is the same statement with one box
+    // instead of two and with both ends of it identified.
     //
-    // Nothing in the frame named it: the highlight carries no label (a
-    // highlight writes one at its top-left, which here lands on the LCT gene's
-    // own label in the lane above), so a reader met a narrow stripe with no
-    // account of itself over a wide red triangle. That ratio IS the story of a
-    // sweep, and now one line of the frame states it.
+    // BIGGER AND SHORTER (earlier review: "make red text box annotation text
+    // larger and less wordy"): 17 -> 22 px, and the counts are gone. The count
+    // they carried was hard-won and it belongs in the caption rather than here
+    // -- it is exactly the "specific value a reader cannot check against the
+    // picture" that website/CLAUDE.md rules out of a callout. The measurement
+    // itself stays in the paragraph below.
+    //
+    // THE STRIPE PILL MOVED TO THE ClinVar LANE, which is the one band in this
+    // figure that is genuinely empty: its jexl filter leaves two marks, both at
+    // the stripe. So the label sits on the lane directly above the stripe,
+    // right-aligned to end short of it, with an arrow across the gap. In the
+    // matrix lane it had nowhere to go that was not either the sidebar or the
+    // data.
+    //
+    // It answers "why only [a] small region highlighted? what is the scientific
+    // story there?": the stripe is LCT/MCM6, 89 kb, the locus selection acted
+    // on, and the block it dragged along is the whole width of the triangle
+    // above. Naming the stripe is all the pill has to do -- the ratio is then
+    // visible, and stating it would be stating the obvious. The highlight
+    // itself carries no label because a highlight writes one at its top-left,
+    // which here lands on the LCT gene's own label in the lane above.
+    //
+    // ARROW HEADS ARE GENOMIC, the matrix's columns are not (matrix mode gives
+    // every variant equal width), so the heads are placed to land inside the
+    // drawn block rather than at a variant: 135,900,000 is just right of the
+    // stripe and well inside the slab. fracY 0.30 and 0.78 are the clade's and
+    // the mosaic's centres, measured off the capture -- the clade occupies the
+    // top ~0.08-0.52 of the lane and the mosaic the rest.
     annotations: [
       {
         type: 'text',
-        text: 'Shaded: LCT/MCM6, the locus the sweep acted on',
+        text: 'LCT/MCM6: the locus the sweep acted on',
         fontSize: 22,
-        maxWidth: 340,
+        // one line. At 420 it wrapped, and a right-aligned pill wraps its LAST
+        // word onto a line of its own against the arrow it points with.
+        maxWidth: 500,
+        textAlign: 'end',
         anchor: {
-          track: 'kgp_lct_haplotypes',
-          locus: 'chr2:134,470,000',
-          fracY: 0.04,
+          track: 'hg38-clinvarMain',
+          locus: 'chr2:135,690,000',
+          fracY: 0.5,
+          alignX: 'left',
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'hg38-clinvarMain',
+          locus: 'chr2:135,700,000',
+          fracY: 0.5,
+          alignX: 'left',
+        },
+        anchor: {
+          track: 'hg38-clinvarMain',
+          locus: 'chr2:135,787,850',
+          fracY: 0.5,
           alignX: 'left',
         },
       },
       {
         type: 'text',
-        text: 'One clade, unbroken across the block',
+        text: 'One clade, unbroken across the block.\nEvery other row: mosaic.',
         fontSize: 22,
         maxWidth: 340,
         anchor: {
           track: 'kgp_lct_haplotypes',
-          locus: 'chr2:134,470,000',
-          fracY: 0.33,
+          locus: 'chr2:134,650,000',
+          fracY: 0.52,
           alignX: 'left',
         },
       },
       {
-        type: 'text',
-        text: 'Everything else: no shared block',
-        fontSize: 22,
-        maxWidth: 340,
+        type: 'arrow',
+        fromAnchor: {
+          track: 'kgp_lct_haplotypes',
+          locus: 'chr2:135,290,000',
+          fracY: 0.46,
+          alignX: 'left',
+        },
         anchor: {
           track: 'kgp_lct_haplotypes',
-          locus: 'chr2:134,470,000',
-          fracY: 0.74,
+          locus: 'chr2:135,900,000',
+          fracY: 0.3,
+          alignX: 'left',
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'kgp_lct_haplotypes',
+          locus: 'chr2:135,290,000',
+          fracY: 0.58,
+          alignX: 'left',
+        },
+        anchor: {
+          track: 'kgp_lct_haplotypes',
+          locus: 'chr2:135,900,000',
+          fracY: 0.78,
           alignX: 'left',
         },
       },
