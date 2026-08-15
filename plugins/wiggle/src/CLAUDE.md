@@ -7,17 +7,15 @@ other plugins draw a wiggle-shaped axis against it.
 ## Two shaders, because a module reflects one instance struct
 
 `wiggle.slang` fills (xyplot, density, scatter) on a 20-byte record;
-`wiggleLine.slang` strokes (line, linecenter) on a 40-byte one. Only the stroked
+`wiggleLine.slang` strokes (line, linecenter) on a 40-byte one. Only stroked
 renderings read a neighbour, and one module means one layout, so while they
 shared a shader every fill buffer carried those 20 bytes for nothing — 164MB
 rather than 82MB at 1000 sources, against a 256MB `maxBufferSize` floor, which
 is a zoom ceiling rather than just waste.
 
-`wiggleCommon.slang` holds what they must agree on, following
-`alignmentsUniforms`: the struct is shared, the **binding is not**, and each
-re-imports `colorPack`/`hpmath` since Slang does not re-export through an
-import. `consts-out` takes the whole `export-consts` list so
-`wiggleRenderModes.generated.ts` stays one file.
+`wiggleCommon.slang` holds what they must agree on: the struct is shared, the
+**binding is not**, and each re-imports `colorPack`/`hpmath` since Slang does
+not re-export through an import.
 
 **The pass, the buffer and the `renderingType` uniform all come off the encoded
 layers, never off `renderState`.** Encode and render are separate autoruns and
@@ -60,10 +58,9 @@ is unresolved — not a precedent.
 It hoists log arithmetic out of a per-feature loop; the generated
 `normalizeScore` is per-call scalar and kept as an **oracle**, swept by
 `normalizeScoreParity.test.ts`. Both floored the log domain at 1 once,
-flattening any domain under 1 — the floor is the domain's own min.
-
-`scoreToY` is `js-skip`ed for the one allowed disagreement: a degenerate
-(`min === max`) domain, where JS returns 0 and the shader divides by an epsilon.
+flattening any domain under 1 — the floor is the domain's own min. `scoreToY` is
+`js-skip`ed for the one allowed disagreement: a degenerate (`min === max`)
+domain.
 
 ## `rowIndex` is the position in the display's own `sources`
 
@@ -83,16 +80,15 @@ floored at 1 or the shader seeds the row transform with Infinity.
   it, computed once per layer and read by both the encoder and `drawLineCenter`.
   Measured in **bp, not px** — px drifts from the encoded break wherever a block
   is clipped.
-- **`DEFAULT_GAP_BREAK_MULTIPLE` is 0 (off)** after shipping at 20; see
+- **`DEFAULT_GAP_BREAK_MULTIPLE` is 0 (off)** after shipping at 20;
   `gapBreak.ts`.
 
 ## Effective vs raw `summaryScoreMode`
 
 `effectiveSummaryScoreMode` resolves whiskers to `avg` under density, and the
-autoscale domain, menu radio, tooltip and `gpuProps` all read it. `rpcProps`
-carries the **raw** slot: the effective one moves with the rendering type, and
-anything in `rpcProps` invalidates the fetch, so switching to density would
-re-download every region.
+autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
+carries the raw slot** — the effective one moves with the rendering type, so
+switching to density would re-download every region.
 
 `bicolorPivot` crosses both ways — the worker owns the `avg`-path pos/neg split
 (ADR-016), the whiskers bands are colored main-thread.
@@ -113,9 +109,8 @@ its `RowColorMode`, because **the fallback belongs to the mode as much as the
 channel does**. Outside density an unset `color` really is painted in
 `posColor`, so the key resolves to it; in density `posColor` is the score ramp
 and identity is drawn by `SvgRowLabels`, which paints a row with no `labelColor`
-as no swatch at all — so an uncoloured density row gets no key entry either.
-Reachable whenever a density track mixes grouped subtracks (which always take a
-group palette entry) with ungrouped ones (which take none).
+as no swatch — so an uncoloured density row gets no key entry either. Reachable
+whenever a density track mixes grouped subtracks with ungrouped ones.
 
 ## The shipped arrays are aliased — read, never write
 

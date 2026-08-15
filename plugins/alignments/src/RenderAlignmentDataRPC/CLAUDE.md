@@ -25,23 +25,20 @@ PAF/synteny block, which keyed by the empty name made every block in the region
 one chain the moment `linkedReads` was set. `groupReadsByName` skips a nameless
 read likewise.
 
-**Keep every dimension a closed set; `MAX_GROUPS` is only the backstop.** Each
-group allocates region-width depth arrays and its own GPU coverage buffer.
-`mapq` bins by confidence, not by decade, because real MAPQ is bimodal at the
-aligner's ceiling. `tag` is the one the data decides, so the dialog blocks
-Submit and names the count. The `''` untagged group is held out of the overflow
-merge — reads _lacking_ the tag are a distinct answer users look for.
-
-Chain mode allows only dimensions where every read of a chain yields the same
-key (`chainConsistent`). Adding a `GroupByType` member is a compile error until
-it's classified.
-
-Key generators must cover **both** worlds this pipeline serves, since
-LGVSyntenyDisplay pushes PAF blocks through it — hence `strand` over
-`SAM_FLAG_REVERSE`, and `getMappingQuality`.
-
-Chain numbering is **per worker call**, so anything unioning chains across calls
-keys by chain **name**, not chainIdx.
+- **Keep every dimension a closed set; `MAX_GROUPS` is only the backstop.** Each
+  group allocates region-width depth arrays and its own GPU coverage buffer.
+- `mapq` bins by confidence, not by decade — real MAPQ is bimodal at the
+  aligner's ceiling.
+- `tag` is the one the data decides, so the dialog blocks Submit and names the
+  count. The `''` untagged group is held out of the overflow merge — reads
+  _lacking_ the tag are a distinct answer users look for.
+- Chain mode allows only dimensions where every read of a chain yields the same
+  key (`chainConsistent`). A new `GroupByType` member is a compile error until
+  it's classified.
+- Key generators must cover **both** worlds this pipeline serves — hence
+  `strand` over `SAM_FLAG_REVERSE`, and `getMappingQuality`.
+- Chain numbering is **per worker call**, so anything unioning chains across
+  calls keys by chain **name**, not chainIdx.
 
 ## A fixture builds on `testPileupData`, never `as unknown as`
 
@@ -69,14 +66,12 @@ so a localized sort can't false-match the same number on another chromosome.
 Both layout paths call it: the gate lived in the multi-region path alone while
 the single-region path — most browsing — passed `sortedBy` straight through, and
 the slot is **config**, so a sort set at chr1:1000 silently reordered chr2's
-reads by whatever sat at chr2:1000 with the menu still showing a sort as active.
+reads with the menu still showing a sort as active.
 
 It is also what the display's `sortedBy` getter promises: it canonicalizes the
 refName because a session spec can carry an alias, and says an unresolvable one
-leaves the reads _unsorted_.
-
-The multi-region path keeps its own `regions &&` check on top — structural, not
-policy: it needs the bounds to find the region holding the sort position.
+leaves the reads _unsorted_. The multi-region path keeps its own `regions &&`
+check on top — structural, not policy.
 
 `showSoftClipping` belongs in `rpcProps` — the worker gates per-base extraction
 on it.
