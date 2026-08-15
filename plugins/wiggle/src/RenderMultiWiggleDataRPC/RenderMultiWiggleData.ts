@@ -26,7 +26,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 }
 
 export default class RenderMultiWiggleData extends RpcMethodTypeWithRenameRegions<'RenderMultiWiggleData'> {
-  name = 'RenderMultiWiggleData'
+  name = 'RenderMultiWiggleData' as const
 
   async execute(args: RenderMultiWiggleDataArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

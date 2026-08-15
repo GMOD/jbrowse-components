@@ -7,7 +7,7 @@ import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
 export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRegions<'CoreGetRegionByteEstimate'> {
-  name = 'CoreGetRegionByteEstimate'
+  name = 'CoreGetRegionByteEstimate' as const
 
   async execute(
     args: {

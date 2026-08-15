@@ -12,7 +12,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 }
 
 export class MultiWiggleClusterScoreMatrix extends RpcMethodTypeWithFiltersAndRenameRegions<'MultiWiggleClusterScoreMatrix'> {
-  name = 'MultiWiggleClusterScoreMatrix'
+  name = 'MultiWiggleClusterScoreMatrix' as const
 
   async execute(args: GetScoreMatrixArgs, rpcDriverClassName: string) {
     const deserializedArgs = await this.deserializeArguments(

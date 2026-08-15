@@ -110,6 +110,29 @@ export interface RpcHandles {
 }
 
 /**
+ * What the two `RpcExecute*` derivations resolve to for a method name that was
+ * written out but has no registry entry: a shape nothing satisfies, so the miss
+ * is a compile error naming the method rather than silence.
+ *
+ * The silence was the problem. Both derivations are conditionals over `keyof
+ * RpcRegistry`, and a name that misses falls out the bottom — where `unknown`
+ * used to be. So `RpcMethodType<'GetFeatureDetails'>` type-checked with an
+ * `execute` free to take and return anything at all. `GetFeatureDetails` is the
+ * *class* name; the registry key beside it is `GetPileupFeatureDetails`, and
+ * both classes called `GetFeatureDetails` (alignments, canvas) register under a
+ * name their class does not carry — so the wrong guess is the natural one, and
+ * an opt-in that silently opts you back out is worse than none, because it
+ * reads as checked.
+ *
+ * Only for a name written out. The bare default `string` is the escape hatch
+ * documented on {@link RpcMethodType} and still resolves to `unknown`;
+ * `string extends M` is what tells the two apart.
+ */
+export interface NotInRpcRegistry<M extends string> {
+  __rpcRegistryError: `no RpcRegistry entry for '${M}'`
+}
+
+/**
  * What a registered method's `execute` actually receives: its declared args,
  * plus the session it is pinned to, plus the handles the driver merged in.
  *
@@ -121,7 +144,9 @@ export interface RpcHandles {
  */
 export type RpcExecuteArgs<M extends string> = M extends RpcMethodName
   ? RpcArgs<M & RpcMethodName> & { sessionId: string } & RpcHandles
-  : unknown
+  : string extends M
+    ? unknown
+    : NotInRpcRegistry<M>
 
 /**
  * What a CALLER passes to `rpcManager.call`: the method's own data, minus the
@@ -141,7 +166,10 @@ export type RpcCallArgs<M extends string> = M extends RpcMethodName
 // parameterized with its own name (`RpcMethodType<'CoreGetRegions'>`) gets its
 // executor checked against the registry, so a registry entry can't drift from
 // what the worker actually sends back. `string` (the default) resolves to
-// `unknown`, leaving unparameterized methods unconstrained.
+// `unknown`, leaving unparameterized methods unconstrained; a name that is not a
+// key resolves to NotInRpcRegistry, which nothing satisfies.
 export type RpcExecuteReturn<M extends string> = M extends RpcMethodName
   ? RpcReturn<M & RpcMethodName> | RpcResult<RpcReturn<M & RpcMethodName>>
-  : unknown
+  : string extends M
+    ? unknown
+    : NotInRpcRegistry<M>

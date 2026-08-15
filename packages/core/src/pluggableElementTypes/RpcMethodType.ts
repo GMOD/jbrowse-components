@@ -189,10 +189,36 @@ export function convertFileHandleLocations(
  * as before; that's the escape hatch for a method whose worker-side shape
  * intentionally differs from what the client sees because `deserializeReturn`
  * transforms it (CoreGetFeatures, BreakpointGetFeatures).
+ *
+ * The name is checked twice over, because parameterizing used to be a claim
+ * rather than a fact: it must be a key of the registry (a miss lands on
+ * {@link NotInRpcRegistry} instead of quietly on `unknown`), and it must be the
+ * key this class sets as its {@link name}. Both are compile errors, so the
+ * escape hatch is the only way to end up unchecked, and taking it is visible.
  */
 export default abstract class RpcMethodType<
   MethodName extends string = string,
 > extends PluggableElementBase {
+  /**
+   * The key this method is registered under, and the same one the class is
+   * parameterized with — `pluginManager.getRpcMethodType` looks it up by this
+   * string, so it is what a caller's `rpcManager.call` names.
+   *
+   * Narrowed to `MethodName` because the parameter was otherwise a claim about
+   * a method that nothing checked was this one: `RpcMethodType<'A'>` with
+   * `name = 'B'` type-checked, and then `execute` was checked against B's
+   * registry entry while the worker ran it for A. Not hypothetical here —
+   * `GetPileupFeatureDetails` and `GetCanvasFeatureDetails` are two registry
+   * keys held by two same-bodied classes both called `GetFeatureDetails`.
+   *
+   * A class field initializer is not contextually typed by the base property,
+   * so a parameterized subclass writes `name = 'CoreGetRegions' as const`.
+   * Omitting the `as const` is a compile error on `name`, which is the point:
+   * the tie is either made or reported, never silently absent. Unparameterized
+   * subclasses keep plain `string` and need nothing.
+   */
+  declare name: MethodName
+
   pluginManager: PluginManager
 
   constructor(pluginManager: PluginManager) {

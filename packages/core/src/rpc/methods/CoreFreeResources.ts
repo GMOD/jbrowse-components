@@ -15,7 +15,7 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
  * open stays cached however long that takes.
  */
 export default class CoreFreeResources extends RpcMethodType<'CoreFreeResources'> {
-  name = 'CoreFreeResources'
+  name = 'CoreFreeResources' as const
 
   async execute(args: { sessionId?: string }) {
     await freeAdapterResources(args)

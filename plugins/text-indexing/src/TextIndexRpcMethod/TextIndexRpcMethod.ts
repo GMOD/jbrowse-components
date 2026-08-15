@@ -31,7 +31,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 }
 
 export class TextIndexRpcMethod extends RpcMethodType<'TextIndexRpcMethod'> {
-  name = 'TextIndexRpcMethod'
+  name = 'TextIndexRpcMethod' as const
 
   async execute(
     args: RpcExecuteArgs<'TextIndexRpcMethod'>,

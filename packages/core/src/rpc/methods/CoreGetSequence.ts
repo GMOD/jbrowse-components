@@ -9,7 +9,7 @@ import type { StopToken } from '../../util/stopToken.ts'
 // CoreGetSequence takes a single region whose refName fetchSeq() has already
 // resolved to the sequence adapter's name, so no region renaming is needed here
 export default class CoreGetSequence extends RpcMethodType<'CoreGetSequence'> {
-  name = 'CoreGetSequence'
+  name = 'CoreGetSequence' as const
 
   async execute(
     args: {

@@ -4,7 +4,7 @@ import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMetho
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions<'CoreGetExportData'> {
-  name = 'CoreGetExportData'
+  name = 'CoreGetExportData' as const
 
   async execute(args: RpcExecuteArgs<'CoreGetExportData'>, rpcDriver: string) {
     const {

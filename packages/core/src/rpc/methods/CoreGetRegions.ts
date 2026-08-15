@@ -3,7 +3,7 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
 export default class CoreGetRegions extends RpcMethodType<'CoreGetRegions'> {
-  name = 'CoreGetRegions'
+  name = 'CoreGetRegions' as const
 
   async execute(
     args: {

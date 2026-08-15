@@ -6,7 +6,7 @@ import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
 export default class CoreGetInfo extends RpcMethodType<'CoreGetInfo'> {
-  name = 'CoreGetInfo'
+  name = 'CoreGetInfo' as const
 
   async execute(
     args: {
