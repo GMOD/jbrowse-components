@@ -8,14 +8,13 @@ other plugins draw a wiggle-shaped axis against it.
 
 `wiggle.slang` fills (xyplot, density, scatter) on a 20-byte record;
 `wiggleLine.slang` strokes (line, linecenter) on a 40-byte one. Only stroked
-renderings read a neighbour, and one module means one layout, so while they
-shared a shader every fill buffer carried those 20 bytes for nothing — 164MB
-rather than 82MB at 1000 sources, against a 256MB `maxBufferSize` floor, which
-is a zoom ceiling rather than just waste.
+renderings read a neighbour, so while they shared a shader every fill buffer
+carried those 20 bytes for nothing — 164MB rather than 82MB at 1000 sources,
+against a 256MB `maxBufferSize` floor, which is a zoom ceiling rather than
+waste.
 
 `wiggleCommon.slang` holds what they must agree on: the struct is shared, the
-**binding is not**, and each re-imports `colorPack`/`hpmath` since Slang does
-not re-export through an import.
+**binding is not**, and each re-imports `colorPack`/`hpmath`.
 
 **The pass, the buffer and the `renderingType` uniform all come off the encoded
 layers, never off `renderState`.** Encode and render are separate autoruns and
@@ -30,10 +29,10 @@ its own — an empty pack is how a pass releases its buffer.
 ## The two displays differ in one thing: the vertical inset
 
 Single-wiggle insets by `YSCALEBAR_LABEL_OFFSET` so end labels aren't clipped;
-multi-wiggle stacks rows edge-to-edge. One decision, two halves that must move
-together: the render height and `computeYTicks`' offset. Split them and ticks
-label the wrong data. `WiggleFamilySvgFrame` bakes in the single-wiggle inset,
-so parameterize that before unifying the SVG bodies.
+multi-wiggle stacks rows edge-to-edge. Two halves must move together — the
+render height and `computeYTicks`' offset — or ticks label the wrong data.
+`WiggleFamilySvgFrame` bakes in the single-wiggle inset, so parameterize that
+before unifying the SVG bodies.
 
 ## `viewportWidth` is CSS px — `clip.scissorW`, never `clip.pxW`
 
@@ -48,23 +47,23 @@ is unresolved — not a precedent.
 - **Floor**: `MIN_FILL_WIDTH_PX`, `export-consts`ed from `wiggleCommon.slang`
   (adr-051), re-exported as `WIGGLE_MIN_PX`. One number, both backends.
 - **`WIGGLE_FUDGE_FACTOR` (0.8px) is Canvas2D-only.** `fillRect` at fractional
-  coords antialiases its edges and leaves hairline gaps; adjacent GPU quads on a
-  multisampled target don't. The shader must not grow a matching fudge.
+  coords leaves hairline gaps; adjacent GPU quads on a multisampled target
+  don't. The shader must not grow a matching fudge.
 - **Anchor is shared**: both grow a floored bar away from the bin's _start_ —
   the reversed-block family in `packages/render-core/CLAUDE.md` owns the rule.
 
 ## `makeScoreNormalizer` is the one `js-export` twin that doesn't retire
 
 It hoists log arithmetic out of a per-feature loop; the generated
-`normalizeScore` is per-call scalar and kept as an **oracle**, swept by
-`normalizeScoreParity.test.ts`. Both floored the log domain at 1 once,
+`normalizeScore` is per-call scalar and kept as an **oracle**
+(`normalizeScoreParity.test.ts`). Both floored the log domain at 1 once,
 flattening any domain under 1 — the floor is the domain's own min. `scoreToY` is
-`js-skip`ed for the one allowed disagreement: a degenerate (`min === max`)
+`js-skip`ed for the one allowed disagreement, a degenerate (`min === max`)
 domain.
 
 ## `rowIndex` is the position in the display's own `sources`
 
-Never the payload's — a source missing from the RPC payload leaves its row empty
+Never the payload's — a source missing from the payload leaves its row empty
 instead of shifting everything below it. Overlay collapses onto row 0.
 
 `findRowHit` picks `visibleSources[floor(offsetY / rowHeight)]`, so
@@ -90,17 +89,16 @@ autoscale domain, menu radio, tooltip and `gpuProps` all read it. **`rpcProps`
 carries the raw slot** — the effective one moves with the rendering type, so
 switching to density would re-download every region.
 
-`bicolorPivot` crosses both ways — the worker owns the `avg`-path pos/neg split
+`bicolorPivot` crosses both ways: the worker owns the `avg`-path pos/neg split
 (ADR-016), the whiskers bands are colored main-thread.
 
 ## Whiskers splits into solid layers only when the bars nest
 
 `isDensityMode || (isFilled && bands.length > 1)`. Back-to-front, largest
-magnitude first, which is the opposite order on each side of the pivot — a
-single band order can't express it. Density needs it because `drawDensity`
-builds one gradient per layer. Everything else keeps the band whole with
-per-instance colors; splitting line or scatter breaks continuity at every pivot
-crossing.
+magnitude first — the opposite order on each side of the pivot, which a single
+band order can't express. Density needs it because `drawDensity` builds one
+gradient per layer. Everything else keeps the band whole with per-instance
+colors; splitting line or scatter breaks continuity at every pivot crossing.
 
 ## The colour key takes the mode, not `isDensityMode`
 
@@ -108,7 +106,7 @@ crossing.
 its `RowColorMode`, because **the fallback belongs to the mode as much as the
 channel does**. Outside density an unset `color` really is painted in
 `posColor`, so the key resolves to it; in density `posColor` is the score ramp
-and identity is drawn by `SvgRowLabels`, which paints a row with no `labelColor`
+and identity comes from `SvgRowLabels`, which paints a row with no `labelColor`
 as no swatch — so an uncoloured density row gets no key entry either. Reachable
 whenever a density track mixes grouped subtracks with ungrouped ones.
 
@@ -117,10 +115,9 @@ whenever a density track mixes grouped subtracks with ungrouped ones.
 `processFeaturesFromArrays` aliases min/max onto `featureScores` when there's no
 summary variation, and an all-positive window's `pos*` arrays onto the full
 arrays. Structured clone preserves the sharing; `collectWiggleTransferables`
-dedupes, and takes **every region's result at once** so the dedupe spans
-regions. A pass that normalizes a band in place rewrites the average scores
-under every other reader, and the throw lands at the `postMessage`, nowhere near
-the cause.
+dedupes and takes **every region's result at once** so the dedupe spans regions.
+A pass normalizing a band in place rewrites the average scores under every other
+reader, and the throw lands at the `postMessage`, nowhere near the cause.
 
 Nothing shares a buffer across regions, because `processFeaturesFromArrays`
 copies its inputs. Keep it that way: aliasing the adapter's arrays instead looks

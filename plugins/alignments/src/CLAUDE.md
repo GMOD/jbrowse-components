@@ -1,14 +1,12 @@
 # plugins/alignments
 
-Adapter seams and their measurements:
+Adapter seams and the measurements behind the array shapes:
 `agent-docs/reference/BAM_STACK_INTEGRATION.md`.
 
-## Shaders are `src/shaders`, a peer of `src/features`
-
-`features/` is the shared layer here — one pass per directory, packing for
-whichever renderer draws it — so the shaders it packs for belong beside it, not
-inside the single display that mounts them. Other plugins keep shaders
-display-local and are right to: theirs have one consumer.
+**Shaders live in `src/shaders`, a peer of `src/features`** — `features/` is the
+shared layer here, one pass per directory, so the shaders it packs for belong
+beside it rather than inside the single display that mounts them. Other plugins
+keep shaders display-local and are right to: theirs have one consumer.
 
 ## Strand comes from `strand`; `flags` answers everything else
 
@@ -30,8 +28,7 @@ needing a strand AND a flag (`firstOfPairStrand`) live in `shared/util.ts`.
 ## A read's identity is `readKeys`; `readIdAt` builds the string
 
 The result ships **keys** — a transferable `Float64Array` of the record id BAM
-and CRAM already hold, plus `readIdPrefix`. Building the string per read cost
-~33ms on a 153,677-read window; structured clone is priced by object **count**.
+and CRAM already hold, plus `readIdPrefix`.
 
 - **A map key, dedupe key or sort tiebreak takes the key.** `Map<ReadKey, …>` is
   fine and faster.
@@ -39,8 +36,8 @@ and CRAM already hold, plus `readIdPrefix`. Building the string per read cost
   feature-details fetch.
 - **Never spell the string yourself.** `shared/readIdentity.ts` derives the
   prefix by stripping a record id off a real `id()` and checking the strip, so
-  an adapter whose features carry no `recordId` falls back to whole strings.
-  Hence `ReadKey` is `number | string`.
+  an adapter whose features carry no `recordId` falls back to whole strings
+  rather than shipping a wrong prefix. Hence `ReadKey` is `number | string`.
 
 Getting this wrong is silent: the details RPC compares the rebuilt string
 against `feature.id()` **in the worker** and the click lands on "Could not load
@@ -49,8 +46,8 @@ test.
 
 ## Read names are one block; `readNameAt` slices one out
 
-`readNameBlock` + `readNameOffsets`, not `readNames: string[]` — same
-object-count reason, plus a name is **decoded**, not copied.
+`readNameBlock` + `readNameOffsets`, not `readNames: string[]` — structured
+clone is priced by object **count**, and a name is **decoded**, not copied.
 
 - **`readNameAt(data, i)`, never `readNameBlock.slice` by hand.** V8 slices a
   long string in O(1).
@@ -67,12 +64,11 @@ from tens of thousands up.
 
 ## The other two per-read string arrays
 
-- **Mate reference is `readNextRefIds` + `nextRefNames`** — the old string array
-  held ONE distinct value across 153,677 entries. `buildReadInterchrom` compares
-  per SLOT, not per read.
+- **Mate reference is `readNextRefIds` + `nextRefNames`**; the worker resolves a
+  name once per contig. `buildReadInterchrom` compares per SLOT, not per read.
 - **`readSuppAlignments` ships only when some read in the group HAS one.** The
-  `getTag(f, 'SA')` walk is unconditional; what the absent array saves is the
-  clone. **Gating the WALK on `readConnections` is the mistake to not repeat** —
+  `getTag(f, 'SA')` walk is unconditional; the absent array saves the clone.
+  **Gating the WALK on `readConnections` is the mistake to not repeat** —
   `derivativePathCandidates` is a second, ungated consumer, so the default fetch
   carried no SA and "Reconstruct derivative allele" lost every off-screen split
   segment. `readConnections` is therefore **not** in `rpcProps`, pinned by
@@ -81,9 +77,6 @@ from tens of thousands up.
 The shared rule: **ask what the consumer actually is before making the shape
 cheaper**, and **enumerate the consumers before deciding not to BUILD one** — a
 missing reader costs correctness, not milliseconds.
-
-`readTagValues` / `sortTagValues` are filled only under a tag color scheme or
-tag sort, so neither is on the default path.
 
 ## Adapter hot path (BAM/CRAM)
 
@@ -94,10 +87,10 @@ drives `forEachMismatch`.
 
 **`get('tags')` is never the way to read a tag on this path**, however many you
 want: it decodes every tag and BAM memoizes it onto a record in a shared chunk
-LRU, so it is retained as well as paid for. Use `getTag` / `getTagAlt` —
-5.7-9.2x on the repo's spliced fixtures. That inverts only for a read whose tag
-block is dominated by a long `MD`; `benches/gapStrand.bench.ts` prints tag
-bytes/read alongside the ratio, and the real fix is a library change (seam 5).
+LRU, so it is retained as well as paid for. Use `getTag` / `getTagAlt` (5.7-9.2x
+on the repo's spliced fixtures). That inverts only for a read whose tag block is
+dominated by a long `MD`; `benches/gapStrand.bench.ts` prints tag bytes/read
+alongside the ratio, and the real fix is a library change (seam 5).
 
 **`withRegionRef`, never `record.ref = …`** — `@gmod/bam` memoizes decoded
 records in a per-file chunk LRU, so two queries can get the identical objects

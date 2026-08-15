@@ -10,17 +10,16 @@ Nearly all of this is about placement happening **twice, on two clocks**.
 
 ## Two passes, because the exact answer costs an RPC
 
-A CIGAR walk happens in the worker, so an exact answer can only be asked for
-when the anchor settles — the **exact pass**, reading the debounced
-`coarseDynamicBlocks`. On its own the row sits still through the drag and jumps
-half a second after the user stops. So a **frame pass** on live
-`dynamicBlocks.contentBlocks` does everything except the RPC. Exact supplies
-correctness, frame supplies motion.
+A CIGAR walk happens in the worker, so the **exact pass** can only ask once the
+anchor settles, reading the debounced `coarseDynamicBlocks`. On its own the row
+sits still through the drag and jumps half a second after the user stops. So a
+**frame pass** on live `dynamicBlocks.contentBlocks` does everything except the
+RPC. Exact supplies correctness, frame supplies motion.
 
 **The frame pass replans; it does not extrapolate the last exact answer.** That
 was tried and snaps 43% of a screen when the settle lands, because "the answer"
 is two functions: affine inside a single alignment (`FollowTransform`), and an
-**envelope** once the window is wider than any one alignment. An envelope is not
+**envelope** once the window is wider than any one alignment, which is not
 affine in the window. So the affine shortcut is taken only where affine is true,
 and the cached transform may only be built from a **single-block** answer — an
 envelope carries no one strand, and a forward transform derived from one mirrors
@@ -35,15 +34,14 @@ the anchor is the top row.
 
 ## The autorun's synchronous prefix is the only place observables are read
 
-`execute` is `async` and MobX stops tracking at the first `await`, so everything
-the placement needs is read before it is called. **`FollowStep` is that
-boundary, not a convenience struct** — a field missing from it can only be read
-untracked, producing a follow that works once and never re-fires.
+`execute` is `async` and MobX stops tracking at the first `await`.
+**`FollowStep` is that boundary, not a convenience struct** — a field missing
+from it can only be read untracked, producing a follow that works once and never
+re-fires.
 
 Same rule: `LevelState` is a plain object, not MST or a MobX box, since the
 exact pass writes it every pass. And `followUnaligned` / `followApproximate` are
-**written here and read only by the header**; a third such flag must keep that
-property.
+**written here and read only by the header**; a third such flag must keep that.
 
 ## What each pass may touch
 
@@ -58,8 +56,8 @@ property.
 
 The exact pass reads the moving row on purpose (`alreadyShowing`), inverting
 that rule: the dependency is what re-asserts the follow over a row the user
-nudged by hand. So it re-enters on its own navigation — one settle wakes it
-three times, and two things make that converge: `alreadyShowing` compares
+nudged by hand. It therefore re-enters on its own navigation — one settle wakes
+it three times, and two things make that converge: `alreadyShowing` compares
 against where the row actually is, with a tolerance; and the per-level answer
 promise is shared by key, so all three ride one `SyntenyResolveMatchingRegion`.
 The integration suite asserts that count.
@@ -76,7 +74,7 @@ on one contig is only ever sent alignments already pointing at it.
 ## Every refName the follow reads is canonical, made so in two places
 
 Nothing here canonicalizes; every comparison assumes both operands already
-agree. They do because both channels are renamed first: `featureData`'s
+agree. They do because both channels are renamed first — `featureData`'s
 `refNameDict`/`mateRefNameDict` in the fetch's `run`, and `ResolvedSpan.refName`
 on receipt in `resolveMatchingSpan`.
 
